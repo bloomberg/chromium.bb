@@ -36,14 +36,14 @@ TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate2* delegate)
     : InfoBar(delegate) {
   TranslateInfoBarDelegate2::BackgroundAnimationType animation =
       delegate->background_animation_type();
-  if (animation != TranslateInfoBarDelegate2::NONE) {
+  if (animation != TranslateInfoBarDelegate2::kNone) {
     background_color_animation_.reset(new SlideAnimation(this));
     background_color_animation_->SetTweenType(Tween::LINEAR);
     background_color_animation_->SetSlideDuration(500);
-    if (animation == TranslateInfoBarDelegate2::NORMAL_TO_ERROR) {
+    if (animation == TranslateInfoBarDelegate2::kNormalToError) {
       background_color_animation_->Show();
     } else {
-      DCHECK_EQ(TranslateInfoBarDelegate2::ERROR_TO_NORMAL, animation);
+      DCHECK_EQ(TranslateInfoBarDelegate2::kErrorToNormal, animation);
       // Hide() runs the animation in reverse.
       background_color_animation_->Reset(1.0);
       background_color_animation_->Hide();
@@ -216,14 +216,14 @@ void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
 InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
-    case BEFORE_TRANSLATE:
+    case kBeforeTranslate:
       infobar = new BeforeTranslateInfoBar(this);
       break;
-    case AFTER_TRANSLATE:
+    case kAfterTranslate:
       infobar = new AfterTranslateInfoBar(this);
       break;
-    case TRANSLATING:
-    case TRANSLATION_ERROR:
+    case kTranslating:
+    case kTranslationError:
       infobar = new TranslateMessageInfoBar(this);
       break;
     default:

@@ -26,10 +26,10 @@ namespace {
 
 // All states the translate toolbar can assume.
 TranslateInfoBarDelegate2::Type kTranslateToolbarStates[] = {
-  TranslateInfoBarDelegate2::BEFORE_TRANSLATE,
-  TranslateInfoBarDelegate2::AFTER_TRANSLATE,
-  TranslateInfoBarDelegate2::TRANSLATING,
-  TranslateInfoBarDelegate2::TRANSLATION_ERROR
+  TranslateInfoBarDelegate2::kBeforeTranslate,
+  TranslateInfoBarDelegate2::kAfterTranslate,
+  TranslateInfoBarDelegate2::kTranslating,
+  TranslateInfoBarDelegate2::kTranslationError
 };
 
 class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate2 {
@@ -82,7 +82,7 @@ class TranslationInfoBarTest : public CocoaTest {
   }
 
   void CreateInfoBar() {
-    CreateInfoBar(TranslateInfoBarDelegate2::BEFORE_TRANSLATE);
+    CreateInfoBar(TranslateInfoBarDelegate2::kBeforeTranslate);
   }
 
   void CreateInfoBar(TranslateInfoBarDelegate2::Type type) {
@@ -94,7 +94,7 @@ class TranslationInfoBarTest : public CocoaTest {
                         MSG_ROUTING_NONE,
                         NULL));
     TranslateErrors::Type error = TranslateErrors::NONE;
-    if (type == TranslateInfoBarDelegate2::TRANSLATION_ERROR)
+    if (type == TranslateInfoBarDelegate2::kTranslationError)
       error = TranslateErrors::NETWORK;
     infobar_delegate.reset(
         new MockTranslateInfoBarDelegate(type, error, tab_contents.get()));
@@ -125,7 +125,7 @@ TEST_F(TranslationInfoBarTest, TranslateCalledOnButtonPress) {
 // Check that clicking the "Retry" button calls Translate() when we're
 // in the error mode - http://crbug.com/41315 .
 TEST_F(TranslationInfoBarTest, TranslateCalledInErrorMode) {
-  CreateInfoBar(TranslateInfoBarDelegate2::TRANSLATION_ERROR);
+  CreateInfoBar(TranslateInfoBarDelegate2::kTranslationError);
 
   EXPECT_CALL(*infobar_delegate, Translate()).Times(1);
 

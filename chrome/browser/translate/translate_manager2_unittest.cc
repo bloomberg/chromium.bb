@@ -152,6 +152,8 @@ class TranslateManager2Test : public RenderViewHostTestHarness,
   }
 
   virtual void TearDown() {
+    process()->sink().ClearMessages();
+
     notification_registrar_.Remove(
         this,
         NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
@@ -271,7 +273,7 @@ TEST_F(TranslateManager2Test, NormalTranslate) {
   // We should have an infobar.
   TranslateInfoBarDelegate2* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate2::BEFORE_TRANSLATE, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate2::kBeforeTranslate, infobar->type());
 
   // Simulate clicking translate.
   process()->sink().ClearMessages();
@@ -292,7 +294,7 @@ TEST_F(TranslateManager2Test, NormalTranslate) {
   // The "Translating..." infobar should be showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate2::TRANSLATING, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate2::kTranslating, infobar->type());
 
   // Simulate the render notifying the translation has been done.
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
@@ -301,7 +303,7 @@ TEST_F(TranslateManager2Test, NormalTranslate) {
   // The after translate infobar should be showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate2::AFTER_TRANSLATE, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate2::kAfterTranslate, infobar->type());
 
   // Simulate changing the original language, this should trigger a translation.
   process()->sink().ClearMessages();
@@ -342,7 +344,7 @@ TEST_F(TranslateManager2Test, TranslateScriptNotAvailable) {
   // We should have an infobar.
   TranslateInfoBarDelegate2* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate2::BEFORE_TRANSLATE, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate2::kBeforeTranslate, infobar->type());
 
   // Simulate clicking translate.
   process()->sink().ClearMessages();
@@ -356,7 +358,63 @@ TEST_F(TranslateManager2Test, TranslateScriptNotAvailable) {
   // And we should have an error infobar showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate2::TRANSLATION_ERROR, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate2::kTranslationError, infobar->type());
+}
+
+// Ensures we deal correctly with pages for which the browser does not recognize
+// the language (the translate server may or not detect the language).
+TEST_F(TranslateManager2Test, TranslateUnknownLanguage) {
+  // Simulate navigating to a page ("und" is the string returned by the CLD for
+  // languages it does not recognize).
+  SimulateNavigation(GURL("http://www.google.mys"), 0, "G00g1e", "und");
+
+  // We should not have an infobar as we don't know the language.
+  ASSERT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Translate the page anyway throught the context menu.
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  SimulateURLFetch(true);  //  Simulare receiving the translate script.
+
+  // Simulate the render notifying the translation has been done, the server
+  // having detected the page was in a known and supported language.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
+      TranslateErrors::NONE));
+
+  // The after translate infobar should be showing.
+  TranslateInfoBarDelegate2* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate2::kAfterTranslate, infobar->type());
+  EXPECT_EQ("fr", infobar->GetOriginalLanguageCode());
+  EXPECT_EQ("en", infobar->GetTargetLanguageCode());
+
+  // Let's run the same steps but this time the server detects the page is
+  // already in English.
+  SimulateNavigation(GURL("http://www.google.com"), 1, "The Google", "und");
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(1, 0, "en", "en",
+      TranslateErrors::IDENTICAL_LANGUAGES));
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate2::kTranslationError, infobar->type());
+  EXPECT_EQ(TranslateErrors::IDENTICAL_LANGUAGES, infobar->error());
+
+  // Let's run the same steps again but this time the server fails to detect the
+  // page's language (it returns an empty string).
+  SimulateNavigation(GURL("http://www.google.com"), 2, "The Google", "und");
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(2, 0, "", "en",
+      TranslateErrors::UNKNOWN_LANGUAGE));
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate2::kTranslationError, infobar->type());
+  EXPECT_EQ(TranslateErrors::UNKNOWN_LANGUAGE, infobar->error());
 }
 
 // Tests that we show/don't show an info-bar for all languages the CLD can
@@ -925,6 +983,14 @@ TEST_F(TranslateManager2Test, FAILS_ContextMenu) {
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
+
+  // Test that the translate context menu is enabled when the page is in an
+  // unknown language as the UI.
+  SimulateNavigation(url, 0, "G00g1e", "und");
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 }
 
 // Tests that an extra always/never translate button is shown on the "before
