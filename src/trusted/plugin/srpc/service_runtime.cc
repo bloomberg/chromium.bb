@@ -225,6 +225,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* shm) {
     // TODO(sehr): leaking raw_channel and runtime_channel_.
     return false;
   }
+  plugin_->EnableVideo();
   // Create the listener thread and initialize the nacl module.
   if (!plugin_->InitializeModuleMultimedia(raw_channel, this)) {
     // TODO(sehr): leaking raw_channel, runtime_channel_, and default_socket_.

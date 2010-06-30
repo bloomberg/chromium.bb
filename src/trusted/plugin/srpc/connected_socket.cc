@@ -112,11 +112,6 @@ bool ConnectedSocket::Init(Plugin* plugin,
     PLUGIN_PRINTF(("ConnectedSocket::Init -- SrpcClient::Init failed.\n"));
     return false;
   }
-
-  // Only enable video on socket with service_runtime.
-  if (can_use_proxied_npapi) {
-    plugin->EnableVideo();
-  }
   return true;
 }
 
