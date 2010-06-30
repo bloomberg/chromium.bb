@@ -139,6 +139,12 @@ class UserController : public views::ButtonListener,
   // Invoked when the user wants to login. Forwards the call to the delegate.
   void Login();
 
+  // Performs common setup for login windows.
+  void ConfigureLoginWindow(views::WidgetGtk* window,
+                            int index,
+                            const gfx::Rect& bounds,
+                            chromeos::WmIpcWindowType type,
+                            views::View* contents_view);
   views::WidgetGtk* CreateControlsWindow(int index, int* height);
   views::WidgetGtk* CreateImageWindow(int index);
   views::WidgetGtk* CreateLabelWindow(int index, WmIpcWindowType type);
@@ -187,7 +193,7 @@ class UserController : public views::ButtonListener,
   // View that shows user image on image window.
   UserView* user_view_;
 
-  // View that that is used for new user login.
+  // View that is used for new user login.
   NewUserView* new_user_view_;
 
   // Views that show display name of the user.

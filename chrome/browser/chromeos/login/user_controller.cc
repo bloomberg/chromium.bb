@@ -39,7 +39,7 @@ const int kUserNameGap = 4;
 
 // Approximate height of controls window, this constant is used in new user
 // case to make border window size close to exsisting users.
-const int kControlsHeight = 30;
+const int kControlsHeight = 26;
 
 // Widget that notifies window manager about clicking on itself.
 // Doesn't send anything if user is selected.
@@ -96,6 +96,7 @@ class UserEntryNativeButton : public views::NativeButton {
     controller_->FocusPasswordField();
   }
 
+ private:
   UserController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UserEntryNativeButton);
@@ -132,6 +133,7 @@ class UserEntryTextfield : public views::Textfield {
       return views::Textfield::SkipDefaultKeyEventProcessing(e);
   }
 
+ private:
   UserController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UserEntryTextfield);
@@ -201,10 +203,6 @@ UserController::UserController(Delegate* delegate,
 UserController::~UserController() {
   controls_window_->Close();
   image_window_->Close();
-  user_view_ = NULL;
-  new_user_view_ = NULL;
-  label_view_ = NULL;
-  unselected_label_view_ = NULL;
   border_window_->Close();
   label_window_->Close();
   unselected_label_window_->Close();
@@ -309,6 +307,29 @@ void UserController::IsActiveChanged(bool active) {
   }
 }
 
+void UserController::ConfigureLoginWindow(WidgetGtk* window,
+                                          int index,
+                                          const gfx::Rect& bounds,
+                                          chromeos::WmIpcWindowType type,
+                                          views::View* contents_view) {
+  window->MakeTransparent();
+  window->Init(NULL, bounds);
+  window->SetContentsView(contents_view);
+  window->SetWidgetDelegate(this);
+
+  std::vector<int> params;
+  params.push_back(index);
+  WmIpc::instance()->SetWindowType(
+      window->GetNativeView(),
+      type,
+      &params);
+
+  GdkWindow* gdk_window = window->GetNativeView()->window;
+  gdk_window_set_back_pixmap(gdk_window, NULL, false);
+
+  window->Show();
+}
+
 WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
   views::View* control_view;
   if (is_guest_) {
@@ -339,21 +360,16 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
     layout->AddView(submit_button_);
   }
 
+  *height = kControlsHeight;
+  if (is_guest_)
+    *height += kUserImageSize + kUserNameGap;
+
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
-  window->MakeTransparent();
-  window->Init(NULL, gfx::Rect());
-  window->SetContentsView(control_view);
-  window->SetWidgetDelegate(this);
-  std::vector<int> params;
-  params.push_back(index);
-  WmIpc::instance()->SetWindowType(
-      window->GetNativeView(),
-      WM_IPC_WINDOW_LOGIN_CONTROLS,
-      &params);
-  *height = is_guest_ ? kUserImageSize + kControlsHeight
-                      : control_view->GetPreferredSize().height();
-  window->SetBounds(gfx::Rect(0, 0, kUserImageSize, *height));
-  window->Show();
+  ConfigureLoginWindow(window,
+                       index,
+                       gfx::Rect(kUserImageSize, *height),
+                       WM_IPC_WINDOW_LOGIN_CONTROLS,
+                       control_view);
   return window;
 }
 
@@ -368,16 +384,11 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
   }
 
   WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
-  window->Init(NULL, gfx::Rect(user_view_->GetPreferredSize()));
-  window->SetContentsView(user_view_);
-
-  std::vector<int> params;
-  params.push_back(index);
-  WmIpc::instance()->SetWindowType(
-      window->GetNativeView(),
-      WM_IPC_WINDOW_LOGIN_IMAGE,
-      &params);
-  window->Show();
+  ConfigureLoginWindow(window,
+                       index,
+                       gfx::Rect(user_view_->GetPreferredSize()),
+                       WM_IPC_WINDOW_LOGIN_IMAGE,
+                       user_view_);
   return window;
 }
 
@@ -395,6 +406,9 @@ void UserController::CreateBorderWindow(int index,
   border_window_->GetRootView()->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));
   UpdateUserCount(index, total_user_count);
+
+  GdkWindow* gdk_window = border_window_->GetNativeView()->window;
+  gdk_window_set_back_pixmap(gdk_window, NULL, false);
 
   border_window_->Show();
 }
@@ -432,14 +446,11 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
       kUserImageSize : kUnselectedSize;
   int height = label->GetPreferredSize().height();
   WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
-  window->MakeTransparent();
-  window->Init(NULL, gfx::Rect(0, 0, width, height));
-  window->SetContentsView(label);
-
-  std::vector<int> params;
-  params.push_back(index);
-  WmIpc::instance()->SetWindowType(window->GetNativeView(), type, &params);
-  window->Show();
+  ConfigureLoginWindow(window,
+                       index,
+                       gfx::Rect(0, 0, width, height),
+                       type,
+                       label);
   return window;
 }
 
