@@ -42,17 +42,6 @@ class BrowserImplNpapi : public BrowserInterface {
   virtual bool Alert(InstanceIdentifier instance_id,
                      const nacl::string& text);
 
-  // Returns true iff |filename| appears to be a valid ELF file;
-  // returns an informative error message otherwise.
-  virtual bool MightBeElfExecutable(const nacl::string& filename,
-                                    nacl::string* error);
-
-  // Returns true iff the first |size| bytes of |buffer| appear to be
-  // a valid ELF file; returns an informative error message otherwise.
-  virtual bool MightBeElfExecutable(const char* buffer,
-                                    size_t size,
-                                    nacl::string* error);
-
   // Evaluate a JavaScript string in the browser.
   virtual bool EvalString(InstanceIdentifier plugin_identifier,
                           const nacl::string& handler_string);

@@ -48,28 +48,31 @@ class BrowserInterface {
   virtual bool Alert(InstanceIdentifier instance_id,
                      const nacl::string& text) = 0;
 
-  // Returns true iff |filename| appears to be a valid ELF file;
-  // returns an informative error message otherwise.
-  virtual bool MightBeElfExecutable(const nacl::string& filename,
-                                    nacl::string* error) = 0;
-
-  // Returns true iff the first |size| bytes of |buffer| appear to be
-  // a valid ELF file; returns an informative error message otherwise.
-  virtual bool MightBeElfExecutable(const char* buffer,
-                                    size_t size,
-                                    nacl::string* error) = 0;
-
   // Evaluate a JavaScript string in the browser.
   virtual bool EvalString(InstanceIdentifier plugin_identifier,
                           const nacl::string& str) = 0;
 
-  // Gets the origin of the current page.
+  // Gets the origin of the current page.  Origin is scheme://domain.
   virtual bool GetOrigin(InstanceIdentifier instance_id,
                          nacl::string* origin) = 0;
 
   // Creates a browser scriptable handle for a given portable handle.
   // If handle is NULL, returns NULL.
   virtual ScriptableHandle* NewScriptableHandle(PortableHandle* handle) = 0;
+
+  // Filename-based version of the function below that takes a char* and size.
+  static bool MightBeElfExecutable(const nacl::string& filename,
+                                    nacl::string* error);
+
+  // Returns true iff the first |size| bytes of |e_ident_bytes| appear to be
+  // a valid ELF file; returns an informative error message otherwise.
+  // The check for valid ELF executable is only done looking at the e_ident
+  // bytes.  Fuller checking is done by the service_runtime.
+  static bool MightBeElfExecutable(const char* e_ident_bytes,
+                                   size_t size,
+                                   nacl::string* error);
+
+  static const char* kNoError;
 };
 
 }  // namespace plugin

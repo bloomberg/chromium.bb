@@ -15,15 +15,13 @@
 
 #include <map>
 
-#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
-#include "native_client/src/shared/npruntime/npmodule.h"
+#include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 using nacl::assert_cast;
@@ -182,48 +180,6 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
   NPN_ReleaseVariantValue(&href_value);
 
   return ("" != *origin);
-}
-
-// TODO(gregoryd): consider refactoring and moving the code to service_runtime
-bool BrowserImplNpapi::MightBeElfExecutable(const nacl::string& filename,
-                                            nacl::string* error) {
-  char buf[EI_ABIVERSION + 1];  // (field offset from file beginning)
-  FILE* fp = fopen(filename.c_str(), "rb");
-  if (fp == NULL) {
-    *error = "Load failed: cannot open local file for reading.";
-    return false;
-  }
-  if (fread(buf, sizeof buf, 1, fp) != 1) {
-    *error = "Load failed: file too short to be an ELF executable.";
-    return false;
-  }
-  fclose(fp);
-  return MightBeElfExecutable(buf, sizeof buf, error);
-}
-
-bool BrowserImplNpapi::MightBeElfExecutable(const char* buffer,
-                                            size_t size,
-                                            nacl::string* error) {
-  if (size < EI_ABIVERSION + 1) {
-    *error = "Load failed: file too short to be an ELF executable.";
-    return false;
-  }
-  const char EI_MAG0123[4] = { 0x7f, 'E', 'L', 'F' };
-  if (strncmp(buffer, EI_MAG0123, sizeof EI_MAG0123) != 0) {
-    // This can happen if we read a 404 error page, for example.
-    *error = "Load failed: bad magic number; not an ELF executable.";
-    return false;
-  }
-  if (buffer[EI_ABIVERSION] != EF_NACL_ABIVERSION) {
-    nacl::stringstream ss;
-    ss << "Load failed: ABI version mismatch: expected " << EF_NACL_ABIVERSION
-       << ", got " << (unsigned) buffer[EI_ABIVERSION] << ".";
-    *error = ss.str();
-    return false;
-  }
-  // Returns a zero-length string if there were no errors.
-  *error = "";
-  return true;
 }
 
 // Creates a browser scriptable handle for a given portable handle.

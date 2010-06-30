@@ -48,6 +48,11 @@
 #include "native_client/src/include/elf.h"
 
 /*
+ * The ELF magic number bytes.
+ */
+#define EI_MAG0123 "\177ELF"
+
+/*
  * The ELF OS ABI marker for a NativeClient module.
  * TODO(sehr): Get real values approved by the appropriate authorities.
  */

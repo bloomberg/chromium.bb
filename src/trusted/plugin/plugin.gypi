@@ -38,6 +38,7 @@
       # generic URL-origin / same-domain handling
       'origin.cc',
       # Portable plugin code
+      'srpc/browser_interface.cc',
       'srpc/closure.cc',
       'srpc/connected_socket.cc',
       'srpc/desc_based_handle.cc',
