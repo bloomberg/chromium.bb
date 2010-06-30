@@ -39,9 +39,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
-  // TODO(vangelis): Remove this version of initialize() once the changes
-  //                 to WebGraphicsContext3D have been checked in upstream.
-  virtual bool initialize(WebGraphicsContext3D::Attributes attributes);
   virtual bool initialize(WebGraphicsContext3D::Attributes attributes,
                           WebKit::WebView*);
 
