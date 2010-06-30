@@ -33,12 +33,10 @@ void SignalHandler(int value) {
 
 namespace plugin {
 
-SrpcClient::SrpcClient(bool can_use_proxied_npapi)
-    : can_use_proxied_npapi_(can_use_proxied_npapi),
-      browser_interface_(NULL) {
-  PLUGIN_PRINTF(("SrpcClient::SrpcClient(%p, %d)\n",
-                 static_cast<void*>(this),
-                 can_use_proxied_npapi));
+SrpcClient::SrpcClient()
+    : browser_interface_(NULL) {
+  PLUGIN_PRINTF(("SrpcClient::SrpcClient(%p)\n",
+                 static_cast<void*>(this)));
 }
 
 bool SrpcClient::Init(BrowserInterface* browser_interface,
@@ -56,22 +54,6 @@ bool SrpcClient::Init(BrowserInterface* browser_interface,
   // Record the method names in a convenient way for later dispatches.
   GetMethods();
   PLUGIN_PRINTF(("SrpcClient::SrpcClient: GetMethods worked\n"));
-  if (can_use_proxied_npapi_) {
-    // TODO(sehr): this needs to be revisited when we allow groups of instances
-    // in one NaCl module.
-    uintptr_t npapi_ident =
-        browser_interface->StringToIdentifier("NP_Initialize");
-    if (methods_.find(npapi_ident) != methods_.end()) {
-      PLUGIN_PRINTF(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
-      // Start up NPAPI interaction.
-      nacl::NPModule* npmodule =
-          new(std::nothrow) nacl::NPModule(&srpc_channel_);
-      PluginNpapi* plugin_npapi = static_cast<PluginNpapi*>(socket->plugin());
-      if (NULL != npmodule) {
-        plugin_npapi->set_module(npmodule);
-      }
-    }
-  }
   return true;
 }
 
@@ -81,6 +63,23 @@ SrpcClient::~SrpcClient() {
   // And delete the connection.
   NaClSrpcDtor(&srpc_channel_);
   PLUGIN_PRINTF(("SrpcClient::~SrpcClient: done\n"));
+}
+
+void SrpcClient::StartJSObjectProxy(Plugin* plugin) {
+  // TODO(sehr): this needs to be revisited when we allow groups of instances
+  // in one NaCl module.
+  uintptr_t npapi_ident =
+      browser_interface_->StringToIdentifier("NP_Initialize");
+  if (methods_.find(npapi_ident) != methods_.end()) {
+    PLUGIN_PRINTF(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
+    // Start up NPAPI interaction.
+    nacl::NPModule* npmodule =
+        new(std::nothrow) nacl::NPModule(&srpc_channel_);
+    PluginNpapi* plugin_npapi = static_cast<PluginNpapi*>(plugin);
+    if (NULL != npmodule) {
+      plugin_npapi->set_module(npmodule);
+    }
+  }
 }
 
 void SrpcClient::GetMethods() {

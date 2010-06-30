@@ -21,7 +21,7 @@ namespace {
 bool RpcConnect(void* obj, plugin::SrpcParams *params) {
   plugin::SocketAddress* socket_addr =
       reinterpret_cast<plugin::SocketAddress*>(obj);
-  plugin::ScriptableHandle* connected_socket = socket_addr->Connect(false);
+  plugin::ScriptableHandle* connected_socket = socket_addr->Connect();
   if (NULL == connected_socket) {
     return false;
   }
@@ -88,8 +88,8 @@ SocketAddress::~SocketAddress() {
 }
 
 // Returns a connected socket for the address.
-ScriptableHandle* SocketAddress::Connect(bool can_use_proxied_npapi) {
-  PLUGIN_PRINTF(("SocketAddress::Connect(%d)\n", can_use_proxied_npapi));
+ScriptableHandle* SocketAddress::Connect() {
+  PLUGIN_PRINTF(("SocketAddress::Connect()\n"));
   nacl::DescWrapper* con_desc = wrapper()->Connect();
   if (NULL == con_desc) {
     PLUGIN_PRINTF(("SocketAddress::Connect: connect failed\n"));
@@ -98,7 +98,7 @@ ScriptableHandle* SocketAddress::Connect(bool can_use_proxied_npapi) {
     PLUGIN_PRINTF(("SocketAddress::Connect: take returned %p\n",
                    static_cast<void*>(con_desc)));
     ConnectedSocket* portable_connected_socket =
-        ConnectedSocket::New(plugin(), con_desc, can_use_proxied_npapi);
+        ConnectedSocket::New(plugin(), con_desc);
     ScriptableHandle* connected_socket =
         plugin()->browser_interface()->NewScriptableHandle(
             portable_connected_socket);

@@ -62,15 +62,20 @@ bool ConnectedSocket::InitParamsEx(uintptr_t method_id,
   return false;
 }
 
+void ConnectedSocket::StartJSObjectProxy(Plugin* plugin) {
+  if (srpc_client_) {
+    srpc_client_->StartJSObjectProxy(plugin);
+  }
+}
+
 ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
-                                      nacl::DescWrapper* desc,
-                                      bool can_use_proxied_npapi) {
+                                      nacl::DescWrapper* desc) {
   PLUGIN_PRINTF(("ConnectedSocket::New()\n"));
 
   ConnectedSocket* connected_socket = new(std::nothrow) ConnectedSocket();
 
   if (connected_socket == NULL ||
-      !connected_socket->Init(plugin, desc, can_use_proxied_npapi)) {
+      !connected_socket->Init(plugin, desc)) {
     // Ok to delete if NULL.
     delete connected_socket;
     return NULL;
@@ -80,8 +85,7 @@ ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
 }
 
 bool ConnectedSocket::Init(Plugin* plugin,
-                           nacl::DescWrapper* wrapper,
-                           bool can_use_proxied_npapi) {
+                           nacl::DescWrapper* wrapper) {
   // TODO(sehr): this lock seems like it should be movable to PluginNpapi.
   VideoScopedGlobalLock video_lock;
 
@@ -90,14 +94,13 @@ bool ConnectedSocket::Init(Plugin* plugin,
     return false;
   }
 
-  PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p, %d)\n",
+  PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p)\n",
                  static_cast<void*>(plugin),
-                 static_cast<void*>(wrapper),
-                 can_use_proxied_npapi));
+                 static_cast<void*>(wrapper)));
 
   // Get SRPC client interface going over socket.  Only the JavaScript main
   // channel may use proxied NPAPI (not the command channels).
-  srpc_client_ = new(std::nothrow) SrpcClient(can_use_proxied_npapi);
+  srpc_client_ = new(std::nothrow) SrpcClient();
   if (NULL == srpc_client_) {
     // Return an error.
     // TODO(sehr): make sure that clients check for this as well.

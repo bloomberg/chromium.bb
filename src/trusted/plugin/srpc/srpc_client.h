@@ -26,10 +26,11 @@ class SrpcClient {
   //  discovery and provides the interface for future rpcs.
   bool Init(BrowserInterface* browser_interface, ConnectedSocket* socket);
 
-  explicit SrpcClient(bool can_use_proxied_npapi);
+  explicit SrpcClient();
   //  The destructor closes the connection to sel_ldr.
   ~SrpcClient();
 
+  void StartJSObjectProxy(Plugin* plugin);
   //  Test whether the SRPC service has a given method.
   bool HasMethod(uintptr_t method_id);
   //  Invoke an SRPC method.
@@ -42,7 +43,6 @@ class SrpcClient {
   typedef std::map<uintptr_t, MethodInfo*> Methods;
   Methods methods_;
   NaClSrpcChannel srpc_channel_;
-  bool can_use_proxied_npapi_;
   BrowserInterface* browser_interface_;
 };
 

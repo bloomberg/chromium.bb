@@ -70,9 +70,14 @@ class PortableHandle {
   virtual size_t shm_size() const { return 0; }
 
   // SocketAddress objects can be connected to, returning a ConnectedSocket.
-  virtual ScriptableHandle* Connect(bool can_use_proxied_npapi) {
-    UNREFERENCED_PARAMETER(can_use_proxied_npapi);
+  virtual ScriptableHandle* Connect() {
     return NULL;
+  }
+  // This is only virtual because although Connect() always returns a
+  // ConnectedSocket, it cannot be declared as doing so, because of
+  // the PortableHandle/ScriptableHandle split.
+  virtual void StartJSObjectProxy(Plugin* plugin) {
+    UNREFERENCED_PARAMETER(plugin);
   }
 
  protected:

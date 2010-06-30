@@ -27,7 +27,7 @@ class SocketAddress : public DescBasedHandle {
   static SocketAddress* New(Plugin* plugin, nacl::DescWrapper* wrapper);
 
   // Connect to a socket address.
-  virtual ScriptableHandle* Connect(bool can_use_proxied_npapi);
+  virtual ScriptableHandle* Connect();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(SocketAddress);

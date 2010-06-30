@@ -26,9 +26,7 @@ class SrpcClient;
 // (SocketAddress).
 class ConnectedSocket : public DescBasedHandle {
  public:
-  static ConnectedSocket* New(Plugin* plugin,
-                              nacl::DescWrapper* desc,
-                              bool can_use_proxied_npapi);
+  static ConnectedSocket* New(Plugin* plugin, nacl::DescWrapper* desc);
 
   virtual bool InvokeEx(uintptr_t method_id,
                         CallType call_type,
@@ -37,14 +35,13 @@ class ConnectedSocket : public DescBasedHandle {
   virtual bool InitParamsEx(uintptr_t method_id,
                             CallType call_type,
                             SrpcParams* params);
+  void StartJSObjectProxy(Plugin* plugin);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ConnectedSocket);
   ConnectedSocket();
   virtual ~ConnectedSocket();
-  bool Init(Plugin* plugin,
-            nacl::DescWrapper* desc,
-            bool can_use_proxied_npapi);
+  bool Init(Plugin* plugin, nacl::DescWrapper* desc);
   SrpcClient* srpc_client_;
 };
 
