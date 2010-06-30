@@ -524,7 +524,7 @@ install-llc() {
      exit -1
   fi
 
-  local dst=toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin
+  local dst=${ARM_UNTRUSTED}/arm-none-linux-gnueabi/llvm/bin
   # back up llc the first time we install a local one
   if [ ! -f ${dst}/llc.saved ] ; then
     cp ${dst}/llc ${dst}/llc.saved
