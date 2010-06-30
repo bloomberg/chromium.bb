@@ -344,14 +344,14 @@ WidgetGtk* UserController::CreateControlsWindow(int index, int* height) {
   window->Init(NULL, gfx::Rect());
   window->SetContentsView(control_view);
   window->SetWidgetDelegate(this);
-  *height = is_guest_ ? kUserImageSize + kControlsHeight
-                      : control_view->GetPreferredSize().height();
   std::vector<int> params;
   params.push_back(index);
   WmIpc::instance()->SetWindowType(
       window->GetNativeView(),
       WM_IPC_WINDOW_LOGIN_CONTROLS,
       &params);
+  *height = is_guest_ ? kUserImageSize + kControlsHeight
+                      : control_view->GetPreferredSize().height();
   window->SetBounds(gfx::Rect(0, 0, kUserImageSize, *height));
   window->Show();
   return window;
@@ -384,18 +384,18 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
 void UserController::CreateBorderWindow(int index,
                                         int total_user_count,
                                         int controls_height) {
+  // Guest login controls window is much higher than exsisting user's controls
+  // window so window manager will place the control instead of image window.
+  int width = kUserImageSize + kBorderSize * 2;
+  int height = kBorderSize * 2 + controls_height;
+  if (!is_guest_)
+    height += kBorderSize + kUserImageSize;
   border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
-  border_window_->Init(NULL, gfx::Rect());
+  border_window_->Init(NULL, gfx::Rect(0, 0, width, height));
   border_window_->GetRootView()->set_background(
       views::Background::CreateSolidBackground(kBackgroundColor));
   UpdateUserCount(index, total_user_count);
 
-  // Guest login controls window is much higher than exsisting user's controls
-  // window so window manager will place the control instead of image window.
-  int height = kBorderSize * 2 + controls_height;
-  height += is_guest_ ? 0 : kBorderSize + kUserImageSize;
-  border_window_->SetBounds(gfx::Rect(0, 0, kUserImageSize + kBorderSize * 2,
-                            height));
   border_window_->Show();
 }
 
@@ -418,11 +418,6 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
       rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD) :
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-  int width = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
-      kUserImageSize : kUnselectedSize;
-  WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
-  window->MakeTransparent();
-  window->Init(NULL, gfx::Rect());
   std::wstring text = is_guest_ ? l10n_util::GetString(IDS_GUEST) :
       UTF8ToWide(user_.GetDisplayName());
   views::Label* label = new views::Label(text);
@@ -433,13 +428,17 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   else
     unselected_label_view_ = label;
 
+  int width = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
+      kUserImageSize : kUnselectedSize;
+  int height = label->GetPreferredSize().height();
+  WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
+  window->MakeTransparent();
+  window->Init(NULL, gfx::Rect(0, 0, width, height));
   window->SetContentsView(label);
 
-  int height = label->GetPreferredSize().height();
   std::vector<int> params;
   params.push_back(index);
   WmIpc::instance()->SetWindowType(window->GetNativeView(), type, &params);
-  window->SetBounds(gfx::Rect(0, 0, width, height));
   window->Show();
   return window;
 }
