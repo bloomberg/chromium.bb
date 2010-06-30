@@ -12,7 +12,6 @@
 #include "app/sql/meta_table.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
 
 class FilePath;
 class RefCountedMemory;
@@ -44,6 +43,13 @@ class ThumbnailDatabase {
   // When not INIT_OK, no other functions should be called.
   sql::InitStatus Init(const FilePath& db_name,
                        const HistoryPublisher* history_publisher);
+
+  // Open database on a given filename. If the file does not exist,
+  // it is created.
+  // |db| is the database to open.
+  // |db_name| is a path to the database file.
+  static sql::InitStatus OpenDatabase(sql::Connection* db,
+                                      const FilePath& db_name);
 
   // Transactions on the database.
   void BeginTransaction();
@@ -119,7 +125,7 @@ class ThumbnailDatabase {
   // will be dropped, leaving only those copied favicons remaining. This is
   // used to quickly delete most of the favicons when clearing history.
   bool InitTemporaryFavIconsTable() {
-    return InitFavIconsTable(true);
+    return InitFavIconsTable(&db_, true);
   }
 
   // Copies the given favicon from the "main" favicon table to the temporary
@@ -137,12 +143,11 @@ class ThumbnailDatabase {
 
   // Returns true iff the thumbnails table exists.
   // Migrating to TopSites is dropping the thumbnails table.
-  // (TODO(nshkrob): renaming to favicons??)
   bool NeedsMigrationToTopSites();
 
-  // Drops thumbnails table. Returns true iff the table was dropped
-  // successfully. False may mean that the table was already dropped.
-  bool DropThumbnailsTable();
+  // Renames the database file and drops the Thumbnails table.
+  bool RenameAndDropThumbnails(const FilePath& old_db_file,
+                               const FilePath& new_db_file);
 
  private:
   friend class ExpireHistoryBackend;
@@ -152,10 +157,13 @@ class ThumbnailDatabase {
   bool InitThumbnailTable();
 
   // Creates the favicon table, returning true if the table already exists,
-  // or was successfully created. is_temporary will be false when generating
+  // or was successfully created. |is_temporary| will be false when generating
   // the "regular" favicons table. The expirer sets this to true to generate the
   // temporary table, which will have a different name but the same schema.
-  bool InitFavIconsTable(bool is_temporary);
+  // |db| is the connection to use for initializing the table.
+  // A different connection is used in RenameAndDropThumbnails, when we
+  // need to copy the favicons between two database files.
+  bool InitFavIconsTable(sql::Connection* db, bool is_temporary);
 
   // Adds support for the new metadata on web page thumbnails.
   bool UpgradeToVersion3();

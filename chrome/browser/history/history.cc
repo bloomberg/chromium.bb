@@ -756,5 +756,6 @@ void HistoryService::StartTopSitesMigration() {
 }
 
 void HistoryService::OnTopSitesReady() {
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::DeleteThumbnailsDatabase);
+  ScheduleAndForget(PRIORITY_NORMAL,
+                    &HistoryBackend::MigrateThumbnailsDatabase);
 }

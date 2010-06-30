@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/ref_counted_memory.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
@@ -46,25 +51,22 @@ class ThumbnailDatabaseTest : public testing::Test {
   }
 
  protected:
-  // testing::Test
   virtual void SetUp() {
-    // get an empty file for the test DB
-    FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    file_name_ = test_data_dir.AppendASCII("TestThumbnails.db");
-    file_util::Delete(file_name_, false);
+    // Get a temporary directory for the test DB files.
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    file_name_ = temp_dir_.path().AppendASCII("TestThumbnails.db");
+    new_file_name_ = temp_dir_.path().AppendASCII("TestFavicons.db");
 
     google_bitmap_.reset(
         gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
   }
 
-  virtual void TearDown() {
-    file_util::Delete(file_name_, false);
-  }
-
   scoped_ptr<SkBitmap> google_bitmap_;
 
+  ScopedTempDir temp_dir_;
   FilePath file_name_;
+  FilePath new_file_name_;
 };
 
 TEST_F(ThumbnailDatabaseTest, AddDelete) {
@@ -334,8 +336,36 @@ TEST_F(ThumbnailDatabaseTest, NeedsMigrationToTopSites) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();
   EXPECT_TRUE(db.NeedsMigrationToTopSites());
-  EXPECT_TRUE(db.DropThumbnailsTable());
+  EXPECT_TRUE(db.RenameAndDropThumbnails(file_name_, new_file_name_));
   EXPECT_FALSE(db.NeedsMigrationToTopSites());
+  EXPECT_FALSE(file_util::PathExists(file_name_));
+  EXPECT_TRUE(file_util::PathExists(new_file_name_));
+}
+
+TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
+  ThumbnailDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
+  db.BeginTransaction();
+
+  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  scoped_refptr<RefCountedBytes> favicon(new RefCountedBytes(data));
+
+  GURL url("http://google.com");
+  FavIconID id = db.AddFavIcon(url);
+  base::Time time = base::Time::Now();
+  db.SetFavIcon(id, favicon, time);
+  EXPECT_TRUE(db.RenameAndDropThumbnails(file_name_, new_file_name_));
+
+  base::Time time_out;
+  std::vector<unsigned char> favicon_out;
+  GURL url_out;
+  EXPECT_TRUE(db.GetFavIcon(id, &time_out, &favicon_out, &url_out));
+  EXPECT_EQ(url, url_out);
+  EXPECT_EQ(time.ToTimeT(), time_out.ToTimeT());
+  ASSERT_EQ(data.size(), favicon_out.size());
+  EXPECT_TRUE(std::equal(data.begin(),
+                         data.end(),
+                         favicon_out.begin()));
 }
 
 }  // namespace history

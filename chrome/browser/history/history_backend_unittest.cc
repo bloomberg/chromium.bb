@@ -168,7 +168,7 @@ void HistoryBackendTestDelegate::DBLoaded() {
 }
 
 void HistoryBackendTestDelegate::StartTopSitesMigration() {
-  test_->backend_->DeleteThumbnailsDatabase();
+  test_->backend_->MigrateThumbnailsDatabase();
 }
 
 TEST_F(HistoryBackendTest, Loaded) {

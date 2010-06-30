@@ -194,7 +194,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const GURL& page_url,
       scoped_refptr<RefCountedBytes>* data);
 
-  void DeleteThumbnailsDatabase();
+  void MigrateThumbnailsDatabase();
 
   // Favicon -------------------------------------------------------------------
 
@@ -317,6 +317,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Computes the name of the specified database on disk.
   FilePath GetThumbnailFileName() const;
+
+  // Returns the name of the Favicons database. This is the new name
+  // of the Thumbnails database.
+  // See ThumbnailDatabase::RenameAndDropThumbnails.
+  FilePath GetFaviconsFileName() const;
   FilePath GetArchivedFileName() const;
 
   class URLQuerier;

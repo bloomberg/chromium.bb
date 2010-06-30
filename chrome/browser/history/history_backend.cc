@@ -273,6 +273,10 @@ FilePath HistoryBackend::GetThumbnailFileName() const {
   return history_dir_.Append(chrome::kThumbnailsFilename);
 }
 
+FilePath HistoryBackend::GetFaviconsFileName() const {
+  return history_dir_.Append(chrome::kFaviconsFilename);
+}
+
 FilePath HistoryBackend::GetArchivedFileName() const {
   return history_dir_.Append(chrome::kArchivedHistoryFilename);
 }
@@ -578,6 +582,12 @@ void HistoryBackend::InitImpl() {
 
   // Thumbnail database.
   thumbnail_db_.reset(new ThumbnailDatabase());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
+    if (!file_util::PathExists(thumbnail_name)) {
+      // No convertion needed - use new filename right away.
+      thumbnail_name = GetFaviconsFileName();
+    }
+  }
   if (thumbnail_db_->Init(thumbnail_name,
                           history_publisher_.get()) != sql::INIT_OK) {
     // Unlike the main database, we don't error out when the database is too
@@ -2146,8 +2156,9 @@ BookmarkService* HistoryBackend::GetBookmarkService() {
   return bookmark_service_;
 }
 
-void HistoryBackend::DeleteThumbnailsDatabase() {
-  thumbnail_db_->DropThumbnailsTable();
+void HistoryBackend::MigrateThumbnailsDatabase() {
+  thumbnail_db_->RenameAndDropThumbnails(GetThumbnailFileName(),
+                                         GetFaviconsFileName());
 }
 
 }  // namespace history

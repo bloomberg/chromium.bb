@@ -14,6 +14,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/time.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/url_database.h"
@@ -39,32 +40,9 @@ sql::InitStatus ThumbnailDatabase::Init(
     const FilePath& db_name,
     const HistoryPublisher* history_publisher) {
   history_publisher_ = history_publisher;
-
-  // Set the exceptional sqlite error handler.
-  db_.set_error_delegate(GetErrorHandlerForThumbnailDb());
-
-  // Set the database page size to something  larger to give us
-  // better performance (we're typically seek rather than bandwidth limited).
-  // This only has an effect before any tables have been created, otherwise
-  // this is a NOP. Must be a power of 2 and a max of 8192. We use a bigger
-  // one because we're storing larger data (4-16K) in it, so we want a few
-  // blocks per element.
-  db_.set_page_size(4096);
-
-  // The UI is generally designed to work well when the thumbnail database is
-  // slow, so we can tolerate much less caching. The file is also very large
-  // and so caching won't save a significant percentage of it for us,
-  // reducing the benefit of caching in the first place. With the default cache
-  // size of 2000 pages, it will take >8MB of memory, so reducing it can be a
-  // big savings.
-  db_.set_cache_size(64);
-
-  // Run the database in exclusive mode. Nobody else should be accessing the
-  // database while we're running, and this will give somewhat improved perf.
-  db_.set_exclusive_locking();
-
-  if (!db_.Open(db_name))
-    return sql::INIT_FAILURE;
+  sql::InitStatus status = OpenDatabase(&db_, db_name);
+  if (status != sql::INIT_OK)
+    return status;
 
   // Scope initialization in a transaction so we can't be partially initialized.
   sql::Transaction transaction(&db_);
@@ -83,7 +61,7 @@ sql::InitStatus ThumbnailDatabase::Init(
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
                         kCompatibleVersionNumber) ||
       !InitThumbnailTable() ||
-      !InitFavIconsTable(false)) {
+      !InitFavIconsTable(&db_, false)) {
     db_.Close();
     return sql::INIT_FAILURE;
   }
@@ -114,6 +92,37 @@ sql::InitStatus ThumbnailDatabase::Init(
     db_.Close();
     return sql::INIT_FAILURE;
   }
+
+  return sql::INIT_OK;
+}
+
+sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
+                                                const FilePath& db_name) {
+  // Set the exceptional sqlite error handler.
+  db->set_error_delegate(GetErrorHandlerForThumbnailDb());
+
+  // Set the database page size to something  larger to give us
+  // better performance (we're typically seek rather than bandwidth limited).
+  // This only has an effect before any tables have been created, otherwise
+  // this is a NOP. Must be a power of 2 and a max of 8192. We use a bigger
+  // one because we're storing larger data (4-16K) in it, so we want a few
+  // blocks per element.
+  db->set_page_size(4096);
+
+  // The UI is generally designed to work well when the thumbnail database is
+  // slow, so we can tolerate much less caching. The file is also very large
+  // and so caching won't save a significant percentage of it for us,
+  // reducing the benefit of caching in the first place. With the default cache
+  // size of 2000 pages, it will take >8MB of memory, so reducing it can be a
+  // big savings.
+  db->set_cache_size(64);
+
+  // Run the database in exclusive mode. Nobody else should be accessing the
+  // database while we're running, and this will give somewhat improved perf.
+  db->set_exclusive_locking();
+
+  if (!db->Open(db_name))
+    return sql::INIT_FAILURE;
 
   return sql::INIT_OK;
 }
@@ -163,11 +172,12 @@ bool ThumbnailDatabase::RecreateThumbnailTable() {
   return InitThumbnailTable();
 }
 
-bool ThumbnailDatabase::InitFavIconsTable(bool is_temporary) {
+bool ThumbnailDatabase::InitFavIconsTable(sql::Connection* db,
+                                          bool is_temporary) {
   // Note: if you update the schema, don't forget to update
   // CopyToTemporaryFaviconTable as well.
   const char* name = is_temporary ? "temp_favicons" : "favicons";
-  if (!db_.DoesTableExist(name)) {
+  if (!db->DoesTableExist(name)) {
     std::string sql;
     sql.append("CREATE TABLE ");
     sql.append(name);
@@ -176,7 +186,7 @@ bool ThumbnailDatabase::InitFavIconsTable(bool is_temporary) {
                "url LONGVARCHAR NOT NULL,"
                "last_updated INTEGER DEFAULT 0,"
                "image_data BLOB)");
-    if (!db_.Execute(sql.c_str()))
+    if (!db->Execute(sql.c_str()))
       return false;
   }
   return true;
@@ -437,18 +447,79 @@ bool ThumbnailDatabase::CommitTemporaryFavIconTable() {
   return true;
 }
 
-bool ThumbnailDatabase::DropThumbnailsTable() {
-  DCHECK(NeedsMigrationToTopSites());
-  if (!db_.Execute("DROP TABLE thumbnails"))
-    return false;
-  CommitTransaction();
-  Vacuum();
-  BeginTransaction();
-  return true;
-}
-
 bool ThumbnailDatabase::NeedsMigrationToTopSites() {
   return db_.DoesTableExist("thumbnails");
+}
+
+bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
+                                                const FilePath& new_db_file) {
+  // Init favicons table - same schema as the thumbnails.
+  sql::Connection favicons;
+  if (OpenDatabase(&favicons, new_db_file) != sql::INIT_OK)
+    return false;
+
+  if (!InitFavIconsTable(&favicons, false)) {
+    NOTREACHED() << "Couldn't init favicons table.";
+    favicons.Close();
+    return false;
+  }
+  favicons.Close();
+
+  // Can't attach within a transaction.
+  CommitTransaction();
+
+  // Attach new DB.
+  {
+    // This block is needed because otherwise the attach statement is
+    // never cleared from cache and we can't close the DB :P
+    sql::Statement attach(db_.GetUniqueStatement("ATTACH ? AS new_favicons"));
+    if (!attach) {
+      NOTREACHED() << "Unable to attach database.";
+      // Keep the transaction open, even though we failed.
+      BeginTransaction();
+      return false;
+    }
+
+#if defined(OS_POSIX)
+    attach.BindString(0, new_db_file.value());
+#else
+    attach.BindString(0, WideToUTF8(new_db_file.value()));
+#endif
+
+    if (!attach.Run()) {
+      NOTREACHED() << db_.GetErrorMessage();
+      BeginTransaction();
+      return false;
+    }
+  }
+
+  // Move favicons to the new DB.
+  if (!db_.Execute("INSERT OR REPLACE INTO new_favicons.favicons "
+                   "SELECT * FROM favicons")) {
+    NOTREACHED() << "Unable to copy favicons.";
+    BeginTransaction();
+    return false;
+  }
+
+  if (!db_.Execute("DETACH new_favicons")) {
+    NOTREACHED() << "Unable to detach database.";
+    BeginTransaction();
+    return false;
+  }
+
+  db_.Close();
+
+  // Reset the DB to point to new file.
+  if (OpenDatabase(&db_, new_db_file) != sql::INIT_OK)
+    return false;
+
+  file_util::Delete(old_db_file, false);
+
+  InitFavIconsIndex();
+
+  // Reopen the transaction.
+  BeginTransaction();
+  return true;
 }
 
 }  // namespace history
