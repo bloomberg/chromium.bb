@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -19,14 +20,16 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/controls/label.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
 static ContentSettingsWindowView* instance_ = NULL;
 // Content setting dialog bounds padding.
-static const int kDialogPadding = 7;
+const int kDialogPadding = 7;
+// Width of the page selector lisbox.
+const int kListboxWidth = 100;
 
 namespace browser {
 
@@ -52,14 +55,17 @@ ContentSettingsWindowView::ContentSettingsWindowView(Profile* profile)
     // Always show preferences for the original profile. Most state when off
     // the record comes from the original profile, but we explicitly use
     // the original profile to avoid potential problems.
-    : tabs_(NULL),
-      profile_(profile->GetOriginalProfile()) {
+    : profile_(profile->GetOriginalProfile()),
+      label_(NULL),
+      listbox_(NULL),
+      current_page_(0) {
   // We don't need to observe changes in this value.
   last_selected_page_.Init(prefs::kContentSettingsWindowLastTabIndex,
                            profile->GetPrefs(), NULL);
 }
 
 ContentSettingsWindowView::~ContentSettingsWindowView() {
+  STLDeleteElements(&pages_);
 }
 
 void ContentSettingsWindowView::ShowContentSettingsTab(
@@ -74,10 +80,11 @@ void ContentSettingsWindowView::ShowContentSettingsTab(
       page = CONTENT_SETTINGS_TYPE_COOKIES;
   }
   // If the page number is out of bounds, reset to the first tab.
-  if (page < 0 || page >= tabs_->GetTabCount())
+  if (page < 0 || page >= listbox_->GetRowCount())
     page = CONTENT_SETTINGS_TYPE_COOKIES;
 
-  tabs_->SelectTabAt(static_cast<int>(page));
+  listbox_->SelectRow(static_cast<int>(page));
+  ShowSettingsPage(listbox_->SelectedRow());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,19 +107,36 @@ views::View* ContentSettingsWindowView::GetContentsView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ContentSettingsWindowView, views::TabbedPane::Listener implementation:
+// ContentSettingsWindowView, views::Listbox::Listener implementation:
 
-void ContentSettingsWindowView::TabSelectedAt(int index) {
-  last_selected_page_.SetValue(index);
+void ContentSettingsWindowView::ListboxSelectionChanged(
+    views::Listbox* sender) {
+  DCHECK_EQ(listbox_, sender);
+  ShowSettingsPage(listbox_->SelectedRow());
+  last_selected_page_.SetValue(current_page_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentSettingsWindowView, views::View overrides:
 
 void ContentSettingsWindowView::Layout() {
-  tabs_->SetBounds(kDialogPadding, kDialogPadding,
-                   width() - (2 * kDialogPadding),
-                   height() - (2 * kDialogPadding));
+  label_->SetBounds(kDialogPadding,
+                    kDialogPadding,
+                    kListboxWidth,
+                    label_->GetPreferredSize().height());
+
+  listbox_->SetBounds(kDialogPadding,
+                      2 * kDialogPadding + label_->height(),
+                      kListboxWidth,
+                      height() - (3 * kDialogPadding) - label_->height());
+
+  if (pages_[current_page_]->GetParent()) {
+    pages_[current_page_]->SetBounds(
+        2 * kDialogPadding + kListboxWidth,
+        2 * kDialogPadding + label_->height(),
+        width() - (3 * kDialogPadding) - kListboxWidth,
+        height() - (2 * kDialogPadding));
+  }
 }
 
 gfx::Size ContentSettingsWindowView::GetPreferredSize() {
@@ -135,50 +159,50 @@ void ContentSettingsWindowView::ViewHierarchyChanged(bool is_add,
 
 void ContentSettingsWindowView::Init() {
   // Make sure we don't leak memory by calling this twice.
-  DCHECK(!tabs_);
-  tabs_ = new views::TabbedPane;
-  tabs_->SetListener(this);
-  AddChildView(tabs_);
-  int tab_index = 0;
+  DCHECK(!listbox_);
 
-  CookieFilterPageView* cookie_page = new CookieFilterPageView(profile_);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_COOKIES_TAB_LABEL),
-                       cookie_page, false);
+  label_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_CONTENT_SETTINGS_FEATURES_LABEL));
+  label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  AddChildView(label_);
 
-  ContentFilterPageView* image_page =
-      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_IMAGES);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_IMAGES_TAB_LABEL),
-                       image_page, false);
+  pages_.push_back(new CookieFilterPageView(profile_));
+  pages_.push_back(
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_IMAGES));
+  pages_.push_back(
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  pages_.push_back(new PluginFilterPageView(profile_));
+  pages_.push_back(
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_POPUPS));
+  pages_.push_back(
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  for (size_t i = 0; i < pages_.size(); ++i) {
+    pages_[i]->set_parent_owned(false);
+  }
+  DCHECK_EQ(static_cast<int>(pages_.size()), CONTENT_SETTINGS_NUM_TYPES);
 
-  ContentFilterPageView* javascript_page =
-      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_JAVASCRIPT);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_JAVASCRIPT_TAB_LABEL),
-                       javascript_page, false);
+  std::vector<string16> strings;
+  strings.push_back(l10n_util::GetStringUTF16(IDS_COOKIES_TAB_LABEL));
+  strings.push_back(l10n_util::GetStringUTF16(IDS_IMAGES_TAB_LABEL));
+  strings.push_back(l10n_util::GetStringUTF16(IDS_JAVASCRIPT_TAB_LABEL));
+  strings.push_back(l10n_util::GetStringUTF16(IDS_PLUGIN_TAB_LABEL));
+  strings.push_back(l10n_util::GetStringUTF16(IDS_POPUP_TAB_LABEL));
+  strings.push_back(l10n_util::GetStringUTF16(IDS_GEOLOCATION_TAB_LABEL));
+  listbox_ = new views::Listbox(strings, this);
+  AddChildView(listbox_);
+  CHECK_EQ(strings.size(), pages_.size());
+}
 
-  PluginFilterPageView* plugin_page = new PluginFilterPageView(profile_);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_PLUGIN_TAB_LABEL),
-                       plugin_page, false);
-
-  ContentFilterPageView* popup_page =
-      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_POPUPS);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_POPUP_TAB_LABEL),
-                       popup_page, false);
-
-  ContentFilterPageView* geolocation_page =
-      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_GEOLOCATION_TAB_LABEL),
-                       geolocation_page, false);
-
-  DCHECK_EQ(tabs_->GetTabCount(), CONTENT_SETTINGS_NUM_TYPES);
+void ContentSettingsWindowView::ShowSettingsPage(int page) {
+  if (pages_[current_page_]->GetParent())
+    RemoveChildView(pages_[current_page_]);
+  current_page_ = page;
+  AddChildView(pages_[current_page_]);
+  Layout();
+  SchedulePaint();
 }
 
 const OptionsPageView*
     ContentSettingsWindowView::GetCurrentContentSettingsTabView() const {
-  return static_cast<OptionsPageView*>(tabs_->GetSelectedTab());
+  return static_cast<OptionsPageView*>(pages_[current_page_]);
 }

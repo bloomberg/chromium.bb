@@ -35,7 +35,6 @@ void ContentFilterPageView::InitControlLayout() {
   using views::GridLayout;
 
   GridLayout* layout = new GridLayout(this);
-  layout->SetInsets(5, 5, 5, 5);
   SetLayoutManager(layout);
 
   const int single_column_set_id = 0;

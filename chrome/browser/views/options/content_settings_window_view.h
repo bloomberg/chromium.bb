@@ -7,13 +7,17 @@
 
 #include "chrome/browser/pref_member.h"
 #include "chrome/common/content_settings_types.h"
-#include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/controls/listbox/listbox.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
 class Profile;
 class MessageLoop;
 class OptionsPageView;
+
+namespace views {
+class Label;
+}  // namespace views
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentSettingsWindowView
@@ -22,7 +26,7 @@ class OptionsPageView;
 //
 class ContentSettingsWindowView : public views::View,
                                   public views::DialogDelegate,
-                                  public views::TabbedPane::Listener {
+                                  public views::Listbox::Listener {
  public:
   explicit ContentSettingsWindowView(Profile* profile);
   virtual ~ContentSettingsWindowView();
@@ -47,24 +51,38 @@ class ContentSettingsWindowView : public views::View,
   virtual bool Cancel();
   virtual views::View* GetContentsView();
 
-  // views::TabbedPane::Listener implementation:
-  virtual void TabSelectedAt(int index);
+  // views::Listbox::Listener implementation:
+  virtual void ListboxSelectionChanged(views::Listbox* sender);
 
  private:
   // Initializes the view.
   void Init();
 
+  // Makes |pages_[page]| the currently visible page.
+  void ShowSettingsPage(int page);
+
   // Returns the currently selected OptionsPageView.
   const OptionsPageView* GetCurrentContentSettingsTabView() const;
-
-  // The Tab view that contains all of the options pages.
-  views::TabbedPane* tabs_;
 
   // The Profile associated with these options.
   Profile* profile_;
 
+  // The label above the left box.
+  views::Label* label_;
+
+  // The listbox used to select a page.
+  views::Listbox* listbox_;
+
   // The last page the user was on when they opened the Options window.
   IntegerPrefMember last_selected_page_;
+
+  // Stores the index of the currently visible page.
+  int current_page_;
+
+  // Stores the possible content pages displayed on the right.
+  // |pages_[current_page_]| is the currently displayed page, and it's the only
+  // parented View in |pages_|.
+  std::vector<View*> pages_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsWindowView);
 };

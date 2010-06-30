@@ -50,7 +50,7 @@ class Label : public View {
   Label(const std::wstring& text, const gfx::Font& font);
   virtual ~Label();
 
-  // Overridden to compute the size required to display this label
+  // Overridden to compute the size required to display this label.
   virtual gfx::Size GetPreferredSize();
 
   // Overriden to return the baseline of the label.
@@ -58,7 +58,7 @@ class Label : public View {
 
   // Return the height necessary to display this label with the provided width.
   // This method is used to layout multi-line labels. It is equivalent to
-  // GetPreferredSize().height() if the receiver is not multi-line
+  // GetPreferredSize().height() if the receiver is not multi-line.
   virtual int GetHeightForWidth(int w);
 
   // Overriden to dirty our text bounds if we're multi-line.
@@ -72,7 +72,7 @@ class Label : public View {
   virtual void Paint(gfx::Canvas* canvas);
 
   // If the mouse is over the label, and a mouse over background has been
-  // specified, its used. Otherwise super's implementation is invoked
+  // specified, its used. Otherwise super's implementation is invoked.
   virtual void PaintBackground(gfx::Canvas* canvas);
 
   // Set the font.
@@ -96,7 +96,7 @@ class Label : public View {
   // Set the color
   virtual void SetColor(const SkColor& color) { color_ = color; }
 
-  // Return a reference to the currently used color
+  // Return a reference to the currently used color.
   virtual SkColor GetColor() const { return color_; }
 
   // Set horizontal alignment. If the locale is RTL, and the RTL alignment
