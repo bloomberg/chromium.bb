@@ -15,6 +15,7 @@
 #include "base/process_util.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
+#include "base/worker_pool.h"
 #include "chrome/browser/appcache/appcache_dispatcher_host.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -590,7 +591,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileModificationTime,
                                       OnGetFileModificationTime)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenFile, OnOpenFile)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_Keygen, OnKeygen)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
                                       OnGetExtensionMessageBundle)
 #if defined(USE_TCMALLOC)
@@ -1580,7 +1581,7 @@ void ResourceMessageFilter::OnOpenFileOnFileThread(const FilePath& path,
 void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
                                      const std::string& challenge_string,
                                      const GURL& url,
-                                     std::string* signed_public_key) {
+                                     IPC::Message* reply_msg) {
   // Map displayed strings indicating level of keysecurity in the <keygen>
   // menu to the key size in bits. (See SSLKeyGeneratorChromium.cpp in WebCore.)
   int key_size_in_bits;
@@ -1593,11 +1594,44 @@ void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
       break;
     default:
       DCHECK(false) << "Illegal key_size_index " << key_size_index;
-      *signed_public_key = std::string();
+      ViewHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
+      Send(reply_msg);
       return;
   }
+
+  LOG(INFO) << "Dispatching keygen task to worker pool.";
+  // Dispatch to worker pool, so we do not block the IO thread.
+  if (!WorkerPool::PostTask(
+           FROM_HERE,
+           NewRunnableMethod(
+               this, &ResourceMessageFilter::OnKeygenOnWorkerThread,
+               key_size_in_bits, challenge_string, reply_msg),
+           true)) {
+    NOTREACHED() << "Failed to dispatch keygen task to worker pool";
+    ViewHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
+    Send(reply_msg);
+    return;
+  }
+}
+
+void ResourceMessageFilter::OnKeygenOnWorkerThread(
+    int key_size_in_bits,
+    const std::string& challenge_string,
+    IPC::Message* reply_msg) {
+  DCHECK(reply_msg);
+  // Verify we are on a worker thread.
+  DCHECK(!MessageLoop::current());
+
+  // Generate a signed public key and challenge, then send it back.
   net::KeygenHandler keygen_handler(key_size_in_bits, challenge_string);
-  *signed_public_key = keygen_handler.GenKeyAndSignChallenge();
+
+  ViewHostMsg_Keygen::WriteReplyParams(
+      reply_msg,
+      keygen_handler.GenKeyAndSignChallenge());
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
 #if defined(USE_TCMALLOC)

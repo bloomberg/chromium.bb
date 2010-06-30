@@ -332,7 +332,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                               int mode,
                               IPC::Message* reply_msg);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
-                const GURL& url, std::string* signed_public_key);
+                const GURL& url, IPC::Message* reply_msg);
+  void OnKeygenOnWorkerThread(
+      int key_size_in_bits,
+      const std::string& challenge_string,
+      IPC::Message* reply_msg);
   void OnGetExtensionMessageBundle(const std::string& extension_id,
                                    IPC::Message* reply_msg);
   void OnGetExtensionMessageBundleOnFileThread(
