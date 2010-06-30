@@ -85,9 +85,9 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
         new BookmarkDataTypeController(this, profile_, pss));
   }
 
-  // Extension sync is disabled by default.  Register only if
-  // explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncExtensions)) {
+  // Extension sync is enabled by default.  Register unless explicitly
+  // disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncExtensions)) {
     pss->RegisterDataTypeController(
         new ExtensionDataTypeController(this, profile_, pss));
   }
