@@ -176,7 +176,7 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
   std::string actual_mime_type;
   if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
           params.url, params.mimeType.utf8(), kAllowWildcard, &info,
-          &actual_mime_type)) {
+          &actual_mime_type) || !info.enabled) {
     return NULL;
   }
 

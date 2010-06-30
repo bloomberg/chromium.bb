@@ -125,7 +125,8 @@ class PluginList {
   // Get all the enabled plugins.
   void GetEnabledPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
 
-  // Returns true if a plugin is found for the given url and mime type.
+  // Returns true if a plugin is found for the given url and mime type
+  // (including disabled plugins, for which |info->enabled| is false).
   // The mime type which corresponds to the URL is optionally returned
   // back.
   // The allow_wildcard parameter controls whether this function returns

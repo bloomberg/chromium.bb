@@ -327,8 +327,8 @@ FilePath PluginService::GetPluginPath(const GURL& url,
   bool allow_wildcard = true;
   WebPluginInfo info;
   if (NPAPI::PluginList::Singleton()->GetPluginInfo(
-          url, mime_type, allow_wildcard, &info, actual_mime_type) &&
-      PluginAllowedForURL(info.path, policy_url)) {
+        url, mime_type, allow_wildcard, &info, actual_mime_type) &&
+      info.enabled && PluginAllowedForURL(info.path, policy_url)) {
     return info.path;
   }
 

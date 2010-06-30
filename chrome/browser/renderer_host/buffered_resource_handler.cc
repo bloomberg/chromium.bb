@@ -432,7 +432,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   WebPluginInfo info;
   bool allow_wildcard = false;
   return !NPAPI::PluginList::Singleton()->GetPluginInfo(
-      GURL(), type, allow_wildcard, &info, NULL);
+      GURL(), type, allow_wildcard, &info, NULL) || !info.enabled;
 }
 
 void BufferedResourceHandler::UseAlternateResourceHandler(
