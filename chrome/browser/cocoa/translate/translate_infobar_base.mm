@@ -114,16 +114,16 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
   TranslateInfoBarControllerBase* infobar_controller = NULL;
   switch (type_) {
-    case kBeforeTranslate:
+    case BEFORE_TRANSLATE:
       infobar_controller =
           [[BeforeTranslateInfobarController alloc] initWithDelegate:this];
       break;
-    case kAfterTranslate:
+    case AFTER_TRANSLATE:
       infobar_controller =
           [[AfterTranslateInfobarController alloc] initWithDelegate:this];
       break;
-    case kTranslating:
-    case kTranslationError:
+    case TRANSLATING:
+    case TRANSLATION_ERROR:
       infobar_controller =
           [[TranslateMessageInfobarController alloc] initWithDelegate:this];
       break;
@@ -456,8 +456,8 @@ InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
 - (IBAction)ok:(id)sender {
   TranslateInfoBarDelegate2* delegate = [self delegate];
   TranslateInfoBarDelegate2::Type state = delegate->type();
-  DCHECK(state == TranslateInfoBarDelegate2::kBeforeTranslate ||
-      state == TranslateInfoBarDelegate2::kTranslationError);
+  DCHECK(state == TranslateInfoBarDelegate2::BEFORE_TRANSLATE ||
+      state == TranslateInfoBarDelegate2::TRANSLATION_ERROR);
   delegate->Translate();
   UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
 }
@@ -465,7 +465,7 @@ InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
 // Called when someone clicks on the "Nope" button.
 - (IBAction)cancel:(id)sender {
   DCHECK(
-      [self delegate]->type() == TranslateInfoBarDelegate2::kBeforeTranslate);
+      [self delegate]->type() == TranslateInfoBarDelegate2::BEFORE_TRANSLATE);
   [self delegate]->TranslationDeclined();
   UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
   [super dismiss:nil];

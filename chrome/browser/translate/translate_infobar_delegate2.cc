@@ -17,31 +17,17 @@
 #include "grit/theme_resources.h"
 
 // static
-TranslateInfoBarDelegate2* TranslateInfoBarDelegate2::CreateDelegate(
+TranslateInfoBarDelegate2* TranslateInfoBarDelegate2::CreateInstance(
     Type type,
-    TabContents* tab_contents,
-    const std::string& original_language,
-    const std::string& target_language) {
-  DCHECK(type != kTranslationError);
-  if (!TranslateManager2::IsSupportedLanguage(original_language) ||
-      !TranslateManager2::IsSupportedLanguage(target_language)) {
-    return NULL;
-  }
-  TranslateInfoBarDelegate2* delegate =
-      new TranslateInfoBarDelegate2(type, TranslateErrors::NONE,
-                                    tab_contents,
-                                    original_language, target_language);
-  DCHECK(delegate->original_language_index() != -1);
-  DCHECK(delegate->target_language_index() != -1);
-  return delegate;
-}
-
-TranslateInfoBarDelegate2* TranslateInfoBarDelegate2::CreateErrorDelegate(
     TranslateErrors::Type error,
     TabContents* tab_contents,
     const std::string& original_language,
     const std::string& target_language) {
-  return new TranslateInfoBarDelegate2(kTranslationError, error, tab_contents,
+  if (!TranslateManager2::IsSupportedLanguage(original_language) ||
+      !TranslateManager2::IsSupportedLanguage(target_language)) {
+    return NULL;
+  }
+  return new TranslateInfoBarDelegate2(type, error, tab_contents,
                                        original_language, target_language);
 }
 
@@ -53,15 +39,15 @@ TranslateInfoBarDelegate2::TranslateInfoBarDelegate2(
     const std::string& target_language)
     : InfoBarDelegate(tab_contents),
       type_(type),
-      background_animation_(kNone),
+      background_animation_(NONE),
       tab_contents_(tab_contents),
       original_language_index_(-1),
       target_language_index_(-1),
       error_(error),
       infobar_view_(NULL),
       prefs_(tab_contents_->profile()->GetPrefs()) {
-  DCHECK((type_ != kTranslationError && error == TranslateErrors::NONE) ||
-         (type_ == kTranslationError && error != TranslateErrors::NONE));
+  DCHECK((type_ != TRANSLATION_ERROR && error == TranslateErrors::NONE) ||
+         (type_ == TRANSLATION_ERROR && error != TranslateErrors::NONE));
 
   std::vector<std::string> language_codes;
   TranslateManager2::GetSupportedLanguages(&language_codes);
@@ -85,9 +71,12 @@ TranslateInfoBarDelegate2::TranslateInfoBarDelegate2(
     std::string language_code = iter->first;
     if (language_code == original_language)
       original_language_index_ = iter - languages_.begin();
-    if (language_code == target_language)
+    else if (language_code == target_language)
       target_language_index_ = iter - languages_.begin();
   }
+
+  DCHECK(original_language_index_ != -1);
+  DCHECK(target_language_index_ != -1);
 }
 
 int TranslateInfoBarDelegate2::GetLanguageCount() const {
@@ -119,7 +108,7 @@ void TranslateInfoBarDelegate2::SetOriginalLanguage(int language_index) {
   original_language_index_ = language_index;
   if (infobar_view_)
     infobar_view_->OriginalLanguageChanged();
-  if (type_ == kAfterTranslate)
+  if (type_ == AFTER_TRANSLATE)
     Translate();
 }
 
@@ -128,12 +117,12 @@ void TranslateInfoBarDelegate2::SetTargetLanguage(int language_index) {
   target_language_index_ = language_index;
   if (infobar_view_)
     infobar_view_->TargetLanguageChanged();
-  if (type_ == kAfterTranslate)
+  if (type_ == AFTER_TRANSLATE)
     Translate();
 }
 
 bool TranslateInfoBarDelegate2::IsError() {
-  return type_ == kTranslationError;
+  return type_ == TRANSLATION_ERROR;
 }
 
 void TranslateInfoBarDelegate2::Translate() {
@@ -166,7 +155,7 @@ void TranslateInfoBarDelegate2::TranslationDeclined() {
 }
 
 void TranslateInfoBarDelegate2::InfoBarDismissed() {
-  if (type_ != kBeforeTranslate)
+  if (type_ != BEFORE_TRANSLATE)
     return;
 
   // The user closed the infobar without clicking the translate button.
@@ -250,11 +239,11 @@ void TranslateInfoBarDelegate2::NeverTranslatePageLanguage() {
 
 string16 TranslateInfoBarDelegate2::GetMessageInfoBarText() {
   switch (type_) {
-    case kTranslating:
+    case TRANSLATING:
       return l10n_util::GetStringFUTF16(
           IDS_TRANSLATE_INFOBAR_TRANSLATING_TO,
           GetLanguageDisplayableNameAt(target_language_index_));
-    case kTranslationError:
+    case TRANSLATION_ERROR:
       switch (error_) {
         case TranslateErrors::NETWORK:
           return l10n_util::GetStringUTF16(
@@ -263,13 +252,6 @@ string16 TranslateInfoBarDelegate2::GetMessageInfoBarText() {
         case TranslateErrors::TRANSLATION_ERROR:
           return l10n_util::GetStringUTF16(
               IDS_TRANSLATE_INFOBAR_ERROR_CANT_TRANSLATE);
-        case TranslateErrors::UNKNOWN_LANGUAGE:
-          return l10n_util::GetStringUTF16(
-              IDS_TRANSLATE_INFOBAR_UNKNOWN_PAGE_LANGUAGE);
-        case TranslateErrors::IDENTICAL_LANGUAGES:
-          return l10n_util::GetStringFUTF16(
-              IDS_TRANSLATE_INFOBAR_ERROR_SAME_LANGUAGE,
-              GetLanguageDisplayableNameAt(target_language_index_));
         default:
           NOTREACHED();
           return string16();
@@ -282,14 +264,9 @@ string16 TranslateInfoBarDelegate2::GetMessageInfoBarText() {
 
 string16 TranslateInfoBarDelegate2::GetMessageInfoBarButtonText() {
   switch (type_) {
-    case kTranslating:
+    case TRANSLATING:
       return string16();
-    case kTranslationError:
-      if (error_ == TranslateErrors::IDENTICAL_LANGUAGES ||
-          error_ == TranslateErrors::UNKNOWN_LANGUAGE) {
-        // No retry button, we would fail again with the same error.
-        return string16();
-      }
+    case TRANSLATION_ERROR:
       return l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_RETRY);
     default:
       NOTREACHED();
@@ -298,7 +275,7 @@ string16 TranslateInfoBarDelegate2::GetMessageInfoBarButtonText() {
 }
 
 void TranslateInfoBarDelegate2::MessageInfoBarButtonPressed() {
-  DCHECK(type_ == kTranslationError);
+  DCHECK(type_ == TRANSLATION_ERROR);
   Singleton<TranslateManager2>::get()->TranslatePage(
       tab_contents_, GetOriginalLanguageCode(), GetTargetLanguageCode());
 }
@@ -316,10 +293,10 @@ bool TranslateInfoBarDelegate2::ShouldShowAlwaysTranslateButton() {
 void TranslateInfoBarDelegate2::UpdateBackgroundAnimation(
     TranslateInfoBarDelegate2* previous_infobar) {
   if (!previous_infobar || previous_infobar->IsError() == IsError()) {
-    background_animation_ = kNone;
+    background_animation_ = NONE;
     return;
   }
-  background_animation_ = IsError() ? kNormalToError: kErrorToNormal;
+  background_animation_ = IsError() ? NORMAL_TO_ERROR : ERROR_TO_NORMAL;
 }
 
 std::string TranslateInfoBarDelegate2::GetPageHost() {

@@ -13,10 +13,8 @@ class TranslateErrors {
     NONE = 0,
     NETWORK,  // No connectivity.
     INITIALIZATION_ERROR,  // The translation script failed to initialize.
-    UNKNOWN_LANGUAGE,      // The page's language could not be detected.
-    IDENTICAL_LANGUAGES,   // The original and target languages are the same.
-    TRANSLATION_ERROR,     // An error was reported by the translation script
-                           // during translation.
+    TRANSLATION_ERROR,  // An error was reported by the translation script
+                        // during translation.
   };
 
  private:

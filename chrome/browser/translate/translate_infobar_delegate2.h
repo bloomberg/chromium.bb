@@ -19,33 +19,28 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
  public:
   // The different types of infobars that can be shown for translation.
   enum Type {
-    kBeforeTranslate,
-    kTranslating,
-    kAfterTranslate,
-    kTranslationError
+    BEFORE_TRANSLATE,
+    TRANSLATING,
+    AFTER_TRANSLATE,
+    TRANSLATION_ERROR
   };
 
   // The types of background color animations.
   enum BackgroundAnimationType {
-    kNone,
-    kNormalToError,
-    kErrorToNormal
+    NONE,
+    NORMAL_TO_ERROR,
+    ERROR_TO_NORMAL
   };
 
-  // Factory method to create a non-error translate infobar.
+  // Factory method.
   // The original and target language specified are the ASCII language codes
   // (ex: en, fr...).
   // Returns NULL if it failed, typically if |original_language| or
   // |target_language| is not a supported language.
-  static TranslateInfoBarDelegate2* CreateDelegate(
+  // |error| should be set to NONE if |infobar_type| is not TRANSLATION_ERROR.
+  static TranslateInfoBarDelegate2* CreateInstance(
       Type infobar_type,
-      TabContents* tab_contents,
-      const std::string& original_language,
-      const std::string& target_language);
-
-  // Factory method to create an error translate infobar.
-  static TranslateInfoBarDelegate2* CreateErrorDelegate(
-      TranslateErrors::Type error_type,
+      TranslateErrors::Type error,
       TabContents* tab_contents,
       const std::string& original_language,
       const std::string& target_language);
@@ -62,8 +57,6 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
   TabContents* tab_contents() const { return tab_contents_; }
 
   Type type() const { return type_; }
-
-  TranslateErrors::Type error() const { return error_; }
 
   int original_language_index() const { return original_language_index_; }
   int target_language_index() const { return target_language_index_; }
