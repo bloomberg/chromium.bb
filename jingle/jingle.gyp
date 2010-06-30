@@ -87,11 +87,6 @@
             '../build/linux/system.gyp:gtk'
           ],
         }],
-        ['OS=="linux" and chromeos==1', {
-          'include_dirs': [
-            '<(grit_out_dir)',
-          ],
-        }],
       ],
     },
     {
