@@ -12,10 +12,10 @@
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
-#include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
-#include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
 #include "chrome/service/gaia/service_gaia_authenticator.h"
 #include "chrome/service/service_process.h"
+#include "jingle/notifier/listener/mediator_thread_impl.h"
+#include "jingle/notifier/listener/talk_mediator_impl.h"
 
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
@@ -659,4 +659,3 @@ void CloudPrintProxyBackend::Core::OnPrinterJobHandlerShutdown(
   LOG(INFO) << "CP_PROXY: Printer job handle shutdown, id " << printer_id;
   job_handler_map_.erase(printer_id);
 }
-

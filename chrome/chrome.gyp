@@ -781,13 +781,13 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../jingle/jingle.gyp:notifier',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
         'common_constants',
         'common_net',
-        'notifier',
         'sync',
         'sync_notifier',
       ],
@@ -795,98 +795,6 @@
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
             '../build/linux/system.gyp:nss'
-          ],
-        }],
-      ],
-    },
-    # A library for sending and receiving peer-issued notifications.
-    #
-    # TODO(akalin): Separate out the XMPP stuff from this library into
-    # its own library.
-    {
-      'target_name': 'notifier',
-      'type': '<(library)',
-      'sources': [
-        'common/net/notifier/base/signal_thread_task.h',
-        'common/net/notifier/base/ssl_adapter.h',
-        'common/net/notifier/base/ssl_adapter.cc',
-        'common/net/notifier/base/static_assert.h',
-        'common/net/notifier/base/task_pump.cc',
-        'common/net/notifier/base/task_pump.h',
-        'common/net/notifier/communicator/auto_reconnect.cc',
-        'common/net/notifier/communicator/auto_reconnect.h',
-        'common/net/notifier/communicator/connection_options.cc',
-        'common/net/notifier/communicator/connection_options.h',
-        'common/net/notifier/communicator/connection_settings.cc',
-        'common/net/notifier/communicator/connection_settings.h',
-        'common/net/notifier/communicator/const_communicator.h',
-        'common/net/notifier/communicator/gaia_token_pre_xmpp_auth.cc',
-        'common/net/notifier/communicator/gaia_token_pre_xmpp_auth.h',
-        'common/net/notifier/communicator/login.cc',
-        'common/net/notifier/communicator/login.h',
-        'common/net/notifier/communicator/login_connection_state.h',
-        'common/net/notifier/communicator/login_failure.cc',
-        'common/net/notifier/communicator/login_failure.h',
-        'common/net/notifier/communicator/login_settings.cc',
-        'common/net/notifier/communicator/login_settings.h',
-        'common/net/notifier/communicator/product_info.cc',
-        'common/net/notifier/communicator/product_info.h',
-        'common/net/notifier/communicator/single_login_attempt.cc',
-        'common/net/notifier/communicator/single_login_attempt.h',
-        'common/net/notifier/communicator/ssl_socket_adapter.cc',
-        'common/net/notifier/communicator/ssl_socket_adapter.h',
-        'common/net/notifier/communicator/xmpp_connection_generator.cc',
-        'common/net/notifier/communicator/xmpp_connection_generator.h',
-        'common/net/notifier/communicator/xmpp_socket_adapter.cc',
-        'common/net/notifier/communicator/xmpp_socket_adapter.h',
-        'common/net/notifier/listener/listen_task.cc',
-        'common/net/notifier/listener/listen_task.h',
-        'common/net/notifier/listener/mediator_thread.h',
-        'common/net/notifier/listener/mediator_thread_impl.cc',
-        'common/net/notifier/listener/mediator_thread_impl.h',
-        'common/net/notifier/listener/mediator_thread_mock.h',
-        'common/net/notifier/listener/notification_constants.cc',
-        'common/net/notifier/listener/notification_constants.h',
-        'common/net/notifier/listener/notification_defines.h',
-        'common/net/notifier/listener/send_update_task.cc',
-        'common/net/notifier/listener/send_update_task.h',
-        'common/net/notifier/base/sigslotrepeater.h',
-        'common/net/notifier/listener/subscribe_task.cc',
-        'common/net/notifier/listener/subscribe_task.h',
-        'common/net/notifier/listener/talk_mediator.h',
-        'common/net/notifier/listener/talk_mediator_impl.cc',
-        'common/net/notifier/listener/talk_mediator_impl.h',
-        'common/net/notifier/listener/xml_element_util.cc',
-        'common/net/notifier/listener/xml_element_util.h',
-      ],
-      'include_dirs': [
-        '..',
-        '<(protoc_out_dir)',
-      ],
-      'defines' : [
-        '_CRT_SECURE_NO_WARNINGS',
-        '_USE_32BIT_TIME_T',
-        'kXmppProductName="chromium-sync"',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../net/net.gyp:net',
-        '../third_party/expat/expat.gyp:expat',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
-        'common_net',
-      ],
-      'export_dependent_settings': [
-        '../third_party/libjingle/libjingle.gyp:libjingle',
-      ],
-      'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk'
-          ],
-        }],
-        ['OS=="linux" and chromeos==1', {
-          'include_dirs': [
-            '<(grit_out_dir)',
           ],
         }],
       ],
@@ -1092,15 +1000,15 @@
         '..',
       ],
       'dependencies': [
-        'notifier',
         'sync',
+        '../jingle/jingle.gyp:notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
       # This target exports a hard dependency because it depends on
       # cacheinvalidation (which itself has hard_dependency set).
       'hard_dependency': 1,
       'export_dependent_settings': [
-        'notifier',
+        '../jingle/jingle.gyp:notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
     },

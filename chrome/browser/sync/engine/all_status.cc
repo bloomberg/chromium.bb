@@ -17,7 +17,7 @@
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
-#include "chrome/common/net/notifier/listener/talk_mediator.h"
+#include "jingle/notifier/listener/talk_mediator.h"
 
 namespace browser_sync {
 

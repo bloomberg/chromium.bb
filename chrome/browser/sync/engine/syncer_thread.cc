@@ -22,7 +22,7 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/notifier/listener/notification_constants.h"
+#include "jingle/notifier/listener/notification_constants.h"
 
 using std::priority_queue;
 using std::min;

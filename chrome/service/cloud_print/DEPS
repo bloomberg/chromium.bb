@@ -1,0 +1,4 @@
+include_rules = [
+  # sync notifier depends on the common jingle notifier classes.
+  "+jingle/notifier",
+]

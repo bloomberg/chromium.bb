@@ -18,7 +18,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
+#include "jingle/notifier/listener/mediator_thread_impl.h"
 
 namespace sync_notifier {
 

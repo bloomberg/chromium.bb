@@ -54,10 +54,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
-#include "chrome/common/net/notifier/listener/mediator_thread_impl.h"
-#include "chrome/common/net/notifier/listener/notification_constants.h"
-#include "chrome/common/net/notifier/listener/talk_mediator.h"
-#include "chrome/common/net/notifier/listener/talk_mediator_impl.h"
+#include "jingle/notifier/listener/mediator_thread_impl.h"
+#include "jingle/notifier/listener/notification_constants.h"
+#include "jingle/notifier/listener/talk_mediator.h"
+#include "jingle/notifier/listener/talk_mediator_impl.h"
 #include "net/base/network_change_notifier.h"
 
 using browser_sync::AllStatus;

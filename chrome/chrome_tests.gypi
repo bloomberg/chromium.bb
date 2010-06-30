@@ -1804,41 +1804,6 @@
       ], # conditions
     },
     {
-      'target_name': 'notifier_unit_tests',
-      'type': 'executable',
-      'sources': [
-        # TODO(akalin): Write our own test suite and runner.
-        '../base/test/run_all_unittests.cc',
-        '../base/test/test_suite.h',
-        'common/net/notifier/listener/talk_mediator_unittest.cc',
-        'common/net/notifier/listener/send_update_task_unittest.cc',
-        'common/net/notifier/listener/subscribe_task_unittest.cc',
-        'common/net/notifier/listener/xml_element_util_unittest.cc',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        'notifier',
-        '../base/base.gyp:base',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
-      ],
-      # TODO(akalin): Remove this once we have our own test suite and
-      # runner.
-      'conditions': [
-        ['OS == "linux" or OS == "freebsd" or OS == "openbsd" or OS == "solaris"', {
-          'dependencies': [
-            # Needed to handle the #include chain:
-            #   base/test/test_suite.h
-            #   gtk/gtk.h
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'sync_unit_tests',
       'type': 'executable',
       'sources': [

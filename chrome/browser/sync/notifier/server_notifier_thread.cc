@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
-#include "chrome/common/net/notifier/listener/notification_defines.h"
+#include "jingle/notifier/listener/notification_defines.h"
 
 namespace sync_notifier {
 
