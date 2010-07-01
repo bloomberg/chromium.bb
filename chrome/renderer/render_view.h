@@ -567,8 +567,6 @@ class RenderView : public RenderWidget,
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
 #endif
-  virtual bool OptimizedPluginPaintInRect(skia::PlatformCanvas* canvas,
-                                          const gfx::Rect& rect);
 
  private:
   // For unit tests.

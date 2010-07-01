@@ -386,8 +386,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     canvas->drawPaint(paint);
   }
 
-  if (!OptimizedPluginPaintInRect(canvas, rect))
-    webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
+  webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
 
   PaintDebugBorder(rect, canvas);
 
@@ -933,9 +932,4 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
       break;
     }
   }
-}
-
-bool RenderWidget::OptimizedPluginPaintInRect(skia::PlatformCanvas* canvas,
-                                              const gfx::Rect& rect) {
-  return false;
 }

@@ -18,14 +18,6 @@ namespace pepper {
 class PluginInstance;
 }
 
-namespace skia {
-class PlatformCanvas;
-}
-
-namespace gfx {
-class Rect;
-}
-
 class PepperPluginDelegateImpl
     : public pepper::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl> {
@@ -36,9 +28,6 @@ class PepperPluginDelegateImpl
   // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
-
-  bool OptimizedPluginPaintInRect(skia::PlatformCanvas* canvas,
-                                  const gfx::Rect& rect);
 
   // pepper::PluginDelegate implementation.
   virtual void InstanceCreated(pepper::PluginInstance* instance);

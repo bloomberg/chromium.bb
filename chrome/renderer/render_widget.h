@@ -216,9 +216,6 @@ class RenderWidget : public IPC::Channel::Listener,
   // just handled.
   virtual void DidHandleKeyEvent() {}
 
-  virtual bool OptimizedPluginPaintInRect(skia::PlatformCanvas* canvas,
-                                          const gfx::Rect& rect);
-
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
   int32 routing_id_;

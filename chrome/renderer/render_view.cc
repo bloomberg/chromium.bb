@@ -5067,11 +5067,6 @@ void RenderView::DidHandleKeyEvent() {
   edit_commands_.clear();
 }
 
-bool RenderView::OptimizedPluginPaintInRect(skia::PlatformCanvas* canvas,
-                                            const gfx::Rect& rect) {
-  return pepper_delegate_.OptimizedPluginPaintInRect(canvas, rect);
-}
-
 #if defined(OS_MACOSX)
 void RenderView::OnWasHidden() {
   RenderWidget::OnWasHidden();

@@ -7,7 +7,6 @@
 #include "app/surface/transport_dib.h"
 #include "base/scoped_ptr.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/common/render_messages.h"
@@ -131,17 +130,4 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
 #endif
 
   return new PlatformImage2DImpl(width, height, dib);
-}
-
-bool PepperPluginDelegateImpl::OptimizedPluginPaintInRect(
-    skia::PlatformCanvas* canvas,
-    const gfx::Rect& rect) {
-  for (std::set<pepper::PluginInstance*>::iterator i = active_instances_.begin();
-       i != active_instances_.end(); ++i) {
-    if ((*i)->position().Contains(rect)) {
-      (*i)->Paint(webkit_glue::ToWebCanvas(canvas), (*i)->position(), rect);
-      return true;
-    }
-  }
-  return false;
 }
