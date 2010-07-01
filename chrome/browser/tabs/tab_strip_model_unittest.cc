@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -20,10 +21,15 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_observer_mock.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
 
 class TabStripDummyDelegate : public TabStripModelDelegate {
  public:
@@ -1932,4 +1938,39 @@ TEST_F(TabStripModelTest, Phantom) {
 
   // Clean up the phantom tabs.
   tabstrip.CloseAllTabs();
+}
+
+// Makes sure the TabStripModel deletes phantom TabContents from its destructor.
+TEST_F(TabStripModelTest, DeletePhantomTabContents) {
+  if (!browser_defaults::kPhantomTabsEnabled)
+    return;
+
+  TabStripDummyDelegate delegate(NULL);
+  scoped_ptr<TabStripModel> strip(new TabStripModel(&delegate, profile()));
+
+  strip->AddTabContents(CreateTabContents(), -1, PageTransition::TYPED,
+                        TabStripModel::ADD_PINNED);
+
+  // This will make the tab go phantom.
+  delete strip->GetTabContentsAt(0);
+
+  ASSERT_TRUE(strip->IsPhantomTab(0));
+
+  NotificationRegistrar registrar;
+  NotificationObserverMock notification_observer;
+  MockTabStripModelObserver tabstrip_observer;
+  registrar.Add(&notification_observer,
+                NotificationType::TAB_CONTENTS_DESTROYED,
+                NotificationService::AllSources());
+  strip->AddObserver(&tabstrip_observer);
+
+  // Deleting the strip should delete the phanton tabcontents and result in one
+  // TAB_CONTENTS_DESTROYED.
+  EXPECT_CALL(notification_observer, Observe(_, _, _)).Times(1);
+
+  // Delete the tabstrip.
+  strip.reset();
+
+  // And there should have been no methods sent to the TabStripModelObserver.
+  EXPECT_EQ(0, tabstrip_observer.GetStateCount());
 }

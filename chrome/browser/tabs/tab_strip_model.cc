@@ -71,6 +71,16 @@ TabStripModel::~TabStripModel() {
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabStripModelDeleted());
 
+  // Before deleting any phantom tabs remove our notification observers so that
+  // we don't attempt to notify our delegate or do any processing.
+  registrar_.RemoveAll();
+
+  // Phantom tabs still have valid TabConents that we own and need to delete.
+  for (int i = count() - 1; i >= 0; --i) {
+    if (IsPhantomTab(i))
+      delete contents_data_[i]->contents;
+  }
+
   STLDeleteContainerPointers(contents_data_.begin(), contents_data_.end());
   delete order_controller_;
 }
