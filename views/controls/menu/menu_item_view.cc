@@ -100,6 +100,11 @@ bool MenuItemView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
+bool MenuItemView::GetAccessibleState(AccessibilityTypes::State* state) {
+  *state = 0;
+  return true;
+}
+
 void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
                              MenuButton* button,
                              const gfx::Rect& bounds,
@@ -206,6 +211,31 @@ SubmenuView* MenuItemView::CreateSubmenu() {
   if (!submenu_)
     submenu_ = new SubmenuView(this);
   return submenu_;
+}
+
+void MenuItemView::SetTitle(const std::wstring& title) {
+  title_ = title;
+  std::wstring accessible_title(title);
+
+  // Filter out the "&" for accessibility clients.
+  size_t index = 0;
+  while ((index = accessible_title.find(L"&", index)) != std::wstring::npos &&
+         index + 1 < accessible_title.length()) {
+    accessible_title.replace(index, accessible_title.length() - index,
+                             accessible_title.substr(index + 1));
+
+    // Special case for "&&" (escaped for "&").
+    if (accessible_title[index] == '&')
+      ++index;
+  }
+
+  if (!GetAcceleratorText().empty()) {
+    std::wstring accelerator_text(L" ");
+    accelerator_text.append(GetAcceleratorText());
+    accessible_title.append(accelerator_text);
+  }
+
+  SetAccessibleName(accessible_title);
 }
 
 void MenuItemView::SetSelected(bool selected) {

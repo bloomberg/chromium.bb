@@ -83,6 +83,7 @@ class MenuItemView : public View {
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
 
   // Returns the preferred height of menu items. This is only valid when the
   // menu is about to be shown.
@@ -183,12 +184,13 @@ class MenuItemView : public View {
   MenuItemView* GetParentMenuItem() const { return parent_menu_item_; }
 
   // Sets the title
-  void SetTitle(const std::wstring& title) {
-    title_ = title;
-  }
+  void SetTitle(const std::wstring& title);
 
   // Returns the title.
   const std::wstring& GetTitle() const { return title_; }
+
+  // Returns the type of this menu.
+  const Type& GetType() { return type_; }
 
   // Sets whether this item is selected. This is invoked as the user moves
   // the mouse around the menu while open.
