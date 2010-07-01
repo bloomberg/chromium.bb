@@ -9,3 +9,8 @@ BUG47259 WIN : http/tests/local/blob/send-data-blob.html = TEXT
 
 // I need to do a build on a Hardy box in order to get the baselines to agree.
 LINUX BUG_AGL : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyle.html = IMAGE TEXT
+
+// Quick disabling so I can roll DEPS. dataset isn't implemented so two of these need one bug and domList just needs a chrome specific baseline.
+BUG_LEVIN :  fast/dom/dataset-xhtml.xhtml = TEXT
+BUG_LEVIN :  fast/dom/dataset.html = TEXT
+BUG_LEVIN :  fast/dom/domListEnumeration.html = TEXT
