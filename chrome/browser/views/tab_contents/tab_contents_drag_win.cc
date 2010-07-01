@@ -104,7 +104,6 @@ TabContentsDragWin::TabContentsDragWin(TabContentsViewWin* view)
 
 TabContentsDragWin::~TabContentsDragWin() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(!drag_source_.get());
   DCHECK(!drag_drop_thread_.get());
 }
 
@@ -297,10 +296,6 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
         image, gfx::Size(image.width(), image.height()), image_offset, &data);
   }
 
-  // Keep a local reference to drag_source_ in case that EndDragging is called
-  // before DoDragDrop returns.
-  scoped_refptr<WebDragSource> drag_source(drag_source_);
-
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
@@ -312,7 +307,7 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
 
   // This works because WebDragSource::OnDragSourceDrop uses PostTask to
   // dispatch the actual event.
-  drag_source->set_effect(effect);
+  drag_source_->set_effect(effect);
 }
 
 void TabContentsDragWin::EndDragging(bool restore_suspended_state) {
@@ -324,8 +319,6 @@ void TabContentsDragWin::EndDragging(bool restore_suspended_state) {
 
   if (restore_suspended_state)
     view_->drop_target()->set_suspended(old_drop_target_suspended_state_);
-
-  drag_source_ = NULL;
 
   if (msg_hook) {
     AttachThreadInput(drag_out_thread_id, GetCurrentThreadId(), FALSE);
