@@ -8,6 +8,8 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -91,6 +93,11 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
 
   // Switch the locale.
   ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
+
+  // Enable the keyboard layouts that are necessary for the new locale.
+  chromeos::input_method::EnableInputMethods(
+      locale, chromeos::input_method::kKeyboardLayoutsOnly,
+      kHardwareKeyboardLayout);
 
   // The following line does not seem to affect locale anyhow. Maybe in future..
   g_browser_process->SetApplicationLocale(locale);

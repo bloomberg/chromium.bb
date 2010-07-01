@@ -58,6 +58,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/chromeos/status/language_menu_button.h"
 #endif
 
 namespace browser {
@@ -92,6 +93,7 @@ void RegisterLocalState(PrefService* local_state) {
 #if defined(OS_CHROMEOS)
   chromeos::UserManager::RegisterPrefs(local_state);
   WizardController::RegisterPrefs(local_state);
+  chromeos::LanguageMenuButton::RegisterPrefs(local_state);
 #endif
 }
 

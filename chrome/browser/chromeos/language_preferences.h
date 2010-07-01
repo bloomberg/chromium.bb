@@ -393,6 +393,10 @@ const size_t kNumMozcIntegerPrefs = ARRAYSIZE_UNSAFE(kMozcIntegerPrefs);
 // For Traditional Chinese input methods (ibus-pinyin-bopomofo and ibus-chewing)
 // TODO(yusukes): Add constants for Traditional Chinese input methods.
 
+// A string Chrome preference (Local State) of the preferred keyboard layout in
+// the login screen.
+const wchar_t kPreferredKeyboardLayout[] = L"PreferredKeyboardLayout";
+
 // A input method name that corresponds the hardware keyboard layout.
 // TODO(yusukes): just assuming US qwerty keyboard is not always correct.
 const char kHardwareKeyboardLayout[] = "xkb:us::eng";

@@ -168,6 +168,10 @@ void CrosInProcessBrowserTest::SetInputMethodLibraryStatusAreaExpectations() {
       .Times(AnyNumber())
       .WillRepeatedly(InvokeWithoutArgs(CreateFallbackInputMethodDescriptors))
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_input_method_library_, GetSupportedInputMethods())
+      .Times(AnyNumber())
+      .WillRepeatedly(InvokeWithoutArgs(CreateFallbackInputMethodDescriptors))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, current_ime_properties())
       .Times(1)
       .WillOnce((ReturnRef(ime_properties_)))

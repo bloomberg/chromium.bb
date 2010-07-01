@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -569,6 +570,18 @@ void ShowLoginWizard(const std::string& first_screen_name,
 
   // Tell the window manager that the user isn't logged in.
   chromeos::WmIpc::instance()->SetLoggedInProperty(false);
+
+  // Set up keyboards. For example, when |locale| is "en-US", enable US qwerty
+  // and US dvorak keyboard layouts.
+  if (g_browser_process && g_browser_process->local_state()) {
+    const std::string locale = g_browser_process->GetApplicationLocale();
+    const std::string initial_input_method_id =
+        g_browser_process->local_state()->GetString(
+            chromeos::kPreferredKeyboardLayout);
+    chromeos::input_method::EnableInputMethods(
+        locale, chromeos::input_method::kKeyboardLayoutsOnly,
+        initial_input_method_id);
+  }
 
   gfx::Rect screen_bounds(CalculateScreenBounds(size));
 

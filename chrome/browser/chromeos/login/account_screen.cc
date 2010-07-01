@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/login/account_screen.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/profile_manager.h"
@@ -130,6 +132,15 @@ void AccountScreen::NavigationStateChanged(const TabContents* source,
 // AccountScreen, WebPageDelegate implementation:
 void AccountScreen::OnPageLoaded() {
   StopTimeoutTimer();
+  // Enable input methods (e.g. Chinese, Japanese) so that users could input
+  // their first and last names.
+  if (g_browser_process) {
+    const std::string locale = g_browser_process->GetApplicationLocale();
+    input_method::EnableInputMethods(
+        locale, input_method::kKeyboardLayoutsOnly, "");
+    // TODO(yusukes,suzhe): Change the 2nd argument to kAllInputMethods when
+    // crosbug.com/2670 is fixed.
+  }
   view()->ShowPageContent();
 }
 
@@ -148,6 +159,13 @@ void AccountScreen::OnUserCreated(const std::string& username,
 // AccountScreen, private:
 void AccountScreen::CloseScreen(ScreenObserver::ExitCodes code) {
   StopTimeoutTimer();
+  // Disable input methods since they are not necessary to input username and
+  // password.
+  if (g_browser_process) {
+    const std::string locale = g_browser_process->GetApplicationLocale();
+    input_method::EnableInputMethods(
+        locale, input_method::kKeyboardLayoutsOnly, "");
+  }
   delegate()->GetObserver(this)->OnExit(code);
 }
 

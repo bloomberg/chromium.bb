@@ -10,7 +10,9 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -58,7 +60,7 @@ class LanguageMenuButton : public views::MenuButton,
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {}
+                       const NotificationDetails& details);
 
   // Converts an InputMethodDescriptor object into human readable string.
   // Returns a text for the indicator on top right corner of the Chrome window.
@@ -69,6 +71,9 @@ class LanguageMenuButton : public views::MenuButton,
   // Returns a string for the drop-down menu and the tooltip for the indicator.
   static std::wstring GetTextForMenu(
       const InputMethodDescriptor& input_method, bool add_method_name);
+
+  // Registers input method preferences for the login screen.
+  static void RegisterPrefs(PrefService* local_state);
 
  protected:
   // views::View implementation.
@@ -121,6 +126,8 @@ class LanguageMenuButton : public views::MenuButton,
   views::Menu2 language_menu_;
 
   StatusAreaHost* host_;
+  NotificationRegistrar registrar_;
+  bool logged_in_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageMenuButton);
 };

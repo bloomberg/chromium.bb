@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -125,7 +126,8 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
       // in this class. Therefore, GetItemCount() have to return 0 when
       // |model_| is NULL.
       ALLOW_THIS_IN_INITIALIZER_LIST(language_menu_(this)),
-      host_(host) {
+      host_(host),
+      logged_in_(false) {
   DCHECK(input_method_descriptors_.get() &&
          !input_method_descriptors_->empty());
   set_border(NULL);
@@ -152,22 +154,31 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // InputMethodChanged() will be called soon and the indicator will be updated.
   InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
   PrefService* pref_service = GetPrefService(host_);
-  if (pref_service) {
+  if (pref_service && host_->IsBrowserMode()) {
     previous_input_method_pref_.Init(
         prefs::kLanguagePreviousInputMethod, pref_service, this);
-    const std::string& previous_input_method_id =
+    const std::string previous_input_method_id =
         previous_input_method_pref_.GetValue();
     if (!previous_input_method_id.empty())
       library->ChangeInputMethod(previous_input_method_id);
 
     current_input_method_pref_.Init(
         prefs::kLanguageCurrentInputMethod, pref_service, this);
-    const std::string& current_input_method_id =
+    const std::string current_input_method_id =
         current_input_method_pref_.GetValue();
     if (!current_input_method_id.empty())
       library->ChangeInputMethod(current_input_method_id);
   }
   library->AddObserver(this);
+
+  if (host_->IsBrowserMode() || host_->IsScreenLockerMode()) {
+    logged_in_ = true;
+  }
+  if (!logged_in_) {
+    registrar_.Add(this,
+                   NotificationType::LOGIN_USER_CHANGED,
+                   NotificationService::AllSources());
+  }
 }
 
 LanguageMenuButton::~LanguageMenuButton() {
@@ -355,13 +366,13 @@ void LanguageMenuButton::ActivatedAt(int index) {
         }
       }
       // Then, activate the property clicked.
-      CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(key,
-                                                                        true);
+      CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(
+          key, true);
     } else {
       // Command button like "Switch to half punctuation mode" is clicked.
       // We can always use "Deactivate" for command buttons.
-      CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(key,
-                                                                        false);
+      CrosLibrary::Get()->GetInputMethodLibrary()->SetImePropertyActivated(
+          key, false);
     }
     return;
   }
@@ -396,10 +407,22 @@ void LanguageMenuButton::InputMethodChanged(InputMethodLibrary* obj) {
       obj->current_input_method();
   UpdateIndicatorFromInputMethod(current_input_method);
   // Update Chrome prefs as well.
-  if (GetPrefService(host_)) {
-    // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
-    previous_input_method_pref_.SetValue(previous_input_method.id);
-    current_input_method_pref_.SetValue(current_input_method.id);
+  if (host_->IsBrowserMode()) {
+    if (GetPrefService(host_)) {  // make sure we're not in unit tests.
+      // Sometimes (e.g. initial boot) |previous_input_method.id| is empty.
+      previous_input_method_pref_.SetValue(previous_input_method.id);
+      current_input_method_pref_.SetValue(current_input_method.id);
+    }
+  } else {
+    // We're in the login screen (i.e. not in the normal browser mode nor screen
+    // locker mode). If a user has already logged in, we should not update the
+    // local state since a profile for the user might be loaded before the
+    // buttun for the login screen is destroyed.
+    if (!logged_in_ && g_browser_process && g_browser_process->local_state()) {
+        g_browser_process->local_state()->SetString(
+            kPreferredKeyboardLayout, current_input_method.id);
+        g_browser_process->local_state()->SavePersistentPrefs();
+    }
   }
 }
 
@@ -432,7 +455,8 @@ void LanguageMenuButton::UpdateIndicator(
   scoped_ptr<InputMethodDescriptors> active_input_methods(
       CrosLibrary::Get()->GetInputMethodLibrary()->GetActiveInputMethods());
   if (active_input_methods->size() == 1 &&
-      input_method::IsKeyboardLayout(active_input_methods->at(0).id)) {
+      input_method::IsKeyboardLayout(active_input_methods->at(0).id) &&
+      host_->IsBrowserMode()) {
     // As the disabled color is set to invisible, disabling makes the
     // button disappear.
     SetEnabled(false);
@@ -611,6 +635,18 @@ std::wstring LanguageMenuButton::GetTextForMenu(
   }
   DCHECK(!text.empty());
   return text;
+}
+
+void LanguageMenuButton::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterStringPref(kPreferredKeyboardLayout, "");
+}
+
+void LanguageMenuButton::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  if (type == NotificationType::LOGIN_USER_CHANGED) {
+    logged_in_ = true;
+  }
 }
 
 }  // namespace chromeos
