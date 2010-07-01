@@ -22,8 +22,8 @@
 namespace {
 
 // The minimum number of fields that must contain user data and have known types
-// before autofill will attempt to import the data into a profile.
-const int kMinImportSize = 5;
+// before AutoFill will attempt to import the data into a profile.
+const int kMinImportSize = 3;
 
 const char kUnlabeled[] = "Unlabeled";
 
@@ -78,8 +78,8 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
 void PersonalDataManager::OnAutoFillDialogApply(
     std::vector<AutoFillProfile>* profiles,
     std::vector<CreditCard>* credit_cards) {
-  // |profiles| may be NULL
-  // |credit_cards| may be NULL
+  // |profiles| may be NULL.
+  // |credit_cards| may be NULL.
   if (profiles) {
     CancelPendingQuery(&pending_profiles_query_);
     SetProfiles(profiles);
@@ -205,28 +205,16 @@ bool PersonalDataManager::ImportFormData(
   if (importable_credit_card_fields == 0)
     imported_credit_card_.reset();
 
+  {
+    // We're now done with the unique IDs, and SaveImportedProfile() needs the
+    // lock, so release it.
+    AutoUnlock unlock(unique_ids_lock_);
+
+    // We always save imported profiles.
+    SaveImportedProfile();
+  }
+
   return true;
-}
-
-void PersonalDataManager::SaveImportedFormData() {
-  if (profile_->IsOffTheRecord())
-    return;
-
-  if (imported_profile_.get()) {
-    imported_profile_->set_label(ASCIIToUTF16(kUnlabeled));
-
-    std::vector<AutoFillProfile> profiles;
-    profiles.push_back(*imported_profile_);
-    SetProfiles(&profiles);
-  }
-
-  if (imported_credit_card_.get()) {
-    imported_credit_card_->set_label(ASCIIToUTF16(kUnlabeled));
-
-    std::vector<CreditCard> credit_cards;
-    credit_cards.push_back(*imported_credit_card_);
-    SetCreditCards(&credit_cards);
-  }
 }
 
 void PersonalDataManager::GetImportedFormData(AutoFillProfile** profile,
@@ -256,6 +244,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
     return;
 
   AutoLock lock(unique_ids_lock_);
+
   // Remove the unique IDs of the new set of profiles from the unique ID set.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
@@ -320,6 +309,7 @@ void PersonalDataManager::SetCreditCards(
     return;
 
   AutoLock lock(unique_ids_lock_);
+
   // Remove the unique IDs of the new set of credit cards from the unique ID
   // set.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
@@ -602,4 +592,50 @@ void PersonalDataManager::SetUniqueCreditCardLabels(
       iter->second[i]->set_label(newlabel);
     }
   }
+}
+
+void PersonalDataManager::SaveImportedProfile() {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  if (!imported_profile_.get())
+    return;
+
+  // Set to true if |imported_profile_| is merged into the profile list.
+  bool merged = false;
+
+  imported_profile_->set_label(ASCIIToUTF16(kUnlabeled));
+
+  // Don't save a web profile if the data in the profile is a subset of an
+  // auxiliary profile.
+  for (std::vector<AutoFillProfile*>::const_iterator iter =
+           auxiliary_profiles_.begin();
+       iter != auxiliary_profiles_.end(); ++iter) {
+    if (imported_profile_->IsSubsetOf(**iter))
+      return;
+  }
+
+  std::vector<AutoFillProfile> profiles;
+  for (std::vector<AutoFillProfile*>::const_iterator iter =
+           web_profiles_.begin();
+       iter != web_profiles_.end(); ++iter) {
+    if (imported_profile_->IsSubsetOf(**iter)) {
+      // In this case, the existing profile already contains all of the data
+      // in |imported_profile|, so consider the profiles already merged.
+      merged = true;
+    } else if ((*iter)->IntersectionOfTypesHasEqualValues(
+        *imported_profile_)) {
+      // |imported_profile| contains all of the data in this profile, plus
+      // more.
+      merged = true;
+      (*iter)->MergeWith(*imported_profile_);
+    }
+
+    profiles.push_back(**iter);
+  }
+
+  if (!merged)
+    profiles.push_back(*imported_profile_);
+
+  SetProfiles(&profiles);
 }

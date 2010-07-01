@@ -1177,10 +1177,7 @@ TEST_F(WebDatabaseTest, CreditCard) {
                           ASCIIToUTF16("04"));
   work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                           ASCIIToUTF16("2013"));
-  work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                          ASCIIToUTF16("987"));
   work_creditcard.set_billing_address(ASCIIToUTF16("Overlook Hotel"));
-  work_creditcard.set_shipping_address(ASCIIToUTF16("Timberline Lodge"));
 
   EXPECT_TRUE(db.AddCreditCard(work_creditcard));
 
@@ -1202,10 +1199,7 @@ TEST_F(WebDatabaseTest, CreditCard) {
                             ASCIIToUTF16("06"));
   target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                             ASCIIToUTF16("2012"));
-  target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                            ASCIIToUTF16("123"));
   target_creditcard.set_billing_address(ASCIIToUTF16("Overlook Hotel"));
-  target_creditcard.set_shipping_address(string16());
 
   EXPECT_TRUE(db.AddCreditCard(target_creditcard));
   ASSERT_TRUE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"),

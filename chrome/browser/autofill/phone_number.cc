@@ -55,6 +55,25 @@ void PhoneNumber::GetPossibleFieldTypes(const string16& text,
     possible_types->insert(GetWholeNumberType());
 }
 
+void PhoneNumber::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
+  DCHECK(available_types);
+
+  if (!number().empty())
+    available_types->insert(GetNumberType());
+
+  if (!city_code().empty())
+    available_types->insert(GetCityCodeType());
+
+  if (!country_code().empty())
+    available_types->insert(GetCountryCodeType());
+
+  if (!CityAndNumber().empty())
+    available_types->insert(GetCityAndNumberType());
+
+  if (!WholeNumber().empty())
+    available_types->insert(GetWholeNumberType());
+}
+
 string16 PhoneNumber::GetFieldText(const AutoFillType& type) const {
   AutoFillFieldType field_type = type.field_type();
   if (field_type == GetNumberType())
@@ -72,7 +91,7 @@ string16 PhoneNumber::GetFieldText(const AutoFillType& type) const {
   if (field_type == GetWholeNumberType())
     return WholeNumber();
 
-  return EmptyString16();
+  return string16();
 }
 
 void PhoneNumber::FindInfoMatches(const AutoFillType& type,
@@ -113,7 +132,8 @@ void PhoneNumber::SetInfo(const AutoFillType& type, const string16& value) {
     set_city_code(number);
   else if (subgroup == AutoFillType::PHONE_COUNTRY_CODE)
     set_country_code(number);
-  else if (subgroup == AutoFillType::PHONE_WHOLE_NUMBER)
+  else if (subgroup == AutoFillType::PHONE_CITY_AND_NUMBER ||
+           subgroup == AutoFillType::PHONE_WHOLE_NUMBER)
     set_whole_number(number);
   else
     NOTREACHED();

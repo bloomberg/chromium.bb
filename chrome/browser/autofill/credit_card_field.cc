@@ -30,9 +30,6 @@ bool CreditCardField::GetFieldInfo(FieldTypeMap* field_type_map) const {
       AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
   DCHECK(ok);
 
-  Add(field_type_map, verification_,
-      AutoFillType(CREDIT_CARD_VERIFICATION_CODE));
-
   return ok;
 }
 
@@ -87,23 +84,6 @@ CreditCardField* CreditCardField::Parse(
     }
 
     // TODO(jhawkins): Parse the type select control.
-
-    // We look for a card security code before we look for a credit card number
-    // and match the general term "number".  The security code has a plethora of
-    // names; we've seen "verification #", "verification number",
-    // "card identification number" and others listed in the ParseText() call
-    // below.
-    if (is_ecml) {
-      pattern = GetEcmlPattern(kEcmlCardVerification);
-    } else {
-      pattern = ASCIIToUTF16(
-          "verification|card identification|cvn|security code|cvv code|cvc");
-    }
-
-    if (credit_card_field->verification_ == NULL &&
-        ParseText(&q, pattern, &credit_card_field->verification_)) {
-      continue;
-    }
 
     if (is_ecml)
       pattern = GetEcmlPattern(kEcmlCardNumber);
@@ -177,7 +157,6 @@ CreditCardField::CreditCardField()
       cardholder_last_(NULL),
       type_(NULL),
       number_(NULL),
-      verification_(NULL),
       expiration_month_(NULL),
       expiration_year_(NULL) {
 }

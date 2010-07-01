@@ -85,16 +85,16 @@ class TestPersonalDataManager : public PersonalDataManager {
     CreditCard* credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "First", "Elvis Presley",
                                          "Visa", "1234567890123456", "04",
-                                         "2012", "456", "Home", "");
+                                         "2012", "Home");
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
                                          "Mastercard", "0987654321098765", "10",
-                                         "2014", "678", "", "");
+                                         "2014", "");
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "Empty", "", "", "", "",
-                                         "", "", "", "");
+                                         "", "");
     credit_cards->push_back(credit_card);
   }
 
@@ -125,15 +125,6 @@ class TestAutoFillManager : public AutoFillManager {
   DISALLOW_COPY_AND_ASSIGN(TestAutoFillManager);
 };
 
-void CreateTestFormField(const char* label,
-                         const char* name,
-                         const char* value,
-                         const char* type,
-                         webkit_glue::FormField* field) {
-  *field = webkit_glue::FormField(ASCIIToUTF16(label), ASCIIToUTF16(name),
-                                  ASCIIToUTF16(value), ASCIIToUTF16(type), 0);
-}
-
 void CreateTestFormData(FormData* form) {
   form->name = ASCIIToUTF16("MyForm");
   form->method = ASCIIToUTF16("POST");
@@ -141,27 +132,38 @@ void CreateTestFormData(FormData* form) {
   form->action = GURL("http://myform.com/submit.html");
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Address Line 1", "addr1", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Address Line 2", "addr2", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("City", "city", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "City", "city", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("State", "state", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "State", "state", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Postal Code", "zipcode", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Country", "country", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Country", "country", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Phone Number", "phonenumber", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Email", "email", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Email", "email", "", "text", &field);
   form->fields.push_back(field);
 }
 
@@ -172,35 +174,50 @@ void CreateTestFormDataBilling(FormData* form) {
   form->action = GURL("http://myform.com/submit.html");
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Address Line 1", "billingAddr1", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Address Line 1", "billingAddr1", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Address Line 2", "billingAddr2", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Address Line 2", "billingAddr2", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("City", "billingCity", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "City", "billingCity", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("State", "billingState", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "State", "billingState", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Postal Code", "billingZipcode", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Postal Code", "billingZipcode", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Country", "billingCountry", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Country", "billingCountry", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Phone Number", "phonenumber", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Email", "email", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Email", "email", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Name on Card", "nameoncard", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Card Number", "cardnumber", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Expiration Date", "ccmonth", "", "text", &field);
   form->fields.push_back(field);
-  CreateTestFormField("", "ccyear", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "", "ccyear", "", "text", &field);
   form->fields.push_back(field);
 }
 
@@ -274,7 +291,8 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
   const int kPageID = 1;
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
   EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
@@ -305,7 +323,8 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
   const int kPageID = 1;
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "E", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "E", "text", &field);
   EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
@@ -334,7 +353,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   const int kPageID = 1;
 
   webkit_glue::FormField field;
-  CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Card Number", "cardnumber", "", "text", &field);
   EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
@@ -373,7 +393,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   const int kPageID = 1;
 
   webkit_glue::FormField field;
-  CreateTestFormField("Card Number", "cardnumber", "1", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Card Number", "cardnumber", "1", "text", &field);
   EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
@@ -406,7 +427,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   const int kPageID = 1;
 
   webkit_glue::FormField field;
-  CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Name on Card", "nameoncard", "", "text", &field);
   EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
@@ -447,7 +469,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
   const int kPageID = 1;
 
   webkit_glue::FormField field;
-  CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Name on Card", "nameoncard", "", "text", &field);
   EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 
   // Test that we sent the right message to the renderer.
@@ -490,7 +513,8 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsFormIsAutoFilled) {
   const int kPageID = 1;
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
   EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, true, field));
 
   // Test that we sent the right message to the renderer.
@@ -535,40 +559,51 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   ASSERT_EQ(15U, results.fields.size());
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "Elvis", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
-  CreateTestFormField("Middle Name", "middlename", "Aaron", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "Aaron", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
-  CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "Presley", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
-  CreateTestFormField("Address Line 1", "billingAddr1",
+  autofill_unittest::CreateTestFormField(
+      "Address Line 1", "billingAddr1",
                       "3734 Elvis Presley Blvd.", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Address Line 2", "billingAddr2", "Apt. 10", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
-  CreateTestFormField("City", "billingCity", "Memphis", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "City", "billingCity", "Memphis", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[5]));
-  CreateTestFormField("State", "billingState", "Tennessee", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "State", "billingState", "Tennessee", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[6]));
-  CreateTestFormField("Postal Code", "billingZipcode", "38116", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Postal Code", "billingZipcode", "38116", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[7]));
-  CreateTestFormField("Country", "billingCountry", "USA", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Country", "billingCountry", "USA", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[8]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Phone Number", "phonenumber", "12345678901", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[9]));
-  CreateTestFormField("Email", "email", "theking@gmail.com", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Email", "email", "theking@gmail.com", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[10]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Name on Card", "nameoncard", "Elvis Presley", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[11]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Card Number", "cardnumber", "1234567890123456", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[12]));
-  CreateTestFormField("Expiration Date", "ccmonth", "04", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Expiration Date", "ccmonth", "04", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[13]));
-  CreateTestFormField("", "ccyear", "2012", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "", "ccyear", "2012", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
 }
 
@@ -602,30 +637,38 @@ TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
   ASSERT_EQ(11U, results.fields.size());
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "Joe", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "Joe", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
-  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
-  CreateTestFormField("Last Name", "lastname", "Ely", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "Ely", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Address Line 1", "addr1", "916 16th St.", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Address Line 2", "addr2", "Apt. 6", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
-  CreateTestFormField("City", "city", "Lubbock", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "City", "city", "Lubbock", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[5]));
-  CreateTestFormField("State", "state", "Texas", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "State", "state", "Texas", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[6]));
-  CreateTestFormField("Postal Code", "zipcode", "79401", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Postal Code", "zipcode", "79401", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[7]));
-  CreateTestFormField("Country", "country", "USA", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Country", "country", "USA", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[8]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Phone Number", "phonenumber", "12345678901", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[9]));
-  CreateTestFormField("Email", "email", "flatlander@gmail.com", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Email", "email", "flatlander@gmail.com", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[10]));
 }
 
@@ -656,40 +699,51 @@ TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
   ASSERT_EQ(15U, results.fields.size());
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "Joe", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "Joe", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
-  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
-  CreateTestFormField("Last Name", "lastname", "Ely", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "Ely", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
-  CreateTestFormField("Address Line 1", "billingAddr1",
+  autofill_unittest::CreateTestFormField(
+      "Address Line 1", "billingAddr1",
                       "3734 Elvis Presley Blvd.", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Address Line 2", "billingAddr2", "Apt. 10", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
-  CreateTestFormField("City", "billingCity", "Memphis", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "City", "billingCity", "Memphis", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[5]));
-  CreateTestFormField("State", "billingState", "Tennessee", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "State", "billingState", "Tennessee", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[6]));
-  CreateTestFormField("Postal Code", "billingZipcode", "38116", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Postal Code", "billingZipcode", "38116", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[7]));
-  CreateTestFormField("Country", "billingCountry", "USA", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Country", "billingCountry", "USA", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[8]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Phone Number", "phonenumber", "12345678901", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[9]));
-  CreateTestFormField("Email", "email", "flatlander@gmail.com", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Email", "email", "flatlander@gmail.com", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[10]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Name on Card", "nameoncard", "Elvis Presley", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[11]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Card Number", "cardnumber", "1234567890123456", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[12]));
-  CreateTestFormField("Expiration Date", "ccmonth", "04", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Expiration Date", "ccmonth", "04", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[13]));
-  CreateTestFormField("", "ccyear", "2012", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "", "ccyear", "2012", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
 }
 
@@ -703,19 +757,24 @@ TEST_F(AutoFillManagerTest, FillPhoneNumberTest) {
 
   webkit_glue::FormField field;
 
-  CreateTestFormField("country code", "country code", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "country code", "country code", "", "text", &field);
   field.set_size(1);
   form.fields.push_back(field);
-  CreateTestFormField("area code", "area code", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "area code", "area code", "", "text", &field);
   field.set_size(3);
   form.fields.push_back(field);
-  CreateTestFormField("phone", "phone prefix", "1", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "phone", "phone prefix", "1", "text", &field);
   field.set_size(3);
   form.fields.push_back(field);
-  CreateTestFormField("-", "phone suffix", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "-", "phone suffix", "", "text", &field);
   field.set_size(4);
   form.fields.push_back(field);
-  CreateTestFormField("Phone Extension", "ext", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Phone Extension", "ext", "", "text", &field);
   field.set_size(3);
   form.fields.push_back(field);
 
@@ -766,15 +825,20 @@ TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
   form.action = GURL("http://myform.com/submit.html");
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
   form.fields.push_back(field);
-  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "", "text", &field);
   form.fields.push_back(field);
-  CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "", "text", &field);
   form.fields.push_back(field);
-  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Phone Number", "phonenumber", "", "text", &field);
   form.fields.push_back(field);
-  CreateTestFormField("Email", "email", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Email", "email", "", "text", &field);
   form.fields.push_back(field);
 
   // Set up our FormStructures.
@@ -804,13 +868,16 @@ TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
   EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
   ASSERT_EQ(4U, results.fields.size());
 
-  CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "Elvis", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
-  CreateTestFormField("Middle Name", "middlename", "Aaron", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "Aaron", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
-  CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "Presley", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Email", "email", "theking@gmail.com", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
 }
@@ -823,14 +890,18 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   form.action = GURL("http://myform.com/submit.html");
 
   webkit_glue::FormField field;
-  CreateTestFormField("First Name", "firstname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
   form.fields.push_back(field);
-  CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "", "text", &field);
   form.fields.push_back(field);
-  CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "", "text", &field);
   // Note: absent phone number.  Adding this below.
   form.fields.push_back(field);
-  CreateTestFormField("Email", "email", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Email", "email", "", "text", &field);
   form.fields.push_back(field);
 
   // Set up our FormStructures.
@@ -840,7 +911,8 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
 
   // Now, after the call to |FormsSeen| we add the phone number field before
   // filling.
-  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Phone Number", "phonenumber", "", "text", &field);
   form.fields.insert(form.fields.begin() + 3, field);
 
   // The page ID sent to the AutoFillManager from the RenderView, used to send
@@ -861,45 +933,21 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
   ASSERT_EQ(5U, results.fields.size());
 
-  CreateTestFormField("First Name", "firstname", "Elvis", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "Elvis", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[0]));
-  CreateTestFormField("Middle Name", "middlename", "Aaron", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Middle Name", "middlename", "Aaron", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[1]));
-  CreateTestFormField("Last Name", "lastname", "Presley", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Last Name", "lastname", "Presley", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[2]));
-  CreateTestFormField("Phone Number", "phonenumber", "", "text", &field);
+  autofill_unittest::CreateTestFormField(
+      "Phone Number", "phonenumber", "", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
-  CreateTestFormField(
+  autofill_unittest::CreateTestFormField(
       "Email", "email", "theking@gmail.com", "text", &field);
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
-}
-
-TEST_F(AutoFillManagerTest, InfoBarShown) {
-  FormData form;
-  form.name = ASCIIToUTF16("MyForm");
-  form.method = ASCIIToUTF16("POST");
-  form.origin = GURL("http://myform.com/form.html");
-  form.action = GURL("http://myform.com/submit.html");
-
-  webkit_glue::FormField field;
-  CreateTestFormField("E-mail", "one", "one", "text", &field);
-  form.fields.push_back(field);
-  CreateTestFormField("E-mail", "two", "two", "text", &field);
-  form.fields.push_back(field);
-  CreateTestFormField("E-mail", "three", "three", "text", &field);
-  form.fields.push_back(field);
-
-  // Set up our FormStructures.
-  std::vector<FormData> forms;
-  forms.push_back(form);
-  autofill_manager_->FormsSeen(forms);
-
-  // Submit the form.
-  autofill_manager_->FormSubmitted(form);
-
-  // Check that the 'AutoFill InfoBar shown' pref is set.
-  PrefService* prefs = profile()->GetPrefs();
-  EXPECT_TRUE(prefs->GetBoolean(prefs::kAutoFillInfoBarShown));
 }
 
 TEST_F(AutoFillManagerTest, HiddenFields) {
@@ -910,11 +958,14 @@ TEST_F(AutoFillManagerTest, HiddenFields) {
   form.action = GURL("http://myform.com/submit.html");
 
   webkit_glue::FormField field;
-  CreateTestFormField("E-mail", "one", "one", "hidden", &field);
+  autofill_unittest::CreateTestFormField(
+      "E-mail", "one", "one", "hidden", &field);
   form.fields.push_back(field);
-  CreateTestFormField("E-mail", "two", "two", "hidden", &field);
+  autofill_unittest::CreateTestFormField(
+      "E-mail", "two", "two", "hidden", &field);
   form.fields.push_back(field);
-  CreateTestFormField("E-mail", "three", "three", "hidden", &field);
+  autofill_unittest::CreateTestFormField(
+      "E-mail", "three", "three", "hidden", &field);
   form.fields.push_back(field);
 
   // Set up our FormStructures.
@@ -925,9 +976,8 @@ TEST_F(AutoFillManagerTest, HiddenFields) {
   // Submit the form.
   autofill_manager_->FormSubmitted(form);
 
-  // Check that the 'AutoFill InfoBar shown' pref is not set.
-  PrefService* prefs = profile()->GetPrefs();
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kAutoFillInfoBarShown));
+  // TODO(jhawkins): We can't use the InfoBar anymore to determine if we saved
+  // fields.  Need to query the PDM.
 }
 
 }  // namespace

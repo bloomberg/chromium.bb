@@ -64,10 +64,6 @@ class PersonalDataManager
   bool ImportFormData(const std::vector<FormStructure*>& form_structures,
                       AutoFillManager* autofill_manager);
 
-  // Saves |imported_profile_| and |imported_credit_card_| to the WebDB if they
-  // exist.
-  virtual void SaveImportedFormData();
-
   // Gets |imported_profile_| and |imported_credit_card_| and returns their
   // values in |profile| and |credit_card| parameters respectively.  One or
   // both may return NULL.  The objects returned are owned by the
@@ -82,7 +78,7 @@ class PersonalDataManager
   //
   // The relationship between this and Refresh is subtle.
   // A call to SetProfile could include out-of-date data that may conflict
-  // if we didn't refresh-to-latest before an autofill window was opened for
+  // if we didn't refresh-to-latest before an AutoFill window was opened for
   // editing. SetProfile is implemented to make a "best effort" to apply the
   // changes, but in extremely rare edge cases it is possible not all of the
   // updates in |profiles| make it to the DB.  This is why SetProfiles will
@@ -191,6 +187,10 @@ class PersonalDataManager
   // two methods into one.
   void SetUniqueProfileLabels(std::vector<AutoFillProfile>* profiles);
   void SetUniqueCreditCardLabels(std::vector<CreditCard>* credit_cards);
+
+  // Saves |imported_profile_| to the WebDB if it exists.
+  // TODO(jhawkins): SaveImportedCreditCard.
+  void SaveImportedProfile();
 
   // The profile hosting this PersonalDataManager.
   Profile* profile_;

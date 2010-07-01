@@ -15,11 +15,6 @@ void ShowAutoFillDialog(gfx::NativeView parent,
                         Profile* profile,
                         AutoFillProfile* imported_profile,
                         CreditCard* imported_credit_card) {
-  // It's possible we haven't shown the InfoBar yet, but if the user is in the
-  // AutoFill dialog, she doesn't need to be asked to enable or disable
-  // AutoFill.
-  profile->GetPrefs()->SetBoolean(prefs::kAutoFillInfoBarShown, true);
-
   [AutoFillDialogController
       showAutoFillDialogWithObserver:observer
                              profile:profile

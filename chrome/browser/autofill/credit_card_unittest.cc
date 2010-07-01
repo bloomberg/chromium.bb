@@ -22,17 +22,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 00: Empty credit card with empty strings.
   CreditCard credit_card00(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(
-      &credit_card00,
-      "Corporate",
-      "John Dillinger",
-      "Visa",
-      "",
-      "",
-      "",
-      "123",
-      "Chicago",
-      "Indianapolis");
+  autofill_unittest::SetCreditCardInfo(&credit_card00, "Corporate",
+      "John Dillinger", "Visa", "", "", "", "Chicago");
   string16 summary00 = credit_card00.PreviewSummary();
   EXPECT_EQ(summary00, string16());
   string16 obfuscated00 = credit_card00.ObfuscatedNumber();
@@ -40,17 +31,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 1: No credit card number.
   CreditCard credit_card1(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(
-      &credit_card1,
-      "Corporate",
-      "John Dillinger",
-      "Visa",
-      "",
-      "01",
-      "2010",
-      "123",
-      "Chicago",
-      "Indianapolis");
+  autofill_unittest::SetCreditCardInfo(&credit_card1, "Corporate",
+      "John Dillinger", "Visa", "", "01", "2010", "Chicago");
   string16 summary1 = credit_card1.PreviewSummary();
   EXPECT_EQ(summary1, string16());
   string16 obfuscated1 = credit_card1.ObfuscatedNumber();
@@ -58,17 +40,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 2: No month.
   CreditCard credit_card2(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(
-      &credit_card2,
-      "Corporate",
-      "John Dillinger",
-      "Visa",
-      "123456789012",
-      "",
-      "2010",
-      "123",
-      "Chicago",
-      "Indianapolis");
+  autofill_unittest::SetCreditCardInfo(&credit_card2, "Corporate",
+      "John Dillinger", "Visa", "123456789012", "", "2010", "Chicago");
   string16 summary2 = credit_card2.PreviewSummary();
   EXPECT_EQ(summary2, string16(ASCIIToUTF16("************9012")));
   string16 obfuscated2 = credit_card2.ObfuscatedNumber();
@@ -76,17 +49,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 3: No year.
   CreditCard credit_card3(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(
-      &credit_card3,
-      "Corporate",
-      "John Dillinger",
-      "Visa",
-      "123456789012",
-      "01",
-      "",
-      "123",
-      "Chicago",
-      "Indianapolis");
+  autofill_unittest::SetCreditCardInfo(&credit_card3, "Corporate",
+      "John Dillinger", "Visa", "123456789012", "01", "", "Chicago");
   string16 summary3 = credit_card3.PreviewSummary();
   EXPECT_EQ(summary3, string16(ASCIIToUTF16("************9012")));
   string16 obfuscated3 = credit_card3.ObfuscatedNumber();
@@ -94,17 +58,8 @@ TEST(CreditCardTest, PreviewSummaryAndObfuscatedNumberStrings) {
 
   // Case 4: Have everything.
   CreditCard credit_card4(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(
-      &credit_card4,
-      "Corporate",
-      "John Dillinger",
-      "Visa",
-      "123456789012",
-      "01",
-      "2010",
-      "123",
-      "Chicago",
-      "Indianapolis");
+  autofill_unittest::SetCreditCardInfo(&credit_card4, "Corporate",
+      "John Dillinger", "Visa", "123456789012", "01", "2010", "Chicago");
   string16 summary4 = credit_card4.PreviewSummary();
   EXPECT_EQ(summary4, string16(ASCIIToUTF16("************9012, Exp: 01/2010")));
   string16 obfuscated4 = credit_card4.ObfuscatedNumber();

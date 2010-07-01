@@ -139,8 +139,6 @@
         'browser/autofill/autofill_download.h',
         'browser/autofill/autofill_field.cc',
         'browser/autofill/autofill_field.h',
-        'browser/autofill/autofill_infobar_delegate.cc',
-        'browser/autofill/autofill_infobar_delegate.h',
         'browser/autofill/autofill_manager.cc',
         'browser/autofill/autofill_manager.h',
         'browser/autofill/autofill_profile.cc',

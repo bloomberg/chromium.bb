@@ -24,7 +24,6 @@
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
-#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/gtk_util.h"
@@ -230,7 +229,6 @@ class AutoFillDialog : public PersonalDataManager::Observer {
  public:
   AutoFillDialog(AutoFillDialogObserver* observer,
                  PersonalDataManager* personal_data_manager,
-                 PrefService* pref_service,
                  AutoFillProfile* imported_profile,
                  CreditCard* imported_credit_card);
   ~AutoFillDialog();
@@ -317,9 +315,6 @@ class AutoFillDialog : public PersonalDataManager::Observer {
   // Unowned pointer, may not be NULL.
   PersonalDataManager* personal_data_;
 
-  // The preference service. Unowned pointer, may not be NULL.
-  PrefService* pref_service_;
-
   // The imported profile.  May be NULL.
   AutoFillProfile* imported_profile_;
 
@@ -355,17 +350,14 @@ static AutoFillDialog* dialog = NULL;
 
 AutoFillDialog::AutoFillDialog(AutoFillDialogObserver* observer,
                                PersonalDataManager* personal_data_manager,
-                               PrefService* pref_service,
                                AutoFillProfile* imported_profile,
                                CreditCard* imported_credit_card)
     : observer_(observer),
       personal_data_(personal_data_manager),
-      pref_service_(pref_service),
       imported_profile_(imported_profile),
       imported_credit_card_(imported_credit_card) {
   DCHECK(observer_);
   DCHECK(personal_data_);
-  DCHECK(pref_service_);
 
   InitializeWidgets();
   LoadAutoFillData();
@@ -991,15 +983,9 @@ void ShowAutoFillDialog(gfx::NativeView parent,
                         CreditCard* imported_credit_card) {
   DCHECK(profile);
 
-  // It's possible we haven't shown the InfoBar yet, but if the user is in the
-  // AutoFill dialog, she doesn't need to be asked to enable or disable
-  // AutoFill.
-  profile->GetPrefs()->SetBoolean(prefs::kAutoFillInfoBarShown, true);
-
   if (!dialog) {
     dialog = new AutoFillDialog(observer,
                                 profile->GetPersonalDataManager(),
-                                profile->GetPrefs(),
                                 imported_profile,
                                 imported_credit_card);
   }

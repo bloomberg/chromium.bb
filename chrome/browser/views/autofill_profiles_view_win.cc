@@ -1370,11 +1370,6 @@ void ShowAutoFillDialog(gfx::NativeView parent,
                         CreditCard* imported_credit_card) {
   DCHECK(profile);
 
-  // It's possible we haven't shown the InfoBar yet, but if the user is in the
-  // AutoFill dialog, she doesn't need to be asked to enable or disable
-  // AutoFill.
-  profile->GetPrefs()->SetBoolean(prefs::kAutoFillInfoBarShown, true);
-
   PersonalDataManager* personal_data_manager =
       profile->GetPersonalDataManager();
   DCHECK(personal_data_manager);

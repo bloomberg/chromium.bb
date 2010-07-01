@@ -30,8 +30,6 @@ const int kAutoFillAddressLength = arraysize(kAutoFillAddressTypes);
 void Address::GetPossibleFieldTypes(const string16& text,
                                     FieldTypeSet* possible_types) const {
   DCHECK(possible_types);
-  if (!possible_types)
-    return;
 
   // If the text to match against the field types is empty, then no results will
   // match.
@@ -60,12 +58,35 @@ void Address::GetPossibleFieldTypes(const string16& text,
     possible_types->insert(GetCountryType());
 }
 
+void Address::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
+  DCHECK(available_types);
+
+  if (!line1().empty())
+    available_types->insert(GetLine1Type());
+
+  if (!line2().empty())
+    available_types->insert(GetLine2Type());
+
+  if (!apt_num().empty())
+    available_types->insert(GetAptNumType());
+
+  if (!city().empty())
+    available_types->insert(GetCityType());
+
+  if (!state().empty())
+    available_types->insert(GetStateType());
+
+  if (!zip_code().empty())
+    available_types->insert(GetZipCodeType());
+
+  if (!country().empty())
+    available_types->insert(GetCountryType());
+}
+
 void Address::FindInfoMatches(const AutoFillType& type,
                               const string16& info,
                               std::vector<string16>* matched_text) const {
   DCHECK(matched_text);
-  if (!matched_text)
-    return;
 
   string16 match;
   if (type.field_type() == UNKNOWN_TYPE) {

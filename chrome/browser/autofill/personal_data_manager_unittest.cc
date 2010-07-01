@@ -23,6 +23,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using webkit_glue::FormData;
+
 ACTION(QuitUIMessageLoop) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   MessageLoop::current()->Quit();
@@ -178,19 +180,16 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
 // TODO(jhawkins): Test SetCreditCards w/out a WebDataService in the profile.
 TEST_F(PersonalDataManagerTest, SetCreditCards) {
   CreditCard creditcard0(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard0,
-      "Corporate", "John Dillinger", "Visa",
-      "123456789012", "01", "2010", "123", "Chicago", "Indianapolis");
+  autofill_unittest::SetCreditCardInfo(&creditcard0, "Corporate",
+      "John Dillinger", "Visa", "123456789012", "01", "2010", "Chicago");
 
   CreditCard creditcard1(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard1,
-      "Personal", "Bonnie Parker", "Mastercard",
-      "098765432109", "12", "2012", "987", "Dallas", "");
+  autofill_unittest::SetCreditCardInfo(&creditcard1, "Personal",
+      "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", "Dallas");
 
   CreditCard creditcard2(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard2,
-      "Savings", "Clyde Barrow", "American Express",
-      "777666888555", "04", "2015", "445", "Home", "Farm");
+  autofill_unittest::SetCreditCardInfo(&creditcard2, "Savings", "Clyde Barrow",
+      "American Express", "777666888555", "04", "2015", "Home");
 
   // This will verify that the web database has been loaded and the notification
   // sent out.
@@ -347,12 +346,21 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 }
 
 TEST_F(PersonalDataManagerTest, ImportFormData) {
-  webkit_glue::FormData form;
+  FormData form;
+  webkit_glue::FormField field;
+  autofill_unittest::CreateTestFormField(
+      "First name:", "first_name", "George", "text", &field);
+  form.fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Last name:", "last_name", "Washington", "text", &field);
+  form.fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Email:", "email", "theprez@gmail.com", "text", &field);
+  form.fields.push_back(field);
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
   personal_data_->ImportFormData(forms, NULL);
-  personal_data_->SaveImportedFormData();
 
   // And wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -361,9 +369,12 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   MessageLoop::current()->Run();
 
   AutoFillProfile expected(ASCIIToUTF16("Unlabeled"), 1);
+  autofill_unittest::SetProfileInfo(&expected, "Unlabeled", "George", NULL,
+      "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL, NULL);
   const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
   ASSERT_EQ(1U, results.size());
-  ASSERT_EQ(expected, *results[0]);
+  EXPECT_EQ(expected, *results[0]);
 }
 
 TEST_F(PersonalDataManagerTest, SetUniqueProfileLabels) {
@@ -442,4 +453,125 @@ TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
   EXPECT_EQ(ASCIIToUTF16("NotHome"), results[3]->Label());
   EXPECT_EQ(ASCIIToUTF16("Work"), results[4]->Label());
   EXPECT_EQ(ASCIIToUTF16("Work2"), results[5]->Label());
+}
+
+TEST_F(PersonalDataManagerTest, AggregateProfileData) {
+  scoped_ptr<FormData> form(new FormData);
+
+  webkit_glue::FormField field;
+  autofill_unittest::CreateTestFormField(
+      "First name:", "first_name", "George", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Last name:", "last_name", "Washington", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Email:", "email", "theprez@gmail.com", "text", &field);
+  form->fields.push_back(field);
+
+  scoped_ptr<FormStructure> form_structure(new FormStructure(*form));
+  scoped_ptr<std::vector<FormStructure*> > forms(
+      new std::vector<FormStructure*>);
+  forms->push_back(form_structure.get());
+  personal_data_->ImportFormData(*forms, NULL);
+
+  // And wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  scoped_ptr<AutoFillProfile> expected(
+      new AutoFillProfile(ASCIIToUTF16("Unlabeled"), 1));
+  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled", "George", NULL,
+      "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL, NULL);
+  const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(*expected, *results[0]);
+
+  // Now create a completely different profile.
+  form.reset(new FormData);
+  autofill_unittest::CreateTestFormField(
+      "First name:", "first_name", "John", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Last name:", "last_name", "Adams", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Email:", "email", "second@gmail.com", "text", &field);
+  form->fields.push_back(field);
+
+  form_structure.reset(new FormStructure(*form));
+  forms.reset(new std::vector<FormStructure*>);
+  forms->push_back(form_structure.get());
+  personal_data_->ImportFormData(*forms, NULL);
+
+  // And wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  const std::vector<AutoFillProfile*>& results2 = personal_data_->profiles();
+  ASSERT_EQ(2U, results2.size());
+
+  expected.reset(new AutoFillProfile(ASCIIToUTF16("Unlabeled"), 1));
+  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled", "George", NULL,
+      "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL, NULL);
+  EXPECT_EQ(*expected, *results2[0]);
+
+  expected.reset(new AutoFillProfile(ASCIIToUTF16("Unlabeled2"), 2));
+  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled2", "John", NULL,
+      "Adams", "second@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL);
+  EXPECT_EQ(*expected, *results2[1]);
+
+  // Submit a form with new data for the first profile.
+  form.reset(new FormData);
+  autofill_unittest::CreateTestFormField(
+      "First name:", "first_name", "George", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Last name:", "last_name", "Washington", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Address Line 1:", "address", "190 High Street", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "City:", "city", "Philadelphia", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "State:", "state", "Pennsylvania", "text", &field);
+  form->fields.push_back(field);
+  autofill_unittest::CreateTestFormField(
+      "Zip:", "zipcode", "19106", "text", &field);
+  form->fields.push_back(field);
+
+  form_structure.reset(new FormStructure(*form));
+  forms.reset(new std::vector<FormStructure*>);
+  forms->push_back(form_structure.get());
+  personal_data_->ImportFormData(*forms, NULL);
+
+  // And wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  const std::vector<AutoFillProfile*>& results3 = personal_data_->profiles();
+  ASSERT_EQ(2U, results3.size());
+
+  expected.reset(new AutoFillProfile(ASCIIToUTF16("Unlabeled"), 1));
+  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled", "George", NULL,
+      "Washington", "theprez@gmail.com", NULL, "190 High Street", NULL,
+      "Philadelphia", "Pennsylvania", "19106", NULL, NULL, NULL);
+  EXPECT_EQ(*expected, *results3[0]);
+
+  expected.reset(new AutoFillProfile(ASCIIToUTF16("Unlabeled2"), 2));
+  autofill_unittest::SetProfileInfo(expected.get(), "Unlabeled2", "John", NULL,
+      "Adams", "second@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL);
+  EXPECT_EQ(*expected, *results3[1]);
 }

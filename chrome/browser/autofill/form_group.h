@@ -28,7 +28,11 @@ class FormGroup {
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const = 0;
 
-  // Returns the string that should be autofilled into a text field given the
+  // Returns a set of AutoFillFieldTypes for which this FormGroup has non-empty
+  // data.
+  virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const = 0;
+
+  // Returns the string that should be auto-filled into a text field given the
   // type of that field.
   virtual string16 GetFieldText(const AutoFillType& type) const = 0;
 

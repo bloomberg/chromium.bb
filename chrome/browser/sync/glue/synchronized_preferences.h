@@ -28,7 +28,6 @@ static const wchar_t* kSynchronizedPreferences[] = {
   // Options dialog: Personal Stuff tab.
   prefs::kPasswordManagerEnabled,
   prefs::kAutoFillEnabled,
-  prefs::kAutoFillInfoBarShown,
   prefs::kUseCustomChromeFrame,
 
   // Options dialog: Under the hood -> Content Settings -> Cookies.

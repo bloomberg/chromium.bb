@@ -105,7 +105,7 @@ const wchar_t kShowBookmarkBar[] = L"bookmark_bar.show_on_all_tabs";
 // passwords and fill in known passwords).
 const wchar_t kPasswordManagerEnabled[] = L"profile.password_manager_enabled";
 
-// OBSOLETE.  Boolean that is true if the form autofill is on (will record
+// OBSOLETE.  Boolean that is true if the form AutoFill is on (will record
 // values entered in text inputs in forms and shows them in a popup when user
 // type in a text input with the same name later on).  This has been superseded
 // by kAutoFillEnabled.
@@ -453,18 +453,15 @@ const wchar_t kClearSiteDataOnExit[] = L"profile.clear_site_data_on_exit";
 // be displayed at the default zoom level.
 const wchar_t kPerHostZoomLevels[] = L"profile.per_host_zoom_levels";
 
-// Boolean that is true if the autofill infobar has been shown to the user.
-const wchar_t kAutoFillInfoBarShown[] = L"autofill.infobar_shown";
-
-// Boolean that is true if autofill is enabled and allowed to save profile data.
+// Boolean that is true if AutoFill is enabled and allowed to save profile data.
 const wchar_t kAutoFillEnabled[] = L"autofill.enabled";
 
-// Boolean that is true when auxiliary autofill profiles are enabled.
+// Boolean that is true when auxiliary AutoFill profiles are enabled.
 // Currently applies to Address Book "me" card on Mac.  False on Win and Linux.
 const wchar_t kAutoFillAuxiliaryProfilesEnabled[] =
     L"autofill.auxiliary_profiles_enabled";
 
-// Position and size of the autofill dialog.
+// Position and size of the AutoFill dialog.
 const wchar_t kAutoFillDialogPlacement[] = L"autofill.dialog_placement";
 
 // Double that indicates positive (for matched forms) upload rate.

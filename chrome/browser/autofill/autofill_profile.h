@@ -29,6 +29,7 @@ class AutoFillProfile : public FormGroup {
   // FormGroup implementation:
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
+  virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
   virtual string16 GetFieldText(const AutoFillType& type) const;
   // Returns true if the info matches the profile data corresponding to type.
   // If the type is UNKNOWN_TYPE then info will be matched against all of the
@@ -44,6 +45,17 @@ class AutoFillProfile : public FormGroup {
 
   void set_unique_id(int id) { unique_id_ = id; }
   int unique_id() const { return unique_id_; }
+
+  // Returns true if the data in this profile is a subset of the data in
+  // |profile|.
+  bool IsSubsetOf(const AutoFillProfile& profile) const;
+
+  // Returns true if the values of the intersection of the available field types
+  // are equal.  If the intersection is empty, the method returns false.
+  bool IntersectionOfTypesHasEqualValues(const AutoFillProfile& profile) const;
+
+  // Merges the profile data in |profile| with this profile.
+  void MergeWith(const AutoFillProfile& profile);
 
   // Profile summary string for UI.
   // Constructs a summary string based on NAME_FIRST, NAME_LAST, and

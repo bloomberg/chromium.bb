@@ -21,6 +21,7 @@ class ContactInfo : public FormGroup {
   virtual FormGroup* Clone() const;
   virtual void GetPossibleFieldTypes(const string16& text,
                                      FieldTypeSet* possible_types) const;
+  virtual void GetAvailableFieldTypes(FieldTypeSet* available_types) const;
   virtual void FindInfoMatches(const AutoFillType& type,
                                const string16& info,
                                std::vector<string16>* matched_text) const;

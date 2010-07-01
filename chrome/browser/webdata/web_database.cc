@@ -1567,16 +1567,17 @@ static void BindCreditCardToStatement(const CreditCard& credit_card,
   text.clear();
   s->BindString16(7, text);
   s->BindString16(8, credit_card.billing_address());
-  s->BindString16(9, credit_card.shipping_address());
+  // We don't store the shipping address anymore.
+  text.clear();
+  s->BindString16(9, text);
   text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
   std::string encrypted_data;
   Encryptor::EncryptString16(text, &encrypted_data);
   s->BindBlob(10, encrypted_data.data(),
               static_cast<int>(encrypted_data.length()));
-  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE));
-  Encryptor::EncryptString16(text, &encrypted_data);
-  s->BindBlob(11, encrypted_data.data(),
-              static_cast<int>(encrypted_data.length()));
+  // We don't store the CVV anymore.
+  text.clear();
+  s->BindBlob(11, text.data(), static_cast<int>(text.length()));
 }
 
 bool WebDatabase::AddCreditCard(const CreditCard& credit_card) {
@@ -1628,21 +1629,9 @@ static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
                        s.ColumnString16(6));
 
   string16 credit_card_verification_code = s.ColumnString16(7);
-  // It could be non-empty prior to version 23. After that it encrypted in
-  // the column 11.
-  if (credit_card_verification_code.empty()) {
-    int encrypted_cc_len = s.ColumnByteLength(11);
-    std::string encrypted_cc;
-    if (encrypted_cc_len) {
-      encrypted_cc.resize(encrypted_cc_len);
-      memcpy(&encrypted_cc[0], s.ColumnBlob(11), encrypted_cc_len);
-      Encryptor::DecryptString16(encrypted_cc, &credit_card_verification_code);
-    }
-  }
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                       credit_card_verification_code);
+  // We don't store the CVV anymore.
   credit_card->set_billing_address(s.ColumnString16(8));
-  credit_card->set_shipping_address(s.ColumnString16(9));
+  // We don't store the shipping address anymore.
   // Column 10 is processed above.
   // Column 11 is processed above.
 

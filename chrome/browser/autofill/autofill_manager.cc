@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
-#include "chrome/browser/autofill/autofill_infobar_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -47,8 +46,7 @@ const char* kAutoFillLearnMoreUrl =
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       personal_data_(NULL),
-      download_manager_(tab_contents_->profile()),
-      infobar_(NULL) {
+      download_manager_(tab_contents_->profile()) {
   DCHECK(tab_contents);
 
   // |personal_data_| is NULL when using TestTabContents.
@@ -68,7 +66,6 @@ void AutoFillManager::RegisterBrowserPrefs(PrefService* prefs) {
 
 // static
 void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kAutoFillInfoBarShown, false);
   prefs->RegisterBooleanPref(prefs::kAutoFillEnabled, true);
   prefs->RegisterBooleanPref(prefs::kAutoFillAuxiliaryProfilesEnabled, true);
 
@@ -95,15 +92,6 @@ void AutoFillManager::FormSubmitted(const FormData& form) {
   // PersonalDataManager.
   DeterminePossibleFieldTypes(upload_form_structure_.get());
   HandleSubmit();
-
-  if (upload_form_structure_->HasAutoFillableValues()) {
-    PrefService* prefs = tab_contents_->profile()->GetPrefs();
-    bool infobar_shown = prefs->GetBoolean(prefs::kAutoFillInfoBarShown);
-    if (!infobar_shown) {
-      // Ask the user for permission to save form information.
-      infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
-    }
-  }
 }
 
 void AutoFillManager::FormsSeen(const std::vector<FormData>& forms) {
@@ -328,38 +316,6 @@ void AutoFillManager::ShowAutoFillDialog() {
                        NULL);
 }
 
-void AutoFillManager::OnInfoBarClosed() {
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
-  prefs->SetBoolean(prefs::kAutoFillEnabled, true);
-
-  // Save the imported form data as a profile.
-  personal_data_->SaveImportedFormData();
-}
-
-void AutoFillManager::OnInfoBarAccepted() {
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
-  prefs->SetBoolean(prefs::kAutoFillEnabled, true);
-
-  // This is the first time the user is interacting with AutoFill, so set the
-  // uploaded form structure as the initial profile and credit card in the
-  // AutoFillDialog.
-  AutoFillProfile* profile = NULL;
-  CreditCard* credit_card = NULL;
-  // TODO(dhollowa) Now that we aren't immediately saving the imported form
-  // data, we should store the profile and CC in the AFM instead of the PDM.
-  personal_data_->GetImportedFormData(&profile, &credit_card);
-  ::ShowAutoFillDialog(tab_contents_->GetContentNativeView(),
-                       personal_data_,
-                       tab_contents_->profile()->GetOriginalProfile(),
-                       profile,
-                       credit_card);
-}
-
-void AutoFillManager::OnInfoBarCancelled() {
-  PrefService* prefs = tab_contents_->profile()->GetPrefs();
-  prefs->SetBoolean(prefs::kAutoFillEnabled, false);
-}
-
 void AutoFillManager::Reset() {
   upload_form_structure_.reset();
   form_structures_.reset();
@@ -438,8 +394,7 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents,
                                  PersonalDataManager* personal_data)
     : tab_contents_(tab_contents),
       personal_data_(personal_data),
-      download_manager_(NULL),  // No download manager in tests.
-      infobar_(NULL) {
+      download_manager_(NULL) {
   DCHECK(tab_contents);
 }
 

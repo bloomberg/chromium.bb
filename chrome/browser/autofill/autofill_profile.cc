@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/autofill_profile.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "app/l10n_util.h"
@@ -52,12 +53,21 @@ AutoFillProfile::~AutoFillProfile() {
 void AutoFillProfile::GetPossibleFieldTypes(
     const string16& text,
     FieldTypeSet* possible_types) const {
-  FormGroupMap::const_iterator iter;
-  for (iter = personal_info_.begin(); iter != personal_info_.end(); ++iter) {
+  for (FormGroupMap::const_iterator iter = personal_info_.begin();
+       iter != personal_info_.end(); ++iter) {
     FormGroup* data = iter->second;
     DCHECK(data != NULL);
-    if (data != NULL)
-      data->GetPossibleFieldTypes(text, possible_types);
+    data->GetPossibleFieldTypes(text, possible_types);
+  }
+}
+
+void AutoFillProfile::GetAvailableFieldTypes(
+    FieldTypeSet* available_types) const {
+  for (FormGroupMap::const_iterator iter = personal_info_.begin();
+       iter != personal_info_.end(); ++iter) {
+    FormGroup* data = iter->second;
+    DCHECK(data != NULL);
+    data->GetAvailableFieldTypes(available_types);
   }
 }
 
@@ -146,6 +156,58 @@ FormGroup* AutoFillProfile::Clone() const {
   }
 
   return profile;
+}
+
+bool AutoFillProfile::IsSubsetOf(const AutoFillProfile& profile) const {
+  FieldTypeSet types;
+  GetAvailableFieldTypes(&types);
+
+  for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
+       ++iter) {
+    AutoFillType type(*iter);
+    if (GetFieldText(type) != profile.GetFieldText(type))
+      return false;
+  }
+
+  return true;
+}
+
+bool AutoFillProfile::IntersectionOfTypesHasEqualValues(
+    const AutoFillProfile& profile) const {
+  FieldTypeSet a, b, intersection;
+  GetAvailableFieldTypes(&a);
+  profile.GetAvailableFieldTypes(&b);
+  std::set_intersection(a.begin(), a.end(),
+                        b.begin(), b.end(),
+                        std::inserter(intersection, intersection.begin()));
+
+  // An empty intersection can't have equal values.
+  if (intersection.empty())
+    return false;
+
+  for (FieldTypeSet::const_iterator iter = intersection.begin();
+       iter != intersection.end(); ++iter) {
+    AutoFillType type(*iter);
+    if (GetFieldText(type) != profile.GetFieldText(type))
+      return false;
+  }
+
+  return true;
+}
+
+void AutoFillProfile::MergeWith(const AutoFillProfile& profile) {
+  FieldTypeSet a, b, intersection;
+  GetAvailableFieldTypes(&a);
+  profile.GetAvailableFieldTypes(&b);
+  std::set_difference(b.begin(), b.end(),
+                      a.begin(), a.end(),
+                      std::inserter(intersection, intersection.begin()));
+
+  for (FieldTypeSet::const_iterator iter = intersection.begin();
+       iter != intersection.end(); ++iter) {
+    AutoFillType type(*iter);
+    SetInfo(type, profile.GetFieldText(type));
+  }
 }
 
 string16 AutoFillProfile::PreviewSummary() const {

@@ -206,10 +206,9 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
       field_type_map_.find(ASCIIToUTF16("year1")) != field_type_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
       field_type_map_[ASCIIToUTF16("year1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("cvc1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
-      field_type_map_[ASCIIToUTF16("cvc1")]);
+  // We don't store CVV.
+  EXPECT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("cvc1")) == field_type_map_.end());
 }
 
 TEST_F(CreditCardFieldTest, ParseFullCreditCardEcml) {
@@ -266,10 +265,9 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCardEcml) {
       field_type_map_.find(ASCIIToUTF16("year1")) != field_type_map_.end());
   EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
       field_type_map_[ASCIIToUTF16("year1")]);
-  ASSERT_TRUE(
-      field_type_map_.find(ASCIIToUTF16("cvc1")) != field_type_map_.end());
-  EXPECT_EQ(CREDIT_CARD_VERIFICATION_CODE,
-      field_type_map_[ASCIIToUTF16("cvc1")]);
+  // We don't store the CVV.
+  EXPECT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("cvc1")) == field_type_map_.end());
 }
 
 TEST_F(CreditCardFieldTest, ParseExpMonthYear) {

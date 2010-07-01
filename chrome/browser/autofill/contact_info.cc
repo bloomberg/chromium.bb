@@ -28,6 +28,8 @@ FormGroup* ContactInfo::Clone() const {
 
 void ContactInfo::GetPossibleFieldTypes(const string16& text,
                                         FieldTypeSet* possible_types) const {
+  DCHECK(possible_types);
+
   if (IsFirstName(text))
     possible_types->insert(NAME_FIRST);
 
@@ -53,13 +55,38 @@ void ContactInfo::GetPossibleFieldTypes(const string16& text,
     possible_types->insert(COMPANY_NAME);
 }
 
+void ContactInfo::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
+  DCHECK(available_types);
+
+  if (!first().empty())
+    available_types->insert(NAME_FIRST);
+
+  if (!middle().empty())
+    available_types->insert(NAME_MIDDLE);
+
+  if (!last().empty())
+    available_types->insert(NAME_LAST);
+
+  if (!MiddleInitial().empty())
+    available_types->insert(NAME_MIDDLE_INITIAL);
+
+  if (!FullName().empty())
+    available_types->insert(NAME_FULL);
+
+  if (!suffix().empty())
+    available_types->insert(NAME_SUFFIX);
+
+  if (!email().empty())
+    available_types->insert(EMAIL_ADDRESS);
+
+  if (!company_name().empty())
+    available_types->insert(COMPANY_NAME);
+}
+
 void ContactInfo::FindInfoMatches(const AutoFillType& type,
                                   const string16& info,
                                   std::vector<string16>* matched_text) const {
-  if (matched_text == NULL) {
-    DLOG(ERROR) << "NULL matched vector passed in";
-    return;
-  }
+  DCHECK(matched_text);
 
   string16 match;
   if (type.field_type() == UNKNOWN_TYPE) {

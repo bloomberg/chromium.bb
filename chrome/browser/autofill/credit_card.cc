@@ -21,7 +21,6 @@ static const AutoFillFieldType kAutoFillCreditCardTypes[] = {
   CREDIT_CARD_TYPE,
   CREDIT_CARD_EXP_MONTH,
   CREDIT_CARD_EXP_4_DIGIT_YEAR,
-  CREDIT_CARD_VERIFICATION_CODE,
 };
 
 static const int kAutoFillCreditCardLength =
@@ -66,18 +65,34 @@ void CreditCard::GetPossibleFieldTypes(const string16& text,
 
   if (IsCardType(text))
     possible_types->insert(CREDIT_CARD_TYPE);
+}
 
-  if (IsVerificationCode(text))
-    possible_types->insert(CREDIT_CARD_VERIFICATION_CODE);
+void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
+  DCHECK(available_types);
+
+  if (!name_on_card().empty())
+    available_types->insert(CREDIT_CARD_NAME);
+
+  if (!ExpirationMonthAsString().empty())
+    available_types->insert(CREDIT_CARD_EXP_MONTH);
+
+  if (!Expiration2DigitYearAsString().empty())
+    available_types->insert(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+
+  if (!Expiration4DigitYearAsString().empty())
+    available_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+
+  if (!type().empty())
+    available_types->insert(CREDIT_CARD_TYPE);
+
+  if (!number().empty())
+    available_types->insert(CREDIT_CARD_NUMBER);
 }
 
 void CreditCard::FindInfoMatches(const AutoFillType& type,
                                  const string16& info,
                                  std::vector<string16>* matched_text) const {
-  if (matched_text == NULL) {
-    DLOG(ERROR) << "NULL matched vector passed in";
-    return;
-  }
+  DCHECK(matched_text);
 
   string16 match;
   switch (type.field_type()) {
@@ -92,6 +107,7 @@ void CreditCard::FindInfoMatches(const AutoFillType& type,
     }
 
     case CREDIT_CARD_VERIFICATION_CODE:
+      NOTREACHED();
       break;
 
     case UNKNOWN_TYPE:
@@ -145,7 +161,8 @@ string16 CreditCard::GetFieldText(const AutoFillType& type) const {
       return number();
 
     case CREDIT_CARD_VERIFICATION_CODE:
-      return verification_code();
+      NOTREACHED();
+      return string16();
 
     default:
       // ComputeDataPresentForArray will hit this repeatedly.
@@ -159,7 +176,8 @@ string16 CreditCard::GetPreviewText(const AutoFillType& type) const {
       return last_four_digits();
 
     case CREDIT_CARD_VERIFICATION_CODE:
-      return ASCIIToUTF16("xxx");
+      NOTREACHED();
+      return string16();
 
     default:
       return GetFieldText(type);
@@ -198,7 +216,7 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
     }  break;
 
     case CREDIT_CARD_VERIFICATION_CODE:
-      set_verification_code(value);
+      NOTREACHED();
       break;
 
     default:
@@ -223,8 +241,8 @@ string16 CreditCard::PreviewSummary() const {
     return preview;  // No CC number, means empty preview.
   string16 obfuscated_cc_number = ObfuscatedNumber();
   if (!expiration_month() || !expiration_year())
-    return obfuscated_cc_number;  // no expiration date set
-  // TODO(georgey): internationalize date
+    return obfuscated_cc_number;  // No expiration date set.
+  // TODO(georgey): Internationalize date.
   string16 formatted_date(ExpirationMonthAsString());
   formatted_date.append(ASCIIToUTF16("/"));
   formatted_date.append(Expiration4DigitYearAsString());
@@ -249,13 +267,11 @@ void CreditCard::operator=(const CreditCard& source) {
   number_ = source.number_;
   name_on_card_ = source.name_on_card_;
   type_ = source.type_;
-  verification_code_ = source.verification_code_;
   last_four_digits_ = source.last_four_digits_;
   expiration_month_ = source.expiration_month_;
   expiration_year_ = source.expiration_year_;
   label_ = source.label_;
   billing_address_ = source.billing_address_;
-  shipping_address_ = source.shipping_address_;
   unique_id_ = source.unique_id_;
 }
 
@@ -266,14 +282,12 @@ bool CreditCard::operator==(const CreditCard& creditcard) const {
   const AutoFillFieldType types[] = { CREDIT_CARD_NAME,
                                       CREDIT_CARD_TYPE,
                                       CREDIT_CARD_NUMBER,
-                                      CREDIT_CARD_VERIFICATION_CODE,
                                       CREDIT_CARD_EXP_MONTH,
                                       CREDIT_CARD_EXP_4_DIGIT_YEAR };
 
   if (label_ != creditcard.label_ ||
       unique_id_ != creditcard.unique_id_ ||
-      billing_address_ != creditcard.billing_address_ ||
-      shipping_address_ != creditcard.shipping_address_) {
+      billing_address_ != creditcard.billing_address_) {
     return false;
   }
 
@@ -377,10 +391,7 @@ void CreditCard::set_expiration_year(int expiration_year) {
 bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
                                        const string16& info,
                                        string16* match) const {
-  if (match == NULL) {
-    DLOG(ERROR) << "NULL match string passed in";
-    return false;
-  }
+  DCHECK(match);
 
   match->clear();
   switch (field_type) {
@@ -428,10 +439,9 @@ bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
         *match = card_type;
     }
 
-    case CREDIT_CARD_VERIFICATION_CODE: {
-      if (StartsWith(verification_code(), info, true))
-        *match = verification_code();
-    }
+    case CREDIT_CARD_VERIFICATION_CODE:
+      NOTREACHED();
+      break;
 
     default:
       break;
@@ -441,10 +451,6 @@ bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
 
 bool CreditCard::IsNameOnCard(const string16& text) const {
   return StringToLowerASCII(text) == StringToLowerASCII(name_on_card_);
-}
-
-bool CreditCard::IsVerificationCode(const string16& text) const {
-  return StringToLowerASCII(text) == StringToLowerASCII(verification_code_);
 }
 
 bool CreditCard::IsExpirationMonth(const string16& text) const {
@@ -498,16 +504,11 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& creditcard) {
       << " "
       << UTF16ToUTF8(creditcard.billing_address())
       << " "
-      << UTF16ToUTF8(creditcard.shipping_address())
-      << " "
       << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))
       << " "
       << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_TYPE)))
       << " "
       << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)))
-      << " "
-      << UTF16ToUTF8(creditcard.GetFieldText(
-             AutoFillType(CREDIT_CARD_VERIFICATION_CODE)))
       << " "
       << UTF16ToUTF8(creditcard.GetFieldText(
              AutoFillType(CREDIT_CARD_EXP_MONTH)))
