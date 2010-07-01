@@ -15,6 +15,9 @@ import threading
 
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
+import extension_specifics_pb2
+import nigori_specifics_pb2
+import password_specifics_pb2
 import preference_specifics_pb2
 import theme_specifics_pb2
 import typed_url_specifics_pb2
@@ -26,24 +29,28 @@ import sync_pb2
 # of a program, it is useful to have an enumeration.
 ALL_TYPES = (
     TOP_LEVEL,  # The type of the 'Google Chrome' folder.
-    BOOKMARK,
     AUTOFILL,
-    TYPED_URL,
+    BOOKMARK,
+    EXTENSIONS,
+    NIGORI,
+    PASSWORD,
     PREFERENCE,
-    # PASSWORD,  # Disabled since there's no specifics proto.
     # SESSION,
-    THEME) = range(6)
+    THEME,
+    TYPED_URL) = range(9)
 
 # Given a sync type from ALL_TYPES, find the extension token corresponding
 # to that datatype.  Note that TOP_LEVEL has no such token.
 SYNC_TYPE_TO_EXTENSION = {
-    BOOKMARK: bookmark_specifics_pb2.bookmark,
     AUTOFILL: autofill_specifics_pb2.autofill,
-    TYPED_URL: typed_url_specifics_pb2.typed_url,
+    BOOKMARK: bookmark_specifics_pb2.bookmark,
+    EXTENSIONS: extension_specifics_pb2.extension,
+    NIGORI: nigori_specifics_pb2.nigori,
+    PASSWORD: password_specifics_pb2.password,
     PREFERENCE: preference_specifics_pb2.preference,
-    # PASSWORD: password_specifics_pb2.password,  # Disabled
     # SESSION: session_specifics_pb2.session,     # Disabled
     THEME: theme_specifics_pb2.theme,
+    TYPED_URL: typed_url_specifics_pb2.typed_url,
     }
 
 # The parent ID used to indicate a top-level node.
@@ -155,15 +162,19 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=PREFERENCE),
       PermanentItem('google_chrome_autofill', name='Autofill',
                     parent_tag='google_chrome', sync_type=AUTOFILL),
-      # TODO(nick): Disabled since the protocol does not support them yet.
-      # PermanentItem('google_chrome_passwords', name='Passwords',
-      #               parent_tag='google_chrome', sync_type=PASSWORD),
+      PermanentItem('google_chrome_extensions', name='Extensions',
+                    parent_tag='google_chrome', sync_type=EXTENSIONS),
+      PermanentItem('google_chrome_passwords', name='Passwords',
+                    parent_tag='google_chrome', sync_type=PASSWORD),
+      # TODO(rsimha): Disabled since the protocol does not support it yet.
       # PermanentItem('google_chrome_sessions', name='Sessions',
       #               parent_tag='google_chrome', SESSION),
       PermanentItem('google_chrome_themes', name='Themes',
                     parent_tag='google_chrome', sync_type=THEME),
       PermanentItem('google_chrome_typed_urls', name='Typed URLs',
                     parent_tag='google_chrome', sync_type=TYPED_URL),
+      PermanentItem('google_chrome_nigori', name='Nigori',
+                    parent_tag='google_chrome', sync_type=NIGORI),
       ]
 
   def __init__(self):
