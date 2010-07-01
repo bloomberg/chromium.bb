@@ -59,9 +59,6 @@ const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
 
-// Enables the bookmark menu.
-const char kBookmarkMenu[]                  = "bookmark-menu";
-
 // Causes the browser process to throw an assertion on startup.
 const char kBrowserAssertTest[]             = "assert-test";
 

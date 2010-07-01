@@ -38,10 +38,6 @@ class MenuButton : public TextButton {
              bool show_menu_marker);
   virtual ~MenuButton();
 
-  void set_menu_delegate(ViewMenuDelegate* delegate) {
-    menu_delegate_ = delegate;
-  }
-
   void set_menu_marker(const SkBitmap* menu_marker) {
     menu_marker_ = menu_marker;
   }

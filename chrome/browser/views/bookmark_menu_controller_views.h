@@ -52,8 +52,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                          PageNavigator* page_navigator,
                          gfx::NativeWindow parent,
                          const BookmarkNode* node,
-                         int start_child_index,
-                         bool show_other_folder);
+                         int start_child_index);
 
   void RunMenuAt(BookmarkBarView* bookmark_bar, bool for_drop);
 
@@ -129,10 +128,6 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   views::MenuItemView* CreateMenu(const BookmarkNode* parent,
                                   int start_child_index);
 
-  // Builds the menu for the other bookmarks folder. This is added as the last
-  // item to menu_.
-  void BuildOtherFolderMenu(views::MenuItemView* menu, int* next_menu_id);
-
   // Creates an entry in menu for each child node of |parent| starting at
   // |start_child_index|.
   void BuildMenu(const BookmarkNode* parent,
@@ -183,9 +178,6 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
 
   // Is the menu being shown for a drop?
   bool for_drop_;
-
-  // Should the other folder be shown?
-  bool show_other_folder_;
 
   // The bookmark bar. This is only non-null if we're showing a menu item
   // for a folder on the bookmark bar and not for drop.

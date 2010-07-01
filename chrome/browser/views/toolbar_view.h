@@ -188,8 +188,6 @@ class ToolbarView : public AccessibleToolbarView,
   BrowserActionsContainer* browser_actions_;
   views::MenuButton* page_menu_;
   views::MenuButton* app_menu_;
-  // The bookmark menu button. This may be null.
-  views::MenuButton* bookmark_menu_;
   Profile* profile_;
   Browser* browser_;
 

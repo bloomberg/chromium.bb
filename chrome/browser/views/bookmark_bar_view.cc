@@ -1176,9 +1176,8 @@ void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
     node = model_->GetBookmarkBarNode()->GetChild(button_index);
   }
 
-  bookmark_menu_ = new BookmarkMenuController(
-      browser_, profile_, page_navigator_, GetWindow()->GetNativeWindow(),
-      node, start_index, false);
+  bookmark_menu_ = new BookmarkMenuController(browser_, profile_,
+      page_navigator_, GetWindow()->GetNativeWindow(), node, start_index);
   bookmark_menu_->set_observer(this);
   bookmark_menu_->RunMenuAt(this, false);
 }
@@ -1362,9 +1361,8 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
     start_index = GetFirstHiddenNodeIndex();
 
   drop_info_->is_menu_showing = true;
-  bookmark_drop_menu_ = new BookmarkMenuController(
-      browser_, profile_, page_navigator_, GetWindow()->GetNativeWindow(),
-      node, start_index, false);
+  bookmark_drop_menu_ = new BookmarkMenuController(browser_, profile_,
+      page_navigator_, GetWindow()->GetNativeWindow(), node, start_index);
   bookmark_drop_menu_->set_observer(this);
   bookmark_drop_menu_->RunMenuAt(this, true);
 }

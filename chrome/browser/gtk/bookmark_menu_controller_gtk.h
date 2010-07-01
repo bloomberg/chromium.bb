@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                          PageNavigator* page_navigator,
                          GtkWindow* window,
                          const BookmarkNode* node,
-                         int start_child_index,
-                         bool show_other_folder);
+                         int start_child_index);
   virtual ~BookmarkMenuController();
 
   GtkWidget* widget() { return menu_; }

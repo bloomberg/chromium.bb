@@ -95,9 +95,6 @@ const char* GetNameFromID(ViewID id) {
     case VIEW_ID_AUTOCOMPLETE:
       return "chrome-autocomplete-edit";
 
-    case VIEW_ID_BOOKMARK_MENU:
-      return "chrome-bookmark-menu";
-
     case VIEW_ID_BOOKMARK_BAR:
       return "chrome-bookmark-bar";
 

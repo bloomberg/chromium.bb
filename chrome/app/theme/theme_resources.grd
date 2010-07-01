@@ -278,7 +278,6 @@
       <include name="IDR_DOCK_MAX" file="dock_tab_max.png" type="BINDATA" />
       <include name="IDR_DOCK_HIGH" file="dock_tab_high.png" type="BINDATA" />
       <include name="IDR_DOCK_WIDE" file="dock_tab_wide.png" type="BINDATA" />
-      <include name="IDR_MENU_BOOKMARK" file="menu_bookmark.png" type="BINDATA" />
       <include name="IDR_BUBBLE_L" file="bubble_l.png" type="BINDATA" />
       <include name="IDR_BUBBLE_TL" file="bubble_tl.png" type="BINDATA" />
       <include name="IDR_BUBBLE_T" file="bubble_t.png" type="BINDATA" />

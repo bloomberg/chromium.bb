@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -15,13 +14,11 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/view_ids.h"
-#include "chrome/browser/views/bookmark_menu_button.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/wrench_menu.h"
 #include "chrome/browser/wrench_menu_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
@@ -79,7 +76,6 @@ ToolbarView::ToolbarView(Browser* browser)
       browser_actions_(NULL),
       page_menu_(NULL),
       app_menu_(NULL),
-      bookmark_menu_(NULL),
       profile_(NULL),
       browser_(browser),
       profiles_menu_contents_(NULL),
@@ -175,12 +171,6 @@ void ToolbarView::Init(Profile* profile) {
       l10n_util::GetString(IDS_PRODUCT_NAME)));
   app_menu_->SetID(VIEW_ID_APP_MENU);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kBookmarkMenu)) {
-    bookmark_menu_ = new BookmarkMenuButton(browser_);
-  } else {
-    bookmark_menu_ = NULL;
-  }
-
   // Catch the case where the window is created after we detect a new version.
   if (Singleton<UpgradeDetector>::get()->notify_upgrade())
     ShowUpgradeReminder();
@@ -194,8 +184,6 @@ void ToolbarView::Init(Profile* profile) {
   AddChildView(reload_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
-  if (bookmark_menu_)
-    AddChildView(bookmark_menu_);
   if (page_menu_)
     AddChildView(page_menu_);
   AddChildView(app_menu_);
@@ -436,7 +424,6 @@ gfx::Size ToolbarView::GetPreferredSize() {
         reload_->GetPreferredSize().width() + kControlHorizOffset +
         browser_actions_->GetPreferredSize().width() +
         kMenuButtonOffset +
-        (bookmark_menu_ ? bookmark_menu_->GetPreferredSize().width() : 0) +
         (page_menu_ ? page_menu_->GetPreferredSize().width() : 0) +
         app_menu_->GetPreferredSize().width() + kPaddingRight;
 
@@ -512,12 +499,9 @@ void ToolbarView::Layout() {
   int page_menu_width =
       page_menu_ ? page_menu_->GetPreferredSize().width() : 0;
   int app_menu_width = app_menu_->GetPreferredSize().width();
-  int bookmark_menu_width = bookmark_menu_ ?
-      bookmark_menu_->GetPreferredSize().width() : 0;
   int location_x = reload_->x() + reload_->width() + kControlHorizOffset;
-  int available_width = width() - kPaddingRight - bookmark_menu_width -
-      app_menu_width - page_menu_width - browser_actions_width -
-      kMenuButtonOffset - location_x;
+  int available_width = width() - kPaddingRight - app_menu_width -
+      page_menu_width - browser_actions_width - kMenuButtonOffset - location_x;
 
   location_bar_->SetBounds(location_x, child_y, std::max(available_width, 0),
                            child_height);
@@ -534,12 +518,6 @@ void ToolbarView::Layout() {
   //                required.
   browser_actions_->Layout();
   next_menu_x += browser_actions_width;
-
-  if (bookmark_menu_) {
-    bookmark_menu_->SetBounds(next_menu_x, child_y, bookmark_menu_width,
-                              child_height);
-    next_menu_x += bookmark_menu_width;
-  }
 
   if (page_menu_) {
     page_menu_->SetBounds(next_menu_x, child_y, page_menu_width, child_height);
@@ -651,8 +629,6 @@ void ToolbarView::LoadImages() {
         base::i18n::IsRTL() ? IDR_MENU_PAGE_RTL : IDR_MENU_PAGE));
   }
   app_menu_->SetIcon(GetAppMenuIcon());
-  if (bookmark_menu_ != NULL)
-    bookmark_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_BOOKMARK));
 }
 
 void ToolbarView::ShowUpgradeReminder() {

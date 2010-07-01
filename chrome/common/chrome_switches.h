@@ -32,7 +32,6 @@ extern const char kAppsGalleryURL[];
 extern const char kAppsNoThrob[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutomationClientChannelID[];
-extern const char kBookmarkMenu[];
 extern const char kBrowserAssertTest[];
 extern const char kBrowserCrashTest[];
 extern const char kBrowserSubprocessPath[];

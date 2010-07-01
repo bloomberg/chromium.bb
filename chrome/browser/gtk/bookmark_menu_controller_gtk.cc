@@ -68,8 +68,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                PageNavigator* navigator,
                                                GtkWindow* window,
                                                const BookmarkNode* node,
-                                               int start_child_index,
-                                               bool show_other_folder)
+                                               int start_child_index)
     : browser_(browser),
       profile_(profile),
       page_navigator_(navigator),
