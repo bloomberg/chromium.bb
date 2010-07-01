@@ -954,22 +954,6 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
 
 void OpaqueBrowserFrameView::LayoutWindowControls() {
   bool is_maximized = frame_->GetWindow()->IsMaximized();
-#if defined(OS_CHROMEOS)
-  minimize_button_->SetVisible(!is_maximized);
-  restore_button_->SetVisible(!is_maximized);
-  maximize_button_->SetVisible(!is_maximized);
-  close_button_->SetVisible(!is_maximized);
-  if (is_maximized) {
-    // Set the bounds of the minimize button so that we don't have to change
-    // other places that rely on the bounds. Put it slightly to the right
-    // of the edge of the view, so that when we remove the spacing it lines
-    // up with the edge.
-    minimize_button_->SetBounds(
-        width() - FrameBorderThickness() + kNewTabCaptionMaximizedSpacing, 0, 0,
-        0);
-    return;
-  }
-#endif
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                    views::ImageButton::ALIGN_BOTTOM);
   int caption_y = CaptionButtonY();
@@ -983,6 +967,28 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
       right_extra_width - close_button_size.width(), caption_y,
       close_button_size.width() + right_extra_width,
       close_button_size.height());
+
+#if defined(OS_CHROMEOS)
+  minimize_button_->SetVisible(!is_maximized);
+  restore_button_->SetVisible(!is_maximized);
+  maximize_button_->SetVisible(!is_maximized);
+
+  if (browser_view_->browser()->type() == Browser::TYPE_DEVTOOLS)
+    close_button_->SetVisible(true);
+  else
+    close_button_->SetVisible(!is_maximized);
+
+  if (is_maximized) {
+    // Set the bounds of the minimize button so that we don't have to change
+    // other places that rely on the bounds. Put it slightly to the right
+    // of the edge of the view, so that when we remove the spacing it lines
+    // up with the edge.
+    minimize_button_->SetBounds(
+        width() - FrameBorderThickness() + kNewTabCaptionMaximizedSpacing, 0, 0,
+        0);
+    return;
+  }
+#endif
 
   // When the window is restored, we show a maximized button; otherwise, we show
   // a restore button.
