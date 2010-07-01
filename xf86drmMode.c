@@ -52,6 +52,12 @@
 #define U642VOID(x) ((void *)(unsigned long)(x))
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
 
+static inline DRM_IOCTL(int fd, int cmd, void *arg)
+{
+	int ret = drmIoctl(fd, cmd, arg);
+	return ret < 0 ? -errno : ret;
+}
+
 /*
  * Util functions
  */
@@ -242,7 +248,7 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 	f.depth  = depth;
 	f.handle = bo_handle;
 
-	if ((ret = drmIoctl(fd, DRM_IOCTL_MODE_ADDFB, &f)))
+	if ((ret = DRM_IOCTL(fd, DRM_IOCTL_MODE_ADDFB, &f)))
 		return ret;
 
 	*buf_id = f.fb_id;
@@ -251,7 +257,7 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 
 int drmModeRmFB(int fd, uint32_t bufferId)
 {
-	return drmIoctl(fd, DRM_IOCTL_MODE_RMFB, &bufferId);
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_RMFB, &bufferId);
 
 
 }
@@ -289,7 +295,7 @@ int drmModeDirtyFB(int fd, uint32_t bufferId,
 	dirty.clips_ptr = VOID2U64(clips);
 	dirty.num_clips = num_clips;
 
-	return drmIoctl(fd, DRM_IOCTL_MODE_DIRTYFB, &dirty);
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_DIRTYFB, &dirty);
 }
 
 
@@ -344,7 +350,7 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 	} else
 	  crtc.mode_valid = 0;
 
-	return drmIoctl(fd, DRM_IOCTL_MODE_SETCRTC, &crtc);
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_SETCRTC, &crtc);
 }
 
 /*
@@ -361,7 +367,7 @@ int drmModeSetCursor(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t width
 	arg.height = height;
 	arg.handle = bo_handle;
 
-	return drmIoctl(fd, DRM_IOCTL_MODE_CURSOR, &arg);
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_CURSOR, &arg);
 }
 
 int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
@@ -373,7 +379,7 @@ int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
 	arg.x = x;
 	arg.y = y;
 
-	return drmIoctl(fd, DRM_IOCTL_MODE_CURSOR, &arg);
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_CURSOR, &arg);
 }
 
 /*
@@ -510,7 +516,7 @@ int drmModeAttachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_inf
 	memcpy(&res.mode, mode_info, sizeof(struct drm_mode_modeinfo));
 	res.connector_id = connector_id;
 
-	return drmIoctl(fd, DRM_IOCTL_MODE_ATTACHMODE, &res);
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_ATTACHMODE, &res);
 }
 
 int drmModeDetachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_info)
@@ -520,7 +526,7 @@ int drmModeDetachMode(int fd, uint32_t connector_id, drmModeModeInfoPtr mode_inf
 	memcpy(&res.mode, mode_info, sizeof(struct drm_mode_modeinfo));
 	res.connector_id = connector_id;
 
-	return drmIoctl(fd, DRM_IOCTL_MODE_DETACHMODE, &res);
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_DETACHMODE, &res);
 }
 
 
@@ -637,16 +643,12 @@ int drmModeConnectorSetProperty(int fd, uint32_t connector_id, uint32_t property
 			     uint64_t value)
 {
 	struct drm_mode_connector_set_property osp;
-	int ret;
 
 	osp.connector_id = connector_id;
 	osp.prop_id = property_id;
 	osp.value = value;
 
-	if ((ret = drmIoctl(fd, DRM_IOCTL_MODE_SETPROPERTY, &osp)))
-		return ret;
-
-	return 0;
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_SETPROPERTY, &osp);
 }
 
 /*
@@ -715,7 +717,6 @@ int drmCheckModesettingSupported(const char *busid)
 int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
 			uint16_t *red, uint16_t *green, uint16_t *blue)
 {
-	int ret;
 	struct drm_mode_crtc_lut l;
 
 	l.crtc_id = crtc_id;
@@ -724,16 +725,12 @@ int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
 	l.green = VOID2U64(green);
 	l.blue = VOID2U64(blue);
 
-	if ((ret = drmIoctl(fd, DRM_IOCTL_MODE_GETGAMMA, &l)))
-		return ret;
-
-	return 0;
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_GETGAMMA, &l);
 }
 
 int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
 			uint16_t *red, uint16_t *green, uint16_t *blue)
 {
-	int ret;
 	struct drm_mode_crtc_lut l;
 
 	l.crtc_id = crtc_id;
@@ -742,10 +739,7 @@ int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
 	l.green = VOID2U64(green);
 	l.blue = VOID2U64(blue);
 
-	if ((ret = drmIoctl(fd, DRM_IOCTL_MODE_SETGAMMA, &l)))
-		return ret;
-
-	return 0;
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_SETGAMMA, &l);
 }
 
 int drmHandleEvent(int fd, drmEventContextPtr evctx)
@@ -810,5 +804,5 @@ int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
 	flip.flags = flags;
 	flip.reserved = 0;
 
-	return drmIoctl(fd, DRM_IOCTL_MODE_PAGE_FLIP, &flip);
+	return DRM_IOCTL(fd, DRM_IOCTL_MODE_PAGE_FLIP, &flip);
 }
