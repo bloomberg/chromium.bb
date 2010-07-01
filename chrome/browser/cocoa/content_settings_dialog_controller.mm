@@ -12,9 +12,10 @@
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/content_exceptions_window_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
-#import "chrome/browser/cocoa/geolocation_exceptions_window_controller.h"
+#import "chrome/browser/cocoa/simple_content_exceptions_window_controller.h"
 #import "chrome/browser/cocoa/l10n_util.h"
 #import "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#import "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #import "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -324,7 +325,9 @@ class PrefObserverDisabler {
 - (IBAction)showGeolocationExceptions:(id)sender {
   GeolocationContentSettingsMap* settingsMap =
       profile_->GetGeolocationContentSettingsMap();
-  [[GeolocationExceptionsWindowController controllerWithSettingsMap:settingsMap]
+  GeolocationExceptionsTableModel* model =  // Freed by window controller.
+      new GeolocationExceptionsTableModel(settingsMap);
+  [[SimpleContentExceptionsWindowController controllerWithTableModel:model]
       attachSheetTo:[self window]];
 }
 

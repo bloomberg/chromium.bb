@@ -2,40 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_OPTIONS_GEOLOCATION_EXCEPTIONS_VIEW_H_
-#define CHROME_BROWSER_VIEWS_OPTIONS_GEOLOCATION_EXCEPTIONS_VIEW_H_
+#ifndef CHROME_BROWSER_VIEWS_OPTIONS_SIMPLE_CONTENT_EXCEPTIONS_VIEW_H_
+#define CHROME_BROWSER_VIEWS_OPTIONS_SIMPLE_CONTENT_EXCEPTIONS_VIEW_H_
 
 #include <string>
 
-#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
+#include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/common/content_settings.h"
 #include "views/controls/button/button.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/window/dialog_delegate.h"
-
-class GeolocationContentSettingsMap;
 
 namespace views {
 class NativeButton;
 class TableView;
 }
 
-// GeolocationExceptionsView is responsible for showing the user the set of
-// site-specific geolocation permissions. The exceptions are shown in a table
-// view by way of a GeolocationExceptionsTableModel. The user can remove
-// exceptions.
+// SimpleContentExceptionsView is responsible for showing the user the set of
+// site-specific permissions. The exceptions are shown in a table view by way
+// of a RemoveRowsTableModel. The user can remove exceptions.
 // Use the ShowExceptionsWindow method to create and show a
-// GeolocationExceptionsView, which is deleted when the window closes.
-class GeolocationExceptionsView : public views::View,
-                                  public views::ButtonListener,
-                                  public views::DialogDelegate,
-                                  public views::TableViewObserver {
+// SimpleContentExceptionsView, which is deleted when the window closes.
+class SimpleContentExceptionsView : public views::View,
+                                    public views::ButtonListener,
+                                    public views::DialogDelegate,
+                                    public views::TableViewObserver {
  public:
-  // Shows the Exceptions window.
+  // Shows the Exceptions window. Takes ownership of |model|.
   static void ShowExceptionsWindow(gfx::NativeWindow parent,
-                                   GeolocationContentSettingsMap* map);
+                                   RemoveRowsTableModel* model);
 
-  virtual ~GeolocationExceptionsView();
+  virtual ~SimpleContentExceptionsView();
 
   // TableViewObserver overrides:
   virtual void OnSelectionChanged();
@@ -60,7 +57,8 @@ class GeolocationExceptionsView : public views::View,
   virtual views::View* GetContentsView() { return this; }
 
  private:
-  explicit GeolocationExceptionsView(GeolocationContentSettingsMap* map);
+  // Takes ownership of |model|.
+  explicit SimpleContentExceptionsView(RemoveRowsTableModel* model);
 
   void Init();
 
@@ -68,7 +66,7 @@ class GeolocationExceptionsView : public views::View,
   void UpdateButtonState();
 
   // Returns the set of selected rows.
-  GeolocationExceptionsTableModel::Rows GetSelectedRows() const;
+  RemoveRowsTableModel::Rows GetSelectedRows() const;
 
   // Removes the selected item.
   void Remove();
@@ -77,15 +75,15 @@ class GeolocationExceptionsView : public views::View,
   void RemoveAll();
 
   // The model displayed in the table.
-  GeolocationExceptionsTableModel model_;
+  scoped_ptr<RemoveRowsTableModel> model_;
 
   views::TableView* table_;
 
   views::NativeButton* remove_button_;
   views::NativeButton* remove_all_button_;
 
-  DISALLOW_COPY_AND_ASSIGN(GeolocationExceptionsView);
+  DISALLOW_COPY_AND_ASSIGN(SimpleContentExceptionsView);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_OPTIONS_GEOLOCATION_EXCEPTIONS_VIEW_H_
+#endif  // CHROME_BROWSER_VIEWS_OPTIONS_SIMPLE_CONTENT_EXCEPTIONS_VIEW_H_
 

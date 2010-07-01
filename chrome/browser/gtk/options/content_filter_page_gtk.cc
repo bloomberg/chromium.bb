@@ -7,13 +7,14 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
-#include "chrome/browser/gtk/options/geolocation_content_exceptions_window.h"
+#include "chrome/browser/gtk/options/simple_content_exceptions_window.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -171,9 +172,10 @@ void ContentFilterPageGtk::OnAllowToggled(GtkWidget* toggle_button) {
 
 void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
   if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    GeolocationContentExceptionsWindow::ShowExceptionsWindow(
+    SimpleContentExceptionsWindow::ShowExceptionsWindow(
         GTK_WINDOW(gtk_widget_get_toplevel(button)),
-        profile()->GetGeolocationContentSettingsMap());
+        new GeolocationExceptionsTableModel(
+            profile()->GetGeolocationContentSettingsMap()));
     return;
   }
   HostContentSettingsMap* settings_map =

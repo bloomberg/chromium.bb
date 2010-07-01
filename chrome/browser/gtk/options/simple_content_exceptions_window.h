@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GTK_OPTIONS_GEOLOCATION_CONTENT_EXCEPTIONS_WINDOW_H_
-#define CHROME_BROWSER_GTK_OPTIONS_GEOLOCATION_CONTENT_EXCEPTIONS_WINDOW_H_
+#ifndef CHROME_BROWSER_GTK_OPTIONS_SIMPLE_CONTENT_EXCEPTIONS_WINDOW_H_
+#define CHROME_BROWSER_GTK_OPTIONS_SIMPLE_CONTENT_EXCEPTIONS_WINDOW_H_
 
 #include <gtk/gtk.h>
 
@@ -11,18 +11,17 @@
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #include "chrome/browser/gtk/gtk_tree.h"
+#include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 
-class GeolocationContentSettingsMap;
-
-class GeolocationContentExceptionsWindow
+class SimpleContentExceptionsWindow
     : public gtk_tree::TableAdapter::Delegate {
  public:
+  // Takes ownership of |model|.
   static void ShowExceptionsWindow(GtkWindow* parent,
-                                   GeolocationContentSettingsMap* map);
+                                   RemoveRowsTableModel* model);
 
   // gtk_tree::TableAdapter::Delegate implementation:
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
@@ -35,21 +34,22 @@ class GeolocationContentExceptionsWindow
     COL_COUNT
   };
 
-  GeolocationContentExceptionsWindow(GtkWindow* parent,
-                                     GeolocationContentSettingsMap* map);
+  // Takes ownership of |model|.
+  SimpleContentExceptionsWindow(GtkWindow* parent,
+                                RemoveRowsTableModel* model);
 
   // Updates which buttons are enabled.
   void UpdateButtonState();
 
-  void GetSelectedRows(GeolocationExceptionsTableModel::Rows* rows);
+  void GetSelectedRows(RemoveRowsTableModel::Rows* rows);
 
   // Callbacks for the buttons.
-  CHROMEGTK_CALLBACK_0(GeolocationContentExceptionsWindow, void, Remove);
-  CHROMEGTK_CALLBACK_0(GeolocationContentExceptionsWindow, void, RemoveAll);
+  CHROMEGTK_CALLBACK_0(SimpleContentExceptionsWindow, void, Remove);
+  CHROMEGTK_CALLBACK_0(SimpleContentExceptionsWindow, void, RemoveAll);
 
-  CHROMEGTK_CALLBACK_0(GeolocationContentExceptionsWindow, void,
+  CHROMEGTK_CALLBACK_0(SimpleContentExceptionsWindow, void,
                        OnWindowDestroy);
-  CHROMEGTK_CALLBACK_0(GeolocationContentExceptionsWindow, void,
+  CHROMEGTK_CALLBACK_0(SimpleContentExceptionsWindow, void,
                        OnTreeSelectionChanged);
 
   // The list presented in |treeview_|; a gobject instead of a C++ object.
@@ -57,7 +57,7 @@ class GeolocationContentExceptionsWindow
 
   // The C++, views-ish, cross-platform model class that actually contains the
   // gold standard data.
-  scoped_ptr<GeolocationExceptionsTableModel> model_;
+  scoped_ptr<RemoveRowsTableModel> model_;
 
   // The adapter that ferries data back and forth between |model_| and
   // |list_store_| whenever either of them change.
@@ -77,4 +77,4 @@ class GeolocationContentExceptionsWindow
   GtkWidget* remove_all_button_;
 };
 
-#endif  // CHROME_BROWSER_GTK_OPTIONS_GEOLOCATION_CONTENT_EXCEPTIONS_WINDOW_H_
+#endif  // CHROME_BROWSER_GTK_OPTIONS_SIMPLE_CONTENT_EXCEPTIONS_WINDOW_H_

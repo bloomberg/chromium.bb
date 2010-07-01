@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/geolocation_content_exceptions_window.h"
+#include "chrome/browser/gtk/options/simple_content_exceptions_window.h"
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
@@ -16,25 +15,26 @@
 namespace {
 
 // Singleton for exception window.
-GeolocationContentExceptionsWindow* instance = NULL;
+SimpleContentExceptionsWindow* instance = NULL;
 
 }  // namespace
 
 // static
-void GeolocationContentExceptionsWindow::ShowExceptionsWindow(
-    GtkWindow* parent, GeolocationContentSettingsMap* map) {
-  DCHECK(map);
+void SimpleContentExceptionsWindow::ShowExceptionsWindow(
+    GtkWindow* parent, RemoveRowsTableModel* model) {
+  DCHECK(model);
+  scoped_ptr<RemoveRowsTableModel> owned_model(model);
 
   if (!instance) {
-    instance = new GeolocationContentExceptionsWindow(parent, map);
+    instance = new SimpleContentExceptionsWindow(parent, owned_model.release());
   } else {
     gtk_util::PresentWindow(instance->dialog_, 0);
   }
 }
 
-GeolocationContentExceptionsWindow::GeolocationContentExceptionsWindow(
+SimpleContentExceptionsWindow::SimpleContentExceptionsWindow(
     GtkWindow* parent,
-    GeolocationContentSettingsMap* map) {
+    RemoveRowsTableModel* model) {
   // Build the model adapters that translate views and TableModels into
   // something GTK can use.
   list_store_ = gtk_list_store_new(COL_COUNT, G_TYPE_STRING, G_TYPE_STRING);
@@ -63,7 +63,7 @@ GeolocationContentExceptionsWindow::GeolocationContentExceptionsWindow(
                    G_CALLBACK(OnTreeSelectionChangedThunk), this);
 
   // Bind |list_store_| to our C++ model.
-  model_.reset(new GeolocationExceptionsTableModel(map));
+  model_.reset(model);
   model_adapter_.reset(new gtk_tree::TableAdapter(this, list_store_,
                                                   model_.get()));
   // Force a reload of everything to copy data into |list_store_|.
@@ -124,7 +124,7 @@ GeolocationContentExceptionsWindow::GeolocationContentExceptionsWindow(
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
-void GeolocationContentExceptionsWindow::SetColumnValues(int row,
+void SimpleContentExceptionsWindow::SetColumnValues(int row,
                                                          GtkTreeIter* iter) {
   std::wstring hostname = model_->GetText(row, IDS_EXCEPTIONS_HOSTNAME_HEADER);
   gtk_list_store_set(list_store_, iter, COL_HOSTNAME,
@@ -135,42 +135,42 @@ void GeolocationContentExceptionsWindow::SetColumnValues(int row,
                      WideToUTF8(action).c_str(), -1);
 }
 
-void GeolocationContentExceptionsWindow::UpdateButtonState() {
+void SimpleContentExceptionsWindow::UpdateButtonState() {
   int row_count = gtk_tree_model_iter_n_children(
       GTK_TREE_MODEL(list_store_), NULL);
 
-  GeolocationExceptionsTableModel::Rows rows;
+  RemoveRowsTableModel::Rows rows;
   GetSelectedRows(&rows);
   gtk_widget_set_sensitive(remove_button_, model_->CanRemoveRows(rows));
   gtk_widget_set_sensitive(remove_all_button_, row_count > 0);
 }
 
-void GeolocationContentExceptionsWindow::GetSelectedRows(
-    GeolocationExceptionsTableModel::Rows* rows) {
+void SimpleContentExceptionsWindow::GetSelectedRows(
+    RemoveRowsTableModel::Rows* rows) {
   std::set<int> indices;
   gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
   for (std::set<int>::iterator i = indices.begin(); i != indices.end(); ++i)
     rows->insert(*i);
 }
 
-void GeolocationContentExceptionsWindow::Remove(GtkWidget* widget) {
-  GeolocationExceptionsTableModel::Rows rows;
+void SimpleContentExceptionsWindow::Remove(GtkWidget* widget) {
+  RemoveRowsTableModel::Rows rows;
   GetSelectedRows(&rows);
   model_->RemoveRows(rows);
   UpdateButtonState();
 }
 
-void GeolocationContentExceptionsWindow::RemoveAll(GtkWidget* widget) {
+void SimpleContentExceptionsWindow::RemoveAll(GtkWidget* widget) {
   model_->RemoveAll();
   UpdateButtonState();
 }
 
-void GeolocationContentExceptionsWindow::OnWindowDestroy(GtkWidget* widget) {
+void SimpleContentExceptionsWindow::OnWindowDestroy(GtkWidget* widget) {
   instance = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void GeolocationContentExceptionsWindow::OnTreeSelectionChanged(
+void SimpleContentExceptionsWindow::OnTreeSelectionChanged(
     GtkWidget* selection) {
   UpdateButtonState();
 }

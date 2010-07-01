@@ -6,30 +6,29 @@
 
 #include "base/cocoa_protocols_mac.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/remove_rows_table_model.h"
 
-class GeolocationExceptionsTableModel;
-class GeolocationObserverBridge;
+class RemoveRowsObserverBridge;
 
 // Controller for the geolocation exception dialog.
-@interface GeolocationExceptionsWindowController : NSWindowController
-                                                   <NSWindowDelegate,
-                                                    NSTableViewDataSource,
-                                                    NSTableViewDelegate> {
+@interface SimpleContentExceptionsWindowController : NSWindowController
+                                                     <NSWindowDelegate,
+                                                      NSTableViewDataSource,
+                                                      NSTableViewDelegate> {
  @private
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* removeButton_;
   IBOutlet NSButton* removeAllButton_;
   IBOutlet NSButton* doneButton_;
 
-  GeolocationContentSettingsMap* settingsMap_;  // weak
-  scoped_ptr<GeolocationExceptionsTableModel> model_;
-  scoped_ptr<GeolocationObserverBridge> tableObserver_;
+  scoped_ptr<RemoveRowsTableModel> model_;
+  scoped_ptr<RemoveRowsObserverBridge> tableObserver_;
 }
 
 // Shows or makes frontmost the geolocation exceptions window.
-// Changes made by the user in the window are persisted in |settingsMap|.
-+ (id)controllerWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap;
+// Changes made by the user in the window are persisted in |model|.
+// Takes ownership of |model|.
++ (id)controllerWithTableModel:(RemoveRowsTableModel*)model;
 
 // Sets the minimum width of the sheet and resizes it if necessary.
 - (void)setMinWidth:(CGFloat)minWidth;

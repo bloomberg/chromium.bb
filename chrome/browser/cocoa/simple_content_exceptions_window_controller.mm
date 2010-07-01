@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/geolocation_exceptions_window_controller.h"
+#import "chrome/browser/cocoa/simple_content_exceptions_window_controller.h"
 
 #include <set>
 
@@ -11,24 +11,22 @@
 #import "base/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
-#include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-@interface GeolocationExceptionsWindowController (Private)
-- (id)initWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap;
-- (void)selectedRows:(GeolocationExceptionsTableModel::Rows*)rows;
+@interface SimpleContentExceptionsWindowController (Private)
+- (id)initWithTableModel:(RemoveRowsTableModel*)model;
+- (void)selectedRows:(RemoveRowsTableModel::Rows*)rows;
 - (void)adjustEditingButtons;
 - (void)modelDidChange;
 @end
 
-// Observer for the geolocation table model.
-class GeolocationObserverBridge : public TableModelObserver {
+// Observer for a RemoveRowsTableModel.
+class RemoveRowsObserverBridge : public TableModelObserver {
  public:
-  GeolocationObserverBridge(GeolocationExceptionsWindowController* controller)
+  RemoveRowsObserverBridge(SimpleContentExceptionsWindowController* controller)
       : controller_(controller) {}
-  virtual ~GeolocationObserverBridge() {}
+  virtual ~RemoveRowsObserverBridge() {}
 
   virtual void OnModelChanged() {
     [controller_ modelDidChange];
@@ -44,35 +42,34 @@ class GeolocationObserverBridge : public TableModelObserver {
   }
 
  private:
-  GeolocationExceptionsWindowController* controller_;  // weak
+  SimpleContentExceptionsWindowController* controller_;  // weak
 };
 
 namespace  {
 
 const CGFloat kButtonBarHeight = 35.0;
 
-GeolocationExceptionsWindowController* g_exceptionWindow = nil;
+SimpleContentExceptionsWindowController* g_exceptionWindow = nil;
 
 }  // namespace
 
-@implementation GeolocationExceptionsWindowController
+@implementation SimpleContentExceptionsWindowController
 
-+ (id)controllerWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap {
++ (id)controllerWithTableModel:(RemoveRowsTableModel*)model {
   if (!g_exceptionWindow) {
-    g_exceptionWindow = [[GeolocationExceptionsWindowController alloc]
-        initWithSettingsMap:settingsMap];
+    g_exceptionWindow = [[SimpleContentExceptionsWindowController alloc]
+        initWithTableModel:model];
   }
   return g_exceptionWindow;
 }
 
-- (id)initWithSettingsMap:(GeolocationContentSettingsMap*)settingsMap {
+- (id)initWithTableModel:(RemoveRowsTableModel*)model {
   NSString* nibpath =
       [mac_util::MainAppBundle() pathForResource:@"GeolocationExceptionsWindow"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    settingsMap_ = settingsMap;
-    model_.reset(new GeolocationExceptionsTableModel(settingsMap_));
-    tableObserver_.reset(new GeolocationObserverBridge(self));
+    model_.reset(model);
+    tableObserver_.reset(new RemoveRowsObserverBridge(self));
     model_->SetObserver(tableObserver_.get());
 
     // TODO(thakis): autoremember window rect.
@@ -154,7 +151,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 }
 
 - (IBAction)removeRow:(id)sender {
-  GeolocationExceptionsTableModel::Rows rows;
+  RemoveRowsTableModel::Rows rows;
   [self selectedRows:&rows];
   model_->RemoveRows(rows);
 }
@@ -196,7 +193,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 // Private --------------------------------------------------------------------
 
 // Returns the selected rows.
-- (void)selectedRows:(GeolocationExceptionsTableModel::Rows*)rows {
+- (void)selectedRows:(RemoveRowsTableModel::Rows*)rows {
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
   for (NSUInteger index = [selection lastIndex]; index != NSNotFound;
        index = [selection indexLessThanIndex:index])
@@ -206,7 +203,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 // This method appropriately sets the enabled states on the table's editing
 // buttons.
 - (void)adjustEditingButtons {
-  GeolocationExceptionsTableModel::Rows rows;
+  RemoveRowsTableModel::Rows rows;
   [self selectedRows:&rows];
   [removeButton_ setEnabled:model_->CanRemoveRows(rows)];
   [removeAllButton_ setEnabled:([tableView_ numberOfRows] > 0)];
