@@ -450,7 +450,10 @@ void WizardController::OnUpdateErrorUpdating() {
   // If there was an error while getting or applying the update,
   // return to network selection screen.
   // TODO(nkostylev): Show message to the user explaining update error.
-  ShowNetworkScreen();
+  // TODO(nkostylev): Update should be required during OOBE.
+  // Temporary fix, need to migrate to new API. http://crosbug.com/4321
+  MarkOobeCompleted();
+  ShowLoginScreen();
 }
 
 void WizardController::OnUserImageSelected() {
