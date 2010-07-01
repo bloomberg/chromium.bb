@@ -24,6 +24,8 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase {
   CHROMEGTK_CALLBACK_0(BeforeTranslateInfoBar, void, OnLanguageModified);
   CHROMEGTK_CALLBACK_0(BeforeTranslateInfoBar, void, OnAcceptPressed);
   CHROMEGTK_CALLBACK_0(BeforeTranslateInfoBar, void, OnDenyPressed);
+  CHROMEGTK_CALLBACK_0(BeforeTranslateInfoBar, void, OnNeverTranslatePressed);
+  CHROMEGTK_CALLBACK_0(BeforeTranslateInfoBar, void, OnAlwaysTranslatePressed);
 
   DISALLOW_COPY_AND_ASSIGN(BeforeTranslateInfoBar);
 };

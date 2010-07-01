@@ -51,6 +51,29 @@ void BeforeTranslateInfoBar::Init() {
   g_signal_connect(button, "clicked",G_CALLBACK(&OnDenyPressedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
+  TranslateInfoBarDelegate* delegate = GetDelegate();
+  if (delegate->ShouldShowNeverTranslateButton()) {
+    std::string label =
+        l10n_util::GetStringFUTF8(IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE,
+                                  delegate->GetLanguageDisplayableNameAt(
+                                      delegate->original_language_index()));
+    button = gtk_button_new_with_label(label.c_str());
+    g_signal_connect(button, "clicked",
+                     G_CALLBACK(&OnNeverTranslatePressedThunk), this);
+    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+  }
+
+  if (delegate->ShouldShowAlwaysTranslateButton()) {
+    std::string label =
+        l10n_util::GetStringFUTF8(IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE,
+                                  delegate->GetLanguageDisplayableNameAt(
+                                      delegate->original_language_index()));
+    button = gtk_button_new_with_label(label.c_str());
+    g_signal_connect(button, "clicked",
+                     G_CALLBACK(&OnAlwaysTranslatePressedThunk), this);
+    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+  }
+
   gtk_widget_show_all(border_bin_.get());
 }
 
@@ -67,5 +90,14 @@ void BeforeTranslateInfoBar::OnAcceptPressed(GtkWidget* sender) {
 }
 
 void BeforeTranslateInfoBar::OnDenyPressed(GtkWidget* sender) {
+  GetDelegate()->TranslationDeclined();
   RemoveInfoBar();
+}
+
+void BeforeTranslateInfoBar::OnNeverTranslatePressed(GtkWidget* sender) {
+  GetDelegate()->NeverTranslatePageLanguage();
+}
+
+void BeforeTranslateInfoBar::OnAlwaysTranslatePressed(GtkWidget* sender) {
+  GetDelegate()->AlwaysTranslatePageLanguage();
 }
