@@ -74,6 +74,9 @@ void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
 
 }  // namespace
 
+ExistingUserController*
+  ExistingUserController::delete_scheduled_instance_ = NULL;
+
 ExistingUserController::ExistingUserController(
     const std::vector<UserManager::User>& users,
     const gfx::Rect& background_bounds)
@@ -82,6 +85,9 @@ ExistingUserController::ExistingUserController(
       background_view_(NULL),
       selected_view_index_(kNotSelected),
       bubble_(NULL) {
+  if (delete_scheduled_instance_)
+    delete_scheduled_instance_->Delete();
+
   // Caclulate the max number of users from available screen size.
   size_t max_users = kMaxUsers;
   int screen_width = background_bounds.width();
@@ -101,10 +107,12 @@ ExistingUserController::ExistingUserController(
 }
 
 void ExistingUserController::Init() {
-  background_window_ = BackgroundView::CreateWindowContainingView(
-      background_bounds_,
-      &background_view_);
-  background_window_->Show();
+  if (!background_window_) {
+    background_window_ = BackgroundView::CreateWindowContainingView(
+        background_bounds_,
+        &background_view_);
+    background_window_->Show();
+  }
   for (size_t i = 0; i < controllers_.size(); ++i) {
     (controllers_[i])->Init(static_cast<int>(i),
                             static_cast<int>(controllers_.size()));
@@ -116,6 +124,14 @@ void ExistingUserController::Init() {
 
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
+}
+
+void ExistingUserController::OwnBackground(
+    views::Widget* background_widget,
+    chromeos::BackgroundView* background_view) {
+  DCHECK(!background_window_);
+  background_window_ = background_widget;
+  background_view_ = background_view;
 }
 
 ExistingUserController::~ExistingUserController() {
@@ -130,6 +146,7 @@ ExistingUserController::~ExistingUserController() {
 }
 
 void ExistingUserController::Delete() {
+  delete_scheduled_instance_ = NULL;
   delete this;
 }
 
@@ -212,6 +229,8 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
 
   // And schedule us for deletion. We delay for a second as the window manager
   // is doing an animation with our windows.
+  DCHECK(!delete_scheduled_instance_);
+  delete_scheduled_instance_ = this;
   delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
                       &ExistingUserController::Delete);
 }

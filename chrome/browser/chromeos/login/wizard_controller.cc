@@ -314,6 +314,25 @@ void WizardController::ShowNetworkScreen() {
 
 void WizardController::ShowLoginScreen() {
   SetStatusAreaVisible(true);
+
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLoginImages)) {
+    std::vector<chromeos::UserManager::User> users =
+        chromeos::UserManager::Get()->GetUsers();
+    // ExistingUserController deletes itself.
+    gfx::Rect screen_bounds;
+    background_widget_->GetBounds(&screen_bounds, true);
+    chromeos::ExistingUserController* controller =
+        new chromeos::ExistingUserController(users, screen_bounds);
+    controller->OwnBackground(background_widget_, background_view_);
+    controller->Init();
+    background_widget_ = NULL;
+    background_view_ = NULL;
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    return;
+  }
+
   SetCurrentScreen(GetLoginScreen());
 }
 
@@ -589,19 +608,16 @@ void ShowLoginWizard(const std::string& first_screen_name,
   bool oobe_complete = g_browser_process->local_state()->
       GetBoolean(kOobeComplete);
 
-  // TODO(nkostylev): Always switch to ExistingUserController after OOBE
-  // is completed. Enable it after fix for WM is ready.
   if (first_screen_name.empty() &&
+      oobe_complete &&
       chromeos::CrosLibrary::Get()->EnsureLoaded() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLoginImages)) {
     std::vector<chromeos::UserManager::User> users =
         chromeos::UserManager::Get()->GetUsers();
-    if (!users.empty()) {
-      // ExistingUserController deletes itself.
-      (new chromeos::ExistingUserController(users, screen_bounds))->Init();
-      return;
-    }
+    // ExistingUserController deletes itself.
+    (new chromeos::ExistingUserController(users, screen_bounds))->Init();
+    return;
   }
 
   scoped_ptr<chromeos::StartupCustomizationDocument> customization;

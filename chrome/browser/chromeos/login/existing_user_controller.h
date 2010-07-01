@@ -53,6 +53,10 @@ class ExistingUserController : public WmMessageListener::Observer,
   // Creates and shows the appropriate set of windows.
   void Init();
 
+  // Takes ownership of the specified background widget and view.
+  void OwnBackground(views::Widget* background_widget,
+                     chromeos::BackgroundView* background_view);
+
  private:
   friend class DeleteTask<ExistingUserController>;
 
@@ -124,6 +128,10 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // See comment in ProcessWmMessage.
   base::OneShotTimer<ExistingUserController> delete_timer_;
+
+  // Pointer to the instance that was scheduled to be deleted soon or NULL
+  // if there is no such instance.
+  static ExistingUserController* delete_scheduled_instance_;
 
   // Pointer to shown message bubble. We don't need to delete it because
   // it will be deleted on bubble closing.
