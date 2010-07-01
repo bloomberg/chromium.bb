@@ -99,7 +99,6 @@ void SyncBackendHost::Initialize(
       it != types.end(); ++it) {
     registrar_.routing_info[(*it)] = GROUP_PASSIVE;
   }
-  registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
 
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,

@@ -1028,7 +1028,6 @@ class SyncManager::SyncInternal
 
     ModelSafeRoutingInfo enabled_types;
     registrar_->GetModelSafeRoutingInfo(&enabled_types);
-    DCHECK(!enabled_types.empty());
     for (ModelSafeRoutingInfo::const_iterator i = enabled_types.begin();
         i != enabled_types.end(); ++i) {
       if (!lookup->initial_sync_ended_for_type(i->first))
