@@ -749,7 +749,8 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-TEST_F(SyncerThreadWithSyncerTest, Pause) {
+// Timesout http:://crbug.com/39070
+TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
