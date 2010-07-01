@@ -28,7 +28,6 @@
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/l10n_util.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
-#import "chrome/browser/cocoa/sync_customize_controller_cppsafe.h"
 #import "chrome/browser/cocoa/vertical_gradient_view.h"
 #import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/download/download_manager.h"
@@ -1335,7 +1334,7 @@ const int kDisabledIndex = 1;
 // "Personal Stuff" pane.  Spawns a dialog-modal sheet that cleans
 // itself up on close.
 - (IBAction)doSyncCustomize:(id)sender {
-  ShowSyncCustomizeDialog([self window], profile_->GetProfileSyncService());
+  syncService_->ShowChooseDataTypes();
 }
 
 - (IBAction)doSyncReauthentication:(id)sender {

@@ -44,7 +44,6 @@ function set_up_testing() {
   win.JSON = {};
   win.JSON.parse = function() {
     return {
-      showCustomize: form.show_customize.checked,
       error: get_selected_value(form.error),
       user: "homer@gmail.com",
       captchaUrl: "https://www.google.com/accounts/Captcha"
@@ -74,7 +73,6 @@ function set_up_testing() {
   set_text("cannotaccessaccount", "I cannot access my account");
   set_text("href:createnewaccounturl", "href:createnewaccounturl");
   set_text("createaccount", "Create a Google account");
-  set_text("value:customize", "Customize sync...");
   set_text("value:cancel", "Cancel");
 
   function set_text(id, text) {
@@ -112,7 +110,6 @@ function update() {
 </iframe>
 <div id="options">
 <form id="form" name="form">
-<p><input name="show_customize" type="checkbox" checked> Show customize</p>
 <p>
   <input type="radio" name="error" value="" checked> No Error
   <input type="radio" name="error" value="1"> Bad Password

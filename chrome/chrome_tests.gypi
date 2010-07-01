@@ -757,7 +757,6 @@
         'browser/cocoa/styled_text_field_test_helper.h',
         'browser/cocoa/styled_text_field_test_helper.mm',
         'browser/cocoa/styled_text_field_unittest.mm',
-        'browser/cocoa/sync_customize_controller_unittest.mm',
         'browser/cocoa/tab_controller_unittest.mm',
         'browser/cocoa/tab_strip_controller_unittest.mm',
         'browser/cocoa/tab_strip_view_unittest.mm',

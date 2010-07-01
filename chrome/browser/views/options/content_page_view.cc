@@ -24,7 +24,6 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/views/importer_view.h"
-#include "chrome/browser/views/options/customize_sync_window_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
 #include "chrome/browser/views/options/passwords_exceptions_window_view.h"
 #include "chrome/common/chrome_switches.h"

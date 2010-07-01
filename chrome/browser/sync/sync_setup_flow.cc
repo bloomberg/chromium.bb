@@ -37,16 +37,6 @@ static const wchar_t* kChooseDataTypesIFrameXPath =
 static const wchar_t* kDoneIframeXPath = L"//iframe[@id='done']";
 
 void FlowHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("ShowCustomize",
-      NewCallback(this, &FlowHandler::HandleUserClickedCustomize));
-  // On OS X, the customize dialog is modal to the HTML window so we
-  // don't need to hook up the two functions below.
-#if defined(OS_WIN) || defined(OS_LINUX)
-  dom_ui_->RegisterMessageCallback("ClickCustomizeOk",
-      NewCallback(this, &FlowHandler::ClickCustomizeOk));
-  dom_ui_->RegisterMessageCallback("ClickCustomizeCancel",
-      NewCallback(this, &FlowHandler::ClickCustomizeCancel));
-#endif
   dom_ui_->RegisterMessageCallback("SubmitAuth",
       NewCallback(this, &FlowHandler::HandleSubmitAuth));
   dom_ui_->RegisterMessageCallback("ChooseDataTypes",
@@ -125,41 +115,11 @@ static bool GetDataTypeChoiceData(const std::string& json,
   return true;
 }
 
-void FlowHandler::HandleUserClickedCustomize(const Value* value) {
-  if (flow_)
-    flow_->OnUserClickedCustomize();
-}
-
-// To simulate the user clicking "OK" or "Cancel" on the Customize Sync dialog
-void FlowHandler::ClickCustomizeOk(const Value* value) {
-  if (flow_)
-    flow_->ClickCustomizeOk();
-}
-
-void FlowHandler::ClickCustomizeCancel(const Value* value) {
-  if (flow_)
-    flow_->ClickCustomizeCancel();
-}
-
-
 void FlowHandler::HandleSubmitAuth(const Value* value) {
   std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(value));
   std::string username, password, captcha;
   if (json.empty())
     return;
-
-  // If ClickOk() returns false (indicating that there's a problem in the
-  // CustomizeSyncWindowView), don't do anything; the CSWV will focus itself,
-  // indicating that there's something to do there.
-  // ClickOk() has no side effects if the singleton dialog is not present.
-  if (!flow_->ClickCustomizeOk()) {
-    // TODO(dantasse): this results in a kinda ugly experience for this edge
-    // case; come back here and add a nice message explaining that you can't
-    // sync zero datatypes.  (OR just make the CSWV modal to the Gaia Login
-    // box, like we want to do anyway.
-    flow_->Advance(SyncSetupWizard::GAIA_LOGIN);
-    return;
-  }
 
   if (!GetAuthData(json, &username, &password, &captcha)) {
     // The page sent us something that we didn't understand.
@@ -171,7 +131,6 @@ void FlowHandler::HandleSubmitAuth(const Value* value) {
   if (flow_)
     flow_->OnUserSubmittedAuth(username, password, captcha);
 }
-
 
 void FlowHandler::HandleChooseDataTypes(const Value* value) {
   std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(value));
@@ -370,8 +329,6 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
   }
 
   args->SetString(L"captchaUrl", error.captcha().image_url.spec());
-
-  args->SetBoolean(L"showCustomize", true);
 }
 
 // static

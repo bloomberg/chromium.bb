@@ -98,7 +98,6 @@ extern const char kChromeUIThemePath[];
 // Sync related URL components.
 extern const char kSyncResourcesHost[];
 extern const char kSyncGaiaLoginPath[];
-extern const char kSyncMergeAndSyncPath[];
 extern const char kSyncChooseDataTypesPath[];
 extern const char kSyncSetupDonePath[];
 extern const char kSyncSetupFlowPath[];

@@ -14,13 +14,6 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
-#if defined(OS_WIN)
-#include "chrome/browser/views/options/customize_sync_window_view.h"
-#elif defined(OS_LINUX)
-#include "chrome/browser/gtk/options/customize_sync_window_gtk.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/cocoa/sync_customize_controller_cppsafe.h"
-#endif
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 
@@ -96,36 +89,6 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
     return false;
   }
 
-  void OnUserClickedCustomize() {
-#if defined(OS_WIN)
-    CustomizeSyncWindowView::Show(NULL, service_->profile());
-#elif defined(OS_LINUX)
-    ShowCustomizeSyncWindow(service_->profile());
-#elif defined(OS_MACOSX)
-    DCHECK(html_dialog_window_);
-    ShowSyncCustomizeDialog(html_dialog_window_, service_);
-#endif
-  }
-
-  bool ClickCustomizeOk() {
-#if defined(OS_WIN)
-    return CustomizeSyncWindowView::ClickOk();
-#elif defined(OS_LINUX)
-    return CustomizeSyncWindowOk();
-#else
-    return true;
-#endif
-  }
-
-  void ClickCustomizeCancel() {
-#if defined(OS_WIN)
-    CustomizeSyncWindowView::ClickCancel();
-#elif defined(OS_LINUX)
-    CustomizeSyncWindowCancel();
-#endif
-  }
-
-
   void OnUserSubmittedAuth(const std::string& username,
                            const std::string& password,
                            const std::string& captcha) {
@@ -140,7 +103,6 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, ChooseDataTypesSetsPrefs);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepMergeAndSync);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DialogCancelled);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InvalidTransitions);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, FullSuccessfulRunSetsPref);
@@ -211,12 +173,8 @@ class FlowHandler : public DOMMessageHandler {
   virtual void RegisterMessages();
 
   // Callbacks from the page.
-  void HandleUserClickedCustomize(const Value* value);
-  void ClickCustomizeOk(const Value* value);
-  void ClickCustomizeCancel(const Value* value);
   void HandleSubmitAuth(const Value* value);
   void HandleChooseDataTypes(const Value* value);
-  void HandleSubmitMergeAndSync(const Value* value);
 
   // These functions control which part of the HTML is visible.
   void ShowGaiaLogin(const DictionaryValue& args);

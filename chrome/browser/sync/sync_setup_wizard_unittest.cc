@@ -32,7 +32,6 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
   ProfileSyncServiceForWizardTest(ProfileSyncFactory* factory, Profile* profile)
       : ProfileSyncService(factory, profile, false),
-        user_accepted_merge_and_sync_(false),
         user_cancelled_dialog_(false) {
     RegisterPreferences();
     ResetTestStats();
@@ -54,9 +53,6 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     chosen_data_types_ = chosen_types;
   }
 
-  virtual void OnUserAcceptedMergeAndSync() {
-    user_accepted_merge_and_sync_ = true;
-  }
   virtual void OnUserCancelledDialog() {
     user_cancelled_dialog_ = true;
   }
@@ -75,7 +71,6 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     username_.clear();
     password_.clear();
     captcha_.clear();
-    user_accepted_merge_and_sync_ = false;
     user_cancelled_dialog_ = false;
     user_chose_data_types_ = false;
     keep_everything_synced_ = false;
@@ -85,7 +80,6 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   std::string username_;
   std::string password_;
   std::string captcha_;
-  bool user_accepted_merge_and_sync_;
   bool user_cancelled_dialog_;
   bool user_chose_data_types_;
   bool keep_everything_synced_;
@@ -244,7 +238,6 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_EQ(kTestUser, service_->username_);
   EXPECT_EQ(kTestPassword, service_->password_);
   EXPECT_EQ(kTestCaptcha, service_->captcha_);
-  EXPECT_FALSE(service_->user_accepted_merge_and_sync_);
   EXPECT_FALSE(service_->user_cancelled_dialog_);
   service_->ResetTestStats();
 
@@ -257,7 +250,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
   dialog_args.Clear();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(5U, dialog_args.size());
+  EXPECT_EQ(4U, dialog_args.size());
   std::string iframe_to_show;
   dialog_args.GetString(L"iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);
@@ -275,7 +268,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   service_->set_auth_state(kTestUser, captcha_error);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(5U, dialog_args.size());
+  EXPECT_EQ(4U, dialog_args.size());
   dialog_args.GetString(L"iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);
   std::string captcha_url;
@@ -343,7 +336,6 @@ TEST_F(SyncSetupWizardTest, DialogCancelled) {
   EXPECT_TRUE(service_->user_cancelled_dialog_);
   EXPECT_EQ(std::string(), service_->username_);
   EXPECT_EQ(std::string(), service_->password_);
-  EXPECT_FALSE(service_->user_accepted_merge_and_sync_);
 
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
@@ -356,7 +348,6 @@ TEST_F(SyncSetupWizardTest, DialogCancelled) {
   EXPECT_TRUE(service_->user_cancelled_dialog_);
   EXPECT_EQ(std::string(), service_->username_);
   EXPECT_EQ(std::string(), service_->password_);
-  EXPECT_FALSE(service_->user_accepted_merge_and_sync_);
 }
 
 TEST_F(SyncSetupWizardTest, InvalidTransitions) {
@@ -426,7 +417,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(5U, dialog_args.size());
+  EXPECT_EQ(4U, dialog_args.size());
   std::string iframe_to_show;
   dialog_args.GetString(L"iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);

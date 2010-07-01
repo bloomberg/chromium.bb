@@ -18,7 +18,6 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
-#include "chrome/browser/gtk/options/customize_sync_window_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -605,7 +604,7 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
 void ContentPageGtk::OnSyncCustomizeButtonClicked(GtkWidget* widget) {
   // sync_customize_button_ should be invisible if sync is not yet set up.
   DCHECK(sync_service_->HasSyncSetupCompleted());
-  ShowCustomizeSyncWindow(profile());
+  sync_service_->ShowChooseDataTypes();
 }
 
 void ContentPageGtk::OnSyncActionLinkClicked(GtkWidget* widget) {

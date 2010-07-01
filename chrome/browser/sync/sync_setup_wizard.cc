@@ -111,8 +111,6 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
         l10n_util::GetString(IDS_SYNC_CREATE_ACCOUNT));
     localized_strings.SetString(L"cancel",
         l10n_util::GetString(IDS_CANCEL));
-    localized_strings.SetString(L"customize",
-        l10n_util::GetString(IDS_SYNC_LOGIN_CUSTOMIZE));
     localized_strings.SetString(L"settingup",
         l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP));
     localized_strings.SetString(L"success",

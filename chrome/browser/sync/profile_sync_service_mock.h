@@ -28,7 +28,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                void(const std::string& username,
                     const std::string& password,
                     const std::string& captcha));
-  MOCK_METHOD0(OnUserAcceptedMergeAndSync, void());
   MOCK_METHOD0(OnUserCancelledDialog, void());
   MOCK_CONST_METHOD0(GetAuthenticatedUsername, string16());
   MOCK_METHOD2(OnUnrecoverableError,
