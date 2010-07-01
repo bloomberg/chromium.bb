@@ -42,8 +42,18 @@ void SandboxedExtensionUnpacker::Start() {
   // file IO on.
   CHECK(ChromeThread::GetCurrentThreadIdentifier(&thread_identifier_));
 
+  // To understand crbug/35198, allow users who can reproduce the bug
+  // to loosen permissions on the scoped directory.
+  bool loosen_permissions = false;
+#if defined (OS_WIN)
+  loosen_permissions = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIssue35198Permission);
+  LOG(INFO) << "loosen_permissions = " << loosen_permissions;
+#endif
+
   // Create a temporary directory to work in.
-  if (!temp_dir_.CreateUniqueTempDirUnderPath(temp_path_)) {
+  if (!temp_dir_.CreateUniqueTempDirUnderPath(temp_path_,
+                                              loosen_permissions)) {
     ReportFailure("Could not create temporary directory.");
     return;
   }
@@ -51,6 +61,15 @@ void SandboxedExtensionUnpacker::Start() {
   // Initialize the path that will eventually contain the unpacked extension.
   extension_root_ = temp_dir_.path().AppendASCII(
       extension_filenames::kTempExtensionName);
+
+  // To understand crbug/35198, allow users who can reproduce the bug to
+  // create the unpack directory in the browser process.
+  bool crxdir_in_browser = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kIssue35198CrxDirBrowser);
+  LOG(INFO) << "crxdir_in_browser = " << crxdir_in_browser;
+  if (crxdir_in_browser && !file_util::CreateDirectory(extension_root_)) {
+    LOG(ERROR) << "Failed to create directory " << extension_root_.value();
+  }
 
   // Extract the public key and validate the package.
   if (!ValidateSignature())
@@ -69,9 +88,6 @@ void SandboxedExtensionUnpacker::Start() {
   // the link will cause file system access outside the sandbox path.
   FilePath normalized_crx_path;
   if (!file_util::NormalizeFilePath(temp_crx_path, &normalized_crx_path)) {
-    // TODO(skerner): Remove this logging once crbug/13044 is fixed.
-    // This bug is starred by many users who have some kind of link.
-    // If NormalizeFilePath() fails we want to see it in the logs they send.
     LOG(ERROR) << "Could not get the normalized path of "
                << temp_crx_path.value();
     normalized_crx_path = temp_crx_path;

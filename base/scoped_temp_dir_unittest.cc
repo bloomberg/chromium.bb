@@ -65,7 +65,7 @@ TEST(ScopedTempDir, UniqueTempDirUnderPath) {
   FilePath test_path;
   {
     ScopedTempDir dir;
-    EXPECT_TRUE(dir.CreateUniqueTempDirUnderPath(base_path));
+    EXPECT_TRUE(dir.CreateUniqueTempDirUnderPath(base_path, false));
     test_path = dir.path();
     EXPECT_TRUE(file_util::DirectoryExists(test_path));
     EXPECT_TRUE(base_path.IsParent(test_path));
