@@ -666,6 +666,6 @@ TEST_F(WorkerTest, QueuedSharedWorkerStartedFromOtherTab) {
 }
 
 // Flaky, http://crbug.com/47518.
-TEST_F(WorkerTest, FLAKY_OpenDatabaseSyncInputs) {
+TEST_F(WorkerTest, OpenDatabaseSyncInputs) {
   RunWorkerStorageLayoutTest("open-database-sync-inputs.html");
 }
