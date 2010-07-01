@@ -237,7 +237,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       if (!paste_target)
         return;
 
-      bookmark_utils::PasteFromClipboard(model_, parent_, index);
+      bookmark_utils::PasteFromClipboard(model_, paste_target, index);
       break;
     }
 
