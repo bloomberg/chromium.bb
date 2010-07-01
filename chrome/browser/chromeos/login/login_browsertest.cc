@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/cros/mock_power_library.h"
 #include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/mock_synaptics_library.h"
+#include "chrome/browser/chromeos/cros/mock_system_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -53,6 +54,7 @@ class LoginTestBase : public InProcessBrowserTest {
     testApi_->SetSynapticsLibrary(&mock_synaptics_library_, false);
     testApi_->SetCryptohomeLibrary(&mock_cryptohome_library_, false);
     testApi_->SetScreenLockLibrary(&mock_screen_lock_library_, false);
+    testApi_->SetSystemLibrary(&mock_system_library_, false);
   }
 
  protected:
@@ -64,6 +66,7 @@ class LoginTestBase : public InProcessBrowserTest {
   NiceMock<MockPowerLibrary> mock_power_library_;
   NiceMock<MockScreenLockLibrary> mock_screen_lock_library_;
   NiceMock<MockSynapticsLibrary> mock_synaptics_library_;
+  NiceMock<MockSystemLibrary> mock_system_library_;
   ImePropertyList ime_properties_;
   chromeos::CrosLibrary::TestApi* testApi_;
 };
