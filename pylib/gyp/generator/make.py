@@ -131,12 +131,12 @@ AR.target ?= $(AR)
 # - use := to avoid the right hand side multiple times, and
 # - use ifeq instead of ?= because ?= is like ifeq and =, not ifeq and := .
 -include $(obj).target/arflags/arflags.mk
+# Temporarily disabling detect_arflags call due to a bug in gold with the
+# detected flag.
+# TODO(evan): reenable this once there is a release of gold > 2.20.1.
+ARFLAGS.target := crs
 ifeq ($(ARFLAGS.target),)
-  # Temporarily disabling detect_arflags call due to a bug in gold with the
-  # detected flag.
-  # TODO(evan): reenable this once there is a release of gold > 2.20.1.
-  # ARFLAGS.target := $(call detect_arflags,target)
-  ARFLAGS.target := crs
+  ARFLAGS.target := $(call detect_arflags,target)
 endif
 
 CC.host ?= gcc
@@ -148,10 +148,10 @@ LDFLAGS.host ?=
 AR.host ?= ar
 # See the description for ARFLAGS.target.
 -include $(obj).host/arflags/arflags.mk
+# Temporarily disabled -- see ARFLAGS.target.
+ARFLAGS.host := crs
 ifeq ($(ARFLAGS.host),)
-  # Temporarily disabled -- see ARFLAGS.target.
-  # ARFLAGS.host := $(call detect_arflags,host)
-  ARFLAGS.host := crs
+  ARFLAGS.host := $(call detect_arflags,host)
 endif
 
 # Flags to make gcc output dependency info.  Note that you need to be
