@@ -832,6 +832,7 @@
         'browser/gtk/gtk_expanded_container_unittest.cc',
         'browser/gtk/gtk_theme_provider_unittest.cc',
         'browser/gtk/keyword_editor_view_unittest.cc',
+        'browser/gtk/options/content_exceptions_window_gtk_unittest.cc',
         'browser/gtk/options/cookies_view_unittest.cc',
         'browser/gtk/options/languages_page_gtk_unittest.cc',
         'browser/gtk/reload_button_gtk_unittest.cc',

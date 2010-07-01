@@ -47,11 +47,14 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
     GtkWindow* parent,
     HostContentSettingsMap* map,
     ContentSettingsType type) {
-  // Build the model adapters that translate views and TableModels into
-  // something GTK can use.
+  // Build the list backing that GTK uses, along with an adapter which will
+  // sort stuff without changing the underlying backing store.
   list_store_ = gtk_list_store_new(COL_COUNT, G_TYPE_STRING, G_TYPE_STRING);
-  treeview_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_store_));
+  sort_list_store_ = gtk_tree_model_sort_new_with_model(
+      GTK_TREE_MODEL(list_store_));
+  treeview_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(sort_list_store_));
   g_object_unref(list_store_);
+  g_object_unref(sort_list_store_);
 
   // Set up the properties of the treeview
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview_), TRUE);
@@ -185,7 +188,7 @@ void ContentExceptionsWindowGtk::UpdateButtonState() {
   int num_selected = gtk_tree_selection_count_selected_rows(
       treeview_selection_);
   int row_count = gtk_tree_model_iter_n_children(
-      GTK_TREE_MODEL(list_store_), NULL);
+      GTK_TREE_MODEL(sort_list_store_), NULL);
 
   // TODO(erg): http://crbug.com/34177 , support editing of more than one entry
   // at a time.
@@ -202,10 +205,10 @@ void ContentExceptionsWindowGtk::Add(GtkWidget* widget) {
 }
 
 void ContentExceptionsWindowGtk::Edit(GtkWidget* widget) {
-  std::set<int> indices;
-  gtk_tree::GetSelectedIndices(treeview_selection_, &indices);
+  std::set<std::pair<int, int> > indices;
+  GetSelectedModelIndices(&indices);
   DCHECK_GT(indices.size(), 0u);
-  int index = *indices.begin();
+  int index = indices.begin()->first;
   const HostContentSettingsMap::PatternSettingPair& entry =
       model_->entry_at(index);
   new ContentExceptionEditor(GTK_WINDOW(dialog_), this, model_.get(), index,
@@ -213,14 +216,16 @@ void ContentExceptionsWindowGtk::Edit(GtkWidget* widget) {
 }
 
 void ContentExceptionsWindowGtk::Remove(GtkWidget* widget) {
-  std::set<int> selected_indices;
-  gtk_tree::GetSelectedIndices(treeview_selection_, &selected_indices);
+  std::set<std::pair<int, int> > model_selected_indices;
+  GetSelectedModelIndices(&model_selected_indices);
 
-  int selected_row = 0;
-  for (std::set<int>::reverse_iterator i = selected_indices.rbegin();
-       i != selected_indices.rend(); ++i) {
-    model_->RemoveException(*i);
-    selected_row = *i;
+  int selected_row = gtk_tree_model_iter_n_children(
+      GTK_TREE_MODEL(sort_list_store_), NULL);
+  for (std::set<std::pair<int, int> >::reverse_iterator i =
+           model_selected_indices.rbegin();
+       i != model_selected_indices.rend(); ++i) {
+    model_->RemoveException(i->first);
+    selected_row = std::min(selected_row, i->second);
   }
 
   int row_count = model_->RowCount();
@@ -255,6 +260,25 @@ std::string ContentExceptionsWindowGtk::GetWindowTitle() const {
       NOTREACHED();
   }
   return std::string();
+}
+
+void ContentExceptionsWindowGtk::GetSelectedModelIndices(
+    std::set<std::pair<int, int> >* indices) {
+  GtkTreeModel* model;
+  GList* paths = gtk_tree_selection_get_selected_rows(treeview_selection_,
+                                                      &model);
+  for (GList* item = paths; item; item = item->next) {
+    GtkTreePath* sorted_path = reinterpret_cast<GtkTreePath*>(item->data);
+    int sorted_row = gtk_tree::GetRowNumForPath(sorted_path);
+    GtkTreePath* path = gtk_tree_model_sort_convert_path_to_child_path(
+        GTK_TREE_MODEL_SORT(sort_list_store_), sorted_path);
+    int row = gtk_tree::GetRowNumForPath(path);
+    gtk_tree_path_free(path);
+    indices->insert(std::make_pair(row, sorted_row));
+  }
+
+  g_list_foreach(paths, (GFunc)gtk_tree_path_free, NULL);
+  g_list_free(paths);
 }
 
 void ContentExceptionsWindowGtk::OnTreeViewRowActivate(
