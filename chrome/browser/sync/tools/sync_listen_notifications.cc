@@ -105,8 +105,7 @@ class XmppNotificationClient : public sigslot::has_slots<> {
     MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableFunction(&PumpAuxiliaryLoops));
     MessageLoop::current()->Run();
-    // xmpp_client_ is invalid here.
-    xmpp_client_ = NULL;
+    DCHECK(!xmpp_client_);
   }
 
  private:
@@ -133,9 +132,7 @@ class XmppNotificationClient : public sigslot::has_slots<> {
           delegate_->OnError(error, subcode);
         }
         MessageLoop::current()->Quit();
-        buzz::XmppReturnStatus disconnect_status =
-            xmpp_client_->Disconnect();
-        CHECK_EQ(disconnect_status, buzz::XMPP_RETURN_OK);
+        xmpp_client_ = NULL;
         break;
     }
   }
