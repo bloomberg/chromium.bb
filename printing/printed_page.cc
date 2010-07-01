@@ -8,10 +8,12 @@ namespace printing {
 
 PrintedPage::PrintedPage(int page_number,
                          NativeMetafile* native_metafile,
-                         const gfx::Size& page_size)
+                         const gfx::Size& page_size,
+                         const gfx::Rect& page_content_rect)
     : page_number_(page_number),
       native_metafile_(native_metafile),
-      page_size_(page_size) {
+      page_size_(page_size),
+      page_content_rect_(page_content_rect) {
 }
 
 PrintedPage::~PrintedPage() {

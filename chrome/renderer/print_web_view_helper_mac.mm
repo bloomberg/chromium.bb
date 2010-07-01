@@ -16,9 +16,13 @@
 #include "printing/native_metafile.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 
 using WebKit::WebFrame;
 using WebKit::WebCanvas;
+using WebKit::WebRect;
+using WebKit::WebSize;
 
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
@@ -27,7 +31,24 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   CGContextRef context = metafile.Init();
 
   float scale_factor = frame->getPrintPageShrink(params.page_number);
-  metafile.StartPage(canvas_size.width(), canvas_size.height(), scale_factor);
+  double content_width_in_points;
+  double content_height_in_points;
+  double margin_top_in_points;
+  double margin_right_in_points;
+  double margin_bottom_in_points;
+  double margin_left_in_points;
+  GetPageSizeAndMarginsInPoints(frame,
+                                params.page_number,
+                                params.params,
+                                &content_width_in_points,
+                                &content_height_in_points,
+                                &margin_top_in_points,
+                                &margin_right_in_points,
+                                &margin_bottom_in_points,
+                                &margin_left_in_points);
+  metafile.StartPage(content_width_in_points,
+                     content_height_in_points,
+                     scale_factor);
 
   // printPage can create autoreleased references to |canvas|. PDF contexts
   // don't write all their data until they are destroyed, so we need to make
@@ -46,6 +67,17 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   page_params.document_cookie = params.params.document_cookie;
   page_params.actual_shrink = scale_factor;
   base::SharedMemory shared_buf;
+
+  page_params.page_size = gfx::Size(
+      static_cast<int>(content_width_in_points
+                       + margin_left_in_points + margin_right_in_points),
+      static_cast<int>(content_height_in_points
+                       + margin_top_in_points + margin_bottom_in_points));
+  page_params.content_area = gfx::Rect(
+      static_cast<int>(margin_left_in_points),
+      static_cast<int>(margin_top_in_points),
+      static_cast<int>(content_width_in_points),
+      static_cast<int>(content_height_in_points));
 
   // Ask the browser to create the shared memory for us.
   uint32 buf_size = metafile.GetDataSize();

@@ -44,12 +44,12 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
   dpi = printing::kPointsPerInch;
 #endif  // defined(OS_MACOSX)
   print_canvas_size_.set_width(
-      printing::ConvertUnit(print_params.printable_size.width(), dpi,
-                            print_params.desired_dpi));
+      ConvertUnit(print_params.printable_size.width(), dpi,
+                  print_params.desired_dpi));
 
   print_canvas_size_.set_height(
-      printing::ConvertUnit(print_params.printable_size.height(), dpi,
-                            print_params.desired_dpi));
+      ConvertUnit(print_params.printable_size.height(), dpi,
+                  print_params.desired_dpi));
 
   // Layout page according to printer page size. Since WebKit shrinks the
   // size of the page automatically (from 125% to 200%) we trick it to
@@ -131,6 +131,8 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
       return;
     }
 
+    UpdatePrintableSizeInPrintParameters(frame, &default_settings);
+
     // Continue only if the settings are valid.
     if (default_settings.dpi && default_settings.document_cookie) {
       int expected_pages_count = 0;
@@ -172,6 +174,8 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
         msg->EnableMessagePumping();
         if (Send(msg)) {
           msg = NULL;
+
+          UpdatePrintableSizeInPrintParameters(frame, &print_settings.params);
 
           // If the settings are invalid, early quit.
           if (print_settings.params.dpi &&
@@ -429,4 +433,19 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
   if (margin_left_in_points)
     *margin_left_in_points =
         ConvertPixelsToPointDouble(margin_left_in_pixels);
+}
+
+void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
+    WebFrame* frame, ViewMsg_Print_Params* params) {
+#if defined(OS_MACOSX)
+  double content_width_in_points;
+  double content_height_in_points;
+  PrintWebViewHelper::GetPageSizeAndMarginsInPoints(frame, 0, *params,
+                                                    &content_width_in_points,
+                                                    &content_height_in_points,
+                                                    NULL, NULL, NULL, NULL);
+  params->printable_size = gfx::Size(
+      static_cast<int>(content_width_in_points),
+      static_cast<int>(content_height_in_points));
+#endif
 }

@@ -136,6 +136,9 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
       double* margin_bottom_in_points,
       double* margin_left_in_points);
 
+  void UpdatePrintableSizeInPrintParameters(WebKit::WebFrame* frame,
+                                            ViewMsg_Print_Params* params);
+
   RenderView* render_view_;
   WebKit::WebView* print_web_view_;
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
