@@ -8,6 +8,24 @@
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "net/base/network_change_notifier.h"
 
+#if defined(ENABLE_REMOTING)
+#include "remoting/host/chromoting_host.h"
+#include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/encoder_verbatim.h"
+#include "remoting/host/host_config.h"
+
+#if defined(OS_WIN)
+#include "remoting/host/capturer_gdi.h"
+#include "remoting/host/event_executor_win.h"
+#elif defined(OS_LINUX)
+#include "remoting/host/capturer_linux.h"
+#include "remoting/host/event_executor_linux.h"
+#elif defined(OS_MACOSX)
+#include "remoting/host/capturer_mac.h"
+#include "remoting/host/event_executor_mac.h"
+#endif
+#endif  // defined(ENABLED_REMOTING)
+
 ServiceProcess* g_service_process = NULL;
 
 ServiceProcess::ServiceProcess() {
@@ -47,6 +65,32 @@ CloudPrintProxy* ServiceProcess::CreateCloudPrintProxy(
   cloud_print_proxy_list_.push_back(cloud_print_proxy);
   return cloud_print_proxy;
 }
+
+#if defined(ENABLE_REMOTING)
+remoting::ChromotingHost* ServiceProcess::CreateChromotingHost(
+    remoting::ChromotingHostContext* context,
+    remoting::MutableHostConfig* config) {
+  scoped_ptr<remoting::Capturer> capturer;
+  scoped_ptr<remoting::Encoder> encoder;
+  scoped_ptr<remoting::EventExecutor> executor;
+
+  // Select the capturer and encoder from |config|.
+#if defined(OS_WIN)
+  capturer.reset(new remoting::CapturerGdi());
+  executor.reset(new remoting::EventExecutorWin());
+#elif defined(OS_LINUX)
+  capturer.reset(new remoting::CapturerLinux());
+  executor.reset(new remoting::EventExecutorLinux());
+#elif defined(OS_MACOSX)
+  capturer.reset(new remoting::CapturerMac());
+  executor.reset(new remoting::EventExecutorMac());
+#endif
+  encoder.reset(new remoting::EncoderVerbatim());
+
+  return new remoting::ChromotingHost(context, config, capturer.release(),
+                                      encoder.release(), executor.release());
+}
+#endif
 
 ServiceProcess::~ServiceProcess() {
   Teardown();

@@ -1092,6 +1092,13 @@
             'service/cloud_print/print_system_cups.cc',
           ],
         }],
+        ['remoting==1', {
+          'dependencies': [
+            '../remoting/remoting.gyp:chromoting_base',
+            '../remoting/remoting.gyp:chromoting_host',
+            '../remoting/remoting.gyp:chromoting_jingle_glue',
+          ],
+        }],
       ],
     },
   ],

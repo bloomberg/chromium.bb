@@ -16,6 +16,12 @@ namespace net {
 class NetworkChangeNotifier;
 }
 
+namespace remoting {
+class ChromotingHost;
+class ChromotingHostContext;
+class MutableHostConfig;
+}
+
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
 class ServiceProcess {
@@ -48,6 +54,11 @@ class ServiceProcess {
     return file_thread_.get();
   }
   CloudPrintProxy* CreateCloudPrintProxy(JsonPrefStore* service_prefs);
+#if defined(ENABLE_REMOTING)
+  remoting::ChromotingHost* CreateChromotingHost(
+      remoting::ChromotingHostContext* context,
+      remoting::MutableHostConfig* config);
+#endif
 
  private:
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;

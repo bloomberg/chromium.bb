@@ -48,4 +48,6 @@ class ChromotingHostContext {
 
 }  // namespace remoting
 
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::ChromotingHostContext);
+
 #endif  // REMOTING_HOST_CHROMOTING_HOST_CONTEXT_H_

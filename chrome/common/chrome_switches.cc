@@ -275,6 +275,10 @@ const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // This applies only when the process type is "service". Enables the
+// Chromoting Host Process within the service process.
+const char kEnableChromoting[]              = "enable-chromoting";
+
+// This applies only when the process type is "service". Enables the
 // Cloud Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
