@@ -4,9 +4,14 @@
 
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 
+#include <string>
+
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
+#include "base/string_util.h"
+#include "chrome/browser/sync/sync_constants.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "talk/xmpp/constants.h"
@@ -20,13 +25,10 @@ namespace {
 
 const char kBotJid[] = "tango@bot.talk.google.com";
 
-// TODO(akalin): Eliminate use of 'tango' name.
-
-// TODO(akalin): Hash out details of tango IQ protocol.
-
-static const buzz::QName kQnTangoIqPacket("google:tango", "packet");
-static const buzz::QName kQnTangoIqPacketContent(
-    "google:tango", "content");
+const buzz::QName kQnData("google:notifier", "data");
+const buzz::QName kQnSeq("", "seq");
+const buzz::QName kQnSid("", "sid");
+const buzz::QName kQnServiceUrl("", "serviceUrl");
 
 // TODO(akalin): Move these task classes out so that they can be
 // unit-tested.  This'll probably be done easier once we consolidate
@@ -55,7 +57,7 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
     }
     LOG(INFO) << "CacheInvalidationListenTask response received";
     std::string data;
-    if (GetTangoIqPacketData(stanza, &data)) {
+    if (GetCacheInvalidationIqPacketData(stanza, &data)) {
       callback_->Run(data);
     } else {
       LOG(ERROR) << "Could not get packet data";
@@ -70,7 +72,7 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
   virtual bool HandleStanza(const buzz::XmlElement* stanza) {
     LOG(INFO) << "Stanza received: "
               << notifier::XmlElementToString(*stanza);
-    if (IsValidTangoIqPacket(stanza)) {
+    if (IsValidCacheInvalidationIqPacket(stanza)) {
       LOG(INFO) << "Queueing stanza";
       QueueStanza(stanza);
       return true;
@@ -80,28 +82,22 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
   }
 
  private:
-  bool IsValidTangoIqPacket(const buzz::XmlElement* stanza) {
+  bool IsValidCacheInvalidationIqPacket(const buzz::XmlElement* stanza) {
     return
-        (MatchRequestIq(stanza, buzz::STR_SET, kQnTangoIqPacket) &&
+        (MatchRequestIq(stanza, buzz::STR_SET, kQnData) &&
          (stanza->Attr(buzz::QN_TO) == GetClient()->jid().Str()));
   }
 
-  bool GetTangoIqPacketData(const buzz::XmlElement* stanza,
+  bool GetCacheInvalidationIqPacketData(const buzz::XmlElement* stanza,
                             std::string* data) {
-    DCHECK(IsValidTangoIqPacket(stanza));
-    const buzz::XmlElement* tango_iq_packet =
-        stanza->FirstNamed(kQnTangoIqPacket);
-    if (!tango_iq_packet) {
-      LOG(ERROR) << "Could not find tango IQ packet element";
+    DCHECK(IsValidCacheInvalidationIqPacket(stanza));
+    const buzz::XmlElement* cache_invalidation_iq_packet =
+        stanza->FirstNamed(kQnData);
+    if (!cache_invalidation_iq_packet) {
+      LOG(ERROR) << "Could not find cache invalidation IQ packet element";
       return false;
     }
-    const buzz::XmlElement* tango_iq_packet_content =
-        tango_iq_packet->FirstNamed(kQnTangoIqPacketContent);
-    if (!tango_iq_packet_content) {
-      LOG(ERROR) << "Could not find tango IQ packet content element";
-      return false;
-    }
-    *data = tango_iq_packet_content->BodyText();
+    *data = cache_invalidation_iq_packet->BodyText();
     return true;
   }
 
@@ -114,14 +110,17 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
  public:
   CacheInvalidationSendMessageTask(Task* parent,
                                    const buzz::Jid& to_jid,
-                                   const std::string& msg)
+                                   const std::string& msg,
+                                   int seq,
+                                   const std::string& sid)
       : XmppTask(parent, buzz::XmppEngine::HL_SINGLE),
-        to_jid_(to_jid), msg_(msg) {}
+        to_jid_(to_jid), msg_(msg), seq_(seq), sid_(sid) {}
   virtual ~CacheInvalidationSendMessageTask() {}
 
   virtual int ProcessStart() {
     scoped_ptr<buzz::XmlElement> stanza(
-        MakeTangoIqPacket(to_jid_, task_id(), msg_));
+        MakeCacheInvalidationIqPacket(to_jid_, task_id(), msg_,
+                                      seq_, sid_));
     LOG(INFO) << "Sending message: "
               << notifier::XmlElementToString(*stanza.get());
     if (SendStanza(stanza.get()) != buzz::XMPP_RETURN_OK) {
@@ -156,26 +155,36 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
   }
 
  private:
-  static buzz::XmlElement* MakeTangoIqPacket(
+  static buzz::XmlElement* MakeCacheInvalidationIqPacket(
       const buzz::Jid& to_jid,
       const std::string& task_id,
-      const std::string& msg) {
+      const std::string& msg,
+      int seq, const std::string& sid) {
     buzz::XmlElement* iq = MakeIq(buzz::STR_SET, to_jid, task_id);
-    buzz::XmlElement* tango_iq_packet =
-        new buzz::XmlElement(kQnTangoIqPacket, true);
-    iq->AddElement(tango_iq_packet);
-    buzz::XmlElement* tango_iq_packet_content =
-        new buzz::XmlElement(kQnTangoIqPacketContent, true);
-    tango_iq_packet->AddElement(tango_iq_packet_content);
-    tango_iq_packet_content->SetBodyText(msg);
+    buzz::XmlElement* cache_invalidation_iq_packet =
+        new buzz::XmlElement(kQnData, true);
+    iq->AddElement(cache_invalidation_iq_packet);
+    // TODO(akalin): Remove use of seq and sid.
+    cache_invalidation_iq_packet->SetAttr(kQnSeq, IntToString(seq));
+    cache_invalidation_iq_packet->SetAttr(kQnSid, sid);
+    cache_invalidation_iq_packet->SetAttr(kQnServiceUrl,
+                                          browser_sync::kSyncServiceUrl);
+    cache_invalidation_iq_packet->SetBodyText(msg);
     return iq;
   }
 
   const buzz::Jid to_jid_;
   std::string msg_;
+  int seq_;
+  std::string sid_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheInvalidationSendMessageTask);
 };
+
+std::string MakeSid() {
+  uint64 sid = base::RandUint64();
+  return std::string("chrome-sync-") + Uint64ToString(sid);
+}
 
 }  // namespace
 
@@ -183,7 +192,9 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
     buzz::XmppClient* xmpp_client,
     invalidation::InvalidationClient* invalidation_client)
     : xmpp_client_(xmpp_client),
-      invalidation_client_(invalidation_client) {
+      invalidation_client_(invalidation_client),
+      seq_(0),
+      sid_(MakeSid()) {
   CHECK(xmpp_client_);
   CHECK(invalidation_client_);
   invalidation::NetworkEndpoint* network_endpoint =
@@ -223,8 +234,10 @@ void CacheInvalidationPacketHandler::HandleOutboundPacket(
   CacheInvalidationSendMessageTask* send_message_task =
       new CacheInvalidationSendMessageTask(xmpp_client_,
                                            buzz::Jid(kBotJid),
-                                           encoded_message);
+                                           encoded_message,
+                                           seq_, sid_);
   send_message_task->Start();
+  ++seq_;
 }
 
 void CacheInvalidationPacketHandler::HandleInboundPacket(

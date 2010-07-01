@@ -50,6 +50,13 @@ class CacheInvalidationPacketHandler {
   buzz::XmppClient* xmpp_client_;
   invalidation::InvalidationClient* invalidation_client_;
 
+  // Parameters for sent messages.
+
+  // Monotonically increasing sequence number.
+  int seq_;
+  // Unique session token.
+  const std::string sid_;
+
   DISALLOW_COPY_AND_ASSIGN(CacheInvalidationPacketHandler);
 };
 
