@@ -81,7 +81,7 @@ void CreateDragImageForFile(const FilePath::StringType& file_name,
                             width - 2, font.height(),
                             gfx::Canvas::TEXT_ALIGN_CENTER);
 #else
-  std::wstring name = file_util::GetFilenameFromPath(UTF8ToWide(file_name));
+  std::wstring name = FilePath(file_name).BaseName().ToWStringHack();
   canvas.DrawStringInt(name, font, kFileDragImageTextColor,
                        0, icon->height() + kLinkDragImageVPadding,
                        width, font.height(), gfx::Canvas::TEXT_ALIGN_CENTER);

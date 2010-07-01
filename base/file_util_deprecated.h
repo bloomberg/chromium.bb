@@ -17,14 +17,6 @@
 
 namespace file_util {
 
-// Use FilePath::DirName instead.
-void UpOneDirectory(std::wstring* dir);
-// Use FilePath::DirName instead.
-void UpOneDirectoryOrEmpty(std::wstring* dir);
-
-// Use FilePath::BaseName instead.
-std::wstring GetFilenameFromPath(const std::wstring& path);
-
 // Use FilePath::Extension instead.
 FilePath::StringType GetFileExtensionFromPath(const FilePath& path);
 std::wstring GetFileExtensionFromPath(const std::wstring& path);
@@ -46,6 +38,14 @@ int WriteFile(const std::wstring& filename, const char* data, int size);
 // Functions successfully deprecated on non-Windows, but Win-specific
 // callers remain.
 #if defined(OS_WIN)
+// Use FilePath::DirName instead.
+void UpOneDirectory(std::wstring* dir);
+// Use FilePath::DirName instead.
+void UpOneDirectoryOrEmpty(std::wstring* dir);
+
+// Use FilePath::BaseName instead.
+std::wstring GetFilenameFromPath(const std::wstring& path);
+
 // Returns the directory component of a path, without the trailing
 // path separator, or an empty string on error. The function does not
 // check for the existence of the path, so if it is passed a directory

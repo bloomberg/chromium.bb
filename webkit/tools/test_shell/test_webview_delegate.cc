@@ -137,8 +137,10 @@ std::string UrlSuitableForTestResult(const std::string& url) {
   if (url.empty() || std::string::npos == url.find("file://"))
     return url;
 
+  // TODO: elsewhere in the codebase we use net::FormatUrl() for this.
   std::string filename =
-      WideToUTF8(file_util::GetFilenameFromPath(UTF8ToWide(url)));
+      WideToUTF8(FilePath::FromWStringHack(UTF8ToWide(url))
+                     .BaseName().ToWStringHack());
   if (filename.empty())
     return "file:";  // A WebKit test has this in its expected output.
   return filename;
