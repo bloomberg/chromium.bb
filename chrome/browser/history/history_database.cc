@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include "app/sql/transaction.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
@@ -16,6 +17,7 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace history {
 
@@ -24,7 +26,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // or database without *too* many bad effects.
-static const int kCurrentVersionNumber = 17;
+static const int kCurrentVersionNumber = 18;
 static const int kCompatibleVersionNumber = 16;
 static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
@@ -54,7 +56,8 @@ void ComputeDatabaseMetrics(const FilePath& history_name,
 }  // namespace
 
 HistoryDatabase::HistoryDatabase()
-    : needs_version_17_migration_(false) {
+    : needs_version_17_migration_(false),
+      needs_version_18_migration_(false) {
 }
 
 HistoryDatabase::~HistoryDatabase() {
@@ -105,7 +108,7 @@ sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
   // Create the tables and indices.
   // NOTE: If you add something here, also add it to
   //       RecreateAllButStarAndURLTables.
-  if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber))
+  if (!meta_table_.Init(&db_, GetCurrentVersion(), kCompatibleVersionNumber))
     return sql::INIT_FAILURE;
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
@@ -131,7 +134,14 @@ void HistoryDatabase::BeginExclusiveMode() {
 
 // static
 int HistoryDatabase::GetCurrentVersion() {
-  return kCurrentVersionNumber;
+  // Temporary solution while TopSites is behind a flag. If there is
+  // no flag, we are still using the Thumbnails file, i.e. we are at
+  // version 17.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
+    return kCurrentVersionNumber;
+  } else {
+    return kCurrentVersionNumber - 1;
+  }
 }
 
 void HistoryDatabase::BeginTransaction() {
@@ -273,6 +283,9 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
     meta_table_.SetVersionNumber(cur_version);
   }
 
+  if (cur_version == 17)
+    needs_version_18_migration_ = true;
+
   // When the version is too old, we just try to continue anyway, there should
   // not be a released product that makes a database too old for us to handle.
   LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
@@ -305,5 +318,12 @@ void HistoryDatabase::MigrateTimeEpoch() {
   needs_version_17_migration_ = true;
 }
 #endif
+
+void HistoryDatabase::MigrationToTopSitesDone() {
+  // We should be migrating from 17 to 18.
+  DCHECK_EQ(17, meta_table_.GetVersionNumber());
+  meta_table_.SetVersionNumber(18);
+  needs_version_18_migration_ = false;
+}
 
 }  // namespace history

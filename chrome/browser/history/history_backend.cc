@@ -583,7 +583,7 @@ void HistoryBackend::InitImpl() {
   // Thumbnail database.
   thumbnail_db_.reset(new ThumbnailDatabase());
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
-    if (!file_util::PathExists(thumbnail_name)) {
+    if (!db_->needs_version_18_migration()) {
       // No convertion needed - use new filename right away.
       thumbnail_name = GetFaviconsFileName();
     }
@@ -600,7 +600,7 @@ void HistoryBackend::InitImpl() {
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
-    if (thumbnail_db_->NeedsMigrationToTopSites()) {
+    if (db_->needs_version_18_migration()) {
       LOG(INFO) << "Starting TopSites migration";
       delegate_->StartTopSitesMigration();
     }
@@ -2159,6 +2159,7 @@ BookmarkService* HistoryBackend::GetBookmarkService() {
 void HistoryBackend::MigrateThumbnailsDatabase() {
   thumbnail_db_->RenameAndDropThumbnails(GetThumbnailFileName(),
                                          GetFaviconsFileName());
+  db_->MigrationToTopSitesDone();
 }
 
 }  // namespace history

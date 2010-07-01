@@ -122,6 +122,17 @@ class HistoryDatabase : public DownloadDatabase,
     return needs_version_17_migration_;
   }
 
+  // Returns true if the Thumbnails database should be renamed to
+  // Favicons database. 17 -> 18 is migration to TopSites. ThumbnailsDatabase
+  // doesn't store the thumbnails any more, only the favicons. Hence, its file
+  // is renamed from Thumbnails to Favicons.
+  bool needs_version_18_migration() const {
+    return needs_version_18_migration_;
+  }
+
+  // Update the database version after the TopSites migration.
+  void MigrationToTopSitesDone();
+
   // Visit table functions ----------------------------------------------------
 
   // Update the segment id of a visit. Return true on success.
@@ -136,9 +147,6 @@ class HistoryDatabase : public DownloadDatabase,
   // early expiration (AUTO_SUBFRAMES).
   virtual base::Time GetEarlyExpirationThreshold();
   virtual void UpdateEarlyExpirationThreshold(base::Time threshold);
-
-  // Drops the starred table and star_id from urls.
-  bool MigrateFromVersion15ToVersion16();
 
  private:
   // Implemented for URLDatabase.
@@ -168,8 +176,9 @@ class HistoryDatabase : public DownloadDatabase,
 
   base::Time cached_early_expiration_threshold_;
 
-  // See the getter above.
+  // See the getters above.
   bool needs_version_17_migration_;
+  bool needs_version_18_migration_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDatabase);
 };
