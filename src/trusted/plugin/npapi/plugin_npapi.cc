@@ -23,12 +23,12 @@
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
+#include "native_client/src/trusted/plugin/npapi/closure.h"
 #include "native_client/src/trusted/plugin/npapi/multimedia_socket.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/stream_shm_buffer.h"
@@ -46,6 +46,29 @@ void InitializeIdentifiers() {
   plugin::PluginNpapi::kLengthIdent = NPN_GetStringIdentifier("length");
   plugin::PluginNpapi::kLocationIdent = NPN_GetStringIdentifier("location");
   identifiers_initialized = true;
+}
+
+bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+
+  const char* url = params->ins()[0]->u.sval;
+  plugin::ScriptableHandle* callback_obj =
+      reinterpret_cast<plugin::ScriptableHandle*>(params->ins()[1]->u.oval);
+  PLUGIN_PRINTF(("loading %s as file\n", url));
+  plugin::UrlAsNaClDescNotify* callback =
+      new(std::nothrow) plugin::UrlAsNaClDescNotify(plugin, url, callback_obj);
+  if (NULL == callback) {
+    params->set_exception_string("Out of memory in __urlAsNaClDesc");
+    return false;
+  }
+
+  if (!callback->StartDownload()) {
+    PLUGIN_PRINTF(("failed to load URL %s to local file.\n", url));
+    params->set_exception_string("specified url could not be loaded");
+    // callback is always deleted in URLNotify
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -81,6 +104,8 @@ PluginNpapi* PluginNpapi::New(InstanceIdentifier instance_id,
     PLUGIN_PRINTF(("PluginNpapi::New: Init failed\n"));
     return NULL;
   }
+  // Add methods only implemented by the NPAPI plugin.
+  plugin->AddMethodCall(UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
   // Set up the multimedia video support.
   plugin->video_ = new(std::nothrow) VideoMap(plugin);
   if (NULL == plugin->video_) {
@@ -453,6 +478,25 @@ void PluginNpapi::ShutdownMultimedia() {
   PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime:"
                  " deleting multimedia_channel_\n"));
   delete multimedia_channel_;
+}
+
+void PluginNpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
+  nacl::NPModule* npmodule = new(std::nothrow) nacl::NPModule(srpc_channel);
+  if (NULL != npmodule) {
+    set_module(npmodule);
+  }
+}
+
+bool PluginNpapi::RequestNaClModule(const nacl::string& url) {
+  // Load the new module if the origin of the page is valid.
+  PLUGIN_PRINTF(("Plugin::SetProperty src = '%s'\n", url.c_str()));
+  LoadNaClAppNotify* callback = new(std::nothrow) LoadNaClAppNotify(this, url);
+  if ((NULL == callback) || (!callback->StartDownload())) {
+    PLUGIN_PRINTF(("Failed to load URL to local file.\n"));
+    // callback is always deleted in URLNotify
+    return false;
+  }
+  return true;
 }
 
 }  // namespace plugin

@@ -156,18 +156,6 @@ class VideoMap {
   PluginWindow* window_;
 };
 
-extern void VideoGlobalLock();
-extern void VideoGlobalUnlock();
-
-class VideoScopedGlobalLock {
- public:
-  VideoScopedGlobalLock() { VideoGlobalLock(); }
-  ~VideoScopedGlobalLock() { VideoGlobalUnlock(); }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(VideoScopedGlobalLock);
-};
-
 }  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_VIDEO_H_

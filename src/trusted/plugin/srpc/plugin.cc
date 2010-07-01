@@ -22,10 +22,10 @@
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/plugin/npapi/closure.h"
 #include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/nexe_arch.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
@@ -46,29 +46,6 @@ static int32_t stringToInt32(char* src) {
 // cannot reliably handle errors when there are multiple plugins in the same
 // process.  Issue 605.
 PLUGIN_JMPBUF g_LoaderEnv;
-
-bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
-
-  const char* url = params->ins()[0]->u.sval;
-  plugin::ScriptableHandle* callback_obj =
-      reinterpret_cast<plugin::ScriptableHandle*>(params->ins()[1]->u.oval);
-  PLUGIN_PRINTF(("loading %s as file\n", url));
-  plugin::UrlAsNaClDescNotify* callback =
-      new(std::nothrow) plugin::UrlAsNaClDescNotify(plugin, url, callback_obj);
-  if (NULL == callback) {
-    params->set_exception_string("Out of memory in __urlAsNaClDesc");
-    return false;
-  }
-
-  if (!callback->StartDownload()) {
-    PLUGIN_PRINTF(("failed to load URL %s to local file.\n", url));
-    params->set_exception_string("specified url could not be loaded");
-    // callback is always deleted in URLNotify
-    return false;
-  }
-  return true;
-}
 
 bool ShmFactory(void* obj, plugin::SrpcParams* params) {
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
@@ -238,7 +215,6 @@ static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 
 void Plugin::LoadMethods() {
   // Methods supported by Plugin.
-  AddMethodCall(UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
   AddMethodCall(ShmFactory, "__shmFactory", "i", "h");
   AddMethodCall(SocketAddressFactory, "__socketAddressFactory", "s", "h");
   AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
@@ -299,7 +275,7 @@ bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
   }
 }
 
-bool Plugin::SetSrcPropertyImpl(const nacl::string &url) {
+bool Plugin::SetSrcPropertyImpl(const nacl::string& url) {
   if (NULL != service_runtime_) {
     PLUGIN_PRINTF(("Plugin::SetProperty: unloading previous\n"));
     // Plugin owns socket_address_ and socket_, so when we change to a new
@@ -311,31 +287,7 @@ bool Plugin::SetSrcPropertyImpl(const nacl::string &url) {
     delete service_runtime_;
     service_runtime_ = NULL;
   }
-  // Load the new module if the origin of the page is valid.
-  PLUGIN_PRINTF(("Plugin::SetProperty src = '%s'\n", url.c_str()));
-  LoadNaClAppNotify* callback = new(std::nothrow) LoadNaClAppNotify(this, url);
-  if ((NULL == callback) || (!callback->StartDownload())) {
-    PLUGIN_PRINTF(("Failed to load URL to local file.\n"));
-    // callback is always deleted in URLNotify
-    return false;
-  }
-  return true;
-}
-
-Plugin* Plugin::New(BrowserInterface* browser_interface,
-                    InstanceIdentifier instance_id,
-                    int argc,
-                    char* argn[],
-                    char* argv[]) {
-  PLUGIN_PRINTF(("Plugin::New()\n"));
-
-  Plugin* plugin = new(std::nothrow) Plugin();
-  if (plugin == NULL ||
-      !plugin->Init(browser_interface, instance_id, argc, argn, argv)) {
-    return NULL;
-  }
-
-  return plugin;
+  return RequestNaClModule(url);
 }
 
 bool Plugin::Init(BrowserInterface* browser_interface,
@@ -610,6 +562,35 @@ bool Plugin::RunOnfailHandler() {
     return true;
   }
   return browser->EvalString(instance_id(), onfail_handler);
+}
+
+// The NaCl audio/video interface uses a global mutex to protect observed
+// timing-sensitive accesses to the plugin's window when starting up and
+// shutting down.  Because there is a relatively complex relationship between
+// ConnectedSocket and Plugin to synchronize accesses, this code is built in
+// both the NPAPI and PPAPI plugins.  This is unfortunate, because only
+// the NPAPI plugin (when not used as part of the Chrome integration) actually
+// needs the locking.
+// TODO(sehr): move this code to somewhere in the npapi directory.
+class GlobalVideoMutex {
+ public:
+  GlobalVideoMutex() { NaClMutexCtor(&mutex_); }
+  ~GlobalVideoMutex() { NaClMutexDtor(&mutex_); }
+  void Lock() { NaClMutexLock(&mutex_); }
+  void Unlock() { NaClMutexUnlock(&mutex_); }
+
+ private:
+  NaClMutex mutex_;
+};
+
+static GlobalVideoMutex g_VideoMutex;
+
+void VideoGlobalLock() {
+  g_VideoMutex.Lock();
+}
+
+void VideoGlobalUnlock() {
+  g_VideoMutex.Unlock();
 }
 
 }  // namespace plugin

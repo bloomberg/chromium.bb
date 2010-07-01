@@ -24,7 +24,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
-#include "native_client/src/trusted/plugin/srpc/closure.h"
+#include "native_client/src/trusted/plugin/npapi/closure.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
 using nacl::NPIdentifierToWireFormat;

@@ -40,27 +40,6 @@ namespace plugin {
 
 class Plugin;
 
-class GlobalVideoMutex {
- private:
-  NaClMutex mutex_;
- public:
-  void Lock() { NaClMutexLock(&mutex_); }
-  void Unlock() { NaClMutexUnlock(&mutex_); }
-  GlobalVideoMutex() { NaClMutexCtor(&mutex_); }
-  ~GlobalVideoMutex() { NaClMutexDtor(&mutex_); }
-};
-
-static GlobalVideoMutex globalVideoMutex;
-
-void VideoGlobalLock() {
-  globalVideoMutex.Lock();
-}
-
-void VideoGlobalUnlock() {
-  globalVideoMutex.Unlock();
-}
-
-
 #if NACL_LINUX && defined(MOZ_X11)
 static int XKeysymToNaCl(KeySym xsym) {
   if ((xsym & 0xFF00) == 0x0000)

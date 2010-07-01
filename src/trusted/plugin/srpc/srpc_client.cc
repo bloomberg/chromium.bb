@@ -73,13 +73,9 @@ void SrpcClient::StartJSObjectProxy(Plugin* plugin) {
   if (methods_.find(npapi_ident) != methods_.end()) {
     PLUGIN_PRINTF(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
     // Start up NPAPI interaction.
-    nacl::NPModule* npmodule =
-        new(std::nothrow) nacl::NPModule(&srpc_channel_);
-    PluginNpapi* plugin_npapi = static_cast<PluginNpapi*>(plugin);
-    if (NULL != npmodule) {
-      plugin_npapi->set_module(npmodule);
-    }
+    plugin->StartProxiedExecution(&srpc_channel_);
   }
+  // TODO(polina,sehr): this also needs to be revisited for PPAPI proxying.
 }
 
 void SrpcClient::GetMethods() {

@@ -5,7 +5,7 @@
  */
 
 
-#include "native_client/src/trusted/plugin/srpc/closure.h"
+#include "native_client/src/trusted/plugin/npapi/closure.h"
 
 #include <string.h>
 
@@ -24,8 +24,6 @@
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
 #include "native_client/src/trusted/plugin/srpc/stream_shm_buffer.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-
-// TODO(sehr): This file really needs to be split to separate out NPAPI.
 
 struct NPObject;
 
