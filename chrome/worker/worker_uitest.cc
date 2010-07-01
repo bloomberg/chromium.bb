@@ -285,7 +285,7 @@ TEST_F(WorkerTest, WorkerMapGc) {
   RunWorkerFastLayoutTest("wrapper-map-gc.html");
 }
 
-TEST_F(WorkerTest, WorkerMessagePort) {
+TEST_F(WorkerTest, FAILS_WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
 
@@ -314,7 +314,7 @@ TEST_F(WorkerTest, WorkerReplaceSelf) {
 #define WorkerScriptError FLAKY_WorkerScriptError
 #endif
 
-TEST_F(WorkerTest, WorkerScriptError) {
+TEST_F(WorkerTest, FAILS_WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
 
