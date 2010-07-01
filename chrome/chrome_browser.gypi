@@ -904,8 +904,6 @@
         'browser/cocoa/themed_window.mm',
         'browser/cocoa/theme_install_bubble_view.h',
         'browser/cocoa/theme_install_bubble_view.mm',
-        'browser/cocoa/third_party/NSBezierPath+MCAdditions.h',
-        'browser/cocoa/third_party/NSBezierPath+MCAdditions.m',
         'browser/cocoa/throbber_view.h',
         'browser/cocoa/throbber_view.mm',
         'browser/cocoa/toolbar_controller.h',
@@ -2881,6 +2879,9 @@
             '../third_party/GTM/Foundation/GTMNSNumber+64Bit.m',
             '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.h',
             '../third_party/GTM/Foundation/GTMNSObject+KeyValueObserving.m',
+            # MolokoCacao additions
+            '../third_party/molokocacao/NSBezierPath+MCAdditions.h',
+            '../third_party/molokocacao/NSBezierPath+MCAdditions.m',
             # Build necessary Mozilla sources
             '../third_party/mozilla/NSPasteboard+Utils.h',
             '../third_party/mozilla/NSPasteboard+Utils.mm',

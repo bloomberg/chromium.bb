@@ -6,8 +6,8 @@
 
 #include "app/l10n_util.h"
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/third_party/NSBezierPath+MCAdditions.h"
 #include "grit/generated_resources.h"
+#import "third_party/molokocacao/NSBezierPath+MCAdditions.h"
 
 namespace  {
 // Convenience function to return the middle point of the given |rect|.
@@ -15,7 +15,7 @@ static NSPoint MidRect(NSRect rect) {
   return NSMakePoint(NSMidX(rect), NSMidY(rect));
 }
 
-const CGFloat kCircleRadiusPercentage = 0.45;
+const CGFloat kCircleRadiusPercentage = 0.415;
 const CGFloat kCircleHoverWhite = 0.565;
 const CGFloat kCircleClickWhite = 0.396;
 const CGFloat kXShadowAlpha = 0.6;
