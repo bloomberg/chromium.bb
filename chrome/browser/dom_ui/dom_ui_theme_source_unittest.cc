@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,12 +66,12 @@ TEST_F(DOMUISourcesTest, ThemeSourceMimeTypes) {
 TEST_F(DOMUISourcesTest, ThemeSourceImages) {
   // We used to PNGEncode the images ourselves, but encoder differences
   // invalidated that. We now just check that the image exists.
-  theme_source()->StartDataRequest("theme_frame_incognito", true, 1);
+  theme_source()->StartDataRequest("IDR_THEME_FRAME_INCOGNITO", true, 1);
   size_t min = 0;
   EXPECT_EQ(theme_source()->result_request_id_, 1);
   EXPECT_GT(theme_source()->result_data_size_, min);
 
-  theme_source()->StartDataRequest("theme_toolbar", true, 2);
+  theme_source()->StartDataRequest("IDR_THEME_TOOLBAR", true, 2);
   EXPECT_EQ(theme_source()->result_request_id_, 2);
   EXPECT_GT(theme_source()->result_data_size_, min);
 }

@@ -322,7 +322,7 @@ function themeChanged() {
 }
 
 function updateAttribution() {
-  $('attribution-img').src = 'chrome://theme/theme_ntp_attribution?' +
+  $('attribution-img').src = 'chrome://theme/IDR_THEME_NTP_ATTRIBUTION?' +
       Date.now();
 }
 

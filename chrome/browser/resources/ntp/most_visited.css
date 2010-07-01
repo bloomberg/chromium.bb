@@ -120,39 +120,39 @@
 }
 
 .edit-bar > .pin {
-  background-image: url(chrome://theme/newtab_pin_off);
+  background-image: url(chrome://theme/IDR_NEWTAB_PIN_OFF);
 }
 
 .edit-bar > .pin:hover {
-  background-image: url(chrome://theme/newtab_pin_off_h);
+  background-image: url(chrome://theme/IDR_NEWTAB_PIN_OFF_H);
 }
 
 .edit-bar > .pin:active {
-  background-image: url(chrome://theme/newtab_pin_off_p);
+  background-image: url(chrome://theme/IDR_NEWTAB_PIN_OFF_P);
 }
 
 .pinned .edit-bar > .pin {
-  background-image: url(chrome://theme/newtab_pin_on);
+  background-image: url(chrome://theme/IDR_NEWTAB_PIN_ON);
 }
 
 .pinned .edit-bar > .pin:hover {
-  background-image: url(chrome://theme/newtab_pin_on_h);
+  background-image: url(chrome://theme/IDR_NEWTAB_PIN_ON_H);
 }
 
 .pinned .edit-bar > .pin:active {
-  background-image: url(chrome://theme/newtab_pin_on_p);
+  background-image: url(chrome://theme/IDR_NEWTAB_PIN_ON_P);
 }
 
 .edit-bar > .remove {
-  background-image: url(chrome://theme/newtab_close);
+  background-image: url(chrome://theme/IDR_NEWTAB_CLOSE);
 }
 
 .edit-bar > .remove:hover {
-  background-image: url(chrome://theme/newtab_close_h);
+  background-image: url(chrome://theme/IDR_NEWTAB_CLOSE_H);
 }
 
 .edit-bar > .remove:active {
-  background-image: url(chrome://theme/newtab_close_p);
+  background-image: url(chrome://theme/IDR_NEWTAB_CLOSE_P);
 }
 
 .thumbnail-container > .title > div {

@@ -1,5 +1,5 @@
 html {
-  background-image: url(chrome://theme/theme_ntp_background?$1);
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
   background-color: $2; /* COLOR_NTP_BACKGROUND */
   background-position: $3;
   background-repeat: $5;
@@ -17,7 +17,7 @@ body {
 }
 
 #main {
-  background: url(chrome://theme/product_logo?$1) no-repeat 0 8px;
+  background: url(chrome://theme/IDR_PRODUCT_LOGO?$1) no-repeat 0 8px;
 }
 
 #notification.first-run {
@@ -70,7 +70,7 @@ body {
 
 #option-button {
   background-color: $7; /* color_header_gradient_light */
-  -webkit-mask-image: url(chrome://theme/newtab_menu_mask);
+  -webkit-mask-image: url(chrome://theme/IDR_NEWTAB_MENU_MASK);
 }
 
 #recently-closed {

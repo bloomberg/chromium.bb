@@ -58,13 +58,13 @@
 .app > .front > .flip {
   -webkit-transition: opacity .3s;
   -webkit-transition-delay: 0;
-  background-image: url(chrome://theme/balloon_wrench);
+  background-image: url(chrome://theme/IDR_BALLOON_WRENCH);
   opacity: 0;
 }
 
 .app > .front > .flip:hover {
   -webkit-transition: none;
-  background-image: url(chrome://theme/balloon_wrench_hover);
+  background-image: url(chrome://theme/IDR_BALLOON_WRENCH_HOVER);
 }
 
 .app:hover > .front > .flip,
@@ -74,12 +74,12 @@
 }
 
 .app > .back > .flip {
-  background-image: url(chrome://theme/balloon_close);
+  background-image: url(chrome://theme/IDR_BALLOON_CLOSE);
   opacity: .9;
 }
 
 .app > .back > .flip:hover {
-  background-image: url(chrome://theme/balloon_close_hover);
+  background-image: url(chrome://theme/IDR_BALLOON_CLOSE_HOVER);
 }
 
 .app > .back {
@@ -151,4 +151,3 @@ html[has_3d=false] .app > .back {
 html[has_3d=false] .app.config > .back {
   display: block;
 }
-

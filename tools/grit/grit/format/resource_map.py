@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -110,10 +110,7 @@ class SourceInclude(interface.ItemFormatter):
   def Format(self, item, lang='en', begin_item=True, output_dir='.'):
     if not begin_item:
       return ''
-    short_name = item.attrs['name'].lower()
-    if short_name.startswith('idr_'):
-      short_name = short_name[4:]
-    return '  {"%s", %s},\n' % (short_name, item.attrs['name'])
+    return '  {"%s", %s},\n' % (item.attrs['name'], item.attrs['name'])
 
 
 class SourceFileInclude(interface.ItemFormatter):

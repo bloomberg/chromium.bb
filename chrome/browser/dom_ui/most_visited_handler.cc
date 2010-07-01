@@ -453,15 +453,15 @@ const std::vector<MostVisitedHandler::MostVisitedPage>&
     MostVisitedPage welcome_page = {
         l10n_util::GetString(IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE),
         GURL(WideToUTF8(l10n_util::GetString(IDS_CHROME_WELCOME_URL))),
-        GURL("chrome://theme/newtab_chrome_welcome_page_thumbnail"),
-        GURL("chrome://theme/newtab_chrome_welcome_page_favicon")};
+        GURL("chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL"),
+        GURL("chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON")};
     pages.push_back(welcome_page);
 
     MostVisitedPage gallery_page = {
         l10n_util::GetString(IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE),
         GURL(WideToUTF8(l10n_util::GetString(IDS_THEMES_GALLERY_URL))),
-        GURL("chrome://theme/newtab_themes_gallery_thumbnail"),
-        GURL("chrome://theme/newtab_themes_gallery_favicon")};
+        GURL("chrome://theme/IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL"),
+        GURL("chrome://theme/IDR_NEWTAB_THEMES_GALLERY_FAVICON")};
     pages.push_back(gallery_page);
   }
 

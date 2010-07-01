@@ -18,10 +18,10 @@ struct TestCase {
 
 TEST(ResourcesUtil, SpotCheckIds) {
   const TestCase kTestCases[] = {
-    {"back", IDR_BACK},
-    {"stop", IDR_STOP},
-    {"omnibox_star", IDR_OMNIBOX_STAR},
-    {"sad_tab", IDR_SAD_TAB},
+    {"IDR_BACK", IDR_BACK},
+    {"IDR_STOP", IDR_STOP},
+    {"IDR_OMNIBOX_STAR", IDR_OMNIBOX_STAR},
+    {"IDR_SAD_TAB", IDR_SAD_TAB},
   };
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     EXPECT_EQ(kTestCases[i].id,
