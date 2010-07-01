@@ -14,3 +14,6 @@ LINUX BUG_AGL : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyl
 BUG_LEVIN :  fast/dom/dataset-xhtml.xhtml = TEXT
 BUG_LEVIN :  fast/dom/dataset.html = TEXT
 BUG_LEVIN :  fast/dom/domListEnumeration.html = TEXT
+
+// Disabling since this fails on all linux builders.
+LINUX BUG48073 : fast/workers/worker-messageport-gc.html = TEXT
