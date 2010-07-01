@@ -5,6 +5,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/file_path.h"
 #include "base/sys_info.h"
@@ -637,10 +638,11 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
   // because starting the http server crashes if called from that function.
   // The IO thread is not set up at that point.
   virtual void SetUpExtensionApp() {
+    // The web URL of the example app we load has a host of
+    // www.example.com .
     server_ = StartHTTPServer();
     ASSERT_TRUE(server_);
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
-    url_ = GURL(server_->TestServerPage("empty.html"));
 
     profile_ = browser()->profile();
     ASSERT_TRUE(profile_);
@@ -658,14 +660,29 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
     ASSERT_TRUE(extension_app_) << "App Test extension not loaded.";
   }
 
+  // Given a tab, wait for navigation in the tab, then test that it is
+  // selected.  If this function returns false, an error was logged.
+  bool WaitForTab(TabContents* tab) WARN_UNUSED_RESULT {
+    if (!tab) {
+      LOG(ERROR) << "|tab| should not be NULL.";
+      return false;
+    }
+    ui_test_utils::WaitForNavigation(&(tab->controller()));
+    if (tab != browser()->GetSelectedTabContents()) {
+      LOG(ERROR) << "Tab was not selected.";
+      return false;
+    }
+    return true;
+  }
+
   HTTPTestServer* server_;
   Extension* extension_app_;
   Profile* profile_;
-  GURL url_;
 };
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
 
+#define MAYBE_OpenTab OpenTab
 #define MAYBE_OpenPanel OpenPanel
 #define MAYBE_OpenWindow OpenWindow
 #define MAYBE_WindowBeforeTab WindowBeforeTab
@@ -676,8 +693,9 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
 
 // Crashes on mac involving app panels: http://crbug.com/42865
 
-// ChromeOS doesn't open extension based app windows correctly yet:
-// http://crbug.com/43061
+// Tests fail on Chrome OS:  http://crbug.com/43061
+
+#define MAYBE_OpenTab DISABLED_OpenTab
 #define MAYBE_OpenPanel DISABLED_OpenPanel
 #define MAYBE_OpenWindow DISABLED_OpenWindow
 #define MAYBE_WindowBeforeTab DISABLED_WindowBeforeTab
@@ -687,26 +705,28 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
 #endif
 
 // Test that launching an app refocuses a tab already hosting the app.
-// Hangs flakily, http://crbug.com/44026.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, DISABLED_OpenTab) {
+IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   SetUpExtensionApp();
 
-  ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
   ASSERT_EQ(NULL, Browser::FindAppTab(browser(), extension_app_));
 
   // Open a tab with the app.
-  Browser::OpenApplicationTab(profile_, extension_app_);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_);
+  ASSERT_TRUE(WaitForTab(tab));
   ASSERT_EQ(2, browser()->tab_count());
+
   int app_tab_index = browser()->selected_index();
   ASSERT_EQ(0, app_tab_index) << "App tab should be the left most tab.";
   ASSERT_EQ(browser()->GetTabContentsAt(0),
             Browser::FindAppTab(browser(), extension_app_));
 
   // Open the same app.  The existing tab should stay focused.
-  Browser::OpenApplication(profile_, extension_app_->id());
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  tab = Browser::OpenApplication(profile_, extension_app_->id());
+
+  // No need to wait for navigation, because the tab already exists,
+  // and no navigation should take place.
+  ASSERT_TRUE(tab != NULL);
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(app_tab_index, browser()->selected_index());
 
@@ -714,6 +734,10 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, DISABLED_OpenTab) {
   // be refocused.
   browser()->SelectTabContentsAt(1, false);
   Browser::OpenApplication(profile_, extension_app_->id());
+
+  tab = Browser::OpenApplication(profile_, extension_app_->id());
+  ASSERT_TRUE(WaitForTab(tab));
+
   ASSERT_EQ(2, browser()->tab_count());
   ASSERT_EQ(app_tab_index, browser()->selected_index());
 
@@ -740,7 +764,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, DISABLED_OpenTab) {
 IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
   SetUpExtensionApp();
 
-  ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
   ASSERT_EQ(NULL, Browser::FindAppWindowOrPanel(profile_, extension_app_));
 
@@ -774,7 +797,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
 IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenWindow) {
   SetUpExtensionApp();
 
-  ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
   ASSERT_EQ(NULL, Browser::FindAppWindowOrPanel(profile_, extension_app_));
 
@@ -805,7 +827,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenWindow) {
 IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_WindowBeforeTab) {
   SetUpExtensionApp();
 
-  ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
 
   // Open a tab with the app.
@@ -835,12 +856,11 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_WindowBeforeTab) {
 IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
   SetUpExtensionApp();
 
-  ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
 
   // Open a tab with the app.
-  Browser::OpenApplicationTab(profile_, extension_app_);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_);
+  ASSERT_TRUE(WaitForTab(tab));
   ASSERT_EQ(2, browser()->tab_count());
   int app_tab_index = browser()->selected_index();
   ASSERT_EQ(0, app_tab_index) << "App tab should be the left most tab.";
@@ -865,7 +885,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
 IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_TabInFocusedWindow) {
   SetUpExtensionApp();
 
-  ui_test_utils::NavigateToURL(browser(), url_);
   ASSERT_EQ(1, browser()->tab_count());
 
   Browser::OpenApplicationTab(profile_, extension_app_);
