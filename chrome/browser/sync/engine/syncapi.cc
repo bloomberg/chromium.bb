@@ -2021,9 +2021,11 @@ void SyncManager::SyncInternal::TalkMediatorLogin(
 
 void SyncManager::SyncInternal::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
-  // Check if the service url is a sync URL. An empty service URL
-  // is treated as a legacy sync notification
-  if (notification_data.service_url.empty() ||
+  // Check if the service url is a sync URL.  An empty service URL is
+  // treated as a legacy sync notification.  If we're listening to
+  // server-issued notifications, no need to check the service_url.
+  if ((notification_method_ == browser_sync::NOTIFICATION_SERVER) ||
+      notification_data.service_url.empty() ||
       (notification_data.service_url ==
        browser_sync::kSyncLegacyServiceUrl) ||
       (notification_data.service_url ==
@@ -2040,6 +2042,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
 }
 
 void SyncManager::SyncInternal::OnOutgoingNotification() {
+  DCHECK_NE(notification_method_, browser_sync::NOTIFICATION_SERVER);
   allstatus_.IncrementNotificationsSent();
 }
 
