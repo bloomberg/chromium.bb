@@ -14,6 +14,10 @@
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_switches.h"
 
+#if defined(OS_LINUX)
+#include "gfx/gtk_native_view_id_manager.h"
+#endif
+
 namespace {
 
 // Tasks used by this file
@@ -147,6 +151,9 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
+#if defined(OS_LINUX)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_GetViewXID, OnGetViewXID)
+#endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -164,6 +171,16 @@ void GpuProcessHost::OnSynchronizeReply() {
   request.filter->Send(request.reply);
   queued_synchronization_replies_.pop();
 }
+
+#if defined(OS_LINUX)
+void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id, unsigned long* xid) {
+  GtkNativeViewManager* manager = Singleton<GtkNativeViewManager>::get();
+  if (!manager->GetXIDForId(xid, id)) {
+    DLOG(ERROR) << "Can't find XID for view id " << id;
+    *xid = 0;
+  }
+}
+#endif
 
 void GpuProcessHost::ReplyToRenderer(
     const IPC::ChannelHandle& channel,

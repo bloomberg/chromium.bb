@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/child_process_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "gfx/native_widget_types.h"
 
 class ChildProcessLauncher;
 class CommandBufferProxy;
@@ -79,6 +80,9 @@ class GpuProcessHost : public ChildProcessHost {
   // Message handlers.
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnSynchronizeReply();
+#if defined(OS_LINUX)
+  void OnGetViewXID(gfx::NativeViewId id, unsigned long* xid);
+#endif
 
   void ReplyToRenderer(const IPC::ChannelHandle& channel,
                        ResourceMessageFilter* filter);

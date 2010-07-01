@@ -815,6 +815,13 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
     return;
   }
 
+  // Don't do any painting if the GPU process is rendering directly
+  // into the View.
+  RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
+  if (render_widget_host->is_gpu_rendering_active()) {
+    return;
+  }
+
   GdkWindow* window = view_.get()->window;
   DCHECK(!about_to_validate_and_paint_);
 

@@ -137,6 +137,7 @@ void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
 
 #if defined(ENABLE_GPU)
 
+  gfx::PluginWindowHandle handle = NULL;
 #if defined(OS_WIN)
   gfx::NativeView view = gfx::NativeViewFromId(view_id);
 
@@ -146,17 +147,25 @@ void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
       GetProp(view, chrome::kChromiumRendererIdProperty));
   if (view_renderer_id != renderer_id_)
     return;
+  handle = view;
+#elif defined(OS_LINUX)
+  ChildThread* gpu_thread = ChildThread::current();
+  // Ask the browser for the view's XID.
+  // TODO(piman): This assumes that it doesn't change. It can change however
+  // when tearing off tabs. This needs a fix in the browser UI code. A possible
+  // alternative would be to add a socket/plug pair like with plugins but that
+  // has issues with events and focus.
+  gpu_thread->Send(new GpuHostMsg_GetViewXID(view_id, &handle));
 #else
   // TODO(apatrick): This needs to be something valid for mac and linux.
   // Offscreen rendering will work on these platforms but not rendering to the
   // window.
   DCHECK_EQ(view_id, 0);
-  gfx::NativeView view = 0;
 #endif
 
   *route_id = GenerateRouteID();
   scoped_refptr<GpuCommandBufferStub> stub = new GpuCommandBufferStub(
-      this, view, NULL, gfx::Size(), 0, *route_id);
+      this, handle, NULL, gfx::Size(), 0, *route_id);
   router_.AddRoute(*route_id, stub);
   stubs_[*route_id] = stub;
 #endif  // ENABLE_GPU

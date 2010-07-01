@@ -14,13 +14,13 @@
 using gpu::Buffer;
 
 GpuCommandBufferStub::GpuCommandBufferStub(GpuChannel* channel,
-                                           gfx::NativeView view,
+                                           gfx::PluginWindowHandle handle,
                                            GpuCommandBufferStub* parent,
                                            const gfx::Size& size,
                                            uint32 parent_texture_id,
                                            int32 route_id)
     : channel_(channel),
-      view_(view),
+      handle_(handle),
       parent_(parent),
       initial_size_(size),
       parent_texture_id_(parent_texture_id),
@@ -73,11 +73,8 @@ void GpuCommandBufferStub::OnInitialize(
           parent_ ? parent_->processor_.get() : NULL;
       processor_.reset(new gpu::GPUProcessor(command_buffer_.get()));
       // TODO(apatrick): The reinterpret_cast below is only valid on windows.
-#if !defined(OS_WIN)
-      DCHECK_EQ(view_, static_cast<gfx::NativeView>(0));
-#endif
       if (processor_->Initialize(
-          reinterpret_cast<gfx::PluginWindowHandle>(view_),
+          handle_,
           initial_size_,
           parent_processor,
           parent_texture_id_)) {

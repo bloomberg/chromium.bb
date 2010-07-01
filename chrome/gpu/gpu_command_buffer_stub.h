@@ -24,7 +24,7 @@ class GpuCommandBufferStub
       public base::RefCountedThreadSafe<GpuCommandBufferStub> {
  public:
   GpuCommandBufferStub(GpuChannel* channel,
-                       gfx::NativeView view,
+                       gfx::PluginWindowHandle handle,
                        GpuCommandBufferStub* parent,
                        const gfx::Size& size,
                        uint32 parent_texture_id,
@@ -55,7 +55,7 @@ class GpuCommandBufferStub
   void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
   scoped_refptr<GpuChannel> channel_;
-  gfx::NativeView view_;
+  gfx::PluginWindowHandle handle_;
   scoped_refptr<GpuCommandBufferStub> parent_;
   gfx::Size initial_size_;
   uint32 parent_texture_id_;
