@@ -37,6 +37,27 @@ const int kAutoFillPhoneNumberSuffixCount = 4;
 
 const string16::value_type kLabelSeparator[] = {';',' ',0};
 
+// Removes duplicate elements whilst preserving original order of |elements|.
+void RemoveDuplicateElements(std::vector<string16>* elements) {
+  std::vector<string16> copy;
+  for (std::vector<string16>::iterator iter = elements->begin();
+       iter != elements->end(); ++iter) {
+    bool unique = true;
+    for (std::vector<string16>::const_iterator copy_iter = copy.begin();
+         copy_iter != copy.end(); ++copy_iter) {
+      if (*iter == *copy_iter) {
+        unique = false;
+        break;
+      }
+    }
+
+    if (unique)
+      copy.push_back(*iter);
+  }
+
+  elements->assign(copy.begin(), copy.end());
+}
+
 }  // namespace
 
 // TODO(jhawkins): Maybe this should be in a grd file?
@@ -170,9 +191,13 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
     return false;
 
   // If the form is auto-filled and the renderer is querying for suggestions,
-  // then the user is editing the value of a field.  In this case, we don't
-  // want to display the labels, as that information is redundant.
+  // then the user is editing the value of a field.  In this case, don't display
+  // labels, as that information is redundant. In addition, remove duplicate
+  // values.
   if (form_autofilled) {
+    RemoveDuplicateElements(&values);
+    labels.resize(values.size());
+
     for (size_t i = 0; i < labels.size(); ++i)
       labels[i] = string16();
   }

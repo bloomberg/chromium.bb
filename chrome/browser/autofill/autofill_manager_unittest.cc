@@ -49,13 +49,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     return NULL;
   }
 
-  void AddSemicolonAutoFillProfile() {
-    AutoFillProfile* profile = new AutoFillProfile;
-    autofill_unittest::SetProfileInfo(profile, "Home; 8765", "Joe", "", "Ely",
-                                      "flatlander@gmail.com", "MCA",
-                                      "916 16th St.", "Apt. 6", "Lubbock",
-                                      "Texas", "79401", "USA",
-                                      "12345678901", "");
+  void AddProfile(AutoFillProfile* profile) {
     web_profiles_->push_back(profile);
   }
 
@@ -115,8 +109,8 @@ class TestAutoFillManager : public AutoFillManager {
     return test_personal_data_->GetLabeledProfile(label);
   }
 
-  void AddSemicolonAutoFillProfile() {
-    test_personal_data_->AddSemicolonAutoFillProfile();
+  void AddProfile(AutoFillProfile* profile) {
+    test_personal_data_->AddProfile(profile);
   }
 
  private:
@@ -264,10 +258,6 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
     if (results)
       *results = autofill_param.b;
     return true;
-  }
-
-  void AddSemicolonAutoFillProfile() {
-    autofill_manager_->AddSemicolonAutoFillProfile();
   }
 
  protected:
@@ -454,7 +444,14 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
-  AddSemicolonAutoFillProfile();
+  // |profile| will be owned by the mock PersonalDataManager.
+  AutoFillProfile* profile = new AutoFillProfile;
+  autofill_unittest::SetProfileInfo(profile, "Home; 8765", "Joe", "", "Ely",
+                                    "flatlander@gmail.com", "MCA",
+                                    "916 16th St.", "Apt. 6", "Lubbock",
+                                    "Texas", "79401", "USA",
+                                    "12345678901", "");
+  autofill_manager_->AddProfile(profile);
 
   FormData form;
   CreateTestFormDataBilling(&form);
@@ -507,6 +504,44 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsFormIsAutoFilled) {
   std::vector<FormData> forms;
   forms.push_back(form);
   autofill_manager_->FormsSeen(forms);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+
+  webkit_glue::FormField field;
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, true, field));
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
+  EXPECT_EQ(kPageID, page_id);
+  ASSERT_EQ(2U, values.size());
+  EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("Charles"), values[1]);
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(string16(), labels[0]);
+  EXPECT_EQ(string16(), labels[1]);
+}
+
+TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
+  FormData form;
+  CreateTestFormData(&form);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // |profile| will be owned by the mock PersonalDataManager.
+  AutoFillProfile* profile = new AutoFillProfile;
+  autofill_unittest::SetProfileInfo(profile, "Duplicate", "Elvis", "", "", "",
+                                    "", "", "", "", "", "", "", "", "");
+  autofill_manager_->AddProfile(profile);
 
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
@@ -608,7 +643,14 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
 }
 
 TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
-  AddSemicolonAutoFillProfile();
+  // |profile| will be owned by the mock PersonalDataManager.
+  AutoFillProfile* profile = new AutoFillProfile;
+  autofill_unittest::SetProfileInfo(profile, "Home; 8765", "Joe", "", "Ely",
+                                    "flatlander@gmail.com", "MCA",
+                                    "916 16th St.", "Apt. 6", "Lubbock",
+                                    "Texas", "79401", "USA",
+                                    "12345678901", "");
+  autofill_manager_->AddProfile(profile);
 
   FormData form;
   CreateTestFormData(&form);
@@ -673,7 +715,14 @@ TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
 }
 
 TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
-  AddSemicolonAutoFillProfile();
+  // |profile| will be owned by the mock PersonalDataManager.
+  AutoFillProfile* profile = new AutoFillProfile;
+  autofill_unittest::SetProfileInfo(profile, "Home; 8765", "Joe", "", "Ely",
+                                    "flatlander@gmail.com", "MCA",
+                                    "916 16th St.", "Apt. 6", "Lubbock",
+                                    "Texas", "79401", "USA",
+                                    "12345678901", "");
+  autofill_manager_->AddProfile(profile);
 
   FormData form;
   CreateTestFormDataBilling(&form);
