@@ -239,7 +239,6 @@ void GeolocationExceptionsTableModel::AddEntriesForOrigin(
   }
 }
 
-// static
 GeolocationExceptionsTableModel::Entry::Entry(
     const GURL& in_origin, const GURL& in_embedding_origin,
     ContentSetting in_setting)

@@ -1832,6 +1832,8 @@
         'browser/notifications/desktop_notification_service.h',
         'browser/notifications/notification.h',
         'browser/notifications/notification_delegate.h',
+        'browser/notifications/notification_exceptions_table_model.cc',
+        'browser/notifications/notification_exceptions_table_model.h',
         'browser/notifications/notification_object_proxy.cc',
         'browser/notifications/notification_object_proxy.h',
         'browser/notifications/notification_ui_manager.cc',
