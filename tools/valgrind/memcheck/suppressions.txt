@@ -3538,5 +3538,13 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN57_GLOBAL__N_net_spdy_spdy_http_stream.cc_9D292295_3FA9B9B532CreateSpdyHeadersFromHttpRequestERKN3net15HttpRequestInfoEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE
+   fun:*CreateSpdyHeadersFromHttpRequestERKN3net15HttpRequestInfoEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE
+}
+Suppression:
+{
+   bug_48123
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net11SpdySession12CreateStreamERK4GURLNS_15RequestPriorityEP13scoped_refptrINS_10SpdyStreamEERKNS_11BoundNetLogE
+   fun:*SpdyHttpStreamTest_SendRequest_Test8TestBodyEv
 }
