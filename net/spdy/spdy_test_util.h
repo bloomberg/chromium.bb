@@ -30,12 +30,23 @@ struct SpdyHeaderInfo {
 // |data| is the frame to chop.
 // |length| is the length of the frame to chop.
 // |num_chunks| is the number of chunks to create.
-MockWrite* ChopFrame(const char* data, int length, int num_chunks);
+MockWrite* ChopWriteFrame(const char* data, int length, int num_chunks);
 
 // Chop a SpdyFrame into an array of MockWrites.
 // |frame| is the frame to chop.
 // |num_chunks| is the number of chunks to create.
-MockWrite* ChopFrame(const spdy::SpdyFrame* frame, int num_chunks);
+MockWrite* ChopWriteFrame(const spdy::SpdyFrame& frame, int num_chunks);
+
+// Chop a frame into an array of MockReads.
+// |data| is the frame to chop.
+// |length| is the length of the frame to chop.
+// |num_chunks| is the number of chunks to create.
+MockRead* ChopReadFrame(const char* data, int length, int num_chunks);
+
+// Chop a SpdyFrame into an array of MockReads.
+// |frame| is the frame to chop.
+// |num_chunks| is the number of chunks to create.
+MockRead* ChopReadFrame(const spdy::SpdyFrame& frame, int num_chunks);
 
 // Adds headers and values to a map.
 // |extra_headers| is an array of { name, value } pairs, arranged as strings
@@ -160,16 +171,16 @@ spdy::SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
 spdy::SpdyFrame* ConstructSpdyBodyFrame();
 
 // Create an async MockWrite from the given SpdyFrame.
-MockWrite CreateMockWrite(spdy::SpdyFrame* req);
+MockWrite CreateMockWrite(const spdy::SpdyFrame& req);
 
 // Create an async MockWrite from the given SpdyFrame and sequence number.
-MockWrite CreateMockWrite(spdy::SpdyFrame* req, int seq);
+MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq);
 
 // Create a MockRead from the given SpdyFrame.
-MockRead CreateMockRead(spdy::SpdyFrame* resp);
+MockRead CreateMockRead(const spdy::SpdyFrame& resp);
 
 // Create a MockRead from the given SpdyFrame and sequence number.
-MockRead CreateMockRead(spdy::SpdyFrame* resp, int seq);
+MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq);
 
 }  // namespace net
 
