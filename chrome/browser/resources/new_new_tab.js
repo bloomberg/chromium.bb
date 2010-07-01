@@ -937,3 +937,14 @@ function mostVisitedPages(data, firstRun) {
     showFirstRunNotification();
   }
 }
+
+// Log clicked links from the tips section.
+document.addEventListener('click', function(e) {
+  var tipLinks = document.querySelectorAll('#tip-line a');
+  for (var i = 0, tipLink; tipLink = tipLinks[i]; i++) {
+    if (tipLink.contains(e.target)) {
+      chrome.send('metrics', ['NTPTip_' + tipLink.href]);
+      break;
+    }
+  }
+});
