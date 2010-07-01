@@ -333,7 +333,8 @@ void ExistingUserController::ShowError(int error_id,
 }
 
 void ExistingUserController::OnLoginSuccess(const std::string& username,
-                                            const std::string& credentials) {
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+
   AppendStartUrlToCmdline();
   if (selected_view_index_ + 1 == controllers_.size()) {
     // For new user login don't launch browser until we pass image screen.

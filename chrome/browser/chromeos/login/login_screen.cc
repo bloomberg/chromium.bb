@@ -92,7 +92,8 @@ void LoginScreen::OnLoginFailure(const std::string& error) {
 }
 
 void LoginScreen::OnLoginSuccess(const std::string& username,
-                                 const std::string& credentials) {
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+
   delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   AppendStartUrlToCmdline();
   LoginUtils::Get()->CompleteLogin(username, credentials);

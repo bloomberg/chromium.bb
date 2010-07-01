@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+
 class Profile;
 
 namespace chromeos {
@@ -43,7 +45,7 @@ class LoginUtils {
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
   virtual void CompleteLogin(const std::string& username,
-                             const std::string& credentials) = 0;
+      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
   // Invoked after the tmpfs is successfully mounted.
   // Launches a browser in the off the record (incognito) mode.

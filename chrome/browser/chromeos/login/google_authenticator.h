@@ -16,19 +16,20 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
-#include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
 
 class Profile;
+class GaiaAuthenticator2;
 
 namespace chromeos {
 
 class GoogleAuthenticatorTest;
 class LoginStatusConsumer;
 
-class GoogleAuthenticator : public Authenticator,
-                            public URLFetcher::Delegate {
+class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
+
  public:
   explicit GoogleAuthenticator(LoginStatusConsumer* consumer);
   virtual ~GoogleAuthenticator();
@@ -38,7 +39,6 @@ class GoogleAuthenticator : public Authenticator,
   // consumer_->OnLoginSuccess() with the |username| and a vector of
   // authentication cookies or a callback to consumer_->OnLoginFailure() with
   // an error message.  Uses |profile| when doing URL fetches.
-  // Should be called on the FILE thread!
   // Optionally could pass CAPTCHA challenge token - |login_token| and
   // |login_captcha| string that user has entered.
   //
@@ -60,17 +60,6 @@ class GoogleAuthenticator : public Authenticator,
   // Mounts tmpfs and notifies consumer on the success/failure.
   void LoginOffTheRecord();
 
-  // Overridden from URLFetcher::Delegate
-  // When the authentication attempt comes back, will call
-  // consumer_->OnLoginSuccess(|username|).
-  // On any failure, will call consumer_->OnLoginFailure().
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
-
   // Public for testing.
   void set_system_salt(const chromeos::CryptohomeBlob& new_salt) {
     system_salt_ = new_salt;
@@ -86,30 +75,30 @@ class GoogleAuthenticator : public Authenticator,
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  void OnLoginSuccess(const std::string& credentials);
+  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& result);
   void CheckOffline(const std::string& error);
   void CheckLocalaccount(const std::string& error);
-  void OnLoginFailure(const std::string& data);
+  void OnLoginFailure(const std::string& error);
 
   // If a password logs the user in online, but cannot be used to
   // mount his cryptohome, we expect that a password change has
   // occurred.  Call this method to migrate the user's encrypted data
   // forward to use his new password.  |old_password| is the password
-  // his data was last encrypted with, |credentials| is the blob of auth
+  // his data was last encrypted with, |result| is the blob of auth
   // data passed back through OnPasswordChangeDetected().
   //
   // Call this on the UI thread.
   void DoPasswordChange(const std::string& old_password,
-                        const std::string& credentials);
+                        const GaiaAuthConsumer::ClientLoginResult& result);
 
   // If a password logs the user in online, but cannot be used to
   // mount his cryptohome, we expect that a password change has
   // occurred.  Call this method to erase the user's encrypted data
-  // and create a new cryptohome.  |credentials| is the blob of auth
+  // and create a new cryptohome.  |result| is the blob of auth
   // data passed back through OnPasswordChangeDetected().
   //
   // Call this on the UI thread.
-  void SkipPasswordChange(const std::string& credentials);
+  void SkipPasswordChange(const GaiaAuthConsumer::ClientLoginResult& result);
 
   void Cancel();
 
@@ -119,7 +108,14 @@ class GoogleAuthenticator : public Authenticator,
   // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
   static std::string Canonicalize(const std::string& email_address);
 
+  // Callbacks from GaiaAuthenticator2
+  virtual void OnClientLoginFailure(
+      const GaiaAuthConsumer::ClientLoginError& error);
+  virtual void OnClientLoginSuccess(
+      const GaiaAuthConsumer::ClientLoginResult& result);
+
  private:
+
   // If we don't have the system salt yet, loads it from the CryptohomeLibrary.
   void LoadSystemSalt();
 
@@ -137,14 +133,24 @@ class GoogleAuthenticator : public Authenticator,
   // Returns the ascii encoding of the system salt.
   std::string SaltAsAscii();
 
-  // Kicks off a new ClientLogin attempt, canceling any existing attempts.
-  // It is an error to call this before populating |getter_| and |request_body_|
+  // Save the current login attempt for use on the next TryClientLogin
+  // attempt.
+  void PrepareClientLoginAttempt(const std::string& password,
+                                 const std::string& login_token,
+                                 const std::string& login_captcha);
+  // Clear any cached credentials after we've given up trying to authenticate.
+  void ClearClientLoginAttempt();
+
+  // Start a client login attempt. You should set up the
+  // GaiaAuthenticator2 first.
+  // Reuses existing credentials from the last attempt. You should
+  // PrepareClientLoginAttempt before calling this.
   void TryClientLogin();
 
-  // To support internal two-factor authentication, check to see if
-  // |alleged_error| is actually indicating the successful completion
-  // of the first half of a two-factor login.
-  static bool IsSecondFactorSuccess(const std::string& alleged_error);
+  // A callback for use on the UI thread. Cancel the current login
+  // attempt, and produce a login failure.
+  void CancelClientLogin();
+
 
   // Converts the binary data |binary| into an ascii hex string and stores
   // it in |hex_string|.  Not guaranteed to be NULL-terminated.
@@ -153,21 +159,6 @@ class GoogleAuthenticator : public Authenticator,
                           const unsigned int binary_len,
                           char* hex_string,
                           const unsigned int len);
-
-  // Create and return a URLFetcher that is set up to perform a ClientLogin
-  // authentication attempt.  Caller takes ownership.
-  static URLFetcher* CreateClientLoginFetcher(URLRequestContextGetter* getter,
-                                              const std::string& body,
-                                              URLFetcher::Delegate* delegate);
-
-  // Constants to use in the ClientLogin request POST body.
-  static const char kCookiePersistence[];
-  static const char kAccountType[];
-  static const char kSource[];
-  static const char kService[];
-
-  // The format of said POST body.
-  static const char kFormat[];
 
   // The format of said POST body when CAPTCHA token & answer are specified.
   static const char kFormatCaptcha[];
@@ -179,20 +170,24 @@ class GoogleAuthenticator : public Authenticator,
   // Name of a file, next to chrome, that contains a local account username.
   static const char kLocalaccountFile[];
 
+  // Handles all net communications with Gaia.
+  scoped_ptr<GaiaAuthenticator2> gaia_authenticator_;
+
   // Milliseconds until we timeout our attempt to hit ClientLogin.
   static const int kClientLoginTimeoutMs;
 
-  URLFetcher* fetcher_;
-  URLRequestContextGetter* getter_;
   std::string username_;
+  // These fields are saved so we can retry client login.
+  std::string password_;
+  std::string login_token_;
+  std::string login_captcha_;
+
   std::string ascii_hash_;
-  std::string request_body_;
   chromeos::CryptohomeBlob system_salt_;
   std::string localaccount_;
-  bool checked_for_localaccount_;  // needed becasuse empty localaccount_ is ok.
+  bool checked_for_localaccount_;  // needed because empty localaccount_ is ok.
   bool unlock_;  // True if authenticating to unlock the computer.
   bool try_again_;  // True if we're willing to retry the login attempt.
-  bool fetch_completed_;
 
   friend class GoogleAuthenticatorTest;
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, SaltToAscii);

@@ -363,8 +363,9 @@ class InputEventObserver : public MessageLoopForUI::Observer {
          event->type == GDK_MOTION_NOTIFY) &&
         !activated_) {
       activated_ = true;
-      std::string not_used;
-      screen_locker_->OnLoginSuccess(not_used, not_used);
+      std::string not_used_string;
+      GaiaAuthConsumer::ClientLoginResult not_used;
+      screen_locker_->OnLoginSuccess(not_used_string, not_used);
     }
   }
 
@@ -488,7 +489,8 @@ void ScreenLocker::OnLoginFailure(const std::string& error) {
 }
 
 void ScreenLocker::OnLoginSuccess(const std::string& username,
-                                  const std::string& credentials) {
+    const GaiaAuthConsumer::ClientLoginResult& unused) {
+
   DLOG(INFO) << "OnLoginSuccess";
 
   if (CrosLibrary::Get()->EnsureLoaded())

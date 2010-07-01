@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
 class Profile;
 
@@ -50,7 +51,8 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  virtual void OnLoginSuccess(const std::string& credentials) = 0;
+  virtual void OnLoginSuccess(
+      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
   virtual void OnLoginFailure(const std::string& data) = 0;
 
  protected:

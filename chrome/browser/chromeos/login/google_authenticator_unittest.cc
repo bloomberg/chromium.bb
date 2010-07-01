@@ -12,21 +12,22 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/issue_response_handler.h"
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace file_util;
 using ::testing::AnyNumber;
@@ -44,9 +45,10 @@ class MockConsumer : public LoginStatusConsumer {
   ~MockConsumer() {}
   MOCK_METHOD1(OnLoginFailure, void(const std::string& error));
   MOCK_METHOD2(OnLoginSuccess, void(const std::string& username,
-                                    const std::string& data));
+      const GaiaAuthConsumer::ClientLoginResult& result));
   MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
-  MOCK_METHOD1(OnPasswordChangeDetected, void(const std::string& credentials));
+  MOCK_METHOD1(OnPasswordChangeDetected,
+      void(const GaiaAuthConsumer::ClientLoginResult& result));
 };
 
 class GoogleAuthenticatorTest : public ::testing::Test {
@@ -121,8 +123,7 @@ class GoogleAuthenticatorTest : public ::testing::Test {
   unsigned char fake_hash_[32];
   std::string hash_ascii_;
   std::string username_;
-  std::string data_;
-  ResponseCookies cookies_;
+  GaiaAuthConsumer::ClientLoginResult result_;
   // Mocks, destroyed by CrosLibrary class.
   MockCryptohomeLibrary* mock_library_;
   MockLibraryLoader* loader_;
@@ -145,18 +146,6 @@ TEST_F(GoogleAuthenticatorTest, SaltToAscii) {
       .Times(1);
 
   EXPECT_EQ("0a010000000000a0", auth->SaltAsAscii());
-}
-
-TEST_F(GoogleAuthenticatorTest, CheckTwoFactorResponse) {
-  std::string response =
-      StringPrintf("Error=BadAuthentication\n%s\n",
-                   GoogleAuthenticator::kSecondFactor);
-  EXPECT_TRUE(GoogleAuthenticator::IsSecondFactorSuccess(response));
-}
-
-TEST_F(GoogleAuthenticatorTest, CheckNormalErrorCode) {
-  std::string response = "Error=BadAuthentication\n";
-  EXPECT_FALSE(GoogleAuthenticator::IsSecondFactorSuccess(response));
 }
 
 TEST_F(GoogleAuthenticatorTest, EmailAddressNoOp) {
@@ -242,7 +231,7 @@ TEST_F(GoogleAuthenticatorTest, OnLoginSuccess) {
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   auth->set_password_hash(hash_ascii_);
   auth->set_username(username_);
-  auth->OnLoginSuccess(data_);
+  auth->OnLoginSuccess(result_);
 }
 
 TEST_F(GoogleAuthenticatorTest, MountFailure) {
@@ -254,13 +243,13 @@ TEST_F(GoogleAuthenticatorTest, MountFailure) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnLoginSuccess(data_);
+  auth->OnLoginSuccess(result_);
 }
 
 TEST_F(GoogleAuthenticatorTest, PasswordChange) {
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnPasswordChangeDetected(data_));
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_));
+  EXPECT_CALL(consumer, OnPasswordChangeDetected(result_));
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_));
 
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
       .WillOnce(
@@ -276,13 +265,13 @@ TEST_F(GoogleAuthenticatorTest, PasswordChange) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnLoginSuccess(data_);
-  auth->DoPasswordChange("whaty", data_);
+  auth->OnLoginSuccess(result_);
+  auth->DoPasswordChange("whaty", result_);
 }
 
 TEST_F(GoogleAuthenticatorTest, PasswordChangeWrongPassword) {
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnPasswordChangeDetected(data_))
+  EXPECT_CALL(consumer, OnPasswordChangeDetected(result_))
       .Times(2);
 
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
@@ -297,14 +286,14 @@ TEST_F(GoogleAuthenticatorTest, PasswordChangeWrongPassword) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnLoginSuccess(data_);
-  auth->DoPasswordChange("whaty", data_);
+  auth->OnLoginSuccess(result_);
+  auth->DoPasswordChange("whaty", result_);
 }
 
 TEST_F(GoogleAuthenticatorTest, ForgetOldData) {
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnPasswordChangeDetected(data_));
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_));
+  EXPECT_CALL(consumer, OnPasswordChangeDetected(result_));
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_));
 
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
       .WillOnce(
@@ -318,8 +307,8 @@ TEST_F(GoogleAuthenticatorTest, ForgetOldData) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnLoginSuccess(data_);
-  auth->SkipPasswordChange(data_);
+  auth->OnLoginSuccess(result_);
+  auth->SkipPasswordChange(result_);
 }
 
 TEST_F(GoogleAuthenticatorTest, LoginNetFailure) {
@@ -328,9 +317,10 @@ TEST_F(GoogleAuthenticatorTest, LoginNetFailure) {
 
   int error_no = net::ERR_CONNECTION_RESET;
   std::string data(net::ErrorToString(error_no));
-  GURL source;
 
-  URLRequestStatus status(URLRequestStatus::FAILED, error_no);
+  GaiaAuthConsumer::ClientLoginError error;
+  error.code = GaiaAuthConsumer::NETWORK_ERROR;
+  error.network_error = error_no;
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(data))
@@ -340,7 +330,7 @@ TEST_F(GoogleAuthenticatorTest, LoginNetFailure) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnURLFetchComplete(NULL, source, status, 0, cookies_, data);
+  auth->OnClientLoginFailure(error);
   message_loop.RunAllPending();
 }
 
@@ -348,18 +338,38 @@ TEST_F(GoogleAuthenticatorTest, LoginDenied) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  std::string data("Error: NO!");
-  GURL source(AuthResponseHandler::kTokenAuthUrl);
-
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  GaiaAuthConsumer::ClientLoginError error;
+  error.code = GaiaAuthConsumer::PERMISSION_DENIED;
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginFailure(data))
+  EXPECT_CALL(consumer, OnLoginFailure(_))
       .Times(1);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnURLFetchComplete(NULL, source, status, 403, cookies_, data);
+  auth->OnClientLoginFailure(error);
+  message_loop.RunAllPending();
+}
+
+TEST_F(GoogleAuthenticatorTest, CaptchaErrorOutputted) {
+  MessageLoopForUI message_loop;
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+
+  // TODO(chron): Swap out this captcha passing for actual captcha parsing.
+  GaiaAuthConsumer::ClientLoginError error;
+  error.code = GaiaAuthConsumer::PERMISSION_DENIED;
+  error.data = "Url=http://www.google.com/login/captcha\n"
+               "Error=CaptchaRequired\n"
+               "CaptchaToken=DQAAAGgA...dkI1LK9\n"
+               "CaptchaUrl=Captcha?ctoken=...\n";
+
+  MockConsumer consumer;
+  EXPECT_CALL(consumer, OnLoginFailure(error.data))
+      .Times(1);
+
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  PrepForLogin(auth.get());
+  auth->OnClientLoginFailure(error);
   message_loop.RunAllPending();
 }
 
@@ -367,14 +377,12 @@ TEST_F(GoogleAuthenticatorTest, OfflineLogin) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  int error_no = net::ERR_CONNECTION_RESET;
-  std::string data(net::ErrorToString(error_no));
-  GURL source;
-
-  URLRequestStatus status(URLRequestStatus::FAILED, error_no);
+  GaiaAuthConsumer::ClientLoginError error;
+  error.code = GaiaAuthConsumer::NETWORK_ERROR;
+  error.network_error = net::ERR_CONNECTION_RESET;
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
       .Times(1);
   EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
       .WillOnce(Return(true));
@@ -383,7 +391,7 @@ TEST_F(GoogleAuthenticatorTest, OfflineLogin) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnURLFetchComplete(NULL, source, status, 0, cookies_, data);
+  auth->OnClientLoginFailure(error);
   message_loop.RunAllPending();
 }
 
@@ -391,53 +399,15 @@ TEST_F(GoogleAuthenticatorTest, OnlineLogin) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  GURL source(AuthResponseHandler::kTokenAuthUrl);
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
-
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
       .Times(1);
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
       .WillOnce(Return(true));
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnURLFetchComplete(NULL,
-                          source,
-                          status,
-                          kHttpSuccess,
-                          cookies_,
-                          std::string());
-  message_loop.RunAllPending();
-}
-
-TEST_F(GoogleAuthenticatorTest, TwoFactorLogin) {
-  MessageLoopForUI message_loop;
-  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
-
-  GURL source(AuthResponseHandler::kTokenAuthUrl);
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
-
-  std::string response =
-      StringPrintf("Error=BadAuthentication\n%s\n",
-                   GoogleAuthenticator::kSecondFactor);
-
-  MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
-      .Times(1);
-  EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
-      .WillOnce(Return(true));
-
-  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  auth->set_password_hash(hash_ascii_);
-  auth->set_username(username_);
-  PrepForLogin(auth.get());
-  auth->OnURLFetchComplete(NULL,
-                          source,
-                          status,
-                          403,
-                          cookies_,
-                          response);
+  auth->OnClientLoginSuccess(result_);
   message_loop.RunAllPending();
 }
 
@@ -458,43 +428,6 @@ TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
   auth->CheckLocalaccount(std::string());
 }
 
-// Responds as though ClientLogin was successful.
-class MockFetcher : public URLFetcher {
- public:
-  MockFetcher(const GURL& url,
-              URLFetcher::RequestType request_type,
-              URLFetcher::Delegate* d)
-      : URLFetcher(url, request_type, d) {
-  }
-  ~MockFetcher() {}
-  void Start() {
-    GURL source(AuthResponseHandler::kClientLoginUrl);
-    URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
-    delegate()->OnURLFetchComplete(NULL,
-                                   source,
-                                   status,
-                                   kHttpSuccess,
-                                   ResponseCookies(),
-                                   std::string());
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFetcher);
-};
-
-class MockFactory : public URLFetcher::Factory {
- public:
-  MockFactory() {}
-  ~MockFactory() {}
-  URLFetcher* CreateURLFetcher(int id,
-                               const GURL& url,
-                               URLFetcher::RequestType request_type,
-                               URLFetcher::Delegate* d) {
-    return new MockFetcher(url, request_type, d);
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFactory);
-};
-
 TEST_F(GoogleAuthenticatorTest, FullLogin) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
@@ -503,7 +436,7 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
   chromeos::CryptohomeBlob salt_v(fake_hash_, fake_hash_ + sizeof(fake_hash_));
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, data_))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
       .Times(1);
   EXPECT_CALL(*mock_library_, Mount(username_, _, _))
       .WillOnce(Return(true));

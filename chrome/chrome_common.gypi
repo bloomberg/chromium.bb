@@ -338,8 +338,11 @@
         'common/net/url_request_context_getter.h',
         'common/net/url_request_intercept_job.cc',
         'common/net/url_request_intercept_job.h',
+        'common/net/gaia/gaia_auth_consumer.h',
         'common/net/gaia/gaia_authenticator.cc',
         'common/net/gaia/gaia_authenticator.h',
+        'common/net/gaia/gaia_authenticator2.cc',
+        'common/net/gaia/gaia_authenticator2.h',
         'common/net/gaia/signin.h',
       ],
       'dependencies': [

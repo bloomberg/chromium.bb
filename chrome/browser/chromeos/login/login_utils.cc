@@ -69,7 +69,7 @@ class LoginUtilsImpl : public LoginUtils,
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
   virtual void CompleteLogin(const std::string& username,
-                             const std::string& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
 
   // Invoked after the tmpfs is successfully mounted.
   // Launches a browser in the off the record (incognito) mode.
@@ -174,7 +174,8 @@ bool LoginUtilsImpl::ShouldWaitForWifi() {
 }
 
 void LoginUtilsImpl::CompleteLogin(const std::string& username,
-                                   const std::string& credentials) {
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+
   LOG(INFO) << "Completing login for " << username;
 
   if (CrosLibrary::Get()->EnsureLoaded())
@@ -204,8 +205,8 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // DoBrowserLaunch on the UI thread when it's done, and then
   // delete itself.
   CookieFetcher* cf = new CookieFetcher(profile);
-  cf->AttemptFetch(credentials);
-  auth_token_ = ExtractClientLoginParam(credentials, kAuthPrefix, kAuthSuffix);
+  cf->AttemptFetch(credentials.data);
+  auth_token_ = credentials.token;
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin() {

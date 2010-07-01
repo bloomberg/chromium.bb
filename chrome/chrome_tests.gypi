@@ -1032,6 +1032,8 @@
         'common/json_value_serializer_unittest.cc',
         'common/mru_cache_unittest.cc',
         'common/net/gaia/gaia_authenticator_unittest.cc',
+        'common/net/gaia/gaia_authenticator2_unittest.cc',
+        'common/net/gaia/gaia_authenticator2_unittest.h',
         'common/net/url_fetcher_unittest.cc',
         'common/net/test_url_fetcher_factory.cc',
         'common/net/test_url_fetcher_factory.h',
