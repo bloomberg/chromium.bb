@@ -37,7 +37,7 @@ class GeolocationObserverBridge;
 - (void)attachSheetTo:(NSWindow*)window;
 - (IBAction)closeSheet:(id)sender;
 
-- (IBAction)removeException:(id)sender;
-- (IBAction)removeAllExceptions:(id)sender;
+- (IBAction)removeRow:(id)sender;
+- (IBAction)removeAll:(id)sender;
 
 @end

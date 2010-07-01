@@ -8,32 +8,32 @@
 #include <set>
 #include <vector>
 
-#include "app/table_model.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 
-class GeolocationExceptionsTableModel : public TableModel {
+class GeolocationExceptionsTableModel : public RemoveRowsTableModel {
  public:
-  typedef std::set<size_t> Rows;
-
   explicit GeolocationExceptionsTableModel(
       GeolocationContentSettingsMap* map);
+
+  // RemoveRowsTableModel overrides:
 
   // Return whether the given set of rows can be removed.  A parent with setting
   // of CONTENT_SETTING_DEFAULT can't be removed unless all its children are
   // also being removed.
-  bool CanRemoveExceptions(const Rows& rows) const;
+  virtual bool CanRemoveRows(const Rows& rows) const;
 
   // Removes the exceptions at the specified indexes.  If an exception is a
   // parent, and it has children, the row in model will be updated to have
   // CONTENT_SETTING_DEFAULT.  If it is the only child of a
   // CONTENT_SETTING_DEFAULT parent, the parent will be removed from the model
   // too.
-  void RemoveExceptions(const Rows& rows);
+  virtual void RemoveRows(const Rows& rows);
 
   // Removes all the exceptions from both the map and model.
-  void RemoveAll();
+  virtual void RemoveAll();
 
   // TableModel overrides:
   virtual int RowCount();

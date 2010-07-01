@@ -71,7 +71,7 @@ TEST_F(GeolocationExceptionsTableModelTest, CanRemoveException) {
   EXPECT_EQ(1, model_->RowCount());
   GeolocationExceptionsTableModel::Rows rows;
   rows.insert(0U);
-  EXPECT_TRUE(model_->CanRemoveExceptions(rows));
+  EXPECT_TRUE(model_->CanRemoveRows(rows));
 
 
   // Ensure an entry with children can't be removed.
@@ -80,13 +80,13 @@ TEST_F(GeolocationExceptionsTableModelTest, CanRemoveException) {
   map->SetContentSetting(kUrl0, kUrl2, CONTENT_SETTING_BLOCK);
   ResetModel();
   EXPECT_EQ(3, model_->RowCount());
-  EXPECT_FALSE(model_->CanRemoveExceptions(rows));
+  EXPECT_FALSE(model_->CanRemoveRows(rows));
 
   // Ensure it can be removed if removing all children.
   rows.clear();
   rows.insert(1U);
   rows.insert(2U);
-  EXPECT_TRUE(model_->CanRemoveExceptions(rows));
+  EXPECT_TRUE(model_->CanRemoveRows(rows));
 }
 
 TEST_F(GeolocationExceptionsTableModelTest, RemoveExceptions) {
@@ -97,7 +97,7 @@ TEST_F(GeolocationExceptionsTableModelTest, RemoveExceptions) {
   // Test removing parent exception.
   GeolocationExceptionsTableModel::Rows rows;
   rows.insert(0U);
-  model_->RemoveExceptions(rows);
+  model_->RemoveRows(rows);
   EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl0));
   EXPECT_EQ(CONTENT_SETTING_ALLOW, map->GetContentSetting(kUrl0, kUrl1));
   EXPECT_EQ(CONTENT_SETTING_ALLOW, map->GetContentSetting(kUrl0, kUrl2));
@@ -109,7 +109,7 @@ TEST_F(GeolocationExceptionsTableModelTest, RemoveExceptions) {
   rows.clear();
   rows.insert(1U);
   rows.insert(2U);
-  model_->RemoveExceptions(rows);
+  model_->RemoveRows(rows);
   EXPECT_EQ(0, model_->RowCount());
   EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl0));
   EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl1));

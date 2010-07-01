@@ -1956,6 +1956,7 @@
         'browser/profile_import_process_host.h',
         'browser/profile_manager.cc',
         'browser/profile_manager.h',
+        'browser/remove_rows_table_model.h',
         'browser/renderer_host/async_resource_handler.cc',
         'browser/renderer_host/async_resource_handler.h',
         'browser/renderer_host/audio_renderer_host.cc',

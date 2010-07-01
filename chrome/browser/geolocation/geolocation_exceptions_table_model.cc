@@ -57,7 +57,7 @@ GeolocationExceptionsTableModel::GeolocationExceptionsTableModel(
     AddEntriesForOrigin(i->first, i->second);
 }
 
-bool GeolocationExceptionsTableModel::CanRemoveExceptions(
+bool GeolocationExceptionsTableModel::CanRemoveRows(
     const Rows& rows) const {
   for (Rows::const_iterator i(rows.begin()); i != rows.end(); ++i) {
     const Entry& entry = entries_[*i];
@@ -73,7 +73,7 @@ bool GeolocationExceptionsTableModel::CanRemoveExceptions(
   return !rows.empty();
 }
 
-void GeolocationExceptionsTableModel::RemoveExceptions(const Rows& rows) {
+void GeolocationExceptionsTableModel::RemoveRows(const Rows& rows) {
   for (Rows::const_reverse_iterator i(rows.rbegin()); i != rows.rend(); ++i) {
     size_t row = *i;
     Entry* entry = &entries_[row];
@@ -95,11 +95,11 @@ void GeolocationExceptionsTableModel::RemoveExceptions(const Rows& rows) {
       entries_.erase(entries_.begin() + row);  // Note: |entry| is now garbage.
       if (observer_)
         observer_->OnItemsRemoved(row, 1);
-      // If we remove the last non-default child of a default parent, we
-      // should remove the parent too.  We do these removals one-at-a-time
-      // because the table view will end up being called back as each row is
-      // removed, in turn calling back to CanRemoveExceptions(), and if we've
-      // already removed more entries than the view has, we'll have problems.
+      // If we remove the last non-default child of a default parent, we should
+      // remove the parent too.  We do these removals one-at-a-time because the
+      // table view will end up being called back as each row is removed, in
+      // turn calling back to CanRemoveRows(), and if we've already removed
+      // more entries than the view has, we'll have problems.
       if ((row == 0) || rows.count(row - 1))
         break;
       entry = &entries_[--row];

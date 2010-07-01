@@ -31,7 +31,7 @@ class GeolocationExceptionsWindowControllerTest : public CocoaTest {
   }
 
   void ClickRemoveAll(GeolocationExceptionsWindowController* controller) {
-    [controller removeAllExceptions:nil];
+    [controller removeAll:nil];
   }
 
  protected:

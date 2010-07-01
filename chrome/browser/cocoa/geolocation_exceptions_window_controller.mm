@@ -127,7 +127,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
       case NSDeleteFunctionKey:
         // Delete deletes.
         if ([[tableView_ selectedRowIndexes] count] > 0)
-          [self removeException:self];
+          [self removeRow:self];
         return;
     }
   }
@@ -153,13 +153,13 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
   [NSApp endSheet:[self window]];
 }
 
-- (IBAction)removeException:(id)sender {
+- (IBAction)removeRow:(id)sender {
   GeolocationExceptionsTableModel::Rows rows;
   [self selectedRows:&rows];
-  model_->RemoveExceptions(rows);
+  model_->RemoveRows(rows);
 }
 
-- (IBAction)removeAllExceptions:(id)sender {
+- (IBAction)removeAll:(id)sender {
   model_->RemoveAll();
 }
 
@@ -208,7 +208,7 @@ GeolocationExceptionsWindowController* g_exceptionWindow = nil;
 - (void)adjustEditingButtons {
   GeolocationExceptionsTableModel::Rows rows;
   [self selectedRows:&rows];
-  [removeButton_ setEnabled:model_->CanRemoveExceptions(rows)];
+  [removeButton_ setEnabled:model_->CanRemoveRows(rows)];
   [removeAllButton_ setEnabled:([tableView_ numberOfRows] > 0)];
 }
 

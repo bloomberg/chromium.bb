@@ -165,12 +165,12 @@ GeolocationExceptionsTableModel::Rows
 }
 
 void GeolocationExceptionsView::UpdateButtonState() {
-  remove_button_->SetEnabled(model_.CanRemoveExceptions(GetSelectedRows()));
+  remove_button_->SetEnabled(model_.CanRemoveRows(GetSelectedRows()));
   remove_all_button_->SetEnabled(model_.RowCount() > 0);
 }
 
 void GeolocationExceptionsView::Remove() {
-  model_.RemoveExceptions(GetSelectedRows());
+  model_.RemoveRows(GetSelectedRows());
   UpdateButtonState();
 }
 

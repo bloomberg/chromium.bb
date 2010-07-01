@@ -141,7 +141,7 @@ void GeolocationContentExceptionsWindow::UpdateButtonState() {
 
   GeolocationExceptionsTableModel::Rows rows;
   GetSelectedRows(&rows);
-  gtk_widget_set_sensitive(remove_button_, model_->CanRemoveExceptions(rows));
+  gtk_widget_set_sensitive(remove_button_, model_->CanRemoveRows(rows));
   gtk_widget_set_sensitive(remove_all_button_, row_count > 0);
 }
 
@@ -156,7 +156,7 @@ void GeolocationContentExceptionsWindow::GetSelectedRows(
 void GeolocationContentExceptionsWindow::Remove(GtkWidget* widget) {
   GeolocationExceptionsTableModel::Rows rows;
   GetSelectedRows(&rows);
-  model_->RemoveExceptions(rows);
+  model_->RemoveRows(rows);
   UpdateButtonState();
 }
 
