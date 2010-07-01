@@ -56,7 +56,7 @@ class TestEnvironment {
       at_exit_manager_.reset(new base::AtExitManager);
     main_message_loop_.reset(new MessageLoopForUI);
     // TestWebKitClient must be instantiated after the MessageLoopForUI.
-    webkit_client_.reset(new TestWebKitClient);
+    webkit_client_.reset(new TestWebKitClient(unit_test_mode));
   }
 
   ~TestEnvironment() {

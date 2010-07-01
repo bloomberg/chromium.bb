@@ -17,7 +17,7 @@
 // An implementation of WebKitClient for tests.
 class TestWebKitClient : public webkit_glue::WebKitClientImpl {
  public:
-  explicit TestWebKitClient();
+  explicit TestWebKitClient(bool unit_test_mode);
   virtual ~TestWebKitClient();
 
   virtual WebKit::WebMimeRegistry* mimeRegistry();
@@ -71,6 +71,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   SimpleDatabaseSystem database_system_;
   SimpleWebCookieJarImpl cookie_jar_;
   WebURLLoaderMockFactory url_loader_factory_;
+  bool unit_test_mode_;
 
 #if defined(OS_WIN)
   WebKit::WebThemeEngine* active_theme_engine_;

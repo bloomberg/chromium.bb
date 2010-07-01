@@ -34,7 +34,9 @@ class TestWebPluginPageDelegate : public webkit_glue::WebPluginPageDelegate {
       const gfx::Size& size,
       const std::string& json_arguments,
       std::string* json_retval) {}
-  virtual WebKit::WebCookieJar* GetCookieJar() { return NULL; }
+  virtual WebKit::WebCookieJar* GetCookieJar() {
+    return WebKit::webKitClient()->cookieJar();
+  }
 };
 
 }  // namespace webkit_support
