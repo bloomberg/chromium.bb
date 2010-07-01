@@ -205,8 +205,9 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   }
 }
 
+// http://crbug.com/48079 started failing after WebKit roll  62240:62258 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestRendererAccessibilityTree) {
+                       DISABLED_TestRendererAccessibilityTree) {
   // By requesting an accessible chrome will believe a screen reader has been
   // detected.
   ScopedComPtr<IAccessible> document_accessible(
