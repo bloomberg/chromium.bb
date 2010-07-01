@@ -31,6 +31,9 @@ class ContentBlockedBubbleControllerTest : public CocoaTest {
 // Check that the bubble doesn't crash or leak for any settings type
 TEST_F(ContentBlockedBubbleControllerTest, Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      continue;  // Notifications have no bubble.
+
     ContentSettingsType settingsType = static_cast<ContentSettingsType>(i);
 
     scoped_nsobject<NSWindow> parent([[NSWindow alloc]
