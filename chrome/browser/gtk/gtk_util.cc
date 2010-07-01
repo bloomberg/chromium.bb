@@ -14,6 +14,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
+#include "base/gtk_util.h"
 #include "base/i18n/rtl.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
@@ -447,43 +448,6 @@ GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
     gtk_box_pack_start(GTK_BOX(hbox), centering_vbox, FALSE, FALSE, padding);
 
   return centering_vbox;
-}
-
-namespace {
-
-// Common implementation of ConvertAcceleratorsFromWindowsStyle() and
-// RemoveWindowsStyleAccelerators().
-std::string ConvertAmperstandsTo(const std::string& label,
-                                 const std::string& target) {
-  std::string ret;
-  ret.reserve(label.length() * 2);
-  for (size_t i = 0; i < label.length(); ++i) {
-    if ('_' == label[i]) {
-      ret.push_back('_');
-      ret.push_back('_');
-    } else if ('&' == label[i]) {
-      if (i + 1 < label.length() && '&' == label[i + 1]) {
-        ret.push_back(label[i]);
-        ++i;
-      } else {
-        ret.append(target);
-      }
-    } else {
-      ret.push_back(label[i]);
-    }
-  }
-
-  return ret;
-}
-
-}  // namespace
-
-std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
-  return ConvertAmperstandsTo(label, "_");
-}
-
-std::string RemoveWindowsStyleAccelerators(const std::string& label) {
-  return ConvertAmperstandsTo(label, "");
 }
 
 bool IsScreenComposited() {

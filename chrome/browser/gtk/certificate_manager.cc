@@ -14,6 +14,7 @@
 #include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
+#include "base/gtk_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/nss_util.h"
 #include "chrome/browser/browser_process.h"

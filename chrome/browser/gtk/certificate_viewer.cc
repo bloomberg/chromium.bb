@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "base/gtk_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/nss_util.h"
 #include "base/scoped_ptr.h"

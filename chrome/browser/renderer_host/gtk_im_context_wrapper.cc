@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
+#include "base/gtk_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/third_party/icu/icu_utf.h"

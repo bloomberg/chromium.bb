@@ -9,6 +9,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/cookies_tree_model.h"

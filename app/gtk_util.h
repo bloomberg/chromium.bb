@@ -6,6 +6,8 @@
 #define APP_GTK_UTIL_H_
 
 #include <stdint.h>
+#include <string>
+
 typedef struct _GtkWidget GtkWidget;
 
 namespace gtk_util {

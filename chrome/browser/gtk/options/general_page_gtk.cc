@@ -9,6 +9,7 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
+#include "base/gtk_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"

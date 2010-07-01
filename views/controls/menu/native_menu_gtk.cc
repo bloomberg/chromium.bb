@@ -9,6 +9,7 @@
 #include <string>
 
 #include "app/menus/menu_model.h"
+#include "base/gtk_util.h"
 #include "base/i18n/rtl.h"
 #include "base/keyboard_code_conversion_gtk.h"
 #include "base/keyboard_codes.h"
@@ -37,25 +38,6 @@ struct Position {
   // The alignment of the menu at that point.
   views::Menu2::Alignment alignment;
 };
-
-std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
-  std::string ret;
-  ret.reserve(label.length());
-  for (size_t i = 0; i < label.length(); ++i) {
-    if ('&' == label[i]) {
-      if (i + 1 < label.length() && '&' == label[i + 1]) {
-        ret.push_back(label[i]);
-        ++i;
-      } else {
-        ret.push_back('_');
-      }
-    } else {
-      ret.push_back(label[i]);
-    }
-  }
-
-  return ret;
-}
 
 // Returns true if the menu item type specified can be executed as a command.
 bool MenuTypeCanExecute(menus::MenuModel::ItemType type) {
@@ -291,7 +273,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
                                         GtkRadioMenuItem* radio_group,
                                         GtkAccelGroup* accel_group) {
   GtkWidget* menu_item = NULL;
-  std::string label = ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(
+  std::string label = gtk_util::ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(
       model_->GetLabelAt(index)));
 
   menus::MenuModel::ItemType type = model_->GetTypeAt(index);

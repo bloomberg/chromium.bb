@@ -11,6 +11,7 @@
 #include "app/menus/button_menu_item_model.h"
 #include "app/menus/menu_model.h"
 #include "app/resource_bundle.h"
+#include "base/gtk_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"

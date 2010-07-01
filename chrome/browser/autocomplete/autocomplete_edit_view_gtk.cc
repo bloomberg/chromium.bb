@@ -12,6 +12,7 @@
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/l10n_util.h"
+#include "base/gtk_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
