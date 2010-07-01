@@ -194,7 +194,6 @@ void ProfileSyncService::RegisterPreferences() {
     return;
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
-  pref_service->RegisterBooleanPref(prefs::kKeepEverythingSynced, false);
 
   // If you've never synced before, or if you're using Chrome OS, all datatypes
   // are on by default.
@@ -214,6 +213,9 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncTypedUrls, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncExtensions, enable_by_default);
+
+  pref_service->RegisterBooleanPref(prefs::kKeepEverythingSynced,
+      enable_by_default);
 }
 
 void ProfileSyncService::ClearPreferences() {
