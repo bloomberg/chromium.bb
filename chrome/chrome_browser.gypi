@@ -1581,6 +1581,8 @@
         'browser/history/in_memory_database.h',
         'browser/history/in_memory_history_backend.cc',
         'browser/history/in_memory_history_backend.h',
+        'browser/history/in_memory_url_index.cc',
+        'browser/history/in_memory_url_index.h',
         'browser/history/page_usage_data.cc',
         'browser/history/page_usage_data.h',
         'browser/history/query_parser.cc',
