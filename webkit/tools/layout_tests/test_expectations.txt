@@ -14,3 +14,6 @@ LINUX BUG_AGL : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyl
 BUG_LEVIN :  fast/dom/dataset-xhtml.xhtml = TEXT
 BUG_LEVIN :  fast/dom/dataset.html = TEXT
 BUG_LEVIN :  fast/dom/domListEnumeration.html = TEXT
+
+// Update expectations on Chromium side until WebKit is rolled
+BUG_YURYS LINUX WIN :  svg/W3C-SVG-1.1/filters-conv-01-f.svg = TIMEOUT
