@@ -19,6 +19,8 @@ namespace notifier {
 
 class SSLSocketAdapter;
 
+// TODO(sergeyu): Write unittests for this code!
+
 // This class provides a wrapper to libjingle's talk_base::AsyncSocket that
 // implements Chromium's net::ClientSocket interface.  It's used by
 // SSLSocketAdapter to enable Chromium's SSL implementation to work over
@@ -53,11 +55,9 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
  private:
   friend class SSLSocketAdapter;
 
-  void OnConnectEvent(talk_base::AsyncSocket * socket);
-  bool OnReadEvent(talk_base::AsyncSocket * socket);
-  bool OnWriteEvent(talk_base::AsyncSocket * socket);
+  void OnReadEvent(talk_base::AsyncSocket* socket);
+  void OnWriteEvent(talk_base::AsyncSocket* socket);
 
-  net::CompletionCallback* connect_callback_;
   net::CompletionCallback* read_callback_;
   net::CompletionCallback* write_callback_;
 
@@ -97,21 +97,23 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
  private:
   friend class TransportSocket;
 
-  enum State {
-    STATE_NONE,
-    STATE_READ,
-    STATE_READ_COMPLETE,
-    STATE_WRITE,
-    STATE_WRITE_COMPLETE,
-    STATE_SSL_WAIT
+  enum SSLState {
+    SSLSTATE_NONE,
+    SSLSTATE_WAIT,
+    SSLSTATE_CONNECTED,
+  };
+
+  enum IOState {
+    IOSTATE_NONE,
+    IOSTATE_PENDING,
+    IOSTATE_COMPLETE,
   };
 
   void OnConnected(int result);
-  void OnIO(int result);
+  void OnRead(int result);
+  void OnWrite(int result);
 
-  void OnReadEvent(talk_base::AsyncSocket * socket);
-  void OnWriteEvent(talk_base::AsyncSocket * socket);
-  void OnConnectEvent(talk_base::AsyncSocket * socket);
+  virtual void OnConnectEvent(talk_base::AsyncSocket* socket);
 
   int BeginSSL();
 
@@ -120,9 +122,11 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
   TransportSocket* transport_socket_;
   scoped_ptr<net::SSLClientSocket> ssl_socket_;
   net::CompletionCallbackImpl<SSLSocketAdapter> connected_callback_;
-  net::CompletionCallbackImpl<SSLSocketAdapter> io_callback_;
-  bool ssl_connected_;
-  State state_;
+  net::CompletionCallbackImpl<SSLSocketAdapter> read_callback_;
+  net::CompletionCallbackImpl<SSLSocketAdapter> write_callback_;
+  SSLState ssl_state_;
+  IOState read_state_;
+  IOState write_state_;
   scoped_refptr<net::IOBuffer> transport_buf_;
   int data_transferred_;
 

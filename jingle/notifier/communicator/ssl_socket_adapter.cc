@@ -61,11 +61,14 @@ SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
     : SSLAdapter(socket),
       ignore_bad_cert_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-        connected_callback_(this, &SSLSocketAdapter::OnConnected)),
+          connected_callback_(this, &SSLSocketAdapter::OnConnected)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-        io_callback_(this, &SSLSocketAdapter::OnIO)),
-      ssl_connected_(false),
-      state_(STATE_NONE) {
+          read_callback_(this, &SSLSocketAdapter::OnRead)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          write_callback_(this, &SSLSocketAdapter::OnWrite)),
+      ssl_state_(SSLSTATE_NONE),
+      read_state_(IOSTATE_NONE),
+      write_state_(IOSTATE_NONE) {
   transport_socket_ = new TransportSocket(socket, this);
 }
 
@@ -74,7 +77,7 @@ int SSLSocketAdapter::StartSSL(const char* hostname, bool restartable) {
   hostname_ = hostname;
 
   if (socket_->GetState() != Socket::CS_CONNECTED) {
-    state_ = STATE_SSL_WAIT;
+    ssl_state_ = SSLSTATE_WAIT;
     return 0;
   } else {
     return BeginSSL();
@@ -111,7 +114,7 @@ int SSLSocketAdapter::BeginSSL() {
 }
 
 int SSLSocketAdapter::Send(const void* buf, size_t len) {
-  if (!ssl_connected_) {
+  if (ssl_state_ != SSLSTATE_CONNECTED) {
     return AsyncSocketAdapter::Send(buf, len);
   } else {
     scoped_refptr<net::IOBuffer> transport_buf = new net::IOBuffer(len);
@@ -127,96 +130,79 @@ int SSLSocketAdapter::Send(const void* buf, size_t len) {
 }
 
 int SSLSocketAdapter::Recv(void* buf, size_t len) {
-  if (!ssl_connected_) {
-    return AsyncSocketAdapter::Recv(buf, len);
-  }
+  switch (ssl_state_) {
+    case SSLSTATE_NONE:
+      return AsyncSocketAdapter::Recv(buf, len);
 
-  switch (state_) {
-    case STATE_NONE: {
-      transport_buf_ = new net::IOBuffer(len);
-      int result = ssl_socket_->Read(transport_buf_, len, &io_callback_);
-      if (result >= 0) {
-        memcpy(buf, transport_buf_->data(), len);
-      }
-
-      if (result == net::ERR_IO_PENDING) {
-        state_ = STATE_READ;
-        SetError(EWOULDBLOCK);
-      } else {
-        if (result < 0) {
-          SetError(result);
-          LOG(INFO) << "Socket error " << result;
-        }
-        transport_buf_ = NULL;
-      }
-      return result;
-    }
-    case STATE_READ_COMPLETE:
-      memcpy(buf, transport_buf_->data(), len);
-      transport_buf_ = NULL;
-      state_ = STATE_NONE;
-      return data_transferred_;
-
-    case STATE_READ:
-    case STATE_WRITE:
-    case STATE_WRITE_COMPLETE:
-    case STATE_SSL_WAIT:
+    case SSLSTATE_WAIT:
       SetError(EWOULDBLOCK);
       return -1;
 
-    default:
-      NOTREACHED();
-      break;
+    case SSLSTATE_CONNECTED:
+      switch (read_state_) {
+        case IOSTATE_NONE: {
+          transport_buf_ = new net::IOBuffer(len);
+          int result = ssl_socket_->Read(transport_buf_, len, &read_callback_);
+          if (result >= 0) {
+            memcpy(buf, transport_buf_->data(), len);
+          }
+
+          if (result == net::ERR_IO_PENDING) {
+            read_state_ = IOSTATE_PENDING;
+            SetError(EWOULDBLOCK);
+          } else {
+            if (result < 0) {
+              SetError(result);
+              LOG(INFO) << "Socket error " << result;
+            }
+            transport_buf_ = NULL;
+          }
+          return result;
+        }
+        case IOSTATE_PENDING:
+          SetError(EWOULDBLOCK);
+          return -1;
+
+        case IOSTATE_COMPLETE:
+          memcpy(buf, transport_buf_->data(), len);
+          transport_buf_ = NULL;
+          read_state_ = IOSTATE_NONE;
+          return data_transferred_;
+      }
   }
+
+  NOTREACHED();
   return -1;
 }
 
 void SSLSocketAdapter::OnConnected(int result) {
   if (result == net::OK) {
-    ssl_connected_ = true;
+    ssl_state_ = SSLSTATE_CONNECTED;
     OnConnectEvent(this);
   } else {
     LOG(WARNING) << "OnConnected failed with error " << result;
   }
 }
 
-void SSLSocketAdapter::OnIO(int result) {
-  switch (state_) {
-    case STATE_READ:
-      state_ = STATE_READ_COMPLETE;
-      data_transferred_ = result;
-      AsyncSocketAdapter::OnReadEvent(this);
-      break;
-    case STATE_WRITE:
-      state_ = STATE_WRITE_COMPLETE;
-      data_transferred_ = result;
-      AsyncSocketAdapter::OnWriteEvent(this);
-      break;
-    case STATE_NONE:
-    case STATE_READ_COMPLETE:
-    case STATE_WRITE_COMPLETE:
-    case STATE_SSL_WAIT:
-    default:
-      NOTREACHED();
-      break;
-  }
+void SSLSocketAdapter::OnRead(int result) {
+  DCHECK(read_state_ == IOSTATE_PENDING);
+  read_state_ = IOSTATE_COMPLETE;
+  data_transferred_ = result;
+  AsyncSocketAdapter::OnReadEvent(this);
 }
 
-void SSLSocketAdapter::OnReadEvent(talk_base::AsyncSocket* socket) {
-  if (!transport_socket_->OnReadEvent(socket))
-    AsyncSocketAdapter::OnReadEvent(socket);
-}
-
-void SSLSocketAdapter::OnWriteEvent(talk_base::AsyncSocket* socket) {
-  if (!transport_socket_->OnWriteEvent(socket))
-    AsyncSocketAdapter::OnWriteEvent(socket);
+void SSLSocketAdapter::OnWrite(int result) {
+  DCHECK(write_state_ == IOSTATE_PENDING);
+  write_state_ = IOSTATE_COMPLETE;
+  data_transferred_ = result;
+  AsyncSocketAdapter::OnWriteEvent(this);
 }
 
 void SSLSocketAdapter::OnConnectEvent(talk_base::AsyncSocket* socket) {
-  if (state_ != STATE_SSL_WAIT) {
+  if (ssl_state_ != SSLSTATE_WAIT) {
     AsyncSocketAdapter::OnConnectEvent(socket);
   } else {
-    state_ = STATE_NONE;
+    ssl_state_ = SSLSTATE_NONE;
     int result = BeginSSL();
     if (0 != result) {
       // TODO(zork): Handle this case gracefully.
@@ -227,18 +213,20 @@ void SSLSocketAdapter::OnConnectEvent(talk_base::AsyncSocket* socket) {
 
 TransportSocket::TransportSocket(talk_base::AsyncSocket* socket,
                                  SSLSocketAdapter *ssl_adapter)
-    : connect_callback_(NULL),
-      read_callback_(NULL),
+    : read_callback_(NULL),
       write_callback_(NULL),
       read_buffer_len_(0),
       write_buffer_len_(0),
       socket_(socket) {
-    socket_->SignalConnectEvent.connect(this, &TransportSocket::OnConnectEvent);
+  socket_->SignalReadEvent.connect(this, &TransportSocket::OnReadEvent);
+  socket_->SignalWriteEvent.connect(this, &TransportSocket::OnWriteEvent);
 }
 
 int TransportSocket::Connect(net::CompletionCallback* callback) {
-  connect_callback_ = callback;
-  return socket_->Connect(addr_);
+  // Connect is never called by SSLClientSocket, instead SSLSocketAdapter
+  // calls Connect() on socket_ directly.
+  NOTREACHED();
+  return false;
 }
 
 void TransportSocket::Disconnect() {
@@ -318,17 +306,7 @@ bool TransportSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
-void TransportSocket::OnConnectEvent(talk_base::AsyncSocket * socket) {
-  if (connect_callback_) {
-    net::CompletionCallback *callback = connect_callback_;
-    connect_callback_ = NULL;
-    callback->RunWithParams(Tuple1<int>(MapPosixError(socket_->GetError())));
-  } else {
-    LOG(WARNING) << "OnConnectEvent called with no callback.";
-  }
-}
-
-bool TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
+void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
   if (read_callback_) {
     DCHECK(read_buffer_.get());
     net::CompletionCallback* callback = read_callback_;
@@ -346,18 +324,14 @@ bool TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
         read_callback_ = callback;
         read_buffer_ = buffer;
         read_buffer_len_ = buffer_len;
-        return true;
+        return;
       }
     }
     callback->RunWithParams(Tuple1<int>(result));
-    return true;
-  } else {
-    LOG(WARNING) << "OnReadEvent called with no callback.";
-    return false;
   }
 }
 
-bool TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
+void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
   if (write_callback_) {
     DCHECK(write_buffer_.get());
     net::CompletionCallback* callback = write_callback_;
@@ -375,14 +349,10 @@ bool TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
         write_callback_ = callback;
         write_buffer_ = buffer;
         write_buffer_len_ = buffer_len;
-        return true;
+        return;
       }
     }
     callback->RunWithParams(Tuple1<int>(result));
-    return true;
-  } else {
-    LOG(WARNING) << "OnWriteEvent called with no callback.";
-    return false;
   }
 }
 
