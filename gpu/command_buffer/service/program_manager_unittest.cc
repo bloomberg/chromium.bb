@@ -26,14 +26,23 @@ namespace gles2 {
 class ProgramManagerTest : public testing::Test {
  public:
   ProgramManagerTest() { }
+  ~ProgramManagerTest() {
+    manager_.Destroy(false);
+  }
 
  protected:
   virtual void SetUp() {
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::GLInterface::SetGLInterface(gl_.get());
   }
 
   virtual void TearDown() {
+    ::gfx::GLInterface::SetGLInterface(NULL);
+    gl_.reset();
   }
 
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   ProgramManager manager_;
 };
 
@@ -61,10 +70,32 @@ TEST_F(ProgramManagerTest, Basic) {
   EXPECT_TRUE(manager_.GetProgramInfo(kClient1Id) == NULL);
 }
 
+TEST_F(ProgramManagerTest, Destroy) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  // Check we can create program.
+  manager_.CreateProgramInfo(kClient1Id, kService1Id);
+  // Check program got created.
+  ProgramManager::ProgramInfo* info1 =
+      manager_.GetProgramInfo(kClient1Id);
+  ASSERT_TRUE(info1 != NULL);
+  EXPECT_CALL(*gl_, DeleteProgram(kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Destroy(true);
+  // Check the resources were released.
+  info1 = manager_.GetProgramInfo(kClient1Id);
+  ASSERT_TRUE(info1 == NULL);
+}
+
 class ProgramManagerWithShaderTest : public testing::Test {
  public:
   ProgramManagerWithShaderTest()
       : program_info_(NULL) {
+  }
+
+  ~ProgramManagerWithShaderTest() {
+    manager_.Destroy(false);
   }
 
   static const GLint kNumVertexAttribs = 16;
@@ -410,6 +441,7 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
   EXPECT_FALSE(program_info->CanLink());
   fshader->SetStatus(true, "");
   EXPECT_TRUE(program_info->CanLink());
+  shader_manager.Destroy(false);
 }
 
 TEST_F(ProgramManagerWithShaderTest, GetUniformLocation) {

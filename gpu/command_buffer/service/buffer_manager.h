@@ -143,6 +143,10 @@ class BufferManager {
   BufferManager()
       : allow_buffers_on_multiple_targets_(false) {
   }
+  ~BufferManager();
+
+  // Must call before destruction.
+  void Destroy(bool have_context);
 
   // Creates a BufferInfo for the given buffer.
   void CreateBufferInfo(GLuint client_id, GLuint service_id);

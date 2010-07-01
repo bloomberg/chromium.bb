@@ -61,6 +61,10 @@ class GPUProcessorTest : public testing::Test {
                                       decoder_,
                                       parser_,
                                       2));
+
+    EXPECT_CALL(*decoder_, Destroy())
+      .Times(1)
+      .RetiresOnSaturation();
   }
 
   virtual void TearDown() {
@@ -148,6 +152,7 @@ TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
 
 TEST_F(GPUProcessorTest, ProcessorSetsTheGLContext) {
   EXPECT_CALL(*decoder_, MakeCurrent())
+    .WillOnce(Return(true))
     .WillOnce(Return(true));
 
   CommandBuffer::State state;

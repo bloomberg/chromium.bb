@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/shader_manager.h"
+#include "base/scoped_ptr.h"
+#include "app/gfx/gl/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -13,13 +15,23 @@ class ShaderManagerTest : public testing::Test {
   ShaderManagerTest() {
   }
 
+  ~ShaderManagerTest() {
+    manager_.Destroy(false);
+  }
+
  protected:
   virtual void SetUp() {
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::GLInterface::SetGLInterface(gl_.get());
   }
 
   virtual void TearDown() {
+    ::gfx::GLInterface::SetGLInterface(NULL);
+    gl_.reset();
   }
 
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   ShaderManager manager_;
 };
 
@@ -53,6 +65,24 @@ TEST_F(ShaderManagerTest, Basic) {
   // Check we can't get the shader after we remove it.
   manager_.RemoveShaderInfo(kClient1Id);
   EXPECT_TRUE(manager_.GetShaderInfo(kClient1Id) == NULL);
+}
+
+TEST_F(ShaderManagerTest, Destroy) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLenum kShader1Type = GL_VERTEX_SHADER;
+  // Check we can create shader.
+  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
+  // Check shader got created.
+  ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
+  ASSERT_TRUE(info1 != NULL);
+  EXPECT_CALL(*gl_, DeleteShader(kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Destroy(true);
+  // Check that resources got freed.
+  info1 = manager_.GetShaderInfo(kClient1Id);
+  ASSERT_TRUE(info1 == NULL);
 }
 
 }  // namespace gles2

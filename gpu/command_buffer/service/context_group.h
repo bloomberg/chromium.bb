@@ -35,6 +35,9 @@ class ContextGroup {
   // This should only be called by GLES2Decoder.
   bool Initialize();
 
+  // Destroys all the resources. MUST be called before destruction.
+  void Destroy(bool have_context);
+
   uint32 max_vertex_attribs() const {
     return max_vertex_attribs_;
   }

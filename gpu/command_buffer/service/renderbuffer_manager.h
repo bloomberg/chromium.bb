@@ -75,6 +75,10 @@ class RenderbufferManager {
   };
 
   RenderbufferManager() { }
+  ~RenderbufferManager();
+
+  // Must call before destruction.
+  void Destroy(bool have_context);
 
   // Creates a RenderbufferInfo for the given renderbuffer.
   void CreateRenderbufferInfo(GLuint client_id, GLuint service_id);

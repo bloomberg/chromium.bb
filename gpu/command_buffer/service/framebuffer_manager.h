@@ -63,6 +63,10 @@ class FramebufferManager {
   };
 
   FramebufferManager() { }
+  ~FramebufferManager();
+
+  // Must call before destruction.
+  void Destroy(bool have_context);
 
   // Creates a FramebufferInfo for the given framebuffer.
   void CreateFramebufferInfo(GLuint client_id, GLuint service_id);

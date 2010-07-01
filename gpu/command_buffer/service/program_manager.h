@@ -197,6 +197,10 @@ class ProgramManager {
   };
 
   ProgramManager() { }
+  ~ProgramManager();
+
+  // Must call before destruction.
+  void Destroy(bool have_context);
 
   // Creates a new program info.
   void CreateProgramInfo(GLuint client_id, GLuint service_id);

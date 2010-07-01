@@ -70,10 +70,14 @@ bool GPUProcessor::InitializeCommon(const gfx::Size& size,
 }
 
 void GPUProcessor::DestroyCommon() {
+  bool have_context = false;
   if (decoder_.get()) {
+    have_context = decoder_->MakeCurrent();
     decoder_->Destroy();
     decoder_.reset();
   }
+
+  group_.Destroy(have_context);
 
   if (context_.get()) {
     context_->Destroy();

@@ -307,6 +307,23 @@ bool ProgramManager::ProgramInfo::CanLink() const {
   return true;
 }
 
+ProgramManager::~ProgramManager() {
+  DCHECK(program_infos_.empty());
+}
+
+void ProgramManager::Destroy(bool have_context) {
+  while (!program_infos_.empty()) {
+    if (have_context) {
+      ProgramInfo* info = program_infos_.begin()->second;
+      if (!info->IsDeleted()) {
+        glDeleteProgram(info->service_id());
+        info->MarkAsDeleted();
+      }
+    }
+    program_infos_.erase(program_infos_.begin());
+  }
+}
+
 void ProgramManager::CreateProgramInfo(GLuint client_id, GLuint service_id) {
   std::pair<ProgramInfoMap::iterator, bool> result =
       program_infos_.insert(

@@ -98,6 +98,8 @@ class GPUProcessor : public CommandBufferEngine {
 
   int commands_per_update_;
 
+  // TODO(gman): Group needs to be passed in so it can be shared by
+  //    multiple GPUProcessors.
   gles2::ContextGroup group_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;

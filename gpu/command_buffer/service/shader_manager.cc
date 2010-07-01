@@ -8,6 +8,23 @@
 namespace gpu {
 namespace gles2 {
 
+ShaderManager::~ShaderManager() {
+  DCHECK(shader_infos_.empty());
+}
+
+void ShaderManager::Destroy(bool have_context) {
+  while (!shader_infos_.empty()) {
+    if (have_context) {
+      ShaderInfo* info = shader_infos_.begin()->second;
+      if (!info->IsDeleted()) {
+        glDeleteShader(info->service_id());
+        info->MarkAsDeleted();
+      }
+    }
+    shader_infos_.erase(shader_infos_.begin());
+  }
+}
+
 void ShaderManager::CreateShaderInfo(GLuint client_id,
                                      GLuint service_id,
                                      GLenum shader_type) {

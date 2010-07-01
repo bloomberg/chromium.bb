@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/buffer_manager.h"
+#include "app/gfx/gl/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -12,18 +13,27 @@ class BufferManagerTest : public testing::Test {
  public:
   BufferManagerTest() {
   }
+  ~BufferManagerTest() {
+    manager_.Destroy(false);
+  }
 
  protected:
   virtual void SetUp() {
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::GLInterface::SetGLInterface(gl_.get());
   }
 
   virtual void TearDown() {
+    ::gfx::GLInterface::SetGLInterface(NULL);
+    gl_.reset();
   }
 
   GLenum GetTarget(const BufferManager::BufferInfo* info) const {
     return info->target();
   }
 
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   BufferManager manager_;
 };
 
@@ -56,6 +66,24 @@ TEST_F(BufferManagerTest, Basic) {
   // Check we can't get the buffer after we remove it.
   manager_.RemoveBufferInfo(kClientBuffer1Id);
   EXPECT_TRUE(manager_.GetBufferInfo(kClientBuffer1Id) == NULL);
+}
+
+TEST_F(BufferManagerTest, Destroy) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  // Check we can create buffer.
+  manager_.CreateBufferInfo(kClient1Id, kService1Id);
+  // Check buffer got created.
+  BufferManager::BufferInfo* info1 =
+      manager_.GetBufferInfo(kClient1Id);
+  ASSERT_TRUE(info1 != NULL);
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, ::testing::Pointee(kService1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Destroy(true);
+  // Check the resources were released.
+  info1 = manager_.GetBufferInfo(kClient1Id);
+  ASSERT_TRUE(info1 == NULL);
 }
 
 TEST_F(BufferManagerTest, SetRange) {

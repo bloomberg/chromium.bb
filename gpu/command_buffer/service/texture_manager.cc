@@ -58,6 +58,24 @@ static size_t FaceIndexToGLTarget(size_t index) {
   }
 }
 
+TextureManager::~TextureManager() {
+  DCHECK(texture_infos_.empty());
+}
+
+void TextureManager::Destroy(bool have_context) {
+  while (!texture_infos_.empty()) {
+    if (have_context) {
+      TextureInfo* info = texture_infos_.begin()->second;
+      if (!info->IsDeleted()) {
+        GLuint service_id = info->service_id();
+        glDeleteTextures(1, &service_id);
+        info->MarkAsDeleted();
+      }
+    }
+    texture_infos_.erase(texture_infos_.begin());
+  }
+}
+
 bool TextureManager::TextureInfo::CanRender() const {
   if (target_ == 0 || IsDeleted()) {
     return false;

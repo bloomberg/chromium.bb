@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "base/scoped_ptr.h"
+#include "app/gfx/gl/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::Pointee;
 
 namespace gpu {
 namespace gles2 {
@@ -19,13 +23,23 @@ class TextureManagerTest : public testing::Test {
       : manager_(kMaxTextureSize, kMaxCubeMapTextureSize) {
   }
 
+  ~TextureManagerTest() {
+    manager_.Destroy(false);
+  }
+
  protected:
   virtual void SetUp() {
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::GLInterface::SetGLInterface(gl_.get());
   }
 
   virtual void TearDown() {
+    ::gfx::GLInterface::SetGLInterface(NULL);
+    gl_.reset();
   }
 
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   TextureManager manager_;
 };
 
@@ -58,6 +72,24 @@ TEST_F(TextureManagerTest, Basic) {
   // Check we can't get the texture after we remove it.
   manager_.RemoveTextureInfo(kClient1Id);
   EXPECT_TRUE(manager_.GetTextureInfo(kClient1Id) == NULL);
+}
+
+TEST_F(TextureManagerTest, Destroy) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  EXPECT_FALSE(manager_.HaveUnrenderableTextures());
+  // Check we can create texture.
+  manager_.CreateTextureInfo(kClient1Id, kService1Id);
+  // Check texture got created.
+  TextureManager::TextureInfo* info1 = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info1 != NULL);
+  EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_.Destroy(true);
+  // Check that resources got freed.
+  info1 = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info1 == NULL);
 }
 
 TEST_F(TextureManagerTest, MaxValues) {
@@ -126,17 +158,26 @@ class TextureInfoTest : public testing::Test {
   TextureInfoTest()
       : manager_(kMaxTextureSize, kMaxCubeMapTextureSize) {
   }
+  ~TextureInfoTest() {
+    manager_.Destroy(false);
+  }
 
  protected:
   virtual void SetUp() {
+    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
+    ::gfx::GLInterface::SetGLInterface(gl_.get());
     manager_.CreateTextureInfo(kClient1Id, kService1Id);
     info_ = manager_.GetTextureInfo(kClient1Id);
     ASSERT_TRUE(info_ != NULL);
   }
 
   virtual void TearDown() {
+    ::gfx::GLInterface::SetGLInterface(NULL);
+    gl_.reset();
   }
 
+  // Use StrictMock to make 100% sure we know how GL will be called.
+  scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   TextureManager manager_;
   TextureManager::TextureInfo* info_;
 };

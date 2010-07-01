@@ -91,8 +91,11 @@ class ShaderManager {
     std::string log_info_;
   };
 
-  ShaderManager() {
-  }
+  ShaderManager() { }
+  ~ShaderManager();
+
+  // Must call before destruction.
+  void Destroy(bool have_context);
 
   // Creates a shader info for the given shader ID.
   void CreateShaderInfo(GLuint client_id,

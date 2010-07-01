@@ -10,6 +10,24 @@
 namespace gpu {
 namespace gles2 {
 
+BufferManager::~BufferManager() {
+  DCHECK(buffer_infos_.empty());
+}
+
+void BufferManager::Destroy(bool have_context) {
+  while (!buffer_infos_.empty()) {
+    if (have_context) {
+      BufferInfo* info = buffer_infos_.begin()->second;
+      if (!info->IsDeleted()) {
+        GLuint service_id = info->service_id();
+        glDeleteBuffersARB(1, &service_id);
+        info->MarkAsDeleted();
+      }
+    }
+    buffer_infos_.erase(buffer_infos_.begin());
+  }
+}
+
 void BufferManager::CreateBufferInfo(GLuint client_id, GLuint service_id) {
   std::pair<BufferInfoMap::iterator, bool> result =
       buffer_infos_.insert(

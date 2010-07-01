@@ -195,6 +195,10 @@ class TextureManager {
 
   TextureManager(GLsizei max_texture_size,
                  GLsizei max_cube_map_texture_size);
+  ~TextureManager();
+
+  // Must call before destruction.
+  void Destroy(bool have_context);
 
   // Returns the maximum number of levels.
   GLint MaxLevelsForTarget(GLenum target) const {
