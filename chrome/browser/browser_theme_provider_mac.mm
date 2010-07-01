@@ -223,7 +223,7 @@ NSGradient* BrowserThemeProvider::GetNSGradient(int id) const {
 
     case GRADIENT_TOOLBAR:
     case GRADIENT_TOOLBAR_INACTIVE: {
-      NSColor* base_color = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];
+      NSColor* base_color = [NSColor colorWithCalibratedWhite:0.2 alpha:1.0];
       BOOL faded = (id == GRADIENT_TOOLBAR_INACTIVE ) ||
                    (id == GRADIENT_TOOLBAR_BUTTON_INACTIVE);
       NSColor* start_color =
