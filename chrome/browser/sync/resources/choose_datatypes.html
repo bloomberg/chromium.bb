@@ -64,6 +64,12 @@ input[type='submit'] {
   function setChooseDataTypesCheckboxes(args) {
     setStateThrobbing(false);
 
+    // If this frame is on top, the focus should be on it, so pressing enter
+    // submits this form.
+    if (args.iframeToShow == 'choose_data_types') {
+      document.getElementById("okButton").focus();
+    }
+
     document.getElementById("keepEverythingSyncedRadio").checked =
         args.keepEverythingSynced;
     document.getElementById("chooseDataTypesRadio").checked =
@@ -158,11 +164,12 @@ input[type='submit'] {
     });
     chrome.send("ChooseDataTypes", [result]);
   }
+
 </script>
 <body  vlink=#666666
        i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
        onload="initializeChooseDataTypesDialog();">
-<form id="chooseDataTypesForm">
+<form id="chooseDataTypesForm" onsubmit="sendChooseDataTypesAndClose(); return false;">
 <table height="100%" width="100%" margin="0" cellpadding="0">
   <tr valign="top">
     <td colspan="3">
@@ -232,8 +239,7 @@ input[type='submit'] {
              display:inline-block">
         </span>
       </span>
-      <input id="okButton" type="button" i18n-values="value:ok"
-             onclick='sendChooseDataTypesAndClose()'/>
+      <input id="okButton" type="submit" i18n-values="value:ok" />
       <input id="cancelButton" type="button" i18n-values="value:cancel"
              onclick='chrome.send("DialogClose", [""])' />
     </td>
