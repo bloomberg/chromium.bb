@@ -69,6 +69,9 @@ class WebPluginImpl : public WebKit::WebPlugin {
   };
 
   scoped_ptr<InitData> init_data_;  // Cleared upon successful initialization.
+  // True if the instance represents the entire document in a frame instead of
+  // being an embedded resource.
+  bool full_frame_;
   scoped_refptr<PluginInstance> instance_;
   scoped_refptr<URLLoader> document_loader_;
   gfx::Rect plugin_rect_;

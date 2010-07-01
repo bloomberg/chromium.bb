@@ -5,7 +5,10 @@
 #include "chrome/common/pepper_plugin_registry.h"
 
 #include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
@@ -27,6 +30,7 @@ void PepperPluginRegistry::GetList(std::vector<PepperPluginInfo>* plugins) {
   }
 
   GetPluginInfoFromSwitch(plugins);
+  GetExtraPlugins(plugins);
 }
 
 // static
@@ -61,6 +65,20 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
 }
 
 // static
+void PepperPluginRegistry::GetExtraPlugins(
+    std::vector<PepperPluginInfo>* plugins) {
+  FilePath path;
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path) &&
+      file_util::PathExists(path)) {
+    PepperPluginInfo pdf;
+    pdf.path = path;
+    pdf.name = "Chrome PDF Viewer";
+    pdf.mime_types.push_back("application/pdf");
+    plugins->push_back(pdf);
+  }
+}
+
+// static
 void PepperPluginRegistry::GetInternalPluginInfo(
     InternalPluginInfoList* plugin_info) {
   // Currently, to centralize the internal plugin registration logic, we
@@ -86,7 +104,6 @@ void PepperPluginRegistry::GetInternalPluginInfo(
 
   plugin_info->push_back(info);
 #endif
-
 }
 
 pepper::PluginModule* PepperPluginRegistry::GetModule(
@@ -119,6 +136,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
   // override the internal plugins.
   std::vector<PepperPluginInfo> plugins;
   GetPluginInfoFromSwitch(&plugins);
+  GetExtraPlugins(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
     const FilePath& path = plugins[i].path;
     ModuleHandle module = pepper::PluginModule::CreateModule(path);

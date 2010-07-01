@@ -14,6 +14,8 @@
 struct PepperPluginInfo {
   FilePath path;  // Internal plugins are of the form "internal-[name]".
   std::vector<std::string> mime_types;
+  std::string name;
+  std::string description;
 };
 
 // This class holds references to all of the known pepper plugin modules.
@@ -30,6 +32,7 @@ class PepperPluginRegistry {
 
  private:
   static void GetPluginInfoFromSwitch(std::vector<PepperPluginInfo>* plugins);
+  static void GetExtraPlugins(std::vector<PepperPluginInfo>* plugins);
 
   struct InternalPluginInfo : public PepperPluginInfo {
     pepper::PluginModule::EntryPoints entry_points;

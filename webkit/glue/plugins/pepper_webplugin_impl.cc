@@ -26,7 +26,8 @@ WebPluginImpl::WebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
     const base::WeakPtr<PluginDelegate>& plugin_delegate)
-    : init_data_(new InitData()) {
+    : init_data_(new InitData()),
+      full_frame_(params.loadManually) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->delegate = plugin_delegate;
@@ -50,7 +51,8 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
   bool success = instance_->Initialize(container,
                                        init_data_->arg_names,
-                                       init_data_->arg_values);
+                                       init_data_->arg_values,
+                                       full_frame_);
   if (!success) {
     instance_->Delete();
     instance_ = NULL;

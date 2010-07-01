@@ -73,12 +73,14 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PP_Var GetWindowObject();
   PP_Var GetOwnerElementObject();
   bool BindGraphicsDeviceContext(PP_Resource device_id);
+  bool full_frame() const { return full_frame_; }
 
   // PPP_Instance pass-through.
   void Delete();
   bool Initialize(WebKit::WebPluginContainer* container,
                   const std::vector<std::string>& arg_names,
-                  const std::vector<std::string>& arg_values);
+                  const std::vector<std::string>& arg_values,
+                  bool full_frame);
   bool HandleDocumentLoad(URLLoader* loader);
   bool HandleInputEvent(const WebKit::WebInputEvent& event,
                         WebKit::WebCursorInfo* cursor_info);
@@ -98,6 +100,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // NULL until we have been initialized.
   WebKit::WebPluginContainer* container_;
+
+  // Indicates whether this is a full frame instance, which means it represents
+  // an entire document rather than an embed tag.
+  bool full_frame_;
 
   // Position in the viewport (which moves as the page is scrolled) of this
   // plugin. This will be a 0-sized rectangle if the plugin has not yet been

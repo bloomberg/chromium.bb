@@ -130,10 +130,18 @@ bool BindGraphicsDeviceContext(PP_Instance instance_id, PP_Resource device_id) {
   return instance->BindGraphicsDeviceContext(device_id);
 }
 
+bool IsFullFrame(PP_Instance instance_id) {
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return false;
+  return instance->full_frame();
+}
+
 const PPB_Instance ppb_instance = {
   &GetWindowObject,
   &GetOwnerElementObject,
   &BindGraphicsDeviceContext,
+  &IsFullFrame,
 };
 
 }  // namespace
@@ -144,7 +152,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
     : delegate_(delegate),
       module_(module),
       instance_interface_(instance_interface),
-      container_(NULL) {
+      container_(NULL),
+      full_frame_(false) {
   DCHECK(delegate);
   module_->InstanceCreated(this);
   delegate_->InstanceCreated(this);
@@ -235,8 +244,10 @@ void PluginInstance::Delete() {
 
 bool PluginInstance::Initialize(WebPluginContainer* container,
                                 const std::vector<std::string>& arg_names,
-                                const std::vector<std::string>& arg_values) {
+                                const std::vector<std::string>& arg_values,
+                                bool full_frame) {
   container_ = container;
+  full_frame_ = full_frame;
 
   if (!instance_interface_->New(GetPPInstance()))
     return false;
