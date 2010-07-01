@@ -14,3 +14,6 @@ LINUX BUG_AGL : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyl
 BUG_LEVIN :  fast/dom/dataset-xhtml.xhtml = TEXT
 BUG_LEVIN :  fast/dom/dataset.html = TEXT
 BUG_LEVIN :  fast/dom/domListEnumeration.html = TEXT
+
+// This is a temporary addition until I do the next roll which should fix it.
+BUG_LEVIN MAC :  html5lib/runner.html = TEXT
