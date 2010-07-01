@@ -14,6 +14,53 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRegularExpression.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
+// Field names from the ECML specification; see RFC 3106.  We've
+// made these names lowercase since we convert labels and field names to
+// lowercase before searching.
+
+// shipping name/address fields
+string16 kEcmlShipToTitle = ASCIIToUTF16("ecom_shipto_postal_name_prefix");
+string16 kEcmlShipToFirstName = ASCIIToUTF16("ecom_shipto_postal_name_first");
+string16 kEcmlShipToMiddleName = ASCIIToUTF16("ecom_shipto_postal_name_middle");
+string16 kEcmlShipToLastName = ASCIIToUTF16("ecom_shipto_postal_name_last");
+string16 kEcmlShipToNameSuffix = ASCIIToUTF16("ecom_shipto_postal_name_suffix");
+string16 kEcmlShipToCompanyName = ASCIIToUTF16("ecom_shipto_postal_company");
+string16 kEcmlShipToAddress1 = ASCIIToUTF16("ecom_shipto_postal_street_line1");
+string16 kEcmlShipToAddress2 = ASCIIToUTF16("ecom_shipto_postal_street_line2");
+string16 kEcmlShipToAddress3 = ASCIIToUTF16("ecom_shipto_postal_street_line3");
+string16 kEcmlShipToCity = ASCIIToUTF16("ecom_shipto_postal_city");
+string16 kEcmlShipToStateProv = ASCIIToUTF16("ecom_shipto_postal_stateprov");
+string16 kEcmlShipToPostalCode = ASCIIToUTF16("ecom_shipto_postal_postalcode");
+string16 kEcmlShipToCountry = ASCIIToUTF16("ecom_shipto_postal_countrycode");
+string16 kEcmlShipToPhone = ASCIIToUTF16("ecom_shipto_telecom_phone_number");
+string16 kEcmlShipToEmail = ASCIIToUTF16("ecom_shipto_online_email");
+
+// billing name/address fields
+string16 kEcmlBillToTitle = ASCIIToUTF16("ecom_billto_postal_name_prefix");
+string16 kEcmlBillToFirstName = ASCIIToUTF16("ecom_billto_postal_name_first");
+string16 kEcmlBillToMiddleName = ASCIIToUTF16("ecom_billto_postal_name_middle");
+string16 kEcmlBillToLastName = ASCIIToUTF16("ecom_billto_postal_name_last");
+string16 kEcmlBillToNameSuffix = ASCIIToUTF16("ecom_billto_postal_name_suffix");
+string16 kEcmlBillToCompanyName = ASCIIToUTF16("ecom_billto_postal_company");
+string16 kEcmlBillToAddress1 = ASCIIToUTF16("ecom_billto_postal_street_line1");
+string16 kEcmlBillToAddress2 = ASCIIToUTF16("ecom_billto_postal_street_line2");
+string16 kEcmlBillToAddress3 = ASCIIToUTF16("ecom_billto_postal_street_line3");
+string16 kEcmlBillToCity = ASCIIToUTF16("ecom_billto_postal_city");
+string16 kEcmlBillToStateProv = ASCIIToUTF16("ecom_billto_postal_stateprov");
+string16 kEcmlBillToPostalCode = ASCIIToUTF16("ecom_billto_postal_postalcode");
+string16 kEcmlBillToCountry = ASCIIToUTF16("ecom_billto_postal_countrycode");
+string16 kEcmlBillToPhone = ASCIIToUTF16("ecom_billto_telecom_phone_number");
+string16 kEcmlBillToEmail = ASCIIToUTF16("ecom_billto_online_email");
+
+// credit card fields
+string16 kEcmlCardHolder = ASCIIToUTF16("ecom_payment_card_name");
+string16 kEcmlCardType = ASCIIToUTF16("ecom_payment_card_type");
+string16 kEcmlCardNumber = ASCIIToUTF16("ecom_payment_card_number");
+string16 kEcmlCardVerification = ASCIIToUTF16("ecom_payment_card_verification");
+string16 kEcmlCardExpireDay = ASCIIToUTF16("ecom_payment_card_expdate_day");
+string16 kEcmlCardExpireMonth = ASCIIToUTF16("ecom_payment_card_expdate_month");
+string16 kEcmlCardExpireYear = ASCIIToUTF16("ecom_payment_card_expdate_year");
+
 namespace {
 
 // The name of the hidden form control element.

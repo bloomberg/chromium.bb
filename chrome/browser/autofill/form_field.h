@@ -12,52 +12,47 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_structure.h"
 
-// Field names from the ECML specification; see RFC 3106.  We've
-// made these names lowercase since we convert labels and field names to
-// lowercase before searching.
-
-// shipping name/address fields
-static string16 kEcmlShipToTitle = ASCIIToUTF16("ecom_shipto_postal_name_prefix");
-static string16 kEcmlShipToFirstName = ASCIIToUTF16("ecom_shipto_postal_name_first");
-static string16 kEcmlShipToMiddleName = ASCIIToUTF16("ecom_shipto_postal_name_middle");
-static string16 kEcmlShipToLastName = ASCIIToUTF16("ecom_shipto_postal_name_last");
-static string16 kEcmlShipToNameSuffix = ASCIIToUTF16("ecom_shipto_postal_name_suffix");
-static string16 kEcmlShipToCompanyName = ASCIIToUTF16("ecom_shipto_postal_company");
-static string16 kEcmlShipToAddress1 = ASCIIToUTF16("ecom_shipto_postal_street_line1");
-static string16 kEcmlShipToAddress2 = ASCIIToUTF16("ecom_shipto_postal_street_line2");
-static string16 kEcmlShipToAddress3 = ASCIIToUTF16("ecom_shipto_postal_street_line3");
-static string16 kEcmlShipToCity = ASCIIToUTF16("ecom_shipto_postal_city");
-static string16 kEcmlShipToStateProv = ASCIIToUTF16("ecom_shipto_postal_stateprov");
-static string16 kEcmlShipToPostalCode = ASCIIToUTF16("ecom_shipto_postal_postalcode");
-static string16 kEcmlShipToCountry = ASCIIToUTF16("ecom_shipto_postal_countrycode");
-static string16 kEcmlShipToPhone = ASCIIToUTF16("ecom_shipto_telecom_phone_number");
-static string16 kEcmlShipToEmail = ASCIIToUTF16("ecom_shipto_online_email");
+extern string16 kEcmlShipToTitle;
+extern string16 kEcmlShipToFirstName;
+extern string16 kEcmlShipToMiddleName;
+extern string16 kEcmlShipToLastName;
+extern string16 kEcmlShipToNameSuffix;
+extern string16 kEcmlShipToCompanyName;
+extern string16 kEcmlShipToAddress1;
+extern string16 kEcmlShipToAddress2;
+extern string16 kEcmlShipToAddress3;
+extern string16 kEcmlShipToCity;
+extern string16 kEcmlShipToStateProv;
+extern string16 kEcmlShipToPostalCode;
+extern string16 kEcmlShipToCountry;
+extern string16 kEcmlShipToPhone;
+extern string16 kEcmlShipToEmail;
 
 // billing name/address fields
-static string16 kEcmlBillToTitle = ASCIIToUTF16("ecom_billto_postal_name_prefix");
-static string16 kEcmlBillToFirstName = ASCIIToUTF16("ecom_billto_postal_name_first");
-static string16 kEcmlBillToMiddleName = ASCIIToUTF16("ecom_billto_postal_name_middle");
-static string16 kEcmlBillToLastName = ASCIIToUTF16("ecom_billto_postal_name_last");
-static string16 kEcmlBillToNameSuffix = ASCIIToUTF16("ecom_billto_postal_name_suffix");
-static string16 kEcmlBillToCompanyName = ASCIIToUTF16("ecom_billto_postal_company");
-static string16 kEcmlBillToAddress1 = ASCIIToUTF16("ecom_billto_postal_street_line1");
-static string16 kEcmlBillToAddress2 = ASCIIToUTF16("ecom_billto_postal_street_line2");
-static string16 kEcmlBillToAddress3 = ASCIIToUTF16("ecom_billto_postal_street_line3");
-static string16 kEcmlBillToCity = ASCIIToUTF16("ecom_billto_postal_city");
-static string16 kEcmlBillToStateProv = ASCIIToUTF16("ecom_billto_postal_stateprov");
-static string16 kEcmlBillToPostalCode = ASCIIToUTF16("ecom_billto_postal_postalcode");
-static string16 kEcmlBillToCountry = ASCIIToUTF16("ecom_billto_postal_countrycode");
-static string16 kEcmlBillToPhone = ASCIIToUTF16("ecom_billto_telecom_phone_number");
-static string16 kEcmlBillToEmail = ASCIIToUTF16("ecom_billto_online_email");
+extern string16 kEcmlBillToTitle;
+extern string16 kEcmlBillToFirstName;
+extern string16 kEcmlBillToMiddleName;
+extern string16 kEcmlBillToLastName;
+extern string16 kEcmlBillToNameSuffix;
+extern string16 kEcmlBillToCompanyName;
+extern string16 kEcmlBillToAddress1;
+extern string16 kEcmlBillToAddress2;
+extern string16 kEcmlBillToAddress3;
+extern string16 kEcmlBillToCity;
+extern string16 kEcmlBillToStateProv;
+extern string16 kEcmlBillToPostalCode;
+extern string16 kEcmlBillToCountry;
+extern string16 kEcmlBillToPhone;
+extern string16 kEcmlBillToEmail;
 
 // credit card fields
-static string16 kEcmlCardHolder = ASCIIToUTF16("ecom_payment_card_name");
-static string16 kEcmlCardType = ASCIIToUTF16("ecom_payment_card_type");
-static string16 kEcmlCardNumber = ASCIIToUTF16("ecom_payment_card_number");
-static string16 kEcmlCardVerification = ASCIIToUTF16("ecom_payment_card_verification");
-static string16 kEcmlCardExpireDay = ASCIIToUTF16("ecom_payment_card_expdate_day");
-static string16 kEcmlCardExpireMonth = ASCIIToUTF16("ecom_payment_card_expdate_month");
-static string16 kEcmlCardExpireYear = ASCIIToUTF16("ecom_payment_card_expdate_year");
+extern string16 kEcmlCardHolder;
+extern string16 kEcmlCardType;
+extern string16 kEcmlCardNumber;
+extern string16 kEcmlCardVerification;
+extern string16 kEcmlCardExpireDay;
+extern string16 kEcmlCardExpireMonth;
+extern string16 kEcmlCardExpireYear;
 
 enum FormFieldType {
   kAddressType,
