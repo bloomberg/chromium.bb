@@ -26,6 +26,10 @@ namespace {
 const char kPositionString[] = "position";
 const char kAccelGroupString[] = "accel_group";
 
+// Key for the property set on the gtk menu that gives the handle to the hosting
+// NativeMenuGtk.
+const char kNativeMenuGtkString[] = "native_menu_gtk";
+
 // Data passed to the MenuPositionFunc from gtk_menu_popup
 struct Position {
   // The point to run the menu at.
@@ -71,7 +75,7 @@ NativeMenuGtk::NativeMenuGtk(Menu2* menu)
     : parent_(NULL),
       model_(menu->model()),
       menu_(NULL),
-      menu_shown_(false),
+      menu_hidden_(true),
       suppress_activate_signal_(false),
       activated_menu_(NULL),
       activated_index_(-1),
@@ -101,9 +105,8 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   // TODO(beng): value of '1' will not work for context menus!
   gtk_menu_popup(GTK_MENU(menu_), NULL, NULL, MenuPositionFunc, &position, 1,
                  gtk_get_current_event_time());
-
-  DCHECK(!menu_shown_);
-  menu_shown_ = true;
+  DCHECK(menu_hidden_);
+  menu_hidden_ = false;
 
   for (unsigned int i = 0; i < listeners_.size(); ++i) {
     listeners_[i]->OnMenuOpened();
@@ -119,11 +122,16 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
                        G_CALLBACK(OnMenuMoveCurrentThunk), this);
 
   // Block until menu is no longer shown by running a nested message loop.
-  MessageLoopForUI::current()->Run(NULL);
+  MessageLoopForUI::current()->Run(this);
+  if (!menu_hidden_) {
+    // If this happens it means we haven't yet gotten the hide signal and
+    // someone else quit the message loop on us.
+    NOTREACHED();
+    menu_hidden_ = true;
+  }
 
   g_signal_handler_disconnect(G_OBJECT(menu_), hide_handle_id);
   g_signal_handler_disconnect(G_OBJECT(menu_), move_handle_id);
-  menu_shown_ = false;
 
   if (activated_menu_) {
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -205,17 +213,54 @@ void NativeMenuGtk::RemoveMenuListener(MenuListener* listener) {
   }
 }
 
+bool NativeMenuGtk::Dispatch(GdkEvent* event) {
+  if (menu_hidden_) {
+    // The menu has been closed but the message loop is still nested. Don't
+    // dispatch a message, otherwise we might spawn another message loop.
+    return false;  // Exits the nested message loop.
+  }
+  switch (event->type) {
+    case GDK_BUTTON_PRESS:
+    case GDK_2BUTTON_PRESS:
+    case GDK_3BUTTON_PRESS: {
+      gpointer data = NULL;
+      gdk_window_get_user_data(((GdkEventAny*)event)->window, &data);
+      GtkWidget* widget = reinterpret_cast<GtkWidget*>(data);
+      if (widget) {
+        GtkWidget* root = gtk_widget_get_toplevel(widget);
+        if (!g_object_get_data(G_OBJECT(root), kNativeMenuGtkString)) {
+          // The button event is not targeted at a menu, hide the menu and eat
+          // the event. If we didn't do this the button press is dispatched from
+          // the nested message loop and bad things can happen (like trying to
+          // spawn another menu.
+          gtk_menu_popdown(GTK_MENU(menu_));
+          // In some cases we may not have gotten the hide event, but the menu
+          // will be in the process of hiding so set menu_hidden_ anyway.
+          menu_hidden_ = true;
+          return false;  // Exits the nested message loop.
+        }
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  gtk_main_do_event(event);
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuGtk, private:
 
 void NativeMenuGtk::OnMenuHidden(GtkWidget* widget) {
-  if (!menu_shown_) {
-    // This indicates we don't have a menu open, and should never happen.
-    NOTREACHED();
+  if (menu_hidden_) {
+    // The menu has been already hidden by us and we're in the process of
+    // quiting the message loop..
     return;
   }
   // Quit the nested message loop we spawned in RunMenuAt.
   MessageLoop::current()->Quit();
+  menu_hidden_ = true;
 }
 
 void NativeMenuGtk::OnMenuMoveCurrent(GtkWidget* menu_widget,
@@ -330,6 +375,8 @@ void NativeMenuGtk::ResetMenu() {
     gtk_widget_destroy(menu_);
   }
   menu_ = gtk_menu_new();
+  g_object_set_data(
+      G_OBJECT(GTK_MENU(menu_)->toplevel), kNativeMenuGtkString, this);
   destroy_handler_id_ = g_signal_connect(
       menu_, "destroy", G_CALLBACK(NativeMenuGtk::MenuDestroyed), host_menu_);
 }
