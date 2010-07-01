@@ -57,6 +57,7 @@ import optparse
 import os
 import pprint
 import re
+import subprocess
 import sys
 import urlparse
 import urllib
@@ -854,6 +855,35 @@ Mostly svn-specific. Simply runs 'svn cleanup' for each module.
     # client dict, but more legible, and it might contain helpful comments.
     print(client.config_content)
   return client.RunOnDeps('cleanup', args)
+
+
+@attr('usage', '[command] [args ...]')
+def CMDrecurse(parser, args):
+  """Operates on all the entries.
+
+  Runs a shell command on all entries.
+  """
+  # Stop parsing at the first non-arg so that these go through to the command
+  parser.disable_interspersed_args()
+  parser.add_option('-s', '--scm', action='append', default=[],
+                    help='choose scm types to operate upon')
+  options, args = parser.parse_args(args)
+  root, entries = gclient_utils.GetGClientRootAndEntries()
+  scm_set = set()
+  for scm in options.scm:
+    scm_set.update(scm.split(','))
+
+  # Pass in the SCM type as an env variable
+  env = os.environ.copy()
+
+  for path, url in entries.iteritems():
+    scm = gclient_scm.GetScmName(url)
+    if scm_set and scm not in scm_set:
+      continue
+    dir = os.path.normpath(os.path.join(root, path))
+    env['GCLIENT_SCM'] = scm
+    env['GCLIENT_URL'] = url
+    subprocess.Popen(args, cwd=dir, env=env).communicate()
 
 
 @attr('usage', '[url] [safesync url]')

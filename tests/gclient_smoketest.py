@@ -660,6 +660,37 @@ class GClientSmokeBoth(GClientSmokeBase):
           }
     self.check((out, '', 0), results)
 
+  def testRecurse(self):
+    if not self.enabled:
+      return
+    self.gclient(['config', '--spec',
+        'solutions=['
+        '{"name": "src",'
+        ' "url": "' + self.svn_base + 'trunk/src/"},'
+        '{"name": "src-git",'
+        '"url": "' + self.git_base + 'repo_1"}]'])
+    self.gclient(['sync', '--deps', 'mac'])
+    results = self.gclient(['recurse', 'sh', '-c',
+                            'echo $GCLIENT_SCM,$GCLIENT_URL,`pwd`'])
+    
+    entries = [tuple(line.split(','))
+               for line in results[0].strip().split('\n')]
+    logging.debug(entries)
+
+    bases = {'svn': self.svn_base, 'git': self.git_base}
+    expected_source = [
+        ('svn', 'trunk/src/', 'src'),
+        ('git', 'repo_1', 'src-git'),
+        ('svn', 'trunk/other', 'src/other'),
+        ('git', 'repo_2@' + self.githash('repo_2', 1)[:7], 'src/repo2'),
+        ('git', 'repo_3', 'src/repo2/repo_renamed'),
+        ('svn', 'trunk/third_party/foo@1', 'src/third_party/foo'),
+      ]
+    expected = [(scm, bases[scm] + url, os.path.join(self.root_dir, path))
+                for (scm, url, path) in expected_source]
+
+    self.assertEquals(sorted(entries), sorted(expected))
+
 
 if __name__ == '__main__':
   if '-c' in sys.argv:
