@@ -342,11 +342,11 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
     ActivateWizard(WizardController::kUserImageScreenName);
   } else {
     // Hide the login windows now.
-    STLDeleteElements(&controllers_);
-
-    background_window_->Close();
+    WmIpc::Message message(WM_IPC_MESSAGE_WM_HIDE_LOGIN);
+    WmIpc::instance()->SendMessage(message);
 
     LoginUtils::Get()->CompleteLogin(username, credentials);
+
     // Delay deletion as we're on the stack.
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
