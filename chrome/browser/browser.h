@@ -846,13 +846,16 @@ class Browser : public TabStripModelDelegate,
   // The low-level function that other OpenURL...() functions call.  This
   // determines the appropriate SiteInstance to pass to AddTabWithURL(), focuses
   // the newly created tab as needed, and does other miscellaneous housekeeping.
+  // |add_types| is a bitmask of TabStripModel::AddTabTypes and may be used to
+  // pass specific flags to the TabStripModel. |add_types| is only used if
+  // the disposition is NEW_WINDOW or SUPPRESS_OPEN.
   void OpenURLAtIndex(TabContents* source,
                       const GURL& url,
                       const GURL& referrer,
                       WindowOpenDisposition disposition,
                       PageTransition::Type transition,
                       int index,
-                      bool force_index);
+                      int add_types);
 
   // Creates a new popup window with its own Browser object with the
   // incoming sizing information. |initial_pos|'s origin() is the

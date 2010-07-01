@@ -328,6 +328,12 @@ class TabStripModel : public NotificationObserver {
     // selected tab. If not set the tab may still inherit the group under
     // certain situations.
     ADD_INHERIT_GROUP = 1 << 3,
+
+    // If set the newly inserted tab's opener is set to the currently selected
+    // tab. If not set the tab may still inherit the group/opener under certain
+    // situations.
+    // NOTE: this is ignored if ADD_INHERIT_GROUP is set.
+    ADD_INHERIT_OPENER = 1 << 4,
   };
 
   static const int kNoTab = -1;
@@ -684,10 +690,6 @@ class TabStripModel : public NotificationObserver {
 
   // Returns the number of New Tab tabs in the TabStripModel.
   int GetNewTabCount() const;
-
-  // Convenience for setting the opener pointer for the specified |contents| to
-  // be |opener|'s NavigationController.
-  void SetOpenerForContents(TabContents* contents, TabContents* opener);
 
   // Selects either the next tab (|foward| is true), or the previous tab
   // (|forward| is false).

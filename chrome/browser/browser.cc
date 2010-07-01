@@ -1,4 +1,4 @@
-  // Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1247,9 +1247,14 @@ void Browser::OpenCurrentURL() {
     }
   }
 
-  OpenURLAtIndex(NULL, url, GURL(),
-                 open_disposition,
-                 location_bar->GetPageTransition(), -1, true);
+  // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
+  // inherit the opener. In some cases the tabstrip will determine the group
+  // should be inherited, in which case the group is inherited instead of the
+  // opener.
+  OpenURLAtIndex(NULL, url, GURL(), open_disposition,
+                 location_bar->GetPageTransition(), -1,
+                 TabStripModel::ADD_FORCE_INDEX |
+                     TabStripModel::ADD_INHERIT_OPENER);
 }
 
 void Browser::Stop() {
@@ -2484,7 +2489,8 @@ void Browser::OpenURLFromTab(TabContents* source,
                              const GURL& referrer,
                              WindowOpenDisposition disposition,
                              PageTransition::Type transition) {
-  OpenURLAtIndex(source, url, referrer, disposition, transition, -1, false);
+  OpenURLAtIndex(source, url, referrer, disposition, transition, -1,
+                 TabStripModel::ADD_NONE);
 }
 
 void Browser::NavigationStateChanged(const TabContents* source,
@@ -3691,7 +3697,7 @@ void Browser::OpenURLAtIndex(TabContents* source,
                              WindowOpenDisposition disposition,
                              PageTransition::Type transition,
                              int index,
-                             bool force_index) {
+                             int add_types) {
   // TODO(beng): Move all this code into a separate helper that has unit tests.
 
   // No code for these yet
@@ -3780,11 +3786,9 @@ void Browser::OpenURLAtIndex(TabContents* source,
     return;
   } else if (disposition == NEW_WINDOW) {
     Browser* browser = Browser::Create(profile_);
-    int add_types = force_index ? TabStripModel::ADD_FORCE_INDEX :
-                                  TabStripModel::ADD_NONE;
-    add_types |= TabStripModel::ADD_SELECTED;
-    new_contents = browser->AddTabWithURL(url, referrer, transition, index,
-                                          add_types, instance, std::string());
+    new_contents = browser->AddTabWithURL(
+        url, referrer, transition, index,
+        TabStripModel::ADD_SELECTED | add_types, instance, std::string());
     browser->window()->Show();
   } else if ((disposition == CURRENT_TAB) && current_tab) {
     tabstrip_model_.TabNavigating(current_tab, transition);
@@ -3816,10 +3820,8 @@ void Browser::OpenURLAtIndex(TabContents* source,
     OpenURLOffTheRecord(profile_, url);
     return;
   } else if (disposition != SUPPRESS_OPEN) {
-    int add_types = disposition != NEW_BACKGROUND_TAB ?
-        TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE;
-    if (force_index)
-      add_types |= TabStripModel::ADD_FORCE_INDEX;
+    if (disposition != NEW_BACKGROUND_TAB)
+      add_types |= TabStripModel::ADD_SELECTED;
     new_contents = AddTabWithURL(url, referrer, transition, index, add_types,
                                  instance, std::string());
   }

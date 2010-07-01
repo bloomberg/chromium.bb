@@ -151,7 +151,15 @@ void TabStripModel::InsertTabContentsAt(int index,
     }
     // Anything opened by a link we deem to have an opener.
     data->SetGroup(&selected_contents->controller());
+  } else if ((add_types & ADD_INHERIT_OPENER) && selected_contents) {
+    if (foreground) {
+      // Forget any existing relationships, we don't want to make things too
+      // confusing by having multiple groups active at the same time.
+      ForgetAllOpeners();
+    }
+    data->opener = &selected_contents->controller();
   }
+
   contents_data_.insert(contents_data_.begin() + index, data);
 
   if (index <= selected_index_) {
@@ -498,8 +506,6 @@ void TabStripModel::AddTabContents(TabContents* contents,
   // If the newly-opened tab is part of the same task as the parent tab, we want
   // to inherit the parent's "group" attribute, so that if this tab is then
   // closed we'll jump back to the parent tab.
-  // TODO(jbs): Perhaps instead of trying to infer this we should expose
-  // inherit_group directly to callers, who may have more context
   bool inherit_group = (add_types & ADD_INHERIT_GROUP) == ADD_INHERIT_GROUP;
 
   if (transition == PageTransition::LINK &&
@@ -976,12 +982,6 @@ void TabStripModel::ChangeSelectedContentsFrom(
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
       TabSelectedAt(last_selected_contents, new_contents, selected_index_,
                     user_gesture));
-}
-
-void TabStripModel::SetOpenerForContents(TabContents* contents,
-                                    TabContents* opener) {
-  int index = GetIndexOfTabContents(contents);
-  contents_data_.at(index)->opener = &opener->controller();
 }
 
 void TabStripModel::SelectRelativeTab(bool next) {
