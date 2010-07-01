@@ -33,6 +33,7 @@ ContentFilterPageGtk::ContentFilterPageGtk(Profile* profile,
     IDS_PLUGIN_SETTING_LABEL,
     IDS_POPUP_SETTING_LABEL,
     IDS_GEOLOCATION_SETTING_LABEL,
+    IDS_NOTIFICATIONS_SETTING_LABEL,
   };
   COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kTitleIDs_IncorrectSize);
@@ -59,6 +60,7 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
     IDS_PLUGIN_LOAD_RADIO,
     IDS_POPUP_ALLOW_RADIO,
     IDS_GEOLOCATION_ALLOW_RADIO,
+    IDS_NOTIFICATIONS_ALLOW_RADIO,
   };
   COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kAllowIDs_IncorrectSize);
@@ -73,6 +75,7 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
      0,
      0,
      IDS_GEOLOCATION_ASK_RADIO,
+     IDS_NOTIFICATIONS_ASK_RADIO,
   };
   COMPILE_ASSERT(arraysize(kAskIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kAskIDs_IncorrectSize);
@@ -90,6 +93,7 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
     IDS_PLUGIN_NOLOAD_RADIO,
     IDS_POPUP_BLOCK_RADIO,
     IDS_GEOLOCATION_BLOCK_RADIO,
+    IDS_NOTIFICATIONS_BLOCK_RADIO,
   };
   COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kBlockIDs_IncorrectSize);

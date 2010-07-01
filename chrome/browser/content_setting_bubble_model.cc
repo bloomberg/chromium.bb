@@ -22,6 +22,8 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   ContentSettingTitleAndLinkModel(TabContents* tab_contents, Profile* profile,
       ContentSettingsType content_type)
       : ContentSettingBubbleModel(tab_contents, profile, content_type) {
+     // Notifications do not have a bubble.
+     DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
      SetTitle();
      SetManageLink();
   }
@@ -35,6 +37,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       IDS_BLOCKED_PLUGINS_TITLE,
       IDS_BLOCKED_POPUPS_TITLE,
       0,  // Geolocation does not have an overall title.
+      0,  // Notifications do not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
@@ -50,6 +53,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       IDS_BLOCKED_PLUGINS_LINK,
       IDS_BLOCKED_POPUPS_LINK,
       IDS_GEOLOCATION_BUBBLE_MANAGE_LINK,
+      0,  // Notifications do not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kLinkIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
@@ -89,6 +93,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
       IDS_BLOCKED_PLUGINS_UNBLOCK,
       IDS_BLOCKED_POPUPS_UNBLOCK,
       0,  // We don't manage geolocation here.
+      0,  // Notifications do not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
@@ -103,6 +108,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
       IDS_BLOCKED_PLUGINS_NO_ACTION,
       IDS_BLOCKED_POPUPS_NO_ACTION,
       0,  // We don't manage geolocation here.
+      0,  // Notifications do not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);

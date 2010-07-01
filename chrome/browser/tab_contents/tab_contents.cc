@@ -651,7 +651,11 @@ bool TabContents::ShouldDisplayFavIcon() {
 
 bool TabContents::IsContentBlocked(ContentSettingsType content_type) const {
   DCHECK(content_type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
-      << "Geolocation settings handled by GeolocationContentSettingsMap";
+      << "Geolocation settings handled by ContentSettingGeolocationImageModel";
+  DCHECK(content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+      << "Notifications settings handled by "
+      << "ContentSettingsNotificationsImageModel";
+
   if (content_type == CONTENT_SETTINGS_TYPE_POPUPS)
     return blocked_popups_ != NULL;
 

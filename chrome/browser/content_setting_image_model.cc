@@ -28,6 +28,13 @@ class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
   virtual void UpdateFromTabContents(const TabContents* tab_contents);
 };
 
+class ContentSettingNotificationsImageModel : public ContentSettingImageModel {
+ public:
+  ContentSettingNotificationsImageModel();
+
+  virtual void UpdateFromTabContents(const TabContents* tab_contents);
+};
+
 const int ContentSettingBlockedImageModel::kBlockedIconIDs[] = {
     IDR_BLOCKED_COOKIES,
     IDR_BLOCKED_IMAGES,
@@ -93,6 +100,16 @@ void ContentSettingGeolocationImageModel::UpdateFromTabContents(
   set_tooltip(l10n_util::GetStringUTF8(IDS_GEOLOCATION_BLOCKED_TOOLTIP));
 }
 
+ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
+    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+}
+
+void ContentSettingNotificationsImageModel::UpdateFromTabContents(
+    const TabContents* tab_contents) {
+  // Notifications do not have a bubble.
+  set_visible(false);
+}
+
 ContentSettingImageModel::ContentSettingImageModel(
     ContentSettingsType content_settings_type)
     : content_settings_type_(content_settings_type),
@@ -106,5 +123,7 @@ ContentSettingImageModel*
     ContentSettingsType content_settings_type) {
   if (content_settings_type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
     return new ContentSettingGeolocationImageModel();
+  if (content_settings_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+    return new ContentSettingNotificationsImageModel();
   return new ContentSettingBlockedImageModel(content_settings_type);
 }

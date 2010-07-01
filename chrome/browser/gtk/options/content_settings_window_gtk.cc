@@ -114,7 +114,8 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
 
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
-  DCHECK_EQ(gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)),
+  // TODO(thakis): Get rid of |+ 1| once the notifcations pane is done.
+  DCHECK_EQ(gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)) + 1,
             CONTENT_SETTINGS_NUM_TYPES);
 
   // Need to show the notebook before connecting switch-page signal, otherwise

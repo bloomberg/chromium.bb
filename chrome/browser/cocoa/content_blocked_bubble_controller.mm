@@ -117,10 +117,13 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     @"ContentBlockedPlugins",
     @"ContentBlockedPopups",
     @"ContentBubbleGeolocation",
+    @"",  // Notifications do not have a bubble.
   };
   COMPILE_ASSERT(arraysize(nibPaths) == CONTENT_SETTINGS_NUM_TYPES,
                  nibPaths_requires_an_entry_for_every_setting_type);
   const int settingsType = model->content_type();
+  // Nofifications do not have a bubble.
+  CHECK_NE(settingsType, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   DCHECK_LT(settingsType, CONTENT_SETTINGS_NUM_TYPES);
   if ((self = [super initWithWindowNibPath:nibPaths[settingsType]
                               parentWindow:parentWindow

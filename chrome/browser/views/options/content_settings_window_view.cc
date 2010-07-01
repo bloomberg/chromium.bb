@@ -179,7 +179,8 @@ void ContentSettingsWindowView::Init() {
   for (size_t i = 0; i < pages_.size(); ++i) {
     pages_[i]->set_parent_owned(false);
   }
-  DCHECK_EQ(static_cast<int>(pages_.size()), CONTENT_SETTINGS_NUM_TYPES);
+  // TODO(thakis): Remove |+ 1| once the notifications pane is done.
+  DCHECK_EQ(static_cast<int>(pages_.size()) + 1, CONTENT_SETTINGS_NUM_TYPES);
 
   std::vector<string16> strings;
   strings.push_back(l10n_util::GetStringUTF16(IDS_COOKIES_TAB_LABEL));

@@ -93,6 +93,7 @@ const wchar_t*
   L"plugins",
   L"popups",
   NULL,  // Not used for Geolocation
+  NULL,  // Not used for Notifications
 };
 
 // static
@@ -104,6 +105,7 @@ const ContentSetting
   CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
   CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
   CONTENT_SETTING_ASK,    // Not used for Geolocation
+  CONTENT_SETTING_ASK,    // Not used for Notifications
 };
 
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
