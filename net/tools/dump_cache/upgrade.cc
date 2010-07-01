@@ -104,7 +104,8 @@ enum {
   RESULT_OK = 0,
   RESULT_UNKNOWN_COMMAND,
   RESULT_INVALID_PARAMETER,
-  RESULT_NAME_OVERFLOW
+  RESULT_NAME_OVERFLOW,
+  RESULT_PENDING  // This error code is NOT expected by the master process.
 };
 
 // -----------------------------------------------------------------------
@@ -575,6 +576,7 @@ class SlaveSM : public BaseSM {
   void DoGetNextEntry();
   void DoGetPrevEntry();
   int32 GetEntryFromList();
+  void DoGetEntryComplete(int result);
   void DoCloseEntry();
   void DoGetKey();
   void DoGetUseTimes();
@@ -585,16 +587,19 @@ class SlaveSM : public BaseSM {
   void Fail();
 
   void* iterator_;
-  Message msg_;  // Only used for DoReadDataComplete.
+  Message msg_;  // Used for DoReadDataComplete and DoGetEntryComplete.
 
   net::CompletionCallbackImpl<SlaveSM> read_callback_;
+  net::CompletionCallbackImpl<SlaveSM> next_callback_;
   scoped_ptr<disk_cache::BackendImpl> cache_;
 };
 
 SlaveSM::SlaveSM(const std::wstring& path, HANDLE channel)
     : BaseSM(channel), iterator_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          read_callback_(this, &SlaveSM::DoReadDataComplete)) {
+          read_callback_(this, &SlaveSM::DoReadDataComplete)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          next_callback_(this, &SlaveSM::DoGetEntryComplete)) {
   disk_cache::Backend* cache;
   TestCompletionCallback cb;
   int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
@@ -672,6 +677,9 @@ bool SlaveSM::DoInit() {
   DEBUGMSG("\t\t\tSlave DoInit\n");
   DCHECK(state_ == SLAVE_INITIAL);
   state_ = SLAVE_WAITING;
+  if (!cache_.get())
+    return false;
+
   return ReceiveMsg();
 }
 
@@ -700,6 +708,11 @@ void SlaveSM::DoGetPrevEntry() {
     msg.result = RESULT_UNKNOWN_COMMAND;
   } else {
     msg.result = GetEntryFromList();
+    if (msg.result == RESULT_PENDING) {
+      // We are not done yet.
+      msg_ = msg;
+      return;
+    }
     msg.long_arg1 = reinterpret_cast<int64>(entry_);
   }
   SendMsg(msg);
@@ -715,23 +728,31 @@ int32 SlaveSM::GetEntryFromList() {
   if (entry_)
     entry_->Close();
 
-  bool ret;
+  int rv;
   if (input_->msg.command == GET_NEXT_ENTRY) {
-    ret = cache_->OpenNextEntry(&iterator_,
-                                reinterpret_cast<disk_cache::Entry**>(&entry_));
+    rv = cache_->OpenNextEntry(&iterator_,
+                               reinterpret_cast<disk_cache::Entry**>(&entry_),
+                               &next_callback_);
   } else {
     DCHECK(input_->msg.command == GET_PREV_ENTRY);
-    ret = cache_->OpenPrevEntry(&iterator_,
-                                reinterpret_cast<disk_cache::Entry**>(&entry_));
+    rv = cache_->OpenPrevEntry(&iterator_,
+                               reinterpret_cast<disk_cache::Entry**>(&entry_),
+                               &next_callback_);
+  }
+  DCHECK_EQ(net::ERR_IO_PENDING, rv);
+  return RESULT_PENDING;
+}
+
+void SlaveSM::DoGetEntryComplete(int result) {
+  DEBUGMSG("\t\t\tSlave DoGetEntryComplete\n");
+  if (result != net::OK) {
+    entry_ = NULL;
+    DEBUGMSG("\t\t\tSlave end of list\n");
   }
 
-  if (!ret)
-    entry_ = NULL;
-
-  if (!entry_)
-    DEBUGMSG("\t\t\tSlave end of list\n");
-
-  return RESULT_OK;
+  msg_.result = RESULT_OK;
+  msg_.long_arg1 = reinterpret_cast<int64>(entry_);
+  SendMsg(msg_);
 }
 
 void SlaveSM::DoCloseEntry() {
