@@ -1992,6 +1992,14 @@ void SyncManager::SyncInternal::OnNotificationStateChange(
   }
   if ((notification_method_ != browser_sync::NOTIFICATION_SERVER) &&
       notifications_enabled) {
+    // Nudge the syncer thread when notifications are enabled, in case there is
+    // any data that has not yet been synced. If we are listening to
+    // server-issued notifications, we are already guaranteed to receive a
+    // notification on a successful connection.
+    if (syncer_thread()) {
+      syncer_thread()->NudgeSyncer(0, SyncerThread::kLocal);
+    }
+
     // Send a notification as soon as subscriptions are on
     // (see http://code.google.com/p/chromium/issues/detail?id=38563 ).
     core_message_loop_->PostTask(
