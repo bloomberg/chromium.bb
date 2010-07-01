@@ -30,8 +30,8 @@ void PasswordManager::RegisterUserPrefs(PrefService* prefs) {
 
 // This routine is called when PasswordManagers are constructed.
 //
-// Currently we report metrics only once at startup. We require 
-// that this is only ever called from a single thread in order to 
+// Currently we report metrics only once at startup. We require
+// that this is only ever called from a single thread in order to
 // avoid needing to lock (a static boolean flag is then sufficient to
 // guarantee running only once).
 static void ReportMetrics(bool password_manager_enabled) {
@@ -42,13 +42,13 @@ static void ReportMetrics(bool password_manager_enabled) {
   if (ran_once)
     return;
   ran_once = true;
-  
+
   if (password_manager_enabled)
     UserMetrics::RecordAction(UserMetricsAction("PasswordManager_Enabled"));
   else
     UserMetrics::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
-}      
-  
+}
+
 PasswordManager::PasswordManager(Delegate* delegate)
     : login_managers_deleter_(&pending_login_managers_),
       delegate_(delegate),
@@ -56,7 +56,7 @@ PasswordManager::PasswordManager(Delegate* delegate)
   DCHECK(delegate_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
       delegate_->GetProfileForPasswordManager()->GetPrefs(), NULL);
- 
+
   ReportMetrics(*password_manager_enabled_);
 }
 
@@ -134,6 +134,8 @@ void PasswordManager::DidStopLoading() {
   // Form is not completely valid - we do not support it.
   if (!provisional_save_manager_->HasValidPasswordForm())
     return;
+
+  provisional_save_manager_->SubmitPassed();
   if (provisional_save_manager_->IsNewLogin()) {
     delegate_->AddSavePasswordInfoBar(provisional_save_manager_.release());
   } else {
@@ -176,6 +178,7 @@ void PasswordManager::PasswordFormsVisible(
       // failure and abort this save, by clearing provisional_save_manager_.
       // Don't delete the login managers since the user may try again
       // and we want to be able to save in that case.
+      provisional_save_manager_->SubmitFailed();
       ClearProvisionalSave();
       break;
     }
@@ -185,19 +188,18 @@ void PasswordManager::PasswordFormsVisible(
 void PasswordManager::Autofill(
     const PasswordForm& form_for_autofill,
     const PasswordFormMap& best_matches,
-    const PasswordForm* const preferred_match) const {
+    const PasswordForm* const preferred_match,
+    bool wait_for_username) const {
   DCHECK(preferred_match);
   switch (form_for_autofill.scheme) {
     case PasswordForm::SCHEME_HTML: {
       // Note the check above is required because the observer_ for a non-HTML
       // schemed password form may have been freed, so we need to distinguish.
-      bool action_mismatch = form_for_autofill.action.GetWithEmptyPath() !=
-                             preferred_match->action.GetWithEmptyPath();
       webkit_glue::PasswordFormDomManager::FillData fill_data;
       webkit_glue::PasswordFormDomManager::InitFillData(form_for_autofill,
                                                         best_matches,
                                                         preferred_match,
-                                                        action_mismatch,
+                                                        wait_for_username,
                                                         &fill_data);
       delegate_->FillPasswordForm(fill_data);
       return;

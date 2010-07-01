@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_MANAGER_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_MANAGER_H_
 
+#include <string>
+#include <vector>
+
 #include "build/build_config.h"
 
 #include "base/stl_util-inl.h"
@@ -84,8 +87,54 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // observed_form_ (e.g DoesManage(pending_credentials_) == true).
   void Save();
 
+  // Call these if/when we know the form submission worked or failed.
+  // These routines are used to update internal statistics ("ActionsTaken").
+  void SubmitPassed();
+  void SubmitFailed();
+
  private:
   friend class PasswordFormManagerTest;
+
+  // ManagerAction - What does the manager do with this form? Either it
+  // fills it, or it doesn't. If it doesn't fill it, that's either
+  // because it has no match, or it is blacklisted, or it is disabled
+  // via the AUTOCOMPLETE=off attribute. Note that if we don't have
+  // an exact match, we still provide candidates that the user may
+  // end up choosing.
+  enum ManagerAction {
+    kManagerActionNone = 0,
+    kManagerActionAutoFilled,
+    kManagerActionBlacklisted,
+    kManagerActionDisabled,
+    kManagerActionMax
+  };
+
+  // UserAction - What does the user do with this form? If he or she
+  // does nothing (either by accepting what the password manager did, or
+  // by simply (not typing anything at all), you get None. If there were
+  // multiple choices and the user selects one other than the default,
+  // you get Choose, and if the user types in a new value, you get
+  // Override.
+  enum UserAction {
+    kUserActionNone = 0,
+    kUserActionChoose,
+    kUserActionOverride,
+    kUserActionMax
+  };
+
+  // Result - What happens to the form?
+  enum SubmitResult {
+    kSubmitResultNotSubmitted = 0,
+    kSubmitResultFailed,
+    kSubmitResultPassed,
+    kSubmitResultMax
+  };
+
+  // The maximum number of combinations of the three preceding enums.
+  // This is used when recording the actions taken by the form in UMA.
+  static const int kMaxNumActionsTaken = kManagerActionMax * kUserActionMax *
+                                         kSubmitResultMax;
+
   // Called by destructor to ensure if this object is deleted, no potential
   // outstanding callbacks can call OnPasswordStoreRequestDone.
   void CancelLoginsQuery();
@@ -115,6 +164,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // will be reset on all matched logins that different than the current
   // |pending_credentials_|.
   void UpdatePreferredLoginState(PasswordStore* password_store);
+
+  // Converts the "ActionsTaken" fields into an int so they can be logged to
+  // UMA.
+  int GetActionsTaken();
 
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
@@ -167,6 +220,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // The profile from which we get the PasswordStore.
   Profile* profile_;
+
+  // These three fields record the "ActionsTaken" by the browser and
+  // the user with this form, and the result. They are combined and
+  // recorded in UMA when the manager is destroyed.
+  ManagerAction manager_action_;
+  UserAction user_action_;
+  SubmitResult submit_result_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

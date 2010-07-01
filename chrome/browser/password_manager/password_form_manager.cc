@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/histogram.h"
 #include "base/string_util.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profile.h"
@@ -26,7 +27,10 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
       pending_login_query_(0),
       preferred_match_(NULL),
       state_(PRE_MATCHING_PHASE),
-      profile_(profile) {
+      profile_(profile),
+      manager_action_(kManagerActionNone),
+      user_action_(kUserActionNone),
+      submit_result_(kSubmitResultNotSubmitted) {
   DCHECK(profile_);
   if (observed_form_.origin.is_valid())
     SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
@@ -35,7 +39,15 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
 
 PasswordFormManager::~PasswordFormManager() {
   CancelLoginsQuery();
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTaken",
+                            GetActionsTaken(),
+                            kMaxNumActionsTaken);
 }
+
+int PasswordFormManager::GetActionsTaken() {
+  return user_action_ + kUserActionMax * (manager_action_ +
+         kManagerActionMax * submit_result_);
+};
 
 // TODO(timsteele): use a hash of some sort in the future?
 bool PasswordFormManager::DoesManage(const PasswordForm& form) const {
@@ -153,7 +165,13 @@ void PasswordFormManager::ProvisionallySave(const PasswordForm& credentials) {
     // bless it with the action URL from the observed form. See bug 1107719.
     if (pending_credentials_.action.is_empty())
       pending_credentials_.action = observed_form_.action;
+
+    // Check to see if we're using a known username but a new password.
+    if (pending_credentials_.password_value != credentials.password_value)
+      user_action_ = kUserActionOverride;
   } else {
+    // User typed in a new, unknown username.
+    user_action_ = kUserActionOverride;
     pending_credentials_ = observed_form_;
     pending_credentials_.username_value = credentials.username_value;
   }
@@ -196,7 +214,7 @@ void PasswordFormManager::OnRequestDone(int handle,
   // copies to a minimum here.
 
   int best_score = 0;
-  std::vector<PasswordForm> empties; // Empty-path matches in result set.
+  std::vector<PasswordForm> empties;  // Empty-path matches in result set.
   for (size_t i = 0; i < logins_result.size(); i++) {
     if (IgnoreResult(*logins_result[i])) {
       delete logins_result[i];
@@ -256,7 +274,7 @@ void PasswordFormManager::OnRequestDone(int handle,
       best_matches_[it->username_value] = new PasswordForm(*it);
   }
 
-  // Its possible we have at least one match but have no preferred_match_,
+  // It is possible we have at least one match but have no preferred_match_,
   // because a user may have chosen to 'Forget' the preferred match. So we
   // just pick the first one and whichever the user selects for submit will
   // be saved as preferred.
@@ -264,12 +282,22 @@ void PasswordFormManager::OnRequestDone(int handle,
   if (!preferred_match_)
     preferred_match_ = best_matches_.begin()->second;
 
-  // Now we determine if the user told us to ignore this site in the past.
-  // If they haven't, we proceed to auto-fill.
-  if (!preferred_match_->blacklisted_by_user) {
-    password_manager_->Autofill(observed_form_, best_matches_,
-                                preferred_match_);
+  // Check to see if the user told us to ignore this site in the past.
+  if (preferred_match_->blacklisted_by_user) {
+    manager_action_ = kManagerActionBlacklisted;
+    return;
   }
+
+  // Proceed to autofill (note that we provide the choices but don't
+  // actually prefill a value if the ACTION paths don't match).
+  bool wait_for_username = observed_form_.action.GetWithEmptyPath() !=
+                           preferred_match_->action.GetWithEmptyPath();
+  if (wait_for_username)
+    manager_action_ = kManagerActionNone;
+  else
+    manager_action_ = kManagerActionAutoFilled;
+  password_manager_->Autofill(observed_form_, best_matches_,
+                              preferred_match_, wait_for_username);
 }
 
 void PasswordFormManager::OnPasswordStoreRequestDone(
@@ -333,6 +361,8 @@ void PasswordFormManager::UpdatePreferredLoginState(
         iter->second->preferred) {
       // This wasn't the selected login but it used to be preferred.
       iter->second->preferred = false;
+      if (user_action_ == kUserActionNone)
+        user_action_ = kUserActionChoose;
       password_store->UpdateLogin(*iter->second);
     }
   }
@@ -341,9 +371,10 @@ void PasswordFormManager::UpdatePreferredLoginState(
 void PasswordFormManager::UpdateLogin() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   DCHECK(preferred_match_);
-  // If we're doing an Update, its because we autofilled a form and the user
-  // submitted it with a possibly new password value, page security, or selected
-  // one of the non-preferred matches, thus requiring a swap of preferred bits.
+  // If we're doing an Update, we either autofilled correctly and need to
+  // update the stats, or the user typed in a new password for autofilled
+  // username, or the user selected one of the non-preferred matches,
+  // thus requiring a swap of preferred bits.
   DCHECK(!IsNewLogin() && pending_credentials_.preferred);
   DCHECK(!profile_->IsOffTheRecord());
 
@@ -441,4 +472,12 @@ int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
   }
 
   return score;
+}
+
+void PasswordFormManager::SubmitPassed() {
+  submit_result_ = kSubmitResultPassed;
+}
+
+void PasswordFormManager::SubmitFailed() {
+  submit_result_ = kSubmitResultFailed;
 }

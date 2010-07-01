@@ -59,7 +59,8 @@ class PasswordManager : public LoginModel {
   // on the page.
   void Autofill(const webkit_glue::PasswordForm& form_for_autofill,
                 const webkit_glue::PasswordFormMap& best_matches,
-                const webkit_glue::PasswordForm* const preferred_match) const;
+                const webkit_glue::PasswordForm* const preferred_match,
+                bool wait_for_username) const;
 
   // Notification that the user navigated away from the current page.
   // Unless this is a password form submission, for our purposes this
