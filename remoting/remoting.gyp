@@ -72,7 +72,6 @@
         'chromoting_client',
         'chromoting_jingle_glue',
         '../third_party/ppapi/ppapi.gyp:ppapi_c',
-        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'sources': [
         'client/plugin/chromoting_plugin.cc',
@@ -99,7 +98,7 @@
         }],
       ],  # end of 'conditions'
     },  # end of target 'chromoting_plugin'
-
+    
     {
       'target_name': 'chromoting_base',
       'type': '<(library)',
@@ -107,6 +106,7 @@
         '../gfx/gfx.gyp:gfx',
         '../media/media.gyp:media',
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../third_party/zlib/zlib.gyp:zlib',
         'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
         'chromoting_jingle_glue',
         # TODO(hclam): Enable VP8 in the build.
@@ -124,12 +124,15 @@
       'sources': [
         'base/constants.cc',
         'base/constants.h',
+        'base/lossless_compressor.h',
         'base/multiple_array_input_stream.cc',
         'base/multiple_array_input_stream.h',
         'base/protocol_decoder.cc',
         'base/protocol_decoder.h',
         'base/protocol_util.cc',
         'base/protocol_util.h',
+        'base/compressor_zlib.cc',
+        'base/compressor_zlib.h',
       ],
     },  # end of target 'chromoting_base'
 
@@ -324,13 +327,14 @@
         '../testing/gmock/include',
       ],
       'sources': [
-        'host/client_connection_unittest.cc',
+        'base/compressor_zlib_unittest.cc',
         'base/mock_objects.h',
         'base/multiple_array_input_stream_unittest.cc',
         'base/protocol_decoder_unittest.cc',
         'client/mock_objects.h',
         'client/decoder_verbatim_unittest.cc',
         'host/chromoting_host_context_unittest.cc',
+        'host/client_connection_unittest.cc',
         'host/differ_unittest.cc',
         'host/differ_block_unittest.cc',
         'host/json_host_config_unittest.cc',
