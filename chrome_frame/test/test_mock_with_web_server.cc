@@ -1278,7 +1278,9 @@ TEST_F(ChromeFrameTestWithWebServer,
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds * 2);
 }
 
-TEST(IEPrivacy, NavigationToRestrictedSite) {
+// Test has been disabled as it causes the IE8 bot to hang at times.
+// http://crbug.com/47596
+TEST(IEPrivacy, DISABLED_NavigationToRestrictedSite) {
   if (IsIBrowserServicePatchEnabled()) {
     LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
     return;
