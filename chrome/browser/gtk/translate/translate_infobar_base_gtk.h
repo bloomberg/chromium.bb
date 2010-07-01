@@ -9,8 +9,8 @@
 #include "chrome/browser/gtk/infobar_gtk.h"
 
 class MenuGtk;
-class OptionsMenuModel2;
-class TranslateInfoBarDelegate2;
+class OptionsMenuModel;
+class TranslateInfoBarDelegate;
 
 // This class contains some of the base functionality that translate infobars
 // use.
@@ -18,7 +18,7 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
                              public InfoBar,
                              public AnimationDelegate {
  public:
-  explicit TranslateInfoBarBase(TranslateInfoBarDelegate2* delegate);
+  explicit TranslateInfoBarBase(TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 
   // Initializes the infobar widgets. Should be called after the object has been
@@ -59,8 +59,8 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   // language id.
   static int GetLanguageComboboxActiveId(GtkComboBox* combo);
 
-  // Convenience to retrieve the TranslateInfoBarDelegate2 for this infobar.
-  TranslateInfoBarDelegate2* GetDelegate() const;
+  // Convenience to retrieve the TranslateInfoBarDelegate for this infobar.
+  TranslateInfoBarDelegate* GetDelegate() const;
 
  private:
   // Builds a button with an arrow in it to emulate the menu-button style from
@@ -68,7 +68,7 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   static GtkWidget* BuildOptionsMenuButton();
 
   // The menu displayed when the Options button is pressed.
-  scoped_ptr<OptionsMenuModel2> options_menu_model_;
+  scoped_ptr<OptionsMenuModel> options_menu_model_;
   scoped_ptr<MenuGtk> options_menu_menu_;
 
   CHROMEGTK_CALLBACK_0(TranslateInfoBarBase, void, OnOptionsClicked);

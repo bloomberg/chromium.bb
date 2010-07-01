@@ -18,6 +18,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/translate/page_translated_details.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -193,13 +194,13 @@ void TranslateManager::Observe(NotificationType type,
     }
     case NotificationType::TAB_LANGUAGE_DETERMINED: {
       TabContents* tab = Source<TabContents>(source).ptr();
-      std::string language = *(Details<std::string>(details).ptr());
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
       LanguageState& language_state = tab->language_state();
       if (!language_state.translation_pending() &&
           !language_state.translation_declined() &&
           !language_state.IsPageTranslated()) {
+        std::string language = *(Details<std::string>(details).ptr());
         InitiateTranslation(tab, language);
       }
       break;
@@ -211,22 +212,7 @@ void TranslateManager::Observe(NotificationType type,
       TabContents* tab = Source<TabContents>(source).ptr();
       PageTranslatedDetails* page_translated_details =
           Details<PageTranslatedDetails>(details).ptr();
-      TranslateInfoBarDelegate::TranslateState state =
-          (page_translated_details->error_type == TranslateErrors::NONE ?
-           TranslateInfoBarDelegate::kAfterTranslate :
-           TranslateInfoBarDelegate::kTranslateError);
-      TranslateInfoBarDelegate* info_bar = GetTranslateInfoBarDelegate(tab);
-      if (info_bar) {
-        info_bar->UpdateState(state, page_translated_details->error_type);
-      } else {
-        NavigationEntry* entry = tab->controller().GetActiveEntry();
-        if (entry) {
-          AddTranslateInfoBar(tab, state, entry->url(),
-                              page_translated_details->source_language,
-                              page_translated_details->target_language,
-                              page_translated_details->error_type);
-        }
-      }
+      PageTranslated(tab, page_translated_details);
       break;
     }
     case NotificationType::PROFILE_DESTROYED: {
@@ -289,15 +275,9 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
     }
 
     if (error) {
-      // TODO(jcivelli): http://crbug.com/40828 The translate infobar delegate
-      //                 should notify the info-bar so it updates its
-      //                 appearance so we don't have to send a notification.
-      PageTranslatedDetails details(request.source_lang, request.target_lang,
-                                    TranslateErrors::NETWORK);
-      NotificationService::current()->Notify(
-          NotificationType::PAGE_TRANSLATED,
-          Source<TabContents>(tab),
-          Details<PageTranslatedDetails>(&details));
+      ShowInfoBar(tab, TranslateInfoBarDelegate::CreateErrorDelegate(
+          TranslateErrors::NETWORK, tab,
+          request.source_lang, request.target_lang));
     } else {
       // Translate the page.
       DoTranslatePage(tab, translate_script_,
@@ -334,6 +314,10 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     // This can happen for popups created with window.open("").
     return;
   }
+
+  // If there is already a translate infobar showing, don't show another one.
+  if (GetTranslateInfoBarDelegate(tab))
+    return;
 
   std::string target_lang = GetTargetLanguage();
   // Nothing to do if either the language Chrome is in or the language of the
@@ -373,14 +357,13 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   }
 
   // Prompts the user if he/she wants the page translated.
-  AddTranslateInfoBar(tab, TranslateInfoBarDelegate::kBeforeTranslate,
-                      entry->url(), page_lang, target_lang,
-                      TranslateErrors::NONE);
+  tab->AddInfoBar(TranslateInfoBarDelegate::CreateDelegate(
+      TranslateInfoBarDelegate::kBeforeTranslate, tab,
+      page_lang, target_lang));
 }
 
-void TranslateManager::InitiateTranslationPosted(int process_id,
-                                                 int render_id,
-                                                 const std::string& page_lang) {
+void TranslateManager::InitiateTranslationPosted(
+    int process_id, int render_id, const std::string& page_lang) {
   // The tab might have been closed.
   TabContents* tab = tab_util::GetTabContentsByID(process_id, render_id);
   if (!tab || tab->language_state().translation_pending())
@@ -390,8 +373,8 @@ void TranslateManager::InitiateTranslationPosted(int process_id,
 }
 
 void TranslateManager::TranslatePage(TabContents* tab_contents,
-                                     const std::string& source_lang,
-                                     const std::string& target_lang) {
+                                      const std::string& source_lang,
+                                      const std::string& target_lang) {
   NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
@@ -426,20 +409,44 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
       tab_contents->language_state().original_language());
 }
 
-void TranslateManager::DoTranslatePage(TabContents* tab_contents,
+void TranslateManager::DoTranslatePage(TabContents* tab,
                                        const std::string& translate_script,
                                        const std::string& source_lang,
                                        const std::string& target_lang) {
-  NavigationEntry* entry = tab_contents->controller().GetActiveEntry();
+  NavigationEntry* entry = tab->controller().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return;
   }
 
-  tab_contents->language_state().set_translation_pending(true);
-  tab_contents->render_view_host()->TranslatePage(entry->page_id(),
-                                                  translate_script,
-                                                  source_lang, target_lang);
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBarDelegate(tab);
+  if (infobar) {
+    // We don't show the translating infobar if no translate infobar is already
+    // showing (that is the case when the translation was triggered by the
+    // "always translate" for example).
+    infobar = TranslateInfoBarDelegate::CreateDelegate(
+        TranslateInfoBarDelegate::kTranslating, tab, source_lang, target_lang);
+    ShowInfoBar(tab, infobar);
+  }
+  tab->language_state().set_translation_pending(true);
+  tab->render_view_host()->TranslatePage(entry->page_id(), translate_script,
+                                         source_lang, target_lang);
+}
+
+void TranslateManager::PageTranslated(TabContents* tab,
+                                      PageTranslatedDetails* details) {
+  // Create the new infobar to display.
+  TranslateInfoBarDelegate* infobar;
+  if (details->error_type != TranslateErrors::NONE) {
+    infobar = TranslateInfoBarDelegate::CreateErrorDelegate(
+        details->error_type, tab,
+        details->source_language, details->target_language);
+  } else {
+    infobar = TranslateInfoBarDelegate::CreateDelegate(
+        TranslateInfoBarDelegate::kAfterTranslate, tab,
+        details->source_language, details->target_language);
+  }
+  ShowInfoBar(tab, infobar);
 }
 
 bool TranslateManager::IsAcceptLanguage(TabContents* tab,
@@ -505,23 +512,16 @@ void TranslateManager::RequestTranslateScript() {
   fetcher->Start();
 }
 
-// static
-void TranslateManager::AddTranslateInfoBar(
-    TabContents* tab, TranslateInfoBarDelegate::TranslateState state,
-    const GURL& url,
-    const std::string& original_language, const std::string& target_language,
-    TranslateErrors::Type error_type) {
-  PrefService* prefs = tab->profile()->GetPrefs();
-  TranslateInfoBarDelegate* infobar =
-      TranslateInfoBarDelegate::Create(tab, prefs, state, url,
-                                       original_language, target_language,
-                                       error_type);
-  if (!infobar) {
-    NOTREACHED() << "Failed to create infobar for language " <<
-        original_language << " and " << target_language;
-    return;
+void TranslateManager::ShowInfoBar(TabContents* tab,
+                                   TranslateInfoBarDelegate* infobar) {
+  TranslateInfoBarDelegate* old_infobar = GetTranslateInfoBarDelegate(tab);
+  infobar->UpdateBackgroundAnimation(old_infobar);
+  if (old_infobar) {
+    // There already is a translate infobar, simply replace it.
+    tab->ReplaceInfoBar(old_infobar, infobar);
+  } else {
+    tab->AddInfoBar(infobar);
   }
-  tab->AddInfoBar(infobar);
 }
 
 // static

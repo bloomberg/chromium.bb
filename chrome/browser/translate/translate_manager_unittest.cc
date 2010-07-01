@@ -8,7 +8,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
-#include "chrome/browser/translate/translate_infobars_delegates.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/ipc_test_sink.h"
@@ -24,10 +24,12 @@
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cld/languages/public/languages.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 
 using testing::_;
 using testing::Pointee;
 using testing::Property;
+using WebKit::WebContextMenuData;
 
 class TestTranslateManager : public TranslateManager {
  public:
@@ -108,6 +110,11 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
     return !removed_infobars_.empty();
   }
 
+  // Clears the list of stored removed infobars.
+  void ClearRemovedInfoBars() {
+    removed_infobars_.clear();
+  }
+
   // If there is 1 infobar and it is a translate infobar, deny translation and
   // returns true.  Returns false otherwise.
   bool DenyTranslation() {
@@ -147,6 +154,8 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   }
 
   virtual void TearDown() {
+    process()->sink().ClearMessages();
+
     notification_registrar_.Remove(
         this,
         NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
@@ -229,7 +238,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.y = 0;
     params.is_image_blocked = false;
     params.media_flags = 0;
-    params.spellcheck_enabled = false;;
+    params.spellcheck_enabled = false;
     params.is_editable = false;
     params.page_url = tab_contents->controller().GetActiveEntry()->url();
 #if defined(OS_MACOSX)
@@ -237,7 +246,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
-    params.edit_flags = 0;
+    params.edit_flags = WebContextMenuData::CanTranslate;
     return new TestRenderViewContextMenu(tab_contents, params);
   }
 
@@ -263,18 +272,18 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   // Simulate navigating to a page.
   SimulateNavigation(GURL("http://www.google.fr"), 0, "Le Google", "fr");
 
-  // We should have an info-bar.
+  // We should have an infobar.
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::kBeforeTranslate, infobar->state());
+  EXPECT_EQ(TranslateInfoBarDelegate::kBeforeTranslate, infobar->type());
 
   // Simulate clicking translate.
   process()->sink().ClearMessages();
   infobar->Translate();
+
   // Simulate the translate script being retrieved (it only needs to be done
   // once in the test as it is cached).
   SimulateURLFetch(true);
-  EXPECT_FALSE(InfoBarRemoved());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -284,57 +293,66 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
 
-  // The infobar should still be there but in the translating state.
-  ASSERT_EQ(infobar, GetTranslateInfoBar());  // Same instance.
-  // TODO(jcampan): the state is not set if the button is not clicked.
-  //                Refactor the infobar code so we can simulate the click.
-  // EXPECT_EQ(TranslateInfoBarDelegate::kTranslating, infobar->state());
+  // The "Translating..." infobar should be showing.
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::kTranslating, infobar->type());
 
   // Simulate the render notifying the translation has been done.
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
       TranslateErrors::NONE));
 
-  // The infobar should have changed to the after state.
-  EXPECT_FALSE(InfoBarRemoved());
-  ASSERT_EQ(infobar, GetTranslateInfoBar());
-  // TODO(jcampan): the TranslateInfoBar is listening for the PAGE_TRANSLATED
-  //                notification. Since in unit-test, no actual info-bar is
-  //                created, it does not get the notification and does not
-  //                update its state.  Ideally the delegate (or rather model)
-  //                would be the one listening for notifications and updating
-  //                states.  That would make this test work.
-  // EXPECT_EQ(TranslateInfoBarDelegate::kAfterTranslate, infobar->state());
+  // The after translate infobar should be showing.
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::kAfterTranslate, infobar->type());
 
-  // Simulate translating again from there but 2 different languages.
-  infobar->ModifyOriginalLanguage(0);
-  infobar->ModifyTargetLanguage(1);
-  std::string new_original_lang = infobar->original_lang_code();
-  std::string new_target_lang = infobar->target_lang_code();
+  // Simulate changing the original language, this should trigger a translation.
   process()->sink().ClearMessages();
-  infobar->Translate();
+  std::string new_original_lang = infobar->GetLanguageCodeAt(0);
+  infobar->SetOriginalLanguage(0);
+  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  EXPECT_EQ(0, page_id);
+  EXPECT_EQ(new_original_lang, original_lang);
+  EXPECT_EQ("en", target_lang);
+  // Simulate the render notifying the translation has been done.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0,
+      new_original_lang, "en", TranslateErrors::NONE));
+  // infobar is now invalid.
+  TranslateInfoBarDelegate* new_infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(new_infobar != NULL);
+  infobar = new_infobar;
 
-  // Test that we sent the right message to the renderer.
+  // Simulate changing the target language, this should trigger a translation.
+  process()->sink().ClearMessages();
+  std::string new_target_lang = infobar->GetLanguageCodeAt(1);
+  infobar->SetTargetLanguage(1);
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   EXPECT_EQ(0, page_id);
   EXPECT_EQ(new_original_lang, original_lang);
   EXPECT_EQ(new_target_lang, target_lang);
+  // Simulate the render notifying the translation has been done.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0,
+      new_original_lang, new_target_lang, TranslateErrors::NONE));
+  // infobar is now invalid.
+  new_infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(new_infobar != NULL);
 }
 
 TEST_F(TranslateManagerTest, TranslateScriptNotAvailable) {
   // Simulate navigating to a page.
   SimulateNavigation(GURL("http://www.google.fr"), 0, "Le Google", "fr");
 
-  // We should have an info-bar.
+  // We should have an infobar.
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::kBeforeTranslate, infobar->state());
+  EXPECT_EQ(TranslateInfoBarDelegate::kBeforeTranslate, infobar->type());
 
   // Simulate clicking translate.
   process()->sink().ClearMessages();
   infobar->Translate();
   // Simulate a failure retrieving the translate script.
   SimulateURLFetch(false);
-  EXPECT_FALSE(InfoBarRemoved());
 
   // We should not have sent any message to translate to the renderer.
   EXPECT_FALSE(GetTranslateMessage(NULL, NULL, NULL));
@@ -342,7 +360,63 @@ TEST_F(TranslateManagerTest, TranslateScriptNotAvailable) {
   // And we should have an error infobar showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::kTranslateError, infobar->state());
+  EXPECT_EQ(TranslateInfoBarDelegate::kTranslationError, infobar->type());
+}
+
+// Ensures we deal correctly with pages for which the browser does not recognize
+// the language (the translate server may or not detect the language).
+TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
+  // Simulate navigating to a page ("und" is the string returned by the CLD for
+  // languages it does not recognize).
+  SimulateNavigation(GURL("http://www.google.mys"), 0, "G00g1e", "und");
+
+  // We should not have an infobar as we don't know the language.
+  ASSERT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Translate the page anyway throught the context menu.
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  SimulateURLFetch(true);  //  Simulare receiving the translate script.
+
+  // Simulate the render notifying the translation has been done, the server
+  // having detected the page was in a known and supported language.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
+      TranslateErrors::NONE));
+
+  // The after translate infobar should be showing.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::kAfterTranslate, infobar->type());
+  EXPECT_EQ("fr", infobar->GetOriginalLanguageCode());
+  EXPECT_EQ("en", infobar->GetTargetLanguageCode());
+
+  // Let's run the same steps but this time the server detects the page is
+  // already in English.
+  SimulateNavigation(GURL("http://www.google.com"), 1, "The Google", "und");
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(1, 0, "en", "en",
+      TranslateErrors::IDENTICAL_LANGUAGES));
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::kTranslationError, infobar->type());
+  EXPECT_EQ(TranslateErrors::IDENTICAL_LANGUAGES, infobar->error());
+
+  // Let's run the same steps again but this time the server fails to detect the
+  // page's language (it returns an empty string).
+  SimulateNavigation(GURL("http://www.google.com"), 2, "The Google", "und");
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(2, 0, "", "en",
+      TranslateErrors::UNKNOWN_LANGUAGE));
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::kTranslationError, infobar->type());
+  EXPECT_EQ(TranslateErrors::UNKNOWN_LANGUAGE, infobar->error());
 }
 
 // Tests that we show/don't show an info-bar for all languages the CLD can
@@ -601,8 +675,12 @@ TEST_F(TranslateManagerTest, TranslateInPageNavigation) {
   SimulateURLFetch(true);  // Simulate the translate script being retrieved.
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
       TranslateErrors::NONE));
+  // The after translate infobar is showing.
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
 
   // Navigate in page, the same infobar should still be shown.
+  ClearRemovedInfoBars();
   SimulateNavigation(GURL("http://www.google.fr/#ref1"), 0, "Le Google", "fr");
   EXPECT_FALSE(InfoBarRemoved());
   EXPECT_EQ(infobar, GetTranslateInfoBar());
@@ -906,4 +984,70 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
+
+  // Test that the translate context menu is enabled when the page is in an
+  // unknown language as the UI.
+  SimulateNavigation(url, 0, "G00g1e", "und");
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
+}
+
+// Tests that an extra always/never translate button is shown on the "before
+// translate" infobar when the translation is accepted/declined 3 times.
+TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
+  TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
+  translate_prefs.ResetTranslationAcceptedCount("fr");
+  translate_prefs.ResetTranslationDeniedCount("fr");
+  translate_prefs.ResetTranslationAcceptedCount("de");
+  translate_prefs.ResetTranslationDeniedCount("de");
+
+  TranslateInfoBarDelegate* infobar;
+  for (int i = 0; i < 4; ++i) {
+    SimulateNavigation(GURL("http://www.google.fr"), 1, "Le Google", "fr");
+    infobar = GetTranslateInfoBar();
+    ASSERT_TRUE(infobar != NULL);
+    EXPECT_EQ(TranslateInfoBarDelegate::kBeforeTranslate, infobar->type());
+    if (i < 3) {
+      EXPECT_FALSE(infobar->ShouldShowAlwaysTranslateButton());
+      infobar->Translate();
+      process()->sink().ClearMessages();
+    } else {
+      EXPECT_TRUE(infobar->ShouldShowAlwaysTranslateButton());
+    }
+  }
+  // Simulate the user pressing "Always translate French".
+  infobar->AlwaysTranslatePageLanguage();
+  EXPECT_TRUE(translate_prefs.IsLanguagePairWhitelisted("fr", "en"));
+  // Simulate the translate script being retrieved (it only needs to be done
+  // once in the test as it is cached).
+  SimulateURLFetch(true);
+  // That should have triggered a page translate.
+  int page_id = 0;
+  std::string original_lang, target_lang;
+  EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  process()->sink().ClearMessages();
+
+  // Now test that declining the translation causes a "never translate" button
+  // to be shown.
+  for (int i = 0; i < 4; ++i) {
+    SimulateNavigation(GURL("http://www.google.de"), 1, "Das Google", "de");
+    infobar = GetTranslateInfoBar();
+    ASSERT_TRUE(infobar != NULL);
+    EXPECT_EQ(TranslateInfoBarDelegate::kBeforeTranslate, infobar->type());
+    if (i < 3) {
+      EXPECT_FALSE(infobar->ShouldShowNeverTranslateButton());
+      infobar->TranslationDeclined();
+    } else {
+      EXPECT_TRUE(infobar->ShouldShowNeverTranslateButton());
+    }
+  }
+  // Simulate the user pressing "Never translate French".
+  infobar->NeverTranslatePageLanguage();
+  EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("de"));
+  // No translation should have occured and the infobar should be gone.
+  EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+  process()->sink().ClearMessages();
+  ASSERT_TRUE(GetTranslateInfoBar() == NULL);
 }

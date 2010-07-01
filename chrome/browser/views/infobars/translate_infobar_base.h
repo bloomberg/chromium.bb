@@ -8,7 +8,7 @@
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/views/infobars/infobars.h"
 
-class TranslateInfoBarDelegate2;
+class TranslateInfoBarDelegate;
 
 namespace views {
 class MenuButton;
@@ -20,7 +20,7 @@ class ViewMenuDelegate;
 class TranslateInfoBarBase : public TranslateInfoBarView,
                              public InfoBar {
  public:
-  explicit TranslateInfoBarBase(TranslateInfoBarDelegate2* delegate);
+  explicit TranslateInfoBarBase(TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 
   // TranslateInfoBarView implementation:
@@ -48,8 +48,8 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   // positioned.
   gfx::Point DetermineMenuPosition(views::MenuButton* menu_button);
 
-  // Convenience to retrieve the TranslateInfoBarDelegate2 for this infobar.
-  TranslateInfoBarDelegate2* GetDelegate() const;
+  // Convenience to retrieve the TranslateInfoBarDelegate for this infobar.
+  TranslateInfoBarDelegate* GetDelegate() const;
 
   // The translate icon.
   views::ImageView* icon_;
@@ -72,5 +72,3 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
 };
 
 #endif  // CHROME_BROWSER_VIEWS_INFOBARS_TRANSLATE_INFOBAR_BASE_H_
-
-

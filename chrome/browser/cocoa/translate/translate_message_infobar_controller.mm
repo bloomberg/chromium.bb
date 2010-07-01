@@ -12,11 +12,11 @@ using TranslateInfoBarUtilities::MoveControl;
 
 - (id)initWithDelegate:(InfoBarDelegate*)delegate {
   if ((self = [super initWithDelegate:delegate])) {
-    TranslateInfoBarDelegate2* delegate = [self delegate];
+    TranslateInfoBarDelegate* delegate = [self delegate];
     if (delegate->IsError())
-      state_ = TranslateInfoBarDelegate2::kTranslationError;
+      state_ = TranslateInfoBarDelegate::kTranslationError;
     else
-      state_ = TranslateInfoBarDelegate2::kTranslating;
+      state_ = TranslateInfoBarDelegate::kTranslating;
   }
   return self;
 }
@@ -25,7 +25,7 @@ using TranslateInfoBarUtilities::MoveControl;
   [optionsPopUp_ setHidden:YES];
   [self removeOkCancelButtons];
   MoveControl(label1_, tryAgainButton_, spaceBetweenControls_ * 2, true);
-  TranslateInfoBarDelegate2* delegate = [self delegate];
+  TranslateInfoBarDelegate* delegate = [self delegate];
   if (delegate->IsError())
     MoveControl(label1_, tryAgainButton_, spaceBetweenControls_ * 2, true);
 }
@@ -33,13 +33,13 @@ using TranslateInfoBarUtilities::MoveControl;
 - (NSArray*)visibleControls {
   NSMutableArray* visibleControls =
       [NSMutableArray arrayWithObjects:label1_.get(), nil];
-  if (state_ == TranslateInfoBarDelegate2::kTranslationError)
+  if (state_ == TranslateInfoBarDelegate::kTranslationError)
     [visibleControls addObject:tryAgainButton_];
   return visibleControls;
 }
 
 - (void)loadLabelText {
-  TranslateInfoBarDelegate2* delegate = [self delegate];
+  TranslateInfoBarDelegate* delegate = [self delegate];
   string16 messageText = delegate->GetMessageInfoBarText();
   NSString* string1 = base::SysUTF16ToNSString(messageText);
   [label1_ setStringValue:string1];

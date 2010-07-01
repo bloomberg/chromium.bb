@@ -16,7 +16,7 @@
 #import "chrome/browser/cocoa/translate/translate_message_infobar_controller.h"
 #import "chrome/browser/renderer_host/site_instance.h"
 #import "chrome/browser/tab_contents/tab_contents.h"
-#import "chrome/browser/translate/translate_infobar_delegate2.h"
+#import "chrome/browser/translate/translate_infobar_delegate.h"
 #import "ipc/ipc_channel.h"
 #import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest/include/gtest/gtest.h"
@@ -25,19 +25,19 @@
 namespace {
 
 // All states the translate toolbar can assume.
-TranslateInfoBarDelegate2::Type kTranslateToolbarStates[] = {
-  TranslateInfoBarDelegate2::kBeforeTranslate,
-  TranslateInfoBarDelegate2::kAfterTranslate,
-  TranslateInfoBarDelegate2::kTranslating,
-  TranslateInfoBarDelegate2::kTranslationError
+TranslateInfoBarDelegate::Type kTranslateToolbarStates[] = {
+  TranslateInfoBarDelegate::kBeforeTranslate,
+  TranslateInfoBarDelegate::kAfterTranslate,
+  TranslateInfoBarDelegate::kTranslating,
+  TranslateInfoBarDelegate::kTranslationError
 };
 
-class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate2 {
+class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
-  MockTranslateInfoBarDelegate(TranslateInfoBarDelegate2::Type type,
+  MockTranslateInfoBarDelegate(TranslateInfoBarDelegate::Type type,
                                TranslateErrors::Type error,
                                TabContents* contents)
-      : TranslateInfoBarDelegate2(type, error, contents, "en", "es"){
+      : TranslateInfoBarDelegate(type, error, contents, "en", "es"){
     // Start out in the "Before Translate" state.
     type_ = type;
 
@@ -82,10 +82,10 @@ class TranslationInfoBarTest : public CocoaTest {
   }
 
   void CreateInfoBar() {
-    CreateInfoBar(TranslateInfoBarDelegate2::kBeforeTranslate);
+    CreateInfoBar(TranslateInfoBarDelegate::kBeforeTranslate);
   }
 
-  void CreateInfoBar(TranslateInfoBarDelegate2::Type type) {
+  void CreateInfoBar(TranslateInfoBarDelegate::Type type) {
     SiteInstance* instance =
         SiteInstance::CreateSiteInstance(browser_helper_.profile());
     scoped_ptr<TabContents> tab_contents(
@@ -94,7 +94,7 @@ class TranslationInfoBarTest : public CocoaTest {
                         MSG_ROUTING_NONE,
                         NULL));
     TranslateErrors::Type error = TranslateErrors::NONE;
-    if (type == TranslateInfoBarDelegate2::kTranslationError)
+    if (type == TranslateInfoBarDelegate::kTranslationError)
       error = TranslateErrors::NETWORK;
     infobar_delegate.reset(
         new MockTranslateInfoBarDelegate(type, error, tab_contents.get()));
@@ -125,7 +125,7 @@ TEST_F(TranslationInfoBarTest, TranslateCalledOnButtonPress) {
 // Check that clicking the "Retry" button calls Translate() when we're
 // in the error mode - http://crbug.com/41315 .
 TEST_F(TranslationInfoBarTest, TranslateCalledInErrorMode) {
-  CreateInfoBar(TranslateInfoBarDelegate2::kTranslationError);
+  CreateInfoBar(TranslateInfoBarDelegate::kTranslationError);
 
   EXPECT_CALL(*infobar_delegate, Translate()).Times(1);
 

@@ -8,11 +8,11 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/translate/translate_infobar_delegate2.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "grit/generated_resources.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
-    TranslateInfoBarDelegate2* delegate)
+    TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
@@ -25,7 +25,7 @@ void AfterTranslateInfoBar::Init() {
 
   bool swapped_language_combos = false;
   std::vector<string16> strings;
-  TranslateInfoBarDelegate2::GetAfterTranslateStrings(
+  TranslateInfoBarDelegate::GetAfterTranslateStrings(
       &strings, &swapped_language_combos);
   DCHECK(strings.size() == 3U);
 

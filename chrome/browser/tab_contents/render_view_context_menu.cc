@@ -35,7 +35,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/browser/translate/translate_manager2.h"
+#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -463,7 +463,7 @@ void RenderViewContextMenu::AppendPageItems() {
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
 
   std::string locale = g_browser_process->GetApplicationLocale();
-  locale = TranslateManager2::GetLanguageCode(locale);
+  locale = TranslateManager::GetLanguageCode(locale);
   string16 language = l10n_util::GetDisplayNameForLocale(locale, locale, true);
   menu_model_.AddItem(
       IDC_CONTENT_CONTEXT_TRANSLATE,
@@ -737,12 +737,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       std::string original_lang =
           source_tab_contents_->language_state().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
-      target_lang = TranslateManager2::GetLanguageCode(target_lang);
+      target_lang = TranslateManager::GetLanguageCode(target_lang);
       return !!(params_.edit_flags & WebContextMenuData::CanTranslate) &&
              original_lang != target_lang &&
              !source_tab_contents_->language_state().IsPageTranslated() &&
              !source_tab_contents_->interstitial_page() &&
-             TranslateManager2::IsTranslatableURL(params_.page_url);
+             TranslateManager::IsTranslatableURL(params_.page_url);
     }
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
@@ -1147,13 +1147,13 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       std::string original_lang =
           source_tab_contents_->language_state().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
-      target_lang = TranslateManager2::GetLanguageCode(target_lang);
+      target_lang = TranslateManager::GetLanguageCode(target_lang);
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
       TranslatePrefs prefs(profile_->GetPrefs());
       prefs.RemoveLanguageFromBlacklist(original_lang);
       prefs.RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
-      Singleton<TranslateManager2>::get()->TranslatePage(
+      Singleton<TranslateManager>::get()->TranslatePage(
           source_tab_contents_, original_lang, target_lang);
       break;
     }

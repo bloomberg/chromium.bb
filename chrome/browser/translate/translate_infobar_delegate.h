@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H_
+#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE_H_
 
 #include <string>
 #include <vector>
@@ -15,7 +15,7 @@
 class SkBitmap;
 class TranslateInfoBarView;
 
-class TranslateInfoBarDelegate2 : public InfoBarDelegate {
+class TranslateInfoBarDelegate : public InfoBarDelegate {
  public:
   // The different types of infobars that can be shown for translation.
   enum Type {
@@ -37,14 +37,14 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
   // (ex: en, fr...).
   // Returns NULL if it failed, typically if |original_language| or
   // |target_language| is not a supported language.
-  static TranslateInfoBarDelegate2* CreateDelegate(
+  static TranslateInfoBarDelegate* CreateDelegate(
       Type infobar_type,
       TabContents* tab_contents,
       const std::string& original_language,
       const std::string& target_language);
 
   // Factory method to create an error translate infobar.
-  static TranslateInfoBarDelegate2* CreateErrorDelegate(
+  static TranslateInfoBarDelegate* CreateErrorDelegate(
       TranslateErrors::Type error_type,
       TabContents* tab_contents,
       const std::string& original_language,
@@ -100,7 +100,7 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual InfoBarDelegate::Type GetInfoBarType();
-  virtual TranslateInfoBarDelegate2* AsTranslateInfoBarDelegate2() {
+  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() {
     return this;
   }
 
@@ -133,7 +133,7 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
   // Sets this infobar background animation based on the previous infobar shown.
   // A fading background effect is used when transitioning from a normal state
   // to an error state (and vice-versa).
-  void UpdateBackgroundAnimation(TranslateInfoBarDelegate2* previous_infobar);
+  void UpdateBackgroundAnimation(TranslateInfoBarDelegate* previous_infobar);
 
   // Convenience method that returns the displayable language name for
   // |language_code| in the current application locale.
@@ -151,11 +151,11 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
 
  protected:
   // For testing.
-  TranslateInfoBarDelegate2(Type infobar_type,
-                            TranslateErrors::Type error,
-                            TabContents* tab_contents,
-                            const std::string& original_language,
-                            const std::string& target_language);
+  TranslateInfoBarDelegate(Type infobar_type,
+                           TranslateErrors::Type error,
+                           TabContents* tab_contents,
+                           const std::string& original_language,
+                           const std::string& target_language);
   Type type_;
 
  private:
@@ -192,8 +192,7 @@ class TranslateInfoBarDelegate2 : public InfoBarDelegate {
   // The translation related preferences.
   TranslatePrefs prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate2);
+  DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE2_H_
-
+#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_DELEGATE_H_

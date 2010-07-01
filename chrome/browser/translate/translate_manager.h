@@ -13,15 +13,16 @@
 #include "base/lazy_instance.h"
 #include "base/singleton.h"
 #include "base/task.h"
-#include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/translate_errors.h"
 
 class GURL;
+struct PageTranslatedDetails;
 class PrefService;
 class TabContents;
+class TranslateInfoBarDelegate;
 
 // The TranslateManager class is responsible for showing an info-bar when a page
 // in a language different than the user language is loaded.  It triggers the
@@ -32,19 +33,6 @@ class TranslateManager : public NotificationObserver,
                          public URLFetcher::Delegate {
  public:
   virtual ~TranslateManager();
-
-  // NotificationObserver implementation:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // URLFetcher::Delegate implementation:
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
 
   // Translates the page contents from |source_lang| to |target_lang|.
   // The actual translation might be performed asynchronously if the translate
@@ -61,6 +49,19 @@ class TranslateManager : public NotificationObserver,
   // Currently used by unit-tests.
   void ClearTranslateScript() { translate_script_.clear(); }
 
+  // NotificationObserver implementation:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // URLFetcher::Delegate implementation:
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const URLRequestStatus& status,
+                                  int response_code,
+                                  const ResponseCookies& cookies,
+                                  const std::string& data);
+
   // Convenience method to know if a tab is showing a translate infobar.
   static bool IsShowingTranslateInfobar(TabContents* tab);
 
@@ -76,8 +77,8 @@ class TranslateManager : public NotificationObserver,
   // specified |chrome_locale|.
   static std::string GetLanguageCode(const std::string& chrome_locale);
 
-  // Returns true if |page_language| is supported by the translation server.
-  static bool IsSupportedLanguage(const std::string& page_language);
+  // Returns true if |language| is supported by the translation server.
+  static bool IsSupportedLanguage(const std::string& language);
 
  protected:
   TranslateManager();
@@ -112,6 +113,9 @@ class TranslateManager : public NotificationObserver,
                        const std::string& source_lang,
                        const std::string& target_lang);
 
+   // Shows the after translate or error infobar depending on the details.
+   void PageTranslated(TabContents* tab, PageTranslatedDetails* details);
+
   // Returns true if the passed language has been configured by the user as an
   // accept language.
   bool IsAcceptLanguage(TabContents* tab, const std::string& language);
@@ -124,14 +128,9 @@ class TranslateManager : public NotificationObserver,
   // to translate it).
   void RequestTranslateScript();
 
-  // Convenience method that adds a translate infobar to |tab|.
-  static void AddTranslateInfoBar(
-      TabContents* tab,
-      TranslateInfoBarDelegate::TranslateState state,
-      const GURL& url,
-      const std::string& original_language,
-      const std::string& target_language,
-      TranslateErrors::Type error_type);
+  // Shows the specified translate |infobar| in the given |tab|.  If a current
+  // translate infobar is showing, it just replaces it with the new one.
+  void ShowInfoBar(TabContents* tab, TranslateInfoBarDelegate* infobar);
 
   // Returns the language to translate to, which is the language the UI is
   // configured in.  Returns an empty string if that language is not supported

@@ -7,11 +7,11 @@
 
 #include "chrome/browser/gtk/translate/translate_infobar_base_gtk.h"
 
-class TranslateInfoBarDelegate2;
+class TranslateInfoBarDelegate;
 
 class TranslateMessageInfoBar : public TranslateInfoBarBase {
  public:
-  explicit TranslateMessageInfoBar(TranslateInfoBarDelegate2* delegate);
+  explicit TranslateMessageInfoBar(TranslateInfoBarDelegate* delegate);
   virtual ~TranslateMessageInfoBar();
 
   // Overridden from TranslateInfoBarBase:

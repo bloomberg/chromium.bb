@@ -8,8 +8,8 @@
 #include <string>
 
 #include "app/menus/simple_menu_model.h"
-#include "chrome/browser/translate/languages_menu_model2.h"
-#include "chrome/browser/translate/options_menu_model2.h"
+#include "chrome/browser/translate/languages_menu_model.h"
+#include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/views/infobars/infobars.h"
 #include "chrome/browser/views/infobars/translate_infobar_base.h"
@@ -18,7 +18,7 @@
 #include "views/controls/menu/view_menu_delegate.h"
 
 class InfoBarTextButton;
-class TranslateInfoBarDelegate2;
+class TranslateInfoBarDelegate;
 
 namespace views {
 class Menu2;
@@ -29,7 +29,7 @@ class BeforeTranslateInfoBar
     : public TranslateInfoBarBase,
       public views::ViewMenuDelegate {
  public:
-  explicit BeforeTranslateInfoBar(TranslateInfoBarDelegate2* delegate);
+  explicit BeforeTranslateInfoBar(TranslateInfoBarDelegate* delegate);
   virtual ~BeforeTranslateInfoBar();
 
   // Overridden from views::View:
@@ -67,10 +67,10 @@ class BeforeTranslateInfoBar
   InfoBarTextButton* always_translate_button_;
 
   scoped_ptr<views::Menu2> languages_menu_;
-  LanguagesMenuModel2 languages_menu_model_;
+  LanguagesMenuModel languages_menu_model_;
 
   scoped_ptr<views::Menu2> options_menu_;
-  OptionsMenuModel2 options_menu_model_;
+  OptionsMenuModel options_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BeforeTranslateInfoBar);
 };

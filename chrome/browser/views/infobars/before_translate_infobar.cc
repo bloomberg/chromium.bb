@@ -8,7 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/options_menu_model.h"
-#include "chrome/browser/translate/translate_infobar_delegate2.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/views/infobars/infobar_text_button.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/menu_button.h"
@@ -16,11 +16,11 @@
 #include "views/controls/menu/menu_2.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
-    TranslateInfoBarDelegate2* delegate)
+    TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(delegate),
       never_translate_button_(NULL),
       always_translate_button_(NULL),
-      languages_menu_model_(delegate, LanguagesMenuModel2::ORIGINAL),
+      languages_menu_model_(delegate, LanguagesMenuModel::ORIGINAL),
       options_menu_model_(delegate) {
   size_t offset = 0;
   string16 text =

@@ -18,7 +18,7 @@
 #include "chrome/browser/cocoa/translate/after_translate_infobar_controller.h"
 #import "chrome/browser/cocoa/translate/before_translate_infobar_controller.h"
 #include "chrome/browser/cocoa/translate/translate_message_infobar_controller.h"
-#include "chrome/browser/translate/translate_infobars_delegates.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -103,15 +103,8 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 
 }  // namespace TranslateInfoBarUtilities
 
-// For compilation purposes until the linux port goes through and
-// the files can be removed.
-InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
-  NOTREACHED();
-  return NULL;
-}
-
 // TranslateInfoBarDelegate views specific method:
-InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   TranslateInfoBarControllerBase* infobar_controller = NULL;
   switch (type_) {
     case kBeforeTranslate:
@@ -172,19 +165,19 @@ InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
 - (id)initWithDelegate:(InfoBarDelegate*)delegate {
   if ((self = [super initWithDelegate:delegate])) {
       originalLanguageMenuModel_.reset(
-          new LanguagesMenuModel2([self delegate],
-                                  LanguagesMenuModel2::ORIGINAL));
+          new LanguagesMenuModel([self delegate],
+                                 LanguagesMenuModel::ORIGINAL));
 
       targetLanguageMenuModel_.reset(
-          new LanguagesMenuModel2([self delegate],
-                                  LanguagesMenuModel2::TARGET));
-      optionsMenuModel_.reset(new OptionsMenuModel2([self delegate]));
+          new LanguagesMenuModel([self delegate],
+                                 LanguagesMenuModel::TARGET));
+      optionsMenuModel_.reset(new OptionsMenuModel([self delegate]));
   }
   return self;
 }
 
-- (TranslateInfoBarDelegate2*)delegate {
-  return reinterpret_cast<TranslateInfoBarDelegate2*>(delegate_);
+- (TranslateInfoBarDelegate*)delegate {
+  return reinterpret_cast<TranslateInfoBarDelegate*>(delegate_);
 }
 
 - (void)constructViews {
@@ -314,7 +307,7 @@ InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
   // The options model doesn't know how to handle state transitions, so rebuild
   // it each time through here.
   optionsMenuModel_.reset(
-              new OptionsMenuModel2([self delegate]));
+              new OptionsMenuModel([self delegate]));
 
   [optionsPopUp_ removeAllItems];
   // Set title.
@@ -454,10 +447,10 @@ InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
 
 // Called when "Translate" button is clicked.
 - (IBAction)ok:(id)sender {
-  TranslateInfoBarDelegate2* delegate = [self delegate];
-  TranslateInfoBarDelegate2::Type state = delegate->type();
-  DCHECK(state == TranslateInfoBarDelegate2::kBeforeTranslate ||
-      state == TranslateInfoBarDelegate2::kTranslationError);
+  TranslateInfoBarDelegate* delegate = [self delegate];
+  TranslateInfoBarDelegate::Type state = delegate->type();
+  DCHECK(state == TranslateInfoBarDelegate::kBeforeTranslate ||
+      state == TranslateInfoBarDelegate::kTranslationError);
   delegate->Translate();
   UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
 }
@@ -465,7 +458,7 @@ InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
 // Called when someone clicks on the "Nope" button.
 - (IBAction)cancel:(id)sender {
   DCHECK(
-      [self delegate]->type() == TranslateInfoBarDelegate2::kBeforeTranslate);
+      [self delegate]->type() == TranslateInfoBarDelegate::kBeforeTranslate);
   [self delegate]->TranslationDeclined();
   UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
   [super dismiss:nil];

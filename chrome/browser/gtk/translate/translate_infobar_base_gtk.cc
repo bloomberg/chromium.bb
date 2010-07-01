@@ -8,8 +8,8 @@
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/translate/options_menu_model2.h"
-#include "chrome/browser/translate/translate_infobar_delegate2.h"
+#include "chrome/browser/translate/options_menu_model.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/gtk/translate/after_translate_infobar_gtk.h"
 #include "chrome/browser/gtk/translate/before_translate_infobar_gtk.h"
 #include "chrome/browser/gtk/translate/translate_message_infobar_gtk.h"
@@ -32,18 +32,18 @@ enum {
 
 }  // namespace
 
-TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate2* delegate)
+TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
     : InfoBar(delegate) {
-  TranslateInfoBarDelegate2::BackgroundAnimationType animation =
+  TranslateInfoBarDelegate::BackgroundAnimationType animation =
       delegate->background_animation_type();
-  if (animation != TranslateInfoBarDelegate2::kNone) {
+  if (animation != TranslateInfoBarDelegate::kNone) {
     background_color_animation_.reset(new SlideAnimation(this));
     background_color_animation_->SetTweenType(Tween::LINEAR);
     background_color_animation_->SetSlideDuration(500);
-    if (animation == TranslateInfoBarDelegate2::kNormalToError) {
+    if (animation == TranslateInfoBarDelegate::kNormalToError) {
       background_color_animation_->Show();
     } else {
-      DCHECK_EQ(TranslateInfoBarDelegate2::kErrorToNormal, animation);
+      DCHECK_EQ(TranslateInfoBarDelegate::kErrorToNormal, animation);
       // Hide() runs the animation in reverse.
       background_color_animation_->Reset(1.0);
       background_color_animation_->Hide();
@@ -136,7 +136,7 @@ GtkWidget* TranslateInfoBarBase::CreateLanguageCombobox(int selected_language,
                                            G_TYPE_INT, G_TYPE_STRING);
   bool set_selection = false;
   GtkTreeIter selected_iter;
-  TranslateInfoBarDelegate2* delegate = GetDelegate();
+  TranslateInfoBarDelegate* delegate = GetDelegate();
   for (int i = 0; i < delegate->GetLanguageCount(); ++i) {
     if (i == exclude_language)
       continue;
@@ -179,8 +179,8 @@ int TranslateInfoBarBase::GetLanguageComboboxActiveId(GtkComboBox* combo) {
   return id;
 }
 
-TranslateInfoBarDelegate2* TranslateInfoBarBase::GetDelegate() const {
-  return static_cast<TranslateInfoBarDelegate2*>(delegate());
+TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() const {
+  return static_cast<TranslateInfoBarDelegate*>(delegate());
 }
 
 // static
@@ -206,14 +206,14 @@ GtkWidget* TranslateInfoBarBase::BuildOptionsMenuButton() {
 
 void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
   if (!options_menu_model_.get()) {
-    options_menu_model_.reset(new OptionsMenuModel2(GetDelegate()));
+    options_menu_model_.reset(new OptionsMenuModel(GetDelegate()));
     options_menu_menu_.reset(new MenuGtk(NULL, options_menu_model_.get()));
   }
   options_menu_menu_->Popup(sender, 1, gtk_get_current_event_time());
 }
 
 // TranslateInfoBarDelegate specific method:
-InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
     case kBeforeTranslate:

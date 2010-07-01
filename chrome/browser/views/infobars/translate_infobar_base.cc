@@ -7,7 +7,7 @@
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/translate/translate_infobar_delegate2.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/views/infobars/after_translate_infobar.h"
 #include "chrome/browser/views/infobars/before_translate_infobar.h"
 #include "chrome/browser/views/infobars/translate_message_infobar.h"
@@ -18,7 +18,7 @@
 #include "views/controls/image_view.h"
 
 TranslateInfoBarBase::TranslateInfoBarBase(
-    TranslateInfoBarDelegate2* delegate)
+    TranslateInfoBarDelegate* delegate)
     : InfoBar(delegate),
       normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),
       error_background_(InfoBarDelegate::ERROR_TYPE) {
@@ -28,16 +28,16 @@ TranslateInfoBarBase::TranslateInfoBarBase(
     icon_->SetImage(image);
   AddChildView(icon_);
 
-  TranslateInfoBarDelegate2::BackgroundAnimationType animation =
+  TranslateInfoBarDelegate::BackgroundAnimationType animation =
       delegate->background_animation_type();
-  if (animation != TranslateInfoBarDelegate2::kNone) {
+  if (animation != TranslateInfoBarDelegate::kNone) {
     background_color_animation_.reset(new SlideAnimation(this));
     background_color_animation_->SetTweenType(Tween::LINEAR);
     background_color_animation_->SetSlideDuration(500);
-    if (animation == TranslateInfoBarDelegate2::kNormalToError) {
+    if (animation == TranslateInfoBarDelegate::kNormalToError) {
       background_color_animation_->Show();
     } else {
-      DCHECK_EQ(TranslateInfoBarDelegate2::kErrorToNormal, animation);
+      DCHECK_EQ(TranslateInfoBarDelegate::kErrorToNormal, animation);
       // Hide() runs the animation in reverse.
       background_color_animation_->Reset(1.0);
       background_color_animation_->Hide();
@@ -135,8 +135,8 @@ gfx::Point TranslateInfoBarBase::DetermineMenuPosition(
   return menu_position;
 }
 
-TranslateInfoBarDelegate2* TranslateInfoBarBase::GetDelegate() const {
-  return static_cast<TranslateInfoBarDelegate2*>(delegate());
+TranslateInfoBarDelegate* TranslateInfoBarBase::GetDelegate() const {
+  return static_cast<TranslateInfoBarDelegate*>(delegate());
 }
 
 const InfoBarBackground& TranslateInfoBarBase::GetBackground() const {
@@ -155,7 +155,7 @@ void TranslateInfoBarBase::FadeBackground(gfx::Canvas* canvas,
 }
 
 // TranslateInfoBarDelegate views specific method:
-InfoBar* TranslateInfoBarDelegate2::CreateInfoBar() {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
     case kBeforeTranslate:

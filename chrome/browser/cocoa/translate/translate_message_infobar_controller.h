@@ -7,7 +7,7 @@
 @interface TranslateMessageInfobarController : TranslateInfoBarControllerBase {
   // This keeps track of whether the infobar is displaying a message or an
   // error. If it is an error it should have a try again button.
-  TranslateInfoBarDelegate2::Type state_;
+  TranslateInfoBarDelegate::Type state_;
 }
 
 @end

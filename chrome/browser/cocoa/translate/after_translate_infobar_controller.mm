@@ -11,7 +11,7 @@ using TranslateInfoBarUtilities::MoveControl;
 
 - (void)loadLabelText {
   std::vector<string16> strings;
-  TranslateInfoBarDelegate2::GetAfterTranslateStrings(
+  TranslateInfoBarDelegate::GetAfterTranslateStrings(
       &strings, &swappedLanugageButtons_);
   DCHECK(strings.size() == 3U);
   NSString* string1 = base::SysUTF16ToNSString(strings[0]);

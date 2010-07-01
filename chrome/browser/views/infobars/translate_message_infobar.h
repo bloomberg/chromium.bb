@@ -11,7 +11,7 @@ class InfoBarTextButton;
 
 class TranslateMessageInfoBar : public TranslateInfoBarBase {
  public:
-  explicit TranslateMessageInfoBar(TranslateInfoBarDelegate2* delegate);
+  explicit TranslateMessageInfoBar(TranslateInfoBarDelegate* delegate);
 
   virtual void Layout();
 

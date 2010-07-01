@@ -8,7 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/options_menu_model.h"
-#include "chrome/browser/translate/translate_infobar_delegate2.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/views/infobars/infobar_button_border.h"
 #include "chrome/browser/views/infobars/infobar_text_button.h"
 #include "grit/app_resources.h"
@@ -20,14 +20,14 @@
 #include "views/controls/menu/menu_2.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
-    TranslateInfoBarDelegate2* delegate)
+    TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(delegate),
-      original_language_menu_model_(delegate, LanguagesMenuModel2::ORIGINAL),
-      target_language_menu_model_(delegate, LanguagesMenuModel2::TARGET),
+      original_language_menu_model_(delegate, LanguagesMenuModel::ORIGINAL),
+      target_language_menu_model_(delegate, LanguagesMenuModel::TARGET),
       options_menu_model_(delegate),
       swapped_language_buttons_(false) {
   std::vector<string16> strings;
-  TranslateInfoBarDelegate2::GetAfterTranslateStrings(
+  TranslateInfoBarDelegate::GetAfterTranslateStrings(
       &strings, &swapped_language_buttons_);
   DCHECK(strings.size() == 3U);
 
@@ -55,8 +55,8 @@ AfterTranslateInfoBar::AfterTranslateInfoBar(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_REVERT));
   AddChildView(revert_button_);
 
-  UpdateLanguageButtonText(LanguagesMenuModel2::ORIGINAL);
-  UpdateLanguageButtonText(LanguagesMenuModel2::TARGET);
+  UpdateLanguageButtonText(LanguagesMenuModel::ORIGINAL);
+  UpdateLanguageButtonText(LanguagesMenuModel::TARGET);
 }
 
 AfterTranslateInfoBar::~AfterTranslateInfoBar() {
@@ -109,11 +109,11 @@ void AfterTranslateInfoBar::Layout() {
 }
 
 void AfterTranslateInfoBar::OriginalLanguageChanged() {
-  UpdateLanguageButtonText(LanguagesMenuModel2::ORIGINAL);
+  UpdateLanguageButtonText(LanguagesMenuModel::ORIGINAL);
 }
 
 void AfterTranslateInfoBar::TargetLanguageChanged() {
-  UpdateLanguageButtonText(LanguagesMenuModel2::TARGET);
+  UpdateLanguageButtonText(LanguagesMenuModel::TARGET);
 }
 
 void AfterTranslateInfoBar::ButtonPressed(views::Button* sender,
@@ -149,10 +149,10 @@ void AfterTranslateInfoBar::RunMenu(views::View* source,
 }
 
 void AfterTranslateInfoBar::UpdateLanguageButtonText(
-    LanguagesMenuModel2::LanguageType language_type) {
+    LanguagesMenuModel::LanguageType language_type) {
   int language_index;
   views::MenuButton* language_button;
-  if (language_type == LanguagesMenuModel2::ORIGINAL) {
+  if (language_type == LanguagesMenuModel::ORIGINAL) {
     language_index = GetDelegate()->original_language_index();
     language_button = original_language_menu_button_;
   } else {

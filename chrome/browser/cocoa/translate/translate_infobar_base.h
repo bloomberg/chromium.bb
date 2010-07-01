@@ -11,9 +11,9 @@
 #import "base/cocoa_protocols_mac.h"
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/translate/languages_menu_model2.h"
-#include "chrome/browser/translate/options_menu_model2.h"
-#include "chrome/browser/translate/translate_infobar_delegate2.h"
+#include "chrome/browser/translate/languages_menu_model.h"
+#include "chrome/browser/translate/options_menu_model.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/translate_errors.h"
 
@@ -68,13 +68,13 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
   // Space between controls in pixels - read from the NIB.
   CGFloat spaceBetweenControls_;
 
-  scoped_ptr<LanguagesMenuModel2> originalLanguageMenuModel_;
-  scoped_ptr<LanguagesMenuModel2> targetLanguageMenuModel_;
-  scoped_ptr<OptionsMenuModel2> optionsMenuModel_;
+  scoped_ptr<LanguagesMenuModel> originalLanguageMenuModel_;
+  scoped_ptr<LanguagesMenuModel> targetLanguageMenuModel_;
+  scoped_ptr<OptionsMenuModel> optionsMenuModel_;
 }
 
 // Returns the delegate as a TranslateInfoBarDelegate.
-- (TranslateInfoBarDelegate2*)delegate;
+- (TranslateInfoBarDelegate*)delegate;
 
 // Called when the "Show Original" button is pressed.
 - (IBAction)showOriginal:(id)sender;

@@ -4,12 +4,12 @@
 
 #include "chrome/browser/views/infobars/translate_message_infobar.h"
 
-#include "chrome/browser/translate/translate_infobar_delegate2.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/views/infobars/infobar_text_button.h"
 #include "views/controls/image_view.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
-    TranslateInfoBarDelegate2* delegate)
+    TranslateInfoBarDelegate* delegate)
     : TranslateInfoBarBase(delegate) {
   label_ = CreateLabel(delegate->GetMessageInfoBarText());
   AddChildView(label_);

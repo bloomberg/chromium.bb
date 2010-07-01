@@ -8,11 +8,11 @@
 #include "base/task.h"
 #include "chrome/browser/gtk/translate/translate_infobar_base_gtk.h"
 
-class TranslateInfoBarDelegate2;
+class TranslateInfoBarDelegate;
 
 class AfterTranslateInfoBar : public TranslateInfoBarBase {
  public:
-  explicit AfterTranslateInfoBar(TranslateInfoBarDelegate2* delegate);
+  explicit AfterTranslateInfoBar(TranslateInfoBarDelegate* delegate);
   virtual ~AfterTranslateInfoBar();
 
   // Overridden from TranslateInfoBarBase:

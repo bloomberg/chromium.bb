@@ -8,8 +8,8 @@
 #include <string>
 
 #include "app/menus/simple_menu_model.h"
-#include "chrome/browser/translate/languages_menu_model2.h"
-#include "chrome/browser/translate/options_menu_model2.h"
+#include "chrome/browser/translate/languages_menu_model.h"
+#include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/views/infobars/translate_infobar_base.h"
 #include "views/controls/button/button.h"
@@ -17,7 +17,7 @@
 #include "views/controls/menu/view_menu_delegate.h"
 
 class InfoBarTextButton;
-class TranslateInfoBarDelegate2;
+class TranslateInfoBarDelegate;
 
 namespace views {
 class Menu2;
@@ -28,7 +28,7 @@ class AfterTranslateInfoBar :
       public TranslateInfoBarBase,
       public views::ViewMenuDelegate {
  public:
-  explicit AfterTranslateInfoBar(TranslateInfoBarDelegate2* delegate);
+  explicit AfterTranslateInfoBar(TranslateInfoBarDelegate* delegate);
   virtual ~AfterTranslateInfoBar();
 
   // Overridden from views::View:
@@ -48,7 +48,7 @@ class AfterTranslateInfoBar :
  private:
   // Sets the text of the original or target language menu buttons to reflect
   // the current value from the delegate.
-  void UpdateLanguageButtonText(LanguagesMenuModel2::LanguageType language);
+  void UpdateLanguageButtonText(LanguagesMenuModel::LanguageType language);
 
   // The text displayed in the infobar is something like:
   // "Translated from <lang1> to <lang2>"
@@ -65,13 +65,13 @@ class AfterTranslateInfoBar :
   InfoBarTextButton* revert_button_;
 
   scoped_ptr<views::Menu2> original_language_menu_;
-  LanguagesMenuModel2 original_language_menu_model_;
+  LanguagesMenuModel original_language_menu_model_;
 
   scoped_ptr<views::Menu2> target_language_menu_;
-  LanguagesMenuModel2 target_language_menu_model_;
+  LanguagesMenuModel target_language_menu_model_;
 
   scoped_ptr<views::Menu2> options_menu_;
-  OptionsMenuModel2 options_menu_model_;
+  OptionsMenuModel options_menu_model_;
 
   // True if the target language comes before the original one.
   bool swapped_language_buttons_;
