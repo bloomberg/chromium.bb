@@ -6,9 +6,11 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
@@ -16,6 +18,8 @@
 #include "unicode/timezone.h"
 
 namespace chromeos {
+
+static const char kFallbackInputMethodLocale[] = "en-US";
 
 // static
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
@@ -124,6 +128,21 @@ void Preferences::Init(PrefService* prefs) {
   for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
     language_mozc_integer_prefs_[i].Init(
         kMozcIntegerPrefs[i].pref_name, prefs, this);
+  }
+
+  std::string locale(g_browser_process->GetApplicationLocale());
+  if (locale != kFallbackInputMethodLocale &&
+      !prefs->HasPrefPath(prefs::kLanguagePreloadEngines)) {
+    std::string preload_engines(language_preload_engines_.GetValue());
+    std::vector<std::string> input_method_ids;
+    input_method::GetInputMethodIdsFromLanguageCode(
+        locale, input_method::kAllInputMethods, &input_method_ids);
+    if (!input_method_ids.empty()) {
+      if (!preload_engines.empty())
+        preload_engines += ',';
+      preload_engines += JoinString(input_method_ids, ',');
+    }
+    language_preload_engines_.SetValue(preload_engines);
   }
 
   // Initialize touchpad settings to what's saved in user preferences.
