@@ -70,7 +70,8 @@ class IOThread : public BrowserProcessSubThread {
   virtual void CleanUpAfterMessageLoopDestruction();
 
  private:
-  net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory();
+  net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
+      net::HostResolver* resolver);
 
   void InitNetworkPredictorOnIOThread(
       bool prefetching_enabled,

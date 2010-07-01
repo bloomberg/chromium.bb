@@ -133,7 +133,8 @@ void IOThread::Init() {
 
   globals_->net_log.reset(new ChromeNetLog());
   globals_->host_resolver = CreateGlobalHostResolver();
-  globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory());
+  globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
+      globals_->host_resolver));
 }
 
 void IOThread::CleanUp() {
@@ -191,7 +192,8 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
   BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
 }
 
-net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
+net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
+    net::HostResolver* resolver) {
   net::HttpAuthFilterWhitelist* auth_filter = NULL;
 
   // Get the whitelist information from the command line, create an
@@ -234,7 +236,6 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
                                           globals_->url_security_manager.get());
   registry_factory->SetURLSecurityManager("negotiate",
                                           globals_->url_security_manager.get());
-
   if (negotiate_auth_enabled) {
     // Configure the Negotiate settings for the Kerberos SPN.
     // TODO(cbentzel): Read the related IE registry settings on Windows builds.

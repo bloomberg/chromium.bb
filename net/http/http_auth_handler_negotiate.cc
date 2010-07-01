@@ -14,17 +14,33 @@
 namespace net {
 
 HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
+#if defined(OS_WIN)
     SSPILibrary* library,
     ULONG max_token_length,
+#endif
+#if defined(OS_POSIX)
+    GSSAPILibrary* library,
+#endif
     URLSecurityManager* url_security_manager,
+    HostResolver* resolver,
     bool disable_cname_lookup,
     bool use_port)
-    : auth_sspi_(library, "Negotiate", NEGOSSP_NAME, max_token_length),
-      user_callback_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(resolve_cname_callback_(
-          this, &HttpAuthHandlerNegotiate::OnResolveCanonicalName)),
+#if defined(OS_WIN)
+    : auth_system_(library, "Negotiate", NEGOSSP_NAME, max_token_length),
+#endif
+#if defined(OS_POSIX)
+    : auth_system_(library, "Negotiate", CHROME_GSS_KRB5_MECH_OID_DESC),
+#endif
       disable_cname_lookup_(disable_cname_lookup),
       use_port_(use_port),
+      ALLOW_THIS_IN_INITIALIZER_LIST(io_callback_(
+          this, &HttpAuthHandlerNegotiate::OnIOComplete)),
+      resolver_(resolver),
+      already_called_(false),
+      has_username_and_password_(false),
+      user_callback_(NULL),
+      auth_token_(NULL),
+      next_state_(STATE_NONE),
       url_security_manager_(url_security_manager) {
 }
 
@@ -37,12 +53,28 @@ int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
     const HttpRequestInfo* request,
     CompletionCallback* callback,
     std::string* auth_token) {
-  return auth_sspi_.GenerateAuthToken(
-      username,
-      password,
-      spn_,
-      request,
-      auth_token);
+  DCHECK(user_callback_ == NULL);
+  DCHECK((username == NULL) == (password == NULL));
+  DCHECK(auth_token_ == NULL);
+  auth_token_ = auth_token;
+  if (already_called_) {
+    DCHECK((!has_username_and_password_ && username == NULL) ||
+           (has_username_and_password_ && *username == username_ &&
+            *password == password_));
+    next_state_ = STATE_GENERATE_AUTH_TOKEN;
+  } else {
+    already_called_ = true;
+    if (username) {
+      has_username_and_password_ = true;
+      username_ = *username;
+      password_ = *password;
+    }
+    next_state_ = STATE_RESOLVE_CANONICAL_NAME;
+  }
+  int rv = DoLoop(OK);
+  if (rv == ERR_IO_PENDING)
+    user_callback_ = callback;
+  return rv;
 }
 
 // The Negotiate challenge header looks like:
@@ -51,16 +83,16 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuth::ChallengeTokenizer* challenge) {
   scheme_ = "negotiate";
   score_ = 4;
   properties_ = ENCRYPTS_IDENTITY | IS_CONNECTION_BASED;
-  return auth_sspi_.ParseChallenge(challenge);
+  return auth_system_.ParseChallenge(challenge);
 }
 
 // Require identity on first pass instead of second.
 bool HttpAuthHandlerNegotiate::NeedsIdentity() {
-  return auth_sspi_.NeedsIdentity();
+  return auth_system_.NeedsIdentity();
 }
 
 bool HttpAuthHandlerNegotiate::IsFinalRound() {
-  return auth_sspi_.IsFinalRound();
+  return auth_system_.IsFinalRound();
 }
 
 bool HttpAuthHandlerNegotiate::AllowsDefaultCredentials() {
@@ -69,58 +101,6 @@ bool HttpAuthHandlerNegotiate::AllowsDefaultCredentials() {
   if (!url_security_manager_)
     return false;
   return url_security_manager_->CanUseDefaultCredentials(origin_);
-}
-
-bool HttpAuthHandlerNegotiate::NeedsCanonicalName() {
-  if (!spn_.empty())
-    return false;
-  if (disable_cname_lookup_) {
-    spn_ = CreateSPN(address_list_, origin_);
-    address_list_.Reset();
-    return false;
-  }
-  return true;
-}
-
-int HttpAuthHandlerNegotiate::ResolveCanonicalName(
-    HostResolver* resolver, CompletionCallback* callback) {
-  // TODO(cbentzel): Add reverse DNS lookup for numeric addresses.
-  DCHECK(!single_resolve_.get());
-  DCHECK(!disable_cname_lookup_);
-  DCHECK(callback);
-
-  HostResolver::RequestInfo info(origin_.host(), 0);
-  info.set_host_resolver_flags(HOST_RESOLVER_CANONNAME);
-  single_resolve_.reset(new SingleRequestHostResolver(resolver));
-  int rv = single_resolve_->Resolve(info, &address_list_,
-                                    &resolve_cname_callback_,
-                                    net_log_);
-  if (rv == ERR_IO_PENDING) {
-    user_callback_ = callback;
-    return rv;
-  }
-  OnResolveCanonicalName(rv);
-  // Always return OK. OnResolveCanonicalName logs the error code if not
-  // OK and attempts to use the original origin_ hostname rather than failing
-  // the auth attempt completely.
-  return OK;
-}
-
-void HttpAuthHandlerNegotiate::OnResolveCanonicalName(int result) {
-  if (result != OK) {
-    // Even in the error case, try to use origin_.host instead of
-    // passing the failure on to the caller.
-    LOG(INFO) << "Problem finding canonical name for SPN for host "
-              << origin_.host() << ": " << ErrorToString(result);
-    result = OK;
-  }
-  spn_ = CreateSPN(address_list_, origin_);
-  address_list_.Reset();
-  if (user_callback_) {
-    CompletionCallback* callback = user_callback_;
-    user_callback_ = NULL;
-    callback->Run(result);
-  }
 }
 
 std::wstring HttpAuthHandlerNegotiate::CreateSPN(
@@ -164,16 +144,116 @@ std::wstring HttpAuthHandlerNegotiate::CreateSPN(
   }
 }
 
+int HttpAuthHandlerNegotiate::DoLoop(int result) {
+  DCHECK(next_state_ != STATE_NONE);
+
+  int rv = result;
+  do {
+    State state = next_state_;
+    next_state_ = STATE_NONE;
+    switch (state) {
+      case STATE_RESOLVE_CANONICAL_NAME:
+        DCHECK_EQ(OK, rv);
+        rv = DoResolveCanonicalName();
+        break;
+      case STATE_RESOLVE_CANONICAL_NAME_COMPLETE:
+        rv = DoResolveCanonicalNameComplete(rv);
+        break;
+      case STATE_GENERATE_AUTH_TOKEN:
+        DCHECK_EQ(OK, rv);
+        rv = DoGenerateAuthToken();
+        break;
+      case STATE_GENERATE_AUTH_TOKEN_COMPLETE:
+        rv = DoGenerateAuthTokenComplete(rv);
+        break;
+      default:
+        NOTREACHED() << "bad state";
+        rv = ERR_FAILED;
+        break;
+    }
+  } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
+
+  return rv;
+}
+
+int HttpAuthHandlerNegotiate::DoResolveCanonicalName() {
+  next_state_ = STATE_RESOLVE_CANONICAL_NAME_COMPLETE;
+  if (disable_cname_lookup_)
+    return OK;
+
+  // TODO(cbentzel): Add reverse DNS lookup for numeric addresses.
+  DCHECK(!single_resolve_.get());
+  HostResolver::RequestInfo info(origin_.host(), 0);
+  info.set_host_resolver_flags(HOST_RESOLVER_CANONNAME);
+  single_resolve_.reset(new SingleRequestHostResolver(resolver_));
+  return single_resolve_->Resolve(info, &address_list_, &io_callback_,
+                                  net_log_);
+}
+
+int HttpAuthHandlerNegotiate::DoResolveCanonicalNameComplete(int rv) {
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  if (rv != OK) {
+    // Even in the error case, try to use origin_.host instead of
+    // passing the failure on to the caller.
+    LOG(INFO) << "Problem finding canonical name for SPN for host "
+              << origin_.host() << ": " << ErrorToString(rv);
+    rv = OK;
+  }
+
+  next_state_ = STATE_GENERATE_AUTH_TOKEN;
+  spn_ = CreateSPN(address_list_, origin_);
+  address_list_.Reset();
+  return rv;
+}
+
+int HttpAuthHandlerNegotiate::DoGenerateAuthToken() {
+  next_state_ = STATE_GENERATE_AUTH_TOKEN_COMPLETE;
+  std::wstring* username = has_username_and_password_ ? &username_ : NULL;
+  std::wstring* password = has_username_and_password_ ? &password_ : NULL;
+  // TODO(cbentzel): This should possibly be done async.
+  return auth_system_.GenerateAuthToken(username, password, spn_, auth_token_);
+}
+
+int HttpAuthHandlerNegotiate::DoGenerateAuthTokenComplete(int rv) {
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  auth_token_ = NULL;
+  return rv;
+}
+
+void HttpAuthHandlerNegotiate::OnIOComplete(int result) {
+  int rv = DoLoop(result);
+  if (rv != ERR_IO_PENDING)
+    DoCallback(rv);
+}
+
+void HttpAuthHandlerNegotiate::DoCallback(int rv) {
+  DCHECK(rv != ERR_IO_PENDING);
+  DCHECK(user_callback_);
+  CompletionCallback* callback = user_callback_;
+  user_callback_ = NULL;
+  callback->Run(rv);
+}
+
 HttpAuthHandlerNegotiate::Factory::Factory()
     : disable_cname_lookup_(false),
       use_port_(false),
+#if defined(OS_WIN)
       max_token_length_(0),
       first_creation_(true),
       is_unsupported_(false),
       sspi_library_(SSPILibrary::GetDefault()) {
+#endif
+#if defined(OS_POSIX)
+      gssapi_library_(GSSAPILibrary::GetDefault()) {
+#endif
 }
 
 HttpAuthHandlerNegotiate::Factory::~Factory() {
+}
+
+void HttpAuthHandlerNegotiate::Factory::set_host_resolver(
+    HostResolver* resolver) {
+  resolver_ = resolver;
 }
 
 int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
@@ -184,6 +264,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     int digest_nonce_count,
     const BoundNetLog& net_log,
     scoped_ptr<HttpAuthHandler>* handler) {
+#if defined(OS_WIN)
   if (is_unsupported_ || reason == CREATE_PREEMPTIVE)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
   if (max_token_length_ == 0) {
@@ -198,12 +279,25 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   //                 method and only constructing when valid.
   scoped_ptr<HttpAuthHandler> tmp_handler(
       new HttpAuthHandlerNegotiate(sspi_library_, max_token_length_,
-                                   url_security_manager(),
+                                   url_security_manager(), resolver_,
                                    disable_cname_lookup_, use_port_));
   if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
     return ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
   return OK;
+#endif
+#if defined(OS_POSIX)
+  // TODO(ahendrickson): Move towards model of parsing in the factory
+  //                     method and only constructing when valid.
+  scoped_ptr<HttpAuthHandler> tmp_handler(
+      new HttpAuthHandlerNegotiate(gssapi_library_, url_security_manager(),
+                                   resolver_, disable_cname_lookup_,
+                                   use_port_));
+  if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
+    return ERR_INVALID_RESPONSE;
+  handler->swap(tmp_handler);
+  return OK;
+#endif
 }
 
 }  // namespace net
