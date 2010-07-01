@@ -98,6 +98,7 @@ cr.define('cr.ui', function() {
      */
     showMenu: function() {
       this.menu.style.display = 'block';
+      this.setAttribute('menu-shown', '');
 
       // when the menu is shown we steal all keyboard events.
       var doc = this.ownerDocument;
@@ -114,6 +115,7 @@ cr.define('cr.ui', function() {
      * Hides the menu.
      */
     hideMenu: function() {
+      this.removeAttribute('menu-shown');
       this.menu.style.display = 'none';
       var doc = this.ownerDocument;
       var win = doc.defaultView;

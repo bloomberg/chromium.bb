@@ -6,12 +6,10 @@
 //            that handles the loading and the events from the bookmark backend.
 
 cr.define('bmm', function() {
-  // require cr.ui.define
-  // require cr.ui.limitInputWidth.
-  // require cr.ui.contextMenuHandler
   const List = cr.ui.List;
   const ListItem = cr.ui.ListItem;
   const ArrayDataModel = cr.ui.ArrayDataModel;
+  const ContextMenuButton = cr.ui.ContextMenuButton;
 
   /**
    * Basic array data model for use with bookmarks.
@@ -75,6 +73,10 @@ cr.define('bmm', function() {
 
       // HACK(arv): http://crbug.com/40902
       window.addEventListener('resize', cr.bind(this.redraw, this));
+
+      // We could add the ContextMenuButton in the BookmarkListItem but it slows
+      // down redraws a lot so we do this on mouseovers instead.
+      this.addEventListener('mouseover', cr.bind(this.handleMouseOver_, this));
     },
 
     createItem: function(bookmarkNode) {
@@ -167,6 +169,24 @@ cr.define('bmm', function() {
      */
     isRecent: function() {
       return this.parentId_ == 'recent';
+    },
+
+    /**
+     * Handles mouseover on the list so that we can add the context menu button
+     * lazily.
+     * @private
+     * @param {!Event} e The mouseover event object.
+     */
+    handleMouseOver_: function(e) {
+      var el = e.target;
+      while (el && el.parentNode != this) {
+        el = el.parentNode;
+      }
+
+      if (el && el.parentNode == this &&
+          !(el.lastChild instanceof ContextMenuButton)) {
+        el.appendChild(new ContextMenuButton);
+      }
     },
 
     /**
@@ -381,6 +401,9 @@ cr.define('bmm', function() {
 
       this.appendChild(labelEl);
       this.appendChild(urlEl);
+
+      // Initially the ContextMenuButton was added here but it slowed down
+      // rendering a lot so it is now added using mouseover.
     },
 
     /**
@@ -408,7 +431,7 @@ cr.define('bmm', function() {
       var isFolder = bmm.isFolder(this.bookmarkNode);
       var listItem = this;
       var labelEl = this.firstChild;
-      var urlEl = this.lastChild;
+      var urlEl = labelEl.nextSibling;
       var labelInput, urlInput;
 
       // Handles enter and escape which trigger reset and commit respectively.

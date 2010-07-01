@@ -18,9 +18,16 @@ list {
 }
 
 list > * {
-  text-decoration: none;
-  padding: 0 3px;
   color: hsl(0, 0%, 70%);
+  padding: 0 3px;
+  padding-right: 20px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+html[dir=rtl] list > * {
+  padding-right: 3px;
+  padding-left: 20px;
 }
 
 list > * > * {
@@ -45,8 +52,6 @@ list > :hover > .label {
 }
 
 list > * > .url {
-  padding: 3px;
-  -webkit-padding-start: 15px;
   display: none;
 }
 
@@ -74,6 +79,40 @@ list > .folder > .url:empty:after {
   content: "";
 }
 
+list > * > button {
+  -webkit-transition: opacity .15s;
+  background: #fff -webkit-canvas(drop-down-arrow) no-repeat center center;
+  border: 1px solid hsl(214, 91%, 85%);
+  border-radius: 3px;
+  bottom: 1px;
+  display: none;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  right: 3px;
+  top: 1px;
+  width: 15px;
+}
+
+list > [selected]:hover > button,
+list > * > button[menu-shown] {
+  border-color: hsl(214, 91%, 65%);
+}
+
+list > :hover > button {
+  display: block;
+}
+
+list > * > button:hover,
+list > * > button[menu-shown] {
+  display: block;
+}
+
+html[dir=rtl] list > * > button {
+  right: auto;
+  left: 3px;
+}
+
 /*
 /* Edit mode
 */
@@ -85,6 +124,7 @@ list .url input {
   font-size: inherit;
   font-weight: inherit;
   margin: -2px 4px -2px -4px;
+  max-width: 40%;
   padding: 1px 3px 1px 1px;
   outline: none;
   text-decoration: none;
@@ -191,16 +231,6 @@ html[os=mac] .splitter {
   cursor: pointer;
   margin: 10px;
   float: left;
-}
-
-html[dir=rtl] #tree-container {
-  left: auto;
-  right: 0;
-}
-
-html[dir=rtl] #list {
-  left: 0;
-  right: 200px;
 }
 
 .header form {
