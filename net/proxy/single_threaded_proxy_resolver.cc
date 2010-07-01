@@ -35,11 +35,11 @@ class SingleThreadedProxyResolver::SetPacScriptTask
  public:
   SetPacScriptTask(SingleThreadedProxyResolver* coordinator,
                    const GURL& pac_url,
-                   const std::string& pac_bytes,
+                   const string16& pac_script,
                    CompletionCallback* callback)
     : coordinator_(coordinator),
       callback_(callback),
-      pac_bytes_(pac_bytes),
+      pac_script_(pac_script),
       pac_url_(pac_url),
       origin_loop_(MessageLoop::current()) {
     DCHECK(callback);
@@ -71,7 +71,7 @@ class SingleThreadedProxyResolver::SetPacScriptTask
   // Runs on the worker thread.
   void DoRequest(ProxyResolver* resolver) {
     int rv = resolver->expects_pac_bytes() ?
-        resolver->SetPacScriptByData(pac_bytes_, NULL) :
+        resolver->SetPacScriptByData(pac_script_, NULL) :
         resolver->SetPacScriptByUrl(pac_url_, NULL);
 
     DCHECK_NE(rv, ERR_IO_PENDING);
@@ -92,7 +92,7 @@ class SingleThreadedProxyResolver::SetPacScriptTask
   // Must only be used on the "origin" thread.
   SingleThreadedProxyResolver* coordinator_;
   CompletionCallback* callback_;
-  std::string pac_bytes_;
+  string16 pac_script_;
   GURL pac_url_;
 
   // Usable from within DoQuery on the worker thread.
@@ -300,13 +300,13 @@ void SingleThreadedProxyResolver::PurgeMemory() {
 
 int SingleThreadedProxyResolver::SetPacScript(
     const GURL& pac_url,
-    const std::string& pac_bytes,
+    const string16& pac_script,
     CompletionCallback* callback) {
   EnsureThreadStarted();
   DCHECK(!outstanding_set_pac_script_task_);
 
   SetPacScriptTask* task = new SetPacScriptTask(
-      this, pac_url, pac_bytes, callback);
+      this, pac_url, pac_script, callback);
   outstanding_set_pac_script_task_ = task;
   task->Start();
   return ERR_IO_PENDING;

@@ -134,7 +134,7 @@ int InitProxyResolver::DoFetchPacScript() {
     return ERR_UNEXPECTED;
   }
 
-  return proxy_script_fetcher_->Fetch(pac_url, &pac_bytes_, &io_callback_);
+  return proxy_script_fetcher_->Fetch(pac_url, &pac_script_, &io_callback_);
 }
 
 int InitProxyResolver::DoFetchPacScriptComplete(int result) {
@@ -161,7 +161,7 @@ int InitProxyResolver::DoSetPacScript() {
   next_state_ = STATE_SET_PAC_SCRIPT_COMPLETE;
 
   return resolver_->expects_pac_bytes() ?
-      resolver_->SetPacScriptByData(pac_bytes_, &io_callback_) :
+      resolver_->SetPacScriptByData(pac_script_, &io_callback_) :
       resolver_->SetPacScriptByUrl(pac_url, &io_callback_);
 }
 

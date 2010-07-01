@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_util.h"
 #include "base/waitable_event.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_log.h"
@@ -55,10 +56,10 @@ class MockProxyResolver : public ProxyResolver {
   }
 
   virtual int SetPacScript(const GURL& pac_url,
-                           const std::string& bytes,
+                           const string16& text,
                            CompletionCallback* callback) {
     CheckIsOnWorkerThread();
-    last_pac_bytes_ = bytes;
+    last_pac_script_ = text;
     return OK;
   }
 
@@ -69,7 +70,7 @@ class MockProxyResolver : public ProxyResolver {
 
   int purge_count() const { return purge_count_; }
 
-  const std::string& last_pac_bytes() const { return last_pac_bytes_; }
+  const string16& last_pac_script() const { return last_pac_script_; }
 
   void SetResolveLatency(int latency_ms) {
     resolve_latency_ms_ = latency_ms;
@@ -87,7 +88,7 @@ class MockProxyResolver : public ProxyResolver {
   MessageLoop* wrong_loop_;
   int request_count_;
   int purge_count_;
-  std::string last_pac_bytes_;
+  string16 last_pac_script_;
   int resolve_latency_ms_;
 };
 
@@ -151,10 +152,11 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   // Call SetPacScriptByData() -- verify that it reaches the synchronous
   // resolver.
   TestCompletionCallback set_script_callback;
-  rv = resolver.SetPacScriptByData("pac script bytes", &set_script_callback);
+  rv = resolver.SetPacScriptByData(ASCIIToUTF16("pac script bytes"),
+                                   &set_script_callback);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, set_script_callback.WaitForResult());
-  EXPECT_EQ("pac script bytes", mock->last_pac_bytes());
+  EXPECT_EQ(ASCIIToUTF16("pac script bytes"), mock->last_pac_script());
 
   // Start request 0.
   TestCompletionCallback callback0;
@@ -216,7 +218,7 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   // we queue up a dummy request after the PurgeMemory() call and wait until it
   // finishes to ensure PurgeMemory() has had a chance to run.
   TestCompletionCallback dummy_callback;
-  rv = resolver.SetPacScriptByData("dummy", &dummy_callback);
+  rv = resolver.SetPacScriptByData(ASCIIToUTF16("dummy"), &dummy_callback);
   EXPECT_EQ(OK, dummy_callback.WaitForResult());
   EXPECT_EQ(1, mock->purge_count());
 }
@@ -437,7 +439,8 @@ TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
   mock->WaitUntilBlocked();
 
   TestCompletionCallback set_pac_script_callback;
-  rv = resolver.SetPacScriptByData("data", &set_pac_script_callback);
+  rv = resolver.SetPacScriptByData(ASCIIToUTF16("data"),
+                                   &set_pac_script_callback);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Cancel the SetPacScriptByData request (it can't have finished yet,

@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_log_unittest.h"
@@ -33,12 +35,12 @@ class Rules {
           set_pac_error(set_pac_error) {
     }
 
-    std::string bytes() const {
+    string16 text() const {
       if (set_pac_error == OK)
-        return url.spec() + "!valid-script";
+        return UTF8ToUTF16(url.spec() + "!valid-script");
       if (fetch_error == OK)
-        return url.spec() + "!invalid-script";
-      return std::string();
+        return UTF8ToUTF16(url.spec() + "!invalid-script");
+      return string16();
     }
 
     GURL url;
@@ -72,13 +74,13 @@ class Rules {
     return rules_[0];
   }
 
-  const Rule& GetRuleByBytes(const std::string& bytes) const {
+  const Rule& GetRuleByText(const string16& text) const {
     for (RuleList::const_iterator it = rules_.begin(); it != rules_.end();
          ++it) {
-      if (it->bytes() == bytes)
+      if (it->text() == text)
         return *it;
     }
-    LOG(FATAL) << "Rule not found for " << bytes;
+    LOG(FATAL) << "Rule not found for " << text;
     return rules_[0];
   }
 
@@ -93,13 +95,13 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
 
   // ProxyScriptFetcher implementation.
   virtual int Fetch(const GURL& url,
-                    std::string* bytes,
+                    string16* text,
                     CompletionCallback* callback) {
     const Rules::Rule& rule = rules_->GetRuleByUrl(url);
     int rv = rule.fetch_error;
     EXPECT_NE(ERR_UNEXPECTED, rv);
     if (rv == OK)
-      *bytes = rule.bytes();
+      *text = rule.text();
     return rv;
   }
 
@@ -129,33 +131,33 @@ class RuleBasedProxyResolver : public ProxyResolver {
   }
 
   virtual int SetPacScript(const GURL& pac_url,
-                           const std::string& pac_bytes,
+                           const string16& pac_script,
                            CompletionCallback* callback) {
     const Rules::Rule& rule = expects_pac_bytes() ?
-        rules_->GetRuleByBytes(pac_bytes) :
+        rules_->GetRuleByText(pac_script) :
         rules_->GetRuleByUrl(pac_url);
 
     int rv = rule.set_pac_error;
     EXPECT_NE(ERR_UNEXPECTED, rv);
 
     if (expects_pac_bytes())
-      EXPECT_EQ(rule.bytes(), pac_bytes);
+      EXPECT_EQ(rule.text(), pac_script);
     else
       EXPECT_EQ(rule.url, pac_url);
 
     if (rv == OK) {
-      pac_bytes_ = pac_bytes;
+      pac_script_ = pac_script;
       pac_url_ = pac_url;
     }
     return rv;
   }
 
-  const std::string& pac_bytes() const { return pac_bytes_; }
+  const string16& pac_script() const { return pac_script_; }
   const GURL& pac_url() const { return pac_url_; }
 
  private:
   const Rules* rules_;
-  std::string pac_bytes_;
+  string16 pac_script_;
   GURL pac_url_;
 };
 
@@ -174,7 +176,7 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(OK, init.Init(config, &callback));
-  EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
+  EXPECT_EQ(rule.text(), resolver.pac_script());
 
   // Check the NetLog was filled correctly.
   EXPECT_EQ(6u, log.entries().size());
@@ -207,7 +209,7 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(kFailedDownloading, init.Init(config, &callback));
-  EXPECT_EQ("", resolver.pac_bytes());
+  EXPECT_EQ(string16(), resolver.pac_script());
 
   // Check the NetLog was filled correctly.
   EXPECT_EQ(4u, log.entries().size());
@@ -235,7 +237,7 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(kFailedParsing, init.Init(config, &callback));
-  EXPECT_EQ("", resolver.pac_bytes());
+  EXPECT_EQ(string16(), resolver.pac_script());
 }
 
 // Fail downloading the custom PAC script, because the fetcher was NULL.
@@ -249,7 +251,7 @@ TEST(InitProxyResolverTest, HasNullProxyScriptFetcher) {
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, NULL, NULL);
   EXPECT_EQ(ERR_UNEXPECTED, init.Init(config, &callback));
-  EXPECT_EQ("", resolver.pac_bytes());
+  EXPECT_EQ(string16(), resolver.pac_script());
 }
 
 // Succeeds in choosing autodetect (wpad).
@@ -266,7 +268,7 @@ TEST(InitProxyResolverTest, AutodetectSuccess) {
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(OK, init.Init(config, &callback));
-  EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
+  EXPECT_EQ(rule.text(), resolver.pac_script());
 }
 
 // Fails at WPAD (downloading), but succeeds in choosing the custom PAC.
@@ -285,7 +287,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess1) {
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(OK, init.Init(config, &callback));
-  EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
+  EXPECT_EQ(rule.text(), resolver.pac_script());
 }
 
 // Fails at WPAD (parsing), but succeeds in choosing the custom PAC.
@@ -305,7 +307,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   CapturingNetLog log(CapturingNetLog::kUnbounded);
   InitProxyResolver init(&resolver, &fetcher, &log);
   EXPECT_EQ(OK, init.Init(config, &callback));
-  EXPECT_EQ(rule.bytes(), resolver.pac_bytes());
+  EXPECT_EQ(rule.text(), resolver.pac_script());
 
   // Check the NetLog was filled correctly.
   // (Note that the Fetch and Set states are repeated since both WPAD and custom
@@ -353,7 +355,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails1) {
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(kFailedDownloading, init.Init(config, &callback));
-  EXPECT_EQ("", resolver.pac_bytes());
+  EXPECT_EQ(string16(), resolver.pac_script());
 }
 
 // Fails at WPAD (downloading), and fails at custom PAC (parsing).
@@ -372,7 +374,7 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails2) {
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, &fetcher, NULL);
   EXPECT_EQ(kFailedParsing, init.Init(config, &callback));
-  EXPECT_EQ("", resolver.pac_bytes());
+  EXPECT_EQ(string16(), resolver.pac_script());
 }
 
 // Fails at WPAD (parsing), but succeeds in choosing the custom PAC.

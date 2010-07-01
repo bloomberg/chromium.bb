@@ -58,7 +58,7 @@ class SingleThreadedProxyResolver : public ProxyResolver {
 
   // ProxyResolver implementation:
   virtual int SetPacScript(const GURL& pac_url,
-                           const std::string& pac_bytes,
+                           const string16& pac_script,
                            CompletionCallback* callback);
 
   // Starts the worker thread if it isn't already running.

@@ -97,7 +97,7 @@ class InitProxyResolver {
   size_t current_pac_url_index_;
 
   // Filled when the PAC script fetch completes.
-  std::string pac_bytes_;
+  string16 pac_script_;
 
   UrlList pac_urls_;
   State next_state_;
