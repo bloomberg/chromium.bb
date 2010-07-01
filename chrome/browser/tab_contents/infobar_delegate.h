@@ -16,7 +16,6 @@ class ConfirmInfoBarDelegate;
 class CrashedExtensionInfoBarDelegate;
 class ExtensionInfoBarDelegate;
 class TranslateInfoBarDelegate;
-class TranslateInfoBarDelegate2;
 class InfoBar;
 class LinkInfoBarDelegate;
 class SkBitmap;
@@ -110,9 +109,6 @@ class InfoBarDelegate {
   // Returns a pointer to the TranslateInfoBarDelegate interface, if
   // implemented.
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() {
-    return NULL;
-  }
-  virtual TranslateInfoBarDelegate2* AsTranslateInfoBarDelegate2() {
     return NULL;
   }
 
