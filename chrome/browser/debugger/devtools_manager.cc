@@ -24,6 +24,10 @@
 
 // static
 DevToolsManager* DevToolsManager::GetInstance() {
+  // http://crbug.com/47806 this method may be called when BrowserProcess
+  // has already been destroyed.
+  if (!g_browser_process)
+    return NULL;
   return g_browser_process->devtools_manager();
 }
 
