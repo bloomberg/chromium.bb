@@ -416,7 +416,9 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   const BookmarkNode* rootNode = model->root_node();
   NSMutableArray* baseArray = [self addChildFoldersFromNode:rootNode];
   DCHECK(baseArray);
+  [self willChangeValueForKey:@"folderTreeArray"];
   folderTreeArray_.reset([baseArray retain]);
+  [self didChangeValueForKey:@"folderTreeArray"];
 }
 
 - (void)modelChangedPreserveSelection:(BOOL)preserve {
