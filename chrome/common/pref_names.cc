@@ -418,6 +418,8 @@ const wchar_t kUseCustomChromeFrame[] = L"browser.custom_chrome_frame";
 const wchar_t kShowOmniboxSearchHint[] = L"browser.show_omnibox_search_hint";
 
 // The list of origins which are allowed|denied to show desktop notifications.
+const wchar_t kDesktopNotificationDefaultContentSetting[] =
+    L"profile.notifications_default_content_setting";
 const wchar_t kDesktopNotificationAllowedOrigins[] =
     L"profile.notification_allowed_sites";
 const wchar_t kDesktopNotificationDeniedOrigins[] =
