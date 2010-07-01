@@ -1405,6 +1405,7 @@
         'browser/extensions/extension_omnibox_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_processes_apitest.cc',
+        'browser/extensions/extension_rlz_apitest.cc',
         'browser/extensions/extension_startup_browsertest.cc',
         'browser/extensions/extension_storage_apitest.cc',
         'browser/extensions/extension_tabs_apitest.cc',
@@ -1481,6 +1482,10 @@
               },
             },
           }
+        }, {  # 'OS!="win"
+          'sources/': [
+            ['exclude', '^browser/extensions/extension_rlz_apitest.cc'],
+          ],
         }],
         ['OS=="linux"', {
           'dependencies': [

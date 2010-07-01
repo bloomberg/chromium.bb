@@ -1185,6 +1185,8 @@
         'browser/extensions/extension_processes_api_constants.h',
         'browser/extensions/extension_protocols.cc',
         'browser/extensions/extension_protocols.h',
+        'browser/extensions/extension_rlz_module.cc',
+        'browser/extensions/extension_rlz_module.h',
         'browser/extensions/extension_shelf_model.cc',
         'browser/extensions/extension_shelf_model.h',
         'browser/extensions/extension_tabs_module.cc',
@@ -3029,6 +3031,7 @@
 
             # Exclude all of rlz.
             ['exclude', '^browser/rlz/'],
+            ['exclude', '^browser/extensions/extension_rlz_module'],
 
             # Exclude all of views.
             ['exclude', '^browser/views/'],
@@ -3050,6 +3053,10 @@
                 ['include', '^browser/dock_info.cc'],
                 ['include', '^browser/dock_info.h'],
                 ['include', '^browser/extensions/'],
+                # This exclude duplicates the one just above because of the
+                # order of evaluation of the 'sources/' rule above, the
+                # conditions, and this 'sources/' rule.
+                ['exclude', '^browser/extensions/extension_rlz_module'],
                 ['include', 'browser/printing/print_dialog_cloud.cc'],
                 ['include', 'browser/printing/print_dialog_cloud.h'],
                 ['include', '^browser/views/about_chrome_view.cc'],

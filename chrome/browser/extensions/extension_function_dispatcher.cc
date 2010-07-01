@@ -8,7 +8,7 @@
 #include "base/singleton.h"
 #include "base/ref_counted.h"
 #include "base/values.h"
-#include "chrome/browser/browser.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_popup_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
+#include "chrome/browser/extensions/extension_rlz_module.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_test_api.h"
@@ -198,6 +199,13 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<MetricsRecordTimeFunction>();
   RegisterFunction<MetricsRecordMediumTimeFunction>();
   RegisterFunction<MetricsRecordLongTimeFunction>();
+
+  // RLZ.
+#if defined(OS_WIN)
+  RegisterFunction<RlzRecordProductEventFunction>();
+  RegisterFunction<RlzGetAccessPointRlzFunction>();
+  RegisterFunction<RlzClearProductStateFunction>();
+#endif
 
   // Cookies.
   RegisterFunction<GetCookieFunction>();
