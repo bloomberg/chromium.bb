@@ -484,8 +484,10 @@ void RenderThread::OnExtensionExtentsUpdated(
     const ViewMsg_ExtensionExtentsUpdated_Params& params) {
   extension_extents_.resize(params.extension_apps.size());
   for (size_t i = 0; i < params.extension_apps.size(); ++i) {
-    extension_extents_[i].extension_id = params.extension_apps[i].first;
-    extension_extents_[i].web_extent = params.extension_apps[i].second;
+    extension_extents_[i].extension_id = params.extension_apps[i].extension_id;
+    extension_extents_[i].web_extent = params.extension_apps[i].web_extent;
+    extension_extents_[i].browse_extent =
+        params.extension_apps[i].browse_extent;
   }
 }
 
@@ -1040,12 +1042,21 @@ void RenderThread::OnGpuChannelEstablished(
   }
 }
 
-std::string RenderThread::GetExtensionIdForURL(const GURL& url) {
+std::string RenderThread::GetExtensionIdByURL(const GURL& url) {
   if (url.SchemeIs(chrome::kExtensionScheme))
     return url.host();
 
   for (size_t i = 0; i < extension_extents_.size(); ++i) {
     if (extension_extents_[i].web_extent.ContainsURL(url))
+      return extension_extents_[i].extension_id;
+  }
+
+  return std::string();
+}
+
+std::string RenderThread::GetExtensionIdByBrowseExtent(const GURL& url) {
+  for (size_t i = 0; i < extension_extents_.size(); ++i) {
+    if (extension_extents_[i].browse_extent.ContainsURL(url))
       return extension_extents_[i].extension_id;
   }
 

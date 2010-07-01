@@ -3606,6 +3606,11 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
   if (source_extension == destination_extension)
     return false;
 
+  // If there is a source extension and the new URL is part of its browse
+  // extent, also do nothing.
+  if (source_extension && source_extension->browse_extent().ContainsURL(url))
+    return false;
+
   if (destination_extension) {
     // Search for an existing app window for this app.
     for (BrowserList::const_iterator iter = BrowserList::begin();

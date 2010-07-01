@@ -665,8 +665,11 @@ void BrowserRenderProcessHost::SendExtensionExtentsUpdate() {
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
     Extension* extension = service->extensions()->at(i);
     if (!extension->web_extent().is_empty()) {
-      params.extension_apps.push_back(
-          make_pair(extension->id(), extension->web_extent()));
+      ViewMsg_ExtensionExtentInfo info;
+      info.extension_id = extension->id();
+      info.web_extent = extension->web_extent();
+      info.browse_extent = extension->browse_extent();
+      params.extension_apps.push_back(info);
     }
   }
 

@@ -1,0 +1,16 @@
+{
+  "name": "test",
+  "version": "1",
+  "app": {
+    "launch": {
+      "container": "window",
+      "web_url": "http://www.google.com/mail/"
+    },
+    "browse_urls": [
+      "https://www.google.com/accounts/"
+    ]
+  },
+  "permissions": [
+    "notifications"
+  ]
+}

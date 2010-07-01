@@ -716,10 +716,15 @@ struct ViewHostMsg_RunFileChooser_Params {
   FilePath default_file_name;
 };
 
+struct ViewMsg_ExtensionExtentInfo {
+  std::string extension_id;
+  ExtensionExtent web_extent;
+  ExtensionExtent browse_extent;
+};
+
 struct ViewMsg_ExtensionExtentsUpdated_Params {
-  // A list of (extension_id, web_extent) pairs that describe the installed
-  // extension apps and the URLs they cover.
-  std::vector< std::pair<std::string, ExtensionExtent> > extension_apps;
+  // Describes the installed extension apps and the URLs they cover.
+  std::vector<ViewMsg_ExtensionExtentInfo> extension_apps;
 };
 
 // Values that may be OR'd together to form the 'flags' parameter of the
@@ -2736,6 +2741,24 @@ struct ParamTraits<ExtensionExtent> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     LogParam(p.patterns(), l);
+  }
+};
+
+template <>
+struct ParamTraits<ViewMsg_ExtensionExtentInfo> {
+  typedef ViewMsg_ExtensionExtentInfo param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.extension_id);
+    WriteParam(m, p.web_extent);
+    WriteParam(m, p.browse_extent);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->extension_id) &&
+        ReadParam(m, iter, &p->web_extent) &&
+        ReadParam(m, iter, &p->browse_extent);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(p.extension_id, l);
   }
 };
 

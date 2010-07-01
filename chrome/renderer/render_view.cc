@@ -344,10 +344,17 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
     old_url = frame->opener()->url();
 
   std::string old_extension =
-      RenderThread::current()->GetExtensionIdForURL(old_url);
+      RenderThread::current()->GetExtensionIdByURL(old_url);
+  if (!old_extension.empty()) {
+    if (RenderThread::current()->GetExtensionIdByBrowseExtent(new_url) ==
+        old_extension) {
+      return false;
+    }
+  }
+
   std::string new_extension =
-      RenderThread::current()->GetExtensionIdForURL(new_url);
-  return (old_extension != new_extension);
+      RenderThread::current()->GetExtensionIdByURL(new_url);
+  return old_extension != new_extension;
 }
 
 // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'

@@ -220,7 +220,9 @@ class RenderThread : public RenderThreadBase,
   // none. This includes web URLs that are part of an extension's web extent.
   // TODO(mpcomplete): this doesn't feel like it belongs here. Find a better
   // place.
-  std::string GetExtensionIdForURL(const GURL& url);
+  std::string GetExtensionIdByURL(const GURL& url);
+
+  std::string GetExtensionIdByBrowseExtent(const GURL& url);
 
  private:
   // Contains extension-related data that the renderer needs to know about.
@@ -229,6 +231,7 @@ class RenderThread : public RenderThreadBase,
   struct ExtensionInfo {
     std::string extension_id;
     ExtensionExtent web_extent;
+    ExtensionExtent browse_extent;
   };
 
   virtual void OnControlMessageReceived(const IPC::Message& msg);

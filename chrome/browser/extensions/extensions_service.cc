@@ -455,7 +455,7 @@ void ExtensionsService::LoadComponentExtensions() {
             *static_cast<DictionaryValue*>(manifest.get()),
             true,  // require key
             &error)) {
-      NOTREACHED();
+      NOTREACHED() << error;
       return;
     }
 

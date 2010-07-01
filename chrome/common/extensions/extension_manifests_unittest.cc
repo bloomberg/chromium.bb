@@ -117,6 +117,30 @@ TEST_F(ManifestTest, AppWebUrls) {
             extension->web_extent().patterns()[0].GetAsString());
 }
 
+TEST_F(ManifestTest, AppBrowseUrls) {
+  LoadAndExpectError("browse_urls_wrong_type.json",
+                     errors::kInvalidBrowseURLs);
+  LoadAndExpectError("browse_urls_invalid_1.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidBrowseURL, "0"));
+  LoadAndExpectError("browse_urls_invalid_2.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidBrowseURL, "0"));
+  LoadAndExpectError("browse_urls_invalid_3.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidBrowseURL, "0"));
+
+  scoped_ptr<Extension> extension(
+      LoadAndExpectSuccess("browse_urls_default.json"));
+  EXPECT_EQ(0u, extension->browse_extent().patterns().size());
+
+  extension.reset(
+      LoadAndExpectSuccess("browse_urls_valid.json"));
+  ASSERT_EQ(1u, extension->browse_extent().patterns().size());
+  EXPECT_EQ("https://www.google.com/accounts/*",
+            extension->browse_extent().patterns()[0].GetAsString());
+}
+
 TEST_F(ManifestTest, AppLaunchContainer) {
   scoped_ptr<Extension> extension;
 

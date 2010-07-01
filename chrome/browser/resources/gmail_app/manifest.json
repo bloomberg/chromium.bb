@@ -15,6 +15,9 @@
       "*://gmail.com/",
       "*://www.gmail.com/"
     ],
+    "browse_urls": [
+      "https://www.google.com/accounts/"
+    ],
     "launch": {
       "web_url": "https://mail.google.com/mail/"
     }

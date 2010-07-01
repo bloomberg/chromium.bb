@@ -107,4 +107,16 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
             browser()->GetTabContentsAt(1)->render_view_host()->process());
   EXPECT_EQ(host->render_process_host(),
             browser()->GetTabContentsAt(3)->render_view_host()->process());
+
+  // Navigate the non-app tab into the browse extent. It should not enter the
+  // app process.
+  // Navigate the app tab into the browse extent. It should stay in the app
+  // process.
+  const GURL& browse_url(base_url.Resolve("path4/empty.html"));
+  NavigateTabHelper(browser()->GetTabContentsAt(1), browse_url);
+  NavigateTabHelper(browser()->GetTabContentsAt(3), browse_url);
+  EXPECT_NE(host->render_process_host(),
+            browser()->GetTabContentsAt(1)->render_view_host()->process());
+  EXPECT_EQ(host->render_process_host(),
+            browser()->GetTabContentsAt(3)->render_view_host()->process());
 }

@@ -34,6 +34,9 @@
       "*://spreadsheets8.google.com/",
       "*://spreadsheets9.google.com/"
     ],
+    "browse_urls": [
+      "https://www.google.com/accounts/"
+    ],
     "launch": {
       "web_url": "https://docs.google.com/"
     }

@@ -9,6 +9,7 @@ namespace extension_manifest_keys {
 const wchar_t* kAllFrames = L"all_frames";
 const wchar_t* kApp = L"app";
 const wchar_t* kBackground = L"background_page";
+const wchar_t* kBrowseURLs = L"app.browse_urls";
 const wchar_t* kBrowserAction = L"browser_action";
 const wchar_t* kChromeURLOverrides = L"chrome_url_overrides";
 const wchar_t* kContentScripts = L"content_scripts";
@@ -86,6 +87,10 @@ const char* kChromeVersionTooLow =
     "This extension requires * version * or greater.";
 const char* kInvalidAllFrames =
     "Invalid value for 'content_scripts[*].all_frames'.";
+const char* kInvalidBrowseURL =
+    "Invalid value for 'app.browse_urls[*]'.";
+const char* kInvalidBrowseURLs =
+    "Invalid value for 'app.browse_urls'.";
 const char* kInvalidBrowserAction =
     "Invalid value for 'browser_action'.";
 const char* kInvalidChromeURLOverrides =

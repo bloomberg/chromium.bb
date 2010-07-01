@@ -13,6 +13,9 @@
     "urls": [
       "*://www.google.com/calendar/"
     ],
+    "browse_urls": [
+      "https://www.google.com/accounts/"
+    ],
     "launch": {
       "container": "tab",
       "web_url": "https://www.google.com/calendar/"

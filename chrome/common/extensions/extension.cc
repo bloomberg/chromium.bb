@@ -532,14 +532,18 @@ bool Extension::LoadIsApp(const DictionaryValue* manifest,
   return true;
 }
 
-bool Extension::LoadWebURLs(const DictionaryValue* manifest,
-                            std::string* error) {
+bool Extension::LoadExtent(const DictionaryValue* manifest,
+                           const wchar_t* key,
+                           ExtensionExtent* extent,
+                           const char* list_error,
+                           const char* value_error,
+                           std::string* error) {
   Value* temp = NULL;
-  if (!manifest->Get(keys::kWebURLs, &temp))
+  if (!manifest->Get(key, &temp))
     return true;
 
   if (temp->GetType() != Value::TYPE_LIST) {
-    *error = errors::kInvalidWebURLs;
+    *error = list_error;
     return false;
   }
 
@@ -547,28 +551,28 @@ bool Extension::LoadWebURLs(const DictionaryValue* manifest,
   for (size_t i = 0; i < pattern_list->GetSize(); ++i) {
     std::string pattern_string;
     if (!pattern_list->GetString(i, &pattern_string)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidWebURL, UintToString(i));
+      *error = ExtensionErrorUtils::FormatErrorMessage(value_error,
+                                                       UintToString(i));
       return false;
     }
 
     URLPattern pattern(kValidWebExtentSchemes);
     if (!pattern.Parse(pattern_string)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidWebURL, UintToString(i));
+      *error = ExtensionErrorUtils::FormatErrorMessage(value_error,
+                                                       UintToString(i));
       return false;
     }
 
     // We do not allow authors to put wildcards in their paths. Instead, we
     // imply one at the end.
     if (pattern.path().find('*') != std::string::npos) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidWebURL, UintToString(i));
+      *error = ExtensionErrorUtils::FormatErrorMessage(value_error,
+                                                       UintToString(i));
       return false;
     }
     pattern.set_path(pattern.path() + '*');
 
-    web_extent_.AddPattern(pattern);
+    extent->AddPattern(pattern);
   }
 
   return true;
@@ -1466,7 +1470,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   if (!LoadIsApp(manifest_value_.get(), error) ||
-      !LoadWebURLs(manifest_value_.get(), error) ||
+      !LoadExtent(manifest_value_.get(), keys::kWebURLs, &web_extent_,
+                  errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
+      !LoadExtent(manifest_value_.get(), keys::kBrowseURLs, &browse_extent_,
+                  errors::kInvalidBrowseURLs, errors::kInvalidBrowseURL,
+                  error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
       !LoadLaunchContainer(manifest_value_.get(), error) ||
       !LoadLaunchFullscreen(manifest_value_.get(), error)) {

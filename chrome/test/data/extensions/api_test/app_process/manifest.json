@@ -9,6 +9,9 @@
       "http://localhost/files/extensions/api_test/app_process/path1",
       "http://localhost/files/extensions/api_test/app_process/path2"
     ],
+    "browse_urls": [
+      "http://localhost/files/extensions/api_test/app_process/path4"
+    ],
     "launch": {
       "web_url": "http://localhost:1337/files/extensions/api_test/app_process/path1/foo.html"
     }
