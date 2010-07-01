@@ -527,6 +527,11 @@ class PageLoadTest : public UITest {
   PrefService* GetLocalState() {
     FilePath local_state_path = user_data_dir()
         .Append(chrome::kLocalStateFilename);
+  // Accessing the prefs store blocks on mac after every ~30 runs.
+  // Temporarily bail out so that we can see if this causes slowdown on
+  // win chromebot as well.
+  // TODO(nirnimesh): remove this when we reach a conclusion.
+  return NULL;  // Bail out
 
     PrefService* local_state(new PrefService(new PrefValueStore(
         NULL, /* no managed preference values */
