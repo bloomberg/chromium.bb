@@ -1,20 +1,30 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/hover_close_button.h"
 
 #include "app/l10n_util.h"
-#include "base/nsimage_cache_mac.h"
+#include "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/third_party/NSBezierPath+MCAdditions.h"
 #include "grit/generated_resources.h"
 
 namespace  {
+// Convenience function to return the middle point of the given |rect|.
+static NSPoint MidRect(NSRect rect) {
+  return NSMakePoint(NSMidX(rect), NSMidY(rect));
+}
 
-NSString* const kNormalImageString = @"close_bar.pdf";
-NSString* const kHoverImageString = @"close_bar_h.pdf";
-NSString* const kPressedImageString = @"close_bar_p.pdf";
-
+const CGFloat kCircleRadiusPercentage = 0.45;
+const CGFloat kCircleHoverWhite = 0.565;
+const CGFloat kCircleClickWhite = 0.396;
+const CGFloat kXShadowAlpha = 0.6;
+const CGFloat kXShadowCircleAlpha = 0.1;
 }  // namespace
+
+@interface HoverCloseButton(Private)
+- (void)setUpDrawingPaths;
+@end
 
 @implementation HoverCloseButton
 
@@ -29,10 +39,39 @@ NSString* const kPressedImageString = @"close_bar_p.pdf";
   [self commonInit];
 }
 
+- (void)drawRect:(NSRect)rect {
+  if (!circlePath_.get() || !xPath_.get())
+    [self setUpDrawingPaths];
+
+  // If the user is hovering over the button, a light/dark gray circle is drawn
+  // behind the 'x'.
+  if (hoverState_ != kHoverStateNone) {
+    // Adjust the darkness of the circle depending on whether it is being
+    // clicked.
+    CGFloat white = (hoverState_ == kHoverStateMouseOver) ?
+        kCircleHoverWhite : kCircleClickWhite;
+    [[NSColor colorWithCalibratedWhite:white alpha:1.0] set];
+    [circlePath_ fill];
+  }
+
+  [[NSColor whiteColor] set];
+  [xPath_ fill];
+
+  // Give the 'x' an inner shadow for depth. If the button is in a hover state
+  // (circle behind it), then adjust the shadow accordingly (not as harsh).
+  NSShadow* shadow = [[NSShadow alloc] init];
+  CGFloat alpha = (hoverState_ != kHoverStateNone) ?
+      kXShadowCircleAlpha : kXShadowAlpha;
+  [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0
+                                                     alpha:alpha]];
+  [shadow setShadowOffset:NSMakeSize(0.0, -1.0)];
+  [shadow setShadowBlurRadius:2.0];
+  [xPath_ fillWithInnerShadow:shadow];
+}
+
 - (void)commonInit {
   [self setTrackingEnabled:YES];
-  NSImage* alternateImage = nsimage_cache::ImageNamed(kPressedImageString);
-  [self setAlternateImage:alternateImage];
+  hoverState_ = kHoverStateNone;
   [self updateTrackingAreas];
 
   // Set accessibility description.
@@ -42,20 +81,51 @@ NSString* const kPressedImageString = @"close_bar_p.pdf";
                        forAttribute:NSAccessibilityDescriptionAttribute];
 }
 
+- (void)setUpDrawingPaths {
+  NSPoint viewCenter = MidRect([self bounds]);
+
+  circlePath_.reset([[NSBezierPath bezierPath] retain]);
+  [circlePath_ moveToPoint:viewCenter];
+  CGFloat radius = kCircleRadiusPercentage * NSWidth([self bounds]);
+  [circlePath_ appendBezierPathWithArcWithCenter:viewCenter
+                                          radius:radius
+                                      startAngle:0.0
+                                        endAngle:365.0];
+
+  // Construct an 'x' by drawing two intersecting rectangles in the shape of a
+  // cross and then rotating the path by 45 degrees.
+  xPath_.reset([[NSBezierPath bezierPath] retain]);
+  [xPath_ appendBezierPathWithRect:NSMakeRect(3.5, 7.0, 9.0, 2.0)];
+  [xPath_ appendBezierPathWithRect:NSMakeRect(7.0, 3.5, 2.0, 9.0)];
+
+  NSPoint pathCenter = MidRect([xPath_ bounds]);
+
+  NSAffineTransform* transform = [NSAffineTransform transform];
+  [transform translateXBy:viewCenter.x yBy:viewCenter.y];
+  [transform rotateByDegrees:45.0];
+  [transform translateXBy:-pathCenter.x yBy:-pathCenter.y];
+
+  [xPath_ transformUsingAffineTransform:transform];
+}
+
 - (void)dealloc {
   [self setTrackingEnabled:NO];
   [super dealloc];
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent {
-  [self setImage:nsimage_cache::ImageNamed(kHoverImageString)];
+  hoverState_ = kHoverStateMouseOver;
+  [self setNeedsDisplay:YES];
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
-  [self setImage:nsimage_cache::ImageNamed(kNormalImageString)];
+  hoverState_ = kHoverStateNone;
+  [self setNeedsDisplay:YES];
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
+  hoverState_ = kHoverStateMouseDown;
+  [self setNeedsDisplay:YES];
   // The hover button needs to hold onto itself here for a bit.  Otherwise,
   // it can be freed while |super mouseDown:| is in it's loop, and the
   // |checkImageState| call will crash.
@@ -100,18 +170,15 @@ NSString* const kPressedImageString = @"close_bar_p.pdf";
 }
 
 - (void)checkImageState {
-  if (closeTrackingArea_.get()) {
-    // Update the close buttons if the tab has moved.
-    NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
-    mouseLoc = [self convertPoint:mouseLoc fromView:nil];
-    NSString* name = NSPointInRect(mouseLoc, [self bounds]) ?
-        kHoverImageString : kNormalImageString;
-    NSImage* newImage = nsimage_cache::ImageNamed(name);
-    NSImage* buttonImage = [self image];
-    if (![buttonImage isEqual:newImage]) {
-      [self setImage:newImage];
-    }
-  }
+  if (!closeTrackingArea_.get())
+    return;
+
+  // Update the close buttons if the tab has moved.
+  NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
+  mouseLoc = [self convertPoint:mouseLoc fromView:nil];
+  hoverState_ = NSPointInRect(mouseLoc, [self bounds]) ?
+      kHoverStateMouseOver : kHoverStateNone;
+  [self setNeedsDisplay:YES];
 }
 
 @end
