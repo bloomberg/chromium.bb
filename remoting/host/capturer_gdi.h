@@ -12,7 +12,7 @@ typedef HBITMAP BitmapRef;
 
 namespace remoting {
 
-// CapturerGdi captures 24bit RGB using GDI.
+// CapturerGdi captures 32bit RGB using GDI.
 //
 // CapturerGdi is doubled buffered as required by Capturer. See
 // remoting/host/capturer.h.
@@ -21,17 +21,12 @@ class CapturerGdi : public Capturer {
   CapturerGdi();
   virtual ~CapturerGdi();
 
-  virtual void CaptureFullScreen(Task* done_task);
-  virtual void CaptureDirtyRects(Task* done_task);
-  virtual void CaptureRect(const gfx::Rect& rect, Task* done_task);
-  virtual void GetData(const uint8* planes[]) const;
-  virtual void GetDataStride(int strides[]) const;
-  virtual int GetWidth() const;
-  virtual int GetHeight() const;
+  virtual void CaptureRects(const RectVector& rects,
+                            CaptureCompletedCallback* callback);
+  virtual void ScreenConfigurationChanged();
 
  private:
-  // Initialize GDI structures.
-  void InitializeBuffers();
+  void ReleaseBuffers();
   // Generates an image in the current buffer.
   void CaptureImage();
 
@@ -42,7 +37,6 @@ class CapturerGdi : public Capturer {
 
   // We have two buffers for the screen images as required by Capturer.
   void* buffers_[kNumBuffers];
-  bool initialized_;  // Set to 'true' if buffers are initialized.
 
   DISALLOW_COPY_AND_ASSIGN(CapturerGdi);
 };

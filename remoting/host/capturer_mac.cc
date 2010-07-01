@@ -4,51 +4,157 @@
 
 #include "remoting/host/capturer_mac.h"
 
+#include <stddef.h>
+
+#include <OpenGL/CGLMacro.h>
+
 namespace remoting {
 
-// TODO(dmaclach): Implement this class.
-CapturerMac::CapturerMac() {
+CapturerMac::CapturerMac() : cgl_context_(NULL) {
+  // TODO(dmaclach): move this initialization out into session_manager,
+  // or at least have session_manager call into here to initialize it.
+  CGError err
+      = CGRegisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback,
+                                        this);
+  DCHECK_EQ(err, kCGErrorSuccess);
+  err = CGScreenRegisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback,
+                                     this);
+  DCHECK_EQ(err, kCGErrorSuccess);
+  err = CGDisplayRegisterReconfigurationCallback(
+      CapturerMac::DisplaysReconfiguredCallback, this);
+  DCHECK_EQ(err, kCGErrorSuccess);
 }
 
 CapturerMac::~CapturerMac() {
+  ReleaseBuffers();
+  CGUnregisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback, this);
+  CGScreenUnregisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback, this);
+  CGDisplayRemoveReconfigurationCallback(
+      CapturerMac::DisplaysReconfiguredCallback, this);
 }
 
-void CapturerMac::CaptureFullScreen(Task* done_task) {
-  dirty_rects_.clear();
-
-  CaptureImage();
-  dirty_rects_.push_back(gfx::Rect(width_, height_));
-
-  FinishCapture(done_task);
+void CapturerMac::ReleaseBuffers() {
+  if (cgl_context_) {
+    CGLDestroyContext(cgl_context_);
+    cgl_context_ = NULL;
+  }
 }
 
-void CapturerMac::CaptureDirtyRects(Task* done_task) {
-  dirty_rects_.clear();
+void CapturerMac::ScreenConfigurationChanged() {
+  ReleaseBuffers();
+  CGDirectDisplayID mainDevice = CGMainDisplayID();
 
-  CaptureImage();
-  // TODO(garykac): Diff old/new images and generate |dirty_rects_|.
-  // Currently, this just marks the entire screen as dirty.
-  dirty_rects_.push_back(gfx::Rect(width_, height_));
-
-  FinishCapture(done_task);
+  width_ = CGDisplayPixelsWide(mainDevice);
+  height_ = CGDisplayPixelsHigh(mainDevice);
+  bytes_per_row_ = width_ * sizeof(uint32_t);
+  pixel_format_ = PixelFormatRgb32;
+  size_t buffer_size = height() * bytes_per_row_;
+  for (int i = 0; i < kNumBuffers; ++i) {
+    buffers_[i].reset(new uint8[buffer_size]);
+  }
+  CGLPixelFormatAttribute attributes[] = {
+    kCGLPFAFullScreen,
+    kCGLPFADisplayMask,
+    (CGLPixelFormatAttribute)CGDisplayIDToOpenGLDisplayMask(mainDevice),
+    (CGLPixelFormatAttribute)0
+  };
+  CGLPixelFormatObj pixel_format = NULL;
+  GLint matching_pixel_format_count = 0;
+  CGLError err = CGLChoosePixelFormat(attributes,
+                                      &pixel_format,
+                                      &matching_pixel_format_count);
+  DCHECK_EQ(err, kCGLNoError);
+  err = CGLCreateContext(pixel_format, NULL, &cgl_context_);
+  DCHECK_EQ(err, kCGLNoError);
+  CGLDestroyPixelFormat(pixel_format);
+  CGLSetFullScreen(cgl_context_);
+  CGLSetCurrentContext(cgl_context_);
 }
 
-void CapturerMac::CaptureRect(const gfx::Rect& rect, Task* done_task) {
-  dirty_rects_.clear();
+void CapturerMac::CaptureRects(const RectVector& rects,
+                               CaptureCompletedCallback* callback) {
+  // TODO(dmaclach): something smarter here in the future.
+  gfx::Rect dirtyRect;
+  for (RectVector::const_iterator i = rects.begin(); i < rects.end(); ++i) {
+    dirtyRect = dirtyRect.Union(*i);
+  }
 
-  CaptureImage();
-  dirty_rects_.push_back(rect);
+  CGLContextObj CGL_MACRO_CONTEXT = cgl_context_;
+  glReadBuffer(GL_FRONT);
+  glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
 
-  FinishCapture(done_task);
+  glPixelStorei(GL_PACK_ALIGNMENT, 4);  // Force 4-byte alignment.
+  glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+  glPixelStorei(GL_PACK_SKIP_ROWS, 0);
+  glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
+
+  // Read a block of pixels from the frame buffer.
+  glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE,
+               buffers_[current_buffer_].get());
+  glPopClientAttrib();
+
+  Capturer::DataPlanes planes;
+  planes.data[0] = buffers_[current_buffer_].get();
+  planes.strides[0] = bytes_per_row_;
+
+  scoped_refptr<CaptureData> data(new CaptureData(planes,
+                                                  width(),
+                                                  height(),
+                                                  pixel_format()));
+  data->mutable_dirty_rects().assign(1, dirtyRect);
+  FinishCapture(data, callback);
 }
 
-void CapturerMac::GetData(const uint8* planes[]) const {
+
+void CapturerMac::ScreenRefresh(CGRectCount count, const CGRect *rect_array) {
+  RectVector rects;
+  for (CGRectCount i = 0; i < count; ++i) {
+    CGRect rect = rect_array[i];
+    rect.origin.y = height() - rect.size.height;
+    rects.push_back(gfx::Rect(rect));
+  }
+  InvalidateRects(rects);
+
 }
 
-void CapturerMac::GetDataStride(int strides[]) const {
+void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
+                                   size_t count,
+                                   const CGRect *rect_array) {
+  RectVector rects;
+  for (CGRectCount i = 0; i < count; ++i) {
+    CGRect rect = rect_array[i];
+    rect.origin.y = height() - rect.size.height;
+    rects.push_back(gfx::Rect(rect));
+    rect = CGRectOffset(rect, delta.dX, delta.dY);
+    rects.push_back(gfx::Rect(rect));
+  }
+  InvalidateRects(rects);
 }
 
-void CapturerMac::CaptureImage() {
+void CapturerMac::ScreenRefreshCallback(CGRectCount count,
+                                        const CGRect *rect_array,
+                                        void *user_parameter) {
+  CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
+  capturer->ScreenRefresh(count, rect_array);
+}
+
+void CapturerMac::ScreenUpdateMoveCallback(CGScreenUpdateMoveDelta delta,
+                                           size_t count,
+                                           const CGRect *rect_array,
+                                           void *user_parameter) {
+  CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
+  capturer->ScreenUpdateMove(delta, count, rect_array);
+}
+
+void CapturerMac::DisplaysReconfiguredCallback(
+    CGDirectDisplayID display,
+    CGDisplayChangeSummaryFlags flags,
+    void *user_parameter) {
+  if ((display == CGMainDisplayID()) &&
+      !(flags & kCGDisplayBeginConfigurationFlag)) {
+    CapturerMac *capturer = reinterpret_cast<CapturerMac *>(user_parameter);
+    capturer->ScreenConfigurationChanged();
+  }
 }
 
 }  // namespace remoting

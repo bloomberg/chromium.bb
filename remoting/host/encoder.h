@@ -12,10 +12,8 @@
 #include "remoting/host/capturer.h"
 
 namespace media {
-
-class DataBuffer;
-
-}  // namespace media
+  class DataBuffer;
+}
 
 namespace remoting {
 
@@ -44,34 +42,16 @@ class Encoder {
 
   virtual ~Encoder() {}
 
-  // Encode an image stored in |input_data|. |dirty_rects| contains
-  // regions of update since last encode.
+  // Encode an image stored in |capture_data|.
   //
   // If |key_frame| is true, the encoder should not reference
   // previous encode and encode the full frame.
   //
-  // When encoded data is available, partial or full |data_available_task|
-  // is called, data can be read from |data| and size is |data_size|.
-  // After the last data available event and encode has completed,
-  // |encode_done| is set to true and |data_available_task| is deleted.
-  //
-  // Note that |input_data| and |stride| are arrays of 3 elements.
-  //
-  // Implementation has to ensure that when |data_available_task| is called
-  // output parameters are stable.
-  virtual void Encode(const DirtyRects& dirty_rects,
-                      const uint8* const* input_data,
-                      const int* strides,
+  // When encoded data is available, partial or full |data_available_callback|
+  // is called.
+  virtual void Encode(scoped_refptr<Capturer::CaptureData> capture_data,
                       bool key_frame,
                       DataAvailableCallback* data_available_callback) = 0;
-
-  // Set the dimension of the incoming images. Need to call this before
-  // calling Encode().
-  virtual void SetSize(int width, int height) = 0;
-
-  // Set the pixel format of the incoming images. Need to call this before
-  // calling Encode().
-  virtual void SetPixelFormat(PixelFormat pixel_format) = 0;
 };
 
 }  // namespace remoting

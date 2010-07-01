@@ -99,18 +99,6 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void RemoveAllClients();
 
  private:
-
-  // Stores the data and information of a capture to pass off to the
-  // encoding thread.
-  struct CaptureData {
-    DirtyRects dirty_rects_;
-    const uint8* data_[3];
-    int data_strides_[3];
-    int width_;
-    int height_;
-    PixelFormat pixel_format_;
-  };
-
   void DoStart();
   void DoPause();
   void DoStartRateControl();
@@ -119,9 +107,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void DoCapture();
   void DoFinishEncode();
 
-  // DoEncode takes ownership of capture_data and is responsible for deleting
-  // it.
-  void DoEncode(const CaptureData *capture_data);
+  void DoEncode(scoped_refptr<Capturer::CaptureData> capture_data);
   // DoSendUpdate takes ownership of header and is responsible for deleting it.
   void DoSendUpdate(const UpdateStreamPacketHeader* header,
                     const scoped_refptr<media::DataBuffer> data,
@@ -142,7 +128,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   // Helper method to schedule next rate regulation task.
   void ScheduleNextRateControl();
 
-  void CaptureDoneTask();
+  void CaptureDoneCallback(scoped_refptr<Capturer::CaptureData> capture_data);
   // EncodeDataAvailableTask takes ownership of header and is responsible for
   // deleting it.
   void EncodeDataAvailableTask(const UpdateStreamPacketHeader *header,

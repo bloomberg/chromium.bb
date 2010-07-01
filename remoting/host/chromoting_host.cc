@@ -33,6 +33,9 @@ ChromotingHost::~ChromotingHost() {
 }
 
 void ChromotingHost::Start(Task* shutdown_task) {
+  // Get capturer to set up it's initial configuration.
+  capturer_->ScreenConfigurationChanged();
+
   // Submit a task to perform host registration. We'll also start
   // listening to connection if registration is done.
   context_->main_message_loop()->PostTask(

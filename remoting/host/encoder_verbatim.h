@@ -13,31 +13,20 @@ namespace remoting {
 // buffer verbatim.
 class EncoderVerbatim : public Encoder {
  public:
-  EncoderVerbatim()
-      : width_(0), height_(0), bytes_per_pixel_(0) {}
+  EncoderVerbatim() {}
   virtual ~EncoderVerbatim() {}
 
-  virtual void Encode(const DirtyRects& dirty_rects,
-                      const uint8* const* input_data,
-                      const int* strides,
+  virtual void Encode(scoped_refptr<Capturer::CaptureData> capture_data,
                       bool key_frame,
                       DataAvailableCallback* data_available_callback);
-  virtual void SetSize(int width, int height);
-  virtual void SetPixelFormat(PixelFormat pixel_format);
 
  private:
   // Encode a single dirty rect. Called by Encode().
   // Returns false if there is an error.
   bool EncodeRect(const gfx::Rect& dirty,
-                  const uint8* const* input_data,
-                  const int* strides,
-                  UpdateStreamPacketHeader *header,
-                  scoped_refptr<media::DataBuffer> *output_data);
-
-  int width_;
-  int height_;
-  int bytes_per_pixel_;
-  PixelFormat pixel_format_;
+                  const scoped_refptr<Capturer::CaptureData>& capture_data,
+                  UpdateStreamPacketHeader* header,
+                  scoped_refptr<media::DataBuffer>* output_data);
 };
 
 }  // namespace remoting

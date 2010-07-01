@@ -6,6 +6,9 @@
 #define REMOTING_HOST_CAPTURER_MAC_H_
 
 #include "remoting/host/capturer.h"
+#include <ApplicationServices/ApplicationServices.h>
+#include <OpenGL/OpenGL.h>
+#include "base/scoped_ptr.h"
 
 namespace remoting {
 
@@ -15,16 +18,30 @@ class CapturerMac : public Capturer {
   CapturerMac();
   virtual ~CapturerMac();
 
-  virtual void CaptureFullScreen(Task* done_task);
-  virtual void CaptureDirtyRects(Task* done_task);
-  virtual void CaptureRect(const gfx::Rect& rect, Task* done_task);
-  virtual void GetData(const uint8* planes[]) const;
-  virtual void GetDataStride(int strides[]) const;
+  virtual void CaptureRects(const RectVector& rects,
+                            CaptureCompletedCallback* callback);
+
+  virtual void ScreenConfigurationChanged();
 
  private:
-  // Generates an image in the current buffer.
-  void CaptureImage();
+  void ScreenRefresh(CGRectCount count, const CGRect *rect_array);
+  void ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
+                                size_t count,
+                                const CGRect *rect_array);
+  static void ScreenRefreshCallback(CGRectCount count,
+                                    const CGRect *rect_array,
+                                    void *user_parameter);
+  static void ScreenUpdateMoveCallback(CGScreenUpdateMoveDelta delta,
+                                       size_t count,
+                                       const CGRect *rect_array,
+                                       void *user_parameter);
+  static void DisplaysReconfiguredCallback(CGDirectDisplayID display,
+                                           CGDisplayChangeSummaryFlags flags,
+                                           void *user_parameter);
 
+  void ReleaseBuffers();
+  CGLContextObj cgl_context_;
+  scoped_array<uint8> buffers_[kNumBuffers];
   DISALLOW_COPY_AND_ASSIGN(CapturerMac);
 };
 

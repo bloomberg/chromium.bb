@@ -10,71 +10,41 @@ namespace remoting {
 
 // 3780 pixels per meter is equivalent to 96 DPI, typical on desktop monitors.
 static const int kPixelsPerMeter = 3780;
-// 24 bit RGB is 3 bytes per pixel.
+// 32 bit RGBA is 4 bytes per pixel.
 static const int kBytesPerPixel = 4;
 
-CapturerGdi::CapturerGdi()
-    : initialized_(false) {
+CapturerGdi::CapturerGdi() : desktop_dc_(NULL),
+                             memory_dc_(NULL) {
+  memset(target_bitmap_, 0, sizeof(target_bitmap_));
+  memset(buffers_, 0, sizeof(buffers_));
 }
 
 CapturerGdi::~CapturerGdi() {
-  if (initialized_) {
-    for (int i = kNumBuffers - 1; i >= 0; i--) {
+  ReleaseBuffers();
+}
+
+void CapturerGdi::ReleaseBuffers() {
+  for (int i = kNumBuffers - 1; i >= 0; i--) {
+    if (target_bitmap_[i]) {
       DeleteObject(target_bitmap_[i]);
+      target_bitmap_[i] = NULL;
     }
+    if (buffers_[i]) {
+      DeleteObject(buffers_[i]);
+      buffers_[i] = NULL;
+    }
+  }
+
+  desktop_dc_ = NULL;
+  if (memory_dc_) {
+    DeleteDC(memory_dc_);
+    memory_dc_ = NULL;
   }
 }
 
-void CapturerGdi::CaptureFullScreen(Task* done_task) {
-  dirty_rects_.clear();
+void CapturerGdi::ScreenConfigurationChanged() {
+  ReleaseBuffers();
 
-  CaptureImage();
-  dirty_rects_.push_back(gfx::Rect(width_, height_));
-
-  FinishCapture(done_task);
-}
-
-void CapturerGdi::CaptureDirtyRects(Task* done_task) {
-  dirty_rects_.clear();
-
-  CaptureImage();
-  // TODO(garykac): Diff old/new images and generate |dirty_rects_|.
-  // Currently, this just marks the entire screen as dirty.
-  dirty_rects_.push_back(gfx::Rect(width_, height_));
-
-  FinishCapture(done_task);
-}
-
-void CapturerGdi::CaptureRect(const gfx::Rect& rect, Task* done_task) {
-  dirty_rects_.clear();
-
-  CaptureImage();
-  dirty_rects_.push_back(rect);
-
-  FinishCapture(done_task);
-}
-
-void CapturerGdi::GetData(const uint8* planes[]) const {
-  planes[0] = static_cast<const uint8*>(buffers_[current_buffer_]);
-  planes[1] = planes[2] = NULL;
-}
-
-void CapturerGdi::GetDataStride(int strides[]) const {
-  // Only the first plane has data.
-  strides[0] = bytes_per_row_;
-  strides[1] = strides[2] = 0;
-}
-
-int CapturerGdi::GetWidth() const {
-  return GetSystemMetrics(SM_CXSCREEN);
-}
-
-int CapturerGdi::GetHeight() const {
-  return GetSystemMetrics(SM_CYSCREEN);
-}
-
-// TODO(fbarchard): handle error cases.
-void CapturerGdi::InitializeBuffers() {
   desktop_dc_ = GetDC(GetDesktopWindow());
   memory_dc_ = CreateCompatibleDC(desktop_dc_);
 
@@ -85,8 +55,7 @@ void CapturerGdi::InitializeBuffers() {
 
   // Dimensions of screen.
   pixel_format_ = PixelFormatRgb32;
-  bytes_per_pixel_ = kBytesPerPixel;
-  bytes_per_row_ = rounded_width * bytes_per_pixel_;
+  bytes_per_row_ = rounded_width * kBytesPerPixel;
 
   // Create a device independant bitmap (DIB) that is the same size.
   BITMAPINFO bmi;
@@ -94,7 +63,7 @@ void CapturerGdi::InitializeBuffers() {
   bmi.bmiHeader.biHeight = height_;
   bmi.bmiHeader.biWidth = width_;
   bmi.bmiHeader.biPlanes = 1;
-  bmi.bmiHeader.biBitCount = bytes_per_pixel_ * 8;
+  bmi.bmiHeader.biBitCount = kBytesPerPixel * 8;
   bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
   bmi.bmiHeader.biSizeImage = bytes_per_row_ * height_;
   bmi.bmiHeader.biXPelsPerMeter = kPixelsPerMeter;
@@ -106,13 +75,25 @@ void CapturerGdi::InitializeBuffers() {
                                          static_cast<void**>(&buffers_[i]),
                                          NULL, 0);
   }
-  initialized_ = true;
+}
+
+void CapturerGdi::CaptureRects(const RectVector& rects,
+                               CaptureCompletedCallback* callback) {
+  Capturer::DataPlanes planes;
+  planes.data[0] = static_cast<uint8*>(buffers_[current_buffer_]);
+  planes.strides[0] = bytes_per_row_;
+
+  CaptureImage();
+  scoped_refptr<CaptureData> data(new CaptureData(planes,
+                                                  width(),
+                                                  height(),
+                                                  pixel_format()));
+  data->mutable_dirty_rects() = rects;
+
+  FinishCapture(data, callback);
 }
 
 void CapturerGdi::CaptureImage() {
-  if (initialized_ == false) {
-    InitializeBuffers();
-  }
   // Selection the target bitmap into the memory dc.
   SelectObject(memory_dc_, target_bitmap_[current_buffer_]);
 

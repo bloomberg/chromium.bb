@@ -20,11 +20,9 @@ class CapturerFakeAscii : public Capturer {
   CapturerFakeAscii();
   virtual ~CapturerFakeAscii();
 
-  virtual void CaptureFullScreen(Task* done_task);
-  virtual void CaptureDirtyRects(Task* done_task);
-  virtual void CaptureRect(const gfx::Rect& rect, Task* done_task);
-  virtual void GetData(const uint8* planes[]) const;
-  virtual void GetDataStride(int strides[]) const;
+  virtual void CaptureRects(const RectVector& rects,
+                            CaptureCompletedCallback* callback);
+  virtual void ScreenConfigurationChanged();
 
  private:
   // Generates an image in the front buffer.

@@ -147,22 +147,23 @@ void SessionManager::RemoveAllClients() {
 
 void SessionManager::DoCapture() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
-
   // Make sure we have at most two oustanding recordings. We can simply return
   // if we can't make a capture now, the next capture will be started by the
   // end of an encode operation.
-  if (recordings_ >= 2 || !started_)
+  if (recordings_ >= 2 || !started_) {
     return;
+  }
 
   base::Time now = base::Time::Now();
   base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
       static_cast<int>(base::Time::kMillisecondsPerSecond / rate_));
   base::TimeDelta elapsed = now - last_capture_time_;
 
-  // If this method is called sonner than the required interval we return
+  // If this method is called sooner than the required interval we return
   // immediately
-  if (elapsed < interval)
+  if (elapsed < interval) {
     return;
+  }
 
   // At this point we are going to perform one capture so save the current time.
   last_capture_time_ = now;
@@ -172,8 +173,14 @@ void SessionManager::DoCapture() {
   ScheduleNextCapture();
 
   // And finally perform one capture.
-  capturer()->CaptureDirtyRects(
-      NewRunnableMethod(this, &SessionManager::CaptureDoneTask));
+  DCHECK(capturer_.get());
+
+  // TODO(dmaclach): make this not required on the Mac eventually.
+  // Will require getting the X11client to work properly. Right now X11 expects
+  // full screens each pass.
+  capturer_->InvalidateFullScreen();
+  capturer_->CaptureInvalidRects(
+      NewCallback(this, &SessionManager::CaptureDoneCallback));
 }
 
 void SessionManager::DoFinishEncode() {
@@ -189,22 +196,14 @@ void SessionManager::DoFinishEncode() {
     DoCapture();
 }
 
-void SessionManager::DoEncode(const CaptureData *capture_data) {
-  // Take ownership of capture_data.
-  scoped_ptr<const CaptureData> capture_data_owner(capture_data);
-
+void SessionManager::DoEncode(
+    scoped_refptr<Capturer::CaptureData> capture_data) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
   // TODO(hclam): Enable |force_refresh| if a new client was
   // added.
-  encoder()->SetSize(capture_data->width_, capture_data->height_);
-  encoder()->SetPixelFormat(capture_data->pixel_format_);
-  encoder()->Encode(
-      capture_data->dirty_rects_,
-      capture_data->data_,
-      capture_data->data_strides_,
-      false,
-      NewCallback(this, &SessionManager::EncodeDataAvailableTask));
+  encoder_->Encode(capture_data, false,
+                   NewCallback(this, &SessionManager::EncodeDataAvailableTask));
 }
 
 void SessionManager::DoSendUpdate(const UpdateStreamPacketHeader* header,
@@ -214,15 +213,17 @@ void SessionManager::DoSendUpdate(const UpdateStreamPacketHeader* header,
   scoped_ptr<const UpdateStreamPacketHeader> header_owner(header);
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  for (size_t i = 0; i < clients_.size(); ++i) {
+  for (ClientConnectionList::const_iterator i = clients_.begin();
+       i < clients_.end();
+       ++i) {
     if (state & Encoder::EncodingStarting) {
-      clients_[i]->SendBeginUpdateStreamMessage();
+      (*i)->SendBeginUpdateStreamMessage();
     }
 
-    clients_[i]->SendUpdateStreamPacketMessage(header, data);
+    (*i)->SendUpdateStreamPacketMessage(header, data);
 
     if (state & Encoder::EncodingEnded) {
-      clients_[i]->SendEndUpdateStreamMessage();
+      (*i)->SendEndUpdateStreamMessage();
     }
   }
 }
@@ -238,11 +239,11 @@ void SessionManager::DoSendInit(scoped_refptr<ClientConnection> client,
 void SessionManager::DoGetInitInfo(scoped_refptr<ClientConnection> client) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
-  // Sends the init message to the cleint.
+  // Sends the init message to the client.
   network_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &SessionManager::DoSendInit, client,
-                        capturer()->GetWidth(), capturer()->GetHeight()));
+                        capturer()->width(), capturer()->height()));
 
   // And then add the client to the list so it can receive update stream.
   // It is important we do so in such order or the client will receive
@@ -359,22 +360,12 @@ void SessionManager::ScheduleNextRateControl() {
       kRateControlInterval.InMilliseconds());
 }
 
-void SessionManager::CaptureDoneTask() {
+void SessionManager::CaptureDoneCallback(
+    scoped_refptr<Capturer::CaptureData> capture_data) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
-
-  scoped_ptr<CaptureData> data(new CaptureData);
-
-  // Save results of the capture.
-  capturer()->GetData(data->data_);
-  capturer()->GetDataStride(data->data_strides_);
-  capturer()->GetDirtyRects(&data->dirty_rects_);
-  data->pixel_format_ = capturer()->GetPixelFormat();
-  data->width_ = capturer()->GetWidth();
-  data->height_ = capturer()->GetHeight();
-
   encode_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoEncode, data.release()));
+      NewRunnableMethod(this, &SessionManager::DoEncode, capture_data));
 }
 
 void SessionManager::EncodeDataAvailableTask(

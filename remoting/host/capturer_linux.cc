@@ -13,42 +13,11 @@ CapturerLinux::CapturerLinux() {
 CapturerLinux::~CapturerLinux() {
 }
 
-void CapturerLinux::CaptureFullScreen(Task* done_task) {
-  dirty_rects_.clear();
-
-  CaptureImage();
-  dirty_rects_.push_back(gfx::Rect(width_, height_));
-
-  FinishCapture(done_task);
+void CapturerLinux::ScreenConfigurationChanged() {
 }
 
-void CapturerLinux::CaptureDirtyRects(Task* done_task) {
-  dirty_rects_.clear();
-
-  CaptureImage();
-  // TODO(garykac): Diff old/new images and generate |dirty_rects_|.
-  // Currently, this just marks the entire screen as dirty.
-  dirty_rects_.push_back(gfx::Rect(width_, height_));
-
-  FinishCapture(done_task);
-}
-
-void CapturerLinux::CaptureRect(const gfx::Rect& rect, Task* done_task) {
-  dirty_rects_.clear();
-
-  CaptureImage();
-  dirty_rects_.push_back(rect);
-
-  FinishCapture(done_task);
-}
-
-void CapturerLinux::GetData(const uint8* planes[]) const {
-}
-
-void CapturerLinux::GetDataStride(int strides[]) const {
-}
-
-void CapturerLinux::CaptureImage() {
+void CapturerLinux::CaptureRects(const RectVector& rects,
+                                 CaptureCompletedCallback* callback) {
 }
 
 }  // namespace remoting

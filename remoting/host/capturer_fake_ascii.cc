@@ -13,63 +13,35 @@ static const int kHeight = 20;
 static const int kBytesPerPixel = 1;
 
 CapturerFakeAscii::CapturerFakeAscii() {
-  // Dimensions of screen.
+}
+
+CapturerFakeAscii::~CapturerFakeAscii() {
+}
+
+void CapturerFakeAscii::CaptureRects(const RectVector& rects,
+                                     CaptureCompletedCallback* callback) {
+  GenerateImage();
+  Capturer::DataPlanes planes;
+  planes.data[0] = buffers_[current_buffer_].get();
+  planes.strides[0] = bytes_per_row_;
+  scoped_refptr<CaptureData> capture_data(new CaptureData(planes,
+                                                          width_,
+                                                          height_,
+                                                          pixel_format_));
+  FinishCapture(capture_data, callback);
+}
+
+void CapturerFakeAscii::ScreenConfigurationChanged() {
   width_ = kWidth;
   height_ = kHeight;
   pixel_format_ = PixelFormatAscii;
-  bytes_per_pixel_ = kBytesPerPixel;
-  bytes_per_row_ = width_ * bytes_per_pixel_;
+  bytes_per_row_ = width_ * kBytesPerPixel;
 
   // Create memory for the buffers.
   int buffer_size = height_ * bytes_per_row_;
   for (int i = 0; i < kNumBuffers; i++) {
     buffers_[i].reset(new uint8[buffer_size]);
   }
-}
-
-CapturerFakeAscii::~CapturerFakeAscii() {
-}
-
-void CapturerFakeAscii::CaptureFullScreen(Task* done_task) {
-  dirty_rects_.clear();
-
-  GenerateImage();
-
-  // Return a single dirty rect that includes the entire screen.
-  dirty_rects_.push_back(gfx::Rect(width_, height_));
-
-  FinishCapture(done_task);
-}
-
-void CapturerFakeAscii::CaptureDirtyRects(Task* done_task) {
-  dirty_rects_.clear();
-
-  GenerateImage();
-  // TODO(garykac): Diff old/new screen.
-  // Currently, this just marks the entire screen as dirty.
-  dirty_rects_.push_back(gfx::Rect(width_, height_));
-
-  FinishCapture(done_task);
-}
-
-void CapturerFakeAscii::CaptureRect(const gfx::Rect& rect, Task* done_task) {
-  dirty_rects_.clear();
-
-  GenerateImage();
-  dirty_rects_.push_back(rect);
-
-  FinishCapture(done_task);
-}
-
-void CapturerFakeAscii::GetData(const uint8* planes[]) const {
-  planes[0] = buffers_[current_buffer_].get();
-  planes[1] = planes[2] = NULL;
-}
-
-void CapturerFakeAscii::GetDataStride(int strides[]) const {
-  // Only the first plane has data.
-  strides[0] = bytes_per_row_;
-  strides[1] = strides[2] = 0;
 }
 
 void CapturerFakeAscii::GenerateImage() {

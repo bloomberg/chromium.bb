@@ -10,7 +10,6 @@ Capturer::Capturer()
     : width_(0),
       height_(0),
       pixel_format_(PixelFormatInvalid),
-      bytes_per_pixel_(0),
       bytes_per_row_(0),
       current_buffer_(0) {
 }
@@ -18,32 +17,39 @@ Capturer::Capturer()
 Capturer::~Capturer() {
 }
 
-void Capturer::GetDirtyRects(DirtyRects* rects) const {
-  *rects = dirty_rects_;
+void Capturer::CaptureInvalidRects(CaptureCompletedCallback* callback) {
+  // Braced to scope the lock.
+  RectVector local_rects;
+  {
+    AutoLock auto_inval_rects_lock(inval_rects_lock_);
+    local_rects = inval_rects_;
+    inval_rects_.clear();
+  }
+
+  CaptureRects(local_rects, callback);
 }
 
-int Capturer::GetWidth() const {
-  return width_;
+void Capturer::InvalidateRects(const RectVector& inval_rects) {
+  AutoLock auto_inval_rects_lock(inval_rects_lock_);
+  inval_rects_.insert(inval_rects_.end(),
+                      inval_rects.begin(),
+                      inval_rects.end());
 }
 
-int Capturer::GetHeight() const {
-  return height_;
+void Capturer::InvalidateFullScreen() {
+  RectVector rects;
+  rects.push_back(gfx::Rect(0, 0, width_, height_));
+
+  InvalidateRects(rects);
 }
 
-PixelFormat Capturer::GetPixelFormat() const {
-  return pixel_format_;
-}
-
-void Capturer::InvalidateRect(gfx::Rect dirty_rect) {
-  inval_rects_.push_back(dirty_rect);
-}
-
-void Capturer::FinishCapture(Task* done_task) {
-  done_task->Run();
-  delete done_task;
-
+void Capturer::FinishCapture(scoped_refptr<CaptureData> data,
+                             CaptureCompletedCallback* callback) {
   // Select the next buffer to be the current buffer.
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
+
+  callback->Run(data);
+  delete callback;
 }
 
 }  // namespace remoting
