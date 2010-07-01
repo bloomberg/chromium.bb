@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/eintr_wrapper.h"
 #include "base/histogram.h"
+#include "base/perftimer.h"
 #include "base/time.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -220,7 +221,9 @@ void ExternalMetrics::CollectEvents() {
 }
 
 void ExternalMetrics::CollectEventsAndReschedule() {
+  PerfTimer timer;
   CollectEvents();
+  UMA_HISTOGRAM_TIMES("UMA.CollectExternalEventsTime", timer.Elapsed());
   ScheduleCollector();
 }
 
