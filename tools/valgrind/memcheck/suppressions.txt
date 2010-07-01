@@ -3540,11 +3540,37 @@
    ...
    fun:*CreateSpdyHeadersFromHttpRequestERKN3net15HttpRequestInfoEPSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEE
 }
-Suppression:
 {
    bug_48123
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN3net11SpdySession12CreateStreamERK4GURLNS_15RequestPriorityEP13scoped_refptrINS_10SpdyStreamEERKNS_11BoundNetLogE
    fun:*SpdyHttpStreamTest_SendRequest_Test8TestBodyEv
+}
+{
+   bug_48130_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:*IdMapsC1Ev
+   fun:*IdMapsE22DefaultSingletonTraitsIS1_ES1_E3getEv
+   fun:_ZN8chromeos12input_method33GetInputMethodIdsFromLanguageCodeERKSsNS0_15InputMethodTypeEPSt6vectorISsSaISsEE
+   fun:_ZN8chromeos11Preferences4InitEP11PrefService
+   fun:_ZN11ProfileImplC1ERK8FilePath
+   fun:_ZN7Profile13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
+   fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
+}
+{
+   bug_48130_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:*AddInputMethodToMapsERKSsRKN8chromeos21InputMethodDescriptorE
+   ...
+   fun:_ZN8chromeos12input_method33GetInputMethodIdsFromLanguageCodeERKSsNS0_15InputMethodTypeEPSt6vectorISsSaISsEE
+   fun:_ZN8chromeos11Preferences4InitEP11PrefService
+   fun:_ZN11ProfileImplC1ERK8FilePath
+   fun:_ZN7Profile13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
+   fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
 }
