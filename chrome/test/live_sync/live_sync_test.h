@@ -26,6 +26,9 @@ extern const wchar_t kSyncUserForTest[];
 extern const wchar_t kSyncPasswordForTest[];
 }
 
+// Live sync tests are allowed to run for up to 5 minutes.
+const int kTestTimeoutInMS = 300000;
+
 // This is the base class for integration tests for all sync data types. Derived
 // classes must be defined for each sync data type. Individual tests are defined
 // using the IN_PROC_BROWSER_TEST_F macro.
@@ -56,6 +59,7 @@ class LiveSyncTest : public InProcessBrowserTest {
         num_clients_(-1),
         started_local_test_server_(false) {
     InProcessBrowserTest::set_show_window(true);
+    InProcessBrowserTest::SetInitialTimeoutInMS(kTestTimeoutInMS);
     switch (test_type_) {
       case SINGLE_CLIENT: {
         num_clients_ = 1;
