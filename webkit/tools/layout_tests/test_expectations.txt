@@ -7,3 +7,6 @@
 
 // I need to do a build on a Hardy box in order to get the baselines to agree.
 LINUX BUG_AGL : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyle.html = IMAGE TEXT
+
+// Mark the test as having wrong output until next WebKit roll.
+BUG_YURYS MAC : html5lib/runner.html = TEXT
