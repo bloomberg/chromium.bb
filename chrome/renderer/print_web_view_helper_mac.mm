@@ -69,10 +69,10 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   base::SharedMemory shared_buf;
 
   page_params.page_size = gfx::Size(
-      static_cast<int>(content_width_in_points
-                       + margin_left_in_points + margin_right_in_points),
-      static_cast<int>(content_height_in_points
-                       + margin_top_in_points + margin_bottom_in_points));
+      static_cast<int>(content_width_in_points +
+                       margin_left_in_points + margin_right_in_points),
+      static_cast<int>(content_height_in_points +
+                       margin_top_in_points + margin_bottom_in_points));
   page_params.content_area = gfx::Rect(
       static_cast<int>(margin_left_in_points),
       static_cast<int>(margin_top_in_points),

@@ -381,12 +381,12 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
       default_params.margin_top,
       dpi, printing::kPixelsPerInch);
   int margin_right_in_pixels = ConvertUnit(
-      default_params.page_size.width()
-      - default_params.printable_size.width() - default_params.margin_left,
+      default_params.page_size.width() -
+      default_params.printable_size.width() - default_params.margin_left,
       dpi, printing::kPixelsPerInch);
   int margin_bottom_in_pixels = ConvertUnit(
-      default_params.page_size.height()
-      - default_params.printable_size.height() - default_params.margin_top,
+      default_params.page_size.height() -
+      default_params.printable_size.height() - default_params.margin_top,
       dpi, printing::kPixelsPerInch);
   int margin_left_in_pixels = ConvertUnit(
       default_params.margin_left,
@@ -401,12 +401,12 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
                                       margin_left_in_pixels);
   }
 
-  *content_width_in_points = ConvertPixelsToPoint(page_size_in_pixels.width
-                                                  - margin_left_in_pixels
-                                                  - margin_right_in_pixels);
-  *content_height_in_points = ConvertPixelsToPoint(page_size_in_pixels.height
-                                                   - margin_top_in_pixels
-                                                   - margin_bottom_in_pixels);
+  *content_width_in_points = ConvertPixelsToPoint(page_size_in_pixels.width -
+                                                  margin_left_in_pixels -
+                                                  margin_right_in_pixels);
+  *content_height_in_points = ConvertPixelsToPoint(page_size_in_pixels.height -
+                                                   margin_top_in_pixels -
+                                                   margin_bottom_in_pixels);
 
   // Invalid page size and/or margins. We just use the default setting.
   if (*content_width_in_points < 1.0 || *content_height_in_points < 1.0) {
