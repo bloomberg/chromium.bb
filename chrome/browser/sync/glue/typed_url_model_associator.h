@@ -75,10 +75,6 @@ class TypedUrlModelAssociator
   // than the permanent tagged nodes.
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
 
-  // The has_nodes out param is true if the autofill model has any
-  // user-defined typed_url entries.
-  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
-
   virtual void AbortAssociation() {
     // TODO(zork): Implement this.
   }

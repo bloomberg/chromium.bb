@@ -94,11 +94,4 @@ bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-bool ThemeModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
-  DCHECK(has_nodes);
-  // Assume the themes model always has user-created nodes.
-  *has_nodes = true;
-  return true;
-}
-
 }  // namespace browser_sync

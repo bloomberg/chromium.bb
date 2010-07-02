@@ -77,10 +77,6 @@ class AutofillModelAssociator
   // than the permanent tagged nodes.
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
 
-  // The has_nodes out param is true if the autofill model has any
-  // user-defined autofill entries.
-  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
-
   // See ModelAssociator interface.
   virtual void AbortAssociation();
 

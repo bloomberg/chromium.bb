@@ -15,7 +15,6 @@ class ModelAssociatorMock : public AssociatorInterface {
   MOCK_METHOD0(AssociateModels, bool());
   MOCK_METHOD0(DisassociateModels, bool());
   MOCK_METHOD1(SyncModelHasUserCreatedNodes, bool(bool* has_nodes));
-  MOCK_METHOD1(ChromeModelHasUserCreatedNodes, bool(bool* has_nodes));
   MOCK_METHOD0(AbortAssociation, void());
 };
 

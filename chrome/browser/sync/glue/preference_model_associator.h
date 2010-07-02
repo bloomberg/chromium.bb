@@ -57,9 +57,6 @@ class PreferenceModelAssociator
   // nodes.
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
 
-  // Returns whether the preference model has any user-defined preferences.
-  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
-
   virtual void AbortAssociation() {
     // No implementation needed, this associator runs on the main
     // thread.

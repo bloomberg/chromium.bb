@@ -191,21 +191,6 @@ bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-bool PasswordModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
-  DCHECK(has_nodes);
-  std::vector<webkit_glue::PasswordForm*> passwords;
-  if (!password_store_->FillAutofillableLogins(&passwords) ||
-      !password_store_->FillBlacklistLogins(&passwords)) {
-    STLDeleteElements(&passwords);
-    LOG(ERROR) << "Could not get the password entries.";
-    return false;
-  }
-
-  *has_nodes = !passwords.empty();
-  STLDeleteElements(&passwords);
-  return true;
-}
-
 void PasswordModelAssociator::AbortAssociation() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   AutoLock lock(abort_association_pending_lock_);

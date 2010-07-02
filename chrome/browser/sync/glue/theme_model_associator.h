@@ -19,7 +19,7 @@ class UnrecoverableErrorHandler;
 // sync themes model.
 class ThemeModelAssociator : public AssociatorInterface {
  public:
-  ThemeModelAssociator(ProfileSyncService* sync_service);
+  explicit ThemeModelAssociator(ProfileSyncService* sync_service);
   virtual ~ThemeModelAssociator();
 
   // Used by profile_sync_test_util.h.
@@ -29,7 +29,6 @@ class ThemeModelAssociator : public AssociatorInterface {
   virtual bool AssociateModels();
   virtual bool DisassociateModels();
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
-  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
   virtual void AbortAssociation() {
     // No implementation needed, this associator runs on the main
     // thread.

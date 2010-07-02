@@ -57,11 +57,6 @@ class BookmarkModelAssociator
   // than the permanent tagged nodes.
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
 
-  // The has_nodes out param is true if the bookmark model has user
-  // created nodes or not. That is, whether there are nodes in the
-  // bookmark model except the bookmark bar and other bookmarks.
-  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
-
   // Returns sync id for the given bookmark node id.
   // Returns sync_api::kInvalidId if the sync node is not found for the given
   // bookmark node id.

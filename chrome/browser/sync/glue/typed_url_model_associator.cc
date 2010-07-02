@@ -231,13 +231,6 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-bool TypedUrlModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
-  DCHECK(has_nodes);
-  // Assume the typed_url model always have user-created nodes.
-  *has_nodes = true;
-  return true;
-}
-
 int64 TypedUrlModelAssociator::GetSyncIdFromChromeId(
     const std::string typed_url) {
   TypedUrlToSyncIdMap::const_iterator iter = id_map_.find(typed_url);

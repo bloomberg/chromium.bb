@@ -43,8 +43,6 @@ class ExtensionModelAssociator : public AssociatorInterface {
   virtual bool AssociateModels();
   virtual bool DisassociateModels();
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
-  // TODO(akalin): Remove this unused function.
-  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
   virtual void AbortAssociation() {
     // No implementation needed, this associator runs on the main
     // thread.

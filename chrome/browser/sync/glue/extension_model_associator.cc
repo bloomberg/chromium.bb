@@ -196,15 +196,6 @@ bool ExtensionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-bool ExtensionModelAssociator::ChromeModelHasUserCreatedNodes(
-    bool* has_nodes) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  CHECK(has_nodes);
-  // This is wrong, but this function is unused, anyway.
-  *has_nodes = true;
-  return true;
-}
-
 bool ExtensionModelAssociator::OnClientUpdate(const std::string& id) {
   sync_api::WriteTransaction trans(
       sync_service_->backend()->GetUserShareHandle());

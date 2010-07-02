@@ -380,13 +380,6 @@ bool AutofillModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-bool AutofillModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
-  DCHECK(has_nodes);
-  // Assume the autofill model always have user-created nodes.
-  *has_nodes = true;
-  return true;
-}
-
 void AutofillModelAssociator::AbortAssociation() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   AutoLock lock(abort_association_pending_lock_);

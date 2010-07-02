@@ -222,16 +222,6 @@ void BookmarkModelAssociator::Disassociate(int64 sync_id) {
   dirty_associations_sync_ids_.erase(sync_id);
 }
 
-bool BookmarkModelAssociator::ChromeModelHasUserCreatedNodes(bool* has_nodes) {
-  DCHECK(has_nodes);
-  BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
-  DCHECK(model->IsLoaded());
-
-  *has_nodes =  model->GetBookmarkBarNode()->GetChildCount() > 0 ||
-      model->other_node()->GetChildCount() > 0;
-  return true;
-}
-
 bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(has_nodes);
   *has_nodes = false;

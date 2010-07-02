@@ -39,11 +39,6 @@ class AssociatorInterface {
   // return false if an error occurred.
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) = 0;
 
-  // The has_nodes out parameter is set to true if the chrome model
-  // has user-created nodes.  The method may return false if an error
-  // occurred.
-  virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes) = 0;
-
   // Calling this method while AssociateModels() is in progress will
   // cause the method to exit early with a "false" return value.  This
   // is useful for aborting model associations for shutdown.  This

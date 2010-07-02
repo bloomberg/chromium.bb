@@ -154,14 +154,6 @@ bool PreferenceModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
-bool PreferenceModelAssociator::ChromeModelHasUserCreatedNodes(
-    bool* has_nodes) {
-  DCHECK(has_nodes);
-  // Assume the preferences model always have user-created nodes.
-  *has_nodes = true;
-  return true;
-}
-
 int64 PreferenceModelAssociator::GetSyncIdFromChromeId(
     const std::wstring preference_name) {
   PreferenceNameToSyncIdMap::const_iterator iter =
