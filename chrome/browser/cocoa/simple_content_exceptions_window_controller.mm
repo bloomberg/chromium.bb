@@ -64,9 +64,9 @@ SimpleContentExceptionsWindowController* g_exceptionWindow = nil;
 }
 
 - (id)initWithTableModel:(RemoveRowsTableModel*)model {
-  NSString* nibpath =
-      [mac_util::MainAppBundle() pathForResource:@"GeolocationExceptionsWindow"
-                                          ofType:@"nib"];
+  NSString* nibpath = [mac_util::MainAppBundle()
+      pathForResource:@"SimpleContentExceptionsWindow"
+               ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     model_.reset(model);
     tableObserver_.reset(new RemoveRowsObserverBridge(self));
