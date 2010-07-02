@@ -62,6 +62,10 @@ class ExtensionMessageService
   struct MessageChannel;
   struct MessagePort;
 
+  // Returns the event name for an event that is extension-specific.
+  static std::string GetPerExtensionEventName(const std::string& event_name,
+                                              const std::string& extension_id);
+
   // --- UI thread only:
 
   explicit ExtensionMessageService(Profile* profile);
@@ -89,6 +93,13 @@ class ExtensionMessageService
   // permission to access incognito data. If |event_url| is not empty, the
   // event is only sent to extension with host permissions for this url.
   virtual void DispatchEventToRenderers(
+      const std::string& event_name, const std::string& event_args,
+      bool has_incognito_data, const GURL& event_url);
+
+  // Same as above, except use the extension-specific naming scheme for the
+  // event. This is used by events that are per-extension.
+  void DispatchEventToExtension(
+      const std::string& extension_id,
       const std::string& event_name, const std::string& event_args,
       bool has_incognito_data, const GURL& event_url);
 

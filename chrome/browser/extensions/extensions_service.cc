@@ -901,6 +901,9 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
   extension->set_being_upgraded(false);
 
   UpdateActiveExtensionsInCrashReporter();
+
+  if (profile_->GetTemplateURLModel())
+    profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
 }
 
 void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
@@ -975,9 +978,6 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
         Source<Profile>(profile_),
         Details<Extension>(extension));
   }
-
-  if (profile_->GetTemplateURLModel())
-    profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
 
   // Transfer ownership of |extension| to OnExtensionLoaded.
   OnExtensionLoaded(scoped_extension.release(), allow_privilege_increase);

@@ -528,7 +528,8 @@ class AutocompleteProvider
                      bool minimal_changes) = 0;
 
   // Called when a provider must not make any more callbacks for the current
-  // query.
+  // query. This will be called regardless of whether the provider is already
+  // done.
   virtual void Stop() {
     done_ = true;
   }

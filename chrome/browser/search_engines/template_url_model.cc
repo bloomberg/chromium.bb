@@ -1068,9 +1068,7 @@ void TemplateURLModel::RegisterExtensionKeyword(Extension* extension) {
     return;
   }
 
-  if (GetTemplateURLForExtension(extension))
-    return;  // Already have this one registered (might be an upgrade).
-
+  const TemplateURL* existing_url = GetTemplateURLForExtension(extension);
   std::wstring keyword = UTF8ToWide(extension->omnibox_keyword());
 
   TemplateURL* template_url = new TemplateURL;
@@ -1083,7 +1081,13 @@ void TemplateURLModel::RegisterExtensionKeyword(Extension* extension) {
       extension->id() + "/?q={searchTerms}", 0, 0);
   template_url->set_safe_for_autoreplace(false);
 
-  Add(template_url);
+  if (existing_url) {
+    // TODO(mpcomplete): only replace if the user hasn't changed the keyword.
+    // (We don't have UI for that yet).
+    Replace(existing_url, template_url);
+  } else {
+    Add(template_url);
+  }
 }
 
 void TemplateURLModel::UnregisterExtensionKeyword(Extension* extension) {

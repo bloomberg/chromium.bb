@@ -114,6 +114,14 @@ const char ExtensionMessageService::kDispatchOnMessage[] =
 const char ExtensionMessageService::kDispatchEvent[] =
     "Event.dispatchJSON";
 
+// static
+std::string ExtensionMessageService::GetPerExtensionEventName(
+    const std::string& event_name, const std::string& extension_id) {
+  // This should match the method we use in extension_process_binding.js when
+  // setting up the corresponding chrome.Event object.
+  return event_name + "/" + extension_id;
+}
+
 ExtensionMessageService::ExtensionMessageService(Profile* profile)
     : profile_(profile),
       extension_devtools_manager_(NULL),
@@ -483,6 +491,14 @@ void ExtensionMessageService::DispatchEventToRenderers(
     DispatchEvent(
         renderer, event_name, event_args, has_incognito_data, event_url);
   }
+}
+
+void ExtensionMessageService::DispatchEventToExtension(
+    const std::string& extension_id,
+    const std::string& event_name, const std::string& event_args,
+    bool has_incognito_data, const GURL& event_url) {
+  DispatchEventToRenderers(GetPerExtensionEventName(event_name, extension_id),
+                           event_args, has_incognito_data, event_url);
 }
 
 void ExtensionMessageService::Observe(NotificationType type,

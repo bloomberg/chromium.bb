@@ -68,10 +68,13 @@ class KeywordProvider :
       std::wstring* remaining_input);
 
   // AutocompleteProvider
-  virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes);
+  virtual void Start(const AutocompleteInput& input, bool minimal_changes);
+  virtual void Stop();
 
  private:
+  class ScopedEndExtensionKeywordMode;
+  friend class ScopedEndExtensionKeywordMode;
+
   ~KeywordProvider() {}
 
   // Extracts the keyword from |input| into |keyword|. Any remaining characters
@@ -115,6 +118,9 @@ class KeywordProvider :
       const std::wstring& remaining_input,
       int relevance);
 
+  void EnterExtensionKeywordMode(const std::string& extension_id);
+  void MaybeEndExtensionKeywordMode();
+
   // NotificationObserver interface.
   void Observe(NotificationType type,
                const NotificationSource& source,
@@ -136,6 +142,10 @@ class KeywordProvider :
   // We remember the last suggestions we've received from the extension in case
   // we need to reset our matches without asking the extension again.
   std::vector<AutocompleteMatch> extension_suggest_matches_;
+
+  // If non-empty, holds the ID of the extension whose keyword is currently in
+  // the URL bar while the autocomplete popup is open.
+  std::string current_keyword_extension_id_;
 
   NotificationRegistrar registrar_;
 

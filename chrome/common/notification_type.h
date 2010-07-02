@@ -866,9 +866,13 @@ class NotificationType {
     EXTENSION_BOOKMARKS_API_INVOKED,
 
     // Sent when an omnibox extension has sent back omnibox suggestions. The
-    // source is the profile, and the details are a
-    // std::pair<int suggest_id, ListValue suggestions_array>
+    // source is the profile, and the details are an ExtensionOmniboxSuggestions
+    // object.
     EXTENSION_OMNIBOX_SUGGESTIONS_READY,
+
+    // Sent when the user accepts the input in an extension omnibox keyword
+    // session. The source is the profile.
+    EXTENSION_OMNIBOX_INPUT_ENTERED,
 
     // The source is the extension object that changed. Details is a bool*
     // with the new visibility.

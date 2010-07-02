@@ -809,8 +809,7 @@ void AutocompleteController::Start(const std::wstring& text,
 void AutocompleteController::Stop(bool clear_result) {
   for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
        ++i) {
-    if (!(*i)->done())
-      (*i)->Stop();
+    (*i)->Stop();
   }
 
   update_delay_timer_.Stop();

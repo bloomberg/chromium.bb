@@ -250,9 +250,13 @@
                     <a href="#events">Events</a>
                     <ol>
                       <li>
+                        <a href="#event-onInputCancelled">onInputCancelled</a>
+                      </li><li>
                         <a href="#event-onInputChanged">onInputChanged</a>
                       </li><li>
                         <a href="#event-onInputEntered">onInputEntered</a>
+                      </li><li>
+                        <a href="#event-onInputStarted">onInputStarted</a>
                       </li>
                     </ol>
                   </li>
@@ -731,6 +735,30 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
             <!-- iterates over all events -->
             <div class="apiItem">
+              <a name="event-onInputCancelled"></a>
+              <h4>onInputCancelled</h4>
+
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.experimental.omnibox.</span><span>onInputCancelled</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span>);
+              </div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>User has ended the keyword input session without accepting the input.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /decription -->
+
+            </div><div class="apiItem">
               <a name="event-onInputChanged"></a>
               <h4>onInputChanged</h4>
 
@@ -927,6 +955,30 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
             </dl>
           </dd>
         </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /decription -->
+
+            </div><div class="apiItem">
+              <a name="event-onInputStarted"></a>
+              <h4>onInputStarted</h4>
+
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.experimental.omnibox.</span><span>onInputStarted</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span>);
+              </div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>User has started a keyword input session by typing the extension's keyword. This is guaranteed to be sent exactly once per input session, and before any onInputChanged events.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
                   </div>
                 </dl>
 

@@ -1346,6 +1346,7 @@
     "events": [
       {
         "name": "onClicked",
+        "perExtensionEvent": true,
         "type": "function",
         "description": "Fired when a page action icon is clicked.  This event will not fire if the page action has a popup.",
         "parameters": [
@@ -1493,6 +1494,7 @@
     "events": [
       {
         "name": "onClicked",
+        "perExtensionEvent": true,
         "type": "function",
         "description": "Fired when a browser action icon is clicked.  This event will not fire if the browser action has a popup.",
         "parameters": [
@@ -3132,7 +3134,15 @@
     ],
     "events": [
       {
+        "name": "onInputStarted",
+        "perExtensionEvent": true,
+        "type": "function",
+        "description": "User has started a keyword input session by typing the extension's keyword. This is guaranteed to be sent exactly once per input session, and before any onInputChanged events.",
+        "parameters": []
+      },
+      {
         "name": "onInputChanged",
+        "perExtensionEvent": true,
         "type": "function",
         "description": "User has changed what is typed into the omnibox.",
         "parameters": [
@@ -3159,6 +3169,7 @@
       },
       {
         "name": "onInputEntered",
+        "perExtensionEvent": true,
         "type": "function",
         "description": "User has accepted what is typed into the omnibox.",
         "parameters": [
@@ -3167,6 +3178,13 @@
             "name": "text"
           }
         ]
+      },
+      {
+        "name": "onInputCancelled",
+        "perExtensionEvent": true,
+        "type": "function",
+        "description": "User has ended the keyword input session without accepting the input.",
+        "parameters": []
       }
     ]
   }

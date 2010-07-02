@@ -12,6 +12,11 @@
 // Event router class for events related to the omnibox API.
 class ExtensionOmniboxEventRouter {
  public:
+  // The user has just typed the omnibox keyword. This is sent exactly once in
+  // a given input session, before any OnInputChanged events.
+  static void OnInputStarted(
+      Profile* profile, const std::string& extension_id);
+
   // The user has changed what is typed into the omnibox while in an extension
   // keyword session. Returns true if someone is listening to this event, and
   // thus we have some degree of confidence we'll get a response.
@@ -23,6 +28,11 @@ class ExtensionOmniboxEventRouter {
   static void OnInputEntered(
       Profile* profile, const std::string& extension_id,
       const std::string& input);
+
+  // The user has cleared the keyword, or closed the omnibox popup. This is
+  // sent at most once in a give input session, after any OnInputChanged events.
+  static void OnInputCancelled(
+      Profile* profile, const std::string& extension_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionOmniboxEventRouter);

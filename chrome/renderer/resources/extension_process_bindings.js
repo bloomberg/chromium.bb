@@ -246,18 +246,6 @@ var chrome = chrome || {};
       // Setup events for each extension_id/page_action_id string we find.
       chrome.pageActions[pageActions[i]] = new chrome.Event(oldStyleEventName);
     }
-
-    // Note this is singular.
-    var eventName = "pageAction/" + extensionId;
-    chrome.pageAction = chrome.pageAction || {};
-    chrome.pageAction.onClicked = new chrome.Event(eventName);
-  }
-
-  // Browser action events send {windowpId}.
-  function setupBrowserActionEvent(extensionId) {
-    var eventName = "browserAction/" + extensionId;
-    chrome.browserAction = chrome.browserAction || {};
-    chrome.browserAction.onClicked = new chrome.Event(eventName);
   }
 
   function setupToolstripEvents(renderViewId) {
@@ -294,11 +282,6 @@ var chrome = chrome || {};
   }
 
   function setupOmniboxEvents(extensionId) {
-    chrome.experimental.omnibox.onInputEntered =
-        new chrome.Event("experimental.omnibox.onInputEntered/" + extensionId);
-
-    chrome.experimental.omnibox.onInputChanged =
-        new chrome.Event("experimental.omnibox.onInputChanged/" + extensionId);
     chrome.experimental.omnibox.onInputChanged.dispatch =
         function(text, requestId) {
       var suggestCallback = function(suggestions) {
@@ -394,6 +377,8 @@ var chrome = chrome || {};
             return;
 
           var eventName = apiDef.namespace + "." + eventDef.name;
+          if (eventDef.perExtensionEvent)
+            eventName = eventName + "/" + extensionId;
           module[eventDef.name] = new chrome.Event(eventName,
               eventDef.parameters);
         });
@@ -671,7 +656,6 @@ var chrome = chrome || {};
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
     }
 
-    setupBrowserActionEvent(extensionId);
     setupPageActionEvents(extensionId);
     setupToolstripEvents(GetRenderViewId());
     setupPopupEvents(GetRenderViewId());

@@ -454,7 +454,8 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
                                     NULL, NULL, &tab_contents, NULL)) {
     return;
   }
-  std::string event_name = std::string("pageAction/") + extension_id;
+  std::string event_name = ExtensionMessageService::GetPerExtensionEventName(
+      "pageAction.onClicked", extension_id);
   DispatchEventWithTab(profile, event_name.c_str(), tab_contents);
 }
 
@@ -464,6 +465,7 @@ void ExtensionBrowserEventRouter::BrowserActionExecuted(
   int tab_id = 0;
   if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
     return;
-  std::string event_name = std::string("browserAction/") + extension_id;
+  std::string event_name = ExtensionMessageService::GetPerExtensionEventName(
+      "browserAction.onClicked", extension_id);
   DispatchEventWithTab(profile, event_name.c_str(), tab_contents);
 }

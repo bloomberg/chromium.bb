@@ -20,6 +20,24 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
+// Helper functor for Start(), for ending keyword mode unless explicitly told
+// otherwise.
+class KeywordProvider::ScopedEndExtensionKeywordMode {
+ public:
+  ScopedEndExtensionKeywordMode(KeywordProvider* provider)
+      : provider_(provider) { }
+  ~ScopedEndExtensionKeywordMode() {
+    if (provider_)
+      provider_->MaybeEndExtensionKeywordMode();
+  }
+
+  void StayInKeywordMode() {
+    provider_ = NULL;
+  }
+ private:
+  KeywordProvider* provider_;
+};
+
 // static
 std::wstring KeywordProvider::SplitReplacementStringFromInput(
     const std::wstring& input) {
@@ -42,6 +60,8 @@ KeywordProvider::KeywordProvider(ACProviderListener* listener, Profile* profile)
   // suggestions are meant for us.
   registrar_.Add(this, NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY,
                  Source<Profile>(profile->GetOriginalProfile()));
+  registrar_.Add(this, NotificationType::EXTENSION_OMNIBOX_INPUT_ENTERED,
+                 Source<Profile>(profile));
 }
 
 KeywordProvider::KeywordProvider(ACProviderListener* listener,
@@ -97,6 +117,10 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
 
 void KeywordProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
+  // This object ensures we end keyword mode if we exit the function without
+  // toggling keyword mode to on.
+  ScopedEndExtensionKeywordMode keyword_mode_toggle(this);
+
   matches_.clear();
 
   if (!minimal_changes) {
@@ -165,6 +189,12 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       if (!enabled)
         return;
 
+      if (extension->id() != current_keyword_extension_id_)
+        MaybeEndExtensionKeywordMode();
+      if (current_keyword_extension_id_.empty())
+        EnterExtensionKeywordMode(extension->id());
+      keyword_mode_toggle.StayInKeywordMode();
+
       if (minimal_changes) {
         // If the input hasn't significantly changed, we can just use the
         // suggestions from last time. We need to readjust the relevance to
@@ -203,6 +233,11 @@ void KeywordProvider::Start(const AutocompleteInput& input,
                                                  remaining_input, -1));
     }
   }
+}
+
+void KeywordProvider::Stop() {
+  done_ = true;
+  MaybeEndExtensionKeywordMode();
 }
 
 // static
@@ -365,6 +400,13 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
 void KeywordProvider::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
+  if (type == NotificationType::EXTENSION_OMNIBOX_INPUT_ENTERED) {
+    // Input has been accepted, so we're done with this input session. Ensure
+    // we don't send the OnInputCancelled event.
+    current_keyword_extension_id_.clear();
+    return;
+  }
+
   // TODO(mpcomplete): consider clamping the number of suggestions to
   // AutocompleteProvider::kMaxMatches.
   DCHECK(type == NotificationType::EXTENSION_OMNIBOX_SUGGESTIONS_READY);
@@ -408,4 +450,22 @@ void KeywordProvider::Observe(NotificationType type,
   matches_.insert(matches_.end(), extension_suggest_matches_.begin(),
                   extension_suggest_matches_.end());
   listener_->OnProviderUpdate(!extension_suggest_matches_.empty());
+}
+
+void KeywordProvider::EnterExtensionKeywordMode(
+    const std::string& extension_id) {
+  DCHECK(current_keyword_extension_id_.empty());
+  current_keyword_extension_id_ = extension_id;
+
+  ExtensionOmniboxEventRouter::OnInputStarted(
+      profile_, current_keyword_extension_id_);
+}
+
+void KeywordProvider::MaybeEndExtensionKeywordMode() {
+  if (!current_keyword_extension_id_.empty()) {
+    ExtensionOmniboxEventRouter::OnInputCancelled(
+        profile_, current_keyword_extension_id_);
+
+    current_keyword_extension_id_.clear();
+  }
 }

@@ -12,8 +12,10 @@
 #include "chrome/common/notification_service.h"
 
 namespace events {
-const char kOnInputChanged[] = "experimental.omnibox.onInputChanged/";
-const char kOnInputEntered[] = "experimental.omnibox.onInputEntered/";
+const char kOnInputStarted[] = "experimental.omnibox.onInputStarted";
+const char kOnInputChanged[] = "experimental.omnibox.onInputChanged";
+const char kOnInputEntered[] = "experimental.omnibox.onInputEntered";
+const char kOnInputCancelled[] = "experimental.omnibox.onInputCancelled";
 };  // namespace events
 
 namespace {
@@ -31,10 +33,19 @@ const wchar_t kDescriptionStylesOffset[] = L"offset";
 };  // namespace
 
 // static
+void ExtensionOmniboxEventRouter::OnInputStarted(
+    Profile* profile, const std::string& extension_id) {
+  profile->GetExtensionMessageService()->DispatchEventToExtension(
+      extension_id, events::kOnInputStarted, "[]", profile->IsOffTheRecord(),
+      GURL());
+}
+
+// static
 bool ExtensionOmniboxEventRouter::OnInputChanged(
     Profile* profile, const std::string& extension_id,
     const std::string& input, int suggest_id) {
-  std::string event_name = events::kOnInputChanged + extension_id;
+  std::string event_name = ExtensionMessageService::GetPerExtensionEventName(
+      events::kOnInputChanged, extension_id);
   if (!profile->GetExtensionMessageService()->HasEventListener(event_name))
     return false;
 
@@ -44,8 +55,9 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  profile->GetExtensionMessageService()->DispatchEventToRenderers(
-      event_name, json_args, profile->IsOffTheRecord(), GURL());
+  profile->GetExtensionMessageService()->DispatchEventToExtension(
+      extension_id, events::kOnInputChanged, json_args,
+      profile->IsOffTheRecord(), GURL());
   return true;
 }
 
@@ -60,8 +72,21 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  profile->GetExtensionMessageService()->DispatchEventToRenderers(
-      event_name, json_args, profile->IsOffTheRecord(), GURL());
+  profile->GetExtensionMessageService()->DispatchEventToExtension(
+      extension_id, events::kOnInputEntered, json_args,
+      profile->IsOffTheRecord(), GURL());
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_OMNIBOX_INPUT_ENTERED,
+      Source<Profile>(profile), NotificationService::NoDetails());
+}
+
+// static
+void ExtensionOmniboxEventRouter::OnInputCancelled(
+    Profile* profile, const std::string& extension_id) {
+  profile->GetExtensionMessageService()->DispatchEventToExtension(
+      extension_id, events::kOnInputCancelled, "[]", profile->IsOffTheRecord(),
+      GURL());
 }
 
 bool OmniboxSendSuggestionsFunction::RunImpl() {
