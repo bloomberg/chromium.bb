@@ -9,6 +9,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
+#include "net/url_request/url_request_unittest.h"
 #include "webkit/glue/plugins/plugin_switches.h"
 
 namespace {
@@ -53,18 +54,34 @@ class PPAPITest : public UITest {
     launch_arguments_.AppendSwitch(switches::kEnablePepperTesting);
   }
 
-  void RunTest(const FilePath::StringType& test_file_name) {
+  void RunTest(const std::string& test_case) {
     FilePath test_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
     test_path = test_path.Append(FILE_PATH_LITERAL("third_party"));
     test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));
     test_path = test_path.Append(FILE_PATH_LITERAL("tests"));
-    test_path = test_path.Append(test_file_name);
+    test_path = test_path.Append(FILE_PATH_LITERAL("test_case.html"));
 
     // Sanity check the file name.
     EXPECT_TRUE(file_util::PathExists(test_path));
 
+    GURL::Replacements replacements;
+    replacements.SetQuery(test_case.c_str(),
+                          url_parse::Component(0, test_case.size()));
     GURL test_url = net::FilePathToFileURL(test_path);
+    RunTestURL(test_url.ReplaceComponents(replacements));
+  }
+
+  void RunTestViaHTTP(const std::string& test_case) {
+    const wchar_t kDocRoot[] = L"third_party/ppapi/tests";
+    scoped_refptr<HTTPTestServer> server =
+        HTTPTestServer::CreateForkingServer(kDocRoot);
+    ASSERT_TRUE(server);
+    RunTestURL(server->TestServerPage("files/test_case.html?" + test_case));
+  }
+
+ private:
+  void RunTestURL(const GURL& test_url) {
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_TRUE(tab.get());
     ASSERT_TRUE(tab->NavigateToURL(test_url));
@@ -81,7 +98,7 @@ TEST_F(PPAPITest, DISABLED_DeviceContext2D) {
 #else
 TEST_F(PPAPITest, DeviceContext2D) {
 #endif
-  RunTest(FILE_PATH_LITERAL("test_device_context_2d.html"));
+  RunTest("DeviceContext2D");
 }
 
 #if defined(OS_MACOSX)
@@ -90,10 +107,13 @@ TEST_F(PPAPITest, DISABLED_ImageData) {
 #else
 TEST_F(PPAPITest, ImageData) {
 #endif
-  RunTest(FILE_PATH_LITERAL("test_image_data.html"));
+  RunTest("ImageData");
 }
 
-TEST_F(PPAPITest, DISABLED_Buffer) {
-  RunTest(FILE_PATH_LITERAL("test_buffer.html"));
+TEST_F(PPAPITest, Buffer) {
+  RunTest("Buffer");
 }
 
+TEST_F(PPAPITest, URLLoader) {
+  RunTestViaHTTP("URLLoader");
+}
