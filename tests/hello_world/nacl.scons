@@ -73,15 +73,17 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_printf_test')
 
-
-env.ComponentProgram('float.nexe', 'float.c')
-node = env.CommandSelLdrTestNacl(
+# TODO(espindola): fix this ASAP
+# c.f.: http://code.google.com/p/nativeclient/issues/detail?id=626
+if env['BUILD_ARCHITECTURE'] != 'arm':
+  env.ComponentProgram('float.nexe', 'float.c')
+  node = env.CommandSelLdrTestNacl(
     'float_test.out',
     command=[env.File('float.nexe'),
              '1.0', '3.0', '0.5', '100.0', '0.3'],
     stdout_golden=env.File('float.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_float_test')
+  env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_float_test')
 
 
 # TODO(robertm): use a golden file
