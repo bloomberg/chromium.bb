@@ -83,6 +83,7 @@ const struct {
   { "xkb:us:dvorak:eng", "DV" },
   // To distinguish from "xkb:jp::jpn"
   { "mozc", "\xe3\x81\x82" },  // Japanese Hiragana letter A in UTF-8.
+  { "mozc-dv", "\xe3\x81\x82" },
   { "mozc-jp", "\xe3\x81\x82" },
 
   // Handle "m17n:t" input methods here since ICU is not able to handle the
