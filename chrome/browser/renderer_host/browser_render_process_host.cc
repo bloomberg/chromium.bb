@@ -564,6 +564,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     // information is needed very early during bringup. We prefer to
     // use the WebPreferences to set this flag on a page-by-page basis.
     switches::kEnableExperimentalWebGL,
+    switches::kEnableGLSLTranslator,
     switches::kInProcessWebGL,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.

@@ -63,7 +63,10 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   if (!context_)
     return false;
   // TODO(gman): Remove this.
-  DisableShaderTranslation(context_);
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kEnableGLSLTranslator)) {
+    DisableShaderTranslation(context_);
+  }
   return true;
 }
 

@@ -311,6 +311,9 @@ const char kEnableIndexedDatabase[]         = "enable-indexed-database";
 // This flag overrides "disable-ipv6" which appears elswhere in this file.
 const char kEnableIPv6[]                    = "enable-ipv6";
 
+// Enable the GLSL translator.
+const char kEnableGLSLTranslator[]          = "enable-glsl-translator";
+
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
 
