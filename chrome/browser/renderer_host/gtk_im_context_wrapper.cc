@@ -271,12 +271,10 @@ void GtkIMContextWrapper::CancelComposition() {
   gtk_im_context_reset(context_);
   gtk_im_context_reset(context_simple_);
 
-  if (is_focused_) {
-    // Some input methods may not honour the reset call. Focusing out/in the
-    // |context_| to make sure it gets reset correctly.
-    gtk_im_context_focus_out(context_);
-    gtk_im_context_focus_in(context_);
-  }
+  // Some input methods may not honour the reset call. Focusing out/in the
+  // |context_| to make sure it gets reset correctly.
+  gtk_im_context_focus_out(context_);
+  gtk_im_context_focus_in(context_);
 
   is_composing_text_ = false;
   preedit_text_.clear();
