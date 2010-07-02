@@ -138,11 +138,8 @@ class CookieMonster : public CookieStore {
   // one passed into the function via |delete_after|.
   int DeleteAllCreatedAfter(const base::Time& delete_begin, bool sync_to_store);
 
-  // Delete all cookies that match the host of the given URL
-  // regardless of path.  This includes all http_only and secure cookies,
-  // but does not include any domain cookies that may apply to this host.
-  // Returns the number of cookies deleted.
-  int DeleteAllForHost(const GURL& url);
+  // Delete all cookies that match the given URL.
+  int DeleteAllForURL(const GURL& url, bool sync_to_store);
 
   // Delete one specific cookie.
   bool DeleteCookie(const std::string& domain,

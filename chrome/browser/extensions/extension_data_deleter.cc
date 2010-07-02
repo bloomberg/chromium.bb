@@ -44,7 +44,7 @@ void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
   net::CookieMonster* cookie_monster =
       extension_request_context_->GetCookieStore()->GetCookieMonster();
   if (cookie_monster)
-    cookie_monster->DeleteAllForHost(extension_url_);
+    cookie_monster->DeleteAllForURL(extension_url_, true);
 }
 
 void ExtensionDataDeleter::DeleteDatabaseOnFileThread() {
