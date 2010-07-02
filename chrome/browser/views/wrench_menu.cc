@@ -542,12 +542,21 @@ bool WrenchMenu::IsCommandEnabled(int id) const {
   // The items representing the cut (cut/copy/paste) and zoom menu
   // (increment/decrement/reset) are always enabled. The child views of these
   // items enabled state updates appropriately.
-  return command_id == IDC_CUT || command_id == IDC_ZOOM_MENU ||
+  return command_id == IDC_CUT || command_id == IDC_ZOOM_PLUS ||
       entry.first->IsEnabledAt(entry.second);
 }
 
 void WrenchMenu::ExecuteCommand(int id) {
   const Entry& entry = id_to_entry_.find(id)->second;
+  int command_id = entry.first->GetCommandIdAt(entry.second);
+
+  if (command_id == IDC_CUT || command_id == IDC_ZOOM_PLUS) {
+    // These items are represented by child views. If ExecuteCommand is invoked
+    // it means the user clicked on the area around the buttons and we should
+    // not do anyting.
+    return;
+  }
+
   return entry.first->ActivatedAt(entry.second);
 }
 
