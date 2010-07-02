@@ -4,14 +4,14 @@
     <output filename="grit/common_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
-    <output filename="common_resources.rc" type="rc_all" />
     <output filename="common_resources.pak" type="data_package" />
+    <output filename="common_resources.rc" type="rc_all" />
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_JSTEMPLATE_JS" file="..\third_party\jstemplate\jstemplate_compiled.js" type="BINDATA" />
-      <include name="IDR_I18N_TEMPLATE_JS" file="..\browser\resources\shared\js\i18n_template.js" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON" file="extensions\api\extension_api.json" type="BINDATA" />
+      <include name="IDR_I18N_TEMPLATE_JS" file="..\browser\resources\shared\js\i18n_template.js" type="BINDATA" />
+      <include name="IDR_JSTEMPLATE_JS" file="..\third_party\jstemplate\jstemplate_compiled.js" type="BINDATA" />
     </includes>
   </release>
 </grit>
