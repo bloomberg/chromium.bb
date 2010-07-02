@@ -782,7 +782,8 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   // Split our canvas out so we can mask out the corners of the toolbar
   // without masking out the frame.
   canvas->SaveLayerAlpha(
-      255, gfx::Rect(x - kClientEdgeThickness, y, w + kClientEdgeThickness, h));
+      255, gfx::Rect(x - kClientEdgeThickness, y, w + kClientEdgeThickness * 3,
+                     h));
   canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
 
   SkColor theme_toolbar_color =
