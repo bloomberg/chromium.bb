@@ -99,45 +99,57 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void RemoveAllClients();
 
  private:
+  // Getters for capturer and encoder.
+  Capturer* capturer();
+  Encoder* encoder();
+
+  // Capturer thread ----------------------------------------------------------
+
   void DoStart();
   void DoPause();
+
+  void DoSetRate(double rate);
+  void DoSetMaxRate(double max_rate);
+
+  // Hepler method to schedule next capture using the current rate.
+  void ScheduleNextCapture();
+
+  void DoCapture();
+  void CaptureDoneCallback(scoped_refptr<Capturer::CaptureData> capture_data);
+  void DoFinishEncode();
+
+  void DoGetInitInfo(scoped_refptr<ClientConnection> client);
+
+  // Network thread -----------------------------------------------------------
+
   void DoStartRateControl();
   void DoPauseRateControl();
 
-  void DoCapture();
-  void DoFinishEncode();
+  // Helper method to schedule next rate regulation task.
+  void ScheduleNextRateControl();
 
-  void DoEncode(scoped_refptr<Capturer::CaptureData> capture_data);
+  void DoRateControl();
+
   // DoSendUpdate takes ownership of header and is responsible for deleting it.
   void DoSendUpdate(const UpdateStreamPacketHeader* header,
                     const scoped_refptr<media::DataBuffer> data,
                     Encoder::EncodingState state);
   void DoSendInit(scoped_refptr<ClientConnection> client,
                   int width, int height);
-  void DoGetInitInfo(scoped_refptr<ClientConnection> client);
-  void DoSetRate(double rate);
-  void DoSetMaxRate(double max_rate);
+
   void DoAddClient(scoped_refptr<ClientConnection> client);
   void DoRemoveClient(scoped_refptr<ClientConnection> client);
   void DoRemoveAllClients();
-  void DoRateControl();
 
-  // Hepler method to schedule next capture using the current rate.
-  void ScheduleNextCapture();
+  // Encoder thread -----------------------------------------------------------
 
-  // Helper method to schedule next rate regulation task.
-  void ScheduleNextRateControl();
+  void DoEncode(scoped_refptr<Capturer::CaptureData> capture_data);
 
-  void CaptureDoneCallback(scoped_refptr<Capturer::CaptureData> capture_data);
   // EncodeDataAvailableTask takes ownership of header and is responsible for
   // deleting it.
   void EncodeDataAvailableTask(const UpdateStreamPacketHeader *header,
                                const scoped_refptr<media::DataBuffer>& data,
                                Encoder::EncodingState state);
-
-  // Getters for capturer and encoder.
-  Capturer* capturer();
-  Encoder* encoder();
 
   // Message loops used by this class.
   MessageLoop* capture_loop_;

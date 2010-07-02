@@ -57,68 +57,16 @@ SessionManager::~SessionManager() {
   clients_.clear();
 }
 
+// Public methods --------------------------------------------------------------
+
 void SessionManager::Start() {
   capture_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &SessionManager::DoStart));
 }
 
-void SessionManager::DoStart() {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-
-  if (started_) {
-    NOTREACHED() << "Record session already started";
-    return;
-  }
-
-  started_ = true;
-  DoCapture();
-
-  // Starts the rate regulation.
-  network_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoStartRateControl));
-}
-
-void SessionManager::DoStartRateControl() {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  if (rate_control_started_) {
-    NOTREACHED() << "Rate regulation already started";
-    return;
-  }
-  rate_control_started_ = true;
-  ScheduleNextRateControl();
-}
-
 void SessionManager::Pause() {
   capture_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &SessionManager::DoPause));
-}
-
-void SessionManager::DoPause() {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-
-  if (!started_) {
-    NOTREACHED() << "Record session not started";
-    return;
-  }
-
-  started_ = false;
-
-  // Pause the rate regulation.
-  network_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoPauseRateControl));
-}
-
-void SessionManager::DoPauseRateControl() {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  if (!rate_control_started_) {
-    NOTREACHED() << "Rate regulation not started";
-    return;
-  }
-  rate_control_started_ = false;
 }
 
 void SessionManager::SetMaxRate(double rate) {
@@ -143,6 +91,93 @@ void SessionManager::RemoveAllClients() {
   network_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &SessionManager::DoRemoveAllClients));
+}
+
+// Private accessors -----------------------------------------------------------
+
+Capturer* SessionManager::capturer() {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+  return capturer_.get();
+}
+
+Encoder* SessionManager::encoder() {
+  DCHECK_EQ(encode_loop_, MessageLoop::current());
+  return encoder_.get();
+}
+
+// Capturer thread -------------------------------------------------------------
+
+void SessionManager::DoStart() {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  if (started_) {
+    NOTREACHED() << "Record session already started";
+    return;
+  }
+
+  started_ = true;
+  DoCapture();
+
+  // Starts the rate regulation.
+  network_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &SessionManager::DoStartRateControl));
+}
+
+void SessionManager::DoPause() {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  if (!started_) {
+    NOTREACHED() << "Record session not started";
+    return;
+  }
+
+  started_ = false;
+
+  // Pause the rate regulation.
+  network_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &SessionManager::DoPauseRateControl));
+}
+
+void SessionManager::DoSetRate(double rate) {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+  if (rate == rate_)
+    return;
+
+  // Change the current capture rate.
+  rate_ = rate;
+
+  // If we have already started then schedule the next capture with the new
+  // rate.
+  if (started_)
+    ScheduleNextCapture();
+}
+
+void SessionManager::DoSetMaxRate(double max_rate) {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  // TODO(hclam): Should also check for small epsilon.
+  if (max_rate != 0) {
+    max_rate_ = max_rate;
+    DoSetRate(max_rate);
+  } else {
+    NOTREACHED() << "Rate is too small.";
+  }
+}
+
+void SessionManager::ScheduleNextCapture() {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+
+  if (rate_ == 0)
+    return;
+
+  base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
+      static_cast<int>(base::Time::kMillisecondsPerSecond / rate_));
+  capture_loop_->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &SessionManager::DoCapture),
+      interval.InMilliseconds());
 }
 
 void SessionManager::DoCapture() {
@@ -183,6 +218,14 @@ void SessionManager::DoCapture() {
       NewCallback(this, &SessionManager::CaptureDoneCallback));
 }
 
+void SessionManager::CaptureDoneCallback(
+    scoped_refptr<Capturer::CaptureData> capture_data) {
+  DCHECK_EQ(capture_loop_, MessageLoop::current());
+  encode_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &SessionManager::DoEncode, capture_data));
+}
+
 void SessionManager::DoFinishEncode() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
@@ -194,46 +237,6 @@ void SessionManager::DoFinishEncode() {
   // if it is too early to perform a capture.
   if (rate_ > 0)
     DoCapture();
-}
-
-void SessionManager::DoEncode(
-    scoped_refptr<Capturer::CaptureData> capture_data) {
-  DCHECK_EQ(encode_loop_, MessageLoop::current());
-
-  // TODO(hclam): Enable |force_refresh| if a new client was
-  // added.
-  encoder_->Encode(capture_data, false,
-                   NewCallback(this, &SessionManager::EncodeDataAvailableTask));
-}
-
-void SessionManager::DoSendUpdate(const UpdateStreamPacketHeader* header,
-                                  const scoped_refptr<media::DataBuffer> data,
-                                  Encoder::EncodingState state) {
-  // Take ownership of header.
-  scoped_ptr<const UpdateStreamPacketHeader> header_owner(header);
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  for (ClientConnectionList::const_iterator i = clients_.begin();
-       i < clients_.end();
-       ++i) {
-    if (state & Encoder::EncodingStarting) {
-      (*i)->SendBeginUpdateStreamMessage();
-    }
-
-    (*i)->SendUpdateStreamPacketMessage(header, data);
-
-    if (state & Encoder::EncodingEnded) {
-      (*i)->SendEndUpdateStreamMessage();
-    }
-  }
-}
-
-void SessionManager::DoSendInit(scoped_refptr<ClientConnection> client,
-                                int width, int height) {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  // Sends the client init information.
-  client->SendInitClientMessage(width, height);
 }
 
 void SessionManager::DoGetInitInfo(scoped_refptr<ClientConnection> client) {
@@ -253,55 +256,34 @@ void SessionManager::DoGetInitInfo(scoped_refptr<ClientConnection> client) {
       NewRunnableMethod(this, &SessionManager::DoAddClient, client));
 }
 
-void SessionManager::DoSetRate(double rate) {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-  if (rate == rate_)
+// Network thread --------------------------------------------------------------
+
+void SessionManager::DoStartRateControl() {
+  DCHECK_EQ(network_loop_, MessageLoop::current());
+
+  if (rate_control_started_) {
+    NOTREACHED() << "Rate regulation already started";
     return;
-
-  // Change the current capture rate.
-  rate_ = rate;
-
-  // If we have already started then schedule the next capture with the new
-  // rate.
-  if (started_)
-    ScheduleNextCapture();
-}
-
-void SessionManager::DoSetMaxRate(double max_rate) {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-
-  // TODO(hclam): Should also check for small epsilon.
-  if (max_rate != 0) {
-    max_rate_ = max_rate;
-    DoSetRate(max_rate);
-  } else {
-    NOTREACHED() << "Rate is too small.";
   }
+  rate_control_started_ = true;
+  ScheduleNextRateControl();
 }
 
-void SessionManager::DoAddClient(scoped_refptr<ClientConnection> client) {
+void SessionManager::DoPauseRateControl() {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  // TODO(hclam): Force a full frame for next encode.
-  clients_.push_back(client);
-}
-
-void SessionManager::DoRemoveClient(scoped_refptr<ClientConnection> client) {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  // TODO(hclam): Is it correct to do to a scoped_refptr?
-  ClientConnectionList::iterator it
-      = std::find(clients_.begin(), clients_.end(), client);
-  if (it != clients_.end()) {
-    clients_.erase(it);
+  if (!rate_control_started_) {
+    NOTREACHED() << "Rate regulation not started";
+    return;
   }
+  rate_control_started_ = false;
 }
 
-void SessionManager::DoRemoveAllClients() {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  // Clear the list of clients.
-  clients_.clear();
+void SessionManager::ScheduleNextRateControl() {
+  network_loop_->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &SessionManager::DoRateControl),
+      kRateControlInterval.InMilliseconds());
 }
 
 void SessionManager::DoRateControl() {
@@ -339,33 +321,71 @@ void SessionManager::DoRateControl() {
   ScheduleNextRateControl();
 }
 
-void SessionManager::ScheduleNextCapture() {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
+void SessionManager::DoSendUpdate(const UpdateStreamPacketHeader* header,
+                                  const scoped_refptr<media::DataBuffer> data,
+                                  Encoder::EncodingState state) {
+  // Take ownership of header.
+  scoped_ptr<const UpdateStreamPacketHeader> header_owner(header);
+  DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  if (rate_ == 0)
-    return;
+  for (ClientConnectionList::const_iterator i = clients_.begin();
+       i < clients_.end();
+       ++i) {
+    if (state & Encoder::EncodingStarting) {
+      (*i)->SendBeginUpdateStreamMessage();
+    }
 
-  base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
-      static_cast<int>(base::Time::kMillisecondsPerSecond / rate_));
-  capture_loop_->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoCapture),
-      interval.InMilliseconds());
+    (*i)->SendUpdateStreamPacketMessage(header, data);
+
+    if (state & Encoder::EncodingEnded) {
+      (*i)->SendEndUpdateStreamMessage();
+    }
+  }
 }
 
-void SessionManager::ScheduleNextRateControl() {
-  network_loop_->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoRateControl),
-      kRateControlInterval.InMilliseconds());
+void SessionManager::DoSendInit(scoped_refptr<ClientConnection> client,
+                                int width, int height) {
+  DCHECK_EQ(network_loop_, MessageLoop::current());
+
+  // Sends the client init information.
+  client->SendInitClientMessage(width, height);
 }
 
-void SessionManager::CaptureDoneCallback(
+void SessionManager::DoAddClient(scoped_refptr<ClientConnection> client) {
+  DCHECK_EQ(network_loop_, MessageLoop::current());
+
+  // TODO(hclam): Force a full frame for next encode.
+  clients_.push_back(client);
+}
+
+void SessionManager::DoRemoveClient(scoped_refptr<ClientConnection> client) {
+  DCHECK_EQ(network_loop_, MessageLoop::current());
+
+  // TODO(hclam): Is it correct to do to a scoped_refptr?
+  ClientConnectionList::iterator it
+      = std::find(clients_.begin(), clients_.end(), client);
+  if (it != clients_.end()) {
+    clients_.erase(it);
+  }
+}
+
+void SessionManager::DoRemoveAllClients() {
+  DCHECK_EQ(network_loop_, MessageLoop::current());
+
+  // Clear the list of clients.
+  clients_.clear();
+}
+
+// Encoder thread --------------------------------------------------------------
+
+void SessionManager::DoEncode(
     scoped_refptr<Capturer::CaptureData> capture_data) {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-  encode_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoEncode, capture_data));
+  DCHECK_EQ(encode_loop_, MessageLoop::current());
+
+  // TODO(hclam): Enable |force_refresh| if a new client was
+  // added.
+  encoder_->Encode(capture_data, false,
+                   NewCallback(this, &SessionManager::EncodeDataAvailableTask));
 }
 
 void SessionManager::EncodeDataAvailableTask(
@@ -390,16 +410,6 @@ void SessionManager::EncodeDataAvailableTask(
     capture_loop_->PostTask(
         FROM_HERE, NewRunnableMethod(this, &SessionManager::DoFinishEncode));
   }
-}
-
-Capturer* SessionManager::capturer() {
-  DCHECK_EQ(capture_loop_, MessageLoop::current());
-  return capturer_.get();
-}
-
-Encoder* SessionManager::encoder() {
-  DCHECK_EQ(encode_loop_, MessageLoop::current());
-  return encoder_.get();
 }
 
 }  // namespace remoting
