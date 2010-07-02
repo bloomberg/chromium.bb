@@ -195,6 +195,10 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // This is the width we were at when we started animating.
   int start_width_;
 
+  // We only draw the browser action gripper when the user is hovering over it
+  // or dragging it.
+  bool draw_gripper_;
+
   GtkSignalRegistrar signals_;
 
   ScopedRunnableMethodFactory<BrowserActionsToolbarGtk> method_factory_;
