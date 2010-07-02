@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@ class Profile;
 namespace history {
 
 class InMemoryDatabase;
+class InMemoryURLIndex;
 struct URLsDeletedDetails;
 struct URLsModifiedDetails;
 
@@ -50,6 +51,12 @@ class InMemoryHistoryBackend : public NotificationObserver {
     return db_.get();
   }
 
+  // Returns the in memory index owned by this backend.  This index is only
+  // loaded when the --enable-in-memory-url-index flag is used.
+  InMemoryURLIndex* index() const {
+    return index_.get();
+  }
+
   // Notification callback.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -67,6 +74,8 @@ class InMemoryHistoryBackend : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   scoped_ptr<InMemoryDatabase> db_;
+
+  scoped_ptr<InMemoryURLIndex> index_;
 
   // The profile that this object is attached. May be NULL before
   // initialization.

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/sqlite_utils.h"
 #include "chrome/common/url_constants.h"
@@ -149,25 +151,31 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
   typedef std::vector<history::URLRow> URLRowVector;
   URLRowVector url_matches;
   HistoryMatches history_matches;
-  for (Prefixes::const_iterator i(prefixes_.begin()); i != prefixes_.end();
-       ++i) {
-    if (params->cancel)
-      return;  // Canceled in the middle of a query, give up.
-    // We only need kMaxMatches results in the end, but before we get there we
-    // need to promote lower-quality matches that are prefixes of
-    // higher-quality matches, and remove lower-quality redirects.  So we ask
-    // for more results than we need, of every prefix type, in hopes this will
-    // give us far more than enough to work with.  CullRedirects() will then
-    // reduce the list to the best kMaxMatches results.
-    db->AutocompleteForPrefix(WideToUTF16(i->prefix + params->input.text()),
-                              kMaxMatches * 2, &url_matches);
-    for (URLRowVector::const_iterator j(url_matches.begin());
-         j != url_matches.end(); ++j) {
-      const Prefix* best_prefix = BestPrefix(j->url(), std::wstring());
-      DCHECK(best_prefix != NULL);
-      history_matches.push_back(HistoryMatch(*j, i->prefix.length(),
-          !i->num_components,
-          i->num_components >= best_prefix->num_components));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableInMemoryURLIndex)) {
+    // TODO(rohitrao): Fetch results from the index.
+  } else {
+    for (Prefixes::const_iterator i(prefixes_.begin()); i != prefixes_.end();
+         ++i) {
+      if (params->cancel)
+        return;  // Canceled in the middle of a query, give up.
+      // We only need kMaxMatches results in the end, but before we get there we
+      // need to promote lower-quality matches that are prefixes of
+      // higher-quality matches, and remove lower-quality redirects.  So we ask
+      // for more results than we need, of every prefix type, in hopes this will
+      // give us far more than enough to work with.  CullRedirects() will then
+      // reduce the list to the best kMaxMatches results.
+      db->AutocompleteForPrefix(WideToUTF16(i->prefix + params->input.text()),
+                                kMaxMatches * 2, &url_matches);
+      for (URLRowVector::const_iterator j(url_matches.begin());
+           j != url_matches.end(); ++j) {
+        const Prefix* best_prefix = BestPrefix(j->url(), std::wstring());
+        DCHECK(best_prefix != NULL);
+        history_matches.push_back(HistoryMatch(*j, i->prefix.length(),
+            !i->num_components,
+            i->num_components >= best_prefix->num_components));
+      }
     }
   }
 

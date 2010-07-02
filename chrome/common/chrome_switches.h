@@ -105,6 +105,7 @@ extern const char kEnableGLSLTranslator[];
 extern const char kEnableGPUPlugin[];
 extern const char kEnableGPURendering[];
 extern const char kEnableIndexedDatabase[];
+extern const char kEnableInMemoryURLIndex[];
 extern const char kEnableIPv6[];
 extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];

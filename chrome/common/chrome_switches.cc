@@ -305,6 +305,10 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // Enable the Indexed Database API.
 const char kEnableIndexedDatabase[]         = "enable-indexed-database";
 
+// Use the InMemoryURLIndex to back the HistoryURLProvider for autocomplete
+// results.  If not set, defaults to using the InMemoryDatabase.
+const char kEnableInMemoryURLIndex[]        = "enable-in-memory-url-index";
+
 // Enable IPv6 support, even if probes suggest that it may not be fully
 // supported.  Some probes may require internet connections, and this flag will
 // allow support independent of application testing.
