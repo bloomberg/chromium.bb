@@ -69,6 +69,10 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   // was set to in the constructor).
   std::string GetWindowTitle() const;
 
+  // Gets the selected indicies in the two list stores. Indicies are returned
+  // in <list_store_, sort_list_store_> order.
+  void GetSelectedModelIndices(std::set<std::pair<int, int> >* indices);
+
   // GTK Callbacks
   CHROMEGTK_CALLBACK_2(ContentExceptionsWindowGtk, void,
                        OnTreeViewRowActivate, GtkTreePath*, GtkTreeViewColumn*);
@@ -76,7 +80,12 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   CHROMEGTK_CALLBACK_0(ContentExceptionsWindowGtk, void,
                        OnTreeSelectionChanged);
 
-  // The list presented in |treeview_|; a gobject instead of a C++ object.
+  // The list presented in |treeview_|. Separate from |list_store_|, the list
+  // that backs |sort_model_|. This separation comes so the user can sort the
+  // data on screen without changing the underlying |list_store_|.
+  GtkTreeModel* sort_list_store_;
+
+  // The backing to |sort_list_store_|. Doesn't change when sorted.
   GtkListStore* list_store_;
 
   // The C++, views-ish, cross-platform model class that actually contains the
@@ -103,6 +112,8 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   GtkWidget* edit_button_;
   GtkWidget* remove_button_;
   GtkWidget* remove_all_button_;
+
+  friend class ContentExceptionsWindowGtkUnittest;
 };
 
 #endif  // CHROME_BROWSER_GTK_OPTIONS_CONTENT_EXCEPTIONS_WINDOW_GTK_H_
