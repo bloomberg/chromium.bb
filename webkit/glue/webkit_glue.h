@@ -248,6 +248,9 @@ void ClearCache();
 // Returns the product version.  E.g., Chrome/4.1.333.0
 std::string GetProductVersion();
 
+// Returns true if the embedder is running in single process mode.
+bool IsSingleProcess();
+
 // ---- END FUNCTIONS IMPLEMENTED BY EMBEDDER ---------------------------------
 
 

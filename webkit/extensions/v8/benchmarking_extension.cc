@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/stats_table.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
@@ -35,6 +36,10 @@ class BenchmarkingWrapper : public v8::Extension {
         "  native function GetCounter();"
         "  return GetCounter(name);"
         "};"
+        "chrome.benchmarking.isSingleProcess = function() {"
+        "  native function IsSingleProcess();"
+        "  return IsSingleProcess();"
+        "};"
         ) {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -45,6 +50,8 @@ class BenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(ClearCache);
     } else if (name->Equals(v8::String::New("GetCounter"))) {
       return v8::FunctionTemplate::New(GetCounter);
+    } else if (name->Equals(v8::String::New("IsSingleProcess"))) {
+      return v8::FunctionTemplate::New(IsSingleProcess);
     }
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -72,6 +79,10 @@ class BenchmarkingWrapper : public v8::Extension {
 
     int counter = StatsTable::current()->GetCounterValue(name);
     return v8::Integer::New(counter);
+  }
+
+  static v8::Handle<v8::Value> IsSingleProcess(const v8::Arguments& args) {
+    return v8::Boolean::New(webkit_glue::IsSingleProcess());
   }
 };
 

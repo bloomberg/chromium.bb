@@ -809,4 +809,8 @@ std::string GetProductVersion() {
   return std::string("Chrome/0.0.0.0");
 }
 
+bool IsSingleProcess() {
+  return true;
+}
+
 }  // namespace webkit_glue
