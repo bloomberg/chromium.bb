@@ -838,6 +838,8 @@
         'browser/sync/engine/build_commit_command.h',
         'browser/sync/engine/change_reorder_buffer.cc',
         'browser/sync/engine/change_reorder_buffer.h',
+        'browser/sync/engine/cleanup_disabled_types_command.cc',
+        'browser/sync/engine/cleanup_disabled_types_command.h',
         'browser/sync/engine/conflict_resolver.cc',
         'browser/sync/engine/conflict_resolver.h',
         'browser/sync/engine/download_updates_command.cc',

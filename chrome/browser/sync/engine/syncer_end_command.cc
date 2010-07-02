@@ -17,6 +17,8 @@ SyncerEndCommand::~SyncerEndCommand() {}
 void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   sessions::StatusController* status(session->status_controller());
   status->set_syncing(false);
+  session->context()->set_previous_session_routing_info(
+      session->routing_info());
 
   // This might be the first time we've fully completed a sync cycle, for
   // some subset of the currently synced datatypes.

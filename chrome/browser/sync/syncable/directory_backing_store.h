@@ -81,6 +81,7 @@ class DirectoryBackingStore {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion71To72);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);
   FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
   friend class MigrationTest;
 
@@ -121,6 +122,13 @@ class DirectoryBackingStore {
   // Initialize and destroy load_dbhandle_.  Broken out for testing.
   bool BeginLoad();
   void EndLoad();
+
+  // Close save_dbhandle_.  Broken out for testing.
+  void EndSave();
+
+  // Removes each entry whose metahandle is in |handles| from the database.
+  // Does synchronous I/O.  Returns false on error.
+  bool DeleteEntries(const MetahandleSet& handles);
 
   // Lazy creation of save_dbhandle_ for use by SaveChanges code path.
   sqlite3* LazyGetSaveHandle();

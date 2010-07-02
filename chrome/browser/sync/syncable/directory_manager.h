@@ -54,7 +54,7 @@ class DirectoryManager {
 
   // root_path specifies where db is stored.
   explicit DirectoryManager(const FilePath& root_path);
-  ~DirectoryManager();
+  virtual ~DirectoryManager();
 
   static const FilePath GetSyncDataDatabaseFilename();
   const FilePath GetSyncDataDatabasePath() const;

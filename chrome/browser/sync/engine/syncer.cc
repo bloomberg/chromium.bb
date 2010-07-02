@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/engine/apply_updates_command.h"
 #include "chrome/browser/sync/engine/build_and_process_conflict_sets_command.h"
 #include "chrome/browser/sync/engine/build_commit_command.h"
+#include "chrome/browser/sync/engine/cleanup_disabled_types_command.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/download_updates_command.h"
 #include "chrome/browser/sync/engine/get_commit_ids_command.h"
@@ -119,8 +120,15 @@ void Syncer::SyncShare(sessions::SyncSession* session,
     switch (current_step) {
       case SYNCER_BEGIN:
         LOG(INFO) << "Syncer Begin";
+        next_step = CLEANUP_DISABLED_TYPES;
+        break;
+      case CLEANUP_DISABLED_TYPES: {
+        LOG(INFO) << "Cleaning up disabled types";
+        CleanupDisabledTypesCommand cleanup;
+        cleanup.Execute(session);
         next_step = DOWNLOAD_UPDATES;
         break;
+      }
       case DOWNLOAD_UPDATES: {
         LOG(INFO) << "Downloading Updates";
         DownloadUpdatesCommand download_updates;

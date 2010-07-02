@@ -34,8 +34,10 @@
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/sync_types.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncable {
 class DirectoryManager;
@@ -65,6 +67,7 @@ class TestDirectorySetterUpper {
   // Subclasses may want to use a different directory name.
   explicit TestDirectorySetterUpper(const std::string& name);
   virtual void Init();
+  void reset_directory_manager(syncable::DirectoryManager* d);
 
  private:
   void RunInvariantCheck(const syncable::ScopedDirLookup& dir);
@@ -98,6 +101,33 @@ class TriggeredOpenTestDirectorySetterUpper : public TestDirectorySetterUpper {
   explicit TriggeredOpenTestDirectorySetterUpper(const std::string& name);
   virtual void SetUp();
   virtual void TearDown();
+};
+
+// Use this when you don't want to test the whole stack down to the Directory
+// level, as it installs a google mock Directory implementation.
+class MockDirectorySetterUpper : public TestDirectorySetterUpper {
+ public:
+  class Manager : public syncable::DirectoryManager {
+   public:
+    Manager(const FilePath& root_path, syncable::Directory* dir);
+    virtual ~Manager() { managed_directory_ = NULL; }
+  };
+
+  class MockDirectory : public syncable::Directory {
+   public:
+    explicit MockDirectory(const std::string& name);
+    virtual ~MockDirectory() {}
+    MOCK_METHOD1(PurgeEntriesWithTypeIn, void(const syncable::ModelTypeSet&));
+  };
+
+  MockDirectorySetterUpper();
+
+  virtual void SetUp();
+  virtual void TearDown();
+  MockDirectory* directory() { return directory_.get(); }
+
+ private:
+  scoped_ptr<MockDirectory> directory_;
 };
 
 }  // namespace browser_sync

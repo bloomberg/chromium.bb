@@ -570,7 +570,13 @@ struct MultiTypeTimeStamp {
 // the write. This is defined up here since DirectoryChangeEvent also contains
 // one.
 enum WriterTag {
-  INVALID, SYNCER, AUTHWATCHER, UNITTEST, VACUUM_AFTER_SAVE, SYNCAPI
+  INVALID,
+  SYNCER,
+  AUTHWATCHER,
+  UNITTEST,
+  VACUUM_AFTER_SAVE,
+  PURGE_ENTRIES,
+  SYNCAPI
 };
 
 // A separate Event type and channel for very frequent changes, caused
@@ -644,6 +650,8 @@ class Directory {
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
                            TakeSnapshotGetsOnlyDirtyHandlesTest);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn);
+  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
+                           TakeSnapshotGetsMetahandlesToPurge);
 
  public:
   class EventListenerHookup;
@@ -692,6 +700,7 @@ class Directory {
     KernelShareInfoStatus kernel_info_status;
     PersistedKernelInfo kernel_info;
     OriginalEntries dirty_metas;
+    MetahandleSet metahandles_to_purge;
     SaveChangesSnapshot() : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {
     }
   };
@@ -773,6 +782,9 @@ class Directory {
   // The semantic checking is implemented higher up.
   void Undelete(EntryKernel* const entry);
   void Delete(EntryKernel* const entry);
+  void UnlinkEntryFromOrder(EntryKernel* entry,
+                            WriteTransaction* trans,
+                            ScopedKernelLock* lock);
 
   // Overridden by tests.
   virtual DirectoryBackingStore* CreateBackingStore(
@@ -862,7 +874,7 @@ class Directory {
   // entries, which means something different in the syncable namespace.
   // WARNING! This can be real slow, as it iterates over all entries.
   // WARNING! Performs synchronous I/O.
-  void PurgeEntriesWithTypeIn(const std::set<ModelType>& types);
+  virtual void PurgeEntriesWithTypeIn(const std::set<ModelType>& types);
 
  private:
   // Helper to prime ids_index, parent_id_and_names_index, unsynced_metahandles
@@ -926,6 +938,10 @@ class Directory {
   typedef std::set<EntryKernel*,
                    LessField<StringField, UNIQUE_CLIENT_TAG> > ClientTagIndex;
 
+ protected:
+  // Used by tests.
+  void init_kernel(const std::string& name);
+
  private:
 
   struct Kernel {
@@ -969,6 +985,10 @@ class Directory {
     // Contains metahandles that are most likely dirty (though not
     // necessarily).  Dirtyness is confirmed in TakeSnapshotForSaveChanges().
     MetahandleSet* const dirty_metahandles;
+
+    // When a purge takes place, we remove items from all our indices and stash
+    // them in here so that SaveChanges can persist their permanent deletion.
+    MetahandleSet* const metahandles_to_purge;
 
     // TODO(ncarter): Figure out what the hell this is, and comment it.
     Channel* const channel;

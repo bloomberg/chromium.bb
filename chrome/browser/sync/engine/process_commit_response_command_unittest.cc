@@ -86,7 +86,7 @@ class ProcessCommitResponseCommandTestWithParam
                           bool is_folder,
                           syncable::ModelType model_type,
                           int64* metahandle_out) {
-    ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     Id predecessor_id = dir->GetLastChildId(&trans, parent_id);
@@ -132,7 +132,7 @@ class ProcessCommitResponseCommandTestWithParam
     commit_set_->AddCommitItem(metahandle, item_id, model_type);
     sync_state->set_commit_set(*commit_set_.get());
 
-    ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, syncable::GET_BY_ID, item_id);
@@ -228,7 +228,7 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
 
   command_.ExecuteImpl(session());
 
-  ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+  ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
   ReadTransaction trans(dir, __FILE__, __LINE__);
   Id new_fid = dir->GetFirstChildId(&trans, id_factory_.root());
@@ -282,7 +282,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
 
   // Verify that the item is reachable.
   {
-    ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     ReadTransaction trans(dir, __FILE__, __LINE__);
     ASSERT_EQ(folder_id, dir->GetFirstChildId(&trans, id_factory_.root()));
@@ -315,7 +315,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
   // items in the commit batch should have their IDs changed to server IDs.
   command_.ExecuteImpl(session());
 
-  ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+  ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
   ReadTransaction trans(dir, __FILE__, __LINE__);
   // Lookup the parent folder by finding a child of the root.  We can't use

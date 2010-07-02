@@ -1043,4 +1043,49 @@ TEST_F(DirectoryBackingStoreTest, Corruption) {
   }
 }
 
+TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
+  SetUpCurrentDatabaseAndCheckVersion();
+  scoped_ptr<DirectoryBackingStore> dbs(
+      new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+  dbs->BeginLoad();
+
+  MetahandlesIndex index;
+  dbs->LoadEntries(&index);
+  size_t initial_size = index.size();
+  ASSERT_LT(0U, initial_size) << "Test requires entries to delete.";
+  int64 first_to_die = (*index.begin())->ref(META_HANDLE);
+  MetahandleSet to_delete;
+  to_delete.insert(first_to_die);
+  EXPECT_TRUE(dbs->DeleteEntries(to_delete));
+
+  index.clear();
+  dbs->LoadEntries(&index);
+
+  EXPECT_EQ(initial_size - 1, index.size());
+  bool delete_failed = false;
+  for (MetahandlesIndex::iterator it = index.begin(); it != index.end();
+       ++it) {
+    if ((*it)->ref(META_HANDLE) == first_to_die) {
+      delete_failed = true;
+      break;
+    }
+  }
+  EXPECT_FALSE(delete_failed);
+
+  to_delete.clear();
+  for (MetahandlesIndex::iterator it = index.begin(); it != index.end();
+       ++it) {
+    to_delete.insert((*it)->ref(META_HANDLE));
+  }
+
+  EXPECT_TRUE(dbs->DeleteEntries(to_delete));
+
+  index.clear();
+  dbs->LoadEntries(&index);
+  EXPECT_EQ(0U, index.size());
+
+  dbs->EndLoad();
+  dbs->EndSave();
+}
+
 }  // namespace syncable

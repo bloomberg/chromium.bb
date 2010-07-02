@@ -25,9 +25,13 @@ TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
 void TestDirectorySetterUpper::Init() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  manager_.reset(new DirectoryManager(temp_dir_.path()));
+  reset_directory_manager(new DirectoryManager(temp_dir_.path()));
   file_path_ = manager_->GetSyncDataDatabasePath();
   file_util::Delete(file_path_, false);
+}
+
+void TestDirectorySetterUpper::reset_directory_manager(DirectoryManager* d) {
+  manager_.reset(d);
 }
 
 void TestDirectorySetterUpper::SetUp() {
@@ -102,6 +106,29 @@ void TriggeredOpenTestDirectorySetterUpper::TearDown() {
     ASSERT_EQ(name(), names[0]);
     TestDirectorySetterUpper::TearDown();
   }
+}
+
+MockDirectorySetterUpper::MockDirectory::MockDirectory(
+    const std::string& name) {
+  init_kernel(name);
+}
+
+MockDirectorySetterUpper::Manager::Manager(
+    const FilePath& root_path, syncable::Directory* dir) :
+    syncable::DirectoryManager(root_path) {
+  managed_directory_ = dir;
+}
+
+MockDirectorySetterUpper::MockDirectorySetterUpper()
+    : directory_(new MockDirectory(name())) {
+}
+
+void MockDirectorySetterUpper::SetUp() {
+  reset_directory_manager(new Manager(FilePath(), directory_.get()));
+}
+
+void MockDirectorySetterUpper::TearDown() {
+  // Nothing to do here.
 }
 
 }  // namespace browser_sync

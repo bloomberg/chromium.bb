@@ -88,7 +88,7 @@ TEST_F(DownloadUpdatesCommandTest, SetRequestedTypes) {
 }
 
 TEST_F(DownloadUpdatesCommandTest, OldestTimestampPicked) {
-  syncable::ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+  syncable::ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
 
   // i,j,k range over every possible model type.  j and k are enabled and at

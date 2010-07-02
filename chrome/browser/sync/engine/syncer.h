@@ -44,6 +44,7 @@ static const int kDefaultMaxCommitBatchSize = 25;
 
 enum SyncerStep {
   SYNCER_BEGIN,
+  CLEANUP_DISABLED_TYPES,
   DOWNLOAD_UPDATES,
   PROCESS_CLIENT_COMMAND,
   VERIFY_UPDATES,

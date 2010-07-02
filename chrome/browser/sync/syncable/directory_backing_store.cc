@@ -250,6 +250,33 @@ void DirectoryBackingStore::EndLoad() {
   load_dbhandle_ = NULL;  // No longer used.
 }
 
+void DirectoryBackingStore::EndSave() {
+  sqlite3_close(save_dbhandle_);
+  save_dbhandle_ = NULL;
+}
+
+bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
+  if (handles.empty())
+    return true;
+
+  sqlite3* dbhandle = LazyGetSaveHandle();
+
+  string query = "DELETE FROM metas WHERE metahandle IN (";
+  for (MetahandleSet::const_iterator it = handles.begin(); it != handles.end();
+       ++it) {
+    if (it != handles.begin())
+      query.append(",");
+    query.append(Int64ToString(*it));
+  }
+  query.append(")");
+  SQLStatement statement;
+  int result = statement.prepare(dbhandle, query.data(), query.size());
+  if (SQLITE_OK == result)
+    result = statement.step();
+
+  return SQLITE_DONE == result;
+}
+
 bool DirectoryBackingStore::SaveChanges(
     const Directory::SaveChangesSnapshot& snapshot) {
   sqlite3* dbhandle = LazyGetSaveHandle();
@@ -272,6 +299,9 @@ bool DirectoryBackingStore::SaveChanges(
     if (!SaveEntryToDB(*i))
       return false;
   }
+
+  if (!DeleteEntries(snapshot.metahandles_to_purge))
+    return false;
 
   if (save_info) {
     const Directory::PersistedKernelInfo& info = snapshot.kernel_info;

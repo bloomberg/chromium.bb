@@ -96,6 +96,14 @@ class SyncSessionContext {
   }
   const std::string& account_name() { return account_name_; }
 
+  const ModelSafeRoutingInfo& previous_session_routing_info() const {
+    return previous_session_routing_info_;
+  }
+
+  void set_previous_session_routing_info(const ModelSafeRoutingInfo& info) {
+    previous_session_routing_info_ = info;
+  }
+
  private:
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
@@ -125,6 +133,10 @@ class SyncSessionContext {
 
   // The name of the account being synced.
   std::string account_name_;
+
+  // Some routing info history to help us clean up types that get disabled
+  // by the user.
+  ModelSafeRoutingInfo previous_session_routing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

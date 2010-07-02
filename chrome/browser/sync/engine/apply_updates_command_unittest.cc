@@ -43,7 +43,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
   // Create a new unapplied update.
   void CreateUnappliedNewItemWithParent(const string& item_id,
                                         const string& parent_id) {
-    ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
@@ -62,7 +62,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
 
   void CreateUnappliedNewItem(const string& item_id,
                               const sync_pb::EntitySpecifics& specifics) {
-    ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,

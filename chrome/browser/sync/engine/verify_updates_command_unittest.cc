@@ -41,7 +41,7 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
   void CreateLocalItem(const std::string& item_id,
                        const std::string& parent_id,
                        const syncable::ModelType& type) {
-    ScopedDirLookup dir(syncdb().manager(), syncdb().name());
+    ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
     ASSERT_TRUE(dir.good());
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,

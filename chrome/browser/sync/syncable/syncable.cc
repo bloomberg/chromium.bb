@@ -157,6 +157,11 @@ bool LessPathNames::operator() (const string& a, const string& b) const {
 static const DirectoryChangeEvent kShutdownChangesEvent =
     { DirectoryChangeEvent::SHUTDOWN, 0, 0 };
 
+void Directory::init_kernel(const std::string& name) {
+  DCHECK(kernel_ == NULL);
+  kernel_ = new Kernel(FilePath(), name, KernelLoadInfo());
+}
+
 Directory::Kernel::Kernel(const FilePath& db_path,
                           const string& name,
                           const KernelLoadInfo& info)
@@ -170,6 +175,7 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       unapplied_update_metahandles(new MetahandleSet),
       unsynced_metahandles(new MetahandleSet),
       dirty_metahandles(new MetahandleSet),
+      metahandles_to_purge(new MetahandleSet),
       channel(new Directory::Channel(syncable::DIRECTORY_DESTROYED)),
       info_status(Directory::KERNEL_SHARE_INFO_VALID),
       persisted_info(info.kernel_info),
@@ -197,6 +203,7 @@ Directory::Kernel::~Kernel() {
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
   delete dirty_metahandles;
+  delete metahandles_to_purge;
   delete parent_id_child_index;
   delete client_tag_index;
   delete ids_index;
@@ -522,6 +529,10 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   }
   ClearDirtyMetahandles();
 
+  // Set purged handles.
+  DCHECK(snapshot->metahandles_to_purge.empty());
+  snapshot->metahandles_to_purge.swap(*(kernel_->metahandles_to_purge));
+
   // Fill kernel_info_status and kernel_info.
   snapshot->kernel_info = kernel_->persisted_info;
   // To avoid duplicates when the process crashes, we record the next_id to be
@@ -579,6 +590,7 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       // Might not be in it
       num_erased = kernel_->client_tag_index->erase(entry);
       DCHECK_EQ(entry->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
+      DCHECK(!kernel_->parent_id_child_index->count(entry));
       delete entry;
     }
   }
@@ -594,30 +606,42 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
     return;
 
   {
-    ScopedKernelLock lock(this);
-    for (MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
-         it != kernel_->metahandles_index->end(); ++it) {
-      const sync_pb::EntitySpecifics& local_specifics = (*it)->ref(SPECIFICS);
-      const sync_pb::EntitySpecifics& server_specifics =
-          (*it)->ref(SERVER_SPECIFICS);
-      ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
-      ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
+    WriteTransaction trans(this, PURGE_ENTRIES, __FILE__, __LINE__);
+    {
+      ScopedKernelLock lock(this);
+      MetahandlesIndex::iterator it = kernel_->metahandles_index->begin();
+      while (it != kernel_->metahandles_index->end()) {
+        const sync_pb::EntitySpecifics& local_specifics = (*it)->ref(SPECIFICS);
+        const sync_pb::EntitySpecifics& server_specifics =
+            (*it)->ref(SERVER_SPECIFICS);
+        ModelType local_type = GetModelTypeFromSpecifics(local_specifics);
+        ModelType server_type = GetModelTypeFromSpecifics(server_specifics);
 
-      if (types.count(local_type) > 0 || types.count(server_type) > 0) {
-        // Set conditions for permanent deletion.
-        (*it)->put(IS_DEL, true);
-        (*it)->put(IS_UNSYNCED, false);
-        (*it)->put(IS_UNAPPLIED_UPDATE, false);
-        (*it)->mark_dirty(kernel_->dirty_metahandles);
-        DCHECK(!SafeToPurgeFromMemory(*it));
+        // Note the dance around incrementing |it|, since we sometimes erase().
+        if (types.count(local_type) > 0 || types.count(server_type) > 0) {
+          UnlinkEntryFromOrder(*it, NULL, &lock);
+
+          kernel_->metahandles_to_purge->insert((*it)->ref(META_HANDLE));
+
+          size_t num_erased = 0;
+          num_erased = kernel_->ids_index->erase(*it);
+          DCHECK_EQ(1u, num_erased);
+          num_erased = kernel_->client_tag_index->erase(*it);
+          DCHECK_EQ((*it)->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
+          num_erased = kernel_->parent_id_child_index->erase(*it);
+          DCHECK_EQ((*it)->ref(IS_DEL), !num_erased);
+          kernel_->metahandles_index->erase(it++);
+        } else {
+          ++it;
+        }
       }
-    }
 
-    // Ensure meta tracking for these data types reflects the deleted state.
-    for (std::set<ModelType>::const_iterator it = types.begin();
-         it != types.end(); ++it) {
-      set_initial_sync_ended_for_type_unsafe(*it, false);
-      set_last_download_timestamp_unsafe(*it, 0);
+      // Ensure meta tracking for these data types reflects the deleted state.
+      for (std::set<ModelType>::const_iterator it = types.begin();
+           it != types.end(); ++it) {
+        set_initial_sync_ended_for_type_unsafe(*it, false);
+        set_last_download_timestamp_unsafe(*it, 0);
+      }
     }
   }
 }
@@ -640,6 +664,9 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
       (*found)->mark_dirty(kernel_->dirty_metahandles);
     }
   }
+
+  kernel_->metahandles_to_purge->insert(snapshot.metahandles_to_purge.begin(),
+                                        snapshot.metahandles_to_purge.end());
 }
 
 int64 Directory::last_download_timestamp(ModelType model_type) const {
@@ -1276,32 +1303,44 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
 }
 
 void MutableEntry::UnlinkFromOrder() {
-  Id old_previous = Get(PREV_ID);
-  Id old_next = Get(NEXT_ID);
+  ScopedKernelLock lock(dir());
+  dir()->UnlinkEntryFromOrder(kernel_, write_transaction(), &lock);
+}
 
-  // Self-looping signifies that this item is not in the order.  If we were to
-  // set these to 0, we could get into trouble because this node might look
-  // like the first node in the ordering.
-  Put(NEXT_ID, Get(ID));
-  Put(PREV_ID, Get(ID));
+void Directory::UnlinkEntryFromOrder(EntryKernel* entry,
+                                     WriteTransaction* trans,
+                                     ScopedKernelLock* lock) {
+  CHECK(!trans || this == trans->directory());
+  Id old_previous = entry->ref(PREV_ID);
+  Id old_next = entry->ref(NEXT_ID);
+
+  entry->put(NEXT_ID, entry->ref(ID));
+  entry->put(PREV_ID, entry->ref(ID));
+  entry->mark_dirty(kernel_->dirty_metahandles);
 
   if (!old_previous.IsRoot()) {
     if (old_previous == old_next) {
       // Note previous == next doesn't imply previous == next == Get(ID). We
       // could have prev==next=="c-XX" and Get(ID)=="sX..." if an item was added
       // and deleted before receiving the server ID in the commit response.
-      CHECK((old_next == Get(ID)) || !old_next.ServerKnows());
+      CHECK((old_next == entry->ref(ID)) || !old_next.ServerKnows());
       return;  // Done if we were already self-looped (hence unlinked).
     }
-    MutableEntry previous_entry(write_transaction(), GET_BY_ID, old_previous);
-    CHECK(previous_entry.good());
-    previous_entry.Put(NEXT_ID, old_next);
+    EntryKernel* previous_entry = GetEntryById(old_previous, lock);
+    CHECK(previous_entry);
+    if (trans)
+      trans->SaveOriginal(previous_entry);
+    previous_entry->put(NEXT_ID, old_next);
+    previous_entry->mark_dirty(kernel_->dirty_metahandles);
   }
 
   if (!old_next.IsRoot()) {
-    MutableEntry next_entry(write_transaction(), GET_BY_ID, old_next);
-    CHECK(next_entry.good());
-    next_entry.Put(PREV_ID, old_previous);
+    EntryKernel* next_entry = GetEntryById(old_next, lock);
+    CHECK(next_entry);
+    if (trans)
+      trans->SaveOriginal(next_entry);
+    next_entry->put(PREV_ID, old_previous);
+    next_entry->mark_dirty(kernel_->dirty_metahandles);
   }
 }
 

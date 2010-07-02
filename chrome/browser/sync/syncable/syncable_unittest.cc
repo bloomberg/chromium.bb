@@ -300,24 +300,25 @@ class SyncableDirectoryTest : public testing::Test {
     return 1 == dir_->kernel_->dirty_metahandles->count(metahandle);
   }
 
-  bool IsSafeToPermanentlyDelete(Entry* e) {
-    return e->Get(IS_DEL) && !e->Get(IS_UNSYNCED) &&
-           !e->Get(IS_UNAPPLIED_UPDATE);
+  bool IsInMetahandlesToPurge(int64 metahandle) {
+    return 1 == dir_->kernel_->metahandles_to_purge->count(metahandle);
   }
 
   void CheckPurgeEntriesWithTypeInSucceeded(const ModelTypeSet& types_to_purge,
                                             bool before_reload) {
+    SCOPED_TRACE(testing::Message("Before reload: ") << before_reload);
     {
       ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
       MetahandleSet all_set;
       dir_->GetAllMetaHandles(&trans, &all_set);
-      EXPECT_EQ(before_reload ? 7U : 3U, all_set.size());
+      EXPECT_EQ(3U, all_set.size());
+      if (before_reload)
+        EXPECT_EQ(4U, dir_->kernel_->metahandles_to_purge->size());
       for (MetahandleSet::iterator iter = all_set.begin();
            iter != all_set.end(); ++iter) {
         Entry e(&trans, GET_BY_HANDLE, *iter);
         if ((types_to_purge.count(e.GetModelType()) ||
-             types_to_purge.count(e.GetServerModelType())) &&
-             (!before_reload || !IsSafeToPermanentlyDelete(&e))) {
+             types_to_purge.count(e.GetServerModelType()))) {
           FAIL() << "Illegal type should have been deleted.";
         }
       }
@@ -358,6 +359,49 @@ class SyncableDirectoryTest : public testing::Test {
       string name, string server_name, int64 version,
       bool set_server_fields, bool is_dir, bool add_to_lru, int64 *meta_handle);
 };
+
+TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
+  const int metas_to_create = 50;
+  MetahandleSet expected_purges;
+  MetahandleSet all_handles;
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    for (int i = 0; i < metas_to_create; i++) {
+      MutableEntry e(&trans, CREATE, trans.root_id(), "foo");
+      e.Put(IS_UNSYNCED, true);
+      sync_pb::EntitySpecifics specs;
+      if (i % 2 == 0) {
+        AddDefaultExtensionValue(BOOKMARKS, &specs);
+        expected_purges.insert(e.Get(META_HANDLE));
+        all_handles.insert(e.Get(META_HANDLE));
+      } else {
+        AddDefaultExtensionValue(PREFERENCES, &specs);
+        all_handles.insert(e.Get(META_HANDLE));
+      }
+      e.Put(SPECIFICS, specs);
+      e.Put(SERVER_SPECIFICS, specs);
+    }
+  }
+
+  ModelTypeSet to_purge;
+  to_purge.insert(BOOKMARKS);
+  dir_->PurgeEntriesWithTypeIn(to_purge);
+
+  Directory::SaveChangesSnapshot snapshot1;
+  AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+  dir_->TakeSnapshotForSaveChanges(&snapshot1);
+  EXPECT_TRUE(expected_purges == snapshot1.metahandles_to_purge);
+
+  to_purge.clear();
+  to_purge.insert(PREFERENCES);
+  dir_->PurgeEntriesWithTypeIn(to_purge);
+
+  dir_->HandleSaveChangesFailure(snapshot1);
+
+  Directory::SaveChangesSnapshot snapshot2;
+  dir_->TakeSnapshotForSaveChanges(&snapshot2);
+  EXPECT_TRUE(all_handles == snapshot2.metahandles_to_purge);
+}
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
   const int metahandles_to_create = 100;
@@ -1153,6 +1197,44 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
      EXPECT_TRUE(aguilera.is_dirty());
      EXPECT_TRUE(IsInDirtyMetahandles(handle1));
   }
+}
+
+TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
+  int64 handle1 = 0;
+  // Set up an item using a regular, saveable directory.
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+
+    MutableEntry e1(&trans, CREATE, trans.root_id(), "aguilera");
+    ASSERT_TRUE(e1.good());
+    EXPECT_TRUE(e1.GetKernelCopy().is_dirty());
+    handle1 = e1.Get(META_HANDLE);
+    e1.Put(BASE_VERSION, 1);
+    e1.Put(IS_DIR, true);
+    e1.Put(ID, TestIdFactory::FromNumber(101));
+    sync_pb::EntitySpecifics bookmark_specs;
+    AddDefaultExtensionValue(BOOKMARKS, &bookmark_specs);
+    e1.Put(SPECIFICS, bookmark_specs);
+    e1.Put(SERVER_SPECIFICS, bookmark_specs);
+    e1.Put(ID, TestIdFactory::FromNumber(101));
+    EXPECT_TRUE(e1.GetKernelCopy().is_dirty());
+    EXPECT_TRUE(IsInDirtyMetahandles(handle1));
+  }
+  ASSERT_TRUE(dir_->SaveChanges());
+
+  // Now do some operations using a directory for which SaveChanges will
+  // always fail.
+  dir_.reset(new TestUnsaveableDirectory());
+  ASSERT_TRUE(dir_.get());
+  ASSERT_TRUE(OPENED == dir_->Open(FilePath(kFilePath), kName));
+  ASSERT_TRUE(dir_->good());
+
+  ModelTypeSet set;
+  set.insert(BOOKMARKS);
+  dir_->PurgeEntriesWithTypeIn(set);
+  EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
+  ASSERT_FALSE(dir_->SaveChanges());
+  EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
 }
 
 // Create items of each model type, and check that GetModelType and
