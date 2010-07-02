@@ -195,7 +195,7 @@ class SyncSocketClientListener : public IPC::Channel::Listener {
     socket_->Receive(static_cast<void*>(buf), kHelloStringLength);
     EXPECT_EQ(strcmp(str.c_str(), buf), 0);
     // After receiving from the socket there should be no bytes left.
-    EXPECT_EQ(0, socket_->Peek());
+    EXPECT_EQ(0U, socket_->Peek());
     IPC::Message* msg = new MsgClassShutdown();
     EXPECT_TRUE(chan_->Send(msg));
     MessageLoop::current()->Quit();
@@ -220,8 +220,8 @@ TEST_F(SyncSocketTest, SanityTest) {
   base::SyncSocket* pair[2];
   base::SyncSocket::CreatePair(pair);
   // Immediately after creation there should be no pending bytes.
-  EXPECT_EQ(0, pair[0]->Peek());
-  EXPECT_EQ(0, pair[1]->Peek());
+  EXPECT_EQ(0U, pair[0]->Peek());
+  EXPECT_EQ(0U, pair[1]->Peek());
   base::SyncSocket::Handle target_handle;
   // Connect the channel and listener.
   ASSERT_TRUE(chan.Connect());

@@ -186,7 +186,7 @@ class FuzzerServerListener : public SimpleListener {
     Cleanup();
   }
 
-  bool RoundtripAckReply(int routing, int type_id, int reply) {
+  bool RoundtripAckReply(int routing, uint32 type_id, int reply) {
     IPC::Message* message = new IPC::Message(routing, type_id,
                                              IPC::Message::PRIORITY_NORMAL);
     message->WriteInt(reply + 1);
@@ -201,7 +201,7 @@ class FuzzerServerListener : public SimpleListener {
       MessageLoop::current()->Quit();
   }
 
-  void ReplyMsgNotHandled(int type_id) {
+  void ReplyMsgNotHandled(uint32 type_id) {
     RoundtripAckReply(FUZZER_ROUTING_ID, CLIENT_UNHANDLED_IPC, type_id);
     Cleanup();
   }
@@ -227,7 +227,7 @@ class FuzzerClientListener : public SimpleListener {
     MessageLoop::current()->Quit();
   }
 
-  bool ExpectMessage(int value, int type_id) {
+  bool ExpectMessage(int value, uint32 type_id) {
     if (!MsgHandlerInternal(type_id))
       return false;
     int msg_value1 = 0;
@@ -247,12 +247,12 @@ class FuzzerClientListener : public SimpleListener {
     return true;
   }
 
-  bool ExpectMsgNotHandled(int type_id) {
+  bool ExpectMsgNotHandled(uint32 type_id) {
     return ExpectMessage(type_id, CLIENT_UNHANDLED_IPC);
   }
 
  private:
-  bool MsgHandlerInternal(int type_id) {
+  bool MsgHandlerInternal(uint32 type_id) {
     MessageLoop::current()->Run();
     if (NULL == last_msg_)
       return false;
