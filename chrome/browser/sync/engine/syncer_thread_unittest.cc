@@ -841,7 +841,8 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-TEST_F(SyncerThreadWithSyncerTest, PauseWhenNotConnected) {
+// See bug 39070.
+TEST_F(SyncerThreadWithSyncerTest, FLAKY_PauseWhenNotConnected) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent event(false, false);
   ListenerMock listener;
