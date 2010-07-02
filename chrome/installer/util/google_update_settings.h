@@ -104,6 +104,9 @@ class GoogleUpdateSettings {
                                               int install_return_code,
                                               const std::wstring& value);
 
+  // True if a build is strictly organic, according to its brand code.
+  static bool IsOrganic(const std::wstring& brand);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);
 };

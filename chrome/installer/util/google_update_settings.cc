@@ -239,3 +239,20 @@ std::wstring GoogleUpdateSettings::GetNewGoogleUpdateApKey(
   return new_value;
 }
 
+bool GoogleUpdateSettings::IsOrganic(const std::wstring& brand) {
+  static const wchar_t* kBrands[] = {
+      L"CHFO", L"CHFT", L"CHHS", L"CHHM", L"CHMA", L"CHMB", L"CHME", L"CHMF",
+      L"CHMG", L"CHMH", L"CHMI", L"CHMQ", L"CHMV", L"CHNB", L"CHNC", L"CHNG",
+      L"CHNH", L"CHNI", L"CHOA", L"CHOB", L"CHOC", L"CHON", L"CHOO", L"CHOP",
+      L"CHOQ", L"CHOR", L"CHOS", L"CHOT", L"CHOU", L"CHOX", L"CHOY", L"CHOZ",
+      L"CHPD", L"CHPE", L"CHPF", L"CHPG", L"EUBB", L"EUBC", L"GGLA", L"GGLS"
+  };
+  const wchar_t** end = &kBrands[arraysize(kBrands)];
+  const wchar_t** found = std::find(&kBrands[0], end, brand);
+  if (found != end)
+    return true;
+  if (StartsWith(brand, L"EUB", true) || StartsWith(brand, L"EUC", true) ||
+      StartsWith(brand, L"GGR", true))
+    return true;
+  return false;
+}

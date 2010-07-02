@@ -165,7 +165,7 @@ class DelayedInitTask : public Task {
     // means a chromium install. This is ok.
     std::wstring brand;
     GoogleUpdateSettings::GetBrand(&brand);
-    if (is_strict_organic(brand))
+    if (GoogleUpdateSettings::IsOrganic(brand))
       return;
 
     // Do the initial event recording if is the first run or if we have an
@@ -220,24 +220,6 @@ class DelayedInitTask : public Task {
     if (!urlref)
       return false;
     return urlref->HasGoogleBaseURLs();
-  }
-
-  static bool is_strict_organic(const std::wstring& brand) {
-    static const wchar_t* kBrands[] = {
-        L"CHFO", L"CHFT", L"CHHS", L"CHHM", L"CHMA", L"CHMB", L"CHME", L"CHMF",
-        L"CHMG", L"CHMH", L"CHMI", L"CHMQ", L"CHMV", L"CHNB", L"CHNC", L"CHNG",
-        L"CHNH", L"CHNI", L"CHOA", L"CHOB", L"CHOC", L"CHON", L"CHOO", L"CHOP",
-        L"CHOQ", L"CHOR", L"CHOS", L"CHOT", L"CHOU", L"CHOX", L"CHOY", L"CHOZ",
-        L"CHPD", L"CHPE", L"CHPF", L"CHPG", L"EUBB", L"EUBC", L"GGLA", L"GGLS"
-    };
-    const wchar_t** end = &kBrands[arraysize(kBrands)];
-    const wchar_t** found = std::find(&kBrands[0], end, brand);
-    if (found != end)
-      return true;
-    if (StartsWith(brand, L"EUB", true) || StartsWith(brand, L"EUC", true) ||
-        StartsWith(brand, L"GGR", true))
-      return true;
-    return false;
   }
 
   bool first_run_;
