@@ -79,7 +79,10 @@ const int kFirstRunBubbleTopMargin = 5;
 const int kHboxBorder = 4;
 
 // Padding between the elements in the bar.
-static const int kInnerPadding = 4;
+const int kInnerPadding = 4;
+
+// Padding between the right of the star and the edge of the URL entry.
+const int kStarRightPadding = 2;
 
 // Colors used to draw the EV certificate rounded bubble.
 const GdkColor kEvSecureTextColor = GDK_COLOR_RGB(0x07, 0x95, 0x00);
@@ -472,10 +475,16 @@ void LocationBarViewGtk::OnChanged() {
 }
 
 void LocationBarViewGtk::CreateStarButton() {
+  star_image_ = gtk_image_new();
+
+  GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment), 0, 0,
+                            0, kStarRightPadding);
+  gtk_container_add(GTK_CONTAINER(alignment), star_image_);
+
   star_.Own(gtk_event_box_new());
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(star_.get()), FALSE);
-  star_image_ = gtk_image_new();
-  gtk_container_add(GTK_CONTAINER(star_.get()), star_image_);
+  gtk_container_add(GTK_CONTAINER(star_.get()), alignment);
   gtk_widget_show_all(star_.get());
   ViewIDUtil::SetID(star_.get(), VIEW_ID_STAR_BUTTON);
 

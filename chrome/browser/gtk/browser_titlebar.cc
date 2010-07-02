@@ -83,6 +83,10 @@ const int kButtonSpacing = 2;
 // Spacing around outside of titlebar buttons.
 const int kButtonOuterPadding = 2;
 
+// Spacing between tabstrip and window control buttons (when the window is
+// maximized).
+const int kMaximizedTabstripPadding = 16;
+
 gboolean OnMouseMoveEvent(GtkWidget* widget, GdkEventMotion* event,
                           BrowserWindowGtk* browser_window) {
   // Reset to the default mouse cursor.
@@ -482,20 +486,30 @@ void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
 
 void BrowserTitlebar::UpdateTitlebarAlignment() {
   if (browser_window_->browser()->type() == Browser::TYPE_NORMAL) {
-    if (using_custom_frame_ && !browser_window_->IsMaximized()) {
-      gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_),
-          kTitlebarHeight, 0, kTabStripLeftPadding, 0);
-    } else {
-      gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_), 0, 0,
-                                kTabStripLeftPadding, 0);
-    }
+    int top_padding = 0;
+    int side_padding = 0;
+    int vertical_offset = kNormalVerticalOffset;
 
     if (using_custom_frame_) {
-      browser_window_->tabstrip()->SetVerticalOffset(
-          browser_window_->IsMaximized() ? 0 : kNormalVerticalOffset);
-    } else {
-      browser_window_->tabstrip()->SetVerticalOffset(kNormalVerticalOffset);
+      if (!browser_window_->IsMaximized()) {
+        top_padding = kTitlebarHeight;
+      } else if (using_custom_frame_ && browser_window_->IsMaximized()) {
+        vertical_offset = 0;
+        side_padding = kMaximizedTabstripPadding;
+      }
     }
+
+    int right_padding = 0;
+    int left_padding = kTabStripLeftPadding;
+    if (titlebar_right_buttons_hbox_)
+      right_padding = side_padding;
+    if (titlebar_left_buttons_hbox_)
+      left_padding = side_padding;
+
+    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_),
+                              top_padding, 0,
+                              left_padding, right_padding);
+    browser_window_->tabstrip()->SetVerticalOffset(vertical_offset);
   } else {
     if (using_custom_frame_ && !browser_window_->IsFullscreen()) {
       gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_),
