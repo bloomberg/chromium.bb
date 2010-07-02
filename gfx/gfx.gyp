@@ -113,7 +113,13 @@
             'icon_util.h',
             'native_theme_win.cc',
             'native_theme_win.h',
+            'window_impl.cc',
+            'window_impl.h'
           ],
+          'include_dirs': [
+            '..',
+            '<(DEPTH)/third_party/wtl/include',
+          ],          
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [

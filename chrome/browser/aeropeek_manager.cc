@@ -8,7 +8,6 @@
 #include <shobjidl.h>
 
 #include "app/win_util.h"
-#include "app/win/window_impl.h"
 #include "base/command_line.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_handle_win.h"
@@ -29,6 +28,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "gfx/gdi_util.h"
 #include "gfx/icon_util.h"
+#include "gfx/window_impl.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -563,7 +563,7 @@ class SendLivePreviewTask : public Task {
 // * Translating received messages for TabStrip.
 // This class is used by the AeroPeekManager class, which is a proxy
 // between TabStrip and Windows 7.
-class AeroPeekWindow : public app::WindowImpl {
+class AeroPeekWindow : public gfx::WindowImpl {
  public:
   AeroPeekWindow(HWND frame_window,
                  AeroPeekWindowDelegate* delegate,

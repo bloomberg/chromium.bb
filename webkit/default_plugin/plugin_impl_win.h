@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "app/win/window_impl.h"
+#include "gfx/window_impl.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/default_plugin/install_dialog.h"
 #include "webkit/default_plugin/plugin_database_handler.h"
@@ -34,7 +34,7 @@ class PluginDatabaseHandler;
 // Provides the plugin installation functionality. This class is
 // instantiated with the information like the mime type of the
 // target plugin, the display mode, etc.
-class PluginInstallerImpl : public app::WindowImpl {
+class PluginInstallerImpl : public gfx::WindowImpl {
  public:
   static const int kRefreshPluginsMessage  = WM_APP + 1;
   static const int kInstallMissingPluginMessage = WM_APP + 2;

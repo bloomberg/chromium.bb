@@ -28,12 +28,6 @@
             'tree_model.h',
             'tree_node_iterator.h',
             'tree_node_model.h',
-            'win/window_impl.cc',
-            'win/window_impl.h',
-        ],
-        'include_dirs': [
-          '..',
-          '<(DEPTH)/third_party/wtl/include',
         ],
         'conditions': [
           ['OS=="win"', {
@@ -297,8 +291,6 @@
             'gfx/native_theme_win.cc',
             'gfx/native_theme_win.h',
             'os_exchange_data.cc',
-            'win/window_impl.cc',
-            'win/window_impl.h',
           ],
         }],
         ['OS=="linux"', {

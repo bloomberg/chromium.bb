@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_WIN_WINDOW_IMPL_H_
-#define APP_WIN_WINDOW_IMPL_H_
+#ifndef GFX_WINDOW_IMPL_H_
+#define GFX_WINDOW_IMPL_H_
 
 #include <atlbase.h>
 #include <atlapp.h>
@@ -16,7 +16,7 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 
-namespace app {
+namespace gfx {
 
 // An interface implemented by classes that use message maps.
 // ProcessWindowMessage is implemented by the BEGIN_MESSAGE_MAP_EX macro.
@@ -108,6 +108,6 @@ class WindowImpl : public MessageMapInterface {
   DISALLOW_COPY_AND_ASSIGN(WindowImpl);
 };
 
-}  // namespace app
+}  // namespace gfx
 
-#endif  // APP_WIN_WINDOW_IMPL_H_
+#endif  // GFX_WINDOW_IMPL_H_
