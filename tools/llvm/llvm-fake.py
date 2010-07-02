@@ -288,6 +288,7 @@ def SfiCompile(argv, out_pos, mode):
   argv[out_pos] = filename + '.bc'
 
   argv.append('--emit-llvm')
+  argv.append('-fno-expand-va-arg')
   Run(argv)
 
   Run([OPT] +
@@ -455,6 +456,7 @@ def Compile(argv, llvm_binary, mode):
 
   if mode == 'bitcode':
     argv.append('--emit-llvm')
+    argv.append('-fno-expand-va-arg')
     Run(argv)
   else:
     SfiCompile(argv, obj_pos, mode)

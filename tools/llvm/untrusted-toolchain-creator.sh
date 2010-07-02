@@ -60,8 +60,8 @@ readonly DEFAULT_TOOLCHAIN_CLIENT=$(pwd)/toolchain/hg
 readonly TOOLCHAIN_CLIENT=${TOOLCHAIN_CLIENT:-${DEFAULT_TOOLCHAIN_CLIENT}}
 
 # Current milestones within each Hg repo:
-readonly LLVM_REV=449e2506561a
-readonly LLVM_GCC_REV=8146b831af41
+readonly LLVM_REV=4a9de5361ab6
+readonly LLVM_GCC_REV=5cf5cb1fa2b2
 readonly NEWLIB_REV=5d64fed35b93
 readonly BINUTILS_REV=80d1927e7089
 
