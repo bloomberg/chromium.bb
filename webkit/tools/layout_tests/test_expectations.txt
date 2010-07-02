@@ -19,3 +19,4 @@ BUG_LEVIN :  fast/dom/domListEnumeration.html = TEXT
 BUG_LEVIN MAC :  html5lib/runner.html = TEXT
 
 BUG48139 LINUX : fast/js/comparison-operators-less.html = CRASH PASS
+BUG48144 LINUX : fast/js/activation-object-function-lifetime.html = CRASH PASS
