@@ -78,6 +78,9 @@ class MostVisitedHandler : public DOMMessageHandler,
   void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
                                std::vector<PageUsageData*>* data);
 
+  // Sets pages_value_ form a vector of URLs.
+  void SetPagesValue(std::vector<PageUsageData*>* data);
+
   // Callback for TopSites.
   void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
 
@@ -94,9 +97,6 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   void AddPinnedURL(const MostVisitedPage& page, int index);
   void RemovePinnedURL(const GURL& url);
-
-  // Sets pages_value_ from MostVisitedURLs.
-  void SetPagesValue(const history::MostVisitedURLList& urls);
 
   // Sends pages_value_ to the javascript side to and resets page_value_.
   void SendPagesValue();

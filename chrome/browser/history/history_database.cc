@@ -288,7 +288,7 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
 
   // When the version is too old, we just try to continue anyway, there should
   // not be a released product that makes a database too old for us to handle.
-  LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
+  LOG_IF(WARNING, cur_version < GetCurrentVersion()) <<
       "History database version " << cur_version << " is too old to handle.";
 
   return sql::INIT_OK;

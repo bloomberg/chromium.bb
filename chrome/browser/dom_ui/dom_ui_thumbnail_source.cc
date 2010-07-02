@@ -33,7 +33,7 @@ void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
       // We have the thumbnail.
       SendResponse(request_id, data);
     } else {
-      SendResponse(request_id, NULL);
+      SendDefaultThumbnail(request_id);
     }
     return;
   }  // end --top-sites switch
@@ -52,6 +52,16 @@ void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
   }
 }
 
+void DOMUIThumbnailSource::SendDefaultThumbnail(int request_id) {
+  // Use placeholder thumbnail.
+  if (!default_thumbnail_.get()) {
+    default_thumbnail_ =
+        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+            IDR_DEFAULT_THUMBNAIL);
+  }
+  SendResponse(request_id, default_thumbnail_);
+}
+
 // TODO(Nik): remove. ThumbnailStore is to be replaced with TopSites.
 void DOMUIThumbnailSource::DoDataRequest(const std::string& path,
                                          int request_id) {
@@ -61,13 +71,7 @@ void DOMUIThumbnailSource::DoDataRequest(const std::string& path,
     // Got the thumbnail.
     SendResponse(request_id, data);
   } else {
-    // Don't have the thumbnail so return the default thumbnail.
-    if (!default_thumbnail_.get()) {
-      default_thumbnail_ =
-          ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_DEFAULT_THUMBNAIL);
-    }
-    SendResponse(request_id, default_thumbnail_);
+    SendDefaultThumbnail(request_id);
   }
 }
 
@@ -81,13 +85,7 @@ void DOMUIThumbnailSource::OnThumbnailDataAvailable(
   if (data.get() && !data->data.empty()) {
     SendResponse(request_id, data);
   } else {
-    if (!default_thumbnail_.get()) {
-      default_thumbnail_ =
-          ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_DEFAULT_THUMBNAIL);
-    }
-
-    SendResponse(request_id, default_thumbnail_);
+    SendDefaultThumbnail(request_id);
   }
 }
 

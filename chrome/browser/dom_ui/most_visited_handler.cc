@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/singleton.h"
+#include "base/scoped_vector.h"
 #include "base/utf_string_conversions.h"
 #include "base/thread.h"
 #include "base/values.h"
@@ -133,17 +134,6 @@ void SetDictionaryValue(const history::MostVisitedURL& url,
   // TODO(Nik): Need thumbnailUrl?
   // TODO(Nik): Add pinned and blacklisted URLs.
   dict.SetBoolean(L"pinned", false);
-}
-
-void MostVisitedHandler::SetPagesValue(const
-                                       history::MostVisitedURLList& urls) {
-  pages_value_.reset(new ListValue);
-  for (size_t i = 0; i < urls.size(); i++) {
-    // Owned by pages_value_.
-    DictionaryValue* value = new DictionaryValue;
-    SetDictionaryValue(urls[i], *value);
-    pages_value_->Append(value);
-  }
 }
 
 void MostVisitedHandler::SendPagesValue() {
@@ -355,6 +345,13 @@ bool MostVisitedHandler::GetPinnedURLAtIndex(int index,
 void MostVisitedHandler::OnSegmentUsageAvailable(
     CancelableRequestProvider::Handle handle,
     std::vector<PageUsageData*>* data) {
+  SetPagesValue(data);
+  if (got_first_most_visited_request_) {
+    SendPagesValue();
+  }
+}
+
+void MostVisitedHandler::SetPagesValue(std::vector<PageUsageData*>* data) {
   most_visited_urls_.clear();
   pages_value_.reset(new ListValue);
   std::set<GURL> seen_urls;
@@ -362,11 +359,10 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
   size_t data_index = 0;
   size_t output_index = 0;
   size_t pre_populated_index = 0;
-  const size_t pages_count = kMostVisitedPages;
   const std::vector<MostVisitedPage> pre_populated_pages =
       MostVisitedHandler::GetPrePopulatedPages();
 
-  while (output_index < pages_count) {
+  while (output_index < kMostVisitedPages) {
     bool found = false;
     bool pinned = false;
     std::string pinned_url;
@@ -419,15 +415,28 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
     }
     output_index++;
   }
+}
 
-  if (got_first_most_visited_request_) {
-    SendPagesValue();
+// Converts a MostVisitedURLList into a vector of PageUsageData to be
+// sent to the Javascript side to the New Tab Page.
+// Caller takes ownership of the PageUsageData objects in the vector.
+// NOTE: this doesn't set the thumbnail and favicon, only URL and title.
+static void MakePageUsageDataVector(const history::MostVisitedURLList& data,
+                                    std::vector<PageUsageData*>* result) {
+  for (size_t i = 0; i < data.size(); i++) {
+    const history::MostVisitedURL& url = data[i];
+    PageUsageData* pud = new PageUsageData(0);
+    pud->SetURL(url.url);
+    pud->SetTitle(url.title);
+    result->push_back(pud);
   }
 }
 
 void MostVisitedHandler::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& data) {
-  SetPagesValue(data);
+  ScopedVector<PageUsageData> result;
+  MakePageUsageDataVector(data, &result.get());
+  SetPagesValue(&(result.get()));
   if (got_first_most_visited_request_) {
     SendPagesValue();
   }

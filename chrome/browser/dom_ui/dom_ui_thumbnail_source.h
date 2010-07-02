@@ -52,6 +52,9 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource,
   // Fetch the specified resource.
   void DoDataRequest(const std::string& path, int request_id);
 
+  // Send the default thumbnail when we are missing a real one.
+  void SendDefaultThumbnail(int request_id);
+
   Profile* profile_;
   CancelableRequestConsumerT<int, 0> cancelable_consumer_;
 
