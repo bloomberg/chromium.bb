@@ -72,7 +72,6 @@ void GpuCommandBufferStub::OnInitialize(
       gpu::GPUProcessor* parent_processor =
           parent_ ? parent_->processor_.get() : NULL;
       processor_.reset(new gpu::GPUProcessor(command_buffer_.get()));
-      // TODO(apatrick): The reinterpret_cast below is only valid on windows.
       if (processor_->Initialize(
           handle_,
           initial_size_,
