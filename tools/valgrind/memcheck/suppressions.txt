@@ -3574,3 +3574,12 @@
    fun:_ZN14ProfileManager13CreateProfileERK8FilePath
    fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
 }
+{
+   bug_46678_v_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackIN8remoting14SessionManagerEPKNS0_24UpdateStreamPacketHeaderERK13scoped_refptrIN5media10DataBufferEEiEPN9Callback3IT0_T1_T2_E4TypeEPT_MSI_FvSC_SD_SE_E
+   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_8Capturer11CaptureDataEE
+   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEES5_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEE6Tuple1IS5_EE3RunEv
+}
