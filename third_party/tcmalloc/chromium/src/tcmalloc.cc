@@ -282,6 +282,7 @@ extern "C" {
 #ifdef HAVE_STRUCT_MALLINFO
   struct mallinfo mallinfo(void) __THROW         ALIAS("tc_mallinfo");
 #endif
+  size_t malloc_usable_size(void* ptr) __THROW   ALIAS("tc_malloc_usable_size");
 }   // extern "C"
 #else  // #if defined(__GNUC__) && !defined(__MACH__)
 // Portable wrappers
@@ -318,6 +319,9 @@ extern "C" {
 #ifdef HAVE_STRUCT_MALLINFO
   struct mallinfo mallinfo(void) __THROW         { return tc_mallinfo();      }
 #endif
+  size_t malloc_usable_size(void* p) __THROW {
+    return tc_malloc_usable_size(p);
+  }
 }  // extern "C"
 #endif  // #if defined(__GNUC__)
 
@@ -1524,6 +1528,10 @@ extern "C" PERFTOOLS_DLL_DECL struct mallinfo tc_mallinfo(void) __THROW {
   return do_mallinfo();
 }
 #endif
+
+extern "C" PERFTOOLS_DLL_DECL size_t tc_malloc_usable_size(void* ptr) __THROW {
+  return GetSizeWithCallback(ptr, &InvalidGetAllocatedSize);
+}
 
 // This function behaves similarly to MSVC's _set_new_mode.
 // If flag is 0 (default), calls to malloc will behave normally.
