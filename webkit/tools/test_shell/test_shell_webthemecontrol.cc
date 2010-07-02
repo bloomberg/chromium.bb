@@ -267,6 +267,11 @@ void Control::draw() {
       nested_boxes(kCheckIndent, kCheckIndent, kCheckIndent, kCheckIndent,
                    bg_color_, fg_color_);
       break;
+    case kIndeterminateCheckBox_Type:
+      // Indeterminate checkbox is a box containing '-'.
+      nested_boxes(kCheckIndent, height_ / 2, kCheckIndent, height_ / 2,
+                   bg_color_, fg_color_);
+      break;
     case kUncheckedRadio_Type:
       circle(SkIntToScalar(half_height), bg_color_);
       break;

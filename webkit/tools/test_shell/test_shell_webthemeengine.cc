@@ -111,6 +111,28 @@ void Engine::paintButton(WebCanvas* canvas, int part, int state,
         ctype = Control::kCheckedBox_Type;
         cstate = Control::kDisabled_State;
         break;
+      case CBS_MIXEDNORMAL:
+        // Classic theme can't represent mixed state checkbox. We assume
+        // it's equivalent to unchecked.
+        CHECK_EQ(classic_state, DFCS_BUTTONCHECK);
+        ctype = Control::kIndeterminateCheckBox_Type;
+        cstate = Control::kNormal_State;
+        break;
+      case CBS_MIXEDHOT:
+        CHECK_EQ(classic_state, DFCS_BUTTONCHECK | DFCS_HOT);
+        ctype = Control::kIndeterminateCheckBox_Type;
+        cstate = Control::kHot_State;
+        break;
+      case CBS_MIXEDPRESSED:
+        CHECK_EQ(classic_state, DFCS_BUTTONCHECK | DFCS_PUSHED);
+        ctype = Control::kIndeterminateCheckBox_Type;
+        cstate = Control::kPressed_State;
+        break;
+      case CBS_MIXEDDISABLED:
+        CHECK_EQ(classic_state, DFCS_BUTTONCHECK | DFCS_INACTIVE);
+        ctype = Control::kIndeterminateCheckBox_Type;
+        cstate = Control::kDisabled_State;
+        break;
       default:
         NOTREACHED();
         break;

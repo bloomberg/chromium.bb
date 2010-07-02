@@ -72,6 +72,7 @@ class Control {
     kPushButton_Type,
     kUncheckedBox_Type,
     kCheckedBox_Type,
+    kIndeterminateCheckBox_Type,
     kUncheckedRadio_Type,
     kCheckedRadio_Type,
     kHorizontalScrollTrackBack_Type,
