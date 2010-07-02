@@ -118,7 +118,9 @@ bool URLRequestInfo::SetStringProperty(PP_URLRequestProperty property,
   // TODO(darin): Validate input.  Perhaps at a different layer?
   switch (property) {
     case PP_URLRequestProperty_URL:
-      web_request_.setURL(GURL(value));
+      // Keep the url in a string instead of a URL object because it might not
+      // be complete yet.
+      url_ = value;
       return true;
     case PP_URLRequestProperty_Method:
       web_request_.setHTTPMethod(WebString::fromUTF8(value));

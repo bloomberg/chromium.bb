@@ -19,6 +19,7 @@
 #include "webkit/glue/plugins/pepper_url_response_info.h"
 
 using WebKit::WebFrame;
+using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
@@ -175,6 +176,8 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   WebFrame* frame = instance_->container()->element().document().frame();
   if (!frame)
     return PP_Error_Failed;
+  web_request.setURL(
+      frame->document().completeURL(WebString::fromUTF8(request->url())));
   frame->setReferrerForRequest(web_request, WebURL());  // Use default.
   frame->dispatchWillSendRequest(web_request);
 

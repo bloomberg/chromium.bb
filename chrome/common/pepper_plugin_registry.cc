@@ -74,6 +74,8 @@ void PepperPluginRegistry::GetExtraPlugins(
     pdf.path = path;
     pdf.name = "Chrome PDF Viewer";
     pdf.mime_types.push_back("application/pdf");
+    pdf.file_extensions = "pdf";
+    pdf.type_descriptions = "Portable Document Format";
     plugins->push_back(pdf);
   }
 }

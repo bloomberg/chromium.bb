@@ -16,6 +16,8 @@ struct PepperPluginInfo {
   std::vector<std::string> mime_types;
   std::string name;
   std::string description;
+  std::string file_extensions;
+  std::string type_descriptions;
 };
 
 // This class holds references to all of the known pepper plugin modules.

@@ -362,7 +362,12 @@ void PluginService::RegisterPepperPlugins() {
   for (size_t i = 0; i < plugins.size(); ++i) {
     NPAPI::PluginVersionInfo info;
     info.path = plugins[i].path;
-    info.product_name = plugins[i].path.BaseName().ToWStringHack();
+    info.product_name = plugins[i].name.empty() ?
+        plugins[i].path.BaseName().ToWStringHack() :
+        ASCIIToWide(plugins[i].name);
+    info.file_description = ASCIIToWide(plugins[i].description);
+    info.file_extensions = ASCIIToWide(plugins[i].file_extensions);
+    info.file_description = ASCIIToWide(plugins[i].type_descriptions);
     info.mime_types = ASCIIToWide(JoinString(plugins[i].mime_types, '|'));
 
     // These NPAPI entry points will never be called.  TODO(darin): Come up

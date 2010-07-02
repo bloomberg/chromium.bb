@@ -40,8 +40,10 @@ class URLRequestInfo : public Resource {
   const WebKit::WebURLRequest& web_request() const {
     return web_request_;
   }
+  std::string url() const { return url_; }
 
  private:
+  std::string url_;
   WebKit::WebURLRequest web_request_;
 };
 
