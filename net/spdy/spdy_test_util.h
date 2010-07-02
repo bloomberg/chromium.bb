@@ -182,6 +182,11 @@ MockRead CreateMockRead(const spdy::SpdyFrame& resp);
 // Create a MockRead from the given SpdyFrame and sequence number.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq);
 
+// Combines the given SpdyFrames into the given char array and returns
+// the total length.
+int CombineFrames(const spdy::SpdyFrame** frames, int num_frames,
+                  char* buff, int buff_len);
+
 }  // namespace net
 
 #endif // NET_SPDY_SPDY_TEST_UTIL_H_

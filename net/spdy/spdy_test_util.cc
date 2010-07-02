@@ -487,4 +487,22 @@ MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq) {
       true, resp.data(), resp.length() + spdy::SpdyFrame::size(), seq);
 }
 
+// Combines the given SpdyFrames into the given char array and returns
+// the total length.
+int CombineFrames(const spdy::SpdyFrame** frames, int num_frames,
+                  char* buff, int buff_len) {
+  int total_len = 0;
+  for (int i = 0; i < num_frames; ++i) {
+    total_len += frames[i]->length() + spdy::SpdyFrame::size();
+  }
+  DCHECK_LE(total_len, buff_len);
+  char* ptr = buff;
+  for (int i = 0; i < num_frames; ++i) {
+    int len = frames[i]->length() + spdy::SpdyFrame::size();
+    memcpy(ptr, frames[i]->data(), len);
+    ptr += len;
+  }
+  return total_len;
+}
+
 }  // namespace net
