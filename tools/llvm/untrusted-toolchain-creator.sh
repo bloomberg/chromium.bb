@@ -56,7 +56,7 @@ readonly MAKE_OPTS="-j8 VERBOSE=1"
 # The directory in which we we keep src dirs (from hg repos)
 # and objdirs
 
-readonly DEFAULT_TOOLCHAIN_CLIENT=$(readlink -f toolchain/hg)
+readonly DEFAULT_TOOLCHAIN_CLIENT=$(pwd)/toolchain/hg
 readonly TOOLCHAIN_CLIENT=${TOOLCHAIN_CLIENT:-${DEFAULT_TOOLCHAIN_CLIENT}}
 
 # Current milestones within each Hg repo:
@@ -189,7 +189,6 @@ checkout-hg-common() {
     echo "ERROR: hg repo ${dir} already exists"
     exit -1
   fi
-  mkdir -p ${dir}
   pushd ${TOOLCHAIN_CLIENT}
   hg clone https://$1.googlecode.com/hg/ $1
   cd $1
@@ -910,6 +909,8 @@ del-nacl-headers-in-newlib-src() {
 checkout-toolchain-client() {
   Banner "Creating client in ${TOOLCHAIN_CLIENT}"
   rm -rf ${TOOLCHAIN_CLIENT}
+  mkdir -p ${TOOLCHAIN_CLIENT}
+
   checkout-hg-common llvm-gcc.nacl-llvm-branches ${LLVM_GCC_REV}
   checkout-hg-common nacl-llvm-branches ${LLVM_REV}
   checkout-hg-common newlib.nacl-llvm-branches ${NEWLIB_REV}
