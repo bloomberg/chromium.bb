@@ -17,6 +17,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/plugin_process_host.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -53,89 +54,13 @@ static void NotifyPluginsOfActivation() {
 
 // static
 bool PluginService::enable_chrome_plugins_ = true;
-#if defined(OS_CHROMEOS)
-bool PluginService::enable_internal_pdf_ = true;
-#else
-bool PluginService::enable_internal_pdf_ = false;
-#endif
 
 // static
 void PluginService::InitGlobalInstance(Profile* profile) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  bool update_internal_dir = false;
-  FilePath last_internal_dir =
-      profile->GetPrefs()->GetFilePath(prefs::kPluginsLastInternalDirectory);
-  FilePath cur_internal_dir;
-  if (PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &cur_internal_dir) &&
-      cur_internal_dir != last_internal_dir) {
-    update_internal_dir = true;
-    profile->GetPrefs()->SetFilePath(
-        prefs::kPluginsLastInternalDirectory, cur_internal_dir);
-  }
-
-  bool found_internal_pdf = false;
-  bool force_enable_internal_pdf = false;
-  FilePath pdf_path;
-  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-  FilePath::StringType pdf_path_str = pdf_path.value();
-  if (enable_internal_pdf_ &&
-      !profile->GetPrefs()->GetBoolean(prefs::kPluginsEnabledInternalPDF)) {
-    // We switched to the internal pdf plugin being on by default, and so we
-    // need to force it to be enabled.  We only want to do it this once though,
-    // i.e. we don't want to enable it again if the user disables it afterwards.
-    profile->GetPrefs()->SetBoolean(prefs::kPluginsEnabledInternalPDF, true);
-    force_enable_internal_pdf = true;
-  }
-
-  // Disable plugins listed as disabled in prefs.
-  if (ListValue* saved_plugins_list =
-          profile->GetPrefs()->GetMutableList(prefs::kPluginsPluginsList)) {
-    for (ListValue::const_iterator it = saved_plugins_list->begin();
-         it != saved_plugins_list->end();
-         ++it) {
-      if (!(*it)->IsType(Value::TYPE_DICTIONARY)) {
-        LOG(WARNING) << "Invalid entry in " << prefs::kPluginsPluginsList;
-        continue;  // Oops, don't know what to do with this item.
-      }
-
-      DictionaryValue* plugin = static_cast<DictionaryValue*>(*it);
-      FilePath::StringType path;
-      if (!plugin->GetString(L"path", &path))
-        continue;
-
-      bool enabled = true;
-      plugin->GetBoolean(L"enabled", &enabled);
-
-      FilePath plugin_path(path);
-      if (update_internal_dir &&
-          FilePath::CompareIgnoreCase(plugin_path.DirName().value(),
-              last_internal_dir.value()) == 0) {
-        // If the internal plugin directory has changed and if the plugin looks
-        // internal, update its path in the prefs.
-        plugin_path = cur_internal_dir.Append(plugin_path.BaseName());
-        path = plugin_path.value();
-        plugin->SetString(L"path", path);
-      }
-
-      if (FilePath::CompareIgnoreCase(path, pdf_path_str) == 0) {
-        found_internal_pdf = true;
-        if (!enabled && force_enable_internal_pdf) {
-            enabled = true;
-            plugin->SetBoolean(L"enabled", true);
-        }
-      }
-
-      if (!enabled)
-        NPAPI::PluginList::Singleton()->DisablePlugin(plugin_path);
-    }
-  }
-
-  if (!enable_internal_pdf_ && !found_internal_pdf) {
-    // The internal PDF plugin is disabled by default, and the user hasn't
-    // overridden the default.
-    NPAPI::PluginList::Singleton()->DisablePlugin(pdf_path);
-  }
+  // We first group the plugins and then figure out which groups to disable.
+  PluginUpdater::GetInstance()->DisablePluginGroupsFromPrefs(profile);
 
   // Have Chrome plugins write their data to the profile directory.
   GetInstance()->SetChromePluginDataDir(profile->GetPath());

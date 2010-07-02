@@ -1902,6 +1902,8 @@
         'browser/plugin_process_host_mac.cc',
         'browser/plugin_service.cc',
         'browser/plugin_service.h',
+        'browser/plugin_updater.cc',
+        'browser/plugin_updater.h',
         'browser/possible_url_model.cc',
         'browser/possible_url_model.h',
         'browser/power_save_blocker.h',

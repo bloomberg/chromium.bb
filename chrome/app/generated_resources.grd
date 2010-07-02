@@ -3698,6 +3698,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_ENABLE" desc="The link for enabling a plug-in.">
         Enable
       </message>
+      <message name="IDS_PLUGINS_DOWNLOAD" desc="The link label to download the latest version of this plugin">
+        Download Critical Security Update
+      </message>
+      <message name="IDS_PLUGINS_NAME" desc="The label for the name of this plugin">
+        Name:
+      </message>
+      <message name="IDS_PLUGINS_PRIORITY" desc="The label for the priority of this plugin in the list">
+        Priority:
+      </message>
 
       <!-- Session Crashed Info Bar-->
       <message name="IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON" desc="Title of the restore button in the session crashed view.">

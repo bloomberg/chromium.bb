@@ -898,7 +898,7 @@
         'browser/password_manager/password_store_default_unittest.cc',
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/password_manager/password_store_win_unittest.cc',
-        'browser/password_manager/password_store_x_unittest.cc',
+        'browser/plugin_updater_unittest.cc',
         'browser/pref_member_unittest.cc',
         'browser/pref_service_unittest.cc',
         'browser/preferences_mock_mac.cc',
@@ -1532,7 +1532,7 @@
             'browser/chromeos/options/wifi_config_view_browsertest.cc',
             'browser/chromeos/panels/panel_browsertest.cc',
             'browser/chromeos/status/clock_menu_button_browsertest.cc',
-            'browser/chromeos/status/language_menu_button_browsertest.cc',
+            'browser/chromeos/status/language_menu_button_browsertest.cc', 
             'browser/chromeos/status/power_menu_button_browsertest.cc',
           ],
         }],
@@ -2465,7 +2465,7 @@
               # If a test bundle is added to this coverage_build target it
               # necessarily means this file (chrome_tests.gypi) is changed,
               # so the action is run (coverage_bundles.py is generated).
-              # Exceptions to that rule are theoretically possible
+              # Exceptions to that rule are theoretically possible 
               # (e.g. re-gyp with a GYP_DEFINES set).
               # Else it's the same list of bundles as last time.  They are
               # built (since on the deps list) but the action may not run.

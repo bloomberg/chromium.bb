@@ -162,7 +162,7 @@ html[dir=rtl] .tmi-mode {
 }
 
 .plugin-disabled > td {
-  background: url('gray.png') 0px 0px;
+  background-color: #f0f0f0;
   color: #a0a0a0;
   padding-bottom: 4px;
   padding-top: 5px;
@@ -173,8 +173,24 @@ html[dir=rtl] .tmi-mode {
   padding-top: 5px;
 }
 
+.plugin-file-disabled {
+  background-color: #f0f0f0;
+  color: #a0a0a0;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.plugin-file-enabled {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
 .plugin {
   border-bottom: 1px solid #cdcdcd;
+}
+
+.critical {
+  color: red;
 }
 
 /* Indent the text related to each plug-in. */
@@ -201,6 +217,10 @@ html[dir=rtl] .plugin-text {
 .plugin-details table {
   -webkit-border-horizontal-spacing: 0;
   -webkit-border-vertical-spacing: 0;
+}
+
+.plugin-details {
+  -webkit-padding-start: 1em;
 }
 
 /* Separate the inital line, Description, Location, and MIME Types lines. */
@@ -270,31 +290,41 @@ button {
 var pluginDataFormat = {
   'plugins': [
     {
-      'path': '/blahblah/blahblah/MyCrappyPlugin.plugin',
-      'name': 'MyCrappyPlugin',
-      'version': '1.2.3',
-      'description': 'My crappy plugin',
-      'mimeTypes': [
-        { 'description': 'Foo Media',
-          'fileExtensions': [ 'foo' ],
-          'mimeType': 'application/x-my-foo' },
-        { 'description': 'Bar Stuff',
-          'fileExtensions': [ 'bar','baz' ],
-          'mimeType': 'application/my-bar' }
-      ],
-      'enabled': true
-    },
-    {
-      'path': '/foobar/baz/YourGreatPlugin.plugin',
-      'name': 'YourGreatPlugin',
-      'version': '4.5',
-      'description': 'Your great plugin',
-      'mimeTypes': [
-        { 'description': 'Baz Stuff',
-          'fileExtensions': [ 'baz' ],
-          'mimeType': 'application/x-your-baz' }
-      ],
-      'enabled': false
+      'name': 'Group Name',
+      'description': 'description',
+      'version': 'version',
+      'update_url': 'http://update/',
+      'critical': true,
+      'enabled': true,
+      'plugin_files': [
+        {
+          'path': '/blahblah/blahblah/MyCrappyPlugin.plugin',
+          'name': 'MyCrappyPlugin',
+          'version': '1.2.3',
+          'description': 'My crappy plugin',
+          'mimeTypes': [
+            { 'description': 'Foo Media',
+              'fileExtensions': [ 'foo' ],
+              'mimeType': 'application/x-my-foo' },
+            { 'description': 'Bar Stuff',
+              'fileExtensions': [ 'bar','baz' ],
+              'mimeType': 'application/my-bar' }
+          ],
+          'enabled': true
+        },
+        {
+          'path': '/foobar/baz/YourGreatPlugin.plugin',
+          'name': 'YourGreatPlugin',
+          'version': '4.5',
+          'description': 'Your great plugin',
+          'mimeTypes': [
+            { 'description': 'Baz Stuff',
+              'fileExtensions': [ 'baz' ],
+              'mimeType': 'application/x-your-baz' }
+          ],
+          'enabled': false
+        }
+      ]
     }
   ]
 };
@@ -375,9 +405,10 @@ function returnPluginsData(pluginsData){
 /**
  * Handles a 'enable' or 'disable' button getting clicked.
  */
-function handleEnablePlugin(node, enable) {
+function handleEnablePlugin(node, enable, isGroup) {
   // Tell the C++ PluginsDOMHandler to enable/disable the plugin.
-  chrome.send('enablePlugin', [node.pluginPath, String(enable)]);
+  chrome.send('enablePlugin', [String(node.path), String(enable),
+              String(isGroup)]);
   requestPluginsData();
 }
 
@@ -403,7 +434,7 @@ function toggleTmiMode() {
  * Determines whether a plugin's version should be displayed.
  */
 function shouldDisplayPluginVersion(plugin) {
-  return !!plugin.version;
+  return !!plugin.version && plugin.version != '0';
 }
 
 /**
@@ -480,70 +511,118 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
           <div class="plugin-text">
             <div>
               <span class="plugin-name" dir="ltr"
-                    jscontent="name">PLUGIN NAME</span>
+                    jscontent="name">NAME</span>
+              <span jsdisplay="plugin_files.length > 1"
+                  jscontent="'(' + plugin_files.length +' files)'">(x)</span>
               <span jsdisplay="shouldDisplayPluginVersion($this)">
                 - <span i18n-content="pluginVersion">VERSION</span>
-                <span dir="ltr" jscontent="version">x.x.x.x</span>
+                <span jsvalues=".className:critical? 'critical': ''"
+                    dir="ltr" jscontent="version">x.x.x.x</span>
               </span>
+              <a jsdisplay="critical" jsvalues=".href:update_url"
+                    i18n-content="pluginDownload">DOWNLOAD UPDATE</a>
               <span jsdisplay="!enabled"
                     i18n-content="pluginDisabled">(DISABLED)</span>
+              <div jsdisplay="shouldDisplayPluginDescription($this)">
+                <span dir="ltr" jsvalues=".innerHTML:description">
+              </div>
             </div>
-            <div class="plugin-details">
-              <div><table><tr jsdisplay="shouldDisplayPluginDescription($this)">
-                <td class="plugin-details-label"
-                    i18n-content="pluginDescription">DESCRIPTION:</td>
-                <td><span dir="ltr" jsvalues=".innerHTML:description"></td>
-              </tr></table></div>
-              <div><table><tr>
-                <td class="plugin-details-label"
-                    i18n-content="pluginPath">PATH:</td>
-                <td><span dir="ltr" jscontent="path"></span></td>
-              </tr></table></div>
+            <div jsselect="plugin_files" class="plugin-details">
               <div class="showInTmiMode">
-                <table><tr jsdisplay="mimeTypes.length > 0">
-                  <td class="plugin-details-label"
-                      i18n-content="pluginMimeTypes">MIME_TYPES:</td>
-                  <td><table width="100%" class="mime-types">
-                    <tr class="header">
-                      <td i18n-content="pluginMimeTypesMimeType"
-                          >MIME type</td>
-                      <td i18n-content="pluginMimeTypesDescription"
-                          >DESCRIPTION</td>
-                      <td i18n-content="pluginMimeTypesFileExtensions"
-                          >FILE_EXTENSIONS</td>
-                    </tr>
-                    <tr jsselect="mimeTypes">
-                      <td><span dir="ltr"
-                                jscontent="mimeType"></span></td>
-                      <td><span dir="ltr"
-                                jsvalues=".innerHTML:description"></span></td>
-                      <td><table jsdisplay="fileExtensions.length > 0"
-                                 class="hlisting">
-                        <tr><td jsselect="fileExtensions">
-                          <span dir="ltr" jscontent="'.' + $this">
-                        </td></tr>
-                      </table></td>
-                    </tr>
-                  </table></td>
-                </tr></table>
+                <div jsvalues=
+                  ".className:enabled ? 'plugin-file-enabled' : 'plugin-file-disabled'">
+                  <div><table><tr>
+                    <td class="plugin-details-label"
+                        i18n-content="pluginName">NAME:</td>
+                    <td><span dir="ltr" jscontent="name">NAME</span></td>
+                  </tr></table></div>
+                  <div><table><tr jsdisplay="shouldDisplayPluginDescription($this)">
+                    <td class="plugin-details-label"
+                        i18n-content="pluginDescription">DESCRIPTION:</td>
+                    <td><span dir="ltr" jsvalues=".innerHTML:description"></td>
+                  </tr></table></div>
+                  <div><table><tr>
+                    <td class="plugin-details-label"
+                        i18n-content="pluginVersion">VERSION:</td>
+                    <td><span dir="ltr" jscontent="version">x.x.x.x</span></td>
+                  </tr></table></div>
+                  <div><table><tr>
+                    <td class="plugin-details-label"
+                        i18n-content="pluginPriority">PRIORITY:</td>
+                    <td><span dir="ltr" jscontent="priority">x</span></td>
+                  </tr></table></div>
+                  <div><table><tr>
+                    <td class="plugin-details-label"
+                        i18n-content="pluginPath">PATH:</td>
+                    <td><span dir="ltr" jscontent="path"></span></td>
+                  </tr></table></div>
+                  <div><table><tr>
+                    <td class="plugin-details-label">&nbsp;</td>
+                    <td>
+                      <span jsdisplay="!enabled"
+                          i18n-content="pluginDisabled">(DISABLED)</span>
+                      <span>
+                        <a
+                          jsvalues=".path:path"
+                          jsdisplay="enabled"
+                          onclick="handleEnablePlugin(this, false, false)"
+                          href="javascript:void(0);"
+                          i18n-content="disable"
+                          >DISABLE</a>
+                        <a
+                          jsvalues=".path:path"
+                          jsdisplay="!enabled"
+                          onclick="handleEnablePlugin(this, true, false)"
+                          href="javascript:void(0);"
+                          i18n-content="enable"
+                          >ENABLE</a>
+                      </span>
+                    </td>
+                  </tr></table></div>
+                  <table><tr jsdisplay="mimeTypes.length > 0">
+                    <td class="plugin-details-label"
+                        i18n-content="pluginMimeTypes">MIME_TYPES:</td>
+                    <td><table width="100%" class="mime-types">
+                      <tr class="header">
+                        <td i18n-content="pluginMimeTypesMimeType"
+                            >MIME type</td>
+                        <td i18n-content="pluginMimeTypesDescription"
+                            >DESCRIPTION</td>
+                        <td i18n-content="pluginMimeTypesFileExtensions"
+                            >FILE_EXTENSIONS</td>
+                      </tr>
+                      <tr jsselect="mimeTypes">
+                        <td><span dir="ltr"
+                                  jscontent="mimeType"></span></td>
+                        <td><span dir="ltr"
+                                  jsvalues=".innerHTML:description"></span></td>
+                        <td><table jsdisplay="fileExtensions.length > 0"
+                                   class="hlisting">
+                          <tr><td jsselect="fileExtensions">
+                            <span dir="ltr" jscontent="'.' + $this">
+                          </td></tr>
+                        </table></td>
+                      </tr>
+                    </table></td>
+                  </tr></table>
+                </div>
               </div>
             </div>
           </div>
-
           <div class="plugin-actions">
             <span>
               <a
-                jsvalues=".pluginPath:path"
+                jsvalues=".path:name"
                 jsdisplay="enabled"
-                onclick="handleEnablePlugin(this, false)"
-                href="javascript:void();"
+                onclick="handleEnablePlugin(this, false, true)"
+                href="javascript:void(0);"
                 i18n-content="disable"
                 >DISABLE</a>
               <a
-                jsvalues=".pluginPath:path"
+                jsvalues=".path:name"
                 jsdisplay="!enabled"
-                onclick="handleEnablePlugin(this, true)"
-                href="javascript:void();"
+                onclick="handleEnablePlugin(this, true, true)"
+                href="javascript:void(0);"
                 i18n-content="enable"
                 >ENABLE</a>
             </span>
