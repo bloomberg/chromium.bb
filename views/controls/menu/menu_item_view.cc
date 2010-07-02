@@ -14,6 +14,10 @@
 #include "views/controls/menu/menu_separator.h"
 #include "views/controls/menu/submenu_view.h"
 
+#if defined(OS_WIN)
+#include "base/win_util.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -110,8 +114,15 @@ void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
                              const gfx::Rect& bounds,
                              AnchorPosition anchor,
                              bool has_mnemonics) {
-  // Show mnemonics if the button has focus. This mirrors what windows does.
-  PrepareForRun(has_mnemonics, button ? button->HasFocus() : false);
+  // Show mnemonics if the button has focus or alt is pressed.
+  bool show_mnemonics = button ? button->HasFocus() : false;
+#if defined(OS_WIN)
+  // We don't currently need this on gtk as showing the menu gives focus to the
+  // button first.
+  if (!show_mnemonics)
+    show_mnemonics = win_util::IsAltPressed();
+#endif
+  PrepareForRun(has_mnemonics, show_mnemonics);
   int mouse_event_flags;
 
   MenuController* controller = MenuController::GetActiveInstance();
