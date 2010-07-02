@@ -40,6 +40,9 @@ class UpdateView : public views::View {
   virtual bool AcceleratorPressed(const views::Accelerator& a);
 
  private:
+  // Creates Label control and adds it as a child.
+  void InitLabel(views::Label** label);
+
   // Keyboard accelerator to allow cancelling update by hitting escape.
   views::Accelerator escape_accelerator_;
 

@@ -66,7 +66,11 @@ void UpdateScreen::OnReportResults(GoogleUpdateUpgradeResult result,
       break;
     case UPGRADE_SUCCESSFUL:
       view()->AddProgress(kUpdateCompleteProgressIncrement);
-      // Fall through.
+      minimal_update_time_timer_.Stop();
+      checking_for_update_ = false;
+      // TODO(nkostylev): Call reboot API. http://crosbug.com/4002
+      ExitUpdate();
+      break;
     case UPGRADE_ALREADY_UP_TO_DATE:
       checking_for_update_ = false;
       view()->AddProgress(kAfterUpdateCheckProgressIncrement);

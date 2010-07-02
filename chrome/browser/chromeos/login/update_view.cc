@@ -33,6 +33,8 @@ const int kProgressBarY = 250;
 const int kEscapeToSkipLabelY = 290;
 // Progress bar width.
 const int kProgressBarWidth = 450;
+// Horizontal spacing (ex. min left and right margins for label on the screen).
+const int kHorizontalSpacing = 25;
 
 // Label color.
 const SkColor kLabelColor = 0xFF000000;
@@ -61,17 +63,13 @@ void UpdateView::Init() {
   ResourceBundle& res_bundle = ResourceBundle::GetSharedInstance();
   gfx::Font base_font = res_bundle.GetFont(ResourceBundle::BaseFont);
 
-  installing_updates_label_ = new views::Label();
-  installing_updates_label_->SetColor(kLabelColor);
+  InitLabel(&installing_updates_label_);
   installing_updates_label_->SetFont(base_font);
-  installing_updates_label_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
-  installing_updates_label_->SetMultiLine(true);
 
   progress_bar_ = new views::ProgressBar();
+  AddChildView(progress_bar_);
 
   UpdateLocalizedStrings();
-  AddChildView(installing_updates_label_);
-  AddChildView(progress_bar_);
 
 #if !defined(OFFICIAL_BUILD)
   escape_to_skip_label_ = new views::Label();
@@ -100,30 +98,29 @@ void UpdateView::AddProgress(int ticks) {
   progress_bar_->AddProgress(ticks);
 }
 
+// Sets the bounds of the view, placing it at the center of the screen
+// with the |y| coordinate provided. |width| could specify desired view width
+// otherwise preferred width/height are used.
+// |x_center| specifies screen center.
+static void setViewBounds(
+    views::View* view, int x_center, int y, int width = -1) {
+  int preferred_width = (width >= 0) ? width : view->GetPreferredSize().width();
+  int preferred_height = view->GetPreferredSize().height();
+  view->SetBounds(
+      x_center - preferred_width / 2,
+      y,
+      preferred_width,
+      preferred_height);
+}
+
 void UpdateView::Layout() {
   int x_center = width() / 2;
-  int preferred_width = installing_updates_label_->GetPreferredSize().width();
-  int preferred_height = installing_updates_label_->GetPreferredSize().height();
-  installing_updates_label_->SetBounds(
-      x_center - preferred_width / 2,
-      kInstallingUpdatesLabelY,
-      preferred_width,
-      preferred_height);
-  preferred_width = kProgressBarWidth;
-  preferred_height = progress_bar_->GetPreferredSize().height();
-  progress_bar_->SetBounds(
-      x_center - preferred_width / 2,
-      kProgressBarY,
-      preferred_width,
-      preferred_height);
+  int max_width = width() - GetInsets().width() - 2 * kHorizontalSpacing;
+  installing_updates_label_->SizeToFit(max_width);
+  setViewBounds(installing_updates_label_, x_center, kInstallingUpdatesLabelY);
+  setViewBounds(progress_bar_, x_center, kProgressBarY, kProgressBarWidth);
 #if !defined(OFFICIAL_BUILD)
-  preferred_width = escape_to_skip_label_->GetPreferredSize().width();
-  preferred_height = escape_to_skip_label_->GetPreferredSize().height();
-  escape_to_skip_label_->SetBounds(
-      x_center - preferred_width / 2,
-      kEscapeToSkipLabelY,
-      preferred_width,
-      preferred_height);
+  setViewBounds(escape_to_skip_label_, x_center, kEscapeToSkipLabelY);
 #endif
   SchedulePaint();
 }
@@ -139,6 +136,14 @@ bool UpdateView::AcceleratorPressed(const views::Accelerator& a) {
   }
 #endif
   return false;
+}
+
+void UpdateView::InitLabel(views::Label** label) {
+  *label = new views::Label();
+  (*label)->SetColor(kLabelColor);
+  (*label)->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  (*label)->SetMultiLine(true);
+  AddChildView(*label);
 }
 
 }  // namespace chromeos
