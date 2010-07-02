@@ -5,7 +5,6 @@
 # be found in the LICENSE file.
 
 import glob
-import optparse
 import os
 import sys
 
@@ -59,6 +58,8 @@ def GetSources():
     "newlib": dirtree.PatchedTree(
         dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
         PatchGlob("newlib-1.18.0"), strip=2),
+    # TODO(mseaborn): Pin a specific Git commit ID here.
+    "glibc": dirtree.GitTree("http://src.chromium.org/git/nacl-glibc.git"),
     }
 
 
@@ -208,19 +209,46 @@ int main() {
       newlib_toolchain,
       hello_c)
   module_list.append(modules["hello"])
+
+  # TODO(mseaborn): This is cheating.  A manual step is still required
+  # to get glibc to build: nacl-glibc's nacl_config.sh must be run to
+  # populate the "kernel-headers" directory.
+  modules["kernel_headers"] = btarget.ExistingSource(
+      "kernel_headers", os.path.abspath("out/source/glibc/kernel-headers"))
+
+  # libnacl_nocpp and newlib are dependencies for the "forced unwind
+  # support" autoconf check.
+  # TODO(mseaborn): Get glibc to build without having to build newlib first.
+  AddAutoconfModule(
+      "glibc", "glibc",
+      deps=["binutils", "full-gcc", "libnacl_nocpp", "newlib"],
+      explicitly_passed_deps=[modules["kernel_headers"]],
+      configure_opts=[
+          "--prefix=/nacl64",
+          "--host=i486-linux-gnu",
+          "CC=nacl64-gcc -m32",
+          ("CFLAGS=-march=i486 -pipe -fno-strict-aliasing -O2 "
+           "-mno-tls-direct-seg-refs -g"),
+          "--with-headers=%s" % modules["kernel_headers"].dest_path,
+          "--enable-kernel=2.2.0"],
+      use_install_root=True)
+
+  glibc_toolchain = MakeInstallPrefix(
+      "glibc_toolchain",
+      deps=["binutils", "full-gcc", "glibc"])
+
+  modules["hello2"] = btarget.TestModule(
+      "hello2",
+      os.path.join(top_dir, "build", "hello2"),
+      glibc_toolchain, hello_c)
+  module_list.append(modules["hello2"])
+
   return module_list
 
 
 def Main(args):
-  # TODO(mseaborn): Add the ability to build subsets of targets.
-  parser = optparse.OptionParser()
-  parser.add_option("-b", "--build", dest="do_build", action="store_true",
-                    help="Do the build")
-  options, args = parser.parse_args(args)
-  mods = GetTargets(GetSources())
-  btarget.PrintPlan(mods, sys.stdout)
-  if options.do_build:
-    btarget.Rebuild(mods)
+  root_targets = GetTargets(GetSources())
+  btarget.BuildMain(root_targets, args, sys.stdout)
 
 
 if __name__ == "__main__":

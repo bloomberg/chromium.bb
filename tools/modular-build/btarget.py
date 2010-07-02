@@ -4,6 +4,7 @@
 # be found in the LICENSE file.
 
 import hashlib
+import optparse
 import os
 import stat
 import subprocess
@@ -124,6 +125,10 @@ class BuildTarget(TargetBase):
     self._args = args
     self._deps = deps
     self._state = TargetState("%s.state" % dest_dir)
+    if not os.path.join(self.dest_path).startswith("/"):
+      # Build steps tend to require absolute pathnames because they
+      # can be run from various current directories.
+      raise AssertionError("Non-absolute pathname: %r" % self.dest_path)
 
   def GetDeps(self):
     return self._deps
@@ -181,12 +186,12 @@ def InstallDestdir(prefix_dir, install_dir, func):
   temp_dir = "%s.tmp" % install_dir
   dirtree.RemoveTree(temp_dir)
   func(temp_dir)
-  dirtree.RemoveTree(install_dir)
   # Tree is installed into $DESTDIR/$prefix.
   # We need to strip $prefix.
   assert prefix_dir.startswith("/")
   temp_subdir = os.path.join(temp_dir, prefix_dir.lstrip("/"))
   MungeMultilibDir(temp_subdir)
+  dirtree.RemoveTree(install_dir)
   os.rename(temp_subdir, install_dir)
   # TODO: assert that temp_dir doesn't contain anything except prefix dirs
   dirtree.RemoveTree(temp_dir)
@@ -200,11 +205,13 @@ def GetPathVar(prefix_obj):
 def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
                    configure_opts=[], configure_env=[],
                    make_cmd=["make"],
-                   install_cmd=["make", "install"]):
+                   install_cmd=["make", "install"],
+                   explicitly_passed_deps=[],
+                   use_install_root=False):
   prefix_dir = prefix_obj.dest_path
   assert os.path.join(src.dest_path).startswith("/"), src.dest_path
+
   def DoBuild():
-    ResetDir(install_dir)
     ResetDir(build_dir)
     prefix_cmd = ["env", GetPathVar(prefix_obj)]
     subprocess.check_call(
@@ -213,15 +220,26 @@ def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
          "--prefix=%s" % prefix_dir] + configure_opts,
         cwd=build_dir)
     subprocess.check_call(prefix_cmd + make_cmd + ["-j2"], cwd=build_dir)
-    def DoInstall(dest_dir):
+
+    if use_install_root:
+      install_dir_tmp = install_dir + ".tmp"
+      dirtree.RemoveTree(install_dir_tmp)
       subprocess.check_call(
-          prefix_cmd + install_cmd + ["DESTDIR=%s" % dest_dir],
+          prefix_cmd + install_cmd + ["install_root=%s" % install_dir_tmp],
           cwd=build_dir)
-    InstallDestdir(prefix_dir, install_dir, DoInstall)
+      dirtree.RemoveTree(install_dir)
+      os.rename(install_dir_tmp, install_dir)
+    else:
+      def DoInstall(dest_dir):
+        subprocess.check_call(
+            prefix_cmd + install_cmd + ["DESTDIR=%s" % dest_dir],
+            cwd=build_dir)
+      InstallDestdir(prefix_dir, install_dir, DoInstall)
+
   return BuildTarget(name, install_dir, DoBuild,
                      args=["autoconf", configure_opts, configure_env,
                            make_cmd, install_cmd],
-                     deps=[prefix_obj, src])
+                     deps=[prefix_obj, src] + explicitly_passed_deps)
 
 
 def ExportHeaders(name, dest_dir, src_dir):
@@ -333,15 +351,46 @@ def PrintPlan(targets, stream):
     Visit(target)
 
 
-def Rebuild(targets):
+def Rebuild(targets, stream):
   @Memoize
   def Visit(target):
     for dep in target.GetDeps():
       Visit(dep)
     if target.NeedsBuild():
-      print "** building %s" % target.GetName()
+      stream.write("** building %s\n" % target.GetName())
       target.DoBuild()
     else:
-      print "** skipping %s" % target.GetName()
+      stream.write("** skipping %s\n" % target.GetName())
   for target in targets:
     Visit(target)
+
+
+def GetTargetNameMapping(root_targets):
+  all_targets = {}
+  @Memoize
+  def Visit(target):
+    if target.GetName() in all_targets:
+      raise Exception("Multiple targets with name %r" % target.GetName())
+    all_targets[target.GetName()] = target
+    for dep in target.GetDeps():
+      Visit(dep)
+  for target in root_targets:
+    Visit(target)
+  return all_targets
+
+
+def SubsetTargets(root_targets, names):
+  all_targets = GetTargetNameMapping(root_targets)
+  return [all_targets[name] for name in names]
+
+
+def BuildMain(root_targets, args, stream):
+  parser = optparse.OptionParser()
+  parser.add_option("-b", "--build", dest="do_build", action="store_true",
+                    help="Do the build")
+  options, args = parser.parse_args(args)
+  if len(args) > 0:
+    root_targets = SubsetTargets(root_targets, args)
+  PrintPlan(root_targets, stream)
+  if options.do_build:
+    Rebuild(root_targets, stream)
