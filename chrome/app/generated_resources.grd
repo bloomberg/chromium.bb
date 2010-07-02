@@ -4469,6 +4469,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
         Action
       </message>
+      <message name="IDS_EXCEPTIONS_OTR_HEADER" desc="A column header for the incognito column of the cookie/image/javascript/plugins exceptions dialog">
+        Incognito
+      </message>
       <message name="IDS_EXCEPTIONS_ADD_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for adding new exception rules.">
         Add...
       </message>
@@ -4489,6 +4492,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is blocked for a given domain.">
         Block
+      </message>
+      <message name="IDS_EXCEPTIONS_OTR_IN_ITALICS" desc="A label informing the user that incognito-only exceptions are displayed in italics">
+        Exceptions displayed in italics only apply to this incognito session.
       </message>
       <message name="IDS_EXCEPTIONS_NOT_SET_BUTTON" desc="A label to display in the exception page's action column when a site's content setting has not yet been set for a given domain.">
         Not set
@@ -4521,6 +4527,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXCEPTION_EDITOR_ACTION_TITLE" desc="Title of the action combobox in the exception editor">
         Action:
+      </message>
+      <message name="IDS_EXCEPTION_EDITOR_OTR_TITLE" desc="Title of the incognito checkbox in the exception editor">
+        Only apply to this incognito session
       </message>
 
       <!-- Cookie alert dialog -->

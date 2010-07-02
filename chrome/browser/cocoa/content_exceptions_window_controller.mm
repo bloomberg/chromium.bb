@@ -17,9 +17,11 @@
 
 @interface ContentExceptionsWindowController (Private)
 - (id)initWithType:(ContentSettingsType)settingsType
-       settingsMap:(HostContentSettingsMap*)settingsMap;
+       settingsMap:(HostContentSettingsMap*)settingsMap
+    otrSettingsMap:(HostContentSettingsMap*)otrSettingsMap;
 - (void)updateRow:(NSInteger)row
-        withEntry:(const HostContentSettingsMap::PatternSettingPair&)entry;
+        withEntry:(const HostContentSettingsMap::PatternSettingPair&)entry
+           forOtr:(BOOL)isOtr;
 - (void)adjustEditingButtons;
 - (void)modelDidChange;
 - (size_t)menuItemCount;
@@ -141,25 +143,32 @@ static ContentExceptionsWindowController*
 @implementation ContentExceptionsWindowController
 
 + (id)controllerForType:(ContentSettingsType)settingsType
-            settingsMap:(HostContentSettingsMap*)settingsMap {
+            settingsMap:(HostContentSettingsMap*)settingsMap
+         otrSettingsMap:(HostContentSettingsMap*)otrSettingsMap {
   if (!g_exceptionWindows[settingsType]) {
     g_exceptionWindows[settingsType] =
-        [[ContentExceptionsWindowController alloc] initWithType:settingsType
-                                                    settingsMap:settingsMap];
+        [[ContentExceptionsWindowController alloc]
+            initWithType:settingsType
+             settingsMap:settingsMap
+          otrSettingsMap:otrSettingsMap];
   }
   return g_exceptionWindows[settingsType];
 }
 
 - (id)initWithType:(ContentSettingsType)settingsType
-       settingsMap:(HostContentSettingsMap*)settingsMap {
+       settingsMap:(HostContentSettingsMap*)settingsMap
+    otrSettingsMap:(HostContentSettingsMap*)otrSettingsMap {
   NSString* nibpath =
       [mac_util::MainAppBundle() pathForResource:@"ContentExceptionsWindow"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     settingsType_ = settingsType;
     settingsMap_ = settingsMap;
-    model_.reset(new ContentExceptionsTableModel(settingsMap_, settingsType_));
+    otrSettingsMap_ = otrSettingsMap;
+    model_.reset(new ContentExceptionsTableModel(
+        settingsMap_, otrSettingsMap_, settingsType_));
     showAsk_ = settingsType_ == CONTENT_SETTINGS_TYPE_COOKIES;
+    otrAllowed_ = otrSettingsMap != NULL;
     tableObserver_.reset(new UpdatingContentSettingsObserver(self));
     updatesEnabled_ = YES;
 
@@ -199,6 +208,11 @@ static ContentExceptionsWindowController*
   NSCell* patternCell =
       [[tableView_ tableColumnWithIdentifier:@"pattern"] dataCell];
   [patternCell setFormatter:[[[PatternFormatter alloc] init] autorelease]];
+
+  if (!otrAllowed_) {
+    [tableView_
+        removeTableColumn:[tableView_ tableColumnWithIdentifier:@"otr"]];
+  }
 }
 
 - (void)setMinWidth:(CGFloat)minWidth {
@@ -339,10 +353,14 @@ static ContentExceptionsWindowController*
     objectValueForTableColumn:(NSTableColumn*)tableColumn
                           row:(NSInteger)row {
   const HostContentSettingsMap::PatternSettingPair* entry;
-  if (newException_.get() && row >= model_->RowCount())
+  int isOtr;
+  if (newException_.get() && row >= model_->RowCount()) {
     entry = newException_.get();
-  else
+    isOtr = 0;
+  } else {
     entry = &model_->entry_at(row);
+    isOtr = model_->entry_is_off_the_record(row) ? 1 : 0;
+  }
 
   NSObject* result = nil;
   NSString* identifier = [tableColumn identifier];
@@ -350,6 +368,8 @@ static ContentExceptionsWindowController*
     result = base::SysUTF8ToNSString(entry->first.AsString());
   } else if ([identifier isEqualToString:@"action"]) {
     result = [NSNumber numberWithInt:[self indexForSetting:entry->second]];
+  } else if ([identifier isEqualToString:@"otr"]) {
+    result = [NSNumber numberWithInt:isOtr];
   } else {
     NOTREACHED();
   }
@@ -358,19 +378,20 @@ static ContentExceptionsWindowController*
 
 // Updates exception at |row| to contain the data in |entry|.
 - (void)updateRow:(NSInteger)row
-        withEntry:(const HostContentSettingsMap::PatternSettingPair&)entry {
+        withEntry:(const HostContentSettingsMap::PatternSettingPair&)entry
+           forOtr:(BOOL)isOtr {
   // TODO(thakis): This apparently moves an edited row to the back of the list.
   // It's what windows and linux do, but it's kinda sucky. Fix.
   // http://crbug.com/36904
   updatesEnabled_ = NO;
   if (row < model_->RowCount())
     model_->RemoveException(row);
-  model_->AddException(entry.first, entry.second);
+  model_->AddException(entry.first, entry.second, isOtr);
   updatesEnabled_ = YES;
   [self modelDidChange];
 
   // For now, at least re-select the edited element.
-  int newIndex = model_->IndexOfExceptionByPattern(entry.first);
+  int newIndex = model_->IndexOfExceptionByPattern(entry.first, isOtr);
   DCHECK(newIndex != -1);
   [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:newIndex]
           byExtendingSelection:NO];
@@ -395,6 +416,9 @@ static ContentExceptionsWindowController*
   HostContentSettingsMap::PatternSettingPair originalEntry =
       isNewRow ? *newException_ : model_->entry_at(row);
   HostContentSettingsMap::PatternSettingPair entry = originalEntry;
+  bool isOtr =
+      isNewRow ? 0 : model_->entry_is_off_the_record(row);
+  bool wasOtr = isOtr;
 
   // Modify it.
   NSString* identifier = [tableColumn identifier];
@@ -406,6 +430,9 @@ static ContentExceptionsWindowController*
     int index = [object intValue];
     entry.second = [self settingForIndex:index];
   }
+  if ([identifier isEqualToString:@"otr"]) {
+    isOtr = [object intValue] != 0;
+  }
 
   // Commit modification, if any.
   if (isNewRow) {
@@ -415,7 +442,7 @@ static ContentExceptionsWindowController*
       [self adjustEditingButtons];
       return;  // Commit new rows only when the pattern has been set.
     }
-    int newIndex = model_->IndexOfExceptionByPattern(entry.first);
+    int newIndex = model_->IndexOfExceptionByPattern(entry.first, false);
     if (newIndex != -1) {
       // The new pattern was already in the table. Focus existing row instead of
       // overwriting it with a new one.
@@ -426,8 +453,8 @@ static ContentExceptionsWindowController*
       return;
     }
   }
-  if (entry != originalEntry || isNewRow)
-    [self updateRow:row withEntry:entry];
+  if (entry != originalEntry || wasOtr != isOtr || isNewRow)
+    [self updateRow:row withEntry:entry forOtr:isOtr];
 }
 
 
@@ -458,7 +485,8 @@ static ContentExceptionsWindowController*
     return;
 
   // The model caches its data, meaning we need to recreate it on every change.
-  model_.reset(new ContentExceptionsTableModel(settingsMap_, settingsType_));
+  model_.reset(new ContentExceptionsTableModel(
+      settingsMap_, otrSettingsMap_, settingsType_));
 
   [tableView_ reloadData];
   [self adjustEditingButtons];

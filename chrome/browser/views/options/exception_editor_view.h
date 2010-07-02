@@ -12,6 +12,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "views/window/dialog_delegate.h"
+#include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield.h"
 
@@ -38,6 +39,7 @@ class ExceptionEditorView : public views::View,
     virtual void AcceptExceptionEdit(
         const HostContentSettingsMap::Pattern& pattern,
         ContentSetting setting,
+        bool is_off_the_record,
         int index,
         bool is_new) = 0;
 
@@ -50,9 +52,11 @@ class ExceptionEditorView : public views::View,
   // used by ExceptionEditorView but instead passed to the delegate.
   ExceptionEditorView(Delegate* delegate,
                       ContentExceptionsTableModel* model,
+                      bool allow_off_the_record,
                       int index,
                       const HostContentSettingsMap::Pattern& pattern,
-                      ContentSetting setting);
+                      ContentSetting setting,
+                      bool is_off_the_record);
   virtual ~ExceptionEditorView() {}
 
   void Show(gfx::NativeWindow parent);
@@ -82,7 +86,8 @@ class ExceptionEditorView : public views::View,
   // Returns true if we're adding a new item.
   bool is_new() const { return index_ == -1; }
 
-  bool IsPatternValid(const HostContentSettingsMap::Pattern& pattern) const;
+  bool IsPatternValid(const HostContentSettingsMap::Pattern& pattern,
+                      bool is_off_the_record) const;
 
   void UpdateImageView(views::ImageView* image_view, bool is_valid);
 
@@ -91,13 +96,16 @@ class ExceptionEditorView : public views::View,
   ContentSettingComboModel cb_model_;
 
   // Index of the item being edited. If -1, indices this is a new entry.
+  const bool allow_off_the_record_;
   const int index_;
   const HostContentSettingsMap::Pattern pattern_;
   const ContentSetting setting_;
+  const bool is_off_the_record_;
 
   views::Textfield* pattern_tf_;
   views::ImageView* pattern_iv_;
   views::Combobox* action_cb_;
+  views::Checkbox* incognito_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(ExceptionEditorView);
 };

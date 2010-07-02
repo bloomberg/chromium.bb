@@ -166,7 +166,11 @@ void ContentFilterPageView::ButtonPressed(views::Button* sender,
               profile()->GetGeolocationContentSettingsMap()));
     } else {
       ExceptionsView::ShowExceptionsWindow(GetWindow()->GetNativeWindow(),
-          profile()->GetHostContentSettingsMap(), content_type_);
+          profile()->GetHostContentSettingsMap(),
+          profile()->HasOffTheRecordProfile() ?
+              profile()->GetOffTheRecordProfile()->GetHostContentSettingsMap() :
+              NULL,
+          content_type_);
     }
     return;
   }

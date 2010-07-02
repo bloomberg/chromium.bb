@@ -100,6 +100,8 @@ class TestingProfile : public Profile {
 
   virtual void DestroyOffTheRecordProfile() {}
 
+  virtual bool HasOffTheRecordProfile() { return false; }
+
   virtual Profile* GetOriginalProfile() { return this; }
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual VisitedLinkMaster* GetVisitedLinkMaster() { return NULL; }

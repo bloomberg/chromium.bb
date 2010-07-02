@@ -346,6 +346,10 @@ class OffTheRecordProfileImpl : public Profile,
     NOTREACHED();
   }
 
+  virtual bool HasOffTheRecordProfile() {
+    return true;
+  }
+
   virtual Profile* GetOriginalProfile() {
     return profile_;
   }
@@ -1022,6 +1026,10 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
 
 void ProfileImpl::DestroyOffTheRecordProfile() {
   off_the_record_profile_.reset();
+}
+
+bool ProfileImpl::HasOffTheRecordProfile() {
+  return off_the_record_profile_.get() != NULL;
 }
 
 Profile* ProfileImpl::GetOriginalProfile() {

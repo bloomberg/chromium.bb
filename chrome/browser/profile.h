@@ -150,6 +150,9 @@ class Profile {
   // Destroys the off the record profile.
   virtual void DestroyOffTheRecordProfile() = 0;
 
+  // True if an off the record profile exists.
+  virtual bool HasOffTheRecordProfile() = 0;
+
   // Return the original "recording" profile. This method returns this if the
   // profile is not off the record.
   virtual Profile* GetOriginalProfile() = 0;
@@ -480,6 +483,7 @@ class ProfileImpl : public Profile,
   virtual bool IsOffTheRecord();
   virtual Profile* GetOffTheRecordProfile();
   virtual void DestroyOffTheRecordProfile();
+  virtual bool HasOffTheRecordProfile();
   virtual Profile* GetOriginalProfile();
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual history::TopSites* GetTopSites();

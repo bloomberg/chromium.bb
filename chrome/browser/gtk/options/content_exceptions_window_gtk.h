@@ -26,6 +26,7 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
  public:
   static void ShowExceptionsWindow(GtkWindow* window,
                                    HostContentSettingsMap* map,
+                                   HostContentSettingsMap* off_the_record_map,
                                    ContentSettingsType content_type);
 
   ~ContentExceptionsWindowGtk();
@@ -37,6 +38,7 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   virtual void AcceptExceptionEdit(
       const HostContentSettingsMap::Pattern& pattern,
       ContentSetting setting,
+      bool is_off_the_record,
       int index,
       bool is_new);
 
@@ -45,11 +47,13 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   enum {
     COL_PATTERN,
     COL_ACTION,
+    COL_OTR,
     COL_COUNT
   };
 
   ContentExceptionsWindowGtk(GtkWindow* parent,
                              HostContentSettingsMap* map,
+                             HostContentSettingsMap* off_the_record_map,
                              ContentSettingsType type);
 
   // Updates which buttons are enabled.
@@ -78,6 +82,9 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   // The C++, views-ish, cross-platform model class that actually contains the
   // gold standard data.
   scoped_ptr<ContentExceptionsTableModel> model_;
+
+  // True if we also show exceptions from an OTR profile.
+  bool allow_off_the_record_;
 
   // The adapter that ferries data back and forth between |model_| and
   // |list_store_| whenever either of them change.

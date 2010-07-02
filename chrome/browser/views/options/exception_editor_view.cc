@@ -21,15 +21,19 @@
 ExceptionEditorView::ExceptionEditorView(
     Delegate* delegate,
     ContentExceptionsTableModel* model,
+    bool allow_off_the_record,
     int index,
     const HostContentSettingsMap::Pattern& pattern,
-    ContentSetting setting)
+    ContentSetting setting,
+    bool is_off_the_record)
     : delegate_(delegate),
       model_(model),
       cb_model_(model->content_type() == CONTENT_SETTINGS_TYPE_COOKIES),
+      allow_off_the_record_(allow_off_the_record),
       index_(index),
       pattern_(pattern),
-      setting_(setting) {
+      setting_(setting),
+      is_off_the_record_(is_off_the_record) {
   Init();
 }
 
@@ -55,7 +59,8 @@ bool ExceptionEditorView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
     return IsPatternValid(HostContentSettingsMap::Pattern(
-                          UTF16ToUTF8(pattern_tf_->text())));
+                          UTF16ToUTF8(pattern_tf_->text())),
+                          incognito_cb_->checked());
   }
   return true;
 }
@@ -68,7 +73,9 @@ bool ExceptionEditorView::Accept() {
   HostContentSettingsMap::Pattern new_pattern(UTF16ToUTF8(pattern_tf_->text()));
   ContentSetting setting =
       cb_model_.SettingForIndex(action_cb_->selected_item());
-  delegate_->AcceptExceptionEdit(new_pattern, setting, index_, is_new());
+  bool is_off_the_record = incognito_cb_->checked();
+  delegate_->AcceptExceptionEdit(
+      new_pattern, setting, is_off_the_record, index_, is_new());
   return true;
 }
 
@@ -80,7 +87,7 @@ void ExceptionEditorView::ContentsChanged(views::Textfield* sender,
                                           const std::wstring& new_contents) {
   GetDialogClientView()->UpdateDialogButtons();
   UpdateImageView(pattern_iv_, IsPatternValid(HostContentSettingsMap::Pattern(
-      UTF16ToUTF8(pattern_tf_->text()))));
+      UTF16ToUTF8(pattern_tf_->text())), incognito_cb_->checked()));
 }
 
 bool ExceptionEditorView::HandleKeystroke(
@@ -99,11 +106,15 @@ void ExceptionEditorView::Init() {
   pattern_iv_ = new views::ImageView;
 
   UpdateImageView(pattern_iv_, IsPatternValid(HostContentSettingsMap::Pattern(
-      UTF16ToUTF8(pattern_tf_->text()))));
+      UTF16ToUTF8(pattern_tf_->text())), is_off_the_record_));
 
   action_cb_ = new views::Combobox(&cb_model_);
   if (!is_new())
     action_cb_->SetSelectedItem(cb_model_.IndexForSetting(setting_));
+
+  incognito_cb_ = new views::Checkbox(
+      l10n_util::GetString(IDS_EXCEPTION_EDITOR_OTR_TITLE));
+  incognito_cb_->SetChecked(is_off_the_record_);
 
   GridLayout* layout = CreatePanelGridLayout(this);
   SetLayoutManager(layout);
@@ -128,6 +139,11 @@ void ExceptionEditorView::Init() {
   layout->StartRowWithPadding(0, 1, 0, kRelatedControlVerticalSpacing);
   layout->AddView(CreateLabel(IDS_EXCEPTION_EDITOR_ACTION_TITLE));
   layout->AddView(action_cb_);
+
+  if (allow_off_the_record_) {
+    layout->StartRowWithPadding(0, 1, 0, kRelatedControlVerticalSpacing);
+    layout->AddView(incognito_cb_, 3, 1, GridLayout::FILL, GridLayout::FILL);
+  }
 }
 
 views::Label* ExceptionEditorView::CreateLabel(int message_id) {
@@ -137,9 +153,10 @@ views::Label* ExceptionEditorView::CreateLabel(int message_id) {
 }
 
 bool ExceptionEditorView::IsPatternValid(
-    const HostContentSettingsMap::Pattern& pattern) const {
+    const HostContentSettingsMap::Pattern& pattern,
+    bool is_off_the_record) const {
   bool is_valid_pattern = pattern.IsValid() &&
-      (model_->IndexOfExceptionByPattern(pattern) == -1);
+      (model_->IndexOfExceptionByPattern(pattern, is_off_the_record) == -1);
 
   return is_new() ? is_valid_pattern : (!pattern.AsString().empty() &&
       ((pattern_ == pattern) ||  is_valid_pattern));

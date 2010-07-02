@@ -38,6 +38,7 @@ class ExceptionsView : public ExceptionEditorView::Delegate,
   // Shows the Exceptions window.
   static void ShowExceptionsWindow(gfx::NativeWindow parent,
                                    HostContentSettingsMap* map,
+                                   HostContentSettingsMap* off_the_record_map,
                                    ContentSettingsType content_type);
 
   virtual ~ExceptionsView();
@@ -69,11 +70,14 @@ class ExceptionsView : public ExceptionEditorView::Delegate,
   virtual void AcceptExceptionEdit(
       const HostContentSettingsMap::Pattern& pattern,
       ContentSetting setting,
+      bool is_off_the_record,
       int index,
       bool is_new);
 
  private:
-  ExceptionsView(HostContentSettingsMap* map, ContentSettingsType type);
+  ExceptionsView(HostContentSettingsMap* map,
+                 HostContentSettingsMap* off_the_record_map,
+                 ContentSettingsType type);
 
   void Init();
 
@@ -94,6 +98,9 @@ class ExceptionsView : public ExceptionEditorView::Delegate,
 
   // The model displayed in the table.
   ContentExceptionsTableModel model_;
+
+  // True if the user can also add off the record entries.
+  bool allow_off_the_record_;
 
   views::TableView* table_;
 

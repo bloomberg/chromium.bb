@@ -184,9 +184,13 @@ void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
   }
   HostContentSettingsMap* settings_map =
       profile()->GetHostContentSettingsMap();
+  HostContentSettingsMap* otr_settings_map =
+      profile()->HasOffTheRecordProfile() ?
+          profile()->GetOffTheRecordProfile()->GetHostContentSettingsMap() :
+          NULL;
   ContentExceptionsWindowGtk::ShowExceptionsWindow(
       GTK_WINDOW(gtk_widget_get_toplevel(button)),
-      settings_map, content_type_);
+      settings_map, otr_settings_map, content_type_);
 }
 
 void ContentFilterPageGtk::OnPluginsPageLinkClicked(GtkWidget* button) {

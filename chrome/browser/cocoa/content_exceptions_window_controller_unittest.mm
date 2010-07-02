@@ -57,7 +57,8 @@ class ContentExceptionsWindowControllerTest : public CocoaTest {
   ContentExceptionsWindowController* GetController(ContentSettingsType type) {
     id controller = [ContentExceptionsWindowController
         controllerForType:type
-        settingsMap:settingsMap_.get()];
+              settingsMap:settingsMap_.get()
+           otrSettingsMap:NULL];
     [controller showWindow:nil];
     return controller;
   }
@@ -96,7 +97,8 @@ TEST_F(ContentExceptionsWindowControllerTest, Construction) {
   ContentExceptionsWindowController* controller =
       [ContentExceptionsWindowController
           controllerForType:CONTENT_SETTINGS_TYPE_PLUGINS
-                settingsMap:settingsMap_.get()];
+                settingsMap:settingsMap_.get()
+             otrSettingsMap:NULL];
   [controller showWindow:nil];
   [controller close];  // Should autorelease.
 }

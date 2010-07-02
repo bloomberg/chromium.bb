@@ -2560,6 +2560,8 @@
         'browser/views/options/advanced_contents_view.h',
         'browser/views/options/advanced_page_view.cc',
         'browser/views/options/advanced_page_view.h',
+        'browser/views/options/content_exceptions_table_view.cc',
+        'browser/views/options/content_exceptions_table_view.h',
         'browser/views/options/content_page_view.cc',
         'browser/views/options/content_page_view.h',
         'browser/views/options/content_filter_page_view.cc',

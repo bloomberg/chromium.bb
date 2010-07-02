@@ -28,10 +28,15 @@ class UpdatingContentSettingsObserver;
 
   ContentSettingsType settingsType_;
   HostContentSettingsMap* settingsMap_;  // weak
+  HostContentSettingsMap* otrSettingsMap_;  // weak
   scoped_ptr<ContentExceptionsTableModel> model_;
 
   // Is set if "Ask" should be a valid option in the "action" popup.
   BOOL showAsk_;
+
+  // Is set if adding and editing exceptions for the current OTR session should
+  // be allowed.
+  BOOL otrAllowed_;
 
   // Listens for changes to the content settings and reloads the data when they
   // change. See comment in -modelDidChange in the mm file for details.
@@ -49,7 +54,8 @@ class UpdatingContentSettingsObserver;
 // Returns the content exceptions window controller for |settingsType|.
 // Changes made by the user in the window are persisted in |settingsMap|.
 + (id)controllerForType:(ContentSettingsType)settingsType
-            settingsMap:(HostContentSettingsMap*)settingsMap;
+            settingsMap:(HostContentSettingsMap*)settingsMap
+         otrSettingsMap:(HostContentSettingsMap*)otrSettingsMap;
 
 // Shows the exceptions dialog as a modal sheet attached to |window|.
 - (void)attachSheetTo:(NSWindow*)window;

@@ -333,8 +333,13 @@ class PrefObserverDisabler {
 
 - (void)showExceptionsForType:(ContentSettingsType)settingsType {
   HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
+  HostContentSettingsMap* offTheRecordSettingsMap =
+      profile_->HasOffTheRecordProfile() ?
+          profile_->GetOffTheRecordProfile()->GetHostContentSettingsMap() :
+          NULL;
   [[ContentExceptionsWindowController controllerForType:settingsType
-                                            settingsMap:settingsMap]
+                                            settingsMap:settingsMap
+                                         otrSettingsMap:offTheRecordSettingsMap]
       attachSheetTo:[self window]];
 }
 

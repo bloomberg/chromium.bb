@@ -170,9 +170,13 @@ void CookieFilterPageGtk::OnCookiesAllowToggled(GtkWidget* toggle_button) {
 
 void CookieFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
   HostContentSettingsMap* settings_map = profile()->GetHostContentSettingsMap();
+  HostContentSettingsMap* otr_settings_map =
+      profile()->HasOffTheRecordProfile() ?
+          profile()->GetOffTheRecordProfile()->GetHostContentSettingsMap() :
+          NULL;
   ContentExceptionsWindowGtk::ShowExceptionsWindow(
       GTK_WINDOW(gtk_widget_get_toplevel(button)),
-      settings_map, CONTENT_SETTINGS_TYPE_COOKIES);
+      settings_map, otr_settings_map, CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
 void CookieFilterPageGtk::OnBlockThirdPartyToggled(GtkWidget* toggle_button) {

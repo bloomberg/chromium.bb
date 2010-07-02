@@ -12,28 +12,44 @@
 
 ContentExceptionsTableModel::ContentExceptionsTableModel(
     HostContentSettingsMap* map,
+    HostContentSettingsMap* off_the_record_map,
     ContentSettingsType type)
     : map_(map),
+      off_the_record_map_(off_the_record_map),
       content_type_(type),
       observer_(NULL) {
   // Load the contents.
   map->GetSettingsForOneType(type, &entries_);
+  if (off_the_record_map)
+    off_the_record_map->GetSettingsForOneType(type, &off_the_record_entries_);
 }
 
 void ContentExceptionsTableModel::AddException(
     const HostContentSettingsMap::Pattern& pattern,
-    ContentSetting setting) {
-  entries_.push_back(
+    ContentSetting setting,
+    bool is_off_the_record) {
+  DCHECK(!is_off_the_record || off_the_record_map_);
+
+  int insert_position =
+      is_off_the_record ? RowCount() : static_cast<int>(entries_.size());
+
+  entries(is_off_the_record).push_back(
       HostContentSettingsMap::PatternSettingPair(pattern, setting));
-  map_->SetContentSetting(pattern, content_type_, setting);
+  map(is_off_the_record)->SetContentSetting(pattern, content_type_, setting);
   if (observer_)
-    observer_->OnItemsAdded(RowCount() - 1, 1);
+    observer_->OnItemsAdded(insert_position, 1);
 }
 
 void ContentExceptionsTableModel::RemoveException(int row) {
-  const HostContentSettingsMap::PatternSettingPair& pair = entries_[row];
-  map_->SetContentSetting(pair.first, content_type_, CONTENT_SETTING_DEFAULT);
-  entries_.erase(entries_.begin() + row);
+  bool is_off_the_record = entry_is_off_the_record(row);
+  int position_to_delete =
+      is_off_the_record ? row - static_cast<int>(entries_.size()) : row;
+  const HostContentSettingsMap::PatternSettingPair& pair = entry_at(row);
+
+  map(is_off_the_record)->SetContentSetting(
+      pair.first, content_type_, CONTENT_SETTING_DEFAULT);
+  entries(is_off_the_record).erase(
+      entries(is_off_the_record).begin() + position_to_delete);
   if (observer_)
     observer_->OnItemsRemoved(row, 1);
 }
@@ -41,28 +57,37 @@ void ContentExceptionsTableModel::RemoveException(int row) {
 void ContentExceptionsTableModel::RemoveAll() {
   int old_row_count = RowCount();
   entries_.clear();
+  off_the_record_entries_.clear();
   map_->ClearSettingsForOneType(content_type_);
+  if (off_the_record_map_)
+    off_the_record_map_->ClearSettingsForOneType(content_type_);
   if (observer_)
     observer_->OnItemsRemoved(0, old_row_count);
 }
 
 int ContentExceptionsTableModel::IndexOfExceptionByPattern(
-    const HostContentSettingsMap::Pattern& pattern) {
+    const HostContentSettingsMap::Pattern& pattern,
+    bool is_off_the_record) {
+  DCHECK(!is_off_the_record || off_the_record_map_);
+
+  int offset =
+      is_off_the_record ? static_cast<int>(entries_.size()) : 0;
+
   // This is called on every key type in the editor. Move to a map if we end up
   // with lots of exceptions.
-  for (size_t i = 0; i < entries_.size(); ++i) {
-    if (entries_[i].first == pattern)
-      return static_cast<int>(i);
+  for (size_t i = 0; i < entries(is_off_the_record).size(); ++i) {
+    if (entries(is_off_the_record)[i].first == pattern)
+      return offset + static_cast<int>(i);
   }
   return -1;
 }
 
 int ContentExceptionsTableModel::RowCount() {
-  return static_cast<int>(entries_.size());
+  return static_cast<int>(entries_.size() + off_the_record_entries_.size());
 }
 
 std::wstring ContentExceptionsTableModel::GetText(int row, int column_id) {
-  HostContentSettingsMap::PatternSettingPair entry = entries_[row];
+  HostContentSettingsMap::PatternSettingPair entry = entry_at(row);
 
   switch (column_id) {
     case IDS_EXCEPTIONS_PATTERN_HEADER:
