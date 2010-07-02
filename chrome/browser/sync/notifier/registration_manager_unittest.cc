@@ -153,7 +153,7 @@ TEST_F(RegistrationManagerTest, RegisterType) {
   results[2].mutable_operation()->mutable_object_id()->
       mutable_name()->set_string_value("garbage");
   results[3].mutable_status()->
-      set_code(invalidation::Status::UNKNOWN_ERROR);
+      set_code(invalidation::Status::PERMANENT_FAILURE);
   *results[4].mutable_operation()->mutable_object_id() =
       ModelTypeToObjectId(syncable::TYPED_URLS);
 

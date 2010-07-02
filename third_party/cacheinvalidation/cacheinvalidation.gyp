@@ -70,6 +70,7 @@
         'overrides/google/cacheinvalidation/googletest.h',
         'overrides/google/cacheinvalidation/logging.h',
         'overrides/google/cacheinvalidation/mutex.h',
+        'overrides/google/cacheinvalidation/random.h',
         'overrides/google/cacheinvalidation/stl-namespace.h'
         'overrides/google/cacheinvalidation/string_util.h'
         'overrides/google/cacheinvalidation/time.h',
