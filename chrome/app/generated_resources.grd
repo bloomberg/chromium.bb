@@ -6903,6 +6903,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_CHOOSE_DATATYPES" desc="A radio button for users who want to select some datatypes to sync">
         Choose what to sync:
       </message>
+      <message name="IDS_SYNC_ZERO_DATA_TYPES_ERROR" desc="Error message if you try to sync, but uncheck all the data type choices.">
+        You must select at least one data type to sync.
+      </message>
       <message name="IDS_SYNC_DATATYPE_BOOKMARKS" desc="Bookmarks, one of the data types that we allow syncing.">
         Bookmarks
       </message>
