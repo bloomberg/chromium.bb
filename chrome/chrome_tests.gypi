@@ -23,6 +23,7 @@
       '../views/focus/focus_manager_unittest.cc',
       '../views/controls/label_unittest.cc',
       '../views/controls/progress_bar_unittest.cc',
+      '../views/controls/tabbed_pane/tabbed_pane_unittest.cc',
       '../views/controls/table/table_view_unittest.cc',
       '../views/grid_layout_unittest.cc',
     ],

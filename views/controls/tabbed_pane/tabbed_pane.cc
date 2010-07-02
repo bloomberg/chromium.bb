@@ -102,10 +102,8 @@ void TabbedPane::LoadAccelerators() {
 }
 
 void TabbedPane::Layout() {
-  if (native_tabbed_pane_) {
+  if (native_tabbed_pane_)
     native_tabbed_pane_->GetView()->SetBounds(0, 0, width(), height());
-    native_tabbed_pane_->GetView()->Layout();
-  }
 }
 
 void TabbedPane::Focus() {
@@ -127,6 +125,11 @@ bool TabbedPane::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
   *role = AccessibilityTypes::ROLE_PAGETABLIST;
   return true;
+}
+
+gfx::Size TabbedPane::GetPreferredSize() {
+  return native_tabbed_pane_ ?
+      native_tabbed_pane_->GetPreferredSize() : gfx::Size();
 }
 
 }  // namespace views

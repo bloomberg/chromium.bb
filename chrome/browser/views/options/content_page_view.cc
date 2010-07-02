@@ -41,8 +41,10 @@
 
 namespace {
 
-const int kPasswordSavingRadioGroup = 1;
-const int kFormAutofillRadioGroup = 2;
+// All the options pages are in the same view hierarchy. This means we need to
+// make sure group identifiers don't collide across different pages.
+const int kPasswordSavingRadioGroup = 201;
+const int kFormAutofillRadioGroup = 202;
 
 // Background color for the status label when it's showing an error.
 static const SkColor kSyncLabelErrorBgColor = SkColorSetRGB(0xff, 0x9a, 0x9a);
@@ -252,17 +254,6 @@ void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
 void ContentPageView::Layout() {
   if (is_initialized())
     UpdateSyncControls();
-  // We need to Layout twice - once to get the width of the contents box...
-  View::Layout();
-  passwords_asktosave_radio_->SetBounds(
-      0, 0, passwords_group_->GetContentsWidth(), 0);
-  passwords_neversave_radio_->SetBounds(
-      0, 0, passwords_group_->GetContentsWidth(), 0);
-  if (is_initialized()) {
-    sync_status_label_->SetBounds(
-        0, 0, sync_group_->GetContentsWidth(), 0);
-  }
-  // ... and twice to get the height of multi-line items correct.
   View::Layout();
 }
 
@@ -308,10 +299,12 @@ void ContentPageView::InitPasswordSavingGroup() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(passwords_asktosave_radio_);
+  layout->AddView(passwords_asktosave_radio_, 1, 1,
+                  GridLayout::FILL, GridLayout::LEADING);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(passwords_neversave_radio_);
+  layout->AddView(passwords_neversave_radio_, 1, 1,
+                  GridLayout::FILL, GridLayout::LEADING);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(show_passwords_button_);
@@ -356,10 +349,12 @@ void ContentPageView::InitFormAutofillGroup() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, fill_column_view_set_id);
-  layout->AddView(form_autofill_enable_radio_);
+  layout->AddView(form_autofill_enable_radio_, 1, 1,
+                  GridLayout::FILL, GridLayout::LEADING);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, fill_column_view_set_id);
-  layout->AddView(form_autofill_disable_radio_);
+  layout->AddView(form_autofill_disable_radio_, 1, 1,
+                  GridLayout::FILL, GridLayout::LEADING);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, leading_column_view_set_id);
   layout->AddView(change_autofill_settings_button_);
@@ -457,7 +452,8 @@ void ContentPageView::InitSyncGroup() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(sync_status_label_, 3, 1);
+  layout->AddView(sync_status_label_, 3, 1,
+                  GridLayout::FILL, GridLayout::LEADING);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(sync_action_link_, 3, 1);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);

@@ -19,7 +19,8 @@ namespace views {
 // NativeButtonWin, public:
 
 NativeButtonWin::NativeButtonWin(NativeButton* native_button)
-    : native_button_(native_button) {
+    : native_button_(native_button),
+      button_size_valid_(false) {
   // Associates the actual HWND with the native_button so the native_button is
   // the one considered as having the focus (not the wrapper) when the HWND is
   // focused directly (with a click for example).
@@ -43,12 +44,14 @@ void NativeButtonWin::UpdateLabel() {
   }
 
   SetWindowText(native_view(), native_button_->label().c_str());
+  button_size_valid_ = false;
 }
 
 void NativeButtonWin::UpdateFont() {
   SendMessage(native_view(), WM_SETFONT,
               reinterpret_cast<WPARAM>(native_button_->font().hfont()),
               FALSE);
+  button_size_valid_ = false;
 }
 
 void NativeButtonWin::UpdateEnabled() {
@@ -60,6 +63,7 @@ void NativeButtonWin::UpdateDefault() {
     SendMessage(native_view(), BM_SETSTYLE,
                 native_button_->is_default() ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON,
                 true);
+    button_size_valid_ = false;
   }
 }
 
@@ -88,10 +92,13 @@ gfx::NativeView NativeButtonWin::GetTestingHandle() const {
 // NativeButtonWin, View overrides:
 
 gfx::Size NativeButtonWin::GetPreferredSize() {
-  SIZE sz = {0};
-  SendMessage(native_view(), BCM_GETIDEALSIZE, 0, reinterpret_cast<LPARAM>(&sz));
-
-  return gfx::Size(sz.cx, sz.cy);
+  if (!button_size_valid_) {
+    SIZE sz = {0};
+    Button_GetIdealSize(native_view(), reinterpret_cast<LPARAM>(&sz));
+    button_size_.SetSize(sz.cx, sz.cy);
+    button_size_valid_ = true;
+  }
+  return button_size_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

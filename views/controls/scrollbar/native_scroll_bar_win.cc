@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,15 +200,15 @@ NativeScrollBarWin::NativeScrollBarWin(NativeScrollBar* scroll_bar)
     : native_scroll_bar_(scroll_bar),
       sb_container_(NULL) {
   set_focus_view(scroll_bar);
+  memset(&scroll_info_, 0, sizeof(scroll_info_));
 }
 
 NativeScrollBarWin::~NativeScrollBarWin() {
-  if (sb_container_) {
+  if (sb_container_.get()) {
     // We always destroy the scrollbar container explicitly to cover all
     // cases including when the container is no longer connected to a
     // widget tree.
     DestroyWindow(sb_container_->hwnd());
-    delete sb_container_;
   }
 }
 
@@ -227,7 +227,7 @@ gfx::Size NativeScrollBarWin::GetPreferredSize() {
 }
 
 bool NativeScrollBarWin::OnKeyPressed(const KeyEvent& event) {
-  if (!sb_container_)
+  if (!sb_container_.get())
     return false;
   int code = -1;
   switch (event.GetKeyCode()) {
@@ -270,7 +270,7 @@ bool NativeScrollBarWin::OnKeyPressed(const KeyEvent& event) {
 }
 
 bool NativeScrollBarWin::OnMouseWheel(const MouseWheelEvent& e) {
-  if (!sb_container_)
+  if (!sb_container_.get())
     return false;
   sb_container_->ScrollWithOffset(e.GetOffset());
   return true;
@@ -280,8 +280,12 @@ bool NativeScrollBarWin::OnMouseWheel(const MouseWheelEvent& e) {
 // NativeScrollBarWin, NativeControlWin overrides:
 
 void NativeScrollBarWin::CreateNativeControl() {
-  sb_container_ = new ScrollBarContainer(native_scroll_bar_);
+  sb_container_.reset(new ScrollBarContainer(native_scroll_bar_));
   NativeControlCreated(sb_container_->hwnd());
+  // Reinstall scroll state if we have valid information.
+  if (scroll_info_.cbSize)
+    SetScrollInfo(sb_container_->GetScrollBarHWND(), SB_CTL, &scroll_info_,
+                  TRUE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,7 +306,7 @@ View* NativeScrollBarWin::GetView() {
 void NativeScrollBarWin::Update(int viewport_size,
                                 int content_size,
                                 int current_pos) {
-  if (!sb_container_)
+  if (!sb_container_.get())
     return;
 
   if (content_size < 0)
@@ -314,14 +318,13 @@ void NativeScrollBarWin::Update(int viewport_size,
   if (current_pos > content_size)
     current_pos = content_size;
 
-  SCROLLINFO si;
-  si.cbSize = sizeof(si);
-  si.fMask = SIF_DISABLENOSCROLL | SIF_POS | SIF_RANGE | SIF_PAGE;
-  si.nMin = 0;
-  si.nMax = content_size;
-  si.nPos = current_pos;
-  si.nPage = viewport_size;
-  SetScrollInfo(sb_container_->GetScrollBarHWND(), SB_CTL, &si, TRUE);
+  scroll_info_.cbSize = sizeof(scroll_info_);
+  scroll_info_.fMask = SIF_DISABLENOSCROLL | SIF_POS | SIF_RANGE | SIF_PAGE;
+  scroll_info_.nMin = 0;
+  scroll_info_.nMax = content_size;
+  scroll_info_.nPos = current_pos;
+  scroll_info_.nPage = viewport_size;
+  SetScrollInfo(sb_container_->GetScrollBarHWND(), SB_CTL, &scroll_info_, TRUE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,4 +347,3 @@ int NativeScrollBarWrapper::GetVerticalScrollBarWidth() {
 }
 
 }  // namespace views
-

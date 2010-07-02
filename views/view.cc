@@ -218,17 +218,14 @@ void View::ScrollRectToVisible(const gfx::Rect& rect) {
 /////////////////////////////////////////////////////////////////////////////
 
 void View::Layout() {
-  // Layout child Views
+  // If we have a layout manager, let it handle the layout for us.
   if (layout_manager_.get()) {
     layout_manager_->Layout(this);
     SchedulePaint();
-    // TODO(beng): We believe the right thing to do here is return since the
-    //             layout manager should be handling things, but it causes
-    //             regressions (missing options from Options dialog and a hang
-    //             in interactive_ui_tests).
+    return;
   }
 
-  // Lay out contents of child Views
+  // Otherwise, just pass on to the child views.
   for (int i = 0, count = GetChildViewCount(); i < count; ++i) {
     View* child = GetChildViewAt(i);
     child->Layout();
