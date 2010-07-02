@@ -461,6 +461,9 @@ struct ViewHostMsg_DidPrintPage_Params {
 
   // The printable area the page author specified.
   gfx::Rect content_area;
+
+  // True if the page has visible overlays.
+  bool has_visible_overlays;
 };
 
 // Parameters for creating an audio output stream.
@@ -1584,6 +1587,7 @@ struct ParamTraits<ViewHostMsg_DidPrintPage_Params> {
     WriteParam(m, p.actual_shrink);
     WriteParam(m, p.page_size);
     WriteParam(m, p.content_area);
+    WriteParam(m, p.has_visible_overlays);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->metafile_data_handle) &&
@@ -1592,7 +1596,8 @@ struct ParamTraits<ViewHostMsg_DidPrintPage_Params> {
            ReadParam(m, iter, &p->page_number) &&
            ReadParam(m, iter, &p->actual_shrink) &&
            ReadParam(m, iter, &p->page_size) &&
-           ReadParam(m, iter, &p->content_area);
+           ReadParam(m, iter, &p->content_area) &&
+           ReadParam(m, iter, &p->has_visible_overlays);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<ViewHostMsg_DidPrintPage_Params>");

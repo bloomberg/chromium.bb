@@ -51,6 +51,17 @@ void PrintedDocument::RenderPrintedPage(
 
   const printing::PageSetup& page_setup(
       immutable_.settings_.page_setup_device_units());
+  gfx::Rect content_area(page.page_content_rect());
+  const gfx::Size& physical_size = page_setup.physical_size();
+  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
+  if (physical_size.width() > page.page_size().width()) {
+    int diff = physical_size.width() - page.page_size().width();
+    content_area.set_x(content_area.x() + diff / 2);
+  }
+  if (physical_size.height() > page.page_size().height()) {
+    int diff = physical_size.height() - page.page_size().height();
+    content_area.set_y(content_area.y() + diff / 2);
+  }
 
   // Save the state to make sure the context this function call does not modify
   // the device context.
@@ -81,7 +92,7 @@ void PrintedDocument::RenderPrintedPage(
     SelectObject(context, CreateSolidBrush(RGB(0xb0, 0xb0, 0xb0)));
     DrawRect(context, debug_overlay_area);
     // Content area:
-    gfx::Rect debug_content_area(page_setup.content_area());
+    gfx::Rect debug_content_area(content_area());
     debug_content_area.Offset(-page_setup.printable_area().x(),
                               -page_setup.printable_area().y());
     SelectObject(context, CreateSolidBrush(RGB(0xd0, 0xd0, 0xd0)));
@@ -94,8 +105,8 @@ void PrintedDocument::RenderPrintedPage(
     // That is 0,0 is offset by PHYSICALOFFSETX/Y from the page.
     SimpleModifyWorldTransform(
         context,
-        page_setup.content_area().x() - page_setup.printable_area().x(),
-        page_setup.content_area().y() - page_setup.printable_area().y(),
+        content_area.x() - page_setup.printable_area().x(),
+        content_area.y() - page_setup.printable_area().y(),
         mutable_.shrink_factor);
 
     if (!page.native_metafile()->SafePlayback(context)) {

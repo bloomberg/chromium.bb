@@ -59,7 +59,7 @@ TEST_F(PageOverlaysTest, StringConversion) {
   gfx::Size page_size(100, 100);
   gfx::Rect page_content_area(5, 5, 90, 90);
   scoped_refptr<printing::PrintedPage> page(
-      new printing::PrintedPage(1, NULL, page_size, page_content_area));
+      new printing::PrintedPage(1, NULL, page_size, page_content_area, true));
 
   std::wstring input;
   std::wstring out;

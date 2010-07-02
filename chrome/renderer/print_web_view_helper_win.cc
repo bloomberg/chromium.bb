@@ -11,9 +11,12 @@
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
+#include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 
+using printing::ConvertUnitDouble;
+using printing::kPointsPerInch;
 using WebKit::WebFrame;
 using WebKit::WebString;
 
@@ -27,12 +30,30 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   HDC hdc = metafile.hdc();
   DCHECK(hdc);
   skia::PlatformDevice::InitializeDC(hdc);
+
+  double content_width_in_points;
+  double content_height_in_points;
+  double margin_top_in_points;
+  double margin_right_in_points;
+  double margin_bottom_in_points;
+  double margin_left_in_points;
+  GetPageSizeAndMarginsInPoints(frame,
+                                params.page_number,
+                                params.params,
+                                &content_width_in_points,
+                                &content_height_in_points,
+                                &margin_top_in_points,
+                                &margin_right_in_points,
+                                &margin_bottom_in_points,
+                                &margin_left_in_points);
+
   // Since WebKit extends the page width depending on the magical shrink
   // factor we make sure the canvas covers the worst case scenario
   // (x2.0 currently).  PrintContext will then set the correct clipping region.
-  int size_x = static_cast<int>(canvas_size.width() * params.params.max_shrink);
-  int size_y = static_cast<int>(canvas_size.height() *
-      params.params.max_shrink);
+  int size_x = static_cast<int>(content_width_in_points *
+                                params.params.max_shrink);
+  int size_y = static_cast<int>(content_height_in_points *
+                                params.params.max_shrink);
   // Calculate the dpi adjustment.
   float shrink = static_cast<float>(canvas_size.width()) /
       params.params.printable_size.width();
@@ -94,6 +115,26 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   page_params.page_number = params.page_number;
   page_params.document_cookie = params.params.document_cookie;
   page_params.actual_shrink = shrink;
+  page_params.page_size = gfx::Size(
+      static_cast<int>(ConvertUnitDouble(
+          content_width_in_points +
+          margin_left_in_points + margin_right_in_points,
+          kPointsPerInch, params.params.dpi)),
+      static_cast<int>(ConvertUnitDouble(
+          content_height_in_points +
+          margin_top_in_points + margin_bottom_in_points,
+          kPointsPerInch, params.params.dpi)));
+  page_params.content_area = gfx::Rect(
+      static_cast<int>(ConvertUnitDouble(
+          margin_left_in_points, kPointsPerInch, params.params.dpi)),
+      static_cast<int>(ConvertUnitDouble(
+          margin_top_in_points, kPointsPerInch, params.params.dpi)),
+      static_cast<int>(ConvertUnitDouble(
+          content_width_in_points, kPointsPerInch, params.params.dpi)),
+      static_cast<int>(ConvertUnitDouble(
+          content_height_in_points, kPointsPerInch, params.params.dpi)));
+  page_params.has_visible_overlays =
+      frame->isPageBoxVisible(params.page_number);
   base::SharedMemory shared_buf;
 
   // http://msdn2.microsoft.com/en-us/library/ms535522.aspx
@@ -125,4 +166,3 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
     Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
   }
 }
-

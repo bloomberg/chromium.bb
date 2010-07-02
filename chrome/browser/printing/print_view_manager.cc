@@ -135,7 +135,8 @@ void PrintViewManager::DidPrintPage(
                     metafile.release(),
                     params.actual_shrink,
                     params.page_size,
-                    params.content_area);
+                    params.content_area,
+                    params.has_visible_overlays);
 #endif
   ShouldQuitFromInnerMessageLoop();
 }

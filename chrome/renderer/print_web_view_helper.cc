@@ -22,6 +22,7 @@
 using printing::ConvertPixelsToPoint;
 using printing::ConvertPixelsToPointDouble;
 using printing::ConvertUnit;
+using printing::ConvertUnitDouble;
 using WebKit::WebConsoleMessage;
 using WebKit::WebFrame;
 using WebKit::WebRect;
@@ -437,15 +438,21 @@ void PrintWebViewHelper::GetPageSizeAndMarginsInPoints(
 
 void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
     WebFrame* frame, ViewMsg_Print_Params* params) {
-#if defined(OS_MACOSX)
   double content_width_in_points;
   double content_height_in_points;
   PrintWebViewHelper::GetPageSizeAndMarginsInPoints(frame, 0, *params,
                                                     &content_width_in_points,
                                                     &content_height_in_points,
                                                     NULL, NULL, NULL, NULL);
+#if defined(OS_MACOSX)
   params->printable_size = gfx::Size(
       static_cast<int>(content_width_in_points),
       static_cast<int>(content_height_in_points));
+#else
+  params->printable_size = gfx::Size(
+      static_cast<int>(ConvertUnitDouble(
+          content_width_in_points, printing::kPointsPerInch, params->dpi)),
+      static_cast<int>(ConvertUnitDouble(
+          content_height_in_points, printing::kPointsPerInch, params->dpi)));
 #endif
 }
