@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'chromium_code': 1,
-  },
   'target_defaults': {
     'sources/': [
       ['exclude', '/win/'],

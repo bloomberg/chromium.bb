@@ -699,7 +699,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
             // On non-Mac, the Hello message from the client to the server
             // also contains the fd_pipe_, which  will be used for all
             // subsequent file descriptor passing.
-            DCHECK_EQ(m.file_descriptor_set()->size(), 1U);
+            DCHECK_EQ(m.file_descriptor_set()->size(), 1);
             base::FileDescriptor descriptor;
             if (!m.ReadFileDescriptor(&iter, &descriptor)) {
               NOTREACHED();
@@ -777,7 +777,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
         NOTREACHED();
       }
       msg = hello.get();
-      DCHECK_EQ(msg->file_descriptor_set()->size(), 1U);
+      DCHECK_EQ(msg->file_descriptor_set()->size(), 1);
     }
 #endif
 
@@ -853,7 +853,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       if (mode_ != MODE_SERVER && !uses_fifo_ &&
           msg->routing_id() == MSG_ROUTING_NONE &&
           msg->type() == HELLO_MESSAGE_TYPE) {
-        DCHECK_EQ(msg->file_descriptor_set()->size(), 1U);
+        DCHECK_EQ(msg->file_descriptor_set()->size(), 1);
       }
       if (!uses_fifo_ && !msgh.msg_controllen) {
         bytes_written = HANDLE_EINTR(write(pipe_, out_bytes, amt_to_write));

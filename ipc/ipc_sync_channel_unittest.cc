@@ -727,8 +727,8 @@ class QueuedReplyClient : public Worker {
                     const std::string& expected_text,
                     bool pump_during_send)
       : Worker(channel_name, Channel::MODE_CLIENT),
-        pump_during_send_(pump_during_send),
-        expected_text_(expected_text) {
+        expected_text_(expected_text),
+        pump_during_send_(pump_during_send) {
     Worker::OverrideThread(listener_thread);
   }
 
