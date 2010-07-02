@@ -254,8 +254,11 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     // TODO(port): rename these to "skia" instead of "Linux".
     { "linuxCheckboxOff", IDR_LINUX_CHECKBOX_OFF },
     { "linuxCheckboxOn", IDR_LINUX_CHECKBOX_ON },
+    { "linuxCheckboxIndeterminate", IDR_LINUX_CHECKBOX_INDETERMINATE },
     { "linuxCheckboxDisabledOff", IDR_LINUX_CHECKBOX_DISABLED_OFF },
     { "linuxCheckboxDisabledOn", IDR_LINUX_CHECKBOX_DISABLED_ON },
+    { "linuxCheckboxDisabledIndeterminate",
+      IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE },
     { "linuxRadioOff", IDR_LINUX_RADIO_OFF },
     { "linuxRadioOn", IDR_LINUX_RADIO_ON },
     { "linuxRadioDisabledOff", IDR_LINUX_RADIO_DISABLED_OFF },
