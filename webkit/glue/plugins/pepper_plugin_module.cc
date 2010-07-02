@@ -95,10 +95,12 @@ double GetTime() {
   return base::Time::Now().ToDoubleT();
 }
 
-void CallOnMainThread(int delay_in_msec, void (*func)(void*), void* context) {
+void CallOnMainThread(int delay_in_msec,
+                      PP_CompletionCallback callback,
+                      int32_t result) {
   GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
-      NewRunnableFunction(func, context),
+      NewRunnableFunction(callback.func, callback.user_data, result),
       delay_in_msec);
 }
 
