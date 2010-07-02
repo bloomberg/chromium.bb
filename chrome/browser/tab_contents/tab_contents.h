@@ -210,9 +210,7 @@ class TabContents : public PageNavigator,
   bool is_app() const { return extension_app_ != NULL; }
 
   // If an app extension has been explicitly set for this TabContents its icon
-  // is returned. If an app extension has not been set but there is an
-  // extension whose extent contains the url of the current page it's icon
-  // is returned. Otherwise an empty icon is returned.
+  // is returned.
   //
   // NOTE: the returned icon is larger than 16x16 (it's size is
   // Extension::EXTENSION_ICON_SMALLISH).

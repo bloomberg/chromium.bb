@@ -320,8 +320,9 @@ void TabGtk::CloseButtonClicked() {
 
 void TabGtk::UpdateData(TabContents* contents,
                         bool phantom,
+                        bool app,
                         bool loading_only) {
-  TabRendererGtk::UpdateData(contents, phantom, loading_only);
+  TabRendererGtk::UpdateData(contents, phantom, app, loading_only);
   // Cache the title width so we don't recalculate it every time the tab is
   // resized.
   title_width_ = GetTitleWidth(title_font(), GetTitle());

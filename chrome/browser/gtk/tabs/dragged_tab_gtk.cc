@@ -54,7 +54,10 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
       attached_tab_size_(TabRendererGtk::GetMinimumSelectedSize()),
       contents_size_(contents_size),
       close_animation_(this) {
-  renderer_->UpdateData(datasource, false, false);
+  renderer_->UpdateData(datasource,
+                        false, // phantom
+                        datasource->is_app(),
+                        false); // loading_only
   renderer_->set_mini(mini);
 
   container_ = gtk_window_new(GTK_WINDOW_POPUP);

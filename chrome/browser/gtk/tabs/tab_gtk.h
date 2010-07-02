@@ -101,6 +101,7 @@ class TabGtk : public TabRendererGtk,
   virtual void CloseButtonClicked();
   virtual void UpdateData(TabContents* contents,
                           bool phantom,
+                          bool app,
                           bool loading_only);
   virtual void SetBounds(const gfx::Rect& bounds);
 

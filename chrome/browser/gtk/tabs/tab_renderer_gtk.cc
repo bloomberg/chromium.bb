@@ -128,8 +128,11 @@ TabRendererGtk::LoadingAnimation::Data::Data(
 
 bool TabRendererGtk::initialized_ = false;
 TabRendererGtk::TabImage TabRendererGtk::tab_active_ = {0};
+TabRendererGtk::TabImage TabRendererGtk::tab_active_nano_ = {0};
 TabRendererGtk::TabImage TabRendererGtk::tab_inactive_ = {0};
+TabRendererGtk::TabImage TabRendererGtk::tab_inactive_nano_ = {0};
 TabRendererGtk::TabImage TabRendererGtk::tab_alpha_ = {0};
+TabRendererGtk::TabImage TabRendererGtk::tab_alpha_nano_ = {0};
 gfx::Font* TabRendererGtk::title_font_ = NULL;
 int TabRendererGtk::title_font_height_ = 0;
 int TabRendererGtk::close_button_width_ = 0;
@@ -275,17 +278,24 @@ TabRendererGtk::~TabRendererGtk() {
 
 void TabRendererGtk::UpdateData(TabContents* contents,
                                 bool phantom,
+                                bool app,
                                 bool loading_only) {
   DCHECK(contents);
-
   theme_provider_ = GtkThemeProvider::GetFrom(contents->profile());
 
   if (!loading_only) {
     data_.title = contents->GetTitle();
     data_.off_the_record = contents->profile()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
-    data_.favicon = contents->GetFavIcon();
+
+    SkBitmap* app_icon = contents->GetExtensionAppIcon();
+    if (app_icon)
+      data_.favicon = *app_icon;
+    else
+      data_.favicon = contents->GetFavIcon();
+
     data_.phantom = phantom;
+    data_.app = app;
     // This is kind of a hacky way to determine whether our icon is the default
     // favicon. But the plumbing that would be necessary to do it right would
     // be a good bit of work and would sully code for other platforms which
@@ -381,11 +391,18 @@ void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
     if (!theme_provider_->HasCustomImage(theme_id))
       offset_y = background_offset_y_;
   }
+
+  // If the tab is a nanotab, we must take care to only draw the background
+  // within the height of the nanotab.
+  int nanoTabOffset = data_.app ? 9 : 0;
   SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(theme_id);
   canvas.TileImageInt(*tab_bg,
-      x() + favicon_bounds_.x(), offset_y + favicon_bounds_.y(),
-      favicon_bounds_.x(), favicon_bounds_.y(),
-      favicon_bounds_.width(), favicon_bounds_.height());
+                      x() + favicon_bounds_.x(),
+                      offset_y + favicon_bounds_.y() + nanoTabOffset,
+                      favicon_bounds_.x(),
+                      favicon_bounds_.y() + nanoTabOffset,
+                      favicon_bounds_.width(),
+                      favicon_bounds_.height() - nanoTabOffset);
 
   if (!IsSelected()) {
     double throb_value = GetThrobValue();
@@ -455,17 +472,36 @@ void TabRendererGtk::LoadTabImages() {
   tab_alpha_.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_LEFT);
   tab_alpha_.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_RIGHT);
 
+  tab_alpha_nano_.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_NANO_LEFT);
+  tab_alpha_nano_.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_NANO_RIGHT);
+
   tab_active_.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_LEFT);
   tab_active_.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_CENTER);
   tab_active_.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_RIGHT);
   tab_active_.l_width = tab_active_.image_l->width();
   tab_active_.r_width = tab_active_.image_r->width();
 
+  const int kNanoTabDiffHeight = 13;
+
+  tab_active_nano_.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_LEFT);
+  tab_active_nano_.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_CENTER);
+  tab_active_nano_.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_RIGHT);
+  tab_active_nano_.l_width = tab_active_nano_.image_l->width();
+  tab_active_nano_.r_width = tab_active_nano_.image_r->width();
+  tab_active_nano_.y_offset = kNanoTabDiffHeight;
+
   tab_inactive_.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_LEFT);
   tab_inactive_.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_CENTER);
   tab_inactive_.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_RIGHT);
   tab_inactive_.l_width = tab_inactive_.image_l->width();
   tab_inactive_.r_width = tab_inactive_.image_r->width();
+
+  tab_inactive_nano_.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_LEFT);
+  tab_inactive_nano_.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_CENTER);
+  tab_inactive_nano_.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_RIGHT);
+  tab_inactive_nano_.l_width = tab_inactive_.image_l->width();
+  tab_inactive_nano_.r_width = tab_inactive_.image_r->width();
+  tab_inactive_nano_.y_offset = kNanoTabDiffHeight;
 
   close_button_width_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->width();
   close_button_height_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->height();
@@ -822,14 +858,25 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
               favicon, favicon_bounds_.x(),
               favicon_bounds_.y() + fav_icon_hiding_offset_);
         } else {
+          // If the favicon is an app icon, it is allowed to be drawn slightly
+          // larger than the standard favicon.
+          int favIconHeightOffset = data_.app ? -2 : 0;
+          int favIconWidthDelta = data_.app ?
+              data_.favicon.width() - kFavIconSize : 0;
+          int favIconHeightDelta = data_.app ?
+              data_.favicon.height() - kFavIconSize : 0;
+
           // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
           // to using that class to render the favicon).
           canvas->DrawBitmapInt(data_.favicon, 0, 0,
                                 data_.favicon.width(),
                                 data_.favicon.height(),
-                                favicon_bounds_.x(),
-                                favicon_bounds_.y() + fav_icon_hiding_offset_,
-                                kFavIconSize, kFavIconSize,
+                                favicon_bounds_.x() - favIconWidthDelta/2,
+                                favicon_bounds_.y() + favIconHeightOffset
+                                    - favIconHeightDelta/2
+                                    + fav_icon_hiding_offset_,
+                                kFavIconSize + favIconWidthDelta,
+                                kFavIconSize + favIconHeightDelta,
                                 true);
         }
       }
@@ -868,6 +915,12 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(tab_id);
 
+  // App tabs are drawn slightly differently (as nano tabs).
+  TabImage* tab_image = data_.app ? &tab_active_nano_ : &tab_active_;
+  TabImage* tab_inactive_image = data_.app ? &tab_inactive_nano_ :
+                                             &tab_inactive_;
+  TabImage* alpha = data_.app ? &tab_alpha_nano_ : &tab_alpha_;
+
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
   // image is a composited foreground + frame image.
@@ -875,27 +928,35 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       0 : background_offset_y_;
 
   // Draw left edge.
-  SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x,
+  SkBitmap* theme_l = GetMaskedBitmap(alpha->image_l, tab_bg, offset_x,
                                       offset_y);
   canvas->DrawBitmapInt(*theme_l, 0, 0);
 
   // Draw right edge.
-  SkBitmap* theme_r = GetMaskedBitmap(tab_alpha_.image_r, tab_bg,
-      offset_x + width() - tab_active_.r_width, offset_y);
+  SkBitmap* theme_r = GetMaskedBitmap(alpha->image_r, tab_bg,
+      offset_x + width() - tab_image->r_width, offset_y);
 
   canvas->DrawBitmapInt(*theme_r, width() - theme_r->width(), 0);
 
   // Draw center.
-  canvas->TileImageInt(*tab_bg,
-      offset_x + tab_active_.l_width, kDropShadowOffset + offset_y,
-      tab_active_.l_width, 2,
-      width() - tab_active_.l_width - tab_active_.r_width, height() - 2);
+  canvas->TileImageInt(
+      *tab_bg,
+      offset_x + tab_image->l_width,
+      kDropShadowOffset + offset_y + tab_image->y_offset,
+      tab_image->l_width,
+      kDropShadowHeight + tab_image->y_offset,
+      width() - tab_image->l_width - tab_image->r_width,
+      height() - kDropShadowHeight - tab_image->y_offset);
 
-  canvas->DrawBitmapInt(*tab_inactive_.image_l, 0, 0);
-  canvas->TileImageInt(*tab_inactive_.image_c, tab_inactive_.l_width, 0,
-      width() - tab_inactive_.l_width - tab_inactive_.r_width, height());
-  canvas->DrawBitmapInt(*tab_inactive_.image_r,
-      width() - tab_inactive_.r_width, 0);
+  canvas->DrawBitmapInt(*tab_inactive_image->image_l, 0, 0);
+  canvas->TileImageInt(
+      *tab_inactive_image->image_c,
+      tab_inactive_image->l_width,
+      0,
+      width() - tab_inactive_image->l_width - tab_inactive_image->r_width,
+      height());
+  canvas->DrawBitmapInt(*tab_inactive_image->image_r,
+      width() - tab_inactive_image->r_width, 0);
 }
 
 void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
@@ -903,26 +964,32 @@ void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
 
   SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
+  // App tabs are drawn slightly differently (as nano tabs).
+  TabImage* tab_image = data_.app ? &tab_active_nano_ : &tab_active_;
+  TabImage* alpha = data_.app ? &tab_alpha_nano_ : &tab_alpha_;
+
   // Draw left edge.
-  SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x, 0);
+  SkBitmap* theme_l = GetMaskedBitmap(alpha->image_l, tab_bg, offset_x, 0);
   canvas->DrawBitmapInt(*theme_l, 0, 0);
 
   // Draw right edge.
-  SkBitmap* theme_r = GetMaskedBitmap(tab_alpha_.image_r, tab_bg,
-      offset_x + width() - tab_active_.r_width, 0);
-  canvas->DrawBitmapInt(*theme_r, width() - tab_active_.r_width, 0);
+  SkBitmap* theme_r = GetMaskedBitmap(alpha->image_r, tab_bg,
+      offset_x + width() - tab_image->r_width, 0);
+  canvas->DrawBitmapInt(*theme_r, width() - tab_image->r_width, 0);
 
   // Draw center.
   canvas->TileImageInt(*tab_bg,
-      offset_x + tab_active_.l_width, kDropShadowHeight,
-      tab_active_.l_width, kDropShadowHeight,
-      width() - tab_active_.l_width - tab_active_.r_width,
-      height() - kDropShadowHeight);
+                       offset_x + tab_image->l_width,
+                       kDropShadowHeight + tab_image->y_offset,
+                       tab_image->l_width,
+                       kDropShadowHeight + tab_image->y_offset,
+                       width() - tab_image->l_width - tab_image->r_width,
+                       height() - kDropShadowHeight - tab_image->y_offset);
 
-  canvas->DrawBitmapInt(*tab_active_.image_l, 0, 0);
-  canvas->TileImageInt(*tab_active_.image_c, tab_active_.l_width, 0,
-      width() - tab_active_.l_width - tab_active_.r_width, height());
-  canvas->DrawBitmapInt(*tab_active_.image_r, width() - tab_active_.r_width, 0);
+  canvas->DrawBitmapInt(*tab_image->image_l, 0, 0);
+  canvas->TileImageInt(*tab_image->image_c, tab_image->l_width, 0,
+      width() - tab_image->l_width - tab_image->r_width, height());
+  canvas->DrawBitmapInt(*tab_image->image_r, width() - tab_image->r_width, 0);
 }
 
 void TabRendererGtk::PaintLoadingAnimation(gfx::Canvas* canvas) {

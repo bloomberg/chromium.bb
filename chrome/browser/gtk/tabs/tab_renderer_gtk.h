@@ -105,6 +105,7 @@ class TabRendererGtk : public AnimationDelegate,
   // update everything.
   virtual void UpdateData(TabContents* contents,
                           bool phantom,
+                          bool app,
                           bool loading_only);
 
   // Sets the blocked state of the tab.
@@ -118,6 +119,10 @@ class TabRendererGtk : public AnimationDelegate,
   // Sets the phantom state of the tab.
   void set_phantom(bool phantom) { data_.phantom = phantom; }
   bool phantom() const { return data_.phantom; }
+
+  // Sets the app state of the tab.
+  void set_app(bool app) { data_.app = app; }
+  bool app() const { return data_.app; }
 
   // Are we in the process of animating a mini tab state change on this tab?
   void set_animating_mini_change(bool value) {
@@ -257,7 +262,8 @@ class TabRendererGtk : public AnimationDelegate,
           mini(false),
           blocked(false),
           animating_mini_change(false),
-          phantom(false) {
+          phantom(false),
+          app(false) {
     }
 
     SkBitmap favicon;
@@ -271,6 +277,7 @@ class TabRendererGtk : public AnimationDelegate,
     bool blocked;
     bool animating_mini_change;
     bool phantom;
+    bool app;
   };
 
   // TODO(jhawkins): Move into TabResources class.
@@ -280,6 +287,7 @@ class TabRendererGtk : public AnimationDelegate,
     SkBitmap* image_r;
     int l_width;
     int r_width;
+    int y_offset;
   };
 
   // Overridden from AnimationDelegate:
@@ -376,8 +384,11 @@ class TabRendererGtk : public AnimationDelegate,
   TabData data_;
 
   static TabImage tab_active_;
+  static TabImage tab_active_nano_;
   static TabImage tab_inactive_;
+  static TabImage tab_inactive_nano_;
   static TabImage tab_alpha_;
+  static TabImage tab_alpha_nano_;
 
   static gfx::Font* title_font_;
   static int title_font_height_;

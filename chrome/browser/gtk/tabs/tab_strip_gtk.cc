@@ -960,9 +960,11 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
   if (!contains_tab) {
     TabData d = { tab, gfx::Rect() };
     tab_data_.insert(tab_data_.begin() + index, d);
-    tab->UpdateData(contents, model_->IsPhantomTab(index), false);
+    tab->UpdateData(contents, model_->IsPhantomTab(index),
+                    model_->IsAppTab(index), false);
   }
   tab->set_mini(model_->IsMiniTab(index));
+  tab->set_app(model_->IsAppTab(index));
   tab->SetBlocked(model_->IsTabBlocked(index));
 
   if (gtk_widget_get_parent(tab->widget()) != tabstrip_.get())
@@ -1037,7 +1039,9 @@ void TabStripGtk::TabChangedAt(TabContents* contents, int index,
     // We'll receive another notification of the change asynchronously.
     return;
   }
-  tab->UpdateData(contents, model_->IsPhantomTab(index),
+  tab->UpdateData(contents,
+                  model_->IsPhantomTab(index),
+                  model_->IsAppTab(index),
                   change_type == LOADING_ONLY);
   tab->UpdateFromModel();
 }
