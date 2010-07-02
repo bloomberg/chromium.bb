@@ -12,8 +12,6 @@
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "ppapi/cpp/instance.h"
 
-struct NaClSrpcChannel;
-
 namespace plugin {
 
 // Encapsulates a PPAPI plugin.
@@ -24,12 +22,6 @@ class PluginPpapi : public pp::Instance, public Plugin {
 
   // TODO(polina): override pp::Instance methods.
   // TODO(polina): override Plugin methods.
-
-  // Request a nacl module download.
-  virtual bool RequestNaClModule(const nacl::string& url);
-
-  // Support for proxied execution.
-  virtual void StartProxiedExecution(NaClSrpcChannel* srpc_channel);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginPpapi);

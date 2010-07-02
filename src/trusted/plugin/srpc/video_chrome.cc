@@ -14,6 +14,14 @@ namespace plugin {
 
 class Plugin;
 
+void VideoGlobalLock() {
+  return;
+}
+
+void VideoGlobalUnlock() {
+  return;
+}
+
 void VideoMap::Redraw() {
   return;
 }

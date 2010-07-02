@@ -39,6 +39,7 @@
       'origin.cc',
       # Portable plugin code
       'srpc/browser_interface.cc',
+      'srpc/closure.cc',
       'srpc/connected_socket.cc',
       'srpc/desc_based_handle.cc',
       'srpc/method_map.cc',
@@ -57,7 +58,6 @@
     'npapi_sources': [
       # NPAPI specific code
       'npapi/browser_impl_npapi.cc',
-      'npapi/closure.cc',
       'npapi/multimedia_socket.cc',
       'npapi/npapi_native.cc',
       'npapi/npp_gate.cc',
