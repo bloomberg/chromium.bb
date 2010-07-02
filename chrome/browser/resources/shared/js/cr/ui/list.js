@@ -40,7 +40,7 @@ cr.define('cr.ui', function() {
       return 0;
     var item = list.createItem(dataModel.item(0));
     list.appendChild(item);
-    var cs = item.ownerDocument.defaultView.getComputedStyle(item);
+    var cs = getComputedStyle(item);
     var mt = parseFloat(cs.marginTop);
     var mb = parseFloat(cs.marginBottom);
     var h = item.offsetHeight;
@@ -56,6 +56,10 @@ cr.define('cr.ui', function() {
 
     list.removeChild(item);
     return h;
+  }
+
+  function getComputedStyle(el) {
+    return el.ownerDocument.defaultView.getComputedStyle(el);
   }
 
   /**
@@ -263,7 +267,9 @@ cr.define('cr.ui', function() {
       if (!target) {
         this.selectionModel.handleMouseDownUp(e, -1);
       } else {
-        var top = target.offsetTop;
+        var cs = getComputedStyle(target);
+        var top = target.offsetTop -
+                  parseFloat(cs.marginTop);
         var index = Math.floor(top / this.itemHeight_);
         this.selectionModel.handleMouseDownUp(e, index);
       }
@@ -349,7 +355,7 @@ cr.define('cr.ui', function() {
         return true;
       } else {
         var clientHeight = this.clientHeight;
-        var cs = this.ownerDocument.defaultView.getComputedStyle(this);
+        var cs = getComputedStyle(this);
         var paddingY = parseInt(cs.paddingTop, 10) +
                        parseInt(cs.paddingBottom, 10);
 
