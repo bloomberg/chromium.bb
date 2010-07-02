@@ -142,8 +142,8 @@ class DifferTest : public testing::Test {
     ClearDiffInfo();
     MarkBlocks(x_origin, y_origin, width, height);
 
-    DirtyRects* dirty = new DirtyRects();
-    differ_->MergeBlocks(dirty);
+    scoped_ptr<DirtyRects> dirty(new DirtyRects());
+    differ_->MergeBlocks(dirty.get());
 
     ASSERT_EQ(1UL, dirty->size());
     CheckDirtyRect(dirty->at(0), x_origin, y_origin, width, height);
@@ -269,8 +269,8 @@ TEST_F(DifferTest, MergeBlocks_Empty) {
   // +---+---+---+---+
   ClearDiffInfo();
 
-  DirtyRects* dirty = new DirtyRects();
-  differ_->MergeBlocks(dirty);
+  scoped_ptr<DirtyRects> dirty(new DirtyRects());
+  differ_->MergeBlocks(dirty.get());
 
   EXPECT_EQ(0UL, dirty->size());
 }
@@ -416,7 +416,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
 // The exact rects returned depend on the current implementation, so these
 // may need to be updated if we modify how we merge blocks.
 TEST_F(DifferTest, MergeBlocks_MultiRect) {
-  DirtyRects* dirty;
+  scoped_ptr<DirtyRects> dirty;
 
   // +---+---+---+---+      +---+---+---+
   // |   | X |   | _ |      |   | 0 |   |
@@ -432,8 +432,8 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(0, 1, 1, 1);
   MarkBlocks(2, 2, 1, 1);
 
-  dirty = new DirtyRects();
-  differ_->MergeBlocks(dirty);
+  dirty.reset(new DirtyRects());
+  differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(3UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 1, 0, 1, 1);
@@ -453,8 +453,8 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 0, 1, 3);
   MarkBlocks(0, 1, 2, 2);
 
-  dirty = new DirtyRects();
-  differ_->MergeBlocks(dirty);
+  dirty.reset(new DirtyRects());
+  differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(2UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 2, 0, 1, 3);
@@ -474,8 +474,8 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 1, 1, 1);
   MarkBlocks(0, 2, 3, 1);
 
-  dirty = new DirtyRects();
-  differ_->MergeBlocks(dirty);
+  dirty.reset(new DirtyRects());
+  differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(3UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 0, 1, 1, 2);
@@ -497,8 +497,8 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 1, 1, 1);
   MarkBlocks(0, 2, 3, 1);
 
-  dirty = new DirtyRects();
-  differ_->MergeBlocks(dirty);
+  dirty.reset(new DirtyRects());
+  differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(4UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 0, 0, 3, 1);
@@ -519,8 +519,8 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(0, 0, 2, 2);
   MarkBlocks(1, 2, 1, 1);
 
-  dirty = new DirtyRects();
-  differ_->MergeBlocks(dirty);
+  dirty.reset(new DirtyRects());
+  differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(2UL, dirty->size());
   CheckDirtyRect(dirty->at(0), 0, 0, 2, 2);
