@@ -414,11 +414,8 @@ void BookmarkEditorView::Reset() {
 
   context_menu_.reset();
 
-  if (GetParent()) {
+  if (GetParent())
     ExpandAndSelect();
-  } else if (GetParent()) {
-    tree_view_->ExpandAll();
-  }
 }
 GURL BookmarkEditorView::GetInputURL() const {
   return URLFixerUpper::FixupURL(UTF16ToUTF8(url_tf_.text()), std::string());
