@@ -130,7 +130,9 @@ TEST_F(NoInterferenceTest, FLAKY_SimpleFocus) {
 }
 
 // Javascript window.open should open a new window with an IE renderer.
-TEST_F(NoInterferenceTest, FLAKY_JavascriptWindowOpen) {
+// Disabled because of crashes.
+// http://code.google.com/p/chromium/issues/detail?id=48175
+TEST_F(NoInterferenceTest, DISABLED_JavascriptWindowOpen) {
   const std::wstring kWindowOpenUrl = GetTestUrl(L"window_open.html");
   ComStackObjectWithUninitialize<
       testing::StrictMock<MockWebBrowserEventSink> > new_window_mock;
