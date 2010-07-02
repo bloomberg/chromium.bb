@@ -35,48 +35,6 @@
 namespace chromeos {
 
 ///////////////////////////////////////////////////////////////////////////////
-// GtkPreferencePageHost
-//
-//  Hosts a GTK preference page and takes care of sizing it appropriately.
-//
-class GtkPreferencePageHost : public views::NativeViewHost {
- public:
-  explicit GtkPreferencePageHost(GtkWidget* widget);
-
- private:
-  // views::View overrides:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual gfx::Size GetPreferredSize();
-
-  GtkWidget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(GtkPreferencePageHost);
-};
-
-GtkPreferencePageHost::GtkPreferencePageHost(GtkWidget* widget)
-    : widget_(widget) {
-  set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
-}
-
-void GtkPreferencePageHost::ViewHierarchyChanged(bool is_add,
-                                                 View* parent,
-                                                 View* child) {
-  NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
-  if (is_add && child == this)
-    Attach(widget_);
-}
-
-gfx::Size GtkPreferencePageHost::GetPreferredSize() {
-  // We need to show the widget and its children since otherwise containers like
-  // gtk_box don't compute the correct size.
-  gtk_widget_show_all(widget_);
-  GtkRequisition requisition = { 0, 0 };
-  gtk_widget_size_request(GTK_WIDGET(widget_), &requisition);
-  GtkRequisition& size(widget_->requisition);
-  return gfx::Size(size.width, size.height);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // OptionsWindowView
 //
 //  The contents of the Options dialog window.
@@ -256,9 +214,9 @@ void OptionsWindowView::Layout() {
 }
 
 gfx::Size OptionsWindowView::GetPreferredSize() {
-  gfx::Size size(tabs_->GetPreferredSize());
-  size.Enlarge(2 * kDialogPadding, 2 * kDialogPadding);
-  return size;
+  return gfx::Size(views::Window::GetLocalizedContentsSize(
+      IDS_OPTIONS_DIALOG_WIDTH_CHARS,
+      IDS_OPTIONS_DIALOG_HEIGHT_LINES));
 }
 
 void OptionsWindowView::ViewHierarchyChanged(bool is_add,
@@ -305,23 +263,29 @@ void OptionsWindowView::Init() {
                        l10n_util::GetString(IDS_OPTIONS_INTERNET_TAB_LABEL),
                        internet_page, false);
 
+  views::NativeViewHost* general_page_view = new views::NativeViewHost();
+  general_page_view->set_background(views::Background::CreateSolidBackground(
+      SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_GENERAL_TAB_LABEL),
-                       new GtkPreferencePageHost(
-                           general_page_.get_page_widget()),
-                       false);
+                       general_page_view, false);
+  general_page_view->Attach(general_page_.get_page_widget());
 
+  views::NativeViewHost* content_page_view = new views::NativeViewHost();
+  content_page_view->set_background(views::Background::CreateSolidBackground(
+      SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_CONTENT_TAB_LABEL),
-                       new GtkPreferencePageHost(
-                           content_page_.get_page_widget()),
-                       false);
+                       content_page_view, false);
+  content_page_view->Attach(content_page_.get_page_widget());
 
+  views::NativeViewHost* advanced_page_view = new views::NativeViewHost();
+  advanced_page_view->set_background(views::Background::CreateSolidBackground(
+      SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_ADVANCED_TAB_LABEL),
-                       new GtkPreferencePageHost(
-                           advanced_page_.get_page_widget()),
-                       false);
+                       advanced_page_view, false);
+  advanced_page_view->Attach(advanced_page_.get_page_widget());
 
   DCHECK(tabs_->GetTabCount() == OPTIONS_PAGE_COUNT);
 
@@ -380,3 +344,4 @@ void ShowOptionsWindow(OptionsPage page,
 
   OptionsWindowView::instance_->ShowOptionsPage(page, highlight_group);
 }
+

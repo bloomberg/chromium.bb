@@ -62,6 +62,9 @@ class GeneralPageView : public OptionsPageView,
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);
 
+  // views::View overrides:
+  virtual void Layout();
+
  private:
   // ShellIntegration::DefaultBrowserObserver implementation:
   // Updates the UI state to reflect the current default browser state.

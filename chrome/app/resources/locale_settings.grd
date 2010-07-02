@@ -243,6 +243,18 @@
         en-US
       </message>
 
+      <!-- The width of the Options dialog box, in characters (character width = -->
+      <!-- average character width for default dialog box font) -->
+      <message name="IDS_OPTIONS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        98
+      </message>
+
+      <!-- The height of the Options dialog box, in lines (line height = character -->
+      <!-- height for default dialog box font) -->
+      <message name="IDS_OPTIONS_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+        36
+      </message>
+
       <!-- The width of the title column of the Options dialog box, in characters (see -->
       <!-- above for defn of character width) -->
       <message name="IDS_OPTIONS_DIALOG_LEFT_COLUMN_WIDTH_CHARS" use_name_for_id="true">

@@ -407,10 +407,6 @@ class TableView : public NativeControl,
   // Returns the font used for alt text.
   gfx::Font GetAltTextFont();
 
-  // Overriden in order to update the column sizes, which can only be sized
-  // accurately when the native control is available.
-  virtual void VisibilityChanged(View* starting_from, bool is_visible);
-
   TableModel* model_;
   TableTypes table_type_;
   TableViewObserver* table_view_observer_;
@@ -435,6 +431,10 @@ class TableView : public NativeControl,
 
   // Reflects the value passed to SetCustomColorsEnabled.
   bool custom_colors_enabled_;
+
+  // Whether or not the columns have been sized in the ListView. This is
+  // set to true the first time Layout() is invoked and we have a valid size.
+  bool sized_columns_;
 
   // Whether or not columns should automatically be resized to fill the
   // the available width when the list view is resized.

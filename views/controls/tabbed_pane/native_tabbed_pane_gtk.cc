@@ -75,11 +75,6 @@ View* NativeTabbedPaneGtk::RemoveTabAtIndex(int index) {
   // widget delete itself when native_view is deleted.
   gtk_notebook_remove_page(GTK_NOTEBOOK(native_view()), index);
 
-  // Removing a tab might change the size of the tabbed pane.
-  RootView* root_view = GetRootView();
-  if (root_view)
-    GetRootView()->Layout();
-
   return removed_tab;
 }
 
@@ -106,19 +101,6 @@ View* NativeTabbedPaneGtk::GetView() {
 
 void NativeTabbedPaneGtk::SetFocus() {
   Focus();
-}
-
-gfx::Size NativeTabbedPaneGtk::GetPreferredSize() {
-  if (!native_view())
-    return gfx::Size();
-
-  // For some strange reason (or maybe it's a bug), the requisition is not
-  // returned in the passed requisition parameter, but instead written to the
-  // widget's requisition field.
-  GtkRequisition requisition = { 0, 0 };
-  gtk_widget_size_request(GTK_WIDGET(native_view()), &requisition);
-  GtkRequisition& size(GTK_WIDGET(native_view())->requisition);
-  return gfx::Size(size.width, size.height);
 }
 
 gfx::NativeView NativeTabbedPaneGtk::GetTestingHandle() const {
@@ -184,11 +166,6 @@ void NativeTabbedPaneGtk::DoAddTabAtIndex(int index, const std::wstring& title,
 
   if (tab_count == 0 && select_if_first_tab)
     gtk_notebook_set_current_page(GTK_NOTEBOOK(native_view()), 0);
-
-  // Relayout the hierarchy, since the added tab might require more space.
-  RootView* root_view = GetRootView();
-  if (root_view)
-    GetRootView()->Layout();
 }
 
 WidgetGtk* NativeTabbedPaneGtk::GetWidgetAt(int index) {

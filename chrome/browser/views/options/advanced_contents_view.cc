@@ -287,6 +287,7 @@ AdvancedSection::AdvancedSection(Profile* profile,
 void AdvancedSection::DidChangeBounds(const gfx::Rect& previous,
                                       const gfx::Rect& current) {
   Layout();
+  contents_->Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -433,6 +434,9 @@ class PrivacySection : public AdvancedSection,
   // Overridden from views::LinkController:
   virtual void LinkActivated(views::Link* source, int event_flags);
 
+  // Overridden from views::View:
+  virtual void Layout();
+
  protected:
   // OptionsPageView overrides:
   virtual void InitControlLayout();
@@ -545,6 +549,22 @@ void PrivacySection::LinkActivated(views::Link* source, int event_flags) {
   }
 }
 
+void PrivacySection::Layout() {
+  if (reporting_enabled_checkbox_) {
+    // We override this to try and set the width of the enable logging checkbox
+    // to the width of the parent less some fudging since the checkbox's
+    // preferred size calculation code is dependent on its width, and if we
+    // don't do this then it will return 0 as a preferred width when GridLayout
+    // (called from View::Layout) tries to access it.
+    views::View* parent = GetParent();
+    if (parent && parent->width()) {
+      const int parent_width = parent->width();
+      reporting_enabled_checkbox_->SetBounds(0, 0, parent_width - 20, 0);
+    }
+  }
+  View::Layout();
+}
+
 void PrivacySection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
@@ -616,8 +636,8 @@ void PrivacySection::InitControlLayout() {
                          reporting_enabled_checkbox_ != NULL);
   // The "Help make Google Chrome better" checkbox.
   if (reporting_enabled_checkbox_) {
-    AddWrappingCheckboxRow(layout, reporting_enabled_checkbox_,
-                           indented_view_set_id, false);
+    AddLeadingControl(layout, reporting_enabled_checkbox_, indented_view_set_id,
+                      false);
   }
 
   // Init member prefs so we can update the controls if prefs change.
@@ -1401,4 +1421,5 @@ void AdvancedScrollViewContainer::Layout() {
       gfx::NativeTheme::LIST);
   lb.Inset(border.width(), border.height());
   scroll_view_->SetBounds(lb);
+  scroll_view_->Layout();
 }

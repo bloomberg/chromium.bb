@@ -13,7 +13,6 @@
 namespace views {
 
 class WidgetWin;
-class TabLayout;
 
 class NativeTabbedPaneWin : public NativeControlWin,
                             public NativeTabbedPaneWrapper {
@@ -34,7 +33,6 @@ class NativeTabbedPaneWin : public NativeControlWin,
   virtual View* GetSelectedTab();
   virtual View* GetView();
   virtual void SetFocus();
-  virtual gfx::Size GetPreferredSize();
   virtual gfx::NativeView GetTestingHandle() const;
 
   // NativeControlWin overrides.
@@ -59,7 +57,7 @@ class NativeTabbedPaneWin : public NativeControlWin,
   void InitializeTabs();
 
   // Adds a tab with the given content to native control at the given index.
-  void AddNativeTab(int index, const std::wstring& title);
+  void AddNativeTab(int index, const std::wstring& title, View* contents);
 
   // Changes the contents view to the view associated with the tab at |index|.
   // |invoke_listener| controls if this methold should invoke the
@@ -71,9 +69,6 @@ class NativeTabbedPaneWin : public NativeControlWin,
 
   // The tabbed-pane we are bound to.
   TabbedPane* tabbed_pane_;
-
-  // The layout manager we use for managing our tabs.
-  TabLayout* tab_layout_manager_;
 
   // The views associated with the different tabs.
   std::vector<View*> tab_views_;

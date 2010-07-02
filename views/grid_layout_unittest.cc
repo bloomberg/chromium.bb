@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,25 +30,6 @@ class SettableSizeView : public View {
 
  private:
    gfx::Size pref_;
-};
-
-// A view with fixed circumference that trades height for width.
-class FlexibleView : public View {
- public:
-  explicit FlexibleView(int circumference) {
-    circumference_ = circumference;
-  }
-
-  virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(0, circumference_ / 2);
-  }
-
-  virtual int GetHeightForWidth(int width) {
-    return std::max(0, circumference_ / 2 - width);
-  }
-
- private:
-   int circumference_;
 };
 
 class GridLayoutTest : public testing::Test {
@@ -566,43 +547,4 @@ TEST_F(GridLayoutTest, ColumnSpanResizing) {
   // And view2 should be 8 pixels wide:
   // 4 + (6 * 4 / 6).
   ExpectViewBoundsEquals(4, 40, 8, 40, view2);
-}
-
-// Check that GetPreferredSize() takes resizing of columns into account when
-// there is additional space in the case we have column sets of different
-// preferred sizes.
-TEST_F(GridLayoutTest, ColumnResizingOnGetPreferredSize) {
-  views::ColumnSet* set = layout->AddColumnSet(0);
-  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                 1, views::GridLayout::USE_PREF, 0, 0);
-
-  set = layout->AddColumnSet(1);
-  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                 1, views::GridLayout::USE_PREF, 0, 0);
-
-  set = layout->AddColumnSet(2);
-  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                 1, views::GridLayout::USE_PREF, 0, 0);
-
-  // Make a row containing a flexible view that trades width for height.
-  layout->StartRow(0, 0);
-  View* view1 = new FlexibleView(100);
-  layout->AddView(view1, 1, 1, GridLayout::FILL, GridLayout::LEADING);
-
-  // The second row contains a view of fixed size that will enforce a column
-  // width of 20 pixels.
-  layout->StartRow(0, 1);
-  View* view2 = new SettableSizeView(gfx::Size(20, 20));
-  layout->AddView(view2, 1, 1, GridLayout::FILL, GridLayout::LEADING);
-
-  // Add another flexible view in row three in order to ensure column set
-  // ordering doesn't influence sizing behaviour.
-  layout->StartRow(0, 2);
-  View* view3 = new FlexibleView(40);
-  layout->AddView(view3, 1, 1, GridLayout::FILL, GridLayout::LEADING);
-
-  // We expect a height of 50: 30 from the variable width view in the first row
-  // plus 20 from the statically sized view in the second row. The flexible
-  // view in the third row should contribute no height.
-  EXPECT_EQ(gfx::Size(20, 50), layout->GetPreferredSize(&host));
 }

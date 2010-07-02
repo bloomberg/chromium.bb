@@ -35,13 +35,10 @@
 
 namespace {
 
-// All the options pages are in the same view hierarchy. This means we need to
-// make sure group identifiers don't collide across different pages.
-const int kStartupRadioGroup = 101;
-const int kHomePageRadioGroup = 102;
+const int kStartupRadioGroup = 1;
+const int kHomePageRadioGroup = 2;
 const SkColor kDefaultBrowserLabelColor = SkColorSetRGB(0, 135, 0);
 const SkColor kNotDefaultBrowserLabelColor = SkColorSetRGB(135, 0, 0);
-const int kHomePageTextfieldWidthChars = 40;
 
 }  // namespace
 
@@ -405,6 +402,24 @@ void GeneralPageView::HighlightGroup(OptionsGroup highlight_group) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// GeneralPageView, views::View overrides:
+
+void GeneralPageView::Layout() {
+  // We need to Layout twice - once to get the width of the contents box...
+  View::Layout();
+  startup_last_session_radio_->SetBounds(
+      0, 0, startup_group_->GetContentsWidth(), 0);
+  homepage_use_newtab_radio_->SetBounds(
+      0, 0, homepage_group_->GetContentsWidth(), 0);
+  homepage_show_home_button_checkbox_->SetBounds(
+      0, 0, homepage_group_->GetContentsWidth(), 0);
+  default_browser_status_label_->SetBounds(
+      0, 0, default_browser_group_->GetContentsWidth(), 0);
+  // ... and twice to get the height of multi-line items correct.
+  View::Layout();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // GeneralPageView, private:
 
 void GeneralPageView::SetDefaultBrowserUIState(
@@ -497,16 +512,14 @@ void GeneralPageView::InitStartupGroup() {
   layout->AddView(startup_homepage_radio_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(startup_last_session_radio_, 1, 1,
-                  GridLayout::FILL, GridLayout::LEADING);
+  layout->AddView(startup_last_session_radio_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(startup_custom_radio_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, double_column_view_set_id);
-  layout->AddView(startup_custom_pages_table_, 1, 1,
-                  GridLayout::FILL, GridLayout::FILL);
+  layout->AddView(startup_custom_pages_table_);
 
   views::View* button_stack = new views::View;
   GridLayout* button_stack_layout = new GridLayout(button_stack);
@@ -545,8 +558,6 @@ void GeneralPageView::InitHomepageGroup() {
   homepage_use_url_radio_->set_listener(this);
   homepage_use_url_textfield_ = new views::Textfield;
   homepage_use_url_textfield_->SetController(this);
-  homepage_use_url_textfield_->set_default_width_in_chars(
-      kHomePageTextfieldWidthChars);
   homepage_show_home_button_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON));
   homepage_show_home_button_checkbox_->set_listener(this);
@@ -573,16 +584,14 @@ void GeneralPageView::InitHomepageGroup() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(homepage_use_newtab_radio_, 1, 1,
-                  GridLayout::FILL, GridLayout::LEADING);
+  layout->AddView(homepage_use_newtab_radio_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_view_set_id);
   layout->AddView(homepage_use_url_radio_);
   layout->AddView(homepage_use_url_textfield_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(homepage_show_home_button_checkbox_, 1, 1,
-                  GridLayout::FILL, GridLayout::LEADING);
+  layout->AddView(homepage_show_home_button_checkbox_);
 
   homepage_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_GROUP_NAME),
@@ -648,8 +657,7 @@ void GeneralPageView::InitDefaultBrowserGroup() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(default_browser_status_label_, 1, 1,
-                  GridLayout::FILL, GridLayout::LEADING);
+  layout->AddView(default_browser_status_label_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(default_browser_use_as_default_button_);

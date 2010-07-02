@@ -13,6 +13,7 @@ class NativeTabbedPaneWrapper;
 
 // The TabbedPane class is a view that shows tabs.  When the user clicks on a
 // tab, the associated view is displayed.
+// TODO (jcampan): implement GetPreferredSize().
 
 class TabbedPane : public View {
  public:
@@ -71,7 +72,6 @@ class TabbedPane : public View {
   virtual void Focus();
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual gfx::Size GetPreferredSize();
 
   NativeTabbedPaneWrapper* native_wrapper() const {
     return native_tabbed_pane_;
