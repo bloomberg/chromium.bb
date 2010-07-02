@@ -24,8 +24,45 @@ namespace {
 // text input element in a form.
 const int kMaxAutocompleteMenuItems = 6;
 
-// The separator characters for credit card values.
-const string16 kCreditCardSeparators = ASCIIToUTF16(" -");
+// The separator characters for SSNs.
+const string16 kSSNSeparators = ASCIIToUTF16(" -");
+
+bool IsSSN(const string16& text) {
+  string16 number_string;
+  RemoveChars(text, kSSNSeparators.c_str(), &number_string);
+  if (number_string.length() != 9)
+    return false;
+
+  // A SSN is of the form AAA-GG-SSSS (A = area number, G = group number, S =
+  // serial number). The validation we do here is simply checking if the area,
+  // group, and serial numbers are valid. It is possible to check if the group
+  // number is valid for the given area, but that data changes all the time.
+  //
+  // See: http://www.socialsecurity.gov/history/ssn/geocard.html
+  //      http://www.socialsecurity.gov/employer/stateweb.htm
+  //      http://www.socialsecurity.gov/employer/ssnvhighgroup.htm
+
+  string16 area_string = number_string.substr(0, 3);
+  string16 group_string = number_string.substr(3, 2);
+  string16 serial_string = number_string.substr(5, 4);
+
+  int area = StringToInt(area_string);
+  if (area < 1 ||
+      area == 666 ||
+      area > 733 && area < 750 ||
+      area > 772)
+    return false;
+
+  int group = StringToInt(group_string);
+  if (group == 0)
+    return false;
+
+  int serial = StringToInt(serial_string);
+  if (serial == 0)
+    return false;
+
+  return true;
+}
 
 }  // namespace
 
@@ -115,6 +152,7 @@ void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
   //  - non-empty value
   //  - text field
   //  - value is not a credit card number
+  //  - value is not a SSN
   std::vector<webkit_glue::FormField> values;
   for (std::vector<webkit_glue::FormField>::const_iterator iter =
            form.fields.begin();
@@ -122,7 +160,8 @@ void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
     if (!iter->value().empty() &&
         !iter->name().empty() &&
         iter->form_control_type() == ASCIIToUTF16("text") &&
-        !CreditCard::IsCreditCardNumber(iter->value()))
+        !CreditCard::IsCreditCardNumber(iter->value()) &&
+        !IsSSN(iter->value()))
       values.push_back(*iter);
   }
 

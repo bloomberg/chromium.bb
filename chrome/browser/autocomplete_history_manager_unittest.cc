@@ -84,3 +84,22 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(1);
   autocomplete_manager_->FormSubmitted(form);
 }
+
+// Tests that SSNs are not sent to the WebDatabase to be saved.
+TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  webkit_glue::FormField ssn(ASCIIToUTF16("Social Security Number"),
+                             ASCIIToUTF16("ssn"),
+                             ASCIIToUTF16("078-05-1120"),
+                             ASCIIToUTF16("text"),
+                             20);
+  form.fields.push_back(ssn);
+
+  EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
+  autocomplete_manager_->FormSubmitted(form);
+}
