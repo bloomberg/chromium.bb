@@ -144,9 +144,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
   TestInjection(true, true);
 }
 
+// Sometimes times out on Mac.  http://crbug.com/48151
+#if defined(OS_MACOSX)
+#define MAYBE_NoFileAccess DISABLED_NoFileAccess
+#else
+#define MAYBE_NoFileAccess NoFileAccess
+#endif
 // Tests that disallowing file access on an extension prevents it from injecting
 // script into a page with a file URL.
-IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, NoFileAccess) {
+IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
   WaitForServicesToStart(4, true);  // 1 component extension and 3 others.
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
