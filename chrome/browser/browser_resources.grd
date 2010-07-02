@@ -67,8 +67,6 @@ without changes to the corresponding grd file. sew -->
       <include name="IDR_SYNC_CHOOSE_DATATYPES_HTML" file="sync\resources\choose_datatypes.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_DONE_HTML" file="sync\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_BLACKLIST_HTML" file="resources\privacy_blacklist_block.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_BLACKLIST_IMAGE" file="resources\privacy_blacklist_block.png" type="BINDATA" />
       <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
       <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" type="BINDATA" />
       <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" type="BINDATA" />

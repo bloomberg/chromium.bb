@@ -180,7 +180,6 @@ extern const wchar_t kAutoFillDialogPlacement[];
 extern const wchar_t kAutoFillPositiveUploadRate[];
 extern const wchar_t kAutoFillNegativeUploadRate[];
 
-extern const wchar_t kPrivacyFilterRules[];
 extern const wchar_t kUseVerticalTabs[];
 extern const wchar_t kEnableTranslate[];
 extern const wchar_t kPinnedTabs[];

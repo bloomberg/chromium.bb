@@ -905,8 +905,6 @@
         'browser/preferences_mock_mac.h',
         'browser/printing/print_dialog_cloud_unittest.cc',
         'browser/printing/print_job_unittest.cc',
-        'browser/privacy_blacklist/blacklist_interceptor_unittest.cc',
-        'browser/privacy_blacklist/blacklist_unittest.cc',
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/profile_manager_unittest.cc',
         'browser/renderer_host/audio_renderer_host_unittest.cc',
@@ -2123,7 +2121,6 @@
             '../webkit/support/webkit_support.gyp:glue',
           ],
           'sources': [
-            'browser/privacy_blacklist/blacklist_perftest.cc',
             'browser/safe_browsing/filter_false_positive_perftest.cc',
             'browser/visitedlink_perftest.cc',
             'common/json_value_serializer_perftest.cc',

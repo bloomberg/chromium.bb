@@ -25,7 +25,6 @@
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/nacl_types.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
@@ -77,7 +76,6 @@ struct ViewHostMsg_DidPrintPage_Params;
 
 class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                               public ResourceDispatcherHost::Receiver,
-                              public NotificationObserver,
                               public ResolveProxyMsgHelper::Delegate {
  public:
   // Create the filter.
@@ -111,11 +109,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   CallbackWithReturnValue<int>::Type* next_route_id_callback() {
     return next_route_id_callback_.get();
   }
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
   // Returns either the extension URLRequestContext or regular URLRequestContext
   // depending on whether |url| is an extension URL.
@@ -370,8 +363,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // thread. This instance of the clipboard should be accessed only on the IO
   // thread.
   static Clipboard* GetClipboard();
-
-  NotificationRegistrar registrar_;
 
   // The channel associated with the renderer connection. This pointer is not
   // owned by this class.

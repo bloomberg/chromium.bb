@@ -345,9 +345,6 @@ const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 // Enable print preview (work in progress).
 const char kEnablePrintPreview[]            = "enable-print-preview";
 
-// Enable Privacy Blacklists.
-const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
-
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 

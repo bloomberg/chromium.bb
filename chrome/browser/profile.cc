@@ -47,7 +47,6 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/pref_value_store.h"
-#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -544,10 +543,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() {
     return profile_->GetGeolocationPermissionContext();
-  }
-
-  virtual Blacklist* GetPrivacyBlacklist() {
-    return profile_->GetPrivacyBlacklist();
   }
 
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() {
@@ -1252,15 +1247,6 @@ GeolocationPermissionContext* ProfileImpl::GetGeolocationPermissionContext() {
   if (!geolocation_permission_context_.get())
     geolocation_permission_context_ = new GeolocationPermissionContext(this);
   return geolocation_permission_context_.get();
-}
-
-Blacklist* ProfileImpl::GetPrivacyBlacklist() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrivacyBlacklists))
-    return NULL;
-  if (!privacy_blacklist_.get())
-    privacy_blacklist_ = new Blacklist(GetPrefs());
-  return privacy_blacklist_.get();
 }
 
 UserStyleSheetWatcher* ProfileImpl::GetUserStyleSheetWatcher() {

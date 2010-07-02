@@ -37,7 +37,6 @@ class DatabaseTracker;
 
 class AutocompleteClassifier;
 class BackgroundContentsService;
-class Blacklist;
 class BookmarkModel;
 class BrowserThemeProvider;
 class ChromeURLRequestContextGetter;
@@ -332,9 +331,6 @@ class Profile {
   // Returns the geolocation permission context for this profile.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
 
-  // Returns the Privacy Blacklist for this profile.
-  virtual Blacklist* GetPrivacyBlacklist() = 0;
-
   // Returns the user style sheet watcher.
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() = 0;
 
@@ -525,7 +521,6 @@ class ProfileImpl : public Profile,
   virtual HostZoomMap* GetHostZoomMap();
   virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap();
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
-  virtual Blacklist* GetPrivacyBlacklist();
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher();
   virtual FindBarState* GetFindBarState();
   virtual SessionService* GetSessionService();
@@ -623,7 +618,6 @@ class ProfileImpl : public Profile,
       geolocation_content_settings_map_;
   scoped_refptr<GeolocationPermissionContext>
       geolocation_permission_context_;
-  scoped_refptr<Blacklist> privacy_blacklist_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_ptr<FindBarState> find_bar_state_;
   scoped_refptr<DownloadManager> download_manager_;

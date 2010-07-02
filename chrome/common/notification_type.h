@@ -874,13 +874,6 @@ class NotificationType {
     // with the new visibility.
     EXTENSION_APP_TOOLBAR_VISIBILITY_CHANGED,
 
-    // Privacy Blacklist -------------------------------------------------------
-
-    // Sent on the IO thread when a non-visual resource (like a cookie)
-    // is blocked by a privacy blacklist. The details are a const URLRequest,
-    // and the source is a const ChromeURLRequestContext.
-    BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
-
     // Debugging ---------------------------------------------------------------
 
     // TODO(mpcomplete): Sent to diagnose a bug. Remove when fixed.

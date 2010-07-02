@@ -198,7 +198,6 @@ class TestingProfile : public Profile {
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
 
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
-  virtual Blacklist* GetPrivacyBlacklist() { return NULL; }
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() { return NULL; }
   virtual FindBarState* GetFindBarState() {
     if (!find_bar_state_.get())

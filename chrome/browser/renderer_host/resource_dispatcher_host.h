@@ -23,7 +23,6 @@
 #include "base/process.h"
 #include "base/timer.h"
 #include "chrome/common/child_process_info.h"
-#include "chrome/browser/privacy_blacklist/blacklist_interceptor.h"
 #include "chrome/browser/renderer_host/resource_queue.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
@@ -434,9 +433,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // We own the save file manager.
   scoped_refptr<SaveFileManager> save_file_manager_;
-
-  // Handles requests blocked by privacy blacklists.
-  BlacklistInterceptor blacklist_interceptor_;
 
   scoped_refptr<UserScriptListener> user_script_listener_;
 

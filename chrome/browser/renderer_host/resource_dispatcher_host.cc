@@ -28,8 +28,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
-#include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/async_resource_handler.h"
 #include "chrome/browser/renderer_host/buffered_resource_handler.h"
@@ -480,14 +478,6 @@ void ResourceDispatcherHost::BeginRequest(
   appcache::AppCacheInterceptor::SetExtraRequestInfo(
       request, context ? context->appcache_service() : NULL, child_id,
       request_data.appcache_host_id, request_data.resource_type);
-
-  // Associate Privacy Blacklist information with the request.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePrivacyBlacklists)) {
-    request->SetUserData(&BlacklistRequestInfo::kURLRequestDataKey,
-        new BlacklistRequestInfo(request_data.url, request_data.resource_type,
-            context ? context->GetPrivacyBlacklist() : NULL));
-  }
 
   BeginRequestInternal(request);
 }

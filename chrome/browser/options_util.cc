@@ -47,7 +47,6 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kAutoFillEnabled,
     prefs::kHomePage,
     prefs::kHomePageIsNewTabPage,
-    prefs::kPrivacyFilterRules,
     prefs::kPromptForDownload,
     prefs::kPasswordManagerEnabled,
     prefs::kRestoreOnStartup,

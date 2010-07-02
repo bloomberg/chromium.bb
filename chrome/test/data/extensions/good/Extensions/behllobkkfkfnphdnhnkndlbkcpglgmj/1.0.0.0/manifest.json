@@ -27,6 +27,5 @@
       "matches": ["http://*.news.com/*"],
       "js": ["js_files/script3.js"]
     }
-  ],
-  "privacy_blacklists": ["blacklist.pbl"]
+  ]
 }

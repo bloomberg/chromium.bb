@@ -39,8 +39,6 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
-#include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_ui.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
@@ -157,15 +155,6 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
 #else
   NOTIMPLEMENTED();
 #endif
-}
-
-Blacklist::Match* GetPrivacyBlacklistMatchForURL(
-    const GURL& url, ChromeURLRequestContext* context) {
-  const Blacklist* blacklist = context->GetPrivacyBlacklist();
-  // TODO(phajdan.jr): DCHECK(blacklist_manager) when blacklists are stable.
-  if (!blacklist)
-    return NULL;
-  return blacklist->FindMatch(url);
 }
 
 class SetCookieCompletion : public net::CompletionCallback {
@@ -394,10 +383,6 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 // Called on the IPC thread:
 void ResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
-
-  // Add the observers to intercept.
-  registrar_.Add(this, NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
-                 NotificationService::AllSources());
 }
 
 // Called on the IPC thread:
@@ -675,11 +660,6 @@ void ResourceMessageFilter::OnSetCookie(const IPC::Message& message,
                                         const GURL& first_party_for_cookies,
                                         const std::string& cookie) {
   ChromeURLRequestContext* context = GetRequestContextForURL(url);
-
-  scoped_ptr<Blacklist::Match> match(
-      GetPrivacyBlacklistMatchForURL(url, context));
-  if (match.get() && (match->attributes() & Blacklist::kBlockCookies))
-    return;
 
   SetCookieCompletion* callback =
       new SetCookieCompletion(id(), message.routing_id(), url, cookie, context);
@@ -1312,15 +1292,6 @@ void ResourceMessageFilter::OnShowSpellingPanel(bool show) {
 void ResourceMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
     const string16& word) {
   SpellCheckerPlatform::UpdateSpellingPanelWithMisspelledWord(word);
-}
-
-void ResourceMessageFilter::Observe(NotificationType type,
-                                    const NotificationSource &source,
-                                    const NotificationDetails &details) {
-  if (type == NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED) {
-    BlacklistUI::OnNonvisualContentBlocked(
-        Details<const URLRequest>(details).ptr());
-  }
 }
 
 void ResourceMessageFilter::OnDnsPrefetch(

@@ -17,8 +17,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/predictor_api.h"
-#include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_request_info.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -814,44 +812,6 @@ const std::string& ChromeURLRequestContext::GetUserAgent(
   return webkit_glue::GetUserAgent(url);
 }
 
-bool ChromeURLRequestContext::InterceptRequestCookies(
-    const URLRequest* request, const std::string& cookies) const {
-  return InterceptCookie(request, cookies);
-}
-
-bool ChromeURLRequestContext::InterceptResponseCookie(
-    const URLRequest* request, const std::string& cookie) const {
-  return InterceptCookie(request, cookie);
-}
-
-bool ChromeURLRequestContext::InterceptCookie(
-    const URLRequest* request, const std::string& cookie) const {
-  BlacklistRequestInfo* request_info =
-      BlacklistRequestInfo::FromURLRequest(request);
-  // Requests which don't go through ResourceDispatcherHost don't have privacy
-  // blacklist request data.
-  if (!request_info)
-    return true;
-  const Blacklist* blacklist = request_info->GetBlacklist();
-  // TODO(phajdan.jr): remove the NULL check when blacklists are stable.
-  if (!blacklist)
-    return true;
-  scoped_ptr<Blacklist::Match> match(blacklist->FindMatch(request->url()));
-  if (match.get() && (match->attributes() & Blacklist::kBlockCookies)) {
-    NotificationService::current()->Notify(
-        NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
-        Source<const ChromeURLRequestContext>(this),
-        Details<const URLRequest>(request));
-    return false;
-  }
-
-  return true;
-}
-
-const Blacklist* ChromeURLRequestContext::GetPrivacyBlacklist() const {
-  return privacy_blacklist_.get();
-}
-
 void ChromeURLRequestContext::OnNewExtensions(const std::string& id,
                                               ExtensionInfo* info) {
   if (!is_off_the_record_)
@@ -907,7 +867,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   chrome_cookie_policy_ = other->chrome_cookie_policy_;
   host_content_settings_map_ = other->host_content_settings_map_;
   host_zoom_map_ = other->host_zoom_map_;
-  privacy_blacklist_ = other->privacy_blacklist_;
   is_media_ = other->is_media_;
   is_off_the_record_ = other->is_off_the_record_;
 }
@@ -965,7 +924,6 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
 
   host_content_settings_map_ = profile->GetHostContentSettingsMap();
   host_zoom_map_ = profile->GetHostZoomMap();
-  privacy_blacklist_ = profile->GetPrivacyBlacklist();
   transport_security_state_ = profile->GetTransportSecurityState();
 
   if (profile->GetExtensionsService()) {
@@ -1013,7 +971,6 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_user_script_dir_path(user_script_dir_path_);
   context->set_host_content_settings_map(host_content_settings_map_);
   context->set_host_zoom_map(host_zoom_map_);
-  context->set_privacy_blacklist(privacy_blacklist_);
   context->set_transport_security_state(
       transport_security_state_);
   context->set_ssl_config_service(ssl_config_service_);

@@ -472,9 +472,6 @@ const wchar_t kAutoFillPositiveUploadRate[] = L"autofill.positive_upload_rate";
 // Double that indicates negative (for not matched forms) upload rate.
 const wchar_t kAutoFillNegativeUploadRate[] = L"autofill.negative_upload_rate";
 
-// Dictionary that maps providers to lists of filter rules.
-const wchar_t kPrivacyFilterRules[] = L"profile.privacy_filter_rules";
-
 // Boolean that is true when the tabstrip is to be laid out vertically down the
 // side of the browser window.
 const wchar_t kUseVerticalTabs[] = L"tabs.use_vertical_tabs";
