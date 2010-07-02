@@ -278,15 +278,19 @@ which URLs your content script affects.
 
 <p>
 A match pattern is essentially a URL
-that begins with <code>http</code>, <code>https</code>,
-<code>file</code>, or <code>ftp</code>,
+that begins with a permitted scheme (<code>http</code>,
+<code>https</code>, <code>file</code>, or <code>ftp</code>),
 and that can contain '<code>*</code>' characters.
+The special pattern
+<code>&lt;all_urls&gt;</code> matches any URL
+that starts with a permitted scheme.
 Each match pattern has 3 parts:</p>
 <p></p>
 
 <ul>
   <li> <em>scheme</em> —
     for example, <code>http</code> or <code>file</code>
+    or <code>*</code>
   </li>
   <li> <em>host</em> —
     for example, <code>www.google.com</code>
@@ -303,11 +307,17 @@ Each match pattern has 3 parts:</p>
 
 <p>Here's the basic syntax:</p>
 
-<pre><em>&lt;url-pattern&gt;</em> := <em>&lt;scheme&gt;</em>://<em>&lt;host&gt;</em><em>&lt;path&gt;</em><br><em>&lt;scheme&gt;</em> := 'http' | 'https' | 'file' | 'ftp'<br><em>&lt;host&gt;</em> := '*' | '*.' <em>&lt;any char except '/' and '*'&gt;</em>+<br><em>&lt;path&gt;</em> := '/' <em>&lt;any chars&gt;</em></pre>
+<pre><em>&lt;url-pattern&gt;</em> := <em>&lt;scheme&gt;</em>://<em>&lt;host&gt;</em><em>&lt;path&gt;</em>
+<em>&lt;scheme&gt;</em> := '*' | 'http' | 'https' | 'file' | 'ftp'
+<em>&lt;host&gt;</em> := '*' | '*.' <em>&lt;any char except '/' and '*'&gt;</em>+
+<em>&lt;path&gt;</em> := '/' <em>&lt;any chars&gt;</em>
+</pre>
 
 <p>
 The meaning of '<code>*</code>' depends on whether
-it's in the <em>host</em> or the <em>path</em> part.
+it's in the <em>scheme</em>, <em>host</em>, or <em>path</em> part.
+If the <em>scheme</em> is <code>*</code>,
+then it matches either <code>http</code> or <code>https</code>.
 If the <em>host</em> is just <code>*</code>,
 then it matches any host.
 If the <em>host</em> is <code>*.<em>hostname</em></code>,
@@ -410,6 +420,39 @@ The following table shows some valid patterns.
   <td>
     http://127.0.0.1/<br>
     http://127.0.0.1/foo/bar.html
+  </td>
+</tr>
+
+<tr>
+  <td>
+    <code>*://mail.google.com/* </code>
+  </td>
+
+  <td>
+    Matches any URL that starts with
+    <code>http://mail.google.com</code> or
+    <code>https://mail.google.com</code>.
+  </td>
+
+  <td>
+    http://mail.google.com/foo/baz/bar<br>
+    https://mail.google.com/foobar
+  </td>
+</tr>
+
+<tr>
+  <td>
+    <code>&lt;all_urls&gt;</code>
+  </td>
+
+  <td>
+    Matches any URL that uses a permitted scheme.
+    (See the beginning of this section for the list of permitted
+    schemes.)
+  </td>
+  <td>
+    http://example.org/foo/bar.html<br>
+    file:///bar/baz.html
   </td>
 </tr>
 </tbody>
