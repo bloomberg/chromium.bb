@@ -49,7 +49,7 @@ bool IsSSN(const string16& text) {
   int area = StringToInt(area_string);
   if (area < 1 ||
       area == 666 ||
-      area > 733 && area < 750 ||
+      (area > 733 && area < 750) ||
       area > 772)
     return false;
 
