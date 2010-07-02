@@ -113,8 +113,5 @@ bool DOMStorageArea::CheckContentSetting(
     content_setting = request.WaitOnResponse();
   }
 
-  if (content_setting == CONTENT_SETTING_ALLOW)
-    return true;
-  DCHECK(content_setting == CONTENT_SETTING_BLOCK);
-  return false;
+  return (content_setting != CONTENT_SETTING_BLOCK);
 }

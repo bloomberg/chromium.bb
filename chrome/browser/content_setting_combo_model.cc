@@ -16,6 +16,7 @@ const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
 // The settings shown in the combobox if show_ask_ is true;
 const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
                                         CONTENT_SETTING_ASK,
+                                        CONTENT_SETTING_SESSION_ONLY,
                                         CONTENT_SETTING_BLOCK };
 
 }  // namespace
@@ -39,6 +40,8 @@ std::wstring ContentSettingComboModel::GetItemAt(int index) {
       return l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON);
     case CONTENT_SETTING_ASK:
       return l10n_util::GetString(IDS_EXCEPTIONS_ASK_BUTTON);
+    case CONTENT_SETTING_SESSION_ONLY:
+      return l10n_util::GetString(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
     default:
       NOTREACHED();
   }

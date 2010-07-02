@@ -144,6 +144,8 @@ int ChromeCookiePolicy::CheckPolicy(const GURL& url) const {
     return net::ERR_ACCESS_DENIED;
   if (setting == CONTENT_SETTING_ALLOW)
     return net::OK;
+  if (setting == CONTENT_SETTING_SESSION_ONLY)
+    return net::OK_FOR_SESSION_ONLY;
   return net::ERR_IO_PENDING;  // Need to prompt.
 }
 

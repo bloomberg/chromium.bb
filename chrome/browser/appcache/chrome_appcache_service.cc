@@ -82,8 +82,8 @@ bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
   ContentSetting setting = host_contents_settings_map_->GetContentSetting(
       manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
-  return setting == CONTENT_SETTING_ALLOW ||
-         setting == CONTENT_SETTING_ASK;  // we don't prompt for read access
+  // We don't prompt for read access.
+  return setting != CONTENT_SETTING_BLOCK;
 }
 
 int ChromeAppCacheService::CanCreateAppCache(

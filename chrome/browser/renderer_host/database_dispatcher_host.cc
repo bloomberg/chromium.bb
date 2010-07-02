@@ -421,9 +421,10 @@ void DatabaseDispatcherHost::OnAllowDatabase(const std::string& origin_url,
 void DatabaseDispatcherHost::AllowDatabaseResponse(
     IPC::Message* reply_msg, ContentSetting content_setting) {
   DCHECK((content_setting == CONTENT_SETTING_ALLOW) ||
-         (content_setting == CONTENT_SETTING_BLOCK));
+         (content_setting == CONTENT_SETTING_BLOCK) ||
+         (content_setting == CONTENT_SETTING_SESSION_ONLY));
   ViewHostMsg_AllowDatabase::WriteReplyParams(
-      reply_msg, content_setting == CONTENT_SETTING_ALLOW);
+      reply_msg, content_setting != CONTENT_SETTING_BLOCK);
   Send(reply_msg);
 }
 

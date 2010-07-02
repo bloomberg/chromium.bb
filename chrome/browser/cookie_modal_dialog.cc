@@ -86,8 +86,9 @@ bool CookiePromptModalDialog::IsValid() {
           origin_, CONTENT_SETTINGS_TYPE_COOKIES);
   if (content_setting != CONTENT_SETTING_ASK) {
     if (content_setting == CONTENT_SETTING_ALLOW) {
-      // If it's remembered as allow, then we assume session_expire is false.
       AllowSiteData(false, false);
+    } else if (content_setting == CONTENT_SETTING_SESSION_ONLY) {
+      AllowSiteData(false, true);
     } else {
       DCHECK(content_setting == CONTENT_SETTING_BLOCK);
       BlockSiteData(false);
@@ -107,7 +108,8 @@ void CookiePromptModalDialog::AllowSiteData(bool remember,
         CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_DEFAULT);
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(origin_),
-        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
+        CONTENT_SETTINGS_TYPE_COOKIES,
+        session_expire ? CONTENT_SETTING_SESSION_ONLY : CONTENT_SETTING_ALLOW);
   }
 
   if (delegate_) {
