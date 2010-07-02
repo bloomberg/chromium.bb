@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/browser_dialogs.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -36,6 +37,14 @@ void StarView::SetToggled(bool on) {
 bool StarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   *role = AccessibilityTypes::ROLE_PUSHBUTTON;
   return true;
+}
+
+bool StarView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
+  // Don't show tooltip to distract user if BookmarkBubbleView is showing.
+  if (browser::IsBookmarkBubbleViewShowing())
+    return false;
+
+  return ImageView::GetTooltipText(p, tooltip);
 }
 
 bool StarView::OnMousePressed(const views::MouseEvent& event) {
