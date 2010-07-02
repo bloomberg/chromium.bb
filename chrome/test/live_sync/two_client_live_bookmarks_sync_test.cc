@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 370563.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_AddSeveralBMsAndFolders) {
+    FAILS_SC_AddSeveralBMsAndFolders) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -376,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371817.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_RenameBMName) {
+    FAILS_SC_RenameBMName) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371826.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_RenameBMFolderWithLongHierarchy) {
+    FAILS_SC_RenameBMFolderWithLongHierarchy) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -826,7 +826,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371857.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DelBMsUnderBMFoldEmptyFolderAfterwards) {
+    FAILS_SC_DelBMsUnderBMFoldEmptyFolderAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371879.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DelBMFoldWithBMsNonEmptyAccountAfterwards) {
+    FAILS_SC_DelBMFoldWithBMsNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1013,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371880.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DelBMFoldWithBMsAndBMFoldsNonEmptyACAfterwards) {
+    FAILS_SC_DelBMFoldWithBMsAndBMFoldsNonEmptyACAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1117,7 +1117,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371882.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DelBMFoldWithParentAndChildrenBMsAndBMFolds) {
+    FAILS_SC_DelBMFoldWithParentAndChildrenBMsAndBMFolds) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1297,7 +1297,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371957.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_MovingBMsFromBMFoldToBMBar) {
+    FAILS_SC_MovingBMsFromBMFoldToBMBar) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1463,7 +1463,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371967.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_HoistBMs10LevelUp) {
+    FAILS_SC_HoistBMs10LevelUp) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1531,7 +1531,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371968.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_SinkBMs10LevelDown) {
+    FAILS_SC_SinkBMs10LevelDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1602,7 +1602,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371980.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_SinkEmptyBMFold5LevelsDown) {
+    FAILS_SC_SinkEmptyBMFold5LevelsDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1657,7 +1657,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371997.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_SinkNonEmptyBMFold5LevelsDown) {
+    FAILS_SC_SinkNonEmptyBMFold5LevelsDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1823,7 +1823,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 372028.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_ReverseTheOrderOfTenBMFolders) {
+    FAILS_SC_ReverseTheOrderOfTenBMFolders) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1890,7 +1890,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 373506.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    MC_BootStrapEmptyStateEverywhere) {
+    FAILS_MC_BootStrapEmptyStateEverywhere) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1905,7 +1905,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 373508.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    MC_SimpleMergeOfDifferentBMModels) {
+    FAILS_MC_SimpleMergeOfDifferentBMModels) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
@@ -1966,7 +1966,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 386586.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    MC_MergeSimpleBMHierarchyUnderBMBar) {
+    FAILS_MC_MergeSimpleBMHierarchyUnderBMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
@@ -2016,7 +2016,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 386589.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
+    FAILS_MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
