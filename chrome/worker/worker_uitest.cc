@@ -637,7 +637,15 @@ TEST_F(WorkerTest, FLAKY_MultipleTabsQueuedSharedWorker) {
   ASSERT_TRUE(WaitForProcessCountToBe(3, max_workers_per_tab));
 }
 
-TEST_F(WorkerTest, QueuedSharedWorkerStartedFromOtherTab) {
+// Only flaky on Mac  http://crbug.com/48148
+#if defined(OS_MACOSX)
+#define MAYBE_QueuedSharedWorkerStartedFromOtherTab \
+    FLAKY_QueuedSharedWorkerStartedFromOtherTab
+#else
+#define MAYBE_QueuedSharedWorkerStartedFromOtherTab \
+    QueuedSharedWorkerStartedFromOtherTab
+#endif
+TEST_F(WorkerTest, MAYBE_QueuedSharedWorkerStartedFromOtherTab) {
   // Tests to make sure that queued shared workers are started up when
   // an instance is launched from another tab.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
