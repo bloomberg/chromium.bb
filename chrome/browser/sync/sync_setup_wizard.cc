@@ -149,6 +149,8 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
       l10n_util::GetString(IDS_SYNC_DATATYPE_EXTENSIONS));
     localized_strings.SetString(L"typedurls",
       l10n_util::GetString(IDS_SYNC_DATATYPE_TYPED_URLS));
+    localized_strings.SetString(L"synczerodatatypeserror",
+      l10n_util::GetString(IDS_SYNC_ZERO_DATA_TYPES_ERROR));
     localized_strings.SetString(L"ok",
       l10n_util::GetString(IDS_OK));
     localized_strings.SetString(L"cancel",

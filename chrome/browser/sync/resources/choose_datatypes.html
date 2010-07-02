@@ -120,13 +120,10 @@ input[type='submit'] {
   }
 
   function setDataTypeCheckboxesEnabled(enabled) {
-    document.getElementById("bookmarksCheckbox").disabled = !enabled;
-    document.getElementById("preferencesCheckbox").disabled = !enabled;
-    document.getElementById("themesCheckbox").disabled = !enabled;
-    document.getElementById("passwordsCheckbox").disabled = !enabled;
-    document.getElementById("autofillCheckbox").disabled = !enabled;
-    document.getElementById("extensionsCheckbox").disabled = !enabled;
-    document.getElementById("typedUrlsCheckbox").disabled = !enabled;
+    var checkboxes = document.getElementsByName("dataTypeCheckbox");
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].disabled = !enabled;
+    }
   }
 
   function advanceThrobber() {
@@ -145,7 +142,31 @@ input[type='submit'] {
         templateData['ok'];
   }
 
+  // Returns true if at least one data type is enabled and no data types are
+  // checked.  (If all data type checkboxes are disabled, it's because "keep
+  // everything synced" is checked.)
+  function noDataTypesChecked() {
+    var checkboxes = document.getElementsByName("dataTypeCheckbox");
+    var atLeastOneChecked = false;
+    var atLeastOneEnabled = false;
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (!checkboxes[i].disabled && checkboxes[i].style.display != 'none') {
+        atLeastOneEnabled = true;
+        if (checkboxes[i].checked) {
+          atLeastOneChecked = true;
+        }
+      }
+    }
+    return atLeastOneEnabled && !atLeastOneChecked;
+  }
+
   function sendChooseDataTypesAndClose() {
+
+    if (noDataTypesChecked()) {
+      document.getElementById("error_text").style.visibility = "visible";
+      return;
+    }
+
     setStateThrobbing(true);
 
     var f = document.getElementById("chooseDataTypesForm");
@@ -192,43 +213,48 @@ input[type='submit'] {
       <table class="data_type_checkboxes_table" border="0" cellspacing="0" cellpadding="0" width="80%">
         <tr>
           <td>
-            <input id="bookmarksCheckbox" type="checkbox"/>
+            <input id="bookmarksCheckbox" name="dataTypeCheckbox" type="checkbox"/>
             <label id="bookmarksCheckboxLabel" for="bookmarksCheckbox" i18n-content="bookmarks"></label>
           </td>
           <td>
-            <input id="autofillCheckbox" type="checkbox"/>
+            <input id="autofillCheckbox" name="dataTypeCheckbox" type="checkbox"/>
             <label id="autofillCheckboxLabel" for="autofillCheckbox" i18n-content="autofill"></label>
           </td>
         </tr>
         <tr>
           <td>
-            <input id="preferencesCheckbox" type="checkbox"/>
+            <input id="preferencesCheckbox" name="dataTypeCheckbox" type="checkbox"/>
             <label id="preferencesCheckboxLabel" for="preferencesCheckbox" i18n-content="preferences"></label>
           </td>
           <td>
-            <input id="extensionsCheckbox" type="checkbox"/>
+            <input id="extensionsCheckbox" name="dataTypeCheckbox" type="checkbox"/>
             <label id="extensionsCheckboxLabel" for="extensionsCheckbox" i18n-content="extensions"></label>
           </td>
         </tr>
         <tr>
           <td>
-            <input id="themesCheckbox" type="checkbox"/>
+            <input id="themesCheckbox" name="dataTypeCheckbox" type="checkbox"/>
             <label id="themesCheckboxLabel" for="themesCheckbox" i18n-content="themes"></label>
           </td>
           <td>
-            <input id="typedUrlsCheckbox" type="checkbox"/>
+            <input id="typedUrlsCheckbox" name="dataTypeCheckbox" type="checkbox"/>
             <label id="typedUrlsCheckboxLabel" for="typedUrlsCheckbox" i18n-content="typedurls"></label>
           </td>
         </tr>
         <tr>
           <td>
-            <input id="passwordsCheckbox" type="checkbox"/>
+            <input id="passwordsCheckbox" name="dataTypeCheckbox" type="checkbox"/>
             <label id="passwordsCheckboxLabel" for="passwordsCheckbox" i18n-content="passwords"></label>
           </td>
           <td>
           </td>
         </tr>
       </table>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <span id="error_text" i18n-content="synczerodatatypeserror" style="visibility:hidden"></span>
     </td>
   </tr>
   <tr valign="bottom">
