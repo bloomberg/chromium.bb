@@ -117,8 +117,11 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
     if (::RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Google\\ChromeFrame",
                        0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
       DWORD unused = sizeof(pre_read_size_mb);
-      RegQueryValueEx(key, L"PreRead", NULL, NULL,
-                      reinterpret_cast<LPBYTE>(&pre_read_size_mb), &unused);
+      if (::RegQueryValueEx(key, L"PreRead", NULL, NULL,
+                            reinterpret_cast<LPBYTE>(&pre_read_size_mb),
+                            &unused) != ERROR_SUCCESS) {
+        pre_read_size_mb = 16; // Default
+      }
       RegCloseKey(key);
       key = NULL;
     } else {
