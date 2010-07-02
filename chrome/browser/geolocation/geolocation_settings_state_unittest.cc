@@ -119,4 +119,67 @@ TEST_F(GeolocationSettingsStateTests, ClearOnNewOrigin) {
   EXPECT_EQ(0U, tab_state_flags);
 }
 
+TEST_F(GeolocationSettingsStateTests, ShowPortOnSameHost) {
+  TestingProfile profile;
+  GeolocationSettingsState state(&profile);
+  GURL url_0("http://www.example.com");
+
+  NavigationEntry entry;
+  entry.set_url(url_0);
+  NavigationController::LoadCommittedDetails load_committed_details;
+  load_committed_details.entry = &entry;
+  state.DidNavigate(load_committed_details);
+
+  profile.GetGeolocationContentSettingsMap()->SetContentSetting(
+      url_0, url_0, CONTENT_SETTING_ALLOW);
+  state.OnGeolocationPermissionSet(url_0, true);
+
+  GURL url_1("https://www.example.com");
+  profile.GetGeolocationContentSettingsMap()->SetContentSetting(
+      url_1, url_0, CONTENT_SETTING_ALLOW);
+  state.OnGeolocationPermissionSet(url_1, true);
+
+  GURL url_2("http://www.example1.com");
+  profile.GetGeolocationContentSettingsMap()->SetContentSetting(
+  url_2, url_0, CONTENT_SETTING_ALLOW);
+  state.OnGeolocationPermissionSet(url_2, true);
+
+  GeolocationSettingsState::StateMap state_map =
+      state.state_map();
+  EXPECT_EQ(3U, state_map.size());
+
+  GeolocationSettingsState::FormattedHostsPerState formatted_host_per_state;
+  unsigned int tab_state_flags = 0;
+  state.GetDetailedInfo(&formatted_host_per_state, &tab_state_flags);
+
+  EXPECT_EQ(3U, formatted_host_per_state[CONTENT_SETTING_ALLOW].size());
+  EXPECT_EQ(1U,
+            formatted_host_per_state[CONTENT_SETTING_ALLOW].count(
+                url_0.spec()));
+  EXPECT_EQ(1U,
+            formatted_host_per_state[CONTENT_SETTING_ALLOW].count(
+                url_1.spec()));
+  EXPECT_EQ(1U,
+            formatted_host_per_state[CONTENT_SETTING_ALLOW].count(
+                url_2.host()));
+
+  state.OnGeolocationPermissionSet(url_1, false);
+  formatted_host_per_state.clear();
+  tab_state_flags = 0;
+  state.GetDetailedInfo(&formatted_host_per_state, &tab_state_flags);
+
+  EXPECT_EQ(2U, formatted_host_per_state[CONTENT_SETTING_ALLOW].size());
+  EXPECT_EQ(1U,
+            formatted_host_per_state[CONTENT_SETTING_ALLOW].count(
+                url_0.spec()));
+  EXPECT_EQ(1U,
+            formatted_host_per_state[CONTENT_SETTING_ALLOW].count(
+                url_2.host()));
+  EXPECT_EQ(1U, formatted_host_per_state[CONTENT_SETTING_BLOCK].size());
+  EXPECT_EQ(1U,
+            formatted_host_per_state[CONTENT_SETTING_BLOCK].count(
+                url_1.spec()));
+}
+
+
 }  // namespace

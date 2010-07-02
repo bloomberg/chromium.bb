@@ -50,13 +50,30 @@ void GeolocationSettingsState::GetDetailedInfo(
   DCHECK(embedder_url_.is_valid());
   const ContentSetting default_setting =
       profile_->GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
+  std::set<std::string> formatted_hosts;
+  std::set<std::string> repeated_formatted_hosts;
+
+  // Build a set of repeated formatted hosts
+  for (StateMap::const_iterator i(state_map_.begin());
+       i != state_map_.end(); ++i) {
+    std::string formatted_host = GURLToFormattedHost(i->first);
+    if (!formatted_hosts.insert(formatted_host).second) {
+      repeated_formatted_hosts.insert(formatted_host);
+    }
+  }
+
   for (StateMap::const_iterator i(state_map_.begin());
        i != state_map_.end(); ++i) {
     if (i->second == CONTENT_SETTING_ALLOW)
       *tab_state_flags |= TABSTATE_HAS_ANY_ALLOWED;
     if (formatted_hosts_per_state) {
-      (*formatted_hosts_per_state)[i->second].insert(
-          GURLToFormattedHost(i->first));
+      std::string formatted_host = GURLToFormattedHost(i->first);
+      std::string final_formatted_host =
+          repeated_formatted_hosts.find(formatted_host) ==
+          repeated_formatted_hosts.end() ?
+          formatted_host :
+          i->first.spec();
+      (*formatted_hosts_per_state)[i->second].insert(final_formatted_host);
     }
 
     const ContentSetting saved_setting =
