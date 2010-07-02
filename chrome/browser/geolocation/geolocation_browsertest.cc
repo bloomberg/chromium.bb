@@ -278,8 +278,10 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   void SetInfobarResponse(const GURL& requesting_url, bool allowed) {
     TabContents* tab_contents = current_browser_->GetSelectedTabContents();
+    TabSpecificContentSettings* content_settings =
+        tab_contents->GetTabSpecificContentSettings();
     const GeolocationSettingsState& settings_state =
-        tab_contents->geolocation_settings_state();
+        content_settings->geolocation_settings_state();
     size_t state_map_size = settings_state.state_map().size();
     ASSERT_TRUE(infobar_);
     LOG(WARNING) << "will set infobar response";

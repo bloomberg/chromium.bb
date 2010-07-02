@@ -3110,8 +3110,12 @@ bool RenderView::allowDatabase(
   if (!Send(new ViewHostMsg_AllowDatabase(routing_id_,
       origin.toString().utf8(), name, display_name, estimated_size, &result)))
     return false;
-  if (!result)
-    DidBlockContentType(CONTENT_SETTINGS_TYPE_COOKIES);
+  Send(new ViewHostMsg_WebDatabaseAccessed(routing_id_,
+                                           GURL(origin.toString().utf8()),
+                                           name,
+                                           display_name,
+                                           estimated_size,
+                                           !result));
   return result;
 }
 void RenderView::didNotAllowScript(WebKit::WebFrame* frame) {

@@ -117,6 +117,9 @@ class CannedBrowsingDataLocalStorageHelper
   // by this helper.
   void AddLocalStorage(const GURL& origin);
 
+  // Clear the list of canned local storages.
+  void Reset();
+
   // BrowsingDataLocalStorageHelper methods.
   virtual void StartFetching(
       Callback1<const std::vector<LocalStorageInfo>& >::Type* callback);

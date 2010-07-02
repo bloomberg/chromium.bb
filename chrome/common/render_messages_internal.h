@@ -1271,6 +1271,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_ContentBlocked,
                       ContentSettingsType /* type of blocked content */)
 
+  // Tells the browser that a specific Web database in the current page was
+  // accessed.
+  IPC_MESSAGE_ROUTED5(ViewHostMsg_WebDatabaseAccessed,
+                      GURL /* origin url */,
+                      string16 /* database name */,
+                      string16 /* database display name */,
+                      unsigned long /* estimated size */,
+                      bool /* blocked by policy */)
+
   // Initiates a download based on user actions like 'ALT+click'.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DownloadUrl,
                       GURL /* url */,

@@ -204,6 +204,7 @@ class TestDelegate : public URLRequest::Delegate {
         received_redirect_count_(0),
         blocked_get_cookies_count_(0),
         blocked_set_cookie_count_(0),
+        set_cookie_count_(0),
         received_data_before_response_(false),
         request_failed_(false),
         have_certificate_errors_(false),
@@ -306,16 +307,24 @@ class TestDelegate : public URLRequest::Delegate {
       request->Cancel();
   }
 
-  virtual void OnGetCookiesBlocked(URLRequest* request) {
-    blocked_get_cookies_count_++;
-    if (cancel_in_getcookiesblocked_)
-      request->Cancel();
+  virtual void OnGetCookies(URLRequest* request, bool blocked_by_policy) {
+    if (blocked_by_policy) {
+      blocked_get_cookies_count_++;
+      if (cancel_in_getcookiesblocked_)
+        request->Cancel();
+    }
   }
 
-  virtual void OnSetCookieBlocked(URLRequest* request) {
-    blocked_set_cookie_count_++;
-    if (cancel_in_setcookieblocked_)
-      request->Cancel();
+  virtual void OnSetCookie(URLRequest* request,
+                           const std::string& cookie_line,
+                           bool blocked_by_policy) {
+    if (blocked_by_policy) {
+      blocked_set_cookie_count_++;
+      if (cancel_in_setcookieblocked_)
+        request->Cancel();
+    } else {
+      set_cookie_count_++;
+    }
   }
 
   void set_cancel_in_received_redirect(bool val) { cancel_in_rr_ = val; }
@@ -345,6 +354,7 @@ class TestDelegate : public URLRequest::Delegate {
   int received_redirect_count() const { return received_redirect_count_; }
   int blocked_get_cookies_count() const { return blocked_get_cookies_count_; }
   int blocked_set_cookie_count() const { return blocked_set_cookie_count_; }
+  int set_cookie_count() const { return set_cookie_count_; }
   bool received_data_before_response() const {
     return received_data_before_response_;
   }
@@ -373,6 +383,7 @@ class TestDelegate : public URLRequest::Delegate {
   int received_redirect_count_;
   int blocked_get_cookies_count_;
   int blocked_set_cookie_count_;
+  int set_cookie_count_;
   bool received_data_before_response_;
   bool request_failed_;
   bool have_certificate_errors_;

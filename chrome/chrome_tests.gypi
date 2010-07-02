@@ -982,6 +982,7 @@
         'browser/tab_contents/navigation_controller_unittest.cc',
         'browser/tab_contents/navigation_entry_unittest.cc',
         'browser/tab_contents/render_view_host_manager_unittest.cc',
+        'browser/tab_contents/tab_specific_content_settings_unittest.cc',
         'browser/tab_contents/thumbnail_generator_unittest.cc',
         'browser/tab_contents/web_contents_unittest.cc',
         'browser/tab_menu_model_unittest.cc',

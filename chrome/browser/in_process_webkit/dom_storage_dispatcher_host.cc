@@ -264,11 +264,11 @@ void DOMStorageDispatcherHost::OnSetItem(
   // If content was blocked, tell the UI to display the blocked content icon.
   if (reply_msg->routing_id() == MSG_ROUTING_CONTROL) {
     DLOG(WARNING) << "setItem was not given a proper routing id";
-  } else if (result == WebKit::WebStorageArea::ResultBlockedByPolicy) {
+  } else {
     CallRenderViewHostContentSettingsDelegate(
         process_id_, reply_msg->routing_id(),
-        &RenderViewHostDelegate::ContentSettings::OnContentBlocked,
-        CONTENT_SETTINGS_TYPE_COOKIES);
+        &RenderViewHostDelegate::ContentSettings::OnLocalStorageAccessed,
+        url, result == WebStorageArea::ResultBlockedByPolicy);
   }
 
   ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, result, old_value);

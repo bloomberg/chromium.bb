@@ -116,6 +116,10 @@ void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
                              base::Time()));
 }
 
+void CannedBrowsingDataAppCacheHelper::Reset() {
+  info_collection_->infos_by_origin.clear();
+}
+
 void CannedBrowsingDataAppCacheHelper::StartFetching(
     Callback0::Type* completion_callback) {
   completion_callback->Run();

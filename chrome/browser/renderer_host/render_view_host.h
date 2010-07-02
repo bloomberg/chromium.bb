@@ -641,6 +641,11 @@ class RenderViewHost : public RenderWidgetHost {
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
   void OnContentBlocked(ContentSettingsType type);
+  void OnWebDatabaseAccessed(const GURL& url,
+                             const string16& name,
+                             const string16& display_name,
+                             unsigned long estimated_size,
+                             bool blocked_by_policy);
 
  private:
   friend class TestRenderViewHost;

@@ -427,12 +427,16 @@ void GeolocationPermissionContext::NotifyPermissionSet(
     const GURL& requesting_frame, bool allowed) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  RenderViewHostDelegate::ContentSettings* content_settings =
+  TabContents* tab_contents =
       tab_util::GetTabContentsByID(render_process_id, render_view_id);
+
   // TabContents may have gone away (or not exists for extension).
-  if (content_settings)
+  if (tab_contents) {
+    TabSpecificContentSettings* content_settings =
+        tab_contents->GetTabSpecificContentSettings();
     content_settings->OnGeolocationPermissionSet(requesting_frame.GetOrigin(),
                                                  allowed);
+  }
 
   CallRenderViewHost(
       render_process_id, render_view_id,

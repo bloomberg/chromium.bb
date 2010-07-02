@@ -294,11 +294,12 @@ TabContents::TabContents(Profile* profile,
       renderer_preferences_(),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
       language_state_(&controller_),
-      geolocation_settings_state_(profile),
       closed_by_user_gesture_(false) {
-  ClearBlockedContentSettings();
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
+
+  content_settings_delegate_.reset(
+      new TabSpecificContentSettings(this, profile));
 
 #if defined(OS_CHROMEOS)
   // Make sure the thumbnailer is started before starting the render manager.
@@ -649,26 +650,6 @@ bool TabContents::ShouldDisplayFavIcon() {
   return true;
 }
 
-bool TabContents::IsContentBlocked(ContentSettingsType content_type) const {
-  DCHECK(content_type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
-      << "Geolocation settings handled by ContentSettingGeolocationImageModel";
-  DCHECK(content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-      << "Notifications settings handled by "
-      << "ContentSettingsNotificationsImageModel";
-
-  if (content_type == CONTENT_SETTINGS_TYPE_POPUPS)
-    return blocked_popups_ != NULL;
-
-  if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
-      content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-      content_type == CONTENT_SETTINGS_TYPE_PLUGINS ||
-      content_type == CONTENT_SETTINGS_TYPE_COOKIES)
-    return content_blocked_[content_type];
-
-  NOTREACHED();
-  return false;
-}
-
 std::wstring TabContents::GetStatusText() const {
   if (!is_loading() || load_state_ == net::LOAD_STATE_IDLE)
     return std::wstring();
@@ -957,10 +938,9 @@ bool TabContents::ExecuteCode(int request_id, const std::string& extension_id,
 void TabContents::PopupNotificationVisibilityChanged(bool visible) {
   if (is_being_destroyed_)
     return;
+  content_settings_delegate_->SetPopupsBlocked(visible);
   if (!dont_notify_render_view_)
     render_view_host()->AllowScriptToClose(!visible);
-  if (delegate_)
-    delegate_->OnContentSettingsChange(this);
 }
 
 gfx::NativeView TabContents::GetContentNativeView() const {
@@ -1394,12 +1374,6 @@ TabContents* TabContents::CloneAndMakePhantom() {
   return new_contents;
 }
 
-// Resets the |content_blocked_| array.
-void TabContents::ClearBlockedContentSettings() {
-  for (size_t i = 0; i < arraysize(content_blocked_); ++i)
-    content_blocked_[i] = false;
-}
-
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void TabContents::SetIsLoading(bool is_loading,
@@ -1453,6 +1427,7 @@ void TabContents::AddPopup(TabContents* new_contents,
     if (!blocked_popups_)
       blocked_popups_ = new BlockedPopupContainer(this);
     blocked_popups_->AddTabContents(new_contents, initial_pos);
+    content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
   }
 }
 
@@ -1595,10 +1570,8 @@ void TabContents::DidNavigateMainFramePostCommit(
     }
 
     // Clear "blocked" flags.
-    ClearBlockedContentSettings();
-    geolocation_settings_state_.DidNavigate(details);
-    if (delegate_)
-      delegate_->OnContentSettingsChange(this);
+    content_settings_delegate_->ClearBlockedContentSettings();
+    content_settings_delegate_->GeolocationDidNavigate(details);
 
     // Once the main frame is navigated, we're no longer considered to have
     // displayed insecure content.
@@ -2138,18 +2111,7 @@ void TabContents::DocumentLoadedInFrame() {
   controller_.DocumentLoadedInFrame();
 }
 
-void TabContents::OnContentBlocked(ContentSettingsType type) {
-  DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
-      << "Geolocation settings handled by OnGeolocationPermissionSet";
-  content_blocked_[type] = true;
-  if (delegate_)
-    delegate_->OnContentSettingsChange(this);
-}
-
-void TabContents::OnGeolocationPermissionSet(const GURL& requesting_origin,
-                                             bool allowed) {
-  geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
-                                                         allowed);
+void TabContents::OnContentSettingsChange() {
   if (delegate_)
     delegate_->OnContentSettingsChange(this);
 }
@@ -2174,7 +2136,7 @@ RenderViewHostDelegate::Resource* TabContents::GetResourceDelegate() {
 
 RenderViewHostDelegate::ContentSettings*
 TabContents::GetContentSettingsDelegate() {
-  return this;
+  return content_settings_delegate_.get();
 }
 
 RenderViewHostDelegate::Save* TabContents::GetSaveDelegate() {
@@ -2211,6 +2173,10 @@ RenderViewHostDelegate::BookmarkDrag* TabContents::GetBookmarkDragDelegate() {
 void TabContents::SetBookmarkDragDelegate(
     RenderViewHostDelegate::BookmarkDrag* bookmark_drag) {
   bookmark_drag_ = bookmark_drag;
+}
+
+TabSpecificContentSettings* TabContents::GetTabSpecificContentSettings() const {
+  return content_settings_delegate_.get();
 }
 
 RendererPreferences TabContents::GetRendererPrefs(Profile* profile) const {

@@ -173,20 +173,21 @@ class SetCookieCompletion : public net::CompletionCallback {
 
   virtual void RunWithParams(const Tuple1<int>& params) {
     int result = params.a;
+    bool blocked_by_policy = true;
     if (result == net::OK ||
         result == net::OK_FOR_SESSION_ONLY) {
+      blocked_by_policy = false;
       net::CookieOptions options;
       if (result == net::OK_FOR_SESSION_ONLY)
         options.set_force_session();
       context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
                                                      options);
-    } else {
-      if (!context_->IsExternal()) {
-        CallRenderViewHostContentSettingsDelegate(
-            render_process_id_, render_view_id_,
-            &RenderViewHostDelegate::ContentSettings::OnContentBlocked,
-            CONTENT_SETTINGS_TYPE_COOKIES);
-      }
+    }
+    if (!context_->IsExternal()) {
+      CallRenderViewHostContentSettingsDelegate(
+          render_process_id_, render_view_id_,
+          &RenderViewHostDelegate::ContentSettings::OnCookieAccessed,
+          url_, cookie_line_, blocked_by_policy);
     }
     delete this;
   }

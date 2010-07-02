@@ -835,6 +835,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityTree, OnAccessibilityTree)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     // Have the super handle all other messages.
@@ -1906,4 +1907,16 @@ void RenderViewHost::OnContentBlocked(ContentSettingsType type) {
       delegate_->GetContentSettingsDelegate();
   if (content_settings_delegate)
     content_settings_delegate->OnContentBlocked(type);
+}
+
+void RenderViewHost::OnWebDatabaseAccessed(const GURL& url,
+                                           const string16& name,
+                                           const string16& display_name,
+                                           unsigned long estimated_size,
+                                           bool blocked_by_policy) {
+  RenderViewHostDelegate::ContentSettings* content_settings_delegate =
+      delegate_->GetContentSettingsDelegate();
+  if (content_settings_delegate)
+    content_settings_delegate->OnWebDatabaseAccessed(
+        url, name, display_name, estimated_size, blocked_by_policy);
 }

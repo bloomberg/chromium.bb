@@ -199,8 +199,10 @@ class ContentSettingDomainListBubbleModel
     }
   }
   void SetDomainsAndClearLink() {
+    TabSpecificContentSettings* content_settings =
+        tab_contents()->GetTabSpecificContentSettings();
     const GeolocationSettingsState& settings =
-        tab_contents()->geolocation_settings_state();
+        content_settings->geolocation_settings_state();
     GeolocationSettingsState::FormattedHostsPerState formatted_hosts_per_state;
     unsigned int tab_state_flags = 0;
     settings.GetDetailedInfo(&formatted_hosts_per_state, &tab_state_flags);
@@ -233,8 +235,10 @@ class ContentSettingDomainListBubbleModel
     // Reset this embedder's entry to default for each of the requesting
     // origins currently on the page.
     const GURL& embedder_url = tab_contents()->GetURL();
+    TabSpecificContentSettings* content_settings =
+        tab_contents()->GetTabSpecificContentSettings();
     const GeolocationSettingsState::StateMap& state_map =
-        tab_contents()->geolocation_settings_state().state_map();
+        content_settings->geolocation_settings_state().state_map();
     GeolocationContentSettingsMap* settings_map =
         profile()->GetGeolocationContentSettingsMap();
     for (GeolocationSettingsState::StateMap::const_iterator it =

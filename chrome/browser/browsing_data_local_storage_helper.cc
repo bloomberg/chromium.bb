@@ -139,6 +139,10 @@ void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
       base::Time()));
 }
 
+void CannedBrowsingDataLocalStorageHelper::Reset() {
+  local_storage_info_.clear();
+}
+
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
     Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
   callback->Run(local_storage_info_);

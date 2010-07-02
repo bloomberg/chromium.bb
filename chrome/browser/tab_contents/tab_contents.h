@@ -24,7 +24,6 @@
 #include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
-#include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -37,8 +36,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
-#include "chrome/common/content_settings.h"
-#include "chrome/common/content_settings_types.h"
+#include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -71,23 +69,24 @@ namespace IPC {
 class Message;
 }
 
+class AutocompleteHistoryManager;
 class AutoFillManager;
 class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
 class Extension;
-class AutocompleteHistoryManager;
+class GeolocationSettingsState;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
 class PluginInstaller;
 class Profile;
 struct RendererPreferences;
 class RenderViewHost;
+class SiteInstance;
+class SkBitmap;
+class TabContents;
 class TabContentsDelegate;
 class TabContentsFactory;
-class SkBitmap;
-class SiteInstance;
-class TabContents;
 class TabContentsView;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
@@ -101,12 +100,12 @@ class TabContents : public PageNavigator,
                     public RenderViewHostDelegate,
                     public RenderViewHostDelegate::BrowserIntegration,
                     public RenderViewHostDelegate::Resource,
-                    public RenderViewHostDelegate::ContentSettings,
                     public RenderViewHostManager::Delegate,
                     public SelectFileDialog::Listener,
                     public JavaScriptMessageBoxClient,
                     public ImageLoadingTracker::Observer,
-                    public PasswordManager::Delegate {
+                    public PasswordManager::Delegate,
+                    public TabSpecificContentSettings::Delegate {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
@@ -258,16 +257,6 @@ class TabContents : public PageNavigator,
   // Returns whether the favicon should be displayed. If this returns false, no
   // space is provided for the favicon, and the favicon is never displayed.
   virtual bool ShouldDisplayFavIcon();
-
-  // Returns whether a particular kind of content has been blocked for this
-  // page.
-  bool IsContentBlocked(ContentSettingsType content_type) const;
-
-  // Returns the GeolocationSettingsState that controls the
-  // geolocation API usage on this page.
-  const GeolocationSettingsState& geolocation_settings_state() const {
-    return geolocation_settings_state_;
-  }
 
   // Returns a human-readable description the tab's loading state.
   virtual std::wstring GetStatusText() const;
@@ -706,6 +695,10 @@ class TabContents : public PageNavigator,
   virtual void SetBookmarkDragDelegate(
       RenderViewHostDelegate::BookmarkDrag* bookmark_drag);
 
+  // The TabSpecificContentSettings object is used to query the blocked content
+  // state by various UI elements.
+  TabSpecificContentSettings* GetTabSpecificContentSettings() const;
+
   // PasswordManager::Delegate implementation.
   virtual void FillPasswordForm(
       const webkit_glue::PasswordFormDomManager::FillData& form_data);
@@ -738,9 +731,6 @@ class TabContents : public PageNavigator,
 
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;
-
-  // Resets the |content_blocked_| array.
-  void ClearBlockedContentSettings();
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
@@ -832,6 +822,9 @@ class TabContents : public PageNavigator,
   void GenerateKeywordIfNecessary(
       const ViewHostMsg_FrameNavigate_Params& params);
 
+  // ContentBlockedDelegate::Delegate implementation.
+  virtual void OnContentSettingsChange();
+
   // RenderViewHostDelegate ----------------------------------------------------
 
   // RenderViewHostDelegate::BrowserIntegration implementation.
@@ -883,11 +876,6 @@ class TabContents : public PageNavigator,
       const GURL& url,
       bool showing_repost_interstitial);
   virtual void DocumentLoadedInFrame();
-
-  // RenderViewHostDelegate::ContentSettings implementation.
-  virtual void OnContentBlocked(ContentSettingsType type);
-  virtual void OnGeolocationPermissionSet(const GURL& requesting_origin,
-                                          bool allowed);
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
@@ -1098,6 +1086,9 @@ class TabContents : public PageNavigator,
   // Cached web app icon.
   SkBitmap app_icon_;
 
+  // RenderViewHost::ContentSettingsDelegate.
+  scoped_ptr<TabSpecificContentSettings> content_settings_delegate_;
+
   // Data for loading state ----------------------------------------------------
 
   // Indicates whether we're currently loading a resource.
@@ -1149,9 +1140,6 @@ class TabContents : public PageNavigator,
 
   // TODO(pkasting): Hack to try and fix Linux browser tests.
   bool dont_notify_render_view_;
-
-  // Stores which content setting types actually have blocked content.
-  bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
 
   // True if this is a secure page which displayed insecure content.
   bool displayed_insecure_content_;
@@ -1273,9 +1261,6 @@ class TabContents : public PageNavigator,
 
   // Information about the language the page is in and has been translated to.
   LanguageState language_state_;
-
-  // Manages information about Geolocation API usage in this page.
-  GeolocationSettingsState geolocation_settings_state_;
 
   // See description above setter.
   bool closed_by_user_gesture_;

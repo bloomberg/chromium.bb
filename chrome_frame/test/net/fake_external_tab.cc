@@ -441,8 +441,8 @@ void FilterDisabledTests() {
     "URLRequestTest.CookiePolicy_ForceSession",
     "URLRequestTest.DoNotSendCookies",
     "URLRequestTest.DoNotSendCookies_ViaPolicy_Async",
-    "URLRequestTest.CancelTest_During_OnGetCookiesBlocked",
-    "URLRequestTest.CancelTest_During_OnSetCookieBlocked",
+    "URLRequestTest.CancelTest_During_OnGetCookies",
+    "URLRequestTest.CancelTest_During_OnSetCookie",
 
     // These tests are disabled as the rely on functionality provided by
     // Chrome's HTTP stack like the ability to set the proxy for a URL, etc.

@@ -130,8 +130,10 @@ class GeolocationPermissionContextTests : public RenderViewHostTestHarness {
 
   void CheckTabContentsState(const GURL& requesting_frame,
                              ContentSetting expected_content_setting) {
+    TabSpecificContentSettings* content_settings =
+        contents()->GetTabSpecificContentSettings();
     const GeolocationSettingsState::StateMap& state_map =
-        contents()->geolocation_settings_state().state_map();
+        content_settings->geolocation_settings_state().state_map();
     EXPECT_EQ(1U, state_map.count(requesting_frame.GetOrigin()));
     EXPECT_EQ(0U, state_map.count(requesting_frame));
     GeolocationSettingsState::StateMap::const_iterator settings =

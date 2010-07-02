@@ -257,6 +257,19 @@ inline void CallRenderViewHostContentSettingsDelegate(int render_process_id,
                                                             MakeTuple(a, b));
 }
 
+template <typename Method, typename A, typename B, typename C>
+inline void CallRenderViewHostContentSettingsDelegate(int render_process_id,
+                                                      int render_view_id,
+                                                      Method method,
+                                                      const A& a,
+                                                      const B& b,
+                                                      const C& c) {
+  internal::CallRenderViewHostContentSettingsDelegateHelper(render_process_id,
+                                                            render_view_id,
+                                                            method,
+                                                            MakeTuple(a, b, c));
+}
+
 // ----------------------------------------------------------------------------
 // Proxy calls to the specified RenderViewHost's RendererManagement delegate.
 

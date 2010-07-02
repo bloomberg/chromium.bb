@@ -59,8 +59,10 @@ ContentSettingBlockedImageModel::ContentSettingBlockedImageModel(
 
 void ContentSettingBlockedImageModel::UpdateFromTabContents(
     const TabContents* tab_contents) {
-  if (!tab_contents ||
-      !tab_contents->IsContentBlocked(get_content_settings_type())) {
+  TabSpecificContentSettings* content_settings = tab_contents ?
+      tab_contents->GetTabSpecificContentSettings() : NULL;
+  if (!content_settings ||
+      !content_settings->IsContentBlocked(get_content_settings_type())) {
     set_visible(false);
     return;
   }
@@ -80,8 +82,10 @@ void ContentSettingGeolocationImageModel::UpdateFromTabContents(
     set_visible(false);
     return;
   }
+  TabSpecificContentSettings* content_settings =
+      tab_contents->GetTabSpecificContentSettings();
   const GeolocationSettingsState& settings_state =
-      tab_contents->geolocation_settings_state();
+      content_settings->geolocation_settings_state();
   if (settings_state.state_map().empty()) {
     set_visible(false);
     return;

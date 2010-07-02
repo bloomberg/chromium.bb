@@ -14,8 +14,8 @@ typedef RenderViewHostTestHarness ContentSettingImageModelTest;
 
 TEST_F(ContentSettingImageModelTest, UpdateFromTabContents) {
   TestTabContents tab_contents(profile_.get(), NULL);
-  RenderViewHostDelegate::ContentSettings* render_view_host_delegate =
-      &tab_contents;
+  TabSpecificContentSettings* content_settings =
+      tab_contents.GetTabSpecificContentSettings();
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_IMAGES));
@@ -23,7 +23,7 @@ TEST_F(ContentSettingImageModelTest, UpdateFromTabContents) {
   EXPECT_EQ(0, content_setting_image_model->get_icon());
   EXPECT_EQ("", content_setting_image_model->get_tooltip());
 
-  render_view_host_delegate->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
   content_setting_image_model->UpdateFromTabContents(&tab_contents);
 
   EXPECT_TRUE(content_setting_image_model->is_visible());

@@ -2286,6 +2286,8 @@
         'browser/tab_contents/tab_contents_view_gtk.h',
         'browser/tab_contents/tab_contents_view_mac.h',
         'browser/tab_contents/tab_contents_view_mac.mm',
+        'browser/tab_contents/tab_specific_content_settings.h',
+        'browser/tab_contents/tab_specific_content_settings.cc',
         'browser/tab_contents/tab_util.cc',
         'browser/tab_contents/tab_util.h',
         'browser/tab_contents/thumbnail_generator.cc',

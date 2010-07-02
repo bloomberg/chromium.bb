@@ -317,6 +317,31 @@ class RenderViewHostDelegate {
     // content settings.
     virtual void OnContentBlocked(ContentSettingsType type) = 0;
 
+    // Called when a specific cookie in the current page was accessed.
+    // |blocked_by_policy| should be true, if the cookie was blocked due to the
+    // user's content settings. In that case, this function should invoke
+    // OnContentBlocked.
+    virtual void OnCookieAccessed(const GURL& url,
+                                  const std::string& cookie_line,
+                                  bool blocked_by_policy) = 0;
+
+    // Called when a specific local storage area in the current page was
+    // accessed. If access was blocked due to the user's content settings,
+    // |blocked_by_policy| should be true, and this function should invoke
+    // OnContentBlocked.
+    virtual void OnLocalStorageAccessed(const GURL& url,
+                                        bool blocked_by_policy) = 0;
+
+    // Called when a specific Web database in the current page was accessed. If
+    // access was blocked due to the user's content settings,
+    // |blocked_by_policy| should eb true, and this function should invoke
+    // OnContentBlocked.
+    virtual void OnWebDatabaseAccessed(const GURL& url,
+                                       const string16& name,
+                                       const string16& display_name,
+                                       unsigned long estimated_size,
+                                       bool blocked_by_policy) = 0;
+
     // Called when geolocation permission was set in a frame on the current
     // page.
     virtual void OnGeolocationPermissionSet(const GURL& requesting_frame,

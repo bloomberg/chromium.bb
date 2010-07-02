@@ -61,6 +61,9 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
   // helper.
   void AddAppCache(const GURL& manifest_url);
 
+  // Clears the list of canned caches.
+  void Reset();
+
   // BrowsingDataAppCacheHelper methods.
   virtual void StartFetching(Callback0::Type* completion_callback);
   virtual void CancelNotification() {}

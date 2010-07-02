@@ -43,9 +43,9 @@ class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
 };
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
-  RenderViewHostDelegate::ContentSettings* render_view_host_delegate =
-      contents();
-  render_view_host_delegate->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
+  TabSpecificContentSettings* content_settings =
+      contents()->GetTabSpecificContentSettings();
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -59,9 +59,9 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, Cookies) {
-  RenderViewHostDelegate::ContentSettings* render_view_host_delegate =
-      contents();
-  render_view_host_delegate->OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
+  TabSpecificContentSettings* content_settings =
+      contents()->GetTabSpecificContentSettings();
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -79,11 +79,11 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   const GURL frame2_url("http://host2.example:999/");
 
   NavigateAndCommit(page_url);
-  RenderViewHostDelegate::ContentSettings* render_view_host_delegate =
-      contents();
+  TabSpecificContentSettings* content_settings =
+      contents()->GetTabSpecificContentSettings();
 
   // One permitted frame, but not in the content map: requires reload.
-  render_view_host_delegate->OnGeolocationPermissionSet(frame1_url, true);
+  content_settings->OnGeolocationPermissionSet(frame1_url, true);
   CheckGeolocationBubble(1, false, true);
 
   // Add it to the content map, should now have a clear link.
@@ -97,7 +97,7 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
   CheckGeolocationBubble(1, false, false);
 
   // Second frame denied, but not stored in the content map: requires reload.
-  render_view_host_delegate->OnGeolocationPermissionSet(frame2_url, false);
+  content_settings->OnGeolocationPermissionSet(frame2_url, false);
   CheckGeolocationBubble(2, false, true);
 
   // Change the default to block: offer a clear link for the persisted frame 1.

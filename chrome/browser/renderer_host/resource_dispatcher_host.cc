@@ -978,8 +978,10 @@ void ResourceDispatcherHost::OnSSLCertificateError(
   SSLManager::OnSSLCertificateError(this, request, cert_error, cert);
 }
 
-void ResourceDispatcherHost::OnSetCookieBlocked(URLRequest* request) {
-  RESOURCE_LOG("OnSetCookieBlocked: " << request->url().spec());
+void ResourceDispatcherHost::OnSetCookie(URLRequest* request,
+                                         const std::string& cookie_line,
+                                         bool blocked_by_policy) {
+  RESOURCE_LOG("OnSetCookie: " << request->url().spec());
 
   int render_process_id, render_view_id;
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
@@ -987,8 +989,8 @@ void ResourceDispatcherHost::OnSetCookieBlocked(URLRequest* request) {
 
   CallRenderViewHostContentSettingsDelegate(
       render_process_id, render_view_id,
-      &RenderViewHostDelegate::ContentSettings::OnContentBlocked,
-      CONTENT_SETTINGS_TYPE_COOKIES);
+      &RenderViewHostDelegate::ContentSettings::OnCookieAccessed,
+      request->url(), cookie_line, blocked_by_policy);
 }
 
 void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {

@@ -131,6 +131,10 @@ void CannedBrowsingDataDatabaseHelper::AddDatabase(
         base::Time()));
 }
 
+void CannedBrowsingDataDatabaseHelper::Reset() {
+  database_info_.clear();
+}
+
 void CannedBrowsingDataDatabaseHelper::StartFetching(
     Callback1<const std::vector<DatabaseInfo>& >::Type* callback) {
   callback->Run(database_info_);
