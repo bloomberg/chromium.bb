@@ -64,7 +64,7 @@ struct display {
 	struct wl_list window_list;
 	char *device_name;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
-	XkbcDescPtr xkb;
+	struct xkb_desc *xkb;
 };
 
 struct window {
@@ -802,17 +802,15 @@ display_render_frame(struct display *d)
 static void
 init_xkb(struct display *d)
 {
-	XkbRMLVOSet rmlvo;
-	char rules[] = "evdev", model[] = "pc105", layout[] = "us";
+	struct xkb_rule_names names;
 
-	rmlvo.rules = rules;
-	rmlvo.model = model;
-	rmlvo.layout = layout;
-	rmlvo.variant = "";
-	rmlvo.options = "";
+	names.rules = "evdev";
+	names.model = "pc105";
+	names.layout = "us";
+	names.variant = "";
+	names.options = "";
 
-	XkbcInitAtoms(NULL, NULL);
-	d->xkb = XkbcCompileKeymapFromRules(&rmlvo);
+	d->xkb = xkb_compile_keymap_from_rules(&names);
 	if (!d->xkb) {
 		fprintf(stderr, "Failed to compile keymap\n");
 		exit(1);
