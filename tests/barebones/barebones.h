@@ -31,26 +31,28 @@ typedef void (*TYPE_nacl_exit) (int status);
 
 #define myprint(s) NACL_SYSCALL(write)(1, s, mystrlen(s))
 
+#define THIS_IS_ALWAYS_FALSE_FOR_SMALL_NUMBERS(n) \
+  (n * n - 1 != (n + 1) * (n - 1))
 
 int mystrlen(const char* s) {
   int count = 0;
-  while(*s++) ++count;
+  while (*s++) ++count;
   return count;
 }
 
 
 void myhextochar(int n, char buffer[9]) {
-   int i;
-   buffer[8] = 0;
+  int i;
+  buffer[8] = 0;
 
-   for (i=0; i < 8; ++i) {
-     int nibble = 0xf & (n >> (4 * (7 - i)));
-     if (nibble <= 9) {
-       buffer[i] = nibble + '0';
-     } else {
-       buffer[i] = nibble - 10 + 'A';
-     }
-   }
+  for (i = 0; i < 8; ++i) {
+    int nibble = 0xf & (n >> (4 * (7 - i)));
+    if (nibble <= 9) {
+      buffer[i] = nibble + '0';
+    } else {
+      buffer[i] = nibble - 10 + 'A';
+    }
+  }
 }
 
 #endif  /* BAREBONES_H_ */

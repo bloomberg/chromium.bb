@@ -55,13 +55,16 @@ if env['BUILD_ARCHITECTURE'] == 'arm':
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
 
-for basename in ['hello_world',
+for basename in ['addr_modes',
                  'exit',
                  'fib',
+                 'hello_world',
+                 'long_long',
+                 'regs',
                  'switch',
                  'vtable',
                  'vaarg',
-                 'regs']:
+                 ]:
   # TODO(robertm): fix this ASAP
   if env['BUILD_ARCHITECTURE'] == 'arm' and basename == 'vaarg': continue
 
@@ -75,11 +78,15 @@ for basename in ['hello_world',
   test = 'run_barebones_' + basename + '_test'
   env.ComponentProgram(nexe, [FAKE_STARTUP, src])
 
+  # NOTE: we avoid using zero as the "good" exit status and just
+  #       arbitrarily picked 55. All tests are coded to follow this model.
   node = env.CommandSelLdrTestNacl(
       out,
       command=[env.File(nexe)],
       exit_status='55',)
-  env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], test)
+  env.AddNodeToTestSuite(node, ['small_tests',
+                                'barebones_tests',
+                                'sel_ldr_tests'], test)
 
 
 # a test that the validador can handle an empty segment after the last
