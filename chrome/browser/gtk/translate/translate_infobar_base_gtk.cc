@@ -48,6 +48,8 @@ TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
       background_color_animation_->Reset(1.0);
       background_color_animation_->Hide();
     }
+  } else {
+    background_error_percent_ = delegate->IsError() ? 1 : 0;
   }
 }
 
