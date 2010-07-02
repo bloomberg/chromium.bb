@@ -53,19 +53,11 @@ readonly BFD_PLUGIN_DIR=${LLVMGCC_INSTALL_DIR}/lib/bfd-plugins
 
 readonly MAKE_OPTS="-j8 VERBOSE=1"
 
-# The directory in which we perform all our builds.
-# TODO(adonovan): make this include a hash (or segments) of $(pwd) so
-# we don't clobber builds done from other clients.  (The Hg repos could
-# be shared, though.)
-readonly TMP=/tmp/crosstool-untrusted
+# The directory in which we we keep src dirs (from hg repos)
+# and objdirs
 
-# Environmental options: each optional *_DEV variable specifies a
-# directory to use instead of the Mercurial repository.  Use these
-# options to test pending changes.
-LLVM_GCC_DEV=${LLVM_GCC_DEV:-}   # llvm-gcc
-LLVM_DEV=${LLVM_DEV:-}           # llvm
-NEWLIB_DEV=${NEWLIB_DEV:-}       # newlib
-BINUTILS_DEV=${BINUTILS_DEV:-}   # binutils
+readonly DEFAULT_TOOLCHAIN_CLIENT=$(readlink -f toolchain/hg)
+readonly TOOLCHAIN_CLIENT=${TOOLCHAIN_CLIENT:-${DEFAULT_TOOLCHAIN_CLIENT}}
 
 # Current milestones within each Hg repo:
 readonly LLVM_REV=449e2506561a
@@ -107,9 +99,9 @@ readonly RANLIB_FOR_SFI_TARGET=${RANLIB_FOR_TARGET}
 
 readonly CXXFLAGS_FOR_SFI_TARGET="-D__native_client__=1"
 readonly CFLAGS_FOR_SFI_TARGET="-march=${ARM_ARCH} \
-                           -DMISSING_SYSCALL_NAMES=1 \
-                           -ffixed-r9 \
-                           -D__native_client__=1"
+                                -DMISSING_SYSCALL_NAMES=1 \
+                                -ffixed-r9 \
+                                -D__native_client__=1"
 
 # The gold plugin that we use is documented at
 # http://llvm.org/docs/GoldPlugin.html
@@ -189,55 +181,20 @@ RunWithLog() {
   }
 }
 
-# Usage: HgMirror <repo>
-#
-# Clones the specified Mercurial repository from
-# nacl-llvm-branches.googlecode.com into the local "hg mirrors"
-# directory, to be used by subsequent steps.
-HgMirror() {
-  local repo=$1
-  local repo_mirror=${TMP}/hg-mirrors
-  local url=https://${repo}.googlecode.com/hg/
-  mkdir -p ${repo_mirror}
-  echo "HgMirror: creating local mirror of ${url} Mercurial repository..."
-  trap "rm -fr ${repo_mirror}/${repo}" EXIT
-  if [ -d ${repo_mirror}/${repo} ]; then
-    # Already exists: just bring it up-to-date.
-    (cd ${repo_mirror}/${repo} && hg pull)
-  else
-    # Absent: create anew.
-    hg clone ${url} ${repo_mirror}/${repo}
+
+checkout-hg-common() {
+  SubBanner "Checking out local repo for $1 (label: $2)"
+  local dir=${TOOLCHAIN_CLIENT}/$1
+  if [ -d ${dir} ] ; then
+    echo "ERROR: hg repo ${dir} already exists"
+    exit -1
   fi
-  trap - EXIT
-  echo "HgMirror: done."
-}
-
-# Usage: SetupSourceTree <dest> <repo-name> <label> <dev-tree>
-#
-# Sets up a source tree <dest> by cloning the Mercurial repository
-# <repo-name> at label <label> (e.g. an Hg branch name or revision
-# specification), or if <dev-tree> is non-empty, by copying the tree
-# <dev-tree>.
-SetupSourceTree() {
-  local dest=$1
-  local repo_name=$2
-  local label=$3
-  local dev_tree=${4:-}
-
-  rm -rf ${dest}  # TODO(adonovan): optimise around this when safe
-
-  mkdir -p $(dirname ${dest})
-
-  if [ -n "${dev_tree}" ]; then
-    # User has requested that we use their development tree instead.
-    echo "Copying user's development tree ${dev_tree}..."
-    cp -ru ${dev_tree} ${dest}
-  else
-    HgMirror ${repo_name}
-    echo "Making local checkout of repo ${repo_name} at label ${label}..."
-    hg clone ${TMP}/hg-mirrors/${repo_name} ${dest}
-    (cd ${dest} && hg up -C ${label})
-  fi
+  mkdir -p ${dir}
+  pushd ${TOOLCHAIN_CLIENT}
+  hg clone https://$1.googlecode.com/hg/ $1
+  cd $1
+  hg up -C $2
+  popd
 }
 
 ######################################################################
@@ -287,25 +244,23 @@ prune() {
 
 # Build basic llvm tools
 llvm() {
-  local tmpdir=${TMP}/llvm
+  local objdir="${TOOLCHAIN_CLIENT}/build.llvm"
+  local srcdir=$(readlink -f ${TOOLCHAIN_CLIENT}/nacl-llvm-branches)
+  Banner "Building LLVM in ${objdir}"
 
-  Banner "Building LLVM in ${tmpdir}"
-
-  SetupSourceTree ${tmpdir} \
-                  nacl-llvm-branches \
-                  ${LLVM_REV} \
-                  ${LLVM_DEV}
-  pushd ${tmpdir}/llvm-trunk
+  rm -rf ${objdir}
+  mkdir -p ${objdir}
+  pushd ${objdir}
 
 
   # The --with-binutils-include is to allow llvm to build the gold plugin
-  local binutils_include="${TMP}/binutils.nacl/src/binutils-2.20/include"
-  RunWithLog "Configure" ${TMP}/llvm.configure.log\
+  local binutils_include="${TOOLCHAIN_CLIENT}/binutils.nacl-llvm-branches/binutils-2.20/include"
+  RunWithLog "Configure" ${TOOLCHAIN_CLIENT}/log.llvm.configure \
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
              CC=${CC} \
              CXX=${CXX} \
-             ./configure \
+             ${srcdir}/llvm-trunk/configure \
              --disable-jit \
              --enable-optimized \
              --with-binutils-include=${binutils_include} \
@@ -314,44 +269,25 @@ llvm() {
              --prefix=${LLVM_INSTALL_DIR} \
              --with-llvmgccdir=${LLVMGCC_INSTALL_DIR}
 
-  RunWithLog "Make" ${TMP}/llvm.make.log \
+  RunWithLog "Make" ${TOOLCHAIN_CLIENT}/log.llvm.make \
     env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS=${MAKE_OPTS} \
            CC=${CC} \
            CXX=${CXX} \
            make ${MAKE_OPTS} all
 
-  RunWithLog "Installing LLVM" ${TMP}/llvm-install.log \
+  RunWithLog "Installing LLVM" ${TOOLCHAIN_CLIENT}/log.llvm-install \
        make ${MAKE_OPTS} install
 
   SubBanner "Linking the plugin"
   mkdir -p ${BFD_PLUGIN_DIR}
-  ln -s ../../../llvm/lib/LLVMgold.so ${BFD_PLUGIN_DIR}
-  ln -s ../../../llvm/lib/libLTO.so ${BFD_PLUGIN_DIR}
+  ln -sf ../../../llvm/lib/LLVMgold.so ${BFD_PLUGIN_DIR}
+  ln -sf ../../../llvm/lib/libLTO.so ${BFD_PLUGIN_DIR}
 
   popd
 }
 
-SetupNewlibSource() {
-  local tmpdir=${TMP}/newlib
 
-  Banner "Setting up newlib source in ${tmpdir}"
-
-  SetupSourceTree ${tmpdir} \
-                  newlib.nacl-llvm-branches \
-                  ${NEWLIB_REV} \
-                  ${NEWLIB_DEV}
-
-  SubBanner "add nacl headers"
-
-  here=$(pwd)
-  (cd ${tmpdir}/newlib-1.17.0 &&
-    ${here}/src/trusted/service_runtime/export_header.py \
-      ${here}/src/trusted/service_runtime/include \
-      newlib/libc/include)
-}
-
-# Note: depends on newlib source being set up.
 SetupSysRoot() {
   local sys_include=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include
   local sys_include2=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/sys-include
@@ -360,7 +296,7 @@ SetupSysRoot() {
   rm -rf ${sys_include} ${sys_include2}
   mkdir -p ${sys_include}
   ln -sf ${sys_include} ${sys_include2}
-  cp -r ${TMP}/newlib/newlib-1.17.0/newlib/libc/include/* ${sys_include}
+  cp -r ${TOOLCHAIN_CLIENT}/newlib.nacl-llvm-branches/newlib-1.17.0/newlib/libc/include/* ${sys_include}
 }
 
 # Build "pregcc" which is a gcc that does not depend on having glibc/newlib
@@ -369,26 +305,21 @@ SetupSysRoot() {
 # NOTE: depends on newlib source being set up so we can use it to set
 #       up a sysroot.
 ConfigureAndBuildGccStage1() {
-  local tmpdir=${TMP}/llvm-pregcc
+  local objdir="${TOOLCHAIN_CLIENT}/build.llvm-pregcc"
+  local srcdir=$(readlink -f ${TOOLCHAIN_CLIENT}/llvm-gcc.nacl-llvm-branches)
+  Banner "Building llvmgcc-stage1 in ${objdir}"
 
-  Banner "Building llvmgcc-stage1 in ${tmpdir}"
-
-  SetupSourceTree ${tmpdir} \
-                  llvm-gcc.nacl-llvm-branches \
-                  ${LLVM_GCC_REV} \
-                  ${LLVM_GCC_DEV}
-  mkdir -p ${tmpdir}/build
-  pushd ${tmpdir}/build
-
-  # NOTE: you cannot build llvm-gcc inside the source directory
+  rm -rf ${objdir}
+  mkdir -p ${objdir}
+  pushd ${objdir}
 
   # TODO(robertm): do we really need CROSS_TARGET_*
-  RunWithLog "Configure" ${TMP}/llvm-pregcc.configure.log \
+  RunWithLog "Configure" ${TOOLCHAIN_CLIENT}/llvm-pregcc.configure.log \
       env -i PATH=/usr/bin/:/bin \
              CC=${CC} \
              CXX=${CXX} \
              CFLAGS="-Dinhibit_libc" \
-             ../llvm-gcc-4.2/configure \
+             ${srcdir}/llvm-gcc-4.2/configure \
                --prefix=${LLVMGCC_INSTALL_DIR} \
                --enable-llvm=${LLVM_INSTALL_DIR} \
                --without-headers \
@@ -406,7 +337,7 @@ ConfigureAndBuildGccStage1() {
                --with-fpu=${ARM_FPU}
 
  # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
- RunWithLog "Make" ${TMP}/llvm-pregcc.make.log \
+ RunWithLog "Make" ${TOOLCHAIN_CLIENT}/log.llvm-pregcc.make \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              CC=${CC} \
              CXX=${CXX} \
@@ -414,7 +345,7 @@ ConfigureAndBuildGccStage1() {
              make ${MAKE_OPTS} all
 
  # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
- RunWithLog "Install" ${TMP}/llvm-pregcc.install.log \
+ RunWithLog "Install" ${TOOLCHAIN_CLIENT}/log.llvm-pregcc.install \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              CC=${CC} \
              CXX=${CXX} \
@@ -450,7 +381,7 @@ BuildLibgcc() {
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              make clean-target-libgcc
 
-  RunWithLog "Build libgcc" ${TMP}/llvm-gcc.make_libgcc.log \
+  RunWithLog "Build libgcc" ${TOOLCHAIN_CLIENT}/log.llvm-gcc.make_libgcc \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
@@ -465,7 +396,7 @@ BuildLibiberty() {
 
   pushd ${tmpdir}
   # maybe clean libiberty first
-  RunWithLog "Build libiberty" ${TMP}/llvm-gcc.make_libiberty.log \
+  RunWithLog "Build libiberty" ${TOOLCHAIN_CLIENT}/log.llvm-gcc.make_libiberty \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
@@ -497,18 +428,18 @@ STD_ENV_FOR_LIBSTDCPP=(
 
 
 BuildLibstdcpp() {
-  local tmpdir=$1
-  pushd ${tmpdir}
-  local src_dir=${tmpdir}/../llvm-gcc-4.2
-  local cpp_build_dir=${tmpdir}/${CROSS_TARGET}/libstdc++-v3
-  rm -rf ${cpp_build_dir}
-  mkdir -p  ${cpp_build_dir}
-  cd ${cpp_build_dir}
+  local srcdir=$(readlink -f ${TOOLCHAIN_CLIENT}/llvm-gcc.nacl-llvm-branches)
+  # Not sure whetehr this really has to be within the enclosing build-dir
+  local objdir=$1/${CROSS_TARGET}/libstdc++-v3
 
-  RunWithLog "Configure libstdc++" ${TMP}/llvm-gcc.configure_libstdcpp.log \
+  rm -rf ${objdir}
+  mkdir -p ${objdir}
+  pushd ${objdir}
+
+  RunWithLog "Configure libstdc++" ${TOOLCHAIN_CLIENT}/log.llvm-gcc.configure_libstdcpp \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
-        ${src_dir}/libstdc++-v3/configure \
+        ${srcdir}/llvm-gcc-4.2/libstdc++-v3/configure \
           --host=arm-none-linux-gnueabi \
           --prefix=${LLVMGCC_INSTALL_DIR} \
           --enable-llvm=${LLVM_INSTALL_DIR} \
@@ -520,9 +451,9 @@ BuildLibstdcpp() {
           --target=${CROSS_TARGET} \
           --with-sysroot=${NEWLIB_INSTALL_DIR} \
           --with-arch=${ARM_ARCH} \
-          --srcdir=${src_dir}/libstdc++-v3
+          --srcdir=${srcdir}/llvm-gcc-4.2/libstdc++-v3
 
-  RunWithLog "Make libstdc++" ${TMP}/llvm-gcc.make_libstdcpp.log \
+  RunWithLog "Make libstdc++" ${TOOLCHAIN_CLIENT}/log.llvm-gcc.make_libstdcpp \
     env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
         make \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
@@ -537,28 +468,23 @@ BuildLibstdcpp() {
 # Build gcc again in order to build libgcc and other essential libs
 # Note: depends on
 gcc-stage2() {
-  local tmpdir=${TMP}/llvm-gcc
+  local objdir="${TOOLCHAIN_CLIENT}/build.llvm-gcc"
+  local srcdir=$(readlink -f ${TOOLCHAIN_CLIENT}/llvm-gcc.nacl-llvm-branches)
+  Banner "Building llvmgcc-stage2 in ${objdir}"
 
-  Banner "Building llvmgcc-stage2 in ${tmpdir}"
+  rm -rf ${objdir}
+  mkdir -p ${objdir}
+  pushd ${objdir}
 
-  SetupSourceTree ${tmpdir} \
-                  llvm-gcc.nacl-llvm-branches \
-                  ${LLVM_GCC_REV} \
-                  ${LLVM_GCC_DEV}
-  pushd ${tmpdir}
-
-  # NOTE: you cannot build llvm-gcc inside the source directory
-  mkdir -p build
-  cd build
   # TODO(robertm): do we really need CROSS_TARGET_*
-  RunWithLog "Configure" ${TMP}/llvm-gcc.configure.log \
+  RunWithLog "Configure" ${TOOLCHAIN_CLIENT}/log.llvm-gcc.configure \
       env -i PATH=/usr/bin/:/bin \
              CC=${CC} \
              CXX=${CXX} \
              CFLAGS="-Dinhibit_libc" \
              CXXFLAGS="-Dinhibit_libc" \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
-             ../llvm-gcc-4.2/configure \
+             ${srcdir}/llvm-gcc-4.2/configure \
                --prefix=${LLVMGCC_INSTALL_DIR} \
                --enable-llvm=${LLVM_INSTALL_DIR} \
                --program-prefix=llvm- \
@@ -576,15 +502,15 @@ gcc-stage2() {
                --with-fpu=${ARM_FPU} \
                --with-sysroot=${NEWLIB_INSTALL_DIR}
 
- RunWithLog "Make" ${TMP}/llvm-gcc.make.log \
+ RunWithLog "Make" ${TOOLCHAIN_CLIENT}/log.llvm-gcc.make \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} all-gcc
 
 
-  BuildLibgcc ${tmpdir}/build
-  BuildLibiberty ${tmpdir}/build
+  BuildLibgcc ${objdir}
+  BuildLibiberty ${objdir}
 
   SubBanner "Partial compiler install for gcc"
   cd gcc
@@ -595,18 +521,19 @@ gcc-stage2() {
   cp cc1 ${LLVMGCC_INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/4.2.1
   cp cc1plus ${LLVMGCC_INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/4.2.1
 
-  BuildLibstdcpp ${tmpdir}/build
+  BuildLibstdcpp ${objdir}
   popd
 }
 
 
 gcc-stage3() {
-  local tmpdir=${TMP}/llvm-gcc
+  # NOTE: this is the build dir from stage2
+  local objdir="${TOOLCHAIN_CLIENT}/build.llvm-gcc"
 
   Banner "Installing final version of llvmgcc (stage3)"
 
-  pushd ${tmpdir}/build
-  RunWithLog "Make" ${TMP}/llvm-gcc.install.log \
+  pushd ${objdir}
+  RunWithLog "Make" ${TOOLCHAIN_CLIENT}/log.llvm-gcc.install \
       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
@@ -725,39 +652,35 @@ STD_ENV_FOR_NEWLIB=(
     STRIP_FOR_TARGET="${ILLEGAL_TOOL}")
 
 BuildAndInstallBinutils() {
-  local tmpdir="${TMP}/binutils.nacl"
-
+  local objdir="${TOOLCHAIN_CLIENT}/build.binutils.nacl"
+  local srcdir=$(readlink -f ${TOOLCHAIN_CLIENT}/binutils.nacl-llvm-branches)
   Banner "Building binutils"
 
-  SetupSourceTree ${tmpdir}/src \
-                  binutils.nacl-llvm-branches \
-                  ${BINUTILS_REV} \
-                  ${BINUTILS_DEV}
-  rm -rf ${tmpdir}/build
-  mkdir -p ${tmpdir}/build
-  pushd ${tmpdir}/build
+  rm -rf ${objdir}
+  mkdir -p ${objdir}
+  pushd ${objdir}
 
   # --enable-checking is to avoid a build failure:
   #   tc-arm.c:2489: warning: empty body in an if-statement
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
-  RunWithLog "Configuring binutils"  ${TMP}/binutils.configure.log \
+  RunWithLog "Configuring binutils" ${TOOLCHAIN_CLIENT}/log.binutils.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     CC=${CC} \
     CXX=${CXX} \
-    ../src/binutils-2.20/configure --prefix=${BINUTILS_INSTALL_DIR} \
-                                   --target=${CROSS_TARGET} \
-                                   --enable-checking \
-                                   --enable-gold \
-                                   --enable-plugins \
-                                   --with-sysroot=${NEWLIB_INSTALL_DIR}
+    ${srcdir}/binutils-2.20/configure --prefix=${BINUTILS_INSTALL_DIR} \
+                                      --target=${CROSS_TARGET} \
+                                      --enable-checking \
+                                      --enable-gold \
+                                      --enable-plugins \
+                                      --with-sysroot=${NEWLIB_INSTALL_DIR}
 
-  RunWithLog "Make binutils" ${TMP}/binutils.make.log \
+  RunWithLog "Make binutils" ${TOOLCHAIN_CLIENT}/log.binutils.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS}
 
-  RunWithLog "Install binutils"  ${TMP}/binutils.install.log \
+  RunWithLog "Install binutils"  ${TOOLCHAIN_CLIENT}/log.binutils.install \
     env -i PATH="/usr/bin:/bin" \
     make \
       install ${MAKE_OPTS}
@@ -766,7 +689,8 @@ BuildAndInstallBinutils() {
 }
 
 BuildAndInstallSandboxedBinutils() {
-  local tmpdir="${TMP}/binutils.nacl.sandboxed"
+  local objdir="${TOOLCHAIN_CLIENT}/build.binutils.nacl.sandboxed"
+  local srcdir=$(readlink -f ${TOOLCHAIN_CLIENT}/binutils.nacl-llvm-branches)
 
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
     echo "ERROR: install Native Client toolchain"
@@ -775,19 +699,15 @@ BuildAndInstallSandboxedBinutils() {
 
   Banner "Building sandboxed binutils"
 
-  SetupSourceTree ${tmpdir}/src \
-                  binutils.nacl-llvm-branches \
-                  ${BINUTILS_REV} \
-                  ${BINUTILS_DEV}
-  rm -rf ${tmpdir}/build
-  mkdir -p ${tmpdir}/build
-  pushd ${tmpdir}/build
-
+  rm -rf ${objdir}
+  mkdir -p ${objdir}
+  pushd ${objdir}
   # --enable-checking is to avoid a build failure:
   #   tc-arm.c:2489: warning: empty body in an if-statement
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
-  RunWithLog "Configuring sandboxed binutils"  ${TMP}/binutils.configure.log \
+  RunWithLog "Configuring sandboxed binutils" \
+    ${TOOLCHAIN_CLIENT}/log.binutils.sandboxed.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
@@ -799,7 +719,7 @@ BuildAndInstallSandboxedBinutils() {
     RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
     CFLAGS="-O2 -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
     LDFLAGS="-s" \
-    ../src/binutils-2.20/configure --prefix=${SANDBOXED_BINUTILS_INSTALL_DIR} \
+    ${srcdir}/binutils-2.20/configure --prefix=${SANDBOXED_BINUTILS_INSTALL_DIR} \
                                    --host=nacl \
                                    --target=${CROSS_TARGET} \
                                    --disable-nls \
@@ -808,11 +728,11 @@ BuildAndInstallSandboxedBinutils() {
                                    --enable-shared=no \
                                    --with-sysroot=${NEWLIB_INSTALL_DIR}
 
-  RunWithLog "Make binutils" ${TMP}/binutils.make.log \
+  RunWithLog "Make binutils" ${TOOLCHAIN_CLIENT}/log.binutils.sandboxed.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS} all-gas all-ld
 
-  RunWithLog "Install binutils"  ${TMP}/binutils.install.log \
+  RunWithLog "Install binutils" ${TOOLCHAIN_CLIENT}/log.binutils.sandboxed.install \
     env -i PATH="/usr/bin:/bin" \
     make install-gas install-ld
 
@@ -820,7 +740,9 @@ BuildAndInstallSandboxedBinutils() {
 }
 
 BuildAndInstallNewlib() {
-  local tmpdir=${TMP}/newlib
+  local objdir="${TOOLCHAIN_CLIENT}/build.newlib"
+  local srcdir=$(readlink -f ${TOOLCHAIN_CLIENT}/newlib.nacl-llvm-branches)
+
   # NOTE: When an argument is given to this function we abuse it to generate
   #       a bitcode version of the library. In the scenario we just want to
   #       build libc.a and do install or uninstall anything.
@@ -830,15 +752,17 @@ BuildAndInstallNewlib() {
     echo "Error: no such directory '$1'." >&2
     exit 1
   fi
-  Banner "building and installing newlib"
+  Banner "building and installing newlib in ${objdir}"
 
-  pushd ${tmpdir}/newlib-1.17.0
+  rm -rf ${objdir}
+  mkdir -p ${objdir}
+  pushd ${objdir}
 
-  RunWithLog "Configuring newlib"  ${TMP}/newlib.configure.log \
+  RunWithLog "Configuring newlib"  ${TOOLCHAIN_CLIENT}/log.newlib.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     "${STD_ENV_FOR_NEWLIB[@]}" \
-    ./configure \
+    ${srcdir}/newlib-1.17.0/configure \
         --disable-libgloss \
         --disable-multilib \
         --enable-newlib-reent-small \
@@ -848,7 +772,7 @@ BuildAndInstallNewlib() {
         --target="${CROSS_TARGET}"
 
 
-  RunWithLog "Make newlib"  ${TMP}/newlib.make.log \
+  RunWithLog "Make newlib"  ${TOOLCHAIN_CLIENT}/log.newlib.make \
     env -i PATH="/usr/bin:/bin" \
     make \
       "${STD_ENV_FOR_NEWLIB[@]}" \
@@ -857,11 +781,11 @@ BuildAndInstallNewlib() {
 
   if [ $# == 1 ] ; then
     SubBanner "installing lib[cgm].a to $1"
-    cp ${tmpdir}/newlib-1.17.0/arm-none-linux-gnueabi/newlib/lib[cgm].a $1
+    cp ${objdir}/arm-none-linux-gnueabi/newlib/lib[cgm].a $1
     return
   fi
 
-  RunWithLog "Install newlib"  ${TMP}/newlib.install.log \
+  RunWithLog "Install newlib"  ${TOOLCHAIN_CLIENT}/log.newlib.install \
     env -i PATH="/usr/bin:/bin" \
       make \
       "${STD_ENV_FOR_NEWLIB[@]}" \
@@ -953,16 +877,52 @@ help() {
 }
 
 #@
-#@ untrusted_sdk <tarball>
+#@ add-nacl-headers-to-newlib-src
 #@
-#@   Create untrusted SDK tarball.
-#@   This is the primary function of this script.
-untrusted_sdk() {
-  if [ ! -n "${1:-}" ]; then
-    echo "Error: untrusted_sdk needs a tarball name." >&2
-    exit 1
-  fi
-  mkdir -p ${TMP}
+#@   Modify newlib with latest nacl headers
+add-nacl-headers-to-newlib-src() {
+  Banner "Adding nacl headers to newlib"
+  here=$(pwd)
+  pushd ${TOOLCHAIN_CLIENT}/newlib.nacl-llvm-branches/newlib-1.17.0
+  ${here}/src/trusted/service_runtime/export_header.py \
+      ${here}/src/trusted/service_runtime/include \
+      newlib/libc/include
+  popd
+}
+
+#@
+#@ del-nacl-headers-to-newlib-src
+#@
+#@   Cleanse newlib src from all changes
+del-nacl-headers-in-newlib-src() {
+  Banner "Deleting nacl headers in newlib"
+  here=$(pwd)
+  pushd ${TOOLCHAIN_CLIENT}/newlib.nacl-llvm-branches/newlib-1.17.0
+  hg revert newlib/libc/include/
+  hg clean newlib/libc/include/
+  popd
+}
+
+#@
+#@ checkout-toolchain-client
+#@
+#@   check out all srcdirs/repos needed to build TC
+checkout-toolchain-client() {
+  Banner "Creating client in ${TOOLCHAIN_CLIENT}"
+  rm -rf ${TOOLCHAIN_CLIENT}
+  checkout-hg-common llvm-gcc.nacl-llvm-branches ${LLVM_GCC_REV}
+  checkout-hg-common nacl-llvm-branches ${LLVM_REV}
+  checkout-hg-common newlib.nacl-llvm-branches ${NEWLIB_REV}
+  checkout-hg-common binutils.nacl-llvm-branches ${BINUTILS_REV}
+
+  add-nacl-headers-to-newlib-src
+}
+
+#@
+#@ untrusted_sdk_experimental_build
+#@
+#@   rebuild the sdk from existing repos
+untrusted_sdk_experimental_build() {
   PathSanityCheck
   ClearInstallDir
   RecordRevisionInfo
@@ -972,8 +932,27 @@ untrusted_sdk() {
   driver
   gcc-stage2
   gcc-stage3
+
+  # NOTE: this builds native libs NOT needed for pnacl and currently
+  #       also does some header file shuffling which IS needed
   BuildAndInstallNewlib
   extrasdk
+}
+
+#@
+#@ untrusted_sdk <tarball>
+#@
+#@   Create untrusted SDK tarball.
+#@   This is the primary function of this script.
+untrusted_sdk() {
+  if [ ! -n "${1:-}" ]; then
+    echo "Error: untrusted_sdk needs a tarball name." >&2
+    exit 1
+  fi
+  checkout-toolchain-client
+
+  untrusted_sdk_experimental_build
+
   misc-tools
   examples
   prune
@@ -1012,7 +991,6 @@ sandboxed-binutils-only() {
 #@
 #@   install pre-gcc
 gcc-stage1() {
-  SetupNewlibSource
   SetupSysRoot
   ConfigureAndBuildGccStage1
 }
@@ -1033,7 +1011,6 @@ gcc-stage1() {
 #@
 #@   Build and install newlib.
 newlib() {
-  SetupNewlibSource
   BuildAndInstallNewlib
 }
 
@@ -1042,7 +1019,6 @@ newlib() {
 #@
 #@   Build and install newlib.
 newlib-libonly() {
-  SetupNewlibSource
   BuildAndInstallNewlib $1
 }
 
@@ -1056,17 +1032,14 @@ libstdcpp-libonly() {
     exit 1
   fi
   dest=$(readlink -f $1)
-  tmpdir=${TMP}/libstdcpp
+  objdir=${TOOLCHAIN_CLIENT}/build.libstdcpp.only
 
-  # Extract llvm-gcc headers:
-  SetupSourceTree ${tmpdir} \
-                  llvm-gcc.nacl-llvm-branches \
-                  ${LLVM_GCC_REV} \
-                  ${LLVM_GCC_DEV}
-  pushd ${tmpdir}
-  mkdir -p build
-  BuildLibstdcpp ${tmpdir}/build
-  cp ${tmpdir}/build/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a ${dest}
+  rm -rf ${objdir}
+  mkdir -p ${objdir}
+  pushd ${objdir}
+
+  BuildLibstdcpp ${objdir}
+  cp ${objdir}/${CROSS_TARGET}/libstdc++-v3/src/.libs/libstdc++.a ${dest}
   popd
 }
 
