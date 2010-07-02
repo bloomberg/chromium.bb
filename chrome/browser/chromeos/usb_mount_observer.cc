@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 
@@ -52,6 +53,10 @@ void USBMountObserver::OpenFileBrowse(const std::string& url,
   Browser* browser;
   Profile* profile;
   profile = BrowserList::GetLastActive()->profile();
+  PrefService* pref_service = profile->GetPrefs();
+  if (!pref_service->GetBoolean(prefs::kLabsAdvancedFilesystemEnabled)) {
+    return;
+  }
   if (small) {
     browser = FileBrowseUI::OpenPopup(profile,
                                       url,

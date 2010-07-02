@@ -101,6 +101,9 @@ class MediaPlayer : public NotificationObserver,
   // locations correctly.
   void PopupMediaPlayer(Browser* creator);
 
+  // Checks to see the the mediaplayer is currently enabled
+  bool Enabled();
+
   // Popup the playlist.  Shows the browser, sets it up to point at
   // chrome://mediaplayer#playlist
   void PopupPlaylist(Browser* creator);

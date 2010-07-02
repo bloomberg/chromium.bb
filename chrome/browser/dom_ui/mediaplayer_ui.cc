@@ -26,11 +26,13 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
@@ -86,7 +88,7 @@ class MediaplayerHandler : public DOMMessageHandler,
 
   struct MediaUrl {
     MediaUrl() {}
-    MediaUrl(const GURL& newurl)
+    explicit MediaUrl(const GURL& newurl)
         : url(newurl),
           haderror(false) {}
     GURL url;
@@ -376,6 +378,9 @@ void MediaplayerHandler::HandleShowPlaylist(const Value* value) {
 DISABLE_RUNNABLE_METHOD_REFCOUNT(MediaPlayer);
 
 void MediaPlayer::EnqueueMediaURL(const GURL& url, Browser* creator) {
+  if (!Enabled()) {
+    return;
+  }
   if (handler_ == NULL) {
     unhandled_urls_.push_back(url);
     PopupMediaPlayer(creator);
@@ -385,12 +390,25 @@ void MediaPlayer::EnqueueMediaURL(const GURL& url, Browser* creator) {
 }
 
 void MediaPlayer::ForcePlayMediaURL(const GURL& url, Browser* creator) {
+  if (!Enabled()) {
+    return;
+  }
   if (handler_ == NULL) {
     unhandled_urls_.push_back(url);
     PopupMediaPlayer(creator);
   } else {
     handler_->PlaybackMediaFile(url);
   }
+}
+
+bool MediaPlayer::Enabled() {
+#if defined(OS_CHROMEOS)
+  Profile* profile = BrowserList::GetLastActive()->profile();
+  PrefService* pref_service = profile->GetPrefs();
+  return pref_service->GetBoolean(prefs::kLabsMediaplayerEnabled);
+#else
+  return true;
+#endif
 }
 
 void MediaPlayer::TogglePlaylistWindowVisible() {

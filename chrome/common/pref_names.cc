@@ -323,7 +323,16 @@ const wchar_t kLanguageMozcSuggestionsSize[] =
 
 // A boolean pref which determines whether accessibility is enabled.
 const wchar_t kAccessibilityEnabled[] = L"settings.accessibility";
-#endif
+
+// A boolean pref which turns on Advanced Filesystem
+// (USB support, SD card, etc).
+const wchar_t kLabsAdvancedFilesystemEnabled[] =
+    L"settings.labs.advanced_filesystem";
+
+// A boolean pref which turns on the mediaplayer.
+const wchar_t kLabsMediaplayerEnabled[] = L"settings.labs.mediaplayer";
+
+#endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.
 const wchar_t kIpcDisabledMessages[] = L"ipc_log_disabled_messages";

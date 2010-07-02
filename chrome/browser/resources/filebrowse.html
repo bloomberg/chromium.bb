@@ -604,10 +604,130 @@ var currentMenu = null;
 var mainColumn = null;
 var localStrings;
 var downloadList = [];
-
+var advancedEnabled = false;
+var mediaPlayerEnabled = false;
 // strings
 var kPauseDownload;
 var kResumeDownload;
+
+function enabledResult(info) {
+  advancedEnabled = info.enabled;
+  mediaPlayerEnabled = info.mpEnabled;
+  mainColumn = $('main');
+  if (!advancedEnabled) {
+    $('back').style.display = 'none';
+  }
+  if(document.documentElement.clientWidth <= 600) {
+    inFullMode = false;
+    if (chrome.dialogArguments) {
+      var args = JSON.parse(chrome.dialogArguments);
+      if (args.type == 'open') {
+        multiSelect = false;
+        selectFolder = false;
+      } else if (args.type == 'save') {
+        inSaveMode = true;
+        selectFolder = false;
+      } else if (args.type == 'open_multiple') {
+        multiSelect = true;
+        selectFolder = false;
+      } else if (args.type == 'folder') {
+        multiSelect = false;
+        selectFolder = true;
+      } else {
+        alert ('got unknown type' + args.type);
+      }
+      inSelectMode = true;
+      if (inSaveMode) {
+        var main = mainColumn;
+        main.className = 'containerwithsavebuttons';
+        var savemenu = document.createElement('div');
+        savemenu.className = 'savecontainer';
+
+        var savebutton = document.createElement('div');
+        savebutton.id = 'savebutton';
+        savebutton.className = 'filebutton openbutton disabled';
+        savebutton.onclick = dialogSaveClick;
+        savebutton.textContent = localStrings.getString('save');
+        savemenu.appendChild(savebutton);
+
+        var cancelbutton = document.createElement('div');
+        cancelbutton.className = 'filebutton cancelbutton';
+        savemenu.appendChild(cancelbutton);
+        cancelbutton.textContent = localStrings.getString('confirmcancel');
+        cancelbutton.onclick = dialogCancelClick;
+
+        var filenameprompt = document.createElement('div');
+        filenameprompt.className = 'filenameprompt';
+        filenameprompt.textContent = localStrings.getString('filenameprompt');
+        savemenu.appendChild(filenameprompt);
+
+        var filename = document.createElement('input');
+        filename.className = 'filename';
+        filename.id = 'filename';
+        filename.value = args.current_file;
+        savemenu.appendChild(filename);
+        if (advancedEnabled) {
+          var newfolderbutton = document.createElement('div');
+          newfolderbutton.id = 'newfolderbutton';
+          newfolderbutton.className = 'filebutton newfolderbutton disabled';
+          newfolderbutton.textContent = localStrings.getString('newfolder');
+          newfolderbutton.onclick = dialogNewFolderClick;
+          savemenu.appendChild(newfolderbutton);
+        }
+        document.body.appendChild(savemenu);
+
+      } else {
+        var main = mainColumn;
+        main.className = 'containerwithopenbuttons';
+        var openmenu = document.createElement('div');
+        openmenu.className = 'opencontainer';
+        var openbutton = document.createElement('div');
+        openbutton.id = 'openbutton';
+        openbutton.className = 'filebutton openbutton disabled';
+        var cancelbutton = document.createElement('div');
+        cancelbutton.className = 'filebutton cancelbutton';
+        openmenu.appendChild(openbutton);
+        openbutton.onclick = dialogOkClick;
+        openmenu.appendChild(cancelbutton);
+        cancelbutton.onclick = dialogCancelClick;
+        openbutton.textContent = localStrings.getString('open');
+        cancelbutton.textContent = localStrings.getString('confirmcancel');
+        document.body.appendChild(openmenu);
+      }
+    }
+  } else {
+    var main = mainColumn;
+    main.className = 'fullcontainer';
+    var innerContainer = document.createElement('div');
+    innerContainer.className = 'container';
+    innerContainer.id = 'inner';
+    main.appendChild(innerContainer);
+    inFullMode = true;
+    $('back').style.display = 'none';
+  }
+
+  if (document.location.href.indexOf('#') != -1) {
+    var currentpathArray = document.location.href.split('#');
+    var path = currentpathArray[1];
+    if (path == 'scanningdevice') {
+      setUpForScanning();
+    } else {
+      currentNode++;
+      currentSavedPath = path;
+      getDataForPath(path);
+    }
+  } else {
+    currentNode++;
+    if (advancedEnabled) {
+      currentSavedPath = 'roots';
+      getDataForPath('roots');
+    } else {
+      currentSavedPath = localStrings.getString('downloadpath');
+      getDataForPath(currentSavedPath);
+    }
+  }
+  chrome.send("getDownloads", []);
+}
 
 function goBackInList() {
   currentNode--;
@@ -1077,112 +1197,7 @@ function load() {
   localStrings = new LocalStrings();
   kPauseDownload = localStrings.getString('pause');
   kResumeDownload = localStrings.getString('resume');
-  mainColumn = $('main');
-  if(document.documentElement.clientWidth <= 600) {
-    inFullMode = false;
-    if (chrome.dialogArguments) {
-      var args = JSON.parse(chrome.dialogArguments);
-      if (args.type == 'open') {
-        multiSelect = false;
-        selectFolder = false;
-      } else if (args.type == 'save') {
-        inSaveMode = true;
-        selectFolder = false;
-      } else if (args.type == 'open_multiple') {
-        multiSelect = true;
-        selectFolder = false;
-      } else if (args.type == 'folder') {
-        multiSelect = false;
-        selectFolder = true;
-      } else {
-        alert ('got unknown type' + args.type);
-      }
-      inSelectMode = true;
-      if (inSaveMode) {
-        var main = mainColumn;
-        main.className = 'containerwithsavebuttons';
-        var savemenu = document.createElement('div');
-        savemenu.className = 'savecontainer';
-
-        var savebutton = document.createElement('div');
-        savebutton.id = 'savebutton';
-        savebutton.className = 'filebutton openbutton disabled';
-        savebutton.onclick = dialogSaveClick;
-        savebutton.textContent = localStrings.getString('save');
-        savemenu.appendChild(savebutton);
-
-        var cancelbutton = document.createElement('div');
-        cancelbutton.className = 'filebutton cancelbutton';
-        savemenu.appendChild(cancelbutton);
-        cancelbutton.textContent = localStrings.getString('confirmcancel');
-        cancelbutton.onclick = dialogCancelClick;
-
-        var filenameprompt = document.createElement('div');
-        filenameprompt.className = 'filenameprompt';
-        filenameprompt.textContent = localStrings.getString('filenameprompt');
-        savemenu.appendChild(filenameprompt);
-
-        var filename = document.createElement('input');
-        filename.className = 'filename';
-        filename.id = 'filename';
-        filename.value = args.current_file;
-        savemenu.appendChild(filename);
-
-        var newfolderbutton = document.createElement('div');
-        newfolderbutton.id = 'newfolderbutton';
-        newfolderbutton.className = 'filebutton newfolderbutton disabled';
-        newfolderbutton.textContent = localStrings.getString('newfolder');
-        newfolderbutton.onclick = dialogNewFolderClick;
-        savemenu.appendChild(newfolderbutton);
-
-        document.body.appendChild(savemenu);
-
-      } else {
-        var main = mainColumn;
-        main.className = 'containerwithopenbuttons';
-        var openmenu = document.createElement('div');
-        openmenu.className = 'opencontainer';
-        var openbutton = document.createElement('div');
-        openbutton.id = 'openbutton';
-        openbutton.className = 'filebutton openbutton disabled';
-        var cancelbutton = document.createElement('div');
-        cancelbutton.className = 'filebutton cancelbutton';
-        openmenu.appendChild(openbutton);
-        openbutton.onclick = dialogOkClick;
-        openmenu.appendChild(cancelbutton);
-        cancelbutton.onclick = dialogCancelClick;
-        openbutton.textContent = localStrings.getString('open');
-        cancelbutton.textContent = localStrings.getString('confirmcancel');
-        document.body.appendChild(openmenu);
-      }
-    }
-  } else {
-    var main = mainColumn;
-    main.className = 'fullcontainer';
-    var innerContainer = document.createElement('div');
-    innerContainer.className = 'container';
-    innerContainer.id = 'inner';
-    main.appendChild(innerContainer);
-    inFullMode = true;
-    $('back').style.display = 'none';
-  }
-
-  if (document.location.href.indexOf('#') != -1) {
-    var currentpathArray = document.location.href.split('#');
-    var path = currentpathArray[1];
-    if (path == 'scanningdevice') {
-      setUpForScanning();
-    } else {
-      currentNode++;
-      currentSavedPath = path;
-      getDataForPath(path);
-    }
-  } else {
-    currentNode++;
-    currentSavedPath = 'roots';
-    getDataForPath('roots');
-  }
-  chrome.send("getDownloads", []);
+  chrome.send('isAdvancedEnabled', ['']);
 };
 
 function jumpToNode(nodeNumber) {
@@ -1454,7 +1469,8 @@ function createNewItem(title, path, isDirectory) {
       menu.appendChild(flickritem);
       menu.appendChild(emailitem);
     }
-    if (pathIsVideoFile(path) || pathIsAudioFile(path)) {
+    if ((pathIsVideoFile(path) || pathIsAudioFile(path)) && 
+         mediaPlayerEnabled) {
       var enqueueitem = document.createElement('div');
       enqueueitem.textContent = localStrings.getString('enqueue');
       enqueueitem.className = 'menuitem';

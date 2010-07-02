@@ -27,12 +27,14 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
@@ -141,6 +143,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void HandleGetChildren(const Value* value);
  // Callback for the "refreshDirectory" message.
   void HandleRefreshDirectory(const Value* value);
+  void HandleIsAdvancedEnabled(const Value* value);
 
   // Callback for the "getMetadata" message.
   void HandleGetMetadata(const Value* value);
@@ -429,6 +432,8 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::HandleAllowDownload));
   dom_ui_->RegisterMessageCallback("refreshDirectory",
       NewCallback(this, &FilebrowseHandler::HandleRefreshDirectory));
+  dom_ui_->RegisterMessageCallback("isAdvancedEnabled",
+      NewCallback(this, &FilebrowseHandler::HandleIsAdvancedEnabled));
 }
 
 
@@ -619,6 +624,20 @@ void FilebrowseHandler::EnqueueMediaFile(const Value* value) {
 #endif
 }
 
+void FilebrowseHandler::HandleIsAdvancedEnabled(const Value* value) {
+#if defined(OS_CHROMEOS)
+  Profile* profile = BrowserList::GetLastActive()->profile();
+  PrefService* pref_service = profile->GetPrefs();
+  bool is_enabled = pref_service->GetBoolean(
+      prefs::kLabsAdvancedFilesystemEnabled);
+  bool mp_enabled = pref_service->GetBoolean(prefs::kLabsMediaplayerEnabled);
+  DictionaryValue info_value;
+  info_value.SetBoolean(L"enabled", is_enabled);
+  info_value.SetBoolean(L"mpEnabled", mp_enabled);
+  dom_ui_->CallJavascriptFunction(L"enabledResult",
+                                  info_value);
+#endif
+}
 void FilebrowseHandler::HandleRefreshDirectory(const Value* value) {
   if (value && value->GetType() == Value::TYPE_LIST) {
     const ListValue* list_value = static_cast<const ListValue*>(value);

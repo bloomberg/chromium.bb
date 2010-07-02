@@ -24,6 +24,8 @@ static const char kFallbackInputMethodLocale[] = "en-US";
 // static
 void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
   prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
   prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 9);
