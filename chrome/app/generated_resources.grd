@@ -4453,6 +4453,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_GEOLOCATION_EXCEPTION_TITLE" desc="Title for geolocation exceptions dialog">
         Location Exceptions
       </message>
+      <message name="IDS_NOTIFICATIONS_EXCEPTION_TITLE" desc="Title for notifications exceptions dialog">
+        Notification Exceptions
+      </message>
       <message name="IDS_NOTIFICATIONS_SETTINGS_TITLE" desc="Title for notifications exceptions dialog">
         Notification Settings
       </message>
