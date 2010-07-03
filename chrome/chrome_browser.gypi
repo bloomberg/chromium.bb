@@ -2340,8 +2340,6 @@
         'browser/views/about_chrome_view.h',
         'browser/views/about_ipc_dialog.cc',
         'browser/views/about_ipc_dialog.h',
-        'browser/views/about_network_dialog.cc',
-        'browser/views/about_network_dialog.h',
         'browser/views/accelerator_table_gtk.cc',
         'browser/views/accelerator_table_gtk.h',
         'browser/views/accessibility_event_router_views.cc',

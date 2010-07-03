@@ -56,7 +56,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/views/about_ipc_dialog.h"
-#include "chrome/browser/views/about_network_dialog.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -1090,17 +1089,8 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
 // This function gets called with the fixed-up chrome: URLs, so we have to
 // compare against those instead of "about:blah".
 bool HandleNonNavigationAboutURL(const GURL& url) {
-  // About:network and IPC and currently buggy, so we disable it for official
-  // builds.
+  // about:ipc is currently buggy, so we disable it for official builds.
 #if !defined(OFFICIAL_BUILD)
-
-#if defined(OS_WIN)
-  if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUINetworkURL)) {
-    // Run the dialog. This will re-use the existing one if it's already up.
-    AboutNetworkDialog::RunDialog();
-    return true;
-  }
-#endif
 
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && defined(IPC_MESSAGE_LOG_ENABLED)
   if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUIIPCURL)) {

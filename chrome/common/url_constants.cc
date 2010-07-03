@@ -71,7 +71,6 @@ const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUIHistory2URL[] = "chrome://history2/";
 const char kChromeUIIPCURL[] = "chrome://about/ipc";
 const char kChromeUIMediaplayerURL[] = "chrome://mediaplayer/";
-const char kChromeUINetworkURL[] = "chrome://about/network";
 const char kChromeUINewTabURL[] = "chrome://newtab";
 const char kChromeUIOptionsURL[] = "chrome://options/";
 const char kChromeUIPluginsURL[] = "chrome://plugins/";
