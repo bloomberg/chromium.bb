@@ -3552,13 +3552,13 @@
    Memcheck:Leak
    fun:_Znw*
    fun:*IdMapsC1Ev
+   ...
    fun:*IdMapsE22DefaultSingletonTraitsIS1_ES1_E3getEv
    fun:_ZN8chromeos12input_method33GetInputMethodIdsFromLanguageCodeERKSsNS0_15InputMethodTypeEPSt6vectorISsSaISsEE
    fun:_ZN8chromeos11Preferences4InitEP11PrefService
    fun:_ZN11ProfileImplC1ERK8FilePath
    fun:_ZN7Profile13CreateProfileERK8FilePath
    fun:_ZN14ProfileManager13CreateProfileERK8FilePath
-   fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
 }
 {
    bug_48130_b
@@ -3572,7 +3572,6 @@
    fun:_ZN11ProfileImplC1ERK8FilePath
    fun:_ZN7Profile13CreateProfileERK8FilePath
    fun:_ZN14ProfileManager13CreateProfileERK8FilePath
-   fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
 }
 {
    bug_46678_v_a
