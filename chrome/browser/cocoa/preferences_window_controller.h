@@ -92,7 +92,6 @@ class ProfileSyncService;
 
   // User Data panel
   BooleanPrefMember askSavePasswords_;
-  BooleanPrefMember formAutofill_;
   IBOutlet NSButton* autoFillSettingsButton_;
   IBOutlet NSButton* syncButton_;
   IBOutlet NSButton* syncCustomizeButton_;

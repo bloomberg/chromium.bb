@@ -169,6 +169,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 
 @implementation AutoFillDialogController
 
+@synthesize autoFillEnabled = autoFillEnabled_;
 @synthesize auxiliaryEnabled = auxiliaryEnabled_;
 @synthesize itemIsSelected = itemIsSelected_;
 
@@ -226,6 +227,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 - (IBAction)save:(id)sender {
   // If we have an |observer_| then communicate the changes back.
   if (observer_) {
+    profile_->GetPrefs()->SetBoolean(prefs::kAutoFillEnabled, autoFillEnabled_);
     profile_->GetPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled,
                                      auxiliaryEnabled_);
     observer_->OnAutoFillDialogApply(&profiles_, &creditCards_);
@@ -592,6 +594,10 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     profile_ = profile;
     importedProfile_ = importedProfile;
     importedCreditCard_ = importedCreditCard;
+
+    // Use property here to trigger KVO binding.
+    [self setAutoFillEnabled:profile_->GetPrefs()->GetBoolean(
+        prefs::kAutoFillEnabled)];
 
     // Use property here to trigger KVO binding.
     [self setAuxiliaryEnabled:profile_->GetPrefs()->GetBoolean(

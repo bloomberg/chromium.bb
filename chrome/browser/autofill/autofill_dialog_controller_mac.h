@@ -58,6 +58,9 @@ class Profile;
   // Working list of input credit cards.
   std::vector<CreditCard> creditCards_;
 
+  // State of checkbox for enabling AutoFill in general.
+  BOOL autoFillEnabled_;
+
   // State of checkbox for enabling Mac Address Book integration.
   BOOL auxiliaryEnabled_;
 
@@ -80,6 +83,11 @@ class Profile;
   scoped_ptr<AutoFillDialogControllerInternal::PersonalDataManagerObserver>
       personalDataManagerObserver_;
 }
+
+// Property representing state of the AutoFill enabled preference.  Checkbox is
+// bound to this in nib.  Also, enabled state of other controls are also bound
+// to this property.
+@property (nonatomic) BOOL autoFillEnabled;
 
 // Property representing state of Address Book "me" card usage.  Checkbox is
 // bound to this in nib.

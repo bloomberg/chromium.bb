@@ -344,7 +344,6 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setRestoreOnStartupIndex:(NSInteger)type;
 - (void)setShowHomeButton:(BOOL)value;
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value;
-- (void)setFormAutofillEnabledIndex:(NSInteger)value;
 - (void)setIsUsingDefaultTheme:(BOOL)value;
 - (void)setShowAlternateErrorPages:(BOOL)value;
 - (void)setUseSuggest:(BOOL)value;
@@ -788,7 +787,6 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   // Personal Stuff panel
   askSavePasswords_.Init(prefs::kPasswordManagerEnabled,
                          prefs_, observer_.get());
-  formAutofill_.Init(prefs::kAutoFillEnabled, prefs_, observer_.get());
   currentTheme_.Init(prefs::kCurrentThemeID, prefs_, observer_.get());
 
   // Under the hood panel
@@ -1233,10 +1231,6 @@ const int kDisabledIndex = 1;
     [self setPasswordManagerEnabledIndex:askSavePasswords_.GetValue() ?
         kEnabledIndex : kDisabledIndex];
   }
-  if (*prefName == prefs::kAutoFillEnabled) {
-    [self setFormAutofillEnabledIndex:formAutofill_.GetValue() ?
-        kEnabledIndex : kDisabledIndex];
-  }
   if (*prefName == prefs::kCurrentThemeID) {
     [self setIsUsingDefaultTheme:currentTheme_.GetValue().length() == 0];
   }
@@ -1354,18 +1348,6 @@ const int kDisabledIndex = 1;
 
 - (NSInteger)passwordManagerEnabledIndex {
   return askSavePasswords_.GetValue() ? kEnabledIndex : kDisabledIndex;
-}
-
-- (void)setFormAutofillEnabledIndex:(NSInteger)value {
-  if (value == kEnabledIndex)
-    [self recordUserAction:UserMetricsAction("Options_FormAutofill_Enable")];
-  else
-    [self recordUserAction:UserMetricsAction("Options_FormAutofill_Disable")];
-  formAutofill_.SetValue(value == kEnabledIndex ? true : false);
-}
-
-- (NSInteger)formAutofillEnabledIndex {
-  return formAutofill_.GetValue() ? kEnabledIndex : kDisabledIndex;
 }
 
 - (void)setIsUsingDefaultTheme:(BOOL)value {

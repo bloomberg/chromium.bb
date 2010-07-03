@@ -598,4 +598,45 @@ TEST_F(AutoFillDialogControllerTest, ImportedParameters) {
   ASSERT_EQ(observer_.credit_cards_[0], credit_card);
 }
 
+// AutoFill is enabled by default.
+TEST_F(AutoFillDialogControllerTest, AutoFillEnabledTrue) {
+  LoadDialog();
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // AutoFill enabled setting should be unchanged.
+  ASSERT_TRUE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillEnabled));
+}
+
+TEST_F(AutoFillDialogControllerTest, AutoFillEnabledFalse) {
+  helper_.profile()->GetPrefs()->SetBoolean(prefs::kAutoFillEnabled, false);
+  LoadDialog();
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // AutoFill enabled setting should be unchanged.
+  ASSERT_FALSE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillEnabled));
+}
+
+TEST_F(AutoFillDialogControllerTest, AutoFillEnabledChanged) {
+  helper_.profile()->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  LoadDialog();
+  [controller_ setAutoFillEnabled:YES];
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Auxiliary profiles setting should be unchanged.
+  ASSERT_TRUE(helper_.profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillEnabled));
+}
+
 }  // namespace
