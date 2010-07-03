@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <shlwapi.h>
 
+#include "base/file_util.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -110,54 +111,35 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   // Experimental pre-reading optimization
   // The idea is to pre read significant portion of chrome.dll in advance
   // so that subsequent hard page faults are avoided.
-  DWORD pre_read_size_mb = 0;
   if (!cmd_line.HasSwitch(switches::kProcessType) &&
       (IsRunningHeadless() || InstallUtil::IsChromeFrameProcess())) {
+    // The kernel brings in 8 pages for the code section at a time and 4 pages
+    // for other sections. We can skip over these pages to avoid a soft page
+    // fault which may not occur during code execution. However skipping 4K at
+    // a time still has better performance over 32K and 16K according to data.
+    // TODO(ananta)
+    // Investigate this and tune.
+    const size_t kStepSize = 4 * 1024;
+
+    DWORD pre_read_size = 0;
+    DWORD pre_read_step_size = kStepSize;
+    DWORD pre_read = 1;
+
     HKEY key = NULL;
     if (::RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\Google\\ChromeFrame",
                        0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
-      DWORD unused = sizeof(pre_read_size_mb);
-      if (::RegQueryValueEx(key, L"PreRead", NULL, NULL,
-                            reinterpret_cast<LPBYTE>(&pre_read_size_mb),
-                            &unused) != ERROR_SUCCESS) {
-        pre_read_size_mb = 16; // Default
-      }
+      DWORD unused = sizeof(pre_read_size);
+      RegQueryValueEx(key, L"PreReadSize", NULL, NULL,
+                      reinterpret_cast<LPBYTE>(&pre_read_size), &unused);
+      RegQueryValueEx(key, L"PreReadStepSize", NULL, NULL,
+                      reinterpret_cast<LPBYTE>(&pre_read_step_size), &unused);
+      RegQueryValueEx(key, L"PreRead", NULL, NULL,
+                      reinterpret_cast<LPBYTE>(&pre_read), &unused);
       RegCloseKey(key);
       key = NULL;
-    } else {
-      pre_read_size_mb = 16; // Read in first 16 MB by default.
     }
-  }
-
-  if (pre_read_size_mb) {
-    HANDLE chrome_dll = CreateFile(dir->c_str(),
-                                       GENERIC_READ,
-                                       FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                       NULL,
-                                       OPEN_EXISTING,
-                                       FILE_FLAG_SEQUENTIAL_SCAN,
-                                       NULL);
-    if (chrome_dll == INVALID_HANDLE_VALUE) {
-      DWORD error = GetLastError();
-      DLOG(ERROR) << __FUNCTION__ << " CreateFile( "
-          << dir->c_str() << " ) failed. Error: " << error;
-    } else {
-      const size_t kChunkSize = 1024 * 1024; // 1 MB
-      void* buffer = VirtualAlloc(NULL, kChunkSize, MEM_COMMIT, PAGE_READWRITE);
-      if (buffer) {
-        size_t read_size = pre_read_size_mb * kChunkSize;
-        DWORD read = 0;
-        while (::ReadFile(chrome_dll, buffer, kChunkSize, &read, NULL)) {
-          // nothing to do here...
-          read_size -= std::min(size_t(read), read_size);
-          if (!read || !read_size)
-            break;
-        }
-
-        VirtualFree(buffer, 0, MEM_RELEASE);
-      }
-
-      CloseHandle(chrome_dll);
+    if (pre_read) {
+      file_util::PreReadImage(dir->c_str(), pre_read_size, pre_read_step_size);
     }
   }
 

@@ -12,6 +12,7 @@
 #include "chrome_tab.h"  // Generated from chrome_tab.idl.
 
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/registry.h"
@@ -404,26 +405,42 @@ class ChromeFrameStartupTestActiveX : public ChromeFrameStartupTest {
 
 // This class measures the load time of chrome and chrome frame binaries
 class ChromeFrameBinariesLoadTest : public ChromeFrameStartupTestActiveX {
+  static const size_t kStepSize = 4 * 1024;
+ public:
+  ChromeFrameBinariesLoadTest()
+      : pre_read_(false),
+        step_size_(kStepSize),
+        bytes_to_read_(0) {}
+
  protected:
   virtual void RunStartupTestImpl(TimeTicks* start_time,
                                   TimeTicks* end_time) {
     *start_time = TimeTicks::Now();
 
+    if (pre_read_) {
+      EXPECT_TRUE(file_util::PreReadImage(chrome_exe_.value().c_str(),
+                                          bytes_to_read_,
+                                          step_size_));
+      EXPECT_TRUE(file_util::PreReadImage(chrome_dll_.value().c_str(),
+                                          bytes_to_read_,
+                                          step_size_));
+    }
+
     HMODULE chrome_exe = LoadLibrary(chrome_exe_.value().c_str());
-    ASSERT_TRUE(chrome_exe != NULL);
+    EXPECT_TRUE(chrome_exe != NULL);
 
     HMODULE chrome_dll = LoadLibrary(chrome_dll_.value().c_str());
-    ASSERT_TRUE(chrome_dll != NULL);
-
-    HMODULE chrome_tab_dll = LoadLibrary(chrome_frame_dll_.value().c_str());
-    ASSERT_TRUE(chrome_tab_dll != NULL);
+    EXPECT_TRUE(chrome_dll != NULL);
 
     *end_time = TimeTicks::Now();
 
     FreeLibrary(chrome_exe);
     FreeLibrary(chrome_dll);
-    FreeLibrary(chrome_tab_dll);
   }
+
+  bool pre_read_;
+  size_t bytes_to_read_;
+  size_t step_size_;
 };
 
 // This class provides functionality to run the startup performance test for
@@ -929,17 +946,38 @@ TEST_F(ChromeFrameBinariesLoadTest, PerfWarm) {
 }
 
 TEST_F(ChromeFrameStartupTestActiveX, PerfCold) {
+  SetConfigInt(L"PreRead", 0);
   FilePath binaries_to_evict[] = { gears_dll_, avcodec52_dll_,
       avformat52_dll_, avutil50_dll_, chrome_exe_, chrome_dll_,
       chrome_frame_dll_};
   RunStartupTest("cold", "t", "about:blank", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
                  false /* not important */, false);
+  DeleteConfigValue(L"PreRead");
+}
+
+TEST_F(ChromeFrameStartupTestActiveX, PerfColdPreRead) {
+  SetConfigInt(L"PreRead", 1);
+  FilePath binaries_to_evict[] = { gears_dll_, avcodec52_dll_,
+      avformat52_dll_, avutil50_dll_, chrome_exe_, chrome_dll_,
+      chrome_frame_dll_};
+  RunStartupTest("cold_preread", "t", "about:blank", true /* cold */,
+                 arraysize(binaries_to_evict), binaries_to_evict,
+                 false /* not important */, false);
+  DeleteConfigValue(L"PreRead");
 }
 
 TEST_F(ChromeFrameBinariesLoadTest, PerfCold) {
-  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_, chrome_frame_dll_};
+  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
   RunStartupTest("binary_load_cold", "t", "", true /* cold */,
+                 arraysize(binaries_to_evict), binaries_to_evict,
+                 false /* not important */, false);
+}
+
+TEST_F(ChromeFrameBinariesLoadTest, PerfColdPreRead) {
+  FilePath binaries_to_evict[] = {chrome_exe_, chrome_dll_};
+  pre_read_ = true;
+  RunStartupTest("binary_load_cold_preread", "t", "", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
                  false /* not important */, false);
 }
