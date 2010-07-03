@@ -121,6 +121,11 @@ PluginNpapi::~PluginNpapi() {
 NPError PluginNpapi::Destroy(NPSavedData** save) {
   PLUGIN_PRINTF(("PluginNpapi::Destroy(%p, %p)\n", static_cast<void*>(this),
                  static_cast<void*>(save)));
+
+  if (service_runtime_ != NULL) {
+    service_runtime_->Shutdown();
+  }
+
   // This has the indirect effect of doing "delete this".
   scriptable_handle()->Unref();
   return NPERR_NO_ERROR;
@@ -450,7 +455,7 @@ bool PluginNpapi::InitializeModuleMultimedia(ScriptableHandle* raw_channel,
 }
 
 void PluginNpapi::ShutdownMultimedia() {
-  PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime:"
+  PLUGIN_PRINTF(("PluginNpapi::ShutdownMultimedia:"
                  " deleting multimedia_channel_\n"));
   delete multimedia_channel_;
 }

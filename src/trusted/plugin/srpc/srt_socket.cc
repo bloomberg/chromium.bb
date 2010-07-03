@@ -20,7 +20,6 @@ namespace {
 
 // Not really constants.  Do not modify.  Use only after at least
 // one SrtSocket instance has been constructed.
-uintptr_t kHardShutdownIdent;
 uintptr_t kSetOriginIdent;
 uintptr_t kStartModuleIdent;
 uintptr_t kLogIdent;
@@ -32,8 +31,6 @@ void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
   static bool initialized = false;
 
   if (!initialized) {  // branch likely
-    kHardShutdownIdent =
-        browser_interface->StringToIdentifier("hard_shutdown");
     kSetOriginIdent =
         browser_interface->StringToIdentifier("set_origin");
     kStartModuleIdent =
@@ -53,44 +50,13 @@ namespace plugin {
 
 SrtSocket::SrtSocket(ScriptableHandle* s, BrowserInterface* browser_interface)
     : connected_socket_(s),
-      browser_interface_(browser_interface),
-      is_shut_down_(false) {
+      browser_interface_(browser_interface) {
   connected_socket_->AddRef();
   InitializeIdentifiers(browser_interface_);  // inlineable tail call.
 }
 
 SrtSocket::~SrtSocket() {
-  HardShutdown();
   connected_socket_->Unref();
-}
-
-bool SrtSocket::HardShutdown() {
-  if (is_shut_down_) {
-    PLUGIN_PRINTF(("SrtSocket::HardShutdown: already shut down.\n"));
-    return true;
-  }
-  if (!(connected_socket()->HasMethod(kHardShutdownIdent, METHOD_CALL))) {
-    PLUGIN_PRINTF(("No hard_shutdown method was found\n"));
-    return false;
-  }
-  SrpcParams params;
-  bool success;
-  success = connected_socket()->InitParams(kHardShutdownIdent,
-                                           METHOD_CALL,
-                                           &params);
-  if (!success) {
-    return false;
-  }
-  bool rpc_result = (connected_socket()->Invoke(kHardShutdownIdent,
-                                                METHOD_CALL,
-                                                &params));
-  PLUGIN_PRINTF(("SrtSocket::HardShutdown %s\n",
-                 rpc_result ? "succeeded" : "failed"));
-  if (rpc_result) {
-    // invoke succeeded, so mark the module as shut down.
-    is_shut_down_ = true;
-  }
-  return rpc_result;
 }
 
 bool SrtSocket::SetOrigin(nacl::string origin) {

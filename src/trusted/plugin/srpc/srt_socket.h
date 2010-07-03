@@ -24,7 +24,6 @@ class SrtSocket {
   SrtSocket(ScriptableHandle* s, BrowserInterface* browser_interface);
   ~SrtSocket();
 
-  bool HardShutdown();
   bool SetOrigin(nacl::string origin);
   bool StartModule(int* load_status);
   bool LoadModule(NaClDesc* desc);
@@ -41,7 +40,6 @@ class SrtSocket {
   NACL_DISALLOW_COPY_AND_ASSIGN(SrtSocket);
   ScriptableHandle* connected_socket_;
   BrowserInterface* browser_interface_;
-  bool is_shut_down_;
 };  // class SrtSocket
 
 }  // namespace plugin

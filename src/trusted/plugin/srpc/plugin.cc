@@ -308,6 +308,7 @@ bool Plugin::SetSrcPropertyImpl(const nacl::string &url) {
     socket_address_ = NULL;
     socket_->Unref();
     socket_ = NULL;
+    service_runtime_->Shutdown();
     delete service_runtime_;
     service_runtime_ = NULL;
   }
@@ -411,12 +412,12 @@ bool Plugin::Init(BrowserInterface* browser_interface,
 }
 
 Plugin::Plugin()
-  : argc_(-1),
+  : service_runtime_(NULL),
+    argc_(-1),
     argn_(NULL),
     argv_(NULL),
     socket_address_(NULL),
     socket_(NULL),
-    service_runtime_(NULL),
     local_url_(NULL),
     logical_url_(NULL),
     origin_valid_(false),
@@ -434,11 +435,6 @@ Plugin::~Plugin() {
   // so we shut down here what we can and prevent attempts to shut down
   // other linked structures in Deallocate.
 
-  // hard shutdown
-  if (NULL != service_runtime_) {
-    service_runtime_->Shutdown();
-    // TODO(sehr): this needs to free the interface and set it to NULL.
-  }
   // Free the socket address for this plugin, if any.
   if (NULL != socket_address_) {
     PLUGIN_PRINTF(("Plugin::~Plugin: unloading\n"));

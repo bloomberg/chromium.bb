@@ -51,7 +51,7 @@ class ServiceRuntime {
   ScriptableHandle* default_socket() const;
   ScriptableHandle* GetSocketAddress(Plugin* plugin, nacl::Handle channel);
   Plugin* plugin() const { return plugin_; }
-  bool Shutdown();
+  void Shutdown();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);

@@ -16,6 +16,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
+#include "native_client/src/trusted/plugin/srpc/service_runtime.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
@@ -26,7 +27,6 @@ class DescWrapperFactory;
 namespace plugin {
 
 class StreamShmBuffer;
-class ServiceRuntime;
 class ScriptableHandle;
 
 class Plugin : public PortableHandle {
@@ -124,7 +124,7 @@ class Plugin : public PortableHandle {
     return true;
   }
   // Shut down the multimedia system, destroying the listener thread.
-  void ShutdownMultimedia() { }
+  virtual void ShutdownMultimedia() { }
 
   // Width is the width in pixels of the region this instance occupies.
   int32_t width() const { return width_; }
@@ -155,6 +155,7 @@ class Plugin : public PortableHandle {
                     char* argn[],
                     char* argv[]);
   void LoadMethods();
+  ServiceRuntime* service_runtime_;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
@@ -168,7 +169,6 @@ class Plugin : public PortableHandle {
 
   ScriptableHandle* socket_address_;
   ScriptableHandle* socket_;
-  ServiceRuntime* service_runtime_;
   char* local_url_;  // (from malloc)
   char* logical_url_;  // (from malloc)
 

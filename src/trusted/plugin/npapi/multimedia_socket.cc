@@ -63,9 +63,6 @@ MultimediaSocket::MultimediaSocket(ScriptableHandle* s,
 
 MultimediaSocket::~MultimediaSocket() {
   enum UpcallThreadState ts;
-  struct nacl_abi_timeval now;
-  struct nacl_abi_timespec giveup;
-  bool murdered(false);
 
   PLUGIN_PRINTF(("MultimediaSocket::~MultimediaSocket: entered\n"));
   NaClXMutexLock(&mu_);
@@ -77,30 +74,10 @@ MultimediaSocket::~MultimediaSocket() {
   }
   PLUGIN_PRINTF((" upcall_thread_state_ %d\n", upcall_thread_state_));
   if (UPCALL_THREAD_NOT_STARTED != (ts = upcall_thread_state_)) {
-    PLUGIN_PRINTF((" computing giveup time.\n"));
-    NaClGetTimeOfDay(&now);
-    giveup.tv_sec = now.nacl_abi_tv_sec + kMaxUpcallThreadWaitSec;
-    giveup.tv_nsec = now.nacl_abi_tv_usec * kNanoXinMicroX;
     while (UPCALL_THREAD_EXITED != upcall_thread_state_) {
       PLUGIN_PRINTF(("MultimediaSocket::~MultimediaSocket:"
                      " waiting for upcall thread to exit\n"));
-      if (!murdered) {
-        if (NACL_SYNC_CONDVAR_TIMEDOUT ==
-            NaClCondVarTimedWaitAbsolute(&cv_, &mu_, &giveup)) {
-          PLUGIN_PRINTF(("MultimediaSocket::~MultimediaSocket:"
-                         " timed out, killing service runtime process\n"));
-          if (!service_runtime_->Kill()) {
-            // We try our best, but if KillChild fails, we just keep
-            // going.
-            PLUGIN_PRINTF(("Could not kill child!\n"));
-          }
-          murdered = true;
-        }
-      } else {
-        // wait for the process kill to cause the sockets to close
-        // etc, and thus cause the upcall thread to exit due to EOF.
-        NaClXCondVarWait(&cv_, &mu_);
-      }
+      NaClXCondVarWait(&cv_, &mu_);
     }
   }
   NaClXMutexUnlock(&mu_);

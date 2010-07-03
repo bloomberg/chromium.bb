@@ -310,20 +310,29 @@ bool ServiceRuntime::Log(int severity, nacl::string msg) {
   return runtime_channel_->Log(severity, msg);
 }
 
+void ServiceRuntime::Shutdown() {
+  if (subprocess_ != NULL) {
+    Kill();
+  }
+  // This waits for the upcall thread to exit so it must come after we
+  // terminate the subprocess.
+  plugin_->ShutdownMultimedia();
+
+  // Note that this does waitpid() to get rid of any zombie subprocess.
+  delete subprocess_;
+  subprocess_ = NULL;
+
+  delete runtime_channel_;
+  runtime_channel_ = NULL;
+}
+
 ServiceRuntime::~ServiceRuntime() {
   PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime(%p)\n",
                  static_cast<void*>(this)));
 
-  plugin_->ShutdownMultimedia();
-
-  delete runtime_channel_;
-
-  // ServiceRuntimes are always shut down from the default
-  // Connected socket, so we don't delete that memory.
-  PLUGIN_PRINTF(("ServiceRuntime::~ServiceRuntime:"
-                 " deleting subprocess_\n"));
+  // We do this just in case Terminate() was not called.
   delete subprocess_;
-  PLUGIN_PRINTF(("ServiceRuntime: shut down sel_ldr.\n"));
+  delete runtime_channel_;
 }
 
 ScriptableHandle* ServiceRuntime::default_socket_address() const {
@@ -386,21 +395,6 @@ ScriptableHandle* ServiceRuntime::GetSocketAddress(
   imc_desc->Delete();
   PLUGIN_PRINTF((" returning %p\n", static_cast<void*>(retval)));
   return retval;
-}
-
-bool ServiceRuntime::Shutdown() {
-  if (NULL == getenv("NACLTEST_DISABLE_SHUTDOWN")) {
-    PLUGIN_PRINTF(("ServiceRuntime::Shutdown: shutting down\n"));
-    if (NULL != runtime_channel_) {
-      return runtime_channel_->HardShutdown();
-    } else {
-      PLUGIN_PRINTF((" NULL runtime_channel_\n"));
-      return true;
-    }
-  } else {
-    PLUGIN_PRINTF(("ServiceRuntime::Shutdown: shutdown disabled\n"));
-    return true;  // lie.  this is for testing.
-  }
 }
 
 }  // namespace plugin
