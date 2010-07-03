@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/sqlite_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +15,6 @@
 using browser_sync::APEncode;
 using browser_sync::APDecode;
 using browser_sync::ExecOrDie;
-using browser_sync::FilePathToUTF8;
 using browser_sync::UserSettings;
 
 using std::numeric_limits;
@@ -79,7 +77,11 @@ class UserSettingsTest : public testing::Test {
       statement.prepare(primer_handle, query);
       statement.bind_string(0, "foo@foo.com");
       statement.bind_string(1, "foo@foo.com");
-      statement.bind_string(2, FilePathToUTF8(old_style_sync_data_path_));
+#if defined(OS_WIN)
+      statement.bind_string(2, WideToUTF8(old_style_sync_data_path_.value()));
+#elif defined(OS_POSIX)
+      statement.bind_string(2, old_style_sync_data_path_.value());
+#endif
       if (SQLITE_DONE != statement.step()) {
         LOG(FATAL) << query << "\n" << sqlite3_errmsg(primer_handle);
       }

@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 
 using std::map;

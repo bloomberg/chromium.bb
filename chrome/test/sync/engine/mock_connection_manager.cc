@@ -8,7 +8,6 @@
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
