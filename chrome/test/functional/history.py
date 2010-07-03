@@ -183,18 +183,26 @@ class HistoryTest(pyauto.PyUITest):
     history = self.GetHistoryInfo().History()
     self.assertEqual(1, len(history))
     self.assertTrue('zoinks' in history[0]['url'])  # yes it gets lower-cased.
+    # Python's time might be slightly off (~10 ms) from Chrome's time (on win).
+    # time.time() on win counts in 1ms steps whereas it's 1us on linux.
+    # So give the new history item some time separation, so that we can rely
+    # on the history ordering.
+    def _GetTimeLaterThan(tm):
+      y = time.time()
+      if y - tm < 0.5:  # 0.5s should be an acceptable separation
+        return 0.5 + y
+    new_time = _GetTimeLaterThan(history[0]['time'])
     # Full interface (specify both title and url)
-    now = time.time()
     self.AddHistoryItem({'title': 'Google',
                          'url': 'http://www.google.com',
-                         'time': now})
+                         'time': new_time})
     # Expect a second item
     history = self.GetHistoryInfo().History()
     self.assertEqual(2, len(history))
     # And make sure our forged item is there.
     self.assertEqual('Google', history[0]['title'])
     self.assertTrue('google.com' in history[0]['url'])
-    self.assertTrue(abs(now - history[0]['time']) < 1.0)
+    self.assertTrue(abs(new_time - history[0]['time']) < 1.0)
 
 
 if __name__ == '__main__':
