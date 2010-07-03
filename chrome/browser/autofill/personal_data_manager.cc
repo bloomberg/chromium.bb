@@ -405,6 +405,12 @@ const std::vector<AutoFillProfile*>& PersonalDataManager::profiles() {
 
   bool auxiliary_profiles_enabled = profile_->GetPrefs()->GetBoolean(
       prefs::kAutoFillAuxiliaryProfilesEnabled);
+
+#if !defined(OS_MACOSX)
+  DCHECK(!auxiliary_profiles_enabled)
+      << "Auxiliary profiles supported on Mac only";
+#endif
+
   if (auxiliary_profiles_enabled) {
     profiles_.clear();
 
