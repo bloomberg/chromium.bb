@@ -7,6 +7,8 @@
 
 #include "chrome/test/in_process_browser_test.h"
 
+#include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
 #include "net/base/mock_host_resolver.h"
@@ -14,16 +16,11 @@
 
 #include <string>
 
-class Profile;
 class CommandLine;
+class Profile;
 
 namespace net {
 class ScopedDefaultHostResolverProc;
-}
-
-namespace switches {
-extern const wchar_t kSyncUserForTest[];
-extern const wchar_t kSyncPasswordForTest[];
 }
 
 // Live sync tests are allowed to run for up to 5 minutes.
@@ -44,8 +41,9 @@ class LiveSyncTest : public InProcessBrowserTest {
     // functionality level tests.
     TWO_CLIENT,
 
-    // Tests where three client profiles are synced with the server. Typically,
-    // these tests create client side races and verify that sync works.
+    // Tests where three or more client profiles are synced with the server.
+    // Typically, these tests create client side races and verify that sync
+    // works.
     MULTIPLE_CLIENT,
 
     // Tests where several client profiles are synced with the server. Only used
@@ -89,22 +87,22 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Brings down local python test server if one was created.
   virtual void TearDown();
 
-  // Append command line flag to enable sync.
+  // Appends command line flag to enable sync.
   virtual void SetUpCommandLine(CommandLine* command_line) {}
-
-  // Helper to ProfileManager::CreateProfile that handles path creation.
-  static Profile* MakeProfile(const FilePath::StringType name);
 
   // Used to get the number of sync clients used by a test.
   int num_clients() { return num_clients_; }
 
-  // Used to access a particular sync profile.
+  // Returns a pointer to a particular sync profile. Callee owns the object
+  // and manages its lifetime.
   Profile* GetProfile(int index);
 
-  // Used to access a particular sync client.
+  // Returns a pointer to a particular sync client. Callee owns the object
+  // and manages its lifetime.
   ProfileSyncServiceTestHarness* GetClient(int index);
 
-  // Used to verify changes to individual sync profiles.
+  // Returns a pointer to the sync profile that is used to verify changes to
+  // individual sync profiles. Callee owns the object and manages its lifetime.
   Profile* verifier();
 
   // Initializes sync clients and profiles but does not sync any of them.
@@ -133,6 +131,9 @@ class LiveSyncTest : public InProcessBrowserTest {
   std::string password_;
 
  private:
+  // Helper to ProfileManager::CreateProfile that handles path creation.
+  static Profile* MakeProfile(const FilePath::StringType name);
+
   // Helper method used to create a local python test server.
   virtual void SetUpLocalTestServer();
 

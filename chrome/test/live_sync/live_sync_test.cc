@@ -48,8 +48,7 @@ void LiveSyncTest::TearDown() {
 }
 
 // static
-Profile* LiveSyncTest::MakeProfile(
-    const FilePath::StringType name) {
+Profile* LiveSyncTest::MakeProfile(const FilePath::StringType name) {
   FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   return ProfileManager::CreateProfile(path.Append(name));
