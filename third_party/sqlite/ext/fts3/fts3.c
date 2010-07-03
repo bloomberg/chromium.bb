@@ -4717,7 +4717,7 @@ static int interiorReaderStep(InteriorReader *pReader){
     if( !n ) return SQLITE_CORRUPT_BKPT;
     pReader->nData -= n;
     pReader->pData += n;
-    n += fts3GetVarint32Safe(pReader->pData, &nSuffix, pReader->nData);
+    n = fts3GetVarint32Safe(pReader->pData, &nSuffix, pReader->nData);
     if( !n ) return SQLITE_CORRUPT_BKPT;
     pReader->nData -= n;
     pReader->pData += n;
