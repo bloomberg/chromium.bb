@@ -1241,3 +1241,13 @@
    fun:NSRectFill
    fun:_ZN18FocusIndicationFix40currentOSHasSetFocusRingStyleInBitmapBugEv
 }
+{
+   bug_48269
+   Memcheck:Cond
+   ...
+   fun:-[BrowserWindowController initWithBrowser:takeOwnership:]
+   fun:-[BrowserWindowController initWithBrowser:]
+   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
+   fun:_ZN7Browser19CreateBrowserWindowEv
+   fun:_ZN7Browser6CreateEP7Profile
+}
