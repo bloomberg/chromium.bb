@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -84,6 +85,9 @@ class DesktopNotificationService : public NotificationObserver {
   // the standard formatting for notifications.
   static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
                                 const string16& body);
+
+  ContentSetting GetDefaultContentSetting();
+  void SetDefaultContentSetting(ContentSetting setting);
 
   static void RegisterUserPrefs(PrefService* user_prefs);
  private:

@@ -20,6 +20,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/browser/profile.h"
@@ -264,7 +265,12 @@ class TestingProfile : public Profile {
   virtual void InitWebResources() {}
   virtual NTPResourceCache* GetNTPResourceCache();
   virtual DesktopNotificationService* GetDesktopNotificationService() {
-    return NULL;
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    if (!desktop_notification_service_.get()) {
+       desktop_notification_service_.reset(new DesktopNotificationService(
+           this, NULL));
+    }
+    return desktop_notification_service_.get();
   }
   virtual BackgroundContentsService* GetBackgroundContentsService() {
     return NULL;
@@ -363,6 +369,7 @@ class TestingProfile : public Profile {
   scoped_refptr<GeolocationContentSettingsMap>
       geolocation_content_settings_map_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
+  scoped_ptr<DesktopNotificationService> desktop_notification_service_;
 
   // Find bar state.  Created lazily by GetFindBarState().
   scoped_ptr<FindBarState> find_bar_state_;

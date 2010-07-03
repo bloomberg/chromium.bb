@@ -37,6 +37,8 @@
 
 using WebKit::WebNotificationPresenter;
 
+const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
+
 // static
 string16 DesktopNotificationService::CreateDataUrl(
     const GURL& icon_url, const string16& title, const string16& body) {
@@ -203,6 +205,11 @@ DesktopNotificationService::~DesktopNotificationService() {
 }
 
 void DesktopNotificationService::RegisterUserPrefs(PrefService* user_prefs) {
+  if (!user_prefs->FindPreference(
+      prefs::kDesktopNotificationDefaultContentSetting)) {
+    user_prefs->RegisterIntegerPref(
+        prefs::kDesktopNotificationDefaultContentSetting, kDefaultSetting);
+  }
   if (!user_prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
     user_prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
   if (!user_prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
@@ -215,8 +222,12 @@ void DesktopNotificationService::InitPrefs() {
   PrefService* prefs = profile_->GetPrefs();
   std::vector<GURL> allowed_origins;
   std::vector<GURL> denied_origins;
+  ContentSetting default_content_setting = CONTENT_SETTING_DEFAULT;
 
   if (!profile_->IsOffTheRecord()) {
+    default_content_setting = IntToContentSetting(
+        prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
+
     const ListValue* allowed_sites =
         prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
     if (allowed_sites)
@@ -231,6 +242,7 @@ void DesktopNotificationService::InitPrefs() {
   }
 
   prefs_cache_ = new NotificationsPrefsCache();
+  prefs_cache_->SetCacheDefaultContentSetting(default_content_setting);
   prefs_cache_->SetCacheAllowedOrigins(allowed_origins);
   prefs_cache_->SetCacheDeniedOrigins(denied_origins);
   prefs_cache_->set_is_initialized(true);
@@ -239,6 +251,8 @@ void DesktopNotificationService::InitPrefs() {
 void DesktopNotificationService::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
     PrefService* prefs = profile_->GetPrefs();
+    prefs->AddPrefObserver(prefs::kDesktopNotificationDefaultContentSetting,
+                           this);
     prefs->AddPrefObserver(prefs::kDesktopNotificationAllowedOrigins, this);
     prefs->AddPrefObserver(prefs::kDesktopNotificationDeniedOrigins, this);
   }
@@ -247,6 +261,8 @@ void DesktopNotificationService::StartObserving() {
 void DesktopNotificationService::StopObserving() {
   if (!profile_->IsOffTheRecord()) {
     PrefService* prefs = profile_->GetPrefs();
+    prefs->RemovePrefObserver(prefs::kDesktopNotificationDefaultContentSetting,
+                              this);
     prefs->RemovePrefObserver(prefs::kDesktopNotificationAllowedOrigins, this);
     prefs->RemovePrefObserver(prefs::kDesktopNotificationDeniedOrigins, this);
   }
@@ -313,6 +329,18 @@ void DesktopNotificationService::Observe(NotificationType type,
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheDeniedOrigins,
             denied_origins));
+  } else if (0 == name->compare(
+      prefs::kDesktopNotificationDefaultContentSetting)) {
+    const ContentSetting default_content_setting = IntToContentSetting(
+        prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
+
+    // Schedule a cache update on the IO thread.
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            prefs_cache_.get(),
+            &NotificationsPrefsCache::SetCacheDefaultContentSetting,
+            default_content_setting));
   }
 }
 
@@ -375,6 +403,24 @@ void DesktopNotificationService::PersistPermissionChange(
     prefs->ScheduleSavePersistentPrefs();
   }
   StartObserving();
+}
+
+ContentSetting DesktopNotificationService::GetDefaultContentSetting() {
+  PrefService* prefs = profile_->GetPrefs();
+  ContentSetting setting = IntToContentSetting(
+      prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
+  if (setting == CONTENT_SETTING_DEFAULT)
+    setting = kDefaultSetting;
+  return setting;
+}
+
+void DesktopNotificationService::SetDefaultContentSetting(
+    ContentSetting setting) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  profile_->GetPrefs()->SetInteger(
+      prefs::kDesktopNotificationDefaultContentSetting,
+      setting == CONTENT_SETTING_DEFAULT ?  kDefaultSetting : setting);
+  // The cache is updated through the notification observer.
 }
 
 void DesktopNotificationService::RequestPermission(
