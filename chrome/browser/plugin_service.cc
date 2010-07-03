@@ -44,7 +44,7 @@
 static void NotifyPluginsOfActivation() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
        !iter.Done(); ++iter) {
     PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
     plugin->OnAppActivation();
@@ -189,7 +189,7 @@ PluginProcessHost* PluginService::FindPluginProcess(
     return NULL;
   }
 
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
        !iter.Done(); ++iter) {
     PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
     if (plugin->info().path == plugin_path)

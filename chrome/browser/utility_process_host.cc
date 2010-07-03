@@ -17,7 +17,7 @@
 UtilityProcessHost::UtilityProcessHost(ResourceDispatcherHost* rdh,
                                        Client* client,
                                        ChromeThread::ID client_thread_id)
-    : ChildProcessHost(UTILITY_PROCESS, rdh),
+    : BrowserChildProcessHost(UTILITY_PROCESS, rdh),
       client_(client),
       client_thread_id_(client_thread_id) {
 }

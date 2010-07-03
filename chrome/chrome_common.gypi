@@ -186,6 +186,8 @@
         'common/appcache/appcache_dispatcher.h',
         'common/automation_constants.cc',
         'common/automation_constants.h',
+        'common/child_process_host.cc',
+        'common/child_process_host.h',
         'common/chrome_descriptors.h',
         'common/chrome_plugin_api.h',
         'common/chrome_plugin_lib.cc',

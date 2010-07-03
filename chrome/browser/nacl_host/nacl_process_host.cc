@@ -28,7 +28,7 @@
 NaClProcessHost::NaClProcessHost(
     ResourceDispatcherHost *resource_dispatcher_host,
     const std::wstring& url)
-    : ChildProcessHost(NACL_LOADER_PROCESS, resource_dispatcher_host),
+    : BrowserChildProcessHost(NACL_LOADER_PROCESS, resource_dispatcher_host),
       resource_dispatcher_host_(resource_dispatcher_host),
       reply_msg_(NULL),
       descriptor_(0),
@@ -99,12 +99,12 @@ bool NaClProcessHost::LaunchSelLdr() {
     return NaClBrokerService::GetInstance()->LaunchLoader(this,
         ASCIIToWide(channel_id()));
   } else {
-    ChildProcessHost::Launch(FilePath(), cmd_line);
+    BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   }
 #elif defined(OS_POSIX)
-  ChildProcessHost::Launch(true,  // use_zygote
-                           base::environment_vector(),
-                           cmd_line);
+  BrowserChildProcessHost::Launch(true,  // use_zygote
+                                  base::environment_vector(),
+                                  cmd_line);
 #endif
 
   return true;
@@ -118,14 +118,14 @@ void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
 bool NaClProcessHost::DidChildCrash() {
   if (running_on_wow64_)
     return base::DidProcessCrash(NULL, handle());
-  return ChildProcessHost::DidChildCrash();
+  return BrowserChildProcessHost::DidChildCrash();
 }
 
 void NaClProcessHost::OnChildDied() {
 #if defined(OS_WIN)
   NaClBrokerService::GetInstance()->OnLoaderDied();
 #endif
-  ChildProcessHost::OnChildDied();
+  BrowserChildProcessHost::OnChildDied();
 }
 
 void NaClProcessHost::OnProcessLaunched() {

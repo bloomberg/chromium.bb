@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 
 #include "base/ref_counted.h"
-#include "chrome/browser/child_process_host.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/common/nacl_types.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 
@@ -20,7 +20,7 @@ class ResourceMessageFilter;
 // when requested by the renderer.
 // After that, most of the communication is directly between NaCl plugin
 // running in the renderer and NaCl processes.
-class NaClProcessHost : public ChildProcessHost {
+class NaClProcessHost : public BrowserChildProcessHost {
  public:
   NaClProcessHost(ResourceDispatcherHost *resource_dispatcher_host,
                   const std::wstring& url);

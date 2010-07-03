@@ -17,7 +17,7 @@
 
 NaClBrokerHost::NaClBrokerHost(
     ResourceDispatcherHost* resource_dispatcher_host)
-    : ChildProcessHost(NACL_BROKER_PROCESS, resource_dispatcher_host),
+    : BrowserChildProcessHost(NACL_BROKER_PROCESS, resource_dispatcher_host),
       stopping_(false) {
 }
 
@@ -50,7 +50,7 @@ bool NaClBrokerHost::Init() {
   cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
       ASCIIToWide(channel_id()));
 
-  ChildProcessHost::Launch(FilePath(), cmd_line);
+  BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   return true;
 }
 

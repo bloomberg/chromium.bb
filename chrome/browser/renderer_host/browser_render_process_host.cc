@@ -22,8 +22,8 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/child_process_host.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -471,7 +471,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
         field_trial_states);
   }
 
-  ChildProcessHost::SetCrashReporterCommandLine(command_line);
+  BrowserChildProcessHost::SetCrashReporterCommandLine(command_line);
 
   FilePath user_data_dir =
       browser_command_line.GetSwitchValuePath(switches::kUserDataDir);

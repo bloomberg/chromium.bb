@@ -14,11 +14,11 @@
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
-#include "chrome/browser/child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/debugger_wrapper.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -509,7 +509,7 @@ void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
 void BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses(bool enabled) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  ChildProcessHost::Iterator i;  // default constr references a singleton
+  BrowserChildProcessHost::Iterator i;  // default constr references a singleton
   while (!i.Done()) {
     i->Send(new PluginProcessMsg_SetIPCLoggingEnabled(enabled));
     ++i;

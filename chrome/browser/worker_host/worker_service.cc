@@ -262,7 +262,7 @@ bool WorkerService::LookupSharedWorker(
 
 void WorkerService::DocumentDetached(IPC::Message::Sender* sender,
                                      unsigned long long document_id) {
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     worker->DocumentDetached(sender, document_id);
@@ -309,7 +309,7 @@ void WorkerService::CancelCreateDedicatedWorker(IPC::Message::Sender* sender,
   // There could be a race condition where the WebWorkerProxy told us to cancel
   // the worker right as we sent it a message say it's been created.  Look at
   // the running workers.
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     for (WorkerProcessHost::Instances::const_iterator instance =
@@ -330,7 +330,7 @@ void WorkerService::CancelCreateDedicatedWorker(IPC::Message::Sender* sender,
 
 void WorkerService::ForwardMessage(const IPC::Message& message,
                                    IPC::Message::Sender* sender) {
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     if (worker->FilterMessage(message, sender))
@@ -344,7 +344,7 @@ WorkerProcessHost* WorkerService::GetProcessForDomain(const GURL& url) {
   int num_processes = 0;
   std::string domain =
       net::RegistryControlledDomainService::GetDomainAndRegistry(url);
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     num_processes++;
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
@@ -366,7 +366,7 @@ WorkerProcessHost* WorkerService::GetProcessForDomain(const GURL& url) {
 
 WorkerProcessHost* WorkerService::GetProcessToFillUpCores() {
   int num_processes = 0;
-  ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
   for (; !iter.Done(); ++iter)
     num_processes++;
 
@@ -378,7 +378,7 @@ WorkerProcessHost* WorkerService::GetProcessToFillUpCores() {
 
 WorkerProcessHost* WorkerService::GetLeastLoadedWorker() {
   WorkerProcessHost* smallest = NULL;
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     if (!smallest || worker->instances().size() < smallest->instances().size())
@@ -419,7 +419,7 @@ bool WorkerService::TabCanCreateWorkerProcess(int renderer_id,
   int total_workers = 0;
   int workers_per_tab = 0;
   *hit_total_worker_limit = false;
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     for (WorkerProcessHost::Instances::const_iterator cur_instance =
@@ -457,7 +457,7 @@ void WorkerService::Observe(NotificationType type,
 }
 
 void WorkerService::SenderShutdown(IPC::Message::Sender* sender) {
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     worker->SenderShutdown(sender);
@@ -512,7 +512,7 @@ void WorkerService::WorkerProcessDestroyed(WorkerProcessHost* process) {
 
 const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
       int worker_process_id) {
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     if (iter->id() != worker_process_id)
         continue;
@@ -528,7 +528,7 @@ const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
 WorkerProcessHost::WorkerInstance*
 WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name,
                                         bool off_the_record) {
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     for (WorkerProcessHost::Instances::iterator instance_iter =

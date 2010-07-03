@@ -46,7 +46,7 @@ static GpuProcessHost* sole_instance_ = NULL;
 }  // anonymous namespace
 
 GpuProcessHost::GpuProcessHost()
-    : ChildProcessHost(GPU_PROCESS, NULL),
+    : BrowserChildProcessHost(GPU_PROCESS, NULL),
       initialized_(false),
       initialized_successfully_(false) {
   DCHECK_EQ(sole_instance_, static_cast<GpuProcessHost*>(NULL));
@@ -117,7 +117,7 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
   if (!EnsureInitialized())
     return false;
 
-  return ChildProcessHost::Send(msg);
+  return BrowserChildProcessHost::Send(msg);
 }
 
 void GpuProcessHost::OnMessageReceived(const IPC::Message& message) {

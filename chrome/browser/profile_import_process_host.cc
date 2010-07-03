@@ -19,7 +19,7 @@ ProfileImportProcessHost::ProfileImportProcessHost(
     ResourceDispatcherHost* resource_dispatcher,
     ImportProcessClient* import_process_client,
     ChromeThread::ID thread_id)
-    : ChildProcessHost(PROFILE_IMPORT_PROCESS, resource_dispatcher),
+    : BrowserChildProcessHost(PROFILE_IMPORT_PROCESS, resource_dispatcher),
       import_process_client_(import_process_client),
       thread_id_(thread_id) {
 }

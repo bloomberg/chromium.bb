@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/child_process_host.h"
+#include "chrome/browser/browser_child_process_host.h"
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/histogram.h"
 #include "base/logging.h"
@@ -21,7 +20,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
@@ -43,7 +41,7 @@ extern std::string posix_guid;
 
 namespace {
 
-typedef std::list<ChildProcessHost*> ChildProcessList;
+typedef std::list<BrowserChildProcessHost*> ChildProcessList;
 
 // The NotificationTask is used to notify about plugin process connection/
 // disconnection. It is needed because the notifications in the
@@ -68,17 +66,16 @@ class ChildNotificationTask : public Task {
 }  // namespace
 
 
-ChildProcessHost::ChildProcessHost(
+BrowserChildProcessHost::BrowserChildProcessHost(
     ProcessType type, ResourceDispatcherHost* resource_dispatcher_host)
     : Receiver(type, -1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(listener_(this)),
-      resource_dispatcher_host_(resource_dispatcher_host),
-      opening_channel_(false) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
+      resource_dispatcher_host_(resource_dispatcher_host) {
   Singleton<ChildProcessList>::get()->push_back(this);
 }
 
 
-ChildProcessHost::~ChildProcessHost() {
+BrowserChildProcessHost::~BrowserChildProcessHost() {
   Singleton<ChildProcessList>::get()->remove(this);
 
   if (resource_dispatcher_host_)
@@ -86,36 +83,8 @@ ChildProcessHost::~ChildProcessHost() {
 }
 
 // static
-FilePath ChildProcessHost::GetChildPath(bool allow_self) {
-  FilePath child_path;
-
-  child_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-      switches::kBrowserSubprocessPath);
-  if (!child_path.empty())
-    return child_path;
-
-#if defined(OS_MACOSX)
-  // On the Mac, the child executable lives at a predefined location within
-  // the app bundle's versioned directory.
-  return chrome::GetVersionedDirectory().
-      Append(chrome::kHelperProcessExecutablePath);
-#endif
-
-#if defined(OS_LINUX)
-  // Use /proc/self/exe rather than our known binary path so updates
-  // can't swap out the binary from underneath us.
-  if (allow_self)
-    return FilePath("/proc/self/exe");
-#endif
-
-  // On most platforms, the child executable is the same as the current
-  // executable.
-  PathService::Get(base::FILE_EXE, &child_path);
-  return child_path;
-}
-
-// static
-void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
+void BrowserChildProcessHost::SetCrashReporterCommandLine(
+    CommandLine* command_line) {
 #if defined(USE_LINUX_BREAKPAD)
   const bool unattended = (getenv(env_vars::kHeadless) != NULL);
   if (unattended || GoogleUpdateSettings::GetCollectStatsConsent()) {
@@ -132,13 +101,13 @@ void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
 }
 
 // static
-void ChildProcessHost::TerminateAll() {
+void BrowserChildProcessHost::TerminateAll() {
   // Make a copy since the ChildProcessHost dtor mutates the original list.
   ChildProcessList copy = *(Singleton<ChildProcessList>::get());
   STLDeleteElements(&copy);
 }
 
-void ChildProcessHost::Launch(
+void BrowserChildProcessHost::Launch(
 #if defined(OS_WIN)
     const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
@@ -152,46 +121,31 @@ void ChildProcessHost::Launch(
 #elif defined(OS_POSIX)
       use_zygote,
       environ,
-      channel_->GetClientFileDescriptor(),
+      channel()->GetClientFileDescriptor(),
 #endif
       cmd_line,
-      &listener_));
+      &client_));
 }
 
-bool ChildProcessHost::CreateChannel() {
-  channel_id_ = GenerateRandomChannelID(this);
-  channel_.reset(new IPC::Channel(
-      channel_id_, IPC::Channel::MODE_SERVER, &listener_));
-  if (!channel_->Connect())
-    return false;
-
-  opening_channel_ = true;
-
-  return true;
+bool BrowserChildProcessHost::Send(IPC::Message* msg) {
+  return SendOnChannel(msg);
 }
 
-void ChildProcessHost::InstanceCreated() {
-  Notify(NotificationType::CHILD_INSTANCE_CREATED);
+void BrowserChildProcessHost::ForceShutdown() {
+  Singleton<ChildProcessList>::get()->remove(this);
+  ChildProcessHost::ForceShutdown();
 }
 
-bool ChildProcessHost::Send(IPC::Message* msg) {
-  if (!channel_.get()) {
-    delete msg;
-    return false;
-  }
-  return channel_->Send(msg);
-}
-
-void ChildProcessHost::Notify(NotificationType type) {
+void BrowserChildProcessHost::Notify(NotificationType type) {
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
 }
 
-bool ChildProcessHost::DidChildCrash() {
+bool BrowserChildProcessHost::DidChildCrash() {
   return child_process_->DidProcessCrash();
 }
 
-void ChildProcessHost::OnChildDied() {
+void BrowserChildProcessHost::OnChildDied() {
   if (handle() != base::kNullProcessHandle) {
     bool did_crash = DidChildCrash();
     if (did_crash) {
@@ -203,98 +157,48 @@ void ChildProcessHost::OnChildDied() {
     // Notify in the main loop of the disconnection.
     Notify(NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);
   }
-
-  delete this;
+  ChildProcessHost::OnChildDied();
 }
 
-ChildProcessHost::ListenerHook::ListenerHook(ChildProcessHost* host)
+bool BrowserChildProcessHost::InterceptMessageFromChild(
+    const IPC::Message& msg) {
+  bool msg_is_ok = true;
+  bool handled = false;
+  if (resource_dispatcher_host_) {
+    handled = resource_dispatcher_host_->OnMessageReceived(
+        msg, this, &msg_is_ok);
+  }
+  if (!handled && (msg.type() == PluginProcessHostMsg_ShutdownRequest::ID)) {
+    // Must remove the process from the list now, in case it gets used for a
+    // new instance before our watcher tells us that the process terminated.
+    Singleton<ChildProcessList>::get()->remove(this);
+  }
+  if (!msg_is_ok)
+    base::KillProcess(handle(), ResultCodes::KILLED_BAD_MESSAGE, false);
+  return handled;
+}
+
+BrowserChildProcessHost::ClientHook::ClientHook(BrowserChildProcessHost* host)
     : host_(host) {
 }
 
-void ChildProcessHost::ListenerHook::OnMessageReceived(
-    const IPC::Message& msg) {
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  IPC::Logging* logger = IPC::Logging::current();
-  if (msg.type() == IPC_LOGGING_ID) {
-    logger->OnReceivedLoggingMessage(msg);
-    return;
-  }
-
-  if (logger->Enabled())
-    logger->OnPreDispatchMessage(msg);
-#endif
-
-  bool msg_is_ok = true;
-  bool handled = false;
-
-  if (host_->resource_dispatcher_host_) {
-    handled = host_->resource_dispatcher_host_->OnMessageReceived(
-        msg, host_, &msg_is_ok);
-  }
-
-  if (!handled) {
-    if (msg.type() == PluginProcessHostMsg_ShutdownRequest::ID) {
-      // Must remove the process from the list now, in case it gets used for a
-      // new instance before our watcher tells us that the process terminated.
-      Singleton<ChildProcessList>::get()->remove(host_);
-      if (host_->CanShutdown())
-        host_->Send(new PluginProcessMsg_Shutdown());
-    } else {
-      host_->OnMessageReceived(msg);
-    }
-  }
-
-  if (!msg_is_ok)
-    base::KillProcess(host_->handle(), ResultCodes::KILLED_BAD_MESSAGE, false);
-
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  if (logger->Enabled())
-    logger->OnPostDispatchMessage(msg, host_->channel_id_);
-#endif
-}
-
-void ChildProcessHost::ListenerHook::OnChannelConnected(int32 peer_pid) {
-  host_->opening_channel_ = false;
-  host_->OnChannelConnected(peer_pid);
-
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-  bool enabled = IPC::Logging::current()->Enabled();
-  host_->Send(new PluginProcessMsg_SetIPCLoggingEnabled(enabled));
-#endif
-
-  host_->Send(new PluginProcessMsg_AskBeforeShutdown());
-
-  // Notify in the main loop of the connection.
-  host_->Notify(NotificationType::CHILD_PROCESS_HOST_CONNECTED);
-}
-
-void ChildProcessHost::ListenerHook::OnChannelError() {
-  host_->opening_channel_ = false;
-  host_->OnChannelError();
-
-  // This will delete host_, which will also destroy this!
-  host_->OnChildDied();
-}
-
-void ChildProcessHost::ListenerHook::OnProcessLaunched() {
+void BrowserChildProcessHost::ClientHook::OnProcessLaunched() {
   if (!host_->child_process_->GetHandle()) {
-    delete this;
+    host_->OnChildDied();
     return;
   }
-
   host_->set_handle(host_->child_process_->GetHandle());
   host_->OnProcessLaunched();
 }
 
-
-ChildProcessHost::Iterator::Iterator()
+BrowserChildProcessHost::Iterator::Iterator()
     : all_(true), type_(UNKNOWN_PROCESS) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
   iterator_ = Singleton<ChildProcessList>::get()->begin();
 }
 
-ChildProcessHost::Iterator::Iterator(ProcessType type)
+BrowserChildProcessHost::Iterator::Iterator(ProcessType type)
     : all_(false), type_(type) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
@@ -303,7 +207,7 @@ ChildProcessHost::Iterator::Iterator(ProcessType type)
     ++(*this);
 }
 
-ChildProcessHost* ChildProcessHost::Iterator::operator++() {
+BrowserChildProcessHost* BrowserChildProcessHost::Iterator::operator++() {
   do {
     ++iterator_;
     if (Done())
@@ -318,11 +222,6 @@ ChildProcessHost* ChildProcessHost::Iterator::operator++() {
   return NULL;
 }
 
-bool ChildProcessHost::Iterator::Done() {
+bool BrowserChildProcessHost::Iterator::Done() {
   return iterator_ == Singleton<ChildProcessList>::get()->end();
-}
-
-void ChildProcessHost::ForceShutdown() {
-  Singleton<ChildProcessList>::get()->remove(this);
-  Send(new PluginProcessMsg_Shutdown());
 }

@@ -181,7 +181,8 @@ class NotifyPluginProcessHostTask : public Task {
     DWORD plugin_process_id;
     bool found_starting_plugin_process = false;
     GetWindowThreadProcessId(window_, &plugin_process_id);
-    for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+    for (BrowserChildProcessHost::Iterator iter(
+             ChildProcessInfo::PLUGIN_PROCESS);
          !iter.Done(); ++iter) {
       PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
       if (!plugin->handle()) {

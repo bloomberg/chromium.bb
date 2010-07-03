@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/child_process_host.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "ipc/ipc_channel.h"
@@ -24,7 +24,7 @@ class ListValue;
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived sandboxed process that is created to run
 // a specific task.  This class lives solely on the IO thread.
-class UtilityProcessHost : public ChildProcessHost {
+class UtilityProcessHost : public BrowserChildProcessHost {
  public:
   // An interface to be implemented by consumers of the utility process to
   // get results back.  All functions are called on the thread passed along
@@ -121,7 +121,7 @@ class UtilityProcessHost : public ChildProcessHost {
   // IPC messages:
   void OnMessageReceived(const IPC::Message& message);
 
-  // ChildProcessHost:
+  // BrowserChildProcessHost:
   virtual void OnProcessCrashed();
   virtual bool CanShutdown() { return true; }
   virtual URLRequestContext* GetRequestContext(

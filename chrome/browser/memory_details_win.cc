@@ -9,7 +9,7 @@
 #include "base/file_version_info.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_version_info.h"
-#include "chrome/browser/child_process_host.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"

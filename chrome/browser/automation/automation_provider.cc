@@ -1795,7 +1795,7 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
   // Add all child processes in a list of dictionaries, one dictionary item
   // per child process.
   ListValue* child_processes = new ListValue;
-  for (ChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
+  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started, since we need their handle.
     if ((*iter)->handle() != base::kNullProcessHandle) {
       ChildProcessInfo* info = *iter;

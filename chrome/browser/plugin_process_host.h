@@ -15,7 +15,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/child_process_host.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "gfx/native_widget_types.h"
@@ -34,7 +34,7 @@ class GURL;
 // starting the plugin process when a plugin is created that doesn't already
 // have a process.  After that, most of the communication is directly between
 // the renderer and plugin processes.
-class PluginProcessHost : public ChildProcessHost,
+class PluginProcessHost : public BrowserChildProcessHost,
                           public ResolveProxyMsgHelper::Delegate {
  public:
   PluginProcessHost();

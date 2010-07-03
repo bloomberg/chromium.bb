@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/child_process_host.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
@@ -31,7 +31,7 @@ struct ViewHostMsg_CreateWorker_Params;
 // WorkerProcessHost per worker process.  Currently each worker runs in its own
 // process, but that may change.  However, we do assume [by storing a
 // ChromeURLRequestContext] that a WorkerProcessHost serves a single Profile.
-class WorkerProcessHost : public ChildProcessHost {
+class WorkerProcessHost : public BrowserChildProcessHost {
  public:
 
   // Contains information about each worker instance, needed to forward messages

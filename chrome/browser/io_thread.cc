@@ -139,9 +139,9 @@ void IOThread::Init() {
 
 void IOThread::CleanUp() {
   // If any child processes are still running, terminate them and
-  // and delete the ChildProcessHost instances to release whatever
+  // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
-  ChildProcessHost::TerminateAll();
+  BrowserChildProcessHost::TerminateAll();
 
   // Not initialized in Init().  May not be initialized.
   if (predictor_) {

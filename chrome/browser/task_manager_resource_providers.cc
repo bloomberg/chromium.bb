@@ -16,9 +16,9 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -488,7 +488,7 @@ void TaskManagerChildProcessResourceProvider::AddToTaskManager(
 
 // The ChildProcessInfo::Iterator has to be used from the IO thread.
 void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
-  for (ChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
+  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started, since we need their handle.
     if ((*iter)->handle() != base::kNullProcessHandle)
       existing_child_process_info_.push_back(**iter);

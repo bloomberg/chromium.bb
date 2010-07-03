@@ -285,7 +285,7 @@ void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
 #endif  // defined(TOOLKIT_USES_GTK)
 
 PluginProcessHost::PluginProcessHost()
-    : ChildProcessHost(
+    : BrowserChildProcessHost(
           PLUGIN_PROCESS,
           PluginService::GetInstance()->resource_dispatcher_host()),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL))
@@ -456,7 +456,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 void PluginProcessHost::ForceShutdown() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   Send(new PluginProcessMsg_NotifyRenderersOfPendingShutdown());
-  ChildProcessHost::ForceShutdown();
+  BrowserChildProcessHost::ForceShutdown();
 }
 
 void PluginProcessHost::OnProcessLaunched() {

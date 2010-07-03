@@ -12,7 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/values.h"
-#include "chrome/browser/child_process_host.h"
+#include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -26,7 +26,7 @@ struct PasswordForm;
 // Browser-side host to a profile import process.  This class lives only on
 // the IO thread.  It passes messages back to the |thread_id_| thread through
 // a client object.
-class ProfileImportProcessHost : public ChildProcessHost {
+class ProfileImportProcessHost : public BrowserChildProcessHost {
  public:
 
   // An interface that must be implemented by consumers of the profile import
@@ -87,8 +87,8 @@ class ProfileImportProcessHost : public ChildProcessHost {
     DISALLOW_COPY_AND_ASSIGN(ImportProcessClient);
   };
 
-  // |resource_dispatcher| is used in the base ChildProcessHost class to manage
-  // IPC requests.
+  // |resource_dispatcher| is used in the base BrowserChildProcessHost class to
+  // manage IPC requests.
   // |import_process_client| implements callbacks which are triggered by
   // incoming IPC messages.  This client creates an interface between IPC
   // messages received by the ProfileImportProcessHost and the internal
@@ -124,7 +124,7 @@ class ProfileImportProcessHost : public ChildProcessHost {
   // ImportProcessClient.
   void OnMessageReceived(const IPC::Message& message);
 
-  // Overridden from ChildProcessHost:
+  // Overridden from BrowserChildProcessHost:
   virtual void OnProcessCrashed();
   virtual bool CanShutdown() { return true; }
   virtual URLRequestContext* GetRequestContext(

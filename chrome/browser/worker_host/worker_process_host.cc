@@ -58,7 +58,7 @@ class WorkerCrashTask : public Task {
 WorkerProcessHost::WorkerProcessHost(
     ResourceDispatcherHost* resource_dispatcher_host,
     ChromeURLRequestContext *request_context)
-    : ChildProcessHost(WORKER_PROCESS, resource_dispatcher_host),
+    : BrowserChildProcessHost(WORKER_PROCESS, resource_dispatcher_host),
       request_context_(request_context),
       appcache_dispatcher_host_(
           new AppCacheDispatcherHost(request_context)) {
@@ -322,7 +322,7 @@ CallbackWithReturnValue<int>::Type* WorkerProcessHost::GetNextRouteIdCallback(
   // We don't keep callbacks for senders associated with workers, so figure out
   // what kind of sender this is, and cast it to the correct class to get the
   // callback.
-  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
     if (static_cast<IPC::Message::Sender*>(worker) == sender)
