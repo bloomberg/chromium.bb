@@ -150,7 +150,7 @@ def GetLangDirectivePair(language) :
   if _LANGUAGE_DIRECTIVE_PAIR.has_key(language) :
     return _LANGUAGE_DIRECTIVE_PAIR[language]
   else :
-    print 'Warning:GetLangDirectivePair() found undefined language %s' %(language)
+    print 'Warning:GetLangDirectivePair() found undefined language %s' % (language)
     return 'unknown language: see tools/grit/format/rc.py'
 
 def GetLangIdHex(language) :
@@ -427,7 +427,7 @@ class RcInclude(interface.ItemFormatter):
     if self.flatten_html:
       # Generate the flattened HTML file.
       flat_filename = os.path.join(output_dir, os.path.basename(filename))
-      html_inline.InlineFile(filename, flat_filename)
+      html_inline.InlineFile(filename, flat_filename, item)
 
       # Include the flattened HTML file.
       filename = os.path.basename(filename)

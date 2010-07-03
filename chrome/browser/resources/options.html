@@ -16,7 +16,9 @@
 <script src="options/preferences.js"></script>
 <script src="options/pref_ui.js"></script>
 <script src="options/options_page.js"></script>
-<script src="options/chromeos_system_options.js"></script>
+<if expr="pp_ifdef('chromeos')">
+  <script src="options/chromeos_system_options.js"></script>
+</if>
 <script>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,7 +144,9 @@ window.onpopstate = function(e) {
      </ul>
   </div>
   <div id="mainview">
-     <!-- include file="options/chromeos_system_options.html" -->
+     <if expr="pp_ifdef('chromeos')">
+        <include src="options/chromeos_system_options.html">
+     </if>     
      <div class="page hidden" id="dummyPage">
         <!-- TODO(zelidrag): remove this one once we get another page here -->
         Dummy page

@@ -19,6 +19,8 @@ import sys
 import base64
 import mimetypes
 
+from grit.node import base
+
 DIST_DEFAULT = 'chromium'
 DIST_ENV_VAR = 'CHROMIUM_BUILD'
 DIST_SUBSTR = '%DISTRIBUTION%'
@@ -67,7 +69,7 @@ def SrcInlineAsDataURL(src_match, base_path, distribution):
   prefix = src_match.string[src_match.start():src_match.start('filename')-1]
   return "%s\"data:%s;base64,%s\"" % (prefix, mimetype, inline_data)
 
-def InlineFile(input_filename, output_filename):
+def InlineFile(input_filename, output_filename, grd_node):
   """Inlines the resources in a specified file.
 
   Reads input_filename, finds all the src attributes and attempts to
@@ -77,6 +79,7 @@ def InlineFile(input_filename, output_filename):
   Args:
     input_filename: name of file to read in
     output_filename: name of file to be written to
+    grd_node: html node from the grd file for this include tag
   """
   input_filepath = os.path.dirname(input_filename)
 
@@ -99,6 +102,16 @@ def InlineFile(input_filename, output_filename):
 
     filename = filename.replace('%DISTRIBUTION%', distribution)
     return os.path.join(input_filepath, filename)
+
+  def IsConditionSatisfied(src_match):
+    expression = src_match.group('expression')
+    return grd_node is None or grd_node.EvaluateCondition(expression)
+
+  def CheckConditionalElements(src_match):
+    """Helper function to conditionally inline inner elements"""
+    if not IsConditionSatisfied(src_match):
+      return ''
+    return src_match.group('content')
 
   def InlineFileContents(src_match, pattern):
     """Helper function to inline external script and css files"""
@@ -144,7 +157,6 @@ def InlineFile(input_filename, output_filename):
                   lambda m: SrcReplace(m, filepath),
                   text)
 
-
   # We need to inline css and js before we inline images so that image
   # references gets inlined in the css and js
   flat_text = re.sub('<script .*?src="(?P<filename>[^"\']*)".*?></script>',
@@ -157,9 +169,15 @@ def InlineFile(input_filename, output_filename):
       flat_text)
 
   flat_text = re.sub(
-      '<!--\s*include\s+file="(?P<filename>[^"\']*)".*-->',
+      '<include\s+src="(?P<filename>[^"\']*)".*>',
       InlineIncludeFiles,
       flat_text)
+
+  # Check conditional elements, remove unsatisfied ones from the file.
+  flat_text = re.sub('<if .*?expr="(?P<expression>[^"]*)".*?>\s*' +
+                     '(?P<content>([\s\S]+?))\s*</if>',
+                     CheckConditionalElements,
+                     flat_text)
 
   # TODO(glen): Make this regex not match src="" text that is not inside a tag
   flat_text = re.sub('src="(?P<filename>[^"\']*)"',
