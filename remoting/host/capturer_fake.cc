@@ -31,6 +31,7 @@ void CapturerFake::CaptureRects(const RectVector& rects,
                                                           width_,
                                                           height_,
                                                           pixel_format_));
+  capture_data->mutable_dirty_rects() = rects;
   FinishCapture(capture_data, callback);
 }
 

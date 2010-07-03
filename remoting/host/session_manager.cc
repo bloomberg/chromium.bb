@@ -220,6 +220,7 @@ void SessionManager::DoCapture() {
 
 void SessionManager::CaptureDoneCallback(
     scoped_refptr<Capturer::CaptureData> capture_data) {
+  // TODO(hclam): There is a bug if the capturer doesn't produce any dirty rects.
   DCHECK_EQ(capture_loop_, MessageLoop::current());
   encode_loop_->PostTask(
       FROM_HERE,
