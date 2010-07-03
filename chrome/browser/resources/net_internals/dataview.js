@@ -44,7 +44,7 @@ DataView.prototype.onExportToText_ = function() {
             ' (' + ClientInfo.official +
             ' ' + ClientInfo.cl +
             ') ' + ClientInfo.version_mod);
-  text.push('Command line switches: ' + ClientInfo.command_line);
+  text.push('Command line: ' + ClientInfo.command_line);
 
   text.push('');
   text.push('----------------------------------------------');
