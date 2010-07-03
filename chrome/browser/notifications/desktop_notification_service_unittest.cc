@@ -12,19 +12,28 @@
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+class WaitTask : public Task {
+ public:
+  WaitTask(base::WaitableEvent* event)
+      : event_(event) {
+  }
+  virtual void Run() {
+    event_->Wait();
+  }
+
+ private:
+  base::WaitableEvent* event_;
+};
+
+
 class DesktopNotificationServiceTest : public RenderViewHostTestHarness {
  public:
   DesktopNotificationServiceTest()
-      : event_(false, false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      : event_(false, false) {
   }
-
-  void LetIOThreadWait() {
-    event_.Wait();
-  }
-
   base::WaitableEvent event_;
-  ScopedRunnableMethodFactory<DesktopNotificationServiceTest> method_factory_;
 };
 
 TEST_F(DesktopNotificationServiceTest, DefaultContentSettingSentToCache) {
@@ -34,9 +43,7 @@ TEST_F(DesktopNotificationServiceTest, DefaultContentSettingSentToCache) {
   // Create IO thread, start its message loop.
   ChromeThread io_thread(ChromeThread::IO);
   io_thread.Start();
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &DesktopNotificationServiceTest::LetIOThreadWait));
+  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, new WaitTask(&event_));
 
   // Creates the service, calls InitPrefs() on it which loads data from the
   // profile into the cache and then puts the cache in io thread mode.
@@ -63,4 +70,4 @@ TEST_F(DesktopNotificationServiceTest, DefaultContentSettingSentToCache) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, cache->CachedDefaultContentSetting());
 }
 
-
+}  // namespace
