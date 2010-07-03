@@ -11,9 +11,6 @@
 #include "base/process_util.h"
 #include "chrome/common/env_vars.h"
 
-// Force a test to use an already running browser instance. UI tests only.
-const char UITestSuite::kUseExistingBrowser[] = "use-existing-browser";
-
 // Timeout for the test in milliseconds.  UI tests only.
 const char UITestSuite::kTestTimeout[] = "test-timeout";
 
@@ -43,8 +40,6 @@ void UITestSuite::Initialize() {
       parsed_command_line.HasSwitch(switches::kFullMemoryCrashReport));
   UITest::set_safe_plugins(
       parsed_command_line.HasSwitch(switches::kSafePlugins));
-  UITest::set_use_existing_browser(
-      parsed_command_line.HasSwitch(UITestSuite::kUseExistingBrowser));
   UITest::set_dump_histograms_on_exit(
       parsed_command_line.HasSwitch(switches::kDumpHistogramsOnExit));
   UITest::set_enable_dcheck(

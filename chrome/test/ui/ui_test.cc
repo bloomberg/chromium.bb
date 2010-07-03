@@ -77,7 +77,6 @@ bool UITestBase::no_sandbox_ = false;
 bool UITestBase::full_memory_dump_ = false;
 bool UITestBase::safe_plugins_ = false;
 bool UITestBase::show_error_dialogs_ = true;
-bool UITestBase::default_use_existing_browser_ = false;
 bool UITestBase::dump_histograms_on_exit_ = false;
 bool UITestBase::enable_dcheck_ = false;
 bool UITestBase::silent_dump_on_dcheck_ = false;
@@ -118,7 +117,6 @@ UITestBase::UITestBase()
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
-      use_existing_browser_(default_use_existing_browser_),
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
       shutdown_type_(UITestBase::WINDOW_CLOSE),
@@ -144,7 +142,6 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
-      use_existing_browser_(default_use_existing_browser_),
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
       shutdown_type_(UITestBase::WINDOW_CLOSE),
@@ -162,10 +159,8 @@ UITestBase::~UITestBase() {
 }
 
 void UITestBase::SetUp() {
-  if (!use_existing_browser_) {
-    AssertAppNotRunning(L"Please close any other instances "
-                        L"of the app before testing.");
-  }
+  AssertAppNotRunning(L"Please close any other instances "
+                      L"of the app before testing.");
 
   InitializeTimeouts();
   JavaScriptExecutionController::set_timeout(action_max_timeout_ms_);
@@ -401,14 +396,13 @@ void UITestBase::LaunchBrowser(const CommandLine& arguments,
     UpdateHistoryDates();
   }
 
-  ASSERT_TRUE(LaunchBrowserHelper(arguments, use_existing_browser_, false,
-                                  &process_));
+  ASSERT_TRUE(LaunchBrowserHelper(arguments, false, &process_));
   process_id_ = base::GetProcId(process_);
 }
 
 bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
     const CommandLine& cmdline) {
-  return LaunchBrowserHelper(cmdline, false, true, NULL);
+  return LaunchBrowserHelper(cmdline, true, NULL);
 }
 
 void UITestBase::QuitBrowser() {
@@ -1079,9 +1073,8 @@ void UITestBase::WaitForGeneratedFileAndCheck(
 }
 
 bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
-                                 bool use_existing_browser,
-                                 bool wait,
-                                 base::ProcessHandle* process) {
+                                     bool wait,
+                                     base::ProcessHandle* process) {
   FilePath command = browser_directory_.Append(
       FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath));
   CommandLine command_line(command);
@@ -1116,18 +1109,8 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
     command_line.AppendSwitch(switches::kDomAutomationController);
 
   if (include_testing_id_) {
-    if (use_existing_browser) {
-      // TODO(erikkay): The new switch depends on a browser instance already
-      // running, it won't open a new browser window if it's not.  We could fix
-      // this by passing an url (e.g. about:blank) on the command line, but
-      // I decided to keep using the old switch in the existing use case to
-      // minimize changes in behavior.
-      command_line.AppendSwitchWithValue(switches::kAutomationClientChannelID,
-                                         ASCIIToWide(server_->channel_id()));
-    } else {
-      command_line.AppendSwitchWithValue(switches::kTestingChannelID,
-                                         ASCIIToWide(server_->channel_id()));
-    }
+    command_line.AppendSwitchWithValue(switches::kTestingChannelID,
+                                       ASCIIToWide(server_->channel_id()));
   }
 
   if (!show_error_dialogs_ &&
@@ -1211,28 +1194,8 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
                                  wait,
                                  process);
 #endif
-  if (!started)
-    return false;
 
-  if (use_existing_browser) {
-#if defined(OS_WIN)
-    DWORD pid = 0;
-    HWND hwnd = FindWindowEx(HWND_MESSAGE, NULL, chrome::kMessageWindowClass,
-                             user_data_dir_.value().c_str());
-    GetWindowThreadProcessId(hwnd, &pid);
-    // This mode doesn't work if we wound up launching a new browser ourselves.
-    EXPECT_NE(pid, base::GetProcId(*process));
-    CloseHandle(*process);
-    *process = OpenProcess(SYNCHRONIZE, false, pid);
-#else
-  // TODO(port): above code is very Windows-specific; we need to
-  // figure out and abstract out how we'll handle finding any existing
-  // running process, etc. on other platforms.
-  NOTIMPLEMENTED();
-#endif
-  }
-
-  return true;
+  return started;
 }
 
 void UITestBase::UpdateHistoryDates() {

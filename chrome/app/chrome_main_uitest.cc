@@ -46,7 +46,6 @@ TEST_F(ChromeMainTest, AppTestingInterface) {
 // Make sure that the second invocation creates a new window.
 TEST_F(ChromeMainTest, SecondLaunch) {
   include_testing_id_ = false;
-  use_existing_browser_ = true;
 
   ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(
                   CommandLine(CommandLine::ARGUMENTS_ONLY)));
@@ -61,7 +60,6 @@ TEST_F(ChromeMainTest, SecondLaunch) {
 #endif
 TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
   include_testing_id_ = false;
-  use_existing_browser_ = true;
 
   FilePath test_file = test_data_directory_.AppendASCII("empty.html");
 
