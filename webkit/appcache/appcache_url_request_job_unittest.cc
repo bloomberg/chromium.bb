@@ -617,6 +617,69 @@ class AppCacheURLRequestJobTest : public testing::Test {
     TestFinished();
   }
 
+  // DeliverPartialResponse --------------------------------------
+
+  void DeliverPartialResponse() {
+    // This test has several async steps.
+    // 1. Write a small response to response storage.
+    // 2. Use URLRequest to retrieve it a subset using a range request
+    // 3. Verify we received what we expected to receive.
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::VerifyDeliverPartialResponse));
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheURLRequestJobTest::MakeRangeRequest));
+    writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
+    written_response_id_ = writer_->response_id();
+    WriteBasicResponse();
+    // Continues async
+  }
+
+  void MakeRangeRequest() {
+    AppCacheStorage* storage = service_->storage();
+    request_.reset(
+        new URLRequest(GURL("http://blah/"), url_request_delegate_.get()));
+
+    // Request a range, the 3 middle chars out of 'Hello'
+    net::HttpRequestHeaders extra_headers;
+    extra_headers.SetHeader("Range", "bytes= 1-3");
+    request_->SetExtraRequestHeaders(extra_headers);
+
+    // Create job with orders to deliver an appcached entry.
+    scoped_refptr<AppCacheURLRequestJob> job(
+        new AppCacheURLRequestJob(request_.get(), storage));
+    job->DeliverAppCachedResponse(
+        GURL(), 111,
+        AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_));
+    EXPECT_TRUE(job->is_delivering_appcache_response());
+
+    // Start the request.
+    EXPECT_FALSE(job->has_been_started());
+    mock_factory_job_ = job;
+    request_->Start();
+    EXPECT_FALSE(mock_factory_job_);
+    EXPECT_TRUE(job->has_been_started());
+    // Completion is async.
+  }
+
+  void VerifyDeliverPartialResponse() {
+    EXPECT_TRUE(request_->status().is_success());
+    EXPECT_EQ(3, url_request_delegate_->amount_received_);
+    EXPECT_EQ(0, memcmp(kHttpBasicBody + 1,
+                        url_request_delegate_->received_data_->data(),
+                        3));
+    net::HttpResponseHeaders* headers =
+        url_request_delegate_->received_info_.headers.get();
+    EXPECT_EQ(206, headers->response_code());
+    EXPECT_EQ(3, headers->GetContentLength());
+    int64 range_start, range_end, object_size;
+    EXPECT_TRUE(
+        headers->GetContentRange(&range_start, &range_end, &object_size));
+    EXPECT_EQ(1, range_start);
+    EXPECT_EQ(3, range_end);
+    EXPECT_EQ(5, object_size);
+    TestFinished();
+  }
+
   // CancelRequest --------------------------------------
 
   void CancelRequest() {
@@ -730,6 +793,10 @@ TEST_F(AppCacheURLRequestJobTest, DeliverSmallAppCachedResponse) {
 
 TEST_F(AppCacheURLRequestJobTest, DeliverLargeAppCachedResponse) {
   RunTestOnIOThread(&AppCacheURLRequestJobTest::DeliverLargeAppCachedResponse);
+}
+
+TEST_F(AppCacheURLRequestJobTest, DeliverPartialResponse) {
+  RunTestOnIOThread(&AppCacheURLRequestJobTest::DeliverPartialResponse);
 }
 
 TEST_F(AppCacheURLRequestJobTest, CancelRequest) {

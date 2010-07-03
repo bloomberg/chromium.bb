@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_status.h"
 
@@ -243,13 +244,18 @@ bool AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 }
 
 void AppCacheURLRequestJob::SetExtraRequestHeaders(
-    const std::string& headers) {
+    const net::HttpRequestHeaders& headers) {
+  std::string value;
+  std::vector<net::HttpByteRange> ranges;
+  if (!headers.GetHeader(net::HttpRequestHeaders::kRange, &value) ||
+      !net::HttpUtil::ParseRangeHeader(value, &ranges)) {
+    return;
+  }
+
   // If multiple ranges are requested, we play dumb and
   // return the entire response with 200 OK.
-  std::vector<net::HttpByteRange> ranges;
-  if (!net::HttpUtil::ParseRanges(headers, &ranges) || (ranges.size() > 1U))
-    return;
-  range_requested_ = ranges[0];
+  if (ranges.size() == 1U)
+    range_requested_ = ranges[0];
 }
 
 }  // namespace appcache

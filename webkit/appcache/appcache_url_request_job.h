@@ -108,7 +108,7 @@ class AppCacheURLRequestJob : public URLRequestJob,
 
   // Sets extra request headers for Job types that support request headers.
   // This is how we get informed of range-requests.
-  virtual void SetExtraRequestHeaders(const std::string& headers);
+  virtual void SetExtraRequestHeaders(const net::HttpRequestHeaders& headers);
 
   // TODO(michaeln): does this apply to our cached responses?
   // The payload we store should have been fully decoded prior to
