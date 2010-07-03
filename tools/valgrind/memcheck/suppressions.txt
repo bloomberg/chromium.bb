@@ -3418,7 +3418,7 @@
    fun:sqlite3MemMalloc
    fun:mallocWithAlarm
    fun:sqlite3Malloc
-   fun:sqlite3HashInsert
+   ...
    fun:sqlite3CreateIndex
    fun:yy_reduce
    fun:sqlite3Parser
