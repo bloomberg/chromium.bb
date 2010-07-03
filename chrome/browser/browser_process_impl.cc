@@ -278,7 +278,7 @@ bool BrowserProcessImpl::ShouldClearLocalState(FilePath* profile_path) {
   FilePath user_data_dir;
   Profile* profile;
 
-  // Check for the existance of a profile manager. When quitting early,
+  // Check for the existence of a profile manager. When quitting early,
   // e.g. because another chrome instance is running, or when invoked with
   // options such as --uninstall or --try-chrome-again=0, the profile manager
   // does not exist yet.
