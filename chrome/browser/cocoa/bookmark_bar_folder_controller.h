@@ -67,6 +67,10 @@
   BOOL scrollUpArrowShown_;
   BOOL scrollDownArrowShown_;
 
+  // YES if subfolders should grow to the right (the default).
+  // Direction switches if we'd grow off the screen.
+  BOOL subFolderGrowthToRight_;
+
   // The main view of this window (where the buttons go).
   IBOutlet BookmarkBarFolderView* mainView_;
 
@@ -152,11 +156,13 @@
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender;
 - (IBAction)openBookmarkInNewWindow:(id)sender;
 
+@property (assign, nonatomic) BOOL subFolderGrowthToRight;
+
 @end
 
 @interface BookmarkBarFolderController(TestingAPI)
 - (NSView*)mainView;
-- (NSPoint)windowTopLeft;
+- (NSPoint)windowTopLeftForWidth:(int)windowWidth;
 - (NSArray*)buttons;
 - (BookmarkBarFolderController*)folderController;
 - (id)folderTarget;

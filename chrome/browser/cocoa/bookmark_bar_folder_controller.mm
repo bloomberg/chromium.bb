@@ -105,6 +105,8 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 
 @implementation BookmarkBarFolderController
 
+@synthesize subFolderGrowthToRight = subFolderGrowthToRight_;
+
 - (id)initWithParentButton:(BookmarkButton*)button
           parentController:(BookmarkBarFolderController*)parentController
              barController:(BookmarkBarController*)barController {
@@ -118,6 +120,11 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     [button forceButtonBorderToStayOnAlways:YES];
 
     parentController_.reset([parentController retain]);
+    if (!parentController_)
+      [self setSubFolderGrowthToRight:YES];
+    else
+      [self setSubFolderGrowthToRight:[parentController
+                                        subFolderGrowthToRight]];
     barController_ = barController;  // WEAK
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
@@ -264,10 +271,59 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   return folderTarget_.get();
 }
 
+
+// Our parent controller is another BookmarkBarFolderController, so
+// our window is to the right or left of it.  We use a little overlap
+// since it looks much more menu-like than with none.  If we would
+// grow off the screen, switch growth to the other direction.  Growth
+// direction sticks for folder windows which are descendents of us.
+// If we have tried both directions and neither fits, degrade to a
+// default.
+- (CGFloat)childFolderWindowLeftForWidth:(int)windowWidth {
+  // We may legitimately need to try two times (growth to right and
+  // left but not in that order).  Limit us to three tries in case
+  // the folder window can't fit on either side of the screen; we
+  // don't want to loop forever.
+  CGFloat x;
+  int tries = 0;
+  while (tries < 2) {
+    // Try to grow right.
+    if ([self subFolderGrowthToRight]) {
+      tries++;
+      x = NSMaxX([[parentButton_ window] frame]) -
+          bookmarks::kBookmarkMenuOverlap;
+      // If off the screen, switch direction.
+      if ((x + windowWidth + bookmarks::kBookmarkHorizontalScreenPadding) >
+          NSMaxX([[[self window] screen] frame])) {
+        [self setSubFolderGrowthToRight:NO];
+      } else {
+        return x;
+      }
+    }
+    // Try to grow left.
+    if (![self subFolderGrowthToRight]) {
+      tries++;
+      x = NSMinX([[parentButton_ window] frame]) +
+          bookmarks::kBookmarkMenuOverlap -
+          windowWidth;
+      // If off the screen, switch direction.
+      if (x < NSMinX([[[self window] screen] frame])) {
+        [self setSubFolderGrowthToRight:YES];
+      } else {
+        return x;
+      }
+    }
+  }
+  // Unhappy; do the best we can.
+  return NSMaxX([[[self window] screen] frame]) - windowWidth;
+}
+
+
 // Compute and return the top left point of our window (screen
 // coordinates).  The top left is positioned in a manner similar to
-// cascading menus.
-- (NSPoint)windowTopLeft {
+// cascading menus.  Windows may grow to either the right or left of
+// their parent (if a sub-folder) so we need to know |windowWidth|.
+- (NSPoint)windowTopLeftForWidth:(int)windowWidth {
   NSPoint newWindowTopLeft;
   if (![parentController_ isKindOfClass:[self class]]) {
     // If we're not popping up from one of ourselves, we must be
@@ -285,14 +341,8 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     newWindowTopLeft = NSMakePoint(buttonBottomLeftInScreen.x,
                                    bookmarkBarBottomLeftInScreen.y);
   } else {
-    // Our parent controller is another BookmarkBarFolderController.
-    // In this case, start with a slight overlap on the RIGHT of the
-    // parent button, which looks much more menu-like than with none.
-    // Start to RIGHT of the button.
-    // TODO(jrg): If too far to right, pop left again.
-    // http://crbug.com/36225
-    newWindowTopLeft.x = NSMaxX([[parentButton_ window] frame]) -
-        bookmarks::kBookmarkMenuOverlap;
+    // Parent is a folder; grow right/left.
+    newWindowTopLeft.x = [self childFolderWindowLeftForWidth:windowWidth];
     NSPoint top = NSMakePoint(0, (NSMaxY([parentButton_ frame]) +
                                   bookmarks::kBookmarkVerticalPadding));
     NSPoint topOfWindow =
@@ -316,27 +366,11 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   CGFloat windowWidth =
       [self adjustButtonWidths] + (2 * bookmarks::kBookmarkVerticalPadding) +
       bookmarks::kScrollViewContentWidthMargin;
-  NSPoint newWindowTopLeft = [self windowTopLeft];
+  NSPoint newWindowTopLeft = [self windowTopLeftForWidth:windowWidth];
   NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
                                   newWindowTopLeft.y - windowHeight,
                                   windowWidth,
                                   windowHeight);
-
-  // Make the window fit on screen, with a distance of at least |padding| from
-  // the sides.
-  DCHECK([[self window] screen]);
-  NSRect screenFrame = [[[self window] screen] frame];
-  if (NSMaxX(windowFrame) + bookmarks::kBookmarkHorizontalScreenPadding >
-      NSMaxX(screenFrame))
-    windowFrame.origin.x -= NSMaxX(windowFrame) +
-        bookmarks::kBookmarkHorizontalScreenPadding - NSMaxX(screenFrame);
-  // No 'else' to provide preference for the left side of the menu
-  // being visible if neither one fits.  Wish I had an "bool isL2R()"
-  // function right here.
-  if (NSMinX(windowFrame) - bookmarks::kBookmarkHorizontalScreenPadding <
-      NSMinX(screenFrame))
-    windowFrame.origin.x += NSMinX(screenFrame) - NSMinX(windowFrame) +
-        bookmarks::kBookmarkHorizontalScreenPadding;
 
   // Make the scrolled content be the right size (full size).
   NSRect mainViewFrame = NSMakeRect(0, 0,
@@ -347,6 +381,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 
   // Make sure the window fits on the screen.  If not, constrain.
   // We'll scroll to allow the user to see all the content.
+  NSRect screenFrame = [[[self window] screen] frame];
   screenFrame = NSInsetRect(screenFrame, 0, kScrollWindowVerticalMargin);
   if (!NSContainsRect(screenFrame, windowFrame)) {
     scrollable_ = YES;
@@ -969,9 +1004,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 // Close our bookmark folder (a sub-controller) if we have one.
 - (void)closeBookmarkFolder:(id)sender {
-  // folderController_ may be nil but that's OK.
-  [[folderController_ window] close];
-  folderController_ = nil;
+  if (folderController_) {
+    [self setSubFolderGrowthToRight:YES];
+    [[folderController_ window] close];
+    folderController_ = nil;
+  }
 }
 
 - (BookmarkModel*)bookmarkModel {

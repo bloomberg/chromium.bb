@@ -31,7 +31,19 @@
 
 // Don't use a high window level when running unit tests -- it'll
 // interfere with anything else you are working on.
-@interface BookmarkBarFolderControllerLow : BookmarkBarFolderController {
+// For testing.
+@interface BookmarkBarFolderControllerNoLevel : BookmarkBarFolderController
+@end
+
+@implementation BookmarkBarFolderControllerNoLevel
+- (void)configureWindowLevel {
+  // Intentionally empty.
+}
+@end
+
+// No window level and the ability to fake the "top left" point of the window.
+// For testing.
+@interface BookmarkBarFolderControllerLow : BookmarkBarFolderControllerNoLevel {
   BOOL realTopLeft_;  // Use the real windowTopLeft call?
 }
 @property (nonatomic) BOOL realTopLeft;
@@ -42,12 +54,9 @@
 
 @synthesize realTopLeft = realTopLeft_;
 
-- (void)configureWindowLevel {
-  // Intentionally empty.
-}
-
-- (NSPoint)windowTopLeft {
-  return realTopLeft_ ? [super windowTopLeft] : NSMakePoint(200,200);
+- (NSPoint)windowTopLeftForWidth:(int)width {
+  return realTopLeft_ ? [super windowTopLeftForWidth:width] :
+      NSMakePoint(200,200);
 }
 
 @end
@@ -123,7 +132,14 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                  delegate:nil
            resizeDelegate:nil]);
     [parentBarController_ loaded:model];
-    [[test_window() contentView] addSubview:[parentBarController_ view]];
+    // Make parent frame for bookmark bar then open it.
+    NSRect frame = [[test_window() contentView] frame];
+    frame = NSInsetRect(frame, 100, 200);
+    NSView* fakeToolbarView = [[[NSView alloc] initWithFrame:frame]
+                                autorelease];
+    [[test_window() contentView] addSubview:fakeToolbarView];
+    [fakeToolbarView addSubview:[parentBarController_ view]];
+    [parentBarController_ setBookmarkBarEnabled:YES];
   }
 
   // Remove the bookmark with the long title.
@@ -200,7 +216,7 @@ TEST_F(BookmarkBarFolderControllerTest, ReleaseOnClose) {
   [[bbfc window] close];  // trigger an autorelease of bbfc.get()
 }
 
-TEST_F(BookmarkBarFolderControllerTest, Position) {
+TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
  BookmarkButton* parentButton = [[parentBarController_ buttons]
                                    objectAtIndex:0];
   EXPECT_TRUE(parentButton);
@@ -213,7 +229,7 @@ TEST_F(BookmarkBarFolderControllerTest, Position) {
                       barController:parentBarController_]);
   [bbfc window];
   [bbfc setRealTopLeft:YES];
-  NSPoint pt = [bbfc windowTopLeft];  // screen coords
+  NSPoint pt = [bbfc windowTopLeftForWidth:0];  // screen coords
   NSPoint buttonOriginInScreen =
       [[parentButton window]
         convertBaseToScreen:[parentButton
@@ -230,10 +246,75 @@ TEST_F(BookmarkBarFolderControllerTest, Position) {
                        barController:parentBarController_]);
   [bbfc2 window];
   [bbfc2 setRealTopLeft:YES];
-  pt = [bbfc2 windowTopLeft];
+  pt = [bbfc2 windowTopLeftForWidth:0];
   // We're now overlapping the window a bit.
   EXPECT_EQ(pt.x, NSMaxX([[bbfc.get() window] frame]) -
             bookmarks::kBookmarkMenuOverlap);
+}
+
+// Confirm we grow right until end of screen, then start growing left
+// until end of screen again, then right.
+TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* folder = parent;
+
+  const int count = 100;
+  int i;
+  // Make some super duper deeply nested folders.
+  for (i=0; i<count; i++) {
+    folder = model->AddGroup(folder, 0, L"nested folder");
+  }
+
+  // Setup initial state for opening all folders.
+  folder = parent;
+  BookmarkButton* parentButton = [[parentBarController_ buttons]
+                                   objectAtIndex:0];
+  BookmarkBarFolderController* parentController = nil;
+  EXPECT_TRUE(parentButton);
+
+  // Open them all.
+  scoped_nsobject<NSMutableArray> folder_controller_array;
+  folder_controller_array.reset([[NSMutableArray array] retain]);
+  for (i=0; i<count; i++) {
+    BookmarkBarFolderControllerNoLevel* bbfcl =
+        [[BookmarkBarFolderControllerNoLevel alloc]
+          initWithParentButton:parentButton
+              parentController:parentController
+                 barController:parentBarController_];
+    [folder_controller_array addObject:bbfcl];
+    [bbfcl autorelease];
+    [bbfcl window];
+    parentController = bbfcl;
+    parentButton = [[bbfcl buttons] objectAtIndex:0];
+  }
+
+  // Make vector of all x positions.
+  std::vector<CGFloat> leftPositions;
+  for (i=0; i<count; i++) {
+    CGFloat x = [[[folder_controller_array objectAtIndex:i] window]
+                  frame].origin.x;
+    leftPositions.push_back(x);
+  }
+
+  // Make sure the first few grow right.
+  for (i=0; i<3; i++)
+    EXPECT_TRUE(leftPositions[i+1] > leftPositions[i]);
+
+  // Look for the first "grow left".
+  while (leftPositions[i] > leftPositions[i-1])
+    i++;
+  // Confirm the next few also grow left.
+  int j;
+  for (j=i; j<i+3; j++)
+    EXPECT_TRUE(leftPositions[j+1] < leftPositions[j]);
+  i = j;
+
+  // Finally, confirm we see a "grow right" once more.
+  while (leftPositions[i] < leftPositions[i-1])
+    i++;
+  // (No need to EXPECT a final "grow right"; if we didn't find one
+  // we'd get a C++ array bounds exception).
 }
 
 TEST_F(BookmarkBarFolderControllerTest, DropDestination) {
