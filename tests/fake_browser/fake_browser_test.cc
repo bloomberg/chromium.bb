@@ -489,8 +489,12 @@ int main(int argc, char** argv) {
   CHECK(shutdown_func != NULL);
   shutdown_func();
 
-  int rc = dlclose(dl_handle);
-  CHECK(rc == 0);
+  // TODO(mseaborn): Re-enable when
+  // http://code.google.com/p/nativeclient/issues/detail?id=668 is fixed.
+  // The plugin doesn't wait for its upcall thread so unloading running
+  // code causes a crash.
+  // int rc = dlclose(dl_handle);
+  // CHECK(rc == 0);
 
   return 0;
 }
