@@ -43,6 +43,9 @@ class LanguagePinyinConfigView : public views::ButtonListener,
   // views::DialogDelegate overrides.
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView() { return this; }
+  virtual int GetDialogButtons() const;
+  virtual std::wstring GetDialogButtonLabel(
+      MessageBoxFlags::DialogButton button) const;
   virtual std::wstring GetWindowTitle() const;
 
   // views::View overrides.

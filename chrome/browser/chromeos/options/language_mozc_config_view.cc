@@ -110,6 +110,18 @@ void LanguageMozcConfigView::Layout() {
   contents_->SetBounds(0, 0, width(), height());
 }
 
+int LanguageMozcConfigView::GetDialogButtons() const {
+  return MessageBoxFlags::DIALOGBUTTON_OK;
+}
+
+std::wstring LanguageMozcConfigView::GetDialogButtonLabel(
+    MessageBoxFlags::DialogButton button) const {
+  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    return l10n_util::GetString(IDS_OK);
+  }
+  return L"";
+}
+
 std::wstring LanguageMozcConfigView::GetWindowTitle() const {
   return l10n_util::GetString(
       IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE);

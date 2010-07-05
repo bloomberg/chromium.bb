@@ -66,6 +66,18 @@ void LanguagePinyinConfigView::Layout() {
   contents_->SetBounds(0, 0, width(), height());
 }
 
+int LanguagePinyinConfigView::GetDialogButtons() const {
+  return MessageBoxFlags::DIALOGBUTTON_OK;
+}
+
+std::wstring LanguagePinyinConfigView::GetDialogButtonLabel(
+    MessageBoxFlags::DialogButton button) const {
+  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    return l10n_util::GetString(IDS_OK);
+  }
+  return L"";
+}
+
 std::wstring LanguagePinyinConfigView::GetWindowTitle() const {
   return l10n_util::GetString(
       IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE);

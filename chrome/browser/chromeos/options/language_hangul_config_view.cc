@@ -101,6 +101,18 @@ void LanguageHangulConfigView::Layout() {
   contents_->SetBounds(0, 0, width(), height());
 }
 
+int LanguageHangulConfigView::GetDialogButtons() const {
+  return MessageBoxFlags::DIALOGBUTTON_OK;
+}
+
+std::wstring LanguageHangulConfigView::GetDialogButtonLabel(
+    MessageBoxFlags::DialogButton button) const {
+  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    return l10n_util::GetString(IDS_OK);
+  }
+  return L"";
+}
+
 std::wstring LanguageHangulConfigView::GetWindowTitle() const {
   return l10n_util::GetString(
       IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE);
