@@ -217,8 +217,10 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
 
   // Callers expect the requested bounds not the actual bounds. For example,
   // during init callers expect 0x0, but Gtk layout enforces a min size of 1x1.
-  out->set_width(GetNativeView()->requisition.width);
-  out->set_height(GetNativeView()->requisition.height);
+  GtkRequisition requisition;
+  gtk_widget_get_child_requisition(GetNativeView(), &requisition);
+  out->set_width(requisition.width);
+  out->set_height(requisition.height);
 }
 
 void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,

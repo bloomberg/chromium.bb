@@ -201,7 +201,7 @@ void NativeControl::ValidateNativeControl() {
 
 void NativeControl::ViewHierarchyChanged(bool is_add, View *parent,
                                          View *child) {
-  if (is_add && child == this && GetWidget()) {
+  if (is_add && parent != this && !container_ && GetWidget()) {
     ValidateNativeControl();
     Layout();
   }

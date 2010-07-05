@@ -183,9 +183,9 @@ void OptionsWindowView::Layout() {
 }
 
 gfx::Size OptionsWindowView::GetPreferredSize() {
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_OPTIONS_DIALOG_WIDTH_CHARS,
-      IDS_OPTIONS_DIALOG_HEIGHT_LINES));
+  gfx::Size size(tabs_->GetPreferredSize());
+  size.Enlarge(2 * kDialogPadding, 2 * kDialogPadding);
+  return size;
 }
 
 void OptionsWindowView::ViewHierarchyChanged(bool is_add,

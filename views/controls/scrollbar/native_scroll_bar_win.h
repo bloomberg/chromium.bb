@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,12 @@ class NativeScrollBarWin : public NativeControlWin,
   // sb_container_ is a custom hwnd that we use to wrap the real
   // windows scrollbar. We need to do this to get the scroll events
   // without having to do anything special in the high level hwnd.
-  ScrollBarContainer* sb_container_;
+  scoped_ptr<ScrollBarContainer> sb_container_;
+
+  // Last scrollbar state we wrote to the scrollbar. We keep it here, so we can
+  // reinitialize the scrollbar to its previous state in case it gets hidden and
+  // recreated.
+  SCROLLINFO scroll_info_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeScrollBarWin);
 };
@@ -59,4 +64,3 @@ class NativeScrollBarWin : public NativeControlWin,
 }  // namespace views
 
 #endif  // #ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_
-

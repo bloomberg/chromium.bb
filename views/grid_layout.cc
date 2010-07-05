@@ -844,21 +844,25 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   if (rows_.empty())
     return;
 
-  // Calculate the size of each of the columns. Some views preferred heights are
-  // derived from their width, as such we need to calculate the size of the
-  // columns first.
+  // Calculate the preferred width of each of the columns. Some views'
+  // preferred heights are derived from their width, as such we need to
+  // calculate the size of the columns first.
   for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
        i != column_sets_.end(); ++i) {
     (*i)->CalculateSize();
-    if (layout || width > 0) {
-      // We're doing a layout, divy up any extra space.
-      (*i)->Resize(width - (*i)->LayoutWidth() - left_inset_ - right_inset_);
-      // And reset the x coordinates.
-      (*i)->ResetColumnXCoordinates();
-    }
     pref->set_width(std::max(pref->width(), (*i)->LayoutWidth()));
   }
   pref->set_width(pref->width() + left_inset_ + right_inset_);
+
+  // Go over the columns again and set them all to the size we settled for.
+  width = width ? width : pref->width();
+  for (std::vector<ColumnSet*>::iterator i = column_sets_.begin();
+       i != column_sets_.end(); ++i) {
+    // We're doing a layout, divy up any extra space.
+    (*i)->Resize(width - (*i)->LayoutWidth() - left_inset_ - right_inset_);
+    // And reset the x coordinates.
+    (*i)->ResetColumnXCoordinates();
+  }
 
   // Reset the height of each row.
   LayoutElement::ResetSizes(&rows_);
@@ -1063,4 +1067,3 @@ views::GridLayout* CreatePanelGridLayout(views::View* host) {
                     kPanelVertMargin, kPanelHorizMargin);
   return layout;
 }
-

@@ -500,6 +500,8 @@ void WidgetGtk::Init(GtkWidget* parent,
                         GDK_KEY_RELEASE_MASK);
   SetRootViewForWidget(widget_, root_view_.get());
 
+  g_signal_connect_after(G_OBJECT(window_contents_), "size_request",
+                         G_CALLBACK(&OnSizeRequestThunk), this);
   g_signal_connect_after(G_OBJECT(window_contents_), "size_allocate",
                          G_CALLBACK(&OnSizeAllocateThunk), this);
   gtk_widget_set_app_paintable(window_contents_, true);
@@ -881,6 +883,18 @@ int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
   if (event.type == GDK_2BUTTON_PRESS)
     flags |= MouseEvent::EF_IS_DOUBLE_CLICK;
   return flags;
+}
+
+void WidgetGtk::OnSizeRequest(GtkWidget* widget, GtkRequisition* requisition) {
+  // Do only return the preferred size for child windows. GtkWindow interprets
+  // the requisition as a minimum size for top level windows, returning a
+  // preferred size for these would prevents us from setting smaller window
+  // sizes.
+  if (type_ == TYPE_CHILD) {
+    gfx::Size size(root_view_->GetPreferredSize());
+    requisition->width = size.width();
+    requisition->height = size.height();
+  }
 }
 
 void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {

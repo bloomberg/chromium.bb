@@ -64,7 +64,6 @@ TableView::TableView(TableModel* model,
       single_selection_(single_selection),
       ignore_listview_change_(false),
       custom_colors_enabled_(false),
-      sized_columns_(false),
       autosize_columns_(autosize_columns),
       resizable_columns_(resizable_columns),
       list_view_(NULL),
@@ -133,10 +132,8 @@ void TableView::DidChangeBounds(const gfx::Rect& previous,
     return;
   SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(FALSE), 0);
   Layout();
-  if ((!sized_columns_ || autosize_columns_) && width() > 0) {
-    sized_columns_ = true;
+  if (autosize_columns_ && width() > 0)
     ResetColumnSizes();
-  }
   UpdateContentOffset();
   SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
 }
@@ -1549,6 +1546,15 @@ gfx::Rect TableView::GetAltTextBounds() {
 
 gfx::Font TableView::GetAltTextFont() {
   return ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
+}
+
+void TableView::VisibilityChanged(View* starting_from, bool is_visible) {
+  // GetClientRect as used by ResetColumnSize to obtain the total width
+  // available to the columns only works when the native control is visible, so
+  // update the column sizes in case we become visible. This depends on
+  // VisibilityChanged() being called in post order on the view tree.
+  if (is_visible && autosize_columns_)
+    ResetColumnSizes();
 }
 
 
