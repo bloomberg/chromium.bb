@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/env_var.h"
 #include "base/event_recorder.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -90,8 +91,9 @@ int main(int argc, char* argv[]) {
   // directly, its constructor sets up some necessary state.
   MessageLoopForUI main_message_loop;
 
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
   bool suppress_error_dialogs = (
-       base::SysInfo::HasEnvVar(L"CHROME_HEADLESS") ||
+       env->HasEnv("CHROME_HEADLESS") ||
        parsed_command_line.HasSwitch(test_shell::kNoErrorDialogs) ||
        parsed_command_line.HasSwitch(test_shell::kLayoutTests));
   bool layout_test_mode =
