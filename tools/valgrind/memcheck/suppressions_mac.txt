@@ -190,6 +190,24 @@
    fun:_ZN19TestWebViewDelegate20CreatePluginDelegateERK8FilePathRKSs
    fun:_ZN11webkit_glue13WebPluginImpl10initializeEPN6WebKit18WebPluginContainerE
 }
+{
+   # Mac Sandbox test cases are registered in a global map.  This code is only
+   # used in the unit test binary.
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*MacSandboxed*TestCaseEEC2EPKc
+   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*MacSandboxed*TestCaseEEC1EPKc
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZNSt3tr112_GLOBAL__N_16ignoreE
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
+   fun:_ZN4dyld24initializeMainExecutableEv
+   fun:_ZN4dyld5_mainEPK11mach_headermiPPKcS5_S5_
+   fun:_ZN13dyldbootstrap5startEPK11mach_headeriPPKcl
+   fun:_dyld_start
+   obj:*
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
@@ -1101,23 +1119,6 @@
    fun:_ZN7WebCore13InlineFlowBox5paintERNS_12RenderObject9PaintInfoEii
    fun:_ZN7WebCore13RootInlineBox5paintERNS_12RenderObject9PaintInfoEii
    fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_12RenderObject9PaintInfoEii
-}
-{
-   bug_44090
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*MacSandboxed*TestCaseEEC2EPKc
-   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*MacSandboxed*TestCaseEEC1EPKc
-   fun:_Z41__static_initialization_and_destruction_0ii
-   fun:_GLOBAL__I__ZNSt3tr112_GLOBAL__N_16ignoreE
-   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
-   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
-   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
-   fun:_ZN4dyld24initializeMainExecutableEv
-   fun:_ZN4dyld5_mainEPK11mach_headermiPPKcS5_S5_
-   fun:_ZN13dyldbootstrap5startEPK11mach_headeriPPKcl
-   fun:_dyld_start
-   obj:*
 }
 {
    bug_44393
