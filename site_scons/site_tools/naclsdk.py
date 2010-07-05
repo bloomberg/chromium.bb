@@ -151,8 +151,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
     return None
 
   else:
-    print 'unknown sdk mode [%s]' % sdk_mode
-    assert 0
+    raise Exception('Unknown sdk mode: %r' % sdk_mode)
 
 
 def DownloadSdk(env):
@@ -245,6 +244,10 @@ def _SetEnvForX86Sdk(env, sdk_path):
                        ],
               ASFLAGS=[extraflag],
               )
+  if env.Bit('nacl_glibc'):
+    env.Replace(CC="nacl-glibc-gcc")
+    env.Replace(LINK="nacl-glibc-gcc")
+    env.Replace(NACL_SDK_LIB=sdk_path + '/nacl64/lib')
 
 
 def _SetEnvForArmSdk(env, sdk_path):

@@ -113,10 +113,10 @@ def GetTargets(src):
                             modules["nacl_src"])
   # newlib requires the NaCl headers to be copied into its source directory.
   # TODO(mseaborn): Fix newlib to not require this.
-  src["newlib2"] = \
-      btarget.UnionDir2("newlib2", os.path.join(top_dir, "newlib2"),
-                        [("", src["newlib"]),
-                         ("newlib/libc/sys/nacl", modules["nacl-headers"])])
+  src["newlib2"] = btarget.UnionDir2(
+      "newlib2", os.path.join(top_dir, "newlib2"),
+      [("", src["newlib"], ""),
+       ("newlib/libc/sys/nacl", modules["nacl-headers"], "")])
   AddAutoconfModule(
       "binutils", "binutils", deps=[],
       configure_opts=[
@@ -207,7 +207,8 @@ int main() {
       "hello",
       os.path.join(top_dir, "build", "hello"),
       newlib_toolchain,
-      hello_c)
+      hello_c,
+      compiler=["nacl64-gcc", "-m32"])
   module_list.append(modules["hello"])
 
   # TODO(mseaborn): This is cheating.  A manual step is still required
@@ -233,15 +234,26 @@ int main() {
           "--enable-kernel=2.2.0"],
       use_install_root=True)
 
+  modules["wrappers"] = btarget.SourceTarget(
+      "wrappers",
+      os.path.join(top_dir, "install", "wrappers"),
+      dirtree.CopyTree(os.path.join(script_dir, "wrappers")))
+  modules["linker_scripts"] = btarget.UnionDir2(
+      "linker_scripts",
+      os.path.join(top_dir, "install", "linker_scripts"),
+      [("nacl64/lib", src["glibc"], "nacl/dyn-link")])
+
   glibc_toolchain = MakeInstallPrefix(
       "glibc_toolchain",
-      deps=["binutils", "full-gcc", "glibc"])
+      deps=["binutils", "full-gcc", "glibc", "wrappers", "linker_scripts"])
 
-  modules["hello2"] = btarget.TestModule(
-      "hello2",
-      os.path.join(top_dir, "build", "hello2"),
-      glibc_toolchain, hello_c)
-  module_list.append(modules["hello2"])
+  modules["hello_glibc"] = btarget.TestModule(
+      "hello_glibc",
+      os.path.join(top_dir, "build", "hello_glibc"),
+      glibc_toolchain,
+      hello_c,
+      compiler=["nacl-glibc-gcc"])
+  module_list.append(modules["hello_glibc"])
 
   return module_list
 

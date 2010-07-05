@@ -277,8 +277,8 @@ def SconsBuild(name, dest_dir, src_dir, prefix_obj, scons_args):
                      deps=[src_dir, prefix_obj])
 
 
-# TODO(mseaborn): Hard link the files instead of copying, because
-# having multiple copies is relatively expensive.
+# This could be implemented in terms of UnionDir2(), but for clarity
+# and for comparison we write out the simpler definition.
 def UnionDir(name, dest_dir, input_trees):
   def DoBuild():
     ResetDir(dest_dir)
@@ -289,29 +289,40 @@ def UnionDir(name, dest_dir, input_trees):
 
 
 # Combines input directories under different subdirs.
+# An element
+#   (dest_subdir, tree, src_subdir)
+# in input_trees means "take src_subdir from tree and install under
+# dest_subdir in the output".
+# This provides a general means of slicing and combining trees that is
+# not limited to unioning directories.
+# TODO(mseaborn): This means we should probably split it up into parts.
 def UnionDir2(name, dest_dir, input_trees):
   def DoBuild():
     ResetDir(dest_dir)
-    for subdir, tree in input_trees:
-      dest_subdir = os.path.join(dest_dir, subdir)
-      dirtree.MkdirP(dest_subdir)
-      dirtree.CopyOntoHardlink(tree.dest_path, dest_subdir)
-  return BuildTarget(name, dest_dir, DoBuild,
-                     args=["union_dir2"] +
-                          [subdir for subdir, tree in input_trees],
-                     deps=[tree for subdir, tree in input_trees])
+    for dest_subdir, tree, src_subdir in input_trees:
+      dest_path = os.path.join(dest_dir, dest_subdir)
+      dirtree.MkdirP(dest_path)
+      dirtree.CopyOntoHardlink(os.path.join(tree.dest_path, src_subdir),
+                               dest_path)
+  return BuildTarget(
+      name, dest_dir, DoBuild,
+      args=["union_dir2"] +
+           [(dest_subdir, src_subdir)
+            for dest_subdir, tree, src_subdir in input_trees],
+      deps=[tree
+            for dest_subdir, tree, src_subdir in input_trees])
 
 
-def TestModule(name, dest_dir, prefix_obj, code):
+def TestModule(name, dest_dir, prefix_obj, code, compiler):
   def DoBuild():
     ResetDir(dest_dir)
     dirtree.WriteFile(os.path.join(dest_dir, "prog.c"), code)
     subprocess.check_call(
         ["env", GetPathVar(prefix_obj)] +
-        ["nacl64-gcc", "-m32",
-         os.path.join(dest_dir, "prog.c"),
+        compiler +
+        [os.path.join(dest_dir, "prog.c"),
          "-o", os.path.join(dest_dir, "prog")])
-  return BuildTarget(name, dest_dir, DoBuild, args=[code],
+  return BuildTarget(name, dest_dir, DoBuild, args=[code, compiler],
                      deps=[prefix_obj])
 
 

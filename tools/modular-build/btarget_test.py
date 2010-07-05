@@ -9,9 +9,10 @@ import shutil
 import subprocess
 import unittest
 
-import dirtree
-import btarget
 from dirtree_test import TempDirTestCase
+import dirtree
+import dirtree_test
+import btarget
 
 
 def PlanToString(targets):
@@ -126,6 +127,25 @@ class BuildTargetTests(TempDirTestCase):
     # Try again to test idempotence of install step.
     install.DoBuild()
     assert os.path.exists(os.path.join(tempdir, "install/bin/hellow"))
+
+  def test_union_dirs(self):
+    Dir = dirtree_test.Dir
+    File = dirtree_test.File
+
+    tree1 = Dir([("subdir_foo", Dir([("myfile", File("my file"))]))])
+    tree2 = Dir([("subdir_bar", Dir([("urfile", File("another file"))]))])
+
+    tempdir = self.MakeTempDir()
+    dir1 = btarget.SourceTarget("dir1", os.path.join(tempdir, "dir1"), tree1)
+    dir2 = btarget.SourceTarget("dir2", os.path.join(tempdir, "dir2"), tree2)
+    dir3 = btarget.UnionDir2("dir3", os.path.join(tempdir, "dir3"),
+                             [("dest_subdir_a", dir1, ""),
+                              ("dest_subdir_b", dir2, "subdir_bar")])
+    btarget.Rebuild([dir3], open(os.devnull, "w"))
+    assert os.path.exists(os.path.join(dir3.dest_path, "dest_subdir_a",
+                                       "subdir_foo", "myfile"))
+    assert os.path.exists(os.path.join(dir3.dest_path, "dest_subdir_b",
+                                       "urfile"))
 
 
 if __name__ == "__main__":

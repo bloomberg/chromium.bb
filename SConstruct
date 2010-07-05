@@ -539,6 +539,9 @@ def InstallPlugin(target, source, env):
   command = env.subst(' '.join(INSTALL_COMMAND + ['MODE=INSTALL', sb] + deps))
   return os.system(command)
 
+DeclareBit('nacl_glibc', 'Use nacl-glibc for building untrusted code')
+pre_base_env.SetBitFromOption('nacl_glibc', False)
+
 # In prebuild mode we ignore the dependencies so that stuff does
 # NOT get build again
 # Optionally ignore the build process.
@@ -777,6 +780,16 @@ def CommandSelLdrTestNacl(env, name, command,
     # in emulation we skip platform qualification tests
     # NOTE: this only affects arm with user mode emulation
     sel_ldr_flags += ['-Q']
+
+  if env.Bit('nacl_glibc'):
+    # TODO(mseaborn): We should not use '--' here; we should use it
+    # unconditionally below.
+    command = ['${NACL_SDK_LIB}/runnable-ld.so',
+               '--', '--library-path', '${NACL_SDK_LIB}'] + command
+    extra_env = 'NACLDYNCODE=1,NACL_DANGEROUS_ENABLE_FILE_ACCESS=1'
+    extra['osenv'] = AddToStringifiedList(extra.get('osenv'), extra_env)
+    # TODO(mseaborn): Remove the need for the -s (stub out) option.
+    sel_ldr_flags += ['-s']
 
   command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
 

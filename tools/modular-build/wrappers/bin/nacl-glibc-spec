@@ -1,0 +1,9 @@
+
+# TODO(mseaborn): We could remove the need for this spec file if we
+# change nacl-gcc's default one with an option to omit "-lnacl".
+
+*lib:
+-lc -lgcc
+
+# In principle, this also ought to work:
+# + %<-lnacl
