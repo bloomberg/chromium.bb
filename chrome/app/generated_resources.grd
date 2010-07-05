@@ -7619,6 +7619,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_CHANGE_PHOTO">
         Change picture
       </message>
+      <message name="IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE" desc="Title for the password changed dialog box">
+        Login
+      </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_TITLE" desc="Title of the dialog shown when password change has been detected">
         You password has changed
       </message>
@@ -7629,7 +7632,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Synchronize all settings and data\n(may take some time)
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_MIGRATE" desc="Migrate option of the password changed dialog">
-        Only synchronize settings and data that have changed since last sign in\n(requires your previous password)
+        Only synchronize settings and data that have\nchanged since last sign in\n(requires your previous password)
       </message>
       <message name="IDS_LOGIN_PREVIOUS_PASSWORD" desc="Password field text on the password changed dialog">
         Previous password
