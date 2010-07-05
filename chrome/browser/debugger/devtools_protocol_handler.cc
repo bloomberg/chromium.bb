@@ -32,7 +32,7 @@ void DevToolsProtocolHandler::Start() {
 
 void DevToolsProtocolHandler::Init() {
   server_ = DevToolsRemoteListenSocket::Listen(
-      "127.0.0.1", port_, this, this);
+      "127.0.0.1", port_, this);
 }
 
 void DevToolsProtocolHandler::Stop() {
@@ -85,26 +85,14 @@ void DevToolsProtocolHandler::Send(const DevToolsRemoteMessage& message) {
   }
 }
 
-void DevToolsProtocolHandler::DidAccept(ListenSocket *server,
-                                        ListenSocket *connection) {
+void DevToolsProtocolHandler::OnAcceptConnection(ListenSocket *connection) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  if (connection_ == NULL) {
-    connection_ = connection;
-    connection_->AddRef();
-  }
-  // else the connection will get deleted itself with scoped_refptr
+  connection_ = connection;
 }
 
-void DevToolsProtocolHandler::DidRead(ListenSocket *connection,
-                                      const std::string& data) {
-  // Not used.
-}
-
-void DevToolsProtocolHandler::DidClose(ListenSocket *sock) {
+void DevToolsProtocolHandler::OnConnectionLost() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(connection_ == sock);
   connection_ = NULL;
-  sock->Release();
   for (ToolToListenerMap::const_iterator it = tool_to_listener_map_.begin(),
        end = tool_to_listener_map_.end();
        it != end;

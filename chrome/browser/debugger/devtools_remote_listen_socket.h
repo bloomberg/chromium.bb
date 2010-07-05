@@ -14,25 +14,29 @@ class DevToolsRemoteListener;
 
 // Listens to remote debugger incoming connections, handles the V8ARDP protocol
 // socket input and invokes the message handler when appropriate.
-class DevToolsRemoteListenSocket : public ListenSocket {
+class DevToolsRemoteListenSocket : public ListenSocket,
+                                   public ListenSocket::ListenSocketDelegate {
  public:
   // Listen on port for the specified IP address.  Use 127.0.0.1 to only
   // accept local connections.
   static DevToolsRemoteListenSocket* Listen(
       const std::string& ip,
       int port,
-      ListenSocketDelegate* del,
       DevToolsRemoteListener* message_listener);
 
  protected:
   virtual void Listen() { ListenSocket::Listen(); }
   virtual void Accept();
-  virtual void Read();
   virtual void Close();
   virtual void SendInternal(const char* bytes, int len);
 
  private:
   virtual ~DevToolsRemoteListenSocket();
+
+  // ListenSocket::ListenSocketDelegate interface
+  virtual void DidAccept(ListenSocket *server, ListenSocket *connection);
+  virtual void DidRead(ListenSocket *connection, const char* data, int len);
+  virtual void DidClose(ListenSocket *connection);
 
   // The protocol states while reading socket input
   enum State {
@@ -43,11 +47,9 @@ class DevToolsRemoteListenSocket : public ListenSocket {
   };
 
   DevToolsRemoteListenSocket(SOCKET s,
-                             ListenSocketDelegate *del,
                              DevToolsRemoteListener *listener);
   void StartNextField();
   void HandleMessage();
-  void DispatchRead(char* buf, int len);
   void DispatchField();
   const std::string& GetHeader(const std::string& header_name,
                                const std::string& default_value) const;

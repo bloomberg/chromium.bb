@@ -48,7 +48,7 @@ static const char* kSemaphoreName = "chromium.listen_socket";
 
 
 ListenSocket* DevToolsRemoteListenSocketTester::DoListen() {
-  return DevToolsRemoteListenSocket::Listen(kLoopback, kTestPort, this, this);
+  return DevToolsRemoteListenSocket::Listen(kLoopback, kTestPort, this);
 }
 
 void DevToolsRemoteListenSocketTester::SetUp() {
@@ -211,8 +211,6 @@ int DevToolsRemoteListenSocketTester::ClearTestSocket() {
 }
 
 void DevToolsRemoteListenSocketTester::Shutdown() {
-  connection_->Release();
-  connection_ = NULL;
   server_->Release();
   server_ = NULL;
   ReportAction(ListenSocketTestAction(ACTION_SHUTDOWN));
@@ -220,10 +218,8 @@ void DevToolsRemoteListenSocketTester::Shutdown() {
 
 void DevToolsRemoteListenSocketTester::Listen() {
   server_ = DoListen();
-  if (server_) {
-    server_->AddRef();
-    ReportAction(ListenSocketTestAction(ACTION_LISTEN));
-  }
+  server_->AddRef();
+  ReportAction(ListenSocketTestAction(ACTION_LISTEN));
 }
 
 void DevToolsRemoteListenSocketTester::SendFromTester() {
@@ -231,19 +227,14 @@ void DevToolsRemoteListenSocketTester::SendFromTester() {
   ReportAction(ListenSocketTestAction(ACTION_SEND));
 }
 
-void DevToolsRemoteListenSocketTester::DidAccept(ListenSocket *server,
-                                                 ListenSocket *connection) {
+void DevToolsRemoteListenSocketTester::OnAcceptConnection(
+    ListenSocket* connection) {
   connection_ = connection;
-  connection_->AddRef();
   ReportAction(ListenSocketTestAction(ACTION_ACCEPT));
 }
 
-void DevToolsRemoteListenSocketTester::DidRead(ListenSocket *connection,
-                                 const std::string& data) {
-  ReportAction(ListenSocketTestAction(ACTION_READ, data));
-}
-
-void DevToolsRemoteListenSocketTester::DidClose(ListenSocket *sock) {
+void DevToolsRemoteListenSocketTester::OnConnectionLost() {
+  connection_ = NULL;
   ReportAction(ListenSocketTestAction(ACTION_CLOSE));
 }
 

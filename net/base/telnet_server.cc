@@ -197,7 +197,9 @@ void TelnetServer::StateMachineStep(unsigned char c) {
     case EXPECTING_NEW_LINE:
       if (c == TelnetProtocol::LF) {
         Send("\n", 1);
-        socket_delegate_->DidRead(this, command_line_);
+        socket_delegate_->DidRead(this,
+                                  command_line_.c_str(),
+                                  command_line_.length());
         command_line_ = "";
       }
       input_state_ = NOT_IN_IAC_OR_ESC_SEQUENCE;

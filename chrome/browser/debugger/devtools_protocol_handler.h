@@ -21,8 +21,7 @@ class DevToolsRemoteMessage;
 // based on the "Tool" message header value.
 class DevToolsProtocolHandler
     : public DevToolsRemoteListener,
-      public OutboundSocketDelegate,
-      public ListenSocket::ListenSocketDelegate {
+      public OutboundSocketDelegate {
  public:
   typedef base::hash_map< std::string, scoped_refptr<DevToolsRemoteListener> >
       ToolToListenerMap;
@@ -54,15 +53,11 @@ class DevToolsProtocolHandler
 
   // DevToolsRemoteListener interface
   virtual void HandleMessage(const DevToolsRemoteMessage& message);
-  virtual void OnConnectionLost() {}
+  virtual void OnAcceptConnection(ListenSocket *connection);
+  virtual void OnConnectionLost();
 
   // OutboundSocketDelegate interface
   virtual void Send(const DevToolsRemoteMessage& message);
-
-  // ListenSocket::ListenSocketDelegate interface
-  virtual void DidAccept(ListenSocket *server, ListenSocket *connection);
-  virtual void DidRead(ListenSocket *connection, const std::string& data);
-  virtual void DidClose(ListenSocket *sock);
 
  private:
   virtual ~DevToolsProtocolHandler();

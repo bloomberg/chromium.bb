@@ -28,7 +28,7 @@ class TCPPingerTest
     LOG(INFO) << "TCPPinger accepted connection";
     connected_sock_ = connection;
   }
-  virtual void DidRead(ListenSocket*, const std::string& s) {
+  virtual void DidRead(ListenSocket*, const char* str, int len) {
     // Not really needed yet, as TCPPinger doesn't support Read
     connected_sock_->Send(std::string("HTTP/1.1 404 Not Found"), true);
     connected_sock_ = NULL;

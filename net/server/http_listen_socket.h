@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_TOOLS_HTTP_LISTEN_SOCKET_H_
-#define NET_BASE_TOOLS_HTTP_LISTEN_SOCKET_H_
+#ifndef NET_SERVER_HTTP_LISTEN_SOCKET_H_
+#define NET_SERVER_HTTP_LISTEN_SOCKET_H_
 
-#include "base/message_loop.h"
 #include "net/base/listen_socket.h"
 
 class HttpServerRequestInfo;
-class HttpServerResponseInfo;
 
 // Implements a simple HTTP listen socket on top of the raw socket interface.
 class HttpListenSocket : public ListenSocket,
@@ -17,22 +15,30 @@ class HttpListenSocket : public ListenSocket,
  public:
   class Delegate {
    public:
-    virtual void OnRequest(HttpListenSocket* connection,
-                           HttpServerRequestInfo* info) = 0;
+    virtual void OnHttpRequest(HttpListenSocket* socket,
+                               HttpServerRequestInfo* info) = 0;
 
+    virtual void OnWebSocketRequest(HttpListenSocket* socket,
+                                    HttpServerRequestInfo* info) = 0;
+
+    virtual void OnWebSocketMessage(HttpListenSocket* socket,
+                                    const std::string& data) = 0;
+
+    virtual void OnClose(HttpListenSocket* socket) = 0;
    protected:
     virtual ~Delegate() {}
   };
 
-  static HttpListenSocket* Listen(const std::string& ip, int port,
+  static HttpListenSocket* Listen(const std::string& ip,
+                                  int port,
                                   HttpListenSocket::Delegate* delegate);
+
+  void AcceptWebSocket(HttpServerRequestInfo* request);
+
+  void SendOverWebSocket(const std::string& data);
 
   void Listen() { ListenSocket::Listen(); }
   virtual void Accept();
-
-  // Send a server response.
-  // TODO(mbelshe): make this capable of non-ascii data.
-  void Respond(HttpServerResponseInfo* info, std::string& data);
 
   // ListenSocketDelegate
   virtual void DidAccept(ListenSocket* server, ListenSocket* connection);
@@ -40,8 +46,6 @@ class HttpListenSocket : public ListenSocket,
   virtual void DidClose(ListenSocket* sock);
 
  private:
-  friend class base::RefCountedThreadSafe<ListenSocket>;
-
   static const int kReadBufSize = 16 * 1024;
   HttpListenSocket(SOCKET s, HttpListenSocket::Delegate* del);
   virtual ~HttpListenSocket();
@@ -52,9 +56,10 @@ class HttpListenSocket : public ListenSocket,
   HttpServerRequestInfo* ParseHeaders();
 
   HttpListenSocket::Delegate* delegate_;
+  bool is_web_socket_;
   std::string recv_data_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpListenSocket);
 };
 
-#endif // NET_BASE_TOOLS_HTTP_LISTEN_SOCKET_H_
+#endif // NET_SERVER_HTTP_LISTEN_SOCKET_H_

@@ -51,7 +51,9 @@ class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
     // Socket that was created.  Ownership of connection is transferred
     // to the delegate with this call.
     virtual void DidAccept(ListenSocket *server, ListenSocket *connection) = 0;
-    virtual void DidRead(ListenSocket *connection, const std::string& data) = 0;
+    virtual void DidRead(ListenSocket *connection,
+                         const char* data,
+                         int len) = 0;
     virtual void DidClose(ListenSocket *sock) = 0;
   };
 

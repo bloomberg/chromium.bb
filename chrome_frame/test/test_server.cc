@@ -172,11 +172,13 @@ void SimpleWebServer::DidAccept(ListenSocket* server,
 }
 
 void SimpleWebServer::DidRead(ListenSocket* connection,
-                              const std::string& data) {
+                              const char* data,
+                              int len) {
   Connection* c = FindConnection(connection);
   DCHECK(c);
   Request& r = c->request();
-  r.OnDataReceived(data);
+  std::string str(data, len);
+  r.OnDataReceived(str);
   if (r.AllContentReceived()) {
     const Request& request = c->request();
     Response* response = FindResponse(request);
@@ -247,11 +249,14 @@ void HTTPTestServer::DidAccept(ListenSocket* server, ListenSocket* socket) {
   connection_list_.push_back(new ConfigurableConnection(socket));
 }
 
-void HTTPTestServer::DidRead(ListenSocket* socket, const std::string& data) {
+void HTTPTestServer::DidRead(ListenSocket* socket,
+                             const char* data,
+                             int len) {
   scoped_refptr<ConfigurableConnection> connection =
       ConnectionFromSocket(socket);
   if (connection) {
-    connection->r_.OnDataReceived(data);
+    std::string str(data, len);
+    connection->r_.OnDataReceived(str);
     if (connection->r_.AllContentReceived()) {
       if (LowerCaseEqualsASCII(connection->r_.method(), "post"))
         this->Post(connection, connection->r_.path(), connection->r_);

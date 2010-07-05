@@ -212,8 +212,10 @@ void ListenSocketTester::DidAccept(ListenSocket *server,
 }
 
 void ListenSocketTester::DidRead(ListenSocket *connection,
-                                 const std::string& data) {
-  ReportAction(ListenSocketTestAction(ACTION_READ, data));
+                                 const char* data,
+                                 int len) {
+  std::string str(data, len);
+  ReportAction(ListenSocketTestAction(ACTION_READ, str));
 }
 
 void ListenSocketTester::DidClose(ListenSocket *sock) {

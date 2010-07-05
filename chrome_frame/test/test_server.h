@@ -288,7 +288,7 @@ class SimpleWebServer : public ListenSocket::ListenSocketDelegate {
 
   // ListenSocketDelegate overrides.
   virtual void DidAccept(ListenSocket* server, ListenSocket* connection);
-  virtual void DidRead(ListenSocket* connection, const std::string& data);
+  virtual void DidRead(ListenSocket* connection, const char* data, int len);
   virtual void DidClose(ListenSocket* sock);
 
   const ConnectionList& connections() const {
@@ -381,7 +381,7 @@ class HTTPTestServer : public ListenSocket::ListenSocketDelegate {
   virtual void Post(ConfigurableConnection* connection,
                     const std::string& path, const Request& r) = 0;
 
-private:
+ private:
   typedef std::list<scoped_refptr<ConfigurableConnection> > ConnectionList;
   ConnectionList::iterator FindConnection(const ListenSocket* socket);
   scoped_refptr<ConfigurableConnection> ConnectionFromSocket(
@@ -389,7 +389,7 @@ private:
 
   // ListenSocketDelegate overrides.
   virtual void DidAccept(ListenSocket* server, ListenSocket* socket);
-  virtual void DidRead(ListenSocket* socket, const std::string& data);
+  virtual void DidRead(ListenSocket* socket, const char* data, int len);
   virtual void DidClose(ListenSocket* socket);
 
   scoped_refptr<ListenSocket> server_;

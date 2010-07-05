@@ -182,8 +182,9 @@ void HttpListenSocket::DidAccept(ListenSocket* server,
 }
 
 void HttpListenSocket::DidRead(ListenSocket* connection,
-                               const std::string& data) {
-  recv_data_ += data;
+                               const char* data,
+                               int len) {
+  recv_data_.append(data, len);
   while (recv_data_.length()) {
     HttpServerRequestInfo* request = ParseHeaders();
     if (!request)
