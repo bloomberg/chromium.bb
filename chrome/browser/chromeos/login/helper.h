@@ -25,6 +25,11 @@ views::Throbber* CreateDefaultThrobber();
 // Creates painter for login background.
 views::Painter* CreateBackgroundPainter();
 
+// Returns bounds of the screen to use for login wizard.
+// The rect is centered within the default monitor and sized accordingly if
+// |size| is not empty. Otherwise the whole monitor is occupied.
+gfx::Rect CalculateScreenBounds(const gfx::Size& size);
+
 // Define the constants in |login| namespace to avoid potential
 // conflict with other chromeos components.
 namespace login {

@@ -27,9 +27,9 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "gfx/native_widget_types.h"
 #include "grit/theme_resources.h"
 #include "views/screen.h"
-#include "views/widget/widget.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
 
@@ -286,14 +286,11 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
       login_token_ = LoginUtils::ExtractClientLoginParam(error,
                                                          kCaptchaTokenParam,
                                                          kParamSuffix);
-      gfx::NativeWindow parent = GTK_WINDOW(
-          static_cast<views::WidgetGtk*>(background_window_)->GetNativeView());
       CaptchaView* view =
           new CaptchaView(GURL(kCaptchaUrlPrefix + captcha_url));
       view->set_delegate(this);
-      views::Window* window = views::Window::CreateChromeWindow(parent,
-                                                                gfx::Rect(),
-                                                                view);
+      views::Window* window = views::Window::CreateChromeWindow(
+          GetNativeWindow(), gfx::Rect(), view);
       window->SetIsAlwaysOnTop(true);
       window->Show();
     }
@@ -315,6 +312,11 @@ void ExistingUserController::AppendStartUrlToCmdline() {
 void ExistingUserController::ClearCaptchaState() {
   login_token_.clear();
   login_captcha_.clear();
+}
+
+gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
+  return GTK_WINDOW(
+      static_cast<views::WidgetGtk*>(background_window_)->GetNativeView());
 }
 
 void ExistingUserController::ShowError(int error_id,
@@ -358,8 +360,49 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
   LoginUtils::Get()->CompleteOffTheRecordLogin();
 }
 
+void ExistingUserController::OnPasswordChangeDetected(
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  // When signing in as a "New user" always remove old cryptohome.
+  if (selected_view_index_ == controllers_.size() - 1) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(authenticator_.get(),
+                          &Authenticator::ResyncEncryptedData,
+                          credentials));
+    return;
+  }
+
+  cached_credentials_ = credentials;
+  PasswordChangedView* view = new PasswordChangedView(this);
+  views::Window* window = views::Window::CreateChromeWindow(GetNativeWindow(),
+                                                            gfx::Rect(),
+                                                            view);
+  window->SetIsAlwaysOnTop(true);
+  window->Show();
+}
+
 void ExistingUserController::OnCaptchaEntered(const std::string& captcha) {
   login_captcha_ = captcha;
+}
+
+void ExistingUserController::RecoverEncryptedData(
+    const std::string& old_password) {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(authenticator_.get(),
+                        &Authenticator::RecoverEncryptedData,
+                        old_password,
+                        cached_credentials_));
+  cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
+}
+
+void ExistingUserController::ResyncEncryptedData() {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(authenticator_.get(),
+                        &Authenticator::ResyncEncryptedData,
+                        cached_credentials_));
+  cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
 }
 
 }  // namespace chromeos

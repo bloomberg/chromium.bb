@@ -266,7 +266,7 @@ TEST_F(GoogleAuthenticatorTest, PasswordChange) {
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
   auth->OnLoginSuccess(result_);
-  auth->DoPasswordChange("whaty", result_);
+  auth->RecoverEncryptedData("whaty", result_);
 }
 
 TEST_F(GoogleAuthenticatorTest, PasswordChangeWrongPassword) {
@@ -287,7 +287,7 @@ TEST_F(GoogleAuthenticatorTest, PasswordChangeWrongPassword) {
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
   auth->OnLoginSuccess(result_);
-  auth->DoPasswordChange("whaty", result_);
+  auth->RecoverEncryptedData("whaty", result_);
 }
 
 TEST_F(GoogleAuthenticatorTest, ForgetOldData) {
@@ -308,7 +308,7 @@ TEST_F(GoogleAuthenticatorTest, ForgetOldData) {
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
   auth->OnLoginSuccess(result_);
-  auth->SkipPasswordChange(result_);
+  auth->ResyncEncryptedData(result_);
 }
 
 TEST_F(GoogleAuthenticatorTest, LoginNetFailure) {

@@ -147,14 +147,16 @@ void GoogleAuthenticator::LoginOffTheRecord() {
 }
 
 void GoogleAuthenticator::OnClientLoginSuccess(
-    const GaiaAuthConsumer::ClientLoginResult& result) {
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
 
   LOG(INFO) << "Online login successful!";
   ClearClientLoginAttempt();
 
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &GoogleAuthenticator::OnLoginSuccess, result));
+      NewRunnableMethod(this,
+                        &GoogleAuthenticator::OnLoginSuccess,
+                        credentials));
 }
 
 void GoogleAuthenticator::OnClientLoginFailure(
@@ -197,7 +199,7 @@ void GoogleAuthenticator::OnClientLoginFailure(
 }
 
 void GoogleAuthenticator::OnLoginSuccess(
-    const GaiaAuthConsumer::ClientLoginResult& result) {
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
 
   // Send notification of success
   AuthenticationNotificationDetails details(true);
@@ -211,10 +213,10 @@ void GoogleAuthenticator::OnLoginSuccess(
       (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username_.c_str(),
                                                          ascii_hash_.c_str(),
                                                          &mount_error))) {
-    consumer_->OnLoginSuccess(username_, result);
+    consumer_->OnLoginSuccess(username_, credentials);
   } else if (!unlock_ &&
              mount_error == chromeos::kCryptohomeMountErrorKeyFailure) {
-    consumer_->OnPasswordChangeDetected(result);
+    consumer_->OnPasswordChangeDetected(credentials);
   } else {
     OnLoginFailure("Could not mount cryptohome");
   }
@@ -258,25 +260,25 @@ void GoogleAuthenticator::OnLoginFailure(const std::string& error) {
   consumer_->OnLoginFailure(error);
 }
 
-void GoogleAuthenticator::DoPasswordChange(const std::string& old_password,
-    const GaiaAuthConsumer::ClientLoginResult& result) {
+void GoogleAuthenticator::RecoverEncryptedData(const std::string& old_password,
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
 
   std::string old_hash = HashPassword(old_password);
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->MigrateKey(username_,
                                                              old_hash,
                                                              ascii_hash_)) {
-    OnLoginSuccess(result);
+    OnLoginSuccess(credentials);
     return;
   }
   // User seems to have given us the wrong old password...
-  consumer_->OnPasswordChangeDetected(result);
+  consumer_->OnPasswordChangeDetected(credentials);
 }
 
-void GoogleAuthenticator::SkipPasswordChange(
-    const GaiaAuthConsumer::ClientLoginResult& result) {
+void GoogleAuthenticator::ResyncEncryptedData(
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
 
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->Remove(username_)) {
-    OnLoginSuccess(result);
+    OnLoginSuccess(credentials);
   } else {
     OnLoginFailure("Could not destroy your old data!");
   }

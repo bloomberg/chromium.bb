@@ -21,6 +21,8 @@ namespace chromeos {
 // When authentication successfully completes, will call
 // consumer_->OnLoginSuccess(|username|) on the UI thread.
 // On failure, will call consumer_->OnLoginFailure() on the UI thread.
+// On password change detected, will call
+// consumer_->OnPasswordChangeDetected() on the UI thread.
 class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
  public:
   explicit Authenticator(LoginStatusConsumer* consumer)
@@ -32,7 +34,7 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // to login.
   // Optionally |login_token| and |login_captcha| could be provided.
   // Returns true if we kick off the attempt successfully and false if we can't.
-  // Must be called on the FILE thread.
+  // Must be called on the UI thread.
   virtual bool AuthenticateToLogin(Profile* profile,
                                    const std::string& username,
                                    const std::string& password,
@@ -42,7 +44,7 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Given a |username| and |password|, this method attempts to
   // authenticate to unlock the computer.
   // Returns true if we kick off the attempt successfully and false if
-  // we can't.  Must be called on the FILE thread.
+  // we can't. Must be called on the UI thread.
   virtual bool AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) = 0;
 
@@ -54,6 +56,24 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   virtual void OnLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
   virtual void OnLoginFailure(const std::string& data) = 0;
+
+  // Call these methods on the UI thread.
+  // If a password logs the user in online, but cannot be used to
+  // mount his cryptohome, we expect that a password change has
+  // occurred.
+  // Call this method to migrate the user's encrypted data
+  // forward to use his new password.  |old_password| is the password
+  // his data was last encrypted with, |result| is the blob of auth
+  // data passed back through OnPasswordChangeDetected().
+  virtual void RecoverEncryptedData(
+      const std::string& old_password,
+      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
+
+  // Call this method to erase the user's encrypted data
+  // and create a new cryptohome.  |result| is the blob of auth
+  // data passed back through OnPasswordChangeDetected().
+  virtual void ResyncEncryptedData(
+      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
  protected:
   LoginStatusConsumer* consumer_;

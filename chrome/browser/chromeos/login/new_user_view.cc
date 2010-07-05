@@ -310,10 +310,6 @@ gfx::Size NewUserView::GetPreferredSize() {
   return gfx::Size(width(), height());
 }
 
-views::View* NewUserView::GetContentsView() {
-  return this;
-}
-
 void NewUserView::SetUsername(const std::string& username) {
   username_field_->SetText(UTF8ToUTF16(username));
 }
@@ -380,10 +376,6 @@ gfx::Rect NewUserView::GetPasswordBounds() const {
 
 void NewUserView::StopThrobber() {
   throbber_->Stop();
-}
-
-gfx::NativeWindow NewUserView::GetNativeWindow() const {
-  return GTK_WINDOW(static_cast<WidgetGtk*>(GetWidget())->GetNativeView());
 }
 
 bool NewUserView::HandleKeystroke(views::Textfield* s,

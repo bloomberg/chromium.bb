@@ -8,6 +8,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/throbber.h"
 #include "views/painter.h"
+#include "views/screen.h"
 
 namespace chromeos {
 
@@ -73,6 +74,17 @@ views::Throbber* CreateDefaultThrobber() {
 
 views::Painter* CreateBackgroundPainter() {
   return new BackgroundPainter();
+}
+
+gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
+  gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
+  if (!size.IsEmpty()) {
+    int horizontal_diff = bounds.width() - size.width();
+    int vertical_diff = bounds.height() - size.height();
+    bounds.Inset(horizontal_diff / 2, vertical_diff / 2);
+  }
+
+  return bounds;
 }
 
 }  // namespace chromeos

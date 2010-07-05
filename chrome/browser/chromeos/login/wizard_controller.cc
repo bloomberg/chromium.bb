@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -39,7 +40,6 @@
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/accelerator.h"
 #include "views/painter.h"
-#include "views/screen.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 #include "unicode/timezone.h"
@@ -142,21 +142,6 @@ class ContentView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
-
-
-// Returns bounds of the screen to use for login wizard.
-// The rect is centered within the default monitor and sized accordingly if
-// |size| is not empty. Otherwise the whole monitor is occupied.
-gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
-  gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
-  if (!size.IsEmpty()) {
-    int horizontal_diff = bounds.width() - size.width();
-    int vertical_diff = bounds.height() - size.height();
-    bounds.Inset(horizontal_diff / 2, vertical_diff / 2);
-  }
-
-  return bounds;
-}
 
 void DeleteWizardControllerAndLaunchBrowser(WizardController* controller) {
   delete controller;
@@ -605,7 +590,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
         initial_input_method_id);
   }
 
-  gfx::Rect screen_bounds(CalculateScreenBounds(size));
+  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
 
   // Check whether we need to execute OOBE process.
   bool oobe_complete = g_browser_process->local_state()->

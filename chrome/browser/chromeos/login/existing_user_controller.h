@@ -13,15 +13,13 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "gfx/size.h"
-
-namespace views {
-class Wiget;
-}
 
 namespace chromeos {
 
@@ -43,7 +41,8 @@ class ExistingUserController : public WmMessageListener::Observer,
                                public UserController::Delegate,
                                public LoginStatusConsumer,
                                public InfoBubbleDelegate,
-                               public CaptchaView::Delegate {
+                               public CaptchaView::Delegate,
+                               public PasswordChangedView::Delegate {
  public:
   // Initializes views for known users. |background_bounds| determines the
   // bounds of background view.
@@ -84,6 +83,8 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void OnLoginSuccess(const std::string& username,
       const GaiaAuthConsumer::ClientLoginResult& credentials);
   virtual void OnOffTheRecordLoginSuccess();
+  virtual void OnPasswordChangeDetected(
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
 
   // Overridden from views::InfoBubbleDelegate.
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,
@@ -96,11 +97,18 @@ class ExistingUserController : public WmMessageListener::Observer,
   // CaptchaView::Delegate:
   virtual void OnCaptchaEntered(const std::string& captcha);
 
+  // PasswordChangedView::Delegate:
+  virtual void RecoverEncryptedData(const std::string& old_password);
+  virtual void ResyncEncryptedData();
+
   // Adds start url to command line.
   void AppendStartUrlToCmdline();
 
   // Clears existing captcha state;
   void ClearCaptchaState();
+
+  // Returns corresponding native window.
+  gfx::NativeWindow GetNativeWindow() const;
 
   // Show error message. |error_id| error message ID in resources.
   // If |details| string is not empty, it specify additional error text
@@ -145,6 +153,9 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // URL that will be opened on browser startup.
   GURL start_url_;
+
+  // Cached credentials data when password change is detected.
+  GaiaAuthConsumer::ClientLoginResult cached_credentials_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };

@@ -75,30 +75,17 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& result);
+  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials);
   void CheckOffline(const std::string& error);
   void CheckLocalaccount(const std::string& error);
   void OnLoginFailure(const std::string& error);
 
-  // If a password logs the user in online, but cannot be used to
-  // mount his cryptohome, we expect that a password change has
-  // occurred.  Call this method to migrate the user's encrypted data
-  // forward to use his new password.  |old_password| is the password
-  // his data was last encrypted with, |result| is the blob of auth
-  // data passed back through OnPasswordChangeDetected().
-  //
-  // Call this on the UI thread.
-  void DoPasswordChange(const std::string& old_password,
-                        const GaiaAuthConsumer::ClientLoginResult& result);
-
-  // If a password logs the user in online, but cannot be used to
-  // mount his cryptohome, we expect that a password change has
-  // occurred.  Call this method to erase the user's encrypted data
-  // and create a new cryptohome.  |result| is the blob of auth
-  // data passed back through OnPasswordChangeDetected().
-  //
-  // Call this on the UI thread.
-  void SkipPasswordChange(const GaiaAuthConsumer::ClientLoginResult& result);
+  // Call these methods on the UI thread.
+  void RecoverEncryptedData(
+      const std::string& old_password,
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
+  void ResyncEncryptedData(
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
 
   void Cancel();
 
@@ -112,7 +99,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   virtual void OnClientLoginFailure(
       const GaiaAuthConsumer::ClientLoginError& error);
   virtual void OnClientLoginSuccess(
-      const GaiaAuthConsumer::ClientLoginResult& result);
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
 
  private:
 

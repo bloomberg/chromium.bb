@@ -80,9 +80,6 @@ class NewUserView : public views::View,
   virtual void Layout();
   virtual void RequestFocus();
 
-  // Overridden from views::WindowDelegate:
-  virtual views::View* GetContentsView();
-
   // Setters for textfields.
   void SetUsername(const std::string& username);
   void SetPassword(const std::string& password);
@@ -115,9 +112,6 @@ class NewUserView : public views::View,
   virtual void LocaleChanged();
 
  private:
-  // Returns corresponding native window.
-  gfx::NativeWindow GetNativeWindow() const;
-
   // Enables/disables input controls (textfields, buttons).
   void EnableInputControls(bool enabled);
   void FocusFirstField();

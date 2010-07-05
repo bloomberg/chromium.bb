@@ -62,10 +62,10 @@ class MockAuthenticator : public Authenticator {
     consumer_->OnOffTheRecordLoginSuccess();
   }
 
-  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& result) {
+  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials) {
     // If we want to be more like the real thing, we could save username
     // in AuthenticateToLogin, but there's not much of a point.
-    consumer_->OnLoginSuccess(expected_username_, result);
+    consumer_->OnLoginSuccess(expected_username_, credentials);
   }
 
   void OnLoginFailure(const std::string& data) {
@@ -74,6 +74,13 @@ class MockAuthenticator : public Authenticator {
       ChromeThread::PostTask(
           ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
   }
+
+  virtual void RecoverEncryptedData(
+      const std::string& old_password,
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {}
+
+  virtual void ResyncEncryptedData(
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {}
 
  private:
   std::string expected_username_;
