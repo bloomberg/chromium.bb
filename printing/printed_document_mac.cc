@@ -26,22 +26,13 @@ void PrintedDocument::RenderPrintedPage(
 
   const printing::PageSetup& page_setup(
       immutable_.settings_.page_setup_device_units());
-  gfx::Rect target_rect = page.page_content_rect();
-  const gfx::Rect& physical_size = page_setup.physical_size();
-  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
-  if (physical_size.width() > page.page_size().width()) {
-    int diff = physical_size.width() - page.page_size().width();
-    target_rect.set_x(target_rect.x() + diff / 2);
-  }
-  if (physical_size.height() > page.page_size().height()) {
-    int diff = physical_size.height() - page.page_size().height();
-    target_rect.set_y(target_rect.y() + diff / 2);
-  }
+  gfx::Rect content_area;
+  page.GetCenteredPageContentRect(page_setup.physical_size(), &content_area);
 
   const printing::NativeMetafile* metafile = page.native_metafile();
   // Each NativeMetafile is a one-page PDF, and pages use 1-based indexing.
   const int page_number = 1;
-  metafile->RenderPage(page_number, context, target_rect.ToCGRect(),
+  metafile->RenderPage(page_number, context, content_area.ToCGRect(),
                        true, false, false, false);
 
   // TODO(stuartmorgan): Print the header and footer.

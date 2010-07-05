@@ -51,17 +51,8 @@ void PrintedDocument::RenderPrintedPage(
 
   const printing::PageSetup& page_setup(
       immutable_.settings_.page_setup_device_units());
-  gfx::Rect content_area(page.page_content_rect());
-  const gfx::Size& physical_size = page_setup.physical_size();
-  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
-  if (physical_size.width() > page.page_size().width()) {
-    int diff = physical_size.width() - page.page_size().width();
-    content_area.set_x(content_area.x() + diff / 2);
-  }
-  if (physical_size.height() > page.page_size().height()) {
-    int diff = physical_size.height() - page.page_size().height();
-    content_area.set_y(content_area.y() + diff / 2);
-  }
+  gfx::Rect content_area;
+  page.GetCenteredPageContentRect(page_setup.physical_size(), &content_area);
 
   // Save the state to make sure the context this function call does not modify
   // the device context.

@@ -34,6 +34,11 @@ class PrintedPage : public base::RefCountedThreadSafe<PrintedPage> {
   const gfx::Rect& page_content_rect() const { return page_content_rect_; }
   bool has_visible_overlays() const { return has_visible_overlays_; }
 
+  // Get page content rect adjusted based on
+  // http://dev.w3.org/csswg/css3-page/#positioning-page-box
+  void GetCenteredPageContentRect(const gfx::Size& paper_size,
+                                  gfx::Rect* content_rect) const;
+
  private:
   friend class base::RefCountedThreadSafe<PrintedPage>;
 

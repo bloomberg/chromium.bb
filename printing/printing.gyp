@@ -97,6 +97,7 @@
         'page_setup_unittest.cc',
         'pdf_metafile_mac_unittest.cc',
         'pdf_ps_metafile_cairo_unittest.cc',
+        'printed_page_unittest.cc',
         'printing_context_win_unittest.cc',
         'run_all_unittests.cc',
         'units_unittest.cc',
