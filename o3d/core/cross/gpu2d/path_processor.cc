@@ -89,7 +89,7 @@ T max4(const T& v1, const T& v2, const T& v3, const T& v4) {
 // BBox
 //
 
-// Extremely simple bounding box class for Segments.
+// Extremely simple bounding box class for Segments and Contours.
 class BBox {
  public:
   BBox()
@@ -126,6 +126,22 @@ class BBox {
                triangle->get_vertex(2)->y()));
   }
 
+  // Initializes this bounding box to the contents of the other.
+  void Setup(const BBox& bbox) {
+    min_x_ = bbox.min_x();
+    min_y_ = bbox.min_y();
+    max_x_ = bbox.max_x();
+    max_y_ = bbox.max_y();
+  }
+
+  // Extends this bounding box to surround itself and the other.
+  void Extend(const BBox& other) {
+    Setup(min2(min_x(), other.min_x()),
+          min2(min_y(), other.min_y()),
+          max2(max_x(), other.max_x()),
+          max2(max_y(), other.max_y()));
+  }
+
   float min_x() const { return min_x_; }
   float min_y() const { return min_y_; }
   float max_x() const { return max_x_; }
@@ -138,6 +154,17 @@ class BBox {
   float max_y_;
   DISALLOW_COPY_AND_ASSIGN(BBox);
 };
+
+// Suppport for logging BBoxes.
+std::ostream& operator<<(std::ostream& ostr,  // NOLINT
+                         const BBox& arg) {
+  ostr << "[BBox min_x=" << arg.min_x()
+       << " min_y=" << arg.min_y()
+       << " max_x=" << arg.max_x()
+       << " max_y=" << arg.max_y()
+       << "]";
+  return ostr;
+}
 
 //----------------------------------------------------------------------
 // Segment
@@ -389,6 +416,19 @@ class Segment {
   DISALLOW_COPY_AND_ASSIGN(Segment);
 };
 
+// Suppport for logging Segments.
+std::ostream& operator<<(std::ostream& ostr,  // NOLINT
+                         const Segment& arg) {
+  ostr << "[Segment kind=";
+  if (arg.kind() == Segment::kLine) {
+    ostr << "line";
+  } else {
+    ostr << "cubic";
+  }
+  ostr << " bbox=" << arg.bbox() << "]";
+  return ostr;
+}
+
 //----------------------------------------------------------------------
 // Contour
 //
@@ -401,6 +441,7 @@ class Contour {
     first_->set_next(first_);
     first_->set_prev(first_);
     ccw_ = true;
+    bbox_dirty_ = false;
     fill_right_side_ = true;
   }
 
@@ -423,6 +464,7 @@ class Contour {
       segment->set_next(sentinel);
       sentinel->set_prev(segment);
     }
+    bbox_dirty_ = true;
   }
 
   // Subdivides the given segment at the given parametric value.
@@ -470,6 +512,24 @@ class Contour {
     ccw_ = ccw;
   }
 
+  // Returns the bounding box of this contour.
+  const BBox& bbox() const {
+    if (bbox_dirty_) {
+      bool first = true;
+      for (Segment* cur = begin(); cur != end(); cur = cur->next()) {
+        if (first) {
+          bbox_.Setup(cur->bbox());
+        } else {
+          bbox_.Extend(cur->bbox());
+        }
+        first = false;
+      }
+
+      bbox_dirty_ = false;
+    }
+    return bbox_;
+  }
+
   // Returns whether the right side of this contour is filled.
   bool fill_right_side() const { return fill_right_side_; }
 
@@ -489,6 +549,12 @@ class Contour {
 
   // Whether this contour is oriented counterclockwise.
   bool ccw_;
+
+  // This contour's bounding box.
+  mutable BBox bbox_;
+
+  // Whether this contour's bounding box is dirty.
+  mutable bool bbox_dirty_;
 
   // Whether we should fill the right (or left) side of this contour.
   bool fill_right_side_;
@@ -734,7 +800,7 @@ std::vector<Segment*> PathProcessor::AllSegmentsOverlappingY(float y) {
     Contour* cur = *iter;
     for (Segment* seg = cur->begin(); seg != cur->end(); seg = seg->next()) {
       const BBox& bbox = seg->bbox();
-      if (bbox.min_y() <= y && y <= bbox.max_y()) {
+      if (bbox.min_y() < y && y < bbox.max_y()) {
         res.push_back(seg);
       }
     }
@@ -796,9 +862,17 @@ void PathProcessor::DetermineSidesToFill() {
          iter++) {
       const IntervalType& interval = *iter;
       Segment* query_seg = interval.data();
-      // Ignore segments coming from the same contour
+      // Ignore segments coming from the same contour.
       if (query_seg->contour() != cur) {
-        num_crossings += query_seg->NumCrossingsForXRay(seg->get_point(0));
+        // Only perform queries that can affect the computation.
+        // TODO(kbr): make the XRay queries more robust; handle
+        // intersections with the endpoints of segments by choosing
+        // another query point.
+        const BBox& bbox = query_seg->contour()->bbox();
+        if (seg->get_point(0).fX >= bbox.min_x() &&
+            seg->get_point(0).fX <= bbox.max_x()) {
+          num_crossings += query_seg->NumCrossingsForXRay(seg->get_point(0));
+        }
       }
     }
 #endif  // !defined(O3D_CORE_CROSS_GPU2D_PATH_PROCESSOR_DEBUG_ORIENTATION)
@@ -807,14 +881,33 @@ void PathProcessor::DetermineSidesToFill() {
     // For debugging
     std::vector<Segment*> slow_overlaps =
         AllSegmentsOverlappingY(seg->get_point(0).fY);
+    if (overlaps.size() != slow_overlaps.size()) {
+      DLOG(ERROR) << "for query point " << seg->get_point(0).fY << ":";
+      DLOG(ERROR) << " overlaps:";
+      for (size_t i = 0; i < overlaps.size(); i++) {
+        DLOG(ERROR) << "  " << (i+1) << ": " << *overlaps[i].data();
+      }
+      DLOG(ERROR) << " slow_overlaps:";
+      for (size_t i = 0; i < slow_overlaps.size(); i++) {
+        DLOG(ERROR) << "  " << (i+1) << ": " << *slow_overlaps[i];
+      }
+    }
     DCHECK(overlaps.size() == slow_overlaps.size());
     for (std::vector<Segment*>::iterator iter = slow_overlaps.begin();
          iter != slow_overlaps.end();
          iter++) {
       Segment* query_seg = *iter;
-      // Ignore segments coming from the same contour
+      // Ignore segments coming from the same contour.
       if (query_seg->contour() != cur) {
-        num_crossings += query_seg->NumCrossingsForXRay(seg->get_point(0));
+        // Only perform queries that can affect the computation.
+        // TODO(kbr): make the XRay queries more robust; handle
+        // intersections with the endpoints of segments by choosing
+        // another query point.
+        const BBox& bbox = query_seg->contour()->bbox();
+        if (seg->get_point(0).fX >= bbox.min_x() &&
+            seg->get_point(0).fX <= bbox.max_x()) {
+          num_crossings += query_seg->NumCrossingsForXRay(seg->get_point(0));
+        }
       }
     }
 #endif  // O3D_CORE_CROSS_GPU2D_PATH_PROCESSOR_DEBUG_ORIENTATION
