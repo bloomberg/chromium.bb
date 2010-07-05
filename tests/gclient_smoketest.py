@@ -159,8 +159,9 @@ class GClientSmoke(GClientSmokeBase):
          '    "url"         : "svn://127.0.0.1/svn/trunk/src",\n'
          '    "custom_deps" : {\n'
          '    },\n'
-         '    "safesync_url": ""\n'
-         '  },\n]\n')
+         '    "safesync_url": "",\n'
+         '  },\n'
+         ']\n')
 
     test(['config', self.git_base + 'repo_1', '--name', 'src'],
          'solutions = [\n'
@@ -168,8 +169,9 @@ class GClientSmoke(GClientSmokeBase):
          '    "url"         : "git://127.0.0.1/git/repo_1",\n'
          '    "custom_deps" : {\n'
          '    },\n'
-         '    "safesync_url": ""\n'
-         '  },\n]\n')
+         '    "safesync_url": "",\n'
+         '  },\n'
+         ']\n')
 
     test(['config', 'foo', 'faa'],
          'solutions = [\n'
@@ -177,8 +179,9 @@ class GClientSmoke(GClientSmokeBase):
          '    "url"         : "foo",\n'
          '    "custom_deps" : {\n'
          '    },\n'
-         '    "safesync_url": "faa"\n'
-         '  },\n]\n')
+         '    "safesync_url": "faa",\n'
+         '  },\n'
+         ']\n')
 
     test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
 

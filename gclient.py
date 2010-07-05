@@ -403,10 +403,6 @@ class Dependency(GClientKeywords):
 class GClient(Dependency):
   """Object that represent a gclient checkout. A tree of Dependency(), one per
   solution or DEPS entry."""
-  SUPPORTED_COMMANDS = [
-    'cleanup', 'diff', 'export', 'pack', 'revert', 'status', 'update',
-    'runhooks'
-  ]
 
   DEPS_OS_CHOICES = {
     "win32": "win",
@@ -425,7 +421,7 @@ solutions = [
     "url"         : "%(solution_url)s",
     "custom_deps" : {
     },
-    "safesync_url": "%(safesync_url)s"
+    "safesync_url": "%(safesync_url)s",
   },
 ]
 """)
@@ -434,17 +430,15 @@ solutions = [
   { "name"        : "%(solution_name)s",
     "url"         : "%(solution_url)s",
     "custom_deps" : {
-      %(solution_deps)s,
-    },
-    "safesync_url": "%(safesync_url)s"
+%(solution_deps)s    },
+    "safesync_url": "%(safesync_url)s",
   },
 """)
 
   DEFAULT_SNAPSHOT_FILE_TEXT = ("""\
 # Snapshot generated with gclient revinfo --snapshot
 solutions = [
-%(solution_list)s
-]
+%(solution_list)s]
 """)
 
   def __init__(self, root_dir, options):
@@ -523,16 +517,13 @@ solutions = [
     """Creates a .gclient_entries file to record the list of unique checkouts.
 
     The .gclient_entries file lives in the same directory as .gclient.
-
-    Args:
-      entries: A sequence of solution names.
     """
     # Sometimes pprint.pformat will use {', sometimes it'll use { ' ... It
     # makes testing a bit too fun.
     result = pprint.pformat(entries, 2)
     if result.startswith('{\''):
       result = '{ \'' + result[2:]
-    text = "entries = \\\n" + result + '\n'
+    text = 'entries = \\\n' + result + '\n'
     file_path = os.path.join(self.root_dir(), self._options.entries_filename)
     gclient_utils.FileWrite(file_path, text)
 
@@ -546,7 +537,7 @@ solutions = [
     scope = {}
     filename = os.path.join(self.root_dir(), self._options.entries_filename)
     if not os.path.exists(filename):
-      return []
+      return {}
     exec(gclient_utils.FileRead(filename), scope)
     return scope['entries']
 
@@ -589,11 +580,8 @@ solutions = [
       command: The command to use (e.g., 'status' or 'diff')
       args: list of str - extra arguments to add to the command line.
     """
-    if not command in self.SUPPORTED_COMMANDS:
-      raise gclient_utils.Error("'%s' is an unsupported command" % command)
-
     if not self.dependencies:
-      raise gclient_utils.Error("No solution specified")
+      raise gclient_utils.Error('No solution specified')
     revision_overrides = self._EnforceRevisions()
 
     # When running runhooks --force, there's no need to consult the SCM.
@@ -712,8 +700,8 @@ solutions = [
                       entry_fixed)
           else:
             # Delete the entry
-            print('\n________ deleting \'%s\' ' +
-                  'in \'%s\'') % (entry_fixed, self.root_dir())
+            print('\n________ deleting \'%s\' in \'%s\'' % (
+                entry_fixed, self.root_dir()))
             gclient_utils.RemoveDirectory(e_dir)
       # record the current list of entries for next time
       self._SaveEntries(entries)
@@ -731,7 +719,7 @@ solutions = [
     The --snapshot option allows creating a .gclient file to reproduce the tree.
     """
     if not self.dependencies:
-      raise gclient_utils.Error("No solution specified")
+      raise gclient_utils.Error('No solution specified')
 
     # Inner helper to generate base url and rev tuple
     def GetURLAndRev(name, original_url):
@@ -783,17 +771,17 @@ solutions = [
     # Build the snapshot configuration string
     if self._options.snapshot:
       url = entries.pop(name)
-      custom_deps = ",\n      ".join(["\"%s\": \"%s\"" % (x, entries[x])
-                                      for x in sorted(entries.keys())])
+      custom_deps = ''.join(['      \"%s\": \"%s\",\n' % (x, entries[x])
+                             for x in sorted(entries.keys())])
 
       new_gclient += self.DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
                      'solution_name': name,
                      'solution_url': url,
-                     'safesync_url' : "",
+                     'safesync_url' : '',
                      'solution_deps': custom_deps,
                      }
     else:
-      print(";\n".join(["%s: %s" % (x, entries[x])
+      print(';\n'.join(['%s: %s' % (x, entries[x])
                        for x in sorted(entries.keys())]))
 
     # Print the snapshot configuration file
