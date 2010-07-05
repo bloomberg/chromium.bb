@@ -7,3 +7,6 @@
 
 // I need to do a build on a Hardy box in order to get the baselines to agree.
 LINUX BUG_AGL : platform/chromium/fast/text/chromium-linux-fontconfig-renderstyle.html = IMAGE TEXT
+
+BUG48239 DEBUG : fast/js/function-apply-many-args.html = TEXT
+ 
