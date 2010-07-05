@@ -1633,6 +1633,12 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
 }
 
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(NSInteger)code
+            context:(void*)context {
+  [sheet orderOut:self];
+}
+
 @end  // @implementation BrowserWindowController
 
 

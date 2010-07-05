@@ -252,6 +252,11 @@ class TabStripModelObserverBridge;
 // browser.
 - (void)toggleTabStripDisplayMode;
 
+// Called when the Add Search Engine dialog is closed.
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(NSInteger)code
+            context:(void*)context;
+
 @end  // @interface BrowserWindowController
 
 

@@ -19,6 +19,7 @@
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
@@ -195,7 +196,16 @@ gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
 void BrowserWindowCocoa::ConfirmAddSearchProvider(
     const TemplateURL* template_url,
     Profile* profile) {
-  NOTIMPLEMENTED();
+  // The controller will release itself when the window closes.
+  EditSearchEngineCocoaController* editor =
+      [[EditSearchEngineCocoaController alloc] initWithProfile:profile
+                                                      delegate:NULL
+                                                   templateURL:template_url];
+  [NSApp beginSheet:[editor window]
+     modalForWindow:window()
+      modalDelegate:controller_
+     didEndSelector:@selector(sheetDidEnd:returnCode:context:)
+        contextInfo:NULL];
 }
 
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {
