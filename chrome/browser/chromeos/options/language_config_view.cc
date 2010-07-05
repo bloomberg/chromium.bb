@@ -230,9 +230,9 @@ void LanguageConfigView::OnSelectionChanged() {
   // Add the per language config view to the right area.
   right_container_->AddChildView(CreatePerLanguageConfigView(language_code));
   MaybeDisableLastCheckbox();
-  // Let the parent container layout again. This is needed to the the
-  // contents on the right to display.
-  root_container_->Layout();
+  // Layout the right container. This is needed for the contents on the
+  // right to be displayed properly.
+  right_container_->Layout();
 }
 
 std::wstring LanguageConfigView::GetText(int row, int column_id) {
