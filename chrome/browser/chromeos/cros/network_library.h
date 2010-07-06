@@ -136,8 +136,8 @@ class CellularNetwork : public WirelessNetwork {
   // network is not visible (e.g. if this object was obtained from a remembered
   // networks call) then this list will be empty.
   // TODO(joth): Provide implementation in NetworkLibraryImpl to fill this.
-  const std::vector<CellTower>& cell_towers() const { return cell_towers_; }
-  void set_cell_towers(const std::vector<CellTower>& cell_towers) {
+  const CellTowerVector& cell_towers() const { return cell_towers_; }
+  void set_cell_towers(const CellTowerVector& cell_towers) {
     cell_towers_ = cell_towers;
   }
 
@@ -146,7 +146,7 @@ class CellularNetwork : public WirelessNetwork {
   virtual void ConfigureFromService(const ServiceInfo& service);
 
  protected:
-  std::vector<CellTower> cell_towers_;
+  CellTowerVector cell_towers_;
 };
 
 class WifiNetwork : public WirelessNetwork {
@@ -190,10 +190,10 @@ class WifiNetwork : public WirelessNetwork {
   // network. If the network is not visible (e.g. if this object was obtained
   // from a remembered networks call) then this list will be empty.
   // TODO(joth): Provide implementation in NetworkLibraryImpl to fill this.
-  const std::vector<AccessPoint>& access_points() const {
+  const AccessPointVector& access_points() const {
     return access_points_;
   }
-  void set_access_points(const std::vector<AccessPoint>& access_points) {
+  void set_access_points(const AccessPointVector& access_points) {
     access_points_ = access_points;
   }
 
@@ -210,7 +210,7 @@ class WifiNetwork : public WirelessNetwork {
   std::string passphrase_;
   std::string identity_;
   std::string cert_path_;
-  std::vector<AccessPoint> access_points_;
+  AccessPointVector access_points_;
 };
 
 typedef std::vector<WifiNetwork> WifiNetworkVector;
