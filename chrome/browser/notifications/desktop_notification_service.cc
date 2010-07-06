@@ -498,11 +498,25 @@ void DesktopNotificationService::RequestPermission(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!tab)
     return;
-  // Show an info bar requesting permission.
-  std::wstring display_name = DisplayNameForOrigin(origin);
 
-  tab->AddInfoBar(new NotificationPermissionInfoBarDelegate(
-      tab, origin, display_name, process_id, route_id, callback_context));
+  // If |origin| hasn't been seen before and the default content setting for
+  // notifications is "ask", show an infobar.
+  // The cache can only answer queries on the IO thread once it's initialized,
+  // so don't ask the cache.
+  ContentSetting setting = GetContentSetting(origin);
+  if (setting == CONTENT_SETTING_ASK) {
+    // Show an info bar requesting permission.
+    std::wstring display_name = DisplayNameForOrigin(origin);
+
+    tab->AddInfoBar(new NotificationPermissionInfoBarDelegate(
+        tab, origin, display_name, process_id, route_id, callback_context));
+  } else {
+    // Notify renderer immediately.
+    ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      new NotificationPermissionCallbackTask(
+          process_id, route_id, callback_context));
+  }
 }
 
 void DesktopNotificationService::ShowNotification(

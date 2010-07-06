@@ -30,8 +30,10 @@ void ContentExceptionsWindowGtk::ShowExceptionsWindow(
     ContentSettingsType type) {
   DCHECK(map);
   DCHECK(type < CONTENT_SETTINGS_NUM_TYPES);
-  // Geolocation exceptions are handled by GeolocationContentExceptionsWindow.
-  DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  // Geolocation exceptions are handled by SimpleContentExceptionsWindow.
+  DCHECK_NE(type, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  // Notification exceptions are handled by SimpleContentExceptionsWindow.
+  DCHECK_NE(type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 
   if (!instances[type]) {
     // Create the options window.

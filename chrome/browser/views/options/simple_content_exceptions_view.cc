@@ -23,10 +23,12 @@ static SimpleContentExceptionsView* instance = NULL;
 // static
 void SimpleContentExceptionsView::ShowExceptionsWindow(
     gfx::NativeWindow parent,
-    RemoveRowsTableModel* model) {
+    RemoveRowsTableModel* model,
+    int title_message_id) {
   scoped_ptr<RemoveRowsTableModel> owned_model(model);
   if (!instance) {
-    instance = new SimpleContentExceptionsView(owned_model.release());
+    instance = new SimpleContentExceptionsView(owned_model.release(),
+                                               title_message_id);
     views::Window::CreateChromeWindow(parent, gfx::Rect(), instance);
   }
 
@@ -94,15 +96,17 @@ void SimpleContentExceptionsView::ViewHierarchyChanged(bool is_add,
 }
 
 std::wstring SimpleContentExceptionsView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_GEOLOCATION_EXCEPTION_TITLE);
+  return l10n_util::GetString(title_message_id_);
 }
 
 SimpleContentExceptionsView::SimpleContentExceptionsView(
-    RemoveRowsTableModel* model)
+    RemoveRowsTableModel* model,
+    int title_message_id)
     : model_(model),
       table_(NULL),
       remove_button_(NULL),
-      remove_all_button_(NULL) {
+      remove_all_button_(NULL),
+      title_message_id_(title_message_id) {
 }
 
 void SimpleContentExceptionsView::Init() {

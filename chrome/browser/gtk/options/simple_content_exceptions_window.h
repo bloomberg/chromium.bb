@@ -21,7 +21,8 @@ class SimpleContentExceptionsWindow
  public:
   // Takes ownership of |model|.
   static void ShowExceptionsWindow(GtkWindow* parent,
-                                   RemoveRowsTableModel* model);
+                                   RemoveRowsTableModel* model,
+                                   int tile_message_id);
 
   // gtk_tree::TableAdapter::Delegate implementation:
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
@@ -36,7 +37,8 @@ class SimpleContentExceptionsWindow
 
   // Takes ownership of |model|.
   SimpleContentExceptionsWindow(GtkWindow* parent,
-                                RemoveRowsTableModel* model);
+                                RemoveRowsTableModel* model,
+                                int title_message_id);
 
   // Updates which buttons are enabled.
   void UpdateButtonState();

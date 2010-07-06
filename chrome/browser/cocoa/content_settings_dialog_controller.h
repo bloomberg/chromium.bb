@@ -24,6 +24,11 @@ const NSInteger kGeolocationEnabledIndex = 0;
 const NSInteger kGeolocationAskIndex = 1;
 const NSInteger kGeolocationDisabledIndex = 2;
 
+// Indices of the various notifications settings in the geolocation radio group.
+const NSInteger kNotificationsEnabledIndex = 0;
+const NSInteger kNotificationsAskIndex = 1;
+const NSInteger kNotificationsDisabledIndex = 2;
+
 namespace ContentSettingsDialogControllerInternal {
 class PrefObserverBridge;
 }
@@ -63,6 +68,7 @@ class Profile;
 - (IBAction)showPluginsExceptions:(id)sender;
 - (IBAction)showPopupsExceptions:(id)sender;
 - (IBAction)showGeolocationExceptions:(id)sender;
+- (IBAction)showNotificationsExceptions:(id)sender;
 
 @end
 
@@ -76,4 +82,5 @@ class Profile;
 @property(assign, nonatomic) NSInteger popupsEnabledIndex;
 @property(assign, nonatomic) NSInteger pluginsEnabledIndex;
 @property(assign, nonatomic) NSInteger geolocationSettingIndex;
+@property(assign, nonatomic) NSInteger notificationsSettingIndex;
 @end

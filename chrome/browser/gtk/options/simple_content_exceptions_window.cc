@@ -21,12 +21,13 @@ SimpleContentExceptionsWindow* instance = NULL;
 
 // static
 void SimpleContentExceptionsWindow::ShowExceptionsWindow(
-    GtkWindow* parent, RemoveRowsTableModel* model) {
+    GtkWindow* parent, RemoveRowsTableModel* model, int title_message_id) {
   DCHECK(model);
   scoped_ptr<RemoveRowsTableModel> owned_model(model);
 
   if (!instance) {
-    instance = new SimpleContentExceptionsWindow(parent, owned_model.release());
+    instance = new SimpleContentExceptionsWindow(
+        parent, owned_model.release(), title_message_id);
   } else {
     gtk_util::PresentWindow(instance->dialog_, 0);
   }
@@ -34,7 +35,8 @@ void SimpleContentExceptionsWindow::ShowExceptionsWindow(
 
 SimpleContentExceptionsWindow::SimpleContentExceptionsWindow(
     GtkWindow* parent,
-    RemoveRowsTableModel* model) {
+    RemoveRowsTableModel* model,
+    int title_message_id) {
   // Build the model adapters that translate views and TableModels into
   // something GTK can use.
   list_store_ = gtk_list_store_new(COL_COUNT, G_TYPE_STRING, G_TYPE_STRING);
@@ -70,7 +72,7 @@ SimpleContentExceptionsWindow::SimpleContentExceptionsWindow(
   model_adapter_->OnModelChanged();
 
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_GEOLOCATION_EXCEPTION_TITLE).c_str(),
+      l10n_util::GetStringUTF8(title_message_id).c_str(),
       parent,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CLOSE,

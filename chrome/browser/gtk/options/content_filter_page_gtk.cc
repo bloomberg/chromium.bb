@@ -16,6 +16,8 @@
 #include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
 #include "chrome/browser/gtk/options/simple_content_exceptions_window.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -102,12 +104,17 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
       l10n_util::GetStringUTF8(kBlockIDs[content_type_]).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), block_radio_, FALSE, FALSE, 0);
 
-  ContentSetting default_setting =
-      content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION ?
-          profile()->GetGeolocationContentSettingsMap()->
-              GetDefaultContentSetting() :
-          profile()->GetHostContentSettingsMap()->
-              GetDefaultContentSetting(content_type_);
+  ContentSetting default_setting;
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    default_setting = profile()->GetGeolocationContentSettingsMap()->
+        GetDefaultContentSetting();
+  } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    default_setting = profile()->GetDesktopNotificationService()->
+        GetDefaultContentSetting();
+  } else {
+    default_setting = profile()->GetHostContentSettingsMap()->
+        GetDefaultContentSetting(content_type_);
+  }
   // Now that these have been added to the view hierarchy, it's safe to call
   // SetChecked() on them.
   if (default_setting == CONTENT_SETTING_ALLOW) {
@@ -168,6 +175,9 @@ void ContentFilterPageGtk::OnAllowToggled(GtkWidget* toggle_button) {
   if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     profile()->GetGeolocationContentSettingsMap()->SetDefaultContentSetting(
         default_setting);
+  } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    profile()->GetDesktopNotificationService()->SetDefaultContentSetting(
+        default_setting);
   } else {
     profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
         content_type_, default_setting);
@@ -179,7 +189,16 @@ void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
     SimpleContentExceptionsWindow::ShowExceptionsWindow(
         GTK_WINDOW(gtk_widget_get_toplevel(button)),
         new GeolocationExceptionsTableModel(
-            profile()->GetGeolocationContentSettingsMap()));
+            profile()->GetGeolocationContentSettingsMap()),
+        IDS_GEOLOCATION_EXCEPTION_TITLE);
+    return;
+  }
+  if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    SimpleContentExceptionsWindow::ShowExceptionsWindow(
+        GTK_WINDOW(gtk_widget_get_toplevel(button)),
+        new NotificationExceptionsTableModel(
+            profile()->GetDesktopNotificationService()),
+        IDS_NOTIFICATIONS_EXCEPTION_TITLE);
     return;
   }
   HostContentSettingsMap* settings_map =

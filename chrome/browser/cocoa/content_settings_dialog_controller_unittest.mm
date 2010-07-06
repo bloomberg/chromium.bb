@@ -8,7 +8,8 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -22,6 +23,7 @@ class ContentSettingsDialogControllerTest : public CocoaTest {
     TestingProfile* profile = browser_helper_.profile();
     settingsMap_ = new HostContentSettingsMap(profile);
     geoSettingsMap_ = new GeolocationContentSettingsMap(profile);
+    notificationsService_.reset(new DesktopNotificationService(profile, NULL));
     controller_ = [ContentSettingsDialogController
                    showContentSettingsForType:CONTENT_SETTINGS_TYPE_DEFAULT
                    profile:browser_helper_.profile()];
@@ -37,6 +39,7 @@ class ContentSettingsDialogControllerTest : public CocoaTest {
   BrowserTestHelper browser_helper_;
   scoped_refptr<HostContentSettingsMap> settingsMap_;
   scoped_refptr<GeolocationContentSettingsMap> geoSettingsMap_;
+  scoped_ptr<DesktopNotificationService> notificationsService_;
 };
 
 // Test that +showContentSettingsDialogForProfile brings up the existing editor
@@ -230,6 +233,37 @@ TEST_F(ContentSettingsDialogControllerTest, GeolocationSetting) {
   [controller_ setGeolocationSettingIndex:kGeolocationDisabledIndex];
   setting =
       geoSettingsMap_->GetDefaultContentSetting();
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+TEST_F(ContentSettingsDialogControllerTest, NotificationsSetting) {
+  // Change setting, check dialog property.
+  notificationsService_->SetDefaultContentSetting(CONTENT_SETTING_ALLOW);
+  EXPECT_EQ([controller_ notificationsSettingIndex],
+             kNotificationsEnabledIndex);
+
+  notificationsService_->SetDefaultContentSetting(CONTENT_SETTING_ASK);
+  EXPECT_EQ([controller_ notificationsSettingIndex], kNotificationsAskIndex);
+
+  notificationsService_->SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
+  EXPECT_EQ([controller_ notificationsSettingIndex],
+            kNotificationsDisabledIndex);
+
+  // Change dialog property, check setting.
+  NSInteger setting;
+  [controller_ setNotificationsSettingIndex:kNotificationsEnabledIndex];
+  setting =
+      notificationsService_->GetDefaultContentSetting();
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+
+  [controller_ setNotificationsSettingIndex:kNotificationsAskIndex];
+  setting =
+      notificationsService_->GetDefaultContentSetting();
+  EXPECT_EQ(setting, CONTENT_SETTING_ASK);
+
+  [controller_ setNotificationsSettingIndex:kNotificationsDisabledIndex];
+  setting =
+      notificationsService_->GetDefaultContentSetting();
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 

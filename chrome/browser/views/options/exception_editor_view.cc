@@ -34,6 +34,10 @@ ExceptionEditorView::ExceptionEditorView(
       pattern_(pattern),
       setting_(setting),
       is_off_the_record_(is_off_the_record) {
+  // Geolocation exceptions are handled by SimpleContentExceptionsView.
+  DCHECK_NE(setting_, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  // Notification exceptions are handled by SimpleContentExceptionsView.
+  DCHECK_NE(setting_, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   Init();
 }
 

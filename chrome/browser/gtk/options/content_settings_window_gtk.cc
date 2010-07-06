@@ -61,7 +61,8 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
       javascript_page_(profile, CONTENT_SETTINGS_TYPE_JAVASCRIPT),
       plugin_page_(profile, CONTENT_SETTINGS_TYPE_PLUGINS),
       popup_page_(profile, CONTENT_SETTINGS_TYPE_POPUPS),
-      geolocation_page_(profile, CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+      geolocation_page_(profile, CONTENT_SETTINGS_TYPE_GEOLOCATION),
+      notifications_page_(profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
   // We don't need to observe changes in this value.
   last_selected_page_.Init(prefs::kContentSettingsWindowLastTabIndex,
                            profile->GetPrefs(), NULL);
@@ -100,6 +101,7 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
     { IDS_PLUGIN_TAB_LABEL, plugin_page_.get_page_widget() },
     { IDS_POPUP_TAB_LABEL, popup_page_.get_page_widget() },
     { IDS_GEOLOCATION_TAB_LABEL, geolocation_page_.get_page_widget() },
+    { IDS_NOTIFICATIONS_TAB_LABEL, notifications_page_.get_page_widget() },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kNotebookPages); ++i) {
     std::string label = l10n_util::GetStringUTF8(kNotebookPages[i].message_id);
@@ -114,8 +116,7 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
 
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
-  // TODO(thakis): Get rid of |+ 1| once the notifcations pane is done.
-  DCHECK_EQ(gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)) + 1,
+  DCHECK_EQ(gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)),
             CONTENT_SETTINGS_NUM_TYPES);
 
   // Need to show the notebook before connecting switch-page signal, otherwise

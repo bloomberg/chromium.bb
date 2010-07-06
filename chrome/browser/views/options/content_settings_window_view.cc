@@ -176,11 +176,12 @@ void ContentSettingsWindowView::Init() {
       new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_POPUPS));
   pages_.push_back(
       new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  pages_.push_back(
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   for (size_t i = 0; i < pages_.size(); ++i) {
     pages_[i]->set_parent_owned(false);
   }
-  // TODO(thakis): Remove |+ 1| once the notifications pane is done.
-  DCHECK_EQ(static_cast<int>(pages_.size()) + 1, CONTENT_SETTINGS_NUM_TYPES);
+  DCHECK_EQ(static_cast<int>(pages_.size()), CONTENT_SETTINGS_NUM_TYPES);
 
   std::vector<string16> strings;
   strings.push_back(l10n_util::GetStringUTF16(IDS_COOKIES_TAB_LABEL));
@@ -189,6 +190,7 @@ void ContentSettingsWindowView::Init() {
   strings.push_back(l10n_util::GetStringUTF16(IDS_PLUGIN_TAB_LABEL));
   strings.push_back(l10n_util::GetStringUTF16(IDS_POPUP_TAB_LABEL));
   strings.push_back(l10n_util::GetStringUTF16(IDS_GEOLOCATION_TAB_LABEL));
+  strings.push_back(l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_TAB_LABEL));
   listbox_ = new views::Listbox(strings, this);
   AddChildView(listbox_);
   CHECK_EQ(strings.size(), pages_.size());

@@ -30,7 +30,8 @@ class SimpleContentExceptionsView : public views::View,
  public:
   // Shows the Exceptions window. Takes ownership of |model|.
   static void ShowExceptionsWindow(gfx::NativeWindow parent,
-                                   RemoveRowsTableModel* model);
+                                   RemoveRowsTableModel* model,
+                                   int title_message_id);
 
   virtual ~SimpleContentExceptionsView();
 
@@ -58,7 +59,8 @@ class SimpleContentExceptionsView : public views::View,
 
  private:
   // Takes ownership of |model|.
-  explicit SimpleContentExceptionsView(RemoveRowsTableModel* model);
+  explicit SimpleContentExceptionsView(RemoveRowsTableModel* model,
+                                       int title_message_id);
 
   void Init();
 
@@ -81,6 +83,9 @@ class SimpleContentExceptionsView : public views::View,
 
   views::NativeButton* remove_button_;
   views::NativeButton* remove_all_button_;
+
+  // The message id of the window title.
+  int title_message_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleContentExceptionsView);
 };

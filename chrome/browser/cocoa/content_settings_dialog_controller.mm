@@ -17,6 +17,8 @@
 #import "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #import "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #import "chrome/browser/host_content_settings_map.h"
+#import "chrome/browser/notifications/desktop_notification_service.h"
+#import "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
@@ -331,6 +333,15 @@ class PrefObserverDisabler {
       attachSheetTo:[self window]];
 }
 
+- (IBAction)showNotificationsExceptions:(id)sender {
+  DesktopNotificationService* service =
+      profile_->GetDesktopNotificationService();
+  NotificationExceptionsTableModel* model =  // Freed by window controller.
+      new NotificationExceptionsTableModel(service);
+  [[SimpleContentExceptionsWindowController controllerWithTableModel:model]
+      attachSheetTo:[self window]];
+}
+
 - (void)showExceptionsForType:(ContentSettingsType)settingsType {
   HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
   HostContentSettingsMap* offTheRecordSettingsMap =
@@ -439,6 +450,34 @@ class PrefObserverDisabler {
   }
 }
 
+- (void)setNotificationsSettingIndex:(NSInteger)value {
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  switch (value) {
+    case kNotificationsEnabledIndex:  setting = CONTENT_SETTING_ALLOW; break;
+    case kNotificationsAskIndex:      setting = CONTENT_SETTING_ASK;   break;
+    case kNotificationsDisabledIndex: setting = CONTENT_SETTING_BLOCK; break;
+    default:
+      NOTREACHED();
+  }
+  ContentSettingsDialogControllerInternal::PrefObserverDisabler
+      disabler(observer_.get());
+  profile_->GetDesktopNotificationService()->SetDefaultContentSetting(
+      setting);
+}
+
+- (NSInteger)notificationsSettingIndex {
+  ContentSetting setting =
+      profile_->GetDesktopNotificationService()->GetDefaultContentSetting();
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW: return kNotificationsEnabledIndex;
+    case CONTENT_SETTING_ASK:   return kNotificationsAskIndex;
+    case CONTENT_SETTING_BLOCK: return kNotificationsDisabledIndex;
+    default:
+      NOTREACHED();
+      return kGeolocationAskIndex;
+  }
+}
+
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed and should not be NULL.
 - (void)prefChanged:(std::wstring*)prefName {
@@ -470,6 +509,10 @@ class PrefObserverDisabler {
   if (*prefName == prefs::kGeolocationDefaultContentSetting) {
     [self willChangeValueForKey:@"geolocationSettingIndex"];
     [self didChangeValueForKey:@"geolocationSettingIndex"];
+  }
+  if (*prefName == prefs::kDesktopNotificationDefaultContentSetting) {
+    [self willChangeValueForKey:@"notificationsSettingIndex"];
+    [self didChangeValueForKey:@"notificationsSettingIndex"];
   }
 }
 

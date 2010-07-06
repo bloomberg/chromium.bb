@@ -7,6 +7,8 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/exceptions_view.h"
 #include "chrome/browser/views/options/simple_content_exceptions_view.h"
@@ -127,12 +129,17 @@ void ContentFilterPageView::InitControlLayout() {
   layout->AddView(block_radio_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  ContentSetting default_setting =
-      (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) ?
-      profile()->GetGeolocationContentSettingsMap()->
-          GetDefaultContentSetting() :
-      profile()->GetHostContentSettingsMap()->
-          GetDefaultContentSetting(content_type_);
+  ContentSetting default_setting;
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    default_setting = profile()->GetGeolocationContentSettingsMap()->
+        GetDefaultContentSetting();
+  } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    default_setting = profile()->GetDesktopNotificationService()->
+        GetDefaultContentSetting();
+  } else {
+    default_setting = profile()->GetHostContentSettingsMap()->
+        GetDefaultContentSetting(content_type_);
+  }
   // Now that these have been added to the view hierarchy, it's safe to call
   // SetChecked() on them.
   if (default_setting == CONTENT_SETTING_ALLOW) {
@@ -163,7 +170,14 @@ void ContentFilterPageView::ButtonPressed(views::Button* sender,
       SimpleContentExceptionsView::ShowExceptionsWindow(
           GetWindow()->GetNativeWindow(),
           new GeolocationExceptionsTableModel(
-              profile()->GetGeolocationContentSettingsMap()));
+              profile()->GetGeolocationContentSettingsMap()),
+          IDS_GEOLOCATION_EXCEPTION_TITLE);
+    } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      SimpleContentExceptionsView::ShowExceptionsWindow(
+          GetWindow()->GetNativeWindow(),
+          new NotificationExceptionsTableModel(
+              profile()->GetDesktopNotificationService()),
+          IDS_NOTIFICATIONS_EXCEPTION_TITLE);
     } else {
       ExceptionsView::ShowExceptionsWindow(GetWindow()->GetNativeWindow(),
           profile()->GetHostContentSettingsMap(),
@@ -182,6 +196,9 @@ void ContentFilterPageView::ButtonPressed(views::Button* sender,
       (block_radio_->checked() ? CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK);
   if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     profile()->GetGeolocationContentSettingsMap()->SetDefaultContentSetting(
+        default_setting);
+  } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    profile()->GetDesktopNotificationService()->SetDefaultContentSetting(
         default_setting);
   } else {
     profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
