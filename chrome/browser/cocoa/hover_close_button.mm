@@ -59,7 +59,7 @@ const CGFloat kXShadowCircleAlpha = 0.1;
 
   // Give the 'x' an inner shadow for depth. If the button is in a hover state
   // (circle behind it), then adjust the shadow accordingly (not as harsh).
-  NSShadow* shadow = [[NSShadow alloc] init];
+  NSShadow* shadow = [[[NSShadow alloc] init] autorelease];
   CGFloat alpha = (hoverState_ != kHoverStateNone) ?
       kXShadowCircleAlpha : kXShadowAlpha;
   [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0
