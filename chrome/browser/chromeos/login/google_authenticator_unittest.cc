@@ -318,7 +318,7 @@ TEST_F(GoogleAuthenticatorTest, LoginNetFailure) {
   int error_no = net::ERR_CONNECTION_RESET;
   std::string data(net::ErrorToString(error_no));
 
-  GaiaAuthConsumer::ClientLoginError error;
+  GaiaAuthConsumer::GaiaAuthError error;
   error.code = GaiaAuthConsumer::NETWORK_ERROR;
   error.network_error = error_no;
 
@@ -338,7 +338,7 @@ TEST_F(GoogleAuthenticatorTest, LoginDenied) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  GaiaAuthConsumer::ClientLoginError error;
+  GaiaAuthConsumer::GaiaAuthError error;
   error.code = GaiaAuthConsumer::PERMISSION_DENIED;
 
   MockConsumer consumer;
@@ -356,7 +356,7 @@ TEST_F(GoogleAuthenticatorTest, CaptchaErrorOutputted) {
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
   // TODO(chron): Swap out this captcha passing for actual captcha parsing.
-  GaiaAuthConsumer::ClientLoginError error;
+  GaiaAuthConsumer::GaiaAuthError error;
   error.code = GaiaAuthConsumer::PERMISSION_DENIED;
   error.data = "Url=http://www.google.com/login/captcha\n"
                "Error=CaptchaRequired\n"
@@ -377,7 +377,7 @@ TEST_F(GoogleAuthenticatorTest, OfflineLogin) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  GaiaAuthConsumer::ClientLoginError error;
+  GaiaAuthConsumer::GaiaAuthError error;
   error.code = GaiaAuthConsumer::NETWORK_ERROR;
   error.network_error = net::ERR_CONNECTION_RESET;
 

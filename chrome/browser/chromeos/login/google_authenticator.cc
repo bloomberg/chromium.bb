@@ -160,7 +160,7 @@ void GoogleAuthenticator::OnClientLoginSuccess(
 }
 
 void GoogleAuthenticator::OnClientLoginFailure(
-   const GaiaAuthConsumer::ClientLoginError& error) {
+   const GaiaAuthConsumer::GaiaAuthError& error) {
 
   if (error.code == GaiaAuthConsumer::REQUEST_CANCELED) {
     if (try_again_) {

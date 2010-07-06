@@ -27,7 +27,8 @@ using ::testing::_;
 class GaiaAuthenticator2Test : public testing::Test {
  public:
   GaiaAuthenticator2Test()
-    : source_(GaiaAuthenticator2::kClientLoginUrl) {}
+    : client_login_source_(GaiaAuthenticator2::kClientLoginUrl),
+      issue_auth_token_source_(GaiaAuthenticator2::kIssueAuthTokenUrl) {}
 
   void RunParsingTest(const std::string& data,
                       const std::string& sid,
@@ -47,7 +48,8 @@ class GaiaAuthenticator2Test : public testing::Test {
   }
 
   ResponseCookies cookies_;
-  GURL source_;
+  GURL client_login_source_;
+  GURL issue_auth_token_source_;
   TestingProfile profile_;
 };
 
@@ -55,16 +57,21 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
  public:
   MockGaiaConsumer() {}
   ~MockGaiaConsumer() {}
-  MOCK_METHOD1(OnClientLoginFailure, void(const ClientLoginError& error));
+
   MOCK_METHOD1(OnClientLoginSuccess, void(const ClientLoginResult& result));
+  MOCK_METHOD2(OnIssueAuthTokenSuccess, void(const std::string& service,
+      const std::string& token));
+  MOCK_METHOD1(OnClientLoginFailure, void(const GaiaAuthError& error));
+  MOCK_METHOD2(OnIssueAuthTokenFailure, void(const std::string& service,
+      const GaiaAuthError& error));
 };
 
 TEST_F(GaiaAuthenticator2Test, ErrorComparator) {
-  GaiaAuthConsumer::ClientLoginError expected_error;
+  GaiaAuthConsumer::GaiaAuthError expected_error;
   expected_error.code = GaiaAuthConsumer::NETWORK_ERROR;
   expected_error.network_error = -101;
 
-  GaiaAuthConsumer::ClientLoginError matching_error;
+  GaiaAuthConsumer::GaiaAuthError matching_error;
   matching_error.code = GaiaAuthConsumer::NETWORK_ERROR;
   matching_error.network_error = -101;
 
@@ -84,7 +91,7 @@ TEST_F(GaiaAuthenticator2Test, LoginNetFailure) {
   int error_no = net::ERR_CONNECTION_RESET;
   URLRequestStatus status(URLRequestStatus::FAILED, error_no);
 
-  GaiaAuthConsumer::ClientLoginError expected_error;
+  GaiaAuthConsumer::GaiaAuthError expected_error;
   expected_error.code = GaiaAuthConsumer::NETWORK_ERROR;
   expected_error.network_error = error_no;
 
@@ -95,7 +102,35 @@ TEST_F(GaiaAuthenticator2Test, LoginNetFailure) {
   GaiaAuthenticator2 auth(&consumer, std::string(),
       profile_.GetRequestContext());
 
-  auth.OnURLFetchComplete(NULL, source_, status, 0, cookies_, std::string());
+  auth.OnURLFetchComplete(NULL,
+                          client_login_source_,
+                          status,
+                          0,
+                          cookies_,
+                          std::string());
+}
+
+TEST_F(GaiaAuthenticator2Test, TokenNetFailure) {
+  int error_no = net::ERR_CONNECTION_RESET;
+  URLRequestStatus status(URLRequestStatus::FAILED, error_no);
+
+  GaiaAuthConsumer::GaiaAuthError expected_error;
+  expected_error.code = GaiaAuthConsumer::NETWORK_ERROR;
+  expected_error.network_error = error_no;
+
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnIssueAuthTokenFailure(_, expected_error))
+      .Times(1);
+
+  GaiaAuthenticator2 auth(&consumer, std::string(),
+      profile_.GetRequestContext());
+
+  auth.OnURLFetchComplete(NULL,
+                          issue_auth_token_source_,
+                          status,
+                          0,
+                          cookies_,
+                          std::string());
 }
 
 
@@ -103,7 +138,7 @@ TEST_F(GaiaAuthenticator2Test, LoginDenied) {
   std::string data("Error: NO!");
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
 
-  GaiaAuthConsumer::ClientLoginError expected_error;
+  GaiaAuthConsumer::GaiaAuthError expected_error;
   expected_error.code = GaiaAuthConsumer::PERMISSION_DENIED;
 
   MockGaiaConsumer consumer;
@@ -112,7 +147,12 @@ TEST_F(GaiaAuthenticator2Test, LoginDenied) {
 
   GaiaAuthenticator2 auth(&consumer, std::string(),
       profile_.GetRequestContext());
-  auth.OnURLFetchComplete(NULL, source_, status, RC_FORBIDDEN, cookies_, data);
+  auth.OnURLFetchComplete(NULL,
+                          client_login_source_,
+                          status,
+                          RC_FORBIDDEN,
+                          cookies_,
+                          data);
 }
 
 TEST_F(GaiaAuthenticator2Test, ParseRequest) {
@@ -142,11 +182,27 @@ TEST_F(GaiaAuthenticator2Test, OnlineLogin) {
       profile_.GetRequestContext());
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   auth.OnURLFetchComplete(NULL,
-                          source_,
+                          client_login_source_,
                           status,
                           RC_REQUEST_OK,
                           cookies_,
                           data);
+}
+
+TEST_F(GaiaAuthenticator2Test, WorkingIssueAuthToken) {
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnIssueAuthTokenSuccess(_, "token"))
+      .Times(1);
+
+  GaiaAuthenticator2 auth(&consumer, std::string(),
+      profile_.GetRequestContext());
+  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  auth.OnURLFetchComplete(NULL,
+                          issue_auth_token_source_,
+                          status,
+                          RC_REQUEST_OK,
+                          cookies_,
+                          "token");
 }
 
 TEST_F(GaiaAuthenticator2Test, CheckTwoFactorResponse) {
@@ -166,7 +222,7 @@ TEST_F(GaiaAuthenticator2Test, TwoFactorLogin) {
       StringPrintf("Error=BadAuthentication\n%s\n",
                    GaiaAuthenticator2::kSecondFactor);
 
-  GaiaAuthConsumer::ClientLoginError error;
+  GaiaAuthConsumer::GaiaAuthError error;
   error.code = GaiaAuthConsumer::TWO_FACTOR;
 
   MockGaiaConsumer consumer;
@@ -177,7 +233,7 @@ TEST_F(GaiaAuthenticator2Test, TwoFactorLogin) {
       profile_.GetRequestContext());
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   auth.OnURLFetchComplete(NULL,
-                          source_,
+                          client_login_source_,
                           status,
                           RC_FORBIDDEN,
                           cookies_,
@@ -227,7 +283,7 @@ TEST_F(GaiaAuthenticator2Test, FullLoginFailure) {
   URLFetcher::set_factory(NULL);
 }
 
-TEST_F(GaiaAuthenticator2Test, FetchPending) {
+TEST_F(GaiaAuthenticator2Test, ClientFetchPending) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientLoginSuccess(_))
       .Times(1);
@@ -247,12 +303,58 @@ TEST_F(GaiaAuthenticator2Test, FetchPending) {
   URLFetcher::set_factory(NULL);
   EXPECT_TRUE(auth.HasPendingFetch());
   auth.OnURLFetchComplete(NULL,
-                          source_,
+                          client_login_source_,
                           URLRequestStatus(URLRequestStatus::SUCCESS, 0),
                           RC_REQUEST_OK,
                           cookies_,
-                          std::string());
+                          "SID=sid\nLSID=lsid\nAuth=auth\n");
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
+TEST_F(GaiaAuthenticator2Test, FullTokenSuccess) {
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnIssueAuthTokenSuccess("service", "token"))
+      .Times(1);
 
+  TestingProfile profile;
+  TestURLFetcherFactory factory;
+  URLFetcher::set_factory(&factory);
+
+  GaiaAuthenticator2 auth(&consumer, std::string(),
+      profile_.GetRequestContext());
+  auth.StartIssueAuthToken("sid", "lsid", "service");
+
+  URLFetcher::set_factory(NULL);
+  EXPECT_TRUE(auth.HasPendingFetch());
+  auth.OnURLFetchComplete(NULL,
+                          issue_auth_token_source_,
+                          URLRequestStatus(URLRequestStatus::SUCCESS, 0),
+                          RC_REQUEST_OK,
+                          cookies_,
+                          "token");
+  EXPECT_FALSE(auth.HasPendingFetch());
+}
+
+TEST_F(GaiaAuthenticator2Test, FullTokenFailure) {
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnIssueAuthTokenFailure("service", _))
+      .Times(1);
+
+  TestingProfile profile;
+  TestURLFetcherFactory factory;
+  URLFetcher::set_factory(&factory);
+
+  GaiaAuthenticator2 auth(&consumer, std::string(),
+      profile_.GetRequestContext());
+  auth.StartIssueAuthToken("sid", "lsid", "service");
+
+  URLFetcher::set_factory(NULL);
+  EXPECT_TRUE(auth.HasPendingFetch());
+  auth.OnURLFetchComplete(NULL,
+                          issue_auth_token_source_,
+                          URLRequestStatus(URLRequestStatus::SUCCESS, 0),
+                          RC_FORBIDDEN,
+                          cookies_,
+                          "");
+  EXPECT_FALSE(auth.HasPendingFetch());
+}

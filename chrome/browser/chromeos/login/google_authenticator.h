@@ -97,7 +97,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
 
   // Callbacks from GaiaAuthenticator2
   virtual void OnClientLoginFailure(
-      const GaiaAuthConsumer::ClientLoginError& error);
+      const GaiaAuthConsumer::GaiaAuthError& error);
   virtual void OnClientLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 

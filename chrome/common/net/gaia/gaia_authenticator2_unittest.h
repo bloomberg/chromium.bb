@@ -14,17 +14,17 @@
 #include "net/url_request/url_request_status.h"
 
 // Responds as though ClientLogin returned from the server.
-class MockClientLoginFetcher : public URLFetcher {
+class MockFetcher : public URLFetcher {
  public:
-  MockClientLoginFetcher(bool success,
-                         const GURL& url,
-                         URLFetcher::RequestType request_type,
-                         URLFetcher::Delegate* d)
+  MockFetcher(bool success,
+              const GURL& url,
+              URLFetcher::RequestType request_type,
+              URLFetcher::Delegate* d)
       : URLFetcher(url, request_type, d),
-        success_(success) {}
-  ~MockClientLoginFetcher() {}
+        success_(success),
+        url_(url) {}
+  ~MockFetcher() {}
   void Start() {
-    GURL source(GaiaAuthenticator2::kClientLoginUrl);
     URLRequestStatus::Status code;
     int http_code;
     if (success_) {
@@ -37,7 +37,7 @@ class MockClientLoginFetcher : public URLFetcher {
 
     URLRequestStatus status(code, 0);
     delegate()->OnURLFetchComplete(NULL,
-                                   source,
+                                   url_,
                                    status,
                                    http_code,
                                    ResponseCookies(),
@@ -45,7 +45,8 @@ class MockClientLoginFetcher : public URLFetcher {
   }
  private:
   bool success_;
-  DISALLOW_COPY_AND_ASSIGN(MockClientLoginFetcher);
+  GURL url_;
+  DISALLOW_COPY_AND_ASSIGN(MockFetcher);
 };
 
 class MockFactory : public URLFetcher::Factory {
@@ -57,7 +58,7 @@ class MockFactory : public URLFetcher::Factory {
                                const GURL& url,
                                URLFetcher::RequestType request_type,
                                URLFetcher::Delegate* d) {
-    return new MockClientLoginFetcher(success_, url, request_type, d);
+    return new MockFetcher(success_, url, request_type, d);
   }
   void set_success(bool success) {
     success_ = success;
