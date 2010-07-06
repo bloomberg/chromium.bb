@@ -91,6 +91,7 @@ extern const wchar_t kLanguageChewingKeyboardType[];
 extern const wchar_t kLanguageChewingSelKeys[];
 extern const wchar_t kLanguageChewingHsuSelKeyType[];
 extern const wchar_t kLanguageHangulKeyboard[];
+extern const wchar_t kLanguageHangulHanjaKeys[];
 extern const wchar_t kLanguagePinyinCorrectPinyin[];
 extern const wchar_t kLanguagePinyinFuzzyPinyin[];
 extern const wchar_t kLanguagePinyinLookupTablePageSize[];

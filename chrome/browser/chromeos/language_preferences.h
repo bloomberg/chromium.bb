@@ -151,6 +151,12 @@ const LanguageMultipleChoicePreference<int> kChewingHsuSelKeyType = {
 // For Korean input method (ibus-hangul)
 const char kHangulSectionName[] = "engine/Hangul";
 const char kHangulKeyboardConfigName[] = "HangulKeyboard";
+const char kHangulHanjaKeysConfigName[] = "HanjaKeys";
+// We add Control+Alt+9 in addition to the two default keys since Hanja key
+// might not be available on the Chrome OS keyboard and F9 key is reserved by
+// the window manager.
+// TODO: Hanja keys are not configurable yet (and we're not sure if it should.)
+const char kHangulHanjaKeys[] = "F9,Hangul_Hanja,Control+Alt+9";
 
 const struct HangulKeyboardNameIDPair {
   int message_id;

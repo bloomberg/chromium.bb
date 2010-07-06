@@ -248,6 +248,8 @@ const wchar_t kLanguageChewingHsuSelKeyType[] =
 
 // A string pref which determines the keyboard layout for Hangul input method.
 const wchar_t kLanguageHangulKeyboard[] = L"settings.language.hangul_keyboard";
+const wchar_t kLanguageHangulHanjaKeys[] =
+    L"settings.language.hangul_hanja_keys";
 
 // A boolean prefs for ibus-pinyin Chinese input method.
 const wchar_t kLanguagePinyinCorrectPinyin[] =
