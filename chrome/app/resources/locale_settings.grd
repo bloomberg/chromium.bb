@@ -660,7 +660,7 @@
         <!-- The width and height of the Languages and Input dialog box in -->
         <!-- characters and lines (See above). -->
         <message name="IDS_LANGUAGES_INPUT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-          114
+          127
         </message>
         <message name="IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
           26

@@ -337,12 +337,10 @@ void LanguageConfigView::Show(Profile* profile, gfx::NativeWindow parent) {
 void LanguageConfigView::InitInputMethodConfigViewMap() {
   input_method_config_view_map_["chewing"] = CreateLanguageChewingConfigView;
   input_method_config_view_map_["hangul"] = CreateLanguageHangulConfigView;
+  input_method_config_view_map_["mozc"] = CreateLanguageMozcConfigView;
+  input_method_config_view_map_["mozc-dv"] = CreateLanguageMozcConfigView;
+  input_method_config_view_map_["mozc-jp"] = CreateLanguageMozcConfigView;
   input_method_config_view_map_["pinyin"] = CreateLanguagePinyinConfigView;
-
-  // TODO(yusukes): Enable the following two mappings when ibus-mozc starts
-  //                supporting IBus style configs.
-  // input_method_config_view_map_["mozc"] = CreateLanguageMozcConfigView;
-  // input_method_config_view_map_["mozc-jp"] = CreateLanguageMozcConfigView;
 }
 
 void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
