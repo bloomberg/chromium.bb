@@ -800,7 +800,7 @@ std::vector<Segment*> PathProcessor::AllSegmentsOverlappingY(float y) {
     Contour* cur = *iter;
     for (Segment* seg = cur->begin(); seg != cur->end(); seg = seg->next()) {
       const BBox& bbox = seg->bbox();
-      if (bbox.min_y() < y && y < bbox.max_y()) {
+      if (bbox.min_y() <= y && y <= bbox.max_y()) {
         res.push_back(seg);
       }
     }

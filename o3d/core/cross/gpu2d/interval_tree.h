@@ -42,13 +42,13 @@
 namespace o3d {
 namespace gpu2d {
 
-// Interval class which can hold an arbitrary type as its endpoints
-// and a piece of user data. An important characteristic for the
-// algorithms we use is that if two intervals have identical endpoints
-// but different user data, they are not considered to be equal. This
-// situation can arise when representing the vertical extents of
-// bounding boxes of overlapping triangles, where the pointer to the
-// triangle is the user data of the interval.
+// Class representing a closed interval which can hold an arbitrary
+// type as its endpoints and a piece of user data. An important
+// characteristic for the algorithms we use is that if two intervals
+// have identical endpoints but different user data, they are not
+// considered to be equal. This situation can arise when representing
+// the vertical extents of bounding boxes of overlapping triangles,
+// where the pointer to the triangle is the user data of the interval.
 //
 // The following constructors and operators must be implemented on
 // type T:
@@ -106,8 +106,6 @@ class Interval {
     if (this->high() < low)
       return false;
     if (high < this->low())
-      return false;
-    if (this->high() == low || this->low() == high)
       return false;
     return true;
   }
@@ -232,7 +230,9 @@ class IntervalTree : public RedBlackTree<Interval<T, UserData> > {
     // See whether we need to traverse the left subtree.
     IntervalNode* left = node->left();
     if (left != NULL &&
-        interval.low() < left->data().max_high()) {
+        // This is equivalent to:
+        // interval.low() <= left->data().max_high()
+        !(left->data().max_high() < interval.low())) {
       SearchForOverlapsFrom(left, interval, res);
     }
 
@@ -242,7 +242,9 @@ class IntervalTree : public RedBlackTree<Interval<T, UserData> > {
     }
 
     // See whether we need to traverse the right subtree.
-    if (node->data().low() < interval.high()) {
+    // This is equivalent to:
+    // node->data().low() <= interval.high()
+    if (!(interval.high() < node->data().low())) {
       SearchForOverlapsFrom(node->right(), interval, res);
     }
   }
