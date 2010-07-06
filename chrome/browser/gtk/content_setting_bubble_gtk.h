@@ -58,6 +58,7 @@ class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnCloseButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnManageLinkClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnClearLinkClicked);
+  CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnInfoLinkClicked);
 
   // We position the bubble near this widget.
   GtkWidget* anchor_;

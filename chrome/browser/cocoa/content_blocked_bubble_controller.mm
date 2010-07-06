@@ -393,6 +393,11 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   contentSettingBubbleModel_->OnManageLinkClicked();
 }
 
+- (IBAction)showMoreInfo:(id)sender {
+  contentSettingBubbleModel_->OnInfoLinkClicked();
+  [self close];
+}
+
 - (void)popupLinkClicked:(id)sender {
   content_blocked_bubble::PopupLinks::iterator i(popupLinks_.find(sender));
   DCHECK(i != popupLinks_.end());

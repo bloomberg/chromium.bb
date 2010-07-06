@@ -66,6 +66,40 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   }
 };
 
+class ContentSettingTitleLinkAndInfoModel
+    : public ContentSettingTitleAndLinkModel {
+ public:
+  ContentSettingTitleLinkAndInfoModel(TabContents* tab_contents,
+                                      Profile* profile,
+                                      ContentSettingsType content_type)
+      : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
+    SetInfoLink();
+  }
+
+ private:
+  void SetInfoLink() {
+    static const int kInfoIDs[] = {
+      IDS_BLOCKED_COOKIES_INFO,
+      0,  // Images do not have an info link.
+      0,  // Javascript doesn't have an info link.
+      0,  // Plugins do not have an info link.
+      0,  // Popups do not have an info link.
+      0,  // Geolocation does not have an info link.
+      0,  // Notifications do not have a bubble.
+    };
+    COMPILE_ASSERT(arraysize(kInfoIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                   Need_a_setting_for_every_content_settings_type);
+    if (kInfoIDs[content_type()])
+      set_info_link(l10n_util::GetStringUTF8(kInfoIDs[content_type()]));
+  }
+
+  virtual void OnInfoLinkClicked() {
+    DCHECK(content_type() == CONTENT_SETTINGS_TYPE_COOKIES);
+    // FIXME(jochen): show cookie info dialog.
+  }
+};
+
+
 class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
  public:
   ContentSettingSingleRadioGroup(TabContents* tab_contents, Profile* profile,
@@ -256,8 +290,8 @@ ContentSettingBubbleModel*
         Profile* profile,
         ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
-    return new ContentSettingTitleAndLinkModel(tab_contents, profile,
-                                               content_type);
+    return new ContentSettingTitleLinkAndInfoModel(tab_contents, profile,
+                                                   content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_POPUPS) {
     return new ContentSettingPopupBubbleModel(tab_contents, profile,

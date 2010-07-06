@@ -53,4 +53,7 @@ typedef std::map<NSButton*, int> PopupLinks;
 // Callback for "manage" button.
 - (IBAction)manageBlocking:(id)sender;
 
+// Callback for "info" link.
+- (IBAction)showMoreInfo:(id)sender;
+
 @end

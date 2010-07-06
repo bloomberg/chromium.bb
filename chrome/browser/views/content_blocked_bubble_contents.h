@@ -93,6 +93,7 @@ class ContentSettingBubbleContents : public views::View,
   views::NativeButton* close_button_;
   views::Link* manage_link_;
   views::Link* clear_link_;
+  views::Link* info_link_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };

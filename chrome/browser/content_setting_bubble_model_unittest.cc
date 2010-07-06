@@ -36,6 +36,7 @@ class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
     else
       EXPECT_EQ(std::string(), bubble_content.clear_link);
     EXPECT_NE(std::string(), bubble_content.manage_link);
+    EXPECT_EQ(std::string(), bubble_content.info_link);
     EXPECT_EQ(std::string(), bubble_content.title);
   }
 
@@ -55,6 +56,7 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
   EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
   EXPECT_EQ(0, bubble_content.radio_group.default_item);
   EXPECT_NE(std::string(), bubble_content.manage_link);
+  EXPECT_EQ(std::string(), bubble_content.info_link);
   EXPECT_NE(std::string(), bubble_content.title);
 }
 
@@ -70,6 +72,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
   EXPECT_NE(std::string(), bubble_content.manage_link);
+  EXPECT_NE(std::string(), bubble_content.info_link);
   EXPECT_NE(std::string(), bubble_content.title);
 }
 

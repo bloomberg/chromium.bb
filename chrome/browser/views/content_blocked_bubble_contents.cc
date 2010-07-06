@@ -102,7 +102,8 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       info_bubble_(NULL),
       close_button_(NULL),
       manage_link_(NULL),
-      clear_link_(NULL) {
+      clear_link_(NULL),
+      info_link_(NULL) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents));
 }
@@ -146,6 +147,12 @@ void ContentSettingBubbleContents::LinkActivated(views::Link* source,
   }
   if (source == clear_link_) {
     content_setting_bubble_model_->OnClearLinkClicked();
+    info_bubble_->set_fade_away_on_close(true);
+    info_bubble_->Close();  // CAREFUL: This deletes us.
+    return;
+  }
+  if (source == info_link_) {
+    content_setting_bubble_model_->OnInfoLinkClicked();
     info_bubble_->set_fade_away_on_close(true);
     info_bubble_->Close();  // CAREFUL: This deletes us.
     return;
@@ -275,6 +282,19 @@ void ContentSettingBubbleContents::InitControlLayout() {
     clear_link_->SetController(this);
     layout->StartRow(0, single_column_set_id);
     layout->AddView(clear_link_);
+
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    layout->StartRow(0, single_column_set_id);
+    layout->AddView(new views::Separator, 1, 1,
+                    GridLayout::FILL, GridLayout::FILL);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+
+  if (!bubble_content.info_link.empty()) {
+    info_link_ = new views::Link(UTF8ToWide(bubble_content.info_link));
+    info_link_->SetController(this);
+    layout->StartRow(0, single_column_set_id);
+    layout->AddView(info_link_);
 
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     layout->StartRow(0, single_column_set_id);
