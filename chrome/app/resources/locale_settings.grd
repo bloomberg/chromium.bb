@@ -648,7 +648,7 @@
         16
       </message>
 
-      <!-- The width and height of the Geolocation Settings Exceptions -->
+      <!-- The width and height of the Simple Content Settings Exceptions -->
       <!-- dialog box in characters and lines (See above). -->
       <message name="IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         90

@@ -31,6 +31,7 @@ class NotificationExceptionsTableModel : public RemoveRowsTableModel {
  private:
   struct Entry {
     Entry(const GURL& origin, ContentSetting setting);
+    bool operator<(const Entry& b) const;
 
     GURL origin;
     ContentSetting setting;

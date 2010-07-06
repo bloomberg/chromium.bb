@@ -86,8 +86,25 @@ class DesktopNotificationService : public NotificationObserver {
   static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
                                 const string16& body);
 
+  // The default content setting determines how to handle origins that haven't
+  // been allowed or denied yet.
   ContentSetting GetDefaultContentSetting();
   void SetDefaultContentSetting(ContentSetting setting);
+
+  // Returns all origins that explicitly have been allowed.
+  std::vector<GURL> GetAllowedOrigins();
+
+  // Returns all origins that explicitly have been denied.
+  std::vector<GURL> GetBlockedOrigins();
+
+  // Removes an origin from the "explicitly allowed" set.
+  void ResetAllowedOrigin(const GURL& origin);
+
+  // Removes an origin from the "explicitly denied" set.
+  void ResetBlockedOrigin(const GURL& origin);
+
+  // Clears the sets of explicitly allowed and denied origins.
+  void ResetAllOrigins();
 
   static void RegisterUserPrefs(PrefService* user_prefs);
  private:
@@ -102,6 +119,8 @@ class DesktopNotificationService : public NotificationObserver {
   // or on the frame of the notification toast.  Different from the origin
   // itself when dealing with extensions.
   std::wstring DisplayNameForOrigin(const GURL& origin);
+
+  ContentSetting GetContentSetting(const GURL& origin);
 
   // The profile which owns this object.
   Profile* profile_;

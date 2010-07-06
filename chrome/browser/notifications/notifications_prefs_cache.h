@@ -23,7 +23,7 @@ class NotificationsPrefsCache
  public:
   NotificationsPrefsCache();
 
-  // Once is_initialized_() is set, all accesses must happen on the IO thread.
+  // Once is_initialized() is set, all accesses must happen on the IO thread.
   // Before that, all accesses need to happen on the UI thread.
   void set_is_initialized(bool val) { is_initialized_ = val; }
   bool is_initialized() { return is_initialized_; }

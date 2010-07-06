@@ -227,18 +227,8 @@ void DesktopNotificationService::InitPrefs() {
   if (!profile_->IsOffTheRecord()) {
     default_content_setting = IntToContentSetting(
         prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
-
-    const ListValue* allowed_sites =
-        prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
-    if (allowed_sites)
-      NotificationsPrefsCache::ListValueToGurlVector(*allowed_sites,
-                                                     &allowed_origins);
-
-    const ListValue* denied_sites =
-        prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
-    if (denied_sites)
-      NotificationsPrefsCache::ListValueToGurlVector(*denied_sites,
-                                                     &denied_origins);
+    allowed_origins = GetAllowedOrigins();
+    denied_origins = GetBlockedOrigins();
   }
 
   prefs_cache_ = new NotificationsPrefsCache();
@@ -300,13 +290,7 @@ void DesktopNotificationService::Observe(NotificationType type,
   std::wstring* name = Details<std::wstring>(details).ptr();
 
   if (0 == name->compare(prefs::kDesktopNotificationAllowedOrigins)) {
-    const ListValue* allowed_sites =
-        prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
-    std::vector<GURL> allowed_origins;
-    if (allowed_sites) {
-      NotificationsPrefsCache::ListValueToGurlVector(*allowed_sites,
-                                                     &allowed_origins);
-    }
+    std::vector<GURL> allowed_origins(GetAllowedOrigins());
     // Schedule a cache update on the IO thread.
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
@@ -315,13 +299,7 @@ void DesktopNotificationService::Observe(NotificationType type,
             &NotificationsPrefsCache::SetCacheAllowedOrigins,
             allowed_origins));
   } else if (0 == name->compare(prefs::kDesktopNotificationDeniedOrigins)) {
-    const ListValue* denied_sites =
-        prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
-    std::vector<GURL> denied_origins;
-    if (denied_sites) {
-      NotificationsPrefsCache::ListValueToGurlVector(*denied_sites,
-                                                     &denied_origins);
-    }
+    std::vector<GURL> denied_origins(GetBlockedOrigins());
     // Schedule a cache update on the IO thread.
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
@@ -352,6 +330,10 @@ void DesktopNotificationService::PersistPermissionChange(
 
   PrefService* prefs = profile_->GetPrefs();
 
+  // |Observe()| updates the whole permission set in the cache, but only a
+  // single origin has changed. Hence, callers of this method manually
+  // schedule a task to update the prefs cache, and the prefs observer is
+  // disabled while the update runs.
   StopObserving();
 
   bool allowed_changed = false;
@@ -393,7 +375,7 @@ void DesktopNotificationService::PersistPermissionChange(
   // list that changed.
   if (allowed_changed || denied_changed) {
     if (allowed_changed) {
-      ScopedPrefUpdate updateAllowed(
+      ScopedPrefUpdate update_allowed(
           prefs, prefs::kDesktopNotificationAllowedOrigins);
     }
     if (denied_changed) {
@@ -421,6 +403,93 @@ void DesktopNotificationService::SetDefaultContentSetting(
       prefs::kDesktopNotificationDefaultContentSetting,
       setting == CONTENT_SETTING_DEFAULT ?  kDefaultSetting : setting);
   // The cache is updated through the notification observer.
+}
+
+std::vector<GURL> DesktopNotificationService::GetAllowedOrigins() {
+  std::vector<GURL> allowed_origins;
+  PrefService* prefs = profile_->GetPrefs();
+  const ListValue* allowed_sites =
+      prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
+  if (allowed_sites) {
+    NotificationsPrefsCache::ListValueToGurlVector(*allowed_sites,
+                                                   &allowed_origins);
+  }
+  return allowed_origins;
+}
+
+std::vector<GURL> DesktopNotificationService::GetBlockedOrigins() {
+  std::vector<GURL> denied_origins;
+  PrefService* prefs = profile_->GetPrefs();
+  const ListValue* denied_sites =
+      prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
+  if (denied_sites) {
+    NotificationsPrefsCache::ListValueToGurlVector(*denied_sites,
+                                                   &denied_origins);
+  }
+  return denied_origins;
+}
+
+void DesktopNotificationService::ResetAllowedOrigin(const GURL& origin) {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  // Since this isn't called often, let the normal observer behavior update the
+  // cache in this case.
+  PrefService* prefs = profile_->GetPrefs();
+  ListValue* allowed_sites =
+      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
+  {
+    StringValue value(origin.spec());
+    int removed_index = allowed_sites->Remove(value);
+    DCHECK_NE(-1, removed_index) << origin << " was not allowed";
+    ScopedPrefUpdate update_allowed(
+        prefs, prefs::kDesktopNotificationAllowedOrigins);
+  }
+  prefs->ScheduleSavePersistentPrefs();
+}
+
+void DesktopNotificationService::ResetBlockedOrigin(const GURL& origin) {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  // Since this isn't called often, let the normal observer behavior update the
+  // cache in this case.
+  PrefService* prefs = profile_->GetPrefs();
+  ListValue* denied_sites =
+      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
+  {
+    StringValue value(origin.spec());
+    int removed_index = denied_sites->Remove(value);
+    DCHECK_NE(-1, removed_index) << origin << " was not blocked";
+    ScopedPrefUpdate update_allowed(
+        prefs, prefs::kDesktopNotificationDeniedOrigins);
+  }
+  prefs->ScheduleSavePersistentPrefs();
+}
+
+void DesktopNotificationService::ResetAllOrigins() {
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->ClearPref(prefs::kDesktopNotificationAllowedOrigins);
+  prefs->ClearPref(prefs::kDesktopNotificationDeniedOrigins);
+}
+
+ContentSetting DesktopNotificationService::GetContentSetting(
+    const GURL& origin) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (profile_->IsOffTheRecord())
+    return kDefaultSetting;
+
+  std::vector<GURL> allowed_origins(GetAllowedOrigins());
+  if (std::find(allowed_origins.begin(), allowed_origins.end(), origin) !=
+      allowed_origins.end())
+    return CONTENT_SETTING_ALLOW;
+
+  std::vector<GURL> denied_origins(GetBlockedOrigins());
+  if (std::find(denied_origins.begin(), denied_origins.end(), origin) !=
+      denied_origins.end())
+    return CONTENT_SETTING_BLOCK;
+
+  return GetDefaultContentSetting();
 }
 
 void DesktopNotificationService::RequestPermission(
