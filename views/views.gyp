@@ -61,6 +61,8 @@
         'background.h',
         'border.cc',
         'border.h',
+        'box_layout.h',
+        'box_layout.cc',
         'controls/button/button.cc',
         'controls/button/button.h',
         'controls/button/button_dropdown.cc',
@@ -383,8 +385,6 @@
         '..',
       ],
       'sources': [
-	'examples/box_layout.cc',
-	'examples/box_layout.h',
         'examples/button_example.h',
         'examples/combobox_example.h',
         'examples/example_base.cc',

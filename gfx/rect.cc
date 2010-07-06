@@ -15,6 +15,7 @@
 #include <iostream>
 
 #include "base/logging.h"
+#include "gfx/insets.h"
 
 namespace {
 
@@ -103,6 +104,10 @@ void Rect::SetRect(int x, int y, int width, int height) {
   origin_.SetPoint(x, y);
   set_width(width);
   set_height(height);
+}
+
+void Rect::Inset(const gfx::Insets& insets) {
+  Inset(insets.left(), insets.top(), insets.right(), insets.bottom());
 }
 
 void Rect::Inset(int left, int top, int right, int bottom) {

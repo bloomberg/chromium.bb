@@ -25,6 +25,8 @@ typedef struct _GdkRectangle GdkRectangle;
 
 namespace gfx {
 
+class Insets;
+
 class Rect {
  public:
   Rect();
@@ -77,6 +79,9 @@ class Rect {
   void Inset(int horizontal, int vertical) {
     Inset(horizontal, vertical, horizontal, vertical);
   }
+
+  // Shrink the rectangle by the given insets.
+  void Inset(const gfx::Insets& insets);
 
   // Shrink the rectangle by the specified amount on each side.
   void Inset(int left, int top, int right, int bottom);

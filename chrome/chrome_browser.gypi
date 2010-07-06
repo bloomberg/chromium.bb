@@ -2582,6 +2582,8 @@
         'browser/views/options/general_page_view.h',
         'browser/views/options/languages_page_view.cc',
         'browser/views/options/languages_page_view.h',
+        'browser/views/options/managed_prefs_banner_view.cc',
+        'browser/views/options/managed_prefs_banner_view.h',
         'browser/views/options/options_group_view.cc',
         'browser/views/options/options_group_view.h',
         'browser/views/options/options_page_view.cc',

@@ -6,8 +6,8 @@
 #define VIEWS_EXAMPLES_WIDGET_EXAMPLE_H_
 
 #include "views/background.h"
+#include "views/box_layout.h"
 #include "views/controls/button/text_button.h"
-#include "views/examples/box_layout.h"
 #include "views/examples/example_base.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
@@ -59,14 +59,16 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
   virtual std::wstring GetExampleTitle() { return L"Widget"; }
 
   virtual void CreateExampleView(views::View* container) {
-    container->SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, 2));
+    container->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 2));
     BuildButton(container, L"Create a popup widget", POPUP);
     BuildButton(container, L"Create a transparent popup widget",
                 TRANSPARENT_POPUP);
 #if defined(OS_LINUX)
     views::View* vert_container = new views::View();
     container->AddChildView(vert_container);
-    vert_container->SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 20));
+    vert_container->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 20));
     BuildButton(vert_container, L"Create a child widget", CHILD);
     BuildButton(vert_container, L"Create a transparent child widget",
                 TRANSPARENT_CHILD);
@@ -100,7 +102,7 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
 
     views::View* button_container = new views::View();
     button_container->SetLayoutManager(
-        new BoxLayout(BoxLayout::kHorizontal, 1));
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 1));
     button_container->AddChildView(close_button);
     button_container->AddChildView(native_button);
 

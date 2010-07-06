@@ -56,8 +56,9 @@ enum {
   SEARCH_ENGINES_COL_COUNT,
 };
 
-// Set of preferences which might be unavailable for editing when managed.
-const wchar_t* kGeneralManagablePrefs[] = {
+// All general preferences that are potentially managed by policy. We'll
+// display the warning banner if one of these have the managed bit set.
+static const wchar_t* kGeneralPolicyConstrainedPrefs[] = {
   prefs::kHomePage,
   prefs::kHomePageIsNewTabPage
 };
@@ -74,8 +75,9 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
       initializing_(true),
       default_browser_worker_(
           new ShellIntegration::DefaultBrowserWorker(this)),
-      managed_prefs_banner_(profile->GetPrefs(), kGeneralManagablePrefs,
-                            arraysize(kGeneralManagablePrefs)) {
+      managed_prefs_banner_(profile->GetPrefs(),
+                            kGeneralPolicyConstrainedPrefs,
+                            arraysize(kGeneralPolicyConstrainedPrefs)) {
   scoped_ptr<OptionsLayoutBuilderGtk>
     options_builder(OptionsLayoutBuilderGtk::CreateOptionallyCompactLayout());
   page_ = options_builder->get_page_widget();

@@ -19,6 +19,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/views/keyword_editor_view.h"
+#include "chrome/browser/views/options/managed_prefs_banner_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -42,6 +43,13 @@ const int kHomePageRadioGroup = 102;
 const SkColor kDefaultBrowserLabelColor = SkColorSetRGB(0, 135, 0);
 const SkColor kNotDefaultBrowserLabelColor = SkColorSetRGB(135, 0, 0);
 const int kHomePageTextfieldWidthChars = 40;
+
+// All general preferences that are potentially managed by policy. We'll
+// display the warning banner if one of these have the managed bit set.
+const wchar_t* kGeneralPolicyConstrainedPrefs[] = {
+  prefs::kHomePage,
+  prefs::kHomePageIsNewTabPage
+};
 
 }  // namespace
 
@@ -307,6 +315,13 @@ void GeneralPageView::InitControlLayout() {
   ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
+
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(
+      new ManagedPrefsBannerView(profile()->GetPrefs(),
+                                 kGeneralPolicyConstrainedPrefs,
+                                 arraysize(kGeneralPolicyConstrainedPrefs)));
+
   layout->StartRow(0, single_column_view_set_id);
   InitStartupGroup();
   layout->AddView(startup_group_);
