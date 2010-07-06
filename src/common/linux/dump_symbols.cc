@@ -134,18 +134,8 @@ static const ElfW(Shdr) *FindSectionByName(const char *name,
 static bool LoadStabs(const ElfW(Ehdr) *elf_header,
                       const ElfW(Shdr) *stab_section,
                       const ElfW(Shdr) *stabstr_section,
+                      const bool big_endian,
                       Module *module) {
-  // Figure out what endianness this file is.
-  bool big_endian;
-  if (elf_header->e_ident[EI_DATA] == ELFDATA2LSB)
-    big_endian = false;
-  else if (elf_header->e_ident[EI_DATA] == ELFDATA2MSB)
-    big_endian = true;
-  else {
-    fprintf(stderr, "bad data encoding in ELF header: %d\n",
-            elf_header->e_ident[EI_DATA]);
-    return false;
-  }
   // A callback object to handle data from the STABS reader.
   StabsToModule handler(module);
   // Find the addresses of the STABS data, and create a STABS reader object.
@@ -184,18 +174,10 @@ class DumperLineToModule: public DwarfCUToModule::LineToModuleFunctor {
 
 static bool LoadDwarf(const string &dwarf_filename,
                       const ElfW(Ehdr) *elf_header,
+                      const bool big_endian,
                       Module *module) {
-  // Figure out what endianness this file is.
-  dwarf2reader::Endianness endianness;
-  if (elf_header->e_ident[EI_DATA] == ELFDATA2LSB)
-    endianness = dwarf2reader::ENDIANNESS_LITTLE;
-  else if (elf_header->e_ident[EI_DATA] == ELFDATA2MSB)
-    endianness = dwarf2reader::ENDIANNESS_BIG;
-  else {
-    fprintf(stderr, "%s: bad data encoding in ELF header: %d\n",
-            dwarf_filename.c_str(), elf_header->e_ident[EI_DATA]);
-    return false;
-  }
+  const dwarf2reader::Endianness endianness = big_endian ?
+      dwarf2reader::ENDIANNESS_BIG : dwarf2reader::ENDIANNESS_LITTLE;
   dwarf2reader::ByteReader byte_reader(endianness);
 
   // Construct a context for this file.
@@ -267,9 +249,10 @@ static bool LoadDwarfCFI(const string &dwarf_filename,
                          const ElfW(Ehdr) *elf_header,
                          const char *section_name,
                          const ElfW(Shdr) *section,
-                         bool eh_frame,
+                         const bool eh_frame,
                          const ElfW(Shdr) *got_section,
                          const ElfW(Shdr) *text_section,
+                         const bool big_endian,
                          Module *module) {
   // Find the appropriate set of register names for this file's
   // architecture.
@@ -281,17 +264,8 @@ static bool LoadDwarfCFI(const string &dwarf_filename,
     return false;
   }
 
-  // Figure out what endianness this file is.
-  dwarf2reader::Endianness endianness;
-  if (elf_header->e_ident[EI_DATA] == ELFDATA2LSB)
-    endianness = dwarf2reader::ENDIANNESS_LITTLE;
-  else if (elf_header->e_ident[EI_DATA] == ELFDATA2MSB)
-    endianness = dwarf2reader::ENDIANNESS_BIG;
-  else {
-    fprintf(stderr, "%s: bad data encoding in ELF header: %d\n",
-            dwarf_filename.c_str(), elf_header->e_ident[EI_DATA]);
-    return false;
-  }
+  const dwarf2reader::Endianness endianness = big_endian ?
+      dwarf2reader::ENDIANNESS_BIG : dwarf2reader::ENDIANNESS_LITTLE;
 
   // Find the call frame information and its size.
   const char *cfi = reinterpret_cast<const char *>(section->sh_offset);
@@ -330,7 +304,25 @@ static bool LoadDwarfCFI(const string &dwarf_filename,
   return true;
 }
 
-static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
+// Get the endianness of ELF_HEADER. If it's invalid, return false.
+bool ElfEndianness(const ElfW(Ehdr) *elf_header, bool *big_endian) {
+  if (elf_header->e_ident[EI_DATA] == ELFDATA2LSB) {
+    *big_endian = false;
+    return true;
+  }
+  if (elf_header->e_ident[EI_DATA] == ELFDATA2MSB) {
+    *big_endian = true;
+    return true;
+  }
+
+  fprintf(stderr, "bad data encoding in ELF header: %d\n",
+          elf_header->e_ident[EI_DATA]);
+  return false;
+}
+
+static bool LoadSymbols(const std::string &obj_file,
+                        const bool big_endian,
+                        ElfW(Ehdr) *elf_header,
                         Module *module) {
   // Translate all offsets in section headers into address.
   FixAddress(elf_header);
@@ -352,9 +344,11 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
     const ElfW(Shdr) *stabstr_section = stab_section->sh_link + sections;
     if (stabstr_section) {
       found_debug_info_section = true;
-      if (!LoadStabs(elf_header, stab_section, stabstr_section, module))
+      if (!LoadStabs(elf_header, stab_section, stabstr_section, big_endian,
+                     module)) {
         fprintf(stderr, "%s: \".stab\" section found, but failed to load STABS"
                 " debugging information\n", obj_file.c_str());
+      }
     }
   }
 
@@ -364,7 +358,7 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
                           elf_header->e_shnum);
   if (dwarf_section) {
     found_debug_info_section = true;
-    if (!LoadDwarf(obj_file, elf_header, module))
+    if (!LoadDwarf(obj_file, elf_header, big_endian, module))
       fprintf(stderr, "%s: \".debug_info\" section found, but failed to load "
               "DWARF debugging information\n", obj_file.c_str());
   }
@@ -379,7 +373,7 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
     // information, the other debugging information could be perfectly
     // useful.
     LoadDwarfCFI(obj_file, elf_header, ".debug_frame",
-                 dwarf_cfi_section, false, 0, 0, module);
+                 dwarf_cfi_section, false, 0, 0, big_endian, module);
   }
 
   // Linux C++ exception handling information can also provide
@@ -396,8 +390,8 @@ static bool LoadSymbols(const std::string &obj_file, ElfW(Ehdr) *elf_header,
       FindSectionByName(".text", sections, section_names,
                         elf_header->e_shnum);
     // As above, ignore the return value of this function.
-    LoadDwarfCFI(obj_file, elf_header, ".eh_frame",
-                 eh_frame_section, true, got_section, text_section, module);
+    LoadDwarfCFI(obj_file, elf_header, ".eh_frame", eh_frame_section, true,
+                 got_section, text_section, big_endian, module);
   }
 
   if (!found_debug_info_section) {
@@ -556,12 +550,17 @@ bool WriteSymbolFile(const std::string &obj_file, FILE *sym_file) {
     return false;
   }
 
+  // Figure out what endianness this file is.
+  bool big_endian;
+  if (!ElfEndianness(elf_header, &big_endian))
+    return false;
+
   std::string name = BaseFileName(obj_file);
   std::string os = "Linux";
   std::string id = FormatIdentifier(identifier);
 
   Module module(name, os, architecture, id);
-  if (!LoadSymbols(obj_file, elf_header, &module))
+  if (!LoadSymbols(obj_file, big_endian, elf_header, &module))
     return false;
   if (!module.Write(sym_file))
     return false;
