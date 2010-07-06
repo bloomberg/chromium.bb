@@ -116,8 +116,8 @@ SimpleContentExceptionsWindow::SimpleContentExceptionsWindow(
   UpdateButtonState();
 
   gtk_util::ShowDialogWithLocalizedSize(dialog_,
-      IDS_GEOLOCATION_EXCEPTION_DIALOG_WIDTH_CHARS,
-      IDS_GEOLOCATION_EXCEPTION_DIALOG_HEIGHT_LINES,
+      IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_WIDTH_CHARS,
+      IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_HEIGHT_LINES,
       true);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);

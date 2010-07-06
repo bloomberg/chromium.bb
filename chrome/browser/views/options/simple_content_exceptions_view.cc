@@ -82,8 +82,8 @@ void SimpleContentExceptionsView::Layout() {
 
 gfx::Size SimpleContentExceptionsView::GetPreferredSize() {
   return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_GEOLOCATION_EXCEPTION_DIALOG_WIDTH_CHARS,
-      IDS_GEOLOCATION_EXCEPTION_DIALOG_HEIGHT_LINES));
+      IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_WIDTH_CHARS,
+      IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_HEIGHT_LINES));
 }
 
 void SimpleContentExceptionsView::ViewHierarchyChanged(bool is_add,

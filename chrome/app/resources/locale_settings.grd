@@ -650,10 +650,10 @@
 
       <!-- The width and height of the Geolocation Settings Exceptions -->
       <!-- dialog box in characters and lines (See above). -->
-      <message name="IDS_GEOLOCATION_EXCEPTION_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+      <message name="IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         90
       </message>
-      <message name="IDS_GEOLOCATION_EXCEPTION_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+      <message name="IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         16
       </message>
       <if expr="pp_ifdef('chromeos')">
