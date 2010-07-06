@@ -42,8 +42,10 @@ namespace history {
 
 namespace {
 
-static const int kCurrentVersionNumber = 1;
-static const int kCompatibleVersionNumber = 1;
+// Version 1 uses FTS2 for index files.
+// Version 2 uses FTS3.
+static const int kCurrentVersionNumber = 2;
+static const int kCompatibleVersionNumber = 2;
 
 // Snippet computation relies on the index of the columns in the original
 // create statement. These are the 0-based indices (as strings) of the
