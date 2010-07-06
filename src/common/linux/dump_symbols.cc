@@ -111,15 +111,22 @@ static const ElfW(Shdr) *FindSectionByName(const char *name,
 
   // Find the end of the section name section, to make sure that
   // comparisons don't run off the end of the section.
-  const char *names_end = 
+  const char *names_end =
     reinterpret_cast<char*>(section_names->sh_offset + section_names->sh_size);
 
   for (int i = 0; i < nsection; ++i) {
     const char *section_name =
       reinterpret_cast<char*>(section_names->sh_offset + sections[i].sh_name);
     if (names_end - section_name >= name_len + 1 &&
-        strcmp(name, section_name) == 0)
+        strcmp(name, section_name) == 0) {
+      if (sections[i].sh_type == SHT_NOBITS) {
+        fprintf(stderr,
+                "Section %s found, but ignored because type=SHT_NOBITS.\n",
+                name);
+        return NULL;
+      }
       return sections + i;
+    }
   }
   return NULL;
 }
@@ -313,7 +320,7 @@ static bool LoadDwarfCFI(const string &dwarf_filename,
     byte_reader.SetDataBase(got_section->sh_addr);
   if (text_section)
     byte_reader.SetTextBase(text_section->sh_addr);
-    
+
   dwarf2reader::CallFrameInfo::Reporter dwarf_reporter(dwarf_filename,
                                                        section_name);
   dwarf2reader::CallFrameInfo parser(cfi, cfi_size,
