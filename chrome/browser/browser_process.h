@@ -27,7 +27,6 @@ class MetricsService;
 class NotificationUIManager;
 class PrefService;
 class ProfileManager;
-class DebuggerWrapper;
 class ResourceDispatcherHost;
 class StatusTrayManager;
 class SuspendController;
@@ -64,7 +63,6 @@ class BrowserProcess {
   virtual MetricsService* metrics_service() = 0;
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;
-  virtual DebuggerWrapper* debugger_wrapper() = 0;
   virtual DevToolsManager* devtools_manager() = 0;
   virtual Clipboard* clipboard() = 0;
 
@@ -112,7 +110,7 @@ class BrowserProcess {
 
   virtual AutomationProviderList* InitAutomationProviderList() = 0;
 
-  virtual void InitDebuggerWrapper(int port) = 0;
+  virtual void InitDebuggerWrapper(int port, bool useHttp) = 0;
 
   virtual unsigned int AddRefModule() = 0;
   virtual unsigned int ReleaseModule() = 0;

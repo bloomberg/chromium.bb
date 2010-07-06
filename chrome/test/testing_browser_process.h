@@ -86,10 +86,6 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
-  virtual DebuggerWrapper* debugger_wrapper() {
-    return NULL;
-  }
-
   virtual DevToolsManager* devtools_manager() {
     return NULL;
   }
@@ -122,7 +118,7 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
-  virtual void InitDebuggerWrapper(int port) {
+  virtual void InitDebuggerWrapper(int port, bool useHttp) {
   }
 
   virtual unsigned int AddRefModule() {

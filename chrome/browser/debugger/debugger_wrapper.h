@@ -15,12 +15,13 @@
 #include "base/ref_counted.h"
 
 class DebuggerHost;
+class DevToolsHttpProtocolHandler;
 class DevToolsProtocolHandler;
 class DevToolsRemoteListenSocket;
 
 class DebuggerWrapper : public base::RefCountedThreadSafe<DebuggerWrapper> {
  public:
-  explicit DebuggerWrapper(int port);
+  DebuggerWrapper(int port, bool useHttp);
 
  private:
   friend class base::RefCountedThreadSafe<DebuggerWrapper>;
@@ -28,6 +29,7 @@ class DebuggerWrapper : public base::RefCountedThreadSafe<DebuggerWrapper> {
   virtual ~DebuggerWrapper();
 
   scoped_refptr<DevToolsProtocolHandler> proto_handler_;
+  scoped_refptr<DevToolsHttpProtocolHandler> http_handler_;
 };
 
 #endif  // CHROME_BROWSER_DEBUGGER_DEBUGGER_WRAPPER_H_

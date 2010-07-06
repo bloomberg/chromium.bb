@@ -23,6 +23,7 @@
 #include "ipc/ipc_message.h"
 
 class CommandLine;
+class DebuggerWrapper;
 class FilePath;
 class NotificationService;
 
@@ -107,13 +108,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return local_state_.get();
   }
 
-  virtual DebuggerWrapper* debugger_wrapper() {
-    DCHECK(CalledOnValidThread());
-    if (!created_debugger_wrapper_)
-      return NULL;
-    return debugger_wrapper_.get();
-  }
-
   virtual DevToolsManager* devtools_manager() {
     DCHECK(CalledOnValidThread());
     if (!created_devtools_manager_)
@@ -159,10 +153,10 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return automation_provider_list_.get();
   }
 
-  virtual void InitDebuggerWrapper(int port) {
+  virtual void InitDebuggerWrapper(int port, bool useHttp) {
     DCHECK(CalledOnValidThread());
     if (!created_debugger_wrapper_)
-      CreateDebuggerWrapper(port);
+      CreateDebuggerWrapper(port, useHttp);
   }
 
   virtual unsigned int AddRefModule();
@@ -235,7 +229,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateLocalState();
   void CreateViewedPageTracker();
   void CreateIconManager();
-  void CreateDebuggerWrapper(int port);
+  void CreateDebuggerWrapper(int port, bool useHttp);
   void CreateDevToolsManager();
   void CreateGoogleURLTracker();
   void CreateIntranetRedirectDetector();

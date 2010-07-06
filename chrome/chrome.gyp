@@ -517,6 +517,7 @@
       'dependencies': [
         'chrome_resources',
         'chrome_strings',
+        '../net/net.gyp:http_listen_socket',
         'theme_resources',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
@@ -531,6 +532,8 @@
         'browser/debugger/debugger_wrapper.cc',
         'browser/debugger/debugger_wrapper.h',
         'browser/debugger/devtools_client_host.h',
+        'browser/debugger/devtools_http_protocol_handler.cc',
+        'browser/debugger/devtools_http_protocol_handler.h',
         'browser/debugger/devtools_manager.cc',
         'browser/debugger/devtools_manager.h',
         'browser/debugger/devtools_protocol_handler.cc',

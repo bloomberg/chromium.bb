@@ -716,6 +716,9 @@ const char kRecordMode[]                    = "record-mode";
 // Register pepper plugins that should be loaded into the renderer.
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 
+// Enable remote debug over HTTP on the specified port.
+const char kRemoteDebuggingPort[]           = "remote-debugging-port";
+
 // Enable remote debug / automation shell on the specified port.
 const char kRemoteShellPort[]               = "remote-shell-port";
 

@@ -419,11 +419,11 @@ void BrowserProcessImpl::CreateIconManager() {
   icon_manager_.reset(new IconManager);
 }
 
-void BrowserProcessImpl::CreateDebuggerWrapper(int port) {
+void BrowserProcessImpl::CreateDebuggerWrapper(int port, bool useHttp) {
   DCHECK(debugger_wrapper_.get() == NULL);
   created_debugger_wrapper_ = true;
 
-  debugger_wrapper_ = new DebuggerWrapper(port);
+  debugger_wrapper_ = new DebuggerWrapper(port, useHttp);
 }
 
 void BrowserProcessImpl::CreateDevToolsManager() {
