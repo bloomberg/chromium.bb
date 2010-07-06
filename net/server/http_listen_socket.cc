@@ -191,7 +191,7 @@ int charToInput(char ch) {
       return INPUT_COLON;
     case 0x0:
       return INPUT_00;
-    case -1:
+    case static_cast<char>(-1):
       return INPUT_FF;
   }
   return INPUT_DEFAULT;
