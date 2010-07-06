@@ -117,15 +117,16 @@ class PatchedTree(DirTree):
 
 class GitTree(DirTree):
 
-  def __init__(self, url):
+  def __init__(self, url, commit_id="origin/master"):
     self._url = url
+    self._commit_id = commit_id
 
-  def WriteTree(self, dest_dir, commit_id="origin/master"):
+  def WriteTree(self, dest_dir):
     # This is a more incremental, idempotent way of doing "git clone".
     subprocess.check_call(["git", "init"], cwd=dest_dir)
     subprocess.check_call(["git", "remote", "add", "-f", "origin", self._url],
                           cwd=dest_dir)
-    subprocess.check_call(["git", "checkout", commit_id], cwd=dest_dir)
+    subprocess.check_call(["git", "checkout", self._commit_id], cwd=dest_dir)
 
 
 class CopyTree(DirTree):

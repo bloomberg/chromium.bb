@@ -58,6 +58,12 @@ def GetSources():
     "newlib": dirtree.PatchedTree(
         dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
         PatchGlob("newlib-1.18.0"), strip=2),
+    # For a discussion of why nacl-glibc uses these, see
+    # http://code.google.com/p/nativeclient/issues/detail?id=671
+    # TODO(mseaborn): Move this repo to git.chromium.org.
+    "linux_headers": dirtree.GitTree(
+        "http://repo.or.cz/r/linux-headers-for-nacl.git",
+        commit_id="2dc04f8190a54defc0d59e693fa6cff3e8a916a9"),
     # TODO(mseaborn): Pin a specific Git commit ID here.
     "glibc": dirtree.GitTree("http://src.chromium.org/git/nacl-glibc.git"),
     }
@@ -211,26 +217,21 @@ int main() {
       compiler=["nacl64-gcc", "-m32"])
   module_list.append(modules["hello"])
 
-  # TODO(mseaborn): This is cheating.  A manual step is still required
-  # to get glibc to build: nacl-glibc's nacl_config.sh must be run to
-  # populate the "kernel-headers" directory.
-  modules["kernel_headers"] = btarget.ExistingSource(
-      "kernel_headers", os.path.abspath("out/source/glibc/kernel-headers"))
-
   # libnacl_nocpp and newlib are dependencies for the "forced unwind
   # support" autoconf check.
   # TODO(mseaborn): Get glibc to build without having to build newlib first.
   AddAutoconfModule(
       "glibc", "glibc",
       deps=["binutils", "full-gcc", "libnacl_nocpp", "newlib"],
-      explicitly_passed_deps=[modules["kernel_headers"]],
+      explicitly_passed_deps=[src["linux_headers"]],
       configure_opts=[
           "--prefix=/nacl64",
           "--host=i486-linux-gnu",
           "CC=nacl64-gcc -m32",
           ("CFLAGS=-march=i486 -pipe -fno-strict-aliasing -O2 "
            "-mno-tls-direct-seg-refs -g"),
-          "--with-headers=%s" % modules["kernel_headers"].dest_path,
+          ("--with-headers=%s" %
+           os.path.join(src["linux_headers"].dest_path, "include")),
           "--enable-kernel=2.2.0"],
       use_install_root=True)
 
