@@ -165,7 +165,7 @@ void DevToolsHttpProtocolHandler::OnResponseStarted(URLRequest* request) {
 
   HttpListenSocket* socket = it->second;
 
-  int64 expected_size = request->GetExpectedContentSize();
+  int expected_size = static_cast<int>(request->GetExpectedContentSize());
 
   std::string content_type;
   request->GetMimeType(&content_type);
@@ -173,7 +173,7 @@ void DevToolsHttpProtocolHandler::OnResponseStarted(URLRequest* request) {
   if (request->status().is_success()) {
     socket->Send(StringPrintf("HTTP/1.1 200 OK\r\n"
                               "Content-Type:%s\r\n"
-                              "Content-Length:%lld\r\n"
+                              "Content-Length:%d\r\n"
                               "\r\n",
                               content_type.c_str(),
                               expected_size));
