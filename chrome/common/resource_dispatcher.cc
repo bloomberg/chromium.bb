@@ -275,7 +275,7 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
   if (it == pending_requests_.end()) {
     // This might happen for kill()ed requests on the webkit end, so perhaps it
     // shouldn't be a warning...
-    DLOG(WARNING) << "Got response for a nonexistant or finished request";
+    DLOG(WARNING) << "Got response for a nonexistent or finished request";
     // Release resources in the message if it is a data message.
     ReleaseResourcesInDataMessage(message);
     return true;
@@ -309,7 +309,7 @@ void ResourceDispatcher::OnUploadProgress(
   if (it == pending_requests_.end()) {
     // this might happen for kill()ed requests on the webkit end, so perhaps
     // it shouldn't be a warning...
-    DLOG(WARNING) << "Got upload progress for a nonexistant or "
+    DLOG(WARNING) << "Got upload progress for a nonexistent or "
         "finished request";
     return;
   }
@@ -331,7 +331,7 @@ void ResourceDispatcher::OnReceivedResponse(
   if (it == pending_requests_.end()) {
     // This might happen for kill()ed requests on the webkit end, so perhaps it
     // shouldn't be a warning...
-    DLOG(WARNING) << "Got response for a nonexistant or finished request";
+    DLOG(WARNING) << "Got response for a nonexistent or finished request";
     return;
   }
 
@@ -356,7 +356,7 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
   if (it == pending_requests_.end()) {
     // this might happen for kill()ed requests on the webkit end, so perhaps
     // it shouldn't be a warning...
-    DLOG(WARNING) << "Got metadata for a nonexistant or finished request";
+    DLOG(WARNING) << "Got metadata for a nonexistent or finished request";
     return;
   }
 
@@ -384,7 +384,7 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
   if (it == pending_requests_.end()) {
     // this might happen for kill()ed requests on the webkit end, so perhaps
     // it shouldn't be a warning...
-    DLOG(WARNING) << "Got data for a nonexistant or finished request";
+    DLOG(WARNING) << "Got data for a nonexistent or finished request";
     return;
   }
 
@@ -407,7 +407,7 @@ void ResourceDispatcher::OnReceivedRedirect(
   if (it == pending_requests_.end()) {
     // this might happen for kill()ed requests on the webkit end, so perhaps
     // it shouldn't be a warning...
-    DLOG(WARNING) << "Got data for a nonexistant or finished request";
+    DLOG(WARNING) << "Got data for a nonexistent or finished request";
     return;
   }
 
@@ -437,7 +437,7 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
   if (it == pending_requests_.end()) {
     // this might happen for kill()ed requests on the webkit end, so perhaps
     // it shouldn't be a warning...
-    DLOG(WARNING) << "Got 'complete' for a nonexistant or finished request";
+    DLOG(WARNING) << "Got 'complete' for a nonexistent or finished request";
     return;
   }
 

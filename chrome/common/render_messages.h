@@ -704,7 +704,7 @@ struct ViewHostMsg_RunFileChooser_Params {
     // Like Open, but allows picking multiple files to open.
     OpenMultiple,
 
-    // Allows picking a nonexistant file, and prompts to overwrite if the file
+    // Allows picking a nonexistent file, and prompts to overwrite if the file
     // already exists.
     Save,
   };
