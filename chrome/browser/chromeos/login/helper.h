@@ -44,7 +44,7 @@ enum Command {
 const int kBorderSize = 4;
 
 // The size of user image.
-const int kUserImageSize = 260;
+const int kUserImageSize = 256;
 
 // Background color of the login controls.
 const SkColor kBackgroundColor = SK_ColorWHITE;

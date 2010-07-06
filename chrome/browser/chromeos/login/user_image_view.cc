@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -29,14 +30,14 @@ const int kVerticalMargin = 10;
 const int kHorizontalPadding = 10;
 // Padding between vertically neighboring elements.
 const int kVerticalPadding = 10;
-// Size of each image in images list.
-const int kImageSize = 160;
-// Size of selected image preview.
-const int kSelectedImageSize = 260;
+// Size for button with video image.
+const int kVideoImageSize = 256;
 
 }  // namespace
 
 namespace chromeos {
+
+using login::kUserImageSize;
 
 UserImageView::UserImageView(Delegate* delegate)
     : title_label_(NULL),
@@ -68,13 +69,13 @@ void UserImageView::Init() {
   title_label_->SetMultiLine(true);
   AddChildView(title_label_);
 
-  SkBitmap video_button_image(
+  SkBitmap video_button_image =
       skia::ImageOperations::Resize(
           *ResourceBundle::GetSharedInstance().GetBitmapNamed(
               IDR_USER_IMAGE_NO_VIDEO),
-          skia::ImageOperations::RESIZE_LANCZOS3,
-          kImageSize,
-          kImageSize));
+          skia::ImageOperations::RESIZE_BOX,
+          kVideoImageSize,
+          kVideoImageSize);
 
   video_button_ = new views::ImageButton(this);
   video_button_->SetImage(views::CustomButton::BS_NORMAL, &video_button_image);
@@ -82,7 +83,7 @@ void UserImageView::Init() {
 
   selected_image_ = new views::ImageView();
   selected_image_->SetImageSize(
-      gfx::Size(kSelectedImageSize, kSelectedImageSize));
+      gfx::Size(kUserImageSize, kUserImageSize));
   selected_image_->SetImage(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_LOGIN_OTHER_USER));
@@ -98,6 +99,8 @@ void UserImageView::RecreateNativeControls() {
   ok_button_ = new views::NativeButton(this, std::wstring());
   AddChildView(ok_button_);
   ok_button_->SetEnabled(image_selected_);
+  if (image_selected_)
+    ok_button_->RequestFocus();
 
   delete cancel_button_;
   cancel_button_ = new views::NativeButton(this, std::wstring());
@@ -117,12 +120,12 @@ void UserImageView::UpdateLocalizedStrings() {
 
 void UserImageView::UpdateVideoFrame(const SkBitmap& frame) {
   last_frame_.reset(new SkBitmap(frame));
-  SkBitmap video_button_image(
+  SkBitmap video_button_image =
       skia::ImageOperations::Resize(
-          frame,
-          skia::ImageOperations::RESIZE_LANCZOS3,
-          kImageSize,
-          kImageSize));
+          *last_frame_,
+          skia::ImageOperations::RESIZE_BOX,
+          kVideoImageSize,
+          kVideoImageSize);
 
   video_button_->SetImage(views::CustomButton::BS_NORMAL, &video_button_image);
   video_button_->SchedulePaint();
@@ -132,9 +135,16 @@ void UserImageView::OnVideoImageClicked() {
   // TODO(avayvod): Snapshot sound.
   if (!last_frame_.get())
     return;
-  selected_image_->SetImage(*last_frame_);
+
+  selected_image_->SetImage(
+      skia::ImageOperations::Resize(
+          *last_frame_,
+          skia::ImageOperations::RESIZE_LANCZOS3,
+          kUserImageSize,
+          kUserImageSize));
   image_selected_ = true;
   ok_button_->SetEnabled(true);
+  ok_button_->RequestFocus();
 }
 
 void UserImageView::LocaleChanged() {
@@ -180,15 +190,6 @@ void UserImageView::Layout() {
                         ok_button_->y() - title_bottom -
                             2 * kVerticalPadding);
 
-  // Video capture image is in the top left corner of the area.
-  int video_button_x = images_area.x();
-  int video_button_y = images_area.y();
-  gfx::Size video_button_size = video_button_->GetPreferredSize();
-  video_button_->SetBounds(video_button_x,
-                           video_button_y,
-                           video_button_size.width(),
-                           video_button_size.height());
-
   // Selected image is floating in the middle between top and height, near
   // the right border.
   gfx::Size selected_image_size = selected_image_->GetPreferredSize();
@@ -199,6 +200,15 @@ void UserImageView::Layout() {
                              selected_image_y,
                              selected_image_size.width(),
                              selected_image_size.height());
+
+  // Video capture image is on the left side of the area, top aligned with
+  // selected image.
+  int video_button_x = images_area.x();
+  int video_button_y = selected_image_y;
+  video_button_->SetBounds(video_button_x,
+                           video_button_y,
+                           kVideoImageSize,
+                           kVideoImageSize);
 
   SchedulePaint();
 }
