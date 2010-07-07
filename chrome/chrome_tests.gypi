@@ -891,6 +891,7 @@
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
         'browser/notifications/desktop_notifications_unittest.h',
+        'browser/notifications/desktop_notifications_unittest.cc',
         'browser/notifications/notification_exceptions_table_model_unittest.cc',
         'browser/notifications/notification_test_util.h',
         'browser/notifications/notifications_prefs_cache_unittest.cc',
