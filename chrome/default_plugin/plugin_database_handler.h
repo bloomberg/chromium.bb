@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DEFAULT_PLUGIN_PLUGIN_DATABASE_HANDLER_H
-#define WEBKIT_DEFAULT_PLUGIN_PLUGIN_DATABASE_HANDLER_H
+#ifndef CHROME_DEFAULT_PLUGIN_PLUGIN_DATABASE_HANDLER_H_
+#define CHROME_DEFAULT_PLUGIN_PLUGIN_DATABASE_HANDLER_H_
 
 #include <windows.h>
 #include <string>
@@ -153,4 +153,4 @@ class PluginDatabaseHandler {
   bool ignore_plugin_db_data_;
 };
 
-#endif  // WEBKIT_DEFAULT_PLUGIN_PLUGIN_DATABASE_DOWNLOAD_HANDLER_H
+#endif  // CHROME_DEFAULT_PLUGIN_PLUGIN_DATABASE_HANDLER_H_

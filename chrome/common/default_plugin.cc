@@ -4,8 +4,8 @@
 
 #include "chrome/common/default_plugin.h"
 
+#include "chrome/default_plugin/plugin_main.h"
 #include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/default_plugin/plugin_main.h"
 
 namespace chrome {
 

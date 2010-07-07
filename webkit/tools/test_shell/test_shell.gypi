@@ -159,7 +159,6 @@
           ],
           'dependencies': [
             '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
-            '<(DEPTH)/webkit/default_plugin/default_plugin.gyp:default_plugin',
           ],
           # TODO(bradnelson):
           # This should really be done in the 'npapi_layout_test_plugin'

@@ -18,7 +18,7 @@
 #include "base/win_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-#include "webkit/default_plugin/plugin_impl.h"
+#include "webkit/glue/plugins/default_plugin_shared.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -466,7 +466,7 @@ void WebPluginDelegateImpl::Print(HDC hdc) {
 
 void WebPluginDelegateImpl::InstallMissingPlugin() {
   NPEvent evt;
-  evt.event = PluginInstallerImpl::kInstallMissingPluginMessage;
+  evt.event = default_plugin::kInstallMissingPluginMessage;
   evt.lParam = 0;
   evt.wParam = 0;
   instance()->NPP_HandleEvent(&evt);

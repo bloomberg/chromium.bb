@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/default_plugin/plugin_impl_win.h"
+#include "chrome/default_plugin/plugin_impl_win.h"
 
 #include <shellapi.h>
 
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/default_plugin/plugin_main.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_strings.h"
 #include "unicode/locid.h"
-#include "webkit/default_plugin/default_plugin_shared.h"
-#include "webkit/default_plugin/plugin_main.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/plugins/default_plugin_shared.h"
 
 static const int TOOLTIP_MAX_WIDTH = 500;
 
@@ -259,7 +259,7 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
 
 int16 PluginInstallerImpl::NPP_HandleEvent(void* event) {
   NPEvent* npp_event = static_cast<NPEvent*>(event);
-  if (npp_event->event == kInstallMissingPluginMessage) {
+  if (npp_event->event == default_plugin::kInstallMissingPluginMessage) {
     // We could get this message because InfoBar may not be in sync with our
     // internal processing. So we need to check the status.
     if (plugin_installer_state() == PluginListDownloaded) {

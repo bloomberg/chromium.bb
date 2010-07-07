@@ -13,8 +13,8 @@ namespace default_plugin {
 extern NPNetscapeFuncs* g_browser;
 
 // Standard NPAPI functions.
-NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc,
-                char* argn[], char* argv[], NPSavedData* saved);
+NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode,
+                int16_t argc, char* argn[], char* argv[], NPSavedData* saved);
 NPError NPP_Destroy(NPP instance, NPSavedData** save);
 NPError NPP_SetWindow(NPP instance, NPWindow* window);
 NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream* stream,
@@ -22,7 +22,7 @@ NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream* stream,
 NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason);
 int32_t NPP_WriteReady(NPP instance, NPStream* stream);
 int32_t NPP_Write(NPP instance, NPStream* stream, int32_t offset, int32_t len,
-                void* buffer);
+                  void* buffer);
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value);
 #endif

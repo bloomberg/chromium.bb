@@ -7,7 +7,6 @@ include_rules = [
   "+media/filters",
   "+sandbox/src",
   "+skia/include",
-  "+webkit/default_plugin",
   "+webkit/extensions",
   "+webkit/glue",
   "+webkit/glue/plugins",

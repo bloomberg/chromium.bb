@@ -155,6 +155,7 @@
         'plugins/carbon_plugin_window_tracker_mac.h',
         'plugins/carbon_plugin_window_tracker_mac.cc',
         'plugins/coregraphics_private_symbols_mac.h',
+        'plugins/default_plugin_shared.h',
         'plugins/nphostapi.h',
         'plugins/gtk_plugin_container.h',
         'plugins/gtk_plugin_container.cc',

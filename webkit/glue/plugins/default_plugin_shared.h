@@ -5,8 +5,8 @@
 // Thes file contains stuff that should be shared among projects that do some
 // special handling with default plugin
 
-#ifndef WEBKIT_DEFAULT_PLUGIN_DEFAULT_PLUGIN_SHARED_H
-#define WEBKIT_DEFAULT_PLUGIN_DEFAULT_PLUGIN_SHARED_H
+#ifndef WEBKIT_GLUE_PLUGINS_DEFAULT_PLUGIN_SHARED_H
+#define WEBKIT_GLUE_PLUGINS_DEFAULT_PLUGIN_SHARED_H
 
 namespace default_plugin {
 
@@ -21,6 +21,11 @@ enum MissingPluginStatus {
   MISSING_PLUGIN_USER_STARTED_DOWNLOAD
 };
 
+#if defined(OS_WIN)
+#include <windows.h>
+const int kInstallMissingPluginMessage = WM_APP + 117;
+#endif
+
 }  // namespace default_plugin
 
-#endif // #ifndef WEBKIT_DEFAULT_PLUGIN_DEFAULT_PLUGIN_SHARED_H
+#endif // WEBKIT_GLUE_PLUGINS_DEFAULT_PLUGIN_SHARED_H

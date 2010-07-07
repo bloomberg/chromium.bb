@@ -11,7 +11,6 @@ include_rules = [
   "+sandbox/src",
   "+skia/include",
   "+webkit/database",
-  "+webkit/default_plugin",
   "+webkit/glue",  # Defines some types that are marshalled over IPC.
   "+xib_localizers", # For generated mac localization helpers
 

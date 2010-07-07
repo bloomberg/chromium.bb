@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DEFAULT_PLUGIN_PLUGIN_INSTALL_JOB_MONITOR_H__
-#define WEBKIT_DEFAULT_PLUGIN_PLUGIN_INSTALL_JOB_MONITOR_H__
+#ifndef CHROME_DEFAULT_PLUGIN_PLUGIN_INSTALL_JOB_MONITOR_H_
+#define CHROME_DEFAULT_PLUGIN_PLUGIN_INSTALL_JOB_MONITOR_H_
 
 #include <windows.h>
 
@@ -78,4 +78,4 @@ class PluginInstallationJobMonitorThread :
   DISALLOW_COPY_AND_ASSIGN(PluginInstallationJobMonitorThread);
 };
 
-#endif  // WEBKIT_DEFAULT_PLUGIN_PLUGIN_INSTALL_JOB_MONITOR_H__
+#endif  // CHROME_DEFAULT_PLUGIN_PLUGIN_INSTALL_JOB_MONITOR_H_

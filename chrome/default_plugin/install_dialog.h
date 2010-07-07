@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DEFAULT_PLUGIN_INSTALL_DIALOG_H__
-#define WEBKIT_DEFAULT_PLUGIN_INSTALL_DIALOG_H__
+#ifndef CHROME_DEFAULT_PLUGIN_INSTALL_DIALOG_H_
+#define CHROME_DEFAULT_PLUGIN_INSTALL_DIALOG_H_
 
 #include <atlbase.h>
 #include <atlwin.h>
 #include <string>
 #include <vector>
 
-#include "webkit/default_plugin/default_plugin_resources.h"
+#include "chrome/default_plugin/default_plugin_resources.h"
 
 class PluginInstallerImpl;
 
@@ -38,7 +38,7 @@ class PluginInstallDialog : public CDialogImpl<PluginInstallDialog> {
   void ShowInstallDialog(HWND parent);
 
  private:
-  PluginInstallDialog(const std::wstring& plugin_name);
+  explicit PluginInstallDialog(const std::wstring& plugin_name);
   ~PluginInstallDialog();
 
   // Implemented to ensure that we handle RTL layouts correctly.
@@ -57,4 +57,4 @@ class PluginInstallDialog : public CDialogImpl<PluginInstallDialog> {
   std::wstring plugin_name_;
 };
 
-#endif  // WEBKIT_DEFAULT_PLUGIN_INSTALL_DIALOG_H__
+#endif  // CHROME_DEFAULT_PLUGIN_INSTALL_DIALOG_H_
