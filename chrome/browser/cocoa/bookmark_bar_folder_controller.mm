@@ -419,11 +419,9 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // http://crbug.com/35966
   NSRect buttonsOuterFrame = NSMakeRect(
     bookmarks::kBookmarkHorizontalPadding,
-    height - (bookmarks::kBookmarkBarHeight -
-              bookmarks::kBookmarkVerticalPadding),
+    height - bookmarks::kBookmarkButtonHeight,
     bookmarks::kDefaultBookmarkWidth,
-    (bookmarks::kBookmarkBarHeight -
-     2 * bookmarks::kBookmarkVerticalPadding));
+    bookmarks::kBookmarkButtonHeight);
 
   // TODO(jrg): combine with addNodesToButtonList: code from
   // bookmark_bar_controller.mm (but use y offset)
@@ -443,7 +441,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
                                                  frame:buttonsOuterFrame];
       [buttons_ addObject:button];
       [mainView_ addSubview:button];
-      buttonsOuterFrame.origin.y -= bookmarks::kBookmarkBarHeight;
+      buttonsOuterFrame.origin.y -= bookmarks::kBookmarkButtonHeight;
     }
   }
 
