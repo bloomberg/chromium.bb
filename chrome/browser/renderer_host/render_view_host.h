@@ -393,8 +393,7 @@ class RenderViewHost : public RenderWidgetHost {
   // ready.
   void AutocompleteSuggestionsReturned(
       int query_id,
-      const std::vector<string16>& suggestions,
-      int default_suggestion_index);
+      const std::vector<string16>& suggestions);
 
   // Called by the AutoFillManager when the FormData has been filled out.
   void AutoFillFormDataFilled(int query_id, const webkit_glue::FormData& form);
@@ -717,6 +716,12 @@ class RenderViewHost : public RenderWidgetHost {
   // Whether this render view will be used for extensions. This controls
   // what process type we use.
   bool is_extension_process_;
+
+  // AutoFill and Autocomplete suggestions.  We accumulate these separately and
+  // send them back to the renderer together.
+  int autofill_query_id_;
+  std::vector<string16> autofill_values_;
+  std::vector<string16> autofill_labels_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);
 };

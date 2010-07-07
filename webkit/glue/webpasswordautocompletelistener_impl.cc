@@ -54,12 +54,19 @@ void WebInputElementDelegate::SetSelectionRange(size_t start, size_t end) {
 }
 
 void WebInputElementDelegate::RefreshAutofillPopup(
-    const std::vector<string16>& suggestions,
-    int default_suggestion_index) {
+    const std::vector<string16>& suggestions) {
   WebView* webview = element_.document().frame()->view();
-  if (webview)
-    webview->applyAutocompleteSuggestions(element_, suggestions,
-                                          default_suggestion_index);
+  if (webview) {
+    std::vector<string16> names;
+    std::vector<string16> labels;
+
+    for (size_t i = 0; i < suggestions.size(); ++i) {
+      names.push_back(suggestions[i]);
+      labels.push_back(string16());
+    }
+
+    webview->applyAutoFillSuggestions(element_, names, labels, -1);
+  }
 }
 
 WebPasswordAutocompleteListenerImpl::WebPasswordAutocompleteListenerImpl(
@@ -151,7 +158,7 @@ bool WebPasswordAutocompleteListenerImpl::showSuggestionPopup(
   if (suggestions.empty())
     return false;
 
-  username_delegate_->RefreshAutofillPopup(suggestions, -1);
+  username_delegate_->RefreshAutofillPopup(suggestions);
   return true;
 }
 

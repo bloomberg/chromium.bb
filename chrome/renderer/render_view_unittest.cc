@@ -987,11 +987,13 @@ TEST_F(RenderViewTest, SendForms) {
   WebDocument document = web_frame->document();
   WebInputElement firstname =
       document.getElementById("firstname").to<WebInputElement>();
-  // didAcceptAutoFillSuggestions expects a non-zero number of suggestions.
-  view_->suggestions_count_ = 1;
+
+  // Accept suggestion that contains a label.  Labeled items indicate AutoFill
+  // as opposed to Autocomplete.  We're testing this distinction below with
+  // the |ViewHostMsg_FillAutoFillFormData::ID| message.
   view_->didAcceptAutoFillSuggestion(firstname,
-                                     WebKit::WebString(),
-                                     WebKit::WebString(),
+                                     WebKit::WebString::fromUTF8("Johnny"),
+                                     WebKit::WebString::fromUTF8("Home"),
                                      -1);
 
   ProcessPendingMessages();
@@ -1065,8 +1067,6 @@ TEST_F(RenderViewTest, FillFormElement) {
   WebInputElement middlename =
       document.getElementById("middlename").to<WebInputElement>();
   middlename.setAutofilled(true);
-  // didAcceptAutoFillSuggestions expects a non-zero number of suggestions.
-  view_->suggestions_count_ = 4;
 
   // Accept a suggestion in a form that has been auto-filled.  This triggers
   // the direct filling of the firstname element with value parameter.

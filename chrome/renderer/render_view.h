@@ -1157,8 +1157,11 @@ class RenderView : public RenderWidget,
   // The action to take when receiving AutoFill data from the AutoFillManager.
   AutoFillAction autofill_action_;
 
-  // The number of suggestions sent to the AutoFill popup in WebKit.
-  size_t suggestions_count_;
+  // The menu index of the "Clear" menu item.
+  int suggestions_clear_index_;
+
+  // The menu index of the "AutoFill options..." menu item.
+  int suggestions_options_index_;
 
   // Plugins -------------------------------------------------------------------
 

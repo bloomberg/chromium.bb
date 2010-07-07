@@ -433,7 +433,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       browser_window_id_(-1),
       autofill_query_id_(0),
       autofill_action_(AUTOFILL_NONE),
-      suggestions_count_(0),
+      suggestions_clear_index_(-1),
+      suggestions_options_index_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
@@ -692,8 +693,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnDisassociateFromPopupCount)
     IPC_MESSAGE_HANDLER(ViewMsg_AutoFillSuggestionsReturned,
                         OnAutoFillSuggestionsReturned)
-    IPC_MESSAGE_HANDLER(ViewMsg_AutocompleteSuggestionsReturned,
-                        OnAutocompleteSuggestionsReturned)
     IPC_MESSAGE_HANDLER(ViewMsg_AutoFillFormDataFilled,
                         OnAutoFillFormDataFilled)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowScriptToClose,
@@ -1522,32 +1521,37 @@ void RenderView::OnAutoFillSuggestionsReturned(
   if (webview() && query_id == autofill_query_id_) {
     std::vector<string16> v(values);
     std::vector<string16> l(labels);
-    int separator_index = v.size();
+    int separator_index = -1;
 
     // The form has been auto-filled, so give the user the chance to clear the
-    // form.
+    // form.  Append the 'Clear form' menu item.
     if (form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
-      v.push_back(l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
+      v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
       l.push_back(string16());
+      suggestions_clear_index_ = v.size() - 1;
+      separator_index = values.size();
     }
 
-    // Append the 'AutoFill Options...' menu item.
-    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
-    l.push_back(string16());
-    suggestions_count_ = v.size();
-    webview()->applyAutoFillSuggestions(
-        autofill_query_node_, v, l, separator_index);
-  }
-}
+    size_t labeled_item_count = 0;
+    for (size_t i = 0; i < l.size(); ++i) {
+      if (!l[i].empty())
+        labeled_item_count++;
+    }
 
-void RenderView::OnAutocompleteSuggestionsReturned(
-    int query_id,
-    const std::vector<string16>& suggestions,
-    int default_suggestion_index) {
-  if (webview() && query_id == autofill_query_id_) {
-    webview()->applyAutocompleteSuggestions(
-        autofill_query_node_, suggestions, default_suggestion_index);
+    // Only include "AutoFill Options" special menu item if we have labeled
+    // items.
+    if (labeled_item_count > 0) {
+      // Append the 'AutoFill Options...' menu item.
+      v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
+      l.push_back(string16());
+      suggestions_options_index_ = v.size() - 1;
+      separator_index = values.size();
+    }
+
+    // Send to WebKit for display.
+    if (!v.empty())
+      webview()->applyAutoFillSuggestions(
+          autofill_query_node_, v, l, separator_index);
   }
 }
 
@@ -2108,28 +2112,32 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& value,
                                              const WebKit::WebString& label,
                                              unsigned index) {
-  DCHECK_NE(0U, suggestions_count_);
-
-  if (index == suggestions_count_ - 1) {
-    // User selected 'AutoFill Options...'.
+  if (suggestions_options_index_ != -1 &&
+      index == static_cast<unsigned>(suggestions_options_index_)) {
+    // User selected 'AutoFill Options'.
     Send(new ViewHostMsg_ShowAutoFillDialog(routing_id_));
-  } else if (form_manager_.FormWithNodeIsAutoFilled(node) &&
-             index == suggestions_count_ - 2) {
+  } else if (suggestions_clear_index_ != -1 &&
+             index == static_cast<unsigned>(suggestions_clear_index_)) {
+    // User selected 'Clear form'.
     // The form has been auto-filled, so give the user the chance to clear the
     // form.
     form_manager_.ClearFormWithNode(node);
-  } else if (form_manager_.FormWithNodeIsAutoFilled(node)) {
-    // Fill a specific field value.
-    // Cast away const'ness in this case where we're filling the element
-    // directly.
+  } else if (form_manager_.FormWithNodeIsAutoFilled(node) || label.isEmpty()) {
+    // User selected an unlabeled menu item, so we fill directly.
     WebInputElement element = node.toConst<WebInputElement>();
     element.setValue(value);
+
+    WebFrame* webframe = node.document().frame();
+    if (webframe) {
+      webframe->notifiyPasswordListenerOfAutocomplete(element);
+    }
   } else {
     // Fill the values for the whole form.
     QueryAutoFillFormData(node, value, label, AUTOFILL_FILL);
   }
 
-  suggestions_count_ = 0;
+  suggestions_clear_index_ = -1;
+  suggestions_options_index_ = -1;
 }
 
 void RenderView::didSelectAutoFillSuggestion(const WebKit::WebNode& node,

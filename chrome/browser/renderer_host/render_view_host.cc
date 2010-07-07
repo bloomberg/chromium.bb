@@ -1591,12 +1591,18 @@ void RenderViewHost::OnQueryFormFieldAutoFill(
     int query_id, bool form_autofilled, const webkit_glue::FormField& field) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
-  // If the AutoFill delegate has results to return, we don't need any results
-  // from the Autocomplete delegate.
+  // We first save the AutoFill delegate's suggestions. Then we fetch the
+  // Autocomplete delegate's suggestions and send the combined results back to
+  // the render view.
   if (autofill_delegate &&
-      autofill_delegate->GetAutoFillSuggestions(
-          query_id, form_autofilled, field)) {
-      return;
+      autofill_delegate->GetAutoFillSuggestions(query_id,
+                                                form_autofilled,
+                                                field)) {
+  } else {
+    // No suggestions provided, so supply an empty vector as the results.
+    AutoFillSuggestionsReturned(query_id,
+                                std::vector<string16>(),
+                                std::vector<string16>());
   }
 
   RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
@@ -1604,11 +1610,10 @@ void RenderViewHost::OnQueryFormFieldAutoFill(
   if (autocomplete_delegate &&
       autocomplete_delegate->GetAutocompleteSuggestions(
           query_id, field.name(), field.value())) {
-      return;
+  } else {
+    // No suggestions provided, so send an empty vector as the results.
+    AutocompleteSuggestionsReturned(query_id, std::vector<string16>());
   }
-
-  // No suggestions provided, so send an empty vector as the results.
-  AutocompleteSuggestionsReturned(query_id, std::vector<string16>(), -1);
 }
 
 void RenderViewHost::OnRemoveAutocompleteEntry(const string16& field_name,
@@ -1644,16 +1649,25 @@ void RenderViewHost::AutoFillSuggestionsReturned(
     int query_id,
     const std::vector<string16>& names,
     const std::vector<string16>& labels) {
-  Send(new ViewMsg_AutoFillSuggestionsReturned(
-      routing_id(), query_id, names, labels));
+  autofill_query_id_ = query_id;
+  autofill_values_.clear();
+  autofill_values_.insert(autofill_values_.begin(), names.begin(), names.end());
+  autofill_labels_.clear();
+  autofill_labels_.insert(
+      autofill_labels_.begin(), labels.begin(), labels.end());
 }
 
 void RenderViewHost::AutocompleteSuggestionsReturned(
-    int query_id, const std::vector<string16>& suggestions,
-    int default_suggestion_index) {
-  Send(new ViewMsg_AutocompleteSuggestionsReturned(
-      routing_id(), query_id, suggestions, -1));
-  // Default index -1 means no default suggestion.
+    int query_id, const std::vector<string16>& suggestions) {
+  DCHECK_EQ(autofill_query_id_, query_id);
+
+  // Combine AutoFill and Autocomplete values into values and labels.
+  for (size_t i = 0; i < suggestions.size(); ++i) {
+    autofill_values_.push_back(suggestions[i]);
+    autofill_labels_.push_back(string16());
+  }
+  Send(new ViewMsg_AutoFillSuggestionsReturned(
+      routing_id(), query_id, autofill_values_, autofill_labels_));
 }
 
 void RenderViewHost::AutoFillFormDataFilled(int query_id,

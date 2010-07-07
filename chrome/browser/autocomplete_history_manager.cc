@@ -179,9 +179,9 @@ void AutocompleteHistoryManager::SendSuggestions(const WDTypedResult* result) {
     const WDResult<std::vector<string16> >* autofill_result =
         static_cast<const WDResult<std::vector<string16> >*>(result);
     host->AutocompleteSuggestionsReturned(
-        query_id_, autofill_result->GetValue(), -1);
+        query_id_, autofill_result->GetValue());
   } else {
     host->AutocompleteSuggestionsReturned(
-        query_id_, std::vector<string16>(), -1);
+        query_id_, std::vector<string16>());
   }
 }
