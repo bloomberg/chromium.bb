@@ -151,8 +151,6 @@ bool InputMethodLibraryImpl::SetImeConfig(
 void InputMethodLibraryImpl::FlushImeConfig() {
   bool active_input_methods_are_changed = false;
   if (EnsureLoadedAndStarted()) {
-    LOG(INFO) << "Sending " << pending_config_requests_.size()
-              << " set config command(s)";
     InputMethodConfigRequests::iterator iter = pending_config_requests_.begin();
     while (iter != pending_config_requests_.end()) {
       const std::string& section = iter->first.first;
