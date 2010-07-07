@@ -25,6 +25,7 @@
 enum BrowserType {
   CHROME = 0,
   FIREFOX,
+  ICEWEASEL,
   OPERA,
   KONQUEROR,
   EPIPHANY,
@@ -37,6 +38,7 @@ enum BrowserType {
 static const char kBrowserPrettyNames[][10] = {
   "Chrome",
   "Firefox",
+  "Iceweasel",
   "Opera",
   "Konqueror",
   "Epiphany",
@@ -52,6 +54,7 @@ static const struct {
   { "firefox-3.5", FIREFOX },
   { "firefox-3.0", FIREFOX },
   { "firefox-bin", FIREFOX },
+  { "iceweasel", ICEWEASEL },
   { "opera", OPERA },
   { "konqueror", KONQUEROR },
   { "epiphany-browse", EPIPHANY },
