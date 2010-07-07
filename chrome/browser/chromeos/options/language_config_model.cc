@@ -92,7 +92,7 @@ size_t LanguageConfigModel::CountNumActiveInputMethods(
   int num_selected_active_input_methods = 0;
   std::vector<std::string> input_method_ids;
   input_method::GetInputMethodIdsFromLanguageCode(
-      language_code, input_method::kKeyboardLayoutsOnly, &input_method_ids);
+      language_code, input_method::kAllInputMethods, &input_method_ids);
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     if (InputMethodIsActivated(input_method_ids[i])) {
       ++num_selected_active_input_methods;
