@@ -51,6 +51,25 @@ void CustomButton::SetAnimationDuration(int duration) {
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides:
 
+bool CustomButton::GetAccessibleState(AccessibilityTypes::State* state) {
+  *state = 0;
+  switch (state_) {
+    case BS_NORMAL:
+      *state = 0;
+    case BS_HOT:
+      *state = AccessibilityTypes::STATE_HOTTRACKED;
+    case BS_PUSHED:
+      *state = AccessibilityTypes::STATE_PRESSED;
+    case BS_DISABLED:
+      *state = AccessibilityTypes::STATE_UNAVAILABLE;
+    case BS_COUNT:
+      // No additional accessibility state set for this button state.
+      break;
+  }
+
+  return true;
+}
+
 void CustomButton::SetEnabled(bool enabled) {
   if (enabled && state_ == BS_DISABLED) {
     SetState(BS_NORMAL);
@@ -214,6 +233,9 @@ void CustomButton::ViewHierarchyChanged(bool is_add, View *parent,
 void CustomButton::SetHotTracked(bool flag) {
   if (state_ != BS_DISABLED)
     SetState(flag ? BS_HOT : BS_NORMAL);
+
+  if (flag)
+    NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
 }
 
 bool CustomButton::IsHotTracked() const {

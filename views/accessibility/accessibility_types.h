@@ -25,10 +25,19 @@ class AccessibilityTypes {
   typedef uint32 State;
   enum StateFlag {
     STATE_CHECKED     = 1 << 0,
-    STATE_HASPOPUP    = 1 << 1,
-    STATE_LINKED      = 1 << 2,
-    STATE_PROTECTED   = 1 << 3,
-    STATE_READONLY    = 1 << 4
+    STATE_COLLAPSED   = 1 << 1,
+    STATE_DEFAULT     = 1 << 2,
+    STATE_EXPANDED    = 1 << 3,
+    STATE_HASPOPUP    = 1 << 4,
+    STATE_HOTTRACKED  = 1 << 5,
+    STATE_INVISIBLE   = 1 << 6,
+    STATE_LINKED      = 1 << 7,
+    STATE_OFFSCREEN   = 1 << 8,
+    STATE_PRESSED     = 1 << 9,
+    STATE_PROTECTED   = 1 << 10,
+    STATE_READONLY    = 1 << 11,
+    STATE_SELECTED    = 1 << 12,
+    STATE_UNAVAILABLE = 1 << 13
   };
 
   // This defines an enumeration of the supported accessibility roles in our

@@ -854,14 +854,32 @@ int32 ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
   int32 msaa_state = 0;
   if (state & AccessibilityTypes::STATE_CHECKED)
     msaa_state |= STATE_SYSTEM_CHECKED;
+  if (state & AccessibilityTypes::STATE_COLLAPSED)
+    msaa_state |= STATE_SYSTEM_COLLAPSED;
+  if (state & AccessibilityTypes::STATE_DEFAULT)
+    msaa_state |= STATE_SYSTEM_DEFAULT;
+  if (state & AccessibilityTypes::STATE_EXPANDED)
+    msaa_state |= STATE_SYSTEM_EXPANDED;
   if (state & AccessibilityTypes::STATE_HASPOPUP)
     msaa_state |= STATE_SYSTEM_HASPOPUP;
+  if (state & AccessibilityTypes::STATE_HOTTRACKED)
+    msaa_state |= STATE_SYSTEM_HOTTRACKED;
+  if (state & AccessibilityTypes::STATE_INVISIBLE)
+    msaa_state |= STATE_SYSTEM_INVISIBLE;
   if (state & AccessibilityTypes::STATE_LINKED)
     msaa_state |= STATE_SYSTEM_LINKED;
+  if (state & AccessibilityTypes::STATE_OFFSCREEN)
+    msaa_state |= STATE_SYSTEM_OFFSCREEN;
+  if (state & AccessibilityTypes::STATE_PRESSED)
+    msaa_state |= STATE_SYSTEM_PRESSED;
   if (state & AccessibilityTypes::STATE_PROTECTED)
     msaa_state |= STATE_SYSTEM_PROTECTED;
   if (state & AccessibilityTypes::STATE_READONLY)
     msaa_state |= STATE_SYSTEM_READONLY;
+  if (state & AccessibilityTypes::STATE_SELECTED)
+    msaa_state |= STATE_SYSTEM_SELECTED;
+  if (state & AccessibilityTypes::STATE_UNAVAILABLE)
+    msaa_state |= STATE_SYSTEM_UNAVAILABLE;
   return msaa_state;
 }
 
