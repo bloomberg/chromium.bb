@@ -886,6 +886,8 @@ void ResourceDispatcherHost::RemovePendingRequest(
   // Notify interested parties that the request object is going away.
   if (info && info->login_handler())
     info->login_handler()->OnRequestCancelled();
+  if (info->ssl_client_auth_handler())
+    info->ssl_client_auth_handler()->OnRequestCancelled();
   resource_queue_.RemoveRequest(iter->first);
 
   delete iter->second;
