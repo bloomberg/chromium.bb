@@ -221,6 +221,31 @@ void ClipboardReadHTML(Clipboard::Buffer buffer, string16* markup, GURL* url) {
                                                                   markup, url));
 }
 
+bool ClipboardReadAvailableTypes(Clipboard::Buffer buffer,
+                                 std::vector<string16>* types,
+                                 bool* contains_filenames) {
+  bool result = false;
+  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadAvailableTypes(
+      buffer, &result, types, contains_filenames));
+  return result;
+}
+
+bool ClipboardReadData(Clipboard::Buffer buffer, const string16& type,
+                       string16* data, string16* metadata) {
+  bool result = false;
+  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadData(
+      buffer, type, &result, data, metadata));
+  return result;
+}
+
+bool ClipboardReadFilenames(Clipboard::Buffer buffer,
+                            std::vector<string16>* filenames) {
+  bool result;
+  RenderThread::current()->Send(new ViewHostMsg_ClipboardReadFilenames(
+      buffer, &result, filenames));
+  return result;
+}
+
 void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   if (!RenderThread::current()->plugin_refresh_allowed())
     refresh = false;

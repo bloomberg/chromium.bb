@@ -220,6 +220,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #if defined(OS_MACOSX)
   void OnClipboardFindPboardWriteString(const string16& text);
 #endif
+  void OnClipboardReadAvailableTypes(Clipboard::Buffer buffer,
+                                     IPC::Message* reply);
+  void OnClipboardReadData(Clipboard::Buffer buffer, const string16& type,
+                           IPC::Message* reply);
+  void OnClipboardReadFilenames(Clipboard::Buffer buffer, IPC::Message* reply);
 
   void OnCheckNotificationPermission(const GURL& source_url,
                                      int* permission_level);
@@ -352,6 +357,12 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void DoOnClipboardReadAsciiText(Clipboard::Buffer buffer,
                                   IPC::Message* reply_msg);
   void DoOnClipboardReadHTML(Clipboard::Buffer buffer, IPC::Message* reply_msg);
+  void DoOnClipboardReadAvailableTypes(Clipboard::Buffer buffer,
+                                       IPC::Message* reply_msg);
+  void DoOnClipboardReadData(Clipboard::Buffer buffer, const string16& type,
+                             IPC::Message* reply_msg);
+  void DoOnClipboardReadFilenames(Clipboard::Buffer buffer,
+                                  IPC::Message* reply_msg);
   void DoOnAllocateTempFileForPrinting(IPC::Message* reply_msg);
 #endif
 

@@ -51,4 +51,21 @@ void ClipboardReadHTML(Clipboard::Buffer buffer, string16* markup, GURL* url) {
     *url = GURL(url_str);
 }
 
+// TODO(dcheng): Implement.
+bool ClipboardReadAvailableTypes(Clipboard::Buffer buffer,
+                                 std::vector<string16>* types,
+                                 bool* contains_filenames) {
+  return false;
+}
+
+bool ClipboardReadData(Clipboard::Buffer buffer, const string16& type,
+                       string16* data, string16* metadata) {
+  return false;
+}
+
+bool ClipboardReadFilenames(Clipboard::Buffer buffer,
+                            std::vector<string16>* filenames) {
+  return false;
+}
+
 }  // namespace webkit_glue

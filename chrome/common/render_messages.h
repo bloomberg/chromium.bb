@@ -2273,6 +2273,9 @@ struct ParamTraits<Clipboard::Buffer> {
         type = L"BUFFER_SELECTION";
         break;
 #endif
+      case Clipboard::BUFFER_DRAG:
+        type = L"BUFFER_DRAG";
+        break;
       default:
         type = L"UNKNOWN";
         break;

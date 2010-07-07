@@ -21,6 +21,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/clipboard_dispatcher.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -521,6 +522,12 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
                           OnClipboardFindPboardWriteString)
 #endif
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadAvailableTypes,
+                                      OnClipboardReadAvailableTypes)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadData,
+                                      OnClipboardReadData)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadFilenames,
+                                      OnClipboardReadFilenames)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CheckNotificationPermission,
                           OnCheckNotificationPermission)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromExtension,
@@ -991,6 +998,36 @@ void ResourceMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
   const GURL src_url = GURL(src_url_str);
 
   ViewHostMsg_ClipboardReadHTML::WriteReplyParams(reply, markup, src_url);
+  Send(reply);
+}
+
+void ResourceMessageFilter::OnClipboardReadAvailableTypes(
+    Clipboard::Buffer buffer, IPC::Message* reply) {
+  std::vector<string16> types;
+  bool contains_filenames = false;
+  bool result = ClipboardDispatcher::ReadAvailableTypes(
+      buffer, &types, &contains_filenames);
+  ViewHostMsg_ClipboardReadAvailableTypes::WriteReplyParams(
+      reply, result, types, contains_filenames);
+  Send(reply);
+}
+
+void ResourceMessageFilter::OnClipboardReadData(
+    Clipboard::Buffer buffer, const string16& type, IPC::Message* reply) {
+  string16 data;
+  string16 metadata;
+  bool result = ClipboardDispatcher::ReadData(buffer, type, &data, &metadata);
+  ViewHostMsg_ClipboardReadData::WriteReplyParams(
+      reply, result, data, metadata);
+  Send(reply);
+}
+
+void ResourceMessageFilter::OnClipboardReadFilenames(
+    Clipboard::Buffer buffer, IPC::Message* reply) {
+  std::vector<string16> filenames;
+  bool result = ClipboardDispatcher::ReadFilenames(buffer, &filenames);
+  ViewHostMsg_ClipboardReadFilenames::WriteReplyParams(
+      reply, result, filenames);
   Send(reply);
 }
 

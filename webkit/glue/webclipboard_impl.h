@@ -7,7 +7,6 @@
 
 #include "app/clipboard/clipboard.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebClipboard.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
 
 #include <string>
 
@@ -40,6 +39,12 @@ class WebClipboardImpl : public WebKit::WebClipboard {
       const WebKit::WebURL& source_url,
       const WebKit::WebString& title);
   virtual void writeData(const WebKit::WebDragData&);
+
+  virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
+      Buffer, bool* contains_filenames);
+  virtual bool readData(Buffer, const WebKit::WebString& type,
+      WebKit::WebString* data, WebKit::WebString* metadata);
+  virtual WebKit::WebVector<WebKit::WebString> readFilenames(Buffer);
 
  private:
   bool ConvertBufferType(Buffer, Clipboard::Buffer*);

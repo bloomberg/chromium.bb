@@ -76,7 +76,8 @@ int NumberOfPages(WebKit::WebFrame* web_frame,
                   float page_height_in_pixels);
 
 // Returns a dump of the scroll position of the webframe.
-std::wstring DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
+std::wstring DumpFrameScrollPosition(WebKit::WebFrame* web_frame,
+                                     bool recursive);
 
 // Returns a dump of the given history state suitable for implementing the
 // dumpBackForwardList command of the layoutTestController.
@@ -193,6 +194,19 @@ void ClipboardReadAsciiText(Clipboard::Buffer buffer, std::string* result);
 
 // Reads HTML from the clipboard, if available.
 void ClipboardReadHTML(Clipboard::Buffer buffer, string16* markup, GURL* url);
+
+// Reads the available types from the clipboard, if available.
+bool ClipboardReadAvailableTypes(Clipboard::Buffer buffer,
+                                 std::vector<string16>* types,
+                                 bool* contains_filenames);
+
+// Reads one type of data from the clipboard, if available.
+bool ClipboardReadData(Clipboard::Buffer buffer, const string16& type,
+                       string16* data, string16* metadata);
+
+// Reads filenames from the clipboard, if available.
+bool ClipboardReadFilenames(Clipboard::Buffer buffer,
+                            std::vector<string16>* filenames);
 
 // Gets the directory where the application data and libraries exist.  This
 // may be a versioned subdirectory, or it may be the same directory as the

@@ -1429,6 +1429,22 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               string16 /* markup */,
                               GURL /* url */)
 
+  IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_ClipboardReadAvailableTypes,
+                              Clipboard::Buffer /* buffer */,
+                              bool /* result */,
+                              std::vector<string16> /* types */,
+                              bool /* contains filenames */)
+  IPC_SYNC_MESSAGE_CONTROL2_3(ViewHostMsg_ClipboardReadData,
+                              Clipboard::Buffer /* buffer */,
+                              string16 /* type */,
+                              bool /* succeeded */,
+                              string16 /* data */,
+                              string16 /* metadata */)
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ClipboardReadFilenames,
+                              Clipboard::Buffer /* buffer */,
+                              bool /* result */,
+                              std::vector<string16> /* filenames */)
+
 #if defined(OS_MACOSX)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
       string16 /* text */)

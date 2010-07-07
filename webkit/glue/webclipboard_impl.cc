@@ -15,6 +15,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -26,6 +27,7 @@ using WebKit::WebClipboard;
 using WebKit::WebImage;
 using WebKit::WebString;
 using WebKit::WebURL;
+using WebKit::WebVector;
 
 namespace webkit_glue {
 
@@ -171,12 +173,49 @@ void WebClipboardImpl::writeData(const WebKit::WebDragData& data) {
   // TODO(dcheng): Implement this stub.
 }
 
+WebVector<WebString> WebClipboardImpl::readAvailableTypes(
+    Buffer buffer, bool* contains_filenames) {
+  Clipboard::Buffer buffer_type;
+  std::vector<string16> types;
+  if (ConvertBufferType(buffer, &buffer_type)) {
+    ClipboardReadAvailableTypes(buffer_type, &types, contains_filenames);
+  }
+  return types;
+}
+
+bool WebClipboardImpl::readData(Buffer buffer, const WebString& type,
+                                WebString* data, WebString* metadata) {
+  Clipboard::Buffer buffer_type;
+  if (!ConvertBufferType(buffer, &buffer_type))
+    return false;
+
+  string16 data_out;
+  string16 metadata_out;
+  bool result = ClipboardReadData(buffer_type, type, &data_out, &metadata_out);
+  if (result) {
+    *data = data_out;
+    *metadata = metadata_out;
+  }
+  return result;
+}
+
+WebVector<WebString> WebClipboardImpl::readFilenames(Buffer buffer) {
+  Clipboard::Buffer buffer_type;
+  std::vector<string16> filenames;
+  if (ConvertBufferType(buffer, &buffer_type)) {
+    ClipboardReadFilenames(buffer_type, &filenames);
+  }
+  return filenames;
+}
+
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
                                          Clipboard::Buffer* result) {
   switch (buffer) {
     case BufferStandard:
       *result = Clipboard::BUFFER_STANDARD;
       break;
+    case BufferDrag:
+      *result = Clipboard::BUFFER_DRAG;
     case BufferSelection:
 #if defined(USE_X11)
       *result = Clipboard::BUFFER_SELECTION;

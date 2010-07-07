@@ -79,9 +79,8 @@ class Clipboard {
   // functions accept a buffer parameter.
   enum Buffer {
     BUFFER_STANDARD,
-#if defined(USE_X11)
     BUFFER_SELECTION,
-#endif
+    BUFFER_DRAG,
   };
 
   static bool IsValidBuffer(int32 buffer) {
@@ -92,6 +91,8 @@ class Clipboard {
       case BUFFER_SELECTION:
         return true;
 #endif
+      case BUFFER_DRAG:
+        return true;
     }
     return false;
   }
@@ -150,6 +151,8 @@ class Clipboard {
 
   // Reads raw data from the clipboard with the given format type. Stores result
   // as a byte vector.
+  // TODO(dcheng): Due to platform limitations on Windows, we should make sure
+  // format is never controlled by the user.
   void ReadData(const std::string& format, std::string* result);
 
   // Get format Identifiers for various types.
