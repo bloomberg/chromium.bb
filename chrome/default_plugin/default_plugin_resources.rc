@@ -7,7 +7,7 @@
 #endif //APSTUDIO_INVOKED
 
 #include <winuser.h>
-#include "webkit\\default_plugin\\default_plugin_resources.h"
+#include "chrome\\default_plugin\\default_plugin_resources.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -28,4 +28,4 @@ END
 //
 // Icon used by the default plugin window.
 //
-IDI_DEFAULT_PLUGIN_ICON            ICON             "webkit\\default_plugin\\default_plugin.ico"
+IDI_DEFAULT_PLUGIN_ICON            ICON             "chrome\\default_plugin\\default_plugin.ico"
