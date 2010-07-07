@@ -36,6 +36,10 @@ const int kTextWidth = 140;            // Pixels
 // dangerous download message.
 const int kFileNameMaxLength = 20;
 
+// The maximum width in pixels for the file name tooltip.
+const int kToolTipMaxWidth = 900;
+
+
 // Helper to widen a view.
 void WidenView(NSView* view, CGFloat widthChange) {
   // If it is an NSBox, the autoresize of the contentView is the issue.
@@ -150,6 +154,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   [image_ setImage:alertIcon];
 
   bridge_->LoadIcon();
+  [self updateToolTip];
 }
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel {
@@ -252,6 +257,13 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (DownloadItem*)download {
   return bridge_->download_model()->download();
+}
+
+- (void)updateToolTip {
+  std::wstring elidedFilename = gfx::ElideFilename(
+      [self download]->GetFileName(),
+      gfx::Font(), kToolTipMaxWidth);
+  [progressView_ setToolTip:base::SysWideToNSString(elidedFilename)];
 }
 
 - (void)clearDangerousMode {

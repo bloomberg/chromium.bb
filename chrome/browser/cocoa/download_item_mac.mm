@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,8 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
     // another thread, so reload the icon if the download filename changes.
     LoadIcon();
     lastFilePath_ = download->full_path();
+
+    [item_controller_ updateToolTip];
   }
 
   switch (download->state()) {
