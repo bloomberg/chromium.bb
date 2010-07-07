@@ -13,6 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace {
+
 class WindowSizeAutosaverTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
@@ -62,7 +64,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
     EXPECT_EQ(NSHeight(frame), NSHeight([window_ frame]));
 
     // Move and resize window, should store position but not size.
-    [window_ setFrame:NSMakeRect(300, 310, 50, 52) display:NO];
+    [window_ setFrame:NSMakeRect(300, 310, 250, 252) display:NO];
   }
 
   // Another window movement -- shouldn't be recorded.
@@ -121,7 +123,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
     EXPECT_EQ(NSHeight(frame), NSHeight([window_ frame]));
 
     // Move and resize window, should store
-    [window_ setFrame:NSMakeRect(300, 310, 50, 52) display:NO];
+    [window_ setFrame:NSMakeRect(300, 310, 250, 252) display:NO];
   }
 
   // Another window movement -- shouldn't be recorded.
@@ -136,8 +138,8 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
                  state:kSaveWindowRect]);
     EXPECT_EQ(300, NSMinX([window_ frame]));
     EXPECT_EQ(310, NSMinY([window_ frame]));
-    EXPECT_EQ(50, NSWidth([window_ frame]));
-    EXPECT_EQ(52, NSHeight([window_ frame]));
+    EXPECT_EQ(250, NSWidth([window_ frame]));
+    EXPECT_EQ(252, NSHeight([window_ frame]));
   }
 
   // ...and it should be in the profile, too.
@@ -152,6 +154,44 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
   ASSERT_TRUE(windowPref->GetInteger(L"bottom", &y2));
   EXPECT_EQ(300, x1);
   EXPECT_EQ(310, y1);
-  EXPECT_EQ(300 + 50, x2);
-  EXPECT_EQ(310 + 52, y2);
+  EXPECT_EQ(300 + 250, x2);
+  EXPECT_EQ(310 + 252, y2);
 }
+
+// http://crbug.com/39625
+TEST_F(WindowSizeAutosaverTest, DoesNotRestoreButClearsEmptyRect) {
+  PrefService* pref = browser_helper_.profile()->GetPrefs();
+  ASSERT_TRUE(pref != NULL);
+
+  DictionaryValue* windowPref = pref->GetMutableDictionary(path_);
+  windowPref->SetInteger(L"left", 50);
+  windowPref->SetInteger(L"right", 50);
+  windowPref->SetInteger(L"top", 60);
+  windowPref->SetInteger(L"bottom", 60);
+
+  {
+    // Window rect shouldn't change...
+    NSRect frame = [window_ frame];
+    scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
+        initWithWindow:window_
+           prefService:pref
+                  path:path_
+                 state:kSaveWindowRect]);
+    EXPECT_EQ(NSMinX(frame), NSMinX([window_ frame]));
+    EXPECT_EQ(NSMinY(frame), NSMinY([window_ frame]));
+    EXPECT_EQ(NSWidth(frame), NSWidth([window_ frame]));
+    EXPECT_EQ(NSHeight(frame), NSHeight([window_ frame]));
+  }
+
+  // ...and it should be gone from the profile, too.
+  EXPECT_TRUE(pref->GetDictionary(path_) != NULL);
+  int x1, y1, x2, y2;
+  EXPECT_FALSE(windowPref->GetInteger(L"x", &x1));
+  EXPECT_FALSE(windowPref->GetInteger(L"y", &x1));
+  ASSERT_FALSE(windowPref->GetInteger(L"left", &x1));
+  ASSERT_FALSE(windowPref->GetInteger(L"right", &x2));
+  ASSERT_FALSE(windowPref->GetInteger(L"top", &y1));
+  ASSERT_FALSE(windowPref->GetInteger(L"bottom", &y2));
+}
+
+}  // namespace

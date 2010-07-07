@@ -8,6 +8,14 @@
 
 #include "chrome/browser/pref_service.h"
 
+// If the window width stored in the prefs is smaller than this, the size is
+// not restored but instead cleared from the profile -- to protect users from
+// accidentally making their windows very small and then not finding them again.
+const int kMinWindowWidth = 101;
+
+// Minimum restored window height, see |kMinWindowWidth|.
+const int kMinWindowHeight = 17;
+
 @interface WindowSizeAutosaver (Private)
 - (void)save:(NSNotification*)notification;
 - (void)restore;
@@ -77,7 +85,18 @@
         !windowPrefs->GetInteger(L"bottom", &y2)) {
       return;
     }
-    [window_ setFrame:NSMakeRect(x1, y1, x2 - x1, y2 - y1) display:YES];
+    if (x2 - x1 < kMinWindowWidth || y2 - y1 < kMinWindowHeight) {
+      // Windows should never be very small.
+      windowPrefs->Remove(L"left", NULL);
+      windowPrefs->Remove(L"right", NULL);
+      windowPrefs->Remove(L"top", NULL);
+      windowPrefs->Remove(L"bottom", NULL);
+    } else {
+      [window_ setFrame:NSMakeRect(x1, y1, x2 - x1, y2 - y1) display:YES];
+
+      // Make sure the window is on-screen.
+      [window_ cascadeTopLeftFromPoint:NSZeroPoint];
+    }
   } else if (state_ == kSaveWindowPos) {
     int x, y;
     if (!windowPrefs->GetInteger(L"x", &x) ||
