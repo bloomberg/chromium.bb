@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
+			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -99,7 +99,7 @@
 										<int key="NSCellFlags">67239424</int>
 										<int key="NSCellFlags2">0</int>
 										<string key="NSContents">Box</string>
-										<object class="NSFont" key="NSSupport" id="27790857">
+										<object class="NSFont" key="NSSupport">
 											<string key="NSName">LucidaGrande</string>
 											<double key="NSSize">1.300000e+01</double>
 											<int key="NSfFlags">1044</int>
@@ -183,30 +183,35 @@
 									<reference key="NSSuperview" ref="301729179"/>
 									<string key="NSClassName">GTMWidthBasedTweaker</string>
 								</object>
-								<object class="NSButton" id="594274651">
+								<object class="NSCustomView" id="733675496">
 									<reference key="NSNextResponder" ref="301729179"/>
-									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{18, 46}, {280, 25}}</string>
-									<reference key="NSSuperview" ref="301729179"/>
-									<bool key="NSEnabled">YES</bool>
-									<object class="NSButtonCell" key="NSCell" id="189684656">
-										<int key="NSCellFlags">67239424</int>
-										<int key="NSCellFlags2">0</int>
-										<string key="NSContents">^IDS_BLOCKED_COOKIES_INFO</string>
-										<reference key="NSSupport" ref="27790857"/>
-										<reference key="NSControlView" ref="594274651"/>
-										<int key="NSButtonFlags">-2038021889</int>
-										<int key="NSButtonFlags2">134</int>
-										<object class="NSFont" key="NSAlternateImage">
-											<string key="NSName">LucidaGrande</string>
-											<double key="NSSize">1.300000e+01</double>
-											<int key="NSfFlags">16</int>
+									<int key="NSvFlags">294</int>
+									<object class="NSMutableArray" key="NSSubviews">
+										<bool key="EncodedWithXMLCoder">YES</bool>
+										<object class="NSButton" id="841670204">
+											<reference key="NSNextResponder" ref="733675496"/>
+											<int key="NSvFlags">292</int>
+											<string key="NSFrame">{{20, 18}, {115, 17}}</string>
+											<reference key="NSSuperview" ref="733675496"/>
+											<bool key="NSEnabled">YES</bool>
+											<object class="NSButtonCell" key="NSCell" id="892688453">
+												<int key="NSCellFlags">67239424</int>
+												<int key="NSCellFlags2">134348800</int>
+												<string key="NSContents">^IDS_BLOCKED_COOKIES_INFO</string>
+												<reference key="NSSupport" ref="26"/>
+												<reference key="NSControlView" ref="841670204"/>
+												<int key="NSButtonFlags">-2038284033</int>
+												<int key="NSButtonFlags2">164</int>
+												<string key="NSAlternateContents"/>
+												<string key="NSKeyEquivalent"/>
+												<int key="NSPeriodicDelay">200</int>
+												<int key="NSPeriodicInterval">25</int>
+											</object>
 										</object>
-										<string key="NSAlternateContents"/>
-										<string key="NSKeyEquivalent"/>
-										<int key="NSPeriodicDelay">200</int>
-										<int key="NSPeriodicInterval">25</int>
 									</object>
+									<string key="NSFrame">{{0, 41}, {192, 37}}</string>
+									<reference key="NSSuperview" ref="301729179"/>
+									<string key="NSClassName">GTMWidthBasedTweaker</string>
 								</object>
 							</object>
 							<string key="NSFrame">{{0, -6}, {316, 120}}</string>
@@ -314,9 +319,9 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">showMoreInfo:</string>
 						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="594274651"/>
+						<reference key="destination" ref="841670204"/>
 					</object>
-					<int key="connectionID">39</int>
+					<int key="connectionID">46</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -374,8 +379,8 @@
 							<reference ref="266815090"/>
 							<reference ref="395762087"/>
 							<reference ref="730386640"/>
-							<reference ref="594274651"/>
 							<reference ref="913795455"/>
+							<reference ref="733675496"/>
 						</object>
 						<reference key="parent" ref="1006"/>
 					</object>
@@ -455,18 +460,27 @@
 						<reference key="parent" ref="91589614"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">37</int>
-						<reference key="object" ref="594274651"/>
+						<int key="objectID">43</int>
+						<reference key="object" ref="733675496"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="189684656"/>
+							<reference ref="841670204"/>
 						</object>
 						<reference key="parent" ref="301729179"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">38</int>
-						<reference key="object" ref="189684656"/>
-						<reference key="parent" ref="594274651"/>
+						<int key="objectID">44</int>
+						<reference key="object" ref="841670204"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="892688453"/>
+						</object>
+						<reference key="parent" ref="733675496"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">45</int>
+						<reference key="object" ref="892688453"/>
+						<reference key="parent" ref="841670204"/>
 					</object>
 				</object>
 			</object>
@@ -491,10 +505,9 @@
 					<string>2.IBPluginDependency</string>
 					<string>20.IBPluginDependency</string>
 					<string>21.IBPluginDependency</string>
-					<string>37.IBPluginDependency</string>
-					<string>38.CustomClassName</string>
-					<string>38.IBPluginDependency</string>
 					<string>4.IBPluginDependency</string>
+					<string>44.IBPluginDependency</string>
+					<string>45.IBPluginDependency</string>
 					<string>7.IBPluginDependency</string>
 					<string>8.IBPluginDependency</string>
 				</object>
@@ -518,7 +531,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>HyperlinkButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -545,7 +557,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">39</int>
+			<int key="maxID">46</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -575,8 +587,8 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>allowBlockToggled:</string>
 							<string>closeBubble:</string>
-							<string>showMoreInfo:</string>
 							<string>manageBlocking:</string>
+							<string>showMoreInfo:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -677,14 +689,6 @@
 						</object>
 					</object>
 					<reference key="sourceIdentifier" ref="907487000"/>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">HyperlinkButtonCell</string>
-					<string key="superclassName">NSButtonCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/hyperlink_button_cell.h</string>
-					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">InfoBubbleView</string>
