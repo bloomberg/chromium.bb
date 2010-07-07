@@ -21,6 +21,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/plugin_messages.h"
@@ -209,6 +210,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
   render_widget_host_->set_view(this);
+
+  renderer_accessible_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableRendererAccessibility);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -702,8 +706,8 @@ NSWindow* ApparentWindowForView(NSView* view) {
   // See if this is a tab drag window. The width check is to distinguish that
   // case from extension popup windows.
   NSWindow* ancestor_window = [enclosing_window parentWindow];
-  if (ancestor_window && ([enclosing_window frame].size.width ==
-                          [ancestor_window frame].size.width)) {
+  if (ancestor_window && (NSWidth([enclosing_window frame]) ==
+                          NSWidth([ancestor_window frame]))) {
     enclosing_window = ancestor_window;
   }
 
@@ -773,6 +777,21 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
   NOTREACHED() <<
     "RenderWidgetHostViewMac::ContainsNativeView not implemented.";
   return false;
+}
+
+void RenderWidgetHostViewMac::UpdateAccessibilityTree(
+    const webkit_glue::WebAccessibility& tree) {
+  if (renderer_accessible_) {
+    [cocoa_view_ setAccessibilityTree:tree];
+  }
+}
+
+void RenderWidgetHostViewMac::OnAccessibilityFocusChange(int acc_obj_id) {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetHostViewMac::OnAccessibilityObjectStateChange(int acc_obj_id) {
+  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
@@ -851,13 +870,19 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
-  if (self != nil) {
+  if (self) {
     editCommand_helper_.reset(new RWHVMEditCommandHelper);
     editCommand_helper_->AddEditingSelectorsToClass([self class]);
 
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
     closeOnDeactivate_ = NO;
+
+    rendererAccessible_ =
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+                    switches::kDisableRendererAccessibility);
+    accessibilityRequested_ = NO;
+    accessibilityReceived_ = NO;
   }
   return self;
 }
@@ -1343,6 +1368,102 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 // key presses to autohide on.
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event {
   return ([event type] == NSKeyDown) ? YES : NO;
+}
+
+// Create the BrowserAccessibility tree from the WebAccessibility tree passed
+// from the renderer.
+- (void)setAccessibilityTree:(const webkit_glue::WebAccessibility&) tree {
+  BrowserAccessibility* root =
+      [[BrowserAccessibility alloc] initWithObject:tree
+                                          delegate:self
+                                            parent:self];
+  [root autorelease];
+  accessibilityChildren_.reset([[NSArray alloc] initWithObjects:root, nil]);
+  accessibilityReceived_ = YES;
+}
+
+- (NSArray *)accessibilityArrayAttributeValues:(NSString *)attribute
+                                         index:(NSUInteger)index
+                                      maxCount:(NSUInteger)maxCount {
+  NSArray* fullArray = [self accessibilityAttributeValue:attribute];
+  NSUInteger totalLength = [fullArray count];
+  if (index >= totalLength)
+    return nil;
+  NSUInteger length = MIN(totalLength - index, maxCount);
+  return [fullArray subarrayWithRange:NSMakeRange(index, length)];
+}
+
+- (NSUInteger)accessibilityArrayAttributeCount:(NSString *)attribute {
+  NSArray* fullArray = [self accessibilityAttributeValue:attribute];
+  return [fullArray count];
+}
+
+- (id)accessibilityAttributeValue:(NSString *)attribute {
+  if (!accessibilityRequested_) {
+    renderWidgetHostView_->render_widget_host_->EnableRendererAccessibility();
+    accessibilityRequested_ = YES;
+  }
+  if (accessibilityReceived_) {
+    if (rendererAccessible_ &&
+        [attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
+      return accessibilityChildren_.get();
+    } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
+      return NSAccessibilityScrollAreaRole;
+    }
+  }
+  id ret = [super accessibilityAttributeValue:attribute];
+  return ret;
+}
+
+- (id)accessibilityHitTest:(NSPoint)point {
+  if (!accessibilityRequested_) {
+    renderWidgetHostView_->render_widget_host_->EnableRendererAccessibility();
+    accessibilityRequested_ = YES;
+  }
+  if (!accessibilityReceived_) {
+    return self;
+  }
+  NSPoint pointInWindow = [[self window] convertScreenToBase:point];
+  NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
+  localPoint.y = NSHeight([self bounds]) - localPoint.y;
+  if ([accessibilityChildren_ count] == 0)
+    return self;
+  BrowserAccessibility* root = [accessibilityChildren_ objectAtIndex:0];
+  id obj = [root accessibilityHitTest:localPoint];
+  return obj;
+}
+
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (NSUInteger)accessibilityIndexOfChild:(id)child {
+  return [accessibilityChildren_ indexOfObject:child];
+}
+
+- (void)doDefaultAction:(int32)accessibilityObjectId {
+  renderWidgetHostView_->render_widget_host_->
+      AccessibilityDoDefaultAction(accessibilityObjectId);
+}
+
+// Convert a web accessibility's location in web coordinates into a cocoa
+// screen coordinate.
+- (NSPoint)accessibilityPointInScreen:(BrowserAccessibility*)accessibility {
+  NSPoint origin = [accessibility origin];
+  NSSize size = [accessibility size];
+  origin.y = NSHeight([self bounds]) - origin.y;
+  NSPoint originInWindow = [self convertPoint:origin toView:nil];
+  NSPoint originInScreen = [[self window] convertBaseToScreen:originInWindow];
+  originInScreen.y = originInScreen.y - size.height;
+  return originInScreen;
+}
+
+- (void)setAccessibilityFocus:(BOOL)focus
+              accessibilityId:(int32)accessibilityObjectId {
+  if (focus) {
+    renderWidgetHostView_->render_widget_host_->
+        SetAccessibilityFocus(accessibilityObjectId);
+  }
 }
 
 // Spellchecking methods

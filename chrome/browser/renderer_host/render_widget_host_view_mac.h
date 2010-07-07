@@ -13,6 +13,8 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/cocoa/base_view.h"
+#include "chrome/browser/cocoa/browser_accessibility.h"
+#include "chrome/browser/cocoa/browser_accessibility_delegate.h"
 #include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
@@ -33,12 +35,19 @@ class RWHVMEditCommandHelper;
 // when it's removed from the view system.
 // See http://crbug.com/47890 for why we don't use NSTextInputClient yet.
 @interface RenderWidgetHostViewCocoa
-    : BaseView <RenderWidgetHostViewMacOwner, NSTextInput, NSChangeSpelling> {
+    : BaseView <RenderWidgetHostViewMacOwner,
+                NSTextInput,
+                NSChangeSpelling,
+                BrowserAccessibilityDelegate> {
  @private
   scoped_ptr<RenderWidgetHostViewMac> renderWidgetHostView_;
   BOOL canBeKeyView_;
   BOOL closeOnDeactivate_;
+  BOOL rendererAccessible_;
+  BOOL accessibilityRequested_;
+  BOOL accessibilityReceived_;
   scoped_ptr<RWHVMEditCommandHelper> editCommand_helper_;
+  scoped_nsobject<NSArray> accessibilityChildren_;
 
   // These are part of the magic tooltip code from WebKit's WebHTMLView:
   id trackingRectOwner_;              // (not retained)
@@ -127,6 +136,8 @@ class RWHVMEditCommandHelper;
 - (void)renderWidgetHostWasResized;
 // Cancel ongoing composition (abandon the marked text).
 - (void)cancelComposition;
+// Set the new accessibility tree.
+- (void)setAccessibilityTree:(const webkit_glue::WebAccessibility&) tree;
 // Confirm ongoing composition.
 - (void)confirmComposition;
 
@@ -201,7 +212,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void WindowFrameChanged();
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-
+  virtual void UpdateAccessibilityTree(
+      const webkit_glue::WebAccessibility& tree);
+  virtual void OnAccessibilityFocusChange(int acc_obj_id);
+  virtual void OnAccessibilityObjectStateChange(int acc_obj_id);
   // Methods associated with GPU-accelerated plug-in instances.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque);
   virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
@@ -301,6 +315,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Helper class for managing instances of accelerated plug-ins.
   AcceleratedSurfaceContainerManagerMac plugin_container_manager_;
+
+  // Whether or not web accessibility is enabled.
+  bool renderer_accessible_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };

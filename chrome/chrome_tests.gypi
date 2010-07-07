@@ -675,6 +675,7 @@
         'browser/cocoa/bookmark_model_observer_for_cocoa_unittest.mm',
         'browser/cocoa/bookmark_name_folder_controller_unittest.mm',
         'browser/cocoa/bookmark_tree_browser_cell_unittest.mm',
+        'browser/cocoa/browser_accessibility_unittest.mm',
         'browser/cocoa/browser_frame_view_unittest.mm',
         'browser/cocoa/browser_window_cocoa_unittest.mm',
         'browser/cocoa/browser_window_controller_unittest.mm',
