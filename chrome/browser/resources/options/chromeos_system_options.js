@@ -31,11 +31,12 @@ SystemOptions.prototype = {
   initializePage: function() {
     OptionsPage.prototype.initializePage.call(this);
     var timezone = $('timezone-select');
-    timezone.initializeValues(templateData.timezoneList);
+    if (timezone) {
+      timezone.initializeValues(templateData.timezoneList);
+    }
 
     $('language-button').onclick = function(event) {
       // TODO: Open ChromeOS language settings page.
     };
   },
 };
-
