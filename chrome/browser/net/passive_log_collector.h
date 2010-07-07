@@ -90,9 +90,41 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
   typedef std::vector<SourceInfo> SourceInfoList;
 
+  // Interface for consuming a NetLog entry.
+  class SourceTrackerInterface {
+   public:
+    virtual ~SourceTrackerInterface() {}
+
+    virtual void OnAddEntry(const Entry& entry) = 0;
+
+    // Clears all the passively logged data from this tracker.
+    virtual void Clear() = 0;
+
+    // Appends all the captured entries to |out|. The ordering is undefined.
+    virtual void AppendAllEntries(EntryList* out) const = 0;
+  };
+
+  // This source tracker is intended for TYPE_NONE. All entries go into a
+  // circular buffer, and there is no concept of live/dead requests.
+  class GlobalSourceTracker : public SourceTrackerInterface {
+   public:
+    GlobalSourceTracker();
+    ~GlobalSourceTracker();
+
+    // SourceTrackerInterface implementation:
+    virtual void OnAddEntry(const Entry& entry);
+    virtual void Clear();
+    virtual void AppendAllEntries(EntryList* out) const;
+
+   private:
+    typedef std::deque<Entry> CircularEntryList;
+    CircularEntryList entries_;
+    DISALLOW_COPY_AND_ASSIGN(GlobalSourceTracker);
+  };
+
   // This class stores and manages the passively logged information for
   // URLRequests/SocketStreams/ConnectJobs.
-  class SourceTracker {
+  class SourceTracker : public SourceTrackerInterface {
    public:
     // Creates a SourceTracker that will track at most |max_num_sources|.
     // Up to |max_graveyard_size| unreferenced sources will be kept around
@@ -105,13 +137,10 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
 
     virtual ~SourceTracker();
 
-    void OnAddEntry(const Entry& entry);
-
-    // Clears all the passively logged data from this tracker.
-    void Clear();
-
-    // Appends all the captured entries to |out|. The ordering is undefined.
-    void AppendAllEntries(EntryList* out) const;
+    // SourceTrackerInterface implementation:
+    virtual void OnAddEntry(const Entry& entry);
+    virtual void Clear();
+    virtual void AppendAllEntries(EntryList* out) const;
 
 #ifdef UNIT_TEST
     // Helper used to inspect the current state by unit-tests.
@@ -264,7 +293,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
                           net::NetLog::EventParameters* params);
 
   // Returns the tracker to use for sources of type |source_type|, or NULL.
-  SourceTracker* GetTrackerForSourceType(
+  SourceTrackerInterface* GetTrackerForSourceType(
       net::NetLog::SourceType source_type);
 
   // Clears all of the passively logged data.
@@ -280,6 +309,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   FRIEND_TEST_ALL_PREFIXES(PassiveLogCollectorTest,
                            HoldReferenceToDeletedSource);
 
+  GlobalSourceTracker global_source_tracker_;
   ConnectJobTracker connect_job_tracker_;
   SocketTracker socket_tracker_;
   RequestTracker url_request_tracker_;
@@ -290,7 +320,7 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   // This array maps each NetLog::SourceType to one of the tracker instances
   // defined above. Use of this array avoid duplicating the list of trackers
   // elsewhere.
-  SourceTracker* trackers_[net::NetLog::SOURCE_COUNT];
+  SourceTrackerInterface* trackers_[net::NetLog::SOURCE_COUNT];
 
   // The count of how many events have flowed through this log. Used to set the
   // "order" field on captured events.

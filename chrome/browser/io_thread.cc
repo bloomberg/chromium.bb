@@ -74,6 +74,42 @@ net::HostResolver* CreateGlobalHostResolver() {
   return remapped_resolver;
 }
 
+class LoggingNetworkChangeObserver
+    : public net::NetworkChangeNotifier::Observer {
+ public:
+  // |net_log| must remain valid throughout our lifetime.
+  explicit LoggingNetworkChangeObserver(net::NetLog* net_log)
+      : net_log_(net_log) {
+    net::NetworkChangeNotifier::AddObserver(this);
+  }
+
+  ~LoggingNetworkChangeObserver() {
+    net::NetworkChangeNotifier::RemoveObserver(this);
+  }
+
+  virtual void OnIPAddressChanged() {
+    LOG(INFO) << "Observed a change to the network IP addresses";
+
+    net::NetLog::Source global_source;
+
+    // TODO(eroman): We shouldn't need to assign an ID to this source, since
+    //               conceptually it is the "global event stream". However
+    //               currently the javascript does a grouping on source id, so
+    //               the display will look weird if we don't give it one.
+    global_source.id = net_log_->NextID();
+
+    net_log_->AddEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSSES_CHANGED,
+                       base::TimeTicks::Now(),
+                       global_source,
+                       net::NetLog::PHASE_NONE,
+                       NULL);
+  }
+
+ private:
+  net::NetLog* net_log_;
+  DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
+};
+
 }  // namespace
 
 // The IOThread object must outlive any tasks posted to the IO thread before the
@@ -132,12 +168,22 @@ void IOThread::Init() {
   globals_ = new Globals;
 
   globals_->net_log.reset(new ChromeNetLog());
+
+  // Add an observer that will emit network change events to the ChromeNetLog.
+  // Assuming NetworkChangeNotifier dispatches in FIFO order, we should be
+  // logging the network change before other IO thread consumers respond to it.
+  network_change_observer_.reset(
+      new LoggingNetworkChangeObserver(globals_->net_log.get()));
+
   globals_->host_resolver = CreateGlobalHostResolver();
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver));
 }
 
 void IOThread::CleanUp() {
+  // This must be reset before the ChromeNetLog is destroyed.
+  network_change_observer_.reset();
+
   // If any child processes are still running, terminate them and
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.

@@ -49,6 +49,7 @@ PassiveLogCollector::PassiveLogCollector()
 
   // Define the mapping between source types and the tracker objects.
   memset(&trackers_[0], 0, sizeof(trackers_));
+  trackers_[net::NetLog::SOURCE_NONE] = &global_source_tracker_;
   trackers_[net::NetLog::SOURCE_URL_REQUEST] = &url_request_tracker_;
   trackers_[net::NetLog::SOURCE_SOCKET_STREAM] = &socket_stream_tracker_;
   trackers_[net::NetLog::SOURCE_CONNECT_JOB] = &connect_job_tracker_;
@@ -74,12 +75,12 @@ void PassiveLogCollector::OnAddEntry(
   // Package the parameters into a single struct for convenience.
   Entry entry(num_events_seen_++, type, time, source, phase, params);
 
-  SourceTracker* tracker = GetTrackerForSourceType(entry.source.type);
+  SourceTrackerInterface* tracker = GetTrackerForSourceType(entry.source.type);
   if (tracker)
     tracker->OnAddEntry(entry);
 }
 
-PassiveLogCollector::SourceTracker*
+PassiveLogCollector::SourceTrackerInterface*
 PassiveLogCollector::GetTrackerForSourceType(
     net::NetLog::SourceType source_type) {
   DCHECK_LE(source_type, static_cast<int>(arraysize(trackers_)));
@@ -123,6 +124,29 @@ std::string PassiveLogCollector::SourceInfo::GetURL() const {
     }
   }
   return std::string();
+}
+
+//----------------------------------------------------------------------------
+// GlobalSourceTracker
+//----------------------------------------------------------------------------
+
+PassiveLogCollector::GlobalSourceTracker::GlobalSourceTracker() {}
+PassiveLogCollector::GlobalSourceTracker::~GlobalSourceTracker() {}
+
+void PassiveLogCollector::GlobalSourceTracker::OnAddEntry(const Entry& entry) {
+  const size_t kMaxEntries = 30u;
+  entries_.push_back(entry);
+  if (entries_.size() > kMaxEntries)
+    entries_.pop_front();
+}
+
+void PassiveLogCollector::GlobalSourceTracker::Clear() {
+  entries_.clear();
+}
+
+void PassiveLogCollector::GlobalSourceTracker::AppendAllEntries(
+    EntryList* out) const {
+  out->insert(out->end(), entries_.begin(), entries_.end());
 }
 
 //----------------------------------------------------------------------------
@@ -280,8 +304,9 @@ void PassiveLogCollector::SourceTracker::AddReferenceToSourceDependency(
     const net::NetLog::Source& source, SourceInfo* info) {
   // Find the tracker which should be holding |source|.
   DCHECK(parent_);
-  SourceTracker* tracker =
-      parent_->GetTrackerForSourceType(source.type);
+  DCHECK_NE(source.type, net::NetLog::SOURCE_NONE);
+  SourceTracker* tracker = static_cast<SourceTracker*>(
+      parent_->GetTrackerForSourceType(source.type));
   DCHECK(tracker);
 
   // Tell the owning tracker to increment the reference count of |source|.
@@ -301,8 +326,9 @@ PassiveLogCollector::SourceTracker::ReleaseAllReferencesToDependencies(
 
     // Find the tracker which should be holding |source|.
     DCHECK(parent_);
-    SourceTracker* tracker =
-        parent_->GetTrackerForSourceType(source.type);
+    DCHECK_NE(source.type, net::NetLog::SOURCE_NONE);
+    SourceTracker* tracker = static_cast<SourceTracker*>(
+        parent_->GetTrackerForSourceType(source.type));
     DCHECK(tracker);
 
     // Tell the owning tracker to decrement the reference count of |source|.

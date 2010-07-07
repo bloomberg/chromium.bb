@@ -16,6 +16,7 @@
 #include "chrome/common/net/predictor_common.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "net/base/host_resolver.h"
+#include "net/base/network_change_notifier.h"
 
 class ChromeNetLog;
 class ListValue;
@@ -99,6 +100,9 @@ class IOThread : public BrowserProcessSubThread {
   // deletion of the NetLog to CleanUpAfterMessageLoopDestruction() even
   // though |globals_| is reset by CleanUp().
   scoped_ptr<ChromeNetLog> deferred_net_log_to_delete_;
+
+  // Observer that logs network changes to the ChromeNetLog.
+  scoped_ptr<net::NetworkChangeNotifier::Observer> network_change_observer_;
 
   // These member variables are initialized by a task posted to the IO thread,
   // which gets posted by calling certain member functions of IOThread.
