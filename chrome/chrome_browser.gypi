@@ -269,6 +269,7 @@
         'browser/browser_main.cc',
         'browser/browser_main_gtk.cc',
         'browser/browser_main_mac.mm',
+        'browser/browser_main_posix.cc',
         'browser/browser_main_win.cc',
         'browser/browser_main_win.h',
         'browser/browser_prefs.cc',

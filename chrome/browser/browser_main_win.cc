@@ -29,6 +29,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/winsock_init.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/window/window.h"
 
@@ -201,4 +202,24 @@ bool CheckMachineLevelInstall() {
     }
   }
   return false;
+}
+
+// BrowserMainPartsWin ---------------------------------------------------------
+
+class BrowserMainPartsWin : public BrowserMainParts {
+ public:
+  explicit BrowserMainPartsWin(const MainFunctionParams& parameters)
+      : BrowserMainParts(parameters) {}
+
+ protected:
+  virtual void PreEarlyInitialization() {
+    // Initialize Winsock.
+    net::EnsureWinsockInit();
+  }
+};
+
+// static
+BrowserMainParts* BrowserMainParts::CreateBrowserMainParts(
+    const MainFunctionParams& parameters) {
+  return new BrowserMainPartsWin(parameters);
 }

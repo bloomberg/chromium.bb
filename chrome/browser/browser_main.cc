@@ -24,12 +24,11 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
-#include "base/tracked_objects.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_main_win.h"
 #include "chrome/browser/browser_init.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -81,15 +80,6 @@
 #include "net/socket/client_socket_pool_base.h"
 #include "net/spdy/spdy_session_pool.h"
 
-#if defined(OS_POSIX)
-// TODO(port): get rid of this include. It's used just to provide declarations
-// and stub definitions for classes we encouter during the porting effort.
-#include <errno.h>
-#include <signal.h>
-#include <sys/resource.h>
-#include "base/eintr_wrapper.h"
-#endif
-
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
 #include "chrome/app/breakpad_linux.h"
@@ -133,7 +123,6 @@
 #include "chrome/installer/util/version.h"
 #include "net/base/net_util.h"
 #include "net/base/sdch_manager.h"
-#include "net/base/winsock_init.h"
 #include "net/socket/ssl_client_socket_nss_factory.h"
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
@@ -163,6 +152,178 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #endif
+
+// BrowserMainParts ------------------------------------------------------------
+
+BrowserMainParts::BrowserMainParts(const MainFunctionParams& parameters)
+    : parameters_(parameters),
+      parsed_command_line_(parameters.command_line_) {
+}
+
+// BrowserMainParts: EarlyInitialization() and related -------------------------
+
+void BrowserMainParts::EarlyInitialization() {
+  PreEarlyInitialization();
+
+  ConnectionFieldTrial();
+  SocketTimeoutFieldTrial();
+  SpdyFieldTrial();
+  InitializeSSL();  // TODO(viettrungluu): move to platform-specific method(s)
+
+  PostEarlyInitialization();
+}
+
+// This is an A/B test for the maximum number of persistent connections per
+// host. Currently Chrome, Firefox, and IE8 have this value set at 6. Safari
+// uses 4, and Fasterfox (a plugin for Firefox that supposedly configures it to
+// run faster) uses 8. We would like to see how much of an effect this value has
+// on browsing. Too large a value might cause us to run into SYN flood detection
+// mechanisms.
+void BrowserMainParts::ConnectionFieldTrial() {
+  const FieldTrial::Probability kConnDivisor = 100;
+  const FieldTrial::Probability kConn16 = 10;  // 10% probability
+  const FieldTrial::Probability kRemainingConn = 30;  // 30% probability
+
+  scoped_refptr<FieldTrial> conn_trial =
+      new FieldTrial("ConnCountImpact", kConnDivisor);
+
+  const int conn_16 = conn_trial->AppendGroup("_conn_count_16", kConn16);
+  const int conn_4 = conn_trial->AppendGroup("_conn_count_4", kRemainingConn);
+  const int conn_8 = conn_trial->AppendGroup("_conn_count_8", kRemainingConn);
+  const int conn_6 = conn_trial->AppendGroup("_conn_count_6",
+      FieldTrial::kAllRemainingProbability);
+
+  const int conn_trial_grp = conn_trial->group();
+
+  if (conn_trial_grp == conn_4) {
+    net::HttpNetworkSession::set_max_sockets_per_group(4);
+  } else if (conn_trial_grp == conn_6) {
+    // This (6) is the current default value.
+    net::HttpNetworkSession::set_max_sockets_per_group(6);
+  } else if (conn_trial_grp == conn_8) {
+    net::HttpNetworkSession::set_max_sockets_per_group(8);
+  } else if (conn_trial_grp == conn_16) {
+    net::HttpNetworkSession::set_max_sockets_per_group(16);
+  } else {
+    NOTREACHED();
+  }
+}
+
+// A/B test for determining a value for unused socket timeout. Currently the
+// timeout defaults to 10 seconds. Having this value set too low won't allow us
+// to take advantage of idle sockets. Setting it to too high could possibly
+// result in more ERR_CONNECT_RESETs, requiring one RTT to receive the RST
+// packet and possibly another RTT to re-establish the connection.
+void BrowserMainParts::SocketTimeoutFieldTrial() {
+  const FieldTrial::Probability kIdleSktToDivisor = 100;  // Idle socket timeout
+  const FieldTrial::Probability kSktToProb = 25;  // 25% probability
+
+  scoped_refptr<FieldTrial> socket_timeout_trial =
+      new FieldTrial("IdleSktToImpact", kIdleSktToDivisor);
+
+  const int socket_timeout_5 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_5", kSktToProb);
+  const int socket_timeout_10 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_10", kSktToProb);
+  const int socket_timeout_20 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_20", kSktToProb);
+  const int socket_timeout_60 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_60",
+                                        FieldTrial::kAllRemainingProbability);
+
+  const int idle_to_trial_grp = socket_timeout_trial->group();
+
+  if (idle_to_trial_grp == socket_timeout_5) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(5);
+  } else if (idle_to_trial_grp == socket_timeout_10) {
+    // This (10 seconds) is the current default value.
+    net::ClientSocketPool::set_unused_idle_socket_timeout(10);
+  } else if (idle_to_trial_grp == socket_timeout_20) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(20);
+  } else if (idle_to_trial_grp == socket_timeout_60) {
+    net::ClientSocketPool::set_unused_idle_socket_timeout(60);
+  } else {
+    NOTREACHED();
+  }
+}
+
+// When --use-spdy not set, users will be in A/B test for spdy.
+// group A (_npn_with_spdy): this means npn and spdy are enabled. In case server
+//                           supports spdy, browser will use spdy.
+// group B (_npn_with_http): this means npn is enabled but spdy won't be used.
+//                           Http is still used for all requests.
+//            default group: no npn or spdy is involved. The "old" non-spdy
+//                           chrome behavior.
+void BrowserMainParts::SpdyFieldTrial() {
+  bool is_spdy_trial = false;
+  if (parsed_command_line().HasSwitch(switches::kUseSpdy)) {
+    std::string spdy_mode =
+        parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
+    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
+  } else {
+    const FieldTrial::Probability kSpdyDivisor = 1000;
+    // TODO(lzheng): Increase these values to enable more spdy tests.
+    // To enable 100% npn_with_spdy, set npnhttp_probability = 0 and set
+    // npnspdy_probability = FieldTrial::kAllRemainingProbability.
+    FieldTrial::Probability npnhttp_probability = 250;  // 25%
+    FieldTrial::Probability npnspdy_probability = 250;  // 25%
+#if defined(OS_WIN)
+    // Enable the A/B test for SxS. SxS is only available on windows
+    std::wstring channel;
+    if (BrowserDistribution::GetDistribution()->GetChromeChannel(&channel) &&
+        channel == GoogleChromeSxSDistribution::ChannelName()) {
+      npnhttp_probability = 500;
+      npnspdy_probability = 500;
+    }
+#endif
+    scoped_refptr<FieldTrial> trial =
+        new FieldTrial("SpdyImpact", kSpdyDivisor);
+    // npn with only http support, no spdy.
+    int npn_http_grp =
+        trial->AppendGroup("_npn_with_http", npnhttp_probability);
+    // npn with spdy support.
+    int npn_spdy_grp =
+        trial->AppendGroup("_npn_with_spdy", npnspdy_probability);
+    int trial_grp = trial->group();
+    if (trial_grp == npn_http_grp) {
+      is_spdy_trial = true;
+      net::HttpNetworkLayer::EnableSpdy("npn-http");
+    } else if (trial_grp == npn_spdy_grp) {
+      is_spdy_trial = true;
+      net::HttpNetworkLayer::EnableSpdy("npn");
+    } else {
+      CHECK(!is_spdy_trial);
+    }
+  }
+}
+
+// TODO(viettrungluu): move to platform-specific methods
+void BrowserMainParts::InitializeSSL() {
+  // Use NSS for SSL by default.
+#if defined(OS_MACOSX)
+  // The default client socket factory uses NSS for SSL by default on Mac.
+  if (parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
+    net::ClientSocketFactory::SetSSLClientSocketFactory(
+        net::SSLClientSocketMacFactory);
+  } else {
+    // We want to be sure to init NSPR on the main thread.
+    base::EnsureNSPRInit();
+  }
+#elif defined(OS_WIN)
+  // Because of a build system issue (http://crbug.com/43461), the default
+  // client socket factory uses SChannel (the system SSL library) for SSL by
+  // default on Windows.
+  if (!parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
+    net::ClientSocketFactory::SetSSLClientSocketFactory(
+        net::SSLClientSocketNSSFactory);
+    // We want to be sure to init NSPR on the main thread.
+    base::EnsureNSPRInit();
+  }
+#endif
+}
+
+// -----------------------------------------------------------------------------
+// TODO(viettrungluu): move more/rest of BrowserMain() into above structure
 
 namespace {
 
@@ -199,140 +360,6 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
   MessageLoopForUI::current()->Run();
 #endif
 }
-
-#if defined(OS_POSIX)
-// See comment in BrowserMain, where sigaction is called.
-void SIGCHLDHandler(int signal) {
-}
-
-int g_shutdown_pipe_write_fd = -1;
-int g_shutdown_pipe_read_fd = -1;
-
-// Common code between SIG{HUP, INT, TERM}Handler.
-void GracefulShutdownHandler(int signal) {
-  // Reinstall the default handler.  We had one shot at graceful shutdown.
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = SIG_DFL;
-  RAW_CHECK(sigaction(signal, &action, NULL) == 0);
-
-  RAW_CHECK(g_shutdown_pipe_write_fd != -1);
-  RAW_CHECK(g_shutdown_pipe_read_fd != -1);
-  size_t bytes_written = 0;
-  do {
-    int rv = HANDLE_EINTR(
-        write(g_shutdown_pipe_write_fd,
-              reinterpret_cast<const char*>(&signal) + bytes_written,
-              sizeof(signal) - bytes_written));
-    RAW_CHECK(rv >= 0);
-    bytes_written += rv;
-  } while (bytes_written < sizeof(signal));
-
-  RAW_LOG(INFO,
-          "Successfully wrote to shutdown pipe, resetting signal handler.");
-}
-
-// See comment in BrowserMain, where sigaction is called.
-void SIGHUPHandler(int signal) {
-  RAW_CHECK(signal == SIGHUP);
-  RAW_LOG(INFO, "Handling SIGHUP.");
-  GracefulShutdownHandler(signal);
-}
-
-// See comment in BrowserMain, where sigaction is called.
-void SIGINTHandler(int signal) {
-  RAW_CHECK(signal == SIGINT);
-  RAW_LOG(INFO, "Handling SIGINT.");
-  GracefulShutdownHandler(signal);
-}
-
-// See comment in BrowserMain, where sigaction is called.
-void SIGTERMHandler(int signal) {
-  RAW_CHECK(signal == SIGTERM);
-  RAW_LOG(INFO, "Handling SIGTERM.");
-  GracefulShutdownHandler(signal);
-}
-
-class ShutdownDetector : public PlatformThread::Delegate {
- public:
-  explicit ShutdownDetector(int shutdown_fd);
-
-  virtual void ThreadMain();
-
- private:
-  const int shutdown_fd_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShutdownDetector);
-};
-
-ShutdownDetector::ShutdownDetector(int shutdown_fd)
-    : shutdown_fd_(shutdown_fd) {
-  CHECK_NE(shutdown_fd_, -1);
-}
-
-void ShutdownDetector::ThreadMain() {
-  int signal;
-  size_t bytes_read = 0;
-  ssize_t ret;
-  do {
-    ret = HANDLE_EINTR(
-        read(shutdown_fd_,
-             reinterpret_cast<char*>(&signal) + bytes_read,
-             sizeof(signal) - bytes_read));
-    if (ret < 0) {
-      NOTREACHED() << "Unexpected error: " << strerror(errno);
-      break;
-    } else if (ret == 0) {
-      NOTREACHED() << "Unexpected closure of shutdown pipe.";
-      break;
-    }
-    bytes_read += ret;
-  } while (bytes_read < sizeof(signal));
-
-  LOG(INFO) << "Handling shutdown for signal " << signal << ".";
-
-  if (!ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit))) {
-    // Without a UI thread to post the exit task to, there aren't many
-    // options.  Raise the signal again.  The default handler will pick it up
-    // and cause an ungraceful exit.
-    RAW_LOG(WARNING, "No UI thread, exiting ungracefully.");
-    kill(getpid(), signal);
-
-    // The signal may be handled on another thread.  Give that a chance to
-    // happen.
-    sleep(3);
-
-    // We really should be dead by now.  For whatever reason, we're not. Exit
-    // immediately, with the exit status set to the signal number with bit 8
-    // set.  On the systems that we care about, this exit status is what is
-    // normally used to indicate an exit by this signal's default handler.
-    // This mechanism isn't a de jure standard, but even in the worst case, it
-    // should at least result in an immediate exit.
-    RAW_LOG(WARNING, "Still here, exiting really ungracefully.");
-    _exit(signal | (1 << 7));
-  }
-}
-
-// Sets the file descriptor soft limit to |max_descriptors| or the OS hard
-// limit, whichever is lower.
-void SetFileDescriptorLimit(unsigned int max_descriptors) {
-  struct rlimit limits;
-  if (getrlimit(RLIMIT_NOFILE, &limits) == 0) {
-    unsigned int new_limit = max_descriptors;
-    if (limits.rlim_max > 0 && limits.rlim_max < max_descriptors) {
-      new_limit = limits.rlim_max;
-    }
-    limits.rlim_cur = new_limit;
-    if (setrlimit(RLIMIT_NOFILE, &limits) != 0) {
-      PLOG(INFO) << "Failed to set file descriptor limit";
-    }
-  } else {
-    PLOG(INFO) << "Failed to get file descriptor limit";
-  }
-}
-#endif
 
 void AddFirstRunNewTabs(BrowserInit* browser_init,
                         const std::vector<GURL>& new_tabs) {
@@ -684,6 +711,12 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
+  scoped_ptr<BrowserMainParts>
+      parts(BrowserMainParts::CreateBrowserMainParts(parameters));
+
+  parts->EarlyInitialization();
+
+  // TODO(viettrungluu): put the remainder into BrowserMainParts
   const CommandLine& parsed_command_line = parameters.command_line_;
   base::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
 
@@ -693,205 +726,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // TODO(beng, brettw): someday, break this out into sub functions with well
   //                     defined roles (e.g. pre/post-profile startup, etc).
-
-#ifdef TRACK_ALL_TASK_OBJECTS
-  // Start tracking the creation and deletion of Task instance.
-  // This construction MUST be done before main_message_loop, so that it is
-  // destroyed after the main_message_loop.
-  tracked_objects::AutoTracking tracking_objects;
-#endif
-
-#if defined(OS_POSIX)
-  // We need to accept SIGCHLD, even though our handler is a no-op because
-  // otherwise we cannot wait on children. (According to POSIX 2001.)
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = SIGCHLDHandler;
-  CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
-
-  // If adding to this list of signal handlers, note the new signal probably
-  // needs to be reset in child processes. See
-  // base/process_util_posix.cc:LaunchApp
-
-  // We need to handle SIGTERM, because that is how many POSIX-based distros ask
-  // processes to quit gracefully at shutdown time.
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = SIGTERMHandler;
-  CHECK(sigaction(SIGTERM, &action, NULL) == 0);
-  // Also handle SIGINT - when the user terminates the browser via Ctrl+C.
-  // If the browser process is being debugged, GDB will catch the SIGINT first.
-  action.sa_handler = SIGINTHandler;
-  CHECK(sigaction(SIGINT, &action, NULL) == 0);
-  // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
-  // distros send SIGHUP, SIGTERM, and then SIGKILL.
-  action.sa_handler = SIGHUPHandler;
-  CHECK(sigaction(SIGHUP, &action, NULL) == 0);
-
-  const std::string fd_limit_string =
-      parsed_command_line.GetSwitchValueASCII(switches::kFileDescriptorLimit);
-  int fd_limit = 0;
-  if (!fd_limit_string.empty()) {
-    StringToInt(fd_limit_string, &fd_limit);
-  }
-#if defined(OS_MACOSX)
-  // We use quite a few file descriptors for our IPC, and the default limit on
-  // the Mac is low (256), so bump it up if there is no explicit override.
-  if (fd_limit == 0) {
-    fd_limit = 1024;
-  }
-#endif  // OS_MACOSX
-  if (fd_limit > 0) {
-    SetFileDescriptorLimit(fd_limit);
-  }
-#endif  // OS_POSIX
-
-#if defined(OS_WIN)
-  // Initialize Winsock.
-  net::EnsureWinsockInit();
-#endif  // defined(OS_WIN)
-
-  // Initialize statistical testing infrastructure for entire browser.
-  FieldTrialList field_trial;
-
-  // This is an A/B test for the maximum number of persistent connections per
-  // host.  Currently Chrome, Firefox, and IE8 have this value set at 6.
-  // Safari uses 4, and Fasterfox (a plugin for Firefox that supposedly
-  // configures it to run faster) uses 8.  We would like to see how much of an
-  // effect this value has on browsing.  Too large a value might cause us to
-  // run into SYN flood detection mechanisms.
-  const FieldTrial::Probability kConnDivisor = 100;
-  const FieldTrial::Probability kConn16 = 10;  // 10% probability
-  const FieldTrial::Probability kRemainingConn = 30;  // 30% probability
-
-  scoped_refptr<FieldTrial> conn_trial =
-      new FieldTrial("ConnCountImpact", kConnDivisor);
-
-  const int conn_16 = conn_trial->AppendGroup("_conn_count_16", kConn16);
-  const int conn_4 = conn_trial->AppendGroup("_conn_count_4", kRemainingConn);
-  const int conn_8 = conn_trial->AppendGroup("_conn_count_8", kRemainingConn);
-  const int conn_6 = conn_trial->AppendGroup("_conn_count_6",
-      FieldTrial::kAllRemainingProbability);
-
-  const int conn_trial_grp = conn_trial->group();
-
-  if (conn_trial_grp == conn_4) {
-    net::HttpNetworkSession::set_max_sockets_per_group(4);
-  } else if (conn_trial_grp == conn_6) {
-    // This (6) is the current default value.
-    net::HttpNetworkSession::set_max_sockets_per_group(6);
-  } else if (conn_trial_grp == conn_8) {
-    net::HttpNetworkSession::set_max_sockets_per_group(8);
-  } else if (conn_trial_grp == conn_16) {
-    net::HttpNetworkSession::set_max_sockets_per_group(16);
-  } else {
-    NOTREACHED();
-  }
-
-  // A/B test for determining a value for unused socket timeout.  Currently the
-  // timeout defaults to 10 seconds.  Having this value set too low won't allow
-  // us to take advantage of idle sockets.  Setting it to too high could
-  // possibly result in more ERR_CONNECT_RESETs, requiring one RTT to receive
-  // the RST packet and possibly another RTT to re-establish the connection.
-  const FieldTrial::Probability kIdleSktToDivisor = 100;  // Idle socket timeout
-  const FieldTrial::Probability kSktToProb = 25;  // 25% probability
-
-  scoped_refptr<FieldTrial> socket_timeout_trial =
-      new FieldTrial("IdleSktToImpact", kIdleSktToDivisor);
-
-  const int socket_timeout_5 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_5", kSktToProb);
-  const int socket_timeout_10 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_10", kSktToProb);
-  const int socket_timeout_20 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_20", kSktToProb);
-  const int socket_timeout_60 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_60",
-                                        FieldTrial::kAllRemainingProbability);
-
-  const int idle_to_trial_grp = socket_timeout_trial->group();
-
-  if (idle_to_trial_grp == socket_timeout_5) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(5);
-  } else if (idle_to_trial_grp == socket_timeout_10) {
-    // This (10 seconds) is the current default value.
-    net::ClientSocketPool::set_unused_idle_socket_timeout(10);
-  } else if (idle_to_trial_grp == socket_timeout_20) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(20);
-  } else if (idle_to_trial_grp == socket_timeout_60) {
-    net::ClientSocketPool::set_unused_idle_socket_timeout(60);
-  } else {
-    NOTREACHED();
-  }
-
-  // When --use-spdy not set, users will be in A/B test for spdy.
-  // group A (_npn_with_spdy): this means npn and spdy are enabled. In
-  // case server supports spdy, browser will use spdy.
-  // group B (_npn_with_http): this means npn is enabled but spdy
-  // won't be used. Http is still used for all requests.
-  // default group: no npn or spdy is involved. The "old" non-spdy chrome
-  // behavior.
-  bool is_spdy_trial = false;
-  if (parsed_command_line.HasSwitch(switches::kUseSpdy)) {
-    std::string spdy_mode =
-        parsed_command_line.GetSwitchValueASCII(switches::kUseSpdy);
-    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
-  } else {
-    const FieldTrial::Probability kSpdyDivisor = 1000;
-    // TODO(lzheng): Increase these values to enable more spdy tests.
-    // To enable 100% npn_with_spdy, set npnhttp_probability = 0 and set
-    // npnspdy_probability = FieldTrial::kAllRemainingProbability.
-    FieldTrial::Probability npnhttp_probability = 250;  // 25%
-    FieldTrial::Probability npnspdy_probability = 250;  // 25%
-#if defined(OS_WIN)
-    // Enable the A/B test for SxS. SxS is only available on windows
-    std::wstring channel;
-    if (BrowserDistribution::GetDistribution()->GetChromeChannel(&channel) &&
-        channel == GoogleChromeSxSDistribution::ChannelName()) {
-      npnhttp_probability = 500;
-      npnspdy_probability = 500;
-    }
-#endif
-    scoped_refptr<FieldTrial> trial =
-        new FieldTrial("SpdyImpact", kSpdyDivisor);
-    // npn with only http support, no spdy.
-    int npn_http_grp =
-        trial->AppendGroup("_npn_with_http", npnhttp_probability);
-    // npn with spdy support.
-    int npn_spdy_grp =
-        trial->AppendGroup("_npn_with_spdy", npnspdy_probability);
-    int trial_grp = trial->group();
-    if (trial_grp == npn_http_grp) {
-      is_spdy_trial = true;
-      net::HttpNetworkLayer::EnableSpdy("npn-http");
-    } else if (trial_grp == npn_spdy_grp) {
-      is_spdy_trial = true;
-      net::HttpNetworkLayer::EnableSpdy("npn");
-    } else {
-      CHECK(!is_spdy_trial);
-    }
-  }
-
-  // Use NSS for SSL by default.
-#if defined(OS_MACOSX)
-  // The default client socket factory uses NSS for SSL by default on Mac.
-  if (parsed_command_line.HasSwitch(switches::kUseSystemSSL)) {
-    net::ClientSocketFactory::SetSSLClientSocketFactory(
-        net::SSLClientSocketMacFactory);
-  } else {
-    // We want to be sure to init NSPR on the main thread.
-    base::EnsureNSPRInit();
-  }
-#elif defined(OS_WIN)
-  // Because of a build system issue (http://crbug.com/43461), the default
-  // client socket factory uses SChannel (the system SSL library) for SSL by
-  // default on Windows.
-  if (!parsed_command_line.HasSwitch(switches::kUseSystemSSL)) {
-    net::ClientSocketFactory::SetSSLClientSocketFactory(
-        net::SSLClientSocketNSSFactory);
-    // We want to be sure to init NSPR on the main thread.
-    base::EnsureNSPRInit();
-  }
-#endif
 
   // Do platform-specific things (such as finishing initializing Cocoa)
   // prior to instantiating the message loop. This could be turned into a
@@ -911,22 +745,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // Register the main thread by instantiating it, but don't call any methods.
   ChromeThread main_thread(ChromeThread::UI, MessageLoop::current());
-#if defined(OS_POSIX)
-  int pipefd[2];
-  int ret = pipe(pipefd);
-  if (ret < 0) {
-    PLOG(DFATAL) << "Failed to create pipe";
-  } else {
-    g_shutdown_pipe_read_fd = pipefd[0];
-    g_shutdown_pipe_write_fd = pipefd[1];
-    const size_t kShutdownDetectorThreadStackSize = 4096;
-    if (!PlatformThread::CreateNonJoinable(
-        kShutdownDetectorThreadStackSize,
-        new ShutdownDetector(g_shutdown_pipe_read_fd))) {
-      LOG(DFATAL) << "Failed to create shutdown detector task.";
-    }
-  }
-#endif  // defined(OS_POSIX)
+
+  // TODO(viettrungluu): temporary while I refactor BrowserMain()
+  parts->TemporaryPosix_1();
 
   FilePath user_data_dir;
 #if defined(OS_WIN)
@@ -1041,6 +862,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       first_run_ui_bypass = true;
   }
 
+  // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line.HasSwitch(switches::kNoErrorDialogs))
     WarnAboutMinimumSystemRequirements();
 
