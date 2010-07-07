@@ -189,7 +189,7 @@
             ],
           },
           'sources': [
-            'installer/mini_installer/chrome_frame.release',
+            'installer/mini_installer/chrome.release',
             'installer/setup/install.cc',
             'installer/setup/install.h',
             'installer/setup/setup_main.cc',
@@ -245,7 +245,7 @@
               'extension': 'release',
               'variables': {
                 'scan_server_dlls_py' : 'tools/build/win/scan_server_dlls.py',
-                'template_file': 'mini_installer/chrome_frame.release',
+                'template_file': 'mini_installer/chrome.release',
               },
               'inputs': [
                 '<(scan_server_dlls_py)',
