@@ -125,7 +125,7 @@ class MenuButtonBackground : public views::Background {
         CustomButton::BS_NORMAL : static_cast<CustomButton*>(view)->state();
     int w = view->width();
     int h = view->height();
-    switch (type_) {
+    switch (TypeAdjustedForRTL()) {
       case LEFT_BUTTON:
         canvas->FillRectInt(background_color(state), 1, 1, w, h - 2);
         canvas->FillRectInt(border_color(state), 2, 0, w, 1);
@@ -192,6 +192,18 @@ class MenuButtonBackground : public views::Background {
     }
   }
 
+  ButtonType TypeAdjustedForRTL() const {
+    if (!base::i18n::IsRTL())
+      return type_;
+
+    switch (type_) {
+      case LEFT_BUTTON:   return RIGHT_BUTTON;
+      case RIGHT_BUTTON:  return LEFT_BUTTON;
+      default:            break;
+    }
+    return type_;
+  }
+
   const ButtonType type_;
 
   // See description above setter for details.
@@ -214,8 +226,10 @@ class ScheduleAllView : public views::View {
     if (!IsVisible())
       return;
 
-    if (GetParent())
-      GetParent()->SchedulePaint(bounds(), urgent);
+    if (GetParent()) {
+      GetParent()->SchedulePaint(GetBounds(APPLY_MIRRORING_TRANSFORMATION),
+                                 urgent);
+    }
   }
 
  private:
