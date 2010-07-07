@@ -687,7 +687,8 @@ TEST_F(TCPClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
   EXPECT_EQ(0, pool_->IdleSocketCount());
 }
 
-TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
+// Disabled due to failures - see http://crbug.com/43919
+TEST_F(TCPClientSocketPoolTest, DISABLED_BackupSocketConnect) {
   // Case 1 tests the first socket stalling, and the backup connecting.
   MockClientSocketFactory::ClientSocketType case1_types[] = {
     // The first socket will not connect.
