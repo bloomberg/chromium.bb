@@ -49,8 +49,9 @@ Hooks
     ]
 """
 
-__version__ = "0.5"
+__version__ = "0.4.1"
 
+import errno
 import logging
 import optparse
 import os
@@ -95,6 +96,22 @@ class GClientKeywords(object):
     def __str__(self):
       return 'From(%s, %s)' % (repr(self.module_name),
                                repr(self.sub_target_name))
+
+    def GetUrl(self, target_name, sub_deps_base_url, root_dir, sub_deps):
+      """Resolve the URL for this From entry."""
+      sub_deps_target_name = target_name
+      if self.sub_target_name:
+        sub_deps_target_name = self.sub_target_name
+      url = sub_deps[sub_deps_target_name]
+      if url.startswith('/'):
+        # If it's a relative URL, we need to resolve the URL relative to the
+        # sub deps base URL.
+        if not isinstance(sub_deps_base_url, basestring):
+          sub_deps_base_url = sub_deps_base_url.GetPath()
+        scm = gclient_scm.CreateSCM(sub_deps_base_url, root_dir,
+                                    None)
+        url = scm.FullUrlForRelativeUrl(url)
+      return url
 
   class FileImpl(object):
     """Used to implement the File('') syntax which lets you sync a single file
@@ -143,7 +160,6 @@ class Dependency(GClientKeywords):
     self.parent = parent
     self.name = name
     self.url = url
-    self.parsed_url = None
     # These 2 are only set in .gclient and not in DEPS files.
     self.safesync_url = safesync_url
     self.custom_vars = custom_vars or {}
@@ -151,18 +167,12 @@ class Dependency(GClientKeywords):
     self.deps_hooks = []
     self.dependencies = []
     self.deps_file = deps_file or self.DEPS_FILE
-    # A cache of the files affected by the current operation, necessary for
-    # hooks.
-    self.file_list = []
     self.deps_parsed = False
     self.direct_reference = False
 
     # Sanity checks
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
-    if self.name in [d.name for d in self.tree(False)]:
-      raise gclient_utils.Error('Dependency %s specified more than once' %
-          self.name)
     if not isinstance(self.url,
         (basestring, self.FromImpl, self.FileImpl, None.__class__)):
       raise gclient_utils.Error('dependency url must be either a string, None, '
@@ -172,65 +182,16 @@ class Dependency(GClientKeywords):
       raise gclient_utils.Error('deps_file name must not be a path, just a '
                                 'filename. %s' % self.deps_file)
 
-  def LateOverride(self, url):
-    overriden_url = self.get_custom_deps(self.name, url)
-    if overriden_url != url:
-      self.parsed_url = overriden_url
-      logging.debug('%s, %s was overriden to %s' % (self.name, url,
-          self.parsed_url))
-    elif isinstance(url, self.FromImpl):
-      ref = [dep for dep in self.tree(True) if url.module_name == dep.name]
-      if not len(ref) == 1:
-        raise Exception('Failed to find one reference to %s. %s' % (
-          url.module_name, ref))
-      ref = ref[0]
-      sub_target = url.sub_target_name or url
-      # Make sure the referenced dependency DEPS file is loaded and file the
-      # inner referenced dependency.
-      ref.ParseDepsFile(False)
-      found_dep = None
-      for d in ref.dependencies:
-        if d.name == sub_target:
-          found_dep = d
-          break
-      if not found_dep:
-        raise Exception('Couldn\'t find %s in %s, referenced by %s' % (
-            sub_target, ref.name, self.name))
-      # Call LateOverride() again.
-      self.parsed_url = found_dep.LateOverride(found_dep.url)
-      logging.debug('%s, %s to %s' % (self.name, url, self.parsed_url))
-    elif isinstance(url, basestring):
-      parsed_url = urlparse.urlparse(url)
-      if not parsed_url[0]:
-        # A relative url. Fetch the real base.
-        path = parsed_url[2]
-        if not path.startswith('/'):
-          raise gclient_utils.Error(
-              'relative DEPS entry \'%s\' must begin with a slash' % url)
-        # Create a scm just to query the full url.
-        scm = gclient_scm.CreateSCM(self.parent.parsed_url, self.root_dir(),
-                                    None)
-        self.parsed_url = scm.FullUrlForRelativeUrl(url)
-      else:
-        self.parsed_url = url
-      logging.debug('%s, %s -> %s' % (self.name, url, self.parsed_url))
-    elif isinstance(url, self.FileImpl):
-      self.parsed_url = url
-      logging.debug('%s, %s -> %s (File)' % (self.name, url, self.parsed_url))
-    return self.parsed_url
-
   def ParseDepsFile(self, direct_reference):
     """Parses the DEPS file for this dependency."""
     if direct_reference:
       # Maybe it was referenced earlier by a From() keyword but it's now
       # directly referenced.
       self.direct_reference = direct_reference
-    if self.deps_parsed:
-      return
     self.deps_parsed = True
     filepath = os.path.join(self.root_dir(), self.name, self.deps_file)
     if not os.path.isfile(filepath):
-      return
+      return {}
     deps_content = gclient_utils.FileRead(filepath)
 
     # Eval the content.
@@ -281,101 +242,110 @@ class Dependency(GClientKeywords):
         # dependency local path.
         rel_deps[os.path.normpath(os.path.join(self.name, d))] = url
       deps = rel_deps
+    # TODO(maruel): Add these dependencies into self.dependencies.
+    return deps
 
-    # Convert the deps into real Dependency.
-    for name, url in deps.iteritems():
-      if name in [s.name for s in self.dependencies]:
-        raise
-      self.dependencies.append(Dependency(self, name, url))
-    # Sort by name.
-    self.dependencies.sort(key=lambda x: x.name)
-    logging.info('Loaded: %s' % str(self))
+  def _ParseAllDeps(self, solution_urls):
+    """Parse the complete list of dependencies for the client.
 
-  def RunCommandRecursively(self, options, revision_overrides,
-                            command, args, pm):
-    """Runs 'command' before parsing the DEPS in case it's a initial checkout
-    or a revert."""
-    assert self.file_list == []
-    # When running runhooks, there's no need to consult the SCM.
-    # All known hooks are expected to run unconditionally regardless of working
-    # copy state, so skip the SCM status check.
-    run_scm = command not in ('runhooks', None)
-    self.LateOverride(self.url)
-    if run_scm and self.parsed_url:
-      if isinstance(self.parsed_url, self.FileImpl):
-        # Special support for single-file checkout.
-        options.revision = self.parsed_url.GetRevision()
-        scm = gclient_scm.CreateSCM(self.parsed_url.GetPath(), self.root_dir(),
-                                    self.name)
-        scm.RunCommand("updatesingle", options,
-                        args + [self.parsed_url.GetFilename()], self.file_list)
-      else:
-        options.revision = revision_overrides.get(self.name)
-        scm = gclient_scm.CreateSCM(self.parsed_url, self.root_dir(), self.name)
-        scm.RunCommand(command, options, args, self.file_list)
-        self.file_list = [os.path.join(self.name, f.strip())
-                          for f in self.file_list]
-      options.revision = None
-    if pm:
-      # The + 1 comes from the fact that .gclient is considered a step in
-      # itself, .i.e. this code is called one time for the .gclient. This is not
-      # conceptually correct but it simplifies code.
-      pm._total = len(self.tree(False)) + 1
-      pm.update()
-    if self.recursion_limit():
-      # Then we can parse the DEPS file.
-      self.ParseDepsFile(True)
-      if pm:
-        pm._total = len(self.tree(False)) + 1
-        pm.update(0)
-      # Parse the dependencies of this dependency.
-      for s in self.dependencies:
-        # TODO(maruel): All these can run concurrently! No need for threads,
-        # just buffer stdout&stderr on pipes and flush as they complete.
-        # Watch out for stdin.
-        s.RunCommandRecursively(options, revision_overrides, command, args, pm)
+    Args:
+      solution_urls: A dict mapping module names (as relative paths) to URLs
+        corresponding to the solutions specified by the client.  This parameter
+        is passed as an optimization.
 
-  def RunHooksRecursively(self, options):
-    """Evaluates all hooks, running actions as needed. RunCommandRecursively()
-    must have been called before to load the DEPS."""
-    # If "--force" was specified, run all hooks regardless of what files have
-    # changed.
-    if self.deps_hooks:
-      # TODO(maruel): If the user is using git or git-svn, then we don't know
-      # what files have changed so we always run all hooks. It'd be nice to fix
-      # that.
-      if (options.force or
-          gclient_scm.GetScmName(self.parsed_url) in ('git', None) or
-          os.path.isdir(os.path.join(self.root_dir(), self.name, '.git'))):
-        for hook_dict in self.deps_hooks:
-          self._RunHookAction(hook_dict, [])
-      else:
-        # TODO(phajdan.jr): We should know exactly when the paths are absolute.
-        # Convert all absolute paths to relative.
-        for i in range(len(self.file_list)):
-          # It depends on the command being executed (like runhooks vs sync).
-          if not os.path.isabs(self.file_list[i]):
+    Returns:
+      A dict mapping module names (as relative paths) to URLs corresponding
+      to the entire set of dependencies to checkout for the given client.
+
+    Raises:
+      Error: If a dependency conflicts with another dependency or of a solution.
+    """
+    deps = {}
+    for solution in self.dependencies:
+      solution_deps = solution.ParseDepsFile(True)
+
+      # If a line is in custom_deps, but not in the solution, we want to append
+      # this line to the solution.
+      for d in solution.custom_deps:
+        if d not in solution_deps:
+          solution_deps[d] = solution.custom_deps[d]
+
+      for d in solution_deps:
+        if d in solution.custom_deps:
+          # Dependency is overriden.
+          url = solution.custom_deps[d]
+          if url is None:
             continue
+        else:
+          url = solution_deps[d]
+          # if we have a From reference dependent on another solution, then
+          # just skip the From reference. When we pull deps for the solution,
+          # we will take care of this dependency.
+          #
+          # If multiple solutions all have the same From reference, then we
+          # should only add one to our list of dependencies.
+          if isinstance(url, self.FromImpl):
+            if url.module_name in solution_urls:
+              # Already parsed.
+              continue
+            if d in deps and type(deps[d]) != str:
+              if url.module_name == deps[d].module_name:
+                continue
+          elif isinstance(url, str):
+            parsed_url = urlparse.urlparse(url)
+            scheme = parsed_url[0]
+            if not scheme:
+              # A relative url. Fetch the real base.
+              path = parsed_url[2]
+              if path[0] != "/":
+                raise gclient_utils.Error(
+                    "relative DEPS entry \"%s\" must begin with a slash" % d)
+              # Create a scm just to query the full url.
+              scm = gclient_scm.CreateSCM(solution.url, self.root_dir(),
+                                          None)
+              url = scm.FullUrlForRelativeUrl(url)
+        if d in deps and deps[d] != url:
+          raise gclient_utils.Error(
+              "Solutions have conflicting versions of dependency \"%s\"" % d)
+        if d in solution_urls and solution_urls[d] != url:
+          raise gclient_utils.Error(
+              "Dependency \"%s\" conflicts with specified solution" % d)
+        # Grab the dependency.
+        deps[d] = url
+    return deps
 
-          prefix = os.path.commonprefix([self.root_dir().lower(),
-                                        self.file_list[i].lower()])
-          self.file_list[i] = self.file_list[i][len(prefix):]
+  def _RunHooks(self, command, file_list, is_using_git):
+    """Evaluates all hooks, running actions as needed.
+    """
+    # Hooks only run for these command types.
+    if not command in ('update', 'revert', 'runhooks'):
+      return
 
-          # Strip any leading path separators.
-          while (self.file_list[i].startswith('\\') or
-                 self.file_list[i].startswith('/')):
-            self.file_list[i] = self.file_list[i][1:]
+    # Hooks only run when --nohooks is not specified
+    if self._options.nohooks:
+      return
 
-        # Run hooks on the basis of whether the files from the gclient operation
-        # match each hook's pattern.
-        for hook_dict in self.deps_hooks:
-          pattern = re.compile(hook_dict['pattern'])
-          matching_file_list = [f for f in self.file_list if pattern.search(f)]
-          if matching_file_list:
-            self._RunHookAction(hook_dict, matching_file_list)
-    if self.recursion_limit():
-      for s in self.dependencies:
-        s.RunHooksRecursively(options)
+    # Get any hooks from the .gclient file.
+    hooks = self.deps_hooks[:]
+    # Add any hooks found in DEPS files.
+    for d in self.dependencies:
+      hooks.extend(d.deps_hooks)
+
+    # If "--force" was specified, run all hooks regardless of what files have
+    # changed.  If the user is using git, then we don't know what files have
+    # changed so we always run all hooks.
+    if self._options.force or is_using_git:
+      for hook_dict in hooks:
+        self._RunHookAction(hook_dict, [])
+      return
+
+    # Run hooks on the basis of whether the files from the gclient operation
+    # match each hook's pattern.
+    for hook_dict in hooks:
+      pattern = re.compile(hook_dict['pattern'])
+      matching_file_list = [f for f in file_list if pattern.search(f)]
+      if matching_file_list:
+        self._RunHookAction(hook_dict, matching_file_list)
 
   def _RunHookAction(self, hook_dict, matching_file_list):
     """Runs the action from a single hook."""
@@ -419,7 +389,7 @@ class Dependency(GClientKeywords):
   def __str__(self):
     out = []
     for i in ('name', 'url', 'safesync_url', 'custom_deps', 'custom_vars',
-              'deps_hooks', 'file_list'):
+              'deps_hooks'):
       # 'deps_file'
       if self.__dict__[i]:
         out.append('%s: %s' % (i, self.__dict__[i]))
@@ -535,21 +505,19 @@ solutions = [
       'safesync_url' : safesync_url,
     })
 
-  def _SaveEntries(self):
+  def _SaveEntries(self, entries):
     """Creates a .gclient_entries file to record the list of unique checkouts.
 
     The .gclient_entries file lives in the same directory as .gclient.
     """
     # Sometimes pprint.pformat will use {', sometimes it'll use { ' ... It
     # makes testing a bit too fun.
-    result = 'entries = {\n'
-    for entry in self.tree(False):
-      result += '  %s: %s,\n' % (pprint.pformat(entry.name),
-          pprint.pformat(entry.parsed_url))
-    result += '}\n'
+    result = pprint.pformat(entries, 2)
+    if result.startswith('{\''):
+      result = '{ \'' + result[2:]
+    text = 'entries = \\\n' + result + '\n'
     file_path = os.path.join(self.root_dir(), self._options.entries_filename)
-    logging.info(result)
-    gclient_utils.FileWrite(file_path, result)
+    gclient_utils.FileWrite(file_path, text)
 
   def _ReadEntries(self):
     """Read the .gclient_entries file for the given client.
@@ -610,34 +578,115 @@ solutions = [
     if not self.dependencies:
       raise gclient_utils.Error('No solution specified')
     revision_overrides = self._EnforceRevisions()
-    pm = None
+
+    # When running runhooks --force, there's no need to consult the SCM.
+    # All known hooks are expected to run unconditionally regardless of working
+    # copy state, so skip the SCM status check.
+    run_scm = not (command == 'runhooks' and self._options.force)
+
+    entries = {}
+    file_list = []
+    # Run on the base solutions first.
+    for solution in self.dependencies:
+      name = solution.name
+      if name in entries:
+        raise gclient_utils.Error("solution %s specified more than once" % name)
+      url = solution.url
+      entries[name] = url
+      if run_scm and url:
+        self._options.revision = revision_overrides.get(name)
+        scm = gclient_scm.CreateSCM(url, self.root_dir(), name)
+        scm.RunCommand(command, self._options, args, file_list)
+        file_list = [os.path.join(name, f.strip()) for f in file_list]
+        self._options.revision = None
+
+    # Process the dependencies next (sort alphanumerically to ensure that
+    # containing directories get populated first and for readability)
+    deps = self._ParseAllDeps(entries)
+    deps_to_process = deps.keys()
+    deps_to_process.sort()
+
+    # First pass for direct dependencies.
     if command == 'update' and not self._options.verbose:
-      pm = Progress('Syncing projects', len(self.tree(False)) + 1)
-    self.RunCommandRecursively(self._options, revision_overrides,
-                               command, args, pm)
-    if pm:
+      pm = Progress('Syncing projects', len(deps_to_process))
+    for d in deps_to_process:
+      if command == 'update' and not self._options.verbose:
+        pm.update()
+      if type(deps[d]) == str:
+        url = deps[d]
+        entries[d] = url
+        if run_scm:
+          self._options.revision = revision_overrides.get(d)
+          scm = gclient_scm.CreateSCM(url, self.root_dir(), d)
+          scm.RunCommand(command, self._options, args, file_list)
+          self._options.revision = None
+      elif isinstance(deps[d], self.FileImpl):
+        file_dep = deps[d]
+        self._options.revision = file_dep.GetRevision()
+        if run_scm:
+          scm = gclient_scm.CreateSCM(file_dep.GetPath(), self.root_dir(), d)
+          scm.RunCommand("updatesingle", self._options,
+                         args + [file_dep.GetFilename()], file_list)
+
+    if command == 'update' and not self._options.verbose:
       pm.end()
 
-    # Once all the dependencies have been processed, it's now safe to run the
-    # hooks.
-    if not self._options.nohooks:
-      self.RunHooksRecursively(self._options)
+    # Second pass for inherited deps (via the From keyword)
+    for d in deps_to_process:
+      if isinstance(deps[d], self.FromImpl):
+        # Getting the URL from the sub_deps file can involve having to resolve
+        # a File() or having to resolve a relative URL.  To resolve relative
+        # URLs, we need to pass in the orignal sub deps URL.
+        sub_deps_base_url = deps[deps[d].module_name]
+        sub_deps = Dependency(self, deps[d].module_name, sub_deps_base_url
+            ).ParseDepsFile(False)
+        url = deps[d].GetUrl(d, sub_deps_base_url, self.root_dir(), sub_deps)
+        entries[d] = url
+        if run_scm:
+          self._options.revision = revision_overrides.get(d)
+          scm = gclient_scm.CreateSCM(url, self.root_dir(), d)
+          scm.RunCommand(command, self._options, args, file_list)
+          self._options.revision = None
+
+    # Convert all absolute paths to relative.
+    for i in range(len(file_list)):
+      # TODO(phajdan.jr): We should know exactly when the paths are absolute.
+      # It depends on the command being executed (like runhooks vs sync).
+      if not os.path.isabs(file_list[i]):
+        continue
+
+      prefix = os.path.commonprefix([self.root_dir().lower(),
+                                     file_list[i].lower()])
+      file_list[i] = file_list[i][len(prefix):]
+
+      # Strip any leading path separators.
+      while file_list[i].startswith('\\') or file_list[i].startswith('/'):
+        file_list[i] = file_list[i][1:]
+
+    is_using_git = gclient_utils.IsUsingGit(self.root_dir(), entries.keys())
+    self._RunHooks(command, file_list, is_using_git)
 
     if command == 'update':
       # Notify the user if there is an orphaned entry in their working copy.
       # Only delete the directory if there are no changes in it, and
       # delete_unversioned_trees is set to true.
-      entries = [i.name for i in self.tree(False)]
-      for entry, prev_url in self._ReadEntries().iteritems():
+      prev_entries = self._ReadEntries()
+      for entry in prev_entries:
         # Fix path separator on Windows.
         entry_fixed = entry.replace('/', os.path.sep)
         e_dir = os.path.join(self.root_dir(), entry_fixed)
         # Use entry and not entry_fixed there.
         if entry not in entries and os.path.exists(e_dir):
-          file_list = []
-          scm = gclient_scm.CreateSCM(prev_url, self.root_dir(), entry_fixed)
-          scm.status(self._options, [], file_list)
-          modified_files = file_list != []
+          modified_files = False
+          if isinstance(prev_entries, list):
+            # old .gclient_entries format was list, now dict
+            modified_files = gclient_scm.scm.SVN.CaptureStatus(e_dir)
+          else:
+            file_list = []
+            scm = gclient_scm.CreateSCM(prev_entries[entry], self.root_dir(),
+                                        entry_fixed)
+            scm.status(self._options, [], file_list)
+            modified_files = file_list != []
           if not self._options.delete_unversioned_trees or modified_files:
             # There are modified files in this entry. Keep warning until
             # removed.
@@ -650,7 +699,7 @@ solutions = [
                 entry_fixed, self.root_dir()))
             gclient_utils.RemoveDirectory(e_dir)
       # record the current list of entries for next time
-      self._SaveEntries()
+      self._SaveEntries(entries)
     return 0
 
   def PrintRevInfo(self):
@@ -666,51 +715,76 @@ solutions = [
     """
     if not self.dependencies:
       raise gclient_utils.Error('No solution specified')
-    # Load all the settings.
-    self.RunCommandRecursively(self._options, {}, None, [], None)
 
+    # Inner helper to generate base url and rev tuple
     def GetURLAndRev(name, original_url):
-      """Returns the revision-qualified SCM url."""
       url, _ = gclient_utils.SplitUrlRevision(original_url)
       scm = gclient_scm.CreateSCM(original_url, self.root_dir(), name)
-      if not os.path.isdir(scm.checkout_path):
-        return None
-      return '%s@%s' % (url, scm.revinfo(self._options, [], None))
+      return (url, scm.revinfo(self._options, [], None))
 
+    # text of the snapshot gclient file
+    new_gclient = ""
+    # Dictionary of { path : SCM url } to ensure no duplicate solutions
+    solution_names = {}
+    entries = {}
+    # Run on the base solutions first.
+    for solution in self.dependencies:
+      # Dictionary of { path : SCM url } to describe the gclient checkout
+      name = solution.name
+      if name in solution_names:
+        raise gclient_utils.Error("solution %s specified more than once" % name)
+      (url, rev) = GetURLAndRev(name, solution.url)
+      entries[name] = "%s@%s" % (url, rev)
+      solution_names[name] = "%s@%s" % (url, rev)
+
+    # Process the dependencies next (sort alphanumerically to ensure that
+    # containing directories get populated first and for readability)
+    deps = self._ParseAllDeps(entries)
+    deps_to_process = deps.keys()
+    deps_to_process.sort()
+
+    # First pass for direct dependencies.
+    for d in deps_to_process:
+      if type(deps[d]) == str:
+        (url, rev) = GetURLAndRev(d, deps[d])
+        entries[d] = "%s@%s" % (url, rev)
+
+    # Second pass for inherited deps (via the From keyword)
+    for d in deps_to_process:
+      if isinstance(deps[d], self.FromImpl):
+        deps_parent_url = entries[deps[d].module_name]
+        if deps_parent_url.find("@") < 0:
+          raise gclient_utils.Error("From %s missing revisioned url" %
+                                        deps[d].module_name)
+        sub_deps_base_url = deps[deps[d].module_name]
+        sub_deps = Dependency(self, deps[d].module_name, sub_deps_base_url
+            ).ParseDepsFile(False)
+        url = deps[d].GetUrl(d, sub_deps_base_url, self.root_dir(), sub_deps)
+        (url, rev) = GetURLAndRev(d, url)
+        entries[d] = "%s@%s" % (url, rev)
+
+    # Build the snapshot configuration string
     if self._options.snapshot:
-      new_gclient = ''
-      # First level at .gclient
-      for d in self.dependencies:
-        entries = {}
-        def GrabDeps(sol):
-          """Recursively grab dependencies."""
-          for i in sol.dependencies:
-            entries[i.name] = GetURLAndRev(i.name, i.parsed_url)
-            GrabDeps(i)
-        GrabDeps(d)
-        custom_deps = []
-        for k in sorted(entries.keys()):
-          if entries[k]:
-            # Quotes aren't escaped...
-            custom_deps.append('      \"%s\": \'%s\',\n' % (k, entries[k]))
-          else:
-            custom_deps.append('      \"%s\": None,\n' % k)
-        new_gclient += self.DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
-            'solution_name': d.name,
-            'solution_url': d.url,
-            'safesync_url' : d.safesync_url or '',
-            'solution_deps': ''.join(custom_deps),
-        }
-      # Print the snapshot configuration file
-      print(self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient})
+      url = entries.pop(name)
+      custom_deps = ''.join(['      \"%s\": \"%s\",\n' % (x, entries[x])
+                             for x in sorted(entries.keys())])
+
+      new_gclient += self.DEFAULT_SNAPSHOT_SOLUTION_TEXT % {
+                     'solution_name': name,
+                     'solution_url': url,
+                     'safesync_url' : '',
+                     'solution_deps': custom_deps,
+                     }
     else:
-      entries = sorted(self.tree(False), key=lambda i: i.name)
-      for entry in entries:
-        revision = GetURLAndRev(entry.name, entry.parsed_url)
-        line = '%s: %s' % (entry.name, revision)
-        if not entry is entries[-1]:
-          line += ';'
-        print line
+      print(';\n'.join(['%s: %s' % (x, entries[x])
+                       for x in sorted(entries.keys())]))
+
+    # Print the snapshot configuration file
+    if self._options.snapshot:
+      config = self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient}
+      snapclient = GClient(self.root_dir(), self._options)
+      snapclient.SetConfig(config)
+      print(snapclient.config_content)
 
   def ParseDepsFile(self, direct_reference):
     """No DEPS to parse for a .gclient file."""
@@ -1031,7 +1105,8 @@ def CMDrevinfo(parser, args):
                          'references')
   parser.add_option('-s', '--snapshot', action='store_true',
                     help='creates a snapshot .gclient file of the current '
-                         'version of all repositories to reproduce the tree')
+                         'version of all repositories to reproduce the tree, '
+                         'implies -a')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
