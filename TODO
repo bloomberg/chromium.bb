@@ -1,20 +1,85 @@
- - how does clients move their surfaces? set a full tri-mesh every
-   time? probably just go back to x and y position, let the compositor
-   do the fancy stuff.  How does the server apply transformations to a
-   surface behind the clients back? (wobbly, minimize, zoom) Maybe
-   wobble is client side?
+Core wayland protocol
 
+ - implement glyph cache and dnd
 
- - when a surface is the size of the screen and on top, we can set the
+ - dnd, figure out large object transfer: through wayland protocol or
+   pass an fd through the compositor to the other client and let them
+   sort it out?
+
+ - copy-n-paste, store data in server (only one mime-type available)
+   or do X style (content mime-type negotiation, but data goes away
+   when client quits).
+
+ - protocol for setting the cursor image
+
+    - should we have a mechanism to attach surface to cursor for
+      guaranteed non-laggy drag?
+
+    - drawing cursors, moving them, cursor themes, attaching surfaces
+      to cursors.  How do you change cursors when you mouse over a
+      text field if you don't have subwindows?  This is what we do: a
+      client can set a cursor for a surface and wayland will set that
+      on enter and revert to default on leave
+
+ - Discard buffer, as in "wayland discarded your buffer, it's no
+   longer visible, you can stop updating it now.", reattach, as in "oh
+   hey, I'm about to show your buffer that I threw away, what was it
+   again?".  for wayland system compositor vt switcing, for example,
+   to be able to throw away the surfaces in the session we're
+   switching away from.  for minimized windows that we don't want live
+   thumb nails for. etc.
+
+ - Move/resize protocols?  In the style of the dnd protocol, if a
+   surface has grabbed an input, it can request a resize (top/bottom |
+   left/right) or a move.  Goes on for duration of grab or until
+   surface cancels.  Surface gets resize(w,h) during resize events and
+   must reallocate buffer and redraw.
+
+ - Initial surface placement issue.
+
+ - Consolidate drm buffer upload with a create_buffer request, returns
+   buffer object we can use in surface.attach, cache.upload and
+   input.attach?  Will increase object id usage significantly, each
+   buffer swap allocates and throws away a new id.  Does consolidate
+   the details of a buffer very nicely though.
+
+     compositor.create_buffer(new_id, visual, name, stride, width, height)
+
+     surface.attach(buffer)
+
+     cache.upload(buffer, x, y, width, height)
+
+     input.set_cursor(buffer, hotspot_x, hotspot_y)
+
+   Doesn't increase id usage too much, can keep buffers around.
+
+ - Move/resize protocol in the style of the dnd protocol: a surface
+   who has a grabbed device can send a request to initiate a
+   resize(top/bottom+rigth/left) or a move.  The compositor will then
+   resize or move the window and take into account windows, panels and
+   screen edges and constrain and snap the motion accordingly.  As the
+   cursor moves, the compositor sends resize or move (maybe not move
+   events?) events to the app, which responds by attaching a new
+   surface at the new size (optionally, reducing the allocated space
+   to satisfy aspect ratio or resize increments).
+
+ - Initial placement of surfaces.  Guess we can do, 1)
+   surface-relative (menus), 2) pointer-relative (tooltips and
+   right-click menus) or 3) server-decides (all other top-levels).
+
+ - When a surface is the size of the screen and on top, we can set the
    scanout buffer to that surface directly.  Like compiz unredirect
    top-level window feature.  Except it won't have any protocol state
    side-effects and the client that owns the surface won't know.  We
    lose control of updates.  Should work well for X server root window
-   under wayland.
+   under wayland.  Should be possible for yuv overlays as well.
 
     - what about cursors then?  maybe use hw cursors if the cursor
       satisfies hw limitations (64x64, only one cursor), switch to
       composited cursors if not.
+
+    - clients needs to allocate the surface to be suitable for
+      scanout, which they can do whenever they go fullscreen.
 
  - multihead, screen geometry and crtc layout protocol, hotplug
 
@@ -24,45 +89,55 @@
       "org.wayland.input.x" to identify the axes.
 
     - keyboard state, layout events at connect time and when it
-      changes
+      changes, keyboard leds
 
     - relative events
 
-    - input handling - keyboard focus, multiple input devices,
-      multiple pointers, multi touch.
+    - multi touch?
 
- - wayland-system-compositor
+ - sparse/gcc plugin based idl compiler
 
-    - device kit/libudev/console kit integration to discover seats,
-      that is, groups of input devices and outputs that provide a
-      means for one user to interact with the system.  That is,
-      typically a mouse, keyboard and a screen.  The input devices
-      will just be evdev devices, the outputs will be a drm device
-      filename and the specific outputs accessible throught that drm
-      device.
+    - crack?
 
- - send drm device in connection info, probably just udev path.
+    - xml based description instead?
 
- - cairo-drm; wayland needs cairo-drm one way or another:
+ - actually make batch/commit batch up commands
 
-    - chris wilson (ickle) is doing cairo-drm for i915 now, basically
-      the pixman-drm idean, but inside cairo instead.
+ - auth; We need to generate a random socket name and advertise that
+   on dbus along with a connection cookie.  Something like a method
+   that returns the socket name and a connection cookie.  The
+   connection cookie is just another random string that the client
+   must pass to the wayland server to become authenticated.  The
+   Wayland server generates the cookie on demand when the dbus method
+   is called and expires it after 5s or so.
 
-    - pixman-drm; move the ddx driver batchbuffer logic into libdrm
-      and write native, direct rendering acceleration code in
-      pixman-drm.  is a clean approach in that we avoid the mess of
-      the global GL context leaking through to applications, and we
-      can bootstrap this project by pulling in the EXA hooks from the
-      DDX drivers.
+    - or just pass the fd over dbus
 
-    - use open gl behind the scenes a la glitz.
+ - drm bo access control, authentication, flink_to
 
-    - should be possible to provide a realistic api and then stub out
-      the implementation with pwrite and pread so gtk+ port can proceed.
+ - Range protocol may not be sufficient... if a server cycles through
+   2^32 object IDs we don't have a way to handle wrapping.  And since
+   we hand out a range of 256 IDs to each new clients, we're just
+   talking about 2^24 clients.  That's 31 years with a new client
+   every minute...  Maybe just use bigger ranges, then it's feasible
+   to track and garbage collect them when a client dies.
 
- - XKB like client side library for translating keyboard events to
-   more useful keycodes and modifiers etc.  Will probably be shared
-   between toolkits as a low-level library.
+ - Add protocol to let applications specify the effective/logical
+   surface rectangle, that is, the edge of the window, ignoring drop
+   shadows and other padding.  The compositor needs this for snapping
+   and constraining window motion.  Also, maybe communicate the opaque
+   region of the window (or just a conservative, simple estimate), to
+   let the compositor reduce overdraw.
+
+ - multi gpu, needs queue and seqno to wait on in requests
+
+ - synaptics, 3-button emulation, scim
+
+ - what to do when protocol out buffer fills up?  Just block on write
+   would work I guess.  Clients are supposed to throttle using the
+   bread crumb events, so we shouldn't get into this situation.
+
+Clients and ports
 
  - port gtk+
 
@@ -131,66 +206,3 @@
     - clutter as a wayland compositors
 
     - argh, mutter
-
- - make libwayland-client less ghetto
-
- - sparse based idl compiler
-
-    - crack?
-
-    - xml based description instead?
-
- - actually make batch/commit batch up commands
-
- - protocol for setting the cursor image
-
-    - should we have a mechanism to attach surface to cursor for
-      guaranteed non-laggy drag?
-
-    - drawing cursors, moving them, cursor themes, attaching surfaces
-      to cursors.  How do you change cursors when you mouse over a
-      text field if you don't have subwindows?  This is what we do: a
-      client can set a cursor for a surface and wayland will set that
-      on enter and revert to default on leave
-
- - server should be able to discard surfaces, and send a re-render
-   event to clients to get them to render and provide the surface
-   again.  for wayland system compositor vt switcing, for example, to
-   be able to throw away the surfaces in the session we're switching
-   away from.  for minimized windows that we don't want live thumb
-   nails for. etc.
-
- - auth; We need to generate a random socket name and advertise that
-   on dbus along with a connection cookie.  Something like a method
-   that returns the socket name and a connection cookie.  The
-   connection cookie is just another random string that the client
-   must pass to the wayland server to become authenticated.  The
-   Wayland server generates the cookie on demand when the dbus method
-   is called and expires it after 5s or so.
-
-    - or just pass the fd over dbus
-
- - drm bo access control, authentication, flink_to
-
- - Range protocol may not be sufficient... if a server cycles through
-   2^32 object IDs we don't have a way to handle wrapping.  And since
-   we hand out a range of 256 IDs to each new clients, we're just
-   talking about 2^24 clients.  That's 31 years with a new client
-   every minute...  Maybe just use bigger ranges, then it's feasible
-   to track and garbage collect them when a client dies.
-
- - multi gpu, needs queue and seqno to wait on in requests
-
- - opaque region, window rect
-
- - save and restore state on crash, clients reconnect, re-render
-   buffers
-
- - how do apps share the glyph cache?  what is the glyph cache, how
-   does it work?  pixbuf cache?
-
- - synaptics, 3-button emulation, scim
-
- - what to do when protocol out buffer fills up?  Just block on write
-   would work I guess.  Clients are supposed to throttle using the
-   bread crumb events, so we shouldn't get into this situation.
