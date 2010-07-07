@@ -122,7 +122,7 @@ class LanguageConfigView : public TableModel,
   void EnableAllCheckboxes();
 
   // The model of the view.
-  LanguageConfigModel model;
+  LanguageConfigModel model_;
 
   // The map of the input method id to a pointer to the function for
   // creating the input method configuration dialog.

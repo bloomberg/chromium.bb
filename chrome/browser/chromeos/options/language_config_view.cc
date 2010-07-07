@@ -129,7 +129,7 @@ class InputMethodCheckbox : public views::Checkbox {
 
 LanguageConfigView::LanguageConfigView(Profile* profile)
     : OptionsPageView(profile),
-      model(profile->GetPrefs()),
+      model_(profile->GetPrefs()),
       root_container_(NULL),
       right_container_(NULL),
       remove_language_button_(NULL),
@@ -147,7 +147,7 @@ void LanguageConfigView::ButtonPressed(
     InputMethodCheckbox* checkbox =
         static_cast<InputMethodCheckbox*>(sender);
     const std::string& input_method_id = checkbox->input_method_id();
-    model.SetInputMethodActivated(input_method_id, checkbox->checked());
+    model_.SetInputMethodActivated(input_method_id, checkbox->checked());
     if (checkbox->checked()) {
       EnableAllCheckboxes();
     } else {
@@ -204,16 +204,16 @@ void LanguageConfigView::OnSelectionChanged() {
   right_container_->RemoveAllChildViews(true);  // Delete the child views.
 
   const int row = preferred_language_table_->GetFirstSelectedRow();
-  const std::string& language_code = model.preferred_language_code_at(row);
+  const std::string& language_code = model_.preferred_language_code_at(row);
 
   // Count the number of all active input methods.
   std::vector<std::string> active_input_method_ids;
-  model.GetActiveInputMethodIds(&active_input_method_ids);
+  model_.GetActiveInputMethodIds(&active_input_method_ids);
   const int num_all_active_input_methods = active_input_method_ids.size();
 
   // Count the number of active input methods for the selected language.
   int num_selected_active_input_methods =
-      model.CountNumActiveInputMethods(language_code);
+      model_.CountNumActiveInputMethods(language_code);
 
   bool remove_button_enabled = false;
   // Allow removing the language only if the following conditions are met:
@@ -237,9 +237,9 @@ void LanguageConfigView::OnSelectionChanged() {
 
 std::wstring LanguageConfigView::GetText(int row, int column_id) {
   if (row >= 0 && row < static_cast<int>(
-          model.num_preferred_language_codes())) {
+          model_.num_preferred_language_codes())) {
     return input_method::GetLanguageDisplayNameFromCode(
-        model.preferred_language_code_at(row));
+        model_.preferred_language_code_at(row));
   }
   NOTREACHED();
   return L"";
@@ -253,7 +253,7 @@ void LanguageConfigView::SetObserver(TableModelObserver* observer) {
 
 int LanguageConfigView::RowCount() {
   // Returns the number of rows of the language table.
-  return model.num_preferred_language_codes();
+  return model_.num_preferred_language_codes();
 }
 
 void LanguageConfigView::ItemChanged(views::Combobox* combobox,
@@ -271,8 +271,6 @@ void LanguageConfigView::ItemChanged(views::Combobox* combobox,
 }
 
 void LanguageConfigView::InitControlLayout() {
-  // Initialize the model.
-  model.Init();
   // Initialize the map.
   InitInputMethodConfigViewMap();
 
@@ -299,9 +297,6 @@ void LanguageConfigView::InitControlLayout() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
-  // Initialize the language codes currently activated.
-  model.NotifyPrefChanged();
-
   // Set up the container for the contents on the right.  Just adds a
   // place holder here. This will get replaced in OnSelectionChanged().
   right_container_ = new views::View;
@@ -321,7 +316,7 @@ void LanguageConfigView::InitControlLayout() {
   // Select the first row in the language table.
   // There should be at least one language in the table, but we check it
   // here so this won't result in crash in case there is no row in the table.
-  if (model.num_preferred_language_codes() > 0) {
+  if (model_.num_preferred_language_codes() > 0) {
     preferred_language_table_->SelectRow(0);
   }
 }
@@ -345,27 +340,27 @@ void LanguageConfigView::InitInputMethodConfigViewMap() {
 
 void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
   // Skip if the language is already in the preferred_language_codes_.
-  if (model.HasLanguageCode(language_code)) {
+  if (model_.HasLanguageCode(language_code)) {
     return;
   }
   // Activate the first input language associated with the language. We have
   // to call this before the OnItemsAdded() call below so the checkbox
   // for the first input language gets checked.
   std::vector<std::string> input_method_ids;
-  model.GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
+  model_.GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
   if (!input_method_ids.empty()) {
-    model.SetInputMethodActivated(input_method_ids[0], true);
+    model_.SetInputMethodActivated(input_method_ids[0], true);
   }
 
   // Append the language to the list of language codes.
-  const int added_at = model.AddLanguageCode(language_code);
+  const int added_at = model_.AddLanguageCode(language_code);
   // Notify the table that the new row added at |added_at|.
   preferred_language_table_->OnItemsAdded(added_at, 1);
   // For some reason, OnItemsAdded() alone does not redraw the table. Need
   // to tell the table that items are changed. TODO(satorux): Investigate
   // if it's a bug in TableView2.
   preferred_language_table_->OnItemsChanged(
-      0, model.num_preferred_language_codes());
+      0, model_.num_preferred_language_codes());
   // Switch to the row added.
   preferred_language_table_->SelectRow(added_at);
 
@@ -376,14 +371,14 @@ void LanguageConfigView::OnAddLanguage(const std::string& language_code) {
 
 void LanguageConfigView::OnRemoveLanguage() {
   const int row = preferred_language_table_->GetFirstSelectedRow();
-  const std::string& language_code = model.preferred_language_code_at(row);
+  const std::string& language_code = model_.preferred_language_code_at(row);
   // Mark the language not to be ignored.
   add_language_combobox_model_->SetIgnored(language_code, false);
   ResetAddLanguageCombobox();
   // Deactivate the associated input methods.
-  model.DeactivateInputMethodsFor(language_code);
+  model_.DeactivateInputMethodsFor(language_code);
   // Remove the language code and the row from the table.
-  model.RemoveLanguageAt(row);
+  model_.RemoveLanguageAt(row);
   preferred_language_table_->OnItemsRemoved(row, 1);
   // Switch to the previous row, or the first row.
   // There should be at least one row in the table.
@@ -452,14 +447,14 @@ views::View* LanguageConfigView::CreateContentsOnBottom() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
 
-  // Create the add language combobox model.
+  // Create the add language combobox model_.
   // LanguageComboboxModel sorts languages by their display names.
   add_language_combobox_model_.reset(
-      new AddLanguageComboboxModel(NULL, model.supported_language_codes()));
+      new AddLanguageComboboxModel(NULL, model_.supported_language_codes()));
   // Mark the existing preferred languages to be ignored.
-  for (size_t i = 0; i < model.num_preferred_language_codes(); ++i) {
+  for (size_t i = 0; i < model_.num_preferred_language_codes(); ++i) {
     add_language_combobox_model_->SetIgnored(
-        model.preferred_language_code_at(i),
+        model_.preferred_language_code_at(i),
         true);
   }
   // Create the add language combobox.
@@ -569,7 +564,7 @@ void LanguageConfigView::AddInputMethodSection(
 
   // Get the list of input method ids associated with the language code.
   std::vector<std::string> input_method_ids;
-  model.GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
+  model_.GetInputMethodIdsFromLanguageCode(language_code, &input_method_ids);
 
   for (size_t i = 0; i < input_method_ids.size(); ++i) {
     const std::string& input_method_id = input_method_ids[i];
@@ -581,7 +576,7 @@ void LanguageConfigView::AddInputMethodSection(
                                   input_method_id);
     checkbox->set_listener(this);
     checkbox->set_tag(kSelectInputMethodButton);
-    if (model.InputMethodIsActivated(input_method_id)) {
+    if (model_.InputMethodIsActivated(input_method_id)) {
       checkbox->SetChecked(true);
     }
 
@@ -613,7 +608,7 @@ views::DialogDelegate* LanguageConfigView::CreateInputMethodConfigureView(
 
 void LanguageConfigView::MaybeDisableLastCheckbox() {
   std::vector<std::string> input_method_ids;
-  model.GetActiveInputMethodIds(&input_method_ids);
+  model_.GetActiveInputMethodIds(&input_method_ids);
   if (input_method_ids.size() <= 1) {
     for (std::set<InputMethodCheckbox*>::iterator checkbox =
              input_method_checkboxes_.begin();

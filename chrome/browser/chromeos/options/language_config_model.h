@@ -50,9 +50,6 @@ class LanguageConfigModel : public NotificationObserver {
  public:
   LanguageConfigModel(PrefService* pref_service);
 
-  // Initializes the model.
-  void Init();
-
   // Counts the number of active input methods for the given language code.
   size_t CountNumActiveInputMethods(const std::string& language_code);
 

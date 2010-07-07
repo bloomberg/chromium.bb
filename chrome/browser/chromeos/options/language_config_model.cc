@@ -73,9 +73,6 @@ void AddLanguageComboboxModel::SetIgnored(
 
 LanguageConfigModel::LanguageConfigModel(PrefService* pref_service)
     : pref_service_(pref_service) {
-}
-
-void LanguageConfigModel::Init() {
   // Initialize the maps and vectors.
   InitInputMethodIdVectors();
 
@@ -85,6 +82,9 @@ void LanguageConfigModel::Init() {
   // here and compare the result and preload_engines_.GetValue(). If there's
   // a discrepancy between IBus setting and Chrome prefs, we can resolve it
   // by calling preload_engines_SetValue() here.
+
+  // Initialize the language codes currently activated.
+  NotifyPrefChanged();
 }
 
 size_t LanguageConfigModel::CountNumActiveInputMethods(
