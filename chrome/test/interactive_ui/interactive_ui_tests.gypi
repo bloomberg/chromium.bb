@@ -36,7 +36,6 @@
     '<(DEPTH)/chrome/browser/notifications/notifications_interactive_uitest.cc',
     '<(DEPTH)/chrome/browser/views/bookmark_bar_view_test.cc',
     '<(DEPTH)/chrome/browser/views/find_bar_host_interactive_uitest.cc',
-    '<(DEPTH)/chrome/browser/views/tabs/tab_strip_interactive_uitest.cc',
     '<(DEPTH)/chrome/browser/views/tabs/tab_dragging_test.cc',
     '<(DEPTH)/chrome/test/in_process_browser_test.cc',
     '<(DEPTH)/chrome/test/in_process_browser_test.h',
@@ -74,7 +73,6 @@
     ['OS=="linux" and toolkit_views==1', {
       'sources!': [
         '<(DEPTH)/chrome/browser/gtk/bookmark_bar_gtk_interactive_uitest.cc',
-        '<(DEPTH)/chrome/browser/views/tabs/tab_strip_interactive_uitest.cc',
         # TODO(port)
         '<(DEPTH)/chrome/test/interactive_ui/npapi_interactive_test.cc',
       ],

@@ -178,11 +178,6 @@ class View : public AcceleratorTarget {
   void SetX(int x) { SetBounds(x, y(), width(), height()); }
   void SetY(int y) { SetBounds(x(), y, width(), height()); }
 
-  // Registers this view for mouse near events (OnMouseNear and
-  // OnMouseExitedNear). Mouse near events are sent for the extended rectangle
-  // defined by the bounds of this view + |insets|.
-  void RegisterForMouseNearEvents(const gfx::Insets& insets);
-
   // Returns the left coordinate of the View, relative to the parent View,
   // which is the value of bounds_.x().
   //
@@ -695,18 +690,6 @@ class View : public AcceleratorTarget {
   // Default implementation does nothing. Override as needed.
   virtual void OnMouseExited(const MouseEvent& event);
 
-  // Sent when the mouse enters the rectangle defined by this views bounds and
-  // the insets passed to RegisterForMouseNearEvents. This is only sent for
-  // views that have explicitly registered for near notification
-  // (RegisterForMouseNearEvents).
-  virtual void OnMouseNear(const MouseEvent& event) {}
-
-  // Sent when the mouse exits the rectangle defined by this views bounds and
-  // the insets passed to RegisterForMouseNearEvents. This is only sent for
-  // views that have explicitly registered for near notification
-  // (RegisterForMouseNearEvents).
-  virtual void OnMouseExitedNear(const MouseEvent& event) {}
-
   // Set the MouseHandler for a drag session.
   //
   // A drag session is a stream of mouse events starting
@@ -1208,11 +1191,11 @@ class View : public AcceleratorTarget {
 
   // Recursively descends through all descendant views,
   // registering/unregistering all views that want visible bounds in root
-  // view notification and/or mouse near events.
-  static void RegisterChildrenForRootNotifications(RootView* root, View* view);
-  static void UnregisterChildrenForRootNotifications(RootView* root,
-                                                     View* view);
-
+  // view notification.
+  static void RegisterChildrenForVisibleBoundsNotification(RootView* root,
+                                                           View* view);
+  static void UnregisterChildrenForVisibleBoundsNotification(RootView* root,
+                                                             View* view);
 
   // Adds/removes view to the list of descendants that are notified any time
   // this views location and possibly size are changed.
@@ -1311,9 +1294,6 @@ class View : public AcceleratorTarget {
   // is going to be flipped horizontally (using the appropriate transform) on
   // right-to-left locales for this View.
   bool flip_canvas_on_paint_for_rtl_ui_;
-
-  // Insets passed to RegisterForMouseNearEvents.
-  scoped_ptr<gfx::Insets> near_insets_;
 
   // The default value for how long to wait (in ms) before showing a menu
   // button on hover. This value is used if the OS doesn't supply one.

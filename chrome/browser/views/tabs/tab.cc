@@ -23,7 +23,6 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/button/image_button.h"
-#include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
@@ -102,7 +101,7 @@ const char Tab::kViewClassName[] = "browser/tabs/Tab";
 // Tab, public:
 
 Tab::Tab(TabController* controller)
-    : BaseTab(controller, true),
+    : BaseTab(controller),
       showing_icon_(false),
       showing_close_button_(false),
       close_button_color_(NULL) {
@@ -213,7 +212,13 @@ void Tab::Paint(gfx::Canvas* canvas) {
     PaintIcon(canvas);
 
   // If the close button color has changed, generate a new one.
-  SetCloseButtonColor(title_color);
+  if (!close_button_color_ || title_color != close_button_color_) {
+    close_button_color_ = title_color;
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    close_button()->SetBackground(close_button_color_,
+        rb.GetBitmapNamed(IDR_TAB_CLOSE),
+        rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
+  }
 }
 
 void Tab::Layout() {
@@ -261,7 +266,6 @@ void Tab::Layout() {
 
   // Size the Close button.
   showing_close_button_ = ShouldShowCloseBox();
-  gfx::Insets near_insets;
   if (showing_close_button_) {
     int close_button_top =
         kTopPadding + kCloseButtonVertFuzz +
@@ -271,24 +275,10 @@ void Tab::Layout() {
                               close_button_top, close_button_width(),
                               close_button_height());
     close_button()->SetVisible(true);
-    int avail_width = width() - close_button()->bounds().right();
-    if (avail_width > 0) {
-      View* root = GetRootView();
-      if (root) {  // Root is NULL when dragging.
-        // Enable mouse near events for the region from the top of the browser
-        // to the bottom of the tab.
-        gfx::Point loc;
-        ConvertPointToView(close_button(), GetRootView(), &loc);
-        near_insets.Set(loc.y(), close_button()->x(),
-                        height() - close_button()->bounds().bottom(),
-                        avail_width);
-      }
-    }
   } else {
     close_button()->SetBounds(0, 0, 0, 0);
     close_button()->SetVisible(false);
   }
-  close_button()->RegisterForMouseNearEvents(near_insets);
 
   int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
   int title_top = kTopPadding + (content_height - font_height()) / 2;

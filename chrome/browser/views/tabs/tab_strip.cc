@@ -248,13 +248,8 @@ void TabStrip::SelectTabAt(int old_model_index, int new_model_index) {
   }
 
   if (old_model_index >= 0) {
-    Tab* tab = GetTabAtTabDataIndex(ModelIndexToTabIndex(old_model_index));
-    tab->StopMiniTabTitleAnimation();
-    tab->SelectedChanged();
-  }
-  if (new_model_index >= 0) {
-    GetTabAtTabDataIndex(
-        ModelIndexToTabIndex(new_model_index))->SelectedChanged();
+    GetTabAtTabDataIndex(ModelIndexToTabIndex(old_model_index))->
+        StopMiniTabTitleAnimation();
   }
 }
 

@@ -133,21 +133,6 @@ void View::SetBounds(const gfx::Rect& bounds) {
   }
 }
 
-void View::RegisterForMouseNearEvents(const gfx::Insets& insets) {
-  RootView* root = GetRootView();
-  if (insets.empty()) {
-    near_insets_.reset(NULL);
-    if (root)
-      root->UnregisterViewForNearNotification(this);
-  } else {
-    near_insets_.reset(
-        new gfx::Insets(insets.top(), insets.left(), insets.bottom(),
-                        insets.right()));
-    if (root)
-      root->RegisterViewForNearNotification(this);
-  }
-}
-
 gfx::Rect View::GetLocalBounds(bool include_border) const {
   if (include_border || !border_.get())
     return gfx::Rect(0, 0, width(), height());
@@ -556,7 +541,7 @@ void View::AddChildView(int index, View* v) {
   UpdateTooltip();
   RootView* root = GetRootView();
   if (root)
-    RegisterChildrenForRootNotifications(root, v);
+    RegisterChildrenForVisibleBoundsNotification(root, v);
 
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, v);
@@ -628,7 +613,7 @@ void View::DoRemoveChildView(View* a_view,
 
     RootView* root = GetRootView();
     if (root)
-      UnregisterChildrenForRootNotifications(root, a_view);
+      UnregisterChildrenForVisibleBoundsNotification(root, a_view);
     a_view->PropagateRemoveNotifications(this);
     a_view->SetParent(NULL);
 
@@ -1459,26 +1444,24 @@ ThemeProvider* View::GetThemeProvider() const {
 }
 
 // static
-void View::RegisterChildrenForRootNotifications(RootView* root, View* view) {
+void View::RegisterChildrenForVisibleBoundsNotification(
+    RootView* root, View* view) {
   DCHECK(root && view);
   if (view->GetNotifyWhenVisibleBoundsInRootChanges())
     root->RegisterViewForVisibleBoundsNotification(view);
-  if (view->near_insets_.get())
-    root->RegisterViewForNearNotification(view);
   for (int i = 0; i < view->GetChildViewCount(); ++i)
-    RegisterChildrenForRootNotifications(root, view->GetChildViewAt(i));
+    RegisterChildrenForVisibleBoundsNotification(root, view->GetChildViewAt(i));
 }
 
 // static
-void View::UnregisterChildrenForRootNotifications(
+void View::UnregisterChildrenForVisibleBoundsNotification(
     RootView* root, View* view) {
   DCHECK(root && view);
   if (view->GetNotifyWhenVisibleBoundsInRootChanges())
     root->UnregisterViewForVisibleBoundsNotification(view);
-  if (view->near_insets_.get())
-    root->UnregisterViewForNearNotification(view);
   for (int i = 0; i < view->GetChildViewCount(); ++i)
-    UnregisterChildrenForRootNotifications(root, view->GetChildViewAt(i));
+    UnregisterChildrenForVisibleBoundsNotification(root,
+                                                   view->GetChildViewAt(i));
 }
 
 void View::AddDescendantToNotify(View* view) {

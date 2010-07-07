@@ -490,33 +490,6 @@ void RootView::OnMouseMoved(const MouseEvent& e) {
     mouse_move_handler_->OnMouseExited(exited_event);
     SetActiveCursor(NULL);
   }
-
-  if (registered_near_views_.empty())
-    return;
-
-  std::set<View*> near_views;
-  GetViewsRegisteredForNearNotification(e, &near_views);
-
-  MouseEvent exited_near_event(Event::ET_MOUSE_EXITED_NEAR, 0, 0, 0);
-  for (std::set<View*>::const_iterator i = near_views_.begin();
-       i != near_views_.end(); ++i) {
-    if (near_views.find(*i) == near_views.end())
-      (*i)->OnMouseExitedNear(exited_near_event);
-  }
-
-  for (std::set<View*>::const_iterator i = near_views.begin();
-       i != near_views.end(); ++i) {
-    if (near_views_.find(*i) == near_views_.end()) {
-      MouseEvent entered_event(Event::ET_MOUSE_ENTERED,
-                               this,
-                               *i,
-                               e.location(),
-                               0);
-      (*i)->OnMouseNear(entered_event);
-    }
-  }
-
-  near_views_.swap(near_views);
 }
 
 void RootView::ProcessOnMouseExited() {
@@ -525,8 +498,6 @@ void RootView::ProcessOnMouseExited() {
     mouse_move_handler_->OnMouseExited(exited_event);
     mouse_move_handler_ = NULL;
   }
-
-  SendMouseExitedNear();
 }
 
 void RootView::SetMouseHandler(View *new_mh) {
@@ -687,15 +658,6 @@ void RootView::UnregisterViewForVisibleBoundsNotification(View* view) {
   }
 }
 
-void RootView::RegisterViewForNearNotification(View* view) {
-  registered_near_views_.insert(view);
-}
-
-void RootView::UnregisterViewForNearNotification(View* view) {
-  registered_near_views_.erase(view);
-  near_views_.erase(view);
-}
-
 void RootView::SetMouseLocationAndFlags(const MouseEvent& e) {
   last_mouse_event_flags_ = e.GetFlags();
   last_mouse_event_x_ = e.x();
@@ -750,40 +712,6 @@ void RootView::SetActiveCursor(gfx::NativeCursor cursor) {
   if (cursor)
     gdk_cursor_destroy(cursor);
 #endif
-}
-
-void RootView::GetViewsRegisteredForNearNotification(
-    const MouseEvent& e,
-    std::set<View*>* near_views) {
-  const gfx::Point& location = e.location();
-  for (std::set<View*>::const_iterator i = registered_near_views_.begin();
-       i != registered_near_views_.end(); ++i) {
-    View* view = *i;
-    DCHECK(view->near_insets_.get());
-    const gfx::Insets& insets = *view->near_insets_;
-    gfx::Point view_loc(view->x() - insets.left(),
-                        view->y() - insets.top());
-    View::ConvertPointToView(view->GetParent(), this, &view_loc);
-    if (location.x() >= view_loc.x() &&
-        location.y() >= view_loc.y() &&
-        location.x() < view_loc.x() + (view->width() + insets.width()) &&
-        location.y() < view_loc.y() + (view->height() + insets.height())) {
-      near_views->insert(view);
-    }
-  }
-}
-
-void RootView::SendMouseExitedNear() {
-  if (near_views_.empty())
-    return;
-
-  MouseEvent exited_near_event(Event::ET_MOUSE_EXITED_NEAR, 0, 0, 0);
-  for (std::set<View*>::const_iterator i = near_views_.begin();
-       i != near_views_.end(); ++i) {
-    (*i)->OnMouseExitedNear(exited_near_event);
-  }
-
-  near_views_.clear();
 }
 
 }  // namespace views

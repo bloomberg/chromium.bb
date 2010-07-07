@@ -20,7 +20,6 @@
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/font.h"
-#include "gfx/skbitmap_operations.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -49,35 +48,19 @@ static SkBitmap* close_button_p = NULL;
 
 static SkBitmap* crashed_fav_icon = NULL;
 
+namespace {
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabCloseButton
 //
 //  This is a Button subclass that causes middle clicks to be forwarded to the
 //  parent View by explicitly not handling them in OnMousePressed.
-class BaseTab::TabCloseButton : public views::ImageButton {
+class TabCloseButton : public views::ImageButton {
  public:
-  TabCloseButton(BaseTab* tab, bool show_mini_dot)
-      : views::ImageButton(tab),
-        tab_(tab),
-        is_mouse_near_(!show_mini_dot),
-        color_(0) {
+  explicit TabCloseButton(views::ButtonListener* listener)
+      : views::ImageButton(listener) {
   }
   virtual ~TabCloseButton() {}
-
-  // Sets the color used to derive the background color.
-  void SetColor(SkColor color) {
-    if (color_ == color)
-      return;
-
-    color_ = color;
-    // This is invoked from Paint, so we don't need to schedule a paint.
-    UpdateBackgroundImage(false);
-  }
-
-  // Invoked when the selected state changes.
-  void SelectedStateChanged() {
-    UpdateBackgroundImage(true);
-  }
 
   virtual bool OnMousePressed(const views::MouseEvent& event) {
     bool handled = ImageButton::OnMousePressed(event);
@@ -99,62 +82,11 @@ class BaseTab::TabCloseButton : public views::ImageButton {
     GetParent()->OnMouseExited(event);
   }
 
-  virtual void OnMouseNear(const views::MouseEvent& event) {
-    is_mouse_near_ = true;
-    UpdateBackgroundImage(true);
-  }
-
-  virtual void OnMouseExitedNear(const views::MouseEvent& event) {
-    is_mouse_near_ = false;
-    UpdateBackgroundImage(true);
-  }
-
  private:
-  // Returns the image to use for the background.
-  static const SkBitmap& GetBackgroundImage(SkColor color, bool is_mouse_near) {
-    // All tabs share the same color, so we cache the bitmaps.
-    static SkColor cached_color = 0;
-    static SkBitmap* near_image = NULL;
-    static SkBitmap* far_image = NULL;
-    if (!near_image || cached_color != color) {
-      cached_color = color;
-      if (!near_image) {
-        near_image = new SkBitmap();
-        far_image = new SkBitmap();
-      }
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      *near_image = SkBitmapOperations::CreateButtonBackground(
-          color,
-          *rb.GetBitmapNamed(IDR_TAB_CLOSE),
-          *rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
-      *far_image = SkBitmapOperations::CreateButtonBackground(
-          color,
-          *rb.GetBitmapNamed(IDR_TAB_CLOSE),
-          *rb.GetBitmapNamed(IDR_TAB_CLOSE_DOT_MASK));
-    }
-    return is_mouse_near ? *near_image : *far_image;
-  }
-
-  // Should we use the near image?
-  bool use_near_image() const { return is_mouse_near_ || tab_->IsSelected(); }
-
-  // Resets the background image.
-  void UpdateBackgroundImage(bool paint) {
-    set_background_image(GetBackgroundImage(color_, use_near_image()));
-    if (paint)
-      SchedulePaint();
-  }
-
-  BaseTab* tab_;
-
-  // Is the mouse near the close button?
-  bool is_mouse_near_;
-
-  // Color used to derive the background image from.
-  SkColor color_;
-
   DISALLOW_COPY_AND_ASSIGN(TabCloseButton);
 };
+
+}  // namespace
 
 // static
 int BaseTab::close_button_width_ = 0;
@@ -207,7 +139,7 @@ class BaseTab::FavIconCrashAnimation : public LinearAnimation,
   DISALLOW_COPY_AND_ASSIGN(FavIconCrashAnimation);
 };
 
-BaseTab::BaseTab(TabController* controller, bool show_mini_dot)
+BaseTab::BaseTab(TabController* controller)
     : controller_(controller),
       closing_(false),
       dragging_(false),
@@ -219,7 +151,7 @@ BaseTab::BaseTab(TabController* controller, bool show_mini_dot)
   BaseTab::InitResources();
 
   // Add the Close Button.
-  TabCloseButton* close_button = new TabCloseButton(this, show_mini_dot);
+  TabCloseButton* close_button = new TabCloseButton(this);
   close_button_ = close_button;
   close_button->SetImage(views::CustomButton::BS_NORMAL, close_button_n);
   close_button->SetImage(views::CustomButton::BS_HOT, close_button_h);
@@ -294,10 +226,6 @@ void BaseTab::StopPulse() {
 
   pulse_animation_->Stop();  // Do stop so we get notified.
   pulse_animation_.reset(NULL);
-}
-
-void BaseTab::SelectedChanged() {
-  close_button_->SelectedStateChanged();
 }
 
 bool BaseTab::IsSelected() const {
@@ -404,14 +332,6 @@ void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
     loading_animation_frame_ = 0;
   }
   SchedulePaint();
-}
-
-views::ImageButton* BaseTab::close_button() const {
-  return close_button_;
-}
-
-void BaseTab::SetCloseButtonColor(SkColor color) {
-  close_button_->SetColor(color);
 }
 
 void BaseTab::PaintIcon(gfx::Canvas* canvas, int x, int y) {

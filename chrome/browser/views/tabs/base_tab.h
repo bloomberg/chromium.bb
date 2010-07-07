@@ -32,7 +32,7 @@ class BaseTab : public AnimationDelegate,
                 public views::ContextMenuController,
                 public views::View {
  public:
-  BaseTab(TabController* controller, bool show_mini_dot);
+  explicit BaseTab(TabController* controller);
   ~BaseTab();
 
   // Sets the data this tabs displays. Invokes DataChanged for subclasses to
@@ -71,10 +71,6 @@ class BaseTab : public AnimationDelegate,
     theme_provider_ = provider;
   }
 
-  // Invoked when the selected state changes. Resets the image of the close
-  // button.
-  void SelectedChanged();
-
   // Returns true if the tab is selected.
   virtual bool IsSelected() const;
 
@@ -108,10 +104,7 @@ class BaseTab : public AnimationDelegate,
     return hover_animation_.get();
   }
 
-  views::ImageButton* close_button() const;
-
-  // Sets the color used to derive the close button images.
-  void SetCloseButtonColor(SkColor color);
+  views::ImageButton* close_button() const { return close_button_; }
 
   // Paints the icon at the specified x-coordinate.
   void PaintIcon(gfx::Canvas* canvas, int x, int y);
@@ -150,7 +143,6 @@ class BaseTab : public AnimationDelegate,
  private:
   // The animation object used to swap the favicon with the sad tab icon.
   class FavIconCrashAnimation;
-  class TabCloseButton;
 
   // Set the temporary offset for the favicon. This is used during the crash
   // animation.
@@ -194,7 +186,7 @@ class BaseTab : public AnimationDelegate,
 
   scoped_refptr<AnimationContainer> animation_container_;
 
-  TabCloseButton* close_button_;
+  views::ImageButton* close_button_;
 
   // The current index of the loading animation.
   int loading_animation_frame_;

@@ -74,7 +74,6 @@
       <include name="IDR_TAB_CLOSE" file="tab_close.png" type="BINDATA" />
       <include name="IDR_TAB_CLOSE_H" file="tab_close_h.png" type="BINDATA" />
       <include name="IDR_TAB_CLOSE_P" file="tab_close_p.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_DOT_MASK" file="tab_close_dot_mask.png" type="BINDATA" />
       <include name="IDR_TAB_CLOSE_MASK" file="tab_close_mask.png" type="BINDATA" />
       <include name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center.png" type="BINDATA" />
       <include name="IDR_TAB_INACTIVE_LEFT" file="tab_inactive_left.png" type="BINDATA" />

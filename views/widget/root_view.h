@@ -5,7 +5,6 @@
 #ifndef VIEWS_WIDGET_ROOT_VIEW_H_
 #define VIEWS_WIDGET_ROOT_VIEW_H_
 
-#include <set>
 #include <string>
 
 #include "base/ref_counted.h"
@@ -210,10 +209,6 @@ class RootView : public View,
   void RegisterViewForVisibleBoundsNotification(View* view);
   void UnregisterViewForVisibleBoundsNotification(View* view);
 
-  // Registers/unregisters the View for mouse near events.
-  void RegisterViewForNearNotification(View* view);
-  void UnregisterViewForNearNotification(View* view);
-
   // Returns the next focusable view or view containing a FocusTraversable (NULL
   // if none was found), starting at the starting_view.
   // check_starting_view, can_go_up and can_go_down controls the traversal of
@@ -254,15 +249,6 @@ class RootView : public View,
 
   // Sets the current cursor, or resets it to the last one if NULL is provided.
   void SetActiveCursor(gfx::NativeCursor cursor);
-
-  // Returns in |near_views| the set of views registered for mouse near events
-  // that overlap with the location of the specified event.
-  void GetViewsRegisteredForNearNotification(const MouseEvent& e,
-                                             std::set<View*>* near_views);
-
-  // Sends OnMouseExitedNear to the set of views the mouse is near and empties
-  // the set.
-  void SendMouseExitedNear();
 
   // The view currently handing down - drag - up
   View* mouse_pressed_handler_;
@@ -338,16 +324,6 @@ class RootView : public View,
   // True if we're currently processing paint.
   bool is_processing_paint_;
 #endif
-
-  // Set of views registered for mouse near events.
-  // NOTE: because views registered for near mouse events can overlap other
-  // views and extend outside the bounds of themselves and ancestors we store
-  // the registered views here and treat them separately. This is generally ok
-  // as there are a small set of views registered for near notification.
-  std::set<View*> registered_near_views_;
-
-  // Set of views the mouse is currently near.
-  std::set<View*> near_views_;
 
   DISALLOW_COPY_AND_ASSIGN(RootView);
 };
