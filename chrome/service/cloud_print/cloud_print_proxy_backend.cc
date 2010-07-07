@@ -497,47 +497,47 @@ void CloudPrintProxyBackend::Core::HandlePrinterListResponse(
     const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
-  if (status.is_success()) {
+  bool succeeded = false;
+  if (status.is_success() && response_code == 200) {
     server_error_count_ = 0;
-    if (response_code == 200) {
-      // Parse the response JSON for the list of printers already registered.
-      bool succeeded = false;
-      DictionaryValue* response_dict_temp = NULL;
-      CloudPrintHelpers::ParseResponseJSON(data, &succeeded,
-                                           &response_dict_temp);
-      scoped_ptr<DictionaryValue> response_dict;
-      response_dict.reset(response_dict_temp);
-      if (succeeded) {
-        DCHECK(response_dict.get());
-        ListValue* printer_list = NULL;
-        response_dict->GetList(kPrinterListValue, &printer_list);
-        // There may be no "printers" value in the JSON
-        if (printer_list) {
-          for (size_t index = 0; index < printer_list->GetSize(); index++) {
-            DictionaryValue* printer_data = NULL;
-            if (printer_list->GetDictionary(index, &printer_data)) {
-              std::string printer_name;
-              printer_data->GetString(kNameValue, &printer_name);
-              RemovePrinterFromList(printer_name);
-              InitJobHandlerForPrinter(printer_data);
-            } else {
-              NOTREACHED();
-            }
+    // Parse the response JSON for the list of printers already registered.
+    DictionaryValue* response_dict_temp = NULL;
+    CloudPrintHelpers::ParseResponseJSON(data, &succeeded,
+                                         &response_dict_temp);
+    scoped_ptr<DictionaryValue> response_dict;
+    response_dict.reset(response_dict_temp);
+    if (succeeded) {
+      DCHECK(response_dict.get());
+      ListValue* printer_list = NULL;
+      response_dict->GetList(kPrinterListValue, &printer_list);
+      // There may be no "printers" value in the JSON
+      if (printer_list) {
+        for (size_t index = 0; index < printer_list->GetSize(); index++) {
+          DictionaryValue* printer_data = NULL;
+          if (printer_list->GetDictionary(index, &printer_data)) {
+            std::string printer_name;
+            printer_data->GetString(kNameValue, &printer_name);
+            RemovePrinterFromList(printer_name);
+            InitJobHandlerForPrinter(printer_data);
+          } else {
+            NOTREACHED();
           }
         }
       }
+      MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
+      if (!printer_list_.empty()) {
+        // Let the frontend know that we have a list of printers available.
+        backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+            &Core::NotifyPrinterListAvailable, printer_list_));
+      } else {
+        // No more work to be done here.
+        MessageLoop::current()->PostTask(
+            FROM_HERE, NewRunnableMethod(this, &Core::EndRegistration));
+      }
     }
-    MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
-    if (!printer_list_.empty()) {
-      // Let the frontend know that we have a list of printers available.
-      backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &Core::NotifyPrinterListAvailable, printer_list_));
-    } else {
-      // No more work to be done here.
-      MessageLoop::current()->PostTask(
-          FROM_HERE, NewRunnableMethod(this, &Core::EndRegistration));
-    }
-  } else {
+  }
+
+  if (!succeeded) {
     HandleServerError(NewRunnableMethod(this, &Core::GetRegisteredPrinters));
   }
 }
