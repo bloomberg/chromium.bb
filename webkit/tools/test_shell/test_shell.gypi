@@ -332,7 +332,7 @@
           ],
           'copies': [
             {
-              'destination': '<(PRODUCT_DIR)/plugins/',
+              'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/PlugIns/',
               'files': [
                 '<(PRODUCT_DIR)/TestNetscapePlugIn.plugin/',
               ],
