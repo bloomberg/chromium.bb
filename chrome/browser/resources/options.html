@@ -19,6 +19,9 @@
 <if expr="pp_ifdef('chromeos')">
   <script src="options/chromeos_system_options.js"></script>
 </if>
+<script src="options/advanced_options.js"></script>
+<script src="options/browser_options.js"></script>
+<script src="options/personal_options.js"></script>
 <script>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -28,16 +31,24 @@
  */
 function load() {
   localStrings = new LocalStrings();
-  OptionsPage.register(SystemOptions.getInstance());
-  var labsOptions = new OptionsPage('labs',
-                                    templateData.labsPage,
-                                    'labsPage');
-  OptionsPage.register(labsOptions);
+
+  const isChromeOS = /CrOS/.test(navigator.platform);
+  if (isChromeOS) {
+    OptionsPage.register(SystemOptions.getInstance());
+  }
+  OptionsPage.register(BrowserOptions.getInstance());
+  OptionsPage.register(PersonalOptions.getInstance());
+  OptionsPage.register(AdvancedOptions.getInstance());
 
   Preferences.getInstance().initialize();
-  OptionsPage.showPageByName(SystemOptions.getInstance().name);
+  if (isChromeOS) {
+    OptionsPage.showPageByName(SystemOptions.getInstance().name);
+  } else {
+    OptionsPage.showPageByName(BrowserOptions.getInstance().name);
+  }
 }
 
+document.addEventListener('DOMContentLoaded', load);
 
 window.onpopstate = function(e) {
   OptionsPage.setState(e.state);
@@ -45,81 +56,17 @@ window.onpopstate = function(e) {
 
 </script>
 <link rel="stylesheet" href="dom_ui.css">
-<!-- TODO(zelidrag) just a temp style placeholder until redesign -->
-<style>
-#main-content {
-  display: -webkit-box;
-}
-
-#navbar-container {
-  border: 1px solid black;
-  background-color: #dfdfdf;  
-  cursor: pointer;
-  font-weight: bold; 
-  height: 400px;
-  padding: 10px;
-  position: relative;
-  width: 200px;
-}
-
-.navbar-item, .navbar-item2 {
-  margin: 5px;
-  padding: 5px;
-}
-
-.navbar-item-selected {
-  background-color: #FFFFFF;  
-}
-
-.navbar-item-normal {
-  background-color: #dfdfdf;
-}
-
-#mainview {
-  -webkit-box-align: stretch;
-  border: 1px solid black;
-  height: 400px;
-  width: 600px;
-  padding: 10px;
-  position: relative;
-}
-
-.section {
-  margin-top: 10px;
-}
-
-.option {
-  margin-top: 5px;
-}
-
-.section-title {
-  font-weight: bold; 
-}
-
-.option-control-table {
-  margin-top: 5px;
-  -webkit-padding-start: 10px;
-}
-
-.hidden {
-  display: none;
-}
-
-.touch-slider {
-  -webkit-appearance: slider-horizontal;
-}
-
+<link rel="stylesheet" href="options/options_page.css">
 </style>
 </head>
-<body onload="load();"
-    i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div class="header">
 </div>
 <div id="main-content">
   <div id="navbar-container">
      <ul id="navbar">
      </ul>
-     <hr/>
+     <hr>
      <ul class="hidden">
      </ul>
   </div>
@@ -127,7 +74,9 @@ window.onpopstate = function(e) {
      <if expr="pp_ifdef('chromeos')">
         <include src="options/chromeos_system_options.html">
      </if>     
-     <!-- include file="options/chromeos_labs.html" -->
+     <include src="options/browser_options.html">
+     <include src="options/personal_options.html">
+     <include src="options/advanced_options.html">
   </div>
 </div>
 <script>
@@ -135,7 +84,7 @@ window.onpopstate = function(e) {
 cr.ui.decorate('input[pref][type=checkbox]', PrefCheckbox);
 cr.ui.decorate('input[pref][type=range]', PrefRange);
 cr.ui.decorate('select[pref]', PrefSelect);
-<!-- TODO(zelidrag) add other elements here when we implement them -->
+// TODO(zelidrag) add other elements here when we implement them
 </script>
 </body>
 </html>

@@ -16,7 +16,10 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/advanced_options_handler.h"
+#include "chrome/browser/dom_ui/browser_options_handler.h"
 #include "chrome/browser/dom_ui/core_options_handler.h"
+#include "chrome/browser/dom_ui/personal_options_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -100,6 +103,9 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
 
   // TODO(zelidrag): Add all other page handlers here as we implement them.
   AddOptionsPageUIHandler(localized_strings, new CoreOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LabsHandler());

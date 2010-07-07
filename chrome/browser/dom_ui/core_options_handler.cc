@@ -44,17 +44,16 @@ void CoreOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
           l10n_util::GetString(IDS_PRODUCT_NAME)));
 
+  localized_strings->SetString(L"browserPage",
+      l10n_util::GetString(IDS_OPTIONS_GENERAL_TAB_LABEL));
+  localized_strings->SetString(L"personalPage",
+      l10n_util::GetString(IDS_OPTIONS_CONTENT_TAB_LABEL));
+  localized_strings->SetString(L"advancedPage",
+      l10n_util::GetString(IDS_OPTIONS_ADVANCED_TAB_LABEL));
 #if defined(OS_CHROMEOS)
   localized_strings->SetString(L"internetPage",
       l10n_util::GetString(IDS_OPTIONS_INTERNET_TAB_LABEL));
 #endif
-
-  localized_strings->SetString(L"basicsPage",
-      l10n_util::GetString(IDS_OPTIONS_GENERAL_TAB_LABEL));
-  localized_strings->SetString(L"personalStuffPage",
-      l10n_util::GetString(IDS_OPTIONS_CONTENT_TAB_LABEL));
-  localized_strings->SetString(L"underHoodPage",
-      l10n_util::GetString(IDS_OPTIONS_ADVANCED_TAB_LABEL));
 }
 
 void CoreOptionsHandler::Observe(NotificationType type,
