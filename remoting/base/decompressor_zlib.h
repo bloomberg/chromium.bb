@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_COMPRESSOR_ZLIB_H_
-#define REMOTING_BASE_COMPRESSOR_ZLIB_H_
+#ifndef REMOTING_BASE_DECOMPRESSOR_ZLIB_H_
+#define REMOTING_BASE_DECOMPRESSOR_ZLIB_H_
 
 #include "base/scoped_ptr.h"
-#include "remoting/base/compressor.h"
+#include "remoting/base/decompressor.h"
 
 typedef struct z_stream_s z_stream;
 
 namespace remoting {
 
-// A lossless compressor using zlib.
-class CompressorZlib : public Compressor {
+// A lossless decompressor using zlib.
+class DecompressorZlib : public Decompressor {
  public:
-  CompressorZlib();
-  virtual ~CompressorZlib();
+  DecompressorZlib();
+  virtual ~DecompressorZlib();
 
-  // Compressor implementations.
+  // Decompressor implementations.
   virtual bool Process(const uint8* input_data, int input_size,
                        uint8* output_data, int output_size,
                        int* consumed, int* written);
@@ -29,4 +29,4 @@ class CompressorZlib : public Compressor {
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_COMPRESSOR_ZLIB_H_
+#endif  // REMOTING_BASE_DECOMPRESSOR_ZLIB_H_

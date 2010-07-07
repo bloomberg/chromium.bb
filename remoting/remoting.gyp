@@ -122,17 +122,20 @@
       # depend on chromotocol_proto_lib for headers.
       'hard_dependency': 1,
       'sources': [
+        'base/compressor.h',
+        'base/compressor_zlib.cc',
+        'base/compressor_zlib.h',
         'base/constants.cc',
         'base/constants.h',
-        'base/lossless_compressor.h',
+        'base/decompressor.h',
+        'base/decompressor_zlib.cc',
+        'base/decompressor_zlib.h',
         'base/multiple_array_input_stream.cc',
         'base/multiple_array_input_stream.h',
         'base/protocol_decoder.cc',
         'base/protocol_decoder.h',
         'base/protocol_util.cc',
         'base/protocol_util.h',
-        'base/compressor_zlib.cc',
-        'base/compressor_zlib.h',
       ],
     },  # end of target 'chromoting_base'
 
@@ -328,6 +331,7 @@
       ],
       'sources': [
         'base/compressor_zlib_unittest.cc',
+        'base/decompressor_zlib_unittest.cc',
         'base/mock_objects.h',
         'base/multiple_array_input_stream_unittest.cc',
         'base/protocol_decoder_unittest.cc',

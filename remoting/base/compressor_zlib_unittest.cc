@@ -21,24 +21,36 @@ static void Compress(remoting::Compressor* compressor,
 
   // Feed data into the compress until the end.
   // This loop will rewrite |output_data| continuously.
-  while (input_size) {
-    int consumed, written;
-    compressor->Write(input_data, input_size,
-                      output_data, output_size,
-                      &consumed, &written);
+  int consumed = 0;
+  int written = 0;
+  while (compressor->Process(input_data, input_size,
+                             output_data, output_size,
+                             &consumed, &written)) {
     input_data += consumed;
     input_size -= consumed;
   }
-
-  // And then flush the remaining data from the compressor.
-  int written;
-  while (compressor->Flush(output_data, output_size, &written)) {
-  }
 }
 
-TEST(CompressorZlibTest, SimpleCompress) {
+TEST(CompressorZlibTest, Compress) {
   static const int kRawDataSize = 1024 * 128;
   static const int kCompressedDataSize = 256;
+  uint8 raw_data[kRawDataSize];
+  uint8 compressed_data[kCompressedDataSize];
+
+  // Generate the test data.g
+  GenerateTestData(raw_data, kRawDataSize, 99);
+
+  // Then use the compressor to compress.
+  remoting::CompressorZlib compressor;
+  Compress(&compressor, raw_data, kRawDataSize,
+           compressed_data, kCompressedDataSize);
+}
+
+// Checks that zlib can work with a small output buffer by reading
+// less from the input.
+TEST(CompressorZlibTest, SmallOutputBuffer) {
+  static const int kRawDataSize = 1024 * 128;
+  static const int kCompressedDataSize = 1;
   uint8 raw_data[kRawDataSize];
   uint8 compressed_data[kCompressedDataSize];
 

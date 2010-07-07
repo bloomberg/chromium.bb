@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/base/compressor_zlib.h"
+#include "remoting/base/decompressor_zlib.h"
 
 #if defined(USE_SYSTEM_ZLIB)
 #include <zlib.h>
@@ -10,9 +10,9 @@
 // should work on Windows. In order to make this code cross platform, we map
 // back to the normal functions here in the case that we are using the system
 // zlib.
-#define MOZ_Z_deflate deflate
-#define MOZ_Z_deflateEnd deflateEnd
-#define MOZ_Z_deflateInit_ deflateInit_
+#define MOZ_Z_inflate inflate
+#define MOZ_Z_inflateEnd inflateEnd
+#define MOZ_Z_inflateInit_ inflateInit_
 #else
 #include "third_party/zlib/zlib.h"
 #endif
@@ -20,7 +20,7 @@
 
 namespace remoting {
 
-CompressorZlib::CompressorZlib() {
+DecompressorZlib::DecompressorZlib() {
   stream_.reset(new z_stream());
 
   stream_->next_in = Z_NULL;
@@ -28,16 +28,16 @@ CompressorZlib::CompressorZlib() {
   stream_->zfree = Z_NULL;
   stream_->opaque = Z_NULL;
 
-  deflateInit(stream_.get(), Z_BEST_SPEED);
+  inflateInit(stream_.get());
 }
 
-CompressorZlib::~CompressorZlib() {
-  deflateEnd(stream_.get());
+DecompressorZlib::~DecompressorZlib() {
+  inflateEnd(stream_.get());
 }
 
-bool CompressorZlib::Process(const uint8* input_data, int input_size,
-                             uint8* output_data, int output_size,
-                             int* consumed, int* written) {
+bool DecompressorZlib::Process(const uint8* input_data, int input_size,
+                               uint8* output_data, int output_size,
+                               int* consumed, int* written) {
   DCHECK_GT(output_size, 0);
 
   // Setup I/O parameters.
@@ -46,7 +46,7 @@ bool CompressorZlib::Process(const uint8* input_data, int input_size,
   stream_->avail_out = output_size;
   stream_->next_out = (Bytef*)output_data;
 
-  int ret = deflate(stream_.get(), input_size ? Z_NO_FLUSH : Z_FINISH);
+  int ret = inflate(stream_.get(), Z_NO_FLUSH);
   if (ret == Z_STREAM_ERROR) {
     NOTREACHED() << "zlib compression failed";
   }
@@ -54,8 +54,9 @@ bool CompressorZlib::Process(const uint8* input_data, int input_size,
   *consumed = input_size - stream_->avail_in;
   *written = output_size - stream_->avail_out;
 
-  // Return true when we get Z_BUF_ERROR, this way we can feed more data
-  // to zlib.
+  // Since we check that output is always greater than 0, the only
+  // reason for us to get Z_BUF_ERROR is when zlib requires more input
+  // data.
   return ret == Z_OK || ret == Z_BUF_ERROR;
 }
 
