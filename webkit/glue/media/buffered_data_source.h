@@ -25,6 +25,7 @@
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 
 namespace webkit_glue {
+
 /////////////////////////////////////////////////////////////////////////////
 // BufferedResourceLoader
 // This class works inside demuxer thread and render thread. It contains a
@@ -89,9 +90,6 @@ class BufferedResourceLoader :
   // is not available.
   virtual int64 GetBufferedLastBytePosition();
 
-  // Sets whether deferring data is allowed or disallowed.
-  virtual void SetAllowDefer(bool is_allowed);
-
   // Gets the content length in bytes of the instance after this loader has been
   // started. If this value is -1, then content length is unknown.
   virtual int64 content_length() { return content_length_; }
@@ -133,7 +131,6 @@ class BufferedResourceLoader :
   virtual ~BufferedResourceLoader();
 
  private:
-  friend class BufferedResourceLoaderTest;
 
   // Defer the resource loading if the buffer is full.
   void EnableDeferIfNeeded();
@@ -209,9 +206,6 @@ class BufferedResourceLoader :
   int first_offset_;
   int last_offset_;
 
-  // True if resource loader is allowed to defer, false otherwise.
-  bool defer_allowed_;
-
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceLoader);
 };
 
@@ -237,7 +231,6 @@ class BufferedDataSource : public media::DataSource {
   virtual void Initialize(const std::string& url,
                           media::FilterCallback* callback);
   virtual void Stop(media::FilterCallback* callback);
-  virtual void SetPlaybackRate(float playback_rate);
 
   // media::DataSource implementation.
   // Called from demuxer thread.
@@ -294,11 +287,6 @@ class BufferedDataSource : public media::DataSource {
   // request has timed out, this task will destroy the current loader and
   // creates a new one to accommodate the read request.
   void WatchDogTask();
-
-  // This task uses the current playback rate with the previous playback rate
-  // to determine whether we are going from pause to play and play to pause,
-  // and signals the buffered resource loader accordingly.
-  void SetPlaybackRateTask(float playback_rate);
 
   // The method that performs actual read. This method can only be executed on
   // the render thread.
@@ -404,10 +392,6 @@ class BufferedDataSource : public media::DataSource {
   // loop. The RepeatingTimer does PostDelayedTask() internally, by using it
   // the message loop doesn't hold a reference for the watch dog task.
   base::RepeatingTimer<BufferedDataSource> watch_dog_timer_;
-
-  // This variable is true when we are in a paused state and false when we
-  // are in a playing state.
-  bool media_is_paused_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };
