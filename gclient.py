@@ -362,7 +362,8 @@ class Dependency(GClientKeywords):
           self.file_list[i] = self.file_list[i][len(prefix):]
 
           # Strip any leading path separators.
-          while file_list[i].startswith('\\') or file_list[i].startswith('/'):
+          while (self.file_list[i].startswith('\\') or
+                 self.file_list[i].startswith('/')):
             self.file_list[i] = self.file_list[i][1:]
 
         # Run hooks on the basis of whether the files from the gclient operation
