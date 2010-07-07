@@ -313,7 +313,10 @@ bool GetLocalizedString(
 
   HashType::const_iterator iter = english_to_resource_id->find(english_string);
   if (iter == english_to_resource_id->end()) {
-    LOG(ERROR) << "Resouce ID is not found for: " << english_string;
+    // TODO(yusukes): Write Autotest which checks if all display names and all
+    // property names for supported input methods are listed in the resource ID
+    // array (crosbug.com/4572).
+    LOG(ERROR) << "Resource ID is not found for: " << english_string;
     return false;
   }
 
