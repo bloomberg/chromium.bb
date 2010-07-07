@@ -18,16 +18,6 @@ class AudioHandler {
     return Singleton<AudioHandler>::get();
   }
 
-  // Get current volume level in terms of decibels (dB), silence will return
-  // -200 dB.  Returns default of -200.0 on error.  This function is designed
-  // to block until the volume is retrieved or fails.  Blocking call.
-  double GetVolumeDb() const;
-
-  // Blocking call.
-  // TODO(davej): Verify this becomes non-blocking after underlying calls are
-  // made non-blocking.
-  void SetVolumeDb(double volume_db);
-
   // Get volume level in our internal 0-100% range, 0 being pure silence.
   // Volume may go above 100% if another process changes PulseAudio's volume.
   // Returns default of 0 on error.  This function will block until the volume
@@ -37,37 +27,26 @@ class AudioHandler {
   // Set volume level from 0-100%.  Volumes above 100% are OK and boost volume,
   // although clipping will occur more at higher volumes.  Volume gets quieter
   // as the percentage gets lower, and then switches to silence at 0%.
-  // Blocking call.
-  // TODO(davej): Verify this becomes non-blocking after underlying calls are
-  // made non-blocking.
   void SetVolumePercent(double volume_percent);
 
   // Adust volume up (positive percentage) or down (negative percentage),
-  // capping at 100%.  Call GetVolumePercent() afterwards to get the new level.
-  // Blocking call.
-  // TODO(davej): Verify this becomes non-blocking after underlying calls are
-  // made non-blocking.
+  // capping at 100%.  GetVolumePercent() will be accurate after this
+  // blocking call.
   void AdjustVolumeByPercent(double adjust_by_percent);
 
-  // Just returns true if mute, false if not or an error occurred.  This call
-  // will block until the mute state is retrieved or fails.  Blocking call.
+  // Just returns true if mute, false if not or an error occurred.
+  // Blocking call.
   bool IsMute() const;
 
   // Mutes all audio.  Non-blocking call.
-  // TODO(davej): Verify this becomes non-blocking after underlying calls are
-  // made non-blocking.
   void SetMute(bool do_mute);
-
-  // Toggle mute.  Use this if you do not need to know the mute state, so it is
-  // possible to operate asynchronously.  Blocking call.
-  // TODO(davej): Verify this becomes non-blocking after underlying calls are
-  // made non-blocking.
-  void ToggleMute();
 
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
   // and constructor/destructor private as recommended for Singletons.
   friend struct DefaultSingletonTraits<AudioHandler>;
+
+  void OnMixerInitialized(bool success);
 
   AudioHandler();
   virtual ~AudioHandler();
@@ -78,7 +57,7 @@ class AudioHandler {
   static double PercentToVolumeDb(double volume_percent);
 
   scoped_ptr<PulseAudioMixer> mixer_;
-  bool connected_;
+  mutable bool connected_;  // Mutable for sanity checking only
 
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);
 };

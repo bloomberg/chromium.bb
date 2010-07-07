@@ -15,10 +15,12 @@ namespace {
 
 const double kSilenceDb = -200.0;
 const double kMinVolumeDb = -90.0;
+// Choosing 6.0dB here instead of 0dB to give user chance to amplify audio some
+// in case sounds or their setup is too quiet for them.
 const double kMaxVolumeDb = 6.0;
 // A value of less than one adjusts quieter volumes in larger steps (giving
 // finer resolution in the higher volumes).
-const double kVolumeBias = 0.7;
+const double kVolumeBias = 0.5;
 
 }  // namespace
 
@@ -28,23 +30,6 @@ const double kVolumeBias = 0.7;
 // TODO(davej): Serialize volume/mute for next startup?
 // TODO(davej): Should we try to regain a connection if for some reason all was
 // initialized fine, but later IsValid() returned false?  Maybe N retries?
-
-double AudioHandler::GetVolumeDb() const {
-  if (!SanityCheck())
-    return kSilenceDb;
-
-  double volume_db = mixer_->GetVolumeDb();
-  if (volume_db <= kSilenceDb)
-    return kSilenceDb;
-  return volume_db;
-}
-
-void AudioHandler::SetVolumeDb(double volume_db) {
-  if (!SanityCheck())
-    return;
-
-  mixer_->SetVolumeDb(volume_db);
-}
 
 double AudioHandler::GetVolumePercent() const {
   if (!SanityCheck())
@@ -69,16 +54,15 @@ void AudioHandler::SetVolumePercent(double volume_percent) {
   mixer_->SetVolumeDb(vol_db);
 }
 
-// Volume range is from kMinVolumeDb at just above 0% to kMaxVolumeDb at 100%
-// with a special case at 0% which maps to kSilenceDb.
 void AudioHandler::AdjustVolumeByPercent(double adjust_by_percent) {
   if (!SanityCheck())
     return;
 
   DLOG(INFO) << "Adjusting Volume by " << adjust_by_percent << " percent";
 
-  double vol = mixer_->GetVolumeDb();
-  double pct = VolumeDbToPercent(vol);
+  double volume = mixer_->GetVolumeDb();
+  double pct = VolumeDbToPercent(volume);
+
   if (pct < 0)
     pct = 0;
   pct = pct + adjust_by_percent;
@@ -86,13 +70,12 @@ void AudioHandler::AdjustVolumeByPercent(double adjust_by_percent) {
     pct = 100.0;
 
   double new_volume;
-
   if (pct <= 0.1)
     new_volume = kSilenceDb;
   else
     new_volume = PercentToVolumeDb(pct);
 
-  if (new_volume != vol)
+  if (new_volume != volume)
     mixer_->SetVolumeDb(new_volume);
 }
 
@@ -112,19 +95,15 @@ void AudioHandler::SetMute(bool do_mute) {
   mixer_->SetMute(do_mute);
 }
 
-void AudioHandler::ToggleMute() {
-  if (!SanityCheck())
-    return;
-
-  mixer_->ToggleMute();
+void AudioHandler::OnMixerInitialized(bool success) {
+  connected_ = success;
+  DLOG(INFO) << "OnMixerInitialized, success = " << success;
 }
 
 AudioHandler::AudioHandler()
     : connected_(false) {
   mixer_.reset(new PulseAudioMixer());
-  if (mixer_->Init()) {
-    connected_ = true;
-  } else {
+  if (!mixer_->Init(NewCallback(this, &AudioHandler::OnMixerInitialized))) {
     LOG(ERROR) << "Unable to connect to PulseAudio";
   }
 }
@@ -135,7 +114,13 @@ AudioHandler::~AudioHandler() {
 inline bool AudioHandler::SanityCheck() const {
   if (!mixer_->IsValid()) {
     if (connected_) {
+      // Something happened and the mixer is no longer valid after having been
+      // initialized earlier.
+      // TODO(davej): Try to reconnect now?
+      connected_ = false;
       LOG(ERROR) << "Lost connection to PulseAudio";
+    } else {
+      LOG(ERROR) << "Mixer not valid";
     }
     return false;
   }
@@ -144,6 +129,8 @@ inline bool AudioHandler::SanityCheck() const {
 
 // VolumeDbToPercent() and PercentToVolumeDb() conversion functions allow us
 // complete control over how the 0 to 100% range is mapped to actual loudness.
+// Volume range is from kMinVolumeDb at just above 0% to kMaxVolumeDb at 100%
+// with a special case at 0% which maps to kSilenceDb.
 //
 // The mapping is confined to these two functions to make it easy to adjust and
 // have everything else just work.  The range is biased to give finer resolution

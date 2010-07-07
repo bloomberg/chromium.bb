@@ -30,6 +30,14 @@ SystemKeyEventListener::~SystemKeyEventListener() {
   WmMessageListener::instance()->RemoveObserver(this);
 }
 
+// TODO(davej): Move the ShowVolumeBubble() calls in to AudioHandler so that
+// this function returns faster without blocking on GetVolumePercent(), and
+// still guarantees that the volume displayed will be that after the adjustment.
+
+// TODO(davej): The IsMute() check can also be made non-blocking by changing
+// to an AdjustVolumeByPercentOrUnmute() function which can do the steps off
+// of this thread when ShowVolumeBubble() is moved in to AudioHandler.
+
 void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
                                               GdkWindow* window) {
   if (message.type() != WM_IPC_MESSAGE_CHROME_NOTIFY_SYSKEY_PRESSED)
@@ -37,18 +45,25 @@ void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
 
   switch (message.param(0)) {
     case WM_IPC_SYSTEM_KEY_VOLUME_MUTE:
+      // Always muting (and not toggling) as per final decision on
+      // http://crosbug.com/3751
       audio_handler_->SetMute(true);
       VolumeBubble::instance()->ShowVolumeBubble(0);
       break;
     case WM_IPC_SYSTEM_KEY_VOLUME_DOWN:
-      audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
-      audio_handler_->SetMute(false);
-      VolumeBubble::instance()->ShowVolumeBubble(
-          audio_handler_->GetVolumePercent());
+      if (audio_handler_->IsMute()) {
+        VolumeBubble::instance()->ShowVolumeBubble(0);
+      } else {
+        audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
+        VolumeBubble::instance()->ShowVolumeBubble(
+            audio_handler_->GetVolumePercent());
+      }
       break;
     case WM_IPC_SYSTEM_KEY_VOLUME_UP:
-      audio_handler_->AdjustVolumeByPercent(kStepPercentage);
-      audio_handler_->SetMute(false);
+      if (audio_handler_->IsMute())
+        audio_handler_->SetMute(false);
+      else
+        audio_handler_->AdjustVolumeByPercent(kStepPercentage);
       VolumeBubble::instance()->ShowVolumeBubble(
           audio_handler_->GetVolumePercent());
       break;
