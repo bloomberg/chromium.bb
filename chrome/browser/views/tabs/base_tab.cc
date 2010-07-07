@@ -16,6 +16,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/tabs/tab_controller.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
@@ -149,6 +150,8 @@ BaseTab::BaseTab(TabController* controller)
       fav_icon_hiding_offset_(0),
       should_display_crashed_favicon_(false) {
   BaseTab::InitResources();
+
+  SetID(VIEW_ID_TAB);
 
   // Add the Close Button.
   TabCloseButton* close_button = new TabCloseButton(this);
@@ -284,8 +287,19 @@ void BaseTab::OnMouseReleased(const views::MouseEvent& event, bool canceled) {
   // Close tab on middle click, but only if the button is released over the tab
   // (normal windows behavior is to discard presses of a UI element where the
   // releases happen off the element).
-  if (event.IsMiddleMouseButton() && HitTest(event.location()))
-    controller()->CloseTab(this);
+  if (event.IsMiddleMouseButton()) {
+    if (HitTest(event.location())) {
+      controller()->CloseTab(this);
+    } else if (closing_) {
+      // We're animating closed and a middle mouse button was pushed on us but
+      // we don't contain the mouse anymore. We assume the user is clicking
+      // quicker than the animation and we should close the tab that falls under
+      // the mouse.
+      BaseTab* closest_tab = controller()->GetTabAt(this, event.location());
+      if (closest_tab)
+        controller()->CloseTab(closest_tab);
+    }
+  }
 }
 
 bool BaseTab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {

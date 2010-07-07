@@ -41,7 +41,8 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
     if (i == VIEW_ID_CONTENTS_SPLIT ||
         i == VIEW_ID_INFO_BAR_CONTAINER ||
         i == VIEW_ID_DOWNLOAD_SHELF ||
-        i == VIEW_ID_BOOKMARK_BAR_ELEMENT) {
+        i == VIEW_ID_BOOKMARK_BAR_ELEMENT ||
+        i == VIEW_ID_TAB) {
       continue;
     }
 

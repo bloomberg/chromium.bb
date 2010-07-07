@@ -43,6 +43,11 @@ class TabController {
   // destroyed.
   virtual bool EndDrag(bool canceled) = 0;
 
+  // Returns the tab that contains the specified coordinates, in terms of |tab|,
+  // or NULL if there is no tab that contains the specified point.
+  virtual BaseTab* GetTabAt(BaseTab* tab,
+                            const gfx::Point& tab_in_tab_coordinates) = 0;
+
  protected:
   virtual ~TabController() {}
 };

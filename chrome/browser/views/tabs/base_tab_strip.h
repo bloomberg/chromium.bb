@@ -149,6 +149,8 @@ class BaseTabStrip : public views::View,
                               const views::MouseEvent& event);
   virtual void ContinueDrag(const views::MouseEvent& event);
   virtual bool EndDrag(bool canceled);
+  virtual BaseTab* GetTabAt(BaseTab* tab,
+                            const gfx::Point& tab_in_tab_coordinates);
 
   // View overrides:
   virtual void Layout();

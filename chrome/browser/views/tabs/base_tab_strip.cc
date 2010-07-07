@@ -5,6 +5,7 @@
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 
 #include "base/logging.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/tabs/dragged_tab_controller.h"
 #include "chrome/browser/views/tabs/tab_strip_controller.h"
 #include "views/widget/root_view.h"
@@ -306,6 +307,22 @@ bool BaseTabStrip::EndDrag(bool canceled) {
   bool started_drag = drag_controller_->started_drag();
   drag_controller_->EndDrag(canceled);
   return started_drag;
+}
+
+BaseTab* BaseTabStrip::GetTabAt(BaseTab* tab,
+                                const gfx::Point& tab_in_tab_coordinates) {
+  gfx::Point local_point = tab_in_tab_coordinates;
+  ConvertPointToView(tab, this, &local_point);
+  views::View* view = GetViewForPoint(local_point);
+  if (!view)
+    return NULL;  // No tab contains the point.
+
+  // Walk up the view hierarchy until we find a tab, or the TabStrip.
+  while (view && view != this && view->GetID() != VIEW_ID_TAB)
+    view = view->GetParent();
+
+  return view && view->GetID() == VIEW_ID_TAB ?
+      static_cast<BaseTab*>(view) : NULL;
 }
 
 void BaseTabStrip::Layout() {

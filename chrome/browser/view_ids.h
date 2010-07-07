@@ -27,6 +27,9 @@ enum ViewID {
   VIEW_ID_TAB_9,
   VIEW_ID_TAB_LAST,
 
+  // ID for any tab. Currently only used on views.
+  VIEW_ID_TAB,
+
   VIEW_ID_EXTENSION_APP_ICON,
   VIEW_ID_EXTENSION_APP_TITLE,
   VIEW_ID_TAB_STRIP,
