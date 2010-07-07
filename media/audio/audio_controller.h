@@ -183,6 +183,9 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
   EventHandler* handler_;
   AudioOutputStream* stream_;
 
+  // The current volume of the audio stream.
+  double volume_;
+
   // |state_| is written on the audio controller thread and is read on the
   // hardware audio thread. These operations need to be locked. But lock
   // is not required for reading on the audio controller thread.

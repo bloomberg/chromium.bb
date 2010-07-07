@@ -34,7 +34,8 @@ namespace media {
 AudioController::AudioController(EventHandler* handler, uint32 capacity,
                                  SyncReader* sync_reader)
     : handler_(handler),
-      state_(kCreated),
+      volume_(0),
+      state_(kEmpty),
       hardware_pending_bytes_(0),
       buffer_capacity_(capacity),
       sync_reader_(sync_reader),
@@ -42,7 +43,7 @@ AudioController::AudioController(EventHandler* handler, uint32 capacity,
 }
 
 AudioController::~AudioController() {
-  DCHECK(kClosed == state_ || kCreated == state_);
+  DCHECK(kClosed == state_);
 }
 
 // static
@@ -157,6 +158,9 @@ void AudioController::EnqueueData(const uint8* data, uint32 size) {
 void AudioController::DoCreate(AudioManager::Format format, int channels,
                               int sample_rate, int bits_per_sample,
                               uint32 hardware_buffer_size) {
+  DCHECK_EQ(thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(kEmpty, state_);
+
   // Create the stream in the first place.
   stream_ = AudioManager::GetAudioManager()->MakeAudioStream(
       format, channels, sample_rate, bits_per_sample);
@@ -175,6 +179,13 @@ void AudioController::DoCreate(AudioManager::Format format, int channels,
     handler_->OnError(this, 0);
     return;
   }
+  // We have successfully opened the stream. Set the initial volume.
+  stream_->SetVolume(volume_);
+
+  // Finally set the state to kCreated.
+  state_ = kCreated;
+
+  // And then report we have been created.
   handler_->OnCreated(this);
 
   // If in normal latency mode then start buffering.
@@ -252,13 +263,6 @@ void AudioController::DoClose() {
     stream_ = NULL;
   }
 
-  // If we are in low latency mode then also close the SyncReader.
-  // TODO(hclam): The shutdown procedure for low latency mode if not complete,
-  // especially when OnModeData() is blocked on SyncReader for read and the
-  // above Stop() would deadlock.
-  if (sync_reader_)
-    sync_reader_->Close();
-
   // Update the current state. Since the stream is closed at this point
   // there's no other threads reading |state_| so we don't need to lock.
   state_ = kClosed;
@@ -267,10 +271,14 @@ void AudioController::DoClose() {
 void AudioController::DoSetVolume(double volume) {
   DCHECK_EQ(thread_.message_loop(), MessageLoop::current());
 
-  if (state_ == kError || state_ == kEmpty)
+  // Saves the volume to a member first. We may not be able to set the volume
+  // right away but when the stream is created we'll set the volume.
+  volume_ = volume;
+
+  if (state_ != kPlaying && state_ != kPaused && state_ != kCreated)
     return;
 
-  stream_->SetVolume(volume);
+  stream_->SetVolume(volume_);
 }
 
 void AudioController::DoReportError(int code) {
@@ -311,7 +319,9 @@ uint32 AudioController::OnMoreData(AudioOutputStream* stream,
 
 void AudioController::OnClose(AudioOutputStream* stream) {
   // Push source doesn't need to know the stream so just pass in NULL.
-  if (!sync_reader_) {
+  if (LowLatencyMode()) {
+    sync_reader_->Close();
+  } else {
     AutoLock auto_lock(lock_);
     push_source_.OnClose(NULL);
   }

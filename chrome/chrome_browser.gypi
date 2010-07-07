@@ -1956,6 +1956,8 @@
         'browser/renderer_host/async_resource_handler.h',
         'browser/renderer_host/audio_renderer_host.cc',
         'browser/renderer_host/audio_renderer_host.h',
+        'browser/renderer_host/audio_sync_reader.cc',
+        'browser/renderer_host/audio_sync_reader.h',
         'browser/renderer_host/backing_store.cc',
         'browser/renderer_host/backing_store.h',
         'browser/renderer_host/backing_store_manager.cc',
