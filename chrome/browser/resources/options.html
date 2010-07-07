@@ -22,29 +22,6 @@
 <script>
 
 ///////////////////////////////////////////////////////////////////////////////
-// DummyOptions Functions:
-// TODO(zelidrag): Remove DummyOptions once we put the second page in.
-
-function DummyOptions(model) {
-  OptionsPage.call(this, 'dummy', 'Dummy Options Page', 'dummyPage');
-}
-
-DummyOptions.instance = null;
-
-DummyOptions.getInstance = function() {
-  if (DummyOptions.instance)
-    return DummyOptions.instance;
-  // TODO(zelidrag): hook model in.
-  DummyOptions.instance = new DummyOptions(null);
-  return DummyOptions.instance;
-}
-
-// Inherit SystemOptions from OptionsPage.
-DummyOptions.prototype = {
-  __proto__: OptionsPage.prototype,
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
 /**
  * Window onload handler, sets up the page.
@@ -52,7 +29,10 @@ DummyOptions.prototype = {
 function load() {
   localStrings = new LocalStrings();
   OptionsPage.register(SystemOptions.getInstance());
-  OptionsPage.register(DummyOptions.getInstance());
+  var labsOptions = new OptionsPage('labs',
+                                    templateData.labsPage,
+                                    'labsPage');
+  OptionsPage.register(labsOptions);
 
   Preferences.getInstance().initialize();
   OptionsPage.showPageByName(SystemOptions.getInstance().name);
@@ -122,7 +102,7 @@ window.onpopstate = function(e) {
 }
 
 .hidden {
-  visibility: hidden;
+  display: none;
 }
 
 .touch-slider {
@@ -147,10 +127,7 @@ window.onpopstate = function(e) {
      <if expr="pp_ifdef('chromeos')">
         <include src="options/chromeos_system_options.html">
      </if>     
-     <div class="page hidden" id="dummyPage">
-        <!-- TODO(zelidrag): remove this one once we get another page here -->
-        Dummy page
-     </div>
+     <!-- include file="options/chromeos_labs.html" -->
   </div>
 </div>
 <script>

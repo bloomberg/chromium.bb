@@ -69,6 +69,8 @@ void SystemOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // System page - ChromeOS
+  localized_strings->SetString(L"systemPage",
+      l10n_util::GetString(IDS_OPTIONS_SYSTEM_TAB_LABEL));
   localized_strings->SetString(L"datetime_title",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME));
   localized_strings->SetString(L"timezone",

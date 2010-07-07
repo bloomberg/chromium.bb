@@ -45,8 +45,6 @@ void CoreOptionsHandler::GetLocalizedValues(
           l10n_util::GetString(IDS_PRODUCT_NAME)));
 
 #if defined(OS_CHROMEOS)
-  localized_strings->SetString(L"systemPage",
-      l10n_util::GetString(IDS_OPTIONS_SYSTEM_TAB_LABEL));
   localized_strings->SetString(L"internetPage",
       l10n_util::GetString(IDS_OPTIONS_INTERNET_TAB_LABEL));
 #endif

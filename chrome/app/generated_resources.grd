@@ -5444,6 +5444,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_OPTIONS_INTERNET_TAB_LABEL" desc="The title of the Internet tab">
           Internet
         </message>
+        <message name="IDS_OPTIONS_LABS_TAB_LABEL" desc="The title of the LABS tab">
+          Labs
+        </message>
+
       </if>
       <message name="IDS_OPTIONS_GENERAL_TAB_LABEL" desc="The title of the Basics tab">
         Basics
@@ -7697,6 +7701,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_IP_CONFIG">
         Advanced Options
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_MEDIAPLAYER">
+        Mediaplayer
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADVANCEDFS">
+        Advanced Filesystem
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
         Timezone:
       </message>
@@ -7711,6 +7721,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad speed factor.">
         Speed Sensitivity:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_MEDIAPLAYER_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to turn on the mediaplayer">
+        Turn on the Mediaplayer
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_ADVANCEDFS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for the filesystem.">
+        Advanced Filesystem including USB/SD card support.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for accessbility.">
         Enable Accessibility

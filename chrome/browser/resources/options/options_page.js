@@ -73,7 +73,7 @@ OptionsPage.prototype = {
   get visible() {
     var page = $(this.pageDivName);
     return page.ownerDocument.defaultView.getComputedStyle(
-        page).visibility == 'visible';
+        page).display == 'block';
   },
 
   /**
@@ -87,13 +87,11 @@ OptionsPage.prototype = {
       window.history.pushState({pageName: this.name},
                                this.title,
                                '/' + this.name);
-      this.pageDiv.style.visibility = 'visible';
+      this.pageDiv.style.display = 'block';
       this.tab.classList.add('navbar-item-selected');
     } else {
-      this.pageDiv.style.visibility = 'hidden';
+      this.pageDiv.style.display = 'none';
       this.tab.classList.remove('navbar-item-selected');
     }
   }
 };
-
-
