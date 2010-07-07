@@ -678,6 +678,7 @@ drm_compositor_create(struct wl_display *display)
 				     WL_EVENT_READABLE, on_drm_input, ec);
 	setup_tty(ec, loop);
 	ec->base.present = drm_compositor_present;
+	ec->base.focus = 1;
 
 	return &ec->base;
 }

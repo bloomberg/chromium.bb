@@ -375,8 +375,9 @@ wlsc_output_repaint(struct wlsc_output *output)
 	wl_list_for_each(es, &ec->surface_list, link)
 		wlsc_surface_draw(es, output);
 
-	wl_list_for_each(eid, &ec->input_device_list, link)
-		wlsc_surface_draw(eid->sprite, output);
+	if (ec->focus)
+		wl_list_for_each(eid, &ec->input_device_list, link)
+			wlsc_surface_draw(eid->sprite, output);
 }
 
 static void
@@ -398,7 +399,7 @@ repaint(void *data)
 	ec->repaint_needed = 0;
 }
 
-static void
+void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 {
 	compositor->repaint_needed = 1;

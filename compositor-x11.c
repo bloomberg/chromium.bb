@@ -346,7 +346,9 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 		XCB_EVENT_MASK_BUTTON_RELEASE |
 		XCB_EVENT_MASK_POINTER_MOTION |
 		XCB_EVENT_MASK_EXPOSURE |
-		XCB_EVENT_MASK_STRUCTURE_NOTIFY,
+		XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+		XCB_EVENT_MASK_ENTER_WINDOW |
+		XCB_EVENT_MASK_LEAVE_WINDOW,
 		0
 	};
 
@@ -559,6 +561,17 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			r->width = expose->width;
 			r->height = expose->height;
 			break;
+
+		case XCB_ENTER_NOTIFY:
+			c->base.focus = 1;
+			wlsc_compositor_schedule_repaint(&c->base);
+			break;
+
+		case XCB_LEAVE_NOTIFY:
+			c->base.focus = 0;
+			wlsc_compositor_schedule_repaint(&c->base);
+			break;
+
 		case XCB_CLIENT_MESSAGE:
 			client_message = (xcb_client_message_event_t *) event;
 			atom = client_message->data.data32[0];

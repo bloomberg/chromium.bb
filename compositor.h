@@ -99,6 +99,7 @@ struct wlsc_compositor {
 	uint32_t current_frame;
 
 	uint32_t modifier_state;
+	uint32_t focus;
 
 	void (*present)(struct wlsc_compositor *c);
 };
@@ -131,8 +132,8 @@ notify_key(struct wlsc_input_device *device, uint32_t key, uint32_t state);
 
 void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
-struct wlsc_input_device *
-wlsc_input_device_create(struct wlsc_compositor *ec);
+void
+wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
 
 int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
