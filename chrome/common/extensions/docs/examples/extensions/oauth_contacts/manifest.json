@@ -1,6 +1,6 @@
 {
   "name": "Sample - OAuth Contacts",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "icons": { "48": "img/icon-48.png",
             "128": "img/icon-128.png" },
   "description": "Uses OAuth to connect to Google's contacts service and display a list of your contacts.",
