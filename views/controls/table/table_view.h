@@ -443,6 +443,9 @@ class TableView : public NativeControl,
   // Whether or not the user can resize columns.
   bool resizable_columns_;
 
+  // Whether the column sizes have been determined.
+  bool column_sizes_valid_;
+
   // NOTE: While this has the name View in it, it's not a view. Rather it's
   // a wrapper around the List-View window.
   HWND list_view_;

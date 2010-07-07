@@ -132,7 +132,7 @@ void TableView::DidChangeBounds(const gfx::Rect& previous,
     return;
   SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(FALSE), 0);
   Layout();
-  if (autosize_columns_ && width() > 0)
+  if ((autosize_columns_ || !column_sizes_valid_) && width() > 0)
     ResetColumnSizes();
   UpdateContentOffset();
   SendMessage(list_view_, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
@@ -864,6 +864,7 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
   ::ImmAssociateContextEx(list_view_, NULL, 0);
 
   UpdateContentOffset();
+  column_sizes_valid_ = false;
 
   return list_view_;
 }
@@ -1314,6 +1315,8 @@ void TableView::ResetColumnSizes() {
       // Prefer the bounds of the window over our bounds, which may be
       // different.
       width = window_width;
+      // Only set the flag when we know the true width of the table.
+      column_sizes_valid_ = true;
     }
   }
 
@@ -1553,7 +1556,7 @@ void TableView::VisibilityChanged(View* starting_from, bool is_visible) {
   // available to the columns only works when the native control is visible, so
   // update the column sizes in case we become visible. This depends on
   // VisibilityChanged() being called in post order on the view tree.
-  if (is_visible && autosize_columns_)
+  if (is_visible && (autosize_columns_ || !column_sizes_valid_) && width() > 0)
     ResetColumnSizes();
 }
 
