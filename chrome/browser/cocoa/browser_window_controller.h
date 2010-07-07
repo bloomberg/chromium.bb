@@ -122,6 +122,9 @@ class TabStripModelObserverBridge;
   // Bar visibility locks and releases only result (when appropriate) in changes
   // in visible state when the following is |YES|.
   BOOL barVisibilityUpdatesEnabled_;
+
+  // Whether the toolbar is collapsed. Currently used only by extension apps.
+  BOOL toolbarCollapsed_;
 }
 
 // A convenience class method which gets the |BrowserWindowController| for a
@@ -251,6 +254,10 @@ class TabStripModelObserverBridge;
 // disabling vertical tabs for this browser. Re-flows the contents of the
 // browser.
 - (void)toggleTabStripDisplayMode;
+
+// Called when the toolbar is to be hidden or shown. Right now this only occurs
+// when extension apps don't want the toolbar to be shown.
+- (void)setToolbarCollapsedMode:(BOOL)collapsed;
 
 // Called when the Add Search Engine dialog is closed.
 - (void)sheetDidEnd:(NSWindow*)sheet

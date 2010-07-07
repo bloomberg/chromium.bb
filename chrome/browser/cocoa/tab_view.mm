@@ -610,10 +610,13 @@ const CGFloat kRapidCloseDist = 2.5;
   BOOL selected = [self state];
 
   // Outset by 0.5 in order to draw on pixels rather than on borders (which
-  // would cause blurry pixels). Subtract 1px of height to compensate,
-  // otherwise clipping will occur.
+  // would cause blurry pixels). For non-app tabs, subtract 1px of height to
+  // compensate, otherwise clipping will occur.
   rect = NSInsetRect(rect, -0.5, -0.5);
-  rect.size.height -= 1;
+  if ([controller_ app])
+    rect.size.height = 12.0;
+  else
+    rect.size.height -= 1.0;
 
   NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2);
   NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect) + 2);

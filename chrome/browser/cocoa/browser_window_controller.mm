@@ -1633,6 +1633,18 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
 }
 
+- (void)setToolbarCollapsedMode:(BOOL)collapsed {
+  if (toolbarCollapsed_ == collapsed)
+    return;
+
+  static_cast<LocationBarViewMac*>([self locationBarBridge])->
+      SetEditable(!collapsed);
+
+  // TODO(andybons): Actually hide toolbar if collapsed.
+
+  toolbarCollapsed_ = collapsed;
+}
+
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)code
             context:(void*)context {

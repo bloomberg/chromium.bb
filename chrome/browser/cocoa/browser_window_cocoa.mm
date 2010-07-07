@@ -23,12 +23,14 @@
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
+#import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/cocoa/nsmenuitem_additions.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
 #include "chrome/browser/cocoa/repost_form_warning_mac.h"
 #include "chrome/browser/cocoa/status_bubble_mac.h"
 #include "chrome/browser/cocoa/task_manager_mac.h"
 #import "chrome/browser/cocoa/theme_install_bubble_view.h"
+#import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/pref_service.h"
@@ -546,6 +548,10 @@ void BrowserWindowCocoa::Paste() {
 
 void BrowserWindowCocoa::ToggleTabStripMode() {
   [controller_ toggleTabStripDisplayMode];
+}
+
+void BrowserWindowCocoa::SetToolbarCollapsedMode(bool collapsed) {
+  [controller_ setToolbarCollapsedMode:collapsed];
 }
 
 void BrowserWindowCocoa::Observe(NotificationType type,

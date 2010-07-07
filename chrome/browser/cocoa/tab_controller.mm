@@ -10,16 +10,22 @@
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 
 @implementation TabController
 
+@synthesize action = action_;
+@synthesize app = app_;
 @synthesize loadingState = loadingState_;
 @synthesize mini = mini_;
-@synthesize pinned = pinned_;
 @synthesize phantom = phantom_;
+@synthesize pinned = pinned_;
 @synthesize target = target_;
-@synthesize action = action_;
+
+namespace {
+const CGFloat kAppIconTopOffsetPx = 2.0;
+}  // anonymous namespace
 
 namespace TabControllerInternal {
 
@@ -59,9 +65,10 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 // padding, of which we have no comparable constants (we draw using paths, not
 // images). The selected tab width includes the close button width.
 + (CGFloat)minTabWidth { return 31; }
-+ (CGFloat)minSelectedTabWidth { return 47; }
++ (CGFloat)minSelectedTabWidth { return 46; }
 + (CGFloat)maxTabWidth { return 220; }
 + (CGFloat)miniTabWidth { return 53; }
++ (CGFloat)appTabWidth { return 46; }
 
 - (TabView*)tabView {
   return static_cast<TabView*>([self view]);
@@ -163,8 +170,18 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 - (void)setIconView:(NSView*)iconView {
   [iconView_ removeFromSuperview];
   iconView_ = iconView;
-  [iconView_ setFrame:originalIconFrame_];
-
+  if ([self app]) {
+    NSRect appIconFrame = [iconView frame];
+    appIconFrame.origin = originalIconFrame_.origin;
+    // Adjust the position to prevent clipping due to the icon's larger size.
+    appIconFrame.origin.y -= kAppIconTopOffsetPx;
+    // Center the icon.
+    appIconFrame.origin.x = ([TabController appTabWidth] -
+        NSWidth(appIconFrame)) / 2.0;
+    [iconView setFrame:appIconFrame];
+  } else {
+    [iconView_ setFrame:originalIconFrame_];
+  }
   // Ensure that the icon is suppressed if no icon is set or if the tab is too
   // narrow to display one.
   [self updateVisibility];

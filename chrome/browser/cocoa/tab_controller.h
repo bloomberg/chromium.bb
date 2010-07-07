@@ -43,10 +43,12 @@ class MenuDelegate;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
-  BOOL selected_;
+
+  BOOL app_;
   BOOL mini_;
   BOOL pinned_;
   BOOL phantom_;
+  BOOL selected_;
   TabLoadingState loadingState_;
   CGFloat iconTitleXOffset_;  // between left edges of icon and title
   CGFloat titleCloseWidthOffset_;  // between right edges of icon and close btn.
@@ -59,12 +61,13 @@ class MenuDelegate;
 
 @property(assign, nonatomic) TabLoadingState loadingState;
 
-@property(assign, nonatomic) BOOL selected;
-@property(assign, nonatomic) BOOL mini;
-@property(assign, nonatomic) BOOL pinned;
-@property(assign, nonatomic) BOOL phantom;
-@property(assign, nonatomic) id target;
 @property(assign, nonatomic) SEL action;
+@property(assign, nonatomic) BOOL app;
+@property(assign, nonatomic) BOOL mini;
+@property(assign, nonatomic) BOOL phantom;
+@property(assign, nonatomic) BOOL pinned;
+@property(assign, nonatomic) BOOL selected;
+@property(assign, nonatomic) id target;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
 // the icon or the close button. The selected tab always has at least a close
@@ -73,6 +76,7 @@ class MenuDelegate;
 + (CGFloat)maxTabWidth;
 + (CGFloat)minSelectedTabWidth;
 + (CGFloat)miniTabWidth;
++ (CGFloat)appTabWidth;
 
 // The view associated with this controller, pre-casted as a TabView
 - (TabView*)tabView;

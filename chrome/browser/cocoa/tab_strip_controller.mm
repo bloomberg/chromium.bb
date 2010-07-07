@@ -35,6 +35,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -56,6 +57,9 @@ const CGFloat kUseFullAvailableWidth = -1.0;
 
 // The amount by which tabs overlap.
 const CGFloat kTabOverlap = 20.0;
+
+// The amount by which app tabs overlap with themselves and normal tabs.
+const CGFloat kAppTabOverlap = 5.0;
 
 // The amount by which the new tab button is offset (from the tabs).
 const CGFloat kNewTabButtonOffset = 8.0;
@@ -687,6 +691,7 @@ private:
   const CGFloat kMinTabWidth = [TabController minTabWidth];
   const CGFloat kMinSelectedTabWidth = [TabController minSelectedTabWidth];
   const CGFloat kMiniTabWidth = [TabController miniTabWidth];
+  const CGFloat kAppTabWidth = [TabController appTabWidth];
 
   NSRect enclosingRect = NSZeroRect;
   ScopedNSAnimationContextGroup mainAnimationGroup(animate);
@@ -813,7 +818,8 @@ private:
 
     // Set the width. Selected tabs are slightly wider when things get really
     // small and thus we enforce a different minimum width.
-    tabFrame.size.width = [tab mini] ? kMiniTabWidth : nonMiniTabWidth;
+    tabFrame.size.width = [tab mini] ?
+        ([tab app] ? kAppTabWidth : kMiniTabWidth) : nonMiniTabWidth;
     if ([tab selected])
       tabFrame.size.width = MAX(tabFrame.size.width, kMinSelectedTabWidth);
 
@@ -949,6 +955,7 @@ private:
   TabController* newController = [self newTab];
   [newController setMini:tabStripModel_->IsMiniTab(modelIndex)];
   [newController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
+  [newController setApp:tabStripModel_->IsAppTab(modelIndex)];
   [tabArray_ insertObject:newController atIndex:index];
   NSView* newView = [newController view];
 
@@ -1145,28 +1152,23 @@ private:
                     object:self];
 }
 
-// A helper routine for creating an NSImageView to hold the fav icon for
-// |contents|.
-- (NSImageView*)favIconImageViewForContents:(TabContents*)contents {
-  NSRect iconFrame = NSMakeRect(0, 0, 16, 16);
-  NSImageView* view = [[[NSImageView alloc] initWithFrame:iconFrame]
-                          autorelease];
+// A helper routine for creating an NSImageView to hold the fav icon or app icon
+// for |contents|.
+- (NSImageView*)iconImageViewForContents:(TabContents*)contents {
+  BOOL isApp = contents->is_app();
 
-  NSImage* image = nil;
-
-  NavigationEntry* navEntry = contents->controller().GetLastCommittedEntry();
-  if (navEntry != NULL) {
-    NavigationEntry::FaviconStatus favIcon = navEntry->favicon();
-    const SkBitmap& bitmap = favIcon.bitmap();
-    if (favIcon.is_valid() && !bitmap.isNull())
-      image = gfx::SkBitmapToNSImage(bitmap);
-  }
+  NSImage* image = gfx::SkBitmapToNSImage(
+      isApp ? *(contents->GetExtensionAppIcon()) : contents->GetFavIcon());
 
   // Either we don't have a valid favicon or there was some issue converting it
   // from an SkBitmap. Either way, just show the default.
   if (!image)
     image = defaultFavIcon_.get();
 
+  CGFloat iconWidthAndHeight = isApp ? Extension::EXTENSION_ICON_SMALLISH : 16;
+  NSRect iconFrame = NSMakeRect(0, 0, iconWidthAndHeight, iconWidthAndHeight);
+  NSImageView* view = [[[NSImageView alloc] initWithFrame:iconFrame]
+                          autorelease];
   [view setImage:image];
   return view;
 }
@@ -1229,9 +1231,9 @@ private:
     NSView* iconView = nil;
     if (newHasIcon) {
       if (newState == kTabDone) {
-        iconView = [self favIconImageViewForContents:contents];
+        iconView = [self iconImageViewForContents:contents];
       } else if (newState == kTabCrashed) {
-        NSImage* oldImage = [[self favIconImageViewForContents:contents] image];
+        NSImage* oldImage = [[self iconImageViewForContents:contents] image];
         NSRect frame = NSMakeRect(0, 0, 16, 16);
         iconView = [ThrobberView toastThrobberViewWithFrame:frame
                                                 beforeImage:oldImage
@@ -1315,6 +1317,7 @@ private:
   DCHECK([tabController isKindOfClass:[TabController class]]);
   [tabController setMini:tabStripModel_->IsMiniTab(modelIndex)];
   [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
+  [tabController setApp:tabStripModel_->IsAppTab(modelIndex)];
   [self updateFavIconForContents:contents atIndex:modelIndex];
   // If the tab is being restored and it's pinned, the mini state is set after
   // the tab has already been rendered, so re-layout the tabstrip. In all other
