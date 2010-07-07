@@ -42,18 +42,24 @@ void SkiaUtilsMacTest::ShapeHelper(int width, int height,
   NSColor* color = NSReadPixel(NSMakePoint(x, y));
   CGFloat red = 0, green = 0, blue = 0, alpha = 0;
   [image unlockFocus];
+
+  // SkBitmapToNSImage returns a bitmap in the calibrated color space (sRGB),
+  // while NSReadPixel returns a color in the device color space. Convert back
+  // to the calibrated color space before testing.
+  color = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+
   [color getRed:&red green:&green blue:&blue alpha:&alpha];
 
-  // Be tolerant of floating point rounding, gamma, etc.
+  // Be tolerant of floating point rounding and lossy color space conversions.
   if (isred) {
-    EXPECT_GT(red, 0.8);
-    EXPECT_LT(blue, 0.2);
+    EXPECT_GT(red, 0.95);
+    EXPECT_LT(blue, 0.05);
   } else {
-    EXPECT_LT(red, 0.2);
-    EXPECT_GT(blue, 0.8);
+    EXPECT_LT(red, 0.05);
+    EXPECT_GT(blue, 0.95);
   }
-  EXPECT_LT(green, 0.2);
-  EXPECT_GT(alpha, 0.9);
+  EXPECT_LT(green, 0.05);
+  EXPECT_GT(alpha, 0.95);
 }
 
 TEST_F(SkiaUtilsMacTest, BitmapToNSImage_RedSquare64x64) {
