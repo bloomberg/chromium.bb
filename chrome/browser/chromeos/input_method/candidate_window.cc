@@ -227,8 +227,14 @@ class CandidateView : public views::View {
   virtual ~CandidateView() {}
   void Init();
 
-  // Sets candidate text with the given text.
+  // Sets candidate text to the given text.
   void SetCandidateText(const std::wstring& text);
+
+  // Sets shortcut text to the given text.
+  void SetShortcutText(const std::wstring& text);
+
+  // Sets shortcut text from the given integer.
+  void SetShortcutTextFromInt(int index);
 
   // Selects the candidate row. Changes the appearance to make it look
   // like a selected candidate.
@@ -238,9 +244,9 @@ class CandidateView : public views::View {
   // like an unselected candidate.
   void Unselect();
 
-  // Disables the candidate row. Changes the appearance to make it look
-  // like unclickable area.
-  void Disable();
+  // Enables or disables the candidate row based on |enabled|. Changes the
+  // appearance to make it look like unclickable area.
+  void SetRowEnabled(bool enabled);
 
   // Returns the relative position of the candidate label.
   gfx::Point GetCandidateLabelPosition() const;
@@ -383,24 +389,10 @@ void CandidateView::Init() {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);  // |this| owns |layout|.
 
-  // Choose the character used for the shortcut label.
-  const wchar_t kShortcutCharacters[] = L"1234567890ABCDEF";
-  // The default character should not be used but just in case.
-  wchar_t shortcut_character = L'?';
-  if (index_in_page_ < static_cast<int>(arraysize(kShortcutCharacters) - 1)) {
-    shortcut_character = kShortcutCharacters[index_in_page_];
-  }
-
   // Create the shortcut label. The label will eventually be part of the
   // tree of |this| via |wrapped_shortcut_label|, hence it's deleted when
   // |this| is deleted.
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    shortcut_label_ = new views::Label(
-        StringPrintf(L"%lc",  shortcut_character));
-  } else {
-    shortcut_label_ = new views::Label(
-        StringPrintf(L"%lc.",  shortcut_character));
-  }
+  shortcut_label_ = new views::Label();
 
   // Wrap it with padding.
   const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
@@ -470,8 +462,26 @@ void CandidateView::Init() {
 }
 
 void CandidateView::SetCandidateText(const std::wstring& text) {
-  shortcut_label_->SetColor(kShortcutColor);
   candidate_label_->SetText(text);
+}
+
+void CandidateView::SetShortcutText(const std::wstring& text) {
+  shortcut_label_->SetText(text);
+}
+
+void CandidateView::SetShortcutTextFromInt(int index) {
+  // Choose the character used for the shortcut label.
+  const wchar_t kShortcutCharacters[] = L"1234567890ABCDEF";
+  // The default character should not be used but just in case.
+  wchar_t shortcut_character = L'?';
+  if (index < static_cast<int>(arraysize(kShortcutCharacters) - 1)) {
+    shortcut_character = kShortcutCharacters[index];
+  }
+  if (orientation_ == InputMethodLookupTable::kVertical) {
+    shortcut_label_->SetText(StringPrintf(L"%lc", shortcut_character));
+  } else {
+    shortcut_label_->SetText(StringPrintf(L"%lc.", shortcut_character));
+  }
 }
 
 void CandidateView::Select() {
@@ -485,9 +495,9 @@ void CandidateView::Unselect() {
   set_border(NULL);
 }
 
-void CandidateView::Disable() {
-  shortcut_label_->SetColor(kDisabledShortcutColor);
-  candidate_label_->SetText(L"");
+void CandidateView::SetRowEnabled(bool enabled) {
+  shortcut_label_->SetColor(
+      enabled ? kShortcutColor : kDisabledShortcutColor);
 }
 
 gfx::Point CandidateView::GetCandidateLabelPosition() const {
@@ -612,17 +622,37 @@ void CandidateWindowView::UpdateCandidates(
       lookup_table.cursor_absolute_index / lookup_table.page_size;
 
   // Update the candidates in the current page.
-  const int start_from = current_page_index_ * lookup_table.page_size;
+  const size_t start_from = current_page_index_ * lookup_table.page_size;
 
+  // In some cases, engines send empty shortcut labels. For instance,
+  // ibus-mozc sends empty labels when they show suggestions. In this
+  // case, we should not show shortcut labels.
+  const bool no_shortcut_mode = (start_from < lookup_table_.labels.size() &&
+                                 lookup_table_.labels[start_from] == "");
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
     const size_t index_in_page = i;
     const size_t candidate_index = start_from + index_in_page;
+    CandidateView* candidate_view = candidate_views_[index_in_page];
+    // Set the shortcut text.
+    if (no_shortcut_mode) {
+      candidate_view->SetShortcutText(L"");
+    } else {
+      // At this moment, we don't use labels sent from engines for UX
+      // reasons. First, we want to show shortcut labels in empty rows
+      // (ex. show 6, 7, 8, ... in empty rows when the number of
+      // candidates is 5). Second, we want to add a period after each
+      // shortcut label when the candidate window is horizontal.
+      candidate_view->SetShortcutTextFromInt(i);
+    }
+    // Set the candidate text.
     if (candidate_index < lookup_table_.candidates.size()) {
-      candidate_views_[index_in_page]->SetCandidateText(
+      candidate_view->SetCandidateText(
           UTF8ToWide(lookup_table_.candidates[candidate_index]));
+      candidate_view->SetRowEnabled(true);
     } else {
       // Disable the empty row.
-      candidate_views_[index_in_page]->Disable();
+      candidate_view->SetCandidateText(L"");
+      candidate_view->SetRowEnabled(false);
     }
   }
 
