@@ -10,8 +10,6 @@
  * base/basictypes.h, which depends on C++.
  */
 
-#include <dlfcn.h>
-
 #include <map>
 #include <string>
 #include <queue>
@@ -25,19 +23,42 @@
 #include "third_party/npapi/bindings/npruntime.h"
 
 
+#if NACL_WINDOWS
+
+#define RTLD_NOW 0
+#define RTLD_LOCAL 0
+
+void* dlopen(const char* filename, int flag) {
+  return reinterpret_cast<void*>(LoadLibrary(filename));
+}
+
+void* dlsym(void *handle, const char* symbol_name) {
+  return GetProcAddress(reinterpret_cast<HMODULE>(handle), symbol_name);
+}
+
+int dlclose(void* handle) {
+  return !FreeLibrary(reinterpret_cast<HMODULE>(handle));
+}
+
+#else
+# include <dlfcn.h>
+#endif
+
+
 #define CheckRetval(rc) ASSERT_EQ((rc), NPERR_NO_ERROR)
 
 #define NOT_IMPLEMENTED() ASSERT_MSG(0, "Not implemented")
 
-typedef NPError (*NPInitializeType)(NPNetscapeFuncs*, NPPluginFuncs*);
-typedef NPError (*NPGetEntryPointsType)(NPPluginFuncs*);
-typedef void (*NPShutdownType)();
-
-class Callback;
+#if NACL_LINUX || NACL_OSX
+typedef NPError (OSCALL *NPInitializeType)(NPNetscapeFuncs*, NPPluginFuncs*);
+#else
+typedef NPError (OSCALL *NPInitializeType)(NPNetscapeFuncs*);
+#endif
+typedef NPError (OSCALL *NPGetEntryPointsType)(NPPluginFuncs*);
+typedef void (OSCALL *NPShutdownType)();
 
 NPPluginFuncs plugin_funcs;
 std::map<std::string, char*> interned_strings;
-std::queue<Callback> callback_queue;
 std::vector<NPObject*> all_objects;
 std::map<std::string, std::string> url_to_filename;
 
@@ -65,6 +86,8 @@ public:
     plugin_funcs.asfile(instance, &stream, filename.c_str());
   };
 };
+
+std::queue<Callback> callback_queue;
 
 
 void* fb_NPN_MemAlloc(uint32_t size) {
@@ -458,14 +481,19 @@ int main(int argc, char** argv) {
 
   NPNetscapeFuncs browser_funcs;
   InitBrowserFuncs(&browser_funcs);
+  plugin_funcs.size = sizeof(plugin_funcs);
 
   NPInitializeType initialize_func =
     reinterpret_cast<NPInitializeType>(
       reinterpret_cast<uintptr_t>(dlsym(dl_handle, "NP_Initialize")));
   CHECK(initialize_func != NULL);
+#if NACL_LINUX || NACL_OSX
   CheckRetval(initialize_func(&browser_funcs, &plugin_funcs));
+#else
+  CheckRetval(initialize_func(&browser_funcs));
+#endif
 
-  if (NACL_OSX) {
+  if (NACL_OSX || NACL_WINDOWS) {
     NPGetEntryPointsType get_entry_points =
       reinterpret_cast<NPGetEntryPointsType>(
         reinterpret_cast<uintptr_t>(dlsym(dl_handle, "NP_GetEntryPoints")));

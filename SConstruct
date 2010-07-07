@@ -831,7 +831,7 @@ def CommandTestAgainstGoldenOutput(env, name, *args, **kwargs):
   return CommandTest(env, name, *args, **kwargs)
 
 def CommandTest(env, name, command, size='small',
-                direct_emulation=True, **extra):
+                direct_emulation=True, extra_deps=[], **extra):
   if not  name.endswith('.out') or name.startswith('$'):
     print "ERROR: bad  test filename for test output ", name
     assert 0
@@ -892,6 +892,8 @@ def CommandTest(env, name, command, size='small',
   # ignore build dependencies.
   if ARGUMENTS.get('built_elsewhere'):
     env.Ignore(name, deps)
+  else:
+    env.Depends(name, extra_deps)
 
   return env.Command(name, deps, ' '.join(command))
 
