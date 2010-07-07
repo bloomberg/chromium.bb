@@ -35,6 +35,14 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   int state = render_selection ? MPI_HOT :
                                  (IsEnabled() ? MPI_NORMAL : MPI_DISABLED);
   HDC dc = canvas->BeginPlatformPaint();
+  NativeTheme::ControlState control_state;
+
+  if (!IsEnabled()) {
+    control_state = NativeTheme::CONTROL_DISABLED;
+  } else {
+    control_state = render_selection ? NativeTheme::CONTROL_HIGHLIGHTED :
+                                       NativeTheme::CONTROL_NORMAL;
+  }
 
   // The gutter is rendered before the background.
   if (config.render_gutter && !for_drag) {
@@ -63,10 +71,10 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
     PaintCheck(dc,
                IsEnabled() ? MC_CHECKMARKNORMAL : MC_CHECKMARKDISABLED,
-               render_selection, config.check_height, config.check_width);
+               control_state, config.check_height, config.check_width);
   } else if (type_ == RADIO && GetDelegate()->IsItemChecked(GetCommand())) {
     PaintCheck(dc, IsEnabled() ? MC_BULLETNORMAL : MC_BULLETDISABLED,
-               render_selection, config.radio_height, config.radio_width);
+               control_state, config.radio_height, config.radio_width);
   }
 
   // Render the foreground.
@@ -129,13 +137,14 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
     RECT arrow_rect = arrow_bounds.ToRECT();
     NativeTheme::instance()->PaintMenuArrow(
         NativeTheme::MENU, dc, MENU_POPUPSUBMENU, state_id, &arrow_rect,
-        arrow_direction, render_selection);
+        arrow_direction, control_state);
   }
   canvas->EndPlatformPaint();
 }
+
 void MenuItemView::PaintCheck(HDC dc,
                               int state_id,
-                              bool render_selection,
+                              NativeTheme::ControlState control_state,
                               int icon_width,
                               int icon_height) {
   int top_margin = GetTopMargin();
@@ -157,7 +166,7 @@ void MenuItemView::PaintCheck(HDC dc,
   RECT icon_rect = icon_bounds.ToRECT();
   NativeTheme::instance()->PaintMenuCheck(
       NativeTheme::MENU, dc, MENU_POPUPCHECK, state_id, &icon_rect,
-      render_selection);
+      control_state);
 }
 
 }  // namespace views

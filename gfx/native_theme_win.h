@@ -54,6 +54,12 @@ class NativeTheme {
     RIGHT_POINTING_ARROW
   };
 
+  enum ControlState {
+    CONTROL_NORMAL,
+    CONTROL_HIGHLIGHTED,
+    CONTROL_DISABLED
+  };
+
   typedef HRESULT (WINAPI* DrawThemeBackgroundPtr)(HANDLE theme,
                                                    HDC hdc,
                                                    int part_id,
@@ -115,7 +121,7 @@ class NativeTheme {
                          int state_id,
                          RECT* rect,
                          MenuArrowDirection arrow_direction,
-                         bool is_highlighted) const;
+                         ControlState state) const;
 
   HRESULT PaintMenuBackground(ThemeName theme,
                               HDC hdc,
@@ -128,7 +134,7 @@ class NativeTheme {
                          int part_id,
                          int state_id,
                          RECT* rect,
-                         bool is_highlighted) const;
+                         ControlState state) const;
 
   HRESULT PaintMenuCheckBackground(ThemeName theme,
                                    HDC hdc,
@@ -276,7 +282,7 @@ class NativeTheme {
                             RECT* rect,
                             UINT type,
                             UINT state,
-                            bool is_highlighted) const;
+                            ControlState control_state) const;
 
   // Returns a handle to the theme data.
   HANDLE GetThemeHandle(ThemeName theme_name) const;

@@ -177,7 +177,7 @@ HRESULT NativeTheme::PaintMenuArrow(ThemeName theme,
                                     int state_id,
                                     RECT* rect,
                                     MenuArrowDirection arrow_direction,
-                                    bool is_highlighted) const {
+                                    ControlState control_state) const {
   HANDLE handle = GetThemeHandle(MENU);
   if (handle && draw_theme_) {
     if (arrow_direction == RIGHT_POINTING_ARROW) {
@@ -216,7 +216,7 @@ HRESULT NativeTheme::PaintMenuArrow(ThemeName theme,
     state = DFCS_MENUARROW;
   else
     state = DFCS_MENUARROWRIGHT;
-  return PaintFrameControl(hdc, rect, DFC_MENU, state, is_highlighted);
+  return PaintFrameControl(hdc, rect, DFC_MENU, state, control_state);
 }
 
 HRESULT NativeTheme::PaintMenuBackground(ThemeName theme,
@@ -253,12 +253,12 @@ HRESULT NativeTheme::PaintMenuCheck(ThemeName theme,
                                     int part_id,
                                     int state_id,
                                     RECT* rect,
-                                    bool is_highlighted) const {
+                                    ControlState control_state) const {
   HANDLE handle = GetThemeHandle(MENU);
   if (handle && draw_theme_) {
     return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
   }
-  return PaintFrameControl(hdc, rect, DFC_MENU, DFCS_MENUCHECK, is_highlighted);
+  return PaintFrameControl(hdc, rect, DFC_MENU, DFCS_MENUCHECK, control_state);
 }
 
 HRESULT NativeTheme::PaintMenuGutter(HDC hdc,
@@ -687,7 +687,7 @@ HRESULT NativeTheme::PaintFrameControl(HDC hdc,
                                        RECT* rect,
                                        UINT type,
                                        UINT state,
-                                       bool is_highlighted) const {
+                                       ControlState control_state) const {
   const int width = rect->right - rect->left;
   const int height = rect->bottom - rect->top;
 
@@ -706,13 +706,29 @@ HRESULT NativeTheme::PaintFrameControl(HDC hdc,
   // dc's text color for the black bits in the mask, and the dest dc's
   // background color for the white bits in the mask. DrawFrameControl draws the
   // check in black, and the background in white.
-  COLORREF old_bg_color =
-      SetBkColor(hdc,
-                 GetSysColor(is_highlighted ? COLOR_HIGHLIGHT : COLOR_MENU));
-  COLORREF old_text_color =
-      SetTextColor(hdc,
-                   GetSysColor(is_highlighted ? COLOR_HIGHLIGHTTEXT :
-                                                COLOR_MENUTEXT));
+  int bg_color_key;
+  int text_color_key;
+  switch (control_state) {
+    case CONTROL_HIGHLIGHTED:
+      bg_color_key = COLOR_HIGHLIGHT;
+      text_color_key = COLOR_HIGHLIGHTTEXT;
+      break;
+    case CONTROL_NORMAL:
+      bg_color_key = COLOR_MENU;
+      text_color_key = COLOR_MENUTEXT;
+      break;
+    case CONTROL_DISABLED:
+      bg_color_key = COLOR_MENU;
+      text_color_key = COLOR_GRAYTEXT;
+      break;
+    default:
+      NOTREACHED();
+      bg_color_key = COLOR_MENU;
+      text_color_key = COLOR_MENUTEXT;
+      break;
+  }
+  COLORREF old_bg_color = SetBkColor(hdc, GetSysColor(bg_color_key));
+  COLORREF old_text_color = SetTextColor(hdc, GetSysColor(text_color_key));
   BitBlt(hdc, rect->left, rect->top, width, height, bitmap_dc, 0, 0, SRCCOPY);
   SetBkColor(hdc, old_bg_color);
   SetTextColor(hdc, old_text_color);

@@ -12,6 +12,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 
+#if defined(OS_WIN)
+#include "gfx/native_theme_win.h"
+#endif
+
 namespace views {
 
 class MenuButton;
@@ -304,7 +308,7 @@ class MenuItemView : public View {
   // native theme drawing routines.
   void PaintCheck(HDC dc,
                   int part_id,
-                  bool render_selection,
+                  gfx::NativeTheme::ControlState control_state,
                   int icon_width,
                   int icon_height);
 #endif
