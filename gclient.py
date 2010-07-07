@@ -314,26 +314,6 @@ class Dependency(GClientKeywords):
         deps[d] = url
     return deps
 
-  def _RunHookAction(self, hook_dict, matching_file_list):
-    """Runs the action from a single hook."""
-    logging.info(hook_dict)
-    logging.info(matching_file_list)
-    command = hook_dict['action'][:]
-    if command[0] == 'python':
-      # If the hook specified "python" as the first item, the action is a
-      # Python script.  Run it by starting a new copy of the same
-      # interpreter.
-      command[0] = sys.executable
-
-    if '$matching_files' in command:
-      splice_index = command.index('$matching_files')
-      command[splice_index:splice_index + 1] = matching_file_list
-
-    # Use a discrete exit status code of 2 to indicate that a hook action
-    # failed.  Users of this script may wish to treat hook action failures
-    # differently from VC failures.
-    return gclient_utils.SubprocessCall(command, self.root_dir(), fail_status=2)
-
   def _RunHooks(self, command, file_list, is_using_git):
     """Evaluates all hooks, running actions as needed.
     """
@@ -366,6 +346,26 @@ class Dependency(GClientKeywords):
       matching_file_list = [f for f in file_list if pattern.search(f)]
       if matching_file_list:
         self._RunHookAction(hook_dict, matching_file_list)
+
+  def _RunHookAction(self, hook_dict, matching_file_list):
+    """Runs the action from a single hook."""
+    logging.info(hook_dict)
+    logging.info(matching_file_list)
+    command = hook_dict['action'][:]
+    if command[0] == 'python':
+      # If the hook specified "python" as the first item, the action is a
+      # Python script.  Run it by starting a new copy of the same
+      # interpreter.
+      command[0] = sys.executable
+
+    if '$matching_files' in command:
+      splice_index = command.index('$matching_files')
+      command[splice_index:splice_index + 1] = matching_file_list
+
+    # Use a discrete exit status code of 2 to indicate that a hook action
+    # failed.  Users of this script may wish to treat hook action failures
+    # differently from VC failures.
+    return gclient_utils.SubprocessCall(command, self.root_dir(), fail_status=2)
 
   def root_dir(self):
     return self.parent.root_dir()
