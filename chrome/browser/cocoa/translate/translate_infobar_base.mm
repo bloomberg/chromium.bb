@@ -29,10 +29,6 @@ using TranslateInfoBarUtilities::VerifyControlOrderAndSpacing;
 using TranslateInfoBarUtilities::CreateLabel;
 using TranslateInfoBarUtilities::AddMenuItem;
 
-// Colors for translate infobar gradient background.
-const int kGreyTopColor[] = {0xC0, 0xC0, 0xC0};
-const int kGreyBottomColor[] = {0xCC, 0xCC, 0xCC};
-
 #pragma mark TranslateInfoBarUtilities helper functions.
 
 namespace TranslateInfoBarUtilities {
@@ -138,7 +134,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 // Reloads text for all labels for the current state.
 - (void)loadLabelText:(TranslateErrors::Type)error;
 
-// Makes the infobar grey.
+// Set the infobar background gradient.
 - (void)setInfoBarGradientColor;
 
 // Main function to update the toolbar graphic state and data model after
@@ -231,22 +227,15 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 }
 
 - (void)setInfoBarGradientColor {
-  // Use grey gradient for the infobars.
-  NSColor* startingColor =
-      [NSColor colorWithCalibratedRed:kGreyTopColor[0] / 255.0
-                                green:kGreyTopColor[1] / 255.0
-                                 blue:kGreyTopColor[2] / 255.0
-                                alpha:1.0];
-  NSColor* endingColor =
-        [NSColor colorWithCalibratedRed:kGreyBottomColor[0] / 255.0
-                                  green:kGreyBottomColor[1] / 255.0
-                                   blue:kGreyBottomColor[2] / 255.0
-                                  alpha:1.0];
+  NSColor* startingColor = [NSColor colorWithCalibratedWhite:0.93 alpha:1.0];
+  NSColor* endingColor = [NSColor colorWithCalibratedWhite:0.85 alpha:1.0];
   NSGradient* translateInfoBarGradient =
       [[[NSGradient alloc] initWithStartingColor:startingColor
                                      endingColor:endingColor] autorelease];
 
   [infoBarView_ setGradient:translateInfoBarGradient];
+  [infoBarView_
+      setStrokeColor:[NSColor colorWithCalibratedWhite:0.75 alpha:1.0]];
 }
 
 - (void)removeOkCancelButtons {
@@ -551,7 +540,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   id previousControl = nil;
   for (NSUInteger i = 0; i < [visibleControls count]; ++i) {
     id control = [visibleControls objectAtIndex:i];
-    if (previousControl && !VerifyControlOrderAndSpacing(previousControl, control)) {
+    if (previousControl &&
+        !VerifyControlOrderAndSpacing(previousControl, control)) {
       NSString *title = @"";
       if ([control isKindOfClass:[NSPopUpButton class]]) {
         title = [[[control menu] itemAtIndex:0] title];
