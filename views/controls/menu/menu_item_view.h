@@ -55,10 +55,6 @@ class MenuItemView : public View {
   // ID used to identify empty menu items.
   static const int kEmptyMenuItemViewID;
 
-  // If true SetNestableTasksAllowed(true) is invoked before MessageLoop::Run
-  // is invoked. This is only useful for testing and defaults to false.
-  static bool allow_task_nesting_during_run_;
-
   // Different types of menu items.
   enum Type {
     NORMAL,

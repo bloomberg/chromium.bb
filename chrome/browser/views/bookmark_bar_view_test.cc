@@ -139,7 +139,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   virtual void SetUp() {
-    views::MenuItemView::allow_task_nesting_during_run_ = true;
     BookmarkBarView::testing_ = true;
 
     profile_.reset(new TestingProfile());
@@ -185,7 +184,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   virtual void TearDown() {
-    views::MenuItemView::allow_task_nesting_during_run_ = false;
     ViewEventTestBase::TearDown();
     BookmarkBarView::testing_ = false;
     views::ViewsDelegate::views_delegate = NULL;

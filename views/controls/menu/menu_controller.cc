@@ -268,15 +268,15 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->AddRef();
 
+  // We need to turn on nestable tasks as in some situations (pressing alt-f for
+  // one) the menus are run from a task. If we don't do this and are invoked
+  // from a task none of the tasks we schedule are processed and the menu
+  // appears totally broken.
   MessageLoopForUI* loop = MessageLoopForUI::current();
-  if (MenuItemView::allow_task_nesting_during_run_) {
-    bool did_allow_task_nesting = loop->NestableTasksAllowed();
-    loop->SetNestableTasksAllowed(true);
-    loop->Run(this);
-    loop->SetNestableTasksAllowed(did_allow_task_nesting);
-  } else {
-    loop->Run(this);
-  }
+  bool did_allow_task_nesting = loop->NestableTasksAllowed();
+  loop->SetNestableTasksAllowed(true);
+  loop->Run(this);
+  loop->SetNestableTasksAllowed(did_allow_task_nesting);
 
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->ReleaseRef();

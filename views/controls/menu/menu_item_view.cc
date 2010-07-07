@@ -57,9 +57,6 @@ const int MenuItemView::kEmptyMenuItemViewID =
     MenuItemView::kMenuItemViewID + 1;
 
 // static
-bool MenuItemView::allow_task_nesting_during_run_ = false;
-
-// static
 int MenuItemView::label_start_;
 
 // static
