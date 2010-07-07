@@ -160,6 +160,35 @@ void DataTypeManagerImpl::Restart() {
   backend_->ConfigureDataTypes(
       last_requested_types_,
       method_factory_.NewRunnableMethod(&DataTypeManagerImpl::DownloadReady));
+
+  // If there were new types needing download, a nudge will have been sent and
+  // we should be in DOWNLOAD_PENDING.  In that case we start the syncer thread
+  // (which is idempotent) to fetch these updates.
+  // However, we could actually be in PAUSE_PENDING here as if no new types
+  // were needed, our DownloadReady callback will have fired and we will have
+  // requested a pause already (so starting the syncer thread will still not
+  // let it make forward progress as the pause needs to be resumed by us).
+  // Because both the pause and start syncing commands are posted FCFS to the
+  // core thread, there is no race between the pause and the start; the pause
+  // will always win, so we will always start paused if we don't need to
+  // download new types.  Thus, in almost all cases, the syncer thread DOES NOT
+  // start before model association. But...
+  //
+  // TODO(tim): Bug 47957. There is still subtle badness here. If we just
+  // restarted the browser and were upgraded in between, we may be in a state
+  // where a bunch of data types do have initial sync ended, but a new guy
+  // does not.  In this case, what we really want is to _only_ download updates
+  // for that new type and not the ones that have already finished and we've
+  // presumably associated before.  What happens now is the syncer is nudged
+  // and it does a sync from timestamp 0 for only the new types, and sends the
+  // OnSyncCycleCompleted event, which is how we get the DownloadReady call.
+  // We request a pause at this point, but it is done asynchronously. So in
+  // theory, the syncer could charge forward with another sync (for _all_
+  // types) before the pause is serviced, which could be bad for associating
+  // models as we'll merge the present cloud with the immediate past, which
+  // opens the door to bugs like "bookmark came back from dead".  A lot more
+  // stars have to align now for this to happen, but it's still there.
+  backend_->StartSyncingWithServer();
 }
 
 void DataTypeManagerImpl::DownloadReady() {

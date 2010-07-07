@@ -51,8 +51,11 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   virtual void SetUp() {
     service_.reset(new TestProfileSyncService(&factory_, &profile_,
-                                              false, true));
+                                              false, true, NULL));
     service_->AddObserver(&observer_);
+    service_->set_num_expected_resumes(0);
+    service_->set_num_expected_pauses(0);
+    service_->set_synchronous_sync_configuration();
   }
 
   virtual void TearDown() {
@@ -142,8 +145,11 @@ class ProfileSyncServiceStartupBootstrapTest
 
   virtual void SetUp() {
     service_.reset(new TestProfileSyncService(&factory_, &profile_,
-                                              true, true));
+                                              true, true, NULL));
     service_->AddObserver(&observer_);
+    service_->set_num_expected_resumes(0);
+    service_->set_num_expected_pauses(0);
+    service_->set_synchronous_sync_configuration();
   }
 };
 

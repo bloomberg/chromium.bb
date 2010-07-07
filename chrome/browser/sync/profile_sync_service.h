@@ -313,9 +313,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // so we don't need this hack anymore.
   ProfileSyncService();
 
-  // Helper to install and configure a data type manager, and startthe
-  // syncer thread (which is an idempotent operation).
-  void ConfigureDataTypeManagerAndStartSync();
+  // Helper to install and configure a data type manager.
+  void ConfigureDataTypeManager();
 
   // Returns whether processing changes is allowed.  Check this before doing
   // any model-modifying operations.
@@ -336,11 +335,19 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // folder is partial/corrupt)
   virtual void InitializeBackend(bool delete_sync_data_folder);
 
+  const browser_sync::DataTypeController::TypeMap& data_type_controllers() {
+    return data_type_controllers_;
+  }
+
   // We keep track of the last auth error observed so we can cover up the first
   // "expected" auth failure from observers.
   // TODO(timsteele): Same as expecting_first_run_auth_needed_event_. Remove
   // this!
   GoogleServiceAuthError last_auth_error_;
+
+  // Our asynchronous backend to communicate with sync components living on
+  // other threads.
+  scoped_ptr<browser_sync::SyncBackendHost> backend_;
 
   // Cache of the last name the client attempted to authenticate.
   std::string last_attempted_user_email_;
@@ -390,10 +397,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // The last time we detected a successful transition from SYNCING state.
   // Our backend notifies us whenever we should take a new snapshot.
   base::Time last_synced_time_;
-
-  // Our asynchronous backend to communicate with sync components living on
-  // other threads.
-  scoped_ptr<browser_sync::SyncBackendHost> backend_;
 
   // List of available data type controllers.
   browser_sync::DataTypeController::TypeMap data_type_controllers_;

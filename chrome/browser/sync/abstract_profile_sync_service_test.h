@@ -13,19 +13,20 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
+#include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
-#include "chrome/browser/sync/glue/sync_backend_host_mock.h"
+#include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/test/profile_mock.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::SyncBackendHostMock;
 using browser_sync::TestIdFactory;
 using sync_api::UserShare;
 using syncable::BASE_VERSION;
@@ -47,7 +48,7 @@ using syncable::UNITTEST;
 using syncable::WriteTransaction;
 
 class AbstractProfileSyncServiceTest : public testing::Test {
- protected:
+ public:
   AbstractProfileSyncServiceTest()
       : ui_thread_(ChromeThread::UI, &message_loop_) {}
 
@@ -66,6 +67,15 @@ class AbstractProfileSyncServiceTest : public testing::Test {
         break;
       case syncable::PREFERENCES:
         tag_name = browser_sync::kPreferencesTag;
+        break;
+      case syncable::PASSWORDS:
+        tag_name = browser_sync::kPasswordTag;
+        break;
+      case syncable::NIGORI:
+        tag_name = browser_sync::kNigoriTag;
+        break;
+      case syncable::TYPED_URLS:
+        tag_name = browser_sync::kTypedUrlTag;
         break;
       default:
         return false;
@@ -92,24 +102,22 @@ class AbstractProfileSyncServiceTest : public testing::Test {
     return true;
   }
 
-  friend class CreateRootTask;
+ protected:
 
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   ProfileSyncFactoryMock factory_;
-  ProfileSyncServiceObserverMock observer_;
-  SyncBackendHostMock backend_;
   scoped_ptr<TestProfileSyncService> service_;
   TestIdFactory ids_;
 };
 
 class CreateRootTask : public Task {
  public:
-  explicit CreateRootTask(AbstractProfileSyncServiceTest* test,
-                          ModelType model_type)
+  CreateRootTask(AbstractProfileSyncServiceTest* test, ModelType model_type)
       : test_(test), model_type_(model_type), success_(false) {
   }
 
+  virtual ~CreateRootTask() {}
   virtual void Run() {
     success_ = test_->CreateRoot(model_type_);
   }

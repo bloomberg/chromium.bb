@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
@@ -100,11 +102,10 @@ class MockPasswordStore : public PasswordStore {
       bool(std::vector<PasswordForm*>*));
 };
 
-class ProfileSyncServicePasswordTest : public testing::Test {
+class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
  protected:
   ProfileSyncServicePasswordTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        db_thread_(ChromeThread::DB) {
+      : db_thread_(ChromeThread::DB) {
   }
 
   virtual void SetUp() {
@@ -113,6 +114,17 @@ class ProfileSyncServicePasswordTest : public testing::Test {
 
     notification_service_ = new ThreadNotificationService(&db_thread_);
     notification_service_->Init();
+    registrar_.Add(&observer_,
+        NotificationType::SYNC_PASSPHRASE_ACCEPTED,
+        NotificationService::AllSources());
+    registrar_.Add(&observer_,
+        NotificationType::SYNC_CONFIGURE_DONE,
+        NotificationService::AllSources());
+
+    // We shouldn't ever get this. Gmock will complain if we do.
+    registrar_.Add(&observer_,
+        NotificationType::SYNC_PASSPHRASE_REQUIRED,
+        NotificationService::AllSources());
   }
 
   virtual void TearDown() {
@@ -123,10 +135,17 @@ class ProfileSyncServicePasswordTest : public testing::Test {
   }
 
   void StartSyncService(Task* root_task, Task* node_task) {
+    StartSyncService(root_task, node_task, 2, 2);
+  }
+
+  void StartSyncService(Task* root_task, Task* node_task,
+                        int num_resume_expectations,
+                        int num_pause_expectations) {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(&factory_, &profile_,
-                                                false, true));
-      service_->AddObserver(&observer_);
+                                                false, false, root_task));
+      service_->set_num_expected_resumes(num_resume_expectations);
+      service_->set_num_expected_pauses(num_pause_expectations);
       PasswordDataTypeController* data_type_controller =
           new PasswordDataTypeController(&factory_,
                                          &profile_,
@@ -137,86 +156,36 @@ class ProfileSyncServicePasswordTest : public testing::Test {
                                               password_store_.get(),
                                               data_type_controller));
       EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
-          WillOnce(MakeDataTypeManager(&backend_));
+          WillOnce(ReturnNewDataTypeManager());
 
       EXPECT_CALL(profile_, GetPasswordStore(_)).
           WillOnce(Return(password_store_.get()));
 
-      // State changes once for the backend init and once for startup done.
-      EXPECT_CALL(observer_, OnStateChanged()).
-          WillOnce(InvokeTask(root_task)).
-          WillOnce(Return()).
-          WillOnce(Return());
+      EXPECT_CALL(observer_,
+          Observe(
+              NotificationType(NotificationType::SYNC_CONFIGURE_DONE),_,_));
 
       service_->RegisterDataTypeController(data_type_controller);
       service_->Initialize();
+      MessageLoop::current()->Run();
 
       // Only set the passphrase if we actually created the password and nigori
       // root nodes.
       if (root_task) {
-        EXPECT_CALL(observer_, OnStateChanged()).
-            WillOnce(InvokeTask(node_task)).
-            WillOnce(Return()).
+        EXPECT_CALL(observer_,
+            Observe(
+                NotificationType(NotificationType::SYNC_PASSPHRASE_ACCEPTED),
+                    _,_)).
+            WillOnce(InvokeTask(node_task));
+        EXPECT_CALL(observer_,
+            Observe(
+                NotificationType(NotificationType::SYNC_CONFIGURE_DONE),
+                    _,_)).
             WillOnce(QuitUIMessageLoop());
-
         service_->SetPassphrase("foo");
         MessageLoop::current()->Run();
       }
     }
-  }
-
-  void CreatePasswordRoot() {
-    UserShare* user_share = service_->backend()->GetUserShareHandle();
-    DirectoryManager* dir_manager = user_share->dir_manager.get();
-
-    ScopedDirLookup dir(dir_manager, user_share->authenticated_name);
-    ASSERT_TRUE(dir.good());
-
-    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-
-    MutableEntry password_node(&wtrans,
-                               CREATE,
-                               wtrans.root_id(),
-                               browser_sync::kPasswordTag);
-    password_node.Put(UNIQUE_SERVER_TAG, browser_sync::kPasswordTag);
-    password_node.Put(IS_DIR, true);
-    password_node.Put(SERVER_IS_DIR, false);
-    password_node.Put(IS_UNSYNCED, false);
-    password_node.Put(IS_UNAPPLIED_UPDATE, false);
-    password_node.Put(SERVER_VERSION, 20);
-    password_node.Put(BASE_VERSION, 20);
-    password_node.Put(IS_DEL, false);
-    password_node.Put(ID, ids_.MakeServer(browser_sync::kPasswordTag));
-    sync_pb::EntitySpecifics password_specifics;
-    password_specifics.MutableExtension(sync_pb::password);
-    password_node.Put(SPECIFICS, password_specifics);
-  }
-
-  void CreateNigoriRoot() {
-    UserShare* user_share = service_->backend()->GetUserShareHandle();
-    DirectoryManager* dir_manager = user_share->dir_manager.get();
-
-    ScopedDirLookup dir(dir_manager, user_share->authenticated_name);
-    ASSERT_TRUE(dir.good());
-
-    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-
-    MutableEntry nigori_node(&wtrans,
-                             CREATE,
-                             wtrans.root_id(),
-                             browser_sync::kNigoriTag);
-    nigori_node.Put(UNIQUE_SERVER_TAG, browser_sync::kNigoriTag);
-    nigori_node.Put(IS_DIR, false);
-    nigori_node.Put(SERVER_IS_DIR, false);
-    nigori_node.Put(IS_UNSYNCED, false);
-    nigori_node.Put(IS_UNAPPLIED_UPDATE, false);
-    nigori_node.Put(SERVER_VERSION, 20);
-    nigori_node.Put(BASE_VERSION, 20);
-    nigori_node.Put(IS_DEL, false);
-    nigori_node.Put(ID, ids_.MakeServer(browser_sync::kNigoriTag));
-    sync_pb::EntitySpecifics nigori_specifics;
-    nigori_specifics.MutableExtension(sync_pb::nigori);
-    nigori_node.Put(SPECIFICS, nigori_specifics);
   }
 
   void AddPasswordSyncNode(const PasswordForm& entry) {
@@ -276,52 +245,31 @@ class ProfileSyncServicePasswordTest : public testing::Test {
     EXPECT_CALL(*password_store_, RemoveLoginImpl(_)).Times(0);
   }
 
-  friend class CreatePasswordRootTask;
-  friend class CreateNigoriRootTask;
   friend class AddPasswordEntriesTask;
 
-  MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
   ChromeThread db_thread_;
   scoped_refptr<ThreadNotificationService> notification_service_;
-
-  scoped_ptr<TestProfileSyncService> service_;
+  NotificationObserverMock observer_;
   ProfileMock profile_;
-  ProfileSyncFactoryMock factory_;
-  ProfileSyncServiceObserverMock observer_;
-  SyncBackendHostMock backend_;
   scoped_refptr<MockPasswordStore> password_store_;
+  NotificationRegistrar registrar_;
 
   TestIdFactory ids_;
 };
 
 class CreatePasswordRootTask : public Task {
  public:
-  explicit CreatePasswordRootTask(ProfileSyncServicePasswordTest* test)
+  explicit CreatePasswordRootTask(AbstractProfileSyncServiceTest* test)
       : test_(test) {
   }
 
   virtual void Run() {
-    test_->CreateNigoriRoot();
-    test_->CreatePasswordRoot();
+    test_->CreateRoot(syncable::NIGORI);
+    test_->CreateRoot(syncable::PASSWORDS);
   }
 
  private:
-  ProfileSyncServicePasswordTest* test_;
-};
-
-class CreateNigoriRootTask : public Task {
- public:
-  explicit CreateNigoriRootTask(ProfileSyncServicePasswordTest* test)
-      : test_(test) {
-  }
-
-  virtual void Run() {
-    test_->CreateNigoriRoot();
-  }
-
- private:
-  ProfileSyncServicePasswordTest* test_;
+  AbstractProfileSyncServiceTest* test_;
 };
 
 class AddPasswordEntriesTask : public Task {
@@ -343,14 +291,10 @@ class AddPasswordEntriesTask : public Task {
 };
 
 TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
-  // Backend will be paused but not resumed.
-  EXPECT_CALL(backend_, RequestPause()).
-      WillRepeatedly(testing::DoAll(Notify(NotificationType::SYNC_PAUSED),
-                                    testing::Return(true)));
   // Create the nigori root node so that password model association is
   // attempted, but not the password root node so that it fails.
-  CreateNigoriRootTask task(this);
-  StartSyncService(&task, NULL);
+  CreateRootTask task(this, syncable::NIGORI);
+  StartSyncService(&task, NULL, 1, 2);
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 }
 

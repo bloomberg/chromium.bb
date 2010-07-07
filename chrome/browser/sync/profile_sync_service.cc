@@ -302,9 +302,6 @@ void ProfileSyncService::StartUp() {
   // we'll want to start from a fresh SyncDB, so delete any old one that might
   // be there.
   InitializeBackend(!HasSyncSetupCompleted());
-
-  if (HasSyncSetupCompleted())
-    ConfigureDataTypeManagerAndStartSync();
 }
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
@@ -453,6 +450,9 @@ void ProfileSyncService::OnBackendInitialized() {
   if (bootstrap_sync_authentication_) {
     SetSyncSetupCompleted();
   }
+
+  if (HasSyncSetupCompleted())
+    ConfigureDataTypeManager();
 }
 
 void ProfileSyncService::OnSyncCycleCompleted() {
@@ -608,6 +608,16 @@ void ProfileSyncService::OnUserCancelledDialog() {
     DisableForUser();
   }
 
+  // Though an auth could still be in progress, once the dialog is closed we
+  // don't want the UI to stay stuck in the "waiting for authentication" state
+  // as that could take forever.  We set this to false so the buttons to re-
+  // login will appear until either a) the original request finishes and
+  // succeeds, calling OnAuthError(NONE), or b) the user clicks the button,
+  // and tries to re-authenticate. (b) is a little awkward as this second
+  // request will get queued behind the first and could wind up "undoing" the
+  // good if invalid creds were provided, but it's an edge case and the user
+  // can of course get themselves out of it.
+  is_auth_in_progress_ = false;
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
@@ -629,7 +639,7 @@ void ProfileSyncService::ChangePreferredDataTypes(
         preferred_types.count(model_type) != 0);
   }
 
-  ConfigureDataTypeManagerAndStartSync();
+  ConfigureDataTypeManager();
 }
 
 void ProfileSyncService::GetPreferredDataTypes(
@@ -673,7 +683,7 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
   backend_->SetPassphrase(passphrase);
 }
 
-void ProfileSyncService::ConfigureDataTypeManagerAndStartSync() {
+void ProfileSyncService::ConfigureDataTypeManager() {
   if (!data_type_manager_.get()) {
     data_type_manager_.reset(
         factory_->CreateDataTypeManager(backend_.get(),
@@ -683,8 +693,6 @@ void ProfileSyncService::ConfigureDataTypeManagerAndStartSync() {
   syncable::ModelTypeSet types;
   GetPreferredDataTypes(&types);
   data_type_manager_->Configure(types);
-
-  backend_->StartSyncing();
 }
 
 void ProfileSyncService::ActivateDataType(

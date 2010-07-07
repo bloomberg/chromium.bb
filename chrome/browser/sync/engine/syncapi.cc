@@ -937,6 +937,10 @@ class SyncManager::SyncInternal
   // on startup, to serve our UI needs.
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
 
+  // Listen here for directory opened events.
+  void HandleDirectoryManagerEvent(
+      const syncable::DirectoryManagerEvent& event);
+
   // Login to the talk mediator with the given credentials.
   void TalkMediatorLogin(
       const std::string& email, const std::string& token);
@@ -1153,6 +1157,9 @@ class SyncManager::SyncInternal
   // The event listener hookup registered for HandleAuthWatcherEvent.
   scoped_ptr<EventListenerHookup> authwatcher_hookup_;
 
+  // The event listener hookup registered for the DirectoryManager (OPENED).
+  scoped_ptr<EventListenerHookup> directory_manager_hookup_;
+
   // Our cache of a recent authentication problem. If no authentication problem
   // occurred, or if the last problem encountered has been cleared (by a
   // subsequent AuthWatcherEvent), this is set to NONE.
@@ -1287,6 +1294,9 @@ bool SyncManager::SyncInternal::Init(
   LOG(INFO) << "Initialized sync user settings. Starting DirectoryManager.";
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
+  directory_manager_hookup_.reset(NewEventListenerHookup(
+      share_.dir_manager->channel(), this,
+          &SyncInternal::HandleDirectoryManagerEvent));
 
   string client_id = user_settings_->GetClientId();
   connection_manager_.reset(new SyncAPIServerConnectionManager(
@@ -1477,9 +1487,6 @@ bool SyncManager::SyncInternal::AuthenticateForUser(
     return false;
   }
 
-  if (InitialSyncEndedForAllEnabledTypes())
-    MarkAndNotifyInitializationComplete();
-
   // Load the last-known good auth token into the connection manager and send
   // it off to the AuthWatcher for validation.  The result of the validation
   // will update the connection manager if necessary.
@@ -1608,6 +1615,15 @@ void SyncManager::SyncInternal::OnIPAddressChanged() {
   // TODO(akalin): CheckServerReachable() can block, which may cause
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
+}
+
+void SyncManager::SyncInternal::HandleDirectoryManagerEvent(
+    const syncable::DirectoryManagerEvent& event) {
+  LOG(INFO) << "Sync internal handling a directory manager event";
+  if (syncable::DirectoryManagerEvent::OPENED == event.what_happened) {
+     DCHECK(!initialized()) << "Should only happen once";
+     MarkAndNotifyInitializationComplete();
+  }
 }
 
 // Listen to model changes, filter out ones initiated by the sync API, and
@@ -1800,13 +1816,6 @@ SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
 }
 
 void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
-  if (!initialized()) {
-    // This could be the first time that the syncer has completed a full
-    // download; if so, we should signal that initialization is complete.
-    if (event.snapshot && event.snapshot->is_share_usable)
-      MarkAndNotifyInitializationComplete();
-  }
-
   if (!observer_)
     return;
 
@@ -1923,8 +1932,6 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
         if (!dir_change_hookup_.get())
           dir_change_hookup_.reset(lookup->AddChangeObserver(this));
       }
-      if (InitialSyncEndedForAllEnabledTypes())
-        MarkAndNotifyInitializationComplete();
 
       if (!event.auth_token.empty()) {
         core_message_loop_->PostTask(
@@ -2103,7 +2110,6 @@ void SyncManager::SyncInternal::SetupForTestMode(
     }
     dir_change_hookup_.reset(lookup->AddChangeObserver(this));
   }
-  MarkAndNotifyInitializationComplete();
 }
 
 //////////////////////////////////////////////////////////////////////////

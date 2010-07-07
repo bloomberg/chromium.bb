@@ -121,7 +121,7 @@ void SyncBackendHost::Authenticate(const std::string& username,
                         username, password, captcha));
 }
 
-void SyncBackendHost::StartSyncing() {
+void SyncBackendHost::StartSyncingWithServer() {
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
 }
@@ -137,10 +137,12 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // - SyncerThread
   // - CoreThread
   // - UI Thread (stops some time after we return from this call).
-  core_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &SyncBackendHost::Core::DoShutdown,
-                        sync_disabled));
+  if (core_thread_.IsRunning()) {  // Not running in tests.
+    core_thread_.message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(core_.get(),
+                          &SyncBackendHost::Core::DoShutdown,
+                          sync_disabled));
+  }
 
   // Before joining the core_thread_, we wait for the UIModelWorker to
   // give us the green light that it is not depending on the frontend_loop_ to
@@ -536,9 +538,12 @@ void SyncBackendHost::Core::OnInitializationComplete() {
 }
 
 void SyncBackendHost::Core::HandleInitalizationCompletedOnFrontendLoop() {
-  host_->frontend_->OnBackendInitialized();
+  host_->HandleInitializationCompletedOnFrontendLoop();
 }
 
+void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
+  frontend_->OnBackendInitialized();
+}
 
 bool SyncBackendHost::Core::IsCurrentThreadSafeForModel(
     syncable::ModelType model_type) {

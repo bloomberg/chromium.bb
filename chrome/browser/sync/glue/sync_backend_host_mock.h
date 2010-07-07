@@ -41,6 +41,7 @@ class SyncBackendHostMock : public SyncBackendHost {
                void(const std::set<syncable::ModelType>&, CancelableTask*));
   MOCK_METHOD0(RequestPause, bool());
   MOCK_METHOD0(RequestResume, bool());
+  MOCK_METHOD0(StartSyncingWithServer, void());
 };
 
 }  // namespace browser_sync

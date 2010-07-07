@@ -66,8 +66,7 @@ class ProfileSyncServicePreferenceTest
       return false;
 
     service_.reset(new TestProfileSyncService(
-        &factory_, profile_.get(), false, true));
-    service_->AddObserver(&observer_);
+        &factory_, profile_.get(), false, false, task));
 
     // Register the preference data type.
     model_associator_ =
@@ -79,24 +78,15 @@ class ProfileSyncServicePreferenceTest
             model_associator_, change_processor_)));
 
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
-        WillOnce(MakeDataTypeManager(&backend_));
+        WillOnce(ReturnNewDataTypeManager());
 
-    EXPECT_CALL(backend_, RequestPause()).Times(1);
-    EXPECT_CALL(backend_, ConfigureDataTypes(_, _)).Times(1);
-    if (will_fail_association) {
-      EXPECT_CALL(backend_, RequestResume()).Times(0);
-    } else {
-      EXPECT_CALL(backend_, RequestResume()).Times(1);
-    }
+    service_->set_num_expected_resumes(will_fail_association ? 0 : 1);
 
-    EXPECT_CALL(observer_, OnStateChanged()).
-        WillOnce(InvokeTask(task)).
-        WillOnce(Return()).
-        WillOnce(Return());
     service_->RegisterDataTypeController(
         new PreferenceDataTypeController(&factory_,
                                          service_.get()));
     service_->Initialize();
+    MessageLoop::current()->Run();
     return true;
   }
 

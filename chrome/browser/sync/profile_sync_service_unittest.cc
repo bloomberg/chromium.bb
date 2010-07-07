@@ -44,6 +44,8 @@ using browser_sync::SyncBackendHostMock;
 using browser_sync::UnrecoverableErrorHandler;
 using testing::_;
 using testing::Return;
+using testing::WithArg;
+using testing::Invoke;
 
 class TestBookmarkModelAssociator : public BookmarkModelAssociator {
  public:
@@ -239,7 +241,7 @@ class ProfileSyncServiceTest : public testing::Test {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(&factory_,
                                                 profile_.get(),
-                                                false, true));
+                                                false, false, NULL));
 
       // Register the bookmark data type.
       model_associator_ = new TestBookmarkModelAssociator(service_.get(),
@@ -250,18 +252,15 @@ class ProfileSyncServiceTest : public testing::Test {
           WillOnce(Return(ProfileSyncFactory::SyncComponents(
               model_associator_, change_processor_)));
       EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
-          WillOnce(MakeDataTypeManager(&backend_mock_));
+          WillOnce(ReturnNewDataTypeManager());
 
       service_->RegisterDataTypeController(
           new browser_sync::BookmarkDataTypeController(&factory_,
                                                        profile_.get(),
                                                        service_.get()));
       service_->Initialize();
+      MessageLoop::current()->Run();
     }
-    // The service may have already started sync automatically if it's already
-    // enabled by user once.
-    if (!service_->HasSyncSetupCompleted())
-      service_->EnableForUser();
   }
 
   void StopSyncService(SaveOption save) {
@@ -436,7 +435,6 @@ class ProfileSyncServiceTest : public testing::Test {
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
   ProfileSyncFactoryMock factory_;
-  SyncBackendHostMock backend_mock_;
   BookmarkModel* model_;
   TestBookmarkModelAssociator* model_associator_;
   BookmarkChangeProcessor* change_processor_;
@@ -460,9 +458,10 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   service_.reset(new TestProfileSyncService(&factory_, profile_.get(),
-                                            false, true));
+                                            false, true, NULL));
+  service_->set_num_expected_resumes(0);
   EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
-      WillOnce(MakeDataTypeManager(&backend_mock_));
+      WillOnce(ReturnNewDataTypeManager());
   EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_, _)).Times(0);
   service_->RegisterDataTypeController(
       new browser_sync::BookmarkDataTypeController(&factory_,
@@ -1334,7 +1333,7 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
   if (!service_.get()) {
     service_.reset(
         new TestProfileSyncService(&factory_, profile_.get(),
-                                   false, true));
+                                   false, true, NULL));
     profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
     model_associator_ = new TestBookmarkModelAssociator(service_.get(),
@@ -1345,7 +1344,7 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
         WillOnce(Return(ProfileSyncFactory::SyncComponents(
             model_associator_, change_processor_)));
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
-        WillOnce(MakeDataTypeManager(&backend_mock_));
+        WillOnce(ReturnNewDataTypeManager());
 
     service_->RegisterDataTypeController(
         new browser_sync::BookmarkDataTypeController(&factory_,
@@ -1364,6 +1363,8 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
   syncable::ModelTypeSet set;
   set.insert(syncable::BOOKMARKS);
   service_->OnUserChoseDatatypes(false, set);
+
+  MessageLoop::current()->Run();
 
   // Stop the service so we can read the new Sync Data files that were created.
   service_.reset();

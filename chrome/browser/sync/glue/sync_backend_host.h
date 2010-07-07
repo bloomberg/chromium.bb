@@ -107,8 +107,11 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void Authenticate(const std::string& username, const std::string& password,
                     const std::string& captcha);
 
-  // Called on |frontend_loop_| to start syncing.
-  void StartSyncing();
+  // This starts the SyncerThread running a Syncer object to communicate with
+  // sync servers.  Until this is called, no changes will leave or enter this
+  // browser from the cloud / sync servers.
+  // Called on |frontend_loop_|.
+  virtual void StartSyncingWithServer();
 
   // Called on |frontend_loop_| to asynchronously set the passphrase.
   void SetPassphrase(const std::string& passphrase);
@@ -199,8 +202,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         notification_method));
   }
 #endif
+ protected:
+  // InitializationComplete passes through the SyncBackendHost to forward
+  // on to |frontend_|, and so that tests can intercept here if they need to
+  // set up initial conditions.
+  virtual void HandleInitializationCompletedOnFrontendLoop();
 
- private:
   // The real guts of SyncBackendHost, to keep the public client API clean.
   class Core : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
                public sync_api::SyncManager::Observer {
@@ -386,15 +393,17 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
+  // Our core, which communicates directly to the syncapi.
+  scoped_refptr<Core> core_;
+
+ private:
+
   UIModelWorker* ui_worker();
 
   // A thread we dedicate for use by our Core to perform initialization,
   // authentication, handle messages from the syncapi, and periodically tell
   // the syncapi to persist itself.
   base::Thread core_thread_;
-
-  // Our core, which communicates directly to the syncapi.
-  scoped_refptr<Core> core_;
 
   // A reference to the MessageLoop used to construct |this|, so we know how
   // to safely talk back to the SyncFrontend.
