@@ -187,6 +187,3 @@ PREFIX : webcore::scriptcontroller::canexecutescripts___webcore::v8proxy::mainwo
 
 # 48475 / http://code.google.com/p/v8/issues/detail?id=769
 PREFIX : v8::internal::parser::parsefunctionliteral___v8::internal::parser::parsefunctiondeclaration___v8::internal::parser::parsestatement
-
-# 48483
-PREFIX : debugutil::breakdebugger
