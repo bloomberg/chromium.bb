@@ -558,7 +558,6 @@ class GClientSmokeGIT(GClientSmokeBase):
   def testRevInfo(self):
     if not self.enabled:
       return
-    # TODO(maruel): Test multiple solutions.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
@@ -593,7 +592,7 @@ class GClientSmokeBoth(GClientSmokeBase):
     # 3x svn checkout, 3x run hooks
     self.checkBlock(results[0],
                     ['running', 'running', 'running', 'running', 'running',
-                     'running', 'running'])
+                     'running'])
     # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
     # new branch \'hash\''.
     #self.checkString('', results[1])
@@ -608,7 +607,6 @@ class GClientSmokeBoth(GClientSmokeBase):
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     tree['src/svn_hooked1'] = 'svn_hooked1'
-    tree['src/svn_hooked2'] = 'svn_hooked2'
     self.assertTree(tree)
 
   def testMultiSolutionsMultiRev(self):
@@ -675,7 +673,7 @@ class GClientSmokeBoth(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['recurse', 'sh', '-c',
                             'echo $GCLIENT_SCM,$GCLIENT_URL,`pwd`'])
-    
+
     entries = [tuple(line.split(','))
                for line in results[0].strip().split('\n')]
     logging.debug(entries)
