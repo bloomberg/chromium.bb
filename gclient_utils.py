@@ -100,6 +100,23 @@ class Error(Exception):
   pass
 
 
+def SyntaxErrorToError(filename, e):
+  """Raises a gclient_utils.Error exception with the human readable message"""
+  try:
+    # Try to construct a human readable error message
+    if filename:
+      error_message = 'There is a syntax error in %s\n' % filename
+    else:
+      error_message = 'There is a syntax error\n'
+    error_message += 'Line #%s, character %s: "%s"' % (
+        e.lineno, e.offset, re.sub(r'[\r\n]*$', '', e.text))
+  except:
+    # Something went wrong, re-raise the original exception
+    raise e
+  else:
+    raise Error(error_message)
+
+
 class PrintableObject(object):
   def __str__(self):
     output = ''

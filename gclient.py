@@ -204,7 +204,10 @@ class Dependency(GClientKeywords):
       'Var': var.Lookup,
       'deps_os': {},
     }
-    exec(deps_content, global_scope, local_scope)
+    try:
+      exec(deps_content, global_scope, local_scope)
+    except SyntaxError, e:
+      gclient_utils.SyntaxErrorToError(filepath, e)
     deps = local_scope.get('deps', {})
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
@@ -464,18 +467,7 @@ solutions = [
     try:
       exec(content, config_dict)
     except SyntaxError, e:
-      try:
-        # Try to construct a human readable error message
-        error_message = [
-            'There is a syntax error in your configuration file.',
-            'Line #%s, character %s:' % (e.lineno, e.offset),
-            '"%s"' % re.sub(r'[\r\n]*$', '', e.text) ]
-      except:
-        # Something went wrong, re-raise the original exception
-        raise e
-      else:
-        # Raise a new exception with the human readable message:
-        raise gclient_utils.Error('\n'.join(error_message))
+      gclient_utils.SyntaxErrorToError('.gclient', e)
     for s in config_dict.get('solutions', []):
       try:
         self.dependencies.append(Dependency(
@@ -538,7 +530,10 @@ solutions = [
     filename = os.path.join(self.root_dir(), self._options.entries_filename)
     if not os.path.exists(filename):
       return {}
-    exec(gclient_utils.FileRead(filename), scope)
+    try:
+      exec(gclient_utils.FileRead(filename), scope)
+    except SyntaxError, e:
+      gclient_utils.SyntaxErrorToError(filename, e)
     return scope['entries']
 
   def _EnforceRevisions(self):

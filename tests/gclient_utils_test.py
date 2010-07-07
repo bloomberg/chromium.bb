@@ -20,6 +20,7 @@ class GclientUtilsUnittest(SuperMoxTestBase):
         'GetNamedNodeText', 'GetNodeNamedAttributeText', 'IsUsingGit',
         'PathDifference', 'ParseXML', 'PrintableObject', 'RemoveDirectory',
         'SplitUrlRevision', 'SubprocessCall', 'SubprocessCallAndFilter',
+        'SyntaxErrorToError',
         'errno', 'logging', 'os', 're', 'stat', 'subprocess', 'sys', 'time',
         'xml',
     ]
