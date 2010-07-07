@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/default_plugin/plugin_main.h"
+#include "chrome/default_plugin/plugin_main.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "webkit/default_plugin/plugin_impl.h"
+#include "chrome/default_plugin/plugin_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace default_plugin {

@@ -18,7 +18,6 @@
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-#include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"

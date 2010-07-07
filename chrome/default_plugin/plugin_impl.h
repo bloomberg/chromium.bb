@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #if defined(OS_WIN)
-#include "webkit/default_plugin/plugin_impl_win.h"
+#include "chrome/default_plugin/plugin_impl_win.h"
 #elif defined(OS_MACOSX)
-#include "webkit/default_plugin/plugin_impl_mac.h"
+#include "chrome/default_plugin/plugin_impl_mac.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "webkit/default_plugin/plugin_impl_gtk.h"
+#include "chrome/default_plugin/plugin_impl_gtk.h"
 #endif

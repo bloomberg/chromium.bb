@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
-#define WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
+#ifndef CHROME_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
+#define CHROME_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
 
 #include <string>
 #include <vector>
@@ -282,4 +282,4 @@ class PluginInstallerImpl {
 };
 
 
-#endif  // WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
+#endif  // CHROME_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
