@@ -335,7 +335,7 @@ SVGLoader.prototype.parsePath_ = function(pathData,
   if (this.fill_) {
     path.setFill(this.fill_);
   }
-  path.setPolygonOffset(-2 * this.polygonOffset_, -3 * this.polygonOffset_);
+  path.setPolygonOffset(-3 * this.polygonOffset_, -4 * this.polygonOffset_);
   ++this.polygonOffset_;
   this.currentTransform_().addShape(path.shape);
 };
