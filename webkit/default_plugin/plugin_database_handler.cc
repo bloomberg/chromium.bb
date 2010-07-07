@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/default_plugin/plugin_database_handler.h"
+#include "webkit/default_plugin/plugin_database_handler.h"
 
 #if defined(USE_SYSTEM_LIBXML)
 #include <parser.h>
@@ -17,8 +17,8 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/default_plugin/plugin_impl.h"
-#include "chrome/default_plugin/plugin_main.h"
+#include "webkit/default_plugin/plugin_impl.h"
+#include "webkit/default_plugin/plugin_main.h"
 
 using base::Time;
 using base::TimeDelta;

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/default_plugin/install_dialog.h"
+#include "webkit/default_plugin/install_dialog.h"
 
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "chrome/default_plugin/plugin_impl.h"
 #include "grit/webkit_strings.h"
+#include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
 typedef base::hash_map<const std::wstring, PluginInstallDialog*> DialogMap;

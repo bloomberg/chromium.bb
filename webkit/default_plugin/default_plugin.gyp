@@ -11,19 +11,22 @@
       'target_name': 'default_plugin',
       'type': '<(library)',
       'dependencies': [
-        '<(DEPTH)/net/net.gyp:net_resources',
-        '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
-        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-        '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
-        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+        '../../net/net.gyp:net_resources',
+        '../../third_party/icu/icu.gyp:icui18n',
+        '../../third_party/icu/icu.gyp:icuuc',
+        '../../third_party/libxml/libxml.gyp:libxml',
+        '../../third_party/npapi/npapi.gyp:npapi',
+        '../support/webkit_support.gyp:webkit_resources',
+        '../support/webkit_support.gyp:webkit_strings',
       ],
       'include_dirs': [
-        '<(DEPTH)',
+        '../..',
         '<(DEPTH)/third_party/wtl/include',
+        # TODO(bradnelson): this should fall out of the dependencies.
+        '<(SHARED_INTERMEDIATE_DIR)/webkit',
       ],
       'sources': [
+        'default_plugin_shared.h',
         'plugin_impl_gtk.cc',
         'plugin_impl_gtk.h',
         'plugin_impl_mac.h',
@@ -51,7 +54,7 @@
          }],
          ['OS=="linux"', {
             'dependencies': [
-              '<(DEPTH)/build/linux/system.gyp:gtk',
+              '../../build/linux/system.gyp:gtk',
             ],
          }],
       ],

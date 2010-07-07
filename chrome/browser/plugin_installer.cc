@@ -11,7 +11,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "webkit/glue/plugins/default_plugin_shared.h"
+#include "webkit/default_plugin/default_plugin_shared.h"
 
 PluginInstaller::PluginInstaller(TabContents* tab_contents)
     : ConfirmInfoBarDelegate(tab_contents),

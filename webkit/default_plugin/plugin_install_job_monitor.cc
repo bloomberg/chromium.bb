@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/default_plugin/plugin_install_job_monitor.h"
+#include "webkit/default_plugin/plugin_install_job_monitor.h"
 
 #include "base/message_loop.h"
-#include "chrome/default_plugin/plugin_impl.h"
+#include "webkit/default_plugin/plugin_impl.h"
 
 PluginInstallationJobMonitorThread::PluginInstallationJobMonitorThread()
     : Thread("Chrome plugin install thread"),

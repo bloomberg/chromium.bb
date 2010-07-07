@@ -1,20 +1,20 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/default_plugin/plugin_impl_mac.h"
+#include "webkit/default_plugin/plugin_impl_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "chrome/default_plugin/plugin_main.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_strings.h"
 #include "unicode/locid.h"
+#include "webkit/default_plugin/default_plugin_shared.h"
+#include "webkit/default_plugin/plugin_main.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/plugins/default_plugin_shared.h"
 
 // TODO(thakis): Most methods in this class are stubbed out and need to be
 // implemented.
@@ -161,7 +161,7 @@ int16 PluginInstallerImpl::OnDrawRect(CGContextRef context, CGRect dirty_rect) {
       roundf(text_rect.origin.x + (text_rect.size.width - text_size.width)/2),
       roundf(text_rect.origin.y + (text_rect.size.height - text_size.height)/2));
   [text drawAtPoint:label_point withAttributes:attributes];
-
+  
   [NSGraphicsContext restoreGraphicsState];
   return 1;
 }
