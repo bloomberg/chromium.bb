@@ -103,6 +103,19 @@ bool MenuItemView::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
 bool MenuItemView::GetAccessibleState(AccessibilityTypes::State* state) {
   *state = 0;
+
+  switch (GetType()) {
+    case SUBMENU:
+      *state |= AccessibilityTypes::STATE_HASPOPUP;
+    case CHECKBOX:
+    case RADIO:
+      *state |= GetDelegate()->IsItemChecked(GetCommand()) ?
+          AccessibilityTypes::STATE_CHECKED : 0;
+    case NORMAL:
+    case SEPARATOR:
+      // No additional accessibility states currently for these menu states.
+      break;
+  }
   return true;
 }
 
