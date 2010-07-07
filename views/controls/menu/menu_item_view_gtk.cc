@@ -16,7 +16,7 @@
 namespace views {
 
 // Background color when the menu item is selected.
-#if defined(OS_CHROMOS)
+#if defined(OS_CHROMEOS)
 static const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xDC, 0xE4, 0xFA);
 #else
 static const SkColor kSelectedBackgroundColor = SkColorSetRGB(246, 249, 253);
