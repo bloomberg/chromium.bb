@@ -901,17 +901,24 @@ int CookieMonster::DeleteAllCreatedAfter(const Time& delete_begin,
   return DeleteAllCreatedBetween(delete_begin, Time(), sync_to_store);
 }
 
-int CookieMonster::DeleteAllForURL(const GURL& url,
-                                   bool sync_to_store) {
+int CookieMonster::DeleteAllForHost(const GURL& url) {
   AutoLock autolock(lock_);
   InitIfNecessary();
 
-  CookieList cookies = InternalGetAllCookiesForURL(url);
+  if (!HasCookieableScheme(url))
+    return 0;
+
+  // We store host cookies in the store by their canonical host name;
+  // domain cookies are stored with a leading ".".  So this is a pretty
+  // simple lookup and per-cookie delete.
   int num_deleted = 0;
-  for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
-    CookieMap::iterator curit = it;
-    ++it;
-    InternalDeleteCookie(curit, sync_to_store, kDeleteCookieExplicit);
+  for (CookieMapItPair its = cookies_.equal_range(url.host());
+       its.first != its.second;) {
+    CookieMap::iterator curit = its.first;
+    ++its.first;
+    num_deleted++;
+
+    InternalDeleteCookie(curit, true, kDeleteCookieExplicit);
   }
   return num_deleted;
 }
