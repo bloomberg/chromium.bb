@@ -30,7 +30,7 @@ const string16 kSSNSeparators = ASCIIToUTF16(" -");
 bool IsSSN(const string16& text) {
   string16 number_string;
   RemoveChars(text, kSSNSeparators.c_str(), &number_string);
-  if (number_string.length() != 9)
+  if (number_string.length() != 9 || !IsStringASCII(number_string))
     return false;
 
   // A SSN is of the form AAA-GG-SSSS (A = area number, G = group number, S =
