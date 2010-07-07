@@ -24,9 +24,11 @@ clean:
 
 
 pnacl_bin: $(IT).pnacl.arm $(IT).pnacl.opt.arm \
-           $(IT).pnacl.x8632 $(IT).pnacl.opt.x8632 
+           $(IT).pnacl.x8632 $(IT).pnacl.opt.x8632 \
+	   $(IT).pnacl.x8664 $(IT).pnacl.opt.x8664
 
-nacl_bin: $(IT).nacl.x8632 $(IT).nacl.opt.x8632 
+nacl_bin: $(IT).nacl.x8632 $(IT).nacl.opt.x8632 \
+	  $(IT).nacl.x8664 $(IT).nacl.opt.x8664
 
 nosfi_bin: $(IT).gcc.x8632 $(IT).gcc.opt.x8632 \
 	   $(IT).gcc.arm $(IT).gcc.opt.arm 
@@ -34,14 +36,13 @@ nosfi_bin: $(IT).gcc.x8632 $(IT).gcc.opt.x8632 \
 all: pnacl_bin nacl_bin nosfi_bin
 
 
-     
 ######################################################################
 LOCAL_GCC=/usr/bin/gcc
 # straight x86 gcc
 $(IT).gcc.x8632: $(SRC)
 	$(LOCAL_GCC) -O0 -m32 $(CFLAGS) $(SRC)  -static  -lm  -o $@
 
-# optmized x86 gcc
+# optimized x86 gcc
 $(IT).gcc.opt.x8632: $(SRC)
 	$(LOCAL_GCC) -O3 -m32 $(CFLAGS) $(SRC)  -static -lm  -o $@
 
@@ -51,7 +52,7 @@ LOCAL_CROSS_GCC=$(TC_ROOT)/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnuea
 $(IT).gcc.arm: $(SRC)
 	$(LOCAL_CROSS_GCC) -O0 -march=armv6 $(CFLAGS) $(SRC)  -static  -lm  -o $@
 
-# optmized x86 gcc (code sourcery)
+# optimized x86 gcc (code sourcery)
 $(IT).gcc.opt.arm: $(SRC)
 	$(LOCAL_CROSS_GCC) -O3 -march=armv6 $(CFLAGS) $(SRC)  -static -lm  -o $@
 
@@ -62,14 +63,27 @@ NACL_GCC=$(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl-gcc
 $(IT).nacl.x8632: $(SRC)
 	$(NACL_GCC) -O0 -m32 $(CFLAGS) $(SRC)  -static  -lm  -lnosys -o $@
 
-# nacl optmized x86 gcc
+# nacl optimized x86 gcc
 $(IT).nacl.opt.x8632: $(SRC)
 	$(NACL_GCC) -O3 -m32 $(CFLAGS) $(SRC)  -static -lm  -lnosys -o $@
+
+######################################################################
+NACL64_GCC=$(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl64-gcc
+
+# nacl x86-64 gcc
+$(IT).nacl.x8664: $(SRC)
+	$(NACL64_GCC) -O0 $(CFLAGS) $(SRC)  -static  -lm  -lnosys -o $@
+
+# nacl optimized x86-64 gcc
+$(IT).nacl.opt.x8664: $(SRC)
+	$(NACL64_GCC) -O3 $(CFLAGS) $(SRC)  -static -lm  -lnosys -o $@
 
 
 ######################################################################
 # BITCODE - FRONTEND
-BC_GCC=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/llvm-fake-bcgcc
+
+LLVM_FAKE_ROOT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi
+BC_GCC=$(LLVM_FAKE_ROOT)/llvm-fake-bcgcc
 BC_LD=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin/llvm-ld
 BC_OPT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/llvm/bin/opt
 
@@ -91,21 +105,37 @@ $(IT).opt.bc: $(IT).bc
 ######################################################################
 # BITCODE - BACKEND - ARM
 
-BC_ARM=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/llvm-fake-bcld-arm
+BC_ARM=$(LLVM_FAKE_ROOT)/llvm-fake-bcld-arm
 LIB_BC=$(TC_ROOT)/pnacl-untrusted/bitcode
 
 $(IT).pnacl.arm: $(IT).bc
-	$(BC_ARM) $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread -lnosys  -o $@
+	$(BC_ARM) $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
+	-lnosys -o $@
 
 $(IT).pnacl.opt.arm: $(IT).opt.bc
-	$(BC_ARM) $(PNACL) $(IT).opt.bc -L$(LIB_BC) -lc -lm -lnacl -lpthread -lnosys  -o $@
+	$(BC_ARM) $(PNACL) $(IT).opt.bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
+	-lnosys  -o $@
 
 ######################################################################
 # BITCODE - BACKEND - X8632
-BC_X8632=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/llvm-fake-bcld-x86-32
+BC_X8632=$(LLVM_FAKE_ROOT)/llvm-fake-bcld-x86-32
 
 $(IT).pnacl.x8632: $(IT).bc
-	$(BC_X8632)  $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread -lnosys  -o $@
-$(IT).pnacl.opt.x8632: $(IT).opt.bc
-	$(BC_X8632) $(PNACL) $(IT).opt.bc -L$(LIB_BC) -lc -lm -lnacl -lpthread -lnosys  -o $@
+	$(BC_X8632)  $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
+	-lnosys  -o $@
 
+$(IT).pnacl.opt.x8632: $(IT).opt.bc
+	$(BC_X8632) $(PNACL) $(IT).opt.bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
+	-lnosys  -o $@
+
+######################################################################
+# BITCODE - BACKEND - X8664
+BC_X8664=$(LLVM_FAKE_ROOT)/llvm-fake-bcld-x86-64
+
+$(IT).pnacl.x8664: $(IT).bc
+	$(BC_X8664) $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
+	-lnosys  -o $@
+
+$(IT).pnacl.opt.x8664: $(IT).opt.bc
+	$(BC_X8664) $(PNACL) $(IT).opt.bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
+	-lnosys  -o $@

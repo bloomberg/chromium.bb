@@ -77,6 +77,20 @@ SetupNaclX8632() {
   SUFFIX=nacl.x8632
 }
 
+#@
+#@ SetupNaClX8664
+#@   use nacl-gcc compiler
+SetupNaclX8664() {
+  SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
+  if [[ ! -x ${SEL_LDR} ]] ; then
+    echo "you have not build the sel_ldr yet"
+    exit -1
+  fi
+  SEL_LDR=$(readlink -f ${SEL_LDR})
+  PREFIX="${SEL_LDR} -d -f"
+  SUFFIX=nacl.x8664
+}
+
 SetupPnaclX8664Common() {
   SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
   if [[ ! -x ${SEL_LDR} ]] ; then
