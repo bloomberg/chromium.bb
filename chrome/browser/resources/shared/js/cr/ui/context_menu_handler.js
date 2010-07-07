@@ -76,7 +76,7 @@ cr.define('cr.ui', function() {
       var x, y;
       // When the user presses the context menu key (on the keyboard) we need
       // to detect this.
-      if (e.screenX == 0 && e.screenY == 0) {
+      if (this.keyIsDown_) {
         var rect = element.getRectForContextMenu ?
                        element.getRectForContextMenu() :
                        element.getBoundingClientRect();
@@ -96,6 +96,21 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The event object.
      */
     handleEvent: function(e) {
+      // Keep track of keydown state so that we can use that to determine the
+      // reason for the contextmenu event.
+      switch (e.type) {
+        case 'keydown':
+          this.keyIsDown_ = !e.ctrlKey && !e.altKey &&
+              // context menu key or Shift-F10
+              (e.keyCode == 93 && !e.shiftKey ||
+               e.keyIdentifier == 'F10' && e.shiftKey);
+          break;
+
+        case 'keyup':
+          this.keyIsDown_ = false;
+          break;
+      }
+
       // Context menu is handled even when we have no menu.
       if (e.type != 'contextmenu' && !this.menu)
         return;
@@ -159,10 +174,16 @@ cr.define('cr.ui', function() {
         if (menu === oldContextMenu)
           return;
 
-        if (oldContextMenu && !menu)
+        if (oldContextMenu && !menu) {
           this.removeEventListener('contextmenu', contextMenuHandler);
-        if (menu && !oldContextMenu)
+          this.removeEventListener('keydown', contextMenuHandler);
+          this.removeEventListener('keyup', contextMenuHandler);
+        }
+        if (menu && !oldContextMenu) {
           this.addEventListener('contextmenu', contextMenuHandler);
+          this.addEventListener('keydown', contextMenuHandler);
+          this.addEventListener('keyup', contextMenuHandler);
+        }
 
         this.contextMenu_ = menu;
 
