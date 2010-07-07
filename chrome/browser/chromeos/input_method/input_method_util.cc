@@ -582,7 +582,7 @@ bool GetInputMethodIdsFromLanguageCodeInternal(
       result = true;
     }
   }
-  if (!result) {
+  if ((type == kAllInputMethods) && !result) {
     LOG(ERROR) << "Unknown language code: " << normalized_language_code;
   }
   return result;
