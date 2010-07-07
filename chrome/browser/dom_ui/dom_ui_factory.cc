@@ -114,8 +114,12 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewDOMUI<PluginsUI>;
 #if defined(ENABLE_REMOTING)
-  if (url.host() == chrome::kChromeUIRemotingHost)
-    return &NewDOMUI<RemotingUI>;
+  if (url.host() == chrome::kChromeUIRemotingHost) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableChromoting)) {
+      return &NewDOMUI<RemotingUI>;
+    }
+  }
 #endif
 
 #if defined(OS_CHROMEOS)

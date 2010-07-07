@@ -95,16 +95,19 @@ void PepperPluginRegistry::GetInternalPluginInfo(
   // plugin initializers that is built with static initializers?
 
 #if defined(ENABLE_REMOTING)
-  InternalPluginInfo info;
-  // Add the chromoting plugin.
-  info.path =
-      FilePath(FILE_PATH_LITERAL("internal-chromoting"));
-  info.mime_types.push_back("pepper-application/x-chromoting");
-  info.entry_points.get_interface = remoting::PPP_GetInterface;
-  info.entry_points.initialize_module = remoting::PPP_InitializeModule;
-  info.entry_points.shutdown_module = remoting::PPP_ShutdownModule;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableChromoting)) {
+    InternalPluginInfo info;
+    // Add the chromoting plugin.
+    info.path =
+        FilePath(FILE_PATH_LITERAL("internal-chromoting"));
+    info.mime_types.push_back("pepper-application/x-chromoting");
+    info.entry_points.get_interface = remoting::PPP_GetInterface;
+    info.entry_points.initialize_module = remoting::PPP_InitializeModule;
+    info.entry_points.shutdown_module = remoting::PPP_ShutdownModule;
 
-  plugin_info->push_back(info);
+    plugin_info->push_back(info);
+  }
 #endif
 }
 
