@@ -393,6 +393,7 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_NoDataReceived) {
   // without receiving data in between.
   DisallowLoaderDefer();
   AllowLoaderDefer();
+  StopWhenLoad();
 }
 
 TEST_F(BufferedResourceLoaderTest, AllowDefer_ReadSameWindow) {
@@ -412,6 +413,7 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_ReadSameWindow) {
   EXPECT_CALL(*this, ReadCallback(10));
   ReadLoader(10, 10, buffer);
   VerifyBuffer(buffer, 10, 10);
+  StopWhenLoad();
 }
 
 TEST_F(BufferedResourceLoaderTest, AllowDefer_ReadPastWindow) {
@@ -431,6 +433,7 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_ReadPastWindow) {
 
   EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
   ReadLoader(10, 10, buffer);
+  StopWhenLoad();
 }
 
 TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredNoDataReceived) {
@@ -453,6 +456,7 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredNoDataReceived) {
   EXPECT_CALL(*this, ReadCallback(10));
   ReadLoader(20, 10, buffer);
   VerifyBuffer(buffer, 20, 10);
+  StopWhenLoad();
 }
 
 TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadSameWindow) {
@@ -476,6 +480,7 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadSameWindow) {
   EXPECT_CALL(*this, ReadCallback(10));
   ReadLoader(20, 10, buffer);
   VerifyBuffer(buffer, 20, 10);
+  StopWhenLoad();
 }
 
 TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadPastWindow) {
@@ -499,6 +504,7 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadPastWindow) {
 
   EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
   ReadLoader(20, 5, buffer);
+  StopWhenLoad();
 }
 
 // TODO(hclam): add unit test for defer loading.
