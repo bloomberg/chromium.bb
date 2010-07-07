@@ -123,7 +123,11 @@ const struct EnglishToResouceId {
   { "Simplfied/Traditional Chinese",
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE },
 
-  // TODO(yusukes): Support ibus-chewing and ibus-table-* if needed.
+  // For ibus-chewing: third_party/ibus-chewing/files/src/IBusChewingEngine.gob.
+  { "Chi", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_CHINESE_TO_ENGLISH },
+  { "Eng", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_ENGLISH_TO_CHINESE },
+  { "Full", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_FULL_TO_HALF },
+  { "Half", IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_HALF_TO_FULL },
 
   // For the "Languages and Input" dialog.
   { "kbd (m17n)", IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
