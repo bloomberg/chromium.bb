@@ -201,62 +201,6 @@
             },
           ],
         },
-        {
-          'target_name': 'chrome_frame_mini_installer',
-          'type': 'executable',
-          'msvs_guid': '2F3651F5-4662-4565-A4F6-AD15B0E893AA',
-          'sources': [
-            'mini_installer/chrome_frame.release',
-            'mini_installer/chrome_frame_appid.cc',
-          ],
-          'dependencies': [
-            # Artificially make this depend on the other to avoid
-            # problems with parallel packaging scripts being run.
-            'mini_installer',
-          ],
-          'rules': [
-            {
-              'rule_name': 'installer_archive',
-              'extension': 'release',
-              'variables': {
-                'create_installer_archive_py_path':
-                  '../tools/build/win/create_installer_archive.py',
-              },
-              'inputs': [
-                '<(create_installer_archive_py_path)',
-                '<(PRODUCT_DIR)/chrome.exe',
-                '<(PRODUCT_DIR)/chrome.dll',
-                '<(PRODUCT_DIR)/nacl64.exe',
-                '<(PRODUCT_DIR)/nacl64.dll',
-                '<(PRODUCT_DIR)/locales/en-US.dll',
-                '<(PRODUCT_DIR)/icudt42.dll',
-              ],
-              'outputs': [
-                'xxx.out',
-                '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).7z',
-                '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).packed.7z',
-                '<(PRODUCT_DIR)/setup.ex_',
-                '<(PRODUCT_DIR)/packed_files.txt',
-              ],
-              'action': [
-                'python',
-                '<(create_installer_archive_py_path)',
-                '--output_dir=<(PRODUCT_DIR)',
-                '--input_file=<(RULE_INPUT_PATH)',
-                # TODO(sgk):  may just use environment variables
-                #'--distribution=$(CHROMIUM_BUILD)',
-                '--distribution=_google_chrome',
-                '--archive_prefix=cf',
-                '--output_name=chrome_frame',
-                # Optional arguments to generate diff installer
-                #'--last_chrome_installer=C:/Temp/base',
-                #'--setup_exe_format=DIFF',
-                #'--diff_algorithm=COURGETTE',
-              ],
-              'message': 'Create Chrome Frame installer archive'
-            },
-          ],
-        },
       ],
     }],
     [ 'branding == "Chrome"', {

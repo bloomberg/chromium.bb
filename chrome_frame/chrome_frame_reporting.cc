@@ -23,7 +23,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* dll_path) {
   std::wstring product;
   std::wstring version;
   scoped_ptr<FileVersionInfo>
-      version_info(FileVersionInfo::CreateFileVersionInfo(dll_path));
+      version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(dll_path)));
   if (version_info.get()) {
     version = version_info->product_version();
     product = version_info->product_short_name();
