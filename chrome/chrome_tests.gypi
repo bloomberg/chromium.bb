@@ -1236,6 +1236,7 @@
             'chrome_dll_version',
             'installer_util_strings',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+            '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             'test_chrome_plugin',  # run time dependency
           ],
           'conditions': [
