@@ -244,7 +244,7 @@ int CookieMonster::TrimDuplicateCookiesForHost(
          dupes_it != dupes.end();
          ++dupes_it) {
       InternalDeleteCookie(*dupes_it, true /*sync_to_store*/,
-                           kDeleteCookieDuplicateInBackingStore);
+                           DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE);
     }
   }
 
@@ -725,7 +725,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   lock_.AssertAcquired();
 
   UMA_HISTOGRAM_ENUMERATION("net.CookieDeletionCause", deletion_cause,
-                            kDeleteCookieLastEntry);
+                            DELETE_COOKIE_LAST_ENTRY);
 
   CanonicalCookie* cc = it->second;
   COOKIE_DLOG(INFO) << "InternalDeleteCookie() cc: " << cc->DebugString();
@@ -758,7 +758,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
       if (skip_httponly && cc->IsHttpOnly()) {
         skipped_httponly = true;
       } else {
-        InternalDeleteCookie(curit, true, kDeleteCookieOverwrite);
+        InternalDeleteCookie(curit, true, DELETE_COOKIE_OVERWRITE);
       }
       found_equivalent_cookie = true;
     }
@@ -826,7 +826,7 @@ int CookieMonster::GarbageCollectRange(const Time& current,
           "net.CookieEvictedLastAccessMinutes",
           (current - cookie_its[i]->second->LastAccessDate()).InMinutes(),
           1, kMinutesInTenYears, 50);
-      InternalDeleteCookie(cookie_its[i], true, kDeleteCookieEvicted);
+      InternalDeleteCookie(cookie_its[i], true, DELETE_COOKIE_EVICTED);
     }
 
     num_deleted += num_purge;
@@ -847,7 +847,7 @@ int CookieMonster::GarbageCollectExpired(
     ++it;
 
     if (curit->second->IsExpired(current)) {
-      InternalDeleteCookie(curit, true, kDeleteCookieExpired);
+      InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
       ++num_deleted;
     } else if (cookie_its) {
       cookie_its->push_back(curit);
@@ -866,8 +866,8 @@ int CookieMonster::DeleteAll(bool sync_to_store) {
     CookieMap::iterator curit = it;
     ++it;
     InternalDeleteCookie(curit, sync_to_store,
-                         sync_to_store ? kDeleteCookieExplicit :
-                             kDeleteCookieDontRecord /* Destruction. */);
+                         sync_to_store ? DELETE_COOKIE_EXPLICIT :
+                             DELETE_COOKIE_DONT_RECORD /* Destruction. */);
     ++num_deleted;
   }
 
@@ -888,7 +888,7 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
 
     if (cc->CreationDate() >= delete_begin &&
         (delete_end.is_null() || cc->CreationDate() < delete_end)) {
-      InternalDeleteCookie(curit, sync_to_store, kDeleteCookieExplicit);
+      InternalDeleteCookie(curit, sync_to_store, DELETE_COOKIE_EXPLICIT);
       ++num_deleted;
     }
   }
@@ -918,7 +918,7 @@ int CookieMonster::DeleteAllForHost(const GURL& url) {
     ++its.first;
     num_deleted++;
 
-    InternalDeleteCookie(curit, true, kDeleteCookieExplicit);
+    InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPLICIT);
   }
   return num_deleted;
 }
@@ -933,7 +933,7 @@ bool CookieMonster::DeleteCookie(const std::string& domain,
        its.first != its.second; ++its.first) {
     // The creation date acts as our unique index...
     if (its.first->second->CreationDate() == cookie.CreationDate()) {
-      InternalDeleteCookie(its.first, sync_to_store, kDeleteCookieExplicit);
+      InternalDeleteCookie(its.first, sync_to_store, DELETE_COOKIE_EXPLICIT);
       return true;
     }
   }
@@ -1028,7 +1028,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
     CookieMap::iterator curit = it;
     ++it;
     if (matching_cookies.find(curit->second) != matching_cookies.end()) {
-      InternalDeleteCookie(curit, true, kDeleteCookieExplicit);
+      InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPLICIT);
     }
   }
 }
@@ -1118,7 +1118,7 @@ void CookieMonster::FindCookiesForKey(
 
     // If the cookie is expired, delete it.
     if (cc->IsExpired(current)) {
-      InternalDeleteCookie(curit, true, kDeleteCookieExpired);
+      InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
       continue;
     }
 

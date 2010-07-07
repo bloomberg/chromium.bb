@@ -235,13 +235,15 @@ class CookieMonster : public CookieStore {
 
   void InternalUpdateCookieAccessTime(CanonicalCookie* cc);
 
-  enum DeletionCause { kDeleteCookieExplicit,
-                       kDeleteCookieOverwrite,
-                       kDeleteCookieExpired,
-                       kDeleteCookieEvicted,
-                       kDeleteCookieDuplicateInBackingStore,
-                       kDeleteCookieDontRecord,
-                       kDeleteCookieLastEntry = kDeleteCookieDontRecord };
+  enum DeletionCause {
+    DELETE_COOKIE_EXPLICIT,
+    DELETE_COOKIE_OVERWRITE,
+    DELETE_COOKIE_EXPIRED,
+    DELETE_COOKIE_EVICTED,
+    DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE,
+    DELETE_COOKIE_DONT_RECORD,
+    DELETE_COOKIE_LAST_ENTRY = DELETE_COOKIE_DONT_RECORD
+  };
 
   // |deletion_cause| argument is for collecting statistics.
   void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store,
