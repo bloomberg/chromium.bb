@@ -6,6 +6,7 @@
 
 #include <Security/SecBase.h>
 
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/singleton.h"
 #include "base/sys_string_conversions.h"
@@ -75,6 +76,25 @@ class CSSMInitSingleton {
   CSSM_CSP_HANDLE csp_handle_;
 };
 
+// This singleton is separate as it pertains to Apple's wrappers over
+// their own CSSM handles, as opposed to our own CSSM_CSP_HANDLE.
+class SecurityServicesSingleton {
+ public:
+  ~SecurityServicesSingleton() {}
+
+  Lock& lock() { return lock_; }
+
+ private:
+  friend class Singleton<SecurityServicesSingleton>;
+  friend struct DefaultSingletonTraits<SecurityServicesSingleton>;
+
+  SecurityServicesSingleton() {}
+
+  Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecurityServicesSingleton);
+};
+
 }  // namespace
 
 namespace base {
@@ -122,6 +142,10 @@ void LogCSSMError(const char *fn_name, CSSM_RETURN err) {
   } else {
     LOG(ERROR) << fn_name << " returned " << err;
   }
+}
+
+Lock& GetMacSecurityServicesLock() {
+  return Singleton<SecurityServicesSingleton>::get()->lock();
 }
 
 }  // namespace base

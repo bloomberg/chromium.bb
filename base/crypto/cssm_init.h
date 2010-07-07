@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 
+class Lock;
+
 namespace base {
 
 // Initialize CSSM if it isn't already initialized.  This must be called before
@@ -25,6 +27,13 @@ extern const CSSM_API_MEMORY_FUNCS kCssmMemoryFunctions;
 
 // Utility function to log an error message including the error name.
 void LogCSSMError(const char *function_name, CSSM_RETURN err);
+
+// The OS X certificate and key management wrappers over CSSM are not
+// thread-safe. In particular, code that accesses the CSSM database is
+// problematic.
+//
+// http://developer.apple.com/mac/library/documentation/Security/Reference/certifkeytrustservices/Reference/reference.html
+Lock& GetMacSecurityServicesLock();
 
 }  // namespace base
 
