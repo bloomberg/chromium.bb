@@ -1395,6 +1395,7 @@
         'browser/extensions/extension_browsertests_misc.cc',
         'browser/extensions/extension_clipboard_apitest.cc',
         'browser/extensions/extension_context_menu_apitest.cc',
+        'browser/extensions/extension_context_menu_browsertest.cc',
         'browser/extensions/extension_cookies_apitest.cc',
         'browser/extensions/extension_cookies_unittest.cc',
         'browser/extensions/extension_crash_recovery_browsertest.cc',
