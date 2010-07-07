@@ -161,6 +161,20 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
   [controller_ cancel:nil];
 }
 
+TEST_F(BookmarkEditorBaseControllerTest, CreateTwoFolders) {
+  BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* bar = model->GetBookmarkBarNode();
+  // Create 2 folders which are children of the bar.
+  [controller_ selectTestNodeInBrowser:bar];
+  [controller_ newFolder:nil];
+  [controller_ selectTestNodeInBrowser:bar];
+  [controller_ newFolder:nil];
+  // If we do NOT crash on createNewFolders, success!
+  // (e.g. http://crbug.com/47877 is fixed).
+  [controller_ createNewFolders];
+  [controller_ cancel:nil];
+}
+
 TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
   BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
   [controller_ selectTestNodeInBrowser:group_b_3_];

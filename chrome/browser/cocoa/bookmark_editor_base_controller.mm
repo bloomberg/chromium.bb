@@ -511,12 +511,16 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 }
 
 - (void)createNewFolders {
+  // Turn off notifications while "importing" folders (as created in the sheet).
+  observer_->BookmarkImportBeginning([self bookmarkModel]);
   // Scan the tree looking for nodes marked 'newFolder' and create those nodes.
   NSArray* folderTreeArray = [self folderTreeArray];
   for (BookmarkFolderInfo *folderInfo in folderTreeArray) {
     [self createNewFoldersForFolder:folderInfo
                  selectedFolderInfo:[self selectedFolder]];
   }
+  // Notifications back on.
+  observer_->BookmarkImportEnding([self bookmarkModel]);
 }
 
 #pragma mark For Unit Test Use Only
