@@ -47,11 +47,8 @@ bool AudioSyncReader::PrepareForeignSocketHandle(
   ::DuplicateHandle(GetCurrentProcess(), foreign_socket_->handle(),
                     process_handle, foreign_handle,
                     0, FALSE, DUPLICATE_SAME_ACCESS);
-  if (*foreign_handle != 0) {
-    // Note that this is just a way to get away with the unused variable
-    // warning. We want to return true here.
-    return foreign_socket_.release() != NULL;
-  }
+  if (*foreign_handle != 0)
+    return true;
   return false;
 }
 #else
@@ -60,11 +57,8 @@ bool AudioSyncReader::PrepareForeignSocketHandle(
     base::FileDescriptor* foreign_handle) {
   foreign_handle->fd = foreign_socket_->handle();
   foreign_handle->auto_close = false;
-  if (foreign_handle->fd != -1) {
-    // Note that this is just a way to get away with the unused variable
-    // warning. We want to return true here.
-    return foreign_socket_.release() != NULL;
-  }
+  if (foreign_handle->fd != -1)
+    return true;
   return false;
 }
 #endif
