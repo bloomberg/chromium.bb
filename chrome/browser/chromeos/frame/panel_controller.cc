@@ -164,7 +164,7 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
 
 void PanelController::TitleMouseReleased(
     const views::MouseEvent& event, bool canceled) {
-  if (!event.IsOnlyLeftMouseButton()) {
+  if (!event.IsLeftMouseButton()) {
     return;
   }
   // Only handle clicks that started in our window.
