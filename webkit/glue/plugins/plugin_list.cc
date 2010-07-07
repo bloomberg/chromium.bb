@@ -381,8 +381,10 @@ bool PluginList::GetPluginInfo(const GURL& url,
                                std::string* actual_mime_type) {
   bool found = FindPlugin(mime_type, allow_wildcard, info);
   if (!found || (info->path.value() == kDefaultPluginLibraryName)) {
-    found = FindPlugin(url, actual_mime_type, info) ||
-        FindDisabledPlugin(mime_type, allow_wildcard, info);
+    if (FindPlugin(url, actual_mime_type, info) ||
+        FindDisabledPlugin(mime_type, allow_wildcard, info)) {
+      found = true;
+    }
   }
 
   return found;

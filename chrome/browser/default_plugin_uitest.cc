@@ -16,8 +16,7 @@ class DefaultPluginUITest : public UITest {
   }
 };
 
-// Failing consistently: crbug/46662
-TEST_F(DefaultPluginUITest, DISABLED_DefaultPluginLoadTest) {
+TEST_F(DefaultPluginUITest, DefaultPluginLoadTest) {
   // Open page with default plugin.
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("default_plugin.html");
