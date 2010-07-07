@@ -1104,8 +1104,8 @@
   return [tabStripController_ selectedTabView];
 }
 
-- (void)setIsLoading:(BOOL)isLoading {
-  [toolbarController_ setIsLoading:isLoading];
+- (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
+  [toolbarController_ setIsLoading:isLoading force:force];
 }
 
 // Make the location bar the first responder, if possible.

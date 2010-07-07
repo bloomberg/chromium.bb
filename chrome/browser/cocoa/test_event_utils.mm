@@ -49,20 +49,38 @@ NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers) {
   return MouseEventAtPoint(NSMakePoint(0, 0), type, modifiers);
 }
 
-NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window) {
-  return [NSEvent mouseEventWithType:NSLeftMouseDown
+static NSEvent* MouseEventAtPointInWindow(NSPoint point,
+                                          NSEventType type,
+                                          NSWindow* window,
+                                          NSUInteger clickCount) {
+  return [NSEvent mouseEventWithType:type
                             location:point
                        modifierFlags:0
                            timestamp:0
                         windowNumber:[window windowNumber]
                              context:nil
                          eventNumber:0
-                          clickCount:1
+                          clickCount:clickCount
                             pressure:1.0];
+}
+
+NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window) {
+  return MouseEventAtPointInWindow(point, NSLeftMouseDown, window, 1);
 }
 
 NSEvent* LeftMouseDownAtPoint(NSPoint point) {
   return LeftMouseDownAtPointInWindow(point, nil);
+}
+
+std::pair<NSEvent*,NSEvent*> MouseClickInView(NSView* view,
+                                              NSUInteger clickCount) {
+  const NSRect bounds = [view convertRect:[view bounds] toView:nil];
+  const NSPoint mid_point = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
+  NSEvent* down = MouseEventAtPointInWindow(mid_point, NSLeftMouseDown,
+                                            [view window], clickCount);
+  NSEvent* up = MouseEventAtPointInWindow(mid_point, NSLeftMouseUp,
+                                          [view window], clickCount);
+  return std::make_pair(down, up);
 }
 
 }  // namespace test_event_utils

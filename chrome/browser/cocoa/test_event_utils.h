@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_COCOA_TEST_EVENT_UTILS_H_
 #define CHROME_BROWSER_COCOA_TEST_EVENT_UTILS_H_
 
+#include <utility>
+
 #import <objc/objc-class.h>
 
 #include "base/logging.h"
@@ -35,7 +37,11 @@ NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
 NSEvent* LeftMouseDownAtPoint(NSPoint point);
 NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
 
+// Return a mouse down and an up event with the given |clickCount| at
+// |view|'s midpoint.
+std::pair<NSEvent*,NSEvent*> MouseClickInView(NSView* view,
+                                              NSUInteger clickCount);
+
 }  // namespace test_event_utils
 
 #endif  // CHROME_BROWSER_COCOA_TEST_EVENT_UTILS_H_
-

@@ -510,6 +510,7 @@
 					<string>2.CustomClassName</string>
 					<string>2.IBAttributePlaceholdersKey</string>
 					<string>2.IBPluginDependency</string>
+					<string>3.CustomClassName</string>
 					<string>3.IBAttributePlaceholdersKey</string>
 					<string>3.IBPluginDependency</string>
 					<string>38.CustomClassName</string>
@@ -532,7 +533,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{370, 714}, {616, 36}}</string>
+					<string>{{319, 714}, {616, 36}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<boolean value="YES"/>
 					<string>ClickHoldButtonCell</string>
@@ -556,6 +557,7 @@
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>ReloadButton</string>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">
@@ -780,6 +782,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">ReloadButton</string>
+					<string key="superclassName">NSButton</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/reload_button_mac.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">StyledTextField</string>
 					<string key="superclassName">NSTextField</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -818,7 +828,7 @@
 							<string>DelayedMenuButton</string>
 							<string>NSButton</string>
 							<string>AutocompleteTextField</string>
-							<string>NSButton</string>
+							<string>ReloadButton</string>
 							<string>id</string>
 							<string>MenuButton</string>
 						</object>

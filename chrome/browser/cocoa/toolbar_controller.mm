@@ -29,6 +29,7 @@
 #import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/menu_controller.h"
+#import "chrome/browser/cocoa/reload_button.h"
 #import "chrome/browser/cocoa/toolbar_view.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
@@ -412,16 +413,8 @@ class PrefObserverBridge : public NotificationObserver {
   locationBarView_->SetStarred(isStarred ? true : false);
 }
 
-- (void)setIsLoading:(BOOL)isLoading {
-  NSString* imageName = kReloadButtonReloadImageName;
-  NSInteger tag = IDC_RELOAD;
-  if (isLoading) {
-    imageName = kReloadButtonStopImageName;
-    tag = IDC_STOP;
-  }
-  NSImage* stopStartImage = nsimage_cache::ImageNamed(imageName);
-  [reloadButton_ setImage:stopStartImage];
-  [reloadButton_ setTag:tag];
+- (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
+  [reloadButton_ setIsLoading:isLoading force:force];
 }
 
 - (void)setHasToolbar:(BOOL)toolbar hasLocationBar:(BOOL)locBar {

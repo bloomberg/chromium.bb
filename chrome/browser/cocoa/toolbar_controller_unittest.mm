@@ -154,9 +154,9 @@ TEST_F(ToolbarControllerTest, LoadingState) {
   // IDC_RELOAD. When loading, it should be IDC_STOP.
   NSButton* reload = [[bar_ toolbarViews] objectAtIndex:kReloadIndex];
   EXPECT_EQ([reload tag], IDC_RELOAD);
-  [bar_ setIsLoading:YES];
+  [bar_ setIsLoading:YES force:YES];
   EXPECT_EQ([reload tag], IDC_STOP);
-  [bar_ setIsLoading:NO];
+  [bar_ setIsLoading:NO force:YES];
   EXPECT_EQ([reload tag], IDC_RELOAD);
 }
 

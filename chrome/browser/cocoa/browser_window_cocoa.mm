@@ -219,7 +219,7 @@ void BrowserWindowCocoa::SetFocusToLocationBar(bool select_all) {
 }
 
 void BrowserWindowCocoa::UpdateReloadStopState(bool is_loading, bool force) {
-  [controller_ setIsLoading:is_loading ? YES : NO];
+  [controller_ setIsLoading:is_loading force:force];
 }
 
 void BrowserWindowCocoa::UpdateToolbar(TabContents* contents,

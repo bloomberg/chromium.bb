@@ -175,7 +175,9 @@ class TabStripModelObserverBridge;
 - (NSRect)selectedTabGrowBoxRect;
 
 // Called to tell the selected tab to update its loading state.
-- (void)setIsLoading:(BOOL)isLoading;
+// |force| is set if the update is due to changing tabs, as opposed to
+// the page-load finishing.  See comment in reload_button.h.
+- (void)setIsLoading:(BOOL)isLoading force:(BOOL)force;
 
 // Brings this controller's window to the front.
 - (void)activate;

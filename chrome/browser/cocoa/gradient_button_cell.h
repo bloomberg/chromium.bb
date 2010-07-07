@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COCOA_CHROMIUM_BUTTON_CELL_H_
-#define CHROME_BROWSER_COCOA_CHROMIUM_BUTTON_CELL_H_
+#ifndef CHROME_BROWSER_COCOA_GRADIENT_BUTTON_CELL_H_
+#define CHROME_BROWSER_COCOA_GRADIENT_BUTTON_CELL_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -73,4 +73,4 @@ typedef NSInteger ButtonType;
 - (BOOL)isMouseInside;
 @end
 
-#endif  // CHROME_BROWSER_COCOA_CHROMIUM_BUTTON_CELL_H_
+#endif  // CHROME_BROWSER_COCOA_GRADIENT_BUTTON_CELL_H_

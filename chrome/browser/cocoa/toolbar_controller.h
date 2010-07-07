@@ -32,6 +32,7 @@ class MenuDelegate;
 class PrefObserverBridge;
 }
 class Profile;
+@class ReloadButton;
 class TabContents;
 class ToolbarModel;
 class WrenchMenuModel;
@@ -49,7 +50,7 @@ class WrenchMenuModel;
   // corresponding enum in the unit tests.
   IBOutlet DelayedMenuButton* backButton_;
   IBOutlet DelayedMenuButton* forwardButton_;
-  IBOutlet NSButton* reloadButton_;
+  IBOutlet ReloadButton* reloadButton_;
   IBOutlet NSButton* homeButton_;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
@@ -129,9 +130,11 @@ class WrenchMenuModel;
 // Sets whether or not the current page in the frontmost tab is bookmarked.
 - (void)setStarredState:(BOOL)isStarred;
 
-// Called to update the loading state. Handles updating the go/stop button
-// state.
-- (void)setIsLoading:(BOOL)isLoading;
+// Called to update the loading state. Handles updating the go/stop
+// button state.  |force| is set if the update is due to changing
+// tabs, as opposed to the page-load finishing.  See comment in
+// reload_button.h.
+- (void)setIsLoading:(BOOL)isLoading force:(BOOL)force;
 
 // Allow turning off the toolbar (but we may keep the location bar without a
 // surrounding toolbar). If |toolbar| is YES, the value of |hasLocationBar| is
