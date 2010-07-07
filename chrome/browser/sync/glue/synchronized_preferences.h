@@ -61,7 +61,11 @@ static const wchar_t* kSynchronizedPreferences[] = {
   // Options dialog: Under the hood -> Change font and language settings.
   //   Serif, San Serif, Fixed font settings not synced.
   prefs::kDefaultCharset,
+  // There is no dialog to modify the kAcceptLanguages list on OSX, so
+  // don't sync it.
+#if !defined(OS_MACOSX)
   prefs::kAcceptLanguages,
+#endif
   prefs::kEnableSpellCheck,
   // Spell checker language not synced.
   prefs::kApplicationLocale,

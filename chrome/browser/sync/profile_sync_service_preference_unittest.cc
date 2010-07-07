@@ -391,3 +391,23 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeActionAdd) {
   EXPECT_EQ(node_id,
             model_associator_->GetSyncIdFromChromeId(prefs::kHomePage));
 }
+
+TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeUnknownPreference) {
+  CreateRootTask task(this, syncable::PREFERENCES);
+  ASSERT_TRUE(StartSyncService(&task, false));
+  ASSERT_TRUE(task.success());
+
+  scoped_ptr<Value> expected(Value::CreateStringValue(example_url0_));
+  int64 node_id = SetSyncedValue(L"unknown preference", *expected);
+  ASSERT_NE(node_id, sync_api::kInvalidId);
+  scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
+  record->action = SyncManager::ChangeRecord::ACTION_ADD;
+  record->id = node_id;
+  {
+    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+  }
+
+  // Nothing interesting happens on the client when it gets an update
+  // of an unknown preference.  We just should not crash.
+}
