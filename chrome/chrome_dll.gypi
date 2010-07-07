@@ -244,7 +244,7 @@
                 'app/nibs/TaskManager.xib',
                 'app/nibs/Toolbar.xib',
                 'app/theme/back_Template.pdf',
-                'app/theme/chevron.png',  # TODO(jrg): get and use a pdf version
+                'app/theme/chevron.pdf',
                 'app/theme/find_next_Template.pdf',
                 'app/theme/find_prev_Template.pdf',
                 'app/theme/forward_Template.pdf',

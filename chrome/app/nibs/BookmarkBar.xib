@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="63"/>
 			<integer value="4"/>
 			<integer value="18"/>
-			<integer value="62"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -132,7 +132,7 @@
 							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents"/>
 							<reference key="NSControlView" ref="1071220197"/>
-							<int key="NSButtonFlags">-2044968705</int>
+							<int key="NSButtonFlags">-2041822977</int>
 							<int key="NSButtonFlags2">134</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
@@ -2223,6 +2223,27 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">QuartzCore.framework/Headers/CAAnimation.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">QuartzCore.framework/Headers/CALayer.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">QuartzCore.framework/Headers/CIImageProvider.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">SecurityInterface.framework/Headers/SFAuthorizationView.h</string>
 					</object>
 				</object>
@@ -2337,7 +2358,7 @@
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<string>{9, 8}</string>
 				<string>{7, 2}</string>
-				<string>{8, 14}</string>
+				<string>{13, 19}</string>
 			</object>
 		</object>
 	</data>
