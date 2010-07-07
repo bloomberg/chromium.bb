@@ -169,7 +169,6 @@ class TestingProfile : public Profile {
     return template_url_model_.get();
   }
   virtual TemplateURLFetcher* GetTemplateURLFetcher() { return NULL; }
-  virtual ThumbnailStore* GetThumbnailStore() { return NULL; }
   virtual history::TopSites* GetTopSites() { return NULL; }
   virtual DownloadManager* GetDownloadManager() { return NULL; }
   virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }

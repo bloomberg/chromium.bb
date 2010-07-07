@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/thumbnail_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
@@ -62,19 +61,6 @@ void DOMUIThumbnailSource::SendDefaultThumbnail(int request_id) {
   SendResponse(request_id, default_thumbnail_);
 }
 
-// TODO(Nik): remove. ThumbnailStore is to be replaced with TopSites.
-void DOMUIThumbnailSource::DoDataRequest(const std::string& path,
-                                         int request_id) {
-  RefCountedBytes* data = NULL;
-  scoped_refptr<ThumbnailStore> store_ = profile_->GetThumbnailStore();
-  if (store_->GetPageThumbnail(GURL(path), &data)) {
-    // Got the thumbnail.
-    SendResponse(request_id, data);
-  } else {
-    SendDefaultThumbnail(request_id);
-  }
-}
-
 void DOMUIThumbnailSource::OnThumbnailDataAvailable(
     HistoryService::Handle request_handle,
     scoped_refptr<RefCountedBytes> data) {
@@ -87,21 +73,4 @@ void DOMUIThumbnailSource::OnThumbnailDataAvailable(
   } else {
     SendDefaultThumbnail(request_id);
   }
-}
-
-void DOMUIThumbnailSource::Observe(NotificationType type,
-                                   const NotificationSource& source,
-                                   const NotificationDetails& details) {
-  if (type.value != NotificationType::THUMBNAIL_STORE_READY) {
-    NOTREACHED();
-    return;
-  }
-
-  // This notification is sent only once.
-  registrar_.RemoveAll();
-
-  for (size_t i = 0; i < pending_requests_.size(); ++i)
-    DoDataRequest(pending_requests_[i].first, pending_requests_[i].second);
-
-  pending_requests_.clear();
 }

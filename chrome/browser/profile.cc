@@ -58,7 +58,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/tabs/pinned_tab_service.h"
-#include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/browser/visitedlink_event_listener.h"
@@ -623,10 +622,6 @@ class OffTheRecordProfileImpl : public Profile,
     return webkit_context_.get();
   }
 
-  virtual ThumbnailStore* GetThumbnailStore() {
-    return NULL;
-  }
-
   virtual history::TopSites* GetTopSites() {
     return NULL;
   }
@@ -937,12 +932,6 @@ ProfileImpl::~ProfileImpl() {
 
   // The theme provider provides bitmaps to whoever wants them.
   theme_provider_.reset();
-
-  // The ThumbnailStore saves thumbnails used by the NTP.  Call Shutdown to
-  // save any new thumbnails to disk and release its reference to the
-  // HistoryService.
-  if (thumbnail_store_.get())
-    thumbnail_store_->Shutdown();
 
   // Remove pref observers.
   PrefService* prefs = GetPrefs();
@@ -1528,15 +1517,6 @@ TabRestoreService* ProfileImpl::GetTabRestoreService() {
   if (!tab_restore_service_.get())
     tab_restore_service_ = new TabRestoreService(this);
   return tab_restore_service_.get();
-}
-
-ThumbnailStore* ProfileImpl::GetThumbnailStore() {
-  if (!thumbnail_store_.get()) {
-    thumbnail_store_ = new ThumbnailStore;
-    thumbnail_store_->Init(
-        GetPath().Append(chrome::kNewTabThumbnailsFilename), this);
-  }
-  return thumbnail_store_.get();
 }
 
 history::TopSites* ProfileImpl::GetTopSites() {

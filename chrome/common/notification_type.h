@@ -617,10 +617,6 @@ class NotificationType {
 
     // Thumbnails---------------------------------------------------------------
 
-    // Set by ThumbnailStore when it was finished loading data from disk on
-    // startup.
-    THUMBNAIL_STORE_READY,
-
     // Sent by the ThumbnailGenerator whenever a render widget host
     // updates its backing store.  The source is the
     // ThumbnailGenerator, and the details are the RenderWidgetHost

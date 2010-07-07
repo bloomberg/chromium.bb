@@ -2316,8 +2316,6 @@
         'browser/task_manager.h',
         'browser/task_manager_resource_providers.cc',
         'browser/task_manager_resource_providers.h',
-        'browser/thumbnail_store.cc',
-        'browser/thumbnail_store.h',
         'browser/toolbar_model.cc',
         'browser/toolbar_model.h',
         'browser/translate/languages_menu_model.cc',

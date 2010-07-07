@@ -72,7 +72,6 @@ class TabRestoreService;
 class TemplateURLFetcher;
 class TemplateURLModel;
 class ThemeProvider;
-class ThumbnailStore;
 class URLRequestContextGetter;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
@@ -288,8 +287,6 @@ class Profile {
 
   // Returns or creates the ThemeProvider associated with this profile
   virtual BrowserThemeProvider* GetThemeProvider() = 0;
-
-  virtual ThumbnailStore* GetThumbnailStore() = 0;
 
   // Returns the request context information associated with this profile.  Call
   // this only on the UI thread, since it can send notifications that should
@@ -509,7 +506,6 @@ class ProfileImpl : public Profile,
   virtual void ClearTheme();
   virtual Extension* GetTheme();
   virtual BrowserThemeProvider* GetThemeProvider();
-  virtual ThumbnailStore* GetThumbnailStore();
   virtual bool HasCreatedDownloadManager() const;
   virtual URLRequestContextGetter* GetRequestContext();
   virtual URLRequestContextGetter* GetRequestContextForMedia();
@@ -593,7 +589,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<TransportSecurityPersister>
       transport_security_persister_;
   scoped_ptr<PrefService> prefs_;
-  scoped_refptr<ThumbnailStore> thumbnail_store_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   scoped_ptr<TemplateURLModel> template_url_model_;
   scoped_ptr<BookmarkModel> bookmark_bar_model_;

@@ -993,7 +993,6 @@
         'browser/tabs/pinned_tab_codec_unittest.cc',
         'browser/tabs/tab_strip_model_unittest.cc',
         'browser/task_manager_unittest.cc',
-        'browser/thumbnail_store_unittest.cc',
         'browser/translate/translate_manager_unittest.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/views/accessibility_event_router_views_unittest.cc',

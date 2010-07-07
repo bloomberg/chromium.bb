@@ -20,8 +20,7 @@ class ThumbnailStore;
 
 // ThumbnailSource is the gateway between network-level chrome:
 // requests for thumbnails and the history backend that serves these.
-class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource,
-                             public NotificationObserver {
+class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource {
  public:
   explicit DOMUIThumbnailSource(Profile* profile);
 
@@ -43,14 +42,6 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource,
 
  private:
   ~DOMUIThumbnailSource() {}
-
-  // NotificationObserver implementation
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Fetch the specified resource.
-  void DoDataRequest(const std::string& path, int request_id);
 
   // Send the default thumbnail when we are missing a real one.
   void SendDefaultThumbnail(int request_id);

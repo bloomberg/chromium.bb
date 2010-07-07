@@ -71,7 +71,6 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
-#include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_switches.h"
