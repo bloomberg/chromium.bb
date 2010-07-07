@@ -20,13 +20,13 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/cert_store.h"
 #include "chrome/browser/gtk/certificate_dialogs.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
 #include "grit/generated_resources.h"
+#include "net/base/x509_certificate.h"
 
 // PSM = Mozilla's Personal Security Manager.
 namespace psm = mozilla_security_manager;
@@ -732,13 +732,7 @@ void ShowCertificateViewer(gfx::NativeWindow parent, CERTCertificate* cert) {
   (new CertificateViewer(parent, cert_chain))->Show();
 }
 
-void ShowCertificateViewer(gfx::NativeWindow parent, int cert_id) {
-  scoped_refptr<net::X509Certificate> cert;
-  CertStore::GetSharedInstance()->RetrieveCert(cert_id, &cert);
-  if (!cert.get()) {
-    // The certificate was not found. Could be that the renderer crashed before
-    // we displayed the page info.
-    return;
-  }
+void ShowCertificateViewer(gfx::NativeWindow parent,
+                           net::X509Certificate* cert) {
   ShowCertificateViewer(parent, cert->os_cert_handle());
 }

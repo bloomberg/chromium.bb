@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/nss_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gtk/certificate_viewer.h"
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
@@ -305,8 +305,7 @@ void SSLClientCertificateSelector::OnResponse(
   }
   if (response_id == RESPONSE_SHOW_CERT_INFO) {
     if (cert)
-      ShowCertificateViewer(GTK_WINDOW(cert_selector->dialog_),
-                            cert->os_cert_handle());
+      ShowCertificateViewer(GTK_WINDOW(cert_selector->dialog_), cert);
     return;
   }
   cert_selector->delegate_->CertificateSelected(cert);

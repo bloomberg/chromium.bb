@@ -4,17 +4,12 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <cryptuiapi.h>
-#pragma comment(lib, "cryptui.lib")
-#endif
-
 #include "app/resource_bundle.h"
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/cert_store.h"
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/common/pref_names.h"
@@ -35,8 +30,6 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
-#elif defined(OS_LINUX)
-#include "chrome/browser/gtk/certificate_viewer.h"
 #endif
 
 namespace {
@@ -333,37 +326,7 @@ void PageInfoWindowView::CalculateWindowBounds(gfx::Rect* bounds) {
 }
 
 void PageInfoWindowView::ShowCertDialog(int cert_id) {
-#if defined(OS_WIN)
-  scoped_refptr<net::X509Certificate> cert;
-  CertStore::GetSharedInstance()->RetrieveCert(cert_id, &cert);
-  if (!cert.get()) {
-    // The certificate was not found. Could be that the renderer crashed before
-    // we displayed the page info.
-    return;
-  }
-
-  CRYPTUI_VIEWCERTIFICATE_STRUCT view_info = { 0 };
-  view_info.dwSize = sizeof(view_info);
-  // We set our parent to the tab window. This makes the cert dialog created
-  // in CryptUIDlgViewCertificate modal to the browser.
-  view_info.hwndParent = window()->GetNativeWindow();
-  view_info.dwFlags = CRYPTUI_DISABLE_EDITPROPERTIES |
-                      CRYPTUI_DISABLE_ADDTOSTORE;
-  view_info.pCertContext = cert->os_cert_handle();
-  // Search the cert store that 'cert' is in when building the cert chain.
-  HCERTSTORE cert_store = view_info.pCertContext->hCertStore;
-  view_info.cStores = 1;
-  view_info.rghStores = &cert_store;
-  BOOL properties_changed;
-
-  // This next call blocks but keeps processing windows messages, making it
-  // modal to the browser window.
-  BOOL rv = ::CryptUIDlgViewCertificate(&view_info, &properties_changed);
-#elif defined(OS_LINUX)
-  ShowCertificateViewer(window()->GetNativeWindow(), cert_id);
-#else
-  NOTIMPLEMENTED();
-#endif
+  ShowCertificateViewerByID(window()->GetNativeWindow(), cert_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

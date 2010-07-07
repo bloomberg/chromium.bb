@@ -5,8 +5,6 @@
 #include "chrome/browser/cocoa/page_info_window_mac.h"
 
 #include <algorithm>
-#include <Security/Security.h>
-#include <SecurityInterface/SFCertificatePanel.h>
 
 #include "app/l10n_util.h"
 #include "base/scoped_cftyperef.h"
@@ -16,6 +14,7 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/page_info_window_controller.h"
 #include "chrome/browser/cert_store.h"
+#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -105,41 +104,7 @@ void PageInfoWindowMac::Show() {
 
 void PageInfoWindowMac::ShowCertDialog(int) {
   DCHECK(cert_id_ != 0);
-  scoped_refptr<net::X509Certificate> cert;
-  CertStore::GetSharedInstance()->RetrieveCert(cert_id_, &cert);
-  if (!cert.get()) {
-    // The certificate was not found. Could be that the renderer crashed before
-    // we displayed the page info.
-    return;
-  }
-
-  SecCertificateRef cert_mac = cert->os_cert_handle();
-  if (!cert_mac)
-    return;
-
-  scoped_cftyperef<CFMutableArrayRef> certificates(
-      CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks));
-  if (!certificates.get()) {
-    NOTREACHED();
-    return;
-  }
-  CFArrayAppendValue(certificates, cert_mac);
-
-  // Server certificate must be first in the array; subsequent certificates
-  // in the chain can be in any order.
-  const std::vector<SecCertificateRef>& ca_certs =
-      cert->GetIntermediateCertificates();
-  for (size_t i = 0; i < ca_certs.size(); ++i)
-    CFArrayAppendValue(certificates, ca_certs[i]);
-
-  [[[SFCertificatePanel alloc] init]
-      beginSheetForWindow:[controller_ window]
-            modalDelegate:nil
-           didEndSelector:NULL
-              contextInfo:NULL
-             certificates:reinterpret_cast<NSArray*>(certificates.get())
-                showGroup:YES];
-  // The SFCertificatePanel releases itself when the sheet is dismissed.
+  ShowCertificateViewerByID([controller_ window], cert_id_);
 }
 
 // This will create the subviews for the page info window. The general layout
