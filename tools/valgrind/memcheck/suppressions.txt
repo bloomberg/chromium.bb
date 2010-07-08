@@ -3601,3 +3601,39 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+
+{
+   bug_48557_1
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base10SyncSocket10CreatePairEPPS0_
+   fun:_ZN15AudioSyncReader4InitEv
+   fun:_ZN17AudioRendererHost14OnCreateStreamERKN3IPC7MessageEiRK37ViewHostMsg_Audio_CreateStream_Paramsb
+   fun:_ZN21AudioRendererHostTest16CreateLowLatencyEv
+   fun:_ZN54AudioRendererHostTest_CreateLowLatencyAndShutdown_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+
+{
+   bug_48557_2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base10SyncSocket10CreatePairEPPS0_
+   fun:_ZN15AudioSyncReader4InitEv
+   fun:_ZN17AudioRendererHost14OnCreateStreamERKN3IPC7MessageEiRK37ViewHostMsg_Audio_CreateStream_Paramsb
+   fun:_ZN21AudioRendererHostTest16CreateLowLatencyEv
+   fun:_ZN51AudioRendererHostTest_CreateLowLatencyAndClose_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
