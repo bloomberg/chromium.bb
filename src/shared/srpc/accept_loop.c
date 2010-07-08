@@ -18,6 +18,10 @@
 
 struct worker_state {
   int d;
+  /*
+   * TODO(mseaborn): Remove is_privileged.  Now that the plugin
+   * creates only one connection, this concept is unused.
+   */
   int is_privileged;
 };
 
@@ -72,6 +76,7 @@ static NaClSrpcError srpc_shutdown_request(NaClSrpcChannel* channel,
 /**
  * Export the shutdown method on the main rpc service loop.  Use __shutdown
  * to avoid name collisions.
+ * TODO(mseaborn): Remove __shutdown because it is unused.
  */
 NACL_SRPC_METHOD("__shutdown::", srpc_shutdown_request);
 

@@ -200,24 +200,8 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* shm) {
     return false;
   }
 
-  // The second connect on the socket address returns the "untrusted
-  // command channel" to the NaCl app, usually libsrpc -- see
-  // accept_loop's srpc_init.  This channel is "privileged" in that
-  // the srpc_default_acceptor knows that this is from the plugin, and
-  // allows some RPCs that might otherwise not be, e.g., to
-  // (gracefully) shut down the NaCl module.  NB: the default
-  // srpc_shutdown_request handler is not (yet) very graceful.
-  PLUGIN_PRINTF((" connecting for MultiMediaSocket\n"));
-  raw_channel = portable_socket_address->Connect();
-  if (NULL == raw_channel) {
-    PLUGIN_PRINTF(("ServiceRuntime::Start: "
-                   "command channel Connect failed.\n"));
-    // TODO(sehr): leaking runtime_channel_.
-    return false;
-  }
-  PLUGIN_PRINTF((" connecting for javascript SRPC use\n"));
-  // The third connect on the socket address returns the channel used to
-  // perform SRPC calls.
+  // The second connect on the socket address is to the untrusted side
+  // of sel_ldr.
   default_socket_ = portable_socket_address->Connect();
   if (NULL == default_socket_) {
     PLUGIN_PRINTF(("ServiceRuntime::Start: "
@@ -228,7 +212,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* shm) {
   default_socket_->handle()->StartJSObjectProxy(plugin_);
   plugin_->EnableVideo();
   // Create the listener thread and initialize the nacl module.
-  if (!plugin_->InitializeModuleMultimedia(raw_channel, this)) {
+  if (!plugin_->InitializeModuleMultimedia(default_socket_, this)) {
     // TODO(sehr): leaking raw_channel, runtime_channel_, and default_socket_.
     return false;
   }
