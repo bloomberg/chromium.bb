@@ -6,7 +6,7 @@ vars = {
   "skia_revision": "583",
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
-  "nacl_revision": "2587",
+  "nacl_revision": "2631",
   "libvpx_revision": "50313",
   "libjingle_revision": "21",
 }
