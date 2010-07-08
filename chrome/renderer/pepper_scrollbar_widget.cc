@@ -244,10 +244,10 @@ void PepperScrollbarWidget::SetProperty(
       if (property == NPWidgetPropertyScrollbarScrollByLine) {
         forward = *static_cast<bool*>(value);
         granularity = WebScrollbar::ScrollByLine;
-      } else if (property == NPWidgetPropertyScrollbarScrollByLine) {
+      } else if (property == NPWidgetPropertyScrollbarScrollByPage) {
         forward = *static_cast<bool*>(value);
         granularity = WebScrollbar::ScrollByPage;
-      } else if (property == NPWidgetPropertyScrollbarScrollByLine) {
+      } else if (property == NPWidgetPropertyScrollbarScrollByDocument) {
         forward = *static_cast<bool*>(value);
         granularity = WebScrollbar::ScrollByDocument;
       } else {

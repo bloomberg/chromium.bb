@@ -20,11 +20,13 @@
 #include "third_party/ppapi/c/ppb_file_system.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
 #include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/c/ppb_scrollbar.h"
 #include "third_party/ppapi/c/ppb_testing.h"
 #include "third_party/ppapi/c/ppb_url_loader.h"
 #include "third_party/ppapi/c/ppb_url_request_info.h"
 #include "third_party/ppapi/c/ppb_url_response_info.h"
 #include "third_party/ppapi/c/ppb_var.h"
+#include "third_party/ppapi/c/ppb_widget.h"
 #include "third_party/ppapi/c/ppp.h"
 #include "third_party/ppapi/c/ppp_instance.h"
 #include "third_party/ppapi/c/pp_module.h"
@@ -39,10 +41,12 @@
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
+#include "webkit/glue/plugins/pepper_scrollbar.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 #include "webkit/glue/plugins/pepper_url_response_info.h"
 #include "webkit/glue/plugins/pepper_var.h"
+#include "webkit/glue/plugins/pepper_widget.h"
 
 namespace pepper {
 
@@ -173,6 +177,10 @@ const void* GetInterface(const char* name) {
     return FileSystem::GetInterface();
   if (strcmp(name, PPB_DIRECTORYREADER_INTERFACE) == 0)
     return DirectoryReader::GetInterface();
+  if (strcmp(name, PPB_WIDGET_INTERFACE) == 0)
+    return Widget::GetInterface();
+  if (strcmp(name, PPB_SCROLLBAR_INTERFACE) == 0)
+    return Scrollbar::GetInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

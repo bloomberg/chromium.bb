@@ -21,11 +21,14 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
+#include "webkit/glue/plugins/pepper_event_conversion.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
+using WebKit::WebCanvas;
+using WebKit::WebCursorInfo;
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebPluginContainer;
@@ -37,76 +40,6 @@ namespace {
 void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
   *output = PP_MakeRectFromXYWH(input.x(), input.y(),
                                 input.width(), input.height());
-}
-
-PP_Event_Type ConvertEventTypes(WebInputEvent::Type wetype) {
-  switch (wetype) {
-    case WebInputEvent::MouseDown:
-      return PP_Event_Type_MouseDown;
-    case WebInputEvent::MouseUp:
-      return PP_Event_Type_MouseUp;
-    case WebInputEvent::MouseMove:
-      return PP_Event_Type_MouseMove;
-    case WebInputEvent::MouseEnter:
-      return PP_Event_Type_MouseEnter;
-    case WebInputEvent::MouseLeave:
-      return PP_Event_Type_MouseLeave;
-    case WebInputEvent::MouseWheel:
-      return PP_Event_Type_MouseWheel;
-    case WebInputEvent::RawKeyDown:
-      return PP_Event_Type_RawKeyDown;
-    case WebInputEvent::KeyDown:
-      return PP_Event_Type_KeyDown;
-    case WebInputEvent::KeyUp:
-      return PP_Event_Type_KeyUp;
-    case WebInputEvent::Char:
-      return PP_Event_Type_Char;
-    case WebInputEvent::Undefined:
-    default:
-      return PP_Event_Type_Undefined;
-  }
-}
-
-void BuildKeyEvent(const WebInputEvent* event, PP_Event* pp_event) {
-  const WebKit::WebKeyboardEvent* key_event =
-      reinterpret_cast<const WebKit::WebKeyboardEvent*>(event);
-  pp_event->u.key.modifier = key_event->modifiers;
-  pp_event->u.key.normalizedKeyCode = key_event->windowsKeyCode;
-}
-
-void BuildCharEvent(const WebInputEvent* event, PP_Event* pp_event) {
-  const WebKit::WebKeyboardEvent* key_event =
-      reinterpret_cast<const WebKit::WebKeyboardEvent*>(event);
-  pp_event->u.character.modifier = key_event->modifiers;
-  // For consistency, check that the sizes of the texts agree.
-  DCHECK(sizeof(pp_event->u.character.text) == sizeof(key_event->text));
-  DCHECK(sizeof(pp_event->u.character.unmodifiedText) ==
-         sizeof(key_event->unmodifiedText));
-  for (size_t i = 0; i < WebKit::WebKeyboardEvent::textLengthCap; ++i) {
-    pp_event->u.character.text[i] = key_event->text[i];
-    pp_event->u.character.unmodifiedText[i] = key_event->unmodifiedText[i];
-  }
-}
-
-void BuildMouseEvent(const WebInputEvent* event, PP_Event* pp_event) {
-  const WebKit::WebMouseEvent* mouse_event =
-      reinterpret_cast<const WebKit::WebMouseEvent*>(event);
-  pp_event->u.mouse.modifier = mouse_event->modifiers;
-  pp_event->u.mouse.button = mouse_event->button;
-  pp_event->u.mouse.x = mouse_event->x;
-  pp_event->u.mouse.y = mouse_event->y;
-  pp_event->u.mouse.clickCount = mouse_event->clickCount;
-}
-
-void BuildMouseWheelEvent(const WebInputEvent* event, PP_Event* pp_event) {
-  const WebKit::WebMouseWheelEvent* mouse_wheel_event =
-      reinterpret_cast<const WebKit::WebMouseWheelEvent*>(event);
-  pp_event->u.wheel.modifier = mouse_wheel_event->modifiers;
-  pp_event->u.wheel.deltaX = mouse_wheel_event->deltaX;
-  pp_event->u.wheel.deltaY = mouse_wheel_event->deltaY;
-  pp_event->u.wheel.wheelTicksX = mouse_wheel_event->wheelTicksX;
-  pp_event->u.wheel.wheelTicksY = mouse_wheel_event->wheelTicksY;
-  pp_event->u.wheel.scrollByPage = mouse_wheel_event->scrollByPage;
 }
 
 PP_Var GetWindowObject(PP_Instance instance_id) {
@@ -178,7 +111,7 @@ PP_Instance PluginInstance::GetPPInstance() {
   return reinterpret_cast<intptr_t>(this);
 }
 
-void PluginInstance::Paint(WebKit::WebCanvas* canvas,
+void PluginInstance::Paint(WebCanvas* canvas,
                            const gfx::Rect& plugin_rect,
                            const gfx::Rect& paint_rect) {
   if (device_context_2d_)
@@ -271,35 +204,12 @@ bool PluginInstance::HandleDocumentLoad(URLLoader* loader) {
 }
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
-                                      WebKit::WebCursorInfo* cursor_info) {
-  PP_Event pp_event;
+                                      WebCursorInfo* cursor_info) {
+  scoped_ptr<PP_Event> pp_event(CreatePP_Event(event));
+  if (!pp_event.get())
+    return false;
 
-  pp_event.type = ConvertEventTypes(event.type);
-  pp_event.size = sizeof(pp_event);
-  pp_event.time_stamp_seconds = event.timeStampSeconds;
-  switch (pp_event.type) {
-    case PP_Event_Type_Undefined:
-      return false;
-    case PP_Event_Type_MouseDown:
-    case PP_Event_Type_MouseUp:
-    case PP_Event_Type_MouseMove:
-    case PP_Event_Type_MouseEnter:
-    case PP_Event_Type_MouseLeave:
-      BuildMouseEvent(&event, &pp_event);
-      break;
-    case PP_Event_Type_MouseWheel:
-      BuildMouseWheelEvent(&event, &pp_event);
-      break;
-    case PP_Event_Type_RawKeyDown:
-    case PP_Event_Type_KeyDown:
-    case PP_Event_Type_KeyUp:
-      BuildKeyEvent(&event, &pp_event);
-      break;
-    case PP_Event_Type_Char:
-      BuildCharEvent(&event, &pp_event);
-      break;
-  }
-  return instance_interface_->HandleEvent(GetPPInstance(), &pp_event);
+  return instance_interface_->HandleEvent(GetPPInstance(), pp_event.get());
 }
 
 PP_Var PluginInstance::GetInstanceObject() {

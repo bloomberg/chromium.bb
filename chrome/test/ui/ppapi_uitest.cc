@@ -117,3 +117,7 @@ TEST_F(PPAPITest, Buffer) {
 TEST_F(PPAPITest, URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
+
+TEST_F(PPAPITest, Scrollbar) {
+  RunTest("Scrollbar");
+}

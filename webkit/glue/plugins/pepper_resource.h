@@ -20,9 +20,11 @@ class FileIO;
 class FileRef;
 class ImageData;
 class PluginModule;
+class Scrollbar;
 class URLLoader;
 class URLRequestInfo;
 class URLResponseInfo;
+class Widget;
 
 class Resource : public base::RefCountedThreadSafe<Resource> {
  public:
@@ -56,9 +58,11 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   virtual FileIO* AsFileIO() { return NULL; }
   virtual FileRef* AsFileRef() { return NULL; }
   virtual ImageData* AsImageData() { return NULL; }
+  virtual Scrollbar* AsScrollbar() { return NULL; }
   virtual URLLoader* AsURLLoader() { return NULL; }
   virtual URLRequestInfo* AsURLRequestInfo() { return NULL; }
   virtual URLResponseInfo* AsURLResponseInfo() { return NULL; }
+  virtual Widget* AsWidget() { return NULL; }
 
   PluginModule* module_;  // Non-owning pointer to our module.
 
@@ -78,9 +82,11 @@ DEFINE_RESOURCE_CAST(FileChooser)
 DEFINE_RESOURCE_CAST(FileIO)
 DEFINE_RESOURCE_CAST(FileRef)
 DEFINE_RESOURCE_CAST(ImageData)
+DEFINE_RESOURCE_CAST(Scrollbar)
 DEFINE_RESOURCE_CAST(URLLoader)
 DEFINE_RESOURCE_CAST(URLRequestInfo)
 DEFINE_RESOURCE_CAST(URLResponseInfo)
+DEFINE_RESOURCE_CAST(Widget)
 
 #undef DEFINE_RESOURCE_CAST
 }  // namespace pepper
