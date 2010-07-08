@@ -436,19 +436,10 @@ def Compile(argv, llvm_binary, mode):
   # TODO(robertm): remove support for .S files
   if FindAssemblerFilePos(argv) is not None:
     assert TOLERATE_COMPILATION_OF_ASM_CODE
-    if '-raw-mode' in  argv:
-      argv.remove('-raw-mode')
     Run(argv)
     return
 
-  # NOTE:
-  # In raw mode we do not force our own flags on the underlying compiler.
-  # This is used for toolchain bootstrapping.
-  # Otherwise, we add out own options and overwrite system include paths
-  # TODO(robertm): clean this up
-  if '-raw-mode' in  argv:
-    argv.remove('-raw-mode')
-  elif '-nostdinc' in argv:
+  if '-nostdinc' in argv:
     argv += global_config_flags['LLVM_GCC_COMPILE']
   else:
     argv += global_config_flags['LLVM_GCC_COMPILE']
@@ -468,15 +459,6 @@ def Incarnation_sfigcc(argv):
 
 def Incarnation_sfigplusplus(argv):
   Compile(argv, LLVM_GXX, 'sfi')
-
-# in raw mode we do not force our own flags on the underlying compiler
-def Incarnation_rawsfigcc(argv):
-  Compile(argv + ['-raw-mode'], LLVM_GCC, 'sfi')
-
-
-def Incarnation_rawsfigplusplus(argv):
-  Compile(argv + ['-raw-mode'], LLVM_GXX, 'sfi')
-
 
 def Incarnation_gcc(argv):
   Compile(argv, LLVM_GCC, 'regular')
@@ -755,9 +737,6 @@ def Incarnation_sfild(argv):
 INCARNATIONS = {
    'llvm-fake-sfigcc': Incarnation_sfigcc,
    'llvm-fake-sfig++': Incarnation_sfigplusplus,
-
-   'llvm-fake-rawsfigcc': Incarnation_rawsfigcc,
-   'llvm-fake-rawsfig++': Incarnation_rawsfigplusplus,
 
    'llvm-fake-gcc': Incarnation_gcc,
    'llvm-fake-g++': Incarnation_gplusplus,
