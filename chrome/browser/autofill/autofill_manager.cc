@@ -122,14 +122,12 @@ void AutoFillManager::FormsSeen(const std::vector<FormData>& forms) {
   if (!IsAutoFillEnabled())
     return;
 
-  for (std::vector<FormData>::const_iterator iter =
-           forms.begin();
-       iter != forms.end(); ++iter) {
-    FormStructure* form_structure = new FormStructure(*iter);
-    DeterminePossibleFieldTypes(form_structure);
-    form_structures_.push_back(form_structure);
-  }
-  download_manager_.StartQueryRequest(form_structures_);
+  // No profiles or credit cards, no need to parse the forms.
+  if (personal_data_->profiles().empty() &&
+      personal_data_->credit_cards().empty())
+    return;
+
+  ParseForms(forms);
 }
 
 bool AutoFillManager::GetAutoFillSuggestions(int query_id,
@@ -603,4 +601,22 @@ void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
   } else {
     field->set_value(number);
   }
+}
+
+void AutoFillManager::ParseForms(
+    const std::vector<webkit_glue::FormData>& forms) {
+  for (std::vector<FormData>::const_iterator iter =
+           forms.begin();
+       iter != forms.end(); ++iter) {
+    FormStructure* form_structure = new FormStructure(*iter);
+    if (!form_structure->ShouldBeParsed())
+      continue;
+
+    DeterminePossibleFieldTypes(form_structure);
+    form_structures_.push_back(form_structure);
+  }
+
+  // If none of the forms were parsed, no use querying the server.
+  if (!form_structures_.empty())
+    download_manager_.StartQueryRequest(form_structures_);
 }

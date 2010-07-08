@@ -45,8 +45,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
   // RenderViewHostDelegate::AutoFill implementation:
   virtual void FormSubmitted(const webkit_glue::FormData& form);
-  virtual void FormsSeen(
-      const std::vector<webkit_glue::FormData>& forms);
+  virtual void FormsSeen(const std::vector<webkit_glue::FormData>& forms);
   virtual bool GetAutoFillSuggestions(int query_id,
                                       bool form_autofilled,
                                       const webkit_glue::FormField& field);
@@ -133,6 +132,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // |profile|.
   void FillPhoneNumberField(const AutoFillProfile* profile,
                             webkit_glue::FormField* field);
+
+  // Parses the forms using heuristic matching and querying the AutoFill server.
+  void ParseForms(const std::vector<webkit_glue::FormData>& forms);
 
   // The TabContents hosting this AutoFillManager.
   // Weak reference.

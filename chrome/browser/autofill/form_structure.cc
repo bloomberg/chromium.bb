@@ -223,16 +223,7 @@ bool FormStructure::IsAutoFillable() const {
   if (autofill_count() < kRequiredFillableFields)
     return false;
 
-  // Rule out http(s)://*/search?...
-  //  e.g. http://www.google.com/search?q=...
-  //       http://search.yahoo.com/search?p=...
-  if (target_url_.path() == "/search")
-    return false;
-
-  if (method_ == GET)
-    return false;
-
-  return true;
+  return ShouldBeParsed();
 }
 
 bool FormStructure::HasAutoFillableValues() const {
@@ -297,6 +288,22 @@ void FormStructure::UpdateAutoFillCount() {
     if (field && field->IsFieldFillable())
       ++autofill_count_;
   }
+}
+
+bool FormStructure::ShouldBeParsed() const {
+  if (field_count() < kRequiredFillableFields)
+    return false;
+
+  // Rule out http(s)://*/search?...
+  //  e.g. http://www.google.com/search?q=...
+  //       http://search.yahoo.com/search?p=...
+  if (target_url_.path() == "/search")
+    return false;
+
+  if (method_ == GET)
+    return false;
+
+  return true;
 }
 
 void FormStructure::set_possible_types(int index, const FieldTypeSet& types) {

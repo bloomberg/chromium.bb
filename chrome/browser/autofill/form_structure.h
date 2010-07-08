@@ -80,6 +80,9 @@ class FormStructure {
   // heuristically.
   void UpdateAutoFillCount();
 
+  // Returns true if this form matches the structural requirements for AutoFill.
+  bool ShouldBeParsed() const;
+
   // Sets the possible types for the field at |index|.
   void set_possible_types(int index, const FieldTypeSet& types);
 
