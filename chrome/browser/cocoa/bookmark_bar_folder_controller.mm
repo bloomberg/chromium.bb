@@ -155,7 +155,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // Overriden from NSWindowController to call childFolderWillShow: before showing
 // the window.
 - (void)showWindow:(id)sender {
-  [parentController_ childFolderWillShow:self];
+  [barController_ childFolderWillShow:self];
   [super showWindow:sender];
 }
 
@@ -713,7 +713,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 
 // Delegate callback.
 - (void)windowWillClose:(NSNotification*)notification {
-  [parentController_ childFolderWillClose:self];
+  [barController_ childFolderWillClose:self];
   [self closeBookmarkFolder:self];
   [self autorelease];
 }
