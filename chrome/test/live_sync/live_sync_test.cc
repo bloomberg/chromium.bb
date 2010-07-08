@@ -4,17 +4,12 @@
 
 #include "chrome/test/live_sync/live_sync_test.h"
 
-#include <vector>
-
-#include "base/file_util.h"
-#include "base/string_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace switches {
-const wchar_t kPasswordFileForTest[] = L"password-file-for-test";
 const wchar_t kSyncUserForTest[] = L"sync-user-for-test";
 const wchar_t kSyncPasswordForTest[] = L"sync-password-for-test";
 }
@@ -24,36 +19,12 @@ void LiveSyncTest::SetUp() {
   // available.  But we can verify our command line parameters and fail
   // early.
   const CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kPasswordFileForTest)) {
-    // Read GAIA credentials from a local password file if specified via the
-    // "--password-file-for-test" command line switch. Note: The password file
-    // must be a plain text file with exactly two lines -- the username on the
-    // first line and the password on the second line.
-    password_file_ = cl->GetSwitchValue(switches::kPasswordFileForTest);
-    ASSERT_FALSE(password_file_.empty()) << "Can't run live server test "
-        << "without specifying --" << switches::kPasswordFileForTest
-        << "=<filename>";
-    std::string file_contents;
-    file_util::ReadFileToString(password_file_, &file_contents);
-    ASSERT_NE(file_contents, "") << "Password file \"" << password_file_
-        << "\" does not exist.";
-    std::vector<std::string> tokens;
-    std::string delimiters = "\r\n";
-    Tokenize(file_contents, delimiters, &tokens);
-    ASSERT_TRUE(tokens.size() == 2) << "Password file \"" << password_file_
-        << "\" must contain exactly two lines of text.";
-    username_ = tokens[0];
-    password_ = tokens[1];
-  } else {
-    // Read GAIA credentials from the "--sync-XXX-for-test" command line
-    // parameters.
-    username_ = WideToUTF8(cl->GetSwitchValue(switches::kSyncUserForTest));
-    password_ = WideToUTF8(cl->GetSwitchValue(switches::kSyncPasswordForTest));
-    ASSERT_FALSE(username_.empty()) << "Can't run live server test "
-        << "without specifying --" << switches::kSyncUserForTest;
-    ASSERT_FALSE(password_.empty()) << "Can't run live server test "
-        << "without specifying --" << switches::kSyncPasswordForTest;
-  }
+  username_ = WideToUTF8(cl->GetSwitchValue(switches::kSyncUserForTest));
+  password_ = WideToUTF8(cl->GetSwitchValue(switches::kSyncPasswordForTest));
+  ASSERT_FALSE(username_.empty()) << "Can't run live server test "
+      << "without specifying --" << switches::kSyncUserForTest;
+  ASSERT_FALSE(password_.empty()) << "Can't run live server test "
+      << "without specifying --" << switches::kSyncPasswordForTest;
 
   // Unless a sync server was explicitly provided, run a test one locally.
   // TODO(ncarter): It might be better to allow the user to specify a choice
