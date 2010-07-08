@@ -764,7 +764,7 @@
    bug_46886
    Heapcheck:Leak
    ...
-   fun:net::::SpdyHttpStreamTest_SendRequest_Test::TestBody
+   fun:SpdyHttpStreamTest_SendRequest_Test::TestBody
 }
 
 {
