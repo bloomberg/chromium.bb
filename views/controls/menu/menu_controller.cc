@@ -39,7 +39,9 @@ static const int kCloseOnExitTime = 1200;
 
 // Max width of a menu. There does not appear to be an OS value for this, yet
 // both IE and FF restrict the max width of a menu.
-static const int kMaxMenuWidth = 400;
+// NOTE: this needs to be large enough to accommodate the wrench menu with big
+// fonts.
+static const int kMaxMenuWidth = 800;
 
 // Amount to inset submenus.
 static const int kSubmenuHorizontalInset = 3;
