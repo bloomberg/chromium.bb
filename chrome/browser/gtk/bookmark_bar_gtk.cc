@@ -400,6 +400,11 @@ bool BookmarkBarGtk::OnNewTabPage() {
           browser_->GetSelectedTabContents()->ShouldShowBookmarkBar());
 }
 
+bool BookmarkBarGtk::OnAppsPage() const {
+  return (browser_ && browser_->GetSelectedTabContents() &&
+          browser_->GetSelectedTabContents()->is_app());
+}
+
 void BookmarkBarGtk::Loaded(BookmarkModel* model) {
   // If |instructions_| has been nulled, we are in the middle of browser
   // shutdown. Do nothing.

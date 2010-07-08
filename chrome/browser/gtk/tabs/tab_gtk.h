@@ -32,8 +32,14 @@ class TabGtk : public TabRendererGtk,
     // Returns true if the specified Tab is pinned.
     virtual bool IsTabPinned(const TabGtk* tab) const = 0;
 
+    // Returns true if the specified Tab contains an app.
+    virtual bool IsAppTab(const TabGtk* tab) const = 0;
+
     // Returns true if the specified Tab is detached.
     virtual bool IsTabDetached(const TabGtk* tab) const = 0;
+
+    // Returns true if the toolbar is visible for |tab|.
+    virtual bool IsToolbarVisible(const TabGtk* tab) const = 0;
 
     // Selects the specified Tab.
     virtual void SelectTab(TabGtk* tab) = 0;
