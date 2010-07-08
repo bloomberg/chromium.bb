@@ -12,7 +12,6 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
 #include "chrome/browser/gtk/options/cookies_view.h"
-#include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -33,12 +32,11 @@ GtkWidget* WrapInHBox(GtkWidget* widget) {
 CookieFilterPageGtk::CookieFilterPageGtk(Profile* profile)
     : OptionsPageBase(profile),
       initializing_(true) {
-  scoped_ptr<OptionsLayoutBuilderGtk>
-    options_builder(OptionsLayoutBuilderGtk::Create());
-  options_builder->AddOptionGroup(
-      l10n_util::GetStringUTF8(IDS_MODIFY_COOKIE_STORING_LABEL),
-      InitCookieStoringGroup(), true);
-  page_ = options_builder->get_page_widget();
+  GtkWidget* title_label = gtk_util::CreateBoldLabel(
+      l10n_util::GetStringUTF8(IDS_MODIFY_COOKIE_STORING_LABEL));
+  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(page_), title_label, FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(page_), InitCookieStoringGroup());
 
   clear_site_data_on_exit_.Init(prefs::kClearSiteDataOnExit,
                                 profile->GetPrefs(), NULL);

@@ -15,7 +15,6 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
 #include "chrome/browser/gtk/options/simple_content_exceptions_window.h"
-#include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/common/pref_names.h"
@@ -40,12 +39,11 @@ ContentFilterPageGtk::ContentFilterPageGtk(Profile* profile,
   COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kTitleIDs_IncorrectSize);
 
-  scoped_ptr<OptionsLayoutBuilderGtk>
-    options_builder(OptionsLayoutBuilderGtk::Create());
-  options_builder->AddOptionGroup(
-      l10n_util::GetStringUTF8(kTitleIDs[content_type_]),
-      InitGroup(), true);
-  page_ = options_builder->get_page_widget();
+  GtkWidget* title_label = gtk_util::CreateBoldLabel(
+      l10n_util::GetStringUTF8(kTitleIDs[content_type_]));
+  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(page_), title_label, FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(page_), InitGroup());
 }
 
 ContentFilterPageGtk::~ContentFilterPageGtk() {

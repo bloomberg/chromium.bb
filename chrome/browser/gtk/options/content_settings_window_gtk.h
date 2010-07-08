@@ -36,12 +36,15 @@ class ContentSettingsWindowGtk {
   CHROMEGTK_CALLBACK_2(ContentSettingsWindowGtk, void, OnSwitchPage,
                        GtkNotebookPage*, guint);
   CHROMEGTK_CALLBACK_0(ContentSettingsWindowGtk, void, OnWindowDestroy);
+  CHROMEG_CALLBACK_0(ContentSettingsWindowGtk, void, OnListSelectionChanged,
+                     GtkTreeSelection*);
 
   // The options dialog.
   GtkWidget* dialog_;
 
   // The container of the option pages.
   GtkWidget* notebook_;
+  GtkWidget* list_;
 
   // The Profile associated with these options.
   Profile* profile_;
