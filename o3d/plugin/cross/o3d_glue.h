@@ -517,6 +517,12 @@ class PluginObject: public NPObject {
   Bitmap::Ref GetOffscreenBitmap() const;
 
  private:
+  // Called through the browser's NPN_PluginThreadAsyncCall
+  static void TickPluginObject(void* data);
+
+  // Completes the work of an AsyncTick().
+  void ExecuteAsyncTick();
+
   bool fullscreen_region_valid_;
   int fullscreen_region_x_;
   int fullscreen_region_y_;

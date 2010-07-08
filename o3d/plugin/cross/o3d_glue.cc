@@ -987,24 +987,9 @@ void PluginObject::PlatformSpecificSetCursor() {
 
 #endif  // OS_LINUX
 
-namespace {
-void TickPluginObject(void* data) {
+void PluginObject::TickPluginObject(void* data) {
   PluginObject* plugin_object = static_cast<PluginObject*>(data);
-
-  // Check the plugin has not been destroyed already. Chrome sometimes invokes
-  // async callbacks after destruction.
-  if (!plugin_object->client())
-    return;
-
-  // Don't allow reentrancy through asynchronous ticks. Chrome sometimes does
-  // this. It is also possible for the asyncronous call to be invoked while
-  // a message is being handled. This prevents that.
-  Client::ScopedIncrement reentrance_count(plugin_object->client());
-  if (reentrance_count.get() > 1)
-    return;
-
-  plugin_object->Tick();
-}
+  plugin_object->ExecuteAsyncTick();
 }
 
 void PluginObject::AsyncTick() {
@@ -1029,7 +1014,7 @@ void PluginObject::AsyncTick() {
                        bool,
                        const std::string&,
                        const std::string&) {
-        plugin_object_->Tick();
+        plugin_object_->ExecuteAsyncTick();
       }
 
      private:
@@ -1054,6 +1039,24 @@ void PluginObject::AsyncTick() {
       Tick();
     }
   }
+}
+
+void PluginObject::ExecuteAsyncTick() {
+  // Check the plugin has not been destroyed already. Chrome sometimes invokes
+  // async callbacks after destruction.
+  if (!client())
+    return;
+
+  // Don't allow reentrancy through asynchronous ticks. Chrome sometimes does
+  // this. It is also possible for the asyncronous call to be invoked while
+  // a message is being handled. This prevents that.
+  Client::ScopedIncrement reentrance_count(client());
+  if (reentrance_count.get() > 1) {
+    --pending_ticks_;
+    return;
+  }
+
+  Tick();
 }
 
 void PluginObject::Tick() {
