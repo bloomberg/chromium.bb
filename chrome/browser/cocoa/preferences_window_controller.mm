@@ -336,8 +336,6 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)registerPrefObservers;
 - (void)unregisterPrefObservers;
 
-- (void)customHomePagesChanged;
-
 // KVC setter methods.
 - (void)setNewTabPageIsHomePageIndex:(NSInteger)val;
 - (void)setHomepageURL:(NSString*)urlString;
@@ -471,15 +469,6 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     const SessionStartupPref startupPref =
         SessionStartupPref::GetStartupPref(prefs_);
     [customPagesSource_ setURLs:startupPref.urls];
-    [customPagesSource_ addObserver:self
-                         forKeyPath:@"customHomePages"
-                            options:0L
-                            context:NULL];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(homepageEntryChanged:)
-               name:kHomepageEntryChangedNotification
-             object:nil];
 
     // Set up the model for the default search popup. Register for notifications
     // about when the model changes so we can update the selection in the view.
@@ -755,7 +744,6 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   if (syncService_) {
     syncService_->RemoveObserver(observer_.get());
   }
-  [customPagesSource_ removeObserver:self forKeyPath:@"customHomePages"];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self unregisterPrefObservers];
   [animation_ setDelegate:nil];
@@ -825,21 +813,6 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   prefs_->RemovePrefObserver(prefs::kURLsToRestoreOnStartup, observer_.get());
 
   // Nothing to do for other panels...
-}
-
-// Called when a key we're observing via KVO changes.
-- (void)observeValueForKeyPath:(NSString*)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary*)change
-                       context:(void*)context {
-  if ([keyPath isEqualToString:@"customHomePages"]) {
-    [self customHomePagesChanged];
-    return;
-  }
-  [super observeValueForKeyPath:keyPath
-                       ofObject:object
-                         change:change
-                        context:context];
 }
 
 // Called when the window wants to be closed.
@@ -928,20 +901,11 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     [self setRestoreOnStartupIndex:startupPref.type];
   }
 
-  // TODO(beng): Note that the kURLsToRestoreOnStartup pref is a mutable list,
-  //             and changes to mutable lists aren't broadcast through the
-  //             observer system, so this condition will
-  //             never match. Once support for broadcasting such updates is
-  //             added, this will automagically start to work, and this comment
-  //             can be removed.
-  // TODO(chron): We comment out this block right now because we have put in
-  //              broadcast for notifications, but there's some workaround
-  //              currently present that causes an infinite loop.
-  // if (*prefName == prefs::kURLsToRestoreOnStartup) {
-  //  const SessionStartupPref startupPref =
-  //      SessionStartupPref::GetStartupPref(prefs_);
-  //  [customPagesSource_ setURLs:startupPref.urls];
-  // }
+  if (*prefName == prefs::kURLsToRestoreOnStartup) {
+    const SessionStartupPref startupPref =
+        SessionStartupPref::GetStartupPref(prefs_);
+    [customPagesSource_ setURLs:startupPref.urls];
+  }
 
   if (*prefName == prefs::kHomePageIsNewTabPage) {
     NSInteger useNewTabPage = newTabPageIsHomePage_.GetValue() ? 0 : 1;
@@ -972,20 +936,6 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   pref.type = type;
   pref.urls = [customPagesSource_.get() URLs];
   SessionStartupPref::SetStartupPref(prefs_, pref);
-}
-
-// Called when the custom home pages array changes. Force a save to prefs, but
-// in order to save it, we have to look up what the current radio button
-// setting is (since they're set together). What a pain.
-- (void)customHomePagesChanged {
-  const SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs_);
-  [self saveSessionStartupWithType:pref.type];
-}
-
-// Called when an entry in the custom home page array changes URLs. Force
-// a save to prefs.
-- (void)homepageEntryChanged:(NSNotification*)notify {
-  [self customHomePagesChanged];
 }
 
 // Sets the pref based on the index of the selected cell in the matrix and
