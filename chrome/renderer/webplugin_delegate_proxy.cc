@@ -869,6 +869,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
 
   int bytes_per_pixel = CGBitmapContextGetBitsPerPixel(context) / 8;
 #else
+  cairo_surface_flush(page_surface);
   const unsigned char* page_bytes = cairo_image_surface_get_data(page_surface);
   int page_stride = cairo_image_surface_get_stride(page_surface);
   int page_start_x = static_cast<int>(page_x_double);
@@ -879,6 +880,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   cairo_surface_t* bg_surface = cairo_get_target(device.beginPlatformPaint());
   DCHECK_EQ(cairo_surface_get_type(bg_surface), CAIRO_SURFACE_TYPE_IMAGE);
   DCHECK_EQ(cairo_image_surface_get_format(bg_surface), CAIRO_FORMAT_ARGB32);
+  cairo_surface_flush(bg_surface);
   const unsigned char* bg_bytes = cairo_image_surface_get_data(bg_surface);
   int full_bg_width = cairo_image_surface_get_width(bg_surface);
   int full_bg_height = cairo_image_surface_get_height(bg_surface);

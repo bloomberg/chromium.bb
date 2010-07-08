@@ -49,6 +49,8 @@ class CanvasPaintT : public T {
         cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
       cairo_surface_t* source_surface = cairo_get_target(context_);
       CHECK(source_surface);
+      // Flush cairo's cache of the surface.
+      cairo_surface_mark_dirty(source_surface);
       GdkRectangle bounds = rectangle();
       cairo_set_source_surface(cr, source_surface, bounds.x, bounds.y);
       gdk_cairo_region(cr, region_);
@@ -83,7 +85,7 @@ class CanvasPaintT : public T {
     GdkRectangle bounds = rectangle();
     if (!T::initialize(bounds.width, bounds.height, opaque, NULL)) {
       // Cause a deliberate crash;
-      *(char*) 0 = 0;
+      CHECK(false);
     }
 
     // Need to translate so that the dirty region appears at the origin of the

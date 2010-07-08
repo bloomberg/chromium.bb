@@ -47,7 +47,6 @@ class BitmapPlatformDevice::BitmapPlatformDeviceData
   explicit BitmapPlatformDeviceData(cairo_surface_t* surface);
 
   cairo_t* GetContext();
-  cairo_surface_t* GetSurface();
 
   // Sets the transform and clip operations. This will not update the Cairo
   // surface, but will mark the config as dirty. The next call of LoadConfig
@@ -108,13 +107,6 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::SetMatrixClip(
   transform_ = transform;
   clip_region_ = region;
   config_dirty_ = true;
-}
-
-cairo_surface_t*
-BitmapPlatformDevice::BitmapPlatformDeviceData::GetSurface() {
-  // TODO(brettw) this function should be removed.
-  LoadConfig();
-  return surface_;
 }
 
 void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
