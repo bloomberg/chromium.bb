@@ -992,6 +992,7 @@ base_env.Append(
     'src/shared/imc/build.scons',
     'src/shared/npruntime/build.scons',
     'src/shared/platform/build.scons',
+    'src/shared/ppapi/build.scons',
     'src/shared/srpc/build.scons',
     'src/shared/utils/build.scons',
     'src/third_party/protobuf/build.scons',
@@ -1627,9 +1628,9 @@ if not ARGUMENTS.get('nocpp'):
         'src/shared/imc/nacl.scons',
         'src/shared/npruntime/nacl.scons',
         'src/shared/platform/nacl.scons',
+        'src/shared/ppapi/nacl.scons',
         'src/third_party/protobuf/nacl.scons',
         'src/untrusted/gpu/nacl.scons',
-        'src/untrusted/ppapi/nacl.scons',
         ####  ALPHABETICALLY SORTED ####
       ],
   )

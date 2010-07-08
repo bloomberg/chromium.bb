@@ -1,0 +1,23 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# Disable certain warnings treated as errors
+if env.Bit('windows'):
+   env.FilterOut(CCFLAGS=['/WX'])  # don't treat all warnings as errors
+else:
+   env.Append(CCFLAGS=['-Wno-unused-parameter'])
+
+cpp_sources = [
+    '$SOURCE_ROOT/ppapi/cpp/device_context_2d.cc',
+    '$SOURCE_ROOT/ppapi/cpp/image_data.cc',
+    '$SOURCE_ROOT/ppapi/cpp/instance.cc',
+    '$SOURCE_ROOT/ppapi/cpp/module.cc',
+    '$SOURCE_ROOT/ppapi/cpp/scriptable_object.cc',
+    '$SOURCE_ROOT/ppapi/cpp/resource.cc',
+    '$SOURCE_ROOT/ppapi/cpp/var.cc',
+    ]
+
+env.DualLibrary('ppapi_cpp', cpp_sources)

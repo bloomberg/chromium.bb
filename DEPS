@@ -12,7 +12,7 @@ vars = {
   "tools_rev": "2271",
   "python_rev": "22967",
   "wix_rev": "153",
-  "ppapi_rev": "74",
+  "ppapi_rev": "126",
 }
 
 deps = {

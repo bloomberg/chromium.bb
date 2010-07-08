@@ -55,6 +55,7 @@ libs = [
     'gio',
     'expiration',
     'sel',
+    'ppapi_cpp'
 ]
 if env['SHARED_LIBS_SPECIAL']:
   env.Append(LIBS=[l + '_shared' for l in libs])
