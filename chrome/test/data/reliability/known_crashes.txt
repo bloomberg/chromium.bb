@@ -43,145 +43,71 @@ REGEX : `anonymous namespace'::purecall$
 REGEX : `anonymous namespace'::invalidparameter$
 
 # 5359. Random memory corruption?
-PREFIX : v8::internal::sweepspace___v8::internal::markcompactcollector::sweepspaces___v8::internal::markcompactcollector::collectgarbage
+# PREFIX : v8::internal::sweepspace___v8::internal::markcompactcollector::sweepspaces___v8::internal::markcompactcollector::collectgarbage
 
 # Flash crash?
-REGEX : ^webplugindelegateimpl::nativewndproc$
+# REGEX : ^webplugindelegateimpl::nativewndproc$
 
-PREFIX : webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop
+# PREFIX : webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop
 
-PREFIX : base::subtle::refcountedthreadsafebase::release___messageloop::posttask_helper____tls_end
+# PREFIX : base::subtle::refcountedthreadsafebase::release___messageloop::posttask_helper____tls_end
 
 # End mysterious crash section.
 
-# 7701
-# PREFIX : iat_patch::getiatfunction___iat_patch::restoreimportedfunction___iat_patch::iatpatchfunction::unpatch
-
-# 9615
-# SUBSTRING : history::historybackend::~historybackend
-
-# 10791
-# SUBSTRING : webplugindelegateimpl::destroyinstance___webplugindelegateimpl::~webplugindelegateimpl
-
-# 10978
-# PREFIX : webcore::renderobject::localtoabsolute___webcore::layoutstate::layoutstate___webcore::renderview::pushlayoutstate___webcore::frameview::layout
-
 # 15620
-PREFIX : browser::processpendingtabs___browser::clearunloadstate
+# PREFIX : browser::processpendingtabs___browser::clearunloadstate
 
 # 17043
-PREFIX : npapi::pluginstream::trywritetoplugin___npapi::pluginstream::writetoplugin
-
-# 17366
-# SUBSTRING : operator=___webcore::frameview::scrolltoanchor___webcore::frameview::maintainscrollpositionatanchor___webcore::frameloader::gotoanchor
-
-# 18743
-# SUBSTRING : spellchecker::dictionarydownloadcontroller::onurlfetchcomplete
-
-# 18799
-# PREFIX : webplugindelegatestub::onmessagereceived___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::runhandler___messageloop::run___pluginmain___chromemain___wwinmain_____tmaincrtstartup
+# PREFIX : npapi::pluginstream::trywritetoplugin___npapi::pluginstream::writetoplugin
 
 # 19813
-PREFIX : npobjectgetproperty___npobjectgetnamedproperty___webcore::v8custom::v8htmlpluginelementnamedpropertygetter
-
-# 20063
-# PREFIX : npapi::plugininstance::npp_newstream___npapi::pluginstream::open___npapi::pluginstreamurl::didreceiveresponse___webplugindelegatestub::ondidreceiveresponse___ipc::messagewithtuple<tuple1<pluginmsg_didreceiveresponseparams> >::dispatch<webplugindelegatestub,void (__thiscall webplugindelegatestub::*)(pluginmsg_didreceiveresponseparams const &)>
-
-# 20200
-# SUBSTRING : wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
-
-# 20291
-# PREFIX : webplugindelegateimpl::flashwindowlesswndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run
-
-# 20494
-# likely to be related with flash. The top few frames are all in NPSWF.
-# REGEX : npapi::plugininstance::npp_newstream___[^_]*___ipc::syncchannel::sendwithtimeout
+# PREFIX : npobjectgetproperty___npobjectgetnamedproperty___webcore::v8custom::v8htmlpluginelementnamedpropertygetter
 
 # 20915
-REGEX : ^base::messagepumpforio::schedulework___ucase_props_trieindex___canonicalize_map$
-PREFIX : base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_index
-SUBSTRING : npn_invalidaterect___webplugindelegateimpl
-PREFIX : runnablemethod<ipc::channelproxy::context,void (__thiscall ipc::channelproxy::context::*)(ipc::message const &),tuple1<ipc::message> >::run___base::messagepumpforui::dorunloop
+# REGEX : ^base::messagepumpforio::schedulework___ucase_props_trieindex___canonicalize_map$
+# PREFIX : base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_index
+# SUBSTRING : npn_invalidaterect___webplugindelegateimpl
+# PREFIX : runnablemethod<ipc::channelproxy::context,void (__thiscall ipc::channelproxy::context::*)(ipc::message const &),tuple1<ipc::message> >::run___base::messagepumpforui::dorunloop
 
 # 21295
-PREFIX : renderwidgethost::getbackingstore
-
-# 21862
-# PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlrequest::start
-
-# 22205
-# SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore::frameloader::continuefragmentscrollafternavigationpolicy___webcore::frameloader::callcontinuefragmentscrollafternavigationpolicy___webcore::policycheck::call
+# PREFIX : renderwidgethost::getbackingstore
 
 # 22210
-SUBSTRING : webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paint___webcore::frameview::paintcontents
-
-# 23278
-# SUBSTRING : webcore::xmlhttprequest::callreadystatechangelistener___webcore::xmlhttprequest::networkerror
+# SUBSTRING : webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paint___webcore::frameview::paintcontents
 
 # 23281
-REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
-
-# 23411
-# PREFIX : renderviewhost::setnavigationssuspended___renderviewhostmanager::shouldclosepage___renderviewhost::onmsgshouldcloseack
-# SUBSTRING : renderwidgethost::~renderwidgethost___renderviewhost::`scalar deleting destructor'___renderwidgethost::destroy___renderwidgethost::shutdown___renderviewhostmanager::cancelpending
+# REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 
 # 29081
-REGEX : ^malloc$
+# REGEX : ^malloc$
 
 # 29149
-PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
+# PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
 
 # 29758
-PREFIX : webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::processmessagehelper
-PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write___npapi::pluginstream::trywritetoplugin___
+# PREFIX : webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::processmessagehelper
+# PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write___npapi::pluginstream::trywritetoplugin___
 
 # 29759
-PREFIX : webcore::imageeventsender::dispatchpendingevents
-
-# 31731
-# PREFIX : webcore::scriptcontroller::isenabled___webcore::v8proxy::mainworldcontext___webcore::tov8context
-
-# 33067
-# PREFIX : webcore::renderobject::containingblock___webcore::frameview::scrollcontentsfastpath___webcore::scrollview::scrollcontents___webcore::scrollview::valuechanged___webcore::frameview::valuechanged___webcore::scrollbar::setcurrentpos___webcore::scrollbar::scroll___webcore::scrollview::scroll
-
-# 34971
-# PREFIX : modaldialogdelegate::activatemodaldialog___browserview::activateappmodaldialog___browserframewin::onncactivate___views::widgetwin::_processwindowmessage___views::widgetwin::processwindowmessage
-
-# 35027
-# PREFIX : v8::internal::hashtable<v8::internal::stringdictionaryshape,v8::internal::string *>::findentry___v8::internal::jsobject::setnormalizedproperty___v8::internal::jsobject::definegettersetter___v8::internal::jsobject::defineaccessor___v8::internal::runtime_defineaccessor___v8::internal::invoke___v8::internal::execution::call___v8::script::run___webcore::v8proxy::runscript___webcore::v8proxy::evaluate
-
-# 35176
-# PREFIX : std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t> >::assign___addressfield::parsezipcode___addressfield::parse___formfieldset::formfieldset___formstructure::getheuristicfieldinfo
-
-# 35467
-# SUBSTRING : webcore::scriptcontroller::processingusergesture___webcore::frameloader::requestframe___webcore::htmlframeelementbase::openurl___webcore::htmlframeelementbase::setlocation
+# PREFIX : webcore::imageeventsender::dispatchpendingevents
 
 # 38525
-SUBSTRING : webkit_glue::webpluginimpl::updategeometry___webkit::webplugincontainerimpl::reportgeometry___webcore::scrollview::framerectschanged
+# SUBSTRING : webkit_glue::webpluginimpl::updategeometry___webkit::webplugincontainerimpl::reportgeometry___webcore::scrollview::framerectschanged
 
 # 39356
-SUBSTRING : renderwidgethost::onmsgupdaterect___ipc::messagewithtuple<tuple1<viewhostmsg_updaterect_params> >::dispatch<renderwidgethost,void (__thiscall renderwidgethost::*)(viewhostmsg_updaterect_params const &)>___renderwidgethost::onmessagereceived___renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived
-
-# 41148
-# SUBSTRING : wtf::hashtable<webcore::atomicstring,std::pair<webcore::atomicstring,webcore::string>,wtf::pairfirstextractor<std::pair<webcore::atomicstring,webcore::string> >,webcore::casefoldinghash,wtf::pairhashtraits<wtf::hashtraits<webcore::atomicstring>,wtf::hashtraits<webcore::string> >,wtf::hashtraits<webcore::atomicstring> >::add<webcore::atomicstring,webcore::string,wtf::hashmaptranslator<std::pair<webcore::atomicstring,webcore::string>,wtf::pairhashtraits<wtf::hashtraits<webcore::atomicstring>,wtf::hashtraits<webcore::string> >,webcore::casefoldinghash> >___webkit::weburlresponse::addhttpheaderfield___webkit_glue::`anonymous namespace'::populateurlresponse___webkit_glue::weburlloaderimpl::context::onreceivedresponse___resourcedispatcher::onreceivedresponse
+# SUBSTRING : renderwidgethost::onmsgupdaterect___ipc::messagewithtuple<tuple1<viewhostmsg_updaterect_params> >::dispatch<renderwidgethost,void (__thiscall renderwidgethost::*)(viewhostmsg_updaterect_params const &)>___renderwidgethost::onmessagereceived___renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived
 
 # 46106
-PREFIX : webcore::reportfatalerrorinv8___v8::internal::v8::fatalprocessoutofmemory___v8::internal::setelement___v8::internal::runtime::setobjectproperty___v8::internal::runtime_setproperty___v8::internal::invoke___v8::internal::execution::call___v8::script::run___webcore::v8proxy::runscript___webcore::v8proxy::evaluate___webcore::scriptcontroller::evaluate___webcore::scriptcontroller::executescript___webcore::htmltokenizer::scriptexecution
+# PREFIX : webcore::reportfatalerrorinv8___v8::internal::v8::fatalprocessoutofmemory___v8::internal::setelement___v8::internal::runtime::setobjectproperty___v8::internal::runtime_setproperty___v8::internal::invoke___v8::internal::execution::call___v8::script::run___webcore::v8proxy::runscript___webcore::v8proxy::evaluate___webcore::scriptcontroller::evaluate___webcore::scriptcontroller::executescript___webcore::htmltokenizer::scriptexecution
 
 # 47207
-PREFIX : messageloop::runtask___messageloop::deferorrunpendingtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
-
-# 47367
-# SUBSTRING : webcore::bmpimagereader::decodebmp___webcore::icoimagedecoder::decodeatindex___webcore::icoimagedecoder::framebufferatindex___webcore::imagesource::createframeatindex___webkit::webimage::fromdata
+# PREFIX : messageloop::runtask___messageloop::deferorrunpendingtask___messageloop::dodelayedwork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 
 # 47439
-PREFIX : webcore::position::getinlineboxandoffset___webcore::position::getinlineboxandoffset___webcore::frame::firstrectforrange___webkit::webviewimpl::caretorselectionbounds
+# PREFIX : webcore::position::getinlineboxandoffset___webcore::position::getinlineboxandoffset___webcore::frame::firstrectforrange___webkit::webviewimpl::caretorselectionbounds
 
 # 47839
-PREFIX : base::objectwatcher::stopwatching___lockimpl::unlock___`anonymous namespace'::rolloverprotectednow___lockimpl::lock___conditionvariable::signal___watchdog::armsometimedeltaago___`anonymous namespace'::jankobserverhelper::startprocessingtimers___base::messagepumpforio::waitforiocompletion___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
-
-# 47846
-# PREFIX : webcore::scriptcontroller::canexecutescripts___webcore::v8proxy::mainworldcontext___webcore::tov8context
+# PREFIX : base::objectwatcher::stopwatching___lockimpl::unlock___`anonymous namespace'::rolloverprotectednow___lockimpl::lock___conditionvariable::signal___watchdog::armsometimedeltaago___`anonymous namespace'::jankobserverhelper::startprocessingtimers___base::messagepumpforio::waitforiocompletion___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 
 # 48475 / http://code.google.com/p/v8/issues/detail?id=769
 PREFIX : v8::internal::parser::parsefunctionliteral___v8::internal::parser::parsefunctiondeclaration___v8::internal::parser::parsestatement
