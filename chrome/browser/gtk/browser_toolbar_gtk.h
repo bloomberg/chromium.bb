@@ -81,9 +81,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   LocationBarViewGtk* GetLocationBarView() { return location_bar_.get(); }
 
-  bool collapsed() const { return collapsed_; }
-  void set_collapsed(bool val);
-
   // We have to show padding on the bottom of the toolbar when the bookmark
   // is in floating mode. Otherwise the bookmark bar will paint it for us.
   void UpdateForBookmarkBarVisibility(bool show_bottom_padding);
@@ -267,9 +264,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   scoped_ptr<GtkSignalRegistrar> drop_handler_;
 
   ThrobAnimation upgrade_reminder_animation_;
-
-  // When collapsed, the toolbar is just a tiny strip, no controls are visible.
-  bool collapsed_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToolbarGtk);
 };

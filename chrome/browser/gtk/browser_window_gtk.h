@@ -123,7 +123,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void Copy();
   virtual void Paste();
   virtual void ToggleTabStripMode() {}
-  virtual void SetToolbarCollapsedMode(bool val);
+  virtual void SetToolbarCollapsedMode(bool val) {}
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

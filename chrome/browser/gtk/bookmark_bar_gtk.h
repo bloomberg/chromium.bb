@@ -77,9 +77,6 @@ class BookmarkBarGtk : public AnimationDelegate,
   // rendering).
   bool OnNewTabPage();
 
-  // True if we're on an extension apps page.
-  bool OnAppsPage() const;
-
   // Change the visibility of the bookmarks bar. (Starts out hidden, per GTK's
   // default behaviour). There are three visiblity states:
   //
