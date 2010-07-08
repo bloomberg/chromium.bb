@@ -99,7 +99,14 @@ bool EncodingMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {
-  return browser_->command_updater()->IsCommandEnabled(command_id);
+  bool enabled = browser_->command_updater()->IsCommandEnabled(command_id);
+  // Special handling for the contents of the Encoding submenu. On Mac OS,
+  // instead of enabling/disabling the top-level menu item, the submenu's
+  // contents get disabled, per Apple's HIG.
+#if defined(OS_MACOSX)
+  enabled &= browser_->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU);
+#endif
+  return enabled;
 }
 
 bool EncodingMenuModel::GetAcceleratorForCommandId(
