@@ -131,8 +131,10 @@ bool PopulateWordSet(WordSet* word_set, FILE* file, AffReader* aff_reader,
 DicReader::DicReader(const std::string& filename) {
   FilePath path = FilePath::FromWStringHack(ASCIIToWide(filename));
   file_ = file_util::OpenFile(path, "r");
-  additional_words_file_ =
-      file_util::OpenFile(FilePath(path.InsertBeforeExtension("_delta")), "r");
+
+  FilePath additional_path =
+      path.InsertBeforeExtension(FILE_PATH_LITERAL("_delta"));
+  additional_words_file_ = file_util::OpenFile(additional_path, "r");
 }
 
 DicReader::~DicReader() {
