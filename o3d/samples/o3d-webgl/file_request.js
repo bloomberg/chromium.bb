@@ -58,6 +58,8 @@
  * request.send();
  */
 o3d.FileRequest = function() {
+  this.method_ = "";
+  this.async_ = true;
   this.request_ = new XMLHttpRequest();
   var fileRequest = this;
   this.request_.onreadystatechange = function() {
@@ -187,20 +189,8 @@ o3d.FileRequest.prototype.imageLoaded_ = function() {
 o3d.FileRequest.prototype.open =
     function(method, uri, async) {
   this.uri = uri;
-  // TODO(petersont): I think there is a race condition here -- calling
-  // code expects that it can still set up the onreadystatechange callback
-  // between open() and send(), but if open() actually initiates the XHR
-  // then the caller may miss the crucial completion callback!
-  if (this.isImageUrl_(uri)) {
-    this.image_ = new Image();
-    var that = this;
-    this.image_.onload = function() {
-      that.imageLoaded_.call(that);
-    }
-    this.image_.src = uri;
-  } else {
-    this.request_.open(method, uri, async);
-  }
+  this.method_ = method;
+  this.async_ = async;
 };
 
 
@@ -210,7 +200,16 @@ o3d.FileRequest.prototype.open =
  * matter what, with success or failure.
  */
 o3d.FileRequest.prototype.send = function() {
-  // This function left blank for compatability with o3djs.io.
+  if (this.isImageUrl_(this.uri)) {
+    this.image_ = new Image();
+    var that = this;
+    this.image_.onload = function() {
+      that.imageLoaded_.call(that);
+    }
+    this.image_.src = this.uri;
+  } else {
+    this.request_.open(this.method_, this.uri, this.async_);
+  }
 };
 
 
