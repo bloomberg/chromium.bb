@@ -127,7 +127,8 @@ void Scrollbar::SetTickMarks(const PP_Rect* tick_marks, uint32_t count) {
                             tick_marks[i].size.width,
                             tick_marks[i].size.height);;
   }
-  Invalidate(&location());
+  PP_Rect rect = location();
+  Invalidate(&rect);
 }
 
 void Scrollbar::ScrollBy(PP_ScrollBy unit, int32_t multiplier) {
