@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "remoting/client/chromoting_client.h"
@@ -17,7 +18,6 @@
 #include "third_party/ppapi/c/pp_event.h"
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/cpp/completion_callback.h"
-#include "third_party/ppapi/cpp/image_data.h"
 
 using std::string;
 using std::vector;
@@ -26,13 +26,9 @@ namespace remoting {
 
 const char* ChromotingPlugin::kMimeType = "pepper-application/x-chromoting";
 
-ChromotingPlugin::ChromotingPlugin(PP_Instance pp_instance,
-                                   const PPB_Instance* ppb_instance_funcs)
-    : width_(0),
-      height_(0),
-      drawing_context_(NULL),
-      pp_instance_(pp_instance),
-      ppb_instance_funcs_(ppb_instance_funcs) {
+ChromotingPlugin::ChromotingPlugin(PP_Instance pp_instance)
+    : pp::Instance(pp_instance),
+      pepper_main_loop_dont_post_to_me_(NULL) {
 }
 
 ChromotingPlugin::~ChromotingPlugin() {
@@ -53,6 +49,19 @@ ChromotingPlugin::~ChromotingPlugin() {
 bool ChromotingPlugin::Init(uint32_t argc,
                             const char* argn[],
                             const char* argv[]) {
+  CHECK(pepper_main_loop_dont_post_to_me_ == NULL);
+
+  // Record the current thread.  This function should only be invoked by the
+  // plugin thread, so we capture the current message loop and assume it is
+  // indeed the plugin thread.
+  //
+  // We're abusing the pepper API slightly here.  We know we're running as an
+  // internal plugin, and thus we are on the pepper main thread that uses a
+  // message loop.
+  //
+  // TODO(ajwong): See if there is a method for querying what thread we're on
+  // from inside the pepper API.
+  pepper_main_loop_dont_post_to_me_ = MessageLoop::current();
   LOG(INFO) << "Started ChromotingPlugin::Init";
 
   // Extract the URL from the arguments.
@@ -87,21 +96,23 @@ bool ChromotingPlugin::Init(uint32_t argc,
 
   // Create the chromting objects.
   host_connection_.reset(new JingleHostConnection(network_thread_.get()));
-  /*
-  view_.reset(new PepperView(main_thread_->message_loop(), device_,
-                             instance()));
-                             */
-  //client_.reset(new ChromotingClient(main_thread_->message_loop(),
-  //                                   host_connection_.get(), view_.get()));
+  view_.reset(new PepperView(this));
+  client_.reset(new ChromotingClient(main_thread_->message_loop(),
+                                     host_connection_.get(), view_.get()));
+
+  // Default to a medium grey.
+  view_->SetSolidFill(0xFFCDCDCD);
 
   // Kick off the connection.
-  //host_connection_->Connect(user_id, auth_token, host_jid, client_.get());
+  host_connection_->Connect(user_id, auth_token, host_jid, client_.get());
 
   return true;
 }
 
 void ChromotingPlugin::ViewChanged(const PP_Rect& position,
                                    const PP_Rect& clip) {
+  DCHECK(CurrentlyOnPluginThread());
+
   // TODO(ajwong): This is going to be a race condition when the view changes
   // and we're in the middle of a Paint().
   LOG(INFO) << "ViewChanged "
@@ -110,43 +121,18 @@ void ChromotingPlugin::ViewChanged(const PP_Rect& position,
             << position.size.width << ","
             << position.size.height;
 
-  // TODO(ajwong): Do we care about the position?  Probably not...
-  if (position.size.width == width_ || position.size.height == height_)
-    return;
+  view_->SetViewport(position.point.x, position.point.y,
+                       position.size.width, position.size.height);
+  view_->Paint();
+}
 
-  width_ = position.size.width;
-  height_ = position.size.height;
-
-  /*
-   * TODO(ajwong): Reenable this code once we fingure out how we want to
-   * abstract away the C-api for DeviceContext2D.
-  device_context_ = pp::DeviceContext2D(width_, height_, false);
-  if (!ppb_instance_funcs_->BindGraphicsDeviceContext(
-      pp_instance_,
-      device_context_.pp_resource())) {
-    LOG(ERROR) << "Couldn't bind the device context.";
-    return;
-  }
-
-  pp::ImageData image(PP_IMAGEDATAFORMAT_BGRA_PREMUL, width_, height_, false);
-  if (!image.is_null()) {
-    for (int y = 0; y < image.height(); y++) {
-      for (int x = 0; x < image.width(); x++) {
-        *image.GetAddr32(x, y) = 0xccff00cc;
-      }
-    }
-    device_context_.ReplaceContents(&image);
-    device_context_.Flush(pp::CompletionCallback(NULL, this));
-  } else {
-    LOG(ERROR) << "Unable to allocate image.";
-  }
-  */
-
-  //client_->SetViewport(0, 0, width_, height_);
-  //client_->Repaint();
+bool ChromotingPlugin::CurrentlyOnPluginThread() const {
+  return pepper_main_loop_dont_post_to_me_ == MessageLoop::current();
 }
 
 bool ChromotingPlugin::HandleEvent(const PP_Event& event) {
+  DCHECK(CurrentlyOnPluginThread());
+
   switch (event.type) {
     case PP_Event_Type_MouseDown:
     case PP_Event_Type_MouseUp:

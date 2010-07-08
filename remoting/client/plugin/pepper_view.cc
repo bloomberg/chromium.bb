@@ -6,14 +6,15 @@
 
 #include "base/message_loop.h"
 #include "remoting/client/decoder_verbatim.h"
+#include "remoting/client/plugin/chromoting_plugin.h"
+#include "remoting/client/plugin/pepper_util.h"
+#include "third_party/ppapi/cpp/device_context_2d.h"
+#include "third_party/ppapi/cpp/image_data.h"
 
 namespace remoting {
 
-PepperView::PepperView(MessageLoop* message_loop, NPDevice* rendering_device,
-                       NPP plugin_instance)
-  : message_loop_(message_loop),
-    rendering_device_(rendering_device),
-    plugin_instance_(plugin_instance),
+PepperView::PepperView(ChromotingPlugin* plugin)
+  : plugin_(plugin),
     backing_store_width_(0),
     backing_store_height_(0),
     viewport_x_(0),
@@ -28,127 +29,173 @@ PepperView::~PepperView() {
 }
 
 void PepperView::Paint() {
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PepperView::DoPaint));
+  if (!plugin_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(NewRunnableMethod(this, &PepperView::Paint));
+    return;
+  }
+
+  // TODO(ajwong): We shouldn't assume the image data format.
+  pp::ImageData image(PP_IMAGEDATAFORMAT_BGRA_PREMUL, viewport_width_,
+                      viewport_height_, false);
+  if (image.is_null()) {
+    LOG(ERROR) << "Unable to allocate image.";
+    return;
+  }
+
+  if (is_static_fill_) {
+    for (int y = 0; y < image.height(); y++) {
+      for (int x = 0; x < image.width(); x++) {
+        *image.GetAddr32(x, y) = static_fill_color_;
+      }
+    }
+  } else if (frame_) {
+    int32_t* frame_data =
+        reinterpret_cast<int32_t*>(frame_->data(media::VideoFrame::kRGBPlane));
+    int max_height = std::min(backing_store_height_, image.height());
+    int max_width = std::min(backing_store_width_, image.width());
+    for (int y = 0; y < max_height; y++) {
+      for (int x = 0; x < max_width; x++) {
+        // Force alpha to be set to 255.
+        *image.GetAddr32(x, y) =
+            frame_data[y*backing_store_width_ + x] | 0xFF000000;
+      }
+    }
+  } else {
+    // Nothing to paint. escape!
+    //
+    // TODO(ajwong): This is an ugly control flow. fix.
+    return;
+  }
+  device_context_.ReplaceContents(&image);
+  device_context_.Flush(TaskToCompletionCallback(
+      NewRunnableMethod(this, &PepperView::OnPaintDone)));
 }
 
 void PepperView::SetSolidFill(uint32 color) {
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PepperView::DoSetSolidFill, color));
-}
-
-void PepperView::UnsetSolidFill() {
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PepperView::DoUnsetSolidFill));
-}
-
-void PepperView::SetViewport(int x, int y, int width, int height) {
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PepperView::DoSetViewport,
-                        x, y, width, height));
-}
-
-void PepperView::SetBackingStoreSize(int width, int height) {
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PepperView::DoSetBackingStoreSize,
-                        width, height));
-}
-
-void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PepperView::DoHandleBeginUpdateStream, msg));
-}
-
-void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PepperView::DoHandleUpdateStreamPacket, msg));
-}
-
-void PepperView::HandleEndUpdateStream(HostMessage* msg) {
-  message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PepperView::DoHandleEndUpdateStream, msg));
-}
-
-void PepperView::DoPaint() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  LOG(INFO) << "Starting PepperView::DoPaint";
-
-  NPDeviceContext2D context;
-  NPDeviceContext2DConfig config;
-  rendering_device_->initializeContext(plugin_instance_, &config, &context);
-
-  uint32* output_bitmap = static_cast<uint32*>(context.region);
-
-  // TODO(ajwong): Remove debugging code and actually hook up real painting
-  // logic from the decoder.
-  LOG(INFO) << "Painting top: " << context.dirty.top
-            << " bottom: " << context.dirty.bottom
-            << " left: " << context.dirty.left
-            << " right: " << context.dirty.right;
-  for (int i = context.dirty.top; i < context.dirty.bottom; ++i) {
-    for (int j = context.dirty.left; j < context.dirty.right; ++j) {
-      *output_bitmap++ = static_fill_color_;
-    }
+  if (!plugin_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(
+        NewRunnableMethod(this, &PepperView::SetSolidFill, color));
+    return;
   }
-
-  rendering_device_->flushContext(plugin_instance_, &context, NULL, NULL);
-  LOG(INFO) << "Finishing PepperView::DoPaint";
-}
-
-void PepperView::DoSetSolidFill(uint32 color) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
 
   is_static_fill_ = true;
   static_fill_color_ = color;
 }
 
-void PepperView::DoUnsetSolidFill() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+void PepperView::UnsetSolidFill() {
+  if (!plugin_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(
+        NewRunnableMethod(this, &PepperView::UnsetSolidFill));
+    return;
+  }
 
   is_static_fill_ = false;
 }
 
-void PepperView::DoSetViewport(int x, int y, int width, int height) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+void PepperView::SetViewport(int x, int y, int width, int height) {
+  if (!plugin_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(NewRunnableMethod(this, &PepperView::SetViewport,
+                                          x, y, width, height));
+    return;
+  }
 
+  // TODO(ajwong): Should we ignore x & y updates?  What do those even mean?
+
+  // TODO(ajwong): What does viewport x, y mean to a plugin anyways?
   viewport_x_ = x;
   viewport_y_ = y;
   viewport_width_ = width;
   viewport_height_ = height;
+
+  device_context_ =
+      pp::DeviceContext2D(viewport_width_, viewport_height_, false);
+  if (!plugin_->BindGraphicsDeviceContext(device_context_)) {
+    LOG(ERROR) << "Couldn't bind the device context.";
+    return;
+  }
 }
 
-void PepperView::DoSetBackingStoreSize(int width, int height) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+void PepperView::SetBackingStoreSize(int width, int height) {
+  if (!plugin_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(NewRunnableMethod(this,
+                                            &PepperView::SetBackingStoreSize,
+                                            width, height));
+    return;
+  }
 
   backing_store_width_ = width;
   backing_store_height_ = height;
 }
 
-void PepperView::DoHandleBeginUpdateStream(HostMessage* msg) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
+  if (!plugin_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(
+        NewRunnableMethod(this, &PepperView::HandleBeginUpdateStream,
+                          msg));
+    return;
+  }
 
-  NOTIMPLEMENTED();
+  scoped_ptr<HostMessage> deleter(msg);
+
+  // TODO(hclam): Use the information from the message to create the decoder.
+  // We lazily construct the decoder.
+  if (!decoder_.get()) {
+    decoder_.reset(new DecoderVerbatim());
+  }
+
+  if (!frame_) {
+    media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
+                                   backing_store_width_,
+                                   backing_store_height_,
+                                   base::TimeDelta(), base::TimeDelta(),
+                                   &frame_);
+  }
+
+  // Tell the decoder to do start decoding.
+  decoder_->BeginDecode(frame_, &update_rects_,
+      NewRunnableMethod(this, &PepperView::OnPartialDecodeDone),
+      NewRunnableMethod(this, &PepperView::OnDecodeDone));
 }
 
-void PepperView::DoHandleUpdateStreamPacket(HostMessage* msg) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
+  if (!plugin_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(
+        NewRunnableMethod(this, &PepperView::HandleUpdateStreamPacket,
+                          msg));
+    return;
+  }
 
-  NOTIMPLEMENTED();
+  decoder_->PartialDecode(msg);
 }
 
-void PepperView::DoHandleEndUpdateStream(HostMessage* msg) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+void PepperView::HandleEndUpdateStream(HostMessage* msg) {
+  if (!plugin_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(
+        NewRunnableMethod(this, &PepperView::HandleEndUpdateStream,
+                          msg));
+    return;
+  }
 
-  NOTIMPLEMENTED();
+  scoped_ptr<HostMessage> deleter(msg);
+  decoder_->EndDecode();
+}
+
+void PepperView::OnPaintDone() {
+  // TODO(ajwong):Probably should set some variable to allow repaints to
+  // actually paint.
+  return;
+}
+
+void PepperView::OnPartialDecodeDone() {
+  all_update_rects_.insert(all_update_rects_.begin() +
+                           all_update_rects_.size(),
+                           update_rects_.begin(), update_rects_.end());
+  Paint();
+  // TODO(ajwong): Need to block here to be synchronous.
+}
+
+
+void PepperView::OnDecodeDone() {
 }
 
 }  // namespace remoting
