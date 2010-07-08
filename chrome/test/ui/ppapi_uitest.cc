@@ -118,6 +118,10 @@ TEST_F(PPAPITest, URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
+TEST_F(PPAPITest, PaintAgggregator) {
+  RunTestViaHTTP("PaintAggregator");
+}
+
 // http://crbug.com/48544
 TEST_F(PPAPITest, FAILS_Scrollbar) {
   RunTest("Scrollbar");
