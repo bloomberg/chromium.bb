@@ -55,7 +55,7 @@ REGEX : `anonymous namespace'::invalidparameter$
 # End mysterious crash section.
 
 # 15620
-# PREFIX : browser::processpendingtabs___browser::clearunloadstate
+PREFIX : browser::processpendingtabs___browser::clearunloadstate
 
 # 17043
 # PREFIX : npapi::pluginstream::trywritetoplugin___npapi::pluginstream::writetoplugin
