@@ -161,6 +161,13 @@
           ],
           # Disable warning: "'this' : used in base member initialization list."
           'msvs_disabled_warnings': [4355],
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'WarnAsError': 'false',
+              # Turn off errors for signed/unsigned mismatch from Chromium build/common.gypi.
+              'AdditionalOptions!': ['/we4389'],
+            },
+          },
         },
       },
     ],
@@ -188,6 +195,7 @@
                '-fno-eliminate-unused-debug-symbols',
                '-mmacosx-version-min=10.5'],
             'WARNING_CFLAGS': ['-Wno-deprecated-declarations'],
+            'WARNING_CFLAGS!': ['-Wall', '-Wextra'],
             'WARNING_CXXFLAGS': ['-Wstrict-aliasing',
                                  '-Wno-deprecated',],
           },

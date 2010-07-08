@@ -36,7 +36,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "compiler/technique/technique_parser.h"
 #include "core/cross/error.h"
 #include "core/cross/types.h"

@@ -332,9 +332,6 @@ class NPV8Bridge {
                                                 v8::Local<v8::Value> v8_value,
                                                 const v8::AccessorInfo& info);
 
-  static v8::Handle<v8::Boolean> V8PropertyQuery(v8::Local<v8::Value> v8_name,
-                                                 const v8::AccessorInfo& info);
-
   static v8::Handle<v8::Boolean> V8PropertyDeleter(
       v8::Local<v8::Value> v8_name,
       const v8::AccessorInfo& info);
@@ -348,7 +345,7 @@ class NPV8Bridge {
       v8::Local<v8::Value> v8_value,
       const v8::AccessorInfo& info);
 
-  static v8::Handle<v8::Boolean> V8NamedPropertyQuery(
+  static v8::Handle<v8::Integer> V8NamedPropertyQuery(
       v8::Local<v8::String> v8_name,
       const v8::AccessorInfo& info);
 

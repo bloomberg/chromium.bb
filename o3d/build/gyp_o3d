@@ -26,7 +26,8 @@ if __name__ == '__main__':
   args += ['--depth', '.',
            '-I', os.path.join(chrome_src, 'build', 'common.gypi'),
            '-I', os.path.join(o3d_src, 'build', 'common_global.gypi'),
-           '-D', 'mac_deployment_target=10.4']
+           '-D', 'mac_deployment_target=10.4',
+           '-D', 'linux_use_tcmalloc=0']
 
   # Off we go...
   sys.exit(gyp.main(args))

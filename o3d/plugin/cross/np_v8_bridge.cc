@@ -1264,27 +1264,6 @@ v8::Handle<Value> NPV8Bridge::V8PropertySetter(
   return v8_result;
 }
 
-v8::Handle<v8::Boolean> NPV8Bridge::V8PropertyQuery(Local<Value> v8_name,
-                                                    const AccessorInfo& info) {
-  Local<Object> holder = info.Holder();
-  NPV8Bridge* bridge = static_cast<NPV8Bridge*>(
-      Local<External>::Cast(
-          holder->GetInternalField(V8_NP_OBJECT_BRIDGE))->Value());
-  Context::Scope scope(bridge->script_context());
-
-  NPObjectPtr<NPObject> np_object = bridge->V8ToNPObject(holder);
-  if (np_object.IsNull())
-    return v8::Handle<v8::Boolean>();
-
-  NPIdentifier np_name = V8ToNPIdentifier(v8_name);
-  if (np_name == NULL)
-    return v8::Handle<v8::Boolean>();
-
-  bool has = NPN_HasProperty(bridge->npp_, np_object.Get(), np_name) ||
-             NPN_HasMethod(bridge->npp_, np_object.Get(), np_name);
-  return v8::Boolean::New(has);
-}
-
 v8::Handle<v8::Boolean> NPV8Bridge::V8PropertyDeleter(
     Local<Value> v8_name,
     const AccessorInfo& info) {
@@ -1322,10 +1301,28 @@ v8::Handle<Value> NPV8Bridge::V8NamedPropertySetter(Local<v8::String> v8_name,
   return V8PropertySetter(v8_name, v8_value, info);
 }
 
-v8::Handle<v8::Boolean> NPV8Bridge::V8NamedPropertyQuery(
+v8::Handle<v8::Integer> NPV8Bridge::V8NamedPropertyQuery(
     Local<v8::String> v8_name,
     const AccessorInfo& info) {
-  return V8PropertyQuery(v8_name, info);
+  Local<Object> holder = info.Holder();
+  NPV8Bridge* bridge = static_cast<NPV8Bridge*>(
+      Local<External>::Cast(
+          holder->GetInternalField(V8_NP_OBJECT_BRIDGE))->Value());
+  Context::Scope scope(bridge->script_context());
+
+  NPObjectPtr<NPObject> np_object = bridge->V8ToNPObject(holder);
+  if (np_object.IsNull())
+    return v8::Handle<v8::Integer>();
+
+  NPIdentifier np_name = V8ToNPIdentifier(v8_name);
+  if (np_name == NULL)
+    return v8::Handle<v8::Integer>();
+
+  bool has = NPN_HasProperty(bridge->npp_, np_object.Get(), np_name) ||
+             NPN_HasMethod(bridge->npp_, np_object.Get(), np_name);
+  if (!has)
+    return v8::Handle<v8::Integer>();
+  return v8::Integer::New(0);
 }
 
 v8::Handle<v8::Boolean> NPV8Bridge::V8NamedPropertyDeleter(
@@ -1365,7 +1362,24 @@ v8::Handle<Value> NPV8Bridge::V8IndexedPropertySetter(
 v8::Handle<v8::Boolean> NPV8Bridge::V8IndexedPropertyQuery(
     uint32_t index,
     const AccessorInfo& info) {
-  return V8PropertyQuery(Integer::New(index), info);
+  Local<Object> holder = info.Holder();
+  NPV8Bridge* bridge = static_cast<NPV8Bridge*>(
+      Local<External>::Cast(
+          holder->GetInternalField(V8_NP_OBJECT_BRIDGE))->Value());
+  Context::Scope scope(bridge->script_context());
+
+  NPObjectPtr<NPObject> np_object = bridge->V8ToNPObject(holder);
+  if (np_object.IsNull())
+    return v8::Handle<v8::Boolean>();
+
+  Local<Value> v8_name = Integer::New(index);
+  NPIdentifier np_name = V8ToNPIdentifier(v8_name);
+  if (np_name == NULL)
+    return v8::Handle<v8::Boolean>();
+
+  bool has = NPN_HasProperty(bridge->npp_, np_object.Get(), np_name) ||
+             NPN_HasMethod(bridge->npp_, np_object.Get(), np_name);
+  return v8::Boolean::New(has);
 }
 
 v8::Handle<v8::Boolean> NPV8Bridge::V8IndexedPropertyDeleter(

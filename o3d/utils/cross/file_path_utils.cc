@@ -35,8 +35,8 @@
 
 #include "utils/cross/file_path_utils.h"
 #include "base/file_util.h"
-#include "base/string_util.h"
 #include "base/file_path.h"
+#include "base/utf_string_conversions.h"
 
 namespace o3d {
 std::wstring FilePathToWide(const FilePath& input) {

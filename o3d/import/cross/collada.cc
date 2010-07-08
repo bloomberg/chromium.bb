@@ -36,7 +36,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "core/cross/class_manager.h"
 #include "core/cross/curve.h"
 #include "core/cross/error.h"

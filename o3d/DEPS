@@ -3,15 +3,15 @@ vars = {
   "nixysa_rev": "69",
   # When updating the chromium rev, you must also update the nss and sqlite
   # revs to match the version pulled-in by Chromium's own DEPS in the new rev.
-  "chromium_rev": "37758",
+  "chromium_rev": "51794",
   "chromium_breakpad_rev": "47985",
   "o3d_code_rev": "207",
   "skia_rev": "586",
   "gyp_rev": "820",
-  "gtest_rev": "359",
+  "gtest_rev": "408",
   "gflags_rev": "30",
   "breakpad_rev": "604",
-  "v8_rev": "3608",
+  "v8_rev": "5017",
   "nacl_rev": "2500",
 }
 
@@ -96,7 +96,7 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/modp_b64@" + Var("chromium_rev"),
 
   "chrome/third_party/wtl":
-    Var("chromium_trunk") + "/src/chrome/third_party/wtl@" + Var("chromium_rev"),
+    Var("chromium_trunk") + "/src/third_party/wtl@" + Var("chromium_rev"),
 
   "third_party/zlib":
     Var("chromium_trunk") + "/src/third_party/zlib@" + Var("chromium_rev"),
@@ -137,6 +137,14 @@ deps = {
   "testing/gmock":
     Var("chromium_trunk") + "/src/testing/gmock@" + Var("chromium_rev"),
 
+  # Dependency of chrome base
+  "third_party/nss":
+    Var("chromium_trunk") + "/deps/third_party/nss@48440",
+
+  # Dependency of nss, even though its DEPS fail to mention that.
+  "third_party/sqlite":
+    Var("chromium_trunk") + "/src/third_party/sqlite@51584",
+
   # Stuff needed for GYP to run
   "build":
     Var("chromium_trunk") + "/src/build@" + Var("chromium_rev"),
@@ -155,14 +163,6 @@ deps_os = {
 
     "third_party/python_24":
       Var("chromium_trunk") + "/deps/third_party/python_24@19441",
-
-    # Dependency of chrome base
-    "third_party/nss":
-      Var("chromium_trunk") + "/deps/third_party/nss@36871",
-
-    # Dependency of nss, even though its DEPS fail to mention that.
-    "third_party/sqlite":
-      Var("chromium_trunk") + "/src/third_party/sqlite@31834",
   },
   "unix": {
     # Linux, really.

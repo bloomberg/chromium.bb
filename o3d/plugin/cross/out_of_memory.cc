@@ -31,11 +31,18 @@
 
 
 // This file implements a failure handler for the new
-// operator and malloc.
+// operator and malloc for Windows and Mac. (On Linux,
+// chrome's libbase.a implements one already.)
 
-// TODO: This does not currently work on linux. The replacement
-// operator new, malloc, etc do not take priority over those declared in
-// the standard libraries.
+#include "plugin/cross/out_of_memory.h"
+
+#ifdef OS_LINUX
+namespace o3d {
+bool SetupOutOfMemoryHandler() {
+  return true;
+}
+}
+#else
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,7 +61,6 @@
 #include <dlfcn.h>
 #endif
 
-#include "plugin/cross/out_of_memory.h"
 #include "plugin/cross/plugin_metrics.h"
 
 #ifdef _MSC_VER
@@ -71,7 +77,6 @@ namespace {
 // run after abort() to do its work.
 const size_t kReserveSize = 1024 * 256;
 void* g_reserve;
-}  // namespace anonymous
 
 // This is called when a memory allocation fails in the plugin. Note
 // that it will not be called if a memory allocation fails in another
@@ -119,6 +124,7 @@ int HandleOutOfMemory(size_t size) {
   }
   return 0;
 }
+}  // namespace anonymous
 
 bool SetupOutOfMemoryHandler() {
 #ifdef _MSC_VER
@@ -141,7 +147,7 @@ bool SetupOutOfMemoryHandler() {
 }
 }  // namespace o3d
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MACOSX)
 namespace {
 void* dlsym_helper(const char* symbol_name) {
   void* ptr = dlsym(RTLD_NEXT, symbol_name);
@@ -228,4 +234,6 @@ wchar_t* wcsdup(const wchar_t* ptr) {
   return result;
 }
 }
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_LINUX)
+

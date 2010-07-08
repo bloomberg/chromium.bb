@@ -37,7 +37,6 @@
 #define O3D_PLUGIN_CROSS_OUT_OF_MEMORY_H_
 
 namespace o3d {
-void HandleOutOfMemory();
 bool SetupOutOfMemoryHandler();
 }
 
