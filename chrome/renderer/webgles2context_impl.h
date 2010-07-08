@@ -9,6 +9,7 @@
 
 #include "chrome/renderer/ggl/ggl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGLES2Context.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 
 class WebGLES2ContextImpl : public WebKit::WebGLES2Context {
  public:
