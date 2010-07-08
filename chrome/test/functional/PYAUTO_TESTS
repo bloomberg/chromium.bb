@@ -24,6 +24,7 @@
     'bookmark_bar',
     'bookmarks',
     'browser',
+    'codesign',
     'content',
     'downloads',
     'history',
