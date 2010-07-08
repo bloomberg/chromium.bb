@@ -4,6 +4,7 @@
 
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -37,7 +38,6 @@ namespace {
 const wchar_t kWebPluginDelegateProperty[] = L"WebPluginDelegateProperty";
 const wchar_t kPluginNameAtomProperty[] = L"PluginNameAtom";
 const wchar_t kDummyActivationWindowName[] = L"DummyWindowForActivation";
-const wchar_t kPluginOrigProc[] = L"OriginalPtr";
 const wchar_t kPluginFlashThrottle[] = L"FlashThrottle";
 
 // The fastest we are willing to process WM_USER+1 events for Flash.
@@ -62,6 +62,9 @@ WebPluginDelegateImpl* g_current_plugin_instance = NULL;
 
 typedef std::deque<MSG> ThrottleQueue;
 base::LazyInstance<ThrottleQueue> g_throttle_queue(base::LINKER_INITIALIZED);
+base::LazyInstance<std::map<HWND, WNDPROC> > g_window_handle_proc_map(
+    base::LINKER_INITIALIZED);
+
 
 // Helper object for patching the TrackPopupMenu API.
 base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_track_popup_menu(
@@ -644,12 +647,16 @@ void WebPluginDelegateImpl::ThrottleMessage(WNDPROC proc, HWND hwnd,
 // static
 LRESULT CALLBACK WebPluginDelegateImpl::FlashWindowlessWndProc(HWND hwnd,
     UINT message, WPARAM wparam, LPARAM lparam) {
-  WNDPROC old_proc = reinterpret_cast<WNDPROC>(GetProp(hwnd, kPluginOrigProc));
+  std::map<HWND, WNDPROC>::iterator index =
+      g_window_handle_proc_map.Get().find(hwnd);
+
+  WNDPROC old_proc = (*index).second;
   DCHECK(old_proc);
 
   switch (message) {
     case WM_NCDESTROY: {
       WebPluginDelegateImpl::ClearThrottleQueueForWindow(hwnd);
+      g_window_handle_proc_map.Get().erase(index);
       break;
     }
     // Flash may flood the message queue with WM_USER+1 message causing 100% CPU
@@ -687,11 +694,7 @@ BOOL CALLBACK EnumFlashWindows(HWND window, LPARAM arg) {
         window, GWLP_WNDPROC,
         reinterpret_cast<LONG>(wnd_proc)));
     DCHECK(old_flash_proc);
-    BOOL result = SetProp(window, kPluginOrigProc, old_flash_proc);
-    if (!result) {
-      LOG(ERROR) << "SetProp failed, last error = " << GetLastError();
-      return FALSE;
-    }
+    g_window_handle_proc_map.Get()[window] = old_flash_proc;
   }
 
   return TRUE;
