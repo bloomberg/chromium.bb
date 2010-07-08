@@ -11,7 +11,6 @@ import types
 import re
 
 from grit import util
-from grit.format import html_inline
 from grit.format import interface
 
 # Matches all different types of linebreaks.
@@ -425,11 +424,8 @@ class RcInclude(interface.ItemFormatter):
     # if needed (e.g. if it is an HTML file include).
     filename = os.path.abspath(item.FileForLanguage(lang, output_dir))
     if self.flatten_html:
-      # Generate the flattened HTML file.
-      flat_filename = os.path.join(output_dir, os.path.basename(filename))
-      html_inline.InlineFile(filename, flat_filename, item)
-
-      # Include the flattened HTML file.
+      item.Flatten(output_dir)
+      # The flattened file is in the output dir.
       filename = os.path.basename(filename)
     elif self.filenameWithoutPath:
       filename = os.path.basename(filename)

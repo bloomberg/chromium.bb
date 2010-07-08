@@ -8,6 +8,7 @@
 
 import os
 
+import grit.format.html_inline
 import grit.format.rc_header
 import grit.format.rc
 
@@ -16,6 +17,12 @@ from grit import util
 
 class IncludeNode(base.Node):
   '''An <include> element.'''
+  def __init__(self):
+    base.Node.__init__(self)
+
+    # Keep track of whether we've flattened the file or not.  We don't
+    # want to flatten the same file multiple times.
+    self._is_flattened = False
 
   def _IsValidChild(self, child):
     return False
@@ -64,7 +71,8 @@ class IncludeNode(base.Node):
     id = id_map[self.GetTextualIds()[0]]
     filename = self.FilenameToOpen()
     if self.attrs['flattenhtml'] == 'true':
-      # If the file was flattened, the flattened file is in the output dir.
+      self.Flatten(output_dir)
+      # The flattened file is in the output dir.
       filename = os.path.join(output_dir, os.path.split(filename)[1])
 
     file = open(filename, 'rb')
@@ -72,6 +80,15 @@ class IncludeNode(base.Node):
     file.close()
 
     return id, data
+
+  def Flatten(self, output_dir):
+    if self._is_flattened:
+      return
+
+    filename = self.FilenameToOpen()
+    flat_filename = os.path.join(output_dir, os.path.split(filename)[1])
+    grit.format.html_inline.InlineFile(filename, flat_filename, self)
+    self._is_flattened = True
 
   # static method
   def Construct(parent, name, type, file, translateable=True,
