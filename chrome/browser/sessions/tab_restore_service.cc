@@ -210,7 +210,11 @@ void TabRestoreService::BrowserClosing(Browser* browser) {
   Window* window = new Window();
   window->selected_tab_index = browser->selected_index();
   window->timestamp = TimeNow();
-  window->tabs.resize(browser->tab_count());
+  // Don't use std::vector::resize() because it will push copies of an empty tab
+  // into the vector, which will give all tabs in a window the same ID.
+  for (int i = 0; i < browser->tab_count(); ++i) {
+    window->tabs.push_back(Tab());
+  }
   size_t entry_index = 0;
   for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
     PopulateTab(&(window->tabs[entry_index]),
@@ -342,10 +346,11 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
             // Update the browser ID of the rest of the tabs in the window so if
             // any one is restored, it goes into the same window as the tab
             // being restored now.
+            UpdateTabBrowserIDs(tab.browser_id,
+                                browser->session_id().id());
             for (std::vector<Tab>::iterator tab_j = window->tabs.begin();
                  tab_j != window->tabs.end(); ++tab_j) {
-              UpdateTabBrowserIDs((*tab_j).browser_id,
-                                  browser->session_id().id());
+              (*tab_j).browser_id = browser->session_id().id();
             }
           }
           break;
