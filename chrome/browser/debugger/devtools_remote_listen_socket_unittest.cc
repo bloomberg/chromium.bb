@@ -343,7 +343,9 @@ class DevToolsRemoteListenSocketTest: public PlatformTest {
   scoped_refptr<DevToolsRemoteListenSocketTester> tester_;
 };
 
-TEST_F(DevToolsRemoteListenSocketTest, ServerSend) {
+// This test is flaky; see comment in ::TestServerSend.
+// http://code.google.com/p/chromium/issues/detail?id=48562
+TEST_F(DevToolsRemoteListenSocketTest, FLAKY_ServerSend) {
   tester_->TestServerSend();
 }
 

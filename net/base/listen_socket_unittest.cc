@@ -319,6 +319,8 @@ TEST_F(ListenSocketTest, ClientSendLong) {
   tester_->TestClientSendLong();
 }
 
-TEST_F(ListenSocketTest, ServerSend) {
+// This test is flaky; see comment in ::TestServerSend.
+// http://code.google.com/p/chromium/issues/detail?id=48562
+TEST_F(ListenSocketTest, FLAKY_ServerSend) {
   tester_->TestServerSend();
 }
