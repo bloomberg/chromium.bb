@@ -71,11 +71,8 @@ NSColor* HostTextColor() {
 NSColor* BaseTextColor() {
   return [NSColor darkGrayColor];
 }
-NSColor* EVSecureSchemeColor() {
-  return ColorWithRGBBytes(0x07, 0x95, 0x00);
-}
 NSColor* SecureSchemeColor() {
-  return ColorWithRGBBytes(0x00, 0x0e, 0x95);
+  return ColorWithRGBBytes(0x07, 0x95, 0x00);
 }
 NSColor* SecurityErrorSchemeColor() {
   return ColorWithRGBBytes(0xa2, 0x00, 0x00);
@@ -507,16 +504,20 @@ void AutocompleteEditViewMac::ApplyTextAttributes(
   if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
       (security_level != ToolbarModel::NONE)) {
     NSColor* color;
-    if (security_level == ToolbarModel::EV_SECURE) {
-      color = EVSecureSchemeColor();
+    if (security_level == ToolbarModel::EV_SECURE ||
+        security_level == ToolbarModel::SECURE) {
+      color = SecureSchemeColor();
     } else if (security_level == ToolbarModel::SECURITY_ERROR) {
       color = SecurityErrorSchemeColor();
       // Add a strikethrough through the scheme.
       [as addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
+    } else if (security_level == ToolbarModel::SECURITY_WARNING) {
+      color = BaseTextColor();
     } else {
-      color = SecureSchemeColor();
+      NOTREACHED();
+      color = BaseTextColor();
     }
     [as addAttribute:NSForegroundColorAttributeName value:color
                range:ComponentToNSRange(scheme)];
