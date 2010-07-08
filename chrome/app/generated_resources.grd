@@ -7606,7 +7606,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Work offline
       </message>
       <message name="IDS_NETWORK_SELECTION_CONTINUE_BUTTON" desc="Text shown on continue button">
-        Continue »
+        Continue >>
       </message>
       <message name="IDS_LOGIN_TITLE">
         Sign in with your Google account
@@ -7802,12 +7802,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
         Languages
-      </message>
-      <message name="IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON" desc="Accept button text below EULA terms of service">
-	Accept and continue »
-      </message>
-      <message name="IDS_EULS_SYSTEM_SECURITY_SETTINGS_LINK" desc="Link from the EULA wizard screen">
-	System security settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE"
                desc="The title for the Chewing input settings dialog. Please note that 'Chewing' here is name of an input method and not 'an act of biting and grinding with the teeth'.">
