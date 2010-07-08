@@ -9,6 +9,7 @@
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 
@@ -75,8 +76,8 @@ bool WebGLES2ContextImpl::swapBuffers() {
   return ggl::SwapBuffers(context_);
 }
 
-void WebGLES2ContextImpl::resizeOffscreenContent(int width, int height) {
-  ggl::ResizeOffscreenContext(context_, gfx::Size(width, height));
+void WebGLES2ContextImpl::resizeOffscreenContent(const WebKit::WebSize& size) {
+  ggl::ResizeOffscreenContext(context_, size);
 }
 
 unsigned WebGLES2ContextImpl::getOffscreenContentParentTextureId() {

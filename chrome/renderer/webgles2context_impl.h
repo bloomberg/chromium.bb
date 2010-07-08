@@ -22,7 +22,7 @@ class WebGLES2ContextImpl : public WebKit::WebGLES2Context {
   virtual bool destroy();
   virtual bool swapBuffers();
 
-  virtual void resizeOffscreenContent(int width, int height);
+  virtual void resizeOffscreenContent(const WebKit::WebSize&);
   virtual unsigned getOffscreenContentParentTextureId();
 
   ggl::Context* context() { return context_; }
