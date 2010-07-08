@@ -190,7 +190,6 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Icon=chrome-http__gmail.com\n"
       "Type=Application\n"
       "Categories=Application;Network;WebBrowser;\n"
-      "MimeType=text/html;text/xml;application/xhtml_xml;\n"
     },
 
     // Make sure we don't insert duplicate shebangs.

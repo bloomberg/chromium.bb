@@ -349,6 +349,9 @@ std::string ShellIntegration::GetDesktopFileContents(
                tokenizer.token().substr(0, 7) == "Comment" ||
                tokenizer.token().substr(0, 1) == "#") {
       // Skip comment lines.
+    } else if (tokenizer.token().substr(0, 9) == "MimeType=") {
+      // Skip MimeType lines, they are only relevant for a web browser
+      // shortcut, not a web application shortcut.
     } else if (tokenizer.token().substr(0, 5) == "Icon=" &&
                !icon_name.empty()) {
       output_buffer += StringPrintf("Icon=%s\n", icon_name.c_str());
