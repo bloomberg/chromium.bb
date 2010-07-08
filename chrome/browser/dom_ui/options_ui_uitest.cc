@@ -58,6 +58,7 @@ TEST_F(OptionsUITest, CommandOpensOptionsTab) {
   AssertIsOptionsPage(tab);
 }
 
+// TODO(csilv): Investigate why this fails and fix. http://crbug.com/48521
 TEST_F(OptionsUITest, FAILS_CommandAgainGoesBackToOptionsTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -86,7 +87,9 @@ TEST_F(OptionsUITest, FAILS_CommandAgainGoesBackToOptionsTab) {
   ASSERT_EQ(2, tab_count);
 }
 
-TEST_F(OptionsUITest, TwoCommandsOneTab) {
+// TODO(csilv): Investigate why this fails (sometimes) on 10.5 and fix.
+// http://crbug.com/48521
+TEST_F(OptionsUITest, FLAKY_TwoCommandsOneTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
