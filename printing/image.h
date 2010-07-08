@@ -9,10 +9,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/logging.h"
 #include "gfx/size.h"
 #include "printing/native_metafile.h"
+
+class FilePath;
 
 namespace printing {
 
@@ -20,10 +21,10 @@ namespace printing {
 // The main purpose is testing image contents.
 class Image {
  public:
-  // Creates the image from the given filename on disk.  Uses extension to
+  // Creates the image from the given file on disk.  Uses extension to
   // defer file type. PNG and EMF (on Windows) currently supported.
   // If image loading fails size().IsEmpty() will be true.
-  explicit Image(const std::wstring& filename);
+  explicit Image(const FilePath& path);
 
   // Creates the image from the metafile.  Deduces bounds based on bounds in
   // metafile.  If loading fails size().IsEmpty() will be true.

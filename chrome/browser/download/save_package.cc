@@ -1084,7 +1084,9 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(const FilePath& name,
 FilePath SavePackage::EnsureHtmlExtension(const FilePath& name) {
   // If the file name doesn't have an extension suitable for HTML files,
   // append one.
-  FilePath::StringType ext = file_util::GetFileExtensionFromPath(name);
+  FilePath::StringType ext = name.Extension();
+  if (!ext.empty())
+    ext.erase(ext.begin());  // Erase preceding '.'.
   std::string mime_type;
   if (!net::GetMimeTypeFromExtension(ext, &mime_type) ||
       !CanSaveAsComplete(mime_type)) {

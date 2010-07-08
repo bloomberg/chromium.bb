@@ -491,7 +491,8 @@ void TestShell::ResizeSubViews() {
        iter != TestShell::windowList()->end(); iter++) {
     GtkWindow* window = *iter;
     TestShell* shell =
-        static_cast<TestShell*>(g_object_get_data(G_OBJECT(window), "test-shell"));
+        static_cast<TestShell*>(g_object_get_data(G_OBJECT(window),
+                                                  "test-shell"));
     shell->DumpBackForwardList(result);
   }
 }
@@ -505,7 +506,8 @@ void TestShell::ResizeSubViews() {
 
   GtkWindow* window = *(TestShell::windowList()->begin());
   TestShell* shell =
-      static_cast<TestShell*>(g_object_get_data(G_OBJECT(window), "test-shell"));
+      static_cast<TestShell*>(g_object_get_data(G_OBJECT(window),
+                                                "test-shell"));
 
   // Clear focus between tests.
   shell->m_focusedWidgetHost = NULL;
@@ -570,9 +572,8 @@ void TestShell::LoadURLForFrame(const GURL& url,
       new TestNavigationEntry(-1, url, std::wstring(), frame_name));
 }
 
-// TODO(agl): PromptForSaveFile should use FilePath
 bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
-                                  std::wstring* result) {
+                                  FilePath* result) {
   GtkWidget* dialog;
   dialog = gtk_file_chooser_dialog_new(WideToUTF8(prompt_title).c_str(),
                                        GTK_WINDOW(m_mainWnd),
@@ -589,7 +590,7 @@ bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
   }
   char* path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
   gtk_widget_destroy(dialog);
-  *result = UTF8ToWide(path);
+  *result = FilePath(path);
   g_free(path);
   return true;
 }

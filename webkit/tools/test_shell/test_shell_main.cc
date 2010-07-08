@@ -305,9 +305,9 @@ int main(int argc, char* argv[]) {
       if (parsed_command_line.HasSwitch(test_shell::kDumpPixels)) {
         // The pixel test flag also gives the image file name to use.
         params.dump_pixels = true;
-        params.pixel_file_name = parsed_command_line.GetSwitchValue(
+        params.pixel_file_name = parsed_command_line.GetSwitchValuePath(
             test_shell::kDumpPixels);
-        if (params.pixel_file_name.size() == 0) {
+        if (params.pixel_file_name.empty()) {
           fprintf(stderr, "No file specified for pixel tests");
           exit(1);
         }

@@ -1327,8 +1327,9 @@ void DownloadManager::GenerateExtension(
       FILE_PATH_LITERAL("download");
 
   // See if our file name already contains an extension.
-  FilePath::StringType extension(
-      file_util::GetFileExtensionFromPath(file_name));
+  FilePath::StringType extension = file_name.Extension();
+  if (!extension.empty())
+    extension.erase(extension.begin());  // Erase preceding '.'.
 
 #if defined(OS_WIN)
   // Rename shell-integrated extensions.

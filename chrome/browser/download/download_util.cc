@@ -490,8 +490,7 @@ void UpdateAppIconDownloadProgress(int download_count,
 // Appends the passed the number between parenthesis the path before the
 // extension.
 void AppendNumberToPath(FilePath* path, int number) {
-  file_util::InsertBeforeExtension(path,
-      StringPrintf(FILE_PATH_LITERAL(" (%d)"), number));
+  *path = path->InsertBeforeExtensionASCII(StringPrintf(" (%d)", number));
 }
 
 // Attempts to find a number that can be appended to that path to make it

@@ -325,7 +325,7 @@ void TestShell::Dump(TestShell* shell) {
 
 // static
 std::string TestShell::DumpImage(skia::PlatformCanvas* canvas,
-    const std::wstring& file_name, const std::string& pixel_hash) {
+    const FilePath& path, const std::string& pixel_hash) {
   skia::BitmapPlatformDevice& device =
       static_cast<skia::BitmapPlatformDevice&>(canvas->getTopPlatformDevice());
   const SkBitmap& src_bmp = device.accessBitmap(false);
@@ -371,7 +371,7 @@ std::string TestShell::DumpImage(skia::PlatformCanvas* canvas,
         static_cast<int>(src_bmp.rowBytes()), discard_transparency, &png);
 
     // Write to disk.
-    file_util::WriteFile(file_name, reinterpret_cast<const char *>(&png[0]),
+    file_util::WriteFile(path, reinterpret_cast<const char *>(&png[0]),
                          png.size());
   }
 
@@ -692,7 +692,7 @@ void TestShell::GoBackOrForward(int offset) {
 }
 
 void TestShell::DumpDocumentText() {
-  std::wstring file_path;
+  FilePath file_path;
   if (!PromptForSaveFile(L"Dump document text", &file_path))
       return;
 
@@ -702,7 +702,7 @@ void TestShell::DumpDocumentText() {
 }
 
 void TestShell::DumpRenderTree() {
-  std::wstring file_path;
+  FilePath file_path;
   if (!PromptForSaveFile(L"Dump render tree", &file_path))
     return;
 

@@ -700,7 +700,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 }
 
 bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
-                                  std::wstring* result) {
+                                  FilePath* result) {
   wchar_t path_buf[MAX_PATH] = L"data.txt";
 
   OPENFILENAME info = {0};
@@ -714,7 +714,7 @@ bool TestShell::PromptForSaveFile(const wchar_t* prompt_title,
   if (!GetSaveFileName(&info))
     return false;
 
-  result->assign(info.lpstrFile);
+  *result = FilePath(info.lpstrFile);
   return true;
 }
 

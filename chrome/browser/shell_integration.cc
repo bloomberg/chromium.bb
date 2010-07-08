@@ -18,13 +18,15 @@ std::string ShellIntegration::GetCommandLineArgumentsCommon(const GURL& url,
   std::wstring arguments_w;
 
   // Use the same UserDataDir for new launches that we currently have set.
-  std::wstring user_data_dir = cmd.GetSwitchValue(switches::kUserDataDir);
-  if (!user_data_dir.empty()) {
+  FilePath user_data_dir = cmd.GetSwitchValuePath(switches::kUserDataDir);
+  if (!user_data_dir.value().empty()) {
     // Make sure user_data_dir is an absolute path.
     if (file_util::AbsolutePath(&user_data_dir) &&
-        file_util::PathExists(FilePath::FromWStringHack(user_data_dir))) {
+        file_util::PathExists(user_data_dir)) {
+      // TODO: This is wrong in pathological quoting scenarios; we shouldn't be
+      // passing around command lines as strings at all.
       arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kUserDataDir) +
-                     L"=\"" + user_data_dir + L"\" ";
+                     L"=\"" + user_data_dir.ToWStringHack() + L"\" ";
     }
   }
 
