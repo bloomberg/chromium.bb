@@ -1005,6 +1005,7 @@
         'browser/views/extensions/browser_action_drag_data_unittest.cc',
         'browser/views/generic_info_view_unittest.cc',
         'browser/views/info_bubble_unittest.cc',
+        'browser/views/shell_dialogs_win_unittest.cc',
         'browser/views/status_icons/status_tray_win_unittest.cc',
         'browser/visitedlink_unittest.cc',
         'browser/web_applications/web_app_unittest.cc',

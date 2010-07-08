@@ -26,51 +26,41 @@
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 
-namespace {
-
 // This function takes the output of a SaveAs dialog: a filename, a filter and
 // the extension originally suggested to the user (shown in the dialog box) and
-// returns back the filename with the appropriate extension tacked on. For
-// example, if you pass in 'foo' as filename with filter '*.jpg' this function
-// will return 'foo.jpg'. It respects MIME types, so if you pass in 'foo.jpeg'
-// with filer '*.jpg' it will return 'foo.jpeg' (will not append .jpg).
-// |filename| should contain the filename selected in the SaveAs dialog box and
-// may include the path, |filter_selected| should be '*.something', for example
-// '*.*' or it can be blank (which is treated as *.*). |suggested_ext| should
-// contain the extension without the dot (.) in front, for example 'jpg'.
+// returns back the filename with the appropriate extension tacked on. If the
+// user requests an unknown extension and is not using the 'All files' filter,
+// the suggested extension will be appended, otherwise we will leave the
+// filename unmodified. |filename| should contain the filename selected in the
+// SaveAs dialog box and may include the path, |filter_selected| should be
+// '*.something', for example '*.*' or it can be blank (which is treated as
+// *.*). |suggested_ext| should contain the extension without the dot (.) in
+// front, for example 'jpg'.
 std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
                                      const std::wstring& filter_selected,
                                      const std::wstring& suggested_ext) {
+  DCHECK(!filename.empty());
   std::wstring return_value = filename;
 
-  // Get the extension the user ended up selecting.
-  std::wstring selected_ext = file_util::GetFileExtensionFromPath(filename);
-
-  if (filter_selected.empty() || filter_selected == L"*.*") {
-    // If the user selects 'All files' we respect any extension given to us from
-    // the File Save dialog. We also strip any trailing dots, which matches
-    // Windows Explorer and is needed because Windows doesn't allow filenames
-    // to have trailing dots. The GetSaveFileName dialog will not return a
-    // string with only one or more dots.
-    size_t index = return_value.find_last_not_of(L'.');
-    if (index < return_value.size() - 1)
-      return_value.resize(index + 1);
-  } else {
-    // User selected a specific filter (not *.*) so we need to check if the
-    // extension provided has the same mime type. If it doesn't we append the
-    // extension.
-    std::string suggested_mime_type, selected_mime_type;
-    if (suggested_ext != selected_ext &&
-        (!net::GetMimeTypeFromExtension(suggested_ext, &suggested_mime_type) ||
-         !net::GetMimeTypeFromExtension(selected_ext, &selected_mime_type) ||
-         suggested_mime_type != selected_mime_type)) {
+  // If the user didn't give us a known extension, and we wanted one, add it.
+  std::string selected_mime_type;
+  if (!(filter_selected.empty() || filter_selected == L"*.*") &&
+      !net::GetMimeTypeFromExtension(
+          file_util::GetFileExtensionFromPath(filename), &selected_mime_type)) {
+    if (return_value[return_value.length() - 1] != L'.')
       return_value.append(L".");
-      return_value.append(suggested_ext);
-    }
+    return_value.append(suggested_ext);
   }
+
+  // Strip any trailing dots, which Windows doesn't allow.
+  size_t index = return_value.find_last_not_of(L'.');
+  if (index < return_value.size() - 1)
+    return_value.resize(index + 1);
 
   return return_value;
 }
+
+namespace {
 
 // Get the file type description from the registry. This will be "Text Document"
 // for .txt files, "JPEG Image" for .jpg files, etc. If the registry doesn't
