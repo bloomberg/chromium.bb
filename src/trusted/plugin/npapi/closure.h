@@ -8,8 +8,8 @@
 // TODO(sehr): Closure support needs to be factored to be made portable.
 
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_CLOSURE_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_CLOSURE_H_
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
@@ -104,4 +104,4 @@ class NpGetUrlClosure : public Closure {
 
 }  // namespace plugin
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_CLOSURE_H_

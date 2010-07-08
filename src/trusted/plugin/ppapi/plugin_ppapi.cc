@@ -35,4 +35,15 @@ PluginPpapi::~PluginPpapi() {
   PLUGIN_PRINTF(("PluginPpapi::~PluginPpapi(%p)\n", static_cast<void* >(this)));
 }
 
+
+bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
+  UNREFERENCED_PARAMETER(url);
+  return false;
+}
+
+
+void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
+  UNREFERENCED_PARAMETER(srpc_channel);
+}
+
 }  // namespace plugin

@@ -51,6 +51,9 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
   NPError DestroyStream(NPStream* stream, NPError reason);
   void URLNotify(const char* url, NPReason reason, void* notify_data);
 
+  // Request a nacl module download.
+  bool RequestNaClModule(const nacl::string& url);
+
   // These are "constants" initialized when a PluginNpapi has been created.
   static NPIdentifier kHrefIdent;
   static NPIdentifier kLengthIdent;
@@ -67,6 +70,7 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
   nacl::NPModule* module() const { return module_; }
   void set_module(nacl::NPModule* module);
   NPObject* nacl_instance() const { return nacl_instance_; }
+  void StartProxiedExecution(NaClSrpcChannel* srpc_channel);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginNpapi);

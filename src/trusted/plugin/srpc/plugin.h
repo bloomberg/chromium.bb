@@ -31,13 +31,6 @@ class ScriptableHandle;
 
 class Plugin : public PortableHandle {
  public:
-  // Create new Plugin objects.  Returns NULL on failure.
-  static Plugin* New(BrowserInterface* browser_interface,
-                     InstanceIdentifier instance_id,
-                     int argc,
-                     char* argn[],
-                     char* argv[]);
-
   // Load from the local URL saved in local_url.
   // Updates local_url(), nacl_module_origin() and logical_url().
   bool Load(nacl::string logical_url, const char* local_url);
@@ -146,6 +139,12 @@ class Plugin : public PortableHandle {
   bool SetNexesPropertyImpl(const char* nexes_attrs);
   bool SetSrcPropertyImpl(const nacl::string &url);
 
+  // Requesting a nacl module from a specified url.
+  virtual bool RequestNaClModule(const nacl::string& url) = 0;
+
+  // Start up proxied execution of the browser API.
+  virtual void StartProxiedExecution(NaClSrpcChannel* srpc_channel) = 0;
+
  protected:
   Plugin();
   virtual ~Plugin();
@@ -181,6 +180,20 @@ class Plugin : public PortableHandle {
   int32_t video_update_mode_;
 
   nacl::DescWrapperFactory* wrapper_factory_;
+};
+
+// MutexLock support for video locking.  It is in this file to avoid copying
+// between the NPAPI and PPAPI hookups.
+extern void VideoGlobalLock();
+extern void VideoGlobalUnlock();
+
+class VideoScopedGlobalLock {
+ public:
+  VideoScopedGlobalLock() { VideoGlobalLock(); }
+  ~VideoScopedGlobalLock() { VideoGlobalUnlock(); }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VideoScopedGlobalLock);
 };
 
 }  // namespace plugin
