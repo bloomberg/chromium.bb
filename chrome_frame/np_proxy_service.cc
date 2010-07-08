@@ -80,7 +80,6 @@ bool NpProxyService::InitializePrefBranch(nsIPrefService* pref_service) {
   bool result = false;
   ScopedNsPtr<nsIPrefBranch> pref_branch;
 
-  pref_service->ReadUserPrefs(nsnull);
   pref_service->GetBranch(kProxyObserverRoot, pref_branch.Receive());
 
   if (!pref_branch) {
