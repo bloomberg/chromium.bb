@@ -75,5 +75,13 @@ bool WebGLES2ContextImpl::swapBuffers() {
   return ggl::SwapBuffers(context_);
 }
 
+void WebGLES2ContextImpl::resizeOffscreenContent(int width, int height) {
+  ggl::ResizeOffscreenContext(context_, gfx::Size(width, height));
+}
+
+unsigned WebGLES2ContextImpl::getOffscreenContentParentTextureId() {
+  return ggl::GetParentTextureId(context_);
+}
+
 #endif  // defined(ENABLE_GPU)
 
