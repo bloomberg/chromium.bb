@@ -115,7 +115,7 @@ class GClientKeywords(object):
 
   class FileImpl(object):
     """Used to implement the File('') syntax which lets you sync a single file
-    from an SVN repo."""
+    from a SVN repo."""
 
     def __init__(self, file_location):
       self.file_location = file_location
@@ -621,11 +621,13 @@ solutions = [
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
       elif isinstance(deps[d], self.FileImpl):
+        if command in (None, 'cleanup', 'diff', 'pack', 'status'):
+          continue
         file_dep = deps[d]
         self._options.revision = file_dep.GetRevision()
         if run_scm:
-          scm = gclient_scm.CreateSCM(file_dep.GetPath(), self.root_dir(), d)
-          scm.RunCommand("updatesingle", self._options,
+          scm = gclient_scm.SVNWrapper(file_dep.GetPath(), self.root_dir(), d)
+          scm.RunCommand('updatesingle', self._options,
                          args + [file_dep.GetFilename()], file_list)
 
     if command == 'update' and not self._options.verbose:
@@ -1167,6 +1169,8 @@ def Main(argv):
       logging.basicConfig(level=level,
           format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
       options.entries_filename = options.config_filename + '_entries'
+
+      # These hacks need to die.
       if not hasattr(options, 'revisions'):
         # GClient.RunOnDeps expects it even if not applicable.
         options.revisions = []
@@ -1176,6 +1180,10 @@ def Main(argv):
         options.nohooks = True
       if not hasattr(options, 'deps_os'):
         options.deps_os = None
+      if not hasattr(options, 'manually_grab_svn_rev'):
+        options.manually_grab_svn_rev = None
+      if not hasattr(options, 'force'):
+        options.force = None
       return (options, args)
     parser.parse_args = Parse
     # We don't want wordwrapping in epilog (usually examples)

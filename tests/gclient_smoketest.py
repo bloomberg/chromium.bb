@@ -204,11 +204,16 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     # Test unversioned checkout.
     self.parseGclient(['sync', '--deps', 'mac'],
-                      ['running', 'running', 'running', 'running'])
+                      ['running', 'running',
+                       # This is due to the way svn update is called for a
+                       # single file when File() is used in a DEPS file.
+                       ('running', self.root_dir + '/src/file/foo'),
+                       'running', 'running', 'running', 'running'])
     tree = self.mangle_svn_tree(
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other'))
+    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
@@ -225,16 +230,18 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/third_party/foo@2', 'src/third_party/fpp'),
         ('trunk/other@1', 'src/other'),
         ('trunk/third_party/foo@2', 'src/third_party/prout'))
+    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
     self.parseGclient(['sync', '--deps', 'mac'],
-                      ['running', 'running', 'running', 'running'])
+                      ['running', 'running', 'running', 'running', 'running'])
     tree = self.mangle_svn_tree(
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@2', 'src/third_party/fpp'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other'),
         ('trunk/third_party/foo@2', 'src/third_party/prout'))
+    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
@@ -242,7 +249,12 @@ class GClientSmokeSVN(GClientSmokeBase):
     """TODO(maruel): This will become an error soon."""
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     results = self.gclient(['sync', '--deps', 'mac', '-r', 'invalid@1'])
-    self.checkBlock(results[0], ['running', 'running', 'running', 'running'])
+    self.checkBlock(results[0], [
+        'running', 'running',
+        # This is due to the way svn update is called for a single file when
+        # File() is used in a DEPS file.
+        ('running', self.root_dir + '/src/file/foo'),
+        'running', 'running', 'running', 'running'])
     self.checkString('Please fix your script, having invalid --revision flags '
         'will soon considered an error.\n', results[1])
     self.assertEquals(0, results[2])
@@ -250,6 +262,7 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other'))
+    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
@@ -275,11 +288,12 @@ class GClientSmokeSVN(GClientSmokeBase):
                             [['running', join(self.root_dir, 'src')],
                              ['running', join(self.root_dir, 'src', 'other')]])
     out = self.svnBlockCleanup(out)
-    self.checkString('other', out[0][1])
-    self.checkString('svn_hooked1', out[0][2])
-    self.checkString(join('third_party', 'foo'), out[0][3])
+    self.checkString('file', out[0][1])
+    self.checkString('other', out[0][2])
+    self.checkString('svn_hooked1', out[0][3])
+    self.checkString(join('third_party', 'foo'), out[0][4])
     self.checkString('hi', out[1][1])
-    self.assertEquals(4, len(out[0]))
+    self.assertEquals(5, len(out[0]))
     self.assertEquals(2, len(out[1]))
 
     # Revert implies --force implies running hooks without looking at pattern
@@ -287,14 +301,15 @@ class GClientSmokeSVN(GClientSmokeBase):
     results = self.gclient(['revert', '--deps', 'mac'])
     out = self.splitBlock(results[0])
     # src, src/other is missing, src/other, src/third_party/foo is missing,
-    # src/third_party/foo, 2 svn hooks.
-    self.assertEquals(7, len(out))
+    # src/third_party/foo, 2 svn hooks, 3 related to File().
+    self.assertEquals(10, len(out))
     self.checkString('', results[1])
     self.assertEquals(0, results[2])
     tree = self.mangle_svn_tree(
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other'))
+    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
     tree['src/svn_hooked1'] = 'svn_hooked1'
     tree['src/svn_hooked2'] = 'svn_hooked2'
     self.assertTree(tree)
@@ -302,11 +317,13 @@ class GClientSmokeSVN(GClientSmokeBase):
     out = self.parseGclient(['status', '--deps', 'mac'],
                             [['running', join(self.root_dir, 'src')]])
     out = self.svnBlockCleanup(out)
-    self.checkString('other', out[0][1])
-    self.checkString('svn_hooked1', out[0][2])
-    self.checkString('svn_hooked2', out[0][3])
-    self.checkString(join('third_party', 'foo'), out[0][4])
-    self.assertEquals(5, len(out[0]))
+    self.checkString('file', out[0][1])
+    self.checkString('other', out[0][2])
+    self.checkString('svn_hooked1', out[0][3])
+    self.checkString('svn_hooked2', out[0][4])
+    self.checkString(join('third_party', 'foo'), out[0][5])
+    self.assertEquals(6, len(out[0]))
+    self.assertEquals(1, len(out))
 
   def testRevertAndStatusDepsOs(self):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
@@ -592,7 +609,11 @@ class GClientSmokeBoth(GClientSmokeBase):
     results = self.gclient(['sync', '--deps', 'mac'])
     # 3x svn checkout, 3x run hooks
     self.checkBlock(results[0],
-                    ['running', 'running', 'running', 'running', 'running',
+                    ['running', 'running',
+                     # This is due to the way svn update is called for a single
+                     # file when File() is used in a DEPS file.
+                     ('running', self.root_dir + '/src/file/foo'),
+                     'running', 'running', 'running', 'running', 'running',
                      'running', 'running'])
     # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
     # new branch \'hash\''.
@@ -605,6 +626,7 @@ class GClientSmokeBoth(GClientSmokeBase):
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other')))
+    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     tree['src/svn_hooked1'] = 'svn_hooked1'
@@ -675,7 +697,7 @@ class GClientSmokeBoth(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['recurse', 'sh', '-c',
                             'echo $GCLIENT_SCM,$GCLIENT_URL,`pwd`'])
-    
+
     entries = [tuple(line.split(','))
                for line in results[0].strip().split('\n')]
     logging.debug(entries)

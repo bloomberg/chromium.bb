@@ -338,8 +338,8 @@ class FakeRepos(object):
     # - var
     # - hooks
     # - From
-    # TODO(maruel):
     # - File
+    # TODO(maruel):
     # - $matching_files
     # - use_relative_paths
     fs = file_system(1, """
@@ -360,8 +360,8 @@ deps_os = {
     fs = file_system(2, """
 deps = {
   'src/other': 'svn://%(host)s/svn/trunk/other',
-  #'src/third_party/foo': '/trunk/third_party/foo@1',
   'src/third_party/foo': From('src/other', 'foo/bar'),
+  'src/file/foo': File('svn://%(host)s/svn/trunk/third_party/foo/origin'),
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.
@@ -407,7 +407,8 @@ deps = {
     # - hooks
     # - From
     # TODO(maruel):
-    # - File
+    # - File: File is hard to test here because it's SVN-only. It's
+    #         implementation should probably be replaced to use urllib instead.
     # - $matching_files
     # - use_relative_paths
     self._commit_git('repo_3', {
