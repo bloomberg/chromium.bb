@@ -30,6 +30,7 @@ using ::testing::AnyNumber;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::StrictMock;
 using ::testing::_;
 
 CrosInProcessBrowserTest::CrosInProcessBrowserTest()
@@ -62,7 +63,7 @@ void CrosInProcessBrowserTest::InitStatusAreaMocks() {
 void CrosInProcessBrowserTest::InitMockLibraryLoader() {
   if (loader_)
     return;
-  loader_ = new MockLibraryLoader();
+  loader_ = new StrictMock<MockLibraryLoader>();
   EXPECT_CALL(*loader_, Load(_))
       .Times(AnyNumber())
       .WillRepeatedly(Return(true));
@@ -73,7 +74,7 @@ void CrosInProcessBrowserTest::InitMockCryptohomeLibrary() {
   InitMockLibraryLoader();
   if (mock_cryptohome_library_)
     return;
-  mock_cryptohome_library_ = new MockCryptohomeLibrary();
+  mock_cryptohome_library_ = new StrictMock<MockCryptohomeLibrary>();
   test_api()->SetCryptohomeLibrary(mock_cryptohome_library_, true);
 }
 
@@ -81,7 +82,7 @@ void CrosInProcessBrowserTest::InitMockKeyboardLibrary() {
   InitMockLibraryLoader();
   if (mock_keyboard_library_)
     return;
-  mock_keyboard_library_ = new MockKeyboardLibrary();
+  mock_keyboard_library_ = new StrictMock<MockKeyboardLibrary>();
   test_api()->SetKeyboardLibrary(mock_keyboard_library_, true);
 }
 
@@ -89,7 +90,7 @@ void CrosInProcessBrowserTest::InitMockInputMethodLibrary() {
   InitMockLibraryLoader();
   if (mock_input_method_library_)
     return;
-  mock_input_method_library_ = new MockInputMethodLibrary();
+  mock_input_method_library_ = new StrictMock<MockInputMethodLibrary>();
   test_api()->SetInputMethodLibrary(mock_input_method_library_, true);
 }
 
@@ -97,7 +98,7 @@ void CrosInProcessBrowserTest::InitMockNetworkLibrary() {
   InitMockLibraryLoader();
   if (mock_network_library_)
     return;
-  mock_network_library_ = new MockNetworkLibrary();
+  mock_network_library_ = new StrictMock<MockNetworkLibrary>();
   test_api()->SetNetworkLibrary(mock_network_library_, true);
 }
 
@@ -105,7 +106,7 @@ void CrosInProcessBrowserTest::InitMockPowerLibrary() {
   InitMockLibraryLoader();
   if (mock_power_library_)
     return;
-  mock_power_library_ = new MockPowerLibrary();
+  mock_power_library_ = new StrictMock<MockPowerLibrary>();
   test_api()->SetPowerLibrary(mock_power_library_, true);
 }
 
@@ -113,7 +114,7 @@ void CrosInProcessBrowserTest::InitMockScreenLockLibrary() {
   InitMockLibraryLoader();
   if (mock_screen_lock_library_)
     return;
-  mock_screen_lock_library_ = new MockScreenLockLibrary();
+  mock_screen_lock_library_ = new StrictMock<MockScreenLockLibrary>();
   test_api()->SetScreenLockLibrary(mock_screen_lock_library_, true);
 }
 
@@ -121,7 +122,7 @@ void CrosInProcessBrowserTest::InitMockSynapticsLibrary() {
   InitMockLibraryLoader();
   if (mock_synaptics_library_)
     return;
-  mock_synaptics_library_ = new MockSynapticsLibrary();
+  mock_synaptics_library_ = new StrictMock<MockSynapticsLibrary>();
   test_api()->SetSynapticsLibrary(mock_synaptics_library_, true);
 }
 
@@ -129,7 +130,7 @@ void CrosInProcessBrowserTest::InitMockSystemLibrary() {
   InitMockLibraryLoader();
   if (mock_system_library_)
     return;
-  mock_system_library_ = new MockSystemLibrary();
+  mock_system_library_ = new StrictMock<MockSystemLibrary>();
   test_api()->SetSystemLibrary(mock_system_library_, true);
 }
 
@@ -139,6 +140,7 @@ void CrosInProcessBrowserTest::SetStatusAreaMocksExpectations() {
   SetNetworkLibraryStatusAreaExpectations();
   SetPowerLibraryStatusAreaExpectations();
   SetSynapticsLibraryExpectations();
+  SetSystemLibraryStatusAreaExpectations();
 }
 
 void CrosInProcessBrowserTest::SetKeyboardLibraryStatusAreaExpectations() {
@@ -247,6 +249,15 @@ void CrosInProcessBrowserTest::SetPowerLibraryStatusAreaExpectations() {
       .WillOnce((Return(base::TimeDelta::FromMinutes(42))))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_power_library_, RemoveObserver(_))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
+void CrosInProcessBrowserTest::SetSystemLibraryStatusAreaExpectations() {
+  EXPECT_CALL(*mock_system_library_, AddObserver(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_system_library_, RemoveObserver(_))
       .Times(1)
       .RetiresOnSaturation();
 }

@@ -70,6 +70,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   void SetInputMethodLibraryStatusAreaExpectations();
   void SetNetworkLibraryStatusAreaExpectations();
   void SetPowerLibraryStatusAreaExpectations();
+  void SetSystemLibraryStatusAreaExpectations();
   void SetSynapticsLibraryExpectations();
   void SetSystemLibraryExpectations();
 

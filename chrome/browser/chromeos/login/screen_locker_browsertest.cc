@@ -8,6 +8,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
+#include "chrome/browser/chromeos/cros/mock_input_method_library.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
@@ -80,6 +81,10 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
+  EXPECT_CALL(*mock_input_method_library_, GetNumActiveInputMethods())
+      .Times(1)
+      .WillRepeatedly((testing::Return(0)))
+      .RetiresOnSaturation();
   UserManager::Get()->UserLoggedIn("user");
   ScreenLocker::Show();
   ui_test_utils::RunAllPendingInMessageLoop();
