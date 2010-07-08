@@ -24,6 +24,9 @@ class EnvVarGetter {
     return GetEnv(variable_name, NULL);
   }
 
+  virtual void SetEnv(const char* variable_name,
+                      const std::string& new_value) = 0;
+
   // Create an instance of EnvVarGetter
   static EnvVarGetter* Create();
 };

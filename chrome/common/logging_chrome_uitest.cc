@@ -29,24 +29,14 @@ class ChromeLoggingTest : public testing::Test {
     if (!env->GetEnv(env_vars::kLogFileName, &environment_filename_))
       environment_filename_ = "";
 
-    // TODO(port) Add base::SetEnv() and get rid of the ifdefs.
-#if defined(OS_WIN)
-    SetEnvironmentVariable(ASCIIToWide(env_vars::kLogFileName).c_str(),
-                           ASCIIToWide(new_value).c_str());
-#else
-    setenv(env_vars::kLogFileName, new_value.c_str(), 1);
-#endif
+    env->SetEnv(env_vars::kLogFileName, new_value);
   }
 
   // Restores the value of the log file nave environment variable
   // previously saved by SaveEnvironmentVariable().
   void RestoreEnvironmentVariable() {
-#if defined(OS_WIN)
-    SetEnvironmentVariable(ASCIIToWide(env_vars::kLogFileName).c_str(),
-                           ASCIIToWide(environment_filename_).c_str());
-#else
-    setenv(env_vars::kLogFileName, environment_filename_.c_str(), 1);
-#endif
+    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    env->SetEnv(env_vars::kLogFileName, environment_filename_);
   }
 
  private:
