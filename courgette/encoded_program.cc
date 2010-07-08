@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/env_var.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/scoped_ptr.h"
+#include "base/string_util.h"
 
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
@@ -264,9 +266,11 @@ enum FieldSelect {
 static FieldSelect GetFieldSelect() {
 #if 1
   // TODO(sra): Use better configuration.
-  std::wstring s = base::SysInfo::GetEnvVar(L"A_FIELDS");
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  std::string s;
+  env->GetEnv("A_FIELDS", &s);
   if (!s.empty()) {
-    return static_cast<FieldSelect>(wcstoul(s.c_str(), 0, 0));
+    return static_cast<FieldSelect>(wcstoul(ASCIIToWide(s).c_str(), 0, 0));
   }
 #endif
   return  static_cast<FieldSelect>(~0);

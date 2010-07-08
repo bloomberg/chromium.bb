@@ -8,9 +8,10 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/env_var.h"
 #include "base/event_recorder.h"
 #include "base/path_service.h"
-#include "base/sys_info.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
 #include "chrome/browser/browser_list.h"
@@ -307,9 +308,11 @@ LaunchMode GetLaunchShortcutKind() {
     // The windows quick launch path is not localized.
     if (shortcut.find(L"\\Quick Launch\\") != std::wstring::npos)
       return LM_SHORTCUT_QUICKLAUNCH;
-    std::wstring appdata_path = base::SysInfo::GetEnvVar(L"USERPROFILE");
+    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    std::string appdata_path;
+    env->GetEnv("USERPROFILE", &appdata_path);
     if (!appdata_path.empty() &&
-        shortcut.find(appdata_path) != std::wstring::npos)
+        shortcut.find(ASCIIToWide(appdata_path)) != std::wstring::npos)
       return LM_SHORTCUT_DESKTOP;
     return LM_SHORTCUT_UNKNOWN;
   }
