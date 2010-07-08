@@ -54,9 +54,9 @@ void* AsVoid(const BookmarkNode* node) {
 
 // The context menu has been dismissed, restore the X and application grabs
 // to whichever menu last had them. (Assuming that menu is still showing.)
-// The event mask in this function is taken from gtkmenu.c.
 void OnContextMenuHide(GtkWidget* context_menu, GtkWidget* grab_menu) {
   gtk_util::GrabAllInput(grab_menu);
+
   // Match the ref we took when connecting this signal.
   g_object_unref(grab_menu);
 }
@@ -222,10 +222,13 @@ gboolean BookmarkMenuController::OnButtonPressed(
     const BookmarkNode* parent = GetParentNodeFromEmptyMenu(sender);
     bool is_empty_menu = !!parent;
     // If there is no active menu item and we are not an empty menu, then do
-    // nothing.
+    // nothing. This can happen if the user has canceled a context menu while
+    // the cursor is hovering over a bookmark menu. Doing nothing is not optimal
+    // (the hovered item should be active), but it's a hopefully rare corner
+    // case.
     GtkWidget* menu_item = menu_shell->active_menu_item;
     if (!is_empty_menu && !menu_item)
-      return FALSE;
+      return TRUE;
 
     const BookmarkNode* node =
         menu_item ? GetNodeFromMenuItem(menu_item) : NULL;
@@ -283,9 +286,9 @@ gboolean BookmarkMenuController::OnButtonReleased(
   } else {
     // The menu item is a folder node.
     if (event->button == 1) {
-      gtk_menu_popup(GTK_MENU(gtk_menu_item_get_submenu(GTK_MENU_ITEM(sender))),
-                     sender->parent, sender, NULL, NULL,
-                     event->button, event->time);
+      gtk_menu_shell_select_item(GTK_MENU_SHELL(sender->parent), sender);
+      g_signal_emit_by_name(sender->parent, "activate-current");
+      return TRUE;
     }
   }
 
