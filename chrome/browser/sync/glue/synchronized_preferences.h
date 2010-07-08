@@ -84,7 +84,8 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kExtensionsUIDeveloperMode,  // no live update
 
   // Document menu -> Zoom.
-  prefs::kPerHostZoomLevels,
+  //   prefs::kPerHostZoomLevels creates bad UX when synced, see
+  //   http://crbug.com/47359.
 
   // Document menu -> Encoding -> Auto Detect.
   prefs::kWebKitUsesUniversalDetector,
