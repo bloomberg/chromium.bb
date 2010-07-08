@@ -257,94 +257,6 @@ TEST_F(PersonalDataManagerTest, SetCreditCards) {
   EXPECT_EQ(creditcard2, *results3.at(1));
 }
 
-TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
-  AutoFillProfile profile0(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile0,
-      "", "", "", "", "", "", "", "", "", "", "", "", "", "");
-
-  // This will verify that the web database has been loaded and the notification
-  // sent out.
-  EXPECT_CALL(personal_data_observer_,
-              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  // The message loop will exit when the mock observer is notified.
-  MessageLoop::current()->Run();
-
-  // Add the three test profiles to the database.
-  std::vector<AutoFillProfile> update;
-  update.push_back(profile0);
-  personal_data_->SetProfiles(&update);
-
-  // The PersonalDataManager will update the unique IDs when saving the
-  // profiles, so we have to update the expectations.
-  profile0.set_unique_id(update[0].unique_id());
-
-  // Check the local store of profiles, not yet saved to the web database.
-  const std::vector<AutoFillProfile*>& results1 = personal_data_->profiles();
-  ASSERT_EQ(0U, results1.size());
-
-  // Reset the PersonalDataManager.  This tests that the personal data was saved
-  // to the web database, and that we can load the profiles from the web
-  // database.
-  ResetPersonalDataManager();
-
-  // This will verify that the web database has been loaded and the notification
-  // sent out.
-  EXPECT_CALL(personal_data_observer_,
-              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  // The message loop will exit when the PersonalDataLoadedObserver is notified.
-  MessageLoop::current()->Run();
-
-  // Verify that we've loaded the profiles from the web database.
-  const std::vector<AutoFillProfile*>& results2 = personal_data_->profiles();
-  ASSERT_EQ(0U, results2.size());
-}
-
-TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
-  CreditCard creditcard0(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard0,
-      "", "", "", "", "", "", "");
-
-  // This will verify that the web database has been loaded and the notification
-  // sent out.
-  EXPECT_CALL(personal_data_observer_,
-              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  // The message loop will exit when the mock observer is notified.
-  MessageLoop::current()->Run();
-
-  // Add the empty credit card to the database.
-  std::vector<CreditCard> update;
-  update.push_back(creditcard0);
-  personal_data_->SetCreditCards(&update);
-
-  // The PersonalDataManager will update the unique IDs when saving the
-  // credit cards, so we have to update the expectations.
-  creditcard0.set_unique_id(update[0].unique_id());
-
-  // Check the local store of credit cards, not yet saved to the web database.
-  const std::vector<CreditCard*>& results1 = personal_data_->credit_cards();
-  ASSERT_EQ(0U, results1.size());
-
-  // Reset the PersonalDataManager.  This tests that the personal data was saved
-  // to the web database, and that we can load the credit cards from the web
-  // database.
-  ResetPersonalDataManager();
-
-  // This will verify that the web database has been loaded and the notification
-  // sent out.
-  EXPECT_CALL(personal_data_observer_,
-              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
-
-  // The message loop will exit when the PersonalDataLoadedObserver is notified.
-  MessageLoop::current()->Run();
-
-  // Verify that we've loaded the credit cards from the web database.
-  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
-  ASSERT_EQ(0U, results2.size());
-}
-
 TEST_F(PersonalDataManagerTest, Refresh) {
   AutoFillProfile profile0(string16(), 0);
   autofill_unittest::SetProfileInfo(&profile0,
@@ -467,17 +379,11 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
 
 TEST_F(PersonalDataManagerTest, SetUniqueProfileLabels) {
   AutoFillProfile profile0(ASCIIToUTF16("Home"), 0);
-  profile0.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
   AutoFillProfile profile1(ASCIIToUTF16("Home"), 0);
-  profile1.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Paul"));
   AutoFillProfile profile2(ASCIIToUTF16("Home"), 0);
-  profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Ringo"));
   AutoFillProfile profile3(ASCIIToUTF16("NotHome"), 0);
-  profile3.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Other"));
   AutoFillProfile profile4(ASCIIToUTF16("Work"), 0);
-  profile4.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Ozzy"));
   AutoFillProfile profile5(ASCIIToUTF16("Work"), 0);
-  profile5.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Dio"));
 
   // This will verify that the web database has been loaded and the notification
   // sent out.
@@ -514,18 +420,12 @@ TEST_F(PersonalDataManagerTest, SetUniqueProfileLabels) {
 }
 
 TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
-  CreditCard credit_card0(ASCIIToUTF16("Home"), 0);
-  credit_card0.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("John"));
-  CreditCard credit_card1(ASCIIToUTF16("Home"), 0);
-  credit_card1.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Paul"));
-  CreditCard credit_card2(ASCIIToUTF16("Home"), 0);
-  credit_card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Ringo"));
-  CreditCard credit_card3(ASCIIToUTF16("NotHome"), 0);
-  credit_card3.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Other"));
-  CreditCard credit_card4(ASCIIToUTF16("Work"), 0);
-  credit_card4.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Ozzy"));
-  CreditCard credit_card5(ASCIIToUTF16("Work"), 0);
-  credit_card5.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Dio"));
+  CreditCard profile0(ASCIIToUTF16("Home"), 0);
+  CreditCard profile1(ASCIIToUTF16("Home"), 0);
+  CreditCard profile2(ASCIIToUTF16("Home"), 0);
+  CreditCard profile3(ASCIIToUTF16("NotHome"), 0);
+  CreditCard profile4(ASCIIToUTF16("Work"), 0);
+  CreditCard profile5(ASCIIToUTF16("Work"), 0);
 
   // This will verify that the web database has been loaded and the notification
   // sent out.
@@ -535,14 +435,14 @@ TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
   // The message loop will exit when the mock observer is notified.
   MessageLoop::current()->Run();
 
-  // Add the test credit cards to the database.
+  // Add the test profiles to the database.
   std::vector<CreditCard> update;
-  update.push_back(credit_card0);
-  update.push_back(credit_card1);
-  update.push_back(credit_card2);
-  update.push_back(credit_card3);
-  update.push_back(credit_card4);
-  update.push_back(credit_card5);
+  update.push_back(profile0);
+  update.push_back(profile1);
+  update.push_back(profile2);
+  update.push_back(profile3);
+  update.push_back(profile4);
+  update.push_back(profile5);
   personal_data_->SetCreditCards(&update);
 
   const std::vector<CreditCard*>& results = personal_data_->credit_cards();
