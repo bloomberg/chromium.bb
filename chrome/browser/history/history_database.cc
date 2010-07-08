@@ -286,9 +286,17 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
   if (cur_version == 17)
     needs_version_18_migration_ = true;
 
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites) &&
+      cur_version == 18) {
+    // Set DB version back to pre-top sites.
+    cur_version = 17;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
   // When the version is too old, we just try to continue anyway, there should
   // not be a released product that makes a database too old for us to handle.
-  LOG_IF(WARNING, cur_version < GetCurrentVersion()) <<
+  LOG_IF(WARNING, (cur_version < GetCurrentVersion() &&
+                   !needs_version_18_migration_)) <<
       "History database version " << cur_version << " is too old to handle.";
 
   return sql::INIT_OK;
