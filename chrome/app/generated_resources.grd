@@ -5650,8 +5650,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Form AutoFill
         </message>
       </if>
-      <message name="IDS_AUTOFILL_INFOBAR_TEXT" desc="Text to show in the AutoFill request infobar.">
-        AutoFill will use this information to fill in forms with a single click.
+      <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the AutoFill credit card request infobar.">
+        Do you want Chrome to save this credit card information for completing web forms?
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable AutoFill' radio button">
         Enable AutoFill to make it easier to fill in forms
@@ -5659,13 +5659,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable AutoFill' radio button">
         Disable AutoFill
       </message>
-      <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the AutoFill request infobar accept button.">
-        Configure...
+      <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the AutoFill credit card request infobar accept button.">
+        Save info
       </message>
-      <message name="IDS_AUTOFILL_INFOBAR_DENY" desc="Text to show for the AutoFill request infobar deny button.">
-        Disable AutoFill
+      <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the AutoFill credit card request infobar deny button.">
+        Don't save
       </message>
       <message name="IDS_AUTOFILL_LEARN_MORE" desc="Text to show for the AutoFill Learn more link.">
+        Learn more
+      </message>
+      <message name="IDS_AUTOFILL_CC_LEARN_MORE" desc="Text to show for the AutoFill credit card request infobar Learn more link.">
         Learn more
       </message>
       <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">

@@ -15,6 +15,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
+class AutoFillCCInfoBarDelegate;
 class AutoFillProfile;
 class CreditCard;
 class FormStructure;
@@ -54,6 +55,10 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                     const string16& value,
                                     const string16& label);
   virtual void ShowAutoFillDialog();
+
+  // Called by the AutoFillCCInfoBarDelegate when the user interacts with the
+  // infobar.
+  virtual void OnInfoBarClosed(bool should_save);
 
   // Resets the stored form data.
   virtual void Reset();
@@ -155,6 +160,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
   // The form data the user has submitted.
   scoped_ptr<FormStructure> upload_form_structure_;
+
+  // The InfoBar that asks for permission to store credit card information.
+  scoped_ptr<AutoFillCCInfoBarDelegate> cc_infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);
 };

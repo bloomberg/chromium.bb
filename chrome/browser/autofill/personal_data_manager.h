@@ -56,11 +56,10 @@ class PersonalDataManager
   // Removes |observer| as the observer of this PersonalDataManager.
   virtual void RemoveObserver(PersonalDataManager::Observer* observer);
 
-  // If AutoFill is able to determine the field types of a significant number
-  // of field types that contain information in the FormStructures and the user
-  // has not previously been prompted, the user will be asked if he would like
-  // to import the data. If the user selects yes, a profile will be created
-  // with all of the information from recognized fields.
+  // If AutoFill is able to determine the field types of a significant number of
+  // field types that contain information in the FormStructures a profile will
+  // be created with all of the information from recognized fields. Returns
+  // whether a profile was created.
   bool ImportFormData(const std::vector<FormStructure*>& form_structures,
                       AutoFillManager* autofill_manager);
 
@@ -71,6 +70,9 @@ class PersonalDataManager
   // TODO(dhollowa) Now that we aren't immediately saving the imported form
   // data, we should store the profile and CC in the AFM instead of the PDM.
   void GetImportedFormData(AutoFillProfile** profile, CreditCard** credit_card);
+
+  // Saves a credit card value detected in |ImportedFormData|.
+  void SaveImportedCreditCard();
 
   // Sets |web_profiles_| to the contents of |profiles| and updates the web
   // database by adding, updating and removing profiles.  Sets the unique ID of
@@ -189,7 +191,6 @@ class PersonalDataManager
   void SetUniqueCreditCardLabels(std::vector<CreditCard>* credit_cards);
 
   // Saves |imported_profile_| to the WebDB if it exists.
-  // TODO(jhawkins): SaveImportedCreditCard.
   void SaveImportedProfile();
 
   // The profile hosting this PersonalDataManager.

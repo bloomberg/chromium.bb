@@ -224,6 +224,9 @@ bool PersonalDataManager::ImportFormData(
 
     // We always save imported profiles.
     SaveImportedProfile();
+
+    // We never save an imported credit card at this point. If there was one we
+    // found, we'll be asked to save it later once the user gives their OK.
   }
 
   return true;
@@ -667,4 +670,8 @@ void PersonalDataManager::SaveImportedProfile() {
     profiles.push_back(*imported_profile_);
 
   SetProfiles(&profiles);
+}
+
+void PersonalDataManager::SaveImportedCreditCard() {
+  // http://crbug.com/47428
 }

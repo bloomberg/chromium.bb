@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
+#include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -400,7 +401,16 @@ void AutoFillManager::HandleSubmit() {
   if (!personal_data_->ImportFormData(import, this))
     return;
 
-  UploadFormData();
+  // Did we get credit card info?
+  AutoFillProfile* profile;
+  CreditCard* credit_card;
+  personal_data_->GetImportedFormData(&profile, &credit_card);
+
+  if (credit_card) {
+    cc_infobar_.reset(new AutoFillCCInfoBarDelegate(tab_contents_, this));
+  } else {
+    UploadFormData();
+  }
 }
 
 void AutoFillManager::UploadFormData() {
@@ -408,6 +418,12 @@ void AutoFillManager::UploadFormData() {
   // line with toolbar data:
   // download_manager_.StartUploadRequest(upload_form_structure_,
   //                                      form_is_autofilled);
+}
+
+void AutoFillManager::OnInfoBarClosed(bool should_save) {
+  if (should_save)
+    personal_data_->SaveImportedCreditCard();
+  UploadFormData();
 }
 
 AutoFillManager::AutoFillManager()
