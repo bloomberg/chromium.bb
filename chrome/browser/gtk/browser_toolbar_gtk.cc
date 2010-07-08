@@ -351,6 +351,10 @@ void BrowserToolbarGtk::StoppedShowing() {
       GTK_CHROME_BUTTON(app_menu_button_.get()));
 }
 
+GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
+  return theme_provider_->GetIconSetForId(idr);
+}
+
 // menus::SimpleMenuModel::Delegate
 
 bool BrowserToolbarGtk::IsCommandIdEnabled(int id) const {

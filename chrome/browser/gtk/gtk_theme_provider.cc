@@ -201,9 +201,11 @@ GtkThemeProvider* GtkThemeProvider::GetFrom(Profile* profile) {
 GtkThemeProvider::GtkThemeProvider()
     : BrowserThemeProvider(),
       fake_window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
-      fake_frame_(meta_frames_new()) {
+      fake_frame_(meta_frames_new()),
+      fullscreen_icon_set_(NULL) {
   fake_label_.Own(gtk_label_new(""));
   fake_entry_.Own(gtk_entry_new());
+  fake_menu_item_.Own(gtk_menu_item_new());
 
   // Only realized widgets receive style-set notifications, which we need to
   // broadcast new theme images and colors. Only realized widgets have style
@@ -220,6 +222,9 @@ GtkThemeProvider::~GtkThemeProvider() {
   gtk_widget_destroy(fake_frame_);
   fake_label_.Destroy();
   fake_entry_.Destroy();
+  fake_menu_item_.Destroy();
+
+  FreeIconSets();
 
   // We have to call this because FreePlatformCached() in ~BrowserThemeProvider
   // doesn't call the right virutal FreePlatformCaches.
@@ -234,12 +239,12 @@ void GtkThemeProvider::Init(Profile* profile) {
 }
 
 SkBitmap* GtkThemeProvider::GetBitmapNamed(int id) const {
-  if (use_gtk_ && IsOverridableImage(id)) {
-    // Try to get our cached version:
-    ImageCache::const_iterator it = gtk_images_.find(id);
-    if (it != gtk_images_.end())
-      return it->second;
+  // Try to get our cached version:
+  ImageCache::const_iterator it = gtk_images_.find(id);
+  if (it != gtk_images_.end())
+    return it->second;
 
+  if (use_gtk_ && IsOverridableImage(id)) {
     // We haven't built this image yet:
     SkBitmap* bitmap = GenerateGtkThemeBitmap(id);
     gtk_images_[id] = bitmap;
@@ -355,6 +360,13 @@ GdkColor GtkThemeProvider::GetBorderColor() const {
   color.blue = (text.blue + (bg.blue * kBgWeight)) / (1 + kBgWeight);
 
   return color;
+}
+
+GtkIconSet* GtkThemeProvider::GetIconSetForId(int id) const {
+  if (id == IDR_FULLSCREEN_MENU_BUTTON)
+    return fullscreen_icon_set_;
+
+  return NULL;
 }
 
 void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
@@ -535,6 +547,8 @@ void GtkThemeProvider::LoadThemePrefs() {
     LoadDefaultValues();
     BrowserThemeProvider::LoadThemePrefs();
   }
+
+  RebuildMenuIconSets();
 }
 
 void GtkThemeProvider::NotifyThemeChanged(Extension* extension) {
@@ -567,6 +581,8 @@ void GtkThemeProvider::OnStyleSet(GtkWidget* widget,
     LoadGtkValues();
     NotifyThemeChanged(NULL);
   }
+
+  RebuildMenuIconSets();
 
   // Free the old icons only after the theme change notification has gone
   // through.
@@ -761,6 +777,57 @@ void GtkThemeProvider::LoadDefaultValues() {
   inactive_selection_fg_color_ = SkColorSetRGB(50, 50, 50);
 }
 
+void GtkThemeProvider::RebuildMenuIconSets() {
+  FreeIconSets();
+
+  GtkStyle* style = gtk_rc_get_style(fake_menu_item_.get());
+
+  fullscreen_icon_set_ = gtk_icon_set_new();
+  BuildIconFromIDRWithColor(IDR_FULLSCREEN_MENU_BUTTON,
+                            style,
+                            GTK_STATE_PRELIGHT,
+                            fullscreen_icon_set_);
+  BuildIconFromIDRWithColor(IDR_FULLSCREEN_MENU_BUTTON,
+                            style,
+                            GTK_STATE_NORMAL,
+                            fullscreen_icon_set_);
+}
+
+void GtkThemeProvider::BuildIconFromIDRWithColor(int id,
+                                                 GtkStyle* style,
+                                                 GtkStateType state,
+                                                 GtkIconSet* icon_set) {
+  SkColor color = GdkToSkColor(&style->fg[state]);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SkBitmap original = *rb.GetBitmapNamed(id);
+
+  SkBitmap fill_color;
+  fill_color.setConfig(SkBitmap::kARGB_8888_Config,
+                       original.width(), original.height(), 0);
+  fill_color.allocPixels();
+  fill_color.eraseColor(color);
+  SkBitmap masked = SkBitmapOperations::CreateMaskedBitmap(
+      fill_color, original);
+
+  GtkIconSource* icon = gtk_icon_source_new();
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&masked);
+  gtk_icon_source_set_pixbuf(icon, pixbuf);
+  g_object_unref(pixbuf);
+
+  gtk_icon_source_set_direction_wildcarded(icon, TRUE);
+  gtk_icon_source_set_size_wildcarded(icon, TRUE);
+
+  gtk_icon_source_set_state(icon, state);
+  // All fields default to wildcarding being on and setting a property doesn't
+  // turn off wildcarding. You need to do this yourself. This is stated once in
+  // the documentation in the gtk_icon_source_new() function, and no where else.
+  gtk_icon_source_set_state_wildcarded(
+      icon, state == GTK_STATE_NORMAL);
+
+  gtk_icon_set_add_source(icon_set, icon);
+  gtk_icon_source_free(icon);
+}
+
 void GtkThemeProvider::SetThemeColorFromGtk(int id, const GdkColor* color) {
   colors_[id] = GdkToSkColor(color);
 }
@@ -800,6 +867,13 @@ void GtkThemeProvider::FreePerDisplaySurfaces(
     }
   }
   per_display_map->clear();
+}
+
+void GtkThemeProvider::FreeIconSets() {
+  if (fullscreen_icon_set_) {
+    gtk_icon_set_unref(fullscreen_icon_set_);
+    fullscreen_icon_set_ = NULL;
+  }
 }
 
 SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {

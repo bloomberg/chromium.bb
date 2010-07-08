@@ -93,6 +93,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Overridden from MenuGtk::Delegate:
   virtual void StoppedShowing();
+  virtual GtkIconSet* GetIconSetForId(int idr);
 
   // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdEnabled(int id) const;

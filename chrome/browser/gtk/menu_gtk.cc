@@ -92,12 +92,38 @@ void SetupDynamicLabelMenuButton(GtkWidget* button,
                                  int index) {
   if (model->IsLabelDynamicAt(index)) {
     g_object_set_data(G_OBJECT(button), "button-model",
-                      reinterpret_cast<void*>(model));
+                      model);
     g_object_set_data(G_OBJECT(button), "button-model-id",
                       GINT_TO_POINTER(index));
     g_signal_connect(menu, "show", G_CALLBACK(OnSubmenuShowButtonMenuItem),
                      button);
   }
+}
+
+void OnSubmenuShowButtonImage(GtkWidget* widget, GtkButton* button) {
+  MenuGtk::Delegate* delegate = reinterpret_cast<MenuGtk::Delegate*>(
+      g_object_get_data(G_OBJECT(button), "menu-gtk-delegate"));
+  int icon_idr = GPOINTER_TO_INT(g_object_get_data(
+      G_OBJECT(button), "button-image-idr"));
+
+  GtkIconSet* icon_set = delegate->GetIconSetForId(icon_idr);
+  if (icon_set) {
+    gtk_button_set_image(
+        button, gtk_image_new_from_icon_set(icon_set,
+                                            GTK_ICON_SIZE_MENU));
+  }
+}
+
+void SetupImageIcon(GtkWidget* button,
+                    GtkWidget* menu,
+                    int icon_idr,
+                    MenuGtk::Delegate* menu_gtk_delegate) {
+  g_object_set_data(G_OBJECT(button), "button-image-idr",
+                    GINT_TO_POINTER(icon_idr));
+  g_object_set_data(G_OBJECT(button), "menu-gtk-delegate",
+                    menu_gtk_delegate);
+
+  g_signal_connect(menu, "show", G_CALLBACK(OnSubmenuShowButtonImage), button);
 }
 
 // Popup menus may get squished if they open up too close to the bottom of the
@@ -329,8 +355,7 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
                                  GTK_ACCEL_VISIBLE);
     }
 
-    g_object_set_data(G_OBJECT(menu_item), "model",
-                      reinterpret_cast<void*>(model));
+    g_object_set_data(G_OBJECT(menu_item), "model", model);
     AppendMenuItemToMenu(i, menu_item, menu, connect_to_activate);
 
     if (model->IsLabelDynamicAt(i)) {
@@ -348,8 +373,7 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
       RemoveWindowsStyleAccelerators(UTF16ToUTF8(model->label())).c_str());
 
   // Set up the callback to the model for when it is clicked.
-  g_object_set_data(G_OBJECT(menu_item), "button-model",
-                    reinterpret_cast<void*>(model));
+  g_object_set_data(G_OBJECT(menu_item), "button-model", model);
   g_signal_connect(menu_item, "button-pushed",
                    G_CALLBACK(OnMenuButtonPressed), this);
 
@@ -366,13 +390,7 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
 
         int icon_idr;
         if (model->GetIconAt(i, &icon_idr)) {
-          // TODO(erg): This should go through the GtkThemeProvider so we can
-          // get a version tinted to label color.
-          gtk_button_set_image(
-              GTK_BUTTON(button),
-              gtk_image_new_from_pixbuf(
-                  ResourceBundle::GetSharedInstance().
-                  GetPixbufNamed(icon_idr)));
+          SetupImageIcon(button, menu, icon_idr, delegate_);
         } else {
           gtk_button_set_label(
               GTK_BUTTON(button),

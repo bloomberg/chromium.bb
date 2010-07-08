@@ -70,6 +70,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // label. Used for borders between GTK stuff and the webcontent.
   GdkColor GetBorderColor() const;
 
+  // Returns a set of icons tinted for different GtkStateTypes based on the
+  // label colors for the IDR resource |id|.
+  GtkIconSet* GetIconSetForId(int id) const;
+
   // This method returns averages of the thumb part and of the track colors.
   // Used when rendering scrollbars.
   static void GetScrollbarColors(GdkColor* thumb_active_color,
@@ -144,6 +148,18 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Sets the values that we send to webkit to safe defaults.
   void LoadDefaultValues();
 
+  // Builds all of the tinted menus images needed for custom buttons. This is
+  // always called on style-set even if we aren't using the gtk-theme because
+  // the menus are always rendered with gtk colors.
+  void RebuildMenuIconSets();
+
+  // Builds and tints the image with |id| to the GtkStateType |state| and
+  // places the result in |icon_set|.
+  void BuildIconFromIDRWithColor(int id,
+                                 GtkStyle* style,
+                                 GtkStateType state,
+                                 GtkIconSet* icon_set);
+
   // Sets the underlying theme colors/tints from a GTK color.
   void SetThemeColorFromGtk(int id, const GdkColor* color);
   void SetThemeTintFromGtk(int id, const GdkColor* color);
@@ -155,6 +171,9 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // but by the time ~BrowserThemeProvider() is run, the vtable no longer
   // points to GtkThemeProvider's version.
   void FreePerDisplaySurfaces(PerDisplaySurfaceMap* per_display_map);
+
+  // Frees all the created GtkIconSets we use for the chrome menu.
+  void FreeIconSets();
 
   // Lazily generates each bitmap used in the gtk theme.
   SkBitmap* GenerateGtkThemeBitmap(int id) const;
@@ -199,6 +218,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   GtkWidget* fake_frame_;
   OwnedWidgetGtk fake_label_;
   OwnedWidgetGtk fake_entry_;
+  OwnedWidgetGtk fake_menu_item_;
 
   // A list of all GtkChromeButton instances. We hold on to these to notify
   // them of theme changes.
@@ -227,6 +247,11 @@ class GtkThemeProvider : public BrowserThemeProvider,
   SkColor active_selection_fg_color_;
   SkColor inactive_selection_bg_color_;
   SkColor inactive_selection_fg_color_;
+
+  // A GtkIconSet that has the tinted icons for the NORMAL and PRELIGHT states
+  // of the IDR_FULLSCREEN_MENU_BUTTON tinted to the respective menu item label
+  // colors.
+  GtkIconSet* fullscreen_icon_set_;
 
   // Image cache of lazily created images, created when requested by
   // GetBitmapNamed().

@@ -42,6 +42,9 @@ class MenuGtk {
     // Return true if we should override the "gtk-menu-images" system setting
     // when showing image menu items for this menu.
     virtual bool AlwaysShowImages() const { return false; }
+
+    // Returns a tinted image used in button in a menu.
+    virtual GtkIconSet* GetIconSetForId(int idr) { return NULL; }
   };
 
   MenuGtk(MenuGtk::Delegate* delegate, menus::MenuModel* model);

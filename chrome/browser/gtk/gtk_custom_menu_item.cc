@@ -19,12 +19,20 @@ G_DEFINE_TYPE(GtkCustomMenuItem, gtk_custom_menu_item, GTK_TYPE_MENU_ITEM)
 
 static void set_selected(GtkCustomMenuItem* item, GtkWidget* selected) {
   if (selected != item->currently_selected_button) {
-    if (item->currently_selected_button)
+    if (item->currently_selected_button) {
       gtk_widget_set_state(item->currently_selected_button, GTK_STATE_NORMAL);
+      gtk_widget_set_state(
+          gtk_bin_get_child(GTK_BIN(item->currently_selected_button)),
+          GTK_STATE_NORMAL);
+    }
 
     item->currently_selected_button = selected;
-    if (item->currently_selected_button)
+    if (item->currently_selected_button) {
       gtk_widget_set_state(item->currently_selected_button, GTK_STATE_SELECTED);
+      gtk_widget_set_state(
+          gtk_bin_get_child(GTK_BIN(item->currently_selected_button)),
+          GTK_STATE_PRELIGHT);
+    }
   }
 }
 
@@ -49,27 +57,6 @@ static void gtk_custom_menu_item_select(GtkItem *item);
 static void gtk_custom_menu_item_deselect(GtkItem *item);
 static void gtk_custom_menu_item_activate(GtkMenuItem* menu_item);
 
-static void gtk_custom_menu_item_style_set(GtkCustomMenuItem* item,
-                                           GtkStyle* old_style) {
-  // Because several popular themes have no idea about styling buttons in menus
-  // (it's sort of a weird concept) and look like crap, we manually apply the
-  // menu item's prelight information to the button.
-  GtkStyle* style = gtk_widget_get_style(GTK_WIDGET(item));
-
-  for (GList* i = item->button_widgets; i; i = g_list_next(i)) {
-    // Set the button prelight colors.
-    GtkWidget* button = GTK_WIDGET(i->data);
-    gtk_widget_modify_fg(button, GTK_STATE_PRELIGHT,
-                         &style->fg[GTK_STATE_PRELIGHT]);
-    gtk_widget_modify_bg(button, GTK_STATE_PRELIGHT,
-                         &style->bg[GTK_STATE_PRELIGHT]);
-    gtk_widget_modify_text(button, GTK_STATE_PRELIGHT,
-                           &style->text[GTK_STATE_PRELIGHT]);
-    gtk_widget_modify_base(button, GTK_STATE_PRELIGHT,
-                           &style->base[GTK_STATE_PRELIGHT]);
-  }
-}
-
 static void gtk_custom_menu_item_init(GtkCustomMenuItem* item) {
   item->all_widgets = NULL;
   item->button_widgets = NULL;
@@ -85,9 +72,6 @@ static void gtk_custom_menu_item_init(GtkCustomMenuItem* item) {
 
   item->hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_end(GTK_BOX(menu_hbox), item->hbox, FALSE, FALSE, 0);
-
-  g_signal_connect(item, "style-set",
-                   G_CALLBACK(gtk_custom_menu_item_style_set), NULL);
 
   g_signal_connect(item->hbox, "expose-event",
                    G_CALLBACK(gtk_custom_menu_item_hbox_expose),
@@ -309,7 +293,8 @@ GtkWidget* gtk_custom_menu_item_add_button_label(GtkCustomMenuItem* menu_item,
   g_object_set_data(G_OBJECT(button), "command-id",
                     GINT_TO_POINTER(command_id));
   gtk_box_pack_start(GTK_BOX(menu_item->hbox), button, FALSE, FALSE, 0);
-  g_signal_connect(button, "notify", G_CALLBACK(on_button_label_set), NULL);
+  g_signal_connect(button, "notify::label",
+                   G_CALLBACK(on_button_label_set), NULL);
   gtk_widget_show(button);
 
   menu_item->all_widgets = g_list_append(menu_item->all_widgets, button);
