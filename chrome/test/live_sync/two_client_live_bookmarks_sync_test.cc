@@ -1531,7 +1531,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371968.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_SinkBMs10LevelDown) {
+    SC_SinkBMs10LevelDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1572,13 +1572,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     }
   }
   const BookmarkNode* bm_a = v->AddURL(bm0,
-      bm_folder_L10, bm_folder_L0->GetChildCount(), L"BM-A",
+      bm_folder_L10, bm_folder_L10->GetChildCount(), L"BM-A",
       GURL("http://www.bm-a.com"));
   const BookmarkNode* bm_b = v->AddURL(bm0,
-      bm_folder_L10, bm_folder_L0->GetChildCount(), L"BM-B",
+      bm_folder_L10, bm_folder_L10->GetChildCount(), L"BM-B",
       GURL("http://www.bm-b.com"));
   const BookmarkNode* bm_c = v->AddURL(bm0,
-      bm_folder_L10, bm_folder_L0->GetChildCount(), L"BM-C",
+      bm_folder_L10, bm_folder_L10->GetChildCount(), L"BM-C",
       GURL("http://www.bm-c.com"));
   // Let's wait till all the changes populate to another client.
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
