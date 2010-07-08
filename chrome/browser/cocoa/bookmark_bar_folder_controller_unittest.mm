@@ -94,6 +94,30 @@ namespace {
 const int kLotsOfNodesCount = 150;
 };
 
+
+// Redirect certain calls so they can be seen by tests.
+
+@interface BookmarkBarControllerChildFolderRedirect : BookmarkBarController {
+  BookmarkBarFolderController* childFolderDelegate_;
+}
+@property (nonatomic, assign) BookmarkBarFolderController* childFolderDelegate;
+@end
+
+@implementation BookmarkBarControllerChildFolderRedirect
+
+@synthesize childFolderDelegate = childFolderDelegate_;
+
+- (void)childFolderWillShow:(id<BookmarkButtonControllerProtocol>)child {
+  [childFolderDelegate_ childFolderWillShow:child];
+}
+
+- (void)childFolderWillClose:(id<BookmarkButtonControllerProtocol>)child {
+  [childFolderDelegate_ childFolderWillClose:child];
+}
+
+@end
+
+
 class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
   BrowserTestHelper helper_;
@@ -126,7 +150,7 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
                   GURL("http://www.google.com/c"));
 
     parentBarController_.reset(
-      [[BookmarkBarController alloc]
+      [[BookmarkBarControllerChildFolderRedirect alloc]
           initWithBrowser:helper_.browser()
              initialWidth:300
                  delegate:nil
@@ -379,12 +403,11 @@ TEST_F(BookmarkBarFolderControllerTest, OpenFolder) {
   EXPECT_FALSE([bbfc folderController]);
 }
 
-// Test was bad; when code got fixed this test failed.
-// jrg working on this right now to make it test something correct.
-TEST_F(BookmarkBarFolderControllerTest, DISABLED_ChildFolderCallbacks) {
+TEST_F(BookmarkBarFolderControllerTest, ChildFolderCallbacks) {
   scoped_nsobject<BookmarkBarFolderControllerPong> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
+  [parentBarController_ setChildFolderDelegate:bbfc.get()];
 
   EXPECT_FALSE([bbfc childFolderWillShow]);
   [bbfc openBookmarkFolderFromButton:[[bbfc buttons] objectAtIndex:0]];
@@ -393,6 +416,8 @@ TEST_F(BookmarkBarFolderControllerTest, DISABLED_ChildFolderCallbacks) {
   EXPECT_FALSE([bbfc childFolderWillClose]);
   [bbfc closeBookmarkFolder:nil];
   EXPECT_TRUE([bbfc childFolderWillClose]);
+
+  [parentBarController_ setChildFolderDelegate:nil];
 }
 
 // Make sure bookmark folders have variable widths.
