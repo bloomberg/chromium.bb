@@ -687,7 +687,7 @@ void RemoveProperty(PP_Var var,
 
 PP_Var Call(PP_Var var,
             PP_Var method_name,
-            int32_t argc,
+            uint32_t argc,
             PP_Var* argv,
             PP_Var* exception) {
   TryCatch try_catch(exception);
@@ -703,18 +703,22 @@ PP_Var Call(PP_Var var,
   NPIdentifier identifier;
   if (method_name.type == PP_VarType_Void) {
     identifier = NULL;
-  } else {
+  } else if (method_name.type == PP_VarType_String) {
+    // Specifically allow only string functions to be called.
     identifier = PPVarToNPIdentifier(method_name);
     if (!identifier) {
       try_catch.SetException(kInvalidPropertyException);
       return PP_MakeVoid();
     }
+  } else {
+    try_catch.SetException(kInvalidPropertyException);
+    return PP_MakeVoid();
   }
 
   scoped_array<NPVariant> args;
   if (argc) {
     args.reset(new NPVariant[argc]);
-    for (int32_t i = 0; i < argc; ++i)
+    for (uint32_t i = 0; i < argc; ++i)
       args[i] = PPVarToNPVariantNoCopy(argv[i]);
   }
 
@@ -741,7 +745,7 @@ PP_Var Call(PP_Var var,
 }
 
 PP_Var Construct(PP_Var var,
-                 int32_t argc,
+                 uint32_t argc,
                  PP_Var* argv,
                  PP_Var* exception) {
   TryCatch try_catch(exception);
@@ -757,7 +761,7 @@ PP_Var Construct(PP_Var var,
   scoped_array<NPVariant> args;
   if (argc) {
     args.reset(new NPVariant[argc]);
-    for (int32_t i = 0; i < argc; ++i)
+    for (uint32_t i = 0; i < argc; ++i)
       args[i] = PPVarToNPVariantNoCopy(argv[i]);
   }
 
