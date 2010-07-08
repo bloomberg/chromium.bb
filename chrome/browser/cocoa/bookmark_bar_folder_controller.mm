@@ -1168,7 +1168,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)openAll:(const BookmarkNode*)node
     disposition:(WindowOpenDisposition)disposition {
-  [parentController_ openAll:node disposition:disposition];
+  [barController_ openAll:node disposition:disposition];
 }
 
 - (void)addButtonForNode:(const BookmarkNode*)node
