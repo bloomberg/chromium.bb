@@ -33,6 +33,10 @@ class PepperPluginDelegateImpl
   virtual void InstanceCreated(pepper::PluginInstance* instance);
   virtual void InstanceDeleted(pepper::PluginInstance* instance);
   virtual PlatformImage2D* CreateImage2D(int width, int height);
+  virtual void DidChangeNumberOfFindResults(int identifier,
+                                            int total,
+                                            bool final_result);
+  virtual void DidChangeSelectedFindResult(int identifier, int index);
 
  private:
   // Pointer to the RenderView that owns us.

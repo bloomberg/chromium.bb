@@ -108,6 +108,7 @@ class WebGeolocationServiceInterface;
 class WebImage;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebPlugin;
 class WebStorageNamespace;
 class WebURLRequest;
 struct WebFileChooserParams;
@@ -880,7 +881,7 @@ class RenderView : public RenderWidget,
   WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
 
   // Should only be called if this object wraps a PluginDocument.
-  webkit_glue::WebPluginDelegate* GetDelegateForPluginDocument();
+  WebKit::WebPlugin* GetWebPluginFromPluginDocument();
 
   // Decodes a data: URL image or returns an empty image in case of failure.
   SkBitmap ImageFromDataUrl(const GURL&) const;

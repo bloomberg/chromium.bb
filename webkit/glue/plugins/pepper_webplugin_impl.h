@@ -60,6 +60,16 @@ class WebPluginImpl : public WebKit::WebPlugin {
   virtual void didFailLoadingFrameRequest(const WebKit::WebURL& url,
                                           void* notify_data,
                                           const WebKit::WebURLError& error);
+  virtual bool hasSelection() const;
+  virtual WebKit::WebString selectionAsText() const;
+  virtual WebKit::WebString selectionAsMarkup() const;
+  virtual void setZoomFactor(float scale, bool text_only);
+  virtual bool supportsFind();
+  virtual void startFind(const WebKit::WebString& search_text,
+                         bool case_sensitive,
+                         int identifier);
+  virtual void selectFindResult(bool forward);
+  virtual void stopFind();
 
   struct InitData {
     scoped_refptr<PluginModule> module;

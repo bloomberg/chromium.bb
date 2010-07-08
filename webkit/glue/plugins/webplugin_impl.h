@@ -93,20 +93,40 @@ class WebPluginImpl : public WebPlugin,
                          int printer_dpi);
   virtual bool printPage(int page_number, WebKit::WebCanvas* canvas);
   virtual void printEnd();
-  virtual WebKit::WebString selectedText();
+  virtual bool hasSelection() const;
+  virtual WebKit::WebString selectionAsText() const;
+  virtual WebKit::WebString selectionAsMarkup() const;
+  virtual void setZoomFactor(float scale, bool text_only);
+  virtual bool supportsFind();
+  virtual void startFind(const WebKit::WebString& search_text,
+                         bool case_sensitive,
+                         int identifier);
+  virtual void selectFindResult(bool forward);
+  virtual void stopFind();
 
   // WebPlugin implementation:
   void SetWindow(gfx::PluginWindowHandle window);
-
-  // Whether input events should be sent to the delegate.
   virtual void SetAcceptsInputEvents(bool accepts) {
     accepts_input_events_ = accepts;
   }
-
   void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event) { }
 #endif
+  virtual void CancelResource(unsigned long id);
+  virtual void Invalidate();
+  virtual void InvalidateRect(const gfx::Rect& rect);
+  virtual NPObject* GetWindowScriptNPObject();
+  virtual NPObject* GetPluginElement();
+  virtual void SetCookie(const GURL& url,
+                         const GURL& first_party_for_cookies,
+                         const std::string& cookie);
+  virtual std::string GetCookies(const GURL& url,
+                                 const GURL& first_party_for_cookies);
+  virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
+                                   const std::string& json_arguments,
+                                   std::string* json_retval);
+  virtual void OnMissingPluginStatus(int status);
 
   // Given a (maybe partial) url, completes using the base url.
   GURL CompleteURL(const char* url);
@@ -147,9 +167,6 @@ class WebPluginImpl : public WebPlugin,
                              int notify_id,
                              Referrer referrer_flag);
 
-  // Cancels a pending request.
-  void CancelResource(unsigned long id);
-
   // Returns the next avaiable resource id. Returns 0 if the operation fails.
   // It may fail if the page has already been closed.
   unsigned long GetNextResourceId();
@@ -166,22 +183,6 @@ class WebPluginImpl : public WebPlugin,
                            Referrer referrer_flag);
 
   gfx::Rect GetWindowClipRect(const gfx::Rect& rect);
-
-  NPObject* GetWindowScriptNPObject();
-  NPObject* GetPluginElement();
-
-  void SetCookie(const GURL& url,
-                 const GURL& first_party_for_cookies,
-                 const std::string& cookie);
-  std::string GetCookies(const GURL& url,
-                         const GURL& first_party_for_cookies);
-
-  void ShowModalHTMLDialog(const GURL& url, int width, int height,
-                           const std::string& json_arguments,
-                           std::string* json_retval);
-  void OnMissingPluginStatus(int status);
-  void Invalidate();
-  void InvalidateRect(const gfx::Rect& rect);
 
   // Sets the actual Widget for the plugin.
   void SetContainer(WebKit::WebPluginContainer* container);

@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/glue/plugins/webplugin_impl.h"
+
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/rect.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "skia/ext/platform_canvas.h"
@@ -35,9 +38,7 @@
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
-#include "webkit/glue/plugins/webplugin_impl.h"
 #include "webkit/glue/plugins/webplugin_page_delegate.h"
-#include "googleurl/src/gurl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
@@ -422,11 +423,51 @@ void WebPluginImpl::printEnd() {
     delegate_->PrintEnd();
 }
 
-WebString WebPluginImpl::selectedText() {
+bool WebPluginImpl::hasSelection() const {
+  if (!delegate_)
+    return false;
+
+  return delegate_->HasSelection();
+}
+
+WebKit::WebString WebPluginImpl::selectionAsText() const {
   if (!delegate_)
     return WebString();
 
-  return delegate_->GetSelectedText();
+  return delegate_->GetSelectionAsText();
+}
+
+WebKit::WebString WebPluginImpl::selectionAsMarkup() const {
+  if (!delegate_)
+    return WebString();
+
+  return delegate_->GetSelectionAsMarkup();
+}
+
+void WebPluginImpl::setZoomFactor(float scale, bool text_only) {
+  if (delegate_)
+    delegate_->SetZoomFactor(scale, text_only);
+}
+
+bool WebPluginImpl::supportsFind() {
+  return delegate_ && delegate_->SupportsFind();
+}
+
+void WebPluginImpl::startFind(const WebString& search_text,
+                              bool case_sensitive,
+                              int identifier) {
+  if (delegate_)
+    delegate_->StartFind(search_text, case_sensitive, identifier);
+}
+
+void WebPluginImpl::selectFindResult(bool forward) {
+  if (delegate_)
+    delegate_->SelectFindResult(forward);
+}
+
+void WebPluginImpl::stopFind() {
+  if (delegate_)
+    delegate_->StopFind();
 }
 
 

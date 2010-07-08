@@ -6,6 +6,7 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/scoped_ptr.h"
+#include "chrome/renderer/render_view.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
 #if defined(OS_MACOSX)
@@ -130,4 +131,20 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
 #endif
 
   return new PlatformImage2DImpl(width, height, dib);
+}
+
+void PepperPluginDelegateImpl::DidChangeNumberOfFindResults(int identifier,
+                                                           int total,
+                                                           bool final_result) {
+  if (total == 0) {
+    render_view_->ReportNoFindInPageResults(identifier);
+  } else {
+    render_view_->reportFindInPageMatchCount(identifier, total, final_result);
+  }
+}
+
+void PepperPluginDelegateImpl::DidChangeSelectedFindResult(int identifier,
+                                                          int index) {
+  render_view_->reportFindInPageSelection(
+      identifier, index + 1, WebKit::WebRect());
 }

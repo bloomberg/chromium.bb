@@ -55,7 +55,6 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
-#include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(ENABLE_GPU)
@@ -322,12 +321,12 @@ WebPluginResourceClient* WebPluginDelegatePepper::CreateSeekableResourceClient(
   return instance()->GetRangeRequest(range_request_id);
 }
 
-void WebPluginDelegatePepper::StartFind(const std::string& search_text,
+void WebPluginDelegatePepper::StartFind(const string16& search_text,
                                         bool case_sensitive,
                                         int identifier) {
   find_identifier_ = identifier;
   GetFindExtensions()->startFind(
-      instance()->npp(), search_text.c_str(), case_sensitive);
+      instance()->npp(), UTF16ToUTF8(search_text).c_str(), case_sensitive);
 }
 
 void WebPluginDelegatePepper::SelectFindResult(bool forward) {
@@ -502,40 +501,34 @@ NPFontExtensions* WebPluginDelegatePepper::GetFontExtensions() {
   return &g_font_extensions;
 }
 
-void WebPluginDelegatePepper::Zoom(int factor) {
+void WebPluginDelegatePepper::SetZoomFactor(float scale, bool text_only) {
   NPPExtensions* extensions = NULL;
   instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
   if (extensions && extensions->zoom)
-    extensions->zoom(instance()->npp(), factor);
+    extensions->zoom(instance()->npp(), scale, text_only);
 }
 
-void WebPluginDelegatePepper::Copy() {
-  ScopedClipboardWriterGlue scw(webkit_glue::ClipboardGetClipboard());
-  string16 text = GetSelectedText(true);
-  if (!text.empty()) {
-    // Got html data.
-    scw.WriteHTML(text, std::string());
-    return;
-  }
-
-  text = GetSelectedText(false);
-  if (!text.empty())
-    scw.WriteText(text);
+bool WebPluginDelegatePepper::HasSelection() const {
+  return !GetSelectedText(false).empty();
 }
 
-string16 WebPluginDelegatePepper::GetSelectedText() {
+string16 WebPluginDelegatePepper::GetSelectionAsText() const {
   return GetSelectedText(false);
 }
 
-string16 WebPluginDelegatePepper::GetSelectedText(bool html) {
+string16 WebPluginDelegatePepper::GetSelectionAsMarkup() const {
+  return GetSelectedText(true);
+}
+
+string16 WebPluginDelegatePepper::GetSelectedText(bool html) const {
   NPPExtensions* extensions = NULL;
-  instance()->NPP_GetValue(NPPVPepperExtensions, &extensions);
+  instance_->NPP_GetValue(NPPVPepperExtensions, &extensions);
   if (!extensions || !extensions->getSelection)
     return string16();
 
   void* text;
   NPSelectionType type = html ? NPSelectionTypeHTML : NPSelectionTypePlainText;
-  NPP npp = instance()->npp();
+  NPP npp = instance_->npp();
   if (extensions->getSelection(npp, &type, &text) != NPERR_NO_ERROR)
     return string16();
 
@@ -1543,20 +1536,6 @@ void BuildMouseWheelEvent(const WebInputEvent* event, NPPepperEvent* npevent) {
 
 bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
                                                WebCursorInfo* cursor_info) {
-  if (event.type == WebInputEvent::KeyDown) {
-    const WebKeyboardEvent* key_event =
-        reinterpret_cast<const WebKeyboardEvent*>(&event);
-#if defined(OS_MACOSX)
-    if (key_event->modifiers == NPEventModifier_MetaKey &&
-#else
-    if (key_event->modifiers == NPEventModifier_ControlKey &&
-#endif
-        key_event->windowsKeyCode == base::VKEY_C) {
-      Copy();
-      return true;
-    }
-  }
-
   NPPepperEvent npevent;
 
   npevent.type = ConvertEventTypes(event.type);

@@ -143,7 +143,7 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
 
   // See WebPluginContainerImpl's description of the interface.
   virtual bool SupportsFind() { return false; }
-  virtual void StartFind(const std::string& search_text,
+  virtual void StartFind(const string16& search_text,
                          bool case_sensitive,
                          int identifier) {}
   virtual void SelectFindResult(bool forward) {}
@@ -156,11 +156,11 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
 
   // Used for zooming of full page plugins.  0 means reset, while -1 means zoom
   // out and +1 means zoom in.
-  virtual void Zoom(int factor) {}
-  // Copy the selected text.
-  virtual void Copy() {}
-  // Gets the selected UTF8 text, if any.
-  virtual string16 GetSelectedText() { return string16(); }
+  virtual void SetZoomFactor(float scale, bool text_only) {}
+  // Gets the selected text, if any.
+  virtual bool HasSelection() const { return false; }
+  virtual string16 GetSelectionAsText() const { return string16(); }
+  virtual string16 GetSelectionAsMarkup() const { return string16(); }
 };
 
 }  // namespace webkit_glue

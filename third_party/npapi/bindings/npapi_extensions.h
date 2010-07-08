@@ -1037,10 +1037,12 @@ typedef struct _NPPFindExtensions {
 /* Returns NULL if the plugin does not support find extensions. */
 typedef NPPFindExtensions* (*NPPGetFindExtensionsPtr)(NPP instance);
 
-/* Zooms plugins.  0 means reset, -1 means zoom out, and +1 means zoom in. */
+/* Zooms a plugin to the given factor.  If text_only is true, then only the text
+ * should be zoomed. */
 typedef NPError (*NPPZoomPtr) (
     NPP instance,
-    int factor);
+    float factor,
+    bool text_only);
 
 typedef NPError (*NPPWidgetPropertyChangedPtr) (
     NPP instance,

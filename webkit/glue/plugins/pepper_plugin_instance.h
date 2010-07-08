@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/string16.h"
 #include "gfx/rect.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
@@ -56,6 +57,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   const gfx::Rect& position() const { return position_; }
   const gfx::Rect& clip() const { return clip_; }
 
+  int find_identifier() const { return find_identifier_; }
+
   PP_Instance GetPPInstance();
 
   // Paints the current backing store to the web page.
@@ -93,6 +96,15 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
+  string16 GetSelectedText(bool html);
+  void Zoom(float factor, bool text_only);
+  bool SupportsFind();
+  void StartFind(const string16& search_text,
+                 bool case_sensitive,
+                 int identifier);
+  void SelectFindResult(bool forward);
+  void StopFind();
+
  private:
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
@@ -117,6 +129,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // The current device context for painting in 2D.
   scoped_refptr<DeviceContext2D> device_context_2d_;
+
+  // The id of the current find operation, or -1 if none is in process.
+  int find_identifier_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

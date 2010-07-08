@@ -18,6 +18,7 @@ using WebKit::WebCanvas;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginParams;
 using WebKit::WebRect;
+using WebKit::WebString;
 using WebKit::WebVector;
 
 namespace pepper {
@@ -142,6 +143,40 @@ void WebPluginImpl::didFailLoadingFrameRequest(
     const WebKit::WebURL& url,
     void* notify_data,
     const WebKit::WebURLError& error) {
+}
+
+bool WebPluginImpl::hasSelection() const {
+  return !selectionAsText().isEmpty();
+}
+
+WebKit::WebString WebPluginImpl::selectionAsText() const {
+  return instance_->GetSelectedText(false);
+}
+
+WebKit::WebString WebPluginImpl::selectionAsMarkup() const {
+  return instance_->GetSelectedText(true);
+}
+
+void WebPluginImpl::setZoomFactor(float scale, bool text_only) {
+  instance_->Zoom(scale, text_only);
+}
+
+bool WebPluginImpl::supportsFind() {
+  return instance_->SupportsFind();
+}
+
+void WebPluginImpl::startFind(const WebString& search_text,
+                              bool case_sensitive,
+                              int identifier) {
+  instance_->StartFind(search_text, case_sensitive, identifier);
+}
+
+void WebPluginImpl::selectFindResult(bool forward) {
+  instance_->SelectFindResult(forward);
+}
+
+void WebPluginImpl::stopFind() {
+  instance_->StopFind();
 }
 
 }  // namespace pepper

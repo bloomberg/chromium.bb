@@ -44,6 +44,14 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;
+
+  // Notifies that the number of find results has changed.
+  virtual void DidChangeNumberOfFindResults(int identifier,
+                                           int total,
+                                           bool final_result) = 0;
+
+  // Notifies that the index of the currently selected item has been updated.
+  virtual void DidChangeSelectedFindResult(int identifier, int index) = 0;
 };
 
 }  // namespace pepper

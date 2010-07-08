@@ -86,7 +86,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       module_(module),
       instance_interface_(instance_interface),
       container_(NULL),
-      full_frame_(false) {
+      full_frame_(false),
+      find_identifier_(-1) {
   DCHECK(delegate);
   module_->InstanceCreated(this);
   delegate_->InstanceCreated(this);
@@ -243,6 +244,36 @@ void PluginInstance::ViewInitiatedPaint() {
 void PluginInstance::ViewFlushedPaint() {
   if (device_context_2d_)
     device_context_2d_->ViewFlushedPaint();
+}
+
+string16 PluginInstance::GetSelectedText(bool html) {
+  // TODO: implement me
+  return string16();
+}
+
+void PluginInstance::Zoom(float factor, bool text_only) {
+  // TODO: implement me
+}
+
+bool PluginInstance::SupportsFind() {
+  // TODO: implement me
+  return false;
+}
+
+void PluginInstance::StartFind(const string16& search_text,
+                               bool case_sensitive,
+                               int identifier) {
+  find_identifier_ = identifier;
+  // TODO: implement me
+}
+
+void PluginInstance::SelectFindResult(bool forward) {
+  // TODO: implement me
+}
+
+void PluginInstance::StopFind() {
+  find_identifier_ = -1;
+  // TODO: implement me
 }
 
 }  // namespace pepper

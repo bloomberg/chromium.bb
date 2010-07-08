@@ -1127,12 +1127,6 @@ void RenderView::OnCopy() {
   if (!webview())
     return;
 
-  if (webview()->mainFrame()->document().isPluginDocument()) {
-    webkit_glue::WebPluginDelegate* delegate = GetDelegateForPluginDocument();
-    delegate->Copy();
-    return;
-  }
-
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
   UserMetricsRecordAction("Copy");
 }
@@ -3486,10 +3480,8 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
   return url;
 }
 
-webkit_glue::WebPluginDelegate* RenderView::GetDelegateForPluginDocument() {
-  WebPlugin* plugin =
-      webview()->mainFrame()->document().to<WebPluginDocument>().plugin();
-  return static_cast<webkit_glue::WebPluginImpl*>(plugin)->delegate();
+WebKit::WebPlugin* RenderView::GetWebPluginFromPluginDocument() {
+  return webview()->mainFrame()->document().to<WebPluginDocument>().plugin();
 }
 
 void RenderView::OnFind(int request_id, const string16& search_text,
@@ -3497,19 +3489,19 @@ void RenderView::OnFind(int request_id, const string16& search_text,
   WebFrame* main_frame = webview()->mainFrame();
 
   if (main_frame->document().isPluginDocument()) {
-    webkit_glue::WebPluginDelegate* delegate = GetDelegateForPluginDocument();
+#if defined(WEBPLUGIN_HAS_FIND_INTERFACE)
     if (options.findNext) {
       // Just navigate back/forward.
-      delegate->SelectFindResult(options.forward);
+      GetWebPluginFromPluginDocument()->selectFindResult(options.forward);
     } else {
-      if (delegate->SupportsFind()) {
-        delegate->StartFind(UTF16ToUTF8(search_text),
-                            options.matchCase,
-                            request_id);
+      if (GetWebPluginFromPluginDocument()->supportsFind()) {
+        GetWebPluginFromPluginDocument()->startFind(
+            search_text, options.matchCase, request_id);
       } else {
         ReportNoFindInPageResults(request_id);
       }
     }
+#endif
     return;
   }
 
@@ -3622,7 +3614,9 @@ void RenderView::OnStopFinding(const ViewMsg_StopFinding_Params& params) {
 
   WebDocument doc = view->mainFrame()->document();
   if (doc.isPluginDocument()) {
-    GetDelegateForPluginDocument()->StopFind();
+#if defined(WEBPLUGIN_HAS_FIND_INTERFACE)
+    GetWebPluginFromPluginDocument()->stopFind();
+#endif
     return;
   }
 
@@ -3681,24 +3675,6 @@ void RenderView::OnZoom(PageZoom::Function function) {
     return;
 
   webview()->hidePopups();
-  // Should we be saving zoom levels for plugins?  It's not clear, so for now
-  // don't.
-  if (webview()->mainFrame()->document().isPluginDocument()) {
-    webkit_glue::WebPluginDelegate* delegate = GetDelegateForPluginDocument();
-    int zoom;
-    if (function == PageZoom::RESET) {
-      zoom = 0;
-    } else if (function == PageZoom::ZOOM_OUT) {
-      zoom = -1;
-    } else if (function == PageZoom::ZOOM_IN) {
-      zoom = 1;
-    } else {
-      NOTREACHED();
-      return;
-    }
-    delegate->Zoom(zoom);
-    return;
-  }
 
   int zoom_level = webview()->zoomLevel();
   int new_zoom_level = webview()->setZoomLevel(false,

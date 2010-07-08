@@ -81,7 +81,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   virtual webkit_glue::WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id);
   virtual bool SupportsFind();
-  virtual void StartFind(const std::string& search_text,
+  virtual void StartFind(const string16& search_text,
                          bool case_sensitive,
                          int identifier);
   virtual void SelectFindResult(bool forward);
@@ -95,9 +95,10 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   virtual NPWidgetExtensions* GetWidgetExtensions();
   virtual bool SetCursor(NPCursorType type);
   virtual NPFontExtensions* GetFontExtensions();
-  virtual void Zoom(int factor);
-  virtual void Copy();
-  virtual string16 GetSelectedText();
+  virtual void SetZoomFactor(float scale, bool text_only);
+  virtual bool HasSelection() const;
+  virtual string16 GetSelectionAsText() const;
+  virtual string16 GetSelectionAsMarkup() const;
 
   // WebPlugin2DDeviceDelegate implementation.
   virtual NPError Device2DQueryCapability(int32 capability, int32* value);
@@ -268,7 +269,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
 
   // Returns the selection.  If nothing is selected, returns an empty string.
   // If html is true, it will return a string only if html data is available.
-  string16 GetSelectedText(bool html);
+  string16 GetSelectedText(bool html) const;
 
   base::WeakPtr<RenderView> render_view_;
 
