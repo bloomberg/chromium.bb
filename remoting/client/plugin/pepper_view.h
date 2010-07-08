@@ -2,38 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This class is an implementation of the ChromotingView using Pepper devices
-// as the backing stores.  The public APIs to this class are thread-safe.
-// Calls will dispatch any interaction with the pepper API onto the pepper
-// main thread.
-//
-// TODO(ajwong): We need to better understand the threading semantics of this
-// class.  Currently, we're just going to always run everything on the pepper
-// main thread.  Is this smart?
-
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_VIEW_H_
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "media/base/video_frame.h"
 #include "remoting/client/chromoting_view.h"
-#include "remoting/client/decoder.h"
-#include "third_party/ppapi/cpp/device_context_2d.h"
+#include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
+
+class MessageLoop;
 
 namespace remoting {
 
-class ChromotingPlugin;
 class Decoder;
 
 class PepperView : public ChromotingView {
  public:
-  // Constructs a PepperView that draws to the |rendering_device|. The
+  // Constructs a PepperView that draw to the |rendering_device|. The
   // |rendering_device| instance must outlive this class.
   //
   // TODO(ajwong): This probably needs to synchronize with the pepper thread
   // to be safe.
-  explicit PepperView(ChromotingPlugin* plugin);
+  PepperView(MessageLoop* message_loop, NPDevice* rendering_device,
+             NPP plugin_instance);
   virtual ~PepperView();
 
   // ChromotingView implementation.
@@ -47,16 +39,21 @@ class PepperView : public ChromotingView {
   virtual void HandleEndUpdateStream(HostMessage* msg);
 
  private:
-  void OnPaintDone();
-  void OnPartialDecodeDone();
-  void OnDecodeDone();
+  void DoPaint();
+  void DoSetSolidFill(uint32 color);
+  void DoUnsetSolidFill();
+  void DoSetViewport(int x, int y, int width, int height);
+  void DoSetBackingStoreSize(int width, int height);
+  void DoHandleBeginUpdateStream(HostMessage* msg);
+  void DoHandleUpdateStreamPacket(HostMessage* msg);
+  void DoHandleEndUpdateStream(HostMessage* msg);
 
-  // Reference to the creating plugin instance. Needed for interacting with
-  // pepper.  Marking explciitly as const since it must be initialized at
-  // object creation, and never change.
-  ChromotingPlugin* const plugin_;
+  // Synchronization and thread handling objects.
+  MessageLoop* message_loop_;
 
-  pp::DeviceContext2D device_context_;
+  // Handles to Pepper objects needed for drawing to the screen.
+  NPDevice* rendering_device_;
+  NPP plugin_instance_;
 
   int backing_store_width_;
   int backing_store_height_;
@@ -68,10 +65,6 @@ class PepperView : public ChromotingView {
 
   bool is_static_fill_;
   uint32 static_fill_color_;
-
-  scoped_refptr<media::VideoFrame> frame_;
-  UpdatedRects update_rects_;
-  UpdatedRects all_update_rects_;
 
   scoped_ptr<Decoder> decoder_;
 

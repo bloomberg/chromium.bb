@@ -71,8 +71,7 @@
         'chromoting_base',
         'chromoting_client',
         'chromoting_jingle_glue',
-        '../third_party/ppapi/ppapi.gyp:ppapi_cpp_objects',
-        '../third_party/zlib/zlib.gyp:zlib',
+        '../third_party/ppapi/ppapi.gyp:ppapi_c',
       ],
       'sources': [
         'client/plugin/chromoting_plugin.cc',
@@ -81,8 +80,6 @@
         'client/plugin/pepper_entrypoints.h',
         'client/plugin/pepper_view.cc',
         'client/plugin/pepper_view.h',
-        'client/plugin/pepper_util.cc',
-        'client/plugin/pepper_util.h',
         '../media/base/yuv_convert.cc',
         '../media/base/yuv_convert.h',
         '../media/base/yuv_row.h',
