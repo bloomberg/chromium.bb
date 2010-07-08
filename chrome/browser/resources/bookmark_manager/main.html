@@ -966,6 +966,8 @@ var dnd = {
       var relatedNode = this.dropDestination.relatedNode;
       var parentId = dropPos == 'on' ? relatedNode.id : relatedNode.parentId;
 
+      var selectTarget;
+      var selectedTreeId;
       var index;
       var relatedIndex;
       // Try to find the index in the dataModel so we don't have to always keep
@@ -973,17 +975,24 @@ var dnd = {
       var overElement = this.getBookmarkElement(e.target);
       if (overElement instanceof ListItem) {
         relatedIndex = overElement.parentNode.dataModel.indexOf(relatedNode);
+        selectTarget = list;
       } else if (overElement instanceof BookmarkList) {
         relatedIndex = overElement.dataModel.length - 1;
+        selectTarget = list;
       } else {
         // Tree
         relatedIndex = relatedNode.index;
+        selectTarget = tree;
+        selectedTreeId =
+            tree.selectedItem ? tree.selectedItem.bookmarkId : null;
       }
 
       if (dropPos == 'above')
         index = relatedIndex;
       else if (dropPos == 'below')
         index = relatedIndex + 1;
+
+      selectItemsAfterUserAction(selectTarget, selectedTreeId);
 
       if (index != undefined && index != -1)
         chrome.experimental.bookmarkManager.drop(parentId, index);
@@ -1339,6 +1348,8 @@ list.addEventListener('edit', function(e) {
     context.url = bookmarkNode.url;
 
   if (bookmarkNode.id == 'new') {
+    selectItemsAfterUserAction(list);
+
     // New page
     context.parentId = bookmarkNode.parentId;
     chrome.bookmarks.create(context, function(node) {
@@ -1553,6 +1564,58 @@ function addPage() {
 }
 
 /**
+ * This function is used to select items after a user action such as paste, drop
+ * add page etc.
+ * @param {BookmarkList|BookmarkTree} target The target of the user action.
+ * @param {=string} opt_selectedTreeId If provided, then select that tree id.
+ */
+function selectItemsAfterUserAction(target, opt_selectedTreeId) {
+  // We get one onCreated event per item so we delay the handling until we got
+  // no more events coming.
+
+  var ids = [];
+  var timer;
+
+  function handle(id, bookmarkNode) {
+    clearTimeout(timer);
+    if (opt_selectedTreeId || list.parentId == bookmarkNode.parentId)
+      ids.push(id);
+    timer = setTimeout(handleTimeout, 50);
+  }
+
+  function handleTimeout() {
+    chrome.bookmarks.onCreated.removeListener(handle);
+    chrome.bookmarks.onMoved.removeListener(handle);
+
+    if (opt_selectedTreeId && ids.indexOf(opt_selectedTreeId) != -1) {
+      var index = ids.indexOf(opt_selectedTreeId);
+      if (index != -1 && opt_selectedTreeId in bmm.treeLookup) {
+        tree.selectedItem = bmm.treeLookup[opt_selectedTreeId];
+      }
+    } else if (target == list) {
+      var dataModel = list.dataModel;
+      var firstIndex = dataModel.findIndexById(ids[0]);
+      var lastIndex = dataModel.findIndexById(ids[ids.length - 1]);
+      if (firstIndex != -1 && lastIndex != -1) {
+        var selectionModel = list.selectionModel;
+        selectionModel.selectedIndex = -1;
+        selectionModel.selectRange(firstIndex, lastIndex);
+        selectionModel.anchorIndex = selectionModel.leadIndex = lastIndex;
+        list.focus();
+      }
+    }
+
+    list.endBatchUpdates();
+  }
+
+  list.startBatchUpdates();
+
+  chrome.bookmarks.onCreated.addListener(handle);
+  chrome.bookmarks.onMoved.addListener(handle);
+  timer = setTimeout(handleTimeout, 300);
+}
+
+/**
  * Handler for the command event. This is used both for the tree and the list.
  * @param {!Event} e The event object.
  */
@@ -1585,6 +1648,7 @@ function handleCommand(e) {
       chrome.experimental.bookmarkManager.cut(getSelectedBookmarkIds());
       break;
     case 'paste-command':
+      selectItemsAfterUserAction(list);
       chrome.experimental.bookmarkManager.paste(list.parentId);
       break;
     case 'sort-command':
