@@ -118,6 +118,7 @@ TEST_F(PPAPITest, URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
-TEST_F(PPAPITest, Scrollbar) {
+// http://crbug.com/48544
+TEST_F(PPAPITest, FAILS_Scrollbar) {
   RunTest("Scrollbar");
 }
