@@ -132,10 +132,9 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
       return;
     }
 
-    UpdatePrintableSizeInPrintParameters(frame, &default_settings);
-
     // Continue only if the settings are valid.
     if (default_settings.dpi && default_settings.document_cookie) {
+      UpdatePrintableSizeInPrintParameters(frame, &default_settings);
       int expected_pages_count = 0;
       bool use_browser_overlays = true;
 
@@ -176,11 +175,10 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
         if (Send(msg)) {
           msg = NULL;
 
-          UpdatePrintableSizeInPrintParameters(frame, &print_settings.params);
-
           // If the settings are invalid, early quit.
           if (print_settings.params.dpi &&
               print_settings.params.document_cookie) {
+            UpdatePrintableSizeInPrintParameters(frame, &print_settings.params);
             if (print_settings.params.selection_only) {
               CopyAndPrint(print_settings, frame);
             } else {
