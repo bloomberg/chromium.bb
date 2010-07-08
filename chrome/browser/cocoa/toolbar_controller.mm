@@ -57,7 +57,7 @@ NSString* const kHomeButtonImageName = @"home_Template.pdf";
 NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
-const CGFloat kBaseToolbarHeight = 36.0;
+const CGFloat kBaseToolbarHeight = 35.0;
 
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
@@ -481,18 +481,6 @@ class PrefObserverBridge : public NotificationObserver {
   return frame;
 }
 
-// Computes the padding between the buttons that should have a
-// separation from the positions in the nib.  |homeButton_| is right
-// of |forwardButton_| unless it has been hidden, in which case
-// |reloadButton_| is in that spot.
-- (CGFloat)interButtonSpacing {
-  const NSRect forwardFrame = [forwardButton_ frame];
-  NSButton* nextButton = [homeButton_ isHidden] ? reloadButton_ : homeButton_;
-  const NSRect nextButtonFrame = [nextButton frame];
-  DCHECK_GT(NSMinX(nextButtonFrame), NSMaxX(forwardFrame));
-  return NSMinX(nextButtonFrame) - NSMaxX(forwardFrame);
-}
-
 // Show or hide the home button based on the pref.
 - (void)showOptionalHomeButton {
   // Ignore this message if only showing the URL bar.
@@ -502,10 +490,10 @@ class PrefObserverBridge : public NotificationObserver {
   if (hide == [homeButton_ isHidden])
     return;  // Nothing to do, view state matches pref state.
 
-  // Always shift the star and text field by the width of the home button plus
-  // the appropriate gap width. If we're hiding the button, we have to
-  // reverse the direction of the movement (to the left).
-  CGFloat moveX = [self interButtonSpacing] + [homeButton_ frame].size.width;
+  // Always shift the text field by the width of the home button minus one pixel
+  // since the frame edges of each button are right on top of each other. When
+  // hiding the button, reverse the direction of the movement (to the left).
+  CGFloat moveX = [homeButton_ frame].size.width - 1.0;
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
 

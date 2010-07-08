@@ -38,7 +38,7 @@ static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 // Since the container is the maximum height of the toolbar, we have to move the
 // buttons up by this amount in order to have them look vertically centered
 // within the toolbar.
-static const CGFloat kBrowserActionOriginYOffset = 5;
+static const CGFloat kBrowserActionOriginYOffset = 6.0;
 
 // The size of each button on the toolbar.
 static const CGFloat kBrowserActionHeight = 27;

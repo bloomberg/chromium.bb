@@ -18,7 +18,7 @@ static NSPoint MidRect(NSRect rect) {
 const CGFloat kCircleRadiusPercentage = 0.415;
 const CGFloat kCircleHoverWhite = 0.565;
 const CGFloat kCircleClickWhite = 0.396;
-const CGFloat kXShadowAlpha = 0.6;
+const CGFloat kXShadowAlpha = 0.75;
 const CGFloat kXShadowCircleAlpha = 0.1;
 }  // namespace
 
@@ -62,10 +62,10 @@ const CGFloat kXShadowCircleAlpha = 0.1;
   NSShadow* shadow = [[[NSShadow alloc] init] autorelease];
   CGFloat alpha = (hoverState_ != kHoverStateNone) ?
       kXShadowCircleAlpha : kXShadowAlpha;
-  [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0
+  [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.15
                                                      alpha:alpha]];
-  [shadow setShadowOffset:NSMakeSize(0.0, -1.0)];
-  [shadow setShadowBlurRadius:2.0];
+  [shadow setShadowOffset:NSMakeSize(0.0, 0.0)];
+  [shadow setShadowBlurRadius:2.5];
   [xPath_ fillWithInnerShadow:shadow];
 }
 
