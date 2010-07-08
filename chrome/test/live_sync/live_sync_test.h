@@ -130,6 +130,9 @@ class LiveSyncTest : public InProcessBrowserTest {
   // GAIA password used by the test case.
   std::string password_;
 
+  // Locally available plain text file in which GAIA credentials are stored.
+  std::wstring password_file_;
+
  private:
   // Helper to ProfileManager::CreateProfile that handles path creation.
   static Profile* MakeProfile(const FilePath::StringType name);
