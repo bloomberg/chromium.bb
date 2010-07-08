@@ -3582,3 +3582,22 @@
    fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEES5_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEE6Tuple1IS5_EE3RunEv
 }
+{
+   bug_48553
+   Memcheck:Leak
+   fun:malloc
+   fun:malloc
+   fun:pa_xmalloc
+   obj:/usr/lib/libpulse.so.0.4.1
+   fun:pa_threaded_mainloop_wait
+   fun:_ZN8chromeos15PulseAudioMixer14PulseAudioInitEv
+   fun:_ZN8chromeos15PulseAudioMixer6DoInitEP14CallbackRunnerI6Tuple1IbEE
+   fun:_Z16DispatchToMethodIN8chromeos15PulseAudioMixerEMS1_FvP14CallbackRunnerI6Tuple1IbEEES6_EvPT_T0_RKS3_IT1_E
+   fun:_ZN14RunnableMethodIN8chromeos15PulseAudioMixerEMS1_FvP14CallbackRunnerI6Tuple1IbEEES3_IS6_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
