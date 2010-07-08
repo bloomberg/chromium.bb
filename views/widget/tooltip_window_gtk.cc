@@ -4,6 +4,8 @@
 
 #include "views/widget/tooltip_window_gtk.h"
 
+#include <gtk/gtk.h>
+
 #include "base/utf_string_conversions.h"
 
 namespace views {
@@ -25,6 +27,10 @@ void TooltipWindowGtk::SetTooltipText(const std::wstring& text) {
   const std::string& utf8 = WideToUTF8(text);
 
   gtk_label_set_text(label(), utf8.c_str());
+}
+
+GtkLabel* TooltipWindowGtk::label() {
+  return GTK_LABEL(label_);
 }
 
 void  TooltipWindowGtk::Init() {

@@ -5,12 +5,11 @@
 #ifndef CHROME_BROWSER_GTK_BROWSER_ACTIONS_TOOLBAR_GTK_H_
 #define CHROME_BROWSER_GTK_BROWSER_ACTIONS_TOOLBAR_GTK_H_
 
-#include <gtk/gtk.h>
-
 #include <map>
 #include <string>
 
 #include "app/gtk_signal.h"
+#include "app/gtk_signal_registrar.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/slide_animation.h"
 #include "base/linked_ptr.h"
@@ -28,6 +27,7 @@ class Extension;
 class GtkThemeProvider;
 class Profile;
 
+typedef struct _GdkDragContext GdkDragContext;
 typedef struct _GtkWidget GtkWidget;
 
 class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,

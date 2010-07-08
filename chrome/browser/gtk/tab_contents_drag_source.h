@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "app/gtk_signal.h"
+#include "app/gtk_signal_registrar.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"

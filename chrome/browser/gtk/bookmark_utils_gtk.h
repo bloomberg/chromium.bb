@@ -5,14 +5,20 @@
 #ifndef CHROME_BROWSER_GTK_BOOKMARK_UTILS_GTK_H_
 #define CHROME_BROWSER_GTK_BOOKMARK_UTILS_GTK_H_
 
-#include <gtk/gtk.h>
 #include <vector>
 #include <string>
+
+#include "app/gtk_integers.h"
 
 class BookmarkModel;
 class BookmarkNode;
 class GtkThemeProvider;
 class Profile;
+
+typedef struct _GdkDragContext GdkDragContext;
+typedef struct _GdkPixbuf GdkPixbuf;
+typedef struct _GtkSelectionData GtkSelectionData;
+typedef struct _GtkWidget GtkWidget;
 
 namespace bookmark_utils {
 

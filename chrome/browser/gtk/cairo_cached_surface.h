@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_GTK_CAIRO_CACHED_SURFACE_H_
 #define CHROME_BROWSER_GTK_CAIRO_CACHED_SURFACE_H_
 
-#include <gtk/gtk.h>
+typedef struct _GdkPixbuf GdkPixbuf;
+typedef struct _cairo cairo_t;
+typedef struct _cairo_surface cairo_surface_t;
 
 // A helper class that takes a GdkPixbuf* and renders it to the screen. Unlike
 // gdk_cairo_set_source_pixbuf(), CairoCachedSurface assumes that the pixbuf is

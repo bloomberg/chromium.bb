@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "app/gtk_signal_registrar.h"
 #include "app/resource_bundle.h"
 #include "base/env_var.h"
 #include "base/stl_util-inl.h"
@@ -187,6 +188,45 @@ void PickButtonTintFromColors(const GdkColor& accent_gdk_color,
   }
 }
 
+
+// Builds and tints the image with |id| to the GtkStateType |state| and
+// places the result in |icon_set|.
+void BuildIconFromIDRWithColor(int id,
+                               GtkStyle* style,
+                               GtkStateType state,
+                               GtkIconSet* icon_set) {
+  SkColor color = GdkToSkColor(&style->fg[state]);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SkBitmap original = *rb.GetBitmapNamed(id);
+
+  SkBitmap fill_color;
+  fill_color.setConfig(SkBitmap::kARGB_8888_Config,
+                       original.width(), original.height(), 0);
+  fill_color.allocPixels();
+  fill_color.eraseColor(color);
+  SkBitmap masked = SkBitmapOperations::CreateMaskedBitmap(
+      fill_color, original);
+
+  GtkIconSource* icon = gtk_icon_source_new();
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&masked);
+  gtk_icon_source_set_pixbuf(icon, pixbuf);
+  g_object_unref(pixbuf);
+
+  gtk_icon_source_set_direction_wildcarded(icon, TRUE);
+  gtk_icon_source_set_size_wildcarded(icon, TRUE);
+
+  gtk_icon_source_set_state(icon, state);
+  // All fields default to wildcarding being on and setting a property doesn't
+  // turn off wildcarding. You need to do this yourself. This is stated once in
+  // the documentation in the gtk_icon_source_new() function, and no where else.
+  gtk_icon_source_set_state_wildcarded(
+      icon, state == GTK_STATE_NORMAL);
+
+  gtk_icon_set_add_source(icon_set, icon);
+  gtk_icon_source_free(icon);
+}
+
+
 }  // namespace
 
 GtkWidget* GtkThemeProvider::icon_widget_ = NULL;
@@ -202,6 +242,7 @@ GtkThemeProvider::GtkThemeProvider()
     : BrowserThemeProvider(),
       fake_window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
       fake_frame_(meta_frames_new()),
+      signals_(new GtkSignalRegistrar),
       fullscreen_icon_set_(NULL) {
   fake_label_.Own(gtk_label_new(""));
   fake_entry_.Own(gtk_entry_new());
@@ -212,8 +253,8 @@ GtkThemeProvider::GtkThemeProvider()
   // properties, too, which we query for some colors.
   gtk_widget_realize(fake_frame_);
   gtk_widget_realize(fake_window_);
-  signals_.Connect(fake_frame_, "style-set",
-                   G_CALLBACK(&OnStyleSetThunk), this);
+  signals_->Connect(fake_frame_, "style-set",
+                    G_CALLBACK(&OnStyleSetThunk), this);
 }
 
 GtkThemeProvider::~GtkThemeProvider() {
@@ -313,8 +354,8 @@ GtkWidget* GtkThemeProvider::BuildChromeButton() {
   gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(button), use_gtk_);
   chrome_buttons_.push_back(button);
 
-  signals_.Connect(button, "destroy", G_CALLBACK(OnDestroyChromeButtonThunk),
-                   this);
+  signals_->Connect(button, "destroy", G_CALLBACK(OnDestroyChromeButtonThunk),
+                    this);
   return button;
 }
 
@@ -325,8 +366,8 @@ GtkWidget* GtkThemeProvider::CreateToolbarSeparator() {
       kSeparatorPadding, kSeparatorPadding, kSeparatorPadding, 0);
   gtk_container_add(GTK_CONTAINER(alignment), separator);
 
-  signals_.Connect(separator, "expose-event",
-                   G_CALLBACK(OnSeparatorExposeThunk), this);
+  signals_->Connect(separator, "expose-event",
+                    G_CALLBACK(OnSeparatorExposeThunk), this);
   return alignment;
 }
 
@@ -791,41 +832,6 @@ void GtkThemeProvider::RebuildMenuIconSets() {
                             style,
                             GTK_STATE_NORMAL,
                             fullscreen_icon_set_);
-}
-
-void GtkThemeProvider::BuildIconFromIDRWithColor(int id,
-                                                 GtkStyle* style,
-                                                 GtkStateType state,
-                                                 GtkIconSet* icon_set) {
-  SkColor color = GdkToSkColor(&style->fg[state]);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap original = *rb.GetBitmapNamed(id);
-
-  SkBitmap fill_color;
-  fill_color.setConfig(SkBitmap::kARGB_8888_Config,
-                       original.width(), original.height(), 0);
-  fill_color.allocPixels();
-  fill_color.eraseColor(color);
-  SkBitmap masked = SkBitmapOperations::CreateMaskedBitmap(
-      fill_color, original);
-
-  GtkIconSource* icon = gtk_icon_source_new();
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&masked);
-  gtk_icon_source_set_pixbuf(icon, pixbuf);
-  g_object_unref(pixbuf);
-
-  gtk_icon_source_set_direction_wildcarded(icon, TRUE);
-  gtk_icon_source_set_size_wildcarded(icon, TRUE);
-
-  gtk_icon_source_set_state(icon, state);
-  // All fields default to wildcarding being on and setting a property doesn't
-  // turn off wildcarding. You need to do this yourself. This is stated once in
-  // the documentation in the gtk_icon_source_new() function, and no where else.
-  gtk_icon_source_set_state_wildcarded(
-      icon, state == GTK_STATE_NORMAL);
-
-  gtk_icon_set_add_source(icon_set, icon);
-  gtk_icon_source_free(icon);
 }
 
 void GtkThemeProvider::SetThemeColorFromGtk(int id, const GdkColor* color) {

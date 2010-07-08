@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "app/gtk_signal.h"
+#include "app/gtk_signal_registrar.h"
 #include "app/slide_animation.h"
 #include "app/throb_animation.h"
 #include "base/scoped_ptr.h"

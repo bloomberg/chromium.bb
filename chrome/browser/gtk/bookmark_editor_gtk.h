@@ -5,16 +5,21 @@
 #ifndef CHROME_BROWSER_GTK_BOOKMARK_EDITOR_GTK_H_
 #define CHROME_BROWSER_GTK_BOOKMARK_EDITOR_GTK_H_
 
-#include <gtk/gtk.h>
-
 #include <string>
 
+#include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 class GURL;
+
+typedef union  _GdkEvent GdkEvent;
+typedef struct _GtkTreeIter GtkTreeIter;
+typedef struct _GtkTreeSelection GtkTreeSelection;
+typedef struct _GtkTreeStore GtkTreeStore;
+typedef struct _GtkWidget GtkWidget;
 
 // GTK version of the bookmark editor dialog.
 class BookmarkEditorGtk : public BookmarkEditor,

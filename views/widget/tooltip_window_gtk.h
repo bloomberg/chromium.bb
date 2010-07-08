@@ -5,10 +5,16 @@
 #ifndef VIEWS_WIDGET_TOOLTIP_WINDOW_GTK_H_
 #define VIEWS_WIDGET_TOOLTIP_WINDOW_GTK_H_
 
-#include <gtk/gtk.h>
 #include <string>
 
+#include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
+#include "base/basictypes.h"
+
+typedef struct _GdkEventExpose GdkEventExpose;
+typedef struct _GtkLabel GtkLabel;
+typedef struct _GtkWidget GtkWidget;
+typedef struct _GtkStyle GtkStyle;
 
 namespace views {
 
@@ -23,9 +29,7 @@ class TooltipWindowGtk {
   // Sets tooltip text to display.
   void SetTooltipText(const std::wstring& text);
 
-  GtkLabel* label() {
-    return GTK_LABEL(label_);
-  }
+  GtkLabel* label();
 
  protected:
   CHROMEGTK_CALLBACK_1(TooltipWindowGtk, gboolean, OnPaint, GdkEventExpose*);

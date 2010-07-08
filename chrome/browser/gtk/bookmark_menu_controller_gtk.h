@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_GTK_BOOKMARK_MENU_CONTROLLER_GTK_H_
 #define CHROME_BROWSER_GTK_BOOKMARK_MENU_CONTROLLER_GTK_H_
 
-#include <gtk/gtk.h>
-
 #include <map>
 
+#include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
@@ -23,6 +22,11 @@ class PageNavigator;
 class BookmarkModel;
 class BookmarkNode;
 class MenuGtk;
+
+typedef struct _GdkDragContext GdkDragContext;
+typedef struct _GdkEventButton GdkEventButton;
+typedef struct _GtkSelectionData GtkSelectionData;
+typedef struct _GtkWidget GtkWidget;
 
 class BookmarkMenuController : public BaseBookmarkModelObserver,
                                public BookmarkContextMenuControllerDelegate {

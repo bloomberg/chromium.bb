@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
 #define CHROME_BROWSER_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
 
-#include <gtk/gtk.h>
-
 #include "app/gtk_signal.h"
+#include "app/gtk_signal_registrar.h"
 #include "base/timer.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
+typedef struct _GtkWidget GtkWidget;
 
 // FullscreenExitBubbleGTK is responsible for showing a bubble atop the screen
 // in fullscreen mode, telling users how to exit and providing a click target.

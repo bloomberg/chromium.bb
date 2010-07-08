@@ -5,19 +5,28 @@
 #ifndef CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_
 #define CHROME_BROWSER_GTK_GTK_THEME_PROVIDER_H_
 
-#include <gtk/gtk.h>
 #include <map>
 #include <string>
 #include <vector>
 
+#include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "gfx/color_utils.h"
 
 class CairoCachedSurface;
+class GtkSignalRegistrar;
 class Profile;
+
+typedef struct _GdkDisplay GdkDisplay;
+typedef struct _GdkEventExpose GdkEventExpose;
+typedef struct _GdkPixbuf GdkPixbuf;
+typedef struct _GtkIconSet GtkIconSet;
+typedef struct _GtkStyle GtkStyle;
+typedef struct _GtkWidget GtkWidget;
 
 // Specialization of BrowserThemeProvider which supplies system colors.
 class GtkThemeProvider : public BrowserThemeProvider,
@@ -153,13 +162,6 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // the menus are always rendered with gtk colors.
   void RebuildMenuIconSets();
 
-  // Builds and tints the image with |id| to the GtkStateType |state| and
-  // places the result in |icon_set|.
-  void BuildIconFromIDRWithColor(int id,
-                                 GtkStyle* style,
-                                 GtkStateType state,
-                                 GtkIconSet* icon_set);
-
   // Sets the underlying theme colors/tints from a GTK color.
   void SetThemeColorFromGtk(int id, const GdkColor* color);
   void SetThemeTintFromGtk(int id, const GdkColor* color);
@@ -225,7 +227,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   std::vector<GtkWidget*> chrome_buttons_;
 
   // Tracks all the signals we have connected to on various widgets.
-  GtkSignalRegistrar signals_;
+  scoped_ptr<GtkSignalRegistrar> signals_;
 
   // Tints and colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.

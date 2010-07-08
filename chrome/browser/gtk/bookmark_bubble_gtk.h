@@ -12,8 +12,6 @@
 #ifndef CHROME_BROWSER_GTK_BOOKMARK_BUBBLE_GTK_H_
 #define CHROME_BROWSER_GTK_BOOKMARK_BUBBLE_GTK_H_
 
-#include <gtk/gtk.h>
-
 #include <string>
 #include <vector>
 
@@ -29,6 +27,9 @@
 class BookmarkNode;
 class Profile;
 class RecentlyUsedFoldersComboModel;
+
+typedef struct _GtkWidget GtkWidget;
+typedef struct _GParamSpec GParamSpec;
 
 class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
                           public NotificationObserver {

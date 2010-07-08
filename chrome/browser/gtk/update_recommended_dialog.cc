@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/update_recommended_dialog.h"
 
+#include <gtk/gtk.h>
+
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "chrome/browser/browser_list.h"

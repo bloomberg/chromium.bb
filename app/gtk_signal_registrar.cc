@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/gtk_signal.h"
+#include "app/gtk_signal_registrar.h"
+
+#include <glib-object.h>
 
 #include "base/logging.h"
 

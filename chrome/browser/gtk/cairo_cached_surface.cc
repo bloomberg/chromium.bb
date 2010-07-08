@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 
+#include <gtk/gtk.h>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 

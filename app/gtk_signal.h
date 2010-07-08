@@ -5,11 +5,8 @@
 #ifndef APP_GTK_SIGNAL_H_
 #define APP_GTK_SIGNAL_H_
 
-#include <gtk/gtk.h>
-#include <map>
-#include <vector>
-
-#include "base/basictypes.h"
+typedef void* gpointer;
+typedef struct _GtkWidget GtkWidget;
 
 // At the time of writing this, there were two common ways of binding our C++
 // code to the gobject C system. We either defined a whole bunch of "static
@@ -115,53 +112,5 @@
                              ARG5, ARG6)                                    \
   CHROMEG_CALLBACK_6(CLASS, RETURN, METHOD, GtkWidget*, ARG1, ARG2, ARG3,   \
                      ARG4, ARG5, ARG6);
-
-// A class that ensures that callbacks don't run on stale owner objects. Similar
-// in spirit to NotificationRegistrar. Use as follows:
-//
-//   class ChromeObject {
-//    public:
-//     ChromeObject() {
-//       ...
-//
-//       signals_.Connect(widget, "event", CallbackThunk, this);
-//     }
-//
-//     ...
-//
-//    private:
-//     GtkSignalRegistrar signals_;
-//   };
-//
-// When |signals_| goes down, it will disconnect the handlers connected via
-// Connect.
-class GtkSignalRegistrar {
- public:
-  GtkSignalRegistrar();
-  ~GtkSignalRegistrar();
-
-  // Connect before the default handler. Returns the handler id.
-  glong Connect(gpointer instance, const gchar* detailed_signal,
-                GCallback signal_handler, gpointer data);
-  // Connect after the default handler. Returns the handler id.
-  glong ConnectAfter(gpointer instance, const gchar* detailed_signal,
-                     GCallback signal_handler, gpointer data);
-
- private:
-  static void WeakNotifyThunk(gpointer data, GObject* where_the_object_was) {
-    reinterpret_cast<GtkSignalRegistrar*>(data)->WeakNotify(
-        where_the_object_was);
-  }
-  void WeakNotify(GObject* where_the_object_was);
-
-  glong ConnectInternal(gpointer instance, const gchar* detailed_signal,
-                        GCallback signal_handler, gpointer data, bool after);
-
-  typedef std::vector<glong> HandlerList;
-  typedef std::map<GObject*, HandlerList> HandlerMap;
-  HandlerMap handler_lists_;
-
-  DISALLOW_COPY_AND_ASSIGN(GtkSignalRegistrar);
-};
 
 #endif  // APP_GTK_SIGNAL_H_

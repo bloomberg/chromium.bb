@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "app/gtk_signal_registrar.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_util.h"
 

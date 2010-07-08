@@ -16,6 +16,8 @@
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 
+class GtkSignalRegistrar;
+
 class MenuBarHelper {
  public:
   class Delegate {
