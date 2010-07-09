@@ -341,7 +341,7 @@ string16 PluginInstance::GetSelectedText(bool html) {
   String* string = GetString(rv);
   if (!string)
     return string16();
-  return string16(UTF8ToUTF16(string->value()));
+  return UTF8ToUTF16(string->value());
 }
 
 void PluginInstance::Zoom(float factor, bool text_only) {
