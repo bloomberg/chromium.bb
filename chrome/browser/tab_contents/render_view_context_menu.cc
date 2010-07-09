@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -258,7 +259,7 @@ void RenderViewContextMenu::SetExtensionIcon(const std::string& extension_id) {
   ExtensionMenuManager* menu_manager = service->menu_manager();
 
   int index = menu_model_.GetItemCount() - 1;
-  DCHECK(index >= 0);
+  DCHECK_GE(index, 0);
 
   const SkBitmap& icon = menu_manager->GetIconForExtension(extension_id);
   DCHECK(icon.width() == kFavIconSize);
@@ -698,18 +699,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Extension items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    std::map<int, int>::const_iterator i = extension_item_map_.find(id);
-
-    // Unknown item.
-    if (i == extension_item_map_.end())
-      return false;
-
-    // Auto-inserted top-level extension parent.
-    if (i->second == kExtensionTopLevelItem)
-      return true;
-
-    return ExtensionContextMatch(params_,
-                                 GetExtensionMenuItem(id)->enabled_contexts());
+    return ContainsKey(extension_item_map_, id);
   }
 
   switch (id) {

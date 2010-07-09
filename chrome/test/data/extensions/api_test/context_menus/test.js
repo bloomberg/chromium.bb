@@ -1,51 +1,54 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-if (!chrome.contextMenu) {
-  chrome.contextMenu = chrome.experimental.contextMenu;
+if (!chrome.contextMenus) {
+  chrome.contextMenus = chrome.experimental.contextMenus;
 }
 
 var assertNoLastError = chrome.test.assertNoLastError;
 
 var tests = [
   function simple() {
-    chrome.contextMenu.create({"title":"1"}, chrome.test.callbackPass());
+    chrome.contextMenus.create({"title":"1"}, chrome.test.callbackPass());
   },
 
   function no_properties() {
-    chrome.contextMenu.create({}, function(id) {
+    chrome.contextMenus.create({}, function(id) {
       chrome.test.assertTrue(chrome.extension.lastError != null);
       chrome.test.succeed();
     });
   },
 
   function remove() {
-    chrome.contextMenu.create({"title":"1"}, function(id) {
+    chrome.contextMenus.create({"title":"1"}, function(id) {
       assertNoLastError();
-      chrome.contextMenu.remove(id, chrome.test.callbackPass());
+      chrome.contextMenus.remove(id, chrome.test.callbackPass());
     });
   },
 
   function update() {
-    chrome.contextMenu.create({"title":"update test"}, function(id) {
+    chrome.contextMenus.create({"title":"update test"}, function(id) {
       assertNoLastError();
-      chrome.contextMenu.update(id, {"title": "test2"},
+      chrome.contextMenus.update(id, {"title": "test2"},
                                 chrome.test.callbackPass());
     });
   },
 
   function removeAll() {
-    chrome.contextMenu.create({"title":"1"}, function(id) {
+    chrome.contextMenus.create({"title":"1"}, function(id) {
       assertNoLastError();
-      chrome.contextMenu.create({"title":"2"}, function(id2) {
+      chrome.contextMenus.create({"title":"2"}, function(id2) {
         assertNoLastError();
-        chrome.contextMenu.removeAll(chrome.test.callbackPass());
+        chrome.contextMenus.removeAll(chrome.test.callbackPass());
       });
     });
   },
 
   function hasParent() {
-    chrome.contextMenu.create({"title":"parent"}, function(id) {
+    chrome.contextMenus.create({"title":"parent"}, function(id) {
       assertNoLastError();
-      chrome.contextMenu.create({"title":"child", "parentId":id},
+      chrome.contextMenus.create({"title":"child", "parentId":id},
                                 function(id2) {
         assertNoLastError();
         chrome.test.succeed();
@@ -56,9 +59,9 @@ var tests = [
 
 
 // Add tests for creating menu item with various types and contexts.
-var types = ["CHECKBOX", "RADIO", "SEPARATOR"];
-var contexts = ["ALL", "PAGE", "SELECTION", "LINK", "EDITABLE", "IMAGE",
-                "VIDEO", "AUDIO"];
+var types = ["checkbox", "radio", "separator"];
+var contexts = ["all", "page", "selection", "link", "editable", "image",
+                "video", "audio"];
 function makeCreateTest(type, contexts) {
   var result = function() {
     var title = type;
@@ -67,7 +70,7 @@ function makeCreateTest(type, contexts) {
     }
     var properties = {"title": title, "type": type};
 
-    chrome.contextMenu.create(properties, chrome.test.callbackPass());
+    chrome.contextMenus.create(properties, chrome.test.callbackPass());
   };
   result.generatedName = "create_" + type +
                          (contexts ? "-" + contexts.join(",") : "");
@@ -78,7 +81,7 @@ for (var i in types) {
   tests.push(makeCreateTest(types[i]));
 }
 for (var i in contexts) {
-  tests.push(makeCreateTest("NORMAL", [ contexts[i] ]));
+  tests.push(makeCreateTest("normal", [ contexts[i] ]));
 }
 
 chrome.test.runTests(tests);

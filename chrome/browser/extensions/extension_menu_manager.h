@@ -32,8 +32,7 @@ class ExtensionMenuItem {
   // A list of ExtensionMenuItem's.
   typedef std::vector<ExtensionMenuItem*> List;
 
-  // For context menus, these are the contexts where an item can appear and
-  // potentially be enabled.
+  // For context menus, these are the contexts where an item can appear.
   enum Context {
     ALL = 1,
     PAGE = 2,
@@ -53,7 +52,7 @@ class ExtensionMenuItem {
     SEPARATOR
   };
 
-  // A list of Contexts for an item (where it should be shown/enabled).
+  // A list of Contexts for an item.
   class ContextList {
    public:
     ContextList() : value_(0) {}
@@ -85,8 +84,7 @@ class ExtensionMenuItem {
   };
 
   ExtensionMenuItem(const std::string& extension_id, std::string title,
-                    bool checked, Type type, const ContextList& contexts,
-                    const ContextList& enabled_contexts);
+                    bool checked, Type type, const ContextList& contexts);
   virtual ~ExtensionMenuItem();
 
   // Simple accessor methods.
@@ -97,14 +95,12 @@ class ExtensionMenuItem {
   int parent_id() const { return parent_id_; }
   int child_count() const { return children_.size(); }
   ContextList contexts() const { return contexts_; }
-  ContextList enabled_contexts() const { return enabled_contexts_; }
   Type type() const { return type_; }
   bool checked() const { return checked_; }
 
   // Simple mutator methods.
   void set_title(std::string new_title) { title_ = new_title; }
   void set_contexts(ContextList contexts) { contexts_ = contexts; }
-  void set_enabled_contexts(ContextList contexts) { contexts_ = contexts; }
   void set_type(Type type) { type_ = type; }
 
   // Returns the title with any instances of %s replaced by |selection|.
@@ -154,10 +150,6 @@ class ExtensionMenuItem {
 
   // In what contexts should the item be shown?
   ContextList contexts_;
-
-  // In what contexts should the item be enabled (i.e. not greyed out). This
-  // should be a subset of contexts_.
-  ContextList enabled_contexts_;
 
   // If this item is a child of another item, the unique id of its parent. If
   // this is a top-level item with no parent, this will be 0.

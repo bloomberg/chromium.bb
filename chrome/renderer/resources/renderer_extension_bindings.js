@@ -247,7 +247,7 @@ var chrome = chrome || {};
       "experimental.accessibility",
       "experimental.bookmarkManager",
       "experimental.clipboard",
-      "experimental.contextMenu",
+      "experimental.contextMenus",
       "experimental.cookies",
       "experimental.extension",
       "experimental.idle",

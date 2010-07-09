@@ -2501,7 +2501,7 @@
     "events": []
   },
   {
-    "namespace": "experimental.contextMenu",
+    "namespace": "experimental.contextMenus",
     "types": [],
     "functions": [
       {
@@ -2516,36 +2516,29 @@
               "type": {
                 "type": "string",
                 "optional": true,
-                "description": "The type of menu item - one of 'NORMAL', 'CHECKBOX', 'RADIO', or 'SEPARATOR'. Defaults to 'NORMAL' if not specified."
+                "description": "The type of menu item - one of 'normal', 'checkbox', 'radio', or 'separator'. Defaults to 'normal' if not specified."
               },
               "title": {
                 "type": "string",
                 "optional": "true",
-                "description": "This must be specified unless type is 'SEPARATOR'."
+                "description": "This must be specified unless type is 'separator'."
               },
               "checked": {
                 "type": "boolean",
                 "optional": true,
-                "description": " For items of type CHECKBOX or RADIO, should this be selected (RADIO) or checked (CHECKBOX)? Only one RADIO item can be selected at a time in a given group of RADIO items, with the last one to have checked == true winning."
+                "description": " For items of type checkbox or radio, should this be selected (radio) or checked (checkbox)? Only one radio item can be selected at a time in a given group of radio items, with the last one to have checked == true winning."
               },
               "contexts": {
                 "type": "array",
                 "items": {"type": "string"},
                 "minItems": 1,
                 "optional": true,
-                "description": "List of contexts this menu item will appear in. Legal values are: 'ALL', 'PAGE', 'SELECTION', 'LINK', 'EDITABLE', 'IMAGE', 'VIDEO', and 'AUDIO'. Defaults to ['PAGE']."
-              },
-              "enabledContexts": {
-                "type": "array",
-                "optional": true,
-                "items": {"type": "string"},
-                "minItems": 1,
-                "description": "By default the values you pass for the contexts parameter make an item both shown and selectable in those contexts. If you want to limit the contexts where an item is selectable (i.e. not greyed out), you put the ones you want selectable in enabledContexts and any not listed will be shown but disabled. So, for example, if you wanted an item to appear for links and images but only be enabled for links, you would set 'contexts' : ['LINK', 'IMAGE'] and 'enabledContexts' : ['LINK']."
+                "description": "List of contexts this menu item will appear in. Legal values are: 'all', 'page', 'selection', 'link', 'editable', 'image', 'video', and 'audio'. Defaults to ['page']."
               },
               "onclick": {
                 "type": "function",
                 "optional": true,
-                "description": "Function to be called back when your menu item or one of its children is clicked."
+                "description": "Function to be called back when your menu item is clicked."
               },
               "parentId": {
                 "type": "integer",
@@ -2600,12 +2593,6 @@
                 "items": {"type": "string"},
                 "minItems": 1,
                 "optional": true
-              },
-              "enabledContexts": {
-                "type": "array",
-                "optional": true,
-                "items": {"type": "string"},
-                "minItems": 1
               },
               "onclick": {
                 "type": "function",

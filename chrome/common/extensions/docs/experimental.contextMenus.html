@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.experimental.contextMenu - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>chrome.experimental.contextMenus - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
       </div>
@@ -207,7 +207,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.contextMenu</h1>
+        <h1 class="page_title">chrome.experimental.contextMenus</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -222,7 +222,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.contextMenu</a>
+                <a href="#apiReference">API reference: chrome.experimental.contextMenus</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -281,7 +281,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.contextMenu</h2>
+        <h2>API reference: chrome.experimental.contextMenus</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -313,7 +313,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.contextMenu.create</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.experimental.contextMenus.create</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>createProperties</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -402,7 +402,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The type of menu item - one of 'NORMAL', 'CHECKBOX', 'RADIO', or 'SEPARATOR'. Defaults to 'NORMAL' if not specified.</dd>
+          <dd>The type of menu item - one of 'normal', 'checkbox', 'radio', or 'separator'. Defaults to 'normal' if not specified.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -454,7 +454,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>This must be specified unless type is 'SEPARATOR'.</dd>
+          <dd>This must be specified unless type is 'separator'.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -506,7 +506,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd> For items of type CHECKBOX or RADIO, should this be selected (RADIO) or checked (CHECKBOX)? Only one RADIO item can be selected at a time in a given group of RADIO items, with the last one to have checked == true winning.</dd>
+          <dd> For items of type checkbox or radio, should this be selected (radio) or checked (checkbox)? Only one radio item can be selected at a time in a given group of radio items, with the last one to have checked == true winning.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -569,70 +569,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>List of contexts this menu item will appear in. Legal values are: 'ALL', 'PAGE', 'SELECTION', 'LINK', 'EDITABLE', 'IMAGE', 'VIDEO', and 'AUDIO'. Defaults to ['PAGE'].</dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>enabledContexts</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span></span>
-                        </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>By default the values you pass for the contexts parameter make an item both shown and selectable in those contexts. If you want to limit the contexts where an item is selectable (i.e. not greyed out), you put the ones you want selectable in enabledContexts and any not listed will be shown but disabled. So, for example, if you wanted an item to appear for links and images but only be enabled for links, you would set 'contexts' : ['LINK', 'IMAGE'] and 'enabledContexts' : ['LINK'].</dd>
+          <dd>List of contexts this menu item will appear in. Legal values are: 'all', 'page', 'selection', 'link', 'editable', 'image', 'video', and 'audio'. Defaults to ['page'].</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -684,7 +621,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Function to be called back when your menu item or one of its children is clicked.</dd>
+          <dd>Function to be called back when your menu item is clicked.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -915,7 +852,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.contextMenu.remove</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                  <span>chrome.experimental.contextMenus.remove</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
                       <var><span>menuItemId</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -1081,7 +1018,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.contextMenu.removeAll</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.experimental.contextMenus.removeAll</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -1194,7 +1131,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.contextMenu.update</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                  <span>chrome.experimental.contextMenus.update</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
                       <var><span>id</span></var></span><span class="null"><span>, </span><span>object</span>
                       <var><span>updateProperties</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
@@ -1469,71 +1406,6 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
                 <div>
           <dt>
             <var>contexts</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span></span>
-                        </span>
-                        <span style="display: none; ">paramType</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>enabledContexts</var>
               <em>
 
                 <!-- TYPE -->

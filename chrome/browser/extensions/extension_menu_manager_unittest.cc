@@ -36,9 +36,8 @@ class ExtensionMenuManagerTest : public testing::Test {
   static ExtensionMenuItem* CreateTestItem(Extension* extension) {
     ExtensionMenuItem::Type type = ExtensionMenuItem::NORMAL;
     ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::ALL);
-    ExtensionMenuItem::ContextList enabled_contexts = contexts;
-    return new ExtensionMenuItem(extension->id(), "test", false, type, contexts,
-                                 enabled_contexts);
+    return new ExtensionMenuItem(extension->id(), "test", false, type,
+                                 contexts);
   }
 
   // Creates and returns a test Extension. The caller does *not* own the return
@@ -363,7 +362,7 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   // Use the magic of googlemock to save a parameter to our mock's
   // DispatchEventToRenderers method into event_args.
   std::string event_args;
-  std::string expected_event_name = "contextMenu/" + item->extension_id();
+  std::string expected_event_name = "contextMenus/" + item->extension_id();
   EXPECT_CALL(*mock_message_service.get(),
               DispatchEventToRenderers(expected_event_name, _,
                                        profile.IsOffTheRecord(),

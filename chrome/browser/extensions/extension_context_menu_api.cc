@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 
-const wchar_t kEnabledContextsKey[] = L"enabledContexts";
 const wchar_t kCheckedKey[] = L"checked";
 const wchar_t kContextsKey[] = L"contexts";
 const wchar_t kParentIdKey[] = L"parentId";
@@ -18,9 +17,9 @@ const wchar_t kTypeKey[] = L"type";
 const char kTitleNeededError[] =
     "All menu items except for separators must have a title";
 const char kCheckedError[] =
-    "Only items with type RADIO or CHECKBOX can be checked";
+    "Only items with type \"radio\" or \"checkbox\" can be checked";
 const char kParentsMustBeNormalError[] =
-    "Parent items must have type NORMAL";
+    "Parent items must have type \"normal\"";
 
 bool ExtensionContextMenuFunction::ParseContexts(
     const DictionaryValue& properties,
@@ -37,21 +36,21 @@ bool ExtensionContextMenuFunction::ParseContexts(
     if (!list->GetString(i, &value))
       return false;
 
-    if (value == "ALL") {
+    if (value == "all") {
       tmp_result.Add(ExtensionMenuItem::ALL);
-    } else if (value == "PAGE") {
+    } else if (value == "page") {
       tmp_result.Add(ExtensionMenuItem::PAGE);
-    } else if (value == "SELECTION") {
+    } else if (value == "selection") {
       tmp_result.Add(ExtensionMenuItem::SELECTION);
-    } else if (value == "LINK") {
+    } else if (value == "link") {
       tmp_result.Add(ExtensionMenuItem::LINK);
-    } else if (value == "EDITABLE") {
+    } else if (value == "editable") {
       tmp_result.Add(ExtensionMenuItem::EDITABLE);
-    } else if (value == "IMAGE") {
+    } else if (value == "image") {
       tmp_result.Add(ExtensionMenuItem::IMAGE);
-    } else if (value == "VIDEO") {
+    } else if (value == "video") {
       tmp_result.Add(ExtensionMenuItem::VIDEO);
-    } else if (value == "AUDIO") {
+    } else if (value == "audio") {
       tmp_result.Add(ExtensionMenuItem::AUDIO);
     } else {
       error_ = "Invalid value for " + WideToASCII(key);
@@ -76,13 +75,13 @@ bool ExtensionContextMenuFunction::ParseType(
   if (!properties.GetString(kTypeKey, &type_string))
     return false;
 
-  if (type_string == "NORMAL") {
+  if (type_string == "normal") {
     *result = ExtensionMenuItem::NORMAL;
-  } else if (type_string == "CHECKBOX") {
+  } else if (type_string == "checkbox") {
     *result = ExtensionMenuItem::CHECKBOX;
-  } else if (type_string == "RADIO") {
+  } else if (type_string == "radio") {
     *result = ExtensionMenuItem::RADIO;
-  } else if (type_string == "SEPARATOR") {
+  } else if (type_string == "separator") {
     *result = ExtensionMenuItem::SEPARATOR;
   } else {
     error_ = "Invalid type string '" + type_string + "'";
@@ -104,7 +103,7 @@ bool ExtensionContextMenuFunction::ParseChecked(
     return false;
   if (checked && type != ExtensionMenuItem::CHECKBOX &&
       type != ExtensionMenuItem::RADIO) {
-    error_ = "Only CHECKBOX and RADIO type items can be checked";
+    error_ = "Only checkbox and radio type items can be checked";
     return false;
   }
   return true;
@@ -151,10 +150,6 @@ bool CreateContextMenuFunction::RunImpl() {
   if (!ParseContexts(*properties, kContextsKey, &contexts))
     return false;
 
-  ExtensionMenuItem::ContextList enabled_contexts = contexts;
-  if (!ParseContexts(*properties, kEnabledContextsKey, &enabled_contexts))
-    return false;
-
   ExtensionMenuItem::Type type;
   if (!ParseType(*properties, ExtensionMenuItem::NORMAL, &type))
     return false;
@@ -169,8 +164,7 @@ bool CreateContextMenuFunction::RunImpl() {
     return false;
 
   scoped_ptr<ExtensionMenuItem> item(
-      new ExtensionMenuItem(extension_id(), title, checked, type, contexts,
-                            enabled_contexts));
+      new ExtensionMenuItem(extension_id(), title, checked, type, contexts));
 
   int id = 0;
   if (properties->HasKey(kParentIdKey)) {
@@ -252,13 +246,6 @@ bool UpdateContextMenuFunction::RunImpl() {
     return false;
   if (contexts != item->contexts())
     item->set_contexts(contexts);
-
-  // Enabled contexts.
-  ExtensionMenuItem::ContextList enabled_contexts(item->contexts());
-  if (!ParseContexts(*properties, kEnabledContextsKey, &enabled_contexts))
-    return false;
-  if (enabled_contexts != item->enabled_contexts())
-    item->set_enabled_contexts(enabled_contexts);
 
   // Parent id.
   ExtensionMenuItem* parent = NULL;

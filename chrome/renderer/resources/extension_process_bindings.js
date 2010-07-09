@@ -263,7 +263,7 @@ var chrome = chrome || {};
   }
 
   function setupHiddenContextMenuEvent(extensionId) {
-    var eventName = "contextMenu/" + extensionId;
+    var eventName = "contextMenus/" + extensionId;
     chromeHidden.contextMenuEvent = new chrome.Event(eventName);
     chromeHidden.contextMenuHandlers = {};
     chromeHidden.contextMenuEvent.addListener(function() {
@@ -271,12 +271,6 @@ var chrome = chrome || {};
       var onclick = chromeHidden.contextMenuHandlers[menuItemId];
       if (onclick) {
         onclick.apply(onclick, arguments);
-      }
-
-      var parentMenuItemId = arguments[0].parentMenuItemId;
-      var parentOnclick = chromeHidden.contextMenuHandlers[parentMenuItemId];
-      if (parentOnclick) {
-        parentOnclick.apply(parentOnclick, arguments);
       }
     });
   }
@@ -597,7 +591,7 @@ var chrome = chrome || {};
           details, this.name, this.definition.parameters, "page action");
     };
 
-    apiFunctions["experimental.contextMenu.create"].customCallback =
+    apiFunctions["experimental.contextMenus.create"].customCallback =
         function(name, request, response) {
       if (chrome.extension.lastError || !response) {
         return;
@@ -611,7 +605,7 @@ var chrome = chrome || {};
       }
     };
 
-    apiFunctions["experimental.contextMenu.remove"].customCallback =
+    apiFunctions["experimental.contextMenus.remove"].customCallback =
         function(name, request, response) {
       // Remove any onclick handler we had registered for this menu item.
       if (request.args.length > 0) {

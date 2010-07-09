@@ -27,15 +27,13 @@
 ExtensionMenuItem::ExtensionMenuItem(const std::string& extension_id,
                                      std::string title,
                                      bool checked, Type type,
-                                     const ContextList& contexts,
-                                     const ContextList& enabled_contexts)
+                                     const ContextList& contexts)
     : extension_id_(extension_id),
       title_(title),
       id_(0),
       type_(type),
       checked_(checked),
       contexts_(contexts),
-      enabled_contexts_(enabled_contexts),
       parent_id_(0) {}
 
 ExtensionMenuItem::~ExtensionMenuItem() {
@@ -439,7 +437,7 @@ void ExtensionMenuManager::ExecuteCommand(Profile* profile,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  std::string event_name = "contextMenu/" + item->extension_id();
+  std::string event_name = "contextMenus/" + item->extension_id();
   service->DispatchEventToRenderers(event_name, json_args,
                                     profile->IsOffTheRecord(), GURL());
 }
