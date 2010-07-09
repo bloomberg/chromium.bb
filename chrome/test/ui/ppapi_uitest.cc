@@ -114,7 +114,7 @@ TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
 
-TEST_F(PPAPITest, URLLoader) {
+TEST_F(PPAPITest, DISABLED_URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
