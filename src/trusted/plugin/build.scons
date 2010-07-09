@@ -253,7 +253,7 @@ ppNaClPlugin = 'ppNaClPlugin'
 
 ppapi_env = env.Clone()
 # TODO(sehr,polina): when there is a google_nacl_ppruntime, it goes here.
-ppapi_libs = common_libs
+ppapi_libs = common_libs + [ 'ppapi_cpp' ]
 if ppapi_env['SHARED_LIBS_SPECIAL']:
   ppapi_env.Append(LIBS=[l + '_shared' for l in ppapi_libs] + os_libs)
 else:
