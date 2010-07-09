@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/rect.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_event.h"
@@ -26,6 +27,7 @@
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
+#include "webkit/glue/plugins/pepper_string.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
@@ -335,8 +337,11 @@ void PluginInstance::ViewFlushedPaint() {
 }
 
 string16 PluginInstance::GetSelectedText(bool html) {
-  // TODO: implement me
-  return string16();
+  PP_Var rv = instance_interface_->GetSelectedText(GetPPInstance(), html);
+  String* string = GetString(rv);
+  if (!string)
+    return string16();
+  return string16(UTF8ToUTF16(string->value()));
 }
 
 void PluginInstance::Zoom(float factor, bool text_only) {
