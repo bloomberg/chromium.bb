@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -111,18 +111,18 @@ static WebCursorInfo::Type ToCursorType(HCURSOR cursor) {
     WebCursorInfo::Type type;
   } kStandardCursors[] = {
     { LoadCursor(NULL, IDC_ARROW),       WebCursorInfo::TypePointer },
+    { LoadCursor(NULL, IDC_CROSS),       WebCursorInfo::TypeCross },
+    { LoadCursor(NULL, IDC_HAND),        WebCursorInfo::TypeHand },
     { LoadCursor(NULL, IDC_IBEAM),       WebCursorInfo::TypeIBeam },
     { LoadCursor(NULL, IDC_WAIT),        WebCursorInfo::TypeWait },
-    { LoadCursor(NULL, IDC_CROSS),       WebCursorInfo::TypeCross },
-    { LoadCursor(NULL, IDC_SIZENWSE),    WebCursorInfo::TypeNorthWestResize },
-    { LoadCursor(NULL, IDC_SIZENESW),    WebCursorInfo::TypeNorthEastResize },
-    { LoadCursor(NULL, IDC_SIZEWE),      WebCursorInfo::TypeEastWestResize },
-    { LoadCursor(NULL, IDC_SIZENS),      WebCursorInfo::TypeNorthSouthResize },
-    { LoadCursor(NULL, IDC_SIZEALL),     WebCursorInfo::TypeMove },
-    { LoadCursor(NULL, IDC_NO),          WebCursorInfo::TypeNotAllowed },
-    { LoadCursor(NULL, IDC_HAND),        WebCursorInfo::TypeHand },
-    { LoadCursor(NULL, IDC_APPSTARTING), WebCursorInfo::TypeProgress },
     { LoadCursor(NULL, IDC_HELP),        WebCursorInfo::TypeHelp },
+    { LoadCursor(NULL, IDC_SIZENESW),    WebCursorInfo::TypeNorthEastResize },
+    { LoadCursor(NULL, IDC_SIZENWSE),    WebCursorInfo::TypeNorthWestResize },
+    { LoadCursor(NULL, IDC_SIZENS),      WebCursorInfo::TypeNorthSouthResize },
+    { LoadCursor(NULL, IDC_SIZEWE),      WebCursorInfo::TypeEastWestResize },
+    { LoadCursor(NULL, IDC_SIZEALL),     WebCursorInfo::TypeMove },
+    { LoadCursor(NULL, IDC_APPSTARTING), WebCursorInfo::TypeProgress },
+    { LoadCursor(NULL, IDC_NO),          WebCursorInfo::TypeNotAllowed },
   };
   for (int i = 0; i < arraysize(kStandardCursors); i++) {
     if (cursor == kStandardCursors[i].cursor)
