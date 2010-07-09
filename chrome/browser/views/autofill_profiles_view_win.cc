@@ -94,6 +94,7 @@ AutoFillProfilesView::~AutoFillProfilesView() {
     personal_data_manager_->RemoveObserver(this);
 }
 
+// TODO: get rid of imported_profile and imported_credit_card.
 int AutoFillProfilesView::Show(gfx::NativeWindow parent,
                                AutoFillDialogObserver* observer,
                                PersonalDataManager* personal_data_manager,
@@ -1365,14 +1366,12 @@ void AutoFillProfilesView::ContentListTableModel::SetObserver(
 // Declared in "chrome/browser/autofill/autofill_dialog.h"
 void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
-                        Profile* profile,
-                        AutoFillProfile* imported_profile,
-                        CreditCard* imported_credit_card) {
+                        Profile* profile) {
   DCHECK(profile);
 
   PersonalDataManager* personal_data_manager =
       profile->GetPersonalDataManager();
   DCHECK(personal_data_manager);
   AutoFillProfilesView::Show(parent, observer, personal_data_manager,
-      profile->GetPrefs(), imported_profile, imported_credit_card);
+                             profile->GetPrefs(), NULL, NULL);
 }

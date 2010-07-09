@@ -338,9 +338,7 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
 void AutoFillManager::ShowAutoFillDialog() {
   ::ShowAutoFillDialog(tab_contents_->GetContentNativeView(),
                        personal_data_,
-                       tab_contents_->profile()->GetOriginalProfile(),
-                       NULL,
-                       NULL);
+                       tab_contents_->profile()->GetOriginalProfile());
 }
 
 void AutoFillManager::Reset() {

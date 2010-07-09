@@ -978,16 +978,14 @@ int AutoFillDialog::FindIndexOfAddress(string16 billing_address) {
 
 void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
-                        Profile* profile,
-                        AutoFillProfile* imported_profile,
-                        CreditCard* imported_credit_card) {
+                        Profile* profile) {
   DCHECK(profile);
 
   if (!dialog) {
     dialog = new AutoFillDialog(observer,
                                 profile->GetPersonalDataManager(),
-                                imported_profile,
-                                imported_credit_card);
+                                NULL,
+                                NULL);
   }
   dialog->Show();
 }

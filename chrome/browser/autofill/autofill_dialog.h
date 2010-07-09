@@ -37,19 +37,8 @@ class AutoFillDialogObserver {
 //
 // The |parent| parameter (currently only used on Windows) specifies the parent
 // view in the view hierarchy.  May be NULL on Mac and gtk.
-//
-// Optional parameters |imported_profile| and |imported_credit_card| may be
-// supplied.  If they are supplied (non-NULL) they will be used instead of
-// the profile and credit card data retrieved from the PersonalDataManager
-// associated with the |profile|.
-//
-// The PersonalDataManager owns the contents of these vectors.  The lifetime of
-// the contents is until the PersonalDataManager replaces them with new data
-// whenever the web database is updated.
 void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
-                        Profile* profile,
-                        AutoFillProfile* imported_profile,
-                        CreditCard* imported_credit_card);
+                        Profile* profile);
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_H_

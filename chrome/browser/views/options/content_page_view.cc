@@ -124,9 +124,7 @@ void ContentPageView::ButtonPressed(
     DCHECK(profile()->GetPersonalDataManager());
     ShowAutoFillDialog(GetWindow()->GetNativeWindow(),
                        profile()->GetPersonalDataManager(),
-                       profile(),
-                       NULL,
-                       NULL);
+                       profile());
   } else if (sender == themes_reset_button_) {
     UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"),
                             profile()->GetPrefs());

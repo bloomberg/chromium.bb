@@ -1205,7 +1205,7 @@ const int kDisabledIndex = 1;
     return;
   }
 
-  ShowAutoFillDialog(NULL, personalDataManager, profile_, NULL, NULL);
+  ShowAutoFillDialog(NULL, personalDataManager, profile_);
 }
 
 // Called to import data from other browsers (Safari, Firefox, etc).

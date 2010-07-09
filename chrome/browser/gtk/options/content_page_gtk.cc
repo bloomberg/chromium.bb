@@ -455,8 +455,7 @@ void ContentPageGtk::UpdateSyncControls() {
 }
 
 void ContentPageGtk::OnAutoFillButtonClicked(GtkWidget* widget) {
-  ShowAutoFillDialog(
-      NULL, profile()->GetPersonalDataManager(), profile(), NULL, NULL);
+  ShowAutoFillDialog(NULL, profile()->GetPersonalDataManager(), profile());
 }
 
 void ContentPageGtk::OnImportButtonClicked(GtkWidget* widget) {

@@ -12,12 +12,11 @@
 // |chrome/browser/autofill/autofill_dialog.h|.
 void ShowAutoFillDialog(gfx::NativeView parent,
                         AutoFillDialogObserver* observer,
-                        Profile* profile,
-                        AutoFillProfile* imported_profile,
-                        CreditCard* imported_credit_card) {
+                        Profile* profile) {
+  // TODO: get rid of imported profile and credit card.
   [AutoFillDialogController
       showAutoFillDialogWithObserver:observer
                              profile:profile
-                     importedProfile:imported_profile
-                  importedCreditCard:imported_credit_card];
+                     importedProfile:NULL
+                  importedCreditCard:NULL];
 }
