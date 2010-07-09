@@ -249,6 +249,12 @@ int SpdyNetworkTransaction::DoInitConnectionComplete(int result) {
 int SpdyNetworkTransaction::DoSendRequest() {
   next_state_ = STATE_SEND_REQUEST_COMPLETE;
   CHECK(!stream_.get());
+
+  // It is possible that the spdy session was shut down while it was
+  // asynchronously waiting to connect.
+  if(spdy_->IsClosed())
+    return ERR_CONNECTION_CLOSED;
+
   UploadDataStream* upload_data = NULL;
   if (request_->upload_data) {
     int error_code;
