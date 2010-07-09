@@ -137,6 +137,7 @@ bool BrowserImplNpapi::Alert(InstanceIdentifier instance_id,
 
 bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
                                  nacl::string* origin) {
+  NPObject* win_obj = NULL;
   NPVariant loc_value;
   NPVariant href_value;
 
@@ -147,7 +148,6 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
 
   // TODO(gregoryd): consider making this block a function returning origin.
   do {
-    NPObject* win_obj;  // TODO(adonovan): NPN_ReleaseObject(win_obj) needed?
     if (NPERR_NO_ERROR !=
         NPN_GetValue(instance_id, NPNVWindowNPObject, &win_obj)) {
         PLUGIN_PRINTF(("GetOrigin: No window object\n"));
@@ -176,6 +176,9 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
     PLUGIN_PRINTF(("GetOrigin: origin %s\n", origin->c_str()));
   } while (0);
 
+  if (win_obj != NULL) {
+    NPN_ReleaseObject(win_obj);
+  }
   NPN_ReleaseVariantValue(&loc_value);
   NPN_ReleaseVariantValue(&href_value);
 

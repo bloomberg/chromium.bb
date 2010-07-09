@@ -378,6 +378,8 @@ void TestNewAndDestroy() {
 
   // NPP_Destroy
   CheckRetval(plugin_funcs.destroy(plugin_instance, NULL));
+
+  ASSERT_EQ(all_objects.size(), 0);
 }
 
 void TestHelloWorldMethod(const char* nexe_url) {
