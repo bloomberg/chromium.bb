@@ -179,6 +179,8 @@
         'plugins/pepper_file_ref.h',
         'plugins/pepper_file_system.cc',
         'plugins/pepper_file_system.h',
+        'plugins/pepper_font.cc',
+        'plugins/pepper_font.h',
         'plugins/pepper_image_data.cc',
         'plugins/pepper_image_data.h',
         'plugins/pepper_plugin_delegate.h',

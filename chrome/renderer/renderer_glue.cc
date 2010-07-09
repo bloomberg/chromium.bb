@@ -39,6 +39,8 @@
 
 #if defined(OS_WIN)
 #include <strsafe.h>  // note: per msdn docs, this must *follow* other includes
+#elif defined(OS_LINUX)
+#include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
 
 template <typename T, size_t stack_capacity>
@@ -310,5 +312,19 @@ std::string GetProductVersion() {
 bool IsSingleProcess() {
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 }
+
+#if defined(OS_LINUX)
+int MatchFontWithFallback(const std::string& face, bool bold,
+                          bool italic, int charset) {
+  return renderer_sandbox_support::MatchFontWithFallback(
+      face, bold, italic, charset);
+}
+
+bool GetFontTable(int fd, uint32_t table, uint8_t* output,
+                  size_t* output_length) {
+  return renderer_sandbox_support::GetFontTable(
+      fd, table, output, output_length);
+}
+#endif
 
 }  // namespace webkit_glue

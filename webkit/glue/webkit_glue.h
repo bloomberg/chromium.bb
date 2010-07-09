@@ -265,6 +265,26 @@ std::string GetProductVersion();
 // Returns true if the embedder is running in single process mode.
 bool IsSingleProcess();
 
+#if defined(OS_LINUX)
+// Return a read-only file descriptor to the font which best matches the given
+// properties or -1 on failure.
+//   charset: specifies the language(s) that the font must cover. See
+// render_sandbox_host_linux.cc for more information.
+int MatchFontWithFallback(const std::string& face, bool bold,
+                          bool italic, int charset);
+
+// GetFontTable loads a specified font table from an open SFNT file.
+//   fd: a file descriptor to the SFNT file. The position doesn't matter.
+//   table: the table in *big-endian* format, or 0 for the whole font file.
+//   output: a buffer of size output_length that gets the data.  can be 0, in
+//     which case output_length will be set to the required size in bytes.
+//   output_length: size of output, if it's not 0.
+//
+//   returns: true on success.
+bool GetFontTable(int fd, uint32_t table, uint8_t* output,
+                  size_t* output_length);
+#endif
+
 // ---- END FUNCTIONS IMPLEMENTED BY EMBEDDER ---------------------------------
 
 

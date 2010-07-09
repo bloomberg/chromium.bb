@@ -19,6 +19,7 @@
 #include "third_party/ppapi/c/ppb_file_io_trusted.h"
 #include "third_party/ppapi/c/ppb_file_system.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
+#include "third_party/ppapi/c/ppb_font.h"
 #include "third_party/ppapi/c/ppb_instance.h"
 #include "third_party/ppapi/c/ppb_scrollbar.h"
 #include "third_party/ppapi/c/ppb_testing.h"
@@ -38,6 +39,7 @@
 #include "webkit/glue/plugins/pepper_file_io.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
+#include "webkit/glue/plugins/pepper_font.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
@@ -181,6 +183,8 @@ const void* GetInterface(const char* name) {
     return Widget::GetInterface();
   if (strcmp(name, PPB_SCROLLBAR_INTERFACE) == 0)
     return Scrollbar::GetInterface();
+  if (strcmp(name, PPB_FONT_INTERFACE) == 0)
+    return Font::GetInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

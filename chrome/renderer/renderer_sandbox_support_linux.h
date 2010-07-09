@@ -9,8 +9,6 @@
 
 #include <string>
 
-#include "third_party/npapi/bindings/npapi_extensions.h"
-
 namespace WebKit {
 struct WebFontRenderStyle;
 }
@@ -37,7 +35,7 @@ int MakeSharedMemorySegmentViaIPC(size_t length);
 //   charset: specifies the language(s) that the font must cover. See
 // render_sandbox_host_linux.cc for more information.
 int MatchFontWithFallback(const std::string& face, bool bold,
-                          bool italic, NPCharset charset);
+                          bool italic, int charset);
 
 // GetFontTable loads a specified font table from an open SFNT file.
 //   fd: a file descriptor to the SFNT file. The position doesn't matter.

@@ -18,6 +18,7 @@ class DirectoryReader;
 class FileChooser;
 class FileIO;
 class FileRef;
+class Font;
 class ImageData;
 class PluginModule;
 class Scrollbar;
@@ -57,6 +58,7 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   virtual FileChooser* AsFileChooser() { return NULL; }
   virtual FileIO* AsFileIO() { return NULL; }
   virtual FileRef* AsFileRef() { return NULL; }
+  virtual Font* AsFont() { return NULL; }
   virtual ImageData* AsImageData() { return NULL; }
   virtual Scrollbar* AsScrollbar() { return NULL; }
   virtual URLLoader* AsURLLoader() { return NULL; }
@@ -81,6 +83,7 @@ DEFINE_RESOURCE_CAST(DirectoryReader)
 DEFINE_RESOURCE_CAST(FileChooser)
 DEFINE_RESOURCE_CAST(FileIO)
 DEFINE_RESOURCE_CAST(FileRef)
+DEFINE_RESOURCE_CAST(Font)
 DEFINE_RESOURCE_CAST(ImageData)
 DEFINE_RESOURCE_CAST(Scrollbar)
 DEFINE_RESOURCE_CAST(URLLoader)

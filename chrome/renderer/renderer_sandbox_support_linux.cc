@@ -93,7 +93,7 @@ int MakeSharedMemorySegmentViaIPC(size_t length) {
 }
 
 int MatchFontWithFallback(const std::string& face, bool bold,
-                          bool italic, NPCharset charset) {
+                          bool italic, int charset) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_MATCH_WITH_FALLBACK);
   request.WriteString(face);
