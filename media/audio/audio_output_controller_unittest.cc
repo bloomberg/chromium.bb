@@ -5,7 +5,7 @@
 #include "base/env_var.h"
 #include "base/basictypes.h"
 #include "base/waitable_event.h"
-#include "media/audio/audio_controller.h"
+#include "media/audio/audio_output_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,32 +24,35 @@ static const int kBufferCapacity = 3 * kHardwareBufferSize;
 
 namespace media {
 
-class MockAudioControllerEventHandler : public AudioController::EventHandler {
+class MockAudioOutputControllerEventHandler
+    : public AudioOutputController::EventHandler {
  public:
-  MockAudioControllerEventHandler() {}
+  MockAudioOutputControllerEventHandler() {}
 
-  MOCK_METHOD1(OnCreated, void(AudioController* controller));
-  MOCK_METHOD1(OnPlaying, void(AudioController* controller));
-  MOCK_METHOD1(OnPaused, void(AudioController* controller));
-  MOCK_METHOD2(OnError, void(AudioController* controller, int error_code));
+  MOCK_METHOD1(OnCreated, void(AudioOutputController* controller));
+  MOCK_METHOD1(OnPlaying, void(AudioOutputController* controller));
+  MOCK_METHOD1(OnPaused, void(AudioOutputController* controller));
+  MOCK_METHOD2(OnError, void(AudioOutputController* controller,
+                             int error_code));
   MOCK_METHOD3(OnMoreData,
-               void(AudioController* controller,
+               void(AudioOutputController* controller,
                     base::Time timestamp, uint32 pending_bytes));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockAudioControllerEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(MockAudioOutputControllerEventHandler);
 };
 
-class MockAudioControllerSyncReader : public AudioController::SyncReader {
+class MockAudioOutputControllerSyncReader
+    : public AudioOutputController::SyncReader {
  public:
-  MockAudioControllerSyncReader() {}
+  MockAudioOutputControllerSyncReader() {}
 
   MOCK_METHOD1(UpdatePendingBytes, void(uint32 bytes));
   MOCK_METHOD2(Read, uint32(void* data, uint32 size));
   MOCK_METHOD0(Close, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockAudioControllerSyncReader);
+  DISALLOW_COPY_AND_ASSIGN(MockAudioOutputControllerSyncReader);
 };
 
 static bool HasAudioDevices() {
@@ -71,14 +74,16 @@ ACTION_P3(SignalEvent, event, count, limit) {
   }
 }
 
-TEST(AudioControllerTest, CreateAndClose) {
+TEST(AudioOutputControllerTest, CreateAndClose) {
   if (!HasAudioDevices() || IsRunningHeadless())
     return;
 
-  MockAudioControllerEventHandler event_handler;
-  scoped_refptr<AudioController> controller = AudioController::Create(
-      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
-      kSampleRate, kBitsPerSample, kHardwareBufferSize, kBufferCapacity);
+  MockAudioOutputControllerEventHandler event_handler;
+  scoped_refptr<AudioOutputController> controller =
+      AudioOutputController::Create(&event_handler,
+                                    AudioManager::AUDIO_PCM_LINEAR, kChannels,
+                                    kSampleRate, kBitsPerSample,
+                                    kHardwareBufferSize, kBufferCapacity);
   ASSERT_TRUE(controller.get());
 
   // Close the controller immediately.
@@ -89,11 +94,11 @@ TEST(AudioControllerTest, CreateAndClose) {
   controller = NULL;
 }
 
-TEST(AudioControllerTest, PlayAndClose) {
+TEST(AudioOutputControllerTest, PlayAndClose) {
   if (!HasAudioDevices() || IsRunningHeadless())
     return;
 
-  MockAudioControllerEventHandler event_handler;
+  MockAudioOutputControllerEventHandler event_handler;
   base::WaitableEvent event(false, false);
   int count = 0;
 
@@ -110,9 +115,11 @@ TEST(AudioControllerTest, PlayAndClose) {
       .Times(AtLeast(10))
       .WillRepeatedly(SignalEvent(&event, &count, 10));
 
-  scoped_refptr<AudioController> controller = AudioController::Create(
-      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
-      kSampleRate, kBitsPerSample, kHardwareBufferSize, kBufferCapacity);
+  scoped_refptr<AudioOutputController> controller =
+      AudioOutputController::Create(&event_handler,
+                                    AudioManager::AUDIO_PCM_LINEAR, kChannels,
+                                    kSampleRate, kBitsPerSample,
+                                    kHardwareBufferSize, kBufferCapacity);
   ASSERT_TRUE(controller.get());
 
   // Wait for OnCreated() to be called.
@@ -132,11 +139,11 @@ TEST(AudioControllerTest, PlayAndClose) {
   controller = NULL;
 }
 
-TEST(AudioControllerTest, PlayPauseClose) {
+TEST(AudioOutputControllerTest, PlayPauseClose) {
   if (!HasAudioDevices() || IsRunningHeadless())
     return;
 
-  MockAudioControllerEventHandler event_handler;
+  MockAudioOutputControllerEventHandler event_handler;
   base::WaitableEvent event(false, false);
   int count = 0;
 
@@ -159,9 +166,11 @@ TEST(AudioControllerTest, PlayPauseClose) {
       .Times(Exactly(1))
       .WillOnce(InvokeWithoutArgs(&event, &base::WaitableEvent::Signal));
 
-  scoped_refptr<AudioController> controller = AudioController::Create(
-      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
-      kSampleRate, kBitsPerSample, kHardwareBufferSize, kBufferCapacity);
+  scoped_refptr<AudioOutputController> controller =
+      AudioOutputController::Create(&event_handler,
+                                    AudioManager::AUDIO_PCM_LINEAR, kChannels,
+                                    kSampleRate, kBitsPerSample,
+                                    kHardwareBufferSize, kBufferCapacity);
   ASSERT_TRUE(controller.get());
 
   // Wait for OnCreated() to be called.
@@ -186,30 +195,34 @@ TEST(AudioControllerTest, PlayPauseClose) {
   controller = NULL;
 }
 
-TEST(AudioControllerTest, HardwareBufferTooLarge) {
+TEST(AudioOutputControllerTest, HardwareBufferTooLarge) {
   if (!HasAudioDevices() || IsRunningHeadless())
     return;
 
   // Create an audio device with a very large hardware buffer size.
-  MockAudioControllerEventHandler event_handler;
-  scoped_refptr<AudioController> controller = AudioController::Create(
-      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
-      kSampleRate, kBitsPerSample, kHardwareBufferSize * 1000,
-      kBufferCapacity);
+  MockAudioOutputControllerEventHandler event_handler;
+  scoped_refptr<AudioOutputController> controller =
+      AudioOutputController::Create(&event_handler,
+                                    AudioManager::AUDIO_PCM_LINEAR, kChannels,
+                                    kSampleRate, kBitsPerSample,
+                                    kHardwareBufferSize * 1000,
+                                    kBufferCapacity);
 
   // Use assert because we don't stop the device and assume we can't
   // create one.
   ASSERT_FALSE(controller);
 }
 
-TEST(AudioControllerTest, CloseTwice) {
+TEST(AudioOutputControllerTest, CloseTwice) {
   if (!HasAudioDevices() || IsRunningHeadless())
     return;
 
-  MockAudioControllerEventHandler event_handler;
-  scoped_refptr<AudioController> controller = AudioController::Create(
-      &event_handler, AudioManager::AUDIO_PCM_LINEAR, kChannels,
-      kSampleRate, kBitsPerSample, kHardwareBufferSize, kBufferCapacity);
+  MockAudioOutputControllerEventHandler event_handler;
+  scoped_refptr<AudioOutputController> controller =
+      AudioOutputController::Create(&event_handler,
+                                    AudioManager::AUDIO_PCM_LINEAR, kChannels,
+                                    kSampleRate, kBitsPerSample,
+                                    kHardwareBufferSize, kBufferCapacity);
   ASSERT_TRUE(controller.get());
 
   // Close the controller immediately.

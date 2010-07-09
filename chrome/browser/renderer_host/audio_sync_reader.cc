@@ -14,7 +14,7 @@ AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory)
 AudioSyncReader::~AudioSyncReader() {
 }
 
-// media::AudioController::SyncReader implementations.
+// media::AudioOutputController::SyncReader implementations.
 void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
   socket_->Send(&bytes, sizeof(bytes));
 }

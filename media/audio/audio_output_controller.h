@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_AUDIO_CONTROLLER_H_
-#define MEDIA_AUDIO_AUDIO_CONTROLLER_H_
+#ifndef MEDIA_AUDIO_AUDIO_OUTPUT_CONTROLLER_H_
+#define MEDIA_AUDIO_AUDIO_OUTPUT_CONTROLLER_H_
 
 #include "base/lock.h"
 #include "base/ref_counted.h"
@@ -13,15 +13,15 @@
 #include "media/audio/audio_output.h"
 #include "media/audio/simple_sources.h"
 
-// An AudioController controls an AudioOutputStream and provides data
+// An AudioOutputController controls an AudioOutputStream and provides data
 // to this output stream. It has an important function that it executes
 // audio operations like play, pause, stop, etc. on a separate thread,
 // namely the audio controller thread.
 //
-// All the public methods of AudioController are non-blocking except close,
-// the actual operations are performed on the audio controller thread.
+// All the public methods of AudioOutputController are non-blocking except
+// close, the actual operations are performed on the audio controller thread.
 //
-// Here is a state diagram for the AudioController:
+// Here is a state diagram for the AudioOutputController:
 //
 //                    .---->  [ Closed / Error ]  <------.
 //                    |                ^                 |
@@ -36,17 +36,18 @@
 // There are two modes of buffering operations supported by this class.
 //
 // Regular latency mode:
-//   In this mode we receive signals from AudioController and then we
+//   In this mode we receive signals from AudioOutputController and then we
 //   enqueue data into it.
 //
 // Low latency mode:
-//   In this mode a DataSource object is given to the AudioController
-//   and AudioController reads from it synchronously.
+//   In this mode a DataSource object is given to the AudioOutputController
+//   and AudioOutputController reads from it synchronously.
 //
 namespace media {
 
-class AudioController : public base::RefCountedThreadSafe<AudioController>,
-                        public AudioOutputStream::AudioSourceCallback {
+class AudioOutputController
+    : public base::RefCountedThreadSafe<AudioOutputController>,
+      public AudioOutputStream::AudioSourceCallback {
  public:
   // Internal state of the source.
   enum State {
@@ -58,33 +59,33 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
     kError,
   };
 
-  // An event handler that receives events from the AudioController. The
+  // An event handler that receives events from the AudioOutputController. The
   // following methods are called on the audio controller thread.
   class EventHandler {
    public:
     virtual ~EventHandler() {}
-    virtual void OnCreated(AudioController* controller) = 0;
-    virtual void OnPlaying(AudioController* controller) = 0;
-    virtual void OnPaused(AudioController* controller) = 0;
-    virtual void OnError(AudioController* controller, int error_code) = 0;
+    virtual void OnCreated(AudioOutputController* controller) = 0;
+    virtual void OnPlaying(AudioOutputController* controller) = 0;
+    virtual void OnPaused(AudioOutputController* controller) = 0;
+    virtual void OnError(AudioOutputController* controller, int error_code) = 0;
 
     // Audio controller asks for more data.
     // |pending_bytes| is the number of bytes still on the controller.
     // |timestamp| is then time when |pending_bytes| is recorded.
-    virtual void OnMoreData(AudioController* controller,
+    virtual void OnMoreData(AudioOutputController* controller,
                             base::Time timestamp,
                             uint32 pending_bytes) = 0;
   };
 
-  // A synchronous reader interface used by AudioController for synchronous
-  // reading.
+  // A synchronous reader interface used by AudioOutputController for
+  // synchronous reading.
   class SyncReader {
    public:
     virtual ~SyncReader() {}
 
-    // Notify the synchronous reader the number of bytes in the AudioController
-    // not yet played. This is used by SyncReader to prepare more data and
-    // perform synchronization.
+    // Notify the synchronous reader the number of bytes in the
+    // AudioOutputController not yet played. This is used by SyncReader to
+    // prepare more data and perform synchronization.
     virtual void UpdatePendingBytes(uint32 bytes) = 0;
 
     // Read certain amount of data into |data|. This method returns if some
@@ -95,13 +96,13 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
     virtual void Close() = 0;
   };
 
-  virtual ~AudioController();
+  virtual ~AudioOutputController();
 
-  // Factory method for creating an AudioController, returns NULL if failed.
+  // Factory method for creating an AudioOutputController.
   // If successful, an audio controller thread is created. The audio device
   // will be created on the audio controller thread and when that is done
   // event handler will receive a OnCreated() call.
-  static scoped_refptr<AudioController> Create(
+  static scoped_refptr<AudioOutputController> Create(
       EventHandler* event_handler,
       AudioManager::Format format,    // Format of the stream.
       int channels,                   // Number of channels.
@@ -114,7 +115,7 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
       uint32 buffer_capacity);
 
   // Factory method for creating a low latency audio stream.
-  static scoped_refptr<AudioController> CreateLowLatency(
+  static scoped_refptr<AudioOutputController> CreateLowLatency(
       EventHandler* event_handler,
       AudioManager::Format format,    // Format of the stream.
       int channels,                   // Number of channels.
@@ -163,8 +164,8 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
   virtual void OnError(AudioOutputStream* stream, int code);
 
  private:
-  AudioController(EventHandler* handler,
-                  uint32 capacity, SyncReader* sync_reader);
+  AudioOutputController(EventHandler* handler,
+                        uint32 capacity, SyncReader* sync_reader);
 
   // The following methods are executed on the audio controller thread.
   void DoCreate(AudioManager::Format format, int channels,
@@ -205,9 +206,9 @@ class AudioController : public base::RefCountedThreadSafe<AudioController>,
   // The audio controller thread that this object runs on.
   base::Thread thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioController);
+  DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };
 
 }  // namespace media
 
-#endif  //  MEDIA_AUDIO_AUDIO_CONTROLLER_H_
+#endif  //  MEDIA_AUDIO_AUDIO_OUTPUT_CONTROLLER_H_

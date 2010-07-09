@@ -68,8 +68,8 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 #include "ipc/ipc_message.h"
-#include "media/audio/audio_controller.h"
 #include "media/audio/audio_output.h"
+#include "media/audio/audio_output_controller.h"
 #include "media/audio/simple_sources.h"
 
 class AudioManager;
@@ -78,7 +78,7 @@ struct ViewHostMsg_Audio_CreateStream_Params;
 class AudioRendererHost : public base::RefCountedThreadSafe<
                               AudioRendererHost,
                               ChromeThread::DeleteOnIOThread>,
-                          public media::AudioController::EventHandler {
+                          public media::AudioOutputController::EventHandler {
  public:
   typedef std::pair<int32, int> AudioEntryId;
 
@@ -89,8 +89,8 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
           pending_buffer_request(false) {
     }
 
-    // The AudioController that manages the audio stream.
-    scoped_refptr<media::AudioController> controller;
+    // The AudioOutputController that manages the audio stream.
+    scoped_refptr<media::AudioOutputController> controller;
 
     // Render view ID that requested the audio stream.
     int32 render_view_id;
@@ -103,7 +103,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
 
     // The synchronous reader to be used by the controller. We have the
     // ownership of the reader.
-    scoped_ptr<media::AudioController::SyncReader> reader;
+    scoped_ptr<media::AudioOutputController::SyncReader> reader;
 
     bool pending_buffer_request;
   };
@@ -133,12 +133,13 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
   bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
 
   /////////////////////////////////////////////////////////////////////////////
-  // AudioController::EventHandler implementations.
-  virtual void OnCreated(media::AudioController* controller);
-  virtual void OnPlaying(media::AudioController* controller);
-  virtual void OnPaused(media::AudioController* controller);
-  virtual void OnError(media::AudioController* controller, int error_code);
-  virtual void OnMoreData(media::AudioController* controller,
+  // AudioOutputController::EventHandler implementations.
+  virtual void OnCreated(media::AudioOutputController* controller);
+  virtual void OnPlaying(media::AudioOutputController* controller);
+  virtual void OnPaused(media::AudioOutputController* controller);
+  virtual void OnError(media::AudioOutputController* controller,
+                       int error_code);
+  virtual void OnMoreData(media::AudioOutputController* controller,
                           base::Time timestamp,
                           uint32 pending_bytes);
 
@@ -193,20 +194,20 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
 
   // Complete the process of creating an audio stream. This will set up the
   // shared memory or shared socket in low latency mode.
-  void DoCompleteCreation(media::AudioController* controller);
+  void DoCompleteCreation(media::AudioOutputController* controller);
 
   // Send a state change message to the renderer.
-  void DoSendPlayingMessage(media::AudioController* controller);
-  void DoSendPausedMessage(media::AudioController* controller);
+  void DoSendPlayingMessage(media::AudioOutputController* controller);
+  void DoSendPausedMessage(media::AudioOutputController* controller);
 
   // Request more data from the renderer. This method is used only in normal
   // latency mode.
-  void DoRequestMoreData(media::AudioController* controller,
+  void DoRequestMoreData(media::AudioOutputController* controller,
                          base::Time timestamp,
                          uint32 pending_bytes);
 
   // Handle error coming from audio stream.
-  void DoHandleError(media::AudioController* controller, int error_code);
+  void DoHandleError(media::AudioOutputController* controller, int error_code);
 
   // A helper method to send an IPC message to renderer process on IO thread.
   // This method is virtual for testing purpose.
@@ -232,7 +233,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
   // Search for a AudioEntry having the reference to |controller|.
   // This method is used to look up an AudioEntry after a controller
   // event is received.
-  AudioEntry* LookupByController(media::AudioController* controller);
+  AudioEntry* LookupByController(media::AudioOutputController* controller);
 
   int process_id_;
   base::ProcessHandle process_handle_;

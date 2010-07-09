@@ -118,29 +118,29 @@ void AudioRendererHost::IPCChannelClosing() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// media::AudioController::EventHandler implementations.
-void AudioRendererHost::OnCreated(media::AudioController* controller) {
+// media::AudioOutputController::EventHandler implementations.
+void AudioRendererHost::OnCreated(media::AudioOutputController* controller) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &AudioRendererHost::DoCompleteCreation,
                         controller));
 }
 
-void AudioRendererHost::OnPlaying(media::AudioController* controller) {
+void AudioRendererHost::OnPlaying(media::AudioOutputController* controller) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &AudioRendererHost::DoSendPlayingMessage,
                         controller));
 }
 
-void AudioRendererHost::OnPaused(media::AudioController* controller) {
+void AudioRendererHost::OnPaused(media::AudioOutputController* controller) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &AudioRendererHost::DoSendPausedMessage,
                         controller));
 }
 
-void AudioRendererHost::OnError(media::AudioController* controller,
+void AudioRendererHost::OnError(media::AudioOutputController* controller,
                                 int error_code) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
@@ -148,7 +148,7 @@ void AudioRendererHost::OnError(media::AudioController* controller,
                         controller, error_code));
 }
 
-void AudioRendererHost::OnMoreData(media::AudioController* controller,
+void AudioRendererHost::OnMoreData(media::AudioOutputController* controller,
                                    base::Time timestamp,
                                    uint32 pending_bytes) {
   ChromeThread::PostTask(
@@ -157,7 +157,8 @@ void AudioRendererHost::OnMoreData(media::AudioController* controller,
                         controller, timestamp, pending_bytes));
 }
 
-void AudioRendererHost::DoCompleteCreation(media::AudioController* controller) {
+void AudioRendererHost::DoCompleteCreation(
+    media::AudioOutputController* controller) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   AudioEntry* entry = LookupByController(controller);
@@ -213,7 +214,7 @@ void AudioRendererHost::DoCompleteCreation(media::AudioController* controller) {
 }
 
 void AudioRendererHost::DoSendPlayingMessage(
-    media::AudioController* controller) {
+    media::AudioOutputController* controller) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   AudioEntry* entry = LookupByController(controller);
@@ -227,7 +228,7 @@ void AudioRendererHost::DoSendPlayingMessage(
 }
 
 void AudioRendererHost::DoSendPausedMessage(
-    media::AudioController* controller) {
+    media::AudioOutputController* controller) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   AudioEntry* entry = LookupByController(controller);
@@ -240,9 +241,10 @@ void AudioRendererHost::DoSendPausedMessage(
       entry->render_view_id, entry->stream_id, params));
 }
 
-void AudioRendererHost::DoRequestMoreData(media::AudioController* controller,
-                                          base::Time timestamp,
-                                          uint32 pending_bytes) {
+void AudioRendererHost::DoRequestMoreData(
+    media::AudioOutputController* controller,
+    base::Time timestamp,
+    uint32 pending_bytes) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // If we already have a pending request then return.
@@ -260,7 +262,7 @@ void AudioRendererHost::DoRequestMoreData(media::AudioController* controller,
           timestamp.ToInternalValue()));
 }
 
-void AudioRendererHost::DoHandleError(media::AudioController* controller,
+void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,
                                       int error_code) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
@@ -335,7 +337,7 @@ void AudioRendererHost::OnCreateStream(
   }
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
-  scoped_refptr<media::AudioController> controller = NULL;
+  scoped_refptr<media::AudioOutputController> controller = NULL;
   if (low_latency) {
     // If this is the low latency mode, we need to construct a SyncReader first.
     scoped_ptr<AudioSyncReader> reader(
@@ -348,10 +350,10 @@ void AudioRendererHost::OnCreateStream(
     }
 
     // If we have successfully created the SyncReader then assign it to the
-    // entry and construct an AudioController.
+    // entry and construct an AudioOutputController.
     entry->reader.reset(reader.release());
     controller =
-        media::AudioController::CreateLowLatency(
+        media::AudioOutputController::CreateLowLatency(
             this, params.format, params.channels,
             params.sample_rate,
             params.bits_per_sample,
@@ -360,11 +362,12 @@ void AudioRendererHost::OnCreateStream(
   } else {
     // The choice of buffer capacity is based on experiment.
     controller =
-        media::AudioController::Create(this, params.format, params.channels,
-                                       params.sample_rate,
-                                       params.bits_per_sample,
-                                       hardware_packet_size,
-                                       3 * hardware_packet_size);
+        media::AudioOutputController::Create(this, params.format,
+                                             params.channels,
+                                             params.sample_rate,
+                                             params.bits_per_sample,
+                                             hardware_packet_size,
+                                             3 * hardware_packet_size);
   }
 
   if (!controller) {
@@ -485,7 +488,7 @@ void AudioRendererHost::OnNotifyPacketReady(
   if (!packet_size)
     return;
 
-  // Enqueue the data to media::AudioController.
+  // Enqueue the data to media::AudioOutputController.
   entry->controller->EnqueueData(
       reinterpret_cast<uint8*>(entry->shared_memory.memory()),
       packet_size);
@@ -564,7 +567,7 @@ AudioRendererHost::AudioEntry* AudioRendererHost::LookupById(
 }
 
 AudioRendererHost::AudioEntry* AudioRendererHost::LookupByController(
-    media::AudioController* controller) {
+    media::AudioOutputController* controller) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // Iterate the map of entries.

@@ -8,7 +8,7 @@
 #include "base/file_descriptor_posix.h"
 #include "base/process.h"
 #include "base/sync_socket.h"
-#include "media/audio/audio_controller.h"
+#include "media/audio/audio_output_controller.h"
 
 namespace base {
 
@@ -16,16 +16,17 @@ class SharedMemory;
 
 }
 
-// A AudioController::SyncReader implementation using SyncSocket. This is used
-// by AudioController to provide a low latency data source for transmitting
-// audio packets between the browser process and the renderer process.
-class AudioSyncReader : public media::AudioController::SyncReader {
+// A AudioOutputController::SyncReader implementation using SyncSocket. This
+// is used by AudioOutputController to provide a low latency data source for
+// transmitting audio packets between the browser process and the renderer
+// process.
+class AudioSyncReader : public media::AudioOutputController::SyncReader {
  public:
   explicit AudioSyncReader(base::SharedMemory* shared_memory);
 
   virtual ~AudioSyncReader();
 
-  // media::AudioController::SyncReader implementations.
+  // media::AudioOutputController::SyncReader implementations.
   virtual void UpdatePendingBytes(uint32 bytes);
   virtual uint32 Read(void* data, uint32 size);
   virtual void Close();

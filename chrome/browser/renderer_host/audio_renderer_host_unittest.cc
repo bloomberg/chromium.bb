@@ -301,12 +301,12 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void SimulateError() {
-    // Find the first AudioController in the AudioRendererHost.
+    // Find the first AudioOutputController in the AudioRendererHost.
     CHECK(host_->audio_entries_.size())
         << "Calls Create() before calling this method";
-    media::AudioController* controller =
+    media::AudioOutputController* controller =
         host_->audio_entries_.begin()->second->controller;
-    CHECK(controller) << "AudioController not found";
+    CHECK(controller) << "AudioOutputController not found";
 
     // Expect an error signal sent through IPC.
     EXPECT_CALL(*host_, OnStreamError(kRouteId, kStreamId))
@@ -422,8 +422,8 @@ TEST_F(AudioRendererHostTest, DataConversationRealStream) {
   Play();
 
   // If this is a real audio device, the data conversation is not limited
-  // to the buffer capacity of AudioController. So we do 5 exchanges before
-  // we close the device.
+  // to the buffer capacity of AudioOutputController. So we do 5 exchanges
+  // before we close the device.
   for (int i = 0; i < 5; ++i) {
     NotifyPacketReady();
   }
