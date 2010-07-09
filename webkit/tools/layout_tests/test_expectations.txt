@@ -87,3 +87,5 @@ BUGAWONG WIN LINUX MAC SKIP : ietestcenter/Javascript/15.4.4.15-3-8.html = TIMEO
 BUGAWONG WIN : plugins/keyboard-events.html = TEXT
 BUGAWONG WIN : http/tests/plugins/plugin-document-has-focus.html = TEXT
 BUGAWONG MAC : media/video-volume-slider.html = IMAGE+TEXT
+
+BUG48668 MAC : svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE+TEXT
