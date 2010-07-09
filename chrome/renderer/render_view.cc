@@ -5012,7 +5012,9 @@ void RenderView::ExecuteCodeImpl(WebFrame* frame,
                                  const ViewMsg_ExecuteCode_Params& params) {
   // Don't execute scripts in gallery pages.
   GURL frame_url = GURL(frame->url());
-  if (frame_url.host() == GURL(Extension::ChromeStoreURL()).host()) {
+  if (frame_url.host() == GURL(Extension::ChromeStoreURL()).host()
+      && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowScriptingGallery)) {
     Send(new ViewMsg_ExecuteCodeFinished(routing_id_, params.request_id, true));
     return;
   }

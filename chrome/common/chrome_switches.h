@@ -22,6 +22,7 @@ namespace switches {
 extern const char kActivateOnLaunch[];
 extern const char kAllowFileAccessFromFiles[];
 extern const char kAllowSandboxDebugging[];
+extern const char kAllowScriptingGallery[];
 extern const char kAlwaysEnableDevTools[];
 extern const char kApp[];
 extern const char kAppId[];

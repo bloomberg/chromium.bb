@@ -37,7 +37,7 @@ class UserScriptSlave {
   // Inject the appropriate scripts into a frame based on its URL.
   // TODO(aa): Extract a UserScriptFrame interface out of this to improve
   // testability.
-  bool InjectScripts(WebKit::WebFrame* frame, UserScript::RunLocation location);
+  void InjectScripts(WebKit::WebFrame* frame, UserScript::RunLocation location);
 
   static int GetIsolatedWorldId(const std::string& extension_id);
 

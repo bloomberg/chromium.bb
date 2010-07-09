@@ -25,6 +25,11 @@ const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
+// Allows injecting extensions and user scripts on the extensions
+// gallery site. Normally prevented for security reasons, but can be
+// useful for automation testing of the gallery.
+const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
+
 // Enable web inspector for all windows, even if they're part of the browser.
 // Allows us to use our dev tools to debug browser windows itself.
 const char kAlwaysEnableDevTools[]          = "always-enable-dev-tools";

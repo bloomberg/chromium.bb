@@ -141,18 +141,21 @@ void UserScriptSlave::InsertInitExtensionCode(
                    incognito ? "true" : "false"))));
 }
 
-bool UserScriptSlave::InjectScripts(WebFrame* frame,
+void UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
   GURL frame_url = GURL(frame->url());
   // Don't bother if this is not a URL we inject script into.
   if (!URLPattern(UserScript::kValidUserScriptSchemes).IsValidScheme(
                                  frame_url.scheme()))
-    return true;
+    return;
 
   // Don't inject user scripts into the gallery itself.  This prevents
   // a user script from removing the "report abuse" link, for example.
-  if (frame_url.host() == GURL(Extension::ChromeStoreURL()).host())
-    return true;
+  if (frame_url.host() == GURL(Extension::ChromeStoreURL()).host()
+      && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowScriptingGallery)) {
+    return;
+  }
 
   PerfTimer timer;
   int num_css = 0;
@@ -244,5 +247,5 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
 
   LOG(INFO) << "Injected " << num_scripts << " scripts and " << num_css <<
       " css files into " << frame->url().spec().data();
-  return true;
+  return;
 }

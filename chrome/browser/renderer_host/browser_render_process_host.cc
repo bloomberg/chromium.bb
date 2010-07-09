@@ -511,6 +511,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     // for official Google Chrome builds.
     switches::kInProcessPlugins,
 #endif  // GOOGLE_CHROME_BUILD
+    switches::kAllowScriptingGallery,
     switches::kDomAutomationController,
     switches::kUserAgent,
     switches::kNoReferrers,

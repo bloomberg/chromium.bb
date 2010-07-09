@@ -720,7 +720,9 @@ bool ExtensionsService::CanExecuteScriptOnHost(Extension* extension,
                                                std::string* error) const {
   // No extensions are allowed to execute script on the gallery because that
   // would allow extensions to manipulate their own install pages.
-  if (url.host() == GURL(Extension::ChromeStoreURL()).host()) {
+  if (url.host() == GURL(Extension::ChromeStoreURL()).host()
+      && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowScriptingGallery)) {
     if (error)
       *error = errors::kCannotScriptGallery;
     return false;
