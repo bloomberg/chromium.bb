@@ -57,6 +57,20 @@
       'target_base': 'none',
     },
     'target_conditions': [
+      ['OS=="linux" or OS=="mac"', {
+        'cflags': [
+          '-fexceptions',
+        ],
+        'cflags_cc' : [
+          '-frtti',
+        ]
+      }],
+      ['OS=="mac"', {
+        'xcode_settings': {
+          'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',      # -fexceptions
+          'GCC_ENABLE_CPP_RTTI': 'YES',            # -frtti
+        }
+      }],
       ['target_base=="sel"', {
         'sources': [
           'dyn_array.c',
@@ -65,6 +79,7 @@
           'nacl_app_thread.c',
           'nacl_bottom_half.c',
           'nacl_closure.c',
+          'nacl_debug.cc',
           'nacl_globals.c',
           'nacl_memory_object.c',
           'nacl_sync_queue.c',

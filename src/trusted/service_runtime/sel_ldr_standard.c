@@ -28,6 +28,7 @@
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_closure.h"
+#include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
@@ -370,6 +371,14 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     goto cleanup;
   }
 
+  /*
+   * Store information for remote query when debugging.
+   */
+  NaClDebugSetAppInfo(nap);
+  NaClDebugSetAppEnvironment(argc, (char const * const *) argv,
+                             envc, (char const * const *) envv);
+  NaClDebugStart();
+
   size = 0;
 
   /*
@@ -534,6 +543,8 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
   /*
    * Some thread invoked the exit (exit_group) syscall.
    */
+
+  NaClDebugStop(nap->exit_status);
 
   return (nap->exit_status);
 }

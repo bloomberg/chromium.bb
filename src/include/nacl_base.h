@@ -61,9 +61,13 @@
      TypeName(const TypeName&); \
      void operator=(const TypeName&)
 #endif  /* !defined(DISALLOW_COPY_AND_ASSIGN) */
+
+/* Mark this function as not throwing beyond */
+# define NO_THROW throw()
 #else
 # define EXTERN_C_BEGIN
 # define EXTERN_C_END
+# define NO_THROW
 #endif
 
 /*
