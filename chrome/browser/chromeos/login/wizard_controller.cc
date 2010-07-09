@@ -300,7 +300,9 @@ void WizardController::ShowNetworkScreen() {
 void WizardController::ShowLoginScreen() {
   SetStatusAreaVisible(true);
 
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
+  // When run under automation test show plain login screen.
+  if (!is_test_mode_ &&
+      chromeos::CrosLibrary::Get()->EnsureLoaded() &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableLoginImages)) {
     std::vector<chromeos::UserManager::User> users =
@@ -573,7 +575,7 @@ namespace browser {
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
-  LOG(INFO) << "showing login" << first_screen_name;
+  LOG(INFO) << "showing login screen: " << first_screen_name;
 
   // Tell the window manager that the user isn't logged in.
   chromeos::WmIpc::instance()->SetLoggedInProperty(false);
