@@ -108,6 +108,3 @@ PREFIX : messageloop::runtask___messageloop::deferorrunpendingtask___messageloop
 
 # 47839
 # PREFIX : base::objectwatcher::stopwatching___lockimpl::unlock___`anonymous namespace'::rolloverprotectednow___lockimpl::lock___conditionvariable::signal___watchdog::armsometimedeltaago___`anonymous namespace'::jankobserverhelper::startprocessingtimers___base::messagepumpforio::waitforiocompletion___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
-
-# 48475 / http://code.google.com/p/v8/issues/detail?id=769
-PREFIX : v8::internal::parser::parsefunctionliteral___v8::internal::parser::parsefunctiondeclaration___v8::internal::parser::parsestatement
