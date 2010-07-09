@@ -264,6 +264,14 @@ class Client {
   // the plugin to become reentrant. Detect this at a higher level.
   bool IsRendering();
 
+  // If Renderer::max_fps has been set in RENDERMODE_CONTINUOUS mode, we don't
+  // draw on each tick but just let new textures drive the rendering. There is
+  // only one exception: if we haven't received any new textures for a while, we
+  // still need to draw in order to trigger rendering callback. Since there
+  // might be some UI depends on rendering callback.
+  // This function determines if this has happened and if we need a draw.
+  bool NeedsContinuousRender();
+
   // Sets the texture to use when a Texture or Sampler is missing while
   // rendering. If you set it to NULL you'll get an error if you try to render
   // something that is missing a needed Texture, Sampler or ParamSampler

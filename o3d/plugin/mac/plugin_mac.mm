@@ -280,7 +280,7 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
         obj->IsOffscreenRenderingEnabled();
 
     if (plugin_visible && obj->renderer()) {
-      if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
+      if (obj->client()->NeedsContinuousRender() ||
           obj->renderer()->need_to_render()) {
         // Force a sync to the VBL (once per timer callback)
         // to avoid tearing

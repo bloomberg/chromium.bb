@@ -488,7 +488,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
       // If rendering continuously, invalidate the window and force a paint if
       // it is visible. The paint invalidates the renderer and Tick will later
       // repaint the window.
-      if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS) {
+      if (obj->client()->NeedsContinuousRender()) {
         InvalidateRect(obj->GetHWnd(), NULL, FALSE);
         UpdateWindow(obj->GetHWnd());
       }

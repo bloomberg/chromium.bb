@@ -65,6 +65,25 @@ using std::vector;
 using std::make_pair;
 
 namespace o3d {
+// If Renderer::max_fps has been set, rendering is driven by incoming new
+// textures. We draw on each new texture as long as not exceeding max_fps.
+//
+// If we are in RENDERMODE_ON_DEMAND mode, Client::Render() can still set dirty
+// specifically.
+//
+// If we are in RENDERMODE_CONTINUOUS mode, we do NOT set dirty on each tick any
+// more (since it is already driven by new textures.).
+// There is one problem here: what if new texture don't come in for some reason?
+// If that happened, no rendering callback will be invoked and this can cause
+// problem sometimes. For example, some UI may depend on the rendering callback
+// to work correctly.
+// So, in RENDERMODE_CONTINUOUS mode, if we have set max_fps but haven't
+// received any new texture for a while, we draw anyway to trigger the rendering
+// callback.
+// This value defines the minimum number of draws per seconds in
+// RENDERMODE_CONTINUOUS mode.
+static const float kContinuousModeMinDrawPerSecond = 15;
+// TODO(zhurunz) Tuning this value.
 
 // Client constructor.  Creates the default root node for the scenegraph
 Client::Client(ServiceLocator* service_locator)
@@ -354,6 +373,30 @@ void Client::RenderClient(bool send_callback) {
 
 bool Client::IsRendering() {
   return (renderer_.IsAvailable() && renderer_->rendering());
+}
+
+bool Client::NeedsContinuousRender() {
+  // Sanity check
+  if (!renderer_.IsAvailable()) {
+    return false;
+  }
+
+  bool needRender = false;
+  // Only may happen in RENDERMODE_CONTINUOUS mode.
+  if (render_mode() == RENDERMODE_CONTINUOUS) {
+    // Always need a draw in normal RENDERMODE_CONTINUOUS mode.
+    needRender = true;
+
+    // If max_fps has been set, only need a draw when "long time no draw".
+    int max_fps = renderer_->max_fps();
+    if (max_fps > 0 &&
+        render_elapsed_time_timer_.GetElapsedTimeWithoutClearing() <
+        1.0/kContinuousModeMinDrawPerSecond)
+    {
+      needRender = false;
+    }
+  }
+  return needRender;
 }
 
 // Executes draw calls for all visible shapes in a subtree

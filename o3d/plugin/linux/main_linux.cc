@@ -83,7 +83,7 @@ void LinuxTimer(XtPointer data, XtIntervalId* id) {
   obj->client()->Tick();
   obj->draw_ = true;
   if (obj->renderer()) {
-    if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
+    if (obj->client()->NeedsContinuousRender() ||
         obj->renderer()->need_to_render()) {
 
       // NOTE: this draws no matter what instead of just invalidating the
@@ -93,7 +93,7 @@ void LinuxTimer(XtPointer data, XtIntervalId* id) {
     }
   }
   obj->xt_interval_ =
-      XtAppAddTimeOut(obj->xt_app_context_, 10, LinuxTimer, obj);
+      XtAppAddTimeOut(obj->xt_app_context_, 8, LinuxTimer, obj);
 }
 
 void LinuxExposeHandler(Widget w,
@@ -606,7 +606,7 @@ static gboolean GtkTimeoutCallback(gpointer user_data) {
   obj->draw_ = true;
   obj->client()->Tick();
   if (obj->renderer()) {
-    if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
+    if (obj->client()->NeedsContinuousRender() ||
         obj->renderer()->need_to_render()) {
 
       GtkWidget *widget;
@@ -802,7 +802,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
       }
       gtk_widget_show(obj->gtk_container_);
       drawable = GDK_WINDOW_XID(obj->gtk_container_->window);
-      obj->timeout_id_ = g_timeout_add(10, GtkTimeoutCallback, obj);
+      obj->timeout_id_ = g_timeout_add(8, GtkTimeoutCallback, obj);
     } else {
       // No XEmbed support, the xwindow is a Xt Widget.
       Widget widget = XtWindowToWidget(display, xwindow);
@@ -822,7 +822,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
                         LinuxEnterLeaveHandler, obj);
       obj->xt_app_context_ = XtWidgetToApplicationContext(widget);
       obj->xt_interval_ =
-          XtAppAddTimeOut(obj->xt_app_context_, 10, LinuxTimer, obj);
+          XtAppAddTimeOut(obj->xt_app_context_, 8, LinuxTimer, obj);
     }
 
     // Create and assign the graphics context.
