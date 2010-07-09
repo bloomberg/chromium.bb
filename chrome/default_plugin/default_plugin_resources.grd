@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/default_plugin_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="default_plugin_resources.pak" type="data_package" />
+    <output filename="default_plugin_resources.rc" type="rc_all" />
+  </outputs>
+  <release seq="1">
+    <includes>
+      <!-- Medium-term, all the default plugin strings should be moved here. -->
+      <include name="IDR_PLUGIN_ICON" file="plugin_icon.png" type="BINDATA" />
+    </includes>
+  </release>
+</grit>

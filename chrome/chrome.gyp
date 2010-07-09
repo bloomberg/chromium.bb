@@ -1762,6 +1762,7 @@
               'pak_inputs': [
                 '<(grit_out_dir)/browser_resources.pak',
                 '<(grit_out_dir)/common_resources.pak',
+                '<(grit_out_dir)/default_plugin_resources/default_plugin_resources.pak',
                 '<(grit_out_dir)/renderer_resources.pak',
                 '<(grit_out_dir)/theme_resources.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',

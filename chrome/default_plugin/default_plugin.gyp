@@ -5,12 +5,16 @@
 {
   'variables': {
     'chromium_code': 1,
+    'grit_info_cmd': ['python', '../../tools/grit/grit_info.py',],
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
+    'grit_cmd': ['python', '../../tools/grit/grit.py'],
    },
   'targets': [
     {
       'target_name': 'default_plugin',
       'type': '<(library)',
       'dependencies': [
+        ':default_plugin_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
@@ -54,6 +58,45 @@
               '<(DEPTH)/build/linux/system.gyp:gtk',
             ],
          }],
+      ],
+    },
+    # This can't be part of chrome.gyp:chrome_resources because then there'd
+    # be a cyclic dependency.
+    {
+      'target_name': 'default_plugin_resources',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'default_plugin_resources',
+          'variables': {
+            'input_path': 'default_plugin_resources.grd',
+          },
+          'inputs': [
+            '<!@(<(grit_info_cmd) --inputs <(input_path))',
+          ],
+          'outputs': [
+            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/default_plugin_resources\' <(input_path))',
+          ],
+          'action': ['<@(grit_cmd)',
+                     '-i', '<(input_path)', 'build',
+                     '-o', '<(grit_out_dir)/default_plugin_resources'],
+          'conditions': [
+            ['toolkit_views==1', {
+              'action': ['-D', 'toolkit_views'],
+            }],
+          ],
+          'message': 'Generating resources from <(input_path)',
+        },
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(grit_out_dir)/default_plugin_resources',
+        ],
+      },
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': ['../../build/win/system.gyp:cygwin'],
+        }],
       ],
     },
   ],

@@ -11,6 +11,14 @@
 #include "gfx/native_widget_types.h"
 #include "third_party/npapi/bindings/npapi.h"
 
+#ifdef __OBJ__
+@class NSImage;
+@class NSString;
+#else
+class NSImage;
+class NSString;
+#endif
+
 // Possible plugin installer states.
 enum PluginInstallerState {
   PluginInstallerStateUndefined,
@@ -277,6 +285,10 @@ class PluginInstallerImpl {
   // Dimensions of the plugin
   uint32_t width_;
   uint32_t height_;
+  // Plugin icon
+  NSImage* image_;
+  // Displayed text
+  NSString* command_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstallerImpl);
 };
