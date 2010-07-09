@@ -276,7 +276,9 @@ void Firefox2Importer::ImportBookmarks() {
   if (!bookmarks.empty() && !cancelled()) {
     int options = 0;
     if (import_to_bookmark_bar())
-      options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
+      options |= ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
+    if (bookmark_bar_disabled())
+      options |= ProfileWriter::BOOKMARK_BAR_DISABLED;
     bridge_->AddBookmarkEntries(bookmarks, first_folder_name, options);
   }
   if (!parsing_bookmarks_html_file_ && !template_urls.empty() &&

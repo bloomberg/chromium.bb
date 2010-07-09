@@ -131,7 +131,7 @@ void ProfileWriter::AddBookmarkEntry(
     model->EndImportMode();
   }
 
-  if (show_bookmark_toolbar)
+  if (show_bookmark_toolbar && !(options & BOOKMARK_BAR_DISABLED))
     ShowBookmarkBar();
 }
 

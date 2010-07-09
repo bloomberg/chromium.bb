@@ -39,7 +39,8 @@ using webkit_glue::PasswordForm;
 
 Importer::Importer()
     : cancelled_(false),
-      import_to_bookmark_bar_(false) {
+      import_to_bookmark_bar_(false),
+      bookmark_bar_disabled_(false) {
 }
 
 Importer::~Importer() {
@@ -177,6 +178,7 @@ void ImporterHost::StartImportSettings(
   importer_->AddRef();
 
   importer_->set_import_to_bookmark_bar(ShouldImportToBookmarkBar(first_run));
+  importer_->set_bookmark_bar_disabled(first_run);
   scoped_refptr<ImporterBridge> bridge(
       new InProcessImporterBridge(writer_.get(), this));
   task_ = NewRunnableMethod(importer_, &Importer::StartImport,
@@ -584,4 +586,3 @@ void ExternalProcessImporterClient::OnKeywordsImportReady(
   bridge_->SetKeywords(template_url_vec, default_keyword_index,
                        unique_on_host_and_path);
 }
-

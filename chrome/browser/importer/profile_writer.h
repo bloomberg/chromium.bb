@@ -40,7 +40,10 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
     ADD_IF_UNIQUE = 1 << 0,
 
     // Indicates the bookmarks should be added to the bookmark bar.
-    IMPORT_TO_BOOKMARK_BAR     = 1 << 1
+    IMPORT_TO_BOOKMARK_BAR = 1 << 1,
+
+    // Indicates the bookmark bar is not shown.
+    BOOKMARK_BAR_DISABLED = 1 << 2
   };
 
   explicit ProfileWriter(Profile* profile) : profile_(profile) {}

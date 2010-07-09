@@ -451,6 +451,14 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
     import_to_bookmark_bar_ = import_to_bookmark_bar;
   }
 
+  void set_bookmark_bar_disabled(bool bookmark_bar_disabled) {
+    bookmark_bar_disabled_ = bookmark_bar_disabled;
+  }
+
+  bool bookmark_bar_disabled() {
+    return bookmark_bar_disabled_;
+  }
+
   bool cancelled() const { return cancelled_; }
 
  protected:
@@ -475,6 +483,11 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
 
   // True if the importer is created in the first run UI.
   bool import_to_bookmark_bar_;
+
+  // Whether bookmark bar is disabled (not shown) for importer. This is set
+  // true during first run to prevent out of process bookmark importer from
+  // updating bookmark bar settings.
+  bool bookmark_bar_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(Importer);
 };
