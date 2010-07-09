@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,22 @@
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/logging_installer.h"
+
+namespace {
+
+// TODO: refactor this because it is only used once.
+void UpOneDirectoryOrEmpty(std::wstring* dir) {
+  FilePath path = FilePath::FromWStringHack(*dir);
+  FilePath directory = path.DirName();
+  // If there is no separator, we will get back kCurrentDirectory.
+  // In this case, clear dir.
+  if (directory == path || directory.value() == FilePath::kCurrentDirectory)
+    dir->clear();
+  else
+    *dir = directory.ToWStringHack();
+}
+
+} // namespace
 
 CreateRegKeyWorkItem::~CreateRegKeyWorkItem() {
 }
@@ -98,7 +114,7 @@ bool CreateRegKeyWorkItem::InitKeyList() {
     key_list_.push_back(key_path);
     // This is pure string operation so it does not matter whether the
     // path is file path or registry path.
-    file_util::UpOneDirectoryOrEmpty(&key_path);
+    UpOneDirectoryOrEmpty(&key_path);
   } while (!key_path.empty());
 
   return true;

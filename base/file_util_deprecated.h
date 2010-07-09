@@ -28,8 +28,6 @@ FILE* OpenFile(const std::wstring& filename, const char* mode);
 
 // Use FilePath::DirName instead.
 void UpOneDirectory(std::wstring* dir);
-// Use FilePath::DirName instead.
-void UpOneDirectoryOrEmpty(std::wstring* dir);
 
 // Use FilePath::BaseName instead.
 std::wstring GetFilenameFromPath(const std::wstring& path);
