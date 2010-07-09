@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/gpu_info.h"
+#include "chrome/common/gpu_info.h"
 
 uint32 GPUInfo::vendor_id() const {
   return vendor_id_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_GPU_INFO_H__
-#define CHROME_GPU_GPU_INFO_H__
+#ifndef CHROME_COMMON_GPU_INFO_H__
+#define CHROME_COMMON_GPU_INFO_H__
 
 // Provides access to the GPU information for the system
 // on which chrome is currently running.
@@ -11,8 +11,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-
-struct IDirect3D9;
 
 class GPUInfo {
  public:
@@ -40,28 +38,11 @@ class GPUInfo {
   // should be okay.
   uint32 vertex_shader_version() const;
 
-  // Populate variables with necessary graphics card information.
-  // Returns true on success.
-  bool CollectGraphicsInfo();
-
   // Populate variables with passed in values
   void SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
                        const std::wstring& driver_version,
                        uint32 pixel_shader_version,
                        uint32 vertex_shader_version);
-
-#if defined(OS_WIN)
-  // Windows provides two ways of doing graphics so we need two ways of
-  // collecting info based on what's on a user's machine.
-  // The selection between the two methods is done in the cc file.
-
-  // A D3D argument is passed in for testing purposes
-  bool CollectGraphicsInfoD3D(IDirect3D9* d3d);
-
-  // The GL version of collecting information
-  bool CollectGraphicsInfoGL();
-#endif
-
  private:
   uint32 vendor_id_;
   uint32 device_id_;
@@ -70,4 +51,4 @@ class GPUInfo {
   uint32 vertex_shader_version_;
 };
 
-#endif  // CHROME_GPU_GPU_INFO_H__
+#endif  // CHROME_COMMON_GPU_INFO_H__

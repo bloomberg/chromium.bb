@@ -53,6 +53,8 @@
           'common/font_descriptor_mac.mm',
           'common/geoposition.cc',
           'common/geoposition.h',
+          'common/gpu_info.h',
+          'common/gpu_info.cc',
           'common/gpu_messages.h',
           'common/gpu_messages_internal.h',
           'common/logging_chrome.cc',

@@ -4,8 +4,9 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/gpu/gpu_idirect3d9_mock_win.h"
-#include "chrome/gpu/gpu_info.h"
+#include "chrome/gpu/gpu_info_collector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,9 +21,6 @@ class GPUInfoTest : public testing::Test {
 
  protected:
   void SetUp() {
-    gpu_info_.reset(new GPUInfo());
-    ASSERT_TRUE(gpu_info() != NULL);
-
     // Test variables taken from Lenovo T61
     test_identifier_.VendorId = 0x10de;
     test_identifier_.DeviceId = 0x429;
@@ -39,46 +37,45 @@ class GPUInfoTest : public testing::Test {
                         Return(D3D_OK)));
   }
   void TearDown() {
-    gpu_info_.reset();
   }
 
  public:
-  GPUInfo* gpu_info() {
-    return gpu_info_.get();
-  }
-
   IDirect3D9Mock d3d_;
  private:
-  scoped_ptr<GPUInfo> gpu_info_;
   D3DADAPTER_IDENTIFIER9 test_identifier_;
   D3DCAPS9 test_caps_;
 };
 
 TEST_F(GPUInfoTest, VendorIdD3D) {
-  ASSERT_TRUE(gpu_info()->CollectGraphicsInfoD3D(&d3d_));
-  EXPECT_EQ(gpu_info()->vendor_id(), 0x10de);
+  GPUInfo gpu_info;
+  ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, gpu_info));
+  EXPECT_EQ(gpu_info.vendor_id(), 0x10de);
 }
 
 TEST_F(GPUInfoTest, DeviceIdD3D) {
-  ASSERT_TRUE(gpu_info()->CollectGraphicsInfoD3D(&d3d_));
-  EXPECT_EQ(gpu_info()->device_id(), 0x429);
+  GPUInfo gpu_info;
+  ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, gpu_info));
+  EXPECT_EQ(gpu_info.device_id(), 0x429);
 }
 
 TEST_F(GPUInfoTest, DriverVersionD3D) {
-  ASSERT_TRUE(gpu_info()->CollectGraphicsInfoD3D(&d3d_));
-  std::wstring driver_version = gpu_info()->driver_version();
+  GPUInfo gpu_info;
+  ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, gpu_info));
+  std::wstring driver_version = gpu_info.driver_version();
   EXPECT_FALSE(driver_version.empty());
   EXPECT_EQ(driver_version, L"6.14.11.7715");
 }
 
 TEST_F(GPUInfoTest, PixelShaderVersionD3D) {
-  ASSERT_TRUE(gpu_info()->CollectGraphicsInfoD3D(&d3d_));
-  uint32 ps_version = gpu_info()->pixel_shader_version();
+  GPUInfo gpu_info;
+  ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, gpu_info));
+  uint32 ps_version = gpu_info.pixel_shader_version();
   EXPECT_EQ(ps_version, D3DPS_VERSION(3, 0));
 }
 
 TEST_F(GPUInfoTest, VertexShaderVersionD3D) {
-  ASSERT_TRUE(gpu_info()->CollectGraphicsInfoD3D(&d3d_));
-  uint32 vs_version = gpu_info()->vertex_shader_version();
+  GPUInfo gpu_info;
+  ASSERT_TRUE(gpu_info_collector::CollectGraphicsInfoD3D(&d3d_, gpu_info));
+  uint32 vs_version = gpu_info.vertex_shader_version();
   EXPECT_EQ(vs_version, D3DVS_VERSION(3, 0));
 }
