@@ -401,7 +401,6 @@ void ProtData::FireSugestedMimeType(IInternetProtocolSink* delegate) {
         << suggested_mime_type_;
     delegate->ReportProgress(BINDSTATUS_SERVER_MIMETYPEAVAILABLE,
                              suggested_mime_type_);
-    return;
   }
 
   if (has_suggested_mime_type_) {
