@@ -369,6 +369,9 @@ Section::Section(const string16& title,
   description_label_ = new views::Label(UTF16ToWideHack(description));
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  // Allow linebreaking in the middle of words if necessary, so that extremely
+  // long hostnames (longer than one line) will still be completely shown.
+  description_label_->SetAllowCharacterBreak(true);
   AddChildView(description_label_);
 }
 

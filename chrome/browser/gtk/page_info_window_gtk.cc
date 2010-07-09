@@ -165,6 +165,9 @@ GtkWidget* PageInfoWindowGtk::CreateSection(
   label = gtk_label_new(UTF16ToUTF8(section.description).c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+  // Allow linebreaking in the middle of words if necessary, so that extremely
+  // long hostnames (longer than one line) will still be completely shown.
+  gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
   gtk_box_pack_start(GTK_BOX(text_box), label, FALSE, FALSE, 0);
   gtk_widget_set_size_request(label, 400, -1);
 
