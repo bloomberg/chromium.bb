@@ -2037,6 +2037,13 @@
              '../build/linux/system.gyp:nss',
            ],
         }],
+        ['OS=="mac"', {
+          # See the comment in this section of the unit_tests target for an
+          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
+          'dependencies+++': [
+            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
+        }],
         ['OS=="win"', {
           'sources': [
             'app/chrome_dll.rc',
@@ -2323,6 +2330,12 @@
               },
             }],
             ['OS=="mac"', {
+              # See the comment in this section of the unit_tests target for an
+              # explanation (crbug.com/43791 - libwebcore.a is too large to
+              # mmap).
+              'dependencies+++': [
+                '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+              ],
               'include_dirs': [
                 '..',
                 '$(SDKROOT)/usr/include/python2.5',
