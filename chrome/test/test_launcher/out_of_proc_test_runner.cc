@@ -38,7 +38,9 @@ const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
 const char kChildProcessFlag[]   = "child";
 const char kHelpFlag[]   = "help";
 
-const int64 kDefaultTestTimeoutMs = 30000;
+// This value was changed from 30000 (30sec) to 45000 due to
+// http://crbug.com/43862.
+const int64 kDefaultTestTimeoutMs = 45000;
 
 class OutOfProcTestRunner : public tests::TestRunner {
  public:
