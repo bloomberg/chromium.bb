@@ -39,6 +39,7 @@ typedef struct {
     NPBool testWindowOpen;
     NPBool testDocumentOpenInDestroyStream;
     NPBool testKeyboardFocusForPlugins;
+    NPBool mouseDownForEvaluateScript;
     char* onStreamLoad;
     char* onStreamDestroy;
     char* onURLNotify;
@@ -46,6 +47,7 @@ typedef struct {
     char* firstHeaders;
     char* lastUrl;
     char* lastHeaders;
+    char* evaluateScriptOnMouseDownOrKeyDown;
 } PluginObject;
 
 extern NPClass *getPluginClass(void);

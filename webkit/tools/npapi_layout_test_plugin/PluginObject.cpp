@@ -988,6 +988,9 @@ static NPObject *pluginAllocate(NPP npp, NPClass *theClass)
     newInstance->testWindowOpen = false;
     newInstance->testKeyboardFocusForPlugins = false;
 
+    newInstance->evaluateScriptOnMouseDownOrKeyDown = NULL;
+    newInstance->mouseDownForEvaluateScript = false;
+
     return (NPObject*)newInstance;
 }
 

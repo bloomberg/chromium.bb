@@ -141,8 +141,20 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
                 obj->testDocumentOpenInDestroyStream = true;
             } else if (strcasecmp(argn[i], "testwindowopen") == 0) {
                 obj->testWindowOpen = true;
-            } else if (strcasecmp(argn[i], "src") == 0 && strstr(argv[i], "plugin-document-has-focus.pl"))
+            } else if (strcasecmp(argn[i], "src") == 0 && strstr(argv[i], "plugin-document-has-focus.pl")) {
                 obj->testKeyboardFocusForPlugins = true;
+            } else if (strcasecmp(argn[i], "evaluatescript") == 0) {
+                char* script = argv[i];
+                if (script == strstr(script, "mouse::")) {
+                    obj->mouseDownForEvaluateScript = true;
+                    obj->evaluateScriptOnMouseDownOrKeyDown = strdup(script + sizeof("mouse::") - 1);
+                } else if (script == strstr(script, "key::")) {
+                    obj->evaluateScriptOnMouseDownOrKeyDown = strdup(script + sizeof("key::") - 1);
+                }
+                // When testing evaluate script on mouse-down or key-down, allow event logging.
+                if (obj->evaluateScriptOnMouseDownOrKeyDown)
+                    obj->eventLogging = true;
+            }
         }
 
         instance->pdata = obj;
@@ -288,6 +300,9 @@ int16_t NPP_HandleEvent(NPP instance, void *event)
         case WM_MBUTTONDOWN:
         case WM_RBUTTONDOWN:
             log(instance, "mouseDown at (%d, %d)", x, y);
+            if (obj->evaluateScriptOnMouseDownOrKeyDown &&
+                obj->mouseDownForEvaluateScript)
+                executeScript(obj, obj->evaluateScriptOnMouseDownOrKeyDown);
             break;
         case WM_LBUTTONUP:
         case WM_MBUTTONUP:
@@ -312,6 +327,9 @@ int16_t NPP_HandleEvent(NPP instance, void *event)
             break;
         case WM_KEYDOWN:
             log(instance, "keyDown '%c'", MapVirtualKey(evt->wParam, MAPVK_VK_TO_CHAR));
+            if (obj->evaluateScriptOnMouseDownOrKeyDown &&
+                !obj->mouseDownForEvaluateScript)
+                executeScript(obj, obj->evaluateScriptOnMouseDownOrKeyDown);
             break;
         case WM_SETCURSOR:
             break;
@@ -334,6 +352,9 @@ int16_t NPP_HandleEvent(NPP instance, void *event)
     switch (evt->type) {
         case ButtonPress:
             log(instance, "mouseDown at (%d, %d)", bpress_evt->x, bpress_evt->y);
+            if (obj->evaluateScriptOnMouseDownOrKeyDown &&
+                obj->mouseDownForEvaluateScript)
+                executeScript(obj, obj->evaluateScriptOnMouseDownOrKeyDown);
             break;
         case ButtonRelease:
             log(instance, "mouseUp at (%d, %d)", brelease_evt->x, brelease_evt->y);
@@ -341,6 +362,9 @@ int16_t NPP_HandleEvent(NPP instance, void *event)
         case KeyPress:
             // TODO: extract key code
             log(instance, "NOTIMPLEMENTED: keyDown '%c'", ' ');
+            if (obj->evaluateScriptOnMouseDownOrKeyDown &&
+                !obj->mouseDownForEvaluateScript)
+                executeScript(obj, obj->evaluateScriptOnMouseDownOrKeyDown);
             break;
         case KeyRelease:
             // TODO: extract key code
@@ -382,6 +406,9 @@ int16_t NPP_HandleEvent(NPP instance, void *event)
         case mouseDown:
             GlobalToLocal(&pt);
             log(instance, "mouseDown at (%d, %d)", pt.h, pt.v);
+            if (obj->evaluateScriptOnMouseDownOrKeyDown &&
+                obj->mouseDownForEvaluateScript)
+                executeScript(obj, obj->evaluateScriptOnMouseDownOrKeyDown);
             break;
         case mouseUp:
             GlobalToLocal(&pt);
@@ -389,6 +416,9 @@ int16_t NPP_HandleEvent(NPP instance, void *event)
             break;
         case keyDown:
             log(instance, "keyDown '%c'", (char)(evt->message & 0xFF));
+            if (obj->evaluateScriptOnMouseDownOrKeyDown &&
+                !obj->mouseDownForEvaluateScript)
+                executeScript(obj, obj->evaluateScriptOnMouseDownOrKeyDown);
             break;
         case keyUp:
             log(instance, "keyUp '%c'", (char)(evt->message & 0xFF));
