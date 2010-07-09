@@ -122,6 +122,7 @@ WaitableEventWatcher::WaitableEventWatcher()
     : event_(NULL),
       message_loop_(NULL),
       cancel_flag_(NULL),
+      waiter_(NULL),
       callback_task_(NULL),
       delegate_(NULL) {
 }
