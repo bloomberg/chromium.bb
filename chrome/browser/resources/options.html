@@ -39,10 +39,18 @@ function load() {
   OptionsPage.register(AdvancedOptions.getInstance());
   if (cr.isChromeOS) {
     var labsOptions = new OptionsPage('labs',
-                                      templateData.labsPage,
+                                      localStrings.getString('labsPage'),
                                       'labsPage');
     OptionsPage.register(labsOptions);
   }
+
+  var syncSettings = new OptionsPage('sync',
+                                     localStrings.getString('syncPage'),
+                                     'syncPage');
+  OptionsPage.registerSubPage(syncSettings);
+
+  var dummyPage = new OptionsPage('dummy', 'Overlay Test Page', 'dummyPage');
+  OptionsPage.registerOverlay(dummyPage);
 
   Preferences.getInstance().initialize();
   if (cr.isChromeOS) {
@@ -60,11 +68,19 @@ window.onpopstate = function(e) {
 
 </script>
 <link rel="stylesheet" href="dom_ui.css">
-<!-- TODO(zelidrag) just a temp style placeholder until redesign -->
 <link rel="stylesheet" href="options/options_page.css">
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div class="header">
+</div>
+<div id="overlay" class="hidden">
+  <div id="overlayview">
+    <button id="close-overlay" onclick="OptionsPage.clearOverlays();"></button>
+    <div class="page hidden" id="dummyPage">
+        <!-- TODO(dhg): remove this one once we get another page here -->
+        Dummy Overlay Page
+     </div>
+  </div>
 </div>
 <div id="main-content">
   <div id="navbar-container">
@@ -72,13 +88,14 @@ window.onpopstate = function(e) {
      <ul id="navbar">
      </ul>
      <hr/>
-     <ul class="hidden">
+     <ul id="subpagesnav">
      </ul>
   </div>
   <div id="mainview">
      <if expr="pp_ifdef('chromeos')">
         <include src="options/chromeos_system_options.html">
         <include src="options/chromeos_labs.html">
+        <include src="options/sync_options.html" >
      </if>     
      <include src="options/browser_options.html">
      <include src="options/personal_options.html">

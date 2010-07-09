@@ -39,6 +39,7 @@
 #include "grit/theme_resources.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/dom_ui/sync_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/labs_handler.h"
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
@@ -108,6 +109,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new SyncOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LabsHandler());
 #endif
 

@@ -24,6 +24,17 @@ function OptionsPage(name, title, pageDivName) {
 OptionsPage.registeredPages_ = {};
 
 /**
+ * Pages which are meant to have an entry in the nav, but
+ * not have a permanent entry.
+ */
+OptionsPage.registeredSubPages_ = {};
+
+/**
+ * Pages which are meant to behave like model dialogs.
+ */
+OptionsPage.registeredOverlayPages_ = {};
+
+/**
  * Shows a registered page.
  * @param {string} pageName Page name.
  */
@@ -34,15 +45,26 @@ OptionsPage.showPageByName = function(pageName) {
   }
 };
 
-OptionsPage.setState = function(state) {
-  if (state.pageName)
-    OptionsPage.showPageByName(state.pageName);
+/**
+ * Shows a registered Overlay page.
+ * @param {string} overlayName Page name.
+ */
+OptionsPage.showOverlay = function(overlayName) {
+  if (OptionsPage.registeredOverlayPages_[overlayName]) {
+    OptionsPage.registeredOverlayPages_[overlayName].visible = true;
+  }
+};
+
+OptionsPage.clearOverlays = function() {
+   for (var name in OptionsPage.registeredOverlayPages_) {
+     var page = OptionsPage.registeredOverlayPages_[name];
+     page.visible = false;
+   }
 };
 
 /**
  * Registers new options page.
- * @param {OptionsPage} page Page to register, must be of a class derived from
- * OptionsPage.
+ * @param {OptionsPage} page Page to register.
  */
 OptionsPage.register = function(page) {
   OptionsPage.registeredPages_[page.name] = page;
@@ -58,6 +80,35 @@ OptionsPage.register = function(page) {
   var navbar = $('navbar');
   navbar.appendChild(pageNav);
   page.tab = pageNav;
+  page.initializePage();
+};
+
+/**
+ * Registers a new Sub tab page.
+ * @param {OptionsPage} page Page to register.
+ */
+OptionsPage.registerSubPage = function(page) {
+  OptionsPage.registeredPages_[page.name] = page;
+  var pageNav = document.createElement('li');
+  pageNav.id = page.name + 'PageNav';
+  pageNav.className = 'navbar-item subpage-nav';
+  pageNav.setAttribute('pageName', page.name);
+  pageNav.textContent = page.title;
+  var subpagesnav = $('subpagesnav');
+  subpagesnav.appendChild(pageNav);
+  page.tab = pageNav;
+  page.initializePage();
+};
+
+/**
+ * Registers a new Overlay page.
+ * @param {OptionsPage} page Page to register, must be a class derviced from
+ * OptionsPage.
+ */
+OptionsPage.registerOverlay = function(page) {
+  OptionsPage.registeredOverlayPages_[page.name] = page;
+  page.tab = undefined;
+  page.isOverlay = true;
   page.initializePage();
 };
 
@@ -88,10 +139,24 @@ OptionsPage.prototype = {
                                this.title,
                                '/' + this.name);
       this.pageDiv.style.display = 'block';
-      this.tab.classList.add('navbar-item-selected');
+      if (this.isOverlay) {
+        var overlay = $('overlay');
+        overlay.classList.remove('hidden');
+        overlay.classList.add('overlay-visible');
+      }
+      if (this.tab) {
+        this.tab.classList.add('navbar-item-selected');
+      }
     } else {
+      if (this.isOverlay) {
+        var overlay = $('overlay');
+        overlay.classList.add('hidden');
+        overlay.classList.remove('overlay-visible');
+      }
       this.pageDiv.style.display = 'none';
-      this.tab.classList.remove('navbar-item-selected');
+      if (this.tab) {
+        this.tab.classList.remove('navbar-item-selected');
+      }
     }
   }
 };

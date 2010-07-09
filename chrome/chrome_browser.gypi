@@ -386,6 +386,8 @@
         'browser/chromeos/cros/system_library.h',
         'browser/chromeos/customization_document.cc',
         'browser/chromeos/customization_document.h',
+        'browser/chromeos/dom_ui/sync_options_handler.cc',
+        'browser/chromeos/dom_ui/sync_options_handler.h',
         'browser/chromeos/dom_ui/labs_handler.cc',
         'browser/chromeos/dom_ui/labs_handler.h',
         'browser/chromeos/dom_ui/system_options_handler.cc',
