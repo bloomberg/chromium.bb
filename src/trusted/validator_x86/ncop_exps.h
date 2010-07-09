@@ -71,7 +71,7 @@ int NaClExpWidth(NaClExpVector* vector, int node);
 int NaClGetExpKidIndex(NaClExpVector* vector, int node, int kid);
 
 /* Given an index in the vector, return the index to its parent.
- * Note: index must be > 0.
+ * Note: index must be > 0. Returns -1 if no parent defined.
  */
 int NaClGetExpParentIndex(NaClExpVector* vector, int node);
 

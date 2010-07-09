@@ -1,0 +1,5 @@
+Checking jump targets: 0 to c
+At address 5:
+ERROR: Bad jump target
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***

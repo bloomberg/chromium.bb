@@ -5,7 +5,7 @@
  */
 
 
-#include "native_client/src/trusted/validator_x86/nc_store_protect.h"
+#include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_trans.h"
@@ -22,8 +22,23 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+/*
+ * When true, check both uses and sets of memory. When false, only
+ * check sets.
+ */
+Bool NACL_FLAGS_read_sandbox = FALSE;
+
+/* Returns true if the node corresponds to an expression set, or an
+ * expression use if we are doing read sandboxing.
+ */
+static Bool IsPossibleSandboxingNode(NaClExp* node) {
+  return ((NACL_FLAGS_read_sandbox && (node->flags & NACL_EFLAG(ExprUsed))) ||
+          (node->flags & NACL_EFLAG(ExprSet)));
+}
+
+
 /* Checks if the given node index for the given instruction is
- * a valid memory offset, based on NACL rules, returning TRUE iff
+ * a valid (sandboxed) memory offset, based on NACL rules, returning TRUE iff
  * the memory offset is NACL compliant.
  * parameters are:
  *    state - The state of the validator,
@@ -72,9 +87,15 @@ static Bool NaClIsValidMemOffset(
       base_reg != RegRSP &&
       base_reg != RegRBP &&
       base_reg != RegRIP) {
-    if (print_messages) {
-      NaClValidatorInstMessage(LOG_ERROR, state, inst,
-                               "Invalid base register in memory store\n");
+    /* Don't print warning about non-set memory offset, unless
+     * read sandboxing.
+     */
+    if (print_messages && IsPossibleSandboxingNode(node)) {
+      NaClValidatorInstMessage(
+          LOG_ERROR, state, inst,
+          (base_reg == RegUnknown
+           ? "No base register specified in memory offset\n"
+           : "Invalid base register in memory offset\n"));
     }
     return FALSE;
   }
@@ -105,7 +126,7 @@ static Bool NaClIsValidMemOffset(
     if (!index_reg_is_good) {
       if (print_messages) {
         NaClValidatorInstMessage(LOG_ERROR, state, inst,
-                                 "Invalid index register in memory store\n");
+                                 "Invalid index register in memory offset\n");
       }
       return FALSE;
     }
@@ -118,7 +139,7 @@ static Bool NaClIsValidMemOffset(
         (ExprConstant64 == vector->node[disp_index].kind)) {
       if (print_messages) {
         NaClValidatorInstMessage(LOG_ERROR, state, inst,
-                                 "Invalid displacement in memory store\n");
+                                 "Invalid index register in memory offset\n");
       }
       return FALSE;
     }
@@ -126,9 +147,9 @@ static Bool NaClIsValidMemOffset(
   return TRUE;
 }
 
-void NaClStoreValidator(NaClValidatorState* state,
-                        NaClInstIter* iter,
-                        void* ignore) {
+void NaClMemoryReferenceValidator(NaClValidatorState* state,
+                                  NaClInstIter* iter,
+                                  void* ignore) {
   uint32_t i;
   NaClInstState* inst_state = NaClInstIterGetState(iter);
   NaClExpVector* vector = NaClInstStateExpVector(inst_state);
@@ -143,7 +164,9 @@ void NaClStoreValidator(NaClValidatorState* state,
   /* Look for assignments on a memory offset. */
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     NaClExp* node = &vector->node[i];
-    if (node->flags & NACL_EFLAG(ExprSet)) {
+    DEBUG(printf("processing argument %"NACL_PRIu32"\n", i));
+    if (IsPossibleSandboxingNode(node)) {
+      DEBUG(printf("found possible sandboxing reference\n"));
       if (NaClIsValidMemOffset(state, iter, 0, inst_state, vector, i, TRUE)) {
         continue;
       } else if (ExprSegmentAddress == node->kind) {
@@ -234,18 +257,33 @@ void NaClStoreValidator(NaClValidatorState* state,
         }
         /* If reached, we don't know how to handle the segment assign. */
         NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
-                                 "Segment store not allowed\n");
+                                 "Segment memory reference not allowed\n");
       } else if (UndefinedExp == node->kind ||
                  (ExprRegister == node->kind &&
                   RegUnknown == NaClGetExpRegister(node))) {
-        /* This shouldn't happpen, but if it does, its because either:
-         * (1) We couldn't translate the expression, and hence complain; or
-         * (2) It is an X87 instruction with a register address, which we don't
-         *     allow (in case these instructions get generalized in the future).
+        /* First rule out case where the base or index registers of the memory
+         * offset may be unknown.
          */
-        NaClValidatorInstMessage(
-            LOG_ERROR, state, inst_state,
-            "Store not understood, can't verify correctness.\n");
+        int parent_index = NaClGetExpParentIndex(vector, i);
+        if (parent_index >= 0 &&
+            (i == NaClGetExpKidIndex(vector, parent_index, 0) ||
+             i == NaClGetExpKidIndex(vector, parent_index, 1))) {
+          /* Special case of memory offsets that we allow, ignore.
+             That is, memory offsets can optionally define a base and
+             an index register. If they aren't specified, the value
+             RegUnknown is used as a placeholder (and hence legal).
+           */
+        } else {
+          /* This shouldn't happpen, but if it does, its because either:
+           * (1) We couldn't translate the expression, and hence complain; or
+           * (2) It is an X87 instruction with a register address, which we
+           *     don't allow (in case these instructions get generalized in
+           *     the future).
+           */
+          NaClValidatorInstMessage(
+              LOG_ERROR, state, inst_state,
+              "Memory reference not understood, can't verify correctness.\n");
+        }
       }
     }
   }

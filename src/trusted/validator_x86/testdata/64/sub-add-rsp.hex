@@ -1,4 +1,6 @@
 # Sample sequence for enter (nativeclient issue 259), part 1.
+#   sub %esp, %eax
+#   add %rsp, %r15
 29 c4
 4c 01 fc
 

@@ -10,8 +10,8 @@
 #include "native_client/src/trusted/validator_x86/nc_illegal.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"
 #include "native_client/src/trusted/validator_x86/nc_opcode_histogram.h"
+#include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/nc_protect_base.h"
-#include "native_client/src/trusted/validator_x86/nc_store_protect.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncval_driver.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
@@ -87,7 +87,7 @@ void NaClValidatorInit() {
       (NaClValidatorMemoryDestroy) NaClBaseRegisterMemoryDestroy);
 
   NaClRegisterValidator(
-      (NaClValidator) NaClStoreValidator,
+      (NaClValidator) NaClMemoryReferenceValidator,
       (NaClValidatorPostValidate) NULL,
       (NaClValidatorPrintStats) NULL,
       (NaClValidatorMemoryCreate) NULL,

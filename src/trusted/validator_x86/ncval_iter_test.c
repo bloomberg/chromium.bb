@@ -14,6 +14,7 @@
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncval_driver.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
@@ -31,6 +32,7 @@ static char* FLAGS_hex_text = "";
 static int GrokFlags(int argc, const char* argv[]) {
   int i;
   int new_argc;
+  Bool write_sandbox = !NACL_FLAGS_read_sandbox;
   if (argc == 0) return 0;
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
@@ -39,6 +41,12 @@ static int GrokFlags(int argc, const char* argv[]) {
         GrokBoolFlag("-trace", arg, &NACL_FLAGS_validator_trace) ||
         GrokBoolFlag("-trace_verbose",
                      arg, &NACL_FLAGS_validator_trace_verbose)) {
+      continue;
+    } else if (GrokBoolFlag("-write_sfi", arg, &write_sandbox)) {
+      NACL_FLAGS_read_sandbox = !write_sandbox;
+      continue;
+    } else if (GrokBoolFlag("-readwrite_sfi", arg, &NACL_FLAGS_read_sandbox)) {
+      write_sandbox = !NACL_FLAGS_read_sandbox;
       continue;
     } else {
       argv[new_argc++] = argv[i];

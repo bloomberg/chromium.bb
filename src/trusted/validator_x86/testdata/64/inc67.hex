@@ -1,2 +1,3 @@
-#  Show that we don't accept the 67 prefix. Uses case of rip relative addressing.
+# Show that we don't accept the 67 prefix (i.e. 16 bit addressing).
+# Uses case of rip relative addressing.
 67 ff 05 a4 76 39 00

@@ -1,0 +1,5 @@
+0000000000000007: 41 ff e1                                     jmp %r9
+ERROR: Invalid indirect jump
+Checking jump targets: 0 to a
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***

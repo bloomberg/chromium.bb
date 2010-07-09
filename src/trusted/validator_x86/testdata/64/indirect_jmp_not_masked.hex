@@ -1,4 +1,4 @@
-# Model a case where an indirect jump is masked (mask wrong value).
+# Model a case where an indirect jump is inproperly masked (mask wrong value).
 83 e2 f0
 4D8D0C17
 41FFE1

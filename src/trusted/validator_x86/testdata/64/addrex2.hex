@@ -1,2 +1,3 @@
-# Sample test to see if we recognize multiple REX prefixes.
+# Sample test to see if we recognize multiple REX prefixes (40 and 41 below).
+# Instruction is: add %r11d, %eax
 40 41 01 C3

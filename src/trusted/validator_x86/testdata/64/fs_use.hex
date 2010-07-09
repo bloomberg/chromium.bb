@@ -1,0 +1,2 @@
+# Example of use of segment register fs as a use, for instruction:  mov %eax, %fs[%r15]
+64 41 8b 07

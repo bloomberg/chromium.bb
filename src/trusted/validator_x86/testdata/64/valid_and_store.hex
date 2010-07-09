@@ -1,6 +1,7 @@
-# Sample valid (sandboxed) store using an and mask.
-230C25FFFFFFFF
-498944CF36
-
+# Sample valid (write sandboxed) store using an and mask.
+#   and %ecx, 0xe0
+#   mov [%r15+%rcx*8+0x36], %rax
+83 e1 e0
+49 89 44 CF 36
 
 

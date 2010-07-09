@@ -1,4 +1,4 @@
-# Models a jump into the middle of an atomic sequence.
+# Models a jump into the middle of an atomic instruction sequence.
 EB 03
 83 e2 e0
 4D8D0C17

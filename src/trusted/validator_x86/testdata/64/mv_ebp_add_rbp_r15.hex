@@ -1,4 +1,8 @@
-# Check that we handle sequence "mov %ebp, %r11d ; add %rbp, %r15"
+# Check that we handle sequence when not crossing block boundaries:
+#   mov %ebp, %r11d
+#   add %rbp, %r15"
+# Note: Instruction sequence used in mv_ebp_add_crossing.hex to show problems
+# when crossing block boundaries.
 44 89 dd 4c 01 fd
 
 

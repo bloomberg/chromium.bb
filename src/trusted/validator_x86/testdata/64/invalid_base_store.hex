@@ -1,3 +1,4 @@
-# Invalid and store, because base isn't R15, RBP, or RSP.
-230C25FFFFFFFF
+# Invalid base in memory offset, even though index register is properly defined,
+# because base isn't R15, RBP, or RSP.
+83 e1 e0
 498944CD36

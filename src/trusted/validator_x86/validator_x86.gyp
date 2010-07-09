@@ -98,7 +98,7 @@
                      'nc_cpu_checks.c',
                      'nc_illegal.c',
                      'nc_protect_base.c',
-                     'nc_store_protect.c',
+                     'nc_memory_protect.c',
                      'ncvalidate_utils.c',
                      'nc_jumps.c',
                      'ncval_driver.c'

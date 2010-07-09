@@ -403,7 +403,7 @@ int NaClGetExpParentIndex(NaClExpVector* vector, int index) {
       num_kids -= (node_rank - 1);
     }
   }
-  return 0;
+  return -1;
 }
 
 int NaClGetNthExpKind(NaClExpVector* vector,
