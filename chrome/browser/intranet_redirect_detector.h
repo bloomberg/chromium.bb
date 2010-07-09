@@ -13,6 +13,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_resolver_proc.h"
+#include "net/base/network_change_notifier.h"
 
 class PrefService;
 
@@ -33,7 +34,8 @@ class PrefService;
 // return a value at all times (even during startup or in unittest mode).  If no
 // redirection is in place, the returned GURL will be empty.
 class IntranetRedirectDetector : public URLFetcher::Delegate,
-                                 public NotificationObserver {
+                                 public NotificationObserver,
+                                 public net::NetworkChangeNotifier::Observer {
  public:
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->intranet_redirect_detector_.  No code other than the
@@ -57,8 +59,8 @@ class IntranetRedirectDetector : public URLFetcher::Delegate,
  private:
   typedef std::set<URLFetcher*> Fetchers;
 
-  // Called when the five second startup sleep has finished.  Runs any pending
-  // fetch.
+  // Called when the seven second startup sleep or the one second network
+  // switch sleep has finished.  Runs any pending fetch.
   void FinishSleep();
 
   // Starts the fetches to determine the redirect URL if we can currently do so.
@@ -77,13 +79,17 @@ class IntranetRedirectDetector : public URLFetcher::Delegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // NetworkChangeNotifier::Observer
+  virtual void OnIPAddressChanged();
+
   NotificationRegistrar registrar_;
   GURL redirect_origin_;
   ScopedRunnableMethodFactory<IntranetRedirectDetector> fetcher_factory_;
   Fetchers fetchers_;
   std::vector<GURL> resulting_origins_;
-  bool in_startup_sleep_;  // True if we're in the seven-second "no fetching"
-                           // period that begins at browser start.
+  bool in_sleep_;  // True if we're in the seven-second "no fetching" period
+                   // that begins at browser start, or the one-second "no
+                   // fetching" period that begins after network switches.
   bool request_context_available_;
                            // True when the profile has been loaded and the
                            // default request context created, so we can
