@@ -23,10 +23,24 @@ BrowserOptions.prototype = {
 
   // Initialize BrowserOptions page.
   initializePage: function() {
-    // Call base class implementation to starts preference initialization.
+    // Call base class implementation to start preference initialization.
     OptionsPage.prototype.initializePage.call(this);
 
-    // TODO(csilv): add any needed initialization here or delete this method.
+    $('defaultSearchManageEnginesButton').onclick = function(event) {
+      // TODO(stuartmorgan): Spawn search engine management sub-dialog.
+    };
+    $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
+      // TODO(stuartmorgan): Handle making browser default.
+    };
+    $('startupAddButton').onclick = function(event) {
+      // TODO(stuartmorgan): Spawn add sub-dialog.
+    };
+    $('startupRemoveButton').onclick = function(event) {
+      // TODO(stuartmorgan): Remove selected element(s).
+    };
+    $('startupUseCurrentButton').onclick = function(event) {
+      // TODO(stuartmorgan): Add all open tabs (except this one).
+    };
   },
 };
 

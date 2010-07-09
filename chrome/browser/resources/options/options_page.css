@@ -95,6 +95,7 @@ section {
   margin-top: 10px;
   border-bottom: 1px solid #ededed;
   padding-bottom: 10px;
+  clear: left;
 }
 
 section > h3 {
@@ -105,6 +106,10 @@ section > h3 {
   padding-left: 15px;
 }
 
+section > div:only-of-type  {
+  margin-left: 175px;
+}
+
 .option {
   margin-top: 5px;
 }
@@ -112,6 +117,10 @@ section > h3 {
 .option-control-table {
   margin-top: 5px;
   -webkit-padding-start: 10px;
+}
+
+.suboption {
+  margin-left: 18px;
 }
 
 .hidden {

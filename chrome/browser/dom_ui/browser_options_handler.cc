@@ -41,12 +41,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_USE_URL));
   localized_strings->SetString(L"homepageShowButton",
       l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON));
-#if defined(OS_MACOSX)
-  localized_strings->SetString(L"toolbarGroupName",
-      l10n_util::GetString(IDS_OPTIONS_TOOLBAR_GROUP_NAME));
-  localized_strings->SetString(L"pageOptionShowButton",
-      l10n_util::GetString(IDS_OPTIONS_PAGE_OPTION_SHOW_BUTTON));
-#endif
   localized_strings->SetString(L"defaultSearchGroupName",
       l10n_util::GetString(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME));
   localized_strings->SetString(L"defaultSearchManageEnginesLink",
