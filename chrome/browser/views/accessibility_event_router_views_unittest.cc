@@ -55,7 +55,8 @@ class AccessibilityEventRouterViewsTest
   std::string last_control_name_;
 };
 
-TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
+// Temporarily disabled due to http://crbug.com/48717
+TEST_F(AccessibilityEventRouterViewsTest, DISABLED_TestFocusNotification) {
   const char kButton1ASCII[] = "Button1";
   const char kButton2ASCII[] = "Button2";
   const char kButton3ASCII[] = "Button3";
