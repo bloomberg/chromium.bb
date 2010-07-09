@@ -94,7 +94,7 @@ static bool CalculateEnabled() {
     std::string value = cl->GetSwitchValueASCII(switches::kNewWrenchMenu);
     return value.empty() || value == "true";
   }
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
   return true;
 #else
   return false;
@@ -193,9 +193,9 @@ void WrenchMenuModel::Build() {
   AddSeparator();
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   edit_menu_item_model_.reset(new menus::ButtonMenuItemModel(IDS_EDIT, this));
-  edit_menu_item_model_->AddItemWithStringId(IDC_CUT, IDS_CUT);
-  edit_menu_item_model_->AddItemWithStringId(IDC_COPY, IDS_COPY);
-  edit_menu_item_model_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
+  edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
+  edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
+  edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);
   AddButtonItem(0, edit_menu_item_model_.get());
 #else
   // TODO(port): Move to the above.
@@ -206,10 +206,12 @@ void WrenchMenuModel::Build() {
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   zoom_menu_item_model_.reset(
       new menus::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
-  zoom_menu_item_model_->AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
+  zoom_menu_item_model_->AddGroupItemWithStringId(
+      IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
   zoom_menu_item_model_->AddButtonLabel(IDC_ZOOM_PERCENT_DISPLAY,
                                         IDS_ZOOM_PLUS2);
-  zoom_menu_item_model_->AddItemWithStringId(IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
+  zoom_menu_item_model_->AddGroupItemWithStringId(
+      IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddSpace();
   zoom_menu_item_model_->AddItemWithImage(
       IDC_FULLSCREEN, IDR_FULLSCREEN_MENU_BUTTON);

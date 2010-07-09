@@ -377,14 +377,17 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
   g_signal_connect(menu_item, "button-pushed",
                    G_CALLBACK(OnMenuButtonPressed), this);
 
+  GtkSizeGroup* group = NULL;
   for (int i = 0; i < model->GetItemCount(); ++i) {
+    GtkWidget* button = NULL;
+
     switch (model->GetTypeAt(i)) {
       case menus::ButtonMenuItemModel::TYPE_SPACE: {
         gtk_custom_menu_item_add_space(GTK_CUSTOM_MENU_ITEM(menu_item));
         break;
       }
       case menus::ButtonMenuItemModel::TYPE_BUTTON: {
-        GtkWidget* button = gtk_custom_menu_item_add_button(
+        button = gtk_custom_menu_item_add_button(
             GTK_CUSTOM_MENU_ITEM(menu_item),
             model->GetCommandIdAt(i));
 
@@ -402,7 +405,7 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
         break;
       }
       case menus::ButtonMenuItemModel::TYPE_BUTTON_LABEL: {
-        GtkWidget* button = gtk_custom_menu_item_add_button_label(
+        button = gtk_custom_menu_item_add_button_label(
             GTK_CUSTOM_MENU_ITEM(menu_item),
             model->GetCommandIdAt(i));
         gtk_button_set_label(
@@ -413,6 +416,17 @@ GtkWidget* MenuGtk::BuildButtomMenuItem(menus::ButtonMenuItemModel* model,
         break;
       }
     }
+
+    if (button && model->PartOfGroup(i)) {
+      if (!group)
+        group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+
+      gtk_size_group_add_widget(group, button);
+    }
+  }
+
+  if (group) {
+    g_object_unref(group);
   }
 
   return menu_item;

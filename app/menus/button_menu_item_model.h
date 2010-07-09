@@ -14,10 +14,6 @@ namespace menus {
 
 // A model representing the rows of buttons that should be inserted in a button
 // containing menu item.
-//
-// TODO(erg): There are still two major pieces missing from this model. It
-// needs to be able to group buttons together so they all have the same
-// width.
 class ButtonMenuItemModel {
  public:
   // Types of buttons.
@@ -43,12 +39,9 @@ class ButtonMenuItemModel {
 
   ButtonMenuItemModel(int string_id, ButtonMenuItemModel::Delegate* delegate);
 
-  // Adds a button that will emit |command_id|.
-  void AddItemWithStringId(int command_id, int string_id);
-
-  // Adds a button that will emit |command_id|. Sizes for all items with the
-  // same |group| id will be set to the largest item in the group.
-  void AddItemWithStringIdAndGroup(int command_id, int string_id, int group);
+  // Adds a button that will emit |command_id|. All buttons created through
+  // this method will have the same size, based on the largest button.
+  void AddGroupItemWithStringId(int command_id, int string_id);
 
   // Adds a button that has an icon instead of a label.
   void AddItemWithImage(int command_id, int icon_idr);
@@ -80,9 +73,9 @@ class ButtonMenuItemModel {
   // sets the IDR |icon|.
   bool GetIconAt(int index, int* icon) const;
 
-  // If the button at |index| should have its size equalized as part of a
-  // group, returns true and sets the group number |group|.
-  bool GetGroupAt(int index, int* group) const;
+  // If the button at |index| should have its size equalized along with all
+  // other items that have their PartOfGroup bit set.
+  bool PartOfGroup(int index) const;
 
   // Called from implementations.
   void ActivatedCommand(int command_id);
@@ -98,7 +91,7 @@ class ButtonMenuItemModel {
     ButtonType type;
     string16 label;
     int icon_idr;
-    int group;
+    bool part_of_group;
   };
   std::vector<Item> items_;
 

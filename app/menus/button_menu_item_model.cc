@@ -15,33 +15,27 @@ ButtonMenuItemModel::ButtonMenuItemModel(
       delegate_(delegate) {
 }
 
-void ButtonMenuItemModel::AddItemWithStringId(int command_id, int string_id) {
+void ButtonMenuItemModel::AddGroupItemWithStringId(
+    int command_id, int string_id) {
   Item item = { command_id, TYPE_BUTTON, l10n_util::GetStringUTF16(string_id),
-                -1, -1};
-  items_.push_back(item);
-}
-
-void ButtonMenuItemModel::AddItemWithStringIdAndGroup(
-    int command_id, int string_id, int group) {
-  Item item = { command_id, TYPE_BUTTON, l10n_util::GetStringUTF16(string_id),
-                -1, group };
+                -1, true };
   items_.push_back(item);
 }
 
 void ButtonMenuItemModel::AddItemWithImage(int command_id,
                                            int icon_idr) {
-  Item item = { command_id, TYPE_BUTTON, string16(), icon_idr, -1 };
+  Item item = { command_id, TYPE_BUTTON, string16(), icon_idr, false };
   items_.push_back(item);
 }
 
 void ButtonMenuItemModel::AddButtonLabel(int command_id, int string_id) {
   Item item = { command_id, TYPE_BUTTON_LABEL,
-                l10n_util::GetStringUTF16(string_id), -1, -1 };
+                l10n_util::GetStringUTF16(string_id), -1, false };
   items_.push_back(item);
 }
 
 void ButtonMenuItemModel::AddSpace() {
-  Item item = { 0, TYPE_SPACE, string16(), -1, -1 };
+  Item item = { 0, TYPE_SPACE, string16(), -1, false };
   items_.push_back(item);
 }
 
@@ -78,12 +72,8 @@ bool ButtonMenuItemModel::GetIconAt(int index, int* icon_idr) const {
   return true;
 }
 
-bool ButtonMenuItemModel::GetGroupAt(int index, int* group) const {
-  if (items_[index].group == -1)
-    return false;
-
-  *group = items_[index].group;
-  return true;
+bool ButtonMenuItemModel::PartOfGroup(int index) const {
+  return items_[index].part_of_group;
 }
 
 void ButtonMenuItemModel::ActivatedCommand(int command_id) {
