@@ -137,11 +137,11 @@ void Scrollbar::ScrollBy(PP_ScrollBy unit, int32_t multiplier) {
   float fmultiplier = 1.0;
 
   WebScrollbar::ScrollGranularity granularity;
-  if (unit == PP_WIDGET_SCROLL_BY_LINE) {
+  if (unit == PP_SCROLLBY_LINE) {
     granularity = WebScrollbar::ScrollByLine;
-  } else if (unit == PP_WIDGET_SCROLL_BY_PAGE) {
+  } else if (unit == PP_SCROLLBY_PAGE) {
     granularity = WebScrollbar::ScrollByPage;
-  } else if (unit == PP_WIDGET_SCROLL_BY_DOCUMENT) {
+  } else if (unit == PP_SCROLLBY_DOCUMENT) {
     granularity = WebScrollbar::ScrollByDocument;
   } else {
     granularity = WebScrollbar::ScrollByPixel;

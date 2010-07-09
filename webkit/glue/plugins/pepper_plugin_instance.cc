@@ -14,6 +14,7 @@
 #include "third_party/ppapi/c/pp_var.h"
 #include "third_party/ppapi/c/ppb_instance.h"
 #include "third_party/ppapi/c/ppp_instance.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -22,6 +23,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_event_conversion.h"
+#include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
@@ -36,6 +38,64 @@ using WebKit::WebPluginContainer;
 namespace pepper {
 
 namespace {
+
+#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
+    COMPILE_ASSERT(int(WebCursorInfo::webkit_name) == int(np_name), \
+                   mismatching_enums)
+
+COMPILE_ASSERT_MATCHING_ENUM(TypePointer, PP_CURSORTYPE_POINTER);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCross, PP_CURSORTYPE_CROSS);
+COMPILE_ASSERT_MATCHING_ENUM(TypeHand, PP_CURSORTYPE_HAND);
+COMPILE_ASSERT_MATCHING_ENUM(TypeIBeam, PP_CURSORTYPE_IBEAM);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWait, PP_CURSORTYPE_WAIT);
+COMPILE_ASSERT_MATCHING_ENUM(TypeHelp, PP_CURSORTYPE_HELP);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastResize, PP_CURSORTYPE_EASTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthResize, PP_CURSORTYPE_NORTHRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastResize,
+                             PP_CURSORTYPE_NORTHEASTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestResize,
+                             PP_CURSORTYPE_NORTHWESTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthResize, PP_CURSORTYPE_SOUTHRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthEastResize,
+                             PP_CURSORTYPE_SOUTHEASTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthWestResize,
+                             PP_CURSORTYPE_SOUTHWESTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWestResize, PP_CURSORTYPE_WESTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthSouthResize,
+                             PP_CURSORTYPE_NORTHSOUTHRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastWestResize, PP_CURSORTYPE_EASTWESTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastSouthWestResize,
+                             PP_CURSORTYPE_NORTHEASTSOUTHWESTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestSouthEastResize,
+                             PP_CURSORTYPE_NORTHWESTSOUTHEASTRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeColumnResize, PP_CURSORTYPE_COLUMNRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeRowResize, PP_CURSORTYPE_ROWRESIZE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeMiddlePanning, PP_CURSORTYPE_MIDDLEPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeEastPanning, PP_CURSORTYPE_EASTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthPanning, PP_CURSORTYPE_NORTHPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthEastPanning,
+                             PP_CURSORTYPE_NORTHEASTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNorthWestPanning,
+                             PP_CURSORTYPE_NORTHWESTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthPanning, PP_CURSORTYPE_SOUTHPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthEastPanning,
+                             PP_CURSORTYPE_SOUTHEASTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeSouthWestPanning,
+                             PP_CURSORTYPE_SOUTHWESTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeWestPanning, PP_CURSORTYPE_WESTPANNING);
+COMPILE_ASSERT_MATCHING_ENUM(TypeMove, PP_CURSORTYPE_MOVE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeVerticalText, PP_CURSORTYPE_VERTICALTEXT);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCell, PP_CURSORTYPE_CELL);
+COMPILE_ASSERT_MATCHING_ENUM(TypeContextMenu, PP_CURSORTYPE_CONTEXTMENU);
+COMPILE_ASSERT_MATCHING_ENUM(TypeAlias, PP_CURSORTYPE_ALIAS);
+COMPILE_ASSERT_MATCHING_ENUM(TypeProgress, PP_CURSORTYPE_PROGRESS);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNoDrop, PP_CURSORTYPE_NODROP);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCopy, PP_CURSORTYPE_COPY);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNone, PP_CURSORTYPE_NONE);
+COMPILE_ASSERT_MATCHING_ENUM(TypeNotAllowed, PP_CURSORTYPE_NOTALLOWED);
+COMPILE_ASSERT_MATCHING_ENUM(TypeZoomIn, PP_CURSORTYPE_ZOOMIN);
+COMPILE_ASSERT_MATCHING_ENUM(TypeZoomOut, PP_CURSORTYPE_ZOOMOUT);
+COMPILE_ASSERT_MATCHING_ENUM(TypeCustom, PP_CURSORTYPE_CUSTOM);
 
 void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
   *output = PP_MakeRectFromXYWH(input.x(), input.y(),
@@ -70,11 +130,31 @@ bool IsFullFrame(PP_Instance instance_id) {
   return instance->full_frame();
 }
 
+bool SetCursor(PP_Instance instance_id,
+               PP_CursorType type,
+               PP_Resource custom_image_id,
+               const PP_Point* hot_spot) {
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return false;
+
+  scoped_refptr<ImageData> custom_image(
+      Resource::GetAs<ImageData>(custom_image_id));
+  if (custom_image.get()) {
+    // TODO: implement custom cursors.
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  return instance->SetCursor(type);
+}
+
 const PPB_Instance ppb_instance = {
   &GetWindowObject,
   &GetOwnerElementObject,
   &BindGraphicsDeviceContext,
   &IsFullFrame,
+  &SetCursor,
 };
 
 }  // namespace
@@ -170,6 +250,11 @@ bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
   return true;
 }
 
+bool PluginInstance::SetCursor(PP_CursorType type) {
+  cursor_.reset(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
+  return true;
+}
+
 void PluginInstance::Delete() {
   instance_interface_->Delete(GetPPInstance());
 
@@ -210,7 +295,10 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
   if (!pp_event.get())
     return false;
 
-  return instance_interface_->HandleEvent(GetPPInstance(), pp_event.get());
+  bool rv = instance_interface_->HandleEvent(GetPPInstance(), pp_event.get());
+  if (cursor_.get())
+    *cursor_info = *cursor_;
+  return rv;
 }
 
 PP_Var PluginInstance::GetInstanceObject() {

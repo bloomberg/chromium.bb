@@ -10,8 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "gfx/rect.h"
+#include "third_party/ppapi/c/pp_cursor_type.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
@@ -77,6 +79,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PP_Var GetOwnerElementObject();
   bool BindGraphicsDeviceContext(PP_Resource device_id);
   bool full_frame() const { return full_frame_; }
+  bool SetCursor(PP_CursorType type);
 
   // PPP_Instance pass-through.
   void Delete();
@@ -132,6 +135,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
+
+  // Containes the cursor if it's set by the plugin.
+  scoped_ptr<WebKit::WebCursorInfo> cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };
