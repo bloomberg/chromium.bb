@@ -431,11 +431,23 @@ int pthread_create(pthread_t *thread_id,
 
   } while (0);
 
-  pthread_mutex_unlock(&__nc_thread_management_lock);
-
   if (0 != retval) {
+    pthread_mutex_unlock(&__nc_thread_management_lock);
     goto ret; /* error */
   }
+
+  /* Speculatively increase the thread count. If thread creation
+  fails, we will decrease it back. This way the thread count will
+  never be lower than the actual number of threads, but can briefly be
+  higher than that.  */
+  ++__nc_running_threads_counter;
+
+  /* Save the new thread id. This can not be done after the syscall,
+  because the child thread could have already finished by that
+  time. If thread creation fails, it will be overriden with -1 later.*/
+  *thread_id = new_basic_data->thread_id;
+
+  pthread_mutex_unlock(&__nc_thread_management_lock);
 
   /*
    * Calculate the top-of-stack location.  The very first location, is
@@ -455,13 +467,13 @@ int pthread_create(pthread_t *thread_id,
                                        new_tdb,
                                        sizeof(nc_thread_descriptor_t));
   if (0 != retval) {
+    pthread_mutex_lock(&__nc_thread_management_lock);
+    /* TODO(gregoryd) : replace with atomic decrement? */
+    --__nc_running_threads_counter;
+    pthread_mutex_unlock(&__nc_thread_management_lock);
     goto ret;
   }
-  *thread_id = new_basic_data->thread_id;
-  pthread_mutex_lock(&__nc_thread_management_lock);
-  /* TODO(gregoryd) : replace with atomic increment? */
-  ++__nc_running_threads_counter;
-  pthread_mutex_unlock(&__nc_thread_management_lock);
+
   assert(0 == retval);
 
 ret:
