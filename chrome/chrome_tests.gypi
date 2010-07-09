@@ -1016,6 +1016,7 @@
         'common/extensions/url_pattern_unittest.cc',
         'common/extensions/user_script_unittest.cc',
         'common/font_descriptor_mac_unittest.mm',
+        'common/gpu_messages_unittest.cc',
         'common/important_file_writer_unittest.cc',
         'common/json_pref_store_unittest.cc',
         'common/json_value_serializer_unittest.cc',
