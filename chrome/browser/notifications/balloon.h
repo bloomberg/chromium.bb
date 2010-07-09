@@ -63,6 +63,11 @@ class Balloon {
   const gfx::Size& content_size() const { return content_size_; }
   void set_content_size(const gfx::Size& size) { content_size_ = size; }
 
+  const gfx::Size& min_scrollbar_size() const { return min_scrollbar_size_; }
+  void set_min_scrollbar_size(const gfx::Size& size) {
+    min_scrollbar_size_ = size;
+  }
+
   // Request a new content size for this balloon.  This will get passed
   // to the balloon collection for checking against available space and
   // min/max restrictions.
@@ -109,6 +114,9 @@ class Balloon {
   // Position and size of the balloon on the screen.
   gfx::Point position_;
   gfx::Size content_size_;
+
+  // Smallest size for this balloon where scrollbars will be shown.
+  gfx::Size min_scrollbar_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Balloon);
 };

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/window_sizer.h"
 #include "gfx/rect.h"
@@ -41,9 +42,14 @@ BalloonCollectionImpl::~BalloonCollectionImpl() {
 void BalloonCollectionImpl::Add(const Notification& notification,
                                 Profile* profile) {
   Balloon* new_balloon = MakeBalloon(notification, profile);
-
+  // The +1 on width is necessary because width is fixed on notifications,
+  // so since we always have the max size, we would always hit the scrollbar
+  // condition.  We are only interested in comparing height to maximum.
+  new_balloon->set_min_scrollbar_size(gfx::Size(1 + layout_.max_balloon_width(),
+                                                layout_.max_balloon_height()));
   new_balloon->SetPosition(layout_.OffScreenLocation(), false);
   new_balloon->Show();
+
   balloons_.push_back(new_balloon);
   PositionBalloons(false);
 
