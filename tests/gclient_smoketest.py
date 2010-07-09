@@ -401,7 +401,6 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
     out = ('src: %(base)s/src@2;\n'
-           'src/file/foo: %(base)s/third_party/foo/origin;\n'
            'src/other: %(base)s/other@2;\n'
            'src/third_party/foo: %(base)s/third_party/foo@1\n' %
           { 'base': self.svn_base + 'trunk' })
@@ -576,6 +575,7 @@ class GClientSmokeGIT(GClientSmokeBase):
   def testRevInfo(self):
     if not self.enabled:
       return
+    # TODO(maruel): Test multiple solutions.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
@@ -614,7 +614,7 @@ class GClientSmokeBoth(GClientSmokeBase):
                      # file when File() is used in a DEPS file.
                      ('running', self.root_dir + '/src/file/foo'),
                      'running', 'running', 'running', 'running', 'running',
-                     'running'])
+                     'running', 'running'])
     # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
     # new branch \'hash\''.
     #self.checkString('', results[1])
@@ -630,6 +630,7 @@ class GClientSmokeBoth(GClientSmokeBase):
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     tree['src/svn_hooked1'] = 'svn_hooked1'
+    tree['src/svn_hooked2'] = 'svn_hooked2'
     self.assertTree(tree)
 
   def testMultiSolutionsMultiRev(self):
@@ -672,7 +673,6 @@ class GClientSmokeBoth(GClientSmokeBase):
     results = self.gclient(['revinfo', '--deps', 'mac'])
     out = ('src: %(svn_base)s/src/@2;\n'
            'src-git: %(git_base)srepo_1@%(hash1)s;\n'
-           'src/file/foo: %(svn_base)s/third_party/foo/origin;\n'
            'src/other: %(svn_base)s/other@2;\n'
            'src/repo2: %(git_base)srepo_2@%(hash2)s;\n'
            'src/repo2/repo_renamed: %(git_base)srepo_3@%(hash3)s;\n'

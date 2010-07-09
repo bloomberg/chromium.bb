@@ -310,6 +310,14 @@ def SubprocessCallAndFilter(command,
     raise Error(msg)
 
 
+def IsUsingGit(root, paths):
+  """Returns True if we're using git to manage any of our checkouts.
+  |entries| is a list of paths to check."""
+  for path in paths:
+    if os.path.exists(os.path.join(root, path, '.git')):
+      return True
+  return False
+
 def FindGclientRoot(from_dir, filename='.gclient'):
   """Tries to find the gclient root."""
   path = os.path.realpath(from_dir)

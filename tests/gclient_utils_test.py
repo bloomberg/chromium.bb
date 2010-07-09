@@ -17,7 +17,7 @@ class GclientUtilsUnittest(SuperMoxTestBase):
     members = [
         'CheckCall', 'CheckCallError', 'Error', 'FileRead', 'FileWrite',
         'FindFileUpwards', 'FindGclientRoot', 'GetGClientRootAndEntries',
-        'GetNamedNodeText', 'GetNodeNamedAttributeText',
+        'GetNamedNodeText', 'GetNodeNamedAttributeText', 'IsUsingGit',
         'PathDifference', 'ParseXML', 'PrintableObject', 'RemoveDirectory',
         'SplitUrlRevision', 'SubprocessCall', 'SubprocessCallAndFilter',
         'SyntaxErrorToError',
