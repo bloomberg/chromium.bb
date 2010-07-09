@@ -55,11 +55,11 @@ PP_Resource CreateFileRef(PP_Instance instance_id,
 }
 
 PP_Resource CreatePersistentFileRef(PP_Instance instance_id, const char* path) {
-  return CreateFileRef(instance_id, PP_FileSystemType_LocalPersistent, path);
+  return CreateFileRef(instance_id, PP_FILESYSTEMTYPE_LOCALPERSISTENT, path);
 }
 
 PP_Resource CreateTemporaryFileRef(PP_Instance instance_id, const char* path) {
-  return CreateFileRef(instance_id, PP_FileSystemType_LocalTemporary, path);
+  return CreateFileRef(instance_id, PP_FILESYSTEMTYPE_LOCALTEMPORARY, path);
 }
 
 bool IsFileRef(PP_Resource resource) {
@@ -69,7 +69,7 @@ bool IsFileRef(PP_Resource resource) {
 PP_FileSystemType GetFileSystemType(PP_Resource file_ref_id) {
   scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref.get())
-    return PP_FileSystemType_External;
+    return PP_FILESYSTEMTYPE_EXTERNAL;
 
   return file_ref->file_system_type();
 }
@@ -87,7 +87,7 @@ PP_Var GetPath(PP_Resource file_ref_id) {
   if (!file_ref.get())
     return PP_MakeVoid();
 
-  if (file_ref->file_system_type() == PP_FileSystemType_External)
+  if (file_ref->file_system_type() == PP_FILESYSTEMTYPE_EXTERNAL)
     return PP_MakeVoid();
 
   return StringToPPVar(file_ref->path());
@@ -98,7 +98,7 @@ PP_Resource GetParent(PP_Resource file_ref_id) {
   if (!file_ref.get())
     return 0;
 
-  if (file_ref->file_system_type() == PP_FileSystemType_External)
+  if (file_ref->file_system_type() == PP_FILESYSTEMTYPE_EXTERNAL)
     return 0;
 
   scoped_refptr<FileRef> parent_ref(file_ref->GetParent());

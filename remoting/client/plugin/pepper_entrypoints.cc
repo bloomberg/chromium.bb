@@ -174,7 +174,7 @@ class ChromotingModule {
 
   static PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
     PP_Var var;
-    var.type = PP_VarType_Void;
+    var.type = PP_VARTYPE_VOID;
     return var;
   }
 

@@ -27,14 +27,14 @@ PP_ImageDataFormat GetNativeImageDataFormat() {
 
 PP_Resource Create(PP_Module module_id,
                    PP_ImageDataFormat format,
-                   int32_t width, int32_t height,
+                   const PP_Size* size,
                    bool init_to_zero) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
     return NULL;
 
   scoped_refptr<ImageData> data(new ImageData(module));
-  if (!data->Init(format, width, height, init_to_zero))
+  if (!data->Init(format, size->width, size->height, init_to_zero))
     return NULL;
   data->AddRef();  // AddRef for the caller.
 
@@ -45,8 +45,7 @@ bool IsImageData(PP_Resource resource) {
   return !!Resource::GetAs<ImageData>(resource).get();
 }
 
-bool Describe(PP_Resource resource,
-              PP_ImageDataDesc* desc) {
+bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
   // Give predictable values on failure.
   memset(desc, 0, sizeof(PP_ImageDataDesc));
 
@@ -118,8 +117,8 @@ bool ImageData::Init(PP_ImageDataFormat format,
 
 void ImageData::Describe(PP_ImageDataDesc* desc) const {
   desc->format = PP_IMAGEDATAFORMAT_BGRA_PREMUL;
-  desc->width = width_;
-  desc->height = height_;
+  desc->size.width = width_;
+  desc->size.height = height_;
   desc->stride = width_ * 4;
 }
 

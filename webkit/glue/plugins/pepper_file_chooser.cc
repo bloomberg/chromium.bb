@@ -34,7 +34,7 @@ int32_t Show(PP_Resource chooser_id, PP_CompletionCallback callback) {
   scoped_refptr<FileChooser> chooser(
       Resource::GetAs<FileChooser>(chooser_id).get());
   if (!chooser.get())
-    return PP_Error_BadResource;
+    return PP_ERROR_BADRESOURCE;
 
   return chooser->Show(callback);
 }
@@ -79,7 +79,7 @@ const PPB_FileChooser* FileChooser::GetInterface() {
 
 int32_t FileChooser::Show(PP_CompletionCallback callback) {
   NOTIMPLEMENTED();  // TODO(darin): Implement me!
-  return PP_Error_Failed;
+  return PP_ERROR_FAILED;
 }
 
 scoped_refptr<FileRef> FileChooser::GetNextChosenFile() {

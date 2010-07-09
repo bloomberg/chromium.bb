@@ -35,7 +35,7 @@ int32_t GetNextEntry(PP_Resource reader_id,
   scoped_refptr<DirectoryReader> reader(
       Resource::GetAs<DirectoryReader>(reader_id));
   if (!reader.get())
-    return PP_Error_BadResource;
+    return PP_ERROR_BADRESOURCE;
 
   return reader->GetNextEntry(entry, callback);
 }
@@ -63,7 +63,7 @@ const PPB_DirectoryReader* DirectoryReader::GetInterface() {
 int32_t DirectoryReader::GetNextEntry(PP_DirectoryEntry* entry,
                                       PP_CompletionCallback callback) {
   NOTIMPLEMENTED();  // TODO(darin): Implement me!
-  return PP_Error_Failed;
+  return PP_ERROR_FAILED;
 }
 
 }  // namespace pepper

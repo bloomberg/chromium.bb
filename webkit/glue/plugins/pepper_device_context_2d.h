@@ -40,15 +40,15 @@ class DeviceContext2D : public Resource {
   virtual DeviceContext2D* AsDeviceContext2D() { return this; }
 
   // PPB_DeviceContext2D functions.
-  bool Describe(int32_t* width, int32_t* height, bool* is_always_opaque);
+  bool Describe(PP_Size* size, bool* is_always_opaque);
   bool PaintImageData(PP_Resource image,
-                      int32_t x, int32_t y,
+                      const PP_Point* top_left,
                       const PP_Rect* src_rect);
-  bool Scroll(const PP_Rect* clip_rect, int32_t dx, int32_t dy);
+  bool Scroll(const PP_Rect* clip_rect, const PP_Point* amount);
   bool ReplaceContents(PP_Resource image);
   int32_t Flush(const PP_CompletionCallback& callback);
 
-  bool ReadImageData(PP_Resource image, int32_t x, int32_t y);
+  bool ReadImageData(PP_Resource image, const PP_Point* top_left);
 
   // Assciates this device with the given plugin instance. You can pass NULL to
   // clear the existing device. Returns true on success. In this case, a

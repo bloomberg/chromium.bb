@@ -62,14 +62,15 @@ bool ValidateAndConvertRect(const PP_Rect* rect,
   return true;
 }
 
-PP_Resource Create(PP_Module module_id, int32_t width, int32_t height,
+PP_Resource Create(PP_Module module_id,
+                   const PP_Size* size,
                    bool is_always_opaque) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
     return NULL;
 
   scoped_refptr<DeviceContext2D> context(new DeviceContext2D(module));
-  if (!context->Init(width, height, is_always_opaque))
+  if (!context->Init(size->width, size->height, is_always_opaque))
     return NULL;
   context->AddRef();  // AddRef for the caller.
   return context->GetResource();
@@ -82,33 +83,34 @@ bool IsDeviceContext2D(PP_Resource resource) {
 }
 
 bool Describe(PP_Resource device_context,
-              int32_t* width, int32_t* height, bool* is_always_opaque) {
+              PP_Size* size,
+              bool* is_always_opaque) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
     return false;
-  return context->Describe(width, height, is_always_opaque);
+  return context->Describe(size, is_always_opaque);
 }
 
 bool PaintImageData(PP_Resource device_context,
                     PP_Resource image,
-                    int32_t x, int32_t y,
+                    const PP_Point* top_left,
                     const PP_Rect* src_rect) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
     return false;
-  return context->PaintImageData(image, x, y, src_rect);
+  return context->PaintImageData(image, top_left, src_rect);
 }
 
 bool Scroll(PP_Resource device_context,
             const PP_Rect* clip_rect,
-            int32_t dx, int32_t dy) {
+            const PP_Point* amount) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
     return false;
-  return context->Scroll(clip_rect, dx, dy);
+  return context->Scroll(clip_rect, amount);
 }
 
 bool ReplaceContents(PP_Resource device_context, PP_Resource image) {
@@ -124,7 +126,7 @@ int32_t Flush(PP_Resource device_context,
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
   if (!context.get())
-    return PP_Error_BadResource;
+    return PP_ERROR_BADRESOURCE;
   return context->Flush(callback);
 }
 
@@ -197,17 +199,19 @@ bool DeviceContext2D::Init(int width, int height, bool is_always_opaque) {
   return true;
 }
 
-bool DeviceContext2D::Describe(int32_t* width, int32_t* height,
-                               bool* is_always_opaque) {
-  *width = image_data_->width();
-  *height = image_data_->height();
+bool DeviceContext2D::Describe(PP_Size* size, bool* is_always_opaque) {
+  size->width = image_data_->width();
+  size->height = image_data_->height();
   *is_always_opaque = false;  // TODO(brettw) implement this.
   return true;
 }
 
 bool DeviceContext2D::PaintImageData(PP_Resource image,
-                                     int32_t x, int32_t y,
+                                     const PP_Point* top_left,
                                      const PP_Rect* src_rect) {
+  if (!top_left)
+    return false;
+
   scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
   if (!image_resource.get())
     return false;
@@ -221,7 +225,8 @@ bool DeviceContext2D::PaintImageData(PP_Resource image,
 
   // Validate the bitmap position using the previously-validated rect, there
   // should be no painted area outside of the image.
-  int64 x64 = static_cast<int64>(x), y64 = static_cast<int64>(y);
+  int64 x64 = static_cast<int64>(top_left->x);
+  int64 y64 = static_cast<int64>(top_left->y);
   if (x64 + static_cast<int64>(operation.paint_src_rect.x()) < 0 ||
       x64 + static_cast<int64>(operation.paint_src_rect.right()) >
       image_data_->width())
@@ -230,15 +235,15 @@ bool DeviceContext2D::PaintImageData(PP_Resource image,
       y64 + static_cast<int64>(operation.paint_src_rect.bottom()) >
       image_data_->height())
     return false;
-  operation.paint_x = x;
-  operation.paint_y = y;
+  operation.paint_x = top_left->x;
+  operation.paint_y = top_left->y;
 
   queued_operations_.push_back(operation);
   return true;
 }
 
 bool DeviceContext2D::Scroll(const PP_Rect* clip_rect,
-                             int32_t dx, int32_t dy) {
+                             const PP_Point* amount) {
   QueuedOperation operation(QueuedOperation::SCROLL);
   if (!ValidateAndConvertRect(clip_rect,
                               image_data_->width(),
@@ -248,6 +253,8 @@ bool DeviceContext2D::Scroll(const PP_Rect* clip_rect,
 
   // If we're being asked to scroll by more than the clip rect size, just
   // ignore this scroll command and say it worked.
+  int32 dx = amount->x;
+  int32 dy = amount->y;
   if (dx <= -image_data_->width() || dx >= image_data_->width() ||
       dx <= -image_data_->height() || dy >= image_data_->height())
     return true;
@@ -280,12 +287,12 @@ bool DeviceContext2D::ReplaceContents(PP_Resource image) {
 int32_t DeviceContext2D::Flush(const PP_CompletionCallback& callback) {
   // Don't allow more than one pending flush at a time.
   if (HasPendingFlush())
-    return PP_Error_InProgress;
+    return PP_ERROR_INPROGRESS;
 
   // TODO(brettw) check that the current thread is not the main one and
   // implement blocking flushes in this case.
   if (!callback.func)
-    return PP_Error_BadArgument;
+    return PP_ERROR_BADARGUMENT;
 
   gfx::Rect changed_rect;
   for (size_t i = 0; i < queued_operations_.size(); i++) {
@@ -328,10 +335,11 @@ int32_t DeviceContext2D::Flush(const PP_CompletionCallback& callback) {
     // execute in the next round of the message loop.
     ScheduleOffscreenCallback(FlushCallbackData(callback));
   }
-  return PP_Error_WouldBlock;
+  return PP_ERROR_WOULDBLOCK;
 }
 
-bool DeviceContext2D::ReadImageData(PP_Resource image, int32_t x, int32_t y) {
+bool DeviceContext2D::ReadImageData(PP_Resource image,
+                                    const PP_Point* top_left) {
   // Get and validate the image object to paint into.
   scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
   if (!image_resource.get())
@@ -340,10 +348,12 @@ bool DeviceContext2D::ReadImageData(PP_Resource image, int32_t x, int32_t y) {
     return false;  // Must be in the right format.
 
   // Validate the bitmap position.
+  int x = top_left->x;
   if (x < 0 ||
       static_cast<int64>(x) + static_cast<int64>(image_resource->width()) >
       image_data_->width())
     return false;
+  int y = top_left->y;
   if (y < 0 ||
       static_cast<int64>(y) + static_cast<int64>(image_resource->height()) >
       image_data_->height())

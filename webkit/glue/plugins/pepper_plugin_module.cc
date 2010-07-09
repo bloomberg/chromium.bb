@@ -123,12 +123,12 @@ const PPB_Core core_interface = {
 
 bool ReadImageData(PP_Resource device_context_2d,
                    PP_Resource image,
-                   int32_t x, int32_t y) {
+                   const PP_Point* top_left) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context_2d));
   if (!context.get())
     return false;
-  return context->ReadImageData(image, x, y);
+  return context->ReadImageData(image, top_left);
 }
 
 void RunMessageLoop() {

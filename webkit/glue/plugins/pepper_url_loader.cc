@@ -55,12 +55,12 @@ int32_t Open(PP_Resource loader_id,
              PP_CompletionCallback callback) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
-    return PP_Error_BadResource;
+    return PP_ERROR_BADRESOURCE;
 
   scoped_refptr<URLRequestInfo> request(
       Resource::GetAs<URLRequestInfo>(request_id));
   if (!request.get())
-    return PP_Error_BadResource;
+    return PP_ERROR_BADRESOURCE;
 
   return loader->Open(request, callback);
 }
@@ -69,7 +69,7 @@ int32_t FollowRedirect(PP_Resource loader_id,
                        PP_CompletionCallback callback) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
-    return PP_Error_BadResource;
+    return PP_ERROR_BADRESOURCE;
 
   return loader->FollowRedirect(callback);
 }
@@ -117,7 +117,7 @@ int32_t ReadResponseBody(PP_Resource loader_id,
                          PP_CompletionCallback callback) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader.get())
-    return PP_Error_BadResource;
+    return PP_ERROR_BADRESOURCE;
 
   return loader->ReadResponseBody(buffer, bytes_to_read, callback);
 }
@@ -165,17 +165,17 @@ const PPB_URLLoader* URLLoader::GetInterface() {
 int32_t URLLoader::Open(URLRequestInfo* request,
                         PP_CompletionCallback callback) {
   if (loader_.get())
-    return PP_Error_InProgress;
+    return PP_ERROR_INPROGRESS;
 
   // We only support non-blocking calls.
   if (!callback.func)
-    return PP_Error_BadArgument;
+    return PP_ERROR_BADARGUMENT;
 
   WebURLRequest web_request(request->web_request());
 
   WebFrame* frame = instance_->container()->element().document().frame();
   if (!frame)
-    return PP_Error_Failed;
+    return PP_ERROR_FAILED;
   web_request.setURL(
       frame->document().completeURL(WebString::fromUTF8(request->url())));
   frame->setReferrerForRequest(web_request, WebURL());  // Use default.
@@ -184,31 +184,31 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   loader_.reset(WebKit::webKitClient()->createURLLoader());
   if (!loader_.get()) {
     loader_.reset();
-    return PP_Error_Failed;
+    return PP_ERROR_FAILED;
   }
   loader_->loadAsynchronously(web_request, this);
 
   pending_callback_ = callback;
 
   // Notify completion when we receive a redirect or response headers.
-  return PP_Error_WouldBlock;
+  return PP_ERROR_WOULDBLOCK;
 }
 
 int32_t URLLoader::FollowRedirect(PP_CompletionCallback callback) {
   NOTIMPLEMENTED();  // TODO(darin): Implement me.
-  return PP_Error_Failed;
+  return PP_ERROR_FAILED;
 }
 
 int32_t URLLoader::ReadResponseBody(char* buffer, int32_t bytes_to_read,
                                     PP_CompletionCallback callback) {
   if (bytes_to_read <= 0 || !buffer)
-    return PP_Error_BadArgument;
+    return PP_ERROR_BADARGUMENT;
   if (pending_callback_.func)
-    return PP_Error_InProgress;
+    return PP_ERROR_INPROGRESS;
 
   // We only support non-blocking calls.
   if (!callback.func)
-    return PP_Error_BadArgument;
+    return PP_ERROR_BADARGUMENT;
 
   user_buffer_ = buffer;
   user_buffer_size_ = bytes_to_read;
@@ -217,7 +217,7 @@ int32_t URLLoader::ReadResponseBody(char* buffer, int32_t bytes_to_read,
     return FillUserBuffer();
 
   pending_callback_ = callback;
-  return PP_Error_WouldBlock;
+  return PP_ERROR_WOULDBLOCK;
 }
 
 void URLLoader::Close() {
@@ -261,7 +261,7 @@ void URLLoader::didFinishLoading(WebURLLoader* loader) {
 
 void URLLoader::didFail(WebURLLoader* loader, const WebURLError& error) {
   // TODO(darin): Provide more detailed error information.
-  RunCallback(PP_Error_Failed);
+  RunCallback(PP_ERROR_FAILED);
 }
 
 void URLLoader::RunCallback(int32_t result) {

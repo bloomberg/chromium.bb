@@ -37,7 +37,7 @@ class TryCatch {
   }
 
   bool HasException() const {
-    return exception_ && exception_->type != PP_VarType_Void;
+    return exception_ && exception_->type != PP_VARTYPE_VOID;
   }
 
   void SetException(const char* message) {
@@ -106,27 +106,27 @@ PP_Var NPVariantToPPVar(const NPVariant* variant) {
 NPVariant PPVarToNPVariant(PP_Var var) {
   NPVariant ret;
   switch (var.type) {
-    case PP_VarType_Void:
+    case PP_VARTYPE_VOID:
       VOID_TO_NPVARIANT(ret);
       break;
-    case PP_VarType_Null:
+    case PP_VARTYPE_NULL:
       NULL_TO_NPVARIANT(ret);
       break;
-    case PP_VarType_Bool:
+    case PP_VARTYPE_BOOL:
       BOOLEAN_TO_NPVARIANT(var.value.as_bool, ret);
       break;
-    case PP_VarType_Int32:
+    case PP_VARTYPE_INT32:
       INT32_TO_NPVARIANT(var.value.as_int, ret);
       break;
-    case PP_VarType_Double:
+    case PP_VARTYPE_DOUBLE:
       DOUBLE_TO_NPVARIANT(var.value.as_double, ret);
       break;
-    case PP_VarType_String: {
+    case PP_VARTYPE_STRING: {
       const std::string& value = GetStringUnchecked(var)->value();
       STRINGN_TO_NPVARIANT(base::strdup(value.c_str()), value.size(), ret);
       break;
     }
-    case PP_VarType_Object: {
+    case PP_VARTYPE_OBJECT: {
       NPObject* object = GetNPObjectUnchecked(var);
       OBJECT_TO_NPVARIANT(WebBindings::retainObject(object), ret);
       break;
@@ -141,27 +141,27 @@ NPVariant PPVarToNPVariant(PP_Var var) {
 NPVariant PPVarToNPVariantNoCopy(PP_Var var) {
   NPVariant ret;
   switch (var.type) {
-    case PP_VarType_Void:
+    case PP_VARTYPE_VOID:
       VOID_TO_NPVARIANT(ret);
       break;
-    case PP_VarType_Null:
+    case PP_VARTYPE_NULL:
       NULL_TO_NPVARIANT(ret);
       break;
-    case PP_VarType_Bool:
+    case PP_VARTYPE_BOOL:
       BOOLEAN_TO_NPVARIANT(var.value.as_bool, ret);
       break;
-    case PP_VarType_Int32:
+    case PP_VARTYPE_INT32:
       INT32_TO_NPVARIANT(var.value.as_int, ret);
       break;
-    case PP_VarType_Double:
+    case PP_VARTYPE_DOUBLE:
       DOUBLE_TO_NPVARIANT(var.value.as_double, ret);
       break;
-    case PP_VarType_String: {
+    case PP_VARTYPE_STRING: {
       const std::string& value = GetStringUnchecked(var)->value();
       STRINGN_TO_NPVARIANT(value.c_str(), value.size(), ret);
       break;
     }
-    case PP_VarType_Object: {
+    case PP_VARTYPE_OBJECT: {
       OBJECT_TO_NPVARIANT(GetNPObjectUnchecked(var), ret);
       break;
     }
@@ -174,10 +174,10 @@ NPVariant PPVarToNPVariantNoCopy(PP_Var var) {
 // string or integer type.
 NPIdentifier PPVarToNPIdentifier(PP_Var var) {
   switch (var.type) {
-    case PP_VarType_String:
+    case PP_VARTYPE_STRING:
       return WebBindings::getStringIdentifier(
           GetStringUnchecked(var)->value().c_str());
-    case PP_VarType_Int32:
+    case PP_VARTYPE_INT32:
       return WebBindings::getIntIdentifier(var.value.as_int);
     default:
       return NULL;
@@ -197,9 +197,9 @@ PP_Var NPIdentifierToPPVar(NPIdentifier id) {
 
 PP_Var NPIdentifierToPPVarString(NPIdentifier id) {
   PP_Var var = NPIdentifierToPPVar(id);
-  if (var.type == PP_VarType_String)
+  if (var.type == PP_VARTYPE_STRING)
     return var;
-  DCHECK(var.type == PP_VarType_Int32);
+  DCHECK(var.type == PP_VARTYPE_INT32);
   const std::string& str = IntToString(var.value.as_int);
   return VarFromUtf8(str.data(), str.size());
 }
@@ -246,7 +246,7 @@ bool WrapperClass_HasMethod(NPObject* object, NPIdentifier method_name) {
                                           &exception);
   Release(method_name_var);
 
-  if (exception.type != PP_VarType_Void) {
+  if (exception.type != PP_VARTYPE_VOID) {
     ThrowException(object, exception);
     Release(exception);
     return false;
@@ -275,7 +275,7 @@ bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
     Release(args[i]);
 
   bool rv;
-  if (exception.type == PP_VarType_Void) {
+  if (exception.type == PP_VARTYPE_VOID) {
     rv = true;
     *result = PPVarToNPVariant(result_var);
   } else {
@@ -305,7 +305,7 @@ bool WrapperClass_InvokeDefault(NPObject* object, const NPVariant* argv,
     Release(args[i]);
 
   bool rv;
-  if (exception.type == PP_VarType_Void) {
+  if (exception.type == PP_VARTYPE_VOID) {
     rv = true;
     *result = PPVarToNPVariant(result_var);
   } else {
@@ -327,7 +327,7 @@ bool WrapperClass_HasProperty(NPObject* object, NPIdentifier property_name) {
                                             &exception);
   Release(property_name_var);
 
-  if (exception.type != PP_VarType_Void) {
+  if (exception.type != PP_VARTYPE_VOID) {
     ThrowException(object, exception);
     Release(exception);
     return false;
@@ -347,7 +347,7 @@ bool WrapperClass_GetProperty(NPObject* object, NPIdentifier property_name,
   Release(property_name_var);
 
   bool rv;
-  if (exception.type == PP_VarType_Void) {
+  if (exception.type == PP_VARTYPE_VOID) {
     rv = true;
     *result = PPVarToNPVariant(result_var);
   } else {
@@ -371,7 +371,7 @@ bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
   Release(value_var);
   Release(property_name_var);
 
-  if (exception.type != PP_VarType_Void) {
+  if (exception.type != PP_VARTYPE_VOID) {
     ThrowException(object, exception);
     Release(exception);
     return false;
@@ -388,7 +388,7 @@ bool WrapperClass_RemoveProperty(NPObject* object, NPIdentifier property_name) {
                                      &exception);
   Release(property_name_var);
 
-  if (exception.type != PP_VarType_Void) {
+  if (exception.type != PP_VARTYPE_VOID) {
     ThrowException(object, exception);
     Release(exception);
     return false;
@@ -409,7 +409,7 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
                                           &exception);
 
   bool rv;
-  if (exception.type == PP_VarType_Void) {
+  if (exception.type == PP_VARTYPE_VOID) {
     rv = true;
     if (property_count == 0) {
       *values = NULL;
@@ -452,7 +452,7 @@ bool WrapperClass_Construct(NPObject* object, const NPVariant* argv,
     Release(args[i]);
 
   bool rv;
-  if (exception.type == PP_VarType_Void) {
+  if (exception.type == PP_VARTYPE_VOID) {
     rv = true;
     *result = PPVarToNPVariant(result_var);
   } else {
@@ -484,18 +484,18 @@ const NPClass wrapper_class = {
 // PPB_Var methods
 
 void AddRef(PP_Var var) {
-  if (var.type == PP_VarType_String) {
+  if (var.type == PP_VARTYPE_STRING) {
     GetStringUnchecked(var)->AddRef();
-  } else if (var.type == PP_VarType_Object) {
+  } else if (var.type == PP_VARTYPE_OBJECT) {
     // TODO(darin): Add thread safety check
     WebBindings::retainObject(GetNPObjectUnchecked(var));
   }
 }
 
 void Release(PP_Var var) {
-  if (var.type == PP_VarType_String) {
+  if (var.type == PP_VARTYPE_STRING) {
     GetStringUnchecked(var)->Release();
-  } else if (var.type == PP_VarType_Object) {
+  } else if (var.type == PP_VARTYPE_OBJECT) {
     // TODO(darin): Add thread safety check
     WebBindings::releaseObject(GetNPObjectUnchecked(var));
   }
@@ -505,13 +505,13 @@ PP_Var VarFromUtf8(const char* data, uint32_t len) {
   String* str = new String(data, len);
   str->AddRef();  // This is for the caller, we return w/ a refcount of 1.
   PP_Var ret;
-  ret.type = PP_VarType_String;
+  ret.type = PP_VARTYPE_STRING;
   ret.value.as_id = reinterpret_cast<intptr_t>(str);
   return ret;
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
-  if (var.type != PP_VarType_String) {
+  if (var.type != PP_VARTYPE_STRING) {
     *len = 0;
     return NULL;
   }
@@ -701,9 +701,9 @@ PP_Var Call(PP_Var var,
   }
 
   NPIdentifier identifier;
-  if (method_name.type == PP_VarType_Void) {
+  if (method_name.type == PP_VARTYPE_VOID) {
     identifier = NULL;
-  } else if (method_name.type == PP_VarType_String) {
+  } else if (method_name.type == PP_VARTYPE_STRING) {
     // Specifically allow only string functions to be called.
     identifier = PPVarToNPIdentifier(method_name);
     if (!identifier) {
@@ -831,14 +831,14 @@ const PPB_Var* GetVarInterface() {
 
 PP_Var NPObjectToPPVar(NPObject* object) {
   PP_Var ret;
-  ret.type = PP_VarType_Object;
+  ret.type = PP_VARTYPE_OBJECT;
   ret.value.as_id = reinterpret_cast<intptr_t>(object);
   WebBindings::retainObject(object);
   return ret;
 }
 
 NPObject* GetNPObject(PP_Var var) {
-  if (var.type != PP_VarType_Object)
+  if (var.type != PP_VARTYPE_OBJECT)
     return NULL;
   return GetNPObjectUnchecked(var);
 }
@@ -849,7 +849,7 @@ PP_Var StringToPPVar(const std::string& str) {
 }
 
 String* GetString(PP_Var var) {
-  if (var.type != PP_VarType_String)
+  if (var.type != PP_VARTYPE_STRING)
     return NULL;
   return GetStringUnchecked(var);
 }

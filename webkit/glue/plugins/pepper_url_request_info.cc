@@ -42,10 +42,10 @@ bool SetProperty(PP_Resource request_id,
   if (!request.get())
     return false;
 
-  if (var.type == PP_VarType_Bool)
+  if (var.type == PP_VARTYPE_BOOL)
     return request->SetBooleanProperty(property, var.value.as_bool);
 
-  if (var.type == PP_VarType_String)
+  if (var.type == PP_VARTYPE_STRING)
     return request->SetStringProperty(property, GetString(var)->value());
 
   return false;
@@ -117,15 +117,15 @@ bool URLRequestInfo::SetStringProperty(PP_URLRequestProperty property,
                                        const std::string& value) {
   // TODO(darin): Validate input.  Perhaps at a different layer?
   switch (property) {
-    case PP_URLRequestProperty_URL:
+    case PP_URLREQUESTPROPERTY_URL:
       // Keep the url in a string instead of a URL object because it might not
       // be complete yet.
       url_ = value;
       return true;
-    case PP_URLRequestProperty_Method:
+    case PP_URLREQUESTPROPERTY_METHOD:
       web_request_.setHTTPMethod(WebString::fromUTF8(value));
       return true;
-    case PP_URLRequestProperty_Headers:
+    case PP_URLREQUESTPROPERTY_HEADERS:
       // TODO(darin): Support extra request headers
       NOTIMPLEMENTED();
       return false;

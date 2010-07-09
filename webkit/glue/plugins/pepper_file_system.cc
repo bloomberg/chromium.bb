@@ -15,31 +15,31 @@ namespace {
 int32_t MakeDirectory(PP_Resource directory_ref,
                       bool make_ancestors,
                       PP_CompletionCallback callback) {
-  return PP_Error_Failed;  // TODO(darin): Implement me!
+  return PP_ERROR_FAILED;  // TODO(darin): Implement me!
 }
 
 int32_t Query(PP_Resource file_ref,
               PP_FileInfo* info,
               PP_CompletionCallback callback) {
-  return PP_Error_Failed;  // TODO(darin): Implement me!
+  return PP_ERROR_FAILED;  // TODO(darin): Implement me!
 }
 
 int32_t Touch(PP_Resource file_ref,
               PP_Time last_access_time,
               PP_Time last_modified_time,
               PP_CompletionCallback callback) {
-  return PP_Error_Failed;  // TODO(darin): Implement me!
+  return PP_ERROR_FAILED;  // TODO(darin): Implement me!
 }
 
 int32_t Delete(PP_Resource file_ref,
                PP_CompletionCallback callback) {
-  return PP_Error_Failed;  // TODO(darin): Implement me!
+  return PP_ERROR_FAILED;  // TODO(darin): Implement me!
 }
 
 int32_t Rename(PP_Resource file_ref,
                PP_Resource new_file_ref,
                PP_CompletionCallback callback) {
-  return PP_Error_Failed;  // TODO(darin): Implement me!
+  return PP_ERROR_FAILED;  // TODO(darin): Implement me!
 }
 
 const PPB_FileSystem ppb_filesystem = {

@@ -148,15 +148,15 @@ void ChromotingPlugin::ViewChanged(const PP_Rect& position,
 
 bool ChromotingPlugin::HandleEvent(const PP_Event& event) {
   switch (event.type) {
-    case PP_Event_Type_MouseDown:
-    case PP_Event_Type_MouseUp:
-    case PP_Event_Type_MouseMove:
-    case PP_Event_Type_MouseEnter:
-    case PP_Event_Type_MouseLeave:
+    case PP_EVENT_TYPE_MOUSEDOWN:
+    case PP_EVENT_TYPE_MOUSEUP:
+    case PP_EVENT_TYPE_MOUSEMOVE:
+    case PP_EVENT_TYPE_MOUSEENTER:
+    case PP_EVENT_TYPE_MOUSELEAVE:
       //client_->handle_mouse_event(npevent);
       break;
 
-    case PP_Event_Type_Char:
+    case PP_EVENT_TYPE_CHAR:
       //client_->handle_char_event(npevent);
       break;
 
