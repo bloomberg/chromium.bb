@@ -2424,7 +2424,9 @@
             'automated_ui_tests',
             '../app/app.gyp:app_unittests',
             '../base/base.gyp:base_unittests',
-            'browser_tests',
+            # browser_tests's use of subprocesses chokes gcov on 10.6?
+            # Disabling for now (enabled on linux/windows below).
+            # 'browser_tests',
             '../ipc/ipc.gyp:ipc_tests',
             '../media/media.gyp:media_unittests',
             'nacl_ui_tests',
@@ -2445,6 +2447,7 @@
                 # Note build/win/chrome_win.croc uniquely has the
                 # courgette source directory in an include path.
                 '../courgette/courgette.gyp:courgette_unittests',
+                'browser_tests',
                 ]}],
             ['OS=="linux"', {
               'dependencies': [
@@ -2452,6 +2455,7 @@
                 'ui_tests',
                 # Win bot needs to be turned into an interactive bot.
                 'interactive_ui_tests',
+                'browser_tests',
               ]}],
             ['OS=="mac"', {
               'dependencies': [
