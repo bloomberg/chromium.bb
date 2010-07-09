@@ -8,6 +8,7 @@
 #include "chrome/test/in_process_browser_test.h"
 
 #include "base/basictypes.h"
+#include "base/file_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
@@ -129,6 +130,9 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // GAIA password used by the test case.
   std::string password_;
+
+  // Locally available plain text file in which GAIA credentials are stored.
+  FilePath password_file_;
 
  private:
   // Helper to ProfileManager::CreateProfile that handles path creation.
