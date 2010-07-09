@@ -18,9 +18,6 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/notification_service.h"
 
-typedef sync_api::SyncManager::ExtraAutofillChangeRecordData
-    ExtraAutofillChangeRecordData;
-
 namespace browser_sync {
 
 AutofillChangeProcessor::AutofillChangeProcessor(
@@ -302,14 +299,14 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
   for (int i = 0; i < change_count; ++i) {
     sync_api::SyncManager::ChangeRecord::Action action(changes[i].action);
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE == action) {
-      scoped_ptr<ExtraAutofillChangeRecordData> data(
-          static_cast<ExtraAutofillChangeRecordData*>(changes[i].extra));
-      DCHECK(data.get()) << "Extra autofill change record data not present!";
-      const sync_pb::AutofillSpecifics* autofill(data->pre_deletion_data);
-      if (autofill->has_value())
-        ApplySyncAutofillEntryDelete(*autofill);
-      else if (autofill->has_profile())
-        ApplySyncAutofillProfileDelete(autofill->profile(), changes[i].id);
+      DCHECK(changes[i].specifics.HasExtension(sync_pb::autofill))
+          << "Autofill specifics data not present on delete!";
+      const sync_pb::AutofillSpecifics& autofill =
+          changes[i].specifics.GetExtension(sync_pb::autofill);
+      if (autofill.has_value())
+        ApplySyncAutofillEntryDelete(autofill);
+      else if (autofill.has_profile())
+        ApplySyncAutofillProfileDelete(autofill.profile(), changes[i].id);
       else
         NOTREACHED() << "Autofill specifics has no data!";
       continue;

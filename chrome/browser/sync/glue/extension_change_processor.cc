@@ -16,9 +16,6 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 
-typedef sync_api::SyncManager::ExtraExtensionChangeRecordData
-    ExtraExtensionChangeRecordData;
-
 namespace browser_sync {
 
 ExtensionChangeProcessor::ExtensionChangeProcessor(
@@ -112,10 +109,9 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
       }
       case sync_api::SyncManager::ChangeRecord::ACTION_DELETE: {
         StopObserving();
-        scoped_ptr<ExtraExtensionChangeRecordData>
-            data(static_cast<ExtraExtensionChangeRecordData*>(change.extra));
-        if (data.get()) {
-          extension_model_associator_->OnServerRemove(data->extension_id);
+        if (change.specifics.HasExtension(sync_pb::extension)) {
+          extension_model_associator_->OnServerRemove(
+              change.specifics.GetExtension(sync_pb::extension).id());
         } else {
           std::stringstream error;
           error << "Could not get extension ID for deleted node "

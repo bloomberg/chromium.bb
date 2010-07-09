@@ -202,6 +202,14 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
   TypedUrlModelAssociator::TypedUrlUpdateVector updated_urls;
 
   for (int i = 0; i < change_count; ++i) {
+    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
+        changes[i].action) {
+      DCHECK(changes[i].specifics.HasExtension(sync_pb::typed_url)) <<
+          "Typed URL delete change does not have necessary specifics.";
+      GURL url(changes[i].specifics.GetExtension(sync_pb::typed_url).url());
+      history_backend_->DeleteURL(url);
+      continue;
+    }
 
     sync_api::ReadNode sync_node(trans);
     if (!sync_node.InitByIdLookup(changes[i].id)) {
@@ -249,9 +257,6 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
 
       new_visits.push_back(
           std::pair<GURL, std::vector<base::Time> >(url, added_visits));
-    } else if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
-               changes[i].action) {
-      history_backend_->DeleteURL(url);
     } else {
       history::URLRow old_url;
       if (!history_backend_->GetURL(url, &old_url)) {

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 
 namespace sync_api {
 
@@ -36,7 +37,6 @@ namespace sync_api {
 class ChangeReorderBuffer {
  public:
   typedef SyncManager::ChangeRecord ChangeRecord;
-  typedef SyncManager::ExtraChangeRecordData ExtraChangeRecordData;
 
   ChangeReorderBuffer() { }
 
@@ -64,8 +64,8 @@ class ChangeReorderBuffer {
                                          OP_UPDATE_PROPERTIES_ONLY;
   }
 
-  void SetExtraDataForId(int64 id, ExtraChangeRecordData* extra) {
-    extra_data_[id] = extra;
+  void SetSpecificsForId(int64 id, const sync_pb::EntitySpecifics& specifics) {
+    specifics_[id] = specifics;
   }
 
   // Reset the buffer, forgetting any pushed items, so that it can be used
@@ -93,14 +93,14 @@ class ChangeReorderBuffer {
     OP_UPDATE_POSITION_AND_PROPERTIES,  // UpdatedItem with position_changed=1.
   };
   typedef std::map<int64, Operation> OperationMap;
-  typedef std::map<int64, ExtraChangeRecordData*> ExtraDataMap;
+  typedef std::map<int64, sync_pb::EntitySpecifics> SpecificsMap;
 
   // Stores the items that have been pushed into the buffer, and the type of
   // operation that was associated with them.
   OperationMap operations_;
 
-  // Stores extra ChangeRecord data per-ID.
-  ExtraDataMap extra_data_;
+  // Stores entity-specific ChangeRecord data per-ID.
+  SpecificsMap specifics_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeReorderBuffer);
 };

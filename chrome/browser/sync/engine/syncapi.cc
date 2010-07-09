@@ -1713,27 +1713,10 @@ void SyncManager::SyncInternal::SetExtraChangeRecordData(int64 id,
     syncable::ModelType type, ChangeReorderBuffer* buffer,
     const syncable::EntryKernel& original, bool existed_before,
     bool exists_now) {
-  // Extra data for autofill deletions.
-  switch (type) {
-    case syncable::AUTOFILL:
-      if (!exists_now && existed_before) {
-        sync_pb::AutofillSpecifics* s = new sync_pb::AutofillSpecifics;
-        s->CopyFrom(original.ref(SPECIFICS).GetExtension(sync_pb::autofill));
-        ExtraChangeRecordData* extra = new ExtraAutofillChangeRecordData(s);
-        buffer->SetExtraDataForId(id, extra);
-      }
-      break;
-    case syncable::EXTENSIONS:
-      if (!exists_now && existed_before) {
-        const std::string& extension_id =
-            original.ref(SPECIFICS).GetExtension(sync_pb::extension).id();
-        ExtraChangeRecordData* extra =
-            new ExtraExtensionChangeRecordData(extension_id);
-        buffer->SetExtraDataForId(id, extra);
-      }
-      break;
-    default:
-      break;
+  // If this is a deletion, attach the entity specifics as extra data
+  // so that the delete can be processed.
+  if (!exists_now && existed_before) {
+    buffer->SetSpecificsForId(id, original.ref(SPECIFICS));
   }
 }
 
@@ -2130,10 +2113,6 @@ BaseTransaction::~BaseTransaction() {
 UserShare* SyncManager::GetUserShare() const {
   DCHECK(data_->initialized()) << "GetUserShare requires initialization!";
   return data_->GetUserShare();
-}
-
-SyncManager::ExtraAutofillChangeRecordData::~ExtraAutofillChangeRecordData() {
-  delete pre_deletion_data;
 }
 
 }  // namespace sync_api
