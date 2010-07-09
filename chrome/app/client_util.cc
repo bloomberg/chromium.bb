@@ -108,6 +108,7 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   dir->append(installer_util::kChromeDll);
 #endif
 
+#ifdef NDEBUG
   // Experimental pre-reading optimization
   // The idea is to pre read significant portion of chrome.dll in advance
   // so that subsequent hard page faults are avoided.
@@ -142,6 +143,7 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
       file_util::PreReadImage(dir->c_str(), pre_read_size, pre_read_step_size);
     }
   }
+#endif  // NDEBUG
 
   return ::LoadLibraryExW(dir->c_str(), NULL,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
