@@ -31,7 +31,7 @@
 namespace {
 
 // This file is a comma separated list of tests that are currently failing.
-const wchar_t kExpectedFailuresFileName[] = L"expected_failures.txt";
+const char kExpectedFailuresFileName[] = "expected_failures.txt";
 
 class SeleniumTest : public UITest {
  public:
@@ -66,18 +66,17 @@ class SeleniumTest : public UITest {
   }
 
   // The results file is in trunk/chrome/test/selenium/
-  std::wstring GetResultsFilePath() {
-    std::wstring results_path;
+  FilePath GetResultsFilePath() {
+    FilePath results_path;
     PathService::Get(chrome::DIR_TEST_DATA, &results_path);
-    file_util::UpOneDirectory(&results_path);
-    file_util::AppendToPath(&results_path, L"selenium");
-
-    file_util::AppendToPath(&results_path, kExpectedFailuresFileName);
+    results_path = results_path.DirName();
+    results_path = results_path.AppendASCII("selenium");
+    results_path = results_path.AppendASCII(kExpectedFailuresFileName);
     return results_path;
   }
 
   bool ReadExpectedResults(std::string* results) {
-    std::wstring results_path = GetResultsFilePath();
+    FilePath results_path = GetResultsFilePath();
     return file_util::ReadFileToString(results_path, results);
   }
 

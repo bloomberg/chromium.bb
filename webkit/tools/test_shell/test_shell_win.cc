@@ -303,16 +303,17 @@ std::string TestShell::RewriteLocalUrl(const std::string& url) {
 
   std::string new_url(url);
   if (url.compare(0, kPrefixLen, kPrefix, kPrefixLen) == 0) {
-    std::wstring replace_url;
+    FilePath replace_url;
     PathService::Get(base::DIR_EXE, &replace_url);
-    file_util::UpOneDirectory(&replace_url);
-    file_util::UpOneDirectory(&replace_url);
-    file_util::AppendToPath(&replace_url, L"third_party");
-    file_util::AppendToPath(&replace_url, L"WebKit");
-    file_util::AppendToPath(&replace_url, L"LayoutTests");
-    replace_url.push_back(FilePath::kSeparators[0]);
+    replace_url = replace_url.DirName();
+    replace_url = replace_url.DirName();
+    replace_url = replace_url.AppendASCII("third_party");
+    replace_url = replace_url.AppendASCII("WebKit");
+    replace_url = replace_url.AppendASCII("LayoutTests");
+    std::wstring replace_url_str = replace_url.value();
+    replace_url_str.push_back(L'/');
     new_url = std::string("file:///") +
-              WideToUTF8(replace_url).append(url.substr(kPrefixLen));
+              WideToUTF8(replace_url_str).append(url.substr(kPrefixLen));
   }
   return new_url;
 }

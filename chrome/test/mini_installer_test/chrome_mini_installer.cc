@@ -409,26 +409,26 @@ void ChromeMiniInstaller::DeleteFolder(const wchar_t* folder_name) {
 
 // Will delete user data profile.
 void ChromeMiniInstaller::DeleteUserDataFolder() {
-  std::wstring path = GetUserDataDirPath();
-  if (file_util::PathExists(FilePath::FromWStringHack(path.c_str())))
-    ASSERT_TRUE(file_util::Delete(path.c_str(), true));
+  FilePath path = GetUserDataDirPath();
+  if (file_util::PathExists(path))
+    ASSERT_TRUE(file_util::Delete(path, true));
 }
 
 // Gets user data directory path
-std::wstring ChromeMiniInstaller::GetUserDataDirPath() {
+FilePath ChromeMiniInstaller::GetUserDataDirPath() {
   FilePath path;
   PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
-  std::wstring profile_path = path.ToWStringHack();
+  FilePath profile_path = path;
   if (is_chrome_frame_) {
-    file_util::AppendToPath(&profile_path,
+    profile_path = profile_path.Append(
         mini_installer_constants::kChromeFrameAppDir);
   } else {
-    file_util::AppendToPath(&profile_path,
+    profile_path = profile_path.Append(
         mini_installer_constants::kChromeAppDir);
   }
-  file_util::UpOneDirectory(&profile_path);
-  file_util::AppendToPath(&profile_path,
-                          mini_installer_constants::kChromeUserDataDir);
+  profile_path = profile_path.DirName();
+  profile_path = profile_path.Append(
+      mini_installer_constants::kChromeUserDataDir);
   return profile_path;
 }
 
@@ -620,9 +620,9 @@ void ChromeMiniInstaller::VerifyChromeFrameInstall() {
   PlatformThread::Sleep(1500);
 
   // Verify if IExplore folder got created
-  std::wstring path = GetUserDataDirPath();
-  file_util::AppendToPath(&path, L"IEXPLORE");
-  ASSERT_TRUE(file_util::PathExists(FilePath::FromWStringHack(path.c_str())));
+  FilePath path = GetUserDataDirPath();
+  path = path.AppendASCII("IEXPLORE");
+  ASSERT_TRUE(file_util::PathExists(path));
 }
 
 // This method will launch any requested browser.
