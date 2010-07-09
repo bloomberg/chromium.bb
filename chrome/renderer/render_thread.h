@@ -355,7 +355,6 @@ class RenderThread : public RenderThreadBase,
 
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;
-  bool did_notify_webkit_of_modal_loop_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThread> idle_timer_;

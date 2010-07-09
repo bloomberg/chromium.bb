@@ -224,7 +224,6 @@ void RenderThread::Init() {
   is_incognito_process_ = false;
   suspend_webkit_shared_timer_ = true;
   notify_webkit_of_modal_loop_ = true;
-  did_notify_webkit_of_modal_loop_ = false;
   plugin_refresh_allowed_ = true;
   cache_stats_task_pending_ = false;
   widget_count_ = 0;
@@ -346,12 +345,8 @@ bool RenderThread::Send(IPC::Message* msg) {
     if (suspend_webkit_shared_timer)
       webkit_client_->SuspendSharedTimer();
 
-    // WebKit does not like nested calls to willEnterModalLoop.
-    // TODO(darin): Fix WebKit to allow nesting.
-    if (notify_webkit_of_modal_loop && !did_notify_webkit_of_modal_loop_) {
+    if (notify_webkit_of_modal_loop)
       WebView::willEnterModalLoop();
-      did_notify_webkit_of_modal_loop_ = true;
-    }
 
     RenderWidget* widget =
         static_cast<RenderWidget*>(ResolveRoute(msg->routing_id()));
@@ -370,10 +365,8 @@ bool RenderThread::Send(IPC::Message* msg) {
           new PluginMsg_ResetModalDialogEvent(host_window));
     }
 
-    if (notify_webkit_of_modal_loop && did_notify_webkit_of_modal_loop_) {
+    if (notify_webkit_of_modal_loop)
       WebView::didExitModalLoop();
-      did_notify_webkit_of_modal_loop_ = false;
-    }
 
     if (suspend_webkit_shared_timer)
       webkit_client_->ResumeSharedTimer();

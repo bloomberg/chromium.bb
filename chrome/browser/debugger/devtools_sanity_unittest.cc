@@ -468,5 +468,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowStoragePanel) {
   RunTest("testShowStoragePanel", kDebuggerTestPage);
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestMessageLoopReentrant) {
+  RunTest("testMessageLoopReentrant", kDebuggerTestPage);
+}
 
 }  // namespace
