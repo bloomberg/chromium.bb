@@ -5,6 +5,7 @@
 #include "chrome/browser/toolbar_model.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/pref_service.h"

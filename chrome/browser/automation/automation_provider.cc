@@ -34,6 +34,7 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/extension_port_container.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"

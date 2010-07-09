@@ -53,6 +53,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -77,6 +78,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/url_pattern.h"
+#include "chrome/common/navigation_types.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -248,7 +252,8 @@ TabContents::TabContents(Profile* profile,
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
       property_bag_(),
       registrar_(),
-      ALLOW_THIS_IN_INITIALIZER_LIST(printing_(*this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(printing_(
+          new printing::PrintViewManager(*this))),
       save_package_(),
       autocomplete_history_manager_(),
       autofill_manager_(),
@@ -827,7 +832,7 @@ bool TabContents::NavigateToPendingEntry(
 
 void TabContents::Stop() {
   render_manager_.Stop();
-  printing_.Stop();
+  printing_->Stop();
 }
 
 void TabContents::DisassociateFromPopupCount() {
@@ -2143,7 +2148,7 @@ RenderViewHostDelegate::Save* TabContents::GetSaveDelegate() {
 }
 
 RenderViewHostDelegate::Printing* TabContents::GetPrintingDelegate() {
-  return &printing_;
+  return printing_.get();
 }
 
 RenderViewHostDelegate::FavIcon* TabContents::GetFavIconDelegate() {
@@ -2237,7 +2242,7 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
 
 void TabContents::RenderViewGone(RenderViewHost* rvh) {
   // Ask the print preview if this renderer was valuable.
-  if (!printing_.OnRenderViewGone(rvh))
+  if (!printing_->OnRenderViewGone(rvh))
     return;
   if (rvh != render_view_host()) {
     // The pending page's RenderViewHost is gone.

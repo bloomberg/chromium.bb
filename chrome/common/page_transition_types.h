@@ -6,7 +6,6 @@
 #define CHROME_COMMON_PAGE_TRANSITION_TYPES_H__
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 
 // This class is for scoping only.
 class PageTransition {
@@ -131,15 +130,7 @@ class PageTransition {
     return (t <= LAST_CORE);
   }
 
-  static Type FromInt(int32 type) {
-    if (!ValidType(type)) {
-      NOTREACHED() << "Invalid transition type " << type;
-
-      // Return a safe default so we don't have corrupt data in release mode.
-      return LINK;
-    }
-    return static_cast<Type>(type);
-  }
+  static Type FromInt(int32 type);
 
   // Returns true if the given transition is a top-level frame transition, or
   // false if the transition was for a subframe.

@@ -4,6 +4,20 @@
 
 #include "chrome/common/page_transition_types.h"
 
+#include "base/logging.h"
+
+// static
+PageTransition::Type PageTransition::FromInt(int32 type) {
+  if (!ValidType(type)) {
+    NOTREACHED() << "Invalid transition type " << type;
+
+    // Return a safe default so we don't have corrupt data in release mode.
+    return LINK;
+  }
+  return static_cast<Type>(type);
+}
+
+// static
 const char* PageTransition::CoreTransitionString(Type type) {
   switch (type & PageTransition::CORE_MASK) {
     case 0: return "link";

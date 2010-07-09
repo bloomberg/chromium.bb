@@ -8,6 +8,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
+#include "webkit/glue/webpreferences.h"
 
 class RenderViewHostFactory;
 class TestRenderViewHost;

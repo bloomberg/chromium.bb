@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"

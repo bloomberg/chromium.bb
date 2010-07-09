@@ -14,6 +14,7 @@
 #include "chrome/common/notification_type.h"
 #include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class ImageLoadingTrackerTest : public testing::Test,
                                 public ImageLoadingTracker::Observer {

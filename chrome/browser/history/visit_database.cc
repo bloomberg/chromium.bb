@@ -11,6 +11,7 @@
 
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
+#include "base/logging.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/url_constants.h"

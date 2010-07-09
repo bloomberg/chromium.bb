@@ -10,6 +10,7 @@
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/render_messages.h"
 #include "gfx/rect.h"
+#include "webkit/glue/webpreferences.h"
 
 using webkit_glue::PasswordForm;
 

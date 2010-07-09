@@ -9,6 +9,7 @@
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/task.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"

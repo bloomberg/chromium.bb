@@ -16,7 +16,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/save_package.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
@@ -37,9 +35,6 @@
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
-#include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/navigation_types.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/renderer_preferences.h"
@@ -49,7 +44,6 @@
 #include "net/base/load_states.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/password_form.h"
-#include "webkit/glue/webpreferences.h"
 
 namespace gfx {
 class Rect;
@@ -64,6 +58,9 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace printing {
+class PrintViewManager;
+}
 
 namespace IPC {
 class Message;
@@ -88,10 +85,13 @@ class TabContents;
 class TabContentsDelegate;
 class TabContentsFactory;
 class TabContentsView;
+class URLPattern;
+class URLRequestContextGetter;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_RunFileChooser_Params;
+struct WebPreferences;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -1054,7 +1054,7 @@ class TabContents : public PageNavigator,
   NotificationRegistrar registrar_;
 
   // Handles print preview and print job for this contents.
-  printing::PrintViewManager printing_;
+  scoped_ptr<printing::PrintViewManager> printing_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

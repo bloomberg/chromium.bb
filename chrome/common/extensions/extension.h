@@ -20,10 +20,10 @@
 #include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class ExtensionAction;
 class ExtensionResource;
+class SkBitmap;
 
 // Represents a Chrome extension.
 class Extension {
