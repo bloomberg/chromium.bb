@@ -94,6 +94,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import traceback
@@ -146,11 +147,15 @@ class RunProgramThread(threading.Thread):
   We want to print the output of our subprocess in real time, but also
   want a timeout if there has been no output for a certain amount of
   time.  Normal techniques (e.g. loop in select()) aren't cross
-  platform enough.
+  platform enough. the function seems simple: "print output of child, kill it
+  if there is no output by timeout.  But it was tricky to get this right
+  in a x-platform way (see warnings about deadlock on the python
+  subprocess doc page).
+
   """
   # Constants in our queue
-  LINE = 0
-  DIED = 1
+  PROGRESS = 0
+  DONE = 1
 
   def __init__(self, cmd):
     super(RunProgramThread, self).__init__()
@@ -160,22 +165,53 @@ class RunProgramThread(threading.Thread):
     self._retcode = None
 
   def run(self):
-    self._process = subprocess.Popen(self._cmd,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
-    gChildPIDs.append(self._process.pid)
+    # We need to save stdout to a temporary file because of a bug on the
+    # windows implementation of python which can deadlock while waiting
+    # for the IO to complete while writing to the PIPE and the pipe waiting
+    # on us and us waiting on the child process.
+    stdout_file = tempfile.TemporaryFile()
     try:
-      while True:
-        line = self._process.stdout.readline()
-        if not line:  # EOF
-          break
-        print line,
-        self._queue.put(RunProgramThread.LINE, True)
-    except IOError:
-      pass
-    # If we get here the process is dead.
+      self._process = subprocess.Popen(self._cmd,
+                                       stdin=subprocess.PIPE,
+                                       stdout=stdout_file,
+                                       stderr=subprocess.STDOUT)
+      gChildPIDs.append(self._process.pid)
+      try:
+        # To make sure that the buildbot don't kill us if we run too long
+        # without any activity on the console output, we look for progress in
+        # the length of the temporary file and we print what was accumulated so
+        # far to the output console to make the buildbot know we are making some
+        # progress.
+        previous_tell = 0
+        # We will poll the process until we get a non-None return code.
+        self._retcode = None
+        while self._retcode is None:
+          self._retcode = self._process.poll()
+          current_tell = stdout_file.tell()
+          if current_tell > previous_tell:
+            # Report progress to our main thread so we don't timeout.
+            self._queue.put(RunProgramThread.PROGRESS)
+            # And print what was accumulated to far.
+            stdout_file.seek(previous_tell)
+            print stdout_file.read(current_tell - previous_tell),
+            previous_tell = current_tell
+          # Don't be selfish, let other threads do stuff while we wait for
+          # the process to complete.
+          time.sleep(0.5)
+        # OK, the child process has exited, let's print its output to our
+        # console to create debugging logs in case they get to be needed.
+        stdout_file.flush()
+        stdout_file.seek(previous_tell)
+        print stdout_file.read(stdout_file.tell() - previous_tell)
+      except IOError, e:
+        logging.exception('%s', e)
+        pass
+    finally:
+      stdout_file.close()
+
+    # If we get here the process is done.
     gChildPIDs.remove(self._process.pid)
-    self._queue.put(RunProgramThread.DIED)
+    self._queue.put(RunProgramThread.DONE)
 
   def stop(self):
     self.kill()
@@ -215,7 +251,7 @@ class RunProgramThread(threading.Thread):
     while True:
       try:
         x = self._queue.get(True, timeout)
-        if x == RunProgramThread.DIED:
+        if x == RunProgramThread.DONE:
           return self.retcode()
       except Queue.Empty, e:  # timed out
         logging.info('TIMEOUT (%d seconds exceeded with no output): killing' %
@@ -697,6 +733,7 @@ class Coverage(object):
     cmdlist = [self.analyzer,
                '-sym_path=' + self.directory,
                '-src_root=' + self.src_root,
+               '-noxml',
                self.vsts_output]
     self.Run(cmdlist)
     if not os.path.exists(lcov_file):
@@ -779,6 +816,7 @@ def CoverageOptionParser():
                     '--timeout',
                     dest='timeout',
                     default=5.0 * 60.0,
+                    type="int",
                     help='Timeout before bailing if a subprocess has no output.'
                     '  Default is 5min  (Buildbot is 10min.)')
   parser.add_option('-B',
