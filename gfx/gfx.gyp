@@ -33,9 +33,22 @@
       'conditions': [
         ['OS=="win"', {
           'sources': [
+            'canvas_direct2d_unittest.cc',
             'icon_util_unittest.cc',
             'native_theme_win_unittest.cc',
           ],
+          'include_dirs': [
+            '..',
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'd2d1.lib',
+                'd3d10_1.lib',
+              ],
+            },
+          }
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
@@ -107,6 +120,8 @@
       'conditions': [
         ['OS=="win"', {
           'sources': [
+            'canvas_direct2d.cc',
+            'canvas_direct2d.h',
             'gdi_util.cc',
             'gdi_util.h',
             'icon_util.cc',

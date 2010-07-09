@@ -74,8 +74,8 @@ class Canvas {
   // at the specified alpha once Restore() is called.
   // |layer_bounds| are the bounds of the layer relative to the current
   // transform.
-  virtual void SaveLayerAlpha(U8CPU alpha) = 0;
-  virtual void SaveLayerAlpha(U8CPU alpha, const gfx::Rect& layer_bounds) = 0;
+  virtual void SaveLayerAlpha(uint8 alpha) = 0;
+  virtual void SaveLayerAlpha(uint8 alpha, const gfx::Rect& layer_bounds) = 0;
 
   // Restores the drawing state after a call to Save*(). It is an error to
   // call Restore() more times than Save*().

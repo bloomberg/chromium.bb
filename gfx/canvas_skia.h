@@ -79,10 +79,10 @@ class CanvasSkia : public skia::PlatformCanvas,
   // Extracts a bitmap from the contents of this canvas.
   SkBitmap ExtractBitmap() const;
 
-  // Overridden from Canvas2:
+  // Overridden from Canvas:
   virtual void Save();
-  virtual void SaveLayerAlpha(U8CPU alpha);
-  virtual void SaveLayerAlpha(U8CPU alpha, const gfx::Rect& layer_bounds);
+  virtual void SaveLayerAlpha(uint8 alpha);
+  virtual void SaveLayerAlpha(uint8 alpha, const gfx::Rect& layer_bounds);
   virtual void Restore();
   virtual bool GetClipRect(gfx::Rect* clip_rect);
   virtual bool ClipRectInt(int x, int y, int w, int h);

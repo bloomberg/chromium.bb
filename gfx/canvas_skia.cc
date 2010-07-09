@@ -36,12 +36,12 @@ void CanvasSkia::Save() {
   save();
 }
 
-void CanvasSkia::SaveLayerAlpha(U8CPU alpha) {
+void CanvasSkia::SaveLayerAlpha(uint8 alpha) {
   saveLayerAlpha(NULL, alpha);
 }
 
 
-void CanvasSkia::SaveLayerAlpha(U8CPU alpha, const gfx::Rect& layer_bounds) {
+void CanvasSkia::SaveLayerAlpha(uint8 alpha, const gfx::Rect& layer_bounds) {
   SkRect bounds;
   bounds.set(SkIntToScalar(layer_bounds.x()),
              SkIntToScalar(layer_bounds.y()),
