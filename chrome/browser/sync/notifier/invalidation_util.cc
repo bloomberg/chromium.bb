@@ -61,9 +61,9 @@ std::string InvalidationToString(
   ss << "components: { ";
   const invalidation::ComponentStampLog& component_stamp_log =
       invalidation.component_stamp_log();
-  for (int i = 0; i < component_stamp_log.stamps_size(); ++i) {
+  for (int i = 0; i < component_stamp_log.stamp_size(); ++i) {
     const invalidation::ComponentStamp& component_stamp =
-        component_stamp_log.stamps(i);
+        component_stamp_log.stamp(i);
     ss << "component: " << component_stamp.component() << ", ";
     ss << "time: " << component_stamp.time() << ", ";
   }

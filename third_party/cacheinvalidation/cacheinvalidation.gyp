@@ -87,6 +87,8 @@
         'files/src/google/cacheinvalidation/session-manager.h',
         'files/src/google/cacheinvalidation/throttle.cc',
         'files/src/google/cacheinvalidation/throttle.h',
+        'files/src/google/cacheinvalidation/version-manager.cc',
+        'files/src/google/cacheinvalidation/version-manager.h',
       ],
       'include_dirs': [
         '<(protoc_out_dir)',
