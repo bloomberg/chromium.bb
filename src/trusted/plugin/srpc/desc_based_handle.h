@@ -32,6 +32,8 @@ class DescBasedHandle : public PortableHandle {
  public:
   static DescBasedHandle* New(Plugin* plugin, nacl::DescWrapper* wrapper);
 
+  void Invalidate() { }
+
   virtual BrowserInterface* browser_interface() const;
   virtual Plugin* plugin() const { return plugin_; }
   // Get the contained descriptor.

@@ -10,6 +10,7 @@
  * base/basictypes.h, which depends on C++.
  */
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <queue>
@@ -61,6 +62,7 @@ NPPluginFuncs plugin_funcs;
 std::map<std::string, char*> interned_strings;
 std::vector<NPObject*> all_objects;
 std::map<std::string, std::string> url_to_filename;
+bool npn_calls_allowed = true;
 
 void fb_NPN_ReleaseObject(NPObject* npobj);
 NPObject* MakeWindowObject();
@@ -111,11 +113,14 @@ bool fb_NPN_IdentifierIsString(NPIdentifier identifier) {
 }
 
 NPUTF8* fb_NPN_UTF8FromIdentifier(NPIdentifier identifier) {
-  return static_cast<NPUTF8*>(identifier);
+  char* string = strdup(static_cast<char*>(identifier));
+  CHECK(string != NULL);
+  return string;
 }
 
 NPError fb_NPN_GetValue(NPP instance, NPNVariable variable, void* value) {
   UNREFERENCED_PARAMETER(instance);
+  CHECK(npn_calls_allowed);
   if (variable == NPNVWindowNPObject) {
     NPObject** dest = reinterpret_cast<NPObject**>(value);
     *dest = MakeWindowObject();
@@ -135,6 +140,7 @@ NPError fb_NPN_SetValue(NPP instance, NPPVariable variable, void* value) {
 NPError fb_NPN_GetURLNotify(NPP instance, const char* url,
                             const char* target, void* notify_data) {
   UNREFERENCED_PARAMETER(instance);
+  CHECK(npn_calls_allowed);
   CHECK(url != NULL);
   CHECK(target == NULL);
   Callback callback;
@@ -146,6 +152,7 @@ NPError fb_NPN_GetURLNotify(NPP instance, const char* url,
 }
 
 void fb_NPN_ReleaseVariantValue(NPVariant* variant) {
+  CHECK(npn_calls_allowed);
   switch (variant->type) {
     case NPVariantType_Void:
     case NPVariantType_Null:
@@ -166,6 +173,7 @@ void fb_NPN_ReleaseVariantValue(NPVariant* variant) {
 }
 
 NPObject* fb_NPN_CreateObject(NPP npp, NPClass* a_class) {
+  CHECK(npn_calls_allowed);
   NPObject* npobj;
   if (a_class->allocate == NULL) {
     npobj = reinterpret_cast<NPObject*>(malloc(sizeof(NPObject)));
@@ -180,6 +188,7 @@ NPObject* fb_NPN_CreateObject(NPP npp, NPClass* a_class) {
 }
 
 NPObject* fb_NPN_RetainObject(NPObject* npobj) {
+  CHECK(npn_calls_allowed);
   CHECK(npobj->referenceCount > 0);
   npobj->referenceCount++;
   return npobj;
@@ -198,6 +207,7 @@ void RemoveObject(NPObject* npobj) {
 }
 
 void fb_NPN_ReleaseObject(NPObject* npobj) {
+  CHECK(npn_calls_allowed);
   CHECK(npobj->referenceCount > 0);
   if (--npobj->referenceCount == 0) {
     if (npobj->_class->deallocate == NULL) {
@@ -212,6 +222,7 @@ void fb_NPN_ReleaseObject(NPObject* npobj) {
 bool fb_NPN_Invoke(NPP npp, NPObject* npobj, NPIdentifier method_name,
                    const NPVariant* args, uint32_t arg_count,
                    NPVariant* result) {
+  CHECK(npn_calls_allowed);
   UNREFERENCED_PARAMETER(npp);
   return npobj->_class->invoke(npobj, method_name, args, arg_count, result);
 }
@@ -237,12 +248,14 @@ bool fb_NPN_Evaluate(NPP npp, NPObject* npobj, NPString* script,
 
 bool fb_NPN_GetProperty(NPP npp, NPObject* npobj, NPIdentifier property_name,
                         NPVariant* result) {
+  CHECK(npn_calls_allowed);
   UNREFERENCED_PARAMETER(npp);
   return npobj->_class->getProperty(npobj, property_name, result);
 }
 
 bool fb_NPN_SetProperty(NPP npp, NPObject* npobj, NPIdentifier property_name,
                         const NPVariant* value) {
+  CHECK(npn_calls_allowed);
   UNREFERENCED_PARAMETER(npp);
   return npobj->_class->setProperty(npobj, property_name, value);
 }
@@ -382,7 +395,7 @@ void TestNewAndDestroy() {
   ASSERT_EQ(all_objects.size(), 0);
 }
 
-void TestHelloWorldMethod(const char* nexe_url) {
+void TestHelloWorldMethod(const char* nexe_url, bool reverse_deallocate) {
   NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
   NPP plugin_instance = new NPP_t;
   int argc = 0;
@@ -436,16 +449,17 @@ void TestHelloWorldMethod(const char* nexe_url) {
 
   printf("object count = %"NACL_PRIuS"\n", all_objects.size());
 
-  // Uncomment to reproduce the bug
-  // http://code.google.com/p/nativeclient/issues/detail?id=652:
-  //reverse(all_objects.begin(), all_objects.end());
+  if (reverse_deallocate) {
+    // This helps to test for this bug:
+    // http://code.google.com/p/nativeclient/issues/detail?id=652
+    reverse(all_objects.begin(), all_objects.end());
+  }
 
-  // We do not use an iterator to iterate across the vector, because
-  // the vector can change during the iteration:  deallocate() can call
-  // NPN_ReleaseObject().  However, that is actually a bug for an
-  // invalidate()d object.
+  // We avoid using an iterator to iterate across the vector in case
+  // all_objects changes during the iteration.  However, this should
+  // not happen given the uses of CHECK(npn_calls_allowed).
   // See http://code.google.com/p/nativeclient/issues/detail?id=652
-  // TODO(mseaborn): Ensure that all_objects does not change here.
+  npn_calls_allowed = false;
   int count = 0;
   while (all_objects.size() > 0) {
     NPObject* npobj = all_objects.front();
@@ -461,9 +475,13 @@ void TestHelloWorldMethod(const char* nexe_url) {
       free(npobj);
     }
   }
+  npn_calls_allowed = true;
 }
 
 int main(int argc, char** argv) {
+  // Turn off stdout buffering to aid debugging in case of a crash.
+  setvbuf(stdout, NULL, _IONBF, 0);
+
   NaClLogModuleInit();
 
   // Usage: fake_browser_test plugin_path [leafname filename]*
@@ -507,11 +525,15 @@ int main(int argc, char** argv) {
 
   TestNewAndDestroy();
 
+  // TODO(mseaborn): Test running both of these with
+  // reverse_deallocate=false as well.  However, there are some
+  // reliability problems running these multiple times.
+  // See http://code.google.com/p/nativeclient/issues/detail?id=682.
   printf("Test running srpc_hw...\n");
-  TestHelloWorldMethod("http://localhost/srpc_hw.nexe");
+  TestHelloWorldMethod("http://localhost/srpc_hw.nexe", true);
 
   printf("Test running npapi_hw...\n");
-  TestHelloWorldMethod("http://localhost/npapi_hw.nexe");
+  TestHelloWorldMethod("http://localhost/npapi_hw.nexe", true);
 
   NPShutdownType shutdown_func =
     reinterpret_cast<NPShutdownType>(

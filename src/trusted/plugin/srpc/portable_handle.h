@@ -47,6 +47,12 @@ class PortableHandle {
   // Delete this object.
   void Delete() { delete this; }
 
+  // A call to Invalidate() means the object should discard any
+  // refcounted objects it holds, without using Unref(), e.g. by
+  // setting the pointers to NULL.  These objects have either already
+  // been deallocated or will be deallocated shortly.
+  virtual void Invalidate() = 0;
+
   // Generic NPAPI/IDispatch interface
   bool Invoke(uintptr_t method_id, CallType call_type, SrpcParams* params);
   bool HasMethod(uintptr_t method_id, CallType call_type);

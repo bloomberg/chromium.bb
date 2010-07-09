@@ -380,6 +380,11 @@ Plugin::Plugin()
   PLUGIN_PRINTF(("Plugin::Plugin(%p)\n", static_cast<void*>(this)));
 }
 
+void Plugin::Invalidate() {
+  socket_address_ = NULL;
+  socket_ = NULL;
+}
+
 Plugin::~Plugin() {
   PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));
 

@@ -582,6 +582,7 @@ void Invalidate(NPObject* obj) {
       static_cast<plugin::ScriptableImplNpapi*>(obj);
 
   PLUGIN_PRINTF(("Invalidate(%p)\n", static_cast<void*>(scriptable_handle)));
+  scriptable_handle->handle()->Invalidate();
 
   // After invalidation, the browser does not respect reference counting,
   // so we shut down here what we can and prevent attempts to shut down

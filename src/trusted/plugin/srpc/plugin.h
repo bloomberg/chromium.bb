@@ -31,6 +31,8 @@ class ScriptableHandle;
 
 class Plugin : public PortableHandle {
  public:
+  void Invalidate();
+
   // Load from the local URL saved in local_url.
   // Updates local_url(), nacl_module_origin() and logical_url().
   bool Load(nacl::string logical_url, const char* local_url);

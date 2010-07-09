@@ -151,6 +151,12 @@ NPError PluginNpapi::Destroy(NPSavedData** save) {
     service_runtime_->Shutdown();
   }
 
+  // This should be done after terminating the sel_ldr subprocess so
+  // that we can be sure we will not block forever when waiting for
+  // the upcall thread to exit.
+  delete module_;
+  module_ = NULL;
+
   // This has the indirect effect of doing "delete this".
   scriptable_handle()->Unref();
   return NPERR_NO_ERROR;
