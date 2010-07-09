@@ -82,6 +82,10 @@ void MountLibraryImpl::MountStatusChangedHandler(void* object,
 void MountLibraryImpl::Init() {
   // Getting the monitor status so that the daemon starts up.
   MountStatus* mount = RetrieveMountInformation();
+  if (!mount) {
+    LOG(ERROR) << "Failed to retrieve mount information";
+    return;
+  }
   ParseDisks(*mount);
   FreeMountStatus(mount);
 
