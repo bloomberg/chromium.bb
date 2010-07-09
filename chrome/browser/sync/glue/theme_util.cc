@@ -26,8 +26,8 @@
 namespace browser_sync {
 
 const char kCurrentThemeClientTag[] = "current_theme";
-
-namespace {
+const char kCurrentThemeNodeTitle[] = "Current Theme";
+const char kThemesTag[] = "google_chrome_themes";
 
 bool IsSystemThemeDistinctFromDefaultTheme() {
 #if defined(TOOLKIT_USES_GTK)
@@ -44,8 +44,6 @@ bool UseSystemTheme(Profile* profile) {
   return false;
 #endif
 }
-
-}  // namespace
 
 bool AreThemeSpecificsEqual(const sync_pb::ThemeSpecifics& a,
                             const sync_pb::ThemeSpecifics& b) {

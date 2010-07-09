@@ -15,6 +15,15 @@ class ThemeSpecifics;
 namespace browser_sync {
 
 extern const char kCurrentThemeClientTag[];
+extern const char kCurrentThemeNodeTitle[];
+extern const char kThemesTag[];
+
+// Returns whether the the system them (eg. GTK) is different from the default
+// theme.
+bool IsSystemThemeDistinctFromDefaultTheme();
+
+// Returns whether |profile| is configured to use the system theme.
+bool UseSystemTheme(Profile* profile);
 
 // Returns true iff two ThemeSpecifics indicate the same theme.
 bool AreThemeSpecificsEqual(const sync_pb::ThemeSpecifics& a,
