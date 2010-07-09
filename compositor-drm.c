@@ -305,7 +305,6 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 {
 	EGLint major, minor, count;
 	EGLConfig config;
-	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
 
 	static const EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE,		0,
@@ -313,13 +312,6 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
 		EGL_NONE
 	};
-
-	get_typed_display_mesa =
-		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
-	if (get_typed_display_mesa == NULL) {
-		fprintf(stderr, "eglGetTypedDisplayMESA() not found\n");
-		return -1;
-	}
 
 	ec->base.base.device = strdup(udev_device_get_devnode(device));
 	ec->drm_fd = open(ec->base.base.device, O_RDWR);
@@ -330,8 +322,7 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	ec->base.display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
-						  (void *) ec->drm_fd);
+	ec->base.display = eglGetDRMDisplayMESA(ec->drm_fd);
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;

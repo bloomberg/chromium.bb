@@ -820,7 +820,6 @@ init_xkb(struct display *d)
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 {
-	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
 	struct display *d;
 	EGLint major, minor, count;
 	EGLConfig config;
@@ -869,15 +868,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		return NULL;
 	}
 
-	get_typed_display_mesa =
-		(PFNEGLGETTYPEDDISPLAYMESA) eglGetProcAddress("eglGetTypedDisplayMESA");
-	if (get_typed_display_mesa == NULL) {
-		fprintf(stderr, "eglGetDisplayMESA() not found\n");
-		return NULL;
-	}
-
-	d->dpy = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
-					(void *) fd);
+	d->dpy = eglGetDRMDisplayMESA(fd);
 	if (!eglInitialize(d->dpy, &major, &minor)) {
 		fprintf(stderr, "failed to initialize display\n");
 		return NULL;

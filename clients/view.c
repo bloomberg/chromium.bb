@@ -30,7 +30,6 @@
 #include <math.h>
 #include <time.h>
 #include <cairo.h>
-#include <cairo-drm.h>
 #include <glib.h>
 #include <linux/input.h>
 

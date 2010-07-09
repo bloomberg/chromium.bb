@@ -30,7 +30,6 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
-#include <cairo-drm.h>
 
 #define GL_GLEXT_PROTOTYPES
 #define EGL_EGLEXT_PROTOTYPES

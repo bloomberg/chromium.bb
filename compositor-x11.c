@@ -198,7 +198,6 @@ dri2_authenticate(struct x11_compositor *c)
 static int
 x11_compositor_init_egl(struct x11_compositor *c)
 {
-	PFNEGLGETTYPEDDISPLAYMESA get_typed_display_mesa;
 	EGLint major, minor, count;
 	EGLConfig config;
 
@@ -211,7 +210,7 @@ x11_compositor_init_egl(struct x11_compositor *c)
 
 	if (dri2_connect(c) < 0)
 		return -1;
-	
+
 	c->drm_fd = open(c->base.base.device, O_RDWR);
 	if (c->drm_fd == -1) {
 		fprintf(stderr,
@@ -223,16 +222,7 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	if (dri2_authenticate(c) < 0)
 		return -1;
 
-	get_typed_display_mesa =
-		(PFNEGLGETTYPEDDISPLAYMESA)
-		eglGetProcAddress("eglGetTypedDisplayMESA");
-	if (get_typed_display_mesa == NULL) {
-		fprintf(stderr, "eglGetTypedDisplayMESA() not found\n");
-		return -1;
-	}
-
-	c->base.display = get_typed_display_mesa(EGL_DRM_DISPLAY_TYPE_MESA,
-						 (void *) c->drm_fd);
+	c->base.display = eglGetDRMDisplayMESA(c->drm_fd);
 	if (c->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;

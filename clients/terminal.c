@@ -32,7 +32,6 @@
 #include <ctype.h>
 #include <cairo.h>
 #include <glib.h>
-#include <cairo-drm.h>
 
 #include <X11/keysym.h>
 
