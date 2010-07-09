@@ -59,7 +59,8 @@ ExternalTabContainer::ExternalTabContainer(
       waiting_for_unload_event_(false),
       pending_(false),
       infobars_enabled_(true),
-      focus_manager_(NULL) {
+      focus_manager_(NULL),
+      external_tab_view_(NULL) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -189,6 +190,7 @@ void ExternalTabContainer::Uninitialize() {
     focus_manager_ = NULL;
   }
 
+  external_tab_view_ = NULL;
   request_context_ = NULL;
   tab_contents_container_ = NULL;
 }
@@ -797,8 +799,8 @@ void ExternalTabContainer::SetEnableExtensionAutomation(
 }
 
 void ExternalTabContainer::InfoBarSizeChanged(bool is_animating) {
-  if (GetRootView()) {
-    GetRootView()->Layout();
+  if (external_tab_view_) {
+    external_tab_view_->Layout();
   }
 }
 
@@ -949,14 +951,14 @@ void ExternalTabContainer::SetupExternalTabView() {
 
   // The views created here will be destroyed when the ExternalTabContainer
   // widget is torn down.
-  views::View* external_tab_view = new views::View();
+  external_tab_view_ = new views::View();
 
   InfoBarContainer* info_bar_container = new InfoBarContainer(this);
   info_bar_container->ChangeTabContents(tab_contents_);
 
-  views::GridLayout* layout = new views::GridLayout(external_tab_view);
-  views::ColumnSet* columns = layout->AddColumnSet(0);  // Give this column an
-                                                        // identifier of 0.
+  views::GridLayout* layout = new views::GridLayout(external_tab_view_);
+  // Give this column an identifier of 0.
+  views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL,
                      views::GridLayout::FILL,
                      1,
@@ -964,13 +966,13 @@ void ExternalTabContainer::SetupExternalTabView() {
                      0,
                      0);
 
-  external_tab_view->SetLayoutManager(layout);
+  external_tab_view_->SetLayoutManager(layout);
 
   layout->StartRow(0, 0);
   layout->AddView(info_bar_container);
   layout->StartRow(1, 0);
   layout->AddView(tab_contents_container_);
-  SetContentsView(external_tab_view);
+  SetContentsView(external_tab_view_);
   // Note that SetTabContents must be called after AddChildView is called
   tab_contents_container_->ChangeTabContents(tab_contents_);
 }

@@ -330,6 +330,8 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   views::FocusManager* focus_manager_;
 
+  views::View* external_tab_view_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };
 
