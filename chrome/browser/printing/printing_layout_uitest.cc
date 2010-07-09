@@ -282,8 +282,8 @@ class DismissTheWindow : public base::DelegateSimpleThread::Delegate {
 
 }  // namespace
 
-// This test is disable because it fails. See bug 1353559.
-TEST_F(PrintingLayoutTextTest, DISABLED_Complex) {
+// Fails, see http://crbug.com/7721.
+TEST_F(PrintingLayoutTextTest, FAILS_Complex) {
   if (IsTestCaseDisabled())
     return;
 
