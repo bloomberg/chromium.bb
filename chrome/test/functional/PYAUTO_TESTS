@@ -21,6 +21,7 @@
 
 {
   'all': [
+    'autofill',
     'bookmark_bar',
     'bookmarks',
     'browser',

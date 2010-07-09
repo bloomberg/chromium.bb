@@ -18,6 +18,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/automation/automation_autocomplete_edit_tracker.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -43,7 +44,9 @@ struct Reposition_Params;
 struct ExternalTabSettings;
 }
 
+class AutoFillProfile;
 class AutomationExtensionTracker;
+class CreditCard;
 class Extension;
 class ExtensionPortContainer;
 class ExtensionTestResultNotificationObserver;
@@ -437,6 +440,43 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SaveTabContents(Browser* browser,
                        DictionaryValue* args,
                        IPC::Message* reply_message);
+
+  // Get the profiles that are currently saved to the DB.
+  // Uses the JSON interface for input/output.
+  void GetAutoFillProfile(Browser* browser,
+                          DictionaryValue* args,
+                          IPC::Message* reply_message);
+
+  // Fill in an AutoFillProfile with the given profile information.
+  // Uses the JSON interface for input/output.
+  void FillAutoFillProfile(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
+
+  // Translate DictionaryValues of autofill profiles and credit cards to the
+  // data structure used in the browser.
+  // Args:
+  //   profiles/cards: the ListValue of profiles/credit cards to translate.
+  //   json_return: a pointer to the return string in case of error.
+  static std::vector<AutoFillProfile> GetAutoFillProfilesFromList(
+      const ListValue& profiles, std::string* json_return);
+  static std::vector<CreditCard> GetCreditCardsFromList(
+      const ListValue& cards, std::string* json_return);
+
+  // The opposite of the above: translates from the internal data structure
+  // for profiles and credit cards to a ListValue of DictionaryValues. The
+  // caller owns the returned object.
+  static ListValue* GetListFromAutoFillProfiles(
+      std::vector<AutoFillProfile*> autofill_profiles);
+  static ListValue* GetListFromCreditCards(
+      std::vector<CreditCard*> credit_cards);
+
+  // Return the map from the internal data representation to the string value
+  // of auto fill fields and credit card fields.
+  static std::map<AutoFillFieldType, std::wstring>
+      GetAutoFillFieldToStringMap();
+  static std::map<AutoFillFieldType, std::wstring>
+      GetCreditCardFieldToStringMap();
 
   // Util for creating a JSON error return string (dict with key
   // 'error' and error string value).  No need to quote input.

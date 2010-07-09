@@ -29,6 +29,7 @@
 #include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_extension_tracker.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
@@ -2345,6 +2346,260 @@ void AutomationProvider::SaveTabContents(Browser* browser,
   Send(reply_message);
 }
 
+// Sample json input:
+//    { "command": "GetAutoFillProfile" }
+// Refer to GetAutoFillProfile() in chrome/test/pyautolib/pyauto.py for sample
+// json output.
+void AutomationProvider::GetAutoFillProfile(Browser* browser,
+                                            DictionaryValue* args,
+                                            IPC::Message* reply_message) {
+  std::string json_return;
+  bool reply_return = true;
+
+  // Get the AutoFillProfiles currently in the database.
+  int tab_index = 0;
+  args->GetInteger(L"tab_index", &tab_index);
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+
+  if (tab_contents) {
+    PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
+        ->GetPersonalDataManager();
+    if (pdm) {
+      std::vector<AutoFillProfile*> autofill_profiles = pdm->profiles();
+      std::vector<CreditCard*> credit_cards = pdm->credit_cards();
+
+      ListValue* profiles = GetListFromAutoFillProfiles(autofill_profiles);
+      ListValue* cards = GetListFromCreditCards(credit_cards);
+
+      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+      return_value->Set(L"profiles", profiles);
+      return_value->Set(L"credit_cards", cards);
+
+      base::JSONWriter::Write(return_value.get(), false, &json_return);
+    } else {
+      json_return = JSONErrorString("No PersonalDataManager.");
+      reply_return = false;
+    }
+  } else {
+    json_return = JSONErrorString("No tab at that index.");
+    reply_return = false;
+  }
+
+  AutomationMsg_SendJSONRequest::WriteReplyParams(reply_message, json_return,
+                                                  reply_return);
+  Send(reply_message);
+}
+
+// Refer to FillAutoFillProfile() in chrome/test/pyautolib/pyauto.py for sample
+// json input.
+// Sample json output: {}
+void AutomationProvider::FillAutoFillProfile(Browser* browser,
+                                             DictionaryValue* args,
+                                             IPC::Message* reply_message) {
+  std::string json_return = "{}";
+  bool reply_return = true;
+
+  ListValue* profiles = NULL;
+  ListValue* cards = NULL;
+  args->GetList(L"profiles", &profiles);
+  args->GetList(L"credit_cards", &cards);
+
+  std::vector<AutoFillProfile> autofill_profiles;
+  std::vector<CreditCard> credit_cards;
+  // Create an AutoFillProfile for each of the dictionary profiles.
+  if (profiles) {
+    autofill_profiles = GetAutoFillProfilesFromList(*profiles, &json_return);
+  }
+  // Create a CreditCard for each of the dictionary values.
+  if (cards) {
+    credit_cards = GetCreditCardsFromList(*cards, &json_return);
+  }
+
+  // Save the AutoFillProfiles.
+  int tab_index = 0;
+  args->GetInteger(L"tab_index", &tab_index);
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+
+  if (tab_contents) {
+    PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
+        ->GetPersonalDataManager();
+    if (pdm) {
+      pdm->OnAutoFillDialogApply(profiles? &autofill_profiles : NULL,
+                                 cards? &credit_cards : NULL);
+    } else {
+      json_return = JSONErrorString("No PersonalDataManager.");
+      reply_return = false;
+    }
+  } else {
+    json_return = JSONErrorString("No tab at that index.");
+    reply_return = false;
+  }
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, reply_return);
+  Send(reply_message);
+}
+
+/* static */
+ListValue* AutomationProvider::GetListFromAutoFillProfiles(
+    std::vector<AutoFillProfile*> autofill_profiles) {
+  ListValue* profiles = new ListValue;
+
+  std::map<AutoFillFieldType, std::wstring> autofill_type_to_string
+      = GetAutoFillFieldToStringMap();
+
+  // For each AutoFillProfile, transform it to a dictionary object to return.
+  for (std::vector<AutoFillProfile*>::iterator it = autofill_profiles.begin();
+       it != autofill_profiles.end(); ++it) {
+    AutoFillProfile* profile = *it;
+    DictionaryValue* profile_info = new DictionaryValue;
+    profile_info->SetStringFromUTF16(L"label", profile->Label());
+    // For each of the types, if it has a value, add it to the dictionary.
+    for (std::map<AutoFillFieldType, std::wstring>::iterator
+         type_it = autofill_type_to_string.begin();
+         type_it != autofill_type_to_string.end(); ++type_it) {
+      string16 value = profile->GetFieldText(AutoFillType(type_it->first));
+      if (value.length()) {  // If there was something stored for that value.
+        profile_info->SetStringFromUTF16(type_it->second, value);
+      }
+    }
+    profiles->Append(profile_info);
+  }
+  return profiles;
+}
+
+/* static */
+ListValue* AutomationProvider::GetListFromCreditCards(
+    std::vector<CreditCard*> credit_cards) {
+  ListValue* cards = new ListValue;
+
+  std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string =
+      GetCreditCardFieldToStringMap();
+
+  // For each AutoFillProfile, transform it to a dictionary object to return.
+  for (std::vector<CreditCard*>::iterator it = credit_cards.begin();
+       it != credit_cards.end(); ++it) {
+    CreditCard* card = *it;
+    DictionaryValue* card_info = new DictionaryValue;
+    card_info->SetStringFromUTF16(L"label", card->Label());
+    // For each of the types, if it has a value, add it to the dictionary.
+    for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
+        credit_card_type_to_string.begin();
+        type_it != credit_card_type_to_string.end(); ++type_it) {
+      string16 value = card->GetFieldText(AutoFillType(type_it->first));
+      // If there was something stored for that value.
+      if (value.length()) {
+        card_info->SetStringFromUTF16(type_it->second, value);
+      }
+    }
+    cards->Append(card_info);
+  }
+  return cards;
+}
+
+/* static */
+std::vector<AutoFillProfile> AutomationProvider::GetAutoFillProfilesFromList(
+    const ListValue& profiles, std::string* json_return) {
+  std::vector<AutoFillProfile> autofill_profiles;
+  DictionaryValue* profile_info = NULL;
+  string16 profile_label;
+  string16 current_value;
+
+  std::map<AutoFillFieldType, std::wstring> autofill_type_to_string =
+      GetAutoFillFieldToStringMap();
+
+  int num_profiles = profiles.GetSize();
+  for (int i = 0; i < num_profiles; i++) {
+    profiles.GetDictionary(i, &profile_info);
+    profile_info->GetString("label", &profile_label);
+    // Choose an id of 0 so that a unique id will be created.
+    AutoFillProfile profile(profile_label, 0);
+    // Loop through the possible profile types and add those provided.
+    for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
+         autofill_type_to_string.begin();
+         type_it != autofill_type_to_string.end(); ++type_it) {
+      if (profile_info->HasKey(type_it->second)) {
+        if (profile_info->GetStringAsUTF16(type_it->second, &current_value)) {
+          profile.SetInfo(AutoFillType(type_it->first), current_value);
+        } else {
+          *json_return = JSONErrorString("All values must be strings");
+          break;
+        }
+      }
+    }
+    autofill_profiles.push_back(profile);
+  }
+  return autofill_profiles;
+}
+
+/* static */
+std::vector<CreditCard> AutomationProvider::GetCreditCardsFromList(
+    const ListValue& cards, std::string* json_return) {
+  std::vector<CreditCard> credit_cards;
+  DictionaryValue* card_info = NULL;
+  string16 card_label;
+  string16 current_value;
+
+  std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string =
+      GetCreditCardFieldToStringMap();
+
+  int num_credit_cards = cards.GetSize();
+  for (int i = 0; i < num_credit_cards; i++) {
+    cards.GetDictionary(i, &card_info);
+    card_info->GetString("label", &card_label);
+    CreditCard card(card_label, 0);
+    // Loop through the possible credit card fields and add those provided.
+    for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
+        credit_card_type_to_string.begin();
+        type_it != credit_card_type_to_string.end(); ++type_it) {
+      if (card_info->HasKey(type_it->second)) {
+        if (card_info->GetStringAsUTF16(type_it->second, &current_value)) {
+          card.SetInfo(AutoFillType(type_it->first), current_value);
+        } else {
+          *json_return = JSONErrorString("All values must be strings");
+          break;
+        }
+      }
+    }
+    credit_cards.push_back(card);
+  }
+  return credit_cards;
+}
+
+/* static */
+std::map<AutoFillFieldType, std::wstring>
+    AutomationProvider::GetAutoFillFieldToStringMap() {
+  std::map<AutoFillFieldType, std::wstring> autofill_type_to_string;
+  autofill_type_to_string[NAME_FIRST] = L"NAME_FIRST";
+  autofill_type_to_string[NAME_MIDDLE] = L"NAME_MIDDLE";
+  autofill_type_to_string[NAME_LAST] = L"NAME_LAST";
+  autofill_type_to_string[COMPANY_NAME] = L"COMPANY_NAME";
+  autofill_type_to_string[EMAIL_ADDRESS] = L"EMAIL_ADDRESS";
+  autofill_type_to_string[ADDRESS_HOME_LINE1] = L"ADDRESS_HOME_LINE1";
+  autofill_type_to_string[ADDRESS_HOME_LINE2] = L"ADDRESS_HOME_LINE2";
+  autofill_type_to_string[ADDRESS_HOME_CITY] = L"ADDRESS_HOME_CITY";
+  autofill_type_to_string[ADDRESS_HOME_STATE] = L"ADDRESS_HOME_STATE";
+  autofill_type_to_string[ADDRESS_HOME_ZIP] = L"ADDRESS_HOME_ZIP";
+  autofill_type_to_string[ADDRESS_HOME_COUNTRY] = L"ADDRESS_HOME_COUNTRY";
+  autofill_type_to_string[PHONE_HOME_NUMBER] = L"PHONE_HOME_NUMBER";
+  autofill_type_to_string[PHONE_FAX_NUMBER] = L"PHONE_FAX_NUMBER";
+  autofill_type_to_string[NAME_FIRST] = L"NAME_FIRST";
+  return autofill_type_to_string;
+}
+
+/* static */
+std::map<AutoFillFieldType, std::wstring>
+    AutomationProvider::GetCreditCardFieldToStringMap() {
+  std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string;
+  credit_card_type_to_string[CREDIT_CARD_NAME] = L"CREDIT_CARD_NAME";
+  credit_card_type_to_string[CREDIT_CARD_NUMBER] = L"CREDIT_CARD_NUMBER";
+  credit_card_type_to_string[CREDIT_CARD_TYPE] = L"CREDIT_CARD_TYPE";
+  credit_card_type_to_string[CREDIT_CARD_EXP_MONTH] = L"CREDIT_CARD_EXP_MONTH";
+  credit_card_type_to_string[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
+      L"CREDIT_CARD_EXP_4_DIGIT_YEAR";
+  return credit_card_type_to_string;
+}
+
 /* static */
 std::string AutomationProvider::JSONErrorString(const std::string& err) {
   std::string prefix = "{\"error\": \"";
@@ -2399,7 +2654,6 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetPluginsInfo"] = &AutomationProvider::GetPluginsInfo;
 
   handler_map["GetBrowserInfo"] = &AutomationProvider::GetBrowserInfo;
-
   handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
   handler_map["AddHistoryItem"] = &AutomationProvider::AddHistoryItem;
 
@@ -2421,6 +2675,9 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetInitialLoadTimes"] = &AutomationProvider::GetInitialLoadTimes;
 
   handler_map["SaveTabContents"] = &AutomationProvider::SaveTabContents;
+
+  handler_map["GetAutoFillProfile"] = &AutomationProvider::GetAutoFillProfile;
+  handler_map["FillAutoFillProfile"] = &AutomationProvider::FillAutoFillProfile;
 
   if (error_string.empty()) {
     if (handler_map.find(std::string(command)) != handler_map.end()) {

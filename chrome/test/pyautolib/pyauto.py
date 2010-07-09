@@ -551,6 +551,112 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return history_info.HistoryInfo(
         self._SendJSONRequest(0, json.dumps(cmd_dict)))
 
+  def FillAutoFillProfile(self, profiles=None, credit_cards=None,
+                          tab_index=0, window_index=0):
+    """Set the autofill profile to contain the given profiles and credit cards.
+
+       If profiles or credit_cards are specified, they will overwrite existing
+       profiles and credit cards. To update profiles and credit cards, get the
+       existing ones with the GetAutoFillProfile function and then append new
+       profiles to the list and call this function.
+
+    Args:
+      profiles: (optional) a list of dictionaries representing each profile to
+      add. Example:
+      [{
+        'label': 'Profile 1', # Note: 'label' must be present
+        'NAME_FIRST': 'Bob',
+        'NAME_LAST': 'Smith',
+        'ADDRESS_HOME_ZIP': '94043',
+      },
+      {
+        'label': 'Profile 2',
+        'EMAIL_ADDRESS': 'sue@example.com',
+        'COMPANY_NAME': 'Company X',
+      }]
+
+      Each dictionary must have a key 'label'. Other possible keys are:
+      'NAME_FIRST', 'NAME_MIDDLE', 'NAME_LAST', 'EMAIL_ADDRESS',
+      'COMPANY_NAME', 'ADDRESS_HOME_LINE1', 'ADDRESS_HOME_LINE2',
+      'ADDRESS_HOME_CITY', 'ADDRESS_HOME_STATE', 'ADDRESS_HOME_ZIP',
+      'ADDRESS_HOME_COUNTRY', 'PHONE_HOME_NUMBER', 'PHONE_FAX_NUMBER'
+
+      All values must be strings.
+
+      credit_cards: (optional) a list of dictionaries representing each credit
+      card to add. Example:
+      [{
+        'label': 'Personal Credit Card', # Note: 'label' must be present
+        'CREDIT_CARD_NAME': 'Bob C. Smith',
+        'CREDIT_CARD_NUMBER': '5555555555554444',
+        'CREDIT_CARD_EXP_MONTH': '12',
+        'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2011'
+      },
+      {
+        'label': 'Work Credit Card',
+        'CREDIT_CARD_NAME': 'Bob C. Smith',
+        'CREDIT_CARD_NUMBER': '4111111111111111',
+        'CREDIT_CARD_TYPE': 'Visa'
+      }
+
+      Each dictionary must have a key 'label'. Other possible keys are:
+      'CREDIT_CARD_NAME', 'CREDIT_CARD_NUMBER', 'CREDIT_CARD_TYPE',
+      'CREDIT_CARD_EXP_MONTH', 'CREDIT_CARD_EXP_4_DIGIT_YEAR'
+
+      All values must be strings.
+
+      tab_index: tab index, defaults to 0.
+
+      window_index: window index, defaults to 0.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'FillAutoFillProfile',
+      'tab_index': tab_index,
+      'profiles': profiles,
+      'credit_cards': credit_cards
+    }
+    if profiles:
+      for profile in profiles:
+        if not 'label' in profile:
+          raise JSONInterfaceError('must specify label for all profiles')
+    if credit_cards:
+      for credit_card in credit_cards:
+        if not 'label' in credit_card:
+          raise JSONInterfaceError('must specify label for all credit cards')
+    ret_dict = json.loads(self._SendJSONRequest(window_index,
+                                                json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+
+  def GetAutoFillProfile(self, tab_index=0, window_index=0):
+    """Return the profile including all profiles and credit cards currently
+       saved as a list of dictionaries.
+
+       The format of the returned dictionary is described above in
+       FillAutoFillProfile. The general format is:
+       {'profiles': [list of profile dictionaries as described above],
+        'credit_cards': [list of credit card dictionaries as described above]}
+
+    Args:
+       tab_index: tab index, defaults to 0.
+       window_index: window index, defaults to 0.
+
+    Raises:
+       pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetAutoFillProfile',
+      'tab_index': tab_index
+    }
+    ret_dict = json.loads(self._SendJSONRequest(window_index,
+                                                json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
+
   def AddHistoryItem(self, item):
     """Forge a history item for Chrome.
 
