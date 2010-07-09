@@ -523,11 +523,9 @@ TEST_F(WorkerTest, FLAKY_MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
 // This has been flaky on Windows since r39931. http://crbug.com/36800
-#define LimitPerPage FLAKY_LimitPerPage
-#endif
-TEST_F(WorkerTest, LimitPerPage) {
+// And on Mac since r51935. http://crbug.com/48664
+TEST_F(WorkerTest, FLAKY_LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir),
                                        FilePath(kManyWorkersFile));
