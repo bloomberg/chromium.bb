@@ -125,44 +125,47 @@ void AuxiliaryProfilesImpl::GetAddressBookNames(
 void AuxiliaryProfilesImpl::GetAddressBookAddresses(
     NSDictionary* address,
     AutoFillProfile* profile) {
-  NSString* addressField;
-  addressField = [address objectForKey:kABAddressStreetKey];
+  if (NSString* addressField = [address objectForKey:kABAddressStreetKey]) {
+    // If there are newlines in the address, split into two lines.
+    if ([addressField rangeOfCharacterFromSet:
+            [NSCharacterSet newlineCharacterSet]].location != NSNotFound) {
+      NSArray* chunks = [addressField componentsSeparatedByCharactersInSet:
+          [NSCharacterSet newlineCharacterSet]];
+      DCHECK([chunks count] > 1);
 
-  // If there are newlines in the address, split into two lines.
-  if ([addressField rangeOfCharacterFromSet:
-          [NSCharacterSet newlineCharacterSet]].location != NSNotFound) {
-    NSArray *chunks = [addressField componentsSeparatedByCharactersInSet:
-        [NSCharacterSet newlineCharacterSet]];
-    DCHECK([chunks count] > 1);
+      NSString* separator = l10n_util::GetNSString(
+            IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR);
 
-    NSString* separator = l10n_util::GetNSString(
-          IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR);
-
-    NSString* addressField1 = [chunks objectAtIndex:0];
-    NSString* addressField2 =
-        [[chunks subarrayWithRange:NSMakeRange(1, [chunks count] - 1)]
-            componentsJoinedByString:separator];
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
-                     base::SysNSStringToUTF16(addressField1));
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
-                     base::SysNSStringToUTF16(addressField2));
-  } else {
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
-                     base::SysNSStringToUTF16(addressField));
+      NSString* addressField1 = [chunks objectAtIndex:0];
+      NSString* addressField2 =
+          [[chunks subarrayWithRange:NSMakeRange(1, [chunks count] - 1)]
+              componentsJoinedByString:separator];
+      profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                       base::SysNSStringToUTF16(addressField1));
+      profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+                       base::SysNSStringToUTF16(addressField2));
+    } else {
+      profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                       base::SysNSStringToUTF16(addressField));
+    }
   }
 
-  addressField = [address objectForKey:kABAddressCityKey];
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
-                   base::SysNSStringToUTF16(addressField));
-  addressField = [address objectForKey:kABAddressStateKey];
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
-                   base::SysNSStringToUTF16(addressField));
-  addressField = [address objectForKey:kABAddressZIPKey];
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
-                   base::SysNSStringToUTF16(addressField));
-  addressField = [address objectForKey:kABAddressCountryKey];
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
-                   base::SysNSStringToUTF16(addressField));
+  if (NSString* city = [address objectForKey:kABAddressCityKey]) {
+    profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+                     base::SysNSStringToUTF16(city));
+  }
+  if (NSString* state = [address objectForKey:kABAddressStateKey]) {
+    profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
+                     base::SysNSStringToUTF16(state));
+  }
+  if (NSString* zip = [address objectForKey:kABAddressZIPKey]) {
+    profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
+                     base::SysNSStringToUTF16(zip));
+  }
+  if (NSString* country = [address objectForKey:kABAddressCountryKey]) {
+    profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
+                     base::SysNSStringToUTF16(country));
+  }
 }
 
 // Fills in email address matching current address label.  Note that there may
