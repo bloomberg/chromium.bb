@@ -1074,6 +1074,8 @@
         'renderer/render_widget_unittest.cc',
         'renderer/renderer_about_handler_unittest.cc',
         'renderer/renderer_main_unittest.cc',
+        'renderer/safe_browsing/features_unittest.cc',
+        'renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc',
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'renderer/translate_helper_unittest.cc',
