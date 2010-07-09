@@ -25,7 +25,13 @@ function onLoad() {
 }
 
 function OnInitialLoad() {
-  if (window.history.length != 3) {
+  // This page could be visited in the following sequences:-
+  // 1. history_length_test_page2.html redirect to
+  //    history_length_test_page3.html
+  // 1. history_length_test_page1.html -> history_length_test_page2.html
+  //    redirects to history_length_page3.html.
+  // This history lengths could be 3 or 4.
+  if (window.history.length != 3 && window.history.length != 4) {
     onFailure("History_Length_Test_2", 1,
               "History length mismatch on initial load at page 3: " +
               window.history.length);
@@ -36,7 +42,7 @@ function OnInitialLoad() {
 }
 
 function OnNavigateBackward() {
-  if (window.history.length != 3) {
+  if (window.history.length != 4) {
     onFailure("History_Length_Test_3", 1,
               "History length mismatch on navigating backward at page 3: " +
               window.history.length);
@@ -47,7 +53,7 @@ function OnNavigateBackward() {
 }
 
 function OnNavigateForward() {
-  if (window.history.length != 3) {
+  if (window.history.length != 4) {
     onFailure("History_Length_Test_3", 1,
               "History length mismatch on navigating forward at page 3: " +
               window.history.length);

@@ -23,7 +23,7 @@ function onLoad() {
 }
 
 function OnInitialLoad() {
-  if (window.history.length != 3) {
+  if (window.history.length != 2 && window.history.length != 3) {
     onFailure("History_Length_Test_2", 1,
               "History length mismatch on initial load at page 2: " +
               window.history.length);

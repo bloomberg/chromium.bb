@@ -21,7 +21,7 @@ function onLoad() {
 }
 
 function OnNavigateBackward() {
-  if (window.history.length != 2) {
+  if (window.history.length != 4) {
     onFailure("History_Length_Test_3", 1,
               "History length mismatch on navigate backward at page 1: " +
               window.history.length);

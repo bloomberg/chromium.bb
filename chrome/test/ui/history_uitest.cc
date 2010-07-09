@@ -44,10 +44,7 @@ TEST_F(HistoryTester, VerifyHistoryLength1) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 
-// TODO(yuzo): Fix the following failing tests. http://crbug.com/39785
-// These tests are broken because automatic and user-initiated transitions are
-// distinguished based on the interval between page load and redirect.
-TEST_F(HistoryTester, FAILS_VerifyHistoryLength2) {
+TEST_F(HistoryTester, VerifyHistoryLength2) {
   // Test the history length for the following page transitions.
   //   -open-> Page 2 -redirect-> Page 3.
 
@@ -59,11 +56,24 @@ TEST_F(HistoryTester, FAILS_VerifyHistoryLength2) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 
-// Fails consistently: http://crbug.com/39785
-TEST_F(HistoryTester, FAILS_VerifyHistoryLength3) {
+TEST_F(HistoryTester, VerifyHistoryLength3) {
   // Test the history length for the following page transitions.
-  //   -open-> Page 4 -navigate_backward-> Page 3 -navigate_backward->Page 1
-  //   -navigate_forward-> Page 3 -navigate_forward-> Page 4
+  // -open-> Page 1 -> open Page 2 -redirect Page 3. open Page 4
+  // -navigate_backward-> Page 3 -navigate_backward->Page 1
+  // -navigate_forward-> Page 3 -navigate_forward-> Page 4
+  const FilePath test_case_1(
+      FILE_PATH_LITERAL("history_length_test_page_1.html"));
+  GURL url_1 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_1);
+  NavigateToURL(url_1);
+  WaitForFinish("History_Length_Test_1", "1", url_1, kTestCompleteCookie,
+                kTestCompleteSuccess, action_max_timeout_ms());
+
+  const FilePath test_case_2(
+      FILE_PATH_LITERAL("history_length_test_page_2.html"));
+  GURL url_2 = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case_2);
+  NavigateToURL(url_2);
+  WaitForFinish("History_Length_Test_2", "1", url_2, kTestCompleteCookie,
+                kTestCompleteSuccess, action_max_timeout_ms());
 
   const FilePath test_case_3(
       FILE_PATH_LITERAL("history_length_test_page_4.html"));
