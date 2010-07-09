@@ -71,6 +71,8 @@ static const char *kEnvVarsFilePath = O3D_PLUGIN_ENV_VARS_FILE;
 static void DrawPlugin(PluginObject *obj) {
   // Limit drawing to no more than once every timer tick.
   if (!obj->draw_) return;
+  // Don't allow re-entrant rendering (can happen in Chrome)
+  if (obj->client()->IsRendering()) return;
   obj->client()->RenderClient(true);
   obj->draw_ = false;
 }
