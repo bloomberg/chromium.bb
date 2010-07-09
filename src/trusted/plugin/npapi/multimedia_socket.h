@@ -11,29 +11,23 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 
 namespace plugin {
 
 class BrowserInterface;
+class Plugin;
 class ServiceRuntime;
 
 class MultimediaSocket {
  public:
-  MultimediaSocket(ScriptableHandle* s,
-                   BrowserInterface* browser_interface,
+  MultimediaSocket(BrowserInterface* browser_interface,
                    ServiceRuntime* serv_rtm_info);
 
   ~MultimediaSocket();
 
   // Routine for starting the upcall handler thread (used by multimedia)
-  bool InitializeModuleMultimedia(Plugin* plugin);
-
-  // accessor
-  PortableHandle* connected_socket() const {
-    return connected_socket_->handle();
-  }
+  bool InitializeModuleMultimedia(Plugin* plugin, PortableHandle* socket);
 
   void UpcallThreadExiting();
   bool UpcallThreadShouldExit();
@@ -41,7 +35,6 @@ class MultimediaSocket {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(MultimediaSocket);
-  ScriptableHandle* connected_socket_;
   struct NaClThread upcall_thread_;
 
   BrowserInterface* browser_interface_;

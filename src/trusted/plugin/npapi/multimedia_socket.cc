@@ -46,15 +46,12 @@ void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
 
 namespace plugin {
 
-MultimediaSocket::MultimediaSocket(ScriptableHandle* s,
-                                   BrowserInterface* browser_interface,
+MultimediaSocket::MultimediaSocket(BrowserInterface* browser_interface,
                                    ServiceRuntime* sri)
-    : connected_socket_(s),
-      browser_interface_(browser_interface),
+    : browser_interface_(browser_interface),
       service_runtime_(sri),
       upcall_thread_should_exit_(false),
       upcall_thread_id_(0) {
-  connected_socket_->AddRef();
   NaClMutexCtor(&mu_);
   NaClCondVarCtor(&cv_);
   upcall_thread_state_ = UPCALL_THREAD_NOT_STARTED;
@@ -81,7 +78,6 @@ MultimediaSocket::~MultimediaSocket() {
     }
   }
   NaClXMutexUnlock(&mu_);
-  connected_socket_->Unref();
   if (UPCALL_THREAD_NOT_STARTED != ts) {
     NaClThreadDtor(&upcall_thread_);
   }
@@ -190,7 +186,8 @@ static void WINAPI UpcallThread(void* arg) {
 }
 
 // Support for initializing the NativeClient multimedia system.
-bool MultimediaSocket::InitializeModuleMultimedia(Plugin* plugin) {
+bool MultimediaSocket::InitializeModuleMultimedia(
+      Plugin* plugin, PortableHandle* connected_socket) {
   PLUGIN_PRINTF(("MultimediaSocket::InitializeModuleMultimedia(%p)\n",
                  static_cast<void*>(this)));
 
@@ -208,8 +205,8 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin* plugin) {
   }
   // Determine whether the NaCl module has reported having a method called
   // "nacl_multimedia_bridge".
-  if (!(connected_socket()->HasMethod(kNaClMultimediaBridgeIdent,
-                                      METHOD_CALL))) {
+  if (!connected_socket->HasMethod(kNaClMultimediaBridgeIdent,
+                                   METHOD_CALL)) {
     PLUGIN_PRINTF(("No nacl_multimedia_bridge method was found.\n"));
     return false;
   }
@@ -262,9 +259,9 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin* plugin) {
   PLUGIN_PRINTF(("MultimediaSocket::InitializeModuleMultimedia:"
                  " params %p\n", static_cast<void*>(&params)));
 
-  bool rpc_result = (connected_socket()->Invoke(kNaClMultimediaBridgeIdent,
-                                                METHOD_CALL,
-                                                &params));
+  bool rpc_result = connected_socket->Invoke(kNaClMultimediaBridgeIdent,
+                                             METHOD_CALL,
+                                             &params);
   PLUGIN_PRINTF(("MultmediaSocket::InitializeModuleMultimedia:"
                  " returned %d\n", static_cast<int>(rpc_result)));
   desc[1]->Delete();

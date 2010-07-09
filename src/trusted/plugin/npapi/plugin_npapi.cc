@@ -459,8 +459,7 @@ void PluginNpapi::EnableVideo() {
 bool PluginNpapi::InitializeModuleMultimedia(ScriptableHandle* raw_channel,
                                              ServiceRuntime* service_runtime) {
   PLUGIN_PRINTF(("PluginNpapi::InitializeModuleMultimedia\n"));
-  multimedia_channel_ = new(std::nothrow) MultimediaSocket(raw_channel,
-                                                           browser_interface(),
+  multimedia_channel_ = new(std::nothrow) MultimediaSocket(browser_interface(),
                                                            service_runtime);
   if (NULL == multimedia_channel_) {
     PLUGIN_PRINTF(("PluginNpapi::InitializeModuleMultimedia: "
@@ -469,7 +468,8 @@ bool PluginNpapi::InitializeModuleMultimedia(ScriptableHandle* raw_channel,
   }
 
   // Initialize the multimedia system.
-  if (!multimedia_channel_->InitializeModuleMultimedia(this)) {
+  if (!multimedia_channel_->InitializeModuleMultimedia(
+           this, raw_channel->handle())) {
     PLUGIN_PRINTF(("PluginNpapi::InitializeModuleMultimedia: "
                    "InitializeModuleMultimedia failed.\n"));
     delete multimedia_channel_;
