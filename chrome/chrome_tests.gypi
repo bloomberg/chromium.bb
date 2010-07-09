@@ -1618,6 +1618,13 @@
             '../views/views.gyp:views',
           ],
         }],
+        ['OS=="mac"', {
+          # See the comment in this section of the unit_tests target for an
+          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
+          'dependencies+++': [
+            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
+        }],
         ['OS=="win"', {
           'conditions': [
             ['win_use_allocator_shim==1', {
