@@ -25,6 +25,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
@@ -173,14 +174,16 @@ DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
 // static
 RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
                                                         const GURL& page_url) {
+  // The bookmark manager is a chrome extension, so we have to check for it
+  // before we check for extension scheme.
+  if (page_url.host() == extension_misc::kBookmarkManagerId)
+    return BookmarksUI::GetFaviconResourceBytes();
+
   if (page_url.SchemeIs(chrome::kExtensionScheme))
     return ExtensionDOMUI::GetFaviconResourceBytes(profile, page_url);
 
   if (!HasDOMUIScheme(page_url))
     return NULL;
-
-  if (page_url.host() == chrome::kChromeUIBookmarksHost)
-    return BookmarksUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes();

@@ -201,6 +201,9 @@ namespace extension_filenames {
 
 namespace extension_misc {
   const int kUnknownWindowId = -1;
+
+  // The extension id of the bookmark manager.
+  extern const char* kBookmarkManagerId;
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

@@ -4,7 +4,7 @@
   "version": "0.1",
   "description": "Bookmark Manager",
   "icons": {
-    "16": "images/bookmarks_favicon.png"
+    // The favicon is loaded directly from resources.pak.
   },
   "permissions": [
     "bookmarks",

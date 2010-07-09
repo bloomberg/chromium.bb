@@ -279,3 +279,7 @@ const char* kDecodedImagesFilename = "DECODED_IMAGES";
 // extension_path.
 const char* kDecodedMessageCatalogsFilename = "DECODED_MESSAGE_CATALOGS";
 }
+
+namespace extension_misc {
+const char* kBookmarkManagerId = "eemcgdkfndhakfknompkggombfjjjeno";
+}
