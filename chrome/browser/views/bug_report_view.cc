@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -56,8 +57,6 @@ static const int kBugReportVersion = 1;
 static const int kScreenImageRadioGroup = 2;
 static const char kScreenshotsRelativePath[] = "/Screenshots";
 static const char kScreenshotPattern[] = "*.png";
-static const char kAboutBlank[] = "about:blank";
-static const char kSystemInformationUrl[] = "about:system";
 
 // Number of lines description field can display at one time.
 static const int kDescriptionLines = 5;
@@ -608,7 +607,7 @@ void BugReportView::LinkActivated(views::Link* source,
                                     int event_flags) {
   GURL url;
   if (source == system_information_url_control_) {
-    url = GURL(kSystemInformationUrl);
+    url = GURL(chrome::kAboutSystemURL);
   } else {
     NOTREACHED() << "Unknown link source";
     return;

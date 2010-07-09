@@ -37,6 +37,7 @@ const char* kSavableSchemes[] = {
   kFileScheme,
   kFtpScheme,
   kExtensionScheme,
+  kChromeUIScheme,
   NULL
 };
 
@@ -50,6 +51,7 @@ const char kAboutMemoryURL[] = "about:memory";
 const char kAboutNetInternalsURL[] = "about:net-internals";
 const char kAboutPluginsURL[] = "about:plugins";
 const char kAboutShorthangURL[] = "about:shorthang";
+const char kAboutSystemURL[] = "about:system";
 const char kAboutTermsURL[] = "about:terms";
 const char kAboutAboutURL[] = "about:about";
 const char kAboutDNSURL[] = "about:dns";

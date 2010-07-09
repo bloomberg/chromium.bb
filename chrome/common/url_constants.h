@@ -45,6 +45,7 @@ extern const char kAboutHangURL[];
 extern const char kAboutMemoryURL[];
 extern const char kAboutPluginsURL[];
 extern const char kAboutShorthangURL[];
+extern const char kAboutSystemURL[];
 extern const char kAboutTermsURL[];
 extern const char kAboutAboutURL[];
 extern const char kAboutDNSURL[];

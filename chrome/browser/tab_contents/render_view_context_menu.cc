@@ -843,12 +843,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_SPELLCHECK_ADD_TO_DICTIONARY:
       return !params_.misspelled_word.empty();
 
-#if defined(OS_CHROMEOS)
     case IDC_PRINT:
-      return false;
-#else
-    case IDC_PRINT:
-#endif
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLCHECK_SUGGESTION_0:
