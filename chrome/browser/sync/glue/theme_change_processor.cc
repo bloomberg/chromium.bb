@@ -155,9 +155,11 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   }
   const sync_api::SyncManager::ChangeRecord& change =
       changes[change_count - 1];
-  if (change.action != sync_api::SyncManager::ChangeRecord::ACTION_UPDATE) {
+  if (change.action != sync_api::SyncManager::ChangeRecord::ACTION_UPDATE &&
+      change.action != sync_api::SyncManager::ChangeRecord::ACTION_DELETE) {
     std::string err = "strange theme change.action " + change.action;
     error_handler()->OnUnrecoverableError(FROM_HERE, err);
+    return;
   }
   sync_pb::ThemeSpecifics theme_specifics;
   // If the action is a delete, simply use the default values for
@@ -165,8 +167,8 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   if (change.action != sync_api::SyncManager::ChangeRecord::ACTION_DELETE) {
     sync_api::ReadNode node(trans);
     if (!node.InitByIdLookup(change.id)) {
-    error_handler()->OnUnrecoverableError(FROM_HERE,
-                                          "Theme node lookup failed.");
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+                                            "Theme node lookup failed.");
       return;
     }
     DCHECK_EQ(node.GetModelType(), syncable::THEMES);
