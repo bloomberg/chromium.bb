@@ -1659,7 +1659,15 @@ void RenderViewHost::AutoFillSuggestionsReturned(
 
 void RenderViewHost::AutocompleteSuggestionsReturned(
     int query_id, const std::vector<string16>& suggestions) {
-  DCHECK_EQ(autofill_query_id_, query_id);
+  // When query ids match we are responding to an AutoFill and Autocomplete
+  // combined query response.
+  // Otherwise Autocomplete is cancelling, so we only send suggestions (usually
+  // an empty list).
+  if (autofill_query_id_ != query_id) {
+    // Autocomplete is cancelling.
+    autofill_values_.clear();
+    autofill_labels_.clear();
+  }
 
   // Combine AutoFill and Autocomplete values into values and labels.
   for (size_t i = 0; i < suggestions.size(); ++i) {

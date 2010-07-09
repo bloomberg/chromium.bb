@@ -599,6 +599,42 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsFormIsAutoFilled) {
   EXPECT_EQ(string16(), labels[1]);
 }
 
+TEST_F(AutoFillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
+  FormData form;
+  CreateTestFormData(&form);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+  const int kAlternatePageID = 0;
+
+  webkit_glue::FormField field;
+  autofill_unittest::CreateTestFormField(
+      "First Name", "firstname", "", "text", &field);
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, true, field));
+
+  // No suggestions provided, so send an empty vector as the results.
+  // This triggers the combined message send.
+  // In this case, we're simulating a cancel of Autocomplete with a different
+  // page ID and an empty vector of suggestions.
+  rvh()->AutocompleteSuggestionsReturned(kAlternatePageID,
+                                         std::vector<string16>());
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
+  EXPECT_EQ(kAlternatePageID, page_id);
+  ASSERT_EQ(0U, values.size());
+  ASSERT_EQ(0U, labels.size());
+}
+
 TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   FormData form;
   CreateTestFormData(&form);
