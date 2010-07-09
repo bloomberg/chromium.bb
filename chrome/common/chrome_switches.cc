@@ -666,8 +666,12 @@ const char kPluginProcess[]                 = "plugin";
 // Causes the plugin process to display a dialog on launch.
 const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 
+// Enable TCP/IP preconnection, and DNS preresolution, even if a proxy might
+// possibly be used for connections.
+const char kPreconnectDespiteProxy[]        = "preconnect-despite-proxy";
+
 // Prints the pages on the screen.
-const char kPrint[] = "print";
+const char kPrint[]                         = "print";
 
 // Runs a single process for each site (i.e., group of pages from the same
 // registered domain) the user visits.  We default to using a renderer process

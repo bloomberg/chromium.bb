@@ -23,6 +23,10 @@ class Preconnect : public net::CompletionCallback {
 
   static void PreconnectOnIOThread(const GURL& url);
 
+  static void SetPreconnectDespiteProxy(bool status) {
+    preconnect_despite_proxy_ = status;
+  }
+
  private:
   Preconnect() {}
 
@@ -32,6 +36,12 @@ class Preconnect : public net::CompletionCallback {
 
   // IO Callback which whould be performed when the connection is established.
   virtual void RunWithParams(const Tuple1<int>& params);
+
+  // Preconnections are currently conservative, and do nothing if there is a
+  // chance that a proxy may be used.  This boolean allows proxy settings to
+  // be ignored (presumably because a user knows that the proxy won't be doing
+  // much work anway).
+  static bool preconnect_despite_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(Preconnect);
 };

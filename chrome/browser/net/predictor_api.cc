@@ -669,7 +669,8 @@ static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
 
 PredictorInit::PredictorInit(PrefService* user_prefs,
                              PrefService* local_state,
-                             bool preconnect_enabled) {
+                             bool preconnect_enabled,
+                             bool proconnect_despite_proxy) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Set up a field trial to see what disabling DNS pre-resolution does to
   // latency of page loads.
@@ -745,6 +746,8 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
 
     TimeDelta max_queueing_delay(
         TimeDelta::FromMilliseconds(max_queueing_delay_ms));
+
+    Preconnect::SetPreconnectDespiteProxy(proconnect_despite_proxy);
 
     DCHECK(!predictor);
     InitNetworkPredictor(max_queueing_delay, max_concurrent, user_prefs,

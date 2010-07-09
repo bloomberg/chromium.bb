@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/preconnect.h"
 
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/chrome_thread.h"
@@ -11,9 +12,13 @@
 #include "net/base/host_port_pair.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 
 namespace chrome_browser_net {
+
+// static
+bool Preconnect::preconnect_despite_proxy_ = false;
 
 // We will deliberately leak this singular instance, which is used only for
 // callbacks.
@@ -34,6 +39,19 @@ bool Preconnect::PreconnectOnUIThread(const GURL& url) {
   return true;
 }
 
+enum ProxyStatus {
+  PROXY_STATUS_IGNORED,
+  PROXY_UNINITIALIZED,
+  PROXY_NOT_USED,
+  PROXY_PAC_RESOLVER,
+  PROXY_HAS_RULES,
+  PROXY_MAX,
+};
+
+static void HistogramPreconnectStatus(ProxyStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectProxyStatus", status, PROXY_MAX);
+}
+
 // static
 void Preconnect::PreconnectOnIOThread(const GURL& url) {
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
@@ -44,6 +62,27 @@ void Preconnect::PreconnectOnIOThread(const GURL& url) {
     return;
   }
   URLRequestContext* context = getter->GetURLRequestContext();
+
+  if (preconnect_despite_proxy_) {
+    HistogramPreconnectStatus(PROXY_STATUS_IGNORED);
+  } else {
+    // Currently we avoid all preconnects if there is a proxy configuration.
+    net::ProxyService* proxy_service = context->proxy_service();
+    if (!proxy_service->config_has_been_initialized()) {
+      HistogramPreconnectStatus(PROXY_UNINITIALIZED);
+    } else {
+      if (proxy_service->config().MayRequirePACResolver()) {
+        HistogramPreconnectStatus(PROXY_PAC_RESOLVER);
+        return;
+      }
+      if (!proxy_service->config().proxy_rules().empty()) {
+        HistogramPreconnectStatus(PROXY_HAS_RULES);
+        return;
+      }
+      HistogramPreconnectStatus(PROXY_NOT_USED);
+    }
+  }
+
   net::HttpTransactionFactory* factory = context->http_transaction_factory();
   net::HttpNetworkSession* session = factory->GetSession();
   scoped_refptr<net::TCPClientSocketPool> pool = session->tcp_socket_pool();

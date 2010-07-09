@@ -88,7 +88,7 @@ class PredictorInit {
   static const int kMaxPrefetchQueueingDelayMs;
 
   PredictorInit(PrefService* user_prefs, PrefService* local_state,
-                bool preconnect_enabled);
+                bool preconnect_enabled, bool preconnect_despite_proxy);
 
  private:
   // Maintain a field trial instance when we do A/B testing.
