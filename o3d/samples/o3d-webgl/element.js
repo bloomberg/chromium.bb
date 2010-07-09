@@ -147,17 +147,18 @@ o3d.Element.prototype.__defineGetter__('owner',
  * create more than one element for the same material.
  *
  * @param {!o3d.Pack} pack pack used to manage created DrawElement.
- * @param {!o3d.Material} material material to use for DrawElement. If you
- *     pass null it will use the material on this Element. This allows you
- *     to easily setup the default (just draw as is) by passing null or
- *     setup a shadow pass by passing in a shadow material.
+ * @param {!o3d.Material} material material to use for DrawElement.
+ *     Note: When a DrawElement with a material of null is rendered, the
+ *     material on the corresponding Element will get used instead.
+ *     This allows you to easily setup the default (just draw as is) by passing
+ *     null or setup a shadow pass by passing in a shadow material.
  * @return {!o3d.DrawElement} The created draw element.
  */
 o3d.Element.prototype.createDrawElement =
     function(pack, material) {
   drawElement = pack.createObject('DrawElement');
   drawElement.owner = this;
-  drawElement.material = material || this.material;
+  drawElement.material = material;
   this.drawElements.push(drawElement);
   return drawElement;
 };

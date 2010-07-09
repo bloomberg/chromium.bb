@@ -294,9 +294,7 @@ o3d.Pack.prototype.getObjects =
  */
 o3d.Pack.prototype.getObjectsByClassName =
     function(class_type_name) {
-  if (class_type_name.substr(0, 4) == 'o3d.') {
-    class_type_name = class_type_name.substr(4);
-  }
+  class_type_name = o3d.filterTypeName_(class_type_name);
 
   var found = [];
 

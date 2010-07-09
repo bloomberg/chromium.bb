@@ -767,8 +767,29 @@ o3d.WorldViewProjectionInverseTransposeParamMatrix4 = function() {
 o3d.inherit('WorldViewProjectionInverseTransposeParamMatrix4',
     'CompositionParamMatrix4');
 
+
 /**
  * Called to specify the value of a uniform variable.
+ * @param {WebGLContext} gl The current context.
+ * @param {WebGLUniformLocation} location The location to which to apply.
+ */
+o3d.ParamInteger.prototype.applyToLocation = function(gl, location) {
+  gl.uniform1i(location, this.value);
+};
+
+/**
+ * Called to specify the value of a uniform variable.
+ * @param {WebGLContext} gl The current context.
+ * @param {WebGLUniformLocation} location The location to which to apply.
+ */
+o3d.ParamBoolean.prototype.applyToLocation = function(gl, location) {
+  gl.uniform1i(location, this.value);
+};
+
+/**
+ * Called to specify the value of a uniform variable.
+ * @param {WebGLContext} gl The current context.
+ * @param {WebGLUniformLocation} location The location to which to apply.
  */
 o3d.ParamFloat.prototype.applyToLocation = function(gl, location) {
   gl.uniform1f(location, this.value);
@@ -776,6 +797,8 @@ o3d.ParamFloat.prototype.applyToLocation = function(gl, location) {
 
 /**
  * Called to specify the value of a uniform variable.
+ * @param {WebGLContext} gl The current context.
+ * @param {WebGLUniformLocation} location The location to which to apply.
  */
 o3d.ParamFloat2.prototype.applyToLocation = function(gl, location) {
   gl.uniform2fv(location, this.value);
@@ -783,6 +806,8 @@ o3d.ParamFloat2.prototype.applyToLocation = function(gl, location) {
 
 /**
  * Called to specify the value of a uniform variable.
+ * @param {WebGLContext} gl The current context.
+ * @param {WebGLUniformLocation} location The location to which to apply.
  */
 o3d.ParamFloat3.prototype.applyToLocation = function(gl, location) {
   gl.uniform3fv(location, this.value);
@@ -790,6 +815,8 @@ o3d.ParamFloat3.prototype.applyToLocation = function(gl, location) {
 
 /**
  * Called to specify the value of a uniform variable.
+ * @param {WebGLContext} gl The current context.
+ * @param {WebGLUniformLocation} location The location to which to apply.
  */
 o3d.ParamFloat4.prototype.applyToLocation = function(gl, location) {
   gl.uniform4fv(location, this.value);
@@ -797,6 +824,8 @@ o3d.ParamFloat4.prototype.applyToLocation = function(gl, location) {
 
 /**
  * Called to specify the value of a uniform variable.
+ * @param {WebGLContext} gl The current context.
+ * @param {WebGLUniformLocation} location The location to which to apply.
  */
 o3d.ParamMatrix4.prototype.applyToLocation = function(gl, location) {
   gl.uniformMatrix4fv(location,
@@ -812,6 +841,8 @@ o3d.Param.texture_index_ = 0;
 
 /**
  * Called to specify the value of a uniform variable.
+ * @param {WebGLContext} gl The current context.
+ * @param {WebGLUniformLocation} location The location to which to apply.
  */
 o3d.ParamSampler.prototype.applyToLocation = function(gl, location) {
   // When before the effect object assigns values to parameters,

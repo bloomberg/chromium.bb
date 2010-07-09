@@ -157,7 +157,7 @@ o3djs.event.getEventKeyChar = function(event) {
     event = window.event;
   }
   var charCode = 0;
-  if (event.keyIdentifier) 
+  if (event.keyIdentifier)
     charCode = o3djs.event.keyIdentifierToChar(event.keyIdentifier);
   if (!charCode)
     charCode = (window.event) ? window.event.keyCode : event.charCode;

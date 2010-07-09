@@ -127,9 +127,8 @@ o3d.DrawList.prototype.render = function() {
     var projection = drawElementInfo.projection;
     var transform = drawElementInfo.transform;
     var drawElement = drawElementInfo.drawElement;
-    var element = drawElementInfo.drawElement.owner;
-    var material = drawElementInfo.drawElement.material ||
-                   drawElementInfo.drawElement.owner.material;
+    var element = drawElement.owner;
+    var material = drawElement.material || element.material;
     var effect = material.effect;
 
     o3d.Param.SAS.setWorld(world);
@@ -148,7 +147,15 @@ o3d.DrawList.prototype.render = function() {
     ];
 
     effect.searchForParams_(paramObjects);
+
+    var state_on = (material.state != undefined);
+    if (state_on) {
+      material.state.push_();
+    }
     element.render();
+    if (state_on) {
+      material.state.pop_();
+    }
   }
 };
 

@@ -37,92 +37,90 @@
 o3d.State = function() {
   o3d.ParamObject.call(this);
 
-  // TODO(petersont): Only some of these have been implemented.
-  var stateInfos = [
-    {name: 'AlphaBlendEnable', paramType: 'ParamBoolean',
-        defaultValue: false},
-    {name: 'AlphaComparisonFunction', paramType: 'ParamInteger',
-        defaultValue: o3d.State.CMP_ALWAYS},
-    {name: 'AlphaReference', paramType: 'ParamFloat',
-        defaultValue: 0},
-    {name: 'AlphaTestEnable', paramType: 'ParamBoolean',
-        defaultValue: false},
-    {name: 'BlendAlphaEquation', paramType: 'ParamInteger',
-        defaultValue: o3d.State.BLEND_ADD},
-    {name: 'BlendEquation', paramType: 'ParamInteger',
-        defaultValue: o3d.State.BLEND_ADD},
-    {name: 'CCWStencilComparisonFunction', paramType: 'ParamInteger',
-        defaultValue: o3d.State.CMP_ALWAYS},
-    {name: 'CCWStencilFailOperation',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.STENCIL_KEEP},
-    {name: 'CCWStencilPassOperation',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.STENCIL_KEEP},
-    {name: 'CCWStencilZFailOperation',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.STENCIL_KEEP},
-    {name: 'ColorWriteEnable', paramType: 'ParamInteger',
-        defaultValue: 15},
-    {name: 'CullMode', paramType: 'ParamInteger',
-        defaultValue: o3d.State.CULL_CW},
-    {name: 'DestinationBlendAlphaFunction',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.BLENDFUNC_ZERO},
-    {name: 'DestinationBlendFunction',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.BLENDFUNC_ZERO},
-    {name: 'DitherEnable', paramType: 'ParamBoolean',
-        defaultValue: false},
-    {name: 'FillMode', paramType: 'ParamInteger',
-        defaultValue: o3d.State.SOLID},
-    {name: 'LineSmoothEnable', paramType: 'ParamBoolean',
-        defaultValue: false},
-    {name: 'PointSize', paramType: 'ParamFloat',
-        defaultValue: 0},
-    {name: 'PointSpriteEnable', paramType: 'ParamBoolean',
-        defaultValue: false},
-    {name: 'PolygonOffset1',  paramType: 'ParamFloat',
-        defaultValue: 0},
-    {name: 'PolygonOffset2', paramType: 'ParamFloat',
-        defaultValue: 0},
-    {name: 'SeparateAlphaBlendEnable', paramType: 'ParamBoolean',
-        defaultValue: false},
-    {name: 'SourceBlendAlphaFunction',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.BLENDFUNC_ONE},
-    {name: 'SourceBlendFunction',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.BLENDFUNC_ONE},
-    {name: 'StencilComparisonFunction',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.CMP_ALWAYS},
-    {name: 'StencilEnable', paramType: 'ParamBoolean',
-        defaultValue: false},
-    {name: 'StencilFailOperation',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.STENCIL_KEEP},
-    {name: 'StencilMask', paramType: 'ParamInteger',
-        defaultValue: 255},
-    {name: 'StencilPassOperation',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.STENCIL_KEEP},
-    {name: 'StencilReference', paramType: 'ParamInteger',
-        defaultValue: 0},
-    {name: 'StencilWriteMask', paramType: 'ParamInteger',
-        defaultValue: 255},
-    {name: 'StencilZFailOperation',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.STENCIL_KEEP},
-    {name: 'TwoSidedStencilEnable', paramType: 'ParamBoolean',
-        defaultValue: false},
-    {name: 'ZComparisonFunction',  paramType: 'ParamInteger',
-        defaultValue: o3d.State.CMP_LESS},
-    {name: 'ZEnable', paramType: 'ParamBoolean',
-        defaultValue: true},
-    {name: 'ZWriteEnable', paramType: 'ParamBoolean',
-        defaultValue: true}
-  ];
-
   this.state_params_ = {};
 
-  for (var i = 0; i < stateInfos.length; ++i) {
-    var info = stateInfos[i];
-    var param = new o3d.global.o3d[info.paramType];
-    param.value = info.defaultValue;
-    this.state_params_[info.name] = param;
-  }
+ /**
+ * The names types and default values of all the state variables.
+ * @type {Object}
+ * @private
+ */
+ o3d.State.stateVariableInfos_ = o3d.State.stateVariableInfos_ || {
+    'AlphaBlendEnable':
+        {paramType: 'ParamBoolean', defaultValue: false},
+    'AlphaComparisonFunction':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.CMP_ALWAYS},
+    'AlphaReference':
+        {paramType: 'ParamFloat', defaultValue: 0},
+    'AlphaTestEnable':
+        {paramType: 'ParamBoolean', defaultValue: false},
+    'BlendAlphaEquation':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.BLEND_ADD},
+    'BlendEquation':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.BLEND_ADD},
+    'CCWStencilComparisonFunction':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.CMP_ALWAYS},
+    'CCWStencilFailOperation':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.STENCIL_KEEP},
+    'CCWStencilPassOperation':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.STENCIL_KEEP},
+    'CCWStencilZFailOperation':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.STENCIL_KEEP},
+    'ColorWriteEnable':
+        {paramType: 'ParamInteger', defaultValue: 15},
+    'CullMode':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.CULL_CW},
+    'DestinationBlendAlphaFunction':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.BLENDFUNC_ZERO},
+    'DestinationBlendFunction':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.BLENDFUNC_ZERO},
+    'DitherEnable':
+        {paramType: 'ParamBoolean', defaultValue: false},
+    'FillMode':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.SOLID},
+    'LineSmoothEnable':
+        {paramType: 'ParamBoolean', defaultValue: false},
+    'PointSize':
+        {paramType: 'ParamFloat', defaultValue: 0},
+    'PointSpriteEnable':
+        {paramType: 'ParamBoolean', defaultValue: false},
+    'PolygonOffset1':
+        {paramType: 'ParamFloat', defaultValue: 0},
+    'PolygonOffset2':
+        {paramType: 'ParamFloat', defaultValue: 0},
+    'SeparateAlphaBlendEnable':
+        {paramType: 'ParamBoolean', defaultValue: false},
+    'SourceBlendAlphaFunction':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.BLENDFUNC_ONE},
+    'SourceBlendFunction':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.BLENDFUNC_ONE},
+    'StencilComparisonFunction':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.CMP_ALWAYS},
+    'StencilEnable':
+        {paramType: 'ParamBoolean', defaultValue: false},
+    'StencilFailOperation':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.STENCIL_KEEP},
+    'StencilMask':
+        {paramType: 'ParamInteger', defaultValue: 255},
+    'StencilPassOperation':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.STENCIL_KEEP},
+    'StencilReference':
+        {paramType: 'ParamInteger', defaultValue: 0},
+    'StencilWriteMask':
+        {paramType: 'ParamInteger', defaultValue: 255},
+    'StencilZFailOperation':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.STENCIL_KEEP},
+    'TwoSidedStencilEnable':
+        {paramType: 'ParamBoolean', defaultValue: false},
+    'ZComparisonFunction':
+        {paramType: 'ParamInteger', defaultValue: o3d.State.CMP_LESS},
+    'ZEnable':
+        {paramType: 'ParamBoolean', defaultValue: true},
+    'ZWriteEnable':
+        {paramType: 'ParamBoolean', defaultValue: true}
+  };
 };
 o3d.inherit('State', 'ParamObject');
+
 
 /**
  * A private object containing the the state params by name.
@@ -377,189 +375,326 @@ o3d.State.STENCIL_DECREMENT = 7;
  */
 o3d.State.prototype.getStateParam =
     function(state_name) {
+  if (!this.state_params_[state_name]) {
+    var info = o3d.State.stateVariableInfos_[state_name];
+    var param = new o3d.global.o3d[info.paramType];
+    param.value = info.defaultValue;
+    this.state_params_[state_name] = param;
+  }
   return this.state_params_[state_name];
 };
 
 
+/**
+ * Constructs a state to set all state variables to their default value.
+ * This is meant to be called once at client initialization.
+ * @param {WebGLContext} gl The context associated with the calling client.
+ * @return {o3d.State} A new state object.
+ * @private
+ */
+o3d.State.createDefaultState_ = function(gl) {
+  var state = new o3d.State;
+  state.gl = gl;
+  var infos = o3d.State.stateVariableInfos_;
+  for (name in infos) {
+    var info = infos[name];
+    state.getStateParam(name).value = info.defaultValue;
+  }
+  return state;
+};
 
-o3d.State.prototype.convertCmpFunc = function(cmp) {
+
+/**
+ * Converts a comparison function type constant from o3d to WebGL.
+ * @param {!WebGLContext} gl The current context.
+ * @param {number} blend_func The o3d constant.
+ * @return {number} The WebGL version of the constant.
+ * @private
+ */
+o3d.State.convertCmpFunc_ = function(gl, cmp) {
   switch(cmp) {
     case o3d.State.CMP_ALWAYS:
-      return this.gl.ALWAYS;
+      return gl.ALWAYS;
     case o3d.State.CMP_NEVER:
-      return this.gl.NEVER;
+      return gl.NEVER;
     case o3d.State.CMP_LESS:
-      return this.gl.LESS;
+      return gl.LESS;
     case o3d.State.CMP_GREATER:
-      return this.gl.GREATER;
+      return gl.GREATER;
     case o3d.State.CMP_LEQUAL:
-      return this.gl.LEQUAL;
+      return gl.LEQUAL;
     case o3d.State.CMP_GEQUAL:
-      return this.gl.GEQUAL;
+      return gl.GEQUAL;
     case o3d.State.CMP_EQUAL:
-      return this.gl.EQUAL;
+      return gl.EQUAL;
     case o3d.State.CMP_NOTEQUAL:
-      return this.gl.NOTEQUAL;
+      return gl.NOTEQUAL;
     default:
       break;
   }
-  return this.gl.ALWAYS;
+  return gl.ALWAYS;
 };
 
 
-o3d.State.prototype.convertFillMode = function(mode) {
-  switch (mode) {
-    case o3d.State.POINT:
-      return this.gl.POINT;
-    case o3d.State.WIREFRAME:
-      return this.gl.LINE;
-    case o3d.State.SOLID:
-      return this.gl.FILL;
-    default:
-      break;
-  }
-  return this.gl.FILL;
-};
-
-
-o3d.State.prototype.convertBlendFunc = function(blend_func) {
+/**
+ * Converts a blend function type constant from o3d to WebGL.
+ * @param {!WebGLContext} gl The current context.
+ * @param {number} blend_func The o3d constant.
+ * @return {number} The WebGL version of the constant.
+ * @private
+ */
+o3d.State.convertBlendFunc_ = function(gl, blend_func) {
   switch (blend_func) {
     case o3d.State.BLENDFUNC_ZERO:
-      return this.gl.ZERO;
+      return gl.ZERO;
     case o3d.State.BLENDFUNC_ONE:
-      return this.gl.ONE;
+      return gl.ONE;
     case o3d.State.BLENDFUNC_SOURCE_COLOR:
-      return this.gl.SRC_COLOR;
+      return gl.SRC_COLOR;
     case o3d.State.BLENDFUNC_INVERSE_SOURCE_COLOR:
-      return this.gl.ONE_MINUS_SRC_COLOR;
+      return gl.ONE_MINUS_SRC_COLOR;
     case o3d.State.BLENDFUNC_SOURCE_ALPHA:
-      return this.gl.SRC_ALPHA;
+      return gl.SRC_ALPHA;
     case o3d.State.BLENDFUNC_INVERSE_SOURCE_ALPHA:
-      return this.gl.ONE_MINUS_SRC_ALPHA;
+      return gl.ONE_MINUS_SRC_ALPHA;
     case o3d.State.BLENDFUNC_DESTINATION_ALPHA:
-      return this.gl.DST_ALPHA;
+      return gl.DST_ALPHA;
     case o3d.State.BLENDFUNC_INVERSE_DESTINATION_ALPHA:
-      return this.gl.ONE_MINUS_DST_ALPHA;
+      return gl.ONE_MINUS_DST_ALPHA;
     case o3d.State.BLENDFUNC_DESTINATION_COLOR:
-      return this.gl.DST_COLOR;
+      return gl.DST_COLOR;
     case o3d.State.BLENDFUNC_INVERSE_DESTINATION_COLOR:
-      return this.gl.ONE_MINUS_DST_COLOR;
+      return gl.ONE_MINUS_DST_COLOR;
     case o3d.State.BLENDFUNC_SOURCE_ALPHA_SATUTRATE:
-      return this.gl.SRC_ALPHA_SATURATE;
+      return gl.SRC_ALPHA_SATURATE;
     default:
       break;
   }
-  return this.gl.ONE;
+  return gl.ONE;
 };
 
 
-o3d.State.prototype.convertBlendEquation = function(blend_equation) {
+/**
+ * Converts a stencil type constant from o3d to WebGL.
+ * @param {!WebGLContext} gl The current context.
+ * @param {number} stencil_func The o3d constant.
+ * @return {number} The WebGL version of the constant.
+ * @private
+ */
+o3d.State.convertBlendEquation_ = function(gl, blend_equation) {
   switch (blend_equation) {
     case o3d.State.BLEND_ADD:
-      return this.gl.FUNC_ADD;
+      return gl.FUNC_ADD;
     case o3d.State.BLEND_SUBTRACT:
-      return this.gl.FUNC_SUBTRACT;
+      return gl.FUNC_SUBTRACT;
     case o3d.State.BLEND_REVERSE_SUBTRACT:
-      return this.gl.FUNC_REVERSE_SUBTRACT;
+      return gl.FUNC_REVERSE_SUBTRACT;
     case o3d.State.BLEND_MIN:
-      return this.gl.MIN;
+      return gl.MIN;
     case o3d.State.BLEND_MAX:
-      return this.gl.MAX;
+      return gl.MAX;
     default:
       break;
   }
-  return this.gl.FUNC_ADD;
+  return gl.FUNC_ADD;
 };
 
 
-o3d.State.prototype.convertStencilOp = function(stencil_func) {
-  switch (stencil_func) {
-    case o3d.State.STENCIL_KEEP:
-      return this.gl.KEEP;
-    case o3d.State.STENCIL_ZERO:
-      return this.gl.ZERO;
-    case o3d.State.STENCIL_REPLACE:
-      return this.gl.REPLACE;
-    case o3d.State.STENCIL_INCREMENT_SATURATE:
-      return this.gl.INCR;
-    case o3d.State.STENCIL_DECREMENT_SATURATE:
-      return this.gl.DECR;
-    case o3d.State.STENCIL_INVERT:
-      return this.gl.INVERT;
-    case o3d.State.STENCIL_INCREMENT:
-      return this.gl.INCR_WRAP;
-    case o3d.State.STENCIL_DECREMENT:
-      return this.gl.DECR_WRAP;
-    default:
-      break;
-  }
-  return this.gl.KEEP;
+/**
+ * Sets the internal state to the this state.
+ * @private
+ */
+o3d.State.prototype.push_ = function() {
+  this.gl.client.pushState_(this.getVariableMap_());
 };
 
 
-o3d.State.prototype.set = function() {
+/**
+ * Recovers the internal state prior to this state gettings set.
+ * @private
+ */
+o3d.State.prototype.pop_ = function() {
+  this.gl.client.popState_();
+};
+
+
+/**
+ * Returns a new javascript object of name value pairs indicating
+ * what values to set each of the (changing) state variables.
+ * @return {!Object} The variable map.
+ * @private
+ */
+o3d.State.prototype.getVariableMap_ = function() {
+  var m = {};
   var stateParams = this.state_params_;
-
-  if (stateParams['AlphaBlendEnable'].value) {
-    this.gl.enable(this.gl.BLEND);
-  } else {
-    this.gl.disable(this.gl.BLEND);
+  for (var name in stateParams) {
+    m[name] = stateParams[name].value;
   }
+  return m;
+};
 
-  if (stateParams['SeparateAlphaBlendEnable'].value) {
-    this.gl.blendFuncSeparate(
-        this.convertBlendFunc(stateParams['SourceBlendFunction'].value),
-        this.convertBlendFunc(stateParams['DestinationBlendFunction'].value),
-        this.convertBlendFunc(stateParams['SourceBlendAlphaFunction'].value),
-        this.convertBlendFunc(
-            stateParams['DestinationBlendAlphaFunction'].value));
-    this.gl.blendEquationSeparate(
-      this.convertBlendEquation(stateParams['BlendEquation'].value),
-      this.convertBlendEquation(stateParams['BlendAlphaEquation'].value));
-  } else {
-    this.gl.blendFunc(
-        this.convertBlendFunc(stateParams['SourceBlendFunction'].value),
-        this.convertBlendFunc(stateParams['DestinationBlendFunction'].value));
-    this.gl.blendEquation(
-      this.convertBlendEquation(stateParams['BlendEquation'].value));
-  }
 
-  switch (stateParams['CullMode'].value) {
-    case o3d.State.CULL_CW:
-      this.gl.enable(this.gl.CULL_FACE);
-      this.gl.cullFace(this.gl.BACK);
+
+/**
+ * Helper function for setVariables_, looks for each of the given state
+ * variables' names in the given variable map.  If any one of them is a key
+ * in the map, it fills in the rest in the target_map with the value either
+ * from the variable map or from the state if it isn't on the variable map.
+ * @param {Array.<!string>} names The names of the variables in question.
+ * @param {!Object} variable_map An object connecting names to values.
+ * @param {!Object} target_map An object to fill out with the variables from
+ *    the given array of names.
+ * @return {boolean} True if any of the variable names in the given array were
+ *    found in the variable_map
+ * @private
+ */
+o3d.State.relevantValues_ =
+    function(gl, names, variable_map, target_map) {
+  var found = false;
+  for (var i = 0; i < names.length; ++i) {
+    var name = names[i];
+    if (variable_map[name] !== undefined) {
+      found = true;
       break;
-    case o3d.State.CULL_CCW:
-      this.gl.enable(this.gl.CULL_FACE);
-      this.gl.cullFace(this.gl.FRONT);
-      break;
-    default:
-      this.gl.disable(this.gl.CULL_FACE);
-      break;
+    }
   }
 
-  if (stateParams['DitherEnable'].value) {
-    this.gl.enable(this.gl.DITHER);
-  } else {
-    this.gl.disable(this.gl.DITHER);
+  if (found) {
+    for (var i = 0; i < names.length; ++i) {
+      var name = names[i];
+      var value = variable_map[name];
+      if (value === undefined) {
+        value = gl.client.getState_(name);
+      }
+      target_map[name] = value;
+    }
+  }
+  return found;
+};
+
+
+/**
+ * Sets the internal state according to the name value pairs in the given
+ * object.
+ * @param {WebGLContext} gl The gl context to use.
+ * @param {Object} variable_map A map linking state variable names to values.
+ * @private
+ */
+o3d.State.setVariables_ = function(gl, variable_map) {
+  // TODO(petersont): Only some of the state variables have been implemented.
+  // Others are unavailable in webgl.
+
+  // Remember, any state variable might be missing from variable_map.  When the
+  // key is not present, the state should be left alone.
+
+  // Temporary map to hold name value pairs.
+  var v = {};
+
+  if (this.relevantValues_(gl, ['AlphaBlendEnable'], variable_map, v)) {
+    if (v['AlphaBlendEnable']) {
+      gl.enable(gl.BLEND);
+    } else {
+      gl.disable(gl.BLEND);
+    }
   }
 
-  this.gl.depthMask(stateParams['ZWriteEnable'].value);
-
-  if (stateParams['ZEnable'].value) {
-    this.gl.enable(this.gl.DEPTH_TEST);
-    this.gl.depthFunc(
-        this.convertCmpFunc(stateParams['ZComparisonFunction'].value));
-  } else {
-    this.gl.disable(this.gl.DEPTH_TEST);
+  if (this.relevantValues_(gl, ['SeparateAlphaBlendEnable',
+                                'SourceBlendFunction',
+                                'SourceBlendAlphaFunction',
+                                'DestinationBlendAlphaFunction',
+                                'BlendEquation',
+                                'BlendAlphaEquation'], variable_map, v)) {
+    if (v['SeparateAlphaBlendEnable']) {
+      gl.blendFuncSeparate(
+          o3d.State.convertBlendFunc_(gl, v['SourceBlendFunction']),
+          o3d.State.convertBlendFunc_(gl, v['DestinationBlendFunction']),
+          o3d.State.convertBlendFunc_(gl, v['SourceBlendAlphaFunction']),
+          o3d.State.convertBlendFunc_(gl, v['DestinationBlendAlphaFunction']));
+      gl.blendEquationSeparate(
+        o3d.State.convertBlendEquation_(gl, v['BlendEquation']),
+        o3d.State.convertBlendEquation_(gl, v['BlendAlphaEquation']));
+    }
   }
 
-  if (stateParams['StencilEnable'].value) {
-    this.gl.enable(this.gl.STENCIL_TEST);
-    this.gl.stencilFunc(
-        this.convertCmpFunc(stateParams['StencilComparisonFunction'].value));
-  } else {
-    this.gl.disable(this.gl.STENCIL_TEST);
+  if (this.relevantValues_(gl, ['SourceBlendFunction',
+                                'DestinationBlendFunction'], variable_map, v)) {
+    gl.blendFunc(
+        o3d.State.convertBlendFunc_(gl, v['SourceBlendFunction']),
+        o3d.State.convertBlendFunc_(gl, v['DestinationBlendFunction']));
+  }
+
+  if (this.relevantValues_(gl, ['BlendEquation'], variable_map, v)) {
+    gl.blendEquation(o3d.State.convertBlendEquation_(gl, v['BlendEquation']));
+  }
+
+  if (this.relevantValues_(gl, ['CullMode'], variable_map, v)) {
+    switch (v['CullMode']) {
+      case o3d.State.CULL_CW:
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        break;
+      case o3d.State.CULL_CCW:
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.FRONT);
+        break;
+      default:
+        gl.disable(gl.CULL_FACE);
+        break;
+    }
+  }
+
+  if (this.relevantValues_(gl, ['DitherEnable'], variable_map, v)) {
+    if (v['DitherEnable']) {
+      gl.enable(gl.DITHER);
+    } else {
+      gl.disable(gl.DITHER);
+    }
+  }
+
+  if (this.relevantValues_(gl, ['ZEnable', 'ZComparisonFunction'],
+      variable_map, v)) {
+    if (v['ZEnable']) {
+      gl.enable(gl.DEPTH_TEST);
+      gl.depthFunc(
+          this.convertCmpFunc_(gl, v['ZComparisonFunction']));
+    } else {
+      gl.disable(gl.DEPTH_TEST);
+    }
+  }
+
+  if (this.relevantValues_(gl, ['ZWriteEnable'], variable_map, v)) {
+    gl.depthMask(v['ZWriteEnable']);
+  }
+
+  if (this.relevantValues_(gl, ['StencilEnable', 'StencilComparisonFunction'],
+      variable_map, v)) {
+    if (v['StencilEnable']) {
+      gl.enable(gl.STENCIL_TEST);
+      gl.stencilFunc(
+          this.convertCmpFunc_(gl, v['StencilComparisonFunction']));
+    } else {
+      gl.disable(gl.STENCIL_TEST);
+    }
+  }
+
+  if (this.relevantValues_(gl, ['PolygonOffset1',
+                                'PolygonOffset2'], variable_map, v)) {
+    var polygon_offset_factor = v['PolygonOffset1'] || 0;
+    var polygon_offset_bias = v['PolygonOffset2'] || 0;
+
+    if (polygon_offset_factor || polygon_offset_bias) {
+      gl.enable(gl.POLYGON_OFFSET_FILL);
+      gl.polygonOffset(polygon_offset_factor, polygon_offset_bias);
+    } else {
+      gl.disable(gl.POLYGON_OFFSET_FILL);
+    }
+  }
+
+  if (this.relevantValues_(gl, ['FillMode'], variable_map, v)) {
+    // We emulate the behavior of the fill mode state in the primitive class.
+    gl.fillMode_ = v['FillMode'];
   }
 };
+
+
 

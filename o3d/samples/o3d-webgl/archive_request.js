@@ -254,8 +254,7 @@ o3d.ArchiveRequest.prototype.stringEndsWith_ = function(string, suffix) {
  * if one is provided, calls onreadystatechange if this is the last of the
  * requests.
  * @param {o3d.RawData} rawData The current raw data object.
- * @param {function(!o3d.RawData): void} An optional callback to call passing
- *     the current raw data as an argument.
+ * @param {Object} opt_exc An optional exception.
  * @private
  */
 o3d.ArchiveRequest.prototype.resolvePendingRequest_ =

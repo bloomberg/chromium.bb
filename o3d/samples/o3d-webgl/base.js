@@ -176,7 +176,40 @@ o3d.removeFromArray = function(array, object) {
   if (i >= 0) {
     array.splice(i, 1);
   }
-}
+};
+
+
+/**
+ * Determine whether a value is an array. Do not use instanceof because that
+ * will not work for V8 arrays (the browser thinks they are Objects).
+ * @param {*} value A value.
+ * @return {boolean} Whether the value is an array.
+ */
+o3d.isArray_ = function(value) {
+  var valueAsObject = /** @type {!Object} **/ (value);
+  return typeof(value) === 'object' && value !== null &&
+      'length' in valueAsObject && 'splice' in valueAsObject;
+};
+
+
+/**
+ * Utility function to clone an object.
+ *
+ * @param {Object} object The object to clone.
+ * @return {Object} A clone of that object.
+ */
+o3d.clone = function(object) {
+  var result = o3d.isArray_(object) ? [] : {};
+  for (var name in object) {
+    var property = object[name];
+    if (typeof property == 'Object') {
+      result[name] = o3d.clone(property);
+    } else {
+      result[name] = property;
+    }
+  }
+  return result;
+};
 
 
 /**
@@ -219,6 +252,7 @@ o3d.include('render_surface_set');
 o3d.include('render_surface');
 o3d.include('state');
 o3d.include('draw_context');
+o3d.include('ray_intersection_info');
 o3d.include('sampler');
 o3d.include('transform');
 o3d.include('pack');

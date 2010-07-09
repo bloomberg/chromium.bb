@@ -225,6 +225,20 @@ o3d.Client = function() {
     o3d.Renderer.installRenderInterval();
 
   o3d.Renderer.clients_.push(this);
+
+  /**
+   * Stack of objects showing how the state has changed.
+   * @type {!Array.<!Object>}
+   * @private
+   */
+  this.stateMapStack_ = [];
+
+  /**
+   * An object containing an entry for each state variable that has changed.
+   * @type {Object}
+   * @private
+   */
+  this.stateVariableStacks_ = {};
 };
 o3d.inherit('Client', 'NamedObject');
 
@@ -426,6 +440,8 @@ o3d.Client.prototype.render = function() {
   // Synthesize a render event.
   var render_event = new o3d.RenderEvent;
 
+  this.clearStateStack_();
+
   var now = (new Date()).getTime() * 0.001;
   if(this.then_ == 0.0)
     render_event.elapsedTime = 0.0;
@@ -611,7 +627,9 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
   if (!canvas || !canvas.getContext) {
     return false;
   }
-  try {gl = canvas.getContext("experimental-webgl", standard_attributes) } catch(e) { }
+  try {
+    gl = canvas.getContext("experimental-webgl", standard_attributes)
+  } catch(e) { }
   if (!gl) {
     try {
       gl = canvas.getContext("moz-webgl")
@@ -632,6 +650,7 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
   gl.client = this;
   gl.displayInfo = {width: canvas.width,
                     height: canvas.height};
+  o3d.State.createDefaultState_(gl).push_();
 
   return true;
 };
@@ -762,78 +781,34 @@ o3d.Client.getEventInfo_ = function(event) {
 
 
 /**
- * Returns the absolute position of an element for certain browsers.
+ * Returns the absolute position of an element.
  * @param {!HTMLElement} element The element to get a position for.
  * @return {!Object} An object containing x and y as the absolute position
  *     of the given element.
  * @private
  */
 o3d.Client.getAbsolutePosition_ = function(element) {
-  var r = { x: element.offsetLeft, y: element.offsetTop };
-  if (element.offsetParent) {
-    var tmp = o3d.Client.getAbsolutePosition_(element.offsetParent);
-    r.x += tmp.x;
-    r.y += tmp.y;
+  var r = {x: 0, y: 0};
+  for (var e = element; e; e = e.offsetParent) {
+    r.x += e.offsetLeft;
+    r.y += e.offsetTop;
   }
   return r;
 };
 
 /**
- * Retrieve the coordinates of the given event relative to the center
- * of the widget.
+ * Compute the x and y of an event with respect to the element which received
+ * the event.
  *
  * @param {!Object} eventInfo As returned from
  *     o3d.Client.getEventInfo.
- * @param {HTMLElement} opt_reference A DOM element whose position we want
- *     to transform the mouse coordinates to. If it is not passed in the
- *     element in the eventInfo will be used.
  * @return {!Object} An object containing keys 'x' and 'y'.
  * @private
  */
-o3d.Client.getRelativeCoordinates_ = function(eventInfo, opt_reference) {
-  var x, y;
+o3d.Client.getLocalXY_ = function(eventInfo) {
   var event = eventInfo.event;
-  var element = eventInfo.element;
-  var reference = opt_reference || eventInfo.element;
-  if (!window.opera && typeof event.offsetX != 'undefined') {
-    // Use offset coordinates and find common offsetParent
-    var pos = { x: event.offsetX, y: event.offsetY };
-    // Send the coordinates upwards through the offsetParent chain.
-    var e = element;
-    while (e) {
-      e.mouseX_ = pos.x;
-      e.mouseY_ = pos.y;
-      pos.x += e.offsetLeft;
-      pos.y += e.offsetTop;
-      e = e.offsetParent;
-    }
-    // Look for the coordinates starting from the reference element.
-    var e = reference;
-    var offset = { x: 0, y: 0 }
-    while (e) {
-      if (typeof e.mouseX_ != 'undefined') {
-        x = e.mouseX_ - offset.x;
-        y = e.mouseY_ - offset.y;
-        break;
-      }
-      offset.x += e.offsetLeft;
-      offset.y += e.offsetTop;
-      e = e.offsetParent;
-    }
-    // Reset stored coordinates
-    e = element;
-    while (e) {
-      e.mouseX_ = undefined;
-      e.mouseY_ = undefined;
-      e = e.offsetParent;
-    }
-  } else {
-    // Use absolute coordinates
-    var pos = o3d.Client.getAbsolutePosition_(reference);
-    x = event.pageX - pos.x;
-    y = event.pageY - pos.y;
-  }
-  return { x: x, y: y };
+  var p = o3d.Client.getAbsolutePosition_(eventInfo.element);
+  return {x: event.x - p.x, y: event.y - p.y};
 };
 
 
@@ -849,7 +824,9 @@ o3d.Client.wrapEventCallback_ = function(handler, doCancelEvent) {
   return function(event) {
     event = o3d.Client.getEvent_(event);
     var info = o3d.Client.getEventInfo_(event);
-    var relativeCoords = o3d.Client.getRelativeCoordinates_(info);
+    var relativeCoords = o3d.Client.getLocalXY_(info);
+    // In a proper event, there are read only properties, so we clone it.
+    event = o3d.clone(event);
     event.x = relativeCoords.x;
     event.y = relativeCoords.y;
     // Invert value to meet contract for deltaY. @see event.js.
@@ -1037,6 +1014,78 @@ o3d.Client.prototype.invalidateAllParameters = function() {
 o3d.Client.prototype.toDataURL =
     function(opt_mime_type) {
   o3d.notImplemented();
+};
+
+
+/**
+ * Saves data needed to return state to current, then sets the state according
+ * to the given object.
+ * @private
+ */
+o3d.Client.prototype.clearStateStack_ = function() {
+  this.stateMapStack_ = [];
+  for (var name in this.stateVariableStacks_) {
+    var l = this.stateVariableStacks_[name];
+    // Recall there is a default value at the bottom of each of these stacks.
+    if (l.length != 1) {
+      this.stateVariableStacks_[name] = l.slice(0, 1);
+    }
+  }
+};
+
+
+/**
+ * Saves data needed to return state to current, then sets the state according
+ * to the given object.
+ * @param {Object} variable_map A map linking names to values.
+ * @private
+ */
+o3d.Client.prototype.pushState_ = function(variable_map) {
+  // Save the variable map itself in a stack.
+  this.stateMapStack_.push(variable_map);
+
+  // Save each of the state's variable's value in its own stack.
+  for (var name in variable_map) {
+    var value = variable_map[name];
+    if (this.stateVariableStacks_[name] == undefined) {
+      this.stateVariableStacks_[name] = [];
+    }
+    this.stateVariableStacks_[name].push(value);
+  }
+
+  // The value on the top of the stack in stateVariableStacks_
+  // is current at this point.
+  o3d.State.setVariables_(this.gl, variable_map);
+};
+
+
+/**
+ * Returns the state to the way it was before the current state
+ * @private
+ */
+o3d.Client.prototype.popState_ = function() {
+  var variable_map = this.stateMapStack_.pop();
+
+  for (var name in variable_map) {
+    var stack = this.stateVariableStacks_[name];
+    stack.pop();
+    variable_map[name] = stack.length ? stack[stack.length - 1] :
+        o3d.State.stateVariableInfos_[name]['defaultValue'];
+  }
+
+  o3d.State.setVariables_(this.gl, variable_map);
+};
+
+
+/**
+ * Gets the current value of the state variable with the give name.
+ * @param {string} name The name of the state variable in question.
+ * @private
+ */
+o3d.Client.prototype.getState_ = function(name) {
+  var stack = this.stateVariableStacks_[name];
+  return stack.length ? stack[stack.length - 1] :
+        o3d.State.stateVariableInfos_[name]['defaultValue'];
 };
 
 

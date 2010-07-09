@@ -37,17 +37,17 @@
  * @constructor
  */
 o3d.Buffer = function() {
-  this.fields_ = [];
+  this.fields = [];
   this.array_ = null;
 };
 o3d.inherit('Buffer', 'NamedObject');
 
 
 /**
- * A private array to hold the fields.
+ * The fields currently set on the buffer.
  * @type {!Array.<o3d.Field>}
  */
-o3d.Buffer.prototype.fields_ = [];
+o3d.Buffer.prototype.fields = [];
 
 
 /**
@@ -75,6 +75,19 @@ o3d.Buffer.prototype.__defineGetter__('numElements',
 );
 
 /**
+ * Computes and stores the correct total components from the
+ * fields so far.
+ */
+o3d.Buffer.prototype.updateTotalComponents_ = function() {
+  var total = 0;
+  for (var i = 0; i < this.fields.length; ++i) {
+    this.fields[i].offset_ = total;
+    total += this.fields[i].numComponents;
+  }
+  this.totalComponents = total;
+};
+
+/**
  * Allocates memory for the data to be stored in the buffer based on
  * the types of fields set on the buffer.
  *
@@ -83,13 +96,7 @@ o3d.Buffer.prototype.__defineGetter__('numElements',
  */
 o3d.Buffer.prototype.allocateElements =
     function(numElements) {
-  var total = 0;
-  for (var i = 0; i < this.fields_.length; ++i) {
-    this.fields_[i].offset_ = total;
-    total += this.fields_[i].numComponents;
-  }
-  this.totalComponents = total;
-
+  this.updateTotalComponents_();
   this.resize(numElements * this.totalComponents);
 };
 
@@ -126,8 +133,8 @@ o3d.Buffer.prototype.createField =
 
   // Make copies of the existing field data.
   if (alreadyAllocated) {
-    for (var i = 0; i < this.fields_.length; i++) {
-      savedData[i] = this.fields_[i].getAt(0, numElements);
+    for (var i = 0; i < this.fields.length; i++) {
+      savedData[i] = this.fields[i].getAt(0, numElements);
     }
   }
 
@@ -136,15 +143,16 @@ o3d.Buffer.prototype.createField =
   f.buffer = this;
   f.numComponents = numComponents;
   f.size = numComponents * (fieldType=='UByteNField' ? 1 : 4);
-  this.fields_.push(f);
+  this.fields.push(f);
+  this.updateTotalComponents_();
 
   // Resize the buffer with the new field, and replace data.
   if (alreadyAllocated) {
     this.allocateElements(numElements);
-    for (var i = 0; i < this.fields_.length; i++) {
+    for (var i = 0; i < this.fields.length; i++) {
       var fieldData = savedData[i];
       if (fieldData) {
-        this.fields_[i].setAt(0, fieldData);
+        this.fields[i].setAt(0, fieldData);
       }
     }
   }
@@ -164,18 +172,10 @@ o3d.Buffer.prototype.createField =
  */
 o3d.Buffer.prototype.removeField =
     function(field) {
-  // TODO(luchen): Removing fields does not require a reshuffling, but may want
-  // to do it anyways to save space.
-  var i = 0;
-  for (var j = 0; j < this.fields_.length; ++j) {
-    if (this.fields_[i] == field)
-      j++;
-    this.fields_[j] = this.fields_[i];
-    i++;
-  }
-  if (this.fields_.length > i) {
-    this.fields_.pop();
-  }
+  o3d.removeFromArray(this.fields, field);
+  // TODO(petersont): Have this function actually shuffle the buffer around to
+  // remove the field properly.
+  this.updateTotalComponents_();
 };
 
 

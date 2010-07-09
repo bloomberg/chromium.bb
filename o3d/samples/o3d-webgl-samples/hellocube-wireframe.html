@@ -64,12 +64,13 @@ var g_clock = 0;
 var g_timeMult = 1;
 var g_cubeTransform;
 var g_cubePrimitive;
+var g_material;
 var g_finished = false;  // for selenium testing
 
 /**
  * Changes the primitive type of the displayed cube. Some primitive types will
  * only draw a partial cube.
- * @param {string} type the desired primitive type
+ * @param {string} type The desired primitive type.
  */
 function changePrimitive(type) {
   var indicesArray;
@@ -150,6 +151,30 @@ function changePrimitive(type) {
   g_cubePrimitive.numberPrimitives = numberPrimitives;
   g_cubePrimitive.indexBuffer.set(indicesArray);
 }
+
+
+/**
+ * Changes the fill mode on the state associated with the cube material.
+ * @param {string} type The desired fill mode.
+ */
+function changeFillMode(mode_string) {
+  var mode = o3d.State.SOLID;
+  switch (mode_string) {
+    case 'Point':
+      mode = o3d.State.POINT;
+      break;
+    case 'Wireframe':
+      mode = o3d.State.WIREFRAME;
+      break;
+    case 'Solid':
+    default:
+      mode = o3d.State.SOLID;
+      break;
+  }
+
+  g_material.state.getStateParam('FillMode').value = mode;
+}
+
 
 /**
  * Creates an O3D shape representing a cube.  The shape consists of
@@ -277,10 +302,12 @@ function initStep2(clientElements) {
   myEffect.loadPixelShaderFromString(pixelShaderString);
 
   // Create a Material for the mesh.
-  var myMaterial = g_pack.createObject('Material');
+  g_material = g_pack.createObject('Material');
 
   // Set the material's drawList.
-  myMaterial.drawList = viewInfo.performanceDrawList;
+  g_material.drawList = viewInfo.performanceDrawList;
+
+  g_material.state = g_pack.createObject('State');
 
   // Turn off culling.
   viewInfo.performanceDrawPassInfo.state.getStateParam('CullMode').value =
@@ -288,13 +315,14 @@ function initStep2(clientElements) {
 
   // Apply our effect to this material. The effect tells the 3D hardware
   // which shaders to use.
-  myMaterial.effect = myEffect;
+  g_material.effect = myEffect;
 
   // Create the Shape for the cube mesh and assign its material.
-  var cubeShape = createCube(myMaterial);
+  var cubeShape = createCube(g_material);
 
   // Render with line lists to begin with.
   changePrimitive('LineList');
+  changeFillMode('Solid');
 
   // Create a new transform and parent the Shape under it.
   g_cubeTransform = g_pack.createObject('Transform');
@@ -332,7 +360,7 @@ This example shows how to display a cube in O3D using different primitive types.
 
 <form name="default_form" action="#" method="get">
   <p>
-  Change type:
+  Primitive type:
   <select onchange="changePrimitive(this.options[this.selectedIndex].value);">
     <option value="PointList">PointList</option>
     <option value="LineList" selected>LineList</option>
@@ -340,7 +368,16 @@ This example shows how to display a cube in O3D using different primitive types.
     <option value="TriangleList">TriangleList</option>
     <option value="TriangleStrip">TriangleStrip</option>
     <option value="TriangleFan">TriangleFan</option>
-  </select> (PointList may be hard to see.)
+  </select> (PointList might be hard to see.)
+  </p>
+
+  <p>
+  Fill mode:
+  <select onchange="changeFillMode(this.options[this.selectedIndex].value);">
+    <option value="Point">Point</option>
+    <option value="Wireframe">Wireframe</option>
+    <option value="Solid" selected>Solid</option>
+  </select>
   </p>
 </form>
 

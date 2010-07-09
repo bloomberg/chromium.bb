@@ -257,7 +257,7 @@ o3d.Transform.prototype.addShape =
  */
 o3d.Transform.prototype.removeShape =
     function(shape) {
-  o3d.notImplemented();
+  o3d.removeFromArray(this.shapes, shape);
 };
 
 
@@ -599,7 +599,6 @@ o3d.Transform.prototype.rotateX =
                   c * m22 - s * m12,
                   c * m23 - s * m13);
 };
-
 
 
 /**

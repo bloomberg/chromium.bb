@@ -39,14 +39,16 @@
 o3d.BoundingBox =
     function(opt_minExtent, opt_maxExtent) {
   o3d.ParamObject.call(this);
-  if (!opt_minExtent) {
-    opt_minExtent = [0, 0, 0];
+  var minExtent = opt_minExtent || [0, 0, 0];
+  var maxExtent = opt_maxExtent || [0, 0, 0];
+
+  this.minExtent = [minExtent[0], minExtent[1], minExtent[2]];
+  this.maxExtent = [maxExtent[0], maxExtent[1], maxExtent[2]];
+
+  // If there were extents passed in, that validates the box.
+  if (opt_minExtent && opt_maxExtent) {
+    this.valid = true;
   }
-  if (!opt_maxExtent) {
-    opt_maxExtent = [0, 0, 0];
-  }
-  this.minExtent = [opt_minExtent[0], opt_minExtent[1], opt_minExtent[2]];
-  this.maxExtent = [opt_maxExtent[0], opt_maxExtent[1], opt_maxExtent[2]];
 };
 o3d.inherit('BoundingBox', 'ParamObject');
 
@@ -89,6 +91,7 @@ o3d.BoundingBox.fitBoxToPoints_ = function(points, opt_targetBox) {
       target.maxExtent[index] = Math.max(target.maxExtent[index], point[index]);
     }
   }
+  target.valid = true;
   return target;
 };
 
@@ -170,7 +173,7 @@ o3d.BoundingBox.prototype.intersectRay =
     end = [arguments[3], arguments[4], arguments[5]];
   }
 
-  var result = new RayIntersectionInfo;
+  var result = new o3d.RayIntersectionInfo;
 
   if (this.valid) {
     result.valid = true;
@@ -181,7 +184,7 @@ o3d.BoundingBox.prototype.intersectRay =
     var kLeft = 1;
     var kMiddle = 2;
 
-    var dir = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
+    var direction = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
     var coord = [0, 0, 0];
     var inside = true;
 
@@ -200,13 +203,13 @@ o3d.BoundingBox.prototype.intersectRay =
     // Find candidate planes; this loop can be avoided if rays cast all from
     // the eye (assumes perpsective view).
     for (var i = 0; i < kNumberOfDimensions; ++i) {
-      if (start[i] < min_extent_[i]) {
+      if (start[i] < this.minExtent[i]) {
         quadrant[i] = kLeft;
-        candidate_plane[i] = min_extent_[i];
+        candidate_plane[i] = this.minExtent[i];
         inside = false;
-      } else if (start[i] >  max_extent_[i]) {
+      } else if (start[i] >  this.maxExtent[i]) {
         quadrant[i] = kRight;
-        candidate_plane[i] =  max_extent_[i];
+        candidate_plane[i] =  this.maxExtent[i];
         inside = false;
       } else  {
         quadrant[i] = kMiddle;
@@ -215,13 +218,13 @@ o3d.BoundingBox.prototype.intersectRay =
 
     // Ray origin inside bounding box.
     if (inside) {
-       result.position = start;
+      result.position = start;
       result.inside = true;
     } else {
       // Calculate T distances to candidate planes.
       for (var i = 0; i < kNumberOfDimensions; ++i) {
-        if (quadrant[i] != kMiddle && dir[i] != 0.0) {
-          max_t[i] = (candidate_plane[i] - start[i]) / dir[i];
+        if (quadrant[i] != kMiddle && direction[i] != 0.0) {
+          max_t[i] = (candidate_plane[i] - start[i]) / direction[i];
         } else {
           max_t[i] = -1.0;
         }
@@ -241,8 +244,8 @@ o3d.BoundingBox.prototype.intersectRay =
       } else {
         for (var i = 0; i < kNumberOfDimensions; ++i) {
           if (which_plane != i) {
-            coord[i] = start[i] + max_t[which_plane] * dir[i];
-            if (coord[i] < min_extent_[i] || coord[i] > max_extent_[i]) {
+            coord[i] = start[i] + max_t[which_plane] * direction[i];
+            if (coord[i] < this.minExtent[i] || coord[i] > this.maxExtent[i]) {
               result.intersected = false;
               break;
             }

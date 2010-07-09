@@ -197,8 +197,10 @@ o3d.ParamObject.prototype.params_ = {};
  */
 o3d.ParamObject.prototype.copyParams =
     function(source_param_object) {
-  for (param in source_param_object.params_) {
-    this.createParam(param.name, param.className);
+  for (name in source_param_object.params_) {
+    var param = source_param_object.params_[name];
+    this.createParam(name, param.className);
+    this.getParam(name).value = param.value;
   }
 };
 

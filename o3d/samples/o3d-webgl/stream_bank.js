@@ -36,14 +36,32 @@
  */
 o3d.StreamBank = function() {
   o3d.NamedObject.call(this);
-  this.vertexStreams = [];
+  this.vertex_streams_ = [];
 };
 o3d.inherit('StreamBank', 'NamedObject');
 
 /**
  * Array of streams.
  */
-o3d.StreamBank.prototype.vertexStreams = [];
+o3d.StreamBank.prototype.vertex_streams_ = [];
+
+o3d.StreamBank.prototype.__defineGetter__('vertexStreams',
+    function() {
+      result = [];
+      for (var i = 0; i < this.vertex_streams_.length; ++i) {
+        var stream_array = this.vertex_streams_[i];
+        if (stream_array && stream_array.length) {
+          for (var j = 0; j < stream_array.length; ++j) {
+            var stream = stream_array[j];
+            if (stream) {
+              result.push(stream);
+            }
+          }
+        }
+      }
+      return result;
+    }
+);
 
 
 /**
@@ -58,10 +76,10 @@ o3d.StreamBank.prototype.vertexStreams = [];
  */
 o3d.StreamBank.prototype.setVertexStream =
     function(semantic, semantic_index, field, start_index) {
-  if (this.vertexStreams[semantic] == undefined) {
-    this.vertexStreams[semantic] = [];
+  if (this.vertex_streams_[semantic] == undefined) {
+    this.vertex_streams_[semantic] = [];
   }
-  this.vertexStreams[semantic][semantic_index] = new o3d.Stream(
+  this.vertex_streams_[semantic][semantic_index] = new o3d.Stream(
     semantic, semantic_index, field, start_index);
 };
 
@@ -76,10 +94,10 @@ o3d.StreamBank.prototype.setVertexStream =
  */
 o3d.StreamBank.prototype.getVertexStream =
     function(semantic, semantic_index) {
-  if (this.vertexStreams[semantic] == undefined) {
+  if (this.vertex_streams_[semantic] == undefined) {
     return;
   }
-  return this.vertexStreams[semantic][semantic_index];
+  return this.vertex_streams_[semantic][semantic_index];
 };
 
 
@@ -92,10 +110,10 @@ o3d.StreamBank.prototype.getVertexStream =
  */
 o3d.StreamBank.prototype.removeVertexStream =
     function(semantic, semantic_index) {
-  if (this.vertexStreams[semantic] == undefined) {
+  if (this.vertex_streams_[semantic] == undefined) {
     return false;
   }
-  this.vertexStreams[semantic][semantic_index] = null;
+  this.vertex_streams_[semantic][semantic_index] = null;
   return true;
 };
 

@@ -62,12 +62,30 @@ o3d.Shape.prototype.elements = [];
 
 
 /**
+ * Finds a draw element in the given list of draw elements that uses the given
+ * material if such a draw element exists.  Returns null otherwise.
+ * @param {Array.<!o3d.DrawElements>} drawElements An array of draw elements.
+ * @param {o3d.Material} material A material to search for.
+ * @private
+ */
+o3d.Shape.findDrawElementWithMaterial_ = function(drawElements, material) {
+  for (var j = 0; j < drawElements.length; ++j) {
+    if (drawElements[j].material == material) {
+      return drawElements[j];
+    }
+  }
+  return null;
+};
+
+
+/**
  * Creates a DrawElement for each Element owned by this Shape.
- * If an Element already has a DrawElement that uses \a material a new
+ * If an Element already has a DrawElement that uses material a new
  * DrawElement will not be created.
  * @param {o3d.Pack} pack pack used to manage created DrawElements.
  * @param {o3d.Material} material material to use for each DrawElement.
- *     If you pass null it will use the material on the corresponding Element.
+ *     Note: When a DrawElement with a material of null is rendered, the
+ *     material on the corresponding Element will get used instead.
  *     This allows you to easily setup the default (just draw as is) by
  *     passing null or setup a shadow pass by passing in a shadow material.
  */
@@ -75,7 +93,11 @@ o3d.Shape.prototype.createDrawElements =
     function(pack, material) {
   var elements = this.elements;
   for (var i = 0; i < elements.length; ++i) {
-    elements[i].createDrawElement(pack, material);
+    var element = elements[i];
+    if (!o3d.Shape.findDrawElementWithMaterial_(element.drawElements,
+                                                material)) {
+      element.createDrawElement(pack, material);
+    }
   }
 };
 
