@@ -11,6 +11,12 @@ const cr = (function() {
   const isMac = /Mac/.test(navigator.platform);
 
   /**
+   * Whether this is on chromeOS or not.
+   * @type {boolean}
+   */
+  const isChromeOS = /CrOS/.test(navigator.userAgent);
+
+  /**
    * Builds an object structure for the provided namespace path,
    * ensuring that names that already exist are not overwritten. For
    * example:
@@ -317,6 +323,7 @@ const cr = (function() {
 
   return {
     isMac: isMac,
+    isChromeOS: isChromeOS,
     define: define,
     defineProperty: defineProperty,
     PropertyKind: PropertyKind,

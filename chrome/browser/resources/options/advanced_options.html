@@ -3,19 +3,19 @@
   <section>
     <h3 i18n-content="advancedSectionTitlePrivacy"></h3>
     <table class="option-control-table">
-      <tr>
+      <tr><td>
         <button id="privacyContentSettingsButton"
             i18n-content="privacyContentSettingsButton"></button>
         <button id="privacyClearDataButton"
             i18n-content="privacyClearDataButton"></button>
-      </tr>
-      <tr>
+      </td></tr>
+      <tr><td>
         <div class="section-text"
             i18n-content="disableServices"></div>
         <div id="privacyLearnMore">
             <a target="_blank" i18n-content="privacyLearnMoreLabel"
                 i18n-values="href:privacyLearnMoreURL"></a></div>
-      </tr>
+      </td></tr>
       <tr id="linkDoctorCheckbox">
         <td class="option-name"><label><input id="alternateErrorPagesEnabled"
             pref="alternate_error_pages.enabled" type="checkbox"><span
@@ -49,14 +49,14 @@
   <section>
     <h3 i18n-content="advancedSectionTitleNetwork"></h3>
     <table class="option-control-table">
-      <tr>
+      <tr><td>
         <div class="section-text"
             i18n-content="proxiesLabel"></div>
-      </tr>
-      <tr>
+      </td></tr>
+      <tr><td>
         <button id="proxiesConfigureButton"
             i18n-content="proxiesConfigureButton"></button>
-      </tr>
+      </td></tr>
     </table>
   </section>
   <section>
@@ -72,25 +72,25 @@
   <section>
     <h3 i18n-content="downloadLocationGroupName"></h3>
     <table class="option-control-table">
-      <tr>
+      <tr><td>
         <div class="section_text"
             i18n-content="downloadLocationBrowseTitle"></div>
-        <input id="downloadLocationPath" type="text" size="80" disabled>
+        <input id="downloadLocationPath" type="text" size="60" disabled>
         <button id="downloadLocationBrowseButton"
             i18n-content="downloadLocationBrowseButton"></button>
-      </tr>
+      </td></tr>
       <tr id="promptForDownloadCheckbox">
         <td class="option-name"><label><input id="promptForDownload"
             pref="download.prompt_for_download" type="checkbox"><span
             i18n-content="downloadLocationAskForSaveLocation"></span></label>
         </td>
       </tr>
-      <tr>
+      <tr><td>
         <div class="section-text"
             i18n-content="autoOpenFileTypesInfo"></div>
         <button id="autoOpenFileTypesResetToDefault"
             i18n-content="autoOpenFileTypesResetToDefault"></button>
-      </tr>
+      </td></tr>
     </table>
   </section>
   <section>
@@ -101,21 +101,21 @@
             pref="webkit.webprefs.tabs_to_links" type="checkbox"><span
             i18n-content="tabsToLinksPref"></span></label></td>
       </tr>
-      <tr id="promptForDownloadCheckbox">
+      <tr id="promptForDownloadCheckbox"><td>
         <button id="fontSettingsConfigureFontsOnlyButton"
             i18n-content="fontSettingsConfigureFontsOnlyButton"></button>
-      </tr>
+      </td></tr>
     </table>
   </section>
   <section>
     <h3 i18n-content="advancedSectionTitleSecurity"></h3>
     <table class="option-control-table">
-      <tr>
+      <tr><td>
         <div class="section_text"
             i18n-content="certificatesLabel"></div>
         <button id="certificatesManageButton"
             i18n-content="certificatesManageButton"></button>
-      </tr>
+      </td></tr>
       <!-- TODO(csilv): Not supported on all platforms
       <tr id="sslCheckRevocationCheckbox">
         <td class="option-name"><label><input id="sslCheckRevocation"

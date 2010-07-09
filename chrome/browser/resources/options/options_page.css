@@ -1,42 +1,108 @@
+#settings-title {
+  height: 30px;
+  padding-right: 15px;
+  padding-top: 20px;
+  text-align: right;
+  font-size: 140%;
+  color: #c7c7c7;
+}
+
 #main-content {
   display: -webkit-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
 }
 
 #navbar-container {
-  border: 1px solid black;
-  background-color: #dfdfdf;  
+  background: -webkit-gradient(linear, 
+                               left top, 
+                               left bottom,
+                               from(rgba(255,255,255,0)),
+                               color-stop(0.7, rgba(255,255,255,0)),
+                               to(white)),
+              -webkit-gradient(linear,
+                               left top,
+                               right top,
+                               from(white),
+                               color-stop(0.8, white),
+                               to(#f3f3f3));
+  border-right: 1px solid #dbdbdb;
   cursor: pointer;
-  font-weight: bold; 
-  height: 800px;
-  padding: 10px;
   position: relative;
-  width: 200px;
+  width: 250px;
+}
+
+#navbar-container > hr {
+  border-top: 1px solid #dbdbdb;
+  width: 65%;
+  align: right;
 }
 
 .navbar-item, .navbar-item2 {
-  margin: 5px;
-  padding: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 20px;
+  text-align: right;
+  list-style-type: none;
+  list-style-image: none;
 }
 
 .navbar-item-selected {
-  background-color: #FFFFFF;  
+  background: -webkit-gradient(linear, left top, right top, from(white), to(#d6def3));
+  font-weight: bold;
 }
 
 .navbar-item-normal {
   background-color: #dfdfdf;
 }
 
+#gradient-cover {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 250px;
+  bottom: 0;
+}
+
+#gradient {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 250px;
+  bottom: 0;
+}
+
 #mainview {
   -webkit-box-align: stretch;
-  border: 1px solid black;
-  height: 800px;
   width: 600px;
   padding: 10px;
   position: relative;
 }
 
+.page > h1 {
+  height: 30px;
+  padding-right: 15px;
+  padding-top: 12px;
+  padding-left: 15px;
+  font-size: 140%;
+  color: #7c90d8;
+}
+
 section {
   margin-top: 10px;
+  border-bottom: 1px solid #ededed;
+  padding-bottom: 10px;
+}
+
+section > h3 {
+  font-weight: bold; 
+  float: left;
+  width: 150px;
+  font-size: 75%;
+  padding-left: 15px;
 }
 
 .option {
