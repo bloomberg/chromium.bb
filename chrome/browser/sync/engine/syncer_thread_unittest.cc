@@ -45,7 +45,9 @@ class SyncerThreadWithSyncerTest : public testing::Test,
                                    public ModelSafeWorkerRegistrar,
                                    public ChannelEventHandler<SyncerEvent> {
  public:
-  SyncerThreadWithSyncerTest() : sync_cycle_ended_event_(false, false) {}
+  SyncerThreadWithSyncerTest()
+      : max_wait_time_(TimeDelta::FromSeconds(10)),
+        sync_cycle_ended_event_(false, false) {}
   virtual void SetUp() {
     metadb_.SetUp();
     connection_.reset(new MockConnectionManager(metadb_.manager(),
@@ -88,9 +90,14 @@ class SyncerThreadWithSyncerTest : public testing::Test,
 
   // Waits an indefinite amount of sync cycles for the syncer thread to become
   // throttled.  Only call this if a throttle is supposed to occur!
-  void WaitForThrottle() {
-    while (!syncer_thread()->IsSyncingCurrentlySilenced())
-      sync_cycle_ended_event_.Wait();
+  bool WaitForThrottle() {
+    int max_cycles = 5;
+    while (max_cycles && !syncer_thread()->IsSyncingCurrentlySilenced()) {
+      sync_cycle_ended_event_.TimedWait(max_wait_time_);
+      max_cycles--;
+    }
+
+    return syncer_thread()->IsSyncingCurrentlySilenced();
   }
 
   void WaitForDisconnect() {
@@ -114,8 +121,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
         WillOnce(SignalEvent(&event));
     if (!syncer_thread()->RequestPause())
       return false;
-    event.Wait();
-    return true;
+    return event.TimedWait(max_wait_time_);
   }
 
   bool Resume(ListenerMock* listener) {
@@ -125,8 +131,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
         WillOnce(SignalEvent(&event));
     if (!syncer_thread()->RequestResume())
       return false;
-    event.Wait();
-    return true;
+    return event.TimedWait(max_wait_time_);
   }
 
   void PreventThreadFromPolling() {
@@ -141,6 +146,10 @@ class SyncerThreadWithSyncerTest : public testing::Test,
       sync_cycle_ended_event_.Signal();
   }
 
+ protected:
+  TimeDelta max_wait_time_;
+
+ private:
   ManuallyOpenedTestDirectorySetterUpper metadb_;
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<AllStatus> allstatus_;
@@ -701,7 +710,7 @@ TEST_F(SyncerThreadWithSyncerTest, Throttling) {
   // Wait until the syncer thread reports that it is throttled.  Any further
   // sync share interceptions will result in failure.  If things are broken,
   // we may never halt.
-  WaitForThrottle();
+  ASSERT_TRUE(WaitForThrottle());
   EXPECT_TRUE(syncer_thread()->IsSyncingCurrentlySilenced());
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));
@@ -749,8 +758,14 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-// Timesout http:://crbug.com/39070
-TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
+// TODO(skrul): The "Pause" and "PauseWhenNotConnected" tests are
+// marked FLAKY because they sometimes fail on the Windows buildbots.
+// I have been unable to reproduce this hang after extensive testing
+// on a local Windows machine so these tests will remain flaky in
+// order to help diagnose the problem.
+//
+// This issue is tracked at http://crbug.com/39070.
+TEST_F(SyncerThreadWithSyncerTest, FLAKY_Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
@@ -770,7 +785,7 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   ASSERT_TRUE(syncer_thread()->Start());
   metadb()->Open();
-  sync_cycle_ended_event.Wait();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   // Request a pause.
   ASSERT_TRUE(Pause(&listener));
@@ -792,7 +807,7 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   ASSERT_TRUE(Resume(&listener));
-  sync_cycle_ended_event.Wait();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
@@ -821,27 +836,28 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
       Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
       WillOnce(SignalEvent(&event));
   ASSERT_TRUE(syncer_thread()->Start());
-  sync_cycle_ended_event.Wait();
-  event.Wait();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
+  ASSERT_TRUE(event.TimedWait(max_wait_time_));
 
   // Connect, will put the syncer thread into its usually poll wait.
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
       WillOnce(SignalEvent(&event));
   connection()->SetServerReachable();
-  event.Wait();
+  ASSERT_TRUE(event.TimedWait(max_wait_time_));
 
   // Nudge the syncer to complete a cycle.
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
-  sync_cycle_ended_event.Wait();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-// See bug 39070.
+// TODO(skrul): See TODO comment on the "Pause" test above for an
+// explanation of the usage of FLAKY here.
 TEST_F(SyncerThreadWithSyncerTest, FLAKY_PauseWhenNotConnected) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent event(false, false);
@@ -864,8 +880,8 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_PauseWhenNotConnected) {
       WillOnce(SignalEvent(&event));
   metadb()->Open();
   ASSERT_TRUE(syncer_thread()->Start());
-  sync_cycle_ended_event.Wait();
-  event.Wait();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
+  ASSERT_TRUE(event.TimedWait(max_wait_time_));
 
   // Pause and resume the thread while waiting for a connection.
   ASSERT_TRUE(Pause(&listener));
@@ -879,16 +895,16 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_PauseWhenNotConnected) {
       Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
       WillOnce(SignalEvent(&event));
   connection()->SetServerReachable();
-  event.Wait();
+  ASSERT_TRUE(event.TimedWait(max_wait_time_));
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
-  sync_cycle_ended_event.Wait();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   // Disconnect and get into the waiting for a connection state.
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
       WillOnce(SignalEvent(&event));
   connection()->SetServerNotReachable();
-  event.Wait();
+  ASSERT_TRUE(event.TimedWait(max_wait_time_));
 
   // Pause so we can test getting a connection while paused.
   ASSERT_TRUE(Pause(&listener));
@@ -898,7 +914,7 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_PauseWhenNotConnected) {
       Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
       WillOnce(SignalEvent(&event));
   connection()->SetServerReachable();
-  event.Wait();
+  ASSERT_TRUE(event.TimedWait(max_wait_time_));
 
   ASSERT_TRUE(Resume(&listener));
 
@@ -907,7 +923,7 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_PauseWhenNotConnected) {
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
-  sync_cycle_ended_event.Wait();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
@@ -938,7 +954,7 @@ TEST_F(SyncerThreadWithSyncerTest, PauseResumeWhenNotRunning) {
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   ASSERT_TRUE(Resume(&listener));
-  sync_cycle_ended_event.Wait();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
