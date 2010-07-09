@@ -852,8 +852,10 @@ function getClassForPath(path, isDirectory) {
 function getDataForPath(path) {
   if (path == 'roots' ) {
     if (inSaveMode) {
-      var newfolderbutton = $('newfolderbutton');
-      newfolderbutton.className = 'filebutton newfolderbutton disabled';
+      if (advancedEnabled) {
+        var newfolderbutton = $('newfolderbutton');
+        newfolderbutton.className = 'filebutton newfolderbutton disabled';
+      }
       var savebutton = $('savebutton');
       savebutton.className = 'filebutton openbutton disabled';
     } else if (inSelectMode) {
@@ -863,8 +865,10 @@ function getDataForPath(path) {
     chrome.send('getRoots', []);
   } else {
     if (inSaveMode) {
-      var newfolderbutton = $('newfolderbutton');
-      newfolderbutton.className = 'filebutton newfolderbutton';
+      if (advancedEnabled) {
+        var newfolderbutton = $('newfolderbutton');
+        newfolderbutton.className = 'filebutton newfolderbutton';
+      }
       var savebutton = $('savebutton');
       savebutton.className = 'filebutton openbutton';
     } else if (inSelectMode) {
