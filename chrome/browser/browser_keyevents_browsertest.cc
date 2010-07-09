@@ -289,7 +289,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
+// Flaky since r51395. See crbug.com/48671.
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_NormalKeyEvents) {
   static const KeyEventTestData kTestNoInput[] = {
     // a
     { base::VKEY_A, false, false, false,
