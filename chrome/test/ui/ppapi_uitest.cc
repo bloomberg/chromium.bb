@@ -123,6 +123,11 @@ TEST_F(PPAPITest, PaintAgggregator) {
 }
 
 // http://crbug.com/48544
+#if defined(OS_LINUX)
+// TODO(jabdelmalek) this fails on Linux for unknown reasons.
 TEST_F(PPAPITest, FAILS_Scrollbar) {
+#else
+TEST_F(PPAPITest, Scrollbar) {
+#endif
   RunTest("Scrollbar");
 }
