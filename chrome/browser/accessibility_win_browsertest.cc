@@ -16,6 +16,13 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
+#if defined(OS_WIN)
+// http://crbug.com/48655
+#define SKIP_WIN(test) DISABLED_##test
+#else
+#define SKIP_WIN(test) test
+#endif
+
 namespace {
 
 class AccessibilityWinBrowserTest : public InProcessBrowserTest {
@@ -206,7 +213,7 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestRendererAccessibilityTree) {
+                       SKIP_WIN(TestRendererAccessibilityTree)) {
   // By requesting an accessible chrome will believe a screen reader has been
   // detected.
   ScopedComPtr<IAccessible> document_accessible(

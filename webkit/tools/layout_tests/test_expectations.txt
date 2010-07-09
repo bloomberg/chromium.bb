@@ -86,3 +86,4 @@ BUGAWONG WIN LINUX MAC SKIP : ietestcenter/Javascript/15.4.4.15-3-29.html = TIME
 BUGAWONG WIN LINUX MAC SKIP : ietestcenter/Javascript/15.4.4.15-3-8.html = TIMEOUT
 BUGAWONG WIN : plugins/keyboard-events.html = TEXT
 BUGAWONG WIN : http/tests/plugins/plugin-document-has-focus.html = TEXT
+BUGAWONG MAC : media/video-volume-slider.html = IMAGE+TEXT
