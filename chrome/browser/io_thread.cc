@@ -290,6 +290,7 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
         static_cast<net::HttpAuthHandlerNegotiate::Factory*>(
             registry_factory->GetSchemeFactory("negotiate"));
     DCHECK(negotiate_factory);
+    negotiate_factory->set_host_resolver(resolver);
     if (command_line.HasSwitch(switches::kDisableAuthNegotiateCnameLookup))
       negotiate_factory->set_disable_cname_lookup(true);
     if (command_line.HasSwitch(switches::kEnableAuthNegotiatePort))
