@@ -35,6 +35,7 @@
     'prefs',
     'special_tabs',
     'test_basic.SimpleTest.testCanOpenGoogle',
+    'themes',
   ],
 
   'win': [

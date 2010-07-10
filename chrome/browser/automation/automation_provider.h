@@ -441,6 +441,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                        DictionaryValue* args,
                        IPC::Message* reply_message);
 
+  // Get info about theme.
+  // Uses the JSON interface for input/output.
+  void GetThemeInfo(Browser* browser,
+                    DictionaryValue* args,
+                    IPC::Message* reply_message);
+
   // Get the profiles that are currently saved to the DB.
   // Uses the JSON interface for input/output.
   void GetAutoFillProfile(Browser* browser,

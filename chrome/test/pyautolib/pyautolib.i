@@ -330,9 +330,13 @@ class PyUITestBase {
   // Meta-method
   %feature("docstring", "Send a sync JSON request to Chrome.  "
                         "Returns a JSON dict as a response.  "
-			"Internal method.")
+                        "Internal method.")
       _SendJSONRequest;
   std::string _SendJSONRequest(int window_index, std::string request);
+
+  %feature("docstring", "Resets to the default theme. "
+           "Returns true on success.") ResetToDefaultTheme;
+  bool ResetToDefaultTheme();
 
 };
 

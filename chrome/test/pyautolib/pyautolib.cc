@@ -294,3 +294,7 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
   }
   return response;
 }
+
+bool PyUITestBase::ResetToDefaultTheme() {
+  return automation()->ResetToDefaultTheme();
+}

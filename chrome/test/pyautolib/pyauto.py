@@ -757,6 +757,68 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     finally:
       shutil.rmtree(tempdir)
 
+  def SetTheme(self, crx_file_path):
+    """Installs the given theme synchronously.
+
+    A theme file is file with .crx suffix, like an extension.
+    This method call waits until theme is installed and will trigger the
+    "theme installed" infobar.
+
+    Uses InstallExtension().
+
+    Returns:
+      True, on success.
+    """
+    return self.InstallExtension(crx_file_path, True)
+
+  def ClearTheme(self):
+    """Clear the theme.  Resets to default.
+
+    Has no effect when the theme is already the default one.
+    This is a blocking call.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'ClearTheme',
+    }
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
+
+  def GetThemeInfo(self):
+    """Get info about theme.
+
+    This includes info about the theme name, its colors, images, etc.
+
+    Returns:
+      a dictionary containing info about the theme.
+      empty dictionary if no theme has been applied (default theme).
+    SAMPLE:
+    { u'colors': { u'frame': [71, 105, 91],
+                   u'ntp_link': [36, 70, 0],
+                   u'ntp_section': [207, 221, 192],
+                   u'ntp_text': [20, 40, 0],
+                   u'toolbar': [207, 221, 192]},
+      u'images': { u'theme_frame': u'images/theme_frame_camo.png',
+                   u'theme_ntp_background': u'images/theme_ntp_background.png',
+                   u'theme_toolbar': u'images/theme_toolbar_camo.png'},
+      u'name': u'camo theme',
+      u'tints': {u'buttons': [0.33000000000000002, 0.5, 0.46999999999999997]}}
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'GetThemeInfo',
+    }
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
+
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
   """Base TestSuite for PyAuto UI tests."""

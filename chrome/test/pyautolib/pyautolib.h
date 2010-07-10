@@ -147,6 +147,9 @@ class PyUITestBase : public UITestBase {
   // automation proxy additions.  Returns response as JSON dict.
   std::string _SendJSONRequest(int window_index, std::string& request);
 
+  // Resets to the default theme. Returns true on success.
+  bool ResetToDefaultTheme();
+
  private:
   // Enables PostTask to main thread.
   // Should be shared across multiple instances of PyUITestBase so that this

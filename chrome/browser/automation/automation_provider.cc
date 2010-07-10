@@ -2347,6 +2347,27 @@ void AutomationProvider::SaveTabContents(Browser* browser,
   Send(reply_message);
 }
 
+// Sample json input: { "command": "GetThemeInfo" }
+// Refer GetThemeInfo() in chrome/test/pyautolib/pyauto.py for sample output.
+void AutomationProvider::GetThemeInfo(Browser* browser,
+                                      DictionaryValue* args,
+                                      IPC::Message* reply_message) {
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  Extension* theme = browser->profile()->GetTheme();
+  if (theme) {
+    return_value->SetString(L"name", theme->name());
+    return_value->Set(L"images", theme->GetThemeImages()->DeepCopy());
+    return_value->Set(L"colors", theme->GetThemeColors()->DeepCopy());
+    return_value->Set(L"tints", theme->GetThemeTints()->DeepCopy());
+  }
+
+  std::string json_return;
+  base::JSONWriter::Write(return_value.get(), false, &json_return);
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message, json_return, true);
+  Send(reply_message);
+}
+
 // Sample json input:
 //    { "command": "GetAutoFillProfile" }
 // Refer to GetAutoFillProfile() in chrome/test/pyautolib/pyauto.py for sample
@@ -2676,6 +2697,9 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetInitialLoadTimes"] = &AutomationProvider::GetInitialLoadTimes;
 
   handler_map["SaveTabContents"] = &AutomationProvider::SaveTabContents;
+
+  // SetTheme() implemented using InstallExtension().
+  handler_map["GetThemeInfo"] = &AutomationProvider::GetThemeInfo;
 
   handler_map["GetAutoFillProfile"] = &AutomationProvider::GetAutoFillProfile;
   handler_map["FillAutoFillProfile"] = &AutomationProvider::FillAutoFillProfile;
