@@ -2009,6 +2009,7 @@ void AutomationProvider::WaitForDownloadsToComplete(
     AutomationMsg_SendJSONRequest::WriteReplyParams(
         reply_message, json_return, reply_return);
     Send(reply_message);
+    return;
   }
 
   // The observer owns itself.  When the last observed item pings, it
