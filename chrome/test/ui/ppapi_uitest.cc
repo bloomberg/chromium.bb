@@ -114,7 +114,8 @@ TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
 
-TEST_F(PPAPITest, DISABLED_URLLoader) {
+// http://crbug.com/48734
+TEST_F(PPAPITest, FAILS_URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
