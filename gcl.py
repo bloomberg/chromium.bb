@@ -175,9 +175,13 @@ def GetCodeReviewSetting(key):
     settings_file = GetCachedFile(CODEREVIEW_SETTINGS_FILE)
     if settings_file:
       for line in settings_file.splitlines():
-        if not line or line.startswith("#"):
+        if not line or line.startswith('#'):
           continue
-        k, v = line.split(": ", 1)
+        if not ':' in line:
+          raise gclient_utils.Error(
+              '%s is invalid, please fix. It\'s content:\n\n%s' %
+                  (CODEREVIEW_SETTINGS_FILE, settings_file))
+        k, v = line.split(': ', 1)
         CODEREVIEW_SETTINGS[k] = v
     CODEREVIEW_SETTINGS.setdefault('__just_initialized', None)
   return CODEREVIEW_SETTINGS.get(key, "")
@@ -1308,18 +1312,21 @@ def main(argv):
 
   # Create the directories where we store information about changelists if it
   # doesn't exist.
-  if not os.path.exists(GetInfoDir()):
-    os.mkdir(GetInfoDir())
-  if not os.path.exists(GetChangesDir()):
-    os.mkdir(GetChangesDir())
-  if not os.path.exists(GetCacheDir()):
-    os.mkdir(GetCacheDir())
+  try:
+    if not os.path.exists(GetInfoDir()):
+      os.mkdir(GetInfoDir())
+    if not os.path.exists(GetChangesDir()):
+      os.mkdir(GetChangesDir())
+    if not os.path.exists(GetCacheDir()):
+      os.mkdir(GetCacheDir())
 
-  if command:
-    return command(argv[1:])
-  # Unknown command, try to pass that to svn
-  return CMDpassthru(argv)
-
+    if command:
+      return command(argv[1:])
+    # Unknown command, try to pass that to svn
+    return CMDpassthru(argv)
+  except gclient_utils.Error, e:
+    print('Got an exception')
+    print(str(e))
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv[1:]))
