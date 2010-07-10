@@ -28,14 +28,11 @@
 # error "NaCl service runtime stack size is smaller than PTHREAD_STACK_MIN"
 #endif
 
-/*
- * Even if ctor fails, it should be okay -- and required -- to invoke
- * the dtor on it.
- */
-int NaClThreadCtor(struct NaClThread  *ntp,
-                   void               (*start_fn)(void *),
-                   void               *state,
-                   size_t             stack_size) {
+static int NaClThreadCreate(struct NaClThread  *ntp,
+                            void               (*start_fn)(void *),
+                            void               *state,
+                            size_t             stack_size,
+                            int                is_detached) {
   pthread_attr_t  attr;
   int             code;
   int             rv;
@@ -61,15 +58,17 @@ int NaClThreadCtor(struct NaClThread  *ntp,
              : "UNKNOWN"));
     goto done_attr_dtor;
   }
-  if (0 !=
-      (code = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED))) {
-    NaClLog(LOG_ERROR,
-            "nacl_thread: pthread_attr_setdetachstate returned %d (%s)",
-            code,
-            (strerror_r(code, err_string, sizeof err_string) == 0
-             ? err_string
-             : "UNKNOWN"));
-    goto done_attr_dtor;
+  if (is_detached) {
+    if (0 != (code = pthread_attr_setdetachstate(&attr,
+                                                 PTHREAD_CREATE_DETACHED))) {
+      NaClLog(LOG_ERROR,
+              "nacl_thread: pthread_attr_setdetachstate returned %d (%s)",
+              code,
+              (strerror_r(code, err_string, sizeof err_string) == 0
+               ? err_string
+               : "UNKNOWN"));
+      goto done_attr_dtor;
+    }
   }
   if (0 != (code = pthread_create(&ntp->tid,
                                   &attr,
@@ -90,6 +89,26 @@ int NaClThreadCtor(struct NaClThread  *ntp,
   return rv;
 }
 
+/*
+ * Even if ctor fails, it should be okay -- and required -- to invoke
+ * the dtor on it.
+ */
+int NaClThreadCtor(struct NaClThread  *ntp,
+                   void               (*start_fn)(void *),
+                   void               *state,
+                   size_t             stack_size) {
+  return NaClThreadCreate(ntp, start_fn, state, stack_size,
+                          /* is_detached= */ 1);
+}
+
+int NaClThreadCreateJoinable(struct NaClThread  *ntp,
+                             void               (*start_fn)(void *),
+                             void               *state,
+                             size_t             stack_size) {
+  return NaClThreadCreate(ntp, start_fn, state, stack_size,
+                          /* is_detached= */ 0);
+}
+
 void NaClThreadDtor(struct NaClThread *ntp) {
   /*
    * The threads that we create are not joinable, and we cannot tell
@@ -98,6 +117,10 @@ void NaClThreadDtor(struct NaClThread *ntp) {
    * that resources such as the thread stack are properly released.
    */
   UNREFERENCED_PARAMETER(ntp);
+}
+
+void NaClThreadJoin(struct NaClThread *ntp) {
+  pthread_join(ntp->tid, NULL);
 }
 
 void NaClThreadExit(void) {

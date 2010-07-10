@@ -104,7 +104,7 @@ DescWrapper* NPUpcallServer::Start(NPModule* module,
   // info takes ownership of pair[0].
   pair[0] = NULL;
   // Create a thread and an SRPC "upcall" server.
-  if (!NaClThreadCtor(nacl_thread, UpcallThread, info, 128 << 10)) {
+  if (!NaClThreadCreateJoinable(nacl_thread, UpcallThread, info, 128 << 10)) {
     goto done;
   }
   // On success, ownership of info passes to the thread.

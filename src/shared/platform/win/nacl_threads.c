@@ -51,12 +51,27 @@ int NaClThreadCtor(struct NaClThread  *ntp,
   return 1;
 }
 
+int NaClThreadCreateJoinable(struct NaClThread  *ntp,
+                             void               (WINAPI *start_fn)(void *),
+                             void               *state,
+                             size_t             stack_size) {
+  return NaClThreadCtor(ntp, start_fn, state, stack_size);
+}
+
 void NaClThreadDtor(struct NaClThread *ntp) {
   /*
    * the handle is not closed when the thread exits because we are
    * using _beginthreadex and not _beginthread, so we must close it
    * manually
    */
+  CloseHandle(ntp->tid);
+}
+
+void NaClThreadJoin(struct NaClThread *ntp) {
+  DWORD result = WaitForSingleObject(ntp->tid, INFINITE);
+  if (result != WAIT_OBJECT_0) {
+    NaClLog(LOG_ERROR, "NaClThreadJoin: unexpected result of thread\n");
+  }
   CloseHandle(ntp->tid);
 }
 

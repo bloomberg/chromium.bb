@@ -32,28 +32,32 @@ EXTERN_C_BEGIN
 # error "thread abstraction not defined for target OS"
 #endif
 
-typedef enum NaClThreadStatus {
-  NACL_THREAD_OK,
-  NACL_THREAD_RESOURCE_LIMIT
-} NaClThreadStatus;
-
 /*
- * Abstract low-level thread creation.  No thread attribute is
- * available, so no scheduling hint interface, no ability to set the
- * detach state, etc.  All threads are detached, and the main service
- * runtime thread must consult the NaClApp or NaClAppThread state to
- * figure out which thread(s) are still running.
+ * We provide two simple, portable thread creation interfaces:
+ *
+ * Joinable threads, created with NaClThreadCreateJoinable().  These
+ * must eventually be waited for using NaClThreadJoin() or the thread
+ * handle will leak.
+ *
+ * Non-joinable (detached) threads, created with NaClThreadCtor().
+ * These cannot be waited for.
+ * TODO(mseaborn): The corresponding NaClThreadDtor() needs to be
+ * called at some point to prevent a handle leak, but it should
+ * probably be merged into NaClThreadCtor().  Calling it immediately
+ * after NaClThreadCtor() should be OK.
  */
+
 int NaClThreadCtor(struct NaClThread  *ntp,
                    void               (WINAPI *start_fn)(void *),
                    void               *state,
                    size_t             stack_size);
-
-/*
- * NaClThreadDtor is used to clean up the NaClThread object, and
- * cannot be invoked while the thread is still alive.
- */
 void NaClThreadDtor(struct NaClThread *ntp);
+
+int NaClThreadCreateJoinable(struct NaClThread  *ntp,
+                             void               (WINAPI *start_fn)(void *),
+                             void               *state,
+                             size_t             stack_size);
+void NaClThreadJoin(struct NaClThread *ntp);
 
 /*
  * NaClThreadExit is invoked by the thread itself.

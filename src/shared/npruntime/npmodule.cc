@@ -73,6 +73,7 @@ NPModule::~NPModule() {
   if (proxy_) {
     NPN_ReleaseObject(proxy_);
   }
+  NaClThreadJoin(&upcall_thread_);
   // TODO(sehr): release contexts, etc., here.
 }
 
