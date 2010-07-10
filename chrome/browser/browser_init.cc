@@ -76,6 +76,7 @@
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/low_battery_observer.h"
 #include "chrome/browser/chromeos/network_message_observer.h"
+#include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
@@ -435,6 +436,9 @@ bool BrowserInit::LaunchBrowser(
         new chromeos::NetworkMessageObserver(profile);
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(
         network_message_observer);
+
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(
+        chromeos::NetworkStateNotifier::Get());
 
     // Creates the SystemKeyEventListener to listen for keypress messages
     // regardless of what window has focus.

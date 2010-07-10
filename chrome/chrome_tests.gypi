@@ -1366,6 +1366,7 @@
         'browser/chromeos/login/wizard_controller_browsertest.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.h',
+        'browser/chromeos/network_state_notifier_browsertest.cc',
         'browser/chromeos/notifications/notification_browsertest.cc',
         'browser/chromeos/options/wifi_config_view_browsertest.cc',
         'browser/chromeos/panels/panel_browsertest.cc',

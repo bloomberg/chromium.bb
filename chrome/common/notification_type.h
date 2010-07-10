@@ -1037,6 +1037,12 @@ class NotificationType {
     // is being deleted, so the receiver shouldn't use the screen locker
     // object.
     SCREEN_LOCK_STATE_CHANGED,
+
+    // Sent when the network state has changed on UI thread.
+    // The source is AllSources and the details is NetworkStateDetails defined
+    // in chrome/browser/chromeos/network_state_notifier.h.
+    // TODO(oshima): Port this to all platforms.
+    NETWORK_STATE_CHANGED,
 #endif
 
     // Sent before the repost form warning is brought up.

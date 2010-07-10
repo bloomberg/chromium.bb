@@ -501,6 +501,8 @@
         'browser/chromeos/native_dialog_window.h',
         'browser/chromeos/network_list.cc',
         'browser/chromeos/network_list.h',
+        'browser/chromeos/network_state_notifier.cc',
+        'browser/chromeos/network_state_notifier.h',
         'browser/chromeos/network_message_observer.cc',
         'browser/chromeos/network_message_observer.h',
         'browser/chromeos/options/internet_page_view.cc',
