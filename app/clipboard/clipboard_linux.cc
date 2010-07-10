@@ -153,9 +153,8 @@ void Clipboard::SetGtkClipboard() {
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
-  char* data = new char[text_len + 1];
+  char* data = new char[text_len];
   memcpy(data, text_data, text_len);
-  data[text_len] = '\0';
 
   InsertMapping(kMimeText, data, text_len);
   InsertMapping("TEXT", data, text_len);
@@ -177,6 +176,7 @@ void Clipboard::WriteHTML(const char* markup_data,
   char* data = new char[total_len];
   snprintf(data, total_len, "%s", html_prefix);
   memcpy(data + html_prefix_len, markup_data, markup_len);
+  // Some programs expect NULL-terminated data. See http://crbug.com/42624
   data[total_len - 1] = '\0';
 
   InsertMapping(kMimeHtml, data, total_len);
@@ -349,6 +349,10 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   } else {
     UTF8ToUTF16(reinterpret_cast<char*>(data->data), data->length, markup);
   }
+
+  // If there is a terminating NULL, drop it.
+  if (markup->at(markup->length() - 1) == '\0')
+    markup->resize(markup->length() - 1);
 
   gtk_selection_data_free(data);
 }
