@@ -2904,6 +2904,12 @@ each locale. -->
       <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN_UNLIMITED" desc="value NUM_INTERMEDIATE_CA when there is no limit">
         unlimited
       </message>
+      <message name="IDS_CERT_PKIX_CPS_POINTER_QUALIFIER" desc="description of pointer (URI) to Certification Practice Statement published by Certificate Authority">
+        Certification Practice Statement Pointer
+      </message>
+      <message name="IDS_CERT_PKIX_USER_NOTICE_QUALIFIER" desc="description of User Notice certificate policy qualifier">
+        User Notice
+      </message>
       <message name="IDS_CERT_REVOCATION_REASON_UNUSED" desc="description of certificate revocation for reason Unused">
         Unused
       </message>
@@ -2936,6 +2942,9 @@ each locale. -->
       </message>
       <message name="IDS_CERT_EXT_KEY_USAGE_FORMAT" desc="format for description of an extended key usage, with its object identifier (OID).">
         <ph name="USAGE">$1<ex>TLS Web Server Authentication</ex></ph> (<ph name="OID">$2<ex>OID.1.3.6.1.5.5.7.3.1</ex></ph>)
+      </message>
+      <message name="IDS_CERT_MULTILINE_INFO_START_FORMAT" desc="format for header line where further info will appear on the following lines">
+        <ph name="OID">$1<ex>OID.1.23.45.6</ex></ph>:
       </message>
       <message name="IDS_CERT_GENERAL_NAME_RFC822_NAME" desc="label for the certRFC822Name general name type">
         Email Address

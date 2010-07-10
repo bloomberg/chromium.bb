@@ -368,6 +368,11 @@ std::string GetOIDText(SECItem* oid) {
       break;
     case SEC_OID_OCSP_RESPONDER:
       string_id = IDS_CERT_EKU_OCSP_SIGNING;
+    case SEC_OID_PKIX_CPS_POINTER_QUALIFIER:
+      string_id = IDS_CERT_PKIX_CPS_POINTER_QUALIFIER;
+      break;
+    case SEC_OID_PKIX_USER_NOTICE_QUALIFIER:
+      string_id = IDS_CERT_PKIX_USER_NOTICE_QUALIFIER;
       break;
 
     // There are a billionty other OIDs we could add here.  I tried to get the
@@ -677,6 +682,119 @@ std::string ProcessAuthKeyId(SECItem* extension_data) {
   return rv;
 }
 
+std::string ProcessUserNotice(SECItem* der_notice) {
+  CERTUserNotice* notice = CERT_DecodeUserNotice(der_notice);
+  if (!notice)
+    return ProcessRawBytes(der_notice);
+
+  std::string rv;
+  if (notice->noticeReference.organization.len != 0) {
+    switch (notice->noticeReference.organization.type) {
+      case siAsciiString:
+      case siVisibleString:
+      case siUTF8String:
+        rv += std::string(
+            reinterpret_cast<char*>(notice->noticeReference.organization.data),
+            notice->noticeReference.organization.len);
+        break;
+      case siBMPString:
+        rv += ProcessBMPString(&notice->noticeReference.organization);
+        break;
+      default:
+        break;
+    }
+    rv += " - ";
+    SECItem** itemList = notice->noticeReference.noticeNumbers;
+    while (*itemList) {
+      unsigned long number;
+      if (SEC_ASN1DecodeInteger(*itemList, &number) == SECSuccess) {
+        if (itemList != notice->noticeReference.noticeNumbers)
+          rv += ", ";
+        rv += '#';
+        rv += UTF16ToUTF8(UintToString16(number));
+      }
+      itemList++;
+    }
+  }
+  if (notice->displayText.len != 0) {
+    rv += "\n    ";
+    switch (notice->displayText.type) {
+      case siAsciiString:
+      case siVisibleString:
+      case siUTF8String:
+        rv += std::string(reinterpret_cast<char*>(notice->displayText.data),
+                          notice->displayText.len);
+        break;
+      case siBMPString:
+        rv += ProcessBMPString(&notice->displayText);
+        break;
+      default:
+        break;
+    }
+  }
+
+  CERT_DestroyUserNotice(notice);
+  return rv;
+}
+
+std::string ProcessCertificatePolicies(SECItem* extension_data) {
+  std::string rv;
+
+  CERTCertificatePolicies* policies = CERT_DecodeCertificatePoliciesExtension(
+      extension_data);
+  if (!policies)
+    return l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_DUMP_ERROR);
+
+  CERTPolicyInfo** policyInfos = policies->policyInfos;
+  while (*policyInfos) {
+    CERTPolicyInfo* policyInfo = *policyInfos++;
+    std::string key = GetOIDText(&policyInfo->policyID);
+
+    // If we have policy qualifiers, display the oid text
+    // with a ':', otherwise just put the oid text and a newline.
+    // TODO(mattm): Add extra note if this is the ev oid?  (It's a bit
+    // complicated, since we don't want to do the EV check synchronously.)
+    if (policyInfo->policyQualifiers) {
+      rv += l10n_util::GetStringFUTF8(IDS_CERT_MULTILINE_INFO_START_FORMAT,
+                                      UTF8ToUTF16(key));
+    } else {
+      rv += key;
+    }
+    rv += '\n';
+
+    if (policyInfo->policyQualifiers) {
+      // Add all qualifiers on separate lines, indented.
+      CERTPolicyQualifier** policyQualifiers = policyInfo->policyQualifiers;
+      while (*policyQualifiers != NULL) {
+        rv += "  ";
+
+        CERTPolicyQualifier* policyQualifier = *policyQualifiers++;
+        rv += l10n_util::GetStringFUTF8(
+            IDS_CERT_MULTILINE_INFO_START_FORMAT,
+            UTF8ToUTF16(GetOIDText(&policyQualifier->qualifierID)));
+        switch(policyQualifier->oid) {
+          case SEC_OID_PKIX_CPS_POINTER_QUALIFIER:
+            rv += "    ";
+            /* The CPS pointer ought to be the cPSuri alternative
+               of the Qualifier choice. */
+            rv += ProcessIA5String(&policyQualifier->qualifierValue);
+            break;
+          case SEC_OID_PKIX_USER_NOTICE_QUALIFIER:
+            rv += ProcessUserNotice(&policyQualifier->qualifierValue);
+            break;
+          default:
+            rv += ProcessRawBytes(&policyQualifier->qualifierValue);
+            break;
+        }
+        rv += '\n';
+      }
+    }
+  }
+
+  CERT_DestroyCertificatePoliciesExtension(policies);
+  return rv;
+}
+
 std::string ProcessCrlDistPoints(SECItem* extension_data) {
   std::string rv;
   CERTCrlDistributionPoints* crldp;
@@ -921,9 +1039,8 @@ std::string ProcessExtensionData(SECOidTag oid_tag, SECItem* extension_data) {
       return ProcessSubjectKeyId(extension_data);
     case SEC_OID_X509_AUTH_KEY_ID:
       return ProcessAuthKeyId(extension_data);
-    // TODO(mattm):
-    // case SEC_OID_X509_CERTIFICATE_POLICIES:
-    //   return ProcessCertificatePolicies(extension_data, ev_oid_tag);
+    case SEC_OID_X509_CERTIFICATE_POLICIES:
+      return ProcessCertificatePolicies(extension_data);
     case SEC_OID_X509_CRL_DIST_POINTS:
       return ProcessCrlDistPoints(extension_data);
     case SEC_OID_X509_AUTH_INFO_ACCESS:
