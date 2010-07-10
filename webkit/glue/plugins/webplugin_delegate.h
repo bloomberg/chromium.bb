@@ -20,7 +20,6 @@
 #include "webkit/glue/plugins/webplugin_file_delegate.h"
 #include "webkit/glue/plugins/webplugin_print_delegate.h"
 
-
 class FilePath;
 class GURL;
 struct NPObject;
@@ -142,10 +141,9 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
       unsigned long resource_id, int range_request_id) = 0;
 
   // See WebPluginContainerImpl's description of the interface.
-  virtual bool SupportsFind() { return false; }
-  virtual void StartFind(const string16& search_text,
+  virtual bool StartFind(const string16& search_text,
                          bool case_sensitive,
-                         int identifier) {}
+                         int identifier) { return false; }
   virtual void SelectFindResult(bool forward) {}
   virtual void StopFind() {}
   virtual void NumberOfFindResultsChanged(int total, bool final_result) {}

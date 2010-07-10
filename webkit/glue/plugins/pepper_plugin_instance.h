@@ -101,8 +101,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   string16 GetSelectedText(bool html);
   void Zoom(float factor, bool text_only);
-  bool SupportsFind();
-  void StartFind(const string16& search_text,
+  bool StartFind(const string16& search_text,
                  bool case_sensitive,
                  int identifier);
   void SelectFindResult(bool forward);

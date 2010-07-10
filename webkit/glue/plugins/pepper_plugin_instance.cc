@@ -348,15 +348,11 @@ void PluginInstance::Zoom(float factor, bool text_only) {
   // TODO: implement me
 }
 
-bool PluginInstance::SupportsFind() {
-  // TODO: implement me
-  return false;
-}
-
-void PluginInstance::StartFind(const string16& search_text,
+bool PluginInstance::StartFind(const string16& search_text,
                                bool case_sensitive,
                                int identifier) {
   find_identifier_ = identifier;
+  return false;
   // TODO: implement me
 }
 

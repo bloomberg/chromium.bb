@@ -97,10 +97,16 @@ class WebPluginImpl : public WebPlugin,
   virtual WebKit::WebString selectionAsText() const;
   virtual WebKit::WebString selectionAsMarkup() const;
   virtual void setZoomFactor(float scale, bool text_only);
+#if defined(WEBPLUGIN_FIND_HAS_RETURN_TYPE)
+  virtual bool startFind(const WebKit::WebString& search_text,
+                         bool case_sensitive,
+                         int identifier);
+#else
   virtual bool supportsFind();
   virtual void startFind(const WebKit::WebString& search_text,
                          bool case_sensitive,
                          int identifier);
+#endif
   virtual void selectFindResult(bool forward);
   virtual void stopFind();
 

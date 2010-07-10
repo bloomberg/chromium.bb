@@ -80,8 +80,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
       unsigned long resource_id, const GURL& url, int notify_id);
   virtual webkit_glue::WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id);
-  virtual bool SupportsFind();
-  virtual void StartFind(const string16& search_text,
+  virtual bool StartFind(const string16& search_text,
                          bool case_sensitive,
                          int identifier);
   virtual void SelectFindResult(bool forward);

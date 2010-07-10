@@ -321,12 +321,15 @@ WebPluginResourceClient* WebPluginDelegatePepper::CreateSeekableResourceClient(
   return instance()->GetRangeRequest(range_request_id);
 }
 
-void WebPluginDelegatePepper::StartFind(const string16& search_text,
+bool WebPluginDelegatePepper::StartFind(const string16& search_text,
                                         bool case_sensitive,
                                         int identifier) {
+  if (!GetFindExtensions())
+    return false;
   find_identifier_ = identifier;
   GetFindExtensions()->startFind(
       instance()->npp(), UTF16ToUTF8(search_text).c_str(), case_sensitive);
+  return true;
 }
 
 void WebPluginDelegatePepper::SelectFindResult(bool forward) {
@@ -1360,11 +1363,6 @@ void WebPluginDelegatePepper::PrintEnd() {
   pdf_output_done_ = false;
 #endif  // defined(OS_LINUX)
 }
-
-bool WebPluginDelegatePepper::SupportsFind() {
-  return GetFindExtensions() != NULL;
-}
-
 
 WebPluginDelegatePepper::WebPluginDelegatePepper(
     const base::WeakPtr<RenderView>& render_view,

@@ -3489,19 +3489,22 @@ void RenderView::OnFind(int request_id, const string16& search_text,
   WebFrame* main_frame = webview()->mainFrame();
 
   if (main_frame->document().isPluginDocument()) {
-#if defined(WEBPLUGIN_HAS_FIND_INTERFACE)
     if (options.findNext) {
       // Just navigate back/forward.
       GetWebPluginFromPluginDocument()->selectFindResult(options.forward);
     } else {
+#if defined(WEBPLUGIN_FIND_HAS_RETURN_TYPE)
+      if (GetWebPluginFromPluginDocument()->startFind(
+          search_text, options.matchCase, request_id)) {
+#else
       if (GetWebPluginFromPluginDocument()->supportsFind()) {
         GetWebPluginFromPluginDocument()->startFind(
             search_text, options.matchCase, request_id);
+#endif
       } else {
         ReportNoFindInPageResults(request_id);
       }
     }
-#endif
     return;
   }
 
@@ -3614,9 +3617,7 @@ void RenderView::OnStopFinding(const ViewMsg_StopFinding_Params& params) {
 
   WebDocument doc = view->mainFrame()->document();
   if (doc.isPluginDocument()) {
-#if defined(WEBPLUGIN_HAS_FIND_INTERFACE)
     GetWebPluginFromPluginDocument()->stopFind();
-#endif
     return;
   }
 
