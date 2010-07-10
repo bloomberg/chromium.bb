@@ -379,10 +379,6 @@ class MetricsService : public NotificationObserver,
   // buffered plugin stability statistics.
   void RecordCurrentState(PrefService* pref);
 
-  // Requests all renderers to send their histograms back for
-  // collecting stats from renderers.
-  void CollectRendererHistograms();
-
   // Logs the initiation of a page load
   void LogLoadStarted();
 
@@ -484,13 +480,6 @@ class MetricsService : public NotificationObserver,
   // to a constant and otherwise is provided by the UMA server in the server
   // response data.
   int log_event_limit_;
-
-  // The types of data that are to be included in the logs and histograms
-  // according to the UMA response data.
-  std::set<std::string> logs_to_upload_;
-  std::set<std::string> logs_to_omit_;
-  std::set<std::string> histograms_to_upload_;
-  std::set<std::string> histograms_to_omit_;
 
   // Indicate that a timer for sending the next log has already been queued.
   bool timer_pending_;

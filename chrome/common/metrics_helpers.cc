@@ -380,8 +380,9 @@ int64 MetricsLogBase::GetBuildTime() {
 // Internal state is being needlessly exposed, and it would be hard to reuse
 // this code. If we moved this into the Histogram class, then we could use
 // the same infrastructure for logging StatsCounters, RatesCounters, etc.
-void MetricsLogBase::RecordHistogramDelta(const Histogram& histogram,
-                                      const Histogram::SampleSet& snapshot) {
+void MetricsLogBase::RecordHistogramDelta(
+    const Histogram& histogram,
+    const Histogram::SampleSet& snapshot) {
   DCHECK(!locked_);
   DCHECK_NE(0, snapshot.TotalCount());
   snapshot.CheckSize(histogram);
@@ -469,13 +470,10 @@ void MetricsServiceBase::RecordCurrentHistograms() {
 
   StatisticsRecorder::Histograms histograms;
   StatisticsRecorder::GetHistograms(&histograms);
-  for (StatisticsRecorder::Histograms::iterator it = histograms.begin();
+  for (StatisticsRecorder::Histograms::const_iterator it = histograms.begin();
        histograms.end() != it;
        ++it) {
     if ((*it)->flags() & Histogram::kUmaTargetedHistogramFlag)
-      // TODO(petersont): Only record historgrams if they are not precluded by
-      // the UMA response data.
-      // Bug http://code.google.com/p/chromium/issues/detail?id=2739.
       RecordHistogram(**it);
   }
 }
@@ -500,7 +498,7 @@ void MetricsServiceBase::RecordHistogram(const Histogram& histogram) {
     snapshot.Subtract(*already_logged);
   }
 
-  // snapshot now contains only a delta to what we've already_logged.
+  // Snapshot now contains only a delta to what we've already_logged.
 
   if (snapshot.TotalCount() > 0) {
     current_log_->RecordHistogramDelta(histogram, snapshot);

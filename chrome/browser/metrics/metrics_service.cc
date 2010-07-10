@@ -1154,7 +1154,7 @@ void MetricsService::RecallUnsentLogs() {
 
   ListValue* unsent_initial_logs = local_state->GetMutableList(
       prefs::kMetricsInitialLogs);
-  for (ListValue::iterator it = unsent_initial_logs->begin();
+  for (ListValue::const_iterator it = unsent_initial_logs->begin();
       it != unsent_initial_logs->end(); ++it) {
     std::string log;
     (*it)->GetAsString(&log);
@@ -1163,7 +1163,7 @@ void MetricsService::RecallUnsentLogs() {
 
   ListValue* unsent_ongoing_logs = local_state->GetMutableList(
       prefs::kMetricsOngoingLogs);
-  for (ListValue::iterator it = unsent_ongoing_logs->begin();
+  for (ListValue::const_iterator it = unsent_ongoing_logs->begin();
       it != unsent_ongoing_logs->end(); ++it) {
     std::string log;
     (*it)->GetAsString(&log);
@@ -1185,8 +1185,8 @@ void MetricsService::StoreUnsentLogs() {
   if (unsent_initial_logs_.size() > kMaxInitialLogsPersisted)
     start = unsent_initial_logs_.size() - kMaxInitialLogsPersisted;
   for (size_t i = start; i < unsent_initial_logs_.size(); ++i)
-    unsent_initial_logs->Append(
-        Value::CreateStringValue(unsent_initial_logs_[i]));
+      unsent_initial_logs->Append(
+          Value::CreateStringValue(unsent_initial_logs_[i]));
 
   ListValue* unsent_ongoing_logs = local_state->GetMutableList(
       prefs::kMetricsOngoingLogs);
@@ -1194,8 +1194,9 @@ void MetricsService::StoreUnsentLogs() {
   start = 0;
   if (unsent_ongoing_logs_.size() > kMaxOngoingLogsPersisted)
     start = unsent_ongoing_logs_.size() - kMaxOngoingLogsPersisted;
+
   for (size_t i = start; i < unsent_ongoing_logs_.size(); ++i)
-    unsent_ongoing_logs->Append(
+      unsent_ongoing_logs->Append(
         Value::CreateStringValue(unsent_ongoing_logs_[i]));
 }
 
@@ -1459,31 +1460,10 @@ void MetricsService::GetSettingsFromUploadNodeRecursive(
     }
 
     server_permits_upload_ = uploadOn;
-  }
-  if (path == "/upload/logs") {
+  } else if (path == "/upload/logs") {
     xmlChar* log_event_limit_val = xmlGetProp(node, BAD_CAST "event_limit");
     if (log_event_limit_val)
       log_event_limit_ = atoi(reinterpret_cast<char*>(log_event_limit_val));
-  }
-  if (name == "histogram") {
-    xmlChar* type_value = xmlGetProp(node, BAD_CAST "type");
-    if (type_value) {
-      std::string type = (reinterpret_cast<char*>(type_value));
-      if (uploadOn)
-        histograms_to_upload_.insert(type);
-      else
-        histograms_to_omit_.insert(type);
-    }
-  }
-  if (name == "log") {
-    xmlChar* type_value = xmlGetProp(node, BAD_CAST "type");
-    if (type_value) {
-      std::string type = (reinterpret_cast<char*>(type_value));
-      if (uploadOn)
-        logs_to_upload_.insert(type);
-      else
-        logs_to_omit_.insert(type);
-    }
   }
 
   // Recursive call.  If the node is a leaf i.e. if it ends in a "/>", then it
