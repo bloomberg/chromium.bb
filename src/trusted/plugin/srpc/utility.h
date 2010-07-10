@@ -52,6 +52,14 @@ class ScopedCatchSignals {
 #endif
 };
 
+// Tests that a string is a valid JavaScript identifier.  According to the
+// ECMAScript spec, this should be done in terms of unicode character
+// categories.  For now, we are simply limiting identifiers to the ASCII
+// subset of that spec.  If successful, it returns the length of the
+// identifier in the location pointed to by length (if it is not NULL).
+// TODO(sehr): add Unicode identifier support.
+bool IsValidIdentifierString(const char* strval, uint32_t* length);
+
 // Platform abstraction for setjmp and longjmp
 // TODO(sehr): move to portability.h
 #ifdef _MSC_VER
