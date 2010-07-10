@@ -96,9 +96,26 @@ net::ProxyService* CreateProxyService(
     use_v8 = false;  // Fallback to non-v8 implementation.
   }
 
+  size_t num_pac_threads = 0u;  // Use default number of threads.
+
+  // Check the command line for an override on the number of proxy resolver
+  // threads to use.
+  if (command_line.HasSwitch(switches::kNumPacThreads)) {
+    std::string s = command_line.GetSwitchValueASCII(switches::kNumPacThreads);
+
+    // Parse the switch (it should be a positive integer formatted as decimal).
+    int n;
+    if (StringToInt(s, &n) && n > 0) {
+      num_pac_threads = static_cast<size_t>(n);
+    } else {
+      LOG(ERROR) << "Invalid switch for number of PAC threads: " << s;
+    }
+  }
+
   return net::ProxyService::Create(
       proxy_config_service,
       use_v8,
+      num_pac_threads,
       context,
       net_log,
       io_loop);

@@ -632,6 +632,10 @@ const char kNoProxyServer[]                 = "no-proxy-server";
 // Runs the renderer outside the sandbox.
 const char kNoSandbox[]                     = "no-sandbox";
 
+// Specifies the maximum number of threads to use for running the Proxy
+// Autoconfig (PAC) script.
+const char kNumPacThreads[]                 = "num-pac-threads";
+
 // Launch URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 

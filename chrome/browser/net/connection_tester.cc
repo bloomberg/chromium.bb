@@ -151,7 +151,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
     }
 
     *proxy_service = net::ProxyService::Create(config_service.release(), true,
-        this, NULL, MessageLoop::current());
+        0u, this, NULL, MessageLoop::current());
 
     return net::OK;
   }

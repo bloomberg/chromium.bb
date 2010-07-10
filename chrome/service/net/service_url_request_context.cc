@@ -31,7 +31,8 @@ ServiceURLRequestContext::ServiceURLRequestContext() {
           g_service_process->io_thread()->message_loop(),
           g_service_process->file_thread()->message_loop());
   proxy_service_ =
-      net::ProxyService::Create(proxy_config_service, false, this, NULL, NULL);
+      net::ProxyService::Create(
+          proxy_config_service, false, 0u, this, NULL, NULL);
   ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
   http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
