@@ -687,8 +687,7 @@ TEST_F(TCPClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
   EXPECT_EQ(0, pool_->IdleSocketCount());
 }
 
-// Disabled due to failures - see http://crbug.com/43919
-TEST_F(TCPClientSocketPoolTest, DISABLED_BackupSocketConnect) {
+TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
   // Case 1 tests the first socket stalling, and the backup connecting.
   MockClientSocketFactory::ClientSocketType case1_types[] = {
     // The first socket will not connect.
@@ -729,7 +728,7 @@ TEST_F(TCPClientSocketPoolTest, DISABLED_BackupSocketConnect) {
     MessageLoop::current()->RunAllPending();
 
     // Wait for the backup socket timer to fire.
-    PlatformThread::Sleep(ClientSocketPool::kMaxConnectRetryIntervalMs);
+    PlatformThread::Sleep(ClientSocketPool::kMaxConnectRetryIntervalMs * 2);
 
     // Let the appropriate socket connect.
     MessageLoop::current()->RunAllPending();
@@ -742,6 +741,12 @@ TEST_F(TCPClientSocketPoolTest, DISABLED_BackupSocketConnect) {
     EXPECT_EQ(0, pool_->IdleSocketCount());
     handle.Reset();
 
+    // Close all pending connect jobs and existing sockets.
+    pool_->Flush();
+
+    // TODO(mbelshe): Flush has a bug.  UIt doesn't clean out pending connect
+    // jobs.  When they complete, they become idle sockets.  For now, continue
+    // to replace the pool_.  But we really need to fix Flush().
     pool_ = new TCPClientSocketPool(kMaxSockets, kMaxSocketsPerGroup,
         histograms_, host_resolver_, &client_socket_factory_, NULL);
   }
