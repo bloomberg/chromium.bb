@@ -75,8 +75,3 @@ void StatusIconMac::SetPressedImage(const SkBitmap& bitmap) {
 void StatusIconMac::SetToolTip(const string16& tool_tip) {
   [item() setToolTip:base::SysUTF16ToNSString(tool_tip)];
 }
-
-// static factory method
-StatusIcon* StatusIcon::Create() {
-  return new StatusIconMac();
-}

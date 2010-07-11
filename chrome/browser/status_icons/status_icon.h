@@ -12,9 +12,6 @@ class SkBitmap;
 
 class StatusIcon {
  public:
-  // Creates a new StatusIcon.
-  static StatusIcon* Create();
-
   StatusIcon() {}
   virtual ~StatusIcon() {}
 
