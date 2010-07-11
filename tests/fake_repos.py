@@ -169,7 +169,8 @@ def commit_svn(repo):
                 '--no-auth-cache', '--username', 'user1', '--password', 'foo'],
                cwd=repo)
   out, err = proc.communicate()
-  match = re.search(r'revision (\d+).', out)
+  last_line = out.splitlines()[-1]
+  match = re.search(r'(\d+)', out)
   if not match:
     raise Exception('Commit failed', out, err, proc.returncode)
   rev = match.group(1)
