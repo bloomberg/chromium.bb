@@ -257,6 +257,11 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // the caller is free to create a new renderer.
   static RenderProcessHost* GetExistingProcessHost(Profile* profile, Type type);
 
+  // Overrides the default heuristic for limiting the max renderer process
+  // count.  This is useful for unit testing process limit behaviors.
+  // A value of zero means to use the default heuristic.
+  static void SetMaxRendererProcessCount(size_t count);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)

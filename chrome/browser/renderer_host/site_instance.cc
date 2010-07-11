@@ -48,6 +48,13 @@ bool SiteInstance::HasProcess() const {
 }
 
 RenderProcessHost* SiteInstance::GetProcess() {
+  // TODO(erikkay) It would be nice to ensure that the renderer type had been
+  // properly set before we get here.  The default tab creation case winds up
+  // with no site set at this point, so it will default to TYPE_NORMAL.  This
+  // may not be correct, so we'll wind up potentially creating a process that
+  // we then throw away, or worse sharing a process with the wrong process type.
+  // See crbug.com/43448.
+
   // Create a new process if ours went away or was reused.
   if (!process_) {
     // See if we should reuse an old process
@@ -194,19 +201,28 @@ GURL SiteInstance::GetEffectiveURL(Profile* profile, const GURL& url) {
   }
 }
 
-RenderProcessHost::Type SiteInstance::GetRendererType() {
-  // We may not have a site at this point, which generally means this is a
-  // normal navigation.
-  if (!has_site_ || !site_.is_valid())
+/*static*/
+RenderProcessHost::Type SiteInstance::RendererTypeForURL(const GURL& url) {
+  if (!url.is_valid())
     return RenderProcessHost::TYPE_NORMAL;
 
-  if (site_.SchemeIs(chrome::kExtensionScheme))
+  if (url.SchemeIs(chrome::kExtensionScheme))
     return RenderProcessHost::TYPE_EXTENSION;
 
-  if (DOMUIFactory::HasDOMUIScheme(site_))
+  // TODO(erikkay) creis recommends using UseDOMUIForURL instead.
+  if (DOMUIFactory::HasDOMUIScheme(url))
     return RenderProcessHost::TYPE_DOMUI;
 
   return RenderProcessHost::TYPE_NORMAL;
+}
+
+RenderProcessHost::Type SiteInstance::GetRendererType() {
+  // We may not have a site at this point, which generally means this is a
+  // normal navigation.
+  if (!has_site_)
+    return RenderProcessHost::TYPE_NORMAL;
+
+  return RendererTypeForURL(site_);
 }
 
 void SiteInstance::Observe(NotificationType type,

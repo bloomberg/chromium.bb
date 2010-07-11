@@ -13,7 +13,12 @@
 
 namespace {
 
+size_t max_renderer_count_override = 0;
+
 size_t GetMaxRendererProcessCount() {
+  if (max_renderer_count_override)
+    return max_renderer_count_override;
+
   // Defines the maximum number of renderer processes according to the
   // amount of installed memory as reported by the OS. The table
   // values are calculated by assuming that you want the renderers to
@@ -74,7 +79,13 @@ IDMap<RenderProcessHost> all_hosts;
 
 }  // namespace
 
+// static
 bool RenderProcessHost::run_renderer_in_process_ = false;
+
+// static
+void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
+  max_renderer_count_override = count;
+}
 
 RenderProcessHost::RenderProcessHost(Profile* profile)
     : max_page_id_(-1),

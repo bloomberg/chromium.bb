@@ -132,6 +132,9 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   static bool IsSameWebSite(Profile* profile,
                             const GURL& url1, const GURL& url2);
 
+  // Returns the renderer type for this URL.
+  static RenderProcessHost::Type RendererTypeForURL(const GURL& url);
+
  protected:
   friend class base::RefCounted<SiteInstance>;
   friend class BrowsingInstance;
