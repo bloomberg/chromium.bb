@@ -301,8 +301,8 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
                                    error:NULL];
 
   if (!common_sandbox_prefix_data) {
-    LOG(ERROR) << "Failed to find the sandbox profile on disk "
-                << [common_sandbox_prefix_path fileSystemRepresentation];
+    LOG(FATAL) << "Failed to find the sandbox profile on disk "
+               << [common_sandbox_prefix_path fileSystemRepresentation];
     return false;
   }
 
@@ -315,8 +315,8 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
                                     error:NULL];
 
   if (!sandbox_data) {
-    LOG(ERROR) << "Failed to find the sandbox profile on disk "
-                << [sandbox_profile_path fileSystemRepresentation];
+    LOG(FATAL) << "Failed to find the sandbox profile on disk "
+               << [sandbox_profile_path fileSystemRepresentation];
     return false;
   }
 
@@ -347,14 +347,14 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
     // returns).
     FilePath allowed_dir_absolute(allowed_dir);
     if (!file_util::AbsolutePath(&allowed_dir_absolute)) {
-      PLOG(ERROR) << "Failed to resolve absolute path";
+      PLOG(FATAL) << "Failed to resolve absolute path";
       return false;
     }
 
     std::string allowed_dir_escaped;
     if (!QuoteStringForRegex(allowed_dir_absolute.value(),
                              &allowed_dir_escaped)) {
-      LOG(ERROR) << "Regex string quoting failed " << allowed_dir.value();
+      LOG(FATAL) << "Regex string quoting failed " << allowed_dir.value();
       return false;
     }
     NSString* allowed_dir_escaped_ns = base::SysUTF8ToNSString(
@@ -386,7 +386,7 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
     std::string home_dir = base::SysNSStringToUTF8(NSHomeDirectory());
     std::string home_dir_escaped;
     if (!QuotePlainString(home_dir, &home_dir_escaped)) {
-      LOG(ERROR) << "Sandbox string quoting failed";
+      LOG(FATAL) << "Sandbox string quoting failed";
       return false;
     }
     NSString* home_dir_escaped_ns = base::SysUTF8ToNSString(home_dir_escaped);
@@ -403,7 +403,7 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
   char* error_buff = NULL;
   int error = sandbox_init([sandbox_data UTF8String], 0, &error_buff);
   bool success = (error == 0 && error_buff == NULL);
-  LOG_IF(ERROR, !success) << "Failed to initialize sandbox: "
+  LOG_IF(FATAL, !success) << "Failed to initialize sandbox: "
                           << error
                           << " "
                           << error_buff;
