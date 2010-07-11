@@ -195,8 +195,6 @@
         'browser/automation/automation_provider_win.cc',
         'browser/automation/automation_provider.cc',
         'browser/automation/automation_provider.h',
-        'browser/automation/automation_provider_json.h',
-        'browser/automation/automation_provider_json.cc',
         'browser/automation/automation_provider_list.cc',
         'browser/automation/automation_provider_list_generic.cc',
         'browser/automation/automation_provider_list_mac.mm',
