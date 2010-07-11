@@ -463,11 +463,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // data structure used in the browser.
   // Args:
   //   profiles/cards: the ListValue of profiles/credit cards to translate.
-  //   json_return: a pointer to the return string in case of error.
+  //   err_mesg: a pointer to the return string in case of error.
   static std::vector<AutoFillProfile> GetAutoFillProfilesFromList(
-      const ListValue& profiles, std::string* json_return);
+      const ListValue& profiles, std::string* err_mesg);
   static std::vector<CreditCard> GetCreditCardsFromList(
-      const ListValue& cards, std::string* json_return);
+      const ListValue& cards, std::string* err_mesg);
 
   // The opposite of the above: translates from the internal data structure
   // for profiles and credit cards to a ListValue of DictionaryValues. The

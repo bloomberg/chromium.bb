@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
+#include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/save_package.h"
@@ -974,9 +975,7 @@ void AutomationProviderDownloadItemObserver::OnDownloadFileCompleted(
     DownloadItem* download) {
   download->RemoveObserver(this);
   if (--downloads_ == 0) {
-    AutomationMsg_SendJSONRequest::WriteReplyParams(
-        reply_message_, std::string("{}"), true);
-    provider_->Send(reply_message_);
+    AutomationJSONReply(provider_, reply_message_).SendSuccess(NULL);
     delete this;
   }
 }
@@ -984,8 +983,6 @@ void AutomationProviderDownloadItemObserver::OnDownloadFileCompleted(
 void AutomationProviderHistoryObserver::HistoryQueryComplete(
     HistoryService::Handle request_handle,
     history::QueryResults* results) {
-  std::string json_return;
-  bool reply_return = true;
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   ListValue* history_list = new ListValue;
@@ -1005,10 +1002,8 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
 
   return_value->Set(L"history", history_list);
   // Return history info.
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message_, json_return, reply_return);
-  provider_->Send(reply_message_);
+  AutomationJSONReply reply(provider_, reply_message_);
+  reply.SendSuccess(return_value.get());
   delete this;
 }
 
@@ -1035,9 +1030,7 @@ void OmniboxAcceptNotificationObserver::Observe(
     const NotificationDetails& details) {
   if (type == NotificationType::LOAD_STOP ||
       type == NotificationType::AUTH_NEEDED) {
-    AutomationMsg_SendJSONRequest::WriteReplyParams(
-        reply_message_, std::string("{}"), false);
-    automation_->Send(reply_message_);
+    AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
     delete this;
   } else {
     NOTREACHED();
@@ -1059,9 +1052,7 @@ void SavePackageNotificationObserver::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   if (type == NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED) {
-    AutomationMsg_SendJSONRequest::WriteReplyParams(
-        reply_message_, std::string("{}"), true);
-    automation_->Send(reply_message_);
+    AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
     delete this;
   } else {
     NOTREACHED();
