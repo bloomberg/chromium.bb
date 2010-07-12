@@ -69,6 +69,8 @@ static const CGFloat kTabHorzMargin = 13;
   CGFloat iconY =
       MIN(((NSHeight(newBounds) - NSHeight(iconFrame)) / 2) - kSadTabOffset,
           NSHeight(newBounds) - NSHeight(iconFrame));
+  iconX = floor(iconX);
+  iconY = floor(iconY);
   [image_ setFrameOrigin:NSMakePoint(iconX, iconY)];
 
   // Set new frame origin for title.
