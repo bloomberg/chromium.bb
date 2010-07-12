@@ -2036,16 +2036,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // A message sent to the browser on behalf of a renderer which wants to show
   // a desktop notification.
-  IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDesktopNotification,
-                      GURL /* origin */,
-                      GURL /* contents_url */,
-                      int /* notification_id */)
-  IPC_MESSAGE_ROUTED5(ViewHostMsg_ShowDesktopNotificationText,
-                      GURL /* origin */,
-                      GURL /* icon_url */,
-                      string16 /* title */,
-                      string16 /* text */,
-                      int /* notification_id */)
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowDesktopNotification,
+                      ViewHostMsg_ShowNotification_Params)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_CancelDesktopNotification,
                       int /* notification_id */ )
   IPC_MESSAGE_ROUTED2(ViewHostMsg_RequestNotificationPermission,

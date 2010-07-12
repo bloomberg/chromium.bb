@@ -61,6 +61,10 @@ class NotificationUIManager
   // BalloonCollectionObserver implementation.
   virtual void OnBalloonSpaceChanged();
 
+  // Replace an existing notification with this one if applicable;
+  // returns true if the replacement happened.
+  bool TryReplacement(const Notification& notification);
+
   // An owned pointer to the collection of active balloons.
   scoped_ptr<BalloonCollection> balloon_collection_;
 

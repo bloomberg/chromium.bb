@@ -37,6 +37,7 @@ struct MediaPlayerAction;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_RunFileChooser_Params;
+struct ViewHostMsg_ShowNotification_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;
 struct WebPreferences;
@@ -613,12 +614,8 @@ class RenderViewHost : public RenderWidgetHost {
                               const string16& value,
                               const string16& label);
 
-  void OnShowDesktopNotification(const GURL& source_origin,
-                                 const GURL& url, int notification_id);
-  void OnShowDesktopNotificationText(const GURL& origin, const GURL& icon,
-                                     const string16& title,
-                                     const string16& text,
-                                     int notification_id);
+  void OnShowDesktopNotification(
+      const ViewHostMsg_ShowNotification_Params& params);
   void OnCancelDesktopNotification(int notification_id);
   void OnRequestNotificationPermission(const GURL& origin, int callback_id);
 

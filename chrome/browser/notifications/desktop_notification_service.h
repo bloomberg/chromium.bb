@@ -14,6 +14,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 
 class NotificationUIManager;
 class NotificationsPrefsCache;
@@ -21,6 +22,7 @@ class PrefService;
 class Profile;
 class Task;
 class TabContents;
+struct ViewHostMsg_ShowNotification_Params;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
@@ -44,23 +46,13 @@ class DesktopNotificationService : public NotificationObserver {
                          int callback_context,
                          TabContents* tab);
 
-  // Takes a notification object and shows it in the UI.
-  void ShowNotification(const Notification& notification);
-
-  // Two ShowNotification methods: getting content either from remote
-  // URL or as local parameters.  These are called on the UI thread
-  // in response to IPCs from a child process running script. |origin|
-  // is the origin of the script.  |source| indicates whether the
-  // script is in a worker or page.  |notification_id| is an opaque
-  // value to be passed back to the process when events occur on
-  // this notification.
-  bool ShowDesktopNotification(const GURL& origin, const GURL& url,
-      int process_id, int route_id, DesktopNotificationSource source,
-      int notification_id);
-  bool ShowDesktopNotificationText(const GURL& origin, const GURL& icon,
-      const string16& title, const string16& text, int process_id,
-      int route_id, DesktopNotificationSource source, int notification_id);
-
+  // ShowNotification is called on the UI thread handling IPCs from a child
+  // process, identified by |process_id| and |route_id|.  |source| indicates
+  // whether the script is in a worker or page. |params| contains all the
+  // other parameters supplied by the worker or page.
+  bool ShowDesktopNotification(
+      const ViewHostMsg_ShowNotification_Params& params,
+      int process_id, int route_id, DesktopNotificationSource source);
 
   // Cancels a notification.  If it has already been shown, it will be
   // removed from the screen.  If it hasn't been shown yet, it won't be
@@ -83,8 +75,10 @@ class DesktopNotificationService : public NotificationObserver {
   // Creates a data:xxxx URL which contains the full HTML for a notification
   // using supplied icon, title, and text, run through a template which contains
   // the standard formatting for notifications.
-  static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
-                                const string16& body);
+  static string16 CreateDataUrl(const GURL& icon_url,
+                                const string16& title,
+                                const string16& body,
+                                WebKit::WebTextDirection dir);
 
   // The default content setting determines how to handle origins that haven't
   // been allowed or denied yet.
@@ -111,6 +105,9 @@ class DesktopNotificationService : public NotificationObserver {
   void InitPrefs();
   void StartObserving();
   void StopObserving();
+
+  // Takes a notification object and shows it in the UI.
+  void ShowNotification(const Notification& notification);
 
   // Save a permission change to the profile.
   void PersistPermissionChange(const GURL& origin, bool is_allowed);

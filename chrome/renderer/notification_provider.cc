@@ -105,18 +105,31 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
     return false;
 
   DCHECK(notification.isHTML());
+  ViewHostMsg_ShowNotification_Params params;
+  params.origin = GURL(view_->webview()->mainFrame()->url()).GetOrigin();
+  params.is_html = true;
+  params.contents_url = notification.url();
+  params.notification_id = id;
+  params.replace_id = notification.replaceId();
   return Send(new ViewHostMsg_ShowDesktopNotification(view_->routing_id(),
-              GURL(view_->webview()->mainFrame()->url()).GetOrigin(),
-              notification.url(), id));
+                                                      params));
 }
 
 bool NotificationProvider::ShowText(const WebNotification& notification,
                                     int id) {
   DCHECK(!notification.isHTML());
-  return Send(new ViewHostMsg_ShowDesktopNotificationText(view_->routing_id(),
-              GURL(view_->webview()->mainFrame()->url()).GetOrigin(),
-              notification.iconURL(),
-              notification.title(), notification.body(), id));
+  ViewHostMsg_ShowNotification_Params params;
+  params.is_html = false;
+  params.origin = GURL(view_->webview()->mainFrame()->url()).GetOrigin();
+  params.icon_url = notification.iconURL();
+  params.title = notification.title();
+  params.body = notification.body();
+  params.direction = notification.direction();
+  params.notification_id = id;
+  params.replace_id = notification.replaceId();
+
+  return Send(new ViewHostMsg_ShowDesktopNotification(view_->routing_id(),
+                                                      params));
 }
 
 void NotificationProvider::OnDisplay(int id) {

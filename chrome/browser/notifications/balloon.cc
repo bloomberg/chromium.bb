@@ -38,10 +38,12 @@ void Balloon::Show() {
   notification_->Display();
   if (balloon_view_.get()) {
     balloon_view_->Show(this);
+    balloon_view_->RepositionToBalloon();
   }
 }
 
 void Balloon::Update(const Notification& notification) {
+  notification_->Close(false);
   notification_.reset(new Notification(notification));
   notification_->Display();
   if (balloon_view_.get()) {

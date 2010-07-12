@@ -249,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestSystemNotification) {
   // Dismiss the notification.
   // TODO(oshima): Consider updating API to Remove(NotificationDelegate)
   // or Remove(std::string id);
-  collection->Remove(Notification(GURL(), GURL(),
-                                  std::wstring(), delegate.get()));
+  collection->Remove(Notification(GURL(), GURL(), std::wstring(), string16(),
+                                  delegate.get()));
   ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_EQ(0, tester->GetStickyNotificationCount());

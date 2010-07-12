@@ -36,12 +36,14 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
 using WebKit::WebNotificationPresenter;
+using WebKit::WebTextDirection;
 
 const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 
 // static
 string16 DesktopNotificationService::CreateDataUrl(
-    const GURL& icon_url, const string16& title, const string16& body) {
+    const GURL& icon_url, const string16& title, const string16& body,
+    WebTextDirection dir) {
   int resource;
   string16 line_name;
   string16 line;
@@ -51,6 +53,9 @@ string16 DesktopNotificationService::CreateDataUrl(
     subst.push_back(icon_url.spec());
     subst.push_back(EscapeForHTML(UTF16ToUTF8(title)));
     subst.push_back(EscapeForHTML(UTF16ToUTF8(body)));
+    // icon float position
+    subst.push_back(dir == WebKit::WebTextDirectionRightToLeft ?
+                    "right" : "left");
   } else if (title.empty() || body.empty()) {
     resource = IDR_NOTIFICATION_1LINE_HTML;
     line = title.empty() ? body : title;
@@ -64,6 +69,9 @@ string16 DesktopNotificationService::CreateDataUrl(
     subst.push_back(EscapeForHTML(UTF16ToUTF8(title)));
     subst.push_back(EscapeForHTML(UTF16ToUTF8(body)));
   }
+  // body text direction
+  subst.push_back(dir == WebKit::WebTextDirectionRightToLeft ?
+                  "rtl" : "ltr");
 
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -529,37 +537,32 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  Notification notif(GURL(), GURL(), L"", proxy);
+  // TODO(johnnyg): clean up this "empty" notification.
+  Notification notif(GURL(), GURL(), L"", ASCIIToUTF16(""), proxy);
   return ui_manager_->Cancel(notif);
 }
 
 
 bool DesktopNotificationService::ShowDesktopNotification(
-    const GURL& origin, const GURL& url, int process_id, int route_id,
-    DesktopNotificationSource source, int notification_id) {
+    const ViewHostMsg_ShowNotification_Params& params,
+    int process_id, int route_id, DesktopNotificationSource source) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  const GURL& origin = params.origin;
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,
-                                  notification_id,
+                                  params.notification_id,
                                   source == WorkerNotification);
-  Notification notif(origin, url, DisplayNameForOrigin(origin), proxy);
-  ShowNotification(notif);
-  return true;
-}
-
-bool DesktopNotificationService::ShowDesktopNotificationText(
-    const GURL& origin, const GURL& icon, const string16& title,
-    const string16& text, int process_id, int route_id,
-    DesktopNotificationSource source, int notification_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  NotificationObjectProxy* proxy =
-      new NotificationObjectProxy(process_id, route_id,
-                                  notification_id,
-                                  source == WorkerNotification);
-  // "upconvert" the string parameters to a data: URL.
-  string16 data_url = CreateDataUrl(icon, title, text);
+  GURL contents;
+  if (params.is_html) {
+    contents = params.contents_url;
+  } else {
+    // "upconvert" the string parameters to a data: URL.
+    contents = GURL(
+        CreateDataUrl(params.icon_url, params.title, params.body,
+                      params.direction));
+  }
   Notification notif(
-      origin, GURL(data_url), DisplayNameForOrigin(origin), proxy);
+      origin, contents, DisplayNameForOrigin(origin), params.replace_id, proxy);
   ShowNotification(notif);
   return true;
 }

@@ -39,6 +39,7 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
@@ -655,6 +656,33 @@ struct ViewHostMsg_CreateWorker_Params {
   // The ID of the appcache the main shared worker script resource was loaded
   // from, only valid for shared workers.
   int64 script_resource_appcache_id;
+};
+
+// Parameters for the message that creates a desktop notification.
+struct ViewHostMsg_ShowNotification_Params {
+  // URL which is the origin that created this notification.
+  GURL origin;
+
+  // True if this is HTML
+  bool is_html;
+
+  // URL which contains the HTML contents (if is_html is true), otherwise empty.
+  GURL contents_url;
+
+  // Contents of the notification if is_html is false.
+  GURL icon_url;
+  string16 title;
+  string16 body;
+
+  // Directionality of the notification.
+  WebKit::WebTextDirection direction;
+
+  // ReplaceID if this notification should replace an existing one; may be
+  // empty if no replacement is called for.
+  string16 replace_id;
+
+  // Notification ID for sending events back for this notification.
+  int notification_id;
 };
 
 // Creates a new view via a control message since the view doesn't yet exist.
@@ -2554,6 +2582,56 @@ struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
     LogParam(p.parent_appcache_host_id, l);
     l->append(L",");
     LogParam(p.script_resource_appcache_id, l);
+    l->append(L")");
+  }
+};
+
+// Traits for ShowNotification_Params
+template <>
+struct ParamTraits<ViewHostMsg_ShowNotification_Params> {
+  typedef ViewHostMsg_ShowNotification_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.origin);
+    WriteParam(m, p.is_html);
+    WriteParam(m, p.contents_url);
+    WriteParam(m, p.icon_url);
+    WriteParam(m, p.title);
+    WriteParam(m, p.body);
+    WriteParam(m, p.direction);
+    WriteParam(m, p.replace_id);
+    WriteParam(m, p.notification_id);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->origin) &&
+        ReadParam(m, iter, &p->is_html) &&
+        ReadParam(m, iter, &p->contents_url) &&
+        ReadParam(m, iter, &p->icon_url) &&
+        ReadParam(m, iter, &p->title) &&
+        ReadParam(m, iter, &p->body) &&
+        ReadParam(m, iter, &p->direction) &&
+        ReadParam(m, iter, &p->replace_id) &&
+        ReadParam(m, iter, &p->notification_id);
+  }
+  static void Log(const param_type &p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.origin, l);
+    l->append(L", ");
+    LogParam(p.is_html, l);
+    l->append(L", ");
+    LogParam(p.contents_url, l);
+    l->append(L", ");
+    LogParam(p.icon_url, l);
+    l->append(L", ");
+    LogParam(p.title, l);
+    l->append(L",");
+    LogParam(p.body, l);
+    l->append(L",");
+    LogParam(p.direction, l);
+    l->append(L",");
+    LogParam(p.replace_id, l);
+    l->append(L",");
+    LogParam(p.notification_id, l);
     l->append(L")");
   }
 };

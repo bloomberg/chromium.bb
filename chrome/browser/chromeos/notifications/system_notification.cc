@@ -59,7 +59,7 @@ void SystemNotification::Show(const string16& message, bool urgent) {
 
 void SystemNotification::Hide() {
   if (visible_) {
-    collection_->Remove(Notification(GURL(), GURL(), std::wstring(),
+    collection_->Remove(Notification(GURL(), GURL(), std::wstring(), string16(),
                                      delegate_.get()));
 
     visible_ = false;
@@ -68,4 +68,3 @@ void SystemNotification::Hide() {
 }
 
 }  // namespace chromeos
-

@@ -817,8 +817,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnFillAutoFillFormData)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotification,
                         OnShowDesktopNotification)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotificationText,
-                        OnShowDesktopNotificationText)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CancelDesktopNotification,
                         OnCancelDesktopNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestNotificationPermission,
@@ -1766,23 +1764,14 @@ void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,
                                                  target));
 }
 
-void RenderViewHost::OnShowDesktopNotification(const GURL& source_origin,
-    const GURL& url, int notification_id) {
+void RenderViewHost::OnShowDesktopNotification(
+    const ViewHostMsg_ShowNotification_Params& params) {
   DesktopNotificationService* service =
       process()->profile()->GetDesktopNotificationService();
-  service->ShowDesktopNotification(source_origin, url, process()->id(),
-      routing_id(), DesktopNotificationService::PageNotification,
-      notification_id);
-}
 
-void RenderViewHost::OnShowDesktopNotificationText(const GURL& source_origin,
-    const GURL& icon, const string16& title, const string16& text,
-    int notification_id) {
-  DesktopNotificationService* service =
-      process()->profile()->GetDesktopNotificationService();
-  service->ShowDesktopNotificationText(source_origin, icon, title, text,
-      process()->id(), routing_id(),
-      DesktopNotificationService::PageNotification, notification_id);
+    service->ShowDesktopNotification(
+        params, process()->id(), routing_id(),
+        DesktopNotificationService::PageNotification);
 }
 
 void RenderViewHost::OnCancelDesktopNotification(int notification_id) {

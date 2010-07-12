@@ -14,7 +14,8 @@ Notification SystemNotificationFactory::Create(
     const string16& text,
     NotificationDelegate* delegate) {
   string16 content_url = DesktopNotificationService::CreateDataUrl(
-      icon, title, text);
-  return Notification(GURL(), GURL(content_url), std::wstring(), delegate);
+      icon, title, text, WebKit::WebTextDirectionDefault);
+  return Notification(GURL(), GURL(content_url), std::wstring(), string16(),
+                      delegate);
 }
 }  // namespace chromeos
