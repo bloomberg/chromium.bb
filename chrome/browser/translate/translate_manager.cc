@@ -380,6 +380,18 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
     NOTREACHED();
     return;
   }
+
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBarDelegate(tab_contents);
+  if (infobar) {
+    // We don't show the translating infobar if no translate infobar is already
+    // showing (that is the case when the translation was triggered by the
+    // "always translate" for example).
+    infobar = TranslateInfoBarDelegate::CreateDelegate(
+        TranslateInfoBarDelegate::kTranslating, tab_contents,
+        source_lang, target_lang);
+    ShowInfoBar(tab_contents, infobar);
+  }
+
   if (!translate_script_.empty()) {
     DoTranslatePage(tab_contents, translate_script_, source_lang, target_lang);
     return;
@@ -419,15 +431,6 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
     return;
   }
 
-  TranslateInfoBarDelegate* infobar = GetTranslateInfoBarDelegate(tab);
-  if (infobar) {
-    // We don't show the translating infobar if no translate infobar is already
-    // showing (that is the case when the translation was triggered by the
-    // "always translate" for example).
-    infobar = TranslateInfoBarDelegate::CreateDelegate(
-        TranslateInfoBarDelegate::kTranslating, tab, source_lang, target_lang);
-    ShowInfoBar(tab, infobar);
-  }
   tab->language_state().set_translation_pending(true);
   tab->render_view_host()->TranslatePage(entry->page_id(), translate_script,
                                          source_lang, target_lang);

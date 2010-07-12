@@ -281,6 +281,11 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   process()->sink().ClearMessages();
   infobar->Translate();
 
+  // The "Translating..." infobar should be showing.
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::kTranslating, infobar->type());
+
   // Simulate the translate script being retrieved (it only needs to be done
   // once in the test as it is cached).
   SimulateURLFetch(true);
@@ -292,11 +297,6 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   EXPECT_EQ(0, page_id);
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
-
-  // The "Translating..." infobar should be showing.
-  infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::kTranslating, infobar->type());
 
   // Simulate the render notifying the translation has been done.
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en",
