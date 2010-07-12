@@ -13,7 +13,7 @@
 TEST(SymmetricKeyTest, GenerateRandomKey) {
   scoped_ptr<base::SymmetricKey> key(
       base::SymmetricKey::GenerateRandomKey(base::SymmetricKey::AES, 256));
-  ASSERT_TRUE(NULL != key.get());
+  EXPECT_TRUE(NULL != key.get());
   std::string raw_key;
   EXPECT_TRUE(key->GetRawKey(&raw_key));
   EXPECT_EQ(32U, raw_key.size());
@@ -22,53 +22,12 @@ TEST(SymmetricKeyTest, GenerateRandomKey) {
   // (Note: this has a one-in-10^77 chance of failure!)
   scoped_ptr<base::SymmetricKey> key2(
       base::SymmetricKey::GenerateRandomKey(base::SymmetricKey::AES, 256));
-  ASSERT_TRUE(NULL != key2.get());
+  EXPECT_TRUE(NULL != key2.get());
   std::string raw_key2;
   EXPECT_TRUE(key2->GetRawKey(&raw_key2));
   EXPECT_EQ(32U, raw_key2.size());
   EXPECT_NE(raw_key, raw_key2);
 }
-
-// TODO(albertb): Port this test to Mac.
-#if defined(USE_NSS) || defined(OS_WIN)
-TEST(SymmetricKeyTest, ImportGeneratedKey) {
-  scoped_ptr<base::SymmetricKey> key1(
-      base::SymmetricKey::GenerateRandomKey(base::SymmetricKey::AES, 256));
-  ASSERT_TRUE(NULL != key1.get());
-  std::string raw_key1;
-  EXPECT_TRUE(key1->GetRawKey(&raw_key1));
-
-  scoped_ptr<base::SymmetricKey> key2(
-      base::SymmetricKey::Import(base::SymmetricKey::AES, raw_key1));
-  ASSERT_TRUE(NULL != key2.get());
-
-  std::string raw_key2;
-  EXPECT_TRUE(key2->GetRawKey(&raw_key2));
-
-  EXPECT_EQ(raw_key1, raw_key2);
-}
-#endif  // USE_NSS || OS_WIN
-
-// TODO(albertb): Port this test to Win and Mac.
-#if defined(USE_NSS)
-TEST(SymmetricKeyTest, ImportDerivedKey) {
-  scoped_ptr<base::SymmetricKey> key1(
-      base::SymmetricKey::DeriveKeyFromPassword(base::SymmetricKey::HMAC_SHA1,
-                                                "password", "salt", 1024, 160));
-  ASSERT_TRUE(NULL != key1.get());
-  std::string raw_key1;
-  EXPECT_TRUE(key1->GetRawKey(&raw_key1));
-
-  scoped_ptr<base::SymmetricKey> key2(
-      base::SymmetricKey::Import(base::SymmetricKey::HMAC_SHA1, raw_key1));
-  ASSERT_TRUE(NULL != key2.get());
-
-  std::string raw_key2;
-  EXPECT_TRUE(key2->GetRawKey(&raw_key2));
-
-  EXPECT_EQ(raw_key1, raw_key2);
-}
-#endif  // USE_NSS
 
 struct PBKDF2TestVector {
   const char* password;
@@ -78,6 +37,8 @@ struct PBKDF2TestVector {
   const uint8 expected[21];  // string literals need 1 extra NUL byte
 };
 
+// These are the test vectors suggested in:
+// http://www.ietf.org/id/draft-josefsson-pbkdf2-test-vectors-00.txt
 static const PBKDF2TestVector test_vectors[] = {
   // These tests come from
   // http://www.ietf.org/id/draft-josefsson-pbkdf2-test-vectors-00.txt

@@ -39,8 +39,9 @@ TEST(EncryptorTest, EncryptDecrypt) {
 // http://gladman.plushost.co.uk/oldsite/AES/index.php
 // http://csrc.nist.gov/groups/STM/cavp/documents/aes/KAT_AES.zip
 
-// TODO(wtc): implement base::SymmetricKey::Import and enable this test on Mac.
-#if defined(USE_NSS) || defined(OS_WIN)
+// TODO(wtc): implement base::SymmetricKey::Import and enable this test for
+// other platforms.
+#if defined(OS_WIN)
 // NIST SP 800-38A test vector F.2.5 CBC-AES256.Encrypt.
 TEST(EncryptorTest, EncryptAES256CBC) {
   // From NIST SP 800-38a test cast F.2.5 CBC-AES256.Encrypt.
@@ -87,7 +88,7 @@ TEST(EncryptorTest, EncryptAES256CBC) {
   };
 
   scoped_ptr<base::SymmetricKey> key(base::SymmetricKey::Import(
-      base::SymmetricKey::AES, reinterpret_cast<const char*>(raw_key)));
+      base::SymmetricKey::AES, raw_key, sizeof(raw_key)));
   EXPECT_TRUE(NULL != key.get());
 
   base::Encryptor encryptor;
@@ -109,4 +110,4 @@ TEST(EncryptorTest, EncryptAES256CBC) {
 
   EXPECT_EQ(plaintext, decypted);
 }
-#endif  // USE_NSS || OS_WIN
+#endif  // OS_WIN

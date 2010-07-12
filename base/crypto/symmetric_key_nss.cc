@@ -12,10 +12,6 @@
 
 namespace base {
 
-SymmetricKey::SymmetricKey(PK11SymKey* key) : key_(key) {
-  DCHECK(key);
-}
-
 SymmetricKey::~SymmetricKey() {}
 
 // static
@@ -78,33 +74,6 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
 
   PK11SymKey* sym_key = PK11_PBEKeyGen(slot.get(), alg_id.get(), &password_item,
                                        PR_FALSE, NULL);
-  if (!sym_key)
-    return NULL;
-
-  return new SymmetricKey(sym_key);
-}
-
-// static
-SymmetricKey* SymmetricKey::Import(Algorithm algorithm,
-                                   const std::string& raw_key) {
-  CK_MECHANISM_TYPE cipher =
-      algorithm == AES ? CKM_AES_KEY_GEN : CKM_SHA_1_HMAC;
-
-  SECItem key_item;
-  key_item.type = siBuffer;
-  key_item.data = reinterpret_cast<unsigned char*>(
-      const_cast<char *>(raw_key.data()));
-  key_item.len = raw_key.size();
-
-  ScopedPK11Slot slot(PK11_GetBestSlot(cipher, NULL));
-  if (!slot.get())
-    return NULL;
-
-  // The exact value of the |origin| argument doesn't matter to NSS as long as
-  // it's not PK11_OriginFortezzaHack, so we pass PK11_OriginUnwrap as a
-  // placeholder.
-  PK11SymKey* sym_key = PK11_ImportSymKey(slot.get(), cipher, PK11_OriginUnwrap,
-                                          CKA_ENCRYPT, &key_item, NULL);
   if (!sym_key)
     return NULL;
 
