@@ -823,6 +823,7 @@ o3d.Client.getLocalXY_ = function(eventInfo) {
 o3d.Client.wrapEventCallback_ = function(handler, doCancelEvent) {
   return function(event) {
     event = o3d.Client.getEvent_(event);
+    var originalEvent = event;
     var info = o3d.Client.getEventInfo_(event);
     var relativeCoords = o3d.Client.getLocalXY_(info);
     // In a proper event, there are read only properties, so we clone it.
@@ -833,7 +834,8 @@ o3d.Client.wrapEventCallback_ = function(handler, doCancelEvent) {
     event.deltaY = -info.wheel;
     handler(event);
     if (doCancelEvent) {
-      o3djs.event.cancel(event);
+      // Need to cancel the original, un-cloned event.
+      o3djs.event.cancel(originalEvent);
     }
   };
 };
