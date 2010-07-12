@@ -19,8 +19,9 @@
 #include "third_party/ppapi/c/ppb_file_io_trusted.h"
 #include "third_party/ppapi/c/ppb_file_system.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
-#include "third_party/ppapi/c/ppb_font.h"
 #include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/c/ppb_find.h"
+#include "third_party/ppapi/c/ppb_font.h"
 #include "third_party/ppapi/c/ppb_scrollbar.h"
 #include "third_party/ppapi/c/ppb_testing.h"
 #include "third_party/ppapi/c/ppb_url_loader.h"
@@ -185,6 +186,8 @@ const void* GetInterface(const char* name) {
     return Scrollbar::GetInterface();
   if (strcmp(name, PPB_FONT_INTERFACE) == 0)
     return Font::GetInterface();
+  if (strcmp(name, PPB_FIND_INTERFACE) == 0)
+    return PluginInstance::GetFindInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

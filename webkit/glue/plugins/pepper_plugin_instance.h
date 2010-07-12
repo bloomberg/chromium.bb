@@ -16,6 +16,8 @@
 #include "third_party/ppapi/c/pp_cursor_type.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
+#include "third_party/ppapi/c/ppb_find.h"
+#include "third_party/ppapi/c/ppp_find.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 
 typedef struct _pp_Var PP_Var;
@@ -50,6 +52,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // Converts the given instance ID to an actual instance object.
   static PluginInstance* FromPPInstance(PP_Instance instance);
+
+  // Returns a pointer to the interface implementing PPB_Find that is
+  // exposed to the plugin.
+  static const PPB_Find* GetFindInterface();
 
   PluginDelegate* delegate() const { return delegate_; }
   PluginModule* module() const { return module_.get(); }
@@ -134,6 +140,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
+
+  // The plugin find interface.
+  const PPP_Find* plugin_find_interface_;
 
   // Containes the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;

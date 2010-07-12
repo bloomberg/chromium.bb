@@ -13,7 +13,9 @@
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/pp_var.h"
+#include "third_party/ppapi/c/ppb_find.h"
 #include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/c/ppp_find.h"
 #include "third_party/ppapi/c/ppp_instance.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
@@ -159,6 +161,34 @@ const PPB_Instance ppb_instance = {
   &SetCursor,
 };
 
+void NumberOfFindResultsChanged(PP_Instance instance_id,
+                                int32_t total,
+                                bool final_result) {
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return;
+
+  DCHECK_NE(instance->find_identifier(), -1);
+  instance->delegate()->DidChangeNumberOfFindResults(
+      instance->find_identifier(), total, final_result);
+}
+
+void SelectedFindResultChanged(PP_Instance instance_id,
+                               int32_t index) {
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return;
+
+  DCHECK_NE(instance->find_identifier(), -1);
+  instance->delegate()->DidChangeSelectedFindResult(
+      instance->find_identifier(), index);
+}
+
+const PPB_Find ppb_find = {
+  &NumberOfFindResultsChanged,
+  &SelectedFindResultChanged,
+};
+
 }  // namespace
 
 PluginInstance::PluginInstance(PluginDelegate* delegate,
@@ -188,6 +218,11 @@ const PPB_Instance* PluginInstance::GetInterface() {
 // static
 PluginInstance* PluginInstance::FromPPInstance(PP_Instance instance) {
   return reinterpret_cast<PluginInstance*>(instance);
+}
+
+// static
+const PPB_Find* PluginInstance::GetFindInterface() {
+  return &ppb_find;
 }
 
 PP_Instance PluginInstance::GetPPInstance() {
@@ -351,18 +386,33 @@ void PluginInstance::Zoom(float factor, bool text_only) {
 bool PluginInstance::StartFind(const string16& search_text,
                                bool case_sensitive,
                                int identifier) {
+  if (!plugin_find_interface_) {
+    plugin_find_interface_ =
+        reinterpret_cast<const PPP_Find*>(module_->GetPluginInterface(
+            PPP_FIND_INTERFACE));
+  }
+
+  if (plugin_find_interface_)
+    return false;
+
   find_identifier_ = identifier;
-  return false;
-  // TODO: implement me
+  return plugin_find_interface_->StartFind(
+      GetPPInstance(),
+      reinterpret_cast<const char*>(search_text.c_str()),
+      case_sensitive);
 }
 
 void PluginInstance::SelectFindResult(bool forward) {
-  // TODO: implement me
+  DCHECK(plugin_find_interface_);
+
+  plugin_find_interface_->SelectFindResult(GetPPInstance(), forward);
 }
 
 void PluginInstance::StopFind() {
+  DCHECK(plugin_find_interface_);
+
   find_identifier_ = -1;
-  // TODO: implement me
+  plugin_find_interface_->StopFind(GetPPInstance());
 }
 
 }  // namespace pepper
