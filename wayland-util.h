@@ -98,6 +98,11 @@ int wl_list_empty(struct wl_list *list);
 	     &pos->member != (head);					\
 	     pos = __container_of(pos->member.next, pos, member))
 
+#define wl_list_for_each_reverse(pos, head, member)			\
+	for (pos = __container_of((head)->prev, pos, member);		\
+	     &pos->member != (head);					\
+	     pos = __container_of(pos->member.prev, pos, member))
+
 struct wl_array {
 	uint32_t size;
 	uint32_t alloc;

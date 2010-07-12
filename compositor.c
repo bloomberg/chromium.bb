@@ -335,7 +335,7 @@ wlsc_surface_raise(struct wlsc_surface *surface)
 	struct wlsc_compositor *compositor = surface->compositor;
 
 	wl_list_remove(&surface->link);
-	wl_list_insert(compositor->surface_list.prev, &surface->link);
+	wl_list_insert(&compositor->surface_list, &surface->link);
 }
 
 static void
@@ -344,7 +344,7 @@ wlsc_surface_lower(struct wlsc_surface *surface)
 	struct wlsc_compositor *compositor = surface->compositor;
 
 	wl_list_remove(&surface->link);
-	wl_list_insert(&compositor->surface_list, &surface->link);
+	wl_list_insert(compositor->surface_list.prev, &surface->link);
 }
 
 void
@@ -372,7 +372,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	else
 		glClear(GL_COLOR_BUFFER_BIT);
 
-	wl_list_for_each(es, &ec->surface_list, link)
+	wl_list_for_each_reverse(es, &ec->surface_list, link)
 		wlsc_surface_draw(es, output);
 
 	if (ec->focus)
