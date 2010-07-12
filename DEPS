@@ -42,8 +42,6 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/gdb@" + Var("tools_rev"),
   "third_party/gmp":
     Var("native_client_trunk") + "/src/third_party/gmp@" + Var("tools_rev"),
-  "third_party/llvm":
-    Var("native_client_trunk") + "/src/third_party/llvm@" + Var("tools_rev"),
   "third_party/qemu":
     Var("native_client_trunk") + "/src/third_party/qemu@" + Var("tools_rev"),
   "third_party/mpfr":
