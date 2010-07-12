@@ -24,7 +24,7 @@ class Value;
 class ExtensionPrefStore : public PrefStore {
  public:
   explicit ExtensionPrefStore(PrefService* pref_service);
-  virtual ~ExtensionPrefStore() {}
+  virtual ~ExtensionPrefStore();
 
   // The PrefService creates the ExtensionPrefStore, so we need to be able to
   // defer setting the PrefService here until after construction.

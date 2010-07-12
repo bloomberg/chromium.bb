@@ -5,12 +5,17 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "chrome/browser/pref_service.h"
 
 ExtensionPrefStore::ExtensionPrefStore(PrefService* pref_service)
     : pref_service_(pref_service),
       prefs_(new DictionaryValue()) {
+}
+
+ExtensionPrefStore::~ExtensionPrefStore() {
+  STLDeleteElements(&extension_stack_);
 }
 
 // This could be sped up by keeping track of which extension currently controls
@@ -87,6 +92,7 @@ void ExtensionPrefStore::UninstallExtension(std::string extension_id) {
       i != extension_stack_.end(); ++i) {
     if ((*i)->extension_id == extension_id) {
       pref_values.reset((*i)->pref_values);
+      delete *i;
       extension_stack_.erase(i);
       break;
     }
