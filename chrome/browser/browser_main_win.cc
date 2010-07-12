@@ -211,7 +211,7 @@ class BrowserMainPartsWin : public BrowserMainParts {
   explicit BrowserMainPartsWin(const MainFunctionParams& parameters)
       : BrowserMainParts(parameters) {}
 
- protected:
+ private:
   virtual void PreEarlyInitialization() {
     // Initialize Winsock.
     net::EnsureWinsockInit();

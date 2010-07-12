@@ -48,15 +48,10 @@ class BrowserMainParts {
   // later than "EarlyInitialization()" but dependent on it. Once the
   // refactoring includes that later stage, this should be put in some more
   // generic platform-dependent method.
-  void TemporaryPosix_1() {}
+  virtual void TemporaryPosix_1() {}
 
  protected:
   explicit BrowserMainParts(const MainFunctionParams& parameters);
-
-  // Methods to be overridden to provide platform-specific code; these
-  // correspond to the "parts" above.
-  virtual void PreEarlyInitialization() {}
-  virtual void PostEarlyInitialization() {}
 
   // Accessors for data members (below) ----------------------------------------
   const MainFunctionParams& parameters() const {
@@ -67,6 +62,11 @@ class BrowserMainParts {
   }
 
  private:
+  // Methods to be overridden to provide platform-specific code; these
+  // correspond to the "parts" above.
+  virtual void PreEarlyInitialization() {}
+  virtual void PostEarlyInitialization() {}
+
   // Methods for |EarlyInitialization()| ---------------------------------------
 
   // A/B test for the maximum number of persistent connections per host.

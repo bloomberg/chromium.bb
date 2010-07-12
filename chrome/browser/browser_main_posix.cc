@@ -158,7 +158,24 @@ class BrowserMainPartsPosix : public BrowserMainParts {
   explicit BrowserMainPartsPosix(const MainFunctionParams& parameters)
       : BrowserMainParts(parameters) {}
 
- protected:
+  virtual void TemporaryPosix_1() {
+    int pipefd[2];
+    int ret = pipe(pipefd);
+    if (ret < 0) {
+      PLOG(DFATAL) << "Failed to create pipe";
+    } else {
+      g_shutdown_pipe_read_fd = pipefd[0];
+      g_shutdown_pipe_write_fd = pipefd[1];
+      const size_t kShutdownDetectorThreadStackSize = 4096;
+      if (!PlatformThread::CreateNonJoinable(
+          kShutdownDetectorThreadStackSize,
+          new ShutdownDetector(g_shutdown_pipe_read_fd))) {
+        LOG(DFATAL) << "Failed to create shutdown detector task.";
+      }
+    }
+  }
+
+ private:
   virtual void PreEarlyInitialization() {
     // We need to accept SIGCHLD, even though our handler is a no-op because
     // otherwise we cannot wait on children. (According to POSIX 2001.)
@@ -201,23 +218,6 @@ class BrowserMainPartsPosix : public BrowserMainParts {
 #endif  // OS_MACOSX
     if (fd_limit > 0)
       SetFileDescriptorLimit(fd_limit);
-  }
-
-  void TemporaryPosix_1() {
-    int pipefd[2];
-    int ret = pipe(pipefd);
-    if (ret < 0) {
-      PLOG(DFATAL) << "Failed to create pipe";
-    } else {
-      g_shutdown_pipe_read_fd = pipefd[0];
-      g_shutdown_pipe_write_fd = pipefd[1];
-      const size_t kShutdownDetectorThreadStackSize = 4096;
-      if (!PlatformThread::CreateNonJoinable(
-          kShutdownDetectorThreadStackSize,
-          new ShutdownDetector(g_shutdown_pipe_read_fd))) {
-        LOG(DFATAL) << "Failed to create shutdown detector task.";
-      }
-    }
   }
 };
 
