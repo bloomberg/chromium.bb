@@ -37,7 +37,6 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
-#include "grit/net_internals_resources_map.h"
 #include "net/base/escape.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/net_errors.h"
@@ -322,50 +321,23 @@ void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
   // care about the path itself, and will disregard anything else.
   std::string filename =
       GURL(std::string("chrome://net/") + path).path().substr(1);
-  if (filename.empty())
-    filename = "index.html";
 
-  // The name of the files in the grd list are prefixed with the following
-  // directory:
-  std::string key("net_internals/");
-  key += filename;
-
-  const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  for (size_t i = 0; i < kNetInternalsResourcesSize; ++i) {
-    if (kNetInternalsResources[i].name == key) {
-      scoped_refptr<RefCountedStaticMemory> bytes(
-          rb.LoadDataResourceBytes(kNetInternalsResources[i].value));
-      if (bytes && bytes->front()) {
-        SendResponse(request_id, bytes);
-        return;
-      }
+  // The source for the net internals page is flattened during compilation, so
+  // the only resource that should legitimately be requested is the main file.
+  // Note that users can type anything into the address bar, though, so we must
+  // handle arbitrary input.
+  if (filename.empty() || filename == "index.html") {
+    scoped_refptr<RefCountedStaticMemory> bytes(
+        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+            IDR_NET_INTERNALS_INDEX_HTML));
+    if (bytes && bytes->front()) {
+      SendResponse(request_id, bytes);
+      return;
     }
   }
 
-  LOG(WARNING) << "Could not read resource: " << path;
-  std::string data_string = "<p style='color:red'>Failed to read resource";
-  data_string.append(EscapeForHTML(filename));
-  data_string.append("</p>");
-
-  // During the transition from old implementation to new implementation,
-  // users may be entering the URLs for the old frontend.
-  data_string.append(
-      "<p>Note that the URL scheme for net-internals has changed because of "
-      "its new implementation (bug 37421):</p>"
-      "<ul>"
-      "<li>chrome://net-internals/proxyservice.* &rarr; "
-      "<a href='chrome://net-internals#proxy'>chrome://net-internals#proxy"
-      "</a></li>"
-      "<li>chrome://net-internals/hostresolver.* &rarr; <a href='chrome://net"
-      "-internals#dns'>chrome://net-internals#dns</a></li>"
-      "<li>chrome://net-internals/urlrequest.* &rarr; <a href='chrome://net-"
-      "internals#requests'>chrome://net-internals#requests</a></li>"
-      "<li>chrome://net-internals/ (overview for copy-pasting) &rarr; <a href"
-      "='chrome://net-internals#data'>chrome://net-internals#data</a></li>"
-      "<li>chrome://net-internals/view-cache/* &rarr; <a href="
-      "'chrome://view-http-cache'>chrome://view-http-cache</a></li>"
-      "</ul>");
-
+  const std::string data_string("<p style='color:red'>Failed to read resource" +
+      EscapeForHTML(filename) + "</p>");
   scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes);
   bytes->data.resize(data_string.size());
   std::copy(data_string.begin(), data_string.end(), bytes->data.begin());
@@ -373,8 +345,6 @@ void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
 }
 
 std::string NetInternalsHTMLSource::GetMimeType(const std::string&) const {
-  // TODO(eroman): This is incorrect -- some of the subresources may be
-  //               css/javascript.
   return "text/html";
 }
 
