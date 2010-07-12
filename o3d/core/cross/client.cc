@@ -376,24 +376,21 @@ bool Client::IsRendering() {
 }
 
 bool Client::NeedsContinuousRender() {
-  // Sanity check
-  if (!renderer_.IsAvailable()) {
-    return false;
-  }
-
   bool needRender = false;
   // Only may happen in RENDERMODE_CONTINUOUS mode.
   if (render_mode() == RENDERMODE_CONTINUOUS) {
     // Always need a draw in normal RENDERMODE_CONTINUOUS mode.
     needRender = true;
 
-    // If max_fps has been set, only need a draw when "long time no draw".
-    int max_fps = renderer_->max_fps();
-    if (max_fps > 0 &&
-        render_elapsed_time_timer_.GetElapsedTimeWithoutClearing() <
-        1.0/kContinuousModeMinDrawPerSecond)
-    {
-      needRender = false;
+    if (renderer_.IsAvailable()) {
+      // If max_fps has been set, only need a draw when "long time no draw".
+      int max_fps = renderer_->max_fps();
+      if (max_fps > 0 &&
+          render_elapsed_time_timer_.GetElapsedTimeWithoutClearing() <
+          1.0/kContinuousModeMinDrawPerSecond)
+      {
+        needRender = false;
+      }
     }
   }
   return needRender;
