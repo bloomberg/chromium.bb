@@ -27,6 +27,18 @@ const int kMinImportSize = 3;
 
 const char kUnlabeled[] = "Unlabeled";
 
+bool IsEmptyProfile(const AutoFillProfile& profile) {
+  FieldTypeSet types;
+  profile.GetAvailableFieldTypes(&types);
+  return types.empty();
+}
+
+bool IsEmptyCreditCard(const CreditCard& credit_card) {
+  FieldTypeSet types;
+  credit_card.GetAvailableFieldTypes(&types);
+  return types.empty() && credit_card.billing_address().empty();
+}
+
 }  // namespace
 
 PersonalDataManager::~PersonalDataManager() {
@@ -240,6 +252,11 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   if (profile_->IsOffTheRecord())
     return;
 
+  // Remove empty profiles from input.
+  profiles->erase(
+      std::remove_if(profiles->begin(), profiles->end(), IsEmptyProfile),
+      profiles->end());
+
   SetUniqueProfileLabels(profiles);
 
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
@@ -304,6 +321,12 @@ void PersonalDataManager::SetCreditCards(
     std::vector<CreditCard>* credit_cards) {
   if (profile_->IsOffTheRecord())
     return;
+
+  // Remove empty credit cards from input.
+  credit_cards->erase(
+      std::remove_if(
+          credit_cards->begin(), credit_cards->end(), IsEmptyCreditCard),
+      credit_cards->end());
 
   SetUniqueCreditCardLabels(credit_cards);
 
