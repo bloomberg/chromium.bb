@@ -13,6 +13,7 @@
 
 #include "native_client/src/include/portability.h"
 
+EXTERN_C_BEGIN
 struct NaClThreadContext;
 struct NaClAppThread;
 struct NaClMutex;
@@ -52,4 +53,6 @@ struct NaClApp        *GetCurProc(void);
 struct NaClAppThread  *GetCurThread(void);
 
 extern int NaClSrpcFileDescriptor;
+
+EXTERN_C_END
 #endif
