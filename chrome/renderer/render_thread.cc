@@ -253,6 +253,14 @@ void RenderThread::Init() {
   suicide_on_channel_error_filter_ = new SuicideOnChannelErrorFilter;
   AddFilter(suicide_on_channel_error_filter_.get());
 #endif
+
+  // Establish a channel to the GPU process asynchronously if requested. If the
+  // channel is established in time, EstablishGpuChannelSync will not block when
+  // it is later called.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPrelaunchGpuProcess)) {
+    EstablishGpuChannel();
+  }
 }
 
 RenderThread::~RenderThread() {

@@ -200,6 +200,7 @@ extern const char kPluginPath[];
 extern const char kPluginProcess[];
 extern const char kPluginStartupDialog[];
 extern const char kPreconnectDespiteProxy[];
+extern const char kPrelaunchGpuProcess[];
 extern const char kPrint[];
 extern const char kProcessPerSite[];
 extern const char kProcessPerTab[];

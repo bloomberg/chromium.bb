@@ -575,6 +575,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kRemoteShellPort,
     switches::kEnablePepperTesting,
     switches::kEnableChromoting,
+    switches::kPrelaunchGpuProcess,
   };
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {

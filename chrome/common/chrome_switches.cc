@@ -674,6 +674,10 @@ const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 // possibly be used for connections.
 const char kPreconnectDespiteProxy[]        = "preconnect-despite-proxy";
 
+// Establishes a channel to the GPU process asynchronously and (re)launches it
+// if necessary when a renderer process starts.
+const char kPrelaunchGpuProcess[]           = "prelaunch-gpu-process";
+
 // Prints the pages on the screen.
 const char kPrint[]                         = "print";
 
