@@ -45,6 +45,7 @@ class GClientSmokeBase(FakeReposTestBase):
                                shell=sys.platform.startswith('win'))
     (stdout, stderr) = process.communicate()
     logging.debug("XXX: %s\n%s\nXXX" % (' '.join(cmd), stdout))
+    logging.debug("YYY: %s\n%s\nYYY" % (' '.join(cmd), stderr))
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 
@@ -100,8 +101,8 @@ class GClientSmokeBase(FakeReposTestBase):
       else:
         verb = items[i]
         path = self.root_dir
-      self.checkString(results[i][0][0], verb)
-      self.checkString(results[i][0][2], path)
+      self.checkString(results[i][0][0], verb, (i, results[i][0][0], verb))
+      self.checkString(results[i][0][2], path, (i, results[i][0][2], path))
     self.assertEquals(len(results), len(items))
     return results
 
@@ -207,13 +208,14 @@ class GClientSmokeSVN(GClientSmokeBase):
                       ['running', 'running',
                        # This is due to the way svn update is called for a
                        # single file when File() is used in a DEPS file.
-                       ('running', self.root_dir + '/src/file/foo'),
+                       ('running', self.root_dir + '/src/file/other'),
                        'running', 'running', 'running', 'running'])
     tree = self.mangle_svn_tree(
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other'))
-    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
@@ -230,7 +232,8 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/third_party/foo@2', 'src/third_party/fpp'),
         ('trunk/other@1', 'src/other'),
         ('trunk/third_party/foo@2', 'src/third_party/prout'))
-    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
     self.parseGclient(['sync', '--deps', 'mac'],
@@ -241,7 +244,8 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other'),
         ('trunk/third_party/foo@2', 'src/third_party/prout'))
-    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
@@ -253,7 +257,7 @@ class GClientSmokeSVN(GClientSmokeBase):
         'running', 'running',
         # This is due to the way svn update is called for a single file when
         # File() is used in a DEPS file.
-        ('running', self.root_dir + '/src/file/foo'),
+        ('running', self.root_dir + '/src/file/other'),
         'running', 'running', 'running', 'running'])
     self.checkString('Please fix your script, having invalid --revision flags '
         'will soon considered an error.\n', results[1])
@@ -262,7 +266,8 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other'))
-    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
@@ -309,7 +314,8 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other'))
-    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     tree['src/svn_hooked1'] = 'svn_hooked1'
     tree['src/svn_hooked2'] = 'svn_hooked2'
     self.assertTree(tree)
@@ -401,6 +407,7 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
     out = ('src: %(base)s/src@2;\n'
+           'src/file/other: %(base)s/other/DEPS@2;\n'
            'src/other: %(base)s/other@2;\n'
            'src/third_party/foo: %(base)s/third_party/foo@1\n' %
           { 'base': self.svn_base + 'trunk' })
@@ -612,7 +619,7 @@ class GClientSmokeBoth(GClientSmokeBase):
                     ['running', 'running',
                      # This is due to the way svn update is called for a single
                      # file when File() is used in a DEPS file.
-                     ('running', self.root_dir + '/src/file/foo'),
+                     ('running', self.root_dir + '/src/file/other'),
                      'running', 'running', 'running', 'running', 'running',
                      'running', 'running'])
     # TODO(maruel): Something's wrong here. git outputs to stderr 'Switched to
@@ -626,7 +633,8 @@ class GClientSmokeBoth(GClientSmokeBase):
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
         ('trunk/other@2', 'src/other')))
-    tree['src/file/foo/origin'] = 'svn/trunk/third_party/foo@2\n'
+    tree['src/file/other/DEPS'] = (
+        self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
     tree['src/svn_hooked1'] = 'svn_hooked1'
@@ -673,6 +681,7 @@ class GClientSmokeBoth(GClientSmokeBase):
     results = self.gclient(['revinfo', '--deps', 'mac'])
     out = ('src: %(svn_base)s/src/@2;\n'
            'src-git: %(git_base)srepo_1@%(hash1)s;\n'
+           'src/file/other: %(svn_base)s/other/DEPS@2;\n'
            'src/other: %(svn_base)s/other@2;\n'
            'src/repo2: %(git_base)srepo_2@%(hash2)s;\n'
            'src/repo2/repo_renamed: %(git_base)srepo_3@%(hash3)s;\n'

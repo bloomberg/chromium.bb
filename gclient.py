@@ -750,6 +750,9 @@ solutions = [
       if type(deps[d]) == str:
         (url, rev) = GetURLAndRev(d, deps[d])
         entries[d] = "%s@%s" % (url, rev)
+      elif isinstance(deps[d], self.FileImpl):
+        (url, rev) = GetURLAndRev(d, deps[d].file_location)
+        entries[d] = "%s@%s" % (url, rev)
 
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:

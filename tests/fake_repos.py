@@ -361,8 +361,10 @@ deps_os = {
     fs = file_system(2, """
 deps = {
   'src/other': 'svn://%(host)s/svn/trunk/other',
-  'src/third_party/foo': From('src/other', 'foo/bar'),
-  'src/file/foo': File('svn://%(host)s/svn/trunk/third_party/foo/origin'),
+  # Load another DEPS and load a dependency from it. That's an example of
+  # WebKit's chromium checkout flow. Verify it works out of order.
+  'src/third_party/foo': From('src/file/other', 'foo/bar'),
+  'src/file/other': File('svn://%(host)s/svn/trunk/other/DEPS'),
 }
 # I think this is wrong to have the hooks run from the base of the gclient
 # checkout. It's maybe a bit too late to change that behavior.
@@ -383,6 +385,8 @@ hooks = [
     fs['trunk/other/DEPS'] = """
 deps = {
   'foo/bar': '/trunk/third_party/foo@1',
+  # Only the requested deps should be processed.
+  'invalid': '/does_not_exist',
 }
 """
     self._commit_svn(fs)
