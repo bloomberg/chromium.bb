@@ -16,24 +16,32 @@ using testing::Mock;
 
 // Names of the preferences used in this test program.
 namespace prefs {
+  const wchar_t kCurrentThemeID[] = L"extensions.theme.id";
   const wchar_t kDeleteCache[] = L"browser.clear_data.cache";
-  const wchar_t kMaxTabs[] = L"tabs.max_tabs";
+  const wchar_t kExtensionPref[] = L"extension.pref";
   const wchar_t kHomepage[] = L"homepage";
+  const wchar_t kMaxTabs[] = L"tabs.max_tabs";
   const wchar_t kMissingPref[] = L"this.pref.does_not_exist";
   const wchar_t kRecommendedPref[] = L"this.pref.recommended_value_only";
   const wchar_t kSampleDict[] = L"sample.dict";
   const wchar_t kSampleList[] = L"sample.list";
 }
 
-// Expected values of all preferences used in this test programm.
-namespace expected {
+// Potentailly expected values of all preferences used in this test program.
+namespace user {
   const int kMaxTabsValue = 31;
   const bool kDeleteCacheValue = true;
+  const std::wstring kCurrentThemeIDValue = L"abcdefg";
   const std::wstring kHomepageValue = L"http://www.google.com";
 }
 
 namespace enforced {
   const std::wstring kHomepageValue = L"http://www.topeka.com";
+}
+
+namespace extension {
+  const std::wstring kCurrentThemeIDValue = L"set by extension";
+  const std::wstring kHomepageValue = L"http://www.chromium.org";
 }
 
 namespace recommended {
@@ -47,23 +55,28 @@ class PrefValueStoreTest : public testing::Test {
 
   // |PrefStore|s are owned by the |PrefValueStore|.
   DummyPrefStore* enforced_pref_store_;
+  DummyPrefStore* extension_pref_store_;
   DummyPrefStore* recommended_pref_store_;
   DummyPrefStore* user_pref_store_;
 
   // Preferences are owned by the individual |DummyPrefStores|.
   DictionaryValue* enforced_prefs_;
+  DictionaryValue* extension_prefs_;
   DictionaryValue* user_prefs_;
   DictionaryValue* recommended_prefs_;
 
   virtual void SetUp() {
     // Create dummy user preferences.
     enforced_prefs_= CreateEnforcedPrefs();
+    extension_prefs_ = CreateExtensionPrefs();
     user_prefs_ = CreateUserPrefs();
     recommended_prefs_ = CreateRecommendedPrefs();
 
     // Create |DummyPrefStore|s.
     enforced_pref_store_ = new DummyPrefStore();
     enforced_pref_store_->set_prefs(enforced_prefs_);
+    extension_pref_store_ = new DummyPrefStore();
+    extension_pref_store_->set_prefs(extension_prefs_);
     user_pref_store_ = new DummyPrefStore();
     user_pref_store_->set_read_only(false);
     user_pref_store_->set_prefs(user_prefs_);
@@ -72,6 +85,7 @@ class PrefValueStoreTest : public testing::Test {
 
     // Create a new pref-value-store.
     pref_value_store_.reset(new PrefValueStore(enforced_pref_store_,
+                                               extension_pref_store_,
                                                user_pref_store_,
                                                recommended_pref_store_));
   }
@@ -80,9 +94,10 @@ class PrefValueStoreTest : public testing::Test {
   // in it.
   DictionaryValue* CreateUserPrefs() {
     DictionaryValue* user_prefs = new DictionaryValue();
-    user_prefs->SetBoolean(prefs::kDeleteCache, expected::kDeleteCacheValue);
-    user_prefs->SetInteger(prefs::kMaxTabs, expected::kMaxTabsValue);
-    user_prefs->SetString(prefs::kHomepage, expected::kHomepageValue);
+    user_prefs->SetBoolean(prefs::kDeleteCache, user::kDeleteCacheValue);
+    user_prefs->SetInteger(prefs::kMaxTabs, user::kMaxTabsValue);
+    user_prefs->SetString(prefs::kCurrentThemeID, user::kCurrentThemeIDValue);
+    user_prefs->SetString(prefs::kHomepage, user::kHomepageValue);
     return user_prefs;
   }
 
@@ -90,6 +105,14 @@ class PrefValueStoreTest : public testing::Test {
     DictionaryValue* enforced_prefs = new DictionaryValue();
     enforced_prefs->SetString(prefs::kHomepage, enforced::kHomepageValue);
     return enforced_prefs;
+  }
+
+  DictionaryValue* CreateExtensionPrefs() {
+    DictionaryValue* extension_prefs = new DictionaryValue();
+    extension_prefs->SetString(prefs::kCurrentThemeID,
+        extension::kCurrentThemeIDValue);
+    extension_prefs->SetString(prefs::kHomepage, extension::kHomepageValue);
+    return extension_prefs;
   }
 
   DictionaryValue* CreateRecommendedPrefs() {
@@ -123,6 +146,7 @@ class PrefValueStoreTest : public testing::Test {
 
 TEST_F(PrefValueStoreTest, IsReadOnly) {
   enforced_pref_store_->set_read_only(true);
+  extension_pref_store_->set_read_only(true);
   user_pref_store_->set_read_only(true);
   recommended_pref_store_->set_read_only(true);
   EXPECT_TRUE(pref_value_store_->ReadOnly());
@@ -134,26 +158,33 @@ TEST_F(PrefValueStoreTest, IsReadOnly) {
 TEST_F(PrefValueStoreTest, GetValue) {
   Value* value;
 
-  // Test getting an enforced value overwriting a user defined value.
+  // Test getting an enforced value overwriting a user-defined and
+  // extension-defined value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomepage, &value));
   std::wstring actual_str_value;
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(enforced::kHomepageValue, actual_str_value);
 
-  // Test getting a user set value.
+  // Test getting an extension value overwriting a user-defined value.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kCurrentThemeID, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(extension::kCurrentThemeIDValue, actual_str_value);
+
+  // Test getting a user-set value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDeleteCache, &value));
   bool actual_bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
-  EXPECT_EQ(expected::kDeleteCacheValue, actual_bool_value);
+  EXPECT_EQ(user::kDeleteCacheValue, actual_bool_value);
 
   // Test getting a user set value overwriting a recommended value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kMaxTabs, &value));
   int actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
-  EXPECT_EQ(expected::kMaxTabsValue, actual_int_value);
+  EXPECT_EQ(user::kMaxTabsValue, actual_int_value);
 
   // Test getting a recommended value.
   value = NULL;
@@ -217,7 +248,7 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   pref_value_store_->GetValue(prefs::kMaxTabs, &actual_value);
   int int_value;
   EXPECT_TRUE(actual_value->GetAsInteger(&int_value));
-  EXPECT_EQ(expected::kMaxTabsValue, int_value);
+  EXPECT_EQ(user::kMaxTabsValue, int_value);
 
   new_value = Value::CreateIntegerValue(1);
   pref_value_store_->SetUserPrefValue(prefs::kMaxTabs, new_value);

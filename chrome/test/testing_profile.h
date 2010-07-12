@@ -154,12 +154,7 @@ class TestingProfile : public Profile {
       FilePath prefs_filename =
           path_.Append(FILE_PATH_LITERAL("TestPreferences"));
 
-      prefs_.reset(new PrefService(new PrefValueStore(
-        NULL, /* no managed preference values */
-        new JsonPrefStore( /* user defined preference values */
-          prefs_filename,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-        NULL /* no suggested preference values */)));
+      prefs_.reset(PrefService::CreateUserPrefService(prefs_filename));
       Profile::RegisterUserPrefs(prefs_.get());
       browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
     }

@@ -30,6 +30,7 @@
 #include "chrome/browser/dummy_configuration_policy_provider.h"
 
 #include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
@@ -89,8 +90,10 @@ void NotifyReadError(PrefService* pref, int message_id) {
 
 }  // namespace
 
+// static
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
   PrefStore* managed_prefs = NULL;
+  ExtensionPrefStore* extension_prefs = new ExtensionPrefStore(NULL);
   PrefStore* local_prefs = new JsonPrefStore(
       pref_filename,
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
@@ -127,11 +130,30 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
       CommandLine::ForCurrentProcess(),
       recommended_prefs_provider);
 
-  // The PrefValueStore takes to ownership of the parameters.
+  // The PrefValueStore takes ownership of the PrefStores.
   PrefValueStore* value_store = new PrefValueStore(
       managed_prefs,
+      extension_prefs,
       local_prefs,
       recommended_prefs);
+
+  PrefService* pref_service = new PrefService(value_store);
+  extension_prefs->SetPrefService(pref_service);
+
+  return pref_service;
+}
+
+// static
+PrefService* PrefService::CreateUserPrefService(
+    const FilePath& pref_filename) {
+  PrefValueStore* value_store = new PrefValueStore(
+      NULL, /* no enforced prefs */
+      NULL, /* no extension prefs */
+      new JsonPrefStore(
+          pref_filename,
+          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+          /* user prefs */
+      NULL /* no advised prefs */);
   return new PrefService(value_store);
 }
 
@@ -374,6 +396,20 @@ const PrefService::Preference* PrefService::FindPreference(
   Preference p(NULL, pref_name, NULL);
   PreferenceSet::const_iterator it = prefs_.find(&p);
   return it == prefs_.end() ? NULL : *it;
+}
+
+void PrefService::FireObserversIfChanged(const wchar_t* path,
+                                         const Value* old_value) {
+  if (PrefIsChanged(path, old_value))
+    FireObservers(path);
+}
+
+bool PrefService::PrefIsChanged(const wchar_t* path,
+                                const Value* old_value) {
+  Value* new_value = NULL;
+  pref_value_store_->GetValue(path, &new_value);
+  // Some unit tests have no values for certain prefs.
+  return (!new_value || !old_value->Equals(new_value));
 }
 
 const DictionaryValue* PrefService::GetDictionary(const wchar_t* path) const {
@@ -736,14 +772,6 @@ Value* PrefService::GetPrefCopy(const wchar_t* path) {
   const Preference* pref = FindPreference(path);
   DCHECK(pref);
   return pref->GetValue()->DeepCopy();
-}
-
-void PrefService::FireObserversIfChanged(const wchar_t* path,
-                                         const Value* old_value) {
-  Value* new_value = NULL;
-  pref_value_store_->GetValue(path, &new_value);
-  if (!old_value->Equals(new_value))
-    FireObservers(path);
 }
 
 void PrefService::FireObservers(const wchar_t* path) {

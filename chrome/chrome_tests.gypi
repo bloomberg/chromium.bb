@@ -782,6 +782,7 @@
         'browser/extensions/extension_menu_manager_unittest.cc',
         'browser/extensions/extension_messages_unittest.cc',
         'browser/extensions/extension_prefs_unittest.cc',
+        'browser/extensions/extension_pref_store_unittest.cc',
         'browser/extensions/extension_process_manager_unittest.cc',
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_updater_unittest.cc',

@@ -470,12 +470,8 @@ class PageLoadTest : public testing::Test {
     FilePath local_state_path;
     chrome::GetChromeFrameUserDataDirectory(&local_state_path);
 
-    PrefService* local_state = new PrefService(new PrefValueStore(
-        NULL, /* no managed preference values */
-        new JsonPrefStore(/* user defined preference values */
-             local_state_path,
-             ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-        NULL /* no sugessted preference values */));
+    PrefService* local_state = PrefService::CreateUserPrefService(
+        local_state_path);
     return local_state;
   }
 

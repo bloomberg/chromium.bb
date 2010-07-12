@@ -53,7 +53,8 @@ class PrefMemberTestClass : public NotificationObserver {
 }  // anonymous namespace
 
 TEST(PrefMemberTest, BasicGetAndSet) {
-  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
+  PrefService prefs(new PrefValueStore(NULL, NULL, new DummyPrefStore(),
+      NULL));
   RegisterTestPrefs(&prefs);
 
   // Test bool
@@ -143,7 +144,8 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
 TEST(PrefMemberTest, TwoPrefs) {
   // Make sure two RealPrefMembers stay in sync.
-  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
+  PrefService prefs(new PrefValueStore(NULL, NULL, new DummyPrefStore(),
+      NULL));
   RegisterTestPrefs(&prefs);
 
   RealPrefMember pref1;
@@ -163,7 +165,8 @@ TEST(PrefMemberTest, TwoPrefs) {
 }
 
 TEST(PrefMemberTest, Observer) {
-  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
+  PrefService prefs(new PrefValueStore(NULL, NULL, new DummyPrefStore(),
+      NULL));
   RegisterTestPrefs(&prefs);
 
   PrefMemberTestClass test_obj(&prefs);

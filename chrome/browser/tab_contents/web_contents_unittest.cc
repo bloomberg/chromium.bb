@@ -54,12 +54,7 @@ class TabContentsTestingProfile : public TestingProfile {
 
       // Create a preference service that only contains user defined
       // preference values.
-      prefs_.reset(new PrefService(new PrefValueStore(
-        NULL, /* No managed preference values */
-        new JsonPrefStore( /* user defined preference values */
-          source_path,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-        NULL /* No suggested preference values */)));
+      prefs_.reset(PrefService::CreateUserPrefService(source_path));
       Profile::RegisterUserPrefs(prefs_.get());
       browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
     }

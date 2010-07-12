@@ -1207,6 +1207,8 @@
         'browser/extensions/extension_popup_api.h',
         'browser/extensions/extension_prefs.cc',
         'browser/extensions/extension_prefs.h',
+        'browser/extensions/extension_pref_store.cc',
+        'browser/extensions/extension_pref_store.h',
         'browser/extensions/extension_process_manager.cc',
         'browser/extensions/extension_process_manager.h',
         'browser/extensions/extension_processes_api.cc',

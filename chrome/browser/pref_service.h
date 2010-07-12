@@ -69,11 +69,21 @@ class PrefService : public NonThreadSafe {
     DISALLOW_COPY_AND_ASSIGN(Preference);
   };
 
-  // Factory method that creates a new instance of a |PrefService|.
+  // Factory method that creates a new instance of a |PrefService| with
+  // all platform-applicable PrefStores (managed, extension, user, etc.).
+  // This is the usual way to create a new PrefService.
   static PrefService* CreatePrefService(const FilePath& pref_filename);
 
-  // The |PrefValueStore| provides preference values.
+  // Convenience factory method for use in unit tests. Creates a new
+  // PrefService that uses a PrefValueStore with user preferences at the given
+  // |pref_filename|, and no other PrefStores (i.e., no other types of
+  // preferences).
+  static PrefService* CreateUserPrefService(const FilePath& pref_filename);
+
+  // This constructor is primarily used by tests. The |PrefValueStore| provides
+  // preference values.
   explicit PrefService(PrefValueStore* pref_value_store);
+
   ~PrefService();
 
   // Reloads the data from file. This should only be called when the importer
@@ -181,7 +191,17 @@ class PrefService : public NonThreadSafe {
   // preference is not registered.
   const Preference* FindPreference(const wchar_t* pref_name) const;
 
+  // For the given pref_name, fire any observer of the pref only if |old_value|
+  // is different from the current value.  Virtual so it can be mocked for a
+  // unit test.
+  virtual void FireObserversIfChanged(const wchar_t* pref_name,
+                                      const Value* old_value);
+
   bool read_only() const { return pref_value_store_->ReadOnly(); }
+
+ protected:
+  // This should only be accessed by subclasses for unit-testing.
+  bool PrefIsChanged(const wchar_t* path, const Value* old_value);
 
  private:
   // Add a preference to the PreferenceMap.  If the pref already exists, return
@@ -194,11 +214,6 @@ class PrefService : public NonThreadSafe {
 
   // For the given pref_name, fire any observer of the pref.
   void FireObservers(const wchar_t* pref_name);
-
-  // For the given pref_name, fire any observer of the pref only if |old_value|
-  // is different from the current value.
-  void FireObserversIfChanged(const wchar_t* pref_name,
-                              const Value* old_value);
 
   // Load from disk.  Returns a non-zero error code on failure.
   PrefStore::PrefReadError LoadPersistentPrefs();

@@ -252,12 +252,7 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   // Create a preference service that only contains user defined
   // preference values.
-  prefs_.reset(new PrefService(new PrefValueStore(
-      NULL, /* No managed preference values */
-      new JsonPrefStore( /* user defined preference values */
-          pref_file,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-      NULL /* No suggested preference values */)));
+  prefs_.reset(PrefService::CreateUserPrefService(pref_file));
 
   Profile::RegisterUserPrefs(prefs_.get());
   browser::RegisterUserPrefs(prefs_.get());

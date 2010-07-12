@@ -19,20 +19,16 @@ class ShownSectionsHandlerTest : public testing::Test {
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
   // Create a preference value that has only user defined
   // preference values.
-  PrefService pref(new PrefValueStore(
-      NULL, /* no managed preference values */
-      new JsonPrefStore( /* user defined preference values */
-        FilePath(),
-        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-      NULL /* no suggested preference values */));
+  FilePath user_prefs = FilePath();
+  scoped_ptr<PrefService> pref(PrefService::CreateUserPrefService(user_prefs));
 
   // Set an *old* value
-  pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);
-  pref.SetInteger(prefs::kNTPShownSections, THUMB);
+  pref->RegisterIntegerPref(prefs::kNTPShownSections, 0);
+  pref->SetInteger(prefs::kNTPShownSections, THUMB);
 
-  ShownSectionsHandler::MigrateUserPrefs(&pref, 0, 1);
+  ShownSectionsHandler::MigrateUserPrefs(pref.get(), 0, 1);
 
-  int shown_sections = pref.GetInteger(prefs::kNTPShownSections);
+  int shown_sections = pref->GetInteger(prefs::kNTPShownSections);
 
   EXPECT_TRUE(shown_sections & THUMB);
   EXPECT_FALSE(shown_sections & LIST);
@@ -42,20 +38,16 @@ TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs) {
 }
 
 TEST_F(ShownSectionsHandlerTest, MigrateUserPrefs1To2) {
-  PrefService pref(new PrefValueStore(
-      NULL, /* no managed preferences */
-      new JsonPrefStore(
-        FilePath(),
-        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-      NULL  /* no suggested preferences */));
+  FilePath user_prefs = FilePath();
+  scoped_ptr<PrefService> pref(PrefService::CreateUserPrefService(user_prefs));
 
   // Set an *old* value
-  pref.RegisterIntegerPref(prefs::kNTPShownSections, 0);
-  pref.SetInteger(prefs::kNTPShownSections, LIST);
+  pref->RegisterIntegerPref(prefs::kNTPShownSections, 0);
+  pref->SetInteger(prefs::kNTPShownSections, LIST);
 
-  ShownSectionsHandler::MigrateUserPrefs(&pref, 1, 2);
+  ShownSectionsHandler::MigrateUserPrefs(pref.get(), 1, 2);
 
-  int shown_sections = pref.GetInteger(prefs::kNTPShownSections);
+  int shown_sections = pref->GetInteger(prefs::kNTPShownSections);
 
   EXPECT_TRUE(shown_sections & THUMB);
   EXPECT_FALSE(shown_sections & LIST);

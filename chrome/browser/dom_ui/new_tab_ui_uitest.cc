@@ -75,30 +75,26 @@ TEST_F(NewTabUITest, FLAKY_ChromeInternalLoadsNTP) {
 
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
   // PrefService with JSON user-pref file only, no enforced or advised prefs.
-  PrefService prefs(new PrefValueStore(
-      NULL, /* no enforced prefs */
-      new JsonPrefStore(
-          FilePath(),
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-          /* user prefs */
-      NULL /* no advised prefs */));
+  FilePath user_prefs = FilePath();
+  scoped_ptr<PrefService> prefs(
+      PrefService::CreateUserPrefService(user_prefs));
 
   // Does the migration
-  NewTabUI::RegisterUserPrefs(&prefs);
+  NewTabUI::RegisterUserPrefs(prefs.get());
 
   ASSERT_EQ(NewTabUI::current_pref_version(),
-            prefs.GetInteger(prefs::kNTPPrefVersion));
+            prefs->GetInteger(prefs::kNTPPrefVersion));
 
   // Reset the version
-  prefs.ClearPref(prefs::kNTPPrefVersion);
-  ASSERT_EQ(0, prefs.GetInteger(prefs::kNTPPrefVersion));
+  prefs->ClearPref(prefs::kNTPPrefVersion);
+  ASSERT_EQ(0, prefs->GetInteger(prefs::kNTPPrefVersion));
 
-  bool migrated = NewTabUI::UpdateUserPrefsVersion(&prefs);
+  bool migrated = NewTabUI::UpdateUserPrefsVersion(prefs.get());
   ASSERT_TRUE(migrated);
   ASSERT_EQ(NewTabUI::current_pref_version(),
-            prefs.GetInteger(prefs::kNTPPrefVersion));
+            prefs->GetInteger(prefs::kNTPPrefVersion));
 
-  migrated = NewTabUI::UpdateUserPrefsVersion(&prefs);
+  migrated = NewTabUI::UpdateUserPrefsVersion(prefs.get());
   ASSERT_FALSE(migrated);
 }
 

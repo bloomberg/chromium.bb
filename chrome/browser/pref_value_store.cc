@@ -5,28 +5,26 @@
 #include "chrome/browser/pref_value_store.h"
 
 PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
+                               PrefStore* extension_prefs,
                                PrefStore* user_prefs,
-                               PrefStore* recommended_prefs)
-    : managed_prefs_(managed_prefs),
-      user_prefs_(user_prefs),
-      recommended_prefs_(recommended_prefs) {
+                               PrefStore* recommended_prefs) {
+  pref_stores_[MANAGED].reset(managed_prefs);
+  pref_stores_[EXTENSION].reset(extension_prefs);
+  pref_stores_[USER].reset(user_prefs);
+  pref_stores_[RECOMMENDED].reset(recommended_prefs);
 }
 
 PrefValueStore::~PrefValueStore() { }
 
-bool PrefValueStore::GetValue(
-    const std::wstring& name, Value** out_value) const {
+bool PrefValueStore::GetValue(const std::wstring& name,
+                              Value** out_value) const {
   // Check the |PrefStore|s in order of their priority from highest to lowest
   // to find the value of the preference described by the given preference name.
-  if (managed_prefs_.get() &&
-      managed_prefs_->prefs()->Get(name.c_str(), out_value) ) {
-    return true;
-  } else if (user_prefs_.get() &&
-             user_prefs_->prefs()->Get(name.c_str(), out_value) ) {
-    return true;
-  } else if (recommended_prefs_.get() &&
-             recommended_prefs_->prefs()->Get(name.c_str(), out_value)) {
-    return true;
+  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
+    if (pref_stores_[i].get() &&
+        pref_stores_[i]->prefs()->Get(name.c_str(), out_value)) {
+      return true;
+    }
   }
   // No value found for the given preference name, set the return false.
   *out_value = NULL;
@@ -34,49 +32,33 @@ bool PrefValueStore::GetValue(
 }
 
 bool PrefValueStore::WritePrefs() {
-  // Managed and recommended preferences are not set by the user.
-  // Hence they will not be written out.
-  return user_prefs_->WritePrefs();
+  bool success = true;
+  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
+    if (pref_stores_[i].get())
+      success = pref_stores_[i]->WritePrefs() && success;
+  }
+  return success;
 }
 
 void PrefValueStore::ScheduleWritePrefs() {
-  // Managed and recommended preferences are not set by the user.
-  // Hence they will not be written out.
-  user_prefs_->ScheduleWritePrefs();
+  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
+    if (pref_stores_[i].get())
+      pref_stores_[i]->ScheduleWritePrefs();
+  }
 }
 
 PrefStore::PrefReadError PrefValueStore::ReadPrefs() {
-  PrefStore::PrefReadError managed_pref_error = PrefStore::PREF_READ_ERROR_NONE;
-  PrefStore::PrefReadError user_pref_error = PrefStore::PREF_READ_ERROR_NONE;
-  PrefStore::PrefReadError recommended_pref_error =
-      PrefStore::PREF_READ_ERROR_NONE;
-
-  // Read managed preferences.
-  if (managed_prefs_.get()) {
-    managed_pref_error = managed_prefs_->ReadPrefs();
+  PrefStore::PrefReadError result = PrefStore::PREF_READ_ERROR_NONE;
+  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
+    if (pref_stores_[i].get()) {
+      PrefStore::PrefReadError this_error = pref_stores_[i]->ReadPrefs();
+      if (result == PrefStore::PREF_READ_ERROR_NONE)
+        result = this_error;
+    }
   }
-
-  // Read preferences set by the user.
-  if (user_prefs_.get()) {
-    user_pref_error = user_prefs_->ReadPrefs();
-  }
-
-  // Read recommended preferences.
-  if (recommended_prefs_.get()) {
-    recommended_pref_error = recommended_prefs_->ReadPrefs();
-  }
-
-  // TODO(markusheintz): Return a better error status maybe a struct with
-  //   the error status of all PrefStores.
-
-  // Return the first pref store error that occured.
-  if (managed_pref_error != PrefStore::PREF_READ_ERROR_NONE) {
-    return managed_pref_error;
-  }
-  if (user_pref_error != PrefStore::PREF_READ_ERROR_NONE) {
-    return user_pref_error;
-  }
-  return recommended_pref_error;
+  // TODO(markusheintz): Return a better error status: maybe a struct with
+  // the error status of all PrefStores.
+  return result;
 }
 
 bool PrefValueStore::HasPrefPath(const wchar_t* path) const {
@@ -89,28 +71,28 @@ bool PrefValueStore::HasPrefPath(const wchar_t* path) const {
 // The value of a Preference is managed if the PrefStore for managed
 // preferences contains a value for the given preference |name|.
 bool PrefValueStore::PrefValueIsManaged(const wchar_t* name) {
-  if (managed_prefs_.get() == NULL) {
+  if (pref_stores_[MANAGED].get() == NULL) {
     // No managed PreferenceStore set, hence there are no managed
     // preferences.
     return false;
   }
   Value* tmp_value;
-  return managed_prefs_->prefs()->Get(name, &tmp_value);
+  return pref_stores_[MANAGED]->prefs()->Get(name, &tmp_value);
 }
 
 // Note the |DictionaryValue| referenced by the |PrefStore| user_prefs_
-// (returned by the method Prefs()) takes the ownership of the Value referenced
+// (returned by the method prefs()) takes the ownership of the Value referenced
 // by in_value.
 void PrefValueStore::SetUserPrefValue(const wchar_t* name, Value* in_value) {
-  user_prefs_->prefs()->Set(name, in_value);
+  pref_stores_[USER]->prefs()->Set(name, in_value);
 }
 
 bool PrefValueStore::ReadOnly() {
-  return user_prefs_->ReadOnly();
+  return pref_stores_[USER]->ReadOnly();
 }
 
 void PrefValueStore::RemoveUserPrefValue(const wchar_t* name) {
-  if (user_prefs_.get()) {
-    user_prefs_->prefs()->Remove(name, NULL);
+  if (pref_stores_[USER].get()) {
+    pref_stores_[USER]->prefs()->Remove(name, NULL);
   }
 }

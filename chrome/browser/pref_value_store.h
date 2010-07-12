@@ -28,12 +28,13 @@ class PrefStore;
 // (like an admin).
 class PrefValueStore {
  public:
-  // |managed_prefs| contains all managed preference values. They have the
-  // highest priority and precede user-defined preference values. |user_prefs|
-  // contains all user-defined preference values. User-defined values precede
-  // recommended values. |recommended_prefs| contains all recommended
-  // preference values.
+  // In decreasing order of precedence:
+  //   |managed_prefs| contains all managed (policy) preference values.
+  //   |extension_prefs| contains preference values set by extensions.
+  //   |user_prefs| contains all user-set preference values.
+  //   |recommended_prefs| contains all recommended (policy) preference values.
   PrefValueStore(PrefStore* managed_prefs,
+                 PrefStore* extension_prefs,
                  PrefStore* user_prefs,
                  PrefStore* recommended_prefs);
 
@@ -44,14 +45,17 @@ class PrefValueStore {
   bool GetValue(const std::wstring& name, Value** out_value) const;
 
   // Read preference values into the three PrefStores so that they are available
-  // through the GetValue method.
+  // through the GetValue method. Return the first error that occurs (but
+  // continue reading the remaining PrefStores).
   PrefStore::PrefReadError ReadPrefs();
 
-  // Write user settable preference values. Return true if writing values was
-  // successfull.
+  // Persists prefs (to disk or elsewhere). Returns true if writing values was
+  // successful. In practice, only the user prefs are expected to be written
+  // out.
   bool WritePrefs();
 
-  // Calls the method ScheduleWritePrefs on the PrefStores.
+  // Calls the method ScheduleWritePrefs on the PrefStores. In practice, only
+  // the user prefs are expected to be written out.
   void ScheduleWritePrefs();
 
   // Returns true if the PrefValueStore contains the given preference.
@@ -68,7 +72,8 @@ class PrefValueStore {
   // set. But GetValue calls will not return this value as long as the
   // preference is managed. Instead GetValue will return the managed value
   // of the preference. Note that the PrefValueStore takes the ownership of
-  // the value referenced by |in_value|.
+  // the value referenced by |in_value|. It is an error to call this when no
+  // user PrefStore has been set.
   void SetUserPrefValue(const wchar_t* name, Value* in_value);
 
   // Removes a value from the PrefValueStore. If a preference is managed
@@ -81,9 +86,16 @@ class PrefValueStore {
   bool PrefValueIsManaged(const wchar_t* name);
 
  private:
-  scoped_ptr<PrefStore> managed_prefs_;
-  scoped_ptr<PrefStore> user_prefs_;
-  scoped_ptr<PrefStore> recommended_prefs_;
+  // PrefStores must be listed here in order from highest to lowest priority.
+  enum PrefStoreType {
+    MANAGED = 0,
+    EXTENSION,
+    USER,
+    RECOMMENDED,
+    PREF_STORE_TYPE_MAX = RECOMMENDED
+  };
+
+  scoped_ptr<PrefStore> pref_stores_[PREF_STORE_TYPE_MAX + 1];
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };

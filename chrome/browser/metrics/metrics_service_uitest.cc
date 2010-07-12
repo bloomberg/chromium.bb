@@ -54,12 +54,7 @@ class MetricsServiceTest : public UITest {
     FilePath local_state_path = user_data_dir()
         .Append(chrome::kLocalStateFilename);
 
-    return new PrefService(new PrefValueStore(
-        NULL, /* no managed preferences */
-        new JsonPrefStore( /* local user preferences */
-            local_state_path,
-            ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-        NULL /* no recommended preferences */));
+    return PrefService::CreateUserPrefService(local_state_path);
   }
 };
 

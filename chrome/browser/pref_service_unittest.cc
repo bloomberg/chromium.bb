@@ -64,7 +64,8 @@ class TestPrefObserver : public NotificationObserver {
 // TODO(port): port this test to POSIX.
 #if defined(OS_WIN)
 TEST(PrefServiceTest, LocalizedPrefs) {
-  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
+  PrefService prefs(new PrefValueStore(NULL, NULL, new DummyPrefStore(),
+      NULL));
   const wchar_t kBoolean[] = L"boolean";
   const wchar_t kInteger[] = L"integer";
   const wchar_t kString[] = L"string";
@@ -87,7 +88,8 @@ TEST(PrefServiceTest, LocalizedPrefs) {
 #endif
 
 TEST(PrefServiceTest, NoObserverFire) {
-  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
+  PrefService prefs(new PrefValueStore(NULL, NULL, new DummyPrefStore(),
+      NULL));
 
   const wchar_t pref_name[] = L"homepage";
   prefs.RegisterStringPref(pref_name, "");
@@ -122,7 +124,8 @@ TEST(PrefServiceTest, NoObserverFire) {
 }
 
 TEST(PrefServiceTest, HasPrefPath) {
-  PrefService prefs(new PrefValueStore(NULL, new DummyPrefStore(), NULL));
+  PrefService prefs(new PrefValueStore(NULL, NULL, new DummyPrefStore(),
+      NULL));
 
   const wchar_t path[] = L"fake.path";
 
@@ -146,7 +149,7 @@ TEST(PrefServiceTest, Observers) {
   dict->SetString(pref_name, std::string("http://www.cnn.com"));
   DummyPrefStore* pref_store = new DummyPrefStore();
   pref_store->set_prefs(dict);
-  PrefService prefs(new PrefValueStore(NULL, pref_store, NULL));
+  PrefService prefs(new PrefValueStore(NULL, NULL, pref_store, NULL));
   prefs.RegisterStringPref(pref_name, "");
 
   const std::string new_pref_value("http://www.google.com/");
@@ -187,7 +190,7 @@ class PrefServiceSetValueTest : public testing::Test {
   static const char value_[];
 
   PrefServiceSetValueTest()
-      : prefs_(new PrefValueStore(NULL, new DummyPrefStore(), NULL)),
+      : prefs_(new PrefValueStore(NULL, NULL, new DummyPrefStore(), NULL)),
         name_string_(name_),
         null_value_(Value::CreateNullValue()) {}
 
