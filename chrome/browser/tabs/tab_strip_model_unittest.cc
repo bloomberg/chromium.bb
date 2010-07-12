@@ -833,7 +833,6 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
 //  - Close Tab
 //  - Close Other Tabs
 //  - Close Tabs To Right
-//  - Close Tabs Opened By
 TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   TabStripDummyDelegate delegate(NULL);
   TabStripModel tabstrip(&delegate, profile());
@@ -858,17 +857,6 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
 
   TabContents* dummy_contents = CreateTabContents();
   tabstrip.AppendTabContents(dummy_contents, false);
-
-  contents1 = CreateTabContents();
-  contents2 = CreateTabContents();
-  contents3 = CreateTabContents();
-  InsertTabContentses(&tabstrip, contents1, contents2, contents3);
-  EXPECT_EQ(5, tabstrip.count());
-
-  tabstrip.ExecuteContextMenuCommand(0,
-                                     TabStripModel::CommandCloseTabsOpenedBy);
-  EXPECT_EQ(2, tabstrip.count());
-  EXPECT_EQ(dummy_contents, tabstrip.GetTabContentsAt(1));
 
   contents1 = CreateTabContents();
   contents2 = CreateTabContents();
@@ -931,35 +919,6 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
                 tabstrip, 0, TabStripModel::CommandCloseOtherTabs));
   EXPECT_EQ("4 3", GetIndicesClosedByCommandAsString(
                 tabstrip, 2, TabStripModel::CommandCloseOtherTabs));
-
-  tabstrip.CloseAllTabs();
-  EXPECT_TRUE(tabstrip.empty());
-}
-
-// Tests GetIndicesClosedByCommand.
-TEST_F(TabStripModelTest, GetIndicesClosedByCommandWithOpener) {
-  TabStripDummyDelegate delegate(NULL);
-  TabStripModel tabstrip(&delegate, profile());
-  EXPECT_TRUE(tabstrip.empty());
-
-  TabContents* contents1 = CreateTabContents();
-  TabContents* contents2 = CreateTabContents();
-  TabContents* contents3 = CreateTabContents();
-  TabContents* contents4 = CreateTabContents();
-
-  tabstrip.AppendTabContents(contents1, true);
-  InsertTabContentses(&tabstrip, contents2, contents3, contents4);
-
-  EXPECT_EQ("3 2 1", GetIndicesClosedByCommandAsString(
-                tabstrip, 0, TabStripModel::CommandCloseTabsOpenedBy));
-
-  // Pin the first two tabs and make sure the index isn't returned when asking
-  // for the openner.
-  tabstrip.SetTabPinned(0, true);
-  tabstrip.SetTabPinned(1, true);
-
-  EXPECT_EQ("3 2", GetIndicesClosedByCommandAsString(
-                tabstrip, 0, TabStripModel::CommandCloseTabsOpenedBy));
 
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());

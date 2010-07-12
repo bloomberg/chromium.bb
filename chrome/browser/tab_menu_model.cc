@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/tab_menu_model.h"
 
@@ -52,8 +52,6 @@ void TabMenuModel::Build(bool is_pinned, bool allow_toolbar_toggle,
                       IDS_TAB_CXMENU_CLOSEOTHERTABS);
   AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
                       IDS_TAB_CXMENU_CLOSETABSTORIGHT);
-  AddItemWithStringId(TabStripModel::CommandCloseTabsOpenedBy,
-                      IDS_TAB_CXMENU_CLOSETABSOPENEDBY);
   AddSeparator();
   AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
   AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,

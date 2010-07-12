@@ -1150,8 +1150,7 @@ void TabStripGtk::ExecuteCommandForTab(
 
 void TabStripGtk::StartHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id, TabGtk* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
-      command_id == TabStripModel::CommandCloseOtherTabs ||
+  if (command_id == TabStripModel::CommandCloseOtherTabs ||
       command_id == TabStripModel::CommandCloseTabsToRight) {
     NOTIMPLEMENTED();
   }
@@ -1159,8 +1158,7 @@ void TabStripGtk::StartHighlightTabsForCommand(
 
 void TabStripGtk::StopHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id, TabGtk* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
-      command_id == TabStripModel::CommandCloseTabsToRight ||
+  if (command_id == TabStripModel::CommandCloseTabsToRight ||
       command_id == TabStripModel::CommandCloseOtherTabs) {
     // Just tell all Tabs to stop pulsing - it's safe.
     StopAllHighlighting();

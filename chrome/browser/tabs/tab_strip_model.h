@@ -613,7 +613,6 @@ class TabStripModel : public NotificationObserver {
     CommandCloseTab,
     CommandCloseOtherTabs,
     CommandCloseTabsToRight,
-    CommandCloseTabsOpenedBy,
     CommandRestoreTab,
     CommandTogglePinned,
     CommandToggleToolbar,

@@ -623,11 +623,6 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       // Close doesn't effect mini-tabs.
       return count() != IndexOfFirstNonMiniTab() &&
           context_index < (count() - 1);
-    case CommandCloseTabsOpenedBy: {
-      int next_index = GetIndexOfNextTabContentsOpenedBy(
-          &GetTabContentsAt(context_index)->controller(), context_index, true);
-      return next_index != kNoTab && !IsMiniTab(next_index);
-    }
     case CommandDuplicate:
       return delegate_->CanDuplicateContentsAt(context_index);
     case CommandRestoreTab:
@@ -695,14 +690,6 @@ void TabStripModel::ExecuteContextMenuCommand(
     case CommandCloseTabsToRight: {
       UserMetrics::RecordAction(
           UserMetricsAction("TabContextMenu_CloseTabsToRight"),
-          profile_);
-      InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
-                        CLOSE_CREATE_HISTORICAL_TAB);
-      break;
-    }
-    case CommandCloseTabsOpenedBy: {
-      UserMetrics::RecordAction(
-          UserMetricsAction("TabContextMenu_CloseTabsOpenedBy"),
           profile_);
       InternalCloseTabs(GetIndicesClosedByCommand(context_index, command_id),
                         CLOSE_CREATE_HISTORICAL_TAB);
@@ -786,15 +773,6 @@ std::vector<int> TabStripModel::GetIndicesClosedByCommand(
 
   // NOTE: some callers assume indices are sorted in reverse order.
   std::vector<int> indices;
-
-  if (id == CommandCloseTabsOpenedBy) {
-    NavigationController* opener = &GetTabContentsAt(index)->controller();
-    for (int i = count() - 1; i >= 0; --i) {
-      if (OpenerMatches(contents_data_[i], opener, true) && !IsMiniTab(i))
-        indices.push_back(i);
-    }
-    return indices;
-  }
 
   if (id != CommandCloseTabsToRight && id != CommandCloseOtherTabs)
     return indices;

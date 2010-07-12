@@ -395,8 +395,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
 void BrowserTabStripController::StartHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id,
     BaseTab* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
-      command_id == TabStripModel::CommandCloseOtherTabs ||
+  if (command_id == TabStripModel::CommandCloseOtherTabs ||
       command_id == TabStripModel::CommandCloseTabsToRight) {
     int model_index = tabstrip_->GetModelIndexOfBaseTab(tab);
     if (IsValidIndex(model_index)) {
@@ -413,8 +412,7 @@ void BrowserTabStripController::StartHighlightTabsForCommand(
 void BrowserTabStripController::StopHighlightTabsForCommand(
     TabStripModel::ContextMenuCommand command_id,
     BaseTab* tab) {
-  if (command_id == TabStripModel::CommandCloseTabsOpenedBy ||
-      command_id == TabStripModel::CommandCloseTabsToRight ||
+  if (command_id == TabStripModel::CommandCloseTabsToRight ||
       command_id == TabStripModel::CommandCloseOtherTabs) {
     // Just tell all Tabs to stop pulsing - it's safe.
     tabstrip_->StopAllHighlighting();
