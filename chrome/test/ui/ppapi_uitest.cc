@@ -114,8 +114,12 @@ TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
 
+#if defined(OS_MACOSX)
 // http://crbug.com/48734
 TEST_F(PPAPITest, FAILS_URLLoader) {
+#else
+TEST_F(PPAPITest, URLLoader) {
+#endif
   RunTestViaHTTP("URLLoader");
 }
 
