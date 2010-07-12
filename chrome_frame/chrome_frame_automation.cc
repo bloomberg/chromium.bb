@@ -886,7 +886,7 @@ void ChromeFrameAutomationClient::LaunchComplete(
         // ExternalTab.
         IPC::SyncMessage* message =
             new AutomationMsg_ConnectExternalTab(0, external_tab_cookie_, true,
-              NULL, NULL, NULL);
+              m_hWnd, NULL, NULL, NULL);
         automation_server_->SendAsAsync(message,
                                         new CreateExternalTabContext(this),
                                         this);
@@ -1210,7 +1210,8 @@ void ChromeFrameAutomationClient::AttachExternalTab(
 void ChromeFrameAutomationClient::BlockExternalTab(uint64 cookie) {
   // The host does not want this tab to be shown (due popup blocker).
   IPC::SyncMessage* message =
-      new AutomationMsg_ConnectExternalTab(0, cookie, false, NULL, NULL, NULL);
+      new AutomationMsg_ConnectExternalTab(0, cookie, false, m_hWnd,
+                                           NULL, NULL, NULL);
   automation_server_->SendAsAsync(message, NULL, this);
 }
 

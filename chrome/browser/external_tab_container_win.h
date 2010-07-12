@@ -79,7 +79,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   // for this container. Typically used when an ExternalTabContainer
   // instance is created by Chrome and attached to an automation client.
   bool Reinitialize(AutomationProvider* automation_provider,
-                    AutomationResourceMessageFilter* filter);
+                    AutomationResourceMessageFilter* filter,
+                    gfx::NativeWindow parent_window);
 
   // This is invoked when the external host reflects back to us a keyboard
   // message it did not process

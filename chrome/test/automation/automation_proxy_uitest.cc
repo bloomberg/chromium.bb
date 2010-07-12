@@ -778,7 +778,8 @@ void ExternalTabUITestMockClient::ConnectToExternalTab(gfx::NativeWindow parent,
   int tab_handle = 0;
 
   IPC::SyncMessage* message = new AutomationMsg_ConnectExternalTab(0,
-      attach_params.cookie, true, &tab_container, &tab_window, &tab_handle);
+      attach_params.cookie, true, NULL, &tab_container, &tab_window,
+      &tab_handle);
   channel_->Send(message);
 
   RECT rect;

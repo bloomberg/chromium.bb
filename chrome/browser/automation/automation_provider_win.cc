@@ -425,6 +425,7 @@ void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
 void AutomationProvider::ConnectExternalTab(
     uint64 cookie,
     bool allow,
+    gfx::NativeWindow parent_window,
     gfx::NativeWindow* tab_container_window,
     gfx::NativeWindow* tab_window,
     int* tab_handle) {
@@ -441,7 +442,8 @@ void AutomationProvider::ConnectExternalTab(
 
   if (allow && AddExternalTab(external_tab_container)) {
     external_tab_container->Reinitialize(this,
-                                         automation_resource_message_filter_);
+                                         automation_resource_message_filter_,
+                                         parent_window);
     TabContents* tab_contents = external_tab_container->tab_contents();
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();

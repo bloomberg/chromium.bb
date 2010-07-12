@@ -197,7 +197,8 @@ void ExternalTabContainer::Uninitialize() {
 
 bool ExternalTabContainer::Reinitialize(
     AutomationProvider* automation_provider,
-    AutomationResourceMessageFilter* filter) {
+    AutomationResourceMessageFilter* filter,
+    gfx::NativeWindow parent_window) {
   if (!automation_provider || !filter) {
     NOTREACHED();
     return false;
@@ -211,6 +212,9 @@ bool ExternalTabContainer::Reinitialize(
       FROM_HERE,
       external_method_factory_.NewRunnableMethod(
           &ExternalTabContainer::OnReinitialize));
+
+  if (parent_window)
+    SetParent(GetNativeView(), parent_window);
   return true;
 }
 

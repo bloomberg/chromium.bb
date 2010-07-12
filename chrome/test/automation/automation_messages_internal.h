@@ -1100,9 +1100,10 @@ IPC_BEGIN_MESSAGES(Automation)
                       IPC::AttachExternalTabParams)
 
   // Sent when the automation client connects to an existing tab.
-  IPC_SYNC_MESSAGE_ROUTED2_3(AutomationMsg_ConnectExternalTab,
+  IPC_SYNC_MESSAGE_ROUTED3_3(AutomationMsg_ConnectExternalTab,
                              uint64 /* cookie */,
                              bool   /* allow/block tab*/,
+                             gfx::NativeWindow  /* parent window */,
                              gfx::NativeWindow  /* Tab container window */,
                              gfx::NativeWindow  /* Tab window */,
                              int  /* Handle to the new tab */)
