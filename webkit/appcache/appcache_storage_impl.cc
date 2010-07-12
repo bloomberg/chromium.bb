@@ -1044,7 +1044,7 @@ void AppCacheStorageImpl::CheckPolicyAndCallOnMainResponseFound(
       FOR_EACH_DELEGATE(
           (*delegates),
           OnMainResponseFound(url, AppCacheEntry(), AppCacheEntry(),
-                              kNoCacheId, GURL(), true));
+                              kNoCacheId, manifest_url, true));
       return;
     }
   }

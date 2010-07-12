@@ -640,6 +640,7 @@ class RenderViewHost : public RenderWidgetHost {
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
   void OnContentBlocked(ContentSettingsType type);
+  void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url,
                              const string16& name,
                              const string16& display_name,

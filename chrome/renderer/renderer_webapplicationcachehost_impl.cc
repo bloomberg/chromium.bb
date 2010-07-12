@@ -35,12 +35,17 @@ void RendererWebApplicationCacheHostImpl::OnLogMessage(
         WebKit::WebString::fromUTF8(message.c_str())));
 }
 
-void RendererWebApplicationCacheHostImpl::OnContentBlocked() {
-  if (!content_blocked_) {
-    RenderThread::current()->Send(new ViewHostMsg_ContentBlocked(
-        routing_id_, CONTENT_SETTINGS_TYPE_COOKIES));
-    content_blocked_ = true;
-  }
+void RendererWebApplicationCacheHostImpl::OnContentBlocked(
+    const GURL& manifest_url) {
+  RenderThread::current()->Send(new ViewHostMsg_AppCacheAccessed(
+      routing_id_, manifest_url, true));
+}
+
+void RendererWebApplicationCacheHostImpl::OnCacheSelected(
+    int64 selected_cache_id, appcache::Status status) {
+  // TODO(jochen): Send a ViewHostMsg_AppCacheAccessed to the browser once this
+  // methods gets the manifest url passed.
+  WebApplicationCacheHostImpl::OnCacheSelected(selected_cache_id, status);
 }
 
 RenderView* RendererWebApplicationCacheHostImpl::GetRenderView() {

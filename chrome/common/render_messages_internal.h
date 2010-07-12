@@ -627,8 +627,9 @@ IPC_BEGIN_MESSAGES(View)
                        std::string /* message */)
 
   // Notifies the renderer of the fact that AppCache access was blocked.
-  IPC_MESSAGE_CONTROL1(AppCacheMsg_ContentBlocked,
-                       int /* host_id */)
+  IPC_MESSAGE_CONTROL2(AppCacheMsg_ContentBlocked,
+                       int /* host_id */,
+                       GURL /* manifest_url */)
 
   // Reply to the ViewHostMsg_QueryFormFieldAutoFill message with the
   // AutoFill suggestions.
@@ -1263,6 +1264,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // user's content settings.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_ContentBlocked,
                       ContentSettingsType /* type of blocked content */)
+
+  // Tells the browser that  a specific Appcache manifest in the current page
+  // was accessed.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_AppCacheAccessed,
+                      GURL /* manifest url */,
+                      bool /* blocked by policy */)
 
   // Tells the browser that a specific Web database in the current page was
   // accessed.

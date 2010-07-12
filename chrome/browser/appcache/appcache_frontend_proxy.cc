@@ -35,6 +35,7 @@ void AppCacheFrontendProxy::OnLogMessage(int host_id,
   sender_->Send(new AppCacheMsg_LogMessage(host_id, log_level, message));
 }
 
-void AppCacheFrontendProxy::OnContentBlocked(int host_id) {
-  sender_->Send(new AppCacheMsg_ContentBlocked(host_id));
+void AppCacheFrontendProxy::OnContentBlocked(int host_id,
+                                             const GURL& manifest_url) {
+  sender_->Send(new AppCacheMsg_ContentBlocked(host_id, manifest_url));
 }
