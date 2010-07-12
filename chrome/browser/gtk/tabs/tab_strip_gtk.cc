@@ -1084,6 +1084,10 @@ bool TabStripGtk::IsTabDetached(const TabGtk* tab) const {
   return false;
 }
 
+bool TabStripGtk::IsToolbarVisible(const TabGtk* tab) const {
+  return model_->IsToolbarVisible(GetIndexOfTab(tab));
+}
+
 void TabStripGtk::GetCurrentTabWidths(double* unselected_width,
                                       double* selected_width) const {
   *unselected_width = current_unselected_width_;
@@ -1095,6 +1099,13 @@ bool TabStripGtk::IsTabPinned(const TabGtk* tab) const {
     return false;
 
   return model_->IsTabPinned(GetIndexOfTab(tab));
+}
+
+bool TabStripGtk::IsAppTab(const TabGtk* tab) const {
+  if (tab->closing())
+    return false;
+
+  return model_->IsAppTab(GetIndexOfTab(tab));
 }
 
 void TabStripGtk::SelectTab(TabGtk* tab) {
