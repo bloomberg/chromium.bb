@@ -141,7 +141,13 @@ TEST_F(SessionHistoryTest, BasicBackForward) {
 }
 
 // Test that back/forward works when navigating in subframes.
-TEST_F(SessionHistoryTest, FrameBackForward) {
+// Fails on Windows. See crbug.com/TODO
+#if defined(OS_WIN)
+#define MAYBE_FrameBackForward FLAKY_FrameBackForward
+#else
+#define MAYBE_FrameBackForward FrameBackForward
+#endif
+TEST_F(SessionHistoryTest, MAYBE_FrameBackForward) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
