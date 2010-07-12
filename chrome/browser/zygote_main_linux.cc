@@ -89,8 +89,8 @@ static void SELinuxTransitionToTypeOrDie(const char* type) {
 #endif  // CHROMIUM_SELINUX
 
 // This is the object which implements the zygote. The ZygoteMain function,
-// which is called from ChromeMain, at the the bottom and simple constructs one
-// of these objects and runs it.
+// which is called from ChromeMain, simply constructs one of these objects and
+// runs it.
 class Zygote {
  public:
   bool ProcessRequests() {
