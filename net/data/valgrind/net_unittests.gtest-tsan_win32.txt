@@ -11,9 +11,6 @@ URLRequestTest.QuitTest
 # See http://crbug.com/46647
 DiskCacheBackendTest.*
 
-# See http://crbug.com/47836
-ClientSocketPoolBaseTest.CancelPendingSocketAtSocketLimit
-
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
 # Please see http://dev.chromium.org/developers/testing#TOC-SSL-tests
