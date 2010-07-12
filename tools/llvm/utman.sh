@@ -466,7 +466,6 @@ everything() {
   newlib-arm
   extrasdk-arm
   misc-tools
-  examples
 
   clean-pnacl
   organize-native-code
@@ -1941,15 +1940,6 @@ extrasdk-bitcode-install() {
   cp -fa "${include_save}"/* "${include_install}"
   cp -fa "${lib_save}"/*     "${lib_install}"
 }
-
-#+ examples              - Install examples.
-
-examples() {
-  StepBanner "EXAMPLES" "Install"
-  rm -rf  ${INSTALL_ROOT}/examples/
-  cp -r  tools/llvm/arm_examples ${INSTALL_ROOT}/examples/
-}
-
 
 #+ newlib-nacl-headers   - Add custom NaCl headers to newlib
 newlib-nacl-headers() {

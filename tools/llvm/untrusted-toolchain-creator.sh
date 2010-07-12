@@ -832,13 +832,6 @@ extrasdk() {
 }
 
 
-examples() {
-  Banner "installing examples into ${INSTALL_ROOT}/examples"
-  rm -rf  ${INSTALL_ROOT}/examples/
-  cp -r  tools/llvm/arm_examples ${INSTALL_ROOT}/examples/
-}
-
-
 # NOTE: Experiment x86-32 support
 add-x86-basics-32() {
   Banner "installing experimental x86-32 support"
@@ -956,7 +949,6 @@ untrusted_sdk() {
   untrusted_sdk_experimental_build
 
   misc-tools
-  examples
   prune
   tarball $1
 }
@@ -1081,11 +1073,6 @@ driver-symlink() {
 #@ prune
 #@
 #@   Prune tree to make tarball smaller.
-
-#@
-#@ examples
-#@
-#@   Install examples.
 
 #@
 #@ add-x86-basics-32
