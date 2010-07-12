@@ -17,7 +17,7 @@ import subprocess
 import sys
 import unittest
 
-from fake_repos import join, write, FakeReposTestBase
+from fake_repos import check_call, join, write, FakeReposTestBase
 
 GCLIENT_PATH = join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     'gclient')
@@ -103,7 +103,7 @@ class GClientSmokeBase(FakeReposTestBase):
         path = self.root_dir
       self.checkString(results[i][0][0], verb, (i, results[i][0][0], verb))
       self.checkString(results[i][0][2], path, (i, results[i][0][2], path))
-    self.assertEquals(len(results), len(items))
+    self.assertEquals(len(results), len(items), (stdout, items))
     return results
 
   def svnBlockCleanup(self, out):
@@ -744,6 +744,84 @@ class GClientSmokeBoth(GClientSmokeBase):
                 for (scm, url, path) in expected_source]
 
     self.assertEquals(sorted(entries), sorted(expected))
+
+
+class GClientSmokeFromCheckout(GClientSmokeBase):
+  # WebKit abuses this. It has a .gclient and a DEPS from a checkout.
+  def setUp(self):
+    GClientSmokeBase.setUp(self)
+    self.FAKE_REPOS.setUpSVN()
+    os.rmdir(self.root_dir)
+    check_call(['svn', 'checkout', 'svn://127.0.0.1/svn/trunk/webkit',
+        self.root_dir, '-q',
+        '--non-interactive', '--no-auth-cache',
+        '--username', 'user1', '--password', 'foo'])
+
+  def testSync(self):
+    self.parseGclient(['sync', '--deps', 'mac'], ['running', 'running'])
+    tree = self.mangle_svn_tree(
+        ('trunk/webkit@2', ''),
+        ('trunk/third_party/foo@1', 'foo/bar'))
+    self.assertTree(tree)
+
+  def testRevertAndStatus(self):
+    self.gclient(['sync'])
+
+    # TODO(maruel): This is incorrect.
+    out = self.parseGclient(['status', '--deps', 'mac'], [])
+
+    # Revert implies --force implies running hooks without looking at pattern
+    # matching.
+    results = self.gclient(['revert', '--deps', 'mac'])
+    out = self.splitBlock(results[0])
+    self.assertEquals(2, len(out))
+    self.checkString(2, len(out[0]))
+    self.checkString(2, len(out[1]))
+    self.checkString('foo', out[1][1])
+    self.checkString('', results[1])
+    self.assertEquals(0, results[2])
+    tree = self.mangle_svn_tree(
+        ('trunk/webkit@2', ''),
+        ('trunk/third_party/foo@1', 'foo/bar'))
+    self.assertTree(tree)
+
+    # TODO(maruel): This is incorrect.
+    out = self.parseGclient(['status', '--deps', 'mac'], [])
+
+  def testRunHooks(self):
+    # Hooks aren't really tested for now since there is no hook defined.
+    self.gclient(['sync', '--deps', 'mac'])
+    out = self.parseGclient(['runhooks', '--deps', 'mac'], ['running'])
+    self.assertEquals(1, len(out))
+    self.assertEquals(2, len(out[0]))
+    self.assertEquals(3, len(out[0][0]))
+    self.checkString('foo', out[0][1])
+    tree = self.mangle_svn_tree(
+        ('trunk/webkit@2', ''),
+        ('trunk/third_party/foo@1', 'foo/bar'))
+    self.assertTree(tree)
+
+  def testRevInfo(self):
+    self.gclient(['sync', '--deps', 'mac'])
+    results = self.gclient(['revinfo', '--deps', 'mac'])
+    expected = (
+        './: None;\nfoo/bar: svn://127.0.0.1/svn/trunk/third_party/foo@1\n',
+        '', 0)
+    self.check(expected, results)
+    # TODO(maruel): To be added after the refactor.
+    #results = self.gclient(['revinfo', '--snapshot'])
+    #expected = (
+    #    './: None;\nfoo/bar: svn://127.0.0.1/svn/trunk/third_party/foo@1\n',
+    #    '', 0)
+    #self.check(expected, results)
+
+  def testRest(self):
+    self.gclient(['sync'])
+    # TODO(maruel): This is incorrect, it should run on ./ too.
+    out = self.parseGclient(['cleanup', '--deps', 'mac'],
+                            [('running', join(self.root_dir, 'foo', 'bar'))])
+    out = self.parseGclient(['diff', '--deps', 'mac'],
+                            [('running', join(self.root_dir, 'foo', 'bar'))])
 
 
 if __name__ == '__main__':

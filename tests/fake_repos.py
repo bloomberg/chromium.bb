@@ -389,6 +389,27 @@ deps = {
   'invalid': '/does_not_exist',
 }
 """
+    # WebKit abuses this.
+    fs['trunk/webkit/.gclient'] = """
+solutions = [
+  {
+    'name': './',
+    'url': None,
+  },
+]
+"""
+    fs['trunk/webkit/DEPS'] = """
+deps = {
+  'foo/bar': 'svn://%(host)s/svn/trunk/third_party/foo@1'
+}
+
+hooks = [
+  {
+    'pattern': '.*',
+    'action': ['echo', 'foo'],
+  },
+]
+""" % { 'host': self.HOST }
     self._commit_svn(fs)
 
   def setUpGIT(self):
@@ -602,7 +623,10 @@ class FakeReposTestBase(unittest.TestCase):
       for k, v in tree.iteritems():
         if not k.startswith(old_root):
           continue
-        result[join(new_root, k[len(old_root) + 1:]).replace(os.sep, '/')] = v
+        item = k[len(old_root) + 1:]
+        if item.startswith('.'):
+          continue
+        result[join(new_root, item).replace(os.sep, '/')] = v
     return result
 
   def mangle_git_tree(self, *args):
