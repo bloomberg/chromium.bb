@@ -303,8 +303,6 @@ class DraggedTabController : public TabContentsDelegate,
   // ends within this same window.
   views::View* old_focused_view_;
 
-  bool in_destructor_;
-
   // The position along the major axis of the mouse cursor in screen coordinates
   // at the time of the last re-order event.
   int last_move_screen_loc_;

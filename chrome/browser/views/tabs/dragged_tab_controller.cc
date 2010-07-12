@@ -340,7 +340,6 @@ DraggedTabController::DraggedTabController(BaseTab* source_tab,
       attached_tab_(NULL),
       offset_to_width_ratio_(0),
       old_focused_view_(NULL),
-      in_destructor_(false),
       last_move_screen_loc_(0),
       mini_(source_tab->data().mini),
       pinned_(source_tabstrip->IsTabPinned(source_tab)),
@@ -357,7 +356,6 @@ DraggedTabController::~DraggedTabController() {
   if (instance_ == this)
     instance_ = NULL;
 
-  in_destructor_ = true;
   MessageLoopForUI::current()->RemoveObserver(this);
   // Need to delete the view here manually _before_ we reset the dragged
   // contents to NULL, otherwise if the view is animating to its destination
@@ -897,7 +895,10 @@ void DraggedTabController::Detach() {
   DCHECK(index != -1);
   // Hide the tab so that the user doesn't see it animate closed.
   attached_tab_->SetVisible(false);
+  int attached_tab_width = attached_tab_->width();
   attached_model->DetachTabContentsAt(index);
+  // Detaching may end up deleting the tab, drop references to it.
+  attached_tab_ = NULL;
 
   // If we've removed the last Tab from the TabStrip, hide the frame now.
   if (!attached_model->HasNonPhantomTabs())
@@ -912,14 +913,12 @@ void DraggedTabController::Detach() {
 
   // Create the dragged view.
   EnsureDraggedView(tab_data);
-  view_->Attach(attached_tab_->width());
-  view_->Detach(photobooth_.get());
+  view_->SetTabWidthAndUpdate(attached_tab_width, photobooth_.get());
 
   // Detaching resets the delegate, but we still want to be the delegate.
   dragged_contents_->set_delegate(this);
 
   attached_tabstrip_ = NULL;
-  attached_tab_ = NULL;
 }
 
 int DraggedTabController::GetInsertionIndexForDraggedBounds(

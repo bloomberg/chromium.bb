@@ -43,30 +43,17 @@ class DraggedTabView : public views::View {
     mouse_tab_offset_ = offset;
   }
 
-  // Notifies the DraggedTabView that it has become attached to a TabStrip.
-  void Attach(int selected_width);
-
-  // Resizes the dragged tab to a width of |width|.
-  void Resize(int width);
-
-  // Notifies the DraggedTabView that it has been detached from a TabStrip.
-  void Detach(NativeViewPhotobooth* photobooth);
+  // Sets the width of the dragged tab and updates the dragged image.
+  void SetTabWidthAndUpdate(int width, NativeViewPhotobooth* photobooth);
 
   // Notifies the DraggedTabView that it should update itself.
   void Update();
-
-  // Returns the size of the DraggedTabView. Used when attaching to a TabStrip
-  // to determine where to place the Tab in the attached TabStrip.
-  const gfx::Size& attached_tab_size() const { return attached_tab_size_; }
 
  private:
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
-
-  // Paint the view, when it's attached to a TabStrip.
-  void PaintAttachedTab(gfx::Canvas* canvas);
 
   // Paint the view, when it's not attached to any TabStrip.
   void PaintDetachedView(gfx::Canvas* canvas);
@@ -90,10 +77,6 @@ class DraggedTabView : public views::View {
   // The renderer that paints the Tab shape.
   scoped_ptr<views::View> renderer_;
 
-  // True if the view is currently attached to a TabStrip. Controls rendering
-  // and sizing modes.
-  bool attached_;
-
   // True if "Show window contents while dragging" is enabled.
   bool show_contents_on_drag_;
 
@@ -103,9 +86,8 @@ class DraggedTabView : public views::View {
   // position of detached windows.
   gfx::Point mouse_tab_offset_;
 
-  // The size of the tab renderer when the dragged tab is attached to a
-  // tabstrip.
-  gfx::Size attached_tab_size_;
+  // The size of the tab renderer.
+  gfx::Size tab_size_;
 
   // A handle to the DIB containing the current screenshot of the TabContents
   // we are dragging.
