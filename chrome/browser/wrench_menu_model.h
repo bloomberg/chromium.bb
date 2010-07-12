@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "app/menus/button_menu_item_model.h"
 #include "app/menus/simple_menu_model.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

@@ -28,7 +28,6 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -73,6 +72,7 @@ class DOMUI;
 class DownloadItem;
 class Extension;
 class GeolocationSettingsState;
+class InfoBarDelegate;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
 class PluginInstaller;
@@ -644,9 +644,7 @@ class TabContents : public PageNavigator,
   void OnCloseStarted();
 
   // Getter/Setters for the url request context to be used for this tab.
-  void set_request_context(URLRequestContextGetter* context) {
-    request_context_ = context;
-  }
+  void set_request_context(URLRequestContextGetter* context);
   URLRequestContextGetter* request_context() const {
     return request_context_.get();
   }

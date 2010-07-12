@@ -15,11 +15,11 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class CommandLine;
 class DictionaryValue;
 class ListValue;
+class SkBitmap;
 
 // This class acts as the browser-side host to a utility child process.  A
 // utility process is a short-lived sandboxed process that is created to run

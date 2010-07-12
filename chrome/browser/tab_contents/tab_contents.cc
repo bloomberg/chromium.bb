@@ -1345,6 +1345,10 @@ void TabContents::OnCloseStarted() {
     tab_close_start_time_ = base::TimeTicks::Now();
 }
 
+void TabContents::set_request_context(URLRequestContextGetter* context) {
+  request_context_ = context;
+}
+
 bool TabContents::ShouldAcceptDragAndDrop() const {
 #if defined(OS_CHROMEOS)
   // ChromeOS panels (pop-ups) do not take drag-n-drop.

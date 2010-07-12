@@ -8,6 +8,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/webplugin.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 

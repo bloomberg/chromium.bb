@@ -28,6 +28,7 @@
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"

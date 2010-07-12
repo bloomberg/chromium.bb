@@ -16,9 +16,9 @@
 #include "gfx/point.h"
 #include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 
+class SkBitmap;
 class TabContents;
 class TabContentsView;
 struct WebDropData;

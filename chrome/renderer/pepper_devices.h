@@ -15,9 +15,9 @@
 #include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 class WebPluginDelegatePepper;
+class SkBitmap;
 
 // Lists all contexts currently open for painting. These are ones requested by
 // the plugin but not destroyed by it yet. The source pointer is the raw

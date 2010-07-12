@@ -16,6 +16,7 @@
 #include "gfx/gtk_util.h"
 #include "gfx/skbitmap_operations.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
     int normal_id, int active_id, int highlight_id, int depressed_id,

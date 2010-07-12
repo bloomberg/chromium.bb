@@ -15,10 +15,11 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "gfx/rect.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class CairoCachedSurface;
 class GtkThemeProvider;
+class SkBitmap;
 
 // These classes implement two kinds of custom-drawn buttons.  They're
 // used on the toolbar and the bookmarks bar.

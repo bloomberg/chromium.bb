@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace menus {
 

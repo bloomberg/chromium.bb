@@ -8,11 +8,12 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "app/menus/button_menu_item_model.h"
 #include "app/menus/menu_model.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace menus {
+
+class ButtonMenuItemModel;
 
 // A simple MenuModel implementation with an imperative API for adding menu
 // items. This makes it easy to construct fixed menus. Menus populated by

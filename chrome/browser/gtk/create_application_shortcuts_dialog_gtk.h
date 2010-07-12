@@ -12,7 +12,6 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/shell_integration.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;

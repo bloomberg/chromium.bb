@@ -9,6 +9,7 @@
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/infobar_controller.h"
 #include "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "skia/ext/skia_utils_mac.h"

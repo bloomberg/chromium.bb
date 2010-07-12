@@ -6,17 +6,20 @@
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data_database_helper.h"
-#include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
-#include "net/base/cookie_monster.h"
 
+class CannedBrowsingDataAppCacheHelper;
+class CannedBrowsingDataDatabaseHelper;
+class CannedBrowsingDataLocalStorageHelper;
 class Profile;
+
+namespace net {
+class CookieMonster;
+}
 
 class TabSpecificContentSettings
     : public RenderViewHostDelegate::ContentSettings {
@@ -74,6 +77,7 @@ class TabSpecificContentSettings
   class LocalSharedObjectsContainer {
    public:
     explicit LocalSharedObjectsContainer(Profile* profile);
+    ~LocalSharedObjectsContainer();
 
     // Empties the container.
     void Reset();

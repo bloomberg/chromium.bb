@@ -44,7 +44,6 @@
 #include "chrome/renderer/translate_helper.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
@@ -82,6 +81,7 @@ class ListValue;
 class NavigationState;
 class PepperDeviceTest;
 class PrintWebViewHelper;
+class SkBitmap;
 class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 struct ContextMenuMediaParams;

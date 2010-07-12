@@ -10,6 +10,7 @@
 #include "chrome/browser/geolocation/mock_location_provider.h"
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"

@@ -5,6 +5,10 @@
 #include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "net/base/cookie_monster.h"
 
 bool TabSpecificContentSettings::IsContentBlocked(
     ContentSettingsType content_type) const {
@@ -128,6 +132,10 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
       appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
+}
+
+TabSpecificContentSettings::LocalSharedObjectsContainer::
+    ~LocalSharedObjectsContainer() {
 }
 
 void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
