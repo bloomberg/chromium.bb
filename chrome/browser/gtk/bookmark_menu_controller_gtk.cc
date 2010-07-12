@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -204,34 +205,42 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
 gboolean BookmarkMenuController::OnButtonPressed(
     GtkWidget* sender,
     GdkEventButton* event) {
+  if (event->button == 1) {
+    return FALSE;
+
   ignore_button_release_ = false;
   GtkMenuShell* menu_shell = GTK_MENU_SHELL(sender);
-
-  if (event->button == 3) {
-    // If the cursor is outside our bounds, pass this event up to the parent.
-    if (!gtk_util::WidgetContainsCursor(sender)) {
-      if (menu_shell->parent_menu_shell) {
-        return OnButtonPressed(menu_shell->parent_menu_shell, event);
-      } else {
-        // We are the top level menu; we can propagate no further.
-        return FALSE;
-      }
+  // If the cursor is outside our bounds, pass this event up to the parent.
+  if (!gtk_util::WidgetContainsCursor(sender)) {
+    if (menu_shell->parent_menu_shell) {
+      return OnButtonPressed(menu_shell->parent_menu_shell, event);
+    } else {
+      // We are the top level menu; we can propagate no further.
+      return FALSE;
     }
+  }
 
-    // This will return NULL if we are not an empty menu.
-    const BookmarkNode* parent = GetParentNodeFromEmptyMenu(sender);
-    bool is_empty_menu = !!parent;
-    // If there is no active menu item and we are not an empty menu, then do
-    // nothing. This can happen if the user has canceled a context menu while
-    // the cursor is hovering over a bookmark menu. Doing nothing is not optimal
-    // (the hovered item should be active), but it's a hopefully rare corner
-    // case.
-    GtkWidget* menu_item = menu_shell->active_menu_item;
-    if (!is_empty_menu && !menu_item)
-      return TRUE;
+  // This will return NULL if we are not an empty menu.
+  const BookmarkNode* parent = GetParentNodeFromEmptyMenu(sender);
+  bool is_empty_menu = !!parent;
+  // If there is no active menu item and we are not an empty menu, then do
+  // nothing. This can happen if the user has canceled a context menu while
+  // the cursor is hovering over a bookmark menu. Doing nothing is not optimal
+  // (the hovered item should be active), but it's a hopefully rare corner
+  // case.
+  GtkWidget* menu_item = menu_shell->active_menu_item;
+  if (!is_empty_menu && !menu_item)
+    return TRUE;
+  const BookmarkNode* node =
+      menu_item ? GetNodeFromMenuItem(menu_item) : NULL;
 
-    const BookmarkNode* node =
-        menu_item ? GetNodeFromMenuItem(menu_item) : NULL;
+  if (event->button == 2 && node) {
+    bookmark_utils::OpenAll(parent_window_,
+                            profile_, page_navigator_,
+                            node, NEW_BACKGROUND_TAB);
+    gtk_menu_popdown(GTK_MENU(menu_));
+    return TRUE;
+  } else if (event->button == 3) {
     DCHECK_NE(is_empty_menu, !!node);
     if (!is_empty_menu)
       parent = node->GetParent();
@@ -286,6 +295,8 @@ gboolean BookmarkMenuController::OnButtonReleased(
   } else {
     // The menu item is a folder node.
     if (event->button == 1) {
+      // Having overriden the normal handling, we need to manually activate
+      // the item.
       gtk_menu_shell_select_item(GTK_MENU_SHELL(sender->parent), sender);
       g_signal_emit_by_name(sender->parent, "activate-current");
       return TRUE;
