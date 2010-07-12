@@ -18,11 +18,11 @@ class ExtensionIdleEventRouter {
   DISALLOW_COPY_AND_ASSIGN(ExtensionIdleEventRouter);
 };
 
-// Implementation of the chrome.experimental.idle.queryState API.
+// Implementation of the chrome.idle.queryState API.
 class ExtensionIdleQueryStateFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.idle.queryState")
+  DECLARE_EXTENSION_FUNCTION_NAME("idle.queryState")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_IDLE_API_H_

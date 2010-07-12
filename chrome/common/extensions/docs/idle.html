@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Other Deployment Options - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>chrome.idle - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
       </div>
@@ -168,7 +168,7 @@
                   <li><a href="background_pages.html">Background Pages</a></li>
                   <li><a href="content_scripts.html">Content Scripts</a></li>
                   <li><a href="xhr.html">Cross-Origin XHR</a></li>
-                  <li><a href="idle.html">Idle</a></li>
+                  <li class="leftNavSelected">Idle</li>
                   <li><a href="i18n.html">Internationalization</a></li>
                   <li><a href="messaging.html">Message Passing</a></li>
                   <li><a href="npapi.html">NPAPI Plugins</a></li>
@@ -177,7 +177,7 @@
               <li>Finishing
                 <ul>
                   <li><a href="hosting.html">Hosting</a></li>
-                  <li class="leftNavSelected">Other Deployment Options</li>
+                  <li><a href="external_extensions.html">Other Deployment Options</a></li>
                 </ul>
               </li>
             </ul>
@@ -208,52 +208,24 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Other Deployment Options</h1>
+        <h1 class="page_title">chrome.idle</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li>
-              <a href="#prereqs">Before you begin</a>
+            <li style="display: none; ">
+              <a>h2Name</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#preferences">Using a preferences file</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#registry">Using the Windows registry</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#updating">Updating and uninstalling</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#faq">FAQ</a>
-              <ol>
-                <li style="display: none; ">
+                <li>
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li style="display: none; ">
-                <a href="#apiReference">API reference</a>
+              <li>
+                <a href="#apiReference">API reference: chrome.idle</a>
                 <ol>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
@@ -265,7 +237,7 @@
                     <a href="#methods">Methods</a>
                     <ol>
                       <li>
-                        <a href="#method-anchor">methodName</a>
+                        <a href="#method-queryState">queryState</a>
                       </li>
                     </ol>
                   </li>
@@ -273,11 +245,11 @@
                     <a href="#events">Events</a>
                     <ol>
                       <li>
-                        <a href="#event-anchor">eventName</a>
+                        <a href="#event-onStateChanged">onStateChanged</a>
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#types">Types</a>
                     <ol>
                       <li>
@@ -292,266 +264,15 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Other Deployment Options</div>
-<div id="pageData-showTOC" class="pageData">true</div>
-
-<p>
-Usually, users install their own extensions.
-But sometimes you might want an extension
-to be installed automatically.
-Here are two typical cases:
-</p>
-
-<ul>
-  <li>
-    An extension is associated with some other software,
-    and the extension should be installed
-    whenever the user installs that other software.
-    The extension could also be uninstalled
-    when the user removes that other software.
-  </li>
-  <li>
-    A network admin wants to install the same extensions
-    throughout the company.
-  </li>
-</ul>
-
-<p>
-An extension that's installed automatically is known as an
-<em>external extension</em>.
-Google Chrome supports two ways of
-installing external extensions:
-</p>
-
-<ul>
-  <li> Using a preferences JSON file </li>
-  <li> Using the Windows registry (Windows only) </li>
-</ul>
-
-<h2 id="prereqs">Before you begin</h2>
-
-<p>
-First, package a
-<a href="packaging.html"><code>.crx</code> file</a>
-and make sure that it installs successfully.
-</p>
-
-<p>
-Then, before you edit the preferences file or the registry,
-make a note of the following:
-</p>
-
-<ul>
- <li> The intended <b>location</b> of the extension's <code>.crx</code> file </li>
- <li> The extension's <b>version</b>
-   (from the manifest file or the <b>chrome://extensions</b> page) </li>
- <li> The extension's <b>ID</b>
-   (from the <b>chrome://extensions</b> page
-   when you've loaded the packed extension) </li>
-</ul>
-
-<p>
-The following examples assume the location is
-<code>\\server\share\extension.crx</code>
-or <code>/home/share/extension.crx</code>,
-the version is <code>1.0</code>,
-and the ID is <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>.
-</p>
-
-<h2 id="preferences">Using a preferences file</h2>
-
-<p class="note">
-<b>Windows note:</b>
-Until <a href="http://crbug.com/41902">bug 41902</a> is fixed,
-you might want to use the <a href="#registry">Windows registry</a>
-instead of the preferences file.
-
-</p>
-
-<ol>
-<li>Make the <code>.crx</code> extension file available
-to the machine you want to install the extension
-on. (Copy it to a local directory
-or to a network share — for example, <code>\\server\share\extension.crx</code>
-or <code>/home/share/extension.crx</code>.)
-</li>
-<li>Locate the <code>external_extensions.json</code> file
-  under the Google Chrome installation directory.
-  If the file doesn't exist, create it.
-  The location depends on the operating system.
-  <dl>
-  <dt> Windows: </dt>
-    <dd> <code><em>chrome_root</em>\Application\<em>chrome_version</em>\Extensions\</code>
-    <br>
-    Example: <code>c:\Users\Me\AppData\Local\Google\Chrome\Application\6.0.422.0\Extensions\</code>
-    </dd>
-  <dt> Mac OS X: </dt>
-    <dd> <code>/Applications/Google Chrome.app/Contents/Extensions/</code> </dd>
-  <dt> Linux: </dt>
-    <dd> <code>/opt/google/chrome/extensions/</code> <br>
-    <b>Note:</b> Use <code>chmod</code> if necessary
-    to make sure that <code>extensions/external_extensions.json</code>
-    is world-readable.
-    </dd>
-  </dl>
-</li>
-<li> Add an entry to <code>external_extensions.json</code>
-  for your extension's ID,
-  specifying the extension's location and version
-  with fields named "external_crx" and "external_version".
-  Example:
-<pre>{
-  "aaaaaaaaaabbbbbbbbbbcccccccccc": {
-    "external_crx": "/home/share/extension.crx",
-    "external_version": "1.0"
-  }
-}</pre>
-
-<p class="note">
-<b>Note:</b>
-You need to escape
-each <code>\</code> character in the location.
-For example,
-<code>\\server\share\extension.crx</code> would be
-<code>"\\\\server\\share\\extension.crx"</code>.
-</p>
-</li>
-
-<li>Save the JSON file. </li>
-<li>Launch Google Chrome and go to <b>chrome://extensions</b>;
-you should see the extension listed. </li>
-</ol>
-
-<h2 id="registry">Using the Windows registry</h2>
-
-<ol>
-<li>Make the <code>.crx</code> extension file available
-to the machine you want to install the extension on.
-(Copy it to a local directory or to a network share —
-for example, <code>\\server\share\extension.crx</code>.)
-</li><li>Find or create the following key in the
-registry:
-<ul>
-  <li> 32-bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Google\Chrome\Extensions</code> </li>
-  <li> 64-bit Windows: <code>HKEY_LOCAL_MACHINE\Software\Wow6432Node\Google\Chrome\Extensions</code> </li>
-</ul>
-</li>
-
-<li>Create a new key (folder)
-under the <b>Extensions</b> key with the
-same name as the ID of your extension
-(for example, <code>aaaaaaaaaabbbbbbbbbbcccccccccc</code>).
-</li><li>Create two string values (<code>REG_SZ</code>) named "path" and "version",
-  and set them to the extension's location and version.
-  For example:
-<ul>
-  <li>path: <code>\\server\share\extension.crx</code> </li>
-  <li>version: <code>1.0</code> </li>
-</ul>
-</li>
-<li>Launch the browser and go to
-<b>chrome://extensions</b>; you should
-see the extension listed. </li>
-</ol>
-
-<h2 id="updating">Updating and uninstalling</h2>
-
-<p>Google Chrome scans the metadata entries
-in the preferences and registry
-each time the browser starts, and makes
-any necessary changes to the installed
-external extensions. </p>
-
-<p>To update your extension to a new version,
-update the file, and then update the version
-in the preferences or registry. </p>
-
-<p>To uninstall your extension
-(for example, if your software is uninstalled),
-remove the metadata from the preferences file
-or registry. </p>
-
-<h2 id="faq">FAQ</h2>
-
-<p>
-This section answers common questions about external extensions.
-</p>
-
-<br>
-
-<p><b>Can I specify a URL as a path to the external extension?</b> </p>
-<p>Not at this time.
-Google Chrome supports only absolute or relative local paths
-and UNC paths.
-Relative paths are relative
-to the <code>Extensions</code> directory
-(where the <code>external_extensions.json</code> file is located).
-</p>
-
-<br>
-
-<p><b>What are some common mistakes
-when installing with the preferences file?</b> </p>
-<ul>
-  <li>
-    Not specifying the same id/version
-    as the one listed in the <code>.crx</code> </li>
-  <li>
-    <code>external_extension.json</code> is in the wrong location </li>
-  <li>
-    Syntax error in JSON file
-    (forgetting to separate entries with comma or
-    leaving a trailing comma somewhere) </li>
-  <li>
-    Extra curly brackets around the top level dictionary </li>
-  <li>
-    JSON file entry points to the wrong path
-    to the <code>.crx</code> (or path specified but no filename) </li>
-  <li>
-    Backslashes in UNC path not escaped
-    (for example, <code>\\server\share\file</code> is wrong;
-    it should be <code>\\\\server\\share\\extension</code>) </li>
-  <li>
-    Permissions problems on a network share </li>
-</ul>
-
-<br>
-
-<p><b>What are some common mistakes when installing with the registry?</b>
-</p><ul>
-  <li>Not specifying the same id/version
-    as the one listed in the <code>.crx</code> </li>
-  <li>Key created in the wrong location in the registry </li>
-  <li>Registry entry points to the wrong path to the <code>.crx</code> file
-    (or path specified but no filename) </li>
-  <li>Permissions problems on a network share </li>
-</ul>
-
-<br>
-
-<p><b>What if the user uninstalls the extension?</b>
-</p><p>If the user uninstalls the extension through the UI, it will no
-longer be installed or updated on each startup. In other words, the
-external extension is blacklisted. </p>
-
-<br>
-
-<p><b>How do I get off the blacklist?</b>
-</p><p>If the user uninstalls your extension, you should respect that
-decision. However, if you (the developer) accidentally uninstalled
-your extension through the UI,
-you can remove the blacklist tag
-by installing the extension normally
-through the UI, and then uninstalling it. </p>
-</div>
+        <div id="static"></div>
 
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
+        <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
+        <h2>API reference: chrome.idle</h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -575,33 +296,135 @@ through the UI, and then uninstalling it. </p>
 
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
+              <a name="method-queryState"></a> <!-- method-anchor -->
+              <h4>queryState</h4>
 
-              <div class="summary"><span>void</span>
+              <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
+                  <span>chrome.idle.queryState</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>thresholdSeconds</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Returns the current state of the browser.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
-                    </div>
+          <dt>
+            <var>thresholdSeconds</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Threshold, in seconds, used to determine when a machine is in the idle state.</dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                   </div>
                 </dl>
 
                 <!-- RETURNS -->
-                <h4>Returns</h4>
+                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div>
+                  <div style="display: none; ">
                     <div>
                     </div>
                   </div>
@@ -615,24 +438,75 @@ through the UI, and then uninstalling it. </p>
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p>
+                  <p style="display: none; ">
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span>string newState</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
                     <div>
                       <div>
-                      </div>
+          <dt>
+            <var>newState</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span>["active", "idle", "locked"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                     </div>
                   </dl>
                   </div>
                 </div>
 
                 <!-- MIN_VERSION -->
-                <p>
+                <p style="display: none; ">
                   This function was added in version <b><span></span></b>.
                   If you require this function, the manifest key
                   <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
@@ -651,26 +525,75 @@ through the UI, and then uninstalling it. </p>
 
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a></a>
-              <h4>event name</h4>
+              <a name="event-onStateChanged"></a>
+              <h4>onStateChanged</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.bookmarks</span><span>onEvent</span><span class="subdued">.addListener</span>(function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.idle.</span><span>onStateChanged</span><span class="subdued">.addListener</span>(function(<span>string newState</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the event goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when the browser changes to an active state.  Currently only reports the transition from idle to active.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
-                    </div>
+          <dt>
+            <var>newState</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                        <span>["active"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                   </div>
                 </dl>
 
@@ -681,7 +604,7 @@ through the UI, and then uninstalling it. </p>
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="types"></a>
             <h3 id="types">Types</h3>
 

@@ -9,7 +9,7 @@ namespace extension_idle_api_constants {
 const wchar_t kSecondsKey[] = L"seconds";
 const wchar_t kStateKey[] = L"state";
 
-const char kOnStateChanged[] = "experimental.idle.onStateChanged";
+const char kOnStateChanged[] = "idle.onStateChanged";
 
 const wchar_t kStateActive[] = L"active";
 const wchar_t kStateIdle[] = L"idle";

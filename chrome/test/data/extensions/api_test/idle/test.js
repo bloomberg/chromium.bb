@@ -17,9 +17,9 @@ chrome.test.runTests([
   // Exercise querying the state.  Querying the state multiple times within
   // the same threshold exercises different code.
   function queryState() {
-    chrome.experimental.idle.queryState(60, pass(function(state) {
+    chrome.idle.queryState(60, pass(function(state) {
       var previous_state = state;
-      chrome.experimental.idle.queryState(120, pass(function(state) {
+      chrome.idle.queryState(120, pass(function(state) {
         assertEq(previous_state, state);
         chrome.test.succeed();
       }));
@@ -28,7 +28,7 @@ chrome.test.runTests([
 
   // Exercise the setting of the event listener.
   function setCallback() {
-    chrome.experimental.idle.onStateChanged.addListener(function(state) {
+    chrome.idle.onStateChanged.addListener(function(state) {
       window.console.log('current state: ' + state);
 
       // The test has succeeded.

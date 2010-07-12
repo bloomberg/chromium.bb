@@ -2014,8 +2014,7 @@
     ]
   },
   {
-    "namespace": "experimental.idle",
-    "nodoc": "true",
+    "namespace": "idle",
     "types": [],
     "functions": [
       {
@@ -2024,16 +2023,17 @@
         "description": "Returns the current state of the browser.",
         "parameters": [
           {
-            "name": "threshold",
+            "name": "thresholdSeconds",
             "type": "integer",
             "minimum": 15,
-            "description": "Threshold used to determine when a machine is in the idle state."
+            "description": "Threshold, in seconds, used to determine when a machine is in the idle state."
           },
           {
             "name": "callback",
             "type": "function",
             "parameters": [
               {
+                "name": "newState",
                 "type": "string",
                 "enum": ["active", "idle", "locked"]
               }
@@ -2049,6 +2049,7 @@
         "description": "Fired when the browser changes to an active state.  Currently only reports the transition from idle to active.",
         "parameters": [
           {
+            "name": "newState",
             "type": "string",
             "enum": ["active"]
           }
