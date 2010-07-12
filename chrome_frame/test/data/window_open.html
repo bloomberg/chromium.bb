@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <script type="text/javascript">
+      var new_window;
+
+      function OnDblClick() {
+        // Open popup to the url from the given query string.
+        var url = window.location.search.substring(1);
+        new_window = window.open(url, "_blank",
+                                 "left=10, top=10, height=250, width=250");
+      }
+      
+      function OnKeyPress() {
+        var char_code = String.fromCharCode(event.keyCode);
+        if (char_code == 'C') {
+          new_window.close();
+        }
+      }
+    </script>
+  </head>
+  <body onkeypress="OnKeyPress();" ondblclick="OnDblClick();">
+    ChromeFrame full tab mode window open popup test
+  </body>
+</html>

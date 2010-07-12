@@ -370,16 +370,29 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
 // instance to send the response.
 class HTTPTestServer : public ListenSocket::ListenSocketDelegate {
  public:
-  explicit HTTPTestServer(int port, const char* address);
+  explicit HTTPTestServer(int port, const std::wstring& address,
+                          FilePath root_dir);
   virtual ~HTTPTestServer();
+
   // HTTP GET request is received. Override in derived classes.
   // |connection| can be used to send the response.
   virtual void Get(ConfigurableConnection* connection,
-                   const std::string& path, const Request& r) = 0;
+                   const std::wstring& path, const Request& r) = 0;
+
   // HTTP POST request is received. Override in derived classes.
   // |connection| can be used to send the response
   virtual void Post(ConfigurableConnection* connection,
-                    const std::string& path, const Request& r) = 0;
+                    const std::wstring& path, const Request& r) = 0;
+
+  // Return the appropriate url with the specified path for this server.
+  std::wstring Resolve(const std::wstring& path);
+
+  FilePath root_dir() { return root_dir_; }
+
+ protected:
+  int port_;
+  std::wstring address_;
+  FilePath root_dir_;
 
  private:
   typedef std::list<scoped_refptr<ConfigurableConnection> > ConnectionList;
@@ -394,9 +407,9 @@ class HTTPTestServer : public ListenSocket::ListenSocketDelegate {
 
   scoped_refptr<ListenSocket> server_;
   ConnectionList connection_list_;
+
   DISALLOW_COPY_AND_ASSIGN(HTTPTestServer);
 };
-
 
 }  // namespace test_server
 

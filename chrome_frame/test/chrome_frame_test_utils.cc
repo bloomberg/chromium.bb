@@ -356,7 +356,8 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   // This causes the IWebBrowser2 interface which is returned to be useless,
   // i.e it does not receive any events, etc. Our workaround for this is
   // to impersonate a low integrity token and then launch IE.
-  if (win_util::GetWinVersion() == win_util::WINVERSION_VISTA) {
+  if (win_util::GetWinVersion() == win_util::WINVERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
     // Create medium integrity browser that will launch IE broker.
     ScopedComPtr<IWebBrowser2> medium_integrity_browser;
     hr = medium_integrity_browser.CreateInstance(CLSID_InternetExplorer, NULL,
@@ -891,6 +892,56 @@ FilePath GetProfilePathForIE() {
     profile_path = profile_path.Append(L"Google Chrome Frame");
   }
   return profile_path;
+}
+
+FilePath GetTestDataFolder() {
+  FilePath test_dir;
+  PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
+  test_dir = test_dir.Append(FILE_PATH_LITERAL("chrome_frame"))
+      .Append(FILE_PATH_LITERAL("test"))
+      .Append(FILE_PATH_LITERAL("data"));
+  return test_dir;
+}
+
+std::wstring GetPathFromUrl(const std::wstring& url) {
+  string16 url16 = WideToUTF16(url);
+  GURL gurl = GURL(url16);
+  if (gurl.has_query()) {
+    GURL::Replacements replacements;
+    replacements.ClearQuery();
+    gurl = gurl.ReplaceComponents(replacements);
+  }
+  return UTF8ToWide(gurl.PathForRequest());
+}
+
+std::wstring GetPathAndQueryFromUrl(const std::wstring& url) {
+  string16 url16 = WideToUTF16(url);
+  GURL gurl = GURL(url16);
+  return UTF8ToWide(gurl.PathForRequest());
+}
+
+bool AddCFMetaTag(std::string* html_data) {
+  if (!html_data) {
+    NOTREACHED();
+    return false;
+  }
+  size_t head = html_data->find("<head>");
+  if (head == std::string::npos) {
+    // Add missing head section.
+    size_t html = html_data->find("<html>");
+    EXPECT_NE(std::string::npos, html) << "Meta tag will not be injected "
+        << "because the html tag could not be found";
+    if (html != std::string::npos) {
+      html_data->insert(html + strlen("<html>"), "<head></head>");
+      head = html_data->find("<head>");
+    }
+  }
+  if (head != std::string::npos) {
+    html_data->insert(
+        head + strlen("<head>"),
+        "<meta http-equiv=\"x-ua-compatible\" content=\"chrome=1\" />");
+  }
+  return head != std::string::npos;
 }
 
 void DelaySendExtendedKeysEnter(TimedMsgLoop* loop, int delay, char c,

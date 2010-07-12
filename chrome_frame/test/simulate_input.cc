@@ -244,21 +244,17 @@ void SendExtendedKey(WORD key, Modifier modifiers) {
   SendMnemonic(key, modifiers, true, false);
 }
 
-void SendStringW(const wchar_t* s) {
-  while (*s) {
-    wchar_t ch = *s;
-    SendCharW(ch, NONE);
+void SendStringW(const std::wstring& s) {
+  for (size_t i = 0; i < s.length(); i++) {
+    SendCharW(s[i], NONE);
     Sleep(10);
-    s++;
   }
 }
 
-void SendStringA(const char* s) {
-  while (*s) {
-    char ch = *s;
-    SendCharA(ch, NONE);
+void SendStringA(const std::string& s) {
+  for (size_t i = 0; i < s.length(); i++) {
+    SendCharA(s[i], NONE);
     Sleep(10);
-    s++;
   }
 }
 

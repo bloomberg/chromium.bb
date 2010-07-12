@@ -5,6 +5,7 @@
 #include "base/logging.h"
 #include "base/registry.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 #include "chrome_frame/test/test_server.h"
 
@@ -217,9 +218,11 @@ void SimpleWebServer::DidClose(ListenSocket* sock) {
   }
 }
 
-HTTPTestServer::HTTPTestServer(int port, const char* address) {
+HTTPTestServer::HTTPTestServer(int port, const std::wstring& address,
+                               FilePath root_dir)
+    : port_(port), address_(address), root_dir_(root_dir) {
   net::EnsureWinsockInit();
-  server_ = ListenSocket::Listen(address, port, this);
+  server_ = ListenSocket::Listen(WideToUTF8(address), port, this);
 }
 
 HTTPTestServer::~HTTPTestServer() {
@@ -258,10 +261,11 @@ void HTTPTestServer::DidRead(ListenSocket* socket,
     std::string str(data, len);
     connection->r_.OnDataReceived(str);
     if (connection->r_.AllContentReceived()) {
+      std::wstring path = UTF8ToWide(connection->r_.path());
       if (LowerCaseEqualsASCII(connection->r_.method(), "post"))
-        this->Post(connection, connection->r_.path(), connection->r_);
+        this->Post(connection, path, connection->r_);
       else
-        this->Get(connection, connection->r_.path(), connection->r_);
+        this->Get(connection, path, connection->r_);
     }
   }
 }
@@ -270,6 +274,29 @@ void HTTPTestServer::DidClose(ListenSocket* socket) {
   ConnectionList::iterator it = FindConnection(socket);
   DCHECK(it != connection_list_.end());
   connection_list_.erase(it);
+}
+
+std::wstring HTTPTestServer::Resolve(const std::wstring& path) {
+  // Remove the first '/' if needed.
+  std::wstring stripped_path = path;
+  if (path.size() && path[0] == L'/')
+    stripped_path = path.substr(1);
+
+  if (port_ == 80) {
+    if (stripped_path.empty()) {
+      return StringPrintf(L"http://%ls", address_.c_str());
+    } else {
+      return StringPrintf(L"http://%ls/%ls", address_.c_str(),
+                          stripped_path.c_str());
+    }
+  } else {
+    if (stripped_path.empty()) {
+      return StringPrintf(L"http://%ls:%d", address_.c_str(), port_);
+    } else {
+      return StringPrintf(L"http://%ls:%d/%ls", address_.c_str(), port_,
+                          stripped_path.c_str());
+    }
+  }
 }
 
 void ConfigurableConnection::SendChunk() {
@@ -334,4 +361,5 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
       NewRunnableMethod(this, &ConfigurableConnection::SendChunk),
                         options.timeout_);
 }
+
 }  // namespace test_server

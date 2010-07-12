@@ -1,21 +1,46 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome_frame/test/test_with_web_server.h"
 
 #include "base/file_version_info.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/mock_ie_event_sink_actions.h"
+#include "net/base/mime_util.h"
 
 using chrome_frame_test::kChromeFrameLongNavigationTimeoutInSeconds;
+using testing::_;
+using testing::StrCaseEq;
 
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
 const int kLongWaitTimeout = 60 * 1000;
 const int kShortWaitTimeout = 25 * 1000;
+
+namespace {
+
+// Helper method for creating the appropriate HTTP response headers.
+std::string CreateHttpHeaders(CFInvocation invocation,
+                              bool add_no_cache_header,
+                              const std::string& content_type) {
+  std::ostringstream ss;
+  ss << "HTTP/1.1 200 OK\r\n"
+     << "Connection: close\r\n"
+     << "Content-Type: " << content_type << "\r\n";
+  if (invocation.type() == CFInvocation::HTTP_HEADER)
+    ss << "X-UA-Compatible: chrome=1\r\n";
+  if (add_no_cache_header)
+    ss << "Cache-Control: no-cache\r\n";
+  return ss.str();
+}
+
+}  // namespace
 
 class ChromeFrameTestEnvironment: public testing::Environment {
  public:
@@ -234,6 +259,64 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
   EXPECT_TRUE(LaunchBrowser(browser, page));
   ASSERT_TRUE(WaitForTestToComplete(kLongWaitTimeout));
   ASSERT_TRUE(CheckResultFile(result_file_to_check, WideToUTF8(version)));
+}
+
+// MockWebServer methods
+void MockWebServer::ExpectAndServeRequest(CFInvocation invocation,
+                                          const std::wstring& url) {
+  EXPECT_CALL(*this, Get(_, chrome_frame_test::UrlPathEq(url), _))
+      .WillOnce(SendResponse(this, invocation));
+}
+
+void MockWebServer::ExpectAndServeRequestAllowCache(CFInvocation invocation,
+                                                    const std::wstring &url) {
+  EXPECT_CALL(*this, Get(_, chrome_frame_test::UrlPathEq(url), _))
+      .WillOnce(SendResponse(this, invocation));
+}
+
+void MockWebServer::ExpectAndServeRequestAnyNumberTimes(
+    CFInvocation invocation, const std::wstring& path_prefix) {
+  EXPECT_CALL(*this, Get(_, testing::StartsWith(path_prefix), _))
+      .WillRepeatedly(SendResponse(this, invocation));
+}
+
+void MockWebServer::SendResponseHelper(
+    test_server::ConfigurableConnection* connection,
+    const std::wstring& request_uri,
+    CFInvocation invocation,
+    bool add_no_cache_header) {
+  // Convert |request_uri| to a path.
+  std::wstring path = request_uri;
+  size_t query_index = request_uri.find(L"?");
+  if (query_index != std::string::npos) {
+    path = path.erase(query_index);
+  }
+  FilePath file_path = root_dir_;
+  if (path.size())
+    file_path = file_path.Append(path.substr(1));  // remove first '/'
+
+  std::string headers, body;
+  if (file_util::PathExists(file_path)) {
+    std::string content_type;
+    EXPECT_TRUE(net::GetMimeTypeFromFile(file_path, &content_type));
+    DLOG(INFO) << "Going to send file (" << WideToUTF8(file_path.value())
+               << ") with content type (" << content_type << ")";
+    headers = CreateHttpHeaders(invocation, add_no_cache_header, content_type);
+
+    EXPECT_TRUE(file_util::ReadFileToString(file_path, &body))
+        << "Could not read file (" << WideToUTF8(file_path.value()) << ")";
+    if (invocation.type() == CFInvocation::META_TAG &&
+        StartsWithASCII(content_type, "text/html", false)) {
+      EXPECT_TRUE(chrome_frame_test::AddCFMetaTag(&body)) << "Could not add "
+          << "meta tag to HTML file.";
+    }
+  } else {
+    DLOG(INFO) << "Going to send 404 for non-existent file ("
+               << WideToUTF8(file_path.value()) << ")";
+    headers = "HTTP/1.1 404 Not Found";
+    body = "";
+  }
+  connection->Send(headers, body);
 }
 
 const wchar_t kPostMessageBasicPage[] = L"files/postmessage_basic_host.html";

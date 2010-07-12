@@ -345,6 +345,18 @@ std::wstring GetExeVersion(const std::wstring& exe_path);
 // Returns the version of Internet Explorer on the machine.
 IEVersion GetInstalledIEVersion();
 
+// Returns the folder for CF test data.
+FilePath GetTestDataFolder();
+
+// Returns the path portion of the url.
+std::wstring GetPathFromUrl(const std::wstring& url);
+
+// Returns the path and query portion of the url.
+std::wstring GetPathAndQueryFromUrl(const std::wstring& url);
+
+// Adds the CF meta tag to the html page. Returns true if successful.
+bool AddCFMetaTag(std::string* html_data);
+
 // Posts a delayed task to send an extended keystroke |repeat| times with an
 // optional modifier via SendInput. Following this, the enter key is sent.
 void DelaySendExtendedKeysEnter(TimedMsgLoop* loop, int delay, char c,
@@ -366,20 +378,6 @@ class CloseIeAtEndOfScope {
     int closed = CloseAllIEWindows();
     DLOG_IF(ERROR, closed != 0)
         << StringPrintf("Closed %i windows forcefully", closed);
-  }
-};
-
-// Specialization of CComObjectStackEx that performs object cleanup via
-// calling Base::Uninitialize() before we get to CComObjectStackEx' destructor.
-// The CComObjectStackEx destructor expects the reference count to be 0
-// or it will throw an assert.  To work around that and to avoid having to
-// explicitly call Uninitialize() at the end of every test, we override the
-// destructor here to perform the cleanup.
-template <class Base>
-class ComStackObjectWithUninitialize : public CComObjectStackEx<Base> {
- public:
-  virtual ~ComStackObjectWithUninitialize() {
-    Base::Uninitialize();
   }
 };
 
