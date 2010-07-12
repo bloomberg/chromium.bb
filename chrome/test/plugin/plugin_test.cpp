@@ -150,7 +150,7 @@ TEST_F(PluginTest, MediaPlayerNew) {
 }
 
 // http://crbug.com/4809
-TEST_F(PluginTest, MediaPlayerOld) {
+TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
   TestPlugin("wmp_old.html", action_max_timeout_ms(), false);
 }
 
@@ -172,7 +172,7 @@ TEST_F(PluginTest, FlashLayoutWhilePainting) {
 }
 
 // http://crbug.com/8690
-TEST_F(PluginTest, Java) {
+TEST_F(PluginTest, DISABLED_Java) {
   TestPlugin("Java.html", action_max_timeout_ms(), false);
 }
 
