@@ -216,13 +216,13 @@ void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
 
 void Clipboard::WriteData(const char* format_name, size_t format_len,
                           const char* data_data, size_t data_len) {
-  char* data = new char[data_len];
-  memcpy(data, data_data, data_len);
   std::string format(format_name, format_len);
   // We assume that certain mapping types are only written by trusted code.
   // Therefore we must upkeep their integrity.
   if (format == kMimeBmp || format == kMimeURI)
     return;
+  char* data = new char[data_len];
+  memcpy(data, data_data, data_len);
   InsertMapping(format.c_str(), data, data_len);
 }
 
