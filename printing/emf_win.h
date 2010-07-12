@@ -84,6 +84,12 @@ class Emf {
     return hdc_;
   }
 
+  // Inserts a custom GDICOMMENT records indicating StartPage/EndPage calls
+  // (since StartPage and EndPage do not work in a metafile DC). Only valid
+  // when hdc_ is non-NULL.
+  bool StartPage();
+  bool EndPage();
+
   // Saves the EMF data to a file as-is. It is recommended to use the .emf file
   // extension but it is not enforced. This function synchronously writes to the
   // file. For testing only.

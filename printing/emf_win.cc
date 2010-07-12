@@ -14,6 +14,24 @@
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace {
+const int kCustomGdiCommentSignature = 0xdeadbabe;
+struct PageBreakRecord {
+  int signature;
+  enum PageBreakType {
+    START_PAGE,
+    END_PAGE,
+  } type;
+  explicit PageBreakRecord(PageBreakType type_in)
+      : signature(kCustomGdiCommentSignature), type(type_in) {
+  }
+  bool IsValid() const {
+    return (signature == kCustomGdiCommentSignature) &&
+           (type >= START_PAGE) && (type <= END_PAGE);
+  }
+};
+}
+
 namespace printing {
 
 bool DIBFormatNativelySupported(HDC dc, uint32 escape, const BYTE* bits,
@@ -232,6 +250,8 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
   // device.
   // TODO(sanjeevr): We should also add JPEG/PNG support for SetSIBitsToDevice
   //
+  // We also process any custom EMR_GDICOMMENT records which are our
+  // placeholders for StartPage and EndPage.
   // Note: I should probably care about view ports and clipping, eventually.
   bool res;
   switch (record()->iType) {
@@ -343,6 +363,27 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
       // Ignore it.
       res = true;
       break;
+    case EMR_GDICOMMENT: {
+      const EMRGDICOMMENT* comment_record =
+          reinterpret_cast<const EMRGDICOMMENT*>(record());
+      if (comment_record->cbData == sizeof(PageBreakRecord)) {
+        const PageBreakRecord* page_break_record =
+            reinterpret_cast<const PageBreakRecord*>(comment_record->Data);
+        if (page_break_record && page_break_record->IsValid()) {
+          if (page_break_record->type == PageBreakRecord::START_PAGE) {
+            res = !!::StartPage(context_->hdc);
+          } else if (page_break_record->type == PageBreakRecord::END_PAGE) {
+            res = !!::EndPage(context_->hdc);
+          } else {
+            res = false;
+            NOTREACHED();
+          }
+        } else {
+          res = Play();
+        }
+      }
+      break;
+    }
     default: {
       res = Play();
       break;
@@ -350,6 +391,25 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
   }
   return res;
 }
+
+bool Emf::StartPage() {
+  DCHECK(hdc_);
+  if (!hdc_)
+    return false;
+  PageBreakRecord record(PageBreakRecord::START_PAGE);
+  return !!GdiComment(hdc_, sizeof(record),
+                      reinterpret_cast<const BYTE *>(&record));
+}
+
+bool Emf::EndPage() {
+  DCHECK(hdc_);
+  if (!hdc_)
+    return false;
+  PageBreakRecord record(PageBreakRecord::END_PAGE);
+  return !!GdiComment(hdc_, sizeof(record),
+                      reinterpret_cast<const BYTE *>(&record));
+}
+
 
 Emf::Enumerator::Enumerator(const Emf& emf, HDC context, const RECT* rect) {
   context_.handle_table = NULL;

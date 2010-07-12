@@ -6,11 +6,13 @@
 
 // For quick access.
 #include <wingdi.h>
+#include <winspool.h>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_handle_win.h"
 #include "printing/printing_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -111,5 +113,44 @@ TEST_F(EmfPrintingTest, Enumerate) {
   }
   context.PageDone();
   context.DocumentDone();
+}
+
+// Disabled if no "UnitTest printer" exists.
+TEST_F(EmfPrintingTest, PageBreak) {
+  ScopedHDC dc(CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL));
+  if (!dc.Get())
+    return;
+  printing::Emf emf;
+  EXPECT_TRUE(emf.CreateDc(dc.Get(), NULL));
+  EXPECT_TRUE(emf.hdc() != NULL);
+  int pages = 3;
+  while (pages) {
+    EXPECT_TRUE(emf.StartPage());
+    ::Rectangle(emf.hdc(), 10, 10, 190, 190);
+    EXPECT_TRUE(emf.EndPage());
+    --pages;
+  }
+  EXPECT_TRUE(emf.CloseDc());
+  uint32 size = emf.GetDataSize();
+  std::vector<BYTE> data;
+  EXPECT_TRUE(emf.GetData(&data));
+  EXPECT_EQ(data.size(), size);
+  emf.CloseEmf();
+
+  // Playback the data.
+  DOCINFO di = {0};
+  di.cbSize = sizeof(DOCINFO);
+  di.lpszDocName = L"Test Job";
+  int job_id = ::StartDoc(dc.Get(), &di);
+  EXPECT_TRUE(emf.CreateFromData(&data.front(), size));
+  EXPECT_TRUE(emf.SafePlayback(dc.Get()));
+  ::EndDoc(dc.Get());
+  // Since presumably the printer is not real, let us just delete the job from
+  // the queue.
+  HANDLE printer = NULL;
+  if (::OpenPrinter(L"UnitTest Printer", &printer, NULL)) {
+    ::SetJob(printer, job_id, 0, NULL, JOB_CONTROL_DELETE);
+    ClosePrinter(printer);
+  }
 }
 
