@@ -96,7 +96,12 @@ void NativeControlWin::Focus() {
   // Since we are being wrapped by a view, accessibility should receive
   // the super class as the focused view.
   View* parent_view = GetParent();
-  if (parent_view->HasFocus())
+
+  // Due to some controls not behaving as expected without having
+  // a native win32 control, we exclude the following from sending
+  // their IAccessible as focus events.
+  if (parent_view->GetClassName() != views::Combobox::kViewClassName &&
+      parent_view->HasFocus())
     parent_view->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
 }
 
