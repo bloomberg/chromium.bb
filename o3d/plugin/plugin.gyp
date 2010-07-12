@@ -100,6 +100,30 @@
         # repackaging.
         'plugin_rpath%'         : '/opt/google/o3d/lib',      # empty => none
         'plugin_env_vars_file%' : '/opt/google/o3d/envvars',  # empty => none
+        'conditions' : [
+          ['renderer == "gl"',
+            {
+              'as_needed_ldflags': [
+                # The Cg libs use three other libraries without linking to them,
+                # which breaks --as-needed, so we have to specify them here before
+                # the --as-needed flag.
+                '-lGL',       # Used by libCgGL
+                '-lpthread',  # Used by libCg
+                '-lm',        # Used by libCg
+                # GYP dumps all static and shared libraries into one archive group
+                # on the command line in arbitrary order, which breaks
+                # --as-needed, so we have to specify the out-of-order ones before
+                # the --as-needed flag.
+                '-lCgGL',
+                '-lGLEW',
+                '-ldl',      # Used by breakpad
+                '-lrt',
+              ]
+            }, {
+              'as_needed_ldflags': []
+            }
+          ],
+        ]
       },
       'target_name': '<(plugin_npapi_filename)',
       'type': 'loadable_module',
@@ -282,20 +306,7 @@
               '-Wl,-znodelete',
               '-Wl,--gc-sections',
               '<!@(pkg-config --libs-only-L xt)',
-              # The Cg libs use three other libraries without linking to them,
-              # which breaks --as-needed, so we have to specify them here before
-              # the --as-needed flag.
-              '-lGL',       # Used by libCgGL
-              '-lpthread',  # Used by libCg
-              '-lm',        # Used by libCg
-              # GYP dumps all static and shared libraries into one archive group
-              # on the command line in arbitrary order, which breaks
-              # --as-needed, so we have to specify the out-of-order ones before
-              # the --as-needed flag.
-              '-lCgGL',
-              '-lGLEW',
-              '-ldl',      # Used by breakpad
-              '-lrt',
+              '<(as_needed_ldflags)',
               # Directs the linker to only generate dependencies on libraries
               # that we actually use. Must come last.
               '-Wl,--as-needed',
