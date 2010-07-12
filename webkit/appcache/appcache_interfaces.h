@@ -63,8 +63,7 @@ class AppCacheFrontend {
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                      const GURL& url,
                                      int num_total, int num_complete) = 0;
-  virtual void OnContentBlocked(int host_id,
-                                const GURL& manifest_url) = 0;
+  virtual void OnContentBlocked(int host_id) = 0;
   virtual void OnLogMessage(int host_id, LogLevel log_level,
                             const std::string& message) = 0;
   virtual ~AppCacheFrontend() {}

@@ -34,8 +34,7 @@ class AppCacheDispatcher {
   void OnProgressEventRaised(const std::vector<int>& host_ids,
                              const GURL& url, int num_total, int num_complete);
   void OnLogMessage(int host_id, int log_level, const std::string& message);
-  void OnContentBlocked(int host_id,
-                        const GURL& manifest_url);
+  void OnContentBlocked(int host_id);
 
   AppCacheBackendProxy backend_proxy_;
   appcache::AppCacheFrontendImpl frontend_impl_;

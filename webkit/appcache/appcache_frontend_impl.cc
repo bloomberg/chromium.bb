@@ -60,11 +60,10 @@ void AppCacheFrontendImpl::OnLogMessage(int host_id, LogLevel log_level,
     host->OnLogMessage(log_level, message);
 }
 
-void AppCacheFrontendImpl::OnContentBlocked(int host_id,
-                                            const GURL& manifest_url) {
+void AppCacheFrontendImpl::OnContentBlocked(int host_id) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
-    host->OnContentBlocked(manifest_url);
+    host->OnContentBlocked();
 }
 
 }  // namespace appcache

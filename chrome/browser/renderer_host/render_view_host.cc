@@ -835,7 +835,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageContents, OnPageContents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageTranslated, OnPageTranslated)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityTree, OnAccessibilityTree)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
@@ -1930,15 +1929,6 @@ void RenderViewHost::OnContentBlocked(ContentSettingsType type) {
       delegate_->GetContentSettingsDelegate();
   if (content_settings_delegate)
     content_settings_delegate->OnContentBlocked(type);
-}
-
-void RenderViewHost::OnAppCacheAccessed(const GURL& manifest_url,
-                                        bool blocked_by_policy) {
-  RenderViewHostDelegate::ContentSettings* content_settings_delegate =
-      delegate_->GetContentSettingsDelegate();
-  if (content_settings_delegate)
-    content_settings_delegate->OnAppCacheAccessed(manifest_url,
-                                                  blocked_by_policy);
 }
 
 void RenderViewHost::OnWebDatabaseAccessed(const GURL& url,

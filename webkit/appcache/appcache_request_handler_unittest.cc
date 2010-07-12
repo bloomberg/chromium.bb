@@ -39,7 +39,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     virtual void OnLogMessage(int host_id, appcache::LogLevel log_level,
                               const std::string& message) {}
 
-    virtual void OnContentBlocked(int host_id, const GURL& manifest_url) {}
+    virtual void OnContentBlocked(int host_id) {}
   };
 
   // Helper class run a test on our io_thread. The io_thread

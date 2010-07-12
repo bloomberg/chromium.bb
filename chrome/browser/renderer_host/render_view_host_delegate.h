@@ -342,13 +342,6 @@ class RenderViewHostDelegate {
                                        unsigned long estimated_size,
                                        bool blocked_by_policy) = 0;
 
-    // Called when a specific appcache in the current page was accessed. If
-    // access was blocked due to the user's content settings,
-    // |blocked_by_policy| should eb true, and this function should invoke
-    // OnContentBlocked.
-    virtual void OnAppCacheAccessed(const GURL& manifest_url,
-                                    bool blocked_by_policy) = 0;
-
     // Called when geolocation permission was set in a frame on the current
     // page.
     virtual void OnGeolocationPermissionSet(const GURL& requesting_frame,

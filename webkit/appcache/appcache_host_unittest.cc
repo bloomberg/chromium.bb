@@ -61,7 +61,7 @@ class AppCacheHostTest : public testing::Test {
                               const std::string& message) {
     }
 
-    virtual void OnContentBlocked(int host_id, const GURL& manifest_url) {
+    virtual void OnContentBlocked(int host_id) {
     }
 
     int last_host_id_;

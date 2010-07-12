@@ -65,8 +65,6 @@ class TabSpecificContentSettings
                                      const string16& display_name,
                                      unsigned long estimated_size,
                                      bool blocked_by_policy);
-  virtual void OnAppCacheAccessed(const GURL& manifest_url,
-                                  bool blocked_by_policy);
   virtual void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                           bool allowed);
 

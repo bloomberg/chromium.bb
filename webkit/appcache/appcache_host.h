@@ -88,8 +88,8 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   void LoadMainResourceCache(int64 cache_id);
 
   // Used to notify the host that the main resource was blocked by a policy. To
-  // work properly, this method needs to by invoked prior to cache selection.
-  void NotifyMainResourceBlocked(const GURL& manifest_url);
+  // work properly, this method needs to by invokde prior to cache selection.
+  void NotifyMainResourceBlocked();
 
   // Used by the update job to keep track of which hosts are associated
   // with which pending master entries.
@@ -197,8 +197,6 @@ class AppCacheHost : public AppCacheStorage::Delegate,
 
   // True if requests for this host were blocked by a policy.
   bool main_resource_blocked_;
-  GURL blocked_manifest_url_;
-
 
   // List of objects observing us.
   ObserverList<Observer> observers_;
