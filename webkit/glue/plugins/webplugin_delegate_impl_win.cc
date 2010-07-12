@@ -1050,11 +1050,9 @@ void WebPluginDelegateImpl::WindowlessSetWindow() {
 
 void WebPluginDelegateImpl::SetFocus(bool focused) {
   DCHECK(instance()->windowless());
-  if (!focused)
-    return;
 
   NPEvent focus_event;
-  focus_event.event = WM_SETFOCUS;
+  focus_event.event = focused ? WM_SETFOCUS : WM_KILLFOCUS;
   focus_event.wParam = 0;
   focus_event.lParam = 0;
 

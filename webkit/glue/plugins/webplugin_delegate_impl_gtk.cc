@@ -487,12 +487,10 @@ void WebPluginDelegateImpl::WindowlessSetWindow() {
 
 void WebPluginDelegateImpl::SetFocus(bool focused) {
   DCHECK(instance()->windowless());
-  if (!focused)
-    return;
 
   NPEvent np_event = {0};
   XFocusChangeEvent &event = np_event.xfocus;
-  event.type = FocusIn;
+  event.type = focused ? FocusIn : FocusOut;
   event.display = GDK_DISPLAY();
   // Same values as Firefox. .serial and .window stay 0.
   event.mode = -1;
