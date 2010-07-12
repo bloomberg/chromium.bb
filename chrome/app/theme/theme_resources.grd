@@ -198,6 +198,7 @@
         <include name="IDR_INFOBAR_TRANSLATE" file="chromium/infobar_translate.png" type="BINDATA" />
       </if>
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
+      <include name="IDR_INPUT_ALERT" file="input_alert.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_C" file="locationbg_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_L" file="locationbg_l.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="locationbg_readonly_center.png" type="BINDATA" />
@@ -427,6 +428,38 @@
       <if expr="not pp_ifdef('_google_chrome')">
         <include name="IDR_WIZARD_ICON" file="chromium/wizard_icon.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON_RTL" file="chromium/wizard_icon_rtl.png" type="BINDATA" />
+      </if>
+
+      <!-- Images only used by the Views toolkit. -->
+      <if expr="pp_ifdef('toolkit_views')">
+        <include name="IDR_INFOBARBUTTON_BOTTOM_LEFT_H" file="infobarbutton_bl_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_BOTTOM_LEFT_N" file="infobarbutton_bl_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_BOTTOM_LEFT_P" file="infobarbutton_bl_p.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_BOTTOM_H" file="infobarbutton_b_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_BOTTOM_N" file="infobarbutton_b_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_BOTTOM_P" file="infobarbutton_b_p.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_BOTTOM_RIGHT_H" file="infobarbutton_br_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_BOTTOM_RIGHT_N" file="infobarbutton_br_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_BOTTOM_RIGHT_P" file="infobarbutton_br_p.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_CENTER_H" file="infobarbutton_c_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_CENTER_N" file="infobarbutton_c_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_CENTER_P" file="infobarbutton_c_p.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_LEFT_H" file="infobarbutton_l_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_LEFT_P" file="infobarbutton_l_p.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_LEFT_N" file="infobarbutton_l_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_MENU_DROPARROW" file="infobarbutton_menu_droparrow.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_RIGHT_H" file="infobarbutton_r_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_RIGHT_N" file="infobarbutton_r_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_RIGHT_P" file="infobarbutton_r_p.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_H" file="infobarbutton_t_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_LEFT_H" file="infobarbutton_tl_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_LEFT_N" file="infobarbutton_tl_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_LEFT_P" file="infobarbutton_tl_p.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_N" file="infobarbutton_t_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_P" file="infobarbutton_t_p.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_RIGHT_H" file="infobarbutton_tr_h.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_RIGHT_N" file="infobarbutton_tr_n.png" type="BINDATA" />
+        <include name="IDR_INFOBARBUTTON_TOP_RIGHT_P" file="infobarbutton_tr_p.png" type="BINDATA" />
       </if>
 
       <if expr="pp_ifdef('chromeos')">

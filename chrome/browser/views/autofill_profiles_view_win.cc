@@ -27,6 +27,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "views/border.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"

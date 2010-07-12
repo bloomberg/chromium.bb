@@ -13,7 +13,7 @@
 #include "chrome/browser/views/infobars/translate_message_infobar.h"
 #include "chrome/browser/views/infobars/infobar_button_border.h"
 #include "gfx/canvas_skia.h"
-#include "grit/app_resources.h"
+#include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/image_view.h"
 
