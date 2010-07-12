@@ -52,6 +52,9 @@ class SpdyNetworkTransaction : public HttpTransaction {
   virtual LoadState GetLoadState() const;
   virtual uint64 GetUploadProgress() const;
 
+  // Provide access to the stream for testing.
+  friend class SpdyNetworkTransactionTest;
+
  private:
   enum State {
     STATE_INIT_CONNECTION,
