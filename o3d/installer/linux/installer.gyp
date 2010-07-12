@@ -8,7 +8,7 @@
       'target_name': 'installer',
       'type': 'none',
       'conditions': [
-        [ '"<!(which dpkg-buildpackage || true)" != ""',
+        [ '"<!(whereis dpkg-buildpackage)" != "dpkg-buildpackage:"',
           {
             'dependencies': [
               'debian.in/debian.gyp:debian',
