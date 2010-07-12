@@ -262,8 +262,10 @@ class MockClientSocketFactory : public ClientSocketFactory {
 class TCPClientSocketPoolTest : public ClientSocketPoolTest {
  protected:
   TCPClientSocketPoolTest()
-      : ignored_socket_params_(
-            HostPortPair("ignored", 80), MEDIUM, GURL(), false),
+      : params_(new TCPSocketParams(HostPortPair("www.google.com", 80),
+                                    kDefaultPriority, GURL(), false)),
+        low_params_(new TCPSocketParams(HostPortPair("www.google.com", 80),
+                                        LOW, GURL(), false)),
         histograms_(new ClientSocketPoolHistograms("TCPUnitTest")),
         host_resolver_(new MockHostResolver),
         pool_(new TCPClientSocketPool(kMaxSockets,
@@ -275,11 +277,13 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
-    return StartRequestUsingPool(
-        pool_, group_name, priority, ignored_socket_params_);
+    scoped_refptr<TCPSocketParams> params = new TCPSocketParams(
+        HostPortPair("www.google.com", 80), MEDIUM, GURL(), false);
+    return StartRequestUsingPool(pool_, group_name, priority, params);
   }
 
-  TCPSocketParams ignored_socket_params_;
+  scoped_refptr<TCPSocketParams> params_;
+  scoped_refptr<TCPSocketParams> low_params_;
   scoped_refptr<ClientSocketPoolHistograms> histograms_;
   scoped_refptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
@@ -289,8 +293,7 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
 TEST_F(TCPClientSocketPoolTest, Basic) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  TCPSocketParams dest(HostPortPair("www.google.com", 80), LOW, GURL(), false);
-  int rv = handle.Init("a", dest, LOW, &callback, pool_, BoundNetLog());
+  int rv = handle.Init("a", low_params_, LOW, &callback, pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -305,8 +308,8 @@ TEST_F(TCPClientSocketPoolTest, Basic) {
 TEST_F(TCPClientSocketPoolTest, InitHostResolutionFailure) {
   host_resolver_->rules()->AddSimulatedFailure("unresolvable.host.name");
   TestSocketRequest req(&request_order_, &completion_count_);
-  TCPSocketParams dest("unresolvable.host.name", 80, kDefaultPriority, GURL(),
-                       false);
+  scoped_refptr<TCPSocketParams> dest = new TCPSocketParams(
+          "unresolvable.host.name", 80, kDefaultPriority, GURL(), false);
   EXPECT_EQ(ERR_IO_PENDING,
             req.handle()->Init("a", dest, kDefaultPriority, &req, pool_,
                                BoundNetLog()));
@@ -317,17 +320,15 @@ TEST_F(TCPClientSocketPoolTest, InitConnectionFailure) {
   client_socket_factory_.set_client_socket_type(
       MockClientSocketFactory::MOCK_FAILING_CLIENT_SOCKET);
   TestSocketRequest req(&request_order_, &completion_count_);
-  TCPSocketParams dest("a", 80, kDefaultPriority, GURL(), false);
-  EXPECT_EQ(ERR_IO_PENDING,
-            req.handle()->Init("a", dest, kDefaultPriority, &req, pool_,
-                               BoundNetLog()));
+  EXPECT_EQ(ERR_IO_PENDING, req.handle()->Init("a", params_, kDefaultPriority,
+                                               &req, pool_, BoundNetLog()));
   EXPECT_EQ(ERR_CONNECTION_FAILED, req.WaitForResult());
 
   // Make the host resolutions complete synchronously this time.
   host_resolver_->set_synchronous_mode(true);
-  EXPECT_EQ(ERR_CONNECTION_FAILED,
-            req.handle()->Init("a", dest, kDefaultPriority, &req, pool_,
-                               BoundNetLog()));
+  EXPECT_EQ(ERR_CONNECTION_FAILED, req.handle()->Init("a", params_,
+                                                      kDefaultPriority, &req,
+                                                      pool_, BoundNetLog()));
 }
 
 TEST_F(TCPClientSocketPoolTest, PendingRequests) {
@@ -431,10 +432,8 @@ TEST_F(TCPClientSocketPoolTest, PendingRequests_NoKeepAlive) {
 // ClientSocketPool which will crash if the group was not cleared properly.
 TEST_F(TCPClientSocketPoolTest, CancelRequestClearGroup) {
   TestSocketRequest req(&request_order_, &completion_count_);
-  TCPSocketParams dest("www.google.com", 80, kDefaultPriority, GURL(), false);
-  EXPECT_EQ(ERR_IO_PENDING,
-            req.handle()->Init("a", dest, kDefaultPriority, &req, pool_,
-                               BoundNetLog()));
+  EXPECT_EQ(ERR_IO_PENDING, req.handle()->Init("a", params_, kDefaultPriority,
+                                               &req, pool_, BoundNetLog()));
   req.handle()->Reset();
 
   // There is a race condition here.  If the worker pool doesn't post the task
@@ -450,13 +449,10 @@ TEST_F(TCPClientSocketPoolTest, TwoRequestsCancelOne) {
   TestSocketRequest req(&request_order_, &completion_count_);
   TestSocketRequest req2(&request_order_, &completion_count_);
 
-  TCPSocketParams dest("www.google.com", 80, kDefaultPriority, GURL(), false);
-  EXPECT_EQ(ERR_IO_PENDING,
-            req.handle()->Init("a", dest, kDefaultPriority, &req, pool_,
-                               BoundNetLog()));
-  EXPECT_EQ(ERR_IO_PENDING,
-            req2.handle()->Init("a", dest, kDefaultPriority, &req2, pool_,
-                                BoundNetLog()));
+  EXPECT_EQ(ERR_IO_PENDING, req.handle()->Init("a", params_, kDefaultPriority,
+                                               &req, pool_, BoundNetLog()));
+  EXPECT_EQ(ERR_IO_PENDING, req2.handle()->Init("a", params_, kDefaultPriority,
+                                                &req2, pool_, BoundNetLog()));
 
   req.handle()->Reset();
 
@@ -471,17 +467,14 @@ TEST_F(TCPClientSocketPoolTest, ConnectCancelConnect) {
   TestCompletionCallback callback;
   TestSocketRequest req(&request_order_, &completion_count_);
 
-  TCPSocketParams dest("www.google.com", 80, kDefaultPriority, GURL(), false);
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle.Init("a", dest, kDefaultPriority, &callback, pool_,
-                        BoundNetLog()));
+  EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", params_, kDefaultPriority,
+                                        &callback, pool_, BoundNetLog()));
 
   handle.Reset();
 
   TestCompletionCallback callback2;
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle.Init("a", dest, kDefaultPriority, &callback2, pool_,
-                        BoundNetLog()));
+  EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", params_, kDefaultPriority,
+                                        &callback2, pool_, BoundNetLog()));
 
   host_resolver_->set_synchronous_mode(true);
   // At this point, handle has two ConnectingSockets out for it.  Due to the
@@ -579,8 +572,10 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
         MessageLoop::current()->RunAllPending();
       }
       within_callback_ = true;
-      TCPSocketParams dest("www.google.com", 80, LOWEST, GURL(), false);
-      int rv = handle_->Init("a", dest, LOWEST, this, pool_, BoundNetLog());
+      scoped_refptr<TCPSocketParams> dest = new TCPSocketParams(
+          HostPortPair("www.google.com", 80), LOWEST, GURL(), false);
+      int rv = handle_->Init("a", dest, LOWEST, this, pool_,
+                             BoundNetLog());
       EXPECT_EQ(OK, rv);
     }
   }
@@ -599,8 +594,10 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
 TEST_F(TCPClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
   RequestSocketCallback callback(&handle, pool_.get());
-  TCPSocketParams dest("www.google.com", 80, LOWEST, GURL(), false);
-  int rv = handle.Init("a", dest, LOWEST, &callback, pool_, BoundNetLog());
+  scoped_refptr<TCPSocketParams> dest = new TCPSocketParams(
+      HostPortPair("www.google.com", 80), LOWEST, GURL(), false);
+  int rv = handle.Init("a", dest, LOWEST, &callback, pool_,
+                       BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);
 
   // The callback is going to request "www.google.com". We want it to complete
@@ -662,8 +659,7 @@ TEST_F(TCPClientSocketPoolTest, FailingActiveRequestWithPendingRequests) {
 TEST_F(TCPClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
-  int rv = handle.Init("a", dest, LOW, &callback, pool_, BoundNetLog());
+  int rv = handle.Init("a", low_params_, LOW, &callback, pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -718,8 +714,8 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketConnect) {
 
     TestCompletionCallback callback;
     ClientSocketHandle handle;
-    TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
-    int rv = handle.Init("b", dest, LOW, &callback, pool_, BoundNetLog());
+    int rv = handle.Init("b", low_params_, LOW, &callback, pool_,
+                         BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
     EXPECT_FALSE(handle.is_initialized());
     EXPECT_FALSE(handle.socket());
@@ -765,8 +761,8 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketCancel) {
 
     TestCompletionCallback callback;
     ClientSocketHandle handle;
-    TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
-    int rv = handle.Init("c", dest, LOW, &callback, pool_, BoundNetLog());
+    int rv = handle.Init("c", low_params_, LOW, &callback, pool_,
+                         BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
     EXPECT_FALSE(handle.is_initialized());
     EXPECT_FALSE(handle.socket());
@@ -810,8 +806,7 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketFailAfterStall) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
-  int rv = handle.Init("b", dest, LOW, &callback, pool_, BoundNetLog());
+  int rv = handle.Init("b", low_params_, LOW, &callback, pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -856,8 +851,7 @@ TEST_F(TCPClientSocketPoolTest, BackupSocketFailAfterDelay) {
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  TCPSocketParams dest("www.google.com", 80, LOW, GURL(), false);
-  int rv = handle.Init("b", dest, LOW, &callback, pool_, BoundNetLog());
+  int rv = handle.Init("b", low_params_, LOW, &callback, pool_, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());

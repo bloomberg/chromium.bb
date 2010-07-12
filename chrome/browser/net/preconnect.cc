@@ -87,8 +87,9 @@ void Preconnect::PreconnectOnIOThread(const GURL& url) {
   net::HttpNetworkSession* session = factory->GetSession();
   scoped_refptr<net::TCPClientSocketPool> pool = session->tcp_socket_pool();
 
-  net::TCPSocketParams params(url.host(), url.EffectiveIntPort(), net::LOW,
-                              GURL(), false);
+  scoped_refptr<net::TCPSocketParams> params =
+      new net::TCPSocketParams(url.host(), url.EffectiveIntPort(), net::LOW,
+                               GURL(), false);
 
   net::ClientSocketHandle handle;
   if (!callback_instance_)

@@ -22,24 +22,21 @@ namespace net {
 
 class ClientSocketFactory;
 
-class TCPSocketParams {
+class TCPSocketParams : public base::RefCounted<TCPSocketParams> {
  public:
   TCPSocketParams(const HostPortPair& host_port_pair, RequestPriority priority,
-                  const GURL& referrer, bool disable_resolver_cache)
-      :  destination_(host_port_pair.host, host_port_pair.port) {
-    Initialize(priority, referrer, disable_resolver_cache);
-  }
+                  const GURL& referrer, bool disable_resolver_cache);
 
   // TODO(willchan): Update all unittests so we don't need this.
   TCPSocketParams(const std::string& host, int port, RequestPriority priority,
-                  const GURL& referrer, bool disable_resolver_cache)
-      :  destination_(host, port) {
-    Initialize(priority, referrer, disable_resolver_cache);
-  }
+                  const GURL& referrer, bool disable_resolver_cache);
 
-  HostResolver::RequestInfo destination() const { return destination_; }
+  const HostResolver::RequestInfo& destination() const { return destination_; }
 
  private:
+  friend class base::RefCounted<TCPSocketParams>;
+  ~TCPSocketParams();
+
   void Initialize(RequestPriority priority, const GURL& referrer,
                   bool disable_resolver_cache) {
     // The referrer is used by the DNS prefetch system to correlate resolutions
@@ -59,7 +56,7 @@ class TCPSocketParams {
 class TCPConnectJob : public ConnectJob {
  public:
   TCPConnectJob(const std::string& group_name,
-                const TCPSocketParams& params,
+                const scoped_refptr<TCPSocketParams>& params,
                 base::TimeDelta timeout_duration,
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,
@@ -94,7 +91,7 @@ class TCPConnectJob : public ConnectJob {
   int DoTCPConnect();
   int DoTCPConnectComplete(int result);
 
-  const TCPSocketParams params_;
+  scoped_refptr<TCPSocketParams> params_;
   ClientSocketFactory* const client_socket_factory_;
   CompletionCallbackImpl<TCPConnectJob> callback_;
   SingleRequestHostResolver resolver_;

@@ -227,8 +227,9 @@ int SpdyNetworkTransaction::DoInitConnection() {
   connection_group.append(host);
 
   HostPortPair host_port_pair(host, port);
-  TCPSocketParams tcp_params(host_port_pair, request_->priority,
-                             request_->referrer, false);
+  scoped_refptr<TCPSocketParams> tcp_params =
+      new TCPSocketParams(host_port_pair, request_->priority,
+                          request_->referrer, false);
 
   spdy_ = session_->spdy_session_pool()->Get(
       host_port_pair, session_, net_log_);

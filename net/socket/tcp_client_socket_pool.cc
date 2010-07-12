@@ -20,6 +20,23 @@ using base::TimeDelta;
 
 namespace net {
 
+TCPSocketParams::TCPSocketParams(const HostPortPair& host_port_pair,
+                                 RequestPriority priority, const GURL& referrer,
+                                 bool disable_resolver_cache)
+    : destination_(host_port_pair.host, host_port_pair.port) {
+  Initialize(priority, referrer, disable_resolver_cache);
+}
+
+// TODO(willchan): Update all unittests so we don't need this.
+TCPSocketParams::TCPSocketParams(const std::string& host, int port,
+                                 RequestPriority priority, const GURL& referrer,
+                                 bool disable_resolver_cache)
+    : destination_(host, port) {
+  Initialize(priority, referrer, disable_resolver_cache);
+}
+
+TCPSocketParams::~TCPSocketParams() {}
+
 // TCPConnectJobs will time out after this many seconds.  Note this is the total
 // time, including both host resolution and TCP connect() times.
 //
@@ -33,7 +50,7 @@ static const int kTCPConnectJobTimeoutInSeconds = 240;  // 4 minutes.
 
 TCPConnectJob::TCPConnectJob(
     const std::string& group_name,
-    const TCPSocketParams& params,
+    const scoped_refptr<TCPSocketParams>& params,
     base::TimeDelta timeout_duration,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
@@ -113,7 +130,7 @@ int TCPConnectJob::DoLoop(int result) {
 
 int TCPConnectJob::DoResolveHost() {
   next_state_ = kStateResolveHostComplete;
-  return resolver_.Resolve(params_.destination(), &addresses_, &callback_,
+  return resolver_.Resolve(params_->destination(), &addresses_, &callback_,
                            net_log());
 }
 
@@ -197,8 +214,8 @@ int TCPClientSocketPool::RequestSocket(
     ClientSocketHandle* handle,
     CompletionCallback* callback,
     const BoundNetLog& net_log) {
-  const TCPSocketParams* casted_params =
-      static_cast<const TCPSocketParams*>(params);
+  const scoped_refptr<TCPSocketParams>* casted_params =
+      static_cast<const scoped_refptr<TCPSocketParams>*>(params);
 
   if (net_log.HasListener()) {
     // TODO(eroman): Split out the host and port parameters.
@@ -207,8 +224,8 @@ int TCPClientSocketPool::RequestSocket(
         new NetLogStringParameter(
             "host_and_port",
             StringPrintf("%s [port %d]",
-                         casted_params->destination().hostname().c_str(),
-                         casted_params->destination().port())));
+                         casted_params->get()->destination().hostname().c_str(),
+                         casted_params->get()->destination().port())));
   }
 
   return base_.RequestSocket(group_name, *casted_params, priority, handle,
