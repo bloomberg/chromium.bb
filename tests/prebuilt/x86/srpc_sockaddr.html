@@ -22,8 +22,6 @@ var SetTestResult = function(element_id, result) {
 var server;
 // The default socket address for the plugin.
 var default_addr;
-// The address string of the default socket address for the plugin.
-var addr_str;
 // The count of failing tests.  Set from the queue length, and decremented
 // whenever a test passes.
 var failing_count;
@@ -55,59 +53,6 @@ var DefaultSocketAddress = function() {
              function() {
                return server.__defaultSocketAddress();
              });
-  // Attempt to get the string form of the socket address.
-  expectPass('default_tostring',
-             true,
-             function() {
-               var sockaddr = server.__defaultSocketAddress();
-               if (sockaddr.toString() == addr_str) {
-                 return true;
-               }
-               // undefined return will trigger failure.
-               return server.__defaultSocketAddress().toString();
-             });
-}
-
-var SocketAddressFactory = function() {
-  // Test the creation of socket address objects.
-  // Attempt to create with the wrong number of parameters.
-  expectFail('factory_too_few',
-             function() {
-               return server.__socketAddressFactory();
-             });
-  expectFail('factory_too_many',
-             function() {
-               return server.__socketAddressFactory(addr_str, 'extra');
-             });
-  // Attempt to create a shared memory region with size of invalid type.
-  expectFail('factory_null',
-             function() {
-               return server.__socketAddressFactory(undefined);
-             });
-  expectFail('factory_integer',
-             function() {
-               return server.__socketAddressFactory(1);
-             });
-  expectFail('factory_object',
-             function() {
-               return server.__socketAddressFactory(new Array(10));
-             });
-  // Attempt to create a socket address with a valid string.
-  expectPass('factory_conforming',
-             true,
-             function() {
-               return server.__socketAddressFactory(addr_str);
-             });
-  // Check that toString returns the string used to create the address.
-  expectPass('factory_tostring',
-             true,
-             function() {
-               var sockaddr = server.__socketAddressFactory(addr_str);
-               if (sockaddr.toString() == addr_str) {
-                 return true;
-               }
-               // undefined return will trigger failure.
-             });
 }
 
 var Connect = function() {
@@ -117,24 +62,11 @@ var Connect = function() {
              function() {
                return default_addr.connect('extra');
              });
-  expectFail('connect_invalid',
-             function() {
-               // There's a slight chance this is a valid address, I suppose.
-               var sockaddr = server.__socketAddressFactory('abcd');
-               return sockaddr.connect();
-             });
   // Attempt to connect to the default socket address.
   expectPass('connect_default',
              true,
              function() {
                return default_addr.connect();
-             });
-  // Attempt to connect to a created socket address.
-  expectPass('connect_sockaddr',
-             true,
-             function() {
-               var sockaddr = server.__socketAddressFactory(addr_str);
-               return sockaddr.connect();
              });
   // Attempt to connect to a socket address returned from a NaCl module.
   expectPass('connect_nacl',
@@ -202,14 +134,12 @@ var EnqueueAndRunTests = function() {
     // If these fail at the beginning, all the tests will abort.
     // Otherwise more specific tests are done on them.
     default_addr = server.__defaultSocketAddress();
-    addr_str = default_addr.toString();
   } catch (string) {
     window.alert('Socket address test setup failed.');
     return;
   }
   // Enqueue the tests.
   DefaultSocketAddress();
-  SocketAddressFactory();
   Connect();
   // Run them all.
   RunAllTests();
@@ -228,9 +158,6 @@ var EnqueueAndRunTests = function() {
           <b> __defaultSocketAddress tests </b>
         </td>
         <td>
-          <b> __socketAddressFactory tests </b>
-        </td>
-        <td>
           <b> connect tests </b>
         </td>
       </tr>
@@ -247,72 +174,11 @@ var EnqueueAndRunTests = function() {
             </tr>
           </table>
         </td>
-        <td valign=top>
-          <table summary="Factory argument count tests">
-            <tr>
-              <td id="factory_too_few" class="notrun">
-                argc: too few
-              </td>
-            </tr>
-            <tr>
-              <td id="factory_too_many" class="notrun">
-                argc: too many
-              </td>
-            </tr>
-          </table>
-        </td>
         <td>
           <table summary="Connect argument count test">
             <tr>
               <td id="connect_too_many" class="notrun">
                 argc: too many
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <b> Argument type tests </b>
-        </td>
-        <td valign=top>
-        </td>
-        <td valign=top>
-          <table summary="Factory argument type tests">
-            <tr>
-              <td id="factory_null" class="notrun">
-                arg[0]: (address) undefined
-              </td>
-            </tr>
-            <tr>
-              <td id="factory_integer" class="notrun">
-                arg[0]: (address) integer
-              </td>
-            </tr>
-            <tr>
-              <td id="factory_object" class="notrun">
-                arg[0]: (address) object
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td valign=top>
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          <b> Semantic error tests </b>
-        </td>
-        <td>
-        </td>
-        <td>
-        </td>
-        <td>
-          <table summary="Invalid connection test">
-            <tr>
-              <td id="connect_invalid" class="notrun">
-                to bad socket address
               </td>
             </tr>
           </table>
@@ -330,25 +196,6 @@ var EnqueueAndRunTests = function() {
                 conforming invocation
               </td>
             </tr>
-            <tr>
-              <td id="default_tostring" class="notrun">
-                toString
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td valign=top>
-          <table summary="Factory behavior tests">
-            <tr>
-              <td id="factory_conforming" class="notrun">
-                conforming invocation
-              </td>
-            </tr>
-            <tr>
-              <td id="factory_tostring" class="notrun">
-                toString
-              </td>
-            </tr>
           </table>
         </td>
         <td valign=top>
@@ -356,11 +203,6 @@ var EnqueueAndRunTests = function() {
             <tr>
               <td id="connect_default" class="notrun">
                 to default
-              </td>
-            </tr>
-            <tr>
-              <td id="connect_sockaddr" class="notrun">
-                to JavaScript-created address
               </td>
             </tr>
             <tr>

@@ -30,25 +30,6 @@ bool RpcConnect(void* obj, plugin::SrpcParams *params) {
   return true;
 }
 
-bool RpcToString(void* obj, plugin::SrpcParams *params) {
-  plugin::SocketAddress* socket_addr =
-      reinterpret_cast<plugin::SocketAddress*>(obj);
-  const char* str = socket_addr->wrapper()->conn_cap_path();
-  if (NULL == str) {
-    return false;
-  }
-  size_t len = strnlen(str, NACL_PATH_MAX);
-  // strnlen ensures that len <= NACL_PATH_MAX < SIZE_T_MAX, so no overflow.
-  char* ret_string = reinterpret_cast<char*>(malloc(len + 1));
-  if (NULL == ret_string) {
-    return false;
-  }
-  strncpy(ret_string, str, len + 1);
-  params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_STRING;
-  params->outs()[0]->u.sval = ret_string;
-  return true;
-}
-
 }  // namespace
 
 namespace plugin {
@@ -74,7 +55,6 @@ bool SocketAddress::Init(Plugin* plugin, nacl::DescWrapper* wrapper) {
 void SocketAddress::LoadMethods() {
   // Methods implemented by SocketAddresses.
   AddMethodCall(RpcConnect, "connect", "", "h");
-  AddMethodCall(RpcToString, "toString", "", "s");
 }
 
 SocketAddress::SocketAddress() {

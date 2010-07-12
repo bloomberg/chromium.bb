@@ -326,49 +326,6 @@ DescWrapper* DescWrapperFactory::MakeGeneric(struct NaClDesc* desc) {
   return new(std::nothrow) DescWrapper(common_data_, desc);
 }
 
-DescWrapper* DescWrapperFactory::MakeSocketAddress(const char* str) {
-  struct NaClDescConnCap* conn_cap = NULL;
-  DescWrapper* wrapper = NULL;
-
-  // Ensure argument is a valid string short enough to be a socket address.
-  if (NULL == str) {
-    return NULL;
-  }
-  size_t len = strnlen(str, NACL_PATH_MAX);
-  // strnlen ensures NACL_PATH_MAX >= len.  If NACL_PATH_MAX == len, then
-  // there is not enough room to hold the address.
-  if (NACL_PATH_MAX == len) {
-    return NULL;
-  }
-  // Create a NaClSocketAddress from the string.
-  struct NaClSocketAddress sock_addr;
-  // We need len + 1 to guarantee the zero byte is written.  This is safe,
-  // since NACL_PATH_MAX >= len + 1 from above.
-  strncpy(sock_addr.path, str, len + 1);
-  // Create a NaClDescConnCap from the socket address.
-  conn_cap = reinterpret_cast<NaClDescConnCap*>(
-      calloc(1, sizeof(*conn_cap)));
-  if (NULL == conn_cap) {
-    goto cleanup;
-  }
-  if (!NaClDescConnCapCtor(conn_cap, &sock_addr)) {
-    free(conn_cap);
-    conn_cap = NULL;
-    goto cleanup;
-  }
-  wrapper = MakeGeneric(reinterpret_cast<struct NaClDesc*>(conn_cap));
-  if (NULL == wrapper) {
-    goto cleanup;
-  }
-  // If wrapper was created, it took ownership.  If not, NaClDescUnref freed it.
-  conn_cap = NULL;
-  return wrapper;
-
- cleanup:
-  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(conn_cap));
-  return NULL;
-}
-
 int DescWrapperFactory::MakeSocketPair(DescWrapper* pair[2]) {
   // Return an error if the factory wasn't properly initialized.
   if (!common_data_->is_initialized()) {
@@ -471,15 +428,6 @@ DescWrapper::~DescWrapper() {
   }
   NaClDescSafeUnref(desc_);
   desc_ = NULL;
-}
-
-const char* DescWrapper::conn_cap_path() const {
-  if (NULL == desc_ || NACL_DESC_CONN_CAP != type_tag()) {
-    return NULL;
-  }
-  struct NaClDescConnCap* conn_cap =
-      reinterpret_cast<struct NaClDescConnCap*>(desc_);
-  return conn_cap->cap.path;
 }
 
 int DescWrapper::Map(void** addr, size_t* size) {

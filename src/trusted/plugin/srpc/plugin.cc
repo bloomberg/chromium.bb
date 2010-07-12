@@ -87,35 +87,6 @@ bool NullPluginMethod(void* obj, plugin::SrpcParams* params) {
   return true;
 }
 
-bool SocketAddressFactory(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
-  // Type check the input parameter.
-  if (NACL_SRPC_ARG_TYPE_STRING != params->ins()[0]->tag) {
-    return false;
-  }
-  char* str = params->ins()[0]->u.sval;
-  nacl::DescWrapper* wrapper =
-      plugin->wrapper_factory()->MakeSocketAddress(str);
-  if (NULL == wrapper) {
-    return false;
-  }
-  // Create a scriptable object to return.
-  plugin::SocketAddress* portable_socket_address =
-      plugin::SocketAddress::New(plugin, wrapper);
-  plugin::ScriptableHandle* socket_address =
-      plugin->browser_interface()->NewScriptableHandle(portable_socket_address);
-  if (NULL == socket_address) {
-    wrapper->Delete();
-    params->set_exception_string("out of memory");
-    portable_socket_address->Delete();
-    return false;
-  }
-  // Plug the scriptable object into the return values.
-  params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
-  params->outs()[0]->u.oval = socket_address;
-  return true;
-}
-
 bool GetModuleReadyProperty(void* obj, plugin::SrpcParams* params) {
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   if (plugin->socket()) {
@@ -216,7 +187,6 @@ static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 void Plugin::LoadMethods() {
   // Methods supported by Plugin.
   AddMethodCall(ShmFactory, "__shmFactory", "i", "h");
-  AddMethodCall(SocketAddressFactory, "__socketAddressFactory", "s", "h");
   AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
   AddMethodCall(NullPluginMethod, "__nullPluginMethod", "s", "i");
   // Properties implemented by Plugin.

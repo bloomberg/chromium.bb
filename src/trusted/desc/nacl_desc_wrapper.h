@@ -29,8 +29,6 @@ class DescWrapperFactory {
   DescWrapper* MakeImcSock(NaClHandle handle);
   // Create a shared memory object.
   DescWrapper* MakeShm(size_t size);
-  // Create a DescWrapper from a socket address string.
-  DescWrapper* MakeSocketAddress(const char* addr);
   // Create a DescWrapper from opening a host file.
   DescWrapper* OpenHostFile(const char* fname, int flags, int mode);
   // Create a DescWrapper for the designated invalid descriptor
@@ -96,10 +94,6 @@ class DescWrapper {
 
   // Get the type of the wrapped NaClDesc.
   enum NaClDescTypeTag type_tag() const { return desc_->vtbl->typeTag; }
-
-  // Get the path string from a NaClDescConnCap.  Returns NULL if the
-  // type of the NaClDesc is not NACL_DESC_CONN_CAP (a socket address).
-  const char* conn_cap_path() const;
 
   // We do not replicate the underlying NaClDesc object hierarchy, so there
   // are obviously many more methods than a particular derived class

@@ -22,8 +22,6 @@ var SetTestResult = function(element_id, result) {
 var server;
 // The default socket address for the plugin.
 var default_addr;
-// The address string of the default socket address for the plugin.
-var addr_str;
 // The count of failing tests.  Set from the queue length, and decremented
 // whenever a test passes.
 var failing_count;
@@ -338,7 +336,6 @@ var EnqueueAndRunTests = function() {
     // If these fail at the beginning, all the tests will abort.
     // Otherwise more specific tests are done on them.
     default_addr = server.__defaultSocketAddress();
-    addr_str = default_addr.toString();
   } catch (string) {
     window.alert('Socket address test setup failed.');
     return;
