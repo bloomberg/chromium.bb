@@ -564,36 +564,36 @@ TEST_F(FormManagerTest, PreviewForm) {
   WebInputElement firstname =
       document.getElementById("firstname").to<WebInputElement>();
   EXPECT_TRUE(firstname.isAutofilled());
-  EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.placeholder());
+  EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.suggestedValue());
 
   WebInputElement lastname =
       document.getElementById("lastname").to<WebInputElement>();
   EXPECT_TRUE(lastname.isAutofilled());
-  EXPECT_EQ(ASCIIToUTF16("Earp"), lastname.placeholder());
+  EXPECT_EQ(ASCIIToUTF16("Earp"), lastname.suggestedValue());
 
   // Hidden fields are not previewed.
   WebInputElement imhidden =
       document.getElementById("imhidden").to<WebInputElement>();
   EXPECT_FALSE(imhidden.isAutofilled());
-  EXPECT_TRUE(imhidden.placeholder().isEmpty());
+  EXPECT_TRUE(imhidden.suggestedValue().isEmpty());
 
   // Non-empty fields are not previewed.
   WebInputElement notempty =
       document.getElementById("notempty").to<WebInputElement>();
   EXPECT_FALSE(notempty.isAutofilled());
-  EXPECT_TRUE(notempty.placeholder().isEmpty());
+  EXPECT_TRUE(notempty.suggestedValue().isEmpty());
 
   // autocomplete=off fields are not previewed.
   WebInputElement noautocomplete =
       document.getElementById("noautocomplete").to<WebInputElement>();
   EXPECT_FALSE(noautocomplete.isAutofilled());
-  EXPECT_TRUE(noautocomplete.placeholder().isEmpty());
+  EXPECT_TRUE(noautocomplete.suggestedValue().isEmpty());
 
   // Disabled fields are not previewed.
   WebInputElement notenabled =
       document.getElementById("notenabled").to<WebInputElement>();
   EXPECT_FALSE(notenabled.isAutofilled());
-  EXPECT_TRUE(notenabled.placeholder().isEmpty());
+  EXPECT_TRUE(notenabled.suggestedValue().isEmpty());
 }
 
 TEST_F(FormManagerTest, Reset) {
@@ -2333,24 +2333,24 @@ TEST_F(FormManagerTest, ClearPreviewedForm) {
       web_frame->document().getElementById("email").to<WebInputElement>();
   email.setAutofilled(true);
 
-  // Set the placeholder values on two of the elements.
-  lastname.setPlaceholder(ASCIIToUTF16("Earp"));
-  email.setPlaceholder(ASCIIToUTF16("wyatt@earp.com"));
+  // Set the suggested values on two of the elements.
+  lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
+  email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
 
   // Clear the previewed fields.
   EXPECT_TRUE(form_manager.ClearPreviewedForm(forms[0]));
 
   // Fields with non-empty values are not modified.
   EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
-  EXPECT_TRUE(firstname.placeholder().isEmpty());
+  EXPECT_TRUE(firstname.suggestedValue().isEmpty());
   EXPECT_TRUE(firstname.isAutofilled());
 
   // Verify the previewed fields are cleared.
   EXPECT_TRUE(lastname.value().isEmpty());
-  EXPECT_TRUE(lastname.placeholder().isEmpty());
+  EXPECT_TRUE(lastname.suggestedValue().isEmpty());
   EXPECT_FALSE(lastname.isAutofilled());
   EXPECT_TRUE(email.value().isEmpty());
-  EXPECT_TRUE(email.placeholder().isEmpty());
+  EXPECT_TRUE(email.suggestedValue().isEmpty());
   EXPECT_FALSE(email.isAutofilled());
 }
 

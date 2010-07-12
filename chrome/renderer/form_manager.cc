@@ -603,7 +603,7 @@ bool FormManager::ClearPreviewedForm(const FormData& form) {
     if (!input_element.value().isEmpty())
       continue;
 
-    input_element.setPlaceholder(string16());
+    input_element.setSuggestedValue(string16());
     input_element.setAutofilled(false);
   }
 
@@ -857,7 +857,7 @@ void FormManager::PreviewFormField(WebKit::WebFormControlElement* field,
 
   // If the maxlength attribute contains a negative value, maxLength()
   // returns the default maxlength value.
-  input_element.setPlaceholder(
+  input_element.setSuggestedValue(
       data->value().substr(0, input_element.maxLength()));
   input_element.setAutofilled(true);
 }
