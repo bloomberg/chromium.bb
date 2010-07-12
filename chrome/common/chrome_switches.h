@@ -232,6 +232,7 @@ extern const char kServiceAccountLsid[];
 extern const char kShowCompositedLayerBorders[];
 extern const char kShowIcons[];
 extern const char kShowPaintRects[];
+extern const char kShowPrivacyDashboardLink[];
 extern const char kSilentDumpOnDCHECK[];
 extern const char kSimpleDataSource[];
 extern const char kSingleProcess[];

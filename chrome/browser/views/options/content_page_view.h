@@ -102,6 +102,7 @@ class ContentPageView : public OptionsPageView,
   views::Link* sync_action_link_;
   views::NativeButton* sync_start_stop_button_;
   views::NativeButton* sync_customize_button_;
+  views::Link* privacy_dashboard_link_;
 
   BooleanPrefMember ask_to_save_passwords_;
   BooleanPrefMember ask_to_save_form_autofill_;

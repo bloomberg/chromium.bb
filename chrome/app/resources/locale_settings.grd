@@ -537,6 +537,11 @@
         https://tools.google.com/chrome/intl/[GRITLANGCODE]/themes/index.html
       </message>
 
+      <!-- The URL for the privacy dashboard.  TODO(tim): bug 48844, need real link. -->
+      <message name="IDS_PRIVACY_DASHBOARD_URL" translateable="false">
+        http://www.google.com
+      </message>
+
       <!-- The URL for Google Chrome welcome page. This is used for the pre -->
       <!-- populated thumbnails. -->
       <message name="IDS_CHROME_WELCOME_URL" translateable="false">

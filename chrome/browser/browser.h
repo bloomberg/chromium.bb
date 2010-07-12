@@ -522,6 +522,7 @@ class Browser : public TabStripModelDelegate,
   // Used by the "Get themes" link in the options dialog.
   void OpenThemeGalleryTabAndActivate();
   void OpenAutoFillHelpTabAndActivate();
+  void OpenPrivacyDashboardTabAndActivate();
 #if defined(OS_CHROMEOS)
   void OpenSystemOptionsDialog();
   void OpenInternetOptionsDialog();
