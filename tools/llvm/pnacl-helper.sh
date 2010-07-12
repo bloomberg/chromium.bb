@@ -348,7 +348,7 @@ readonly SCONS_ARGS=(MODE=nacl
 #@   run arm tests via the old  toolchain
 test-arm-old() {
   ./scons platform=arm sdl=none naclsdk_validate=0 sel_ldr
-  export TARGET_CODE=sfi
+  export TARGET_CODE=sfi-arm
   rm -rf scons-out/nacl-arm
   ./scons ${SCONS_ARGS[@]} \
           force_sel_ldr=scons-out/opt-linux-arm/staging/sel_ldr \

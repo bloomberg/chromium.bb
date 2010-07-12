@@ -15,7 +15,7 @@ VALIDATOR=$(SDK_ROOT)/tools-x86/arm-ncval-core
 QEMU_SCRIPT=/usr/local/crosstool-trusted/qemu_tool.sh
 
 # TODO: move most of these flags into llvm-fake.py
-NACL_CC=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc \
+NACL_CC=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc-arm \
         -std=gnu99 \
         -Wall \
         -Werror \
@@ -31,7 +31,7 @@ NACL_CC=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc \
         -isystem $(SDK_ROOT)/arm-newlib/arm-none-linux-gnueabi/include/sys
 
 
-NACL_LINK=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc \
+NACL_LINK=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc-arm \
           -static \
           -nostdlib \
           -Wl,-T -Wl,$(SDK_ROOT)/arm-none-linux-gnueabi/ld_script_arm_untrusted \

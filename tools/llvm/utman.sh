@@ -1987,8 +1987,8 @@ llvm-fake-install() {
   #mkdir -p ${DRIVER_INSTALL_DIR}
   cp tools/llvm/llvm-fake.py ${DRIVER_INSTALL_DIR}
   for s in gcc g++ \
-           sfigcc bcgcc \
-           sfig++ bcg++ \
+           sfigcc-arm bcgcc \
+           sfig++-arm bcg++ \
            cppas-arm cppas-x86-32 cppas-x86-64 \
            sfild bcld-arm bcld-x86-32 bcld-x86-64 \
            illegal nop ; do
@@ -2252,7 +2252,7 @@ show-tests() {
 #@ test-arm-old <test>   - run a single arm test via the old toolchain
 test-arm-old() {
   ./scons platform=arm sdl=none naclsdk_validate=0 sel_ldr
-  export TARGET_CODE=sfi
+  export TARGET_CODE=sfi-arm
   rm -rf scons-out/nacl-arm
   local fixedargs=""
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then

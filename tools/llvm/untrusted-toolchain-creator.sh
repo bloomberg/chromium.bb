@@ -624,8 +624,8 @@ InstallDriver() {
   #mkdir -p ${DRIVER_INSTALL_DIR}
   cp tools/llvm/llvm-fake.py ${DRIVER_INSTALL_DIR}
   for s in gcc g++ \
-           sfigcc bcgcc \
-           sfig++ bcg++ \
+           sfigcc-arm bcgcc \
+           sfig++-arm bcg++ \
            cppas-arm cppas-x86-32 cppas-x86-64 \
            sfild bcld-arm bcld-x86-32 bcld-x86-64 \
            illegal nop ; do

@@ -31,7 +31,6 @@ import sys
 #       diagnostic mode and configure reads information that the driver
 #       generates on stdout and stderr
 VERBOSE = 0
-TOLERATE_COMPILATION_OF_ASM_CODE = 1
 
 OUT=[sys.stderr]
 # if you want a log of all the action, remove comment below:
@@ -282,20 +281,17 @@ def Run(args):
 
 
 
-def SfiCompile(argv, out_pos, mode):
-  filename = argv[out_pos]
+def SfiCompile(argv, sfi):
+  "Run llc and the assembler to convert a bitcode file to ELF."
+  obj_pos = FindObjectFilePos(argv)
 
-  argv[out_pos] = filename + '.bc'
-
-  argv.append('--emit-llvm')
-  argv.append('-fno-expand-va-arg')
-  Run(argv)
+  filename = argv[obj_pos]
 
   Run([OPT] +
       global_config_flags['OPT'] +
       [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
-  if mode == 'sfi':
+  if sfi:
     llc = [LLC] + global_config_flags['LLC_SFI_SANDBOXING']
   else:
     llc = [LLC]
@@ -303,9 +299,7 @@ def SfiCompile(argv, out_pos, mode):
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
-  # we use llvm-gcc since it knows the correct mfpu and march to use
-  Run([LLVM_GCC] + global_config_flags['LLVM_GCC_COMPILE']
-      + [filename + '.s', '-c', '-o', filename])
+  AssembleArm(['foo', '-c', filename + '.s', '-o', filename])
 
 def FindObjectFilePos(argv):
   """Return argv index if there is and object file is being generated
@@ -414,8 +408,9 @@ def AssembleX8664(argv):
   Assemble(AS_X86, global_config_flags['AS_X8664'], argv)
 
 
-def Compile(argv, llvm_binary, mode):
-  """ Compile to .o file."""
+def CompileToBC(argv, llvm_binary, temp = False):
+  """ Compile to .bc file."""
+  argv = argv[:]
   argv[0] = llvm_binary
 
   if FindLinkPos(argv):
@@ -433,11 +428,8 @@ def Compile(argv, llvm_binary, mode):
       LogFatal('weird invocation without .o:' + StringifyCommand(argv))
     return
 
-  # TODO(robertm): remove support for .S files
-  if FindAssemblerFilePos(argv) is not None:
-    assert TOLERATE_COMPILATION_OF_ASM_CODE
-    Run(argv)
-    return
+  if temp:
+    argv[obj_pos] += '.bc'
 
   if '-nostdinc' in argv:
     argv += global_config_flags['LLVM_GCC_COMPILE']
@@ -445,35 +437,41 @@ def Compile(argv, llvm_binary, mode):
     argv += global_config_flags['LLVM_GCC_COMPILE']
     argv += global_config_flags['LLVM_GCC_COMPILE_HEADERS']
 
-  if mode == 'bitcode':
-    argv.append('--emit-llvm')
-    argv.append('-fno-expand-va-arg')
+  argv.append('--emit-llvm')
+  argv.append('-fno-expand-va-arg')
+  Run(argv)
+
+def Incarnation_gcclike(argv, tool, temp, sfi):
+  argv = argv[:]
+  argv[0] = tool
+  if IsDiagnosticMode(argv) or FindAssemblerFilePos(argv):
     Run(argv)
-  else:
-    SfiCompile(argv, obj_pos, mode)
+    return;
+  CompileToBC(argv, tool, temp)
+  SfiCompile(argv, sfi)
+
+def Incarnation_sfigccarm(argv):
+  Incarnation_gcclike(argv, LLVM_GCC, True, True)
 
 
-def Incarnation_sfigcc(argv):
-  Compile(argv, LLVM_GCC, 'sfi')
+def Incarnation_sfigplusplusarm(argv):
+  Incarnation_gcclike(argv, LLVM_GXX, True, True)
 
-
-def Incarnation_sfigplusplus(argv):
-  Compile(argv, LLVM_GXX, 'sfi')
 
 def Incarnation_gcc(argv):
-  Compile(argv, LLVM_GCC, 'regular')
+  Incarnation_gcclike(argv, LLVM_GCC, True, False)
 
 
 def Incarnation_gplusplus(argv):
-  Compile(argv, LLVM_GXX, 'regular')
+  Incarnation_gcclike(argv, LLVM_GXX, True, False)
 
 
 def Incarnation_bcgcc(argv):
-  Compile(argv, LLVM_GCC, 'bitcode')
+  CompileToBC(argv, LLVM_GCC)
 
 
 def Incarnation_bcgplusplus(argv):
-  Compile(argv, LLVM_GXX, 'bitcode')
+  CompileToBC(argv, LLVM_GXX)
 
 
 def Incarnation_cppasarm(argv):
@@ -735,8 +733,8 @@ def Incarnation_sfild(argv):
 ######################################################################
 
 INCARNATIONS = {
-   'llvm-fake-sfigcc': Incarnation_sfigcc,
-   'llvm-fake-sfig++': Incarnation_sfigplusplus,
+   'llvm-fake-sfigcc-arm': Incarnation_sfigccarm,
+   'llvm-fake-sfig++-arm': Incarnation_sfigplusplusarm,
 
    'llvm-fake-gcc': Incarnation_gcc,
    'llvm-fake-g++': Incarnation_gplusplus,

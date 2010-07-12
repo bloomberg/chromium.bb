@@ -149,7 +149,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc64_O9'] = ToolchainConfig(
 
 DRIVER_PATH = 'toolchain/linux_arm-untrusted/arm-none-linux-gnueabi'
 
-NACL_LLVM_GCC_ARM = DRIVER_PATH + '/llvm-fake-sfigcc'
+NACL_LLVM_GCC_ARM = DRIVER_PATH + '/llvm-fake-sfigcc-arm'
 
 NACL_LD_ARM = DRIVER_PATH + '/llvm-fake-sfild'
 
