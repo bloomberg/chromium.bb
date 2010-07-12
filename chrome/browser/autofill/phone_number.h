@@ -31,7 +31,7 @@ class PhoneNumber : public FormGroup {
   // returns the trailing 7 digits, |city_code| returns the next 3 digits, and
   // |country_code| returns any remaining digits.
   // Separator characters are stripped before parsing the digits.
-  // Returns true if parsing was successfull, false otherwise.
+  // Returns true if parsing was successful, false otherwise.
   static bool ParsePhoneNumber(const string16& value,
                                string16* number,
                                string16* city_code,

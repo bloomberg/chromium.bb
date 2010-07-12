@@ -55,6 +55,21 @@ class FormGroup {
   // Returns the label for this FormGroup item. This should be overridden for
   // form group items that implement a label.
   virtual const string16& Label() const { return EmptyString16(); }
+
+  // Returns true if the field data in |form_group| does not match the field
+  // data in this FormGroup.
+  virtual bool operator!=(const FormGroup& form_group) const;
+
+  // Returns true if the data in this FormGroup is a subset of the data in
+  // |form_group|.
+  bool IsSubsetOf(const FormGroup& form_group) const;
+
+  // Returns true if the values of the intersection of the available field types
+  // are equal.  If the intersection is empty, the method returns false.
+  bool IntersectionOfTypesHasEqualValues(const FormGroup& form_group) const;
+
+  // Merges the field data in |form_group| with this FormGroup.
+  void MergeWith(const FormGroup& form_group);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_FORM_GROUP_H_

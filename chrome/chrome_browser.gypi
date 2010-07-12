@@ -164,6 +164,7 @@
         'browser/autofill/field_types.h',
         'browser/autofill/form_field.cc',
         'browser/autofill/form_field.h',
+        'browser/autofill/form_group.cc',
         'browser/autofill/form_group.h',
         'browser/autofill/form_structure.cc',
         'browser/autofill/form_structure.h',

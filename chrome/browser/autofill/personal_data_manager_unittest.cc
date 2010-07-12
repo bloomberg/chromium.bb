@@ -403,7 +403,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   wds->RemoveAutoFillProfile(profile2->unique_id());
 
   // Before telling the PDM to refresh, simulate an edit to one of the profiles
-  // via a SetProfile update (this would happen if the autofill window was
+  // via a SetProfile update (this would happen if the AutoFill window was
   // open with a previous snapshot of the profiles, and something [e.g. sync]
   // removed a profile from the browser.  In this edge case, we will end up
   // in a consistent state by dropping the write).

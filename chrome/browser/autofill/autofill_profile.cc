@@ -158,58 +158,6 @@ FormGroup* AutoFillProfile::Clone() const {
   return profile;
 }
 
-bool AutoFillProfile::IsSubsetOf(const AutoFillProfile& profile) const {
-  FieldTypeSet types;
-  GetAvailableFieldTypes(&types);
-
-  for (FieldTypeSet::const_iterator iter = types.begin(); iter != types.end();
-       ++iter) {
-    AutoFillType type(*iter);
-    if (GetFieldText(type) != profile.GetFieldText(type))
-      return false;
-  }
-
-  return true;
-}
-
-bool AutoFillProfile::IntersectionOfTypesHasEqualValues(
-    const AutoFillProfile& profile) const {
-  FieldTypeSet a, b, intersection;
-  GetAvailableFieldTypes(&a);
-  profile.GetAvailableFieldTypes(&b);
-  std::set_intersection(a.begin(), a.end(),
-                        b.begin(), b.end(),
-                        std::inserter(intersection, intersection.begin()));
-
-  // An empty intersection can't have equal values.
-  if (intersection.empty())
-    return false;
-
-  for (FieldTypeSet::const_iterator iter = intersection.begin();
-       iter != intersection.end(); ++iter) {
-    AutoFillType type(*iter);
-    if (GetFieldText(type) != profile.GetFieldText(type))
-      return false;
-  }
-
-  return true;
-}
-
-void AutoFillProfile::MergeWith(const AutoFillProfile& profile) {
-  FieldTypeSet a, b, intersection;
-  GetAvailableFieldTypes(&a);
-  profile.GetAvailableFieldTypes(&b);
-  std::set_difference(b.begin(), b.end(),
-                      a.begin(), a.end(),
-                      std::inserter(intersection, intersection.begin()));
-
-  for (FieldTypeSet::const_iterator iter = intersection.begin();
-       iter != intersection.end(); ++iter) {
-    AutoFillType type(*iter);
-    SetInfo(type, profile.GetFieldText(type));
-  }
-}
-
 string16 AutoFillProfile::PreviewSummary() const {
   // Fetch the components of the summary string.  Any or all of these
   // may be an empty string.

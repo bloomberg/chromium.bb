@@ -653,7 +653,7 @@ void PersonalDataManager::SaveImportedProfile() {
        iter != web_profiles_.end(); ++iter) {
     if (imported_profile_->IsSubsetOf(**iter)) {
       // In this case, the existing profile already contains all of the data
-      // in |imported_profile|, so consider the profiles already merged.
+      // in |imported_profile_|, so consider the profiles already merged.
       merged = true;
     } else if ((*iter)->IntersectionOfTypesHasEqualValues(
         *imported_profile_)) {
@@ -672,6 +672,41 @@ void PersonalDataManager::SaveImportedProfile() {
   SetProfiles(&profiles);
 }
 
+// TODO(jhawkins): Refactor and merge this with SaveImportedProfile.
 void PersonalDataManager::SaveImportedCreditCard() {
-  // http://crbug.com/47428
+  if (profile_->IsOffTheRecord())
+    return;
+
+  if (!imported_credit_card_.get())
+    return;
+
+  // Set to true if |imported_credit_card_| is merged into the profile list.
+  bool merged = false;
+
+  imported_credit_card_->set_label(ASCIIToUTF16(kUnlabeled));
+
+  std::vector<CreditCard> creditcards;
+  for (std::vector<CreditCard*>::const_iterator iter =
+           credit_cards_.begin();
+       iter != credit_cards_.end(); ++iter) {
+    if (imported_credit_card_->IsSubsetOf(**iter)) {
+      // In this case, the existing credit card already contains all of the data
+      // in |imported_credit_card_|, so consider the credit cards already
+      // merged.
+      merged = true;
+    } else if ((*iter)->IntersectionOfTypesHasEqualValues(
+        *imported_credit_card_)) {
+      // |imported_profile| contains all of the data in this profile, plus
+      // more.
+      merged = true;
+      (*iter)->MergeWith(*imported_credit_card_);
+    }
+
+    creditcards.push_back(**iter);
+  }
+
+  if (!merged)
+    creditcards.push_back(*imported_credit_card_);
+
+  SetCreditCards(&creditcards);
 }

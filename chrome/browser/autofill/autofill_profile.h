@@ -46,17 +46,6 @@ class AutoFillProfile : public FormGroup {
   void set_unique_id(int id) { unique_id_ = id; }
   int unique_id() const { return unique_id_; }
 
-  // Returns true if the data in this profile is a subset of the data in
-  // |profile|.
-  bool IsSubsetOf(const AutoFillProfile& profile) const;
-
-  // Returns true if the values of the intersection of the available field types
-  // are equal.  If the intersection is empty, the method returns false.
-  bool IntersectionOfTypesHasEqualValues(const AutoFillProfile& profile) const;
-
-  // Merges the profile data in |profile| with this profile.
-  void MergeWith(const AutoFillProfile& profile);
-
   // Profile summary string for UI.
   // Constructs a summary string based on NAME_FIRST, NAME_LAST, and
   // ADDRESS_HOME_LINE1 fields of the profile.  The summary string is of the
@@ -72,7 +61,7 @@ class AutoFillProfile : public FormGroup {
 
   // For WebData and Sync.
   bool operator==(const AutoFillProfile& profile) const;
-  bool operator!=(const AutoFillProfile& profile) const;
+  virtual bool operator!=(const AutoFillProfile& profile) const;
   void set_label(const string16& label) { label_ = label; }
 
  private:
