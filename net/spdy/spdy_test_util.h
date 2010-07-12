@@ -170,17 +170,11 @@ spdy::SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
 // Constructs a single SPDY data frame with the contents "hello!"
 spdy::SpdyFrame* ConstructSpdyBodyFrame();
 
-// Constructs a single SPDY reset frame.
-spdy::SpdyFrame* ConstructSpdyRstFrame();
-
 // Create an async MockWrite from the given SpdyFrame.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req);
 
 // Create an async MockWrite from the given SpdyFrame and sequence number.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq);
-
-// Create an async MockWrite from the given SpdyFrame and sequence number.
-MockWrite CreateMockWrite(spdy::SpdyFrame* req, int seq);
 
 // Create a MockRead from the given SpdyFrame.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp);

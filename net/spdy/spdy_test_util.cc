@@ -385,13 +385,6 @@ spdy::SpdyFrame* ConstructSpdyBodyFrame() {
   return framer.CreateDataFrame(1, "hello!", 6, spdy::DATA_FLAG_FIN);
 }
 
-// Constructs a single SPDY reset frame.
-spdy::SpdyFrame* ConstructSpdyRstFrame() {
-  spdy::SpdyFramer framer;
-  return framer.CreateRstStream(1, spdy::CANCEL);
-
-}
-
 // Construct an expected SPDY reply string.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -480,12 +473,6 @@ MockWrite CreateMockWrite(const spdy::SpdyFrame& req) {
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq) {
   return MockWrite(
       true, req.data(), req.length() + spdy::SpdyFrame::size(), seq);
-}
-
-// Create a MockWrite from the given SpdyFrame and sequence number.
-MockWrite CreateMockWrite(spdy::SpdyFrame* req, int seq) {
-  return MockWrite(
-      true, req->data(), req->length() + spdy::SpdyFrame::size(), seq);
 }
 
 // Create a MockRead from the given SpdyFrame.
