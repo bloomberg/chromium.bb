@@ -3587,3 +3587,29 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+
+{
+   bug_48865
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt10_List_nodeIN3net25RuleBasedHostResolverProc4RuleEEE8allocateEjPKv
+   fun:_ZNSt10_List_baseIN3net25RuleBasedHostResolverProc4RuleESaIS2_EE11_M_get_nodeEv
+   fun:_ZNSt4listIN3net25RuleBasedHostResolverProc4RuleESaIS2_EE14_M_create_nodeERKS2_
+   fun:_ZNSt4listIN3net25RuleBasedHostResolverProc4RuleESaIS2_EE9_M_insertESt14_List_iteratorIS2_ERKS2_
+   fun:_ZNSt4listIN3net25RuleBasedHostResolverProc4RuleESaIS2_EE9push_backERKS2_
+   fun:_ZN3net25RuleBasedHostResolverProc23AddRuleForAddressFamilyERKSsNS_13AddressFamilyES2_
+   fun:_ZN3net25RuleBasedHostResolverProc7AddRuleERKSsS2_
+   fun:_ZN3net20MockHostResolverBase5ResetEPNS_16HostResolverProcE
+   fun:_ZN3net20MockHostResolverBaseC2Eb
+   fun:_ZN3net16MockHostResolverC1Ev
+   fun:_ZN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc_9D292295_6F30AFB219SessionDependenciesC1Ev
+   fun:_ZN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc_9D292295_6F30AFB218SpdyHttpStreamTestC2Ev
+   fun:_ZN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc_9D292295_6F30AFB235SpdyHttpStreamTest_SendRequest_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplIN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc_9D292295_6F30AFB235SpdyHttpStreamTest_SendRequest_TestEE10CreateTestEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
