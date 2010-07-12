@@ -194,6 +194,26 @@ class GClientSmoke(GClientSmokeBase):
     self.check(('', err, 2), results)
     self.assertFalse(os.path.exists(join(self.root_dir, '.gclient')))
 
+  def testSolutionNone(self):
+    results = self.gclient(['config', '--spec',
+                            'solutions=[{"name": "./", "url": None}]'])
+    self.check(('', '', 0), results)
+    results = self.gclient(['sync'])
+    self.check(('', '', 0), results)
+    self.assertTree({})
+    results = self.gclient(['revinfo'])
+    self.check(('./: None\n', '', 0), results)
+    self.check(('', '', 0), self.gclient(['cleanup']))
+    self.check(('', '', 0), self.gclient(['diff']))
+    self.check(('', '', 0), self.gclient(['export', 'foo']))
+    self.assertTree({})
+    self.check(('', '', 0), self.gclient(['pack']))
+    self.check(('', '', 0), self.gclient(['revert']))
+    self.assertTree({})
+    self.check(('', '', 0), self.gclient(['runhooks']))
+    self.assertTree({})
+    self.check(('', '', 0), self.gclient(['status']))
+
 
 class GClientSmokeSVN(GClientSmokeBase):
   def setUp(self):

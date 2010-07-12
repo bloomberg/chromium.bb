@@ -720,9 +720,11 @@ solutions = [
 
     # Inner helper to generate base url and rev tuple
     def GetURLAndRev(name, original_url):
+      if not original_url:
+        return None
       url, _ = gclient_utils.SplitUrlRevision(original_url)
       scm = gclient_scm.CreateSCM(original_url, self.root_dir(), name)
-      return (url, scm.revinfo(self._options, [], None))
+      return '%s@%s' % (url, scm.revinfo(self._options, [], None))
 
     # text of the snapshot gclient file
     new_gclient = ""
@@ -735,9 +737,9 @@ solutions = [
       name = solution.name
       if name in solution_names:
         raise gclient_utils.Error("solution %s specified more than once" % name)
-      (url, rev) = GetURLAndRev(name, solution.url)
-      entries[name] = "%s@%s" % (url, rev)
-      solution_names[name] = "%s@%s" % (url, rev)
+      url = GetURLAndRev(name, solution.url)
+      entries[name] = url
+      solution_names[name] = url
 
     # Process the dependencies next (sort alphanumerically to ensure that
     # containing directories get populated first and for readability)
@@ -748,11 +750,9 @@ solutions = [
     # First pass for direct dependencies.
     for d in deps_to_process:
       if type(deps[d]) == str:
-        (url, rev) = GetURLAndRev(d, deps[d])
-        entries[d] = "%s@%s" % (url, rev)
+        entries[d] = GetURLAndRev(d, deps[d])
       elif isinstance(deps[d], self.FileImpl):
-        (url, rev) = GetURLAndRev(d, deps[d].file_location)
-        entries[d] = "%s@%s" % (url, rev)
+        entries[d] = GetURLAndRev(d, deps[d].file_location)
 
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:
@@ -765,8 +765,11 @@ solutions = [
         sub_deps = Dependency(self, deps[d].module_name, sub_deps_base_url
             ).ParseDepsFile(False)
         url = deps[d].GetUrl(d, sub_deps_base_url, self.root_dir(), sub_deps)
-        (url, rev) = GetURLAndRev(d, url)
-        entries[d] = "%s@%s" % (url, rev)
+        entries[d] = GetURLAndRev(d, url)
+
+    # Build the snapshot configuration string
+    if self._options.snapshot:
+      url = entries.pop(name)
 
     # Build the snapshot configuration string
     if self._options.snapshot:
