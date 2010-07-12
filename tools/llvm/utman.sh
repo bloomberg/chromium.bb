@@ -1987,6 +1987,7 @@ llvm-fake-install() {
   #mkdir -p ${DRIVER_INSTALL_DIR}
   cp tools/llvm/llvm-fake.py ${DRIVER_INSTALL_DIR}
   for s in gcc g++ \
+           sfigcc sfig++ \
            sfigcc-arm bcgcc \
            sfig++-arm bcg++ \
            cppas-arm cppas-x86-32 cppas-x86-64 \

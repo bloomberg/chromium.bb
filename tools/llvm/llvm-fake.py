@@ -736,6 +736,9 @@ INCARNATIONS = {
    'llvm-fake-sfigcc-arm': Incarnation_sfigccarm,
    'llvm-fake-sfig++-arm': Incarnation_sfigplusplusarm,
 
+   'llvm-fake-sfigcc': Incarnation_sfigccarm,
+   'llvm-fake-sfig++': Incarnation_sfigplusplusarm,
+
    'llvm-fake-gcc': Incarnation_gcc,
    'llvm-fake-g++': Incarnation_gplusplus,
 
