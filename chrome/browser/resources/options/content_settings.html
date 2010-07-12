@@ -1,0 +1,96 @@
+<div class="page hidden" id="contentSettingsPage">
+  <!-- Navigation tabs -->
+  <div id="content-settings-nav-tabs">
+    <span i18n-content="cookies_tab_label" id="cookies-nav-tab"
+          class="inactive-tab" tab-contents="cookiesFilterTab"></span>
+    <span i18n-content="images_tab_label" id="images-nav-tab"
+          class="inactive-tab" tab-contents="imagesFilterTab"></span>
+  </div>
+  <br>
+
+  <!-- Cookie filter tab contents -->
+  <div id="cookiesFilterTab" class="content-settings-tab-contents">
+    <section>
+      <span i18n-content="cookies_modify"></span>
+      <table class="option-control-table">
+      <tr>
+         <td class="option-name"><label>
+           <input type="radio" name="cookies" value="allow">
+             <span i18n-content="cookies_allow"></span>
+         </label></td>
+      </tr>
+      <tr>
+         <td class="option-name"><label>
+           <input type="radio" name="cookies" value="ask">
+             <span i18n-content="cookies_ask"></span>
+         </label></td>
+      </tr>
+      <tr>
+         <td class="option-name"><label>
+           <input type="radio" name="cookies" value="block">
+            <span i18n-content="cookies_block"></span>
+         </label></td>
+      </tr>
+      <tr>
+         <td class="option-name"><button id="cookies-exceptions-button"
+             i18n-content="content_exceptions"></button>
+         </td>
+      </tr>
+      </table>
+    </section>
+
+    <section>
+      <table class="option-control-table">
+      <tr>
+         <td class="option-name"><label>
+           <input id="block-third-party-cookies" type="checkbox">
+             <span i18n-content="cookies_block_3rd_party"></span>
+         </label></td>
+      </tr>
+      <tr>
+        <td class="option-name"><label>
+           <input id="clear-cookies-on-exit"
+                  pref="profile.clear_site_data_on_exit" type="checkbox">
+             <span i18n-content="cookies_clear_on_exit"></span>
+         </label></td>
+      </tr>
+      <tr>
+         <td class="option-name"><button id="show-cookies-button"
+             i18n-content="cookies_show_cookies"></button>
+         </td>
+      </tr>
+      <tr>
+         <td class="option-name"><a i18n-values="href:flash_storage_url">
+           <span i18n-content="flash_storage_settings"></span></a>
+         </td>
+      </tr>
+      </table>
+    </section>
+  </div>
+
+  <!-- Image filter tab contents -->
+  <div id="imagesFilterTab" class="content-settings-tab-contents">
+    <section>
+      <span i18n-content="images_setting"></span>
+      <table class="option-control-table">
+      <tr>
+         <td class="option-name"><label>
+           <input type="radio" name="images" value="allow">
+             <span i18n-content="images_allow"></span>
+         </label></td>
+      </tr>
+      <tr>
+         <td class="option-name"><label>
+           <input type="radio" name="images" value="block">
+             <span i18n-content="images_block"></span>
+         </label></td>
+      </tr>
+      <tr>
+         <td class="option-name"><button id="images-exceptions-button"
+             i18n-content="content_exceptions"></button>
+         </td>
+      </tr>
+      </table>
+    </section>
+  </div>
+</div>

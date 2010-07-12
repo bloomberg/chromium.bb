@@ -1,0 +1,16 @@
+#content-settings-nav-tabs .inactive-tab {
+  background-color: #FFFFFF;
+}
+
+#content-settings-nav-tabs .active-tab {
+  background-color: #DFDFDF;
+  font-weight: bold;
+}
+
+.content-settings-tab-contents {
+  display: none;
+}
+
+.active-tab-contents {
+  display: block;
+}

@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/advanced_options_handler.h"
 #include "chrome/browser/dom_ui/browser_options_handler.h"
+#include "chrome/browser/dom_ui/content_settings_handler.h"
 #include "chrome/browser/dom_ui/core_options_handler.h"
 #include "chrome/browser/dom_ui/personal_options_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -112,6 +113,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new SyncOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LabsHandler());
 #endif
+  AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
 
   // |localized_strings| ownership is taken over by this constructor.
   OptionsUIHTMLSource* html_source =

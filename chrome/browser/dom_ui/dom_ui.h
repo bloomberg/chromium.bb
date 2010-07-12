@@ -171,10 +171,10 @@ class DOMMessageHandler {
   // This is where subclasses specify which messages they'd like to handle.
   virtual void RegisterMessages() = 0;
 
-  // Extract an integer value from a Value.
+  // Extract an integer value from a list Value.
   bool ExtractIntegerValue(const Value* value, int* out_int);
 
-  // Extract a string value from a Value.
+  // Extract a string value from a list Value.
   std::wstring ExtractStringValue(const Value* value);
 
   DOMUI* dom_ui_;

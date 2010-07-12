@@ -1019,6 +1019,8 @@
         'browser/dom_ui/advanced_options_utils_mac.h',
         'browser/dom_ui/browser_options_handler.cc',
         'browser/dom_ui/browser_options_handler.h',
+        'browser/dom_ui/content_settings_handler.cc',
+        'browser/dom_ui/content_settings_handler.h',
         'browser/dom_ui/core_options_handler.cc',
         'browser/dom_ui/core_options_handler.h',
         'browser/dom_ui/personal_options_handler.cc',
