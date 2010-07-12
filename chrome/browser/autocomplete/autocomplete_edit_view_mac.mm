@@ -748,10 +748,6 @@ void AutocompleteEditViewMac::OnKillFocus() {
   controller_->OnKillFocus();
 }
 
-void AutocompleteEditViewMac::OnDidResignKey() {
-  ClosePopup();
-}
-
 bool AutocompleteEditViewMac::CanCopy() {
   const NSRange selection = GetSelectedRange();
   return selection.length > 0;

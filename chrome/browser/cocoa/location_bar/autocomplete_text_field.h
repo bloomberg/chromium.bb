@@ -63,8 +63,9 @@ class AutocompleteTextFieldObserver {
   // Called when the field's frame changes.
   virtual void OnFrameChanged() = 0;
 
-  // Called when the window containing the field loses focus.
-  virtual void OnDidResignKey() = 0;
+  // Called when the popup is no longer appropriate, such as when the
+  // field's window loses focus or a page action is clicked.
+  virtual void ClosePopup() = 0;
 
   // Called when the user begins editing the field, for every edit,
   // and when the user is done editing the field.

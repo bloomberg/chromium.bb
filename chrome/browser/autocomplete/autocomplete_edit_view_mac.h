@@ -86,7 +86,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual int GetPasteActionStringId();
   virtual void OnPasteAndGo();
   virtual void OnFrameChanged();
-  virtual void OnDidResignKey();  // Closes the popup.
   virtual void OnDidBeginEditing();
   virtual void OnDidChange();
   virtual void OnDidEndEditing();

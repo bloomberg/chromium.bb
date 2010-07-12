@@ -71,6 +71,12 @@
 // a decoration area and get the expected selection behaviour,
 // likewise for multiple clicks in those areas.
 - (void)mouseDown:(NSEvent*)theEvent {
+  // Close the popup before processing the event.  This prevents the
+  // popup from being visible while a right-click context menu or
+  // page-action menu is visible.  Also, it matches other platforms.
+  if (observer_)
+    observer_->ClosePopup();
+
   // If the click was a Control-click, bring up the context menu.
   // |NSTextField| handles these cases inconsistently if the field is
   // not already first responder.
@@ -282,11 +288,12 @@
   return NO;
 }
 
+// When the window resigns, make sure the autocomplete popup is no
+// longer visible, since the user's focus is elsewhere.
 - (void)windowDidResignKey:(NSNotification*)notification {
   DCHECK_EQ([self window], [notification object]);
-  if (observer_) {
-    observer_->OnDidResignKey();
-  }
+  if (observer_)
+    observer_->ClosePopup();
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
@@ -312,6 +319,22 @@
     if ([windowController isNormalWindow])
       dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
   }
+}
+
+// NSTextField becomes first responder by installing a "field editor"
+// subview.  Clicks outside the field editor (such as a decoration)
+// will attempt to make the field the first-responder again, which
+// causes a select-all, even if the decoration handles the click.  If
+// the field editor is already in place, don't accept first responder
+// again.  This allows the selection to be unmodified if the click is
+// handled by a decoration or context menu (|-mouseDown:| will still
+// change it if appropriate).
+- (BOOL)acceptsFirstResponder {
+  if ([self currentEditor]) {
+    DCHECK_EQ([self currentEditor], [[self window] firstResponder]);
+    return NO;
+  }
+  return [super acceptsFirstResponder];
 }
 
 // (Overridden from NSResponder)

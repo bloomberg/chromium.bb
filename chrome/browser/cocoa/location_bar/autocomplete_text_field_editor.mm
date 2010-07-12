@@ -204,8 +204,9 @@ class Extension;
     [[BrowserWindowController browserWindowControllerForView:field]
         releaseBarVisibilityForOwner:field withAnimation:YES delay:YES];
 
-    if ([field observer])
-      [field observer]->OnKillFocus();
+    AutocompleteTextFieldObserver* observer = [self observer];
+    if (observer)
+      observer->OnKillFocus();
   }
   return doResign;
 }
@@ -312,6 +313,15 @@ class Extension;
   // this change, so setting |textChangedByKeyEvents_| to NO to
   // prevent its OnDidChange() method from being called unnecessarily.
   textChangedByKeyEvents_ = NO;
+}
+
+- (void)mouseDown:(NSEvent*)theEvent {
+  // Close the popup before processing the event.
+  AutocompleteTextFieldObserver* observer = [self observer];
+  if (observer)
+    observer->ClosePopup();
+
+  [super mouseDown:theEvent];
 }
 
 @end

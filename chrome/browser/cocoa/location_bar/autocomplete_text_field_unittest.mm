@@ -862,8 +862,8 @@ TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {
 // in and out of the window.
 // TODO(shess): Should this test the key window for realz?  That would
 // be really annoying to whoever is running the tests.
-TEST_F(AutocompleteTextFieldObserverTest, SendsOnResignKey) {
-  EXPECT_CALL(field_observer_, OnDidResignKey());
+TEST_F(AutocompleteTextFieldObserverTest, ClosePopupOnResignKey) {
+  EXPECT_CALL(field_observer_, ClosePopup());
   [test_window() resignKeyWindow];
 
   scoped_nsobject<AutocompleteTextField> pin([field_ retain]);
@@ -871,7 +871,7 @@ TEST_F(AutocompleteTextFieldObserverTest, SendsOnResignKey) {
   [test_window() resignKeyWindow];
 
   [[test_window() contentView] addSubview:field_];
-  EXPECT_CALL(field_observer_, OnDidResignKey());
+  EXPECT_CALL(field_observer_, ClosePopup());
   [test_window() resignKeyWindow];
 }
 
