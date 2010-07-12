@@ -457,6 +457,7 @@ void LocationBarViewMac::SetStarred(bool starred) {
   star_icon_view_.SetStarred(starred);
   [field_ updateCursorAndToolTipRects];
   [field_ resetFieldEditorFrameIfNeeded];
+  [field_ setNeedsDisplay:YES];
 }
 
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
