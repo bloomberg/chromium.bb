@@ -23,6 +23,7 @@ class AccountScreen;
 class BackgroundView;
 class LoginScreen;
 class NetworkScreen;
+class RegistrationScreen;
 class UserImageScreen;
 class UpdateScreen;
 class StartupCustomizationDocument;
@@ -75,6 +76,7 @@ class WizardController : public chromeos::ScreenObserver,
   chromeos::AccountScreen* GetAccountScreen();
   chromeos::UpdateScreen* GetUpdateScreen();
   chromeos::UserImageScreen* GetUserImageScreen();
+  chromeos::RegistrationScreen* GetRegistrationScreen();
 
   // Show specific screen.
   void ShowNetworkScreen();
@@ -82,6 +84,7 @@ class WizardController : public chromeos::ScreenObserver,
   void ShowAccountScreen();
   void ShowUpdateScreen();
   void ShowUserImageScreen();
+  void ShowRegistrationScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -103,6 +106,7 @@ class WizardController : public chromeos::ScreenObserver,
   static const char kAccountScreenName[];
   static const char kUpdateScreenName[];
   static const char kUserImageScreenName[];
+  static const char kRegistrationScreenName[];
   static const char kOutOfBoxScreenName[];
   static const char kTestNoScreenName[];
 
@@ -160,6 +164,7 @@ class WizardController : public chromeos::ScreenObserver,
   scoped_ptr<chromeos::AccountScreen> account_screen_;
   scoped_ptr<chromeos::UpdateScreen> update_screen_;
   scoped_ptr<chromeos::UserImageScreen> user_image_screen_;
+  scoped_ptr<chromeos::RegistrationScreen> registration_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

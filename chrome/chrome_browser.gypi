@@ -462,6 +462,8 @@
         'browser/chromeos/login/new_user_view.h',
         'browser/chromeos/login/password_changed_view.cc',
         'browser/chromeos/login/password_changed_view.h',
+        'browser/chromeos/login/registration_screen.cc',
+        'browser/chromeos/login/registration_screen.h',               
         'browser/chromeos/login/rounded_rect_painter.cc',
         'browser/chromeos/login/rounded_rect_painter.h',
         'browser/chromeos/login/screen_locker.cc',

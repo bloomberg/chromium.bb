@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/timer.h"
 #include "chrome/browser/chromeos/login/web_page_view.h"
 #include "views/view.h"
 

@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
+#include "chrome/browser/chromeos/login/registration_screen.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/user_image_screen.h"
@@ -161,6 +162,7 @@ const char WizardController::kLoginScreenName[] = "login";
 const char WizardController::kAccountScreenName[] = "account";
 const char WizardController::kUpdateScreenName[] = "update";
 const char WizardController::kUserImageScreenName[] = "image";
+const char WizardController::kRegistrationScreenName[] = "register";
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
@@ -292,6 +294,12 @@ chromeos::UserImageScreen* WizardController::GetUserImageScreen() {
   return user_image_screen_.get();
 }
 
+chromeos::RegistrationScreen* WizardController::GetRegistrationScreen() {
+  if (!registration_screen_.get())
+    registration_screen_.reset(new chromeos::RegistrationScreen(this));
+  return registration_screen_.get();
+}
+
 void WizardController::ShowNetworkScreen() {
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetNetworkScreen());
@@ -336,6 +344,11 @@ void WizardController::ShowUpdateScreen() {
 void WizardController::ShowUserImageScreen() {
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUserImageScreen());
+}
+
+void WizardController::ShowRegistrationScreen() {
+  SetStatusAreaVisible(true);
+  SetCurrentScreen(GetRegistrationScreen());
 }
 
 void WizardController::SetStatusAreaVisible(bool visible) {
@@ -495,6 +508,8 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
     GetUpdateScreen()->StartUpdate();
   } else if (first_screen_name == kUserImageScreenName) {
     ShowUserImageScreen();
+  } else if (first_screen_name == kRegistrationScreenName) {
+    ShowRegistrationScreen();
   } else if (first_screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();
