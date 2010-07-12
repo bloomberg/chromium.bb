@@ -1,0 +1,147 @@
+<!--
+Copyright 2009, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Box2DJS in 3D</title>
+
+        <!--=============================-->
+        <!-- Copy this part to your app. -->
+        <!-- START                       -->
+        <!--=============================-->
+        <!-- libs -->
+    <script type="text/javascript" src="third_party/prototype-1.6.0.2.js"></script>
+
+        <!-- box2djs -->
+    <script type="text/javascript" src='third_party/box2d/box2d.js'></script>
+        <!--=============================-->
+        <!-- Copy this part to your app. -->
+        <!-- END                         -->
+        <!--=============================-->
+    <script type="text/javascript" src="../../o3d-webgl/base.js"></script>
+    <script type="text/javascript" src="../../o3djs/base.js"></script>
+
+        <!-- demos -->
+    <script src='demos/manager.js'></script>
+    <script src='demos/draw_world.js'></script>
+    <script src='demos/demo_base.js'></script>
+    <script src='demos/top.js'></script>
+    <script src='demos/stack.js'></script>
+    <script src='demos/compound.js'></script>
+    <script src='demos/pendulum.js'></script>
+    <script src='demos/crank.js'></script>
+    <script src='demos/demos.js'></script>
+    <style type="text/css">
+      html, body {
+        border: 0;
+        margin: 0;
+        height: 100%;
+      }
+    </style>
+  </head>
+<body onload="init()" onunload="uninit()">
+<table style="width: 100%; height: 100%;"><tr valign="top" style="height: 50px;"><td>
+<h1>Box2DJS in 3D</h1>
+<p>Based on <a href="http://box2d-js.sourceforge.net/">box2d-js</a>.<br/>
+Left Click to create a new object.<br/>
+Right Click (shift-click on OSX) to switch to the next demo.
+</p>
+</td></tr>
+<tr style="height: 100%;"><td>
+<div id="o3d" style="width: 100%; height: 100%;"></div>
+</td></tr></table>
+<div style="display:none;">
+<textarea id="shader">
+uniform mat4 worldViewProjection;
+uniform vec3 lightWorldPos;
+uniform mat4 world;
+uniform mat4 view;
+uniform mat4 worldInverseTranspose;
+
+attribute vec4 position;
+attribute vec4 normal;
+attribute vec2 texCoord0;
+
+varying vec2 diffuseUV;
+varying vec3 n;
+varying vec3 l;
+varying vec3 v;
+
+void main() {
+  gl_Position = worldViewProjection * position;
+  diffuseUV = texCoord0;
+  n = (worldInverseTranspose * normal).xyz;
+  l = lightWorldPos - (world * position).xyz;
+  v = (view[3] - (world * position)).xyz;
+}
+
+// #o3d SplitMarker
+
+uniform vec4 lightColor;
+uniform sampler2D diffuseSampler;
+uniform vec4 specular;
+uniform float shininess;
+
+uniform vec4 emissive;
+uniform vec4 ambient;
+uniform vec4 colorMult;
+
+varying vec2 diffuseUV;
+varying vec3 n;
+varying vec3 l;
+varying vec3 v;
+
+vec4 lit(float l ,float h, float m) {
+  return vec4(1.0,
+              max(l, 0.0),
+              (l > 0.0) ? pow(max(0.0, h), m) : 0.0,
+              1.0);
+}
+
+void main() {
+  vec4 diffuse = texture2D(diffuseSampler, diffuseUV) * colorMult;
+  vec3 ll = normalize(l);
+  vec3 nn = normalize(n);
+  vec3 r = normalize(reflect(nn, ll));
+  vec3 vv = normalize(v);
+  vec4 litR = lit(dot(nn, ll), dot(r, vv), shininess);
+  gl_FragColor = vec4((emissive + lightColor *
+                 (ambient + diffuse * litR.y + specular * litR.z)).rgb,
+                diffuse.a);
+}
+
+// #o3d MatrixLoadOrder RowMajor
+</textarea>
+</div>
+</body>
+</html>
