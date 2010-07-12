@@ -95,6 +95,10 @@ body {
   color: green;
 }
 
+#requestsListTableBody .source_NONE {
+  color: red;
+}
+
 .tabSwitcher {
   margin-top: 10px;
   margin-left: 10px;

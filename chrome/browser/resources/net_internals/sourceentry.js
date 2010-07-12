@@ -151,9 +151,23 @@ SourceEntry.prototype.createRow_ = function() {
   changeClassName(this.row_, "source_" + sourceTypeString, true);
 };
 
+/**
+ * Returns a description for this source log stream, which will be displayed
+ * in the list view. Most often this is a URL that identifies the request,
+ * or a hostname for a connect job, etc...
+ */
 SourceEntry.prototype.getDescription = function() {
   var e = this.getStartEntry_();
-  if (!e || e.params == undefined)
+  if (!e)
+    return '';
+
+  if (e.source.type == LogSourceType.NONE) {
+    // NONE is what we use for global events that aren't actually grouped
+    // by a "source ID", so we will just stringize the event's type.
+    return getKeyWithValue(LogEventType, e.type);
+  }
+
+  if (e.params == undefined)
     return '';
 
   switch (e.source.type) {
