@@ -249,7 +249,10 @@ void DraggedTabGtk::SetContainerShapeMask(cairo_surface_t* surface) {
     // Make the render area depiction opaque (leaving enough room for the
     // border).
     cairo_identity_matrix(cairo_context);
-    cairo_set_source_rgba(cairo_context, 1.0f, 1.0f, 1.0f, 1.0f);
+    // On Lucid running VNC, the X server will reject RGBA (1,1,1,1) as an
+    // invalid value below in gdk_window_shape_combine_mask(). Using (0,0,0,1)
+    // instead. The value doesn't really matter, as long as the alpha is not 0.
+    cairo_set_source_rgba(cairo_context, 0.0f, 0.0f, 0.0f, 1.0f);
     int tab_height = static_cast<int>(kScalingFactor *
                                       renderer_->height() -
                                       kDragFrameBorderSize);
