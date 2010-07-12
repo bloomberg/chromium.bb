@@ -281,6 +281,53 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
     //   If value within the range of this image, draw at an opacity value
     //     between kMinOpacity and kMaxOpacity-1 relative to where in the range
     //     value is at.
+    // NOTE: Use an array rather than just calculating a resource number to
+    // avoid creating implicit ordering dependencies on the resource values.
+    static const int kWifiUpImages[kNumWifiImages] = {
+      IDR_STATUSBAR_WIFI_UP1,
+      IDR_STATUSBAR_WIFI_UP2,
+      IDR_STATUSBAR_WIFI_UP3,
+      IDR_STATUSBAR_WIFI_UP4,
+      IDR_STATUSBAR_WIFI_UP5,
+      IDR_STATUSBAR_WIFI_UP6,
+      IDR_STATUSBAR_WIFI_UP7,
+      IDR_STATUSBAR_WIFI_UP8,
+      IDR_STATUSBAR_WIFI_UP9,
+    };
+    static const int kWifiUpPImages[kNumWifiImages] = {
+      IDR_STATUSBAR_WIFI_UP1P,
+      IDR_STATUSBAR_WIFI_UP2P,
+      IDR_STATUSBAR_WIFI_UP3P,
+      IDR_STATUSBAR_WIFI_UP4P,
+      IDR_STATUSBAR_WIFI_UP5P,
+      IDR_STATUSBAR_WIFI_UP6P,
+      IDR_STATUSBAR_WIFI_UP7P,
+      IDR_STATUSBAR_WIFI_UP8P,
+      IDR_STATUSBAR_WIFI_UP9P,
+    };
+    static const int kWifiDownImages[kNumWifiImages] = {
+      IDR_STATUSBAR_WIFI_DOWN1,
+      IDR_STATUSBAR_WIFI_DOWN2,
+      IDR_STATUSBAR_WIFI_DOWN3,
+      IDR_STATUSBAR_WIFI_DOWN4,
+      IDR_STATUSBAR_WIFI_DOWN5,
+      IDR_STATUSBAR_WIFI_DOWN6,
+      IDR_STATUSBAR_WIFI_DOWN7,
+      IDR_STATUSBAR_WIFI_DOWN8,
+      IDR_STATUSBAR_WIFI_DOWN9,
+    };
+    static const int kWifiDownPImages[kNumWifiImages] = {
+      IDR_STATUSBAR_WIFI_DOWN1P,
+      IDR_STATUSBAR_WIFI_DOWN2P,
+      IDR_STATUSBAR_WIFI_DOWN3P,
+      IDR_STATUSBAR_WIFI_DOWN4P,
+      IDR_STATUSBAR_WIFI_DOWN5P,
+      IDR_STATUSBAR_WIFI_DOWN6P,
+      IDR_STATUSBAR_WIFI_DOWN7P,
+      IDR_STATUSBAR_WIFI_DOWN8P,
+      IDR_STATUSBAR_WIFI_DOWN9P,
+    };
+
     double value_per_image = 1.0 / kNumWifiImages;
     SkPaint paint;
     for (int i = 0; i < kNumWifiImages; i++) {
@@ -295,18 +342,19 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
         // So we set value to 0 here.
         value = 0;
       }
-      canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_UP1 + i),
-                            0, 0, paint);
-      canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_DOWN1 + i),
-                            0, 0, paint);
+      canvas->DrawBitmapInt(*rb.GetBitmapNamed(kWifiUpImages[i]), 0, 0, paint);
+      canvas->DrawBitmapInt(*rb.GetBitmapNamed(kWifiDownImages[i]), 0, 0,
+                            paint);
 
       // Draw network traffic downloading/uploading image if necessary.
-      if (i == downloading_index)
-        canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_DOWN1P + i),
-                              0, 0, paint);
-      if (i == uploading_index)
-        canvas->DrawBitmapInt(*rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_UP1P + i),
-                              0, 0, paint);
+      if (i == downloading_index) {
+        canvas->DrawBitmapInt(*rb.GetBitmapNamed(kWifiDownPImages[i]), 0, 0,
+                              paint);
+      }
+      if (i == uploading_index) {
+        canvas->DrawBitmapInt(*rb.GetBitmapNamed(kWifiUpPImages[i]), 0, 0,
+                              paint);
+      }
     }
   }
 }
@@ -379,15 +427,36 @@ void NetworkMenuButton::SetBadge(const SkBitmap& badge) {
 // static
 SkBitmap NetworkMenuButton::IconForNetworkStrength(int strength, bool black) {
   // Compose wifi icon by superimposing various icons.
+  // NOTE: Use an array rather than just calculating a resource number to avoid
+  // creating implicit ordering dependencies on the resource values.
+  static const int kBarsImages[kNumWifiImages] = {
+    IDR_STATUSBAR_NETWORK_BARS1,
+    IDR_STATUSBAR_NETWORK_BARS2,
+    IDR_STATUSBAR_NETWORK_BARS3,
+    IDR_STATUSBAR_NETWORK_BARS4,
+    IDR_STATUSBAR_NETWORK_BARS5,
+    IDR_STATUSBAR_NETWORK_BARS6,
+    IDR_STATUSBAR_NETWORK_BARS7,
+    IDR_STATUSBAR_NETWORK_BARS8,
+    IDR_STATUSBAR_NETWORK_BARS9,
+  };
+  static const int kBarsBlackImages[kNumWifiImages] = {
+    IDR_STATUSBAR_NETWORK_BARS1_BLACK,
+    IDR_STATUSBAR_NETWORK_BARS2_BLACK,
+    IDR_STATUSBAR_NETWORK_BARS3_BLACK,
+    IDR_STATUSBAR_NETWORK_BARS4_BLACK,
+    IDR_STATUSBAR_NETWORK_BARS5_BLACK,
+    IDR_STATUSBAR_NETWORK_BARS6_BLACK,
+    IDR_STATUSBAR_NETWORK_BARS7_BLACK,
+    IDR_STATUSBAR_NETWORK_BARS8_BLACK,
+    IDR_STATUSBAR_NETWORK_BARS9_BLACK,
+  };
+
   int index = static_cast<int>(strength / 100.0 *
       nextafter(static_cast<float>(kNumWifiImages), 0));
-  if (index < 0)
-    index = 0;
-  if (index >= kNumWifiImages)
-    index = kNumWifiImages - 1;
-  int base = black ? IDR_STATUSBAR_NETWORK_BARS1_BLACK :
-                     IDR_STATUSBAR_NETWORK_BARS1;
-  return *ResourceBundle::GetSharedInstance().GetBitmapNamed(base + index);
+  index = std::max(std::min(index, kNumWifiImages - 1), 0);
+  return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      black ? kBarsBlackImages[index] : kBarsImages[index]);
 }
 
 // static

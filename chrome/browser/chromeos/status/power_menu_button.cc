@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,22 +129,47 @@ void PowerMenuButton::UpdateIcon() {
     } else if (cros->line_power_on() && cros->battery_fully_charged()) {
       icon_id_ = IDR_STATUSBAR_BATTERY_CHARGED;
     } else {
-      // If fully charged, always show 100% even if percentage is a bit less.
-      double percent = cros->battery_fully_charged() ? 100 :
-          cros->battery_percentage();
-      // Gets the power image depending on battery percentage. Percentage is
+      // Get the power image depending on battery percentage. Percentage is
       // from 0 to 100, so we need to convert that to 0 to kNumPowerImages - 1.
+      // NOTE: Use an array rather than just calculating a resource number to
+      // avoid creating implicit ordering dependencies on the resource values.
+      static const int kChargingImages[kNumPowerImages] = {
+        IDR_STATUSBAR_BATTERY_CHARGING_1,
+        IDR_STATUSBAR_BATTERY_CHARGING_2,
+        IDR_STATUSBAR_BATTERY_CHARGING_3,
+        IDR_STATUSBAR_BATTERY_CHARGING_4,
+        IDR_STATUSBAR_BATTERY_CHARGING_5,
+        IDR_STATUSBAR_BATTERY_CHARGING_6,
+        IDR_STATUSBAR_BATTERY_CHARGING_7,
+        IDR_STATUSBAR_BATTERY_CHARGING_8,
+        IDR_STATUSBAR_BATTERY_CHARGING_9,
+        IDR_STATUSBAR_BATTERY_CHARGING_10,
+        IDR_STATUSBAR_BATTERY_CHARGING_11,
+        IDR_STATUSBAR_BATTERY_CHARGING_12,
+      };
+      static const int kDischargingImages[kNumPowerImages] = {
+        IDR_STATUSBAR_BATTERY_DISCHARGING_1,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_2,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_3,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_4,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_5,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_6,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_7,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_8,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_9,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_10,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_11,
+        IDR_STATUSBAR_BATTERY_DISCHARGING_12,
+      };
+
+      // If fully charged, always show 100% even if percentage is a bit less.
+      double percent = cros->battery_fully_charged() ?
+          100 : cros->battery_percentage();
       int index = static_cast<int>(percent / 100.0 *
                   nextafter(static_cast<float>(kNumPowerImages), 0));
-      // Make sure that index is between 0 and kNumWifiImages - 1
-      if (index < 0)
-        index = 0;
-      if (index >= kNumPowerImages)
-        index = kNumPowerImages - 1;
-      if (cros->line_power_on())
-        icon_id_ = IDR_STATUSBAR_BATTERY_CHARGING_1 + index;
-      else
-        icon_id_ = IDR_STATUSBAR_BATTERY_DISCHARGING_1 + index;
+      index = std::max(std::min(index, kNumPowerImages - 1), 0);
+      icon_id_ = cros->line_power_on() ?
+          kChargingImages[index] : kDischargingImages[index];
     }
   }
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(icon_id_));
