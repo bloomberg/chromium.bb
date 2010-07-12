@@ -9,6 +9,7 @@
 
 LanguageState::LanguageState(NavigationController* nav_controller)
     : navigation_controller_(nav_controller),
+      page_translatable_(false),
       translation_pending_(false),
       translation_declined_(false),
       in_page_navigation_(false) {
@@ -38,13 +39,15 @@ void LanguageState::DidNavigate(bool reload, bool in_page) {
   translation_declined_ = false;
 }
 
-void LanguageState::LanguageDetermined(const std::string& page_language) {
+void LanguageState::LanguageDetermined(const std::string& page_language,
+                                       bool page_translatable) {
   if (in_page_navigation_ && !original_lang_.empty()) {
     // In-page navigation, we don't expect our states to change.
     // Note that we'll set the languages if original_lang_ is empty.  This might
     // happen if the we did not get called on the top-page.
     return;
   }
+  page_translatable_ = page_translatable;
   original_lang_ = page_language;
   current_lang_ = page_language;
 }

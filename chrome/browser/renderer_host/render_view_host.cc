@@ -1893,13 +1893,14 @@ void RenderViewHost::OnCSSInserted() {
 void RenderViewHost::OnPageContents(const GURL& url,
                                     int32 page_id,
                                     const string16& contents,
-                                    const std::string& language) {
+                                    const std::string& language,
+                                    bool page_translatable) {
   RenderViewHostDelegate::BrowserIntegration* integration_delegate =
       delegate_->GetBrowserIntegrationDelegate();
   if (!integration_delegate)
     return;
   integration_delegate->OnPageContents(url, process()->id(), page_id, contents,
-                                       language);
+                                       language, page_translatable);
 }
 
 void RenderViewHost::OnPageTranslated(int32 page_id,

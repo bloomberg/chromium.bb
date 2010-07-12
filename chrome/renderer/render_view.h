@@ -103,6 +103,7 @@ class WebAccessibilityCache;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebDataSource;
+class WebDocument;
 class WebDragData;
 class WebGeolocationServiceInterface;
 class WebImage;
@@ -932,6 +933,11 @@ class RenderView : public RenderWidget,
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent
   void SendPasswordForms(WebKit::WebFrame* frame, bool only_visible);
+
+  // Returns whether the page associated with |document| is a candidate for
+  // translation.  Some pages can explictly specify (via a meta-tag) that they
+  // should not be translated.
+  bool IsPageTranslatable(WebKit::WebDocument* document);
 
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();

@@ -197,7 +197,8 @@ void TranslateManager::Observe(NotificationType type,
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
       LanguageState& language_state = tab->language_state();
-      if (!language_state.translation_pending() &&
+      if (language_state.page_translatable() &&
+          !language_state.translation_pending() &&
           !language_state.translation_declined() &&
           !language_state.IsPageTranslated()) {
         std::string language = *(Details<std::string>(details).ptr());

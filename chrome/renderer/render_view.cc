@@ -838,11 +838,11 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
     std::string language = DetermineTextLanguage(contents);
     UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
                                base::TimeTicks::Now() - begin_time);
-
+    WebKit::WebDocument document = main_frame->document();
     // Send the text to the browser for indexing (the browser might decide not
     // to index, if the URL is HTTPS for instance) and language discovery.
     Send(new ViewHostMsg_PageContents(routing_id_, url, load_id, contents,
-                                      language));
+                                      language, IsPageTranslatable(&document)));
   }
 
   OnCaptureThumbnail();
@@ -1976,6 +1976,23 @@ void RenderView::UpdateTargetURL(const GURL& url, const GURL& fallback_url) {
     target_url_ = latest_url;
     target_url_status_ = TARGET_INFLIGHT;
   }
+}
+
+bool RenderView::IsPageTranslatable(WebKit::WebDocument* document) {
+  std::vector<WebKit::WebElement> meta_elements;
+  webkit_glue::GetMetaElementsWithName(document, ASCIIToUTF16("google"),
+                                       &meta_elements);
+  std::vector<WebKit::WebElement>::const_iterator iter;
+  for (iter = meta_elements.begin(); iter != meta_elements.end(); ++iter) {
+    WebString attribute = iter->getAttribute("value");
+    if (attribute.isNull())  // We support both 'value' and 'content'.
+      attribute = iter->getAttribute("content");
+    if (attribute.isNull())
+      continue;
+    if (LowerCaseEqualsASCII(attribute, "notranslate"))
+      return false;
+  }
+  return true;
 }
 
 void RenderView::StartNavStateSyncTimerIfNecessary() {

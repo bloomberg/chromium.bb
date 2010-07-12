@@ -129,6 +129,12 @@ int NumberOfActiveAnimations(WebKit::WebView* view);
 WebKit::WebString GetSubResourceLinkFromElement(
     const WebKit::WebElement& element);
 
+// Puts the meta-elements of |document| that have the specified |name| in
+// |meta_elements|.
+void GetMetaElementsWithName(WebKit::WebDocument* document,
+                             const string16& name,
+                             std::vector<WebKit::WebElement>* meta_elements);
+
 }  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_DOM_OPERATIONS_H__

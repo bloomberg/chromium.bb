@@ -590,4 +590,29 @@ int NumberOfActiveAnimations(WebView* view) {
   return controller->numberOfActiveAnimations();
 }
 
+void GetMetaElementsWithName(WebDocument* document,
+                             const string16& name,
+                             std::vector<WebElement>* meta_elements) {
+  DCHECK(document);
+  DCHECK(meta_elements);
+  meta_elements->clear();
+  WebElement head = document->head();
+  if (head.isNull() || !head.hasChildNodes())
+    return;
+
+  WebNodeList children = head.childNodes();
+  for (size_t i = 0; i < children.length(); ++i) {
+    WebNode node = children.item(i);
+    if (!node.isElementNode())
+      continue;
+    WebElement element = node.to<WebElement>();
+    if (!element.hasTagName("meta"))
+      continue;
+    WebString meta_name = element.getAttribute("name");
+    if (meta_name.isNull() || meta_name != name)
+      continue;
+    meta_elements->push_back(element);
+  }
+}
+
 }  // webkit_glue
