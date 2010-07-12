@@ -102,6 +102,13 @@ class NavigationEntry {
       return (content_status_ & RAN_INSECURE_CONTENT) != 0;
     }
 
+    void set_connection_status(int connection_status) {
+        connection_status_ = connection_status;
+    }
+    int connection_status() const {
+      return connection_status_;
+    }
+
     // Raw accessors for all the content status flags. This contains a
     // combination of any of the ContentStatusFlags defined above. It is used
     // by some tests for checking and for certain copying. Use the per-status
@@ -119,6 +126,7 @@ class NavigationEntry {
     int cert_id_;
     int cert_status_;
     int security_bits_;
+    int connection_status_;
     int content_status_;
 
     // Copy and assignment is explicitly allowed for this class.

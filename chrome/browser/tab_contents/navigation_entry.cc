@@ -29,6 +29,7 @@ NavigationEntry::SSLStatus::SSLStatus()
       cert_id_(0),
       cert_status_(0),
       security_bits_(-1),
+      connection_status_(0),
       content_status_(NORMAL_CONTENT) {
 }
 

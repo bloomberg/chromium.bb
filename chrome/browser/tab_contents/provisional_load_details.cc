@@ -19,9 +19,11 @@ ProvisionalLoadDetails::ProvisionalLoadDetails(bool is_main_frame,
         ssl_cert_id_(0),
         ssl_cert_status_(0),
         ssl_security_bits_(-1),
+        ssl_connection_status_(0),
         is_content_filtered_(is_content_filtered) {
   SSLManager::DeserializeSecurityInfo(security_info,
                                       &ssl_cert_id_,
                                       &ssl_cert_status_,
-                                      &ssl_security_bits_);
+                                      &ssl_security_bits_,
+                                      &ssl_connection_status_);
 }

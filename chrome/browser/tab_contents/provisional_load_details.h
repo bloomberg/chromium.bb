@@ -43,6 +43,8 @@ class ProvisionalLoadDetails {
 
   int ssl_security_bits() const { return ssl_security_bits_; }
 
+  int ssl_connection_status() const { return ssl_connection_status_; }
+
   bool is_content_filtered() const { return is_content_filtered_; }
 
  private:
@@ -53,6 +55,7 @@ class ProvisionalLoadDetails {
   int ssl_cert_id_;
   int ssl_cert_status_;
   int ssl_security_bits_;
+  int ssl_connection_status_;
   bool is_content_filtered_;
 
   DISALLOW_COPY_AND_ASSIGN(ProvisionalLoadDetails);

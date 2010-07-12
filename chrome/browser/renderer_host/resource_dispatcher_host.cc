@@ -1038,14 +1038,16 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
         CertStore::GetSharedInstance()->StoreCert(request->ssl_info().cert,
                                                   info->child_id());
     response->response_head.security_info =
-        SSLManager::SerializeSecurityInfo(cert_id,
-                                          request->ssl_info().cert_status,
-                                          request->ssl_info().security_bits);
+        SSLManager::SerializeSecurityInfo(
+            cert_id, request->ssl_info().cert_status,
+            request->ssl_info().security_bits,
+            request->ssl_info().connection_status);
   } else {
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status &&
            (request->ssl_info().security_bits == -1 ||
-           request->ssl_info().security_bits == 0));
+            request->ssl_info().security_bits == 0) &&
+           !request->ssl_info().connection_status);
   }
 
   NotifyResponseStarted(request, info->child_id());
@@ -1375,9 +1377,9 @@ void ResourceDispatcherHost::OnResponseCompleted(URLRequest* request) {
   if (ssl_info.cert != NULL) {
     int cert_id = CertStore::GetSharedInstance()->StoreCert(ssl_info.cert,
                                                             info->child_id());
-    security_info = SSLManager::SerializeSecurityInfo(cert_id,
-                                                      ssl_info.cert_status,
-                                                      ssl_info.security_bits);
+    security_info = SSLManager::SerializeSecurityInfo(
+        cert_id, ssl_info.cert_status, ssl_info.security_bits,
+        ssl_info.connection_status);
   }
 
   if (info->resource_handler()->OnResponseCompleted(info->request_id(),
