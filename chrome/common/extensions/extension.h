@@ -99,6 +99,7 @@ class Extension {
   static const char* kExperimentalPermission;
   static const char* kGeolocationPermission;
   static const char* kHistoryPermission;
+  static const char* kIdlePermission;
   static const char* kNotificationPermission;
   static const char* kTabPermission;
   static const char* kUnlimitedStoragePermission;

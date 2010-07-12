@@ -117,6 +117,7 @@ const char* Extension::kBookmarkPermission = "bookmarks";
 const char* Extension::kExperimentalPermission = "experimental";
 const char* Extension::kGeolocationPermission = "geolocation";
 const char* Extension::kHistoryPermission = "history";
+const char* Extension::kIdlePermission = "idle";
 const char* Extension::kNotificationPermission = "notifications";
 const char* Extension::kTabPermission = "tabs";
 const char* Extension::kUnlimitedStoragePermission = "unlimited_storage";
@@ -126,6 +127,7 @@ const char* Extension::kPermissionNames[] = {
   Extension::kBookmarkPermission,
   Extension::kExperimentalPermission,
   Extension::kGeolocationPermission,
+  Extension::kIdlePermission,
   Extension::kHistoryPermission,
   Extension::kNotificationPermission,
   Extension::kTabPermission,
