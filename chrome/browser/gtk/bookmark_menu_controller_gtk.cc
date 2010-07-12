@@ -205,7 +205,7 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
 gboolean BookmarkMenuController::OnButtonPressed(
     GtkWidget* sender,
     GdkEventButton* event) {
-  if (event->button == 1) {
+  if (event->button == 1)
     return FALSE;
 
   ignore_button_release_ = false;
