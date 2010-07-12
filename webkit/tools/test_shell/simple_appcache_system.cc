@@ -131,7 +131,7 @@ class SimpleFrontendProxy
       NOTREACHED();
   }
 
-  virtual void OnContentBlocked(int host_id) {}
+  virtual void OnContentBlocked(int host_id, const GURL& manifest_url) {}
 
  private:
   friend class base::RefCountedThreadSafe<SimpleFrontendProxy>;

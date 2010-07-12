@@ -74,7 +74,7 @@ class AppCacheStorageImplTest : public testing::Test {
     explicit MockStorageDelegate(AppCacheStorageImplTest* test)
         : loaded_cache_id_(0), stored_group_success_(false),
           obsoleted_success_(false), found_cache_id_(kNoCacheId),
-          test_(test) {
+          found_blocked_by_policy_(false), test_(test) {
     }
 
     void OnCacheLoaded(AppCache* cache, int64 cache_id) {
@@ -113,6 +113,7 @@ class AppCacheStorageImplTest : public testing::Test {
       found_fallback_entry_ = fallback_entry;
       found_cache_id_ = cache_id;
       found_manifest_url_ = manifest_url;
+      found_blocked_by_policy_ = was_blocked_by_policy;
       test_->ScheduleNextTask();
     }
 
@@ -130,6 +131,7 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheEntry found_fallback_entry_;
     int64 found_cache_id_;
     GURL found_manifest_url_;
+    bool found_blocked_by_policy_;
     AppCacheStorageImplTest* test_;
   };
 
@@ -682,7 +684,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void Verify_FindNoMainResponse() {
     EXPECT_EQ(kEntryUrl, delegate()->found_url_);
-    EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
+    // If the request was blocked by a policy, the manifest url is still valid.
+    EXPECT_TRUE(delegate()->found_manifest_url_.is_empty() ||
+                delegate()->found_blocked_by_policy_);
     EXPECT_EQ(kNoCacheId, delegate()->found_cache_id_);
     EXPECT_EQ(kNoResponseId, delegate()->found_entry_.response_id());
     EXPECT_EQ(kNoResponseId, delegate()->found_fallback_entry_.response_id());
@@ -742,6 +746,7 @@ class AppCacheStorageImplTest : public testing::Test {
     if (policy_.can_load_return_value_) {
       EXPECT_EQ(kEntryUrl, delegate()->found_url_);
       EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
+      EXPECT_FALSE(delegate()->found_blocked_by_policy_);
       EXPECT_EQ(1, delegate()->found_cache_id_);
       EXPECT_EQ(1, delegate()->found_entry_.response_id());
       EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
@@ -800,6 +805,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void Verify_BasicFindMainFallbackResponse() {
     EXPECT_EQ(kFallbackTestUrl, delegate()->found_url_);
     EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
+    EXPECT_FALSE(delegate()->found_blocked_by_policy_);
     EXPECT_EQ(1, delegate()->found_cache_id_);
     EXPECT_FALSE(delegate()->found_entry_.has_response_id());
     EXPECT_EQ(2, delegate()->found_fallback_entry_.response_id());
@@ -846,6 +852,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void Verify_FindMainResponseWithMultipleHits() {
     EXPECT_EQ(kEntryUrl, delegate()->found_url_);
     EXPECT_EQ(kManifestUrl2, delegate()->found_manifest_url_);
+    EXPECT_FALSE(delegate()->found_blocked_by_policy_);
     EXPECT_EQ(2, delegate()->found_cache_id_);
     EXPECT_EQ(2, delegate()->found_entry_.response_id());
     EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
@@ -894,6 +901,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void Verify_NotFound(GURL expected_url, bool test_finished) {
     EXPECT_EQ(expected_url, delegate()->found_url_);
     EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
+    EXPECT_FALSE(delegate()->found_blocked_by_policy_);
     EXPECT_EQ(kNoCacheId, delegate()->found_cache_id_);
     EXPECT_EQ(kNoResponseId, delegate()->found_entry_.response_id());
     EXPECT_EQ(kNoResponseId, delegate()->found_fallback_entry_.response_id());

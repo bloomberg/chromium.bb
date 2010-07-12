@@ -196,7 +196,7 @@ void AppCacheRequestHandler::OnMainResponseFound(
 
   if (ResourceType::IsFrame(resource_type_)) {
     if (was_blocked_by_policy)
-      host_->NotifyMainResourceBlocked();
+      host_->NotifyMainResourceBlocked(manifest_url);
 
     if (cache_id != kNoCacheId) {
       // AppCacheHost loads and holds a reference to the main resource cache
@@ -208,7 +208,7 @@ void AppCacheRequestHandler::OnMainResponseFound(
   } else {
     DCHECK(ResourceType::IsSharedWorker(resource_type_));
     if (was_blocked_by_policy)
-      host_->frontend()->OnContentBlocked(host_->host_id());
+      host_->frontend()->OnContentBlocked(host_->host_id(), manifest_url);
   }
 
   // 6.11.1 Navigating across documents, steps 10 and 14.

@@ -48,7 +48,8 @@ void AppCacheHost::SelectCache(const GURL& document_url,
          !pending_get_status_callback_);
 
   if (main_resource_blocked_)
-    frontend_->OnContentBlocked(host_id_);
+    frontend_->OnContentBlocked(host_id_,
+                                blocked_manifest_url_);
 
   // First we handle an unusual case of SelectCache being called a second
   // time. Generally this shouldn't happen, but with bad content I think
@@ -379,7 +380,7 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
 }
 
 void AppCacheHost::OnContentBlocked(AppCacheGroup* group) {
-  frontend_->OnContentBlocked(host_id_);
+  frontend_->OnContentBlocked(host_id_, group->manifest_url());
 }
 
 void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
@@ -404,8 +405,9 @@ void AppCacheHost::LoadMainResourceCache(int64 cache_id) {
   service_->storage()->LoadCache(cache_id, this);
 }
 
-void AppCacheHost::NotifyMainResourceBlocked() {
+void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {
   main_resource_blocked_ = true;
+  blocked_manifest_url_ = manifest_url;
 }
 
 void AppCacheHost::AssociateCache(AppCache* cache) {

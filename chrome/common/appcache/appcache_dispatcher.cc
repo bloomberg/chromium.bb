@@ -48,6 +48,7 @@ void AppCacheDispatcher::OnLogMessage(
       host_id, static_cast<appcache::LogLevel>(log_level), message);
 }
 
-void AppCacheDispatcher::OnContentBlocked(int host_id) {
-  frontend_impl_.OnContentBlocked(host_id);
+void AppCacheDispatcher::OnContentBlocked(int host_id,
+                                          const GURL& manifest_url) {
+  frontend_impl_.OnContentBlocked(host_id, manifest_url);
 }

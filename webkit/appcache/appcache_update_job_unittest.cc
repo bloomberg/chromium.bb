@@ -220,7 +220,7 @@ class MockFrontend : public AppCacheFrontend {
                             const std::string& message) {
   }
 
-  virtual void OnContentBlocked(int host_id) {
+  virtual void OnContentBlocked(int host_id, const GURL& manifest_url) {
   }
 
   void AddExpectedEvent(const std::vector<int>& host_ids, EventID event_id) {
