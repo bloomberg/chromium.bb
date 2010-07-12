@@ -105,7 +105,8 @@ bool D3DX9InstallCheck(std::string* error) {
     return false;
   }
 
-  if (!PathAppend(dll_path.get(), _T("O3DExtras\\d3dx9_36.dll"))) {
+  if (!PathAppend(dll_path.get(),
+                  _T(O3D_PLUGIN_EXTRAS_DIRECTORY) _T("\\d3dx9_36.dll"))) {
     *error = "Failed to compute location of d3dx9_36.dll.";
     return false;
   }
@@ -215,7 +216,9 @@ bool D3D9SoftwareInstallCheck(std::string* error) {
     return false;
   }
 
-  if (!PathAppend(dll_path.get(), _T("O3DExtras\\swiftshader_d3d9.dll"))) {
+  if (!PathAppend(dll_path.get(),
+                  _T(O3D_PLUGIN_EXTRAS_DIRECTORY)
+                      _T("\\swiftshader_d3d9.dll"))) {
     *error = "Failed to compute new software renderer location.";
     return false;
   }

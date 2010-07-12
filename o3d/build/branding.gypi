@@ -16,6 +16,7 @@
     'plugin_installdir_csidl%': 'CSIDL_APPDATA',
     'plugin_vendor_directory%': 'Google',
     'plugin_product_directory%': 'O3D',
+    'plugin_extras_directory%': 'O3DExtras',
     # You must set this to 1 if changing any of the above.
     'plugin_rebranded%': '0',
   }

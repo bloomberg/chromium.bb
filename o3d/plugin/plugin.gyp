@@ -60,9 +60,9 @@
     'plugin_domain_whitelist%': '',
   },
   'includes': [
+    '../build/branding.gypi',
     '../build/common.gypi',
-    'branding.gypi',
-    'version.gypi',
+    '../build/version.gypi',
   ],
   'target_defaults': {
     'include_dirs': [

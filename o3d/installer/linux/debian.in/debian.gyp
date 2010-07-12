@@ -5,7 +5,7 @@
 {
   'includes': [
     '../../../build/common.gypi',
-    '../../../plugin/version.gypi',
+    '../../../build/version.gypi',
   ],
   'variables': {
     'INSTALLER_DIR': '<(PRODUCT_DIR)/installer',

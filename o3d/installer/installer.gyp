@@ -7,8 +7,8 @@
     'chromium_code': 1,
   },
   'includes': [
+    '../build/branding.gypi',
     '../build/common.gypi',
-    '../plugin/branding.gypi',
   ],
   'targets': [
     {

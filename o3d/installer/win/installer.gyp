@@ -34,7 +34,7 @@
   },
   'includes': [
     '../../build/common.gypi',
-    '../../plugin/version.gypi',
+    '../../build/version.gypi',
   ],
   'targets': [
     {

@@ -5,12 +5,11 @@
 {
   'variables': {
     'chromium_code': 1,
-    # Whether to enable the English-only, Win/Mac-only fullscreen message.
-    'plugin_enable_fullscreen_msg%': '1',
   },
   'includes': [
+    '../build/branding.gypi',
     '../build/common.gypi',
-    '../plugin/version.gypi',
+    '../build/version.gypi',
   ],
   'target_defaults': {
     'include_dirs': [
@@ -24,15 +23,9 @@
     ],
     'defines': [
       'O3D_PLUGIN_VERSION="<(plugin_version)"',
+      'O3D_PLUGIN_EXTRAS_DIRECTORY="<(plugin_extras_directory)"',
     ],
     'conditions': [
-      ['<(plugin_enable_fullscreen_msg) != 0',
-        {
-          'defines': [
-            'O3D_PLUGIN_ENABLE_FULLSCREEN_MSG=1',
-          ],
-        },
-      ],
       ['OS == "win"',
         {
           'msvs_settings': {
