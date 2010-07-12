@@ -22,15 +22,13 @@ namespace {
 
 int PathToIDR(const std::string& path) {
   int idr = -1;
-  if (path == "images/bookmark_bar_folder_mac.png") {
-    idr = IDR_BOOKMARK_BAR_FOLDER;
-  } else if (path == "images/folder_closed.png") {
+  if (path == "app/resources/folder_closed.png") {
     idr = IDR_FOLDER_CLOSED;
-  } else if (path == "images/folder_closed_rtl.png") {
+  } else if (path == "app/resources/folder_closed_rtl.png") {
     idr = IDR_FOLDER_CLOSED_RTL;
-  } else if (path == "images/folder_open.png") {
+  } else if (path == "app/resources/folder_open.png") {
     idr = IDR_FOLDER_OPEN;
-  } else if (path == "images/folder_open_rtl.png") {
+  } else if (path == "app/resources/folder_open_rtl.png") {
     idr = IDR_FOLDER_OPEN_RTL;
   } else {
     // The name of the files in the grd list are prefixed with the following

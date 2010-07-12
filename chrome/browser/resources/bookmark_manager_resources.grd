@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This comment is only here because changes to resources are not picked up
-without changes to the corresponding grd file. -->
+     without changes to the corresponding grd file. -->
 <grit latest_public_release="0" current_release="1">
   <outputs>
     <output filename="grit/bookmark_manager_resources.h" type="rc_header">
@@ -12,21 +12,9 @@ without changes to the corresponding grd file. -->
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_BOOKMARK_MANAGER_BMM_CSS" file="bookmark_manager/css/bmm.css" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BMM_CSS_JS" file="bookmark_manager/css/bmm.css.js" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BMM_TEST" file="bookmark_manager/js/bmm_test.html" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_LIST" file="bookmark_manager/js/bmm/bookmark_list.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_RECENT" file="bookmark_manager/images/bookmark_manager_recent.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_TREE" file="bookmark_manager/js/bmm/bookmark_tree.js" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARKS_FAVICON" file="bookmark_manager/images/bookmarks_favicon.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARKS_SECTION" file="bookmark_manager/images/bookmarks_section.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_BOOKMARKS_SECTION_32" file="bookmark_manager/images/bookmarks_section_32.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_MANIFEST_JSON" file="bookmark_manager/manifest.json" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_TREE_ITERATOR" file="bookmark_manager/js/bmm/tree_iterator.js" type="BINDATA" />
-      <include name="IDR_BOOKMARK_MANAGER_TREE_ITERATOR_TEST" file="bookmark_manager/js/bmm/tree_iterator_test.html" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" type="BINDATA" />
     </includes>
   </release>
 </grit>
