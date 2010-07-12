@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/audio_output.h"
+#include "media/audio/audio_io.h"
 
 #include <windows.h>
 #include <mmsystem.h>
@@ -35,7 +35,7 @@ AudioManagerWin* g_audio_manager = NULL;
 
 }  // namespace.
 
-bool AudioManagerWin::HasAudioDevices() {
+bool AudioManagerWin::HasAudioOutputDevices() {
   return (::waveOutGetNumDevs() != 0);
 }
 
@@ -43,9 +43,11 @@ bool AudioManagerWin::HasAudioDevices() {
 // should suffice most windows user's needs.
 // - PCMWaveOutAudioOutputStream: Based on the waveOutWrite API (in progress)
 // - PCMDXSoundAudioOutputStream: Based on DirectSound or XAudio (future work).
-AudioOutputStream* AudioManagerWin::MakeAudioStream(Format format, int channels,
-                                                    int sample_rate,
-                                                    char bits_per_sample) {
+AudioOutputStream* AudioManagerWin::MakeAudioOutputStream(
+    Format format,
+    int channels,
+    int sample_rate,
+    char bits_per_sample) {
   if ((channels > kMaxChannels) || (channels <= 0) ||
       (sample_rate > kMaxSampleRate) || (sample_rate <= 0) ||
       (bits_per_sample > kMaxBitsPerSample) || (bits_per_sample <= 0))
@@ -64,7 +66,7 @@ AudioOutputStream* AudioManagerWin::MakeAudioStream(Format format, int channels,
   return NULL;
 }
 
-void AudioManagerWin::ReleaseStream(PCMWaveOutAudioOutputStream* stream) {
+void AudioManagerWin::ReleaseOutputStream(PCMWaveOutAudioOutputStream* stream) {
   if (stream)
     delete stream;
 }

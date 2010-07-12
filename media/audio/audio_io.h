@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_AUDIO_OUTPUT_H_
-#define MEDIA_AUDIO_AUDIO_OUTPUT_H_
+#ifndef MEDIA_AUDIO_AUDIO_IO_H_
+#define MEDIA_AUDIO_AUDIO_IO_H_
 
 #include "base/basictypes.h"
 
@@ -128,7 +128,7 @@ class AudioManager {
 
   // Returns true if the OS reports existence of audio devices. This does not
   // guarantee that the existing devices support all formats and sample rates.
-  virtual bool HasAudioDevices() = 0;
+  virtual bool HasAudioOutputDevices() = 0;
 
   // Factory for all the supported stream formats. The |channels| can be 1 to 5.
   // The |sample_rate| is in hertz and can be any value supported by the
@@ -143,9 +143,9 @@ class AudioManager {
   //    available.
   //
   // Do not free the returned AudioOutputStream. It is owned by AudioManager.
-  virtual AudioOutputStream* MakeAudioStream(Format format, int channels,
-                                             int sample_rate,
-                                             char bits_per_sample) = 0;
+  virtual AudioOutputStream* MakeAudioOutputStream(Format format, int channels,
+                                                   int sample_rate,
+                                                   char bits_per_sample) = 0;
 
   // Muting continues playback but effectively the volume is set to zero.
   // Un-muting returns the volume to the previous level.
@@ -161,4 +161,4 @@ class AudioManager {
 };
 
 
-#endif  // MEDIA_AUDIO_AUDIO_OUTPUT_H_
+#endif  // MEDIA_AUDIO_AUDIO_IO_H_

@@ -35,7 +35,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/audio/audio_output.h"
+#include "media/audio/audio_io.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"

@@ -68,7 +68,7 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 #include "ipc/ipc_message.h"
-#include "media/audio/audio_output.h"
+#include "media/audio/audio_io.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/simple_sources.h"
 

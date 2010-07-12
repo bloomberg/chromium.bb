@@ -96,7 +96,7 @@
 #include "base/shared_memory.h"
 #include "base/waitable_event.h"
 #include "chrome/renderer/audio_message_filter.h"
-#include "media/audio/audio_output.h"
+#include "media/audio/audio_io.h"
 #include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_base.h"
