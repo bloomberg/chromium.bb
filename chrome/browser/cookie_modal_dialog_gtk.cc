@@ -14,21 +14,12 @@
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/views/cookie_prompt_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-
-namespace {
-
-void OnExpanderActivate(GtkExpander* expander) {
-  g_browser_process->local_state()->
-      SetBoolean(prefs::kCookiePromptExpanded,
-                 gtk_expander_get_expanded(GTK_EXPANDER(expander)));
-}
-
-}  // namespace
 
 void CookiePromptModalDialog::CreateAndShowDialog() {
   dialog_ = CreateNativeDialog();
@@ -92,11 +83,10 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
   GtkWidget* expander = gtk_expander_new(
       l10n_util::GetStringUTF8(IDS_COOKIE_SHOW_DETAILS_LABEL).c_str());
   gtk_expander_set_expanded(GTK_EXPANDER(expander),
-                            g_browser_process->local_state()->
+                            tab_contents_->profile()->GetPrefs()->
                             GetBoolean(prefs::kCookiePromptExpanded));
   g_signal_connect(expander, "notify::expanded",
-                   G_CALLBACK(OnExpanderActivate), NULL);
-
+                   G_CALLBACK(OnExpanderActivateThunk), this);
   cookie_view_ = gtk_chrome_cookie_view_new(TRUE);
   gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_view_));
   if (type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE) {
@@ -155,4 +145,11 @@ void CookiePromptModalDialog::HandleDialogResponse(GtkDialog* dialog,
 
   gtk_util::AppModalDismissedUngroupWindows();
   delete this;
+}
+
+void CookiePromptModalDialog::OnExpanderActivate(GtkWidget* expander,
+                                                 GParamSpec* property) {
+  tab_contents_->profile()->GetPrefs()->
+      SetBoolean(prefs::kCookiePromptExpanded,
+                 gtk_expander_get_expanded(GTK_EXPANDER(expander)));
 }

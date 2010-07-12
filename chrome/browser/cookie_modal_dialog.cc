@@ -137,7 +137,7 @@ void CookiePromptModalDialog::BlockSiteData(bool remember) {
 }
 
 // static
-void CookiePromptModalDialog::RegisterPrefs(PrefService* prefs) {
+void CookiePromptModalDialog::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kCookiePromptExpanded, false);
 }
 

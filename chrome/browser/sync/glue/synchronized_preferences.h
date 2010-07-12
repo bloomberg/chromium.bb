@@ -104,6 +104,9 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kDesktopNotificationAllowedOrigins,
   prefs::kDesktopNotificationDeniedOrigins,
 
+  // Cookie prompt dialog.
+  prefs::kCookiePromptExpanded,
+
 #if defined(OS_CHROMEOS)
   // IME prefs
   prefs::kLanguageHangulKeyboard,

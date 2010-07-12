@@ -114,8 +114,9 @@ class CookiePromptView : public views::View,
 
   gfx::NativeWindow root_window_;
 
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(CookiePromptView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_COOKIE_PROMPT_VIEW_H_
-

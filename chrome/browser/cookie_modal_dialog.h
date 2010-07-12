@@ -13,6 +13,10 @@
 #include "chrome/browser/cookie_prompt_modal_dialog_delegate.h"
 #include "googleurl/src/gurl.h"
 
+#if defined(OS_LINUX)
+#include "app/gtk_signal.h"
+#endif
+
 #if defined(OS_MACOSX)
 #if __OBJC__
 @class NSWindow;
@@ -23,6 +27,11 @@ class NSWindow;
 
 class HostContentSettingsMap;
 class PrefService;
+
+#if defined(OS_LINUX)
+typedef struct _GtkWidget GtkWidget;
+typedef struct _GParamSpec GParamSpec;
+#endif
 
 // A controller+model class for cookie and local storage warning prompt.
 // |NativeDialog| is a platform specific view.
@@ -61,7 +70,7 @@ class CookiePromptModalDialog : public AppModalDialog {
                           CookiePromptModalDialogDelegate* delegate);
   virtual ~CookiePromptModalDialog();
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterUserPrefs(PrefService* prefs);
 
   // AppModalDialog overrides.
 #if defined(OS_LINUX) || defined(OS_MACOSX)
@@ -96,6 +105,10 @@ class CookiePromptModalDialog : public AppModalDialog {
   virtual NativeDialog CreateNativeDialog();
 #if defined(OS_LINUX)
   virtual void HandleDialogResponse(GtkDialog* dialog, gint response_id);
+  CHROMEGTK_CALLBACK_1(CookiePromptModalDialog,
+                       void,
+                       OnExpanderActivate,
+                       GParamSpec*);
 #endif
 
  private:

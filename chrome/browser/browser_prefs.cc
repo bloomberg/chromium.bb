@@ -86,7 +86,6 @@ void RegisterLocalState(PrefService* local_state) {
 #endif
   UpgradeDetector::RegisterPrefs(local_state);
   TaskManager::RegisterPrefs(local_state);
-  CookiePromptModalDialog::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
   AutoFillManager::RegisterBrowserPrefs(local_state);
 #if defined(OS_CHROMEOS)
@@ -130,6 +129,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
 #endif
   BackgroundContentsService::RegisterUserPrefs(user_prefs);
+  CookiePromptModalDialog::RegisterUserPrefs(user_prefs);
 }
 
 }  // namespace browser

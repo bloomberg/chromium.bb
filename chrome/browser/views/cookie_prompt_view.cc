@@ -53,9 +53,10 @@ CookiePromptView::CookiePromptView(
       expanded_view_(false),
       signaled_(false),
       parent_(parent),
-      root_window_(root_window) {
+      root_window_(root_window),
+      profile_(profile) {
   InitializeViewResources();
-  expanded_view_ = g_browser_process->local_state()->
+  expanded_view_ = profile_->GetPrefs()->
       GetBoolean(prefs::kCookiePromptExpanded);
 }
 
@@ -274,8 +275,8 @@ void CookiePromptView::ToggleDetailsViewExpand() {
   int old_extended_height = GetExtendedViewHeight();
 
   expanded_view_ = !expanded_view_;
-  g_browser_process->local_state()->SetBoolean(prefs::kCookiePromptExpanded,
-                                               expanded_view_);
+  profile_->GetPrefs()->SetBoolean(prefs::kCookiePromptExpanded,
+                                   expanded_view_);
 
   // We have to set the visbility before asking for the extended view height
   // again as there is a bug in combobox that results in preferred height
