@@ -746,24 +746,23 @@ HistoryView.prototype.updateEntryAnchorWidth_ = function() {
     return;
 
   // Create new CSS rules and add them last to the last stylesheet.
-  // TODO(jochen): The following code does not work due to WebKit bug #32309
-  // if (!this.entryAnchorRule_) {
-  //   var styleSheets = document.styleSheets;
-  //   var styleSheet = styleSheets[styleSheets.length - 1];
-  //   var rules = styleSheet.cssRules;
-  //   var createRule = function(selector) {
-  //     styleSheet.insertRule(selector + '{}', rules.length);
-  //     return rules[rules.length - 1];
-  //   };
-  //   this.entryAnchorRule_ = createRule('.entry .title > a');
-  //   // The following rule needs to be more specific to have higher priority.
-  //   this.entryAnchorStarredRule_ = createRule('.entry .title.starred > a');
-  // }
-  //
-  // var anchorMaxWith = titleElement.offsetWidth;
-  // this.entryAnchorRule_.style.maxWidth = anchorMaxWith + 'px';
-  // // Adjust by the width of star plus its margin.
-  // this.entryAnchorStarredRule_.style.maxWidth = anchorMaxWith - 23 + 'px';
+  if (!this.entryAnchorRule_) {
+     var styleSheets = document.styleSheets;
+     var styleSheet = styleSheets[styleSheets.length - 1];
+     var rules = styleSheet.cssRules;
+     var createRule = function(selector) {
+       styleSheet.insertRule(selector + '{}', rules.length);
+       return rules[rules.length - 1];
+     };
+     this.entryAnchorRule_ = createRule('.entry .title > a');
+     // The following rule needs to be more specific to have higher priority.
+     this.entryAnchorStarredRule_ = createRule('.entry .title.starred > a');
+   }
+
+   var anchorMaxWith = titleElement.offsetWidth;
+   this.entryAnchorRule_.style.maxWidth = anchorMaxWith + 'px';
+   // Adjust by the width of star plus its margin.
+   this.entryAnchorStarredRule_.style.maxWidth = anchorMaxWith - 23 + 'px';
 };
 
 ///////////////////////////////////////////////////////////////////////////////
