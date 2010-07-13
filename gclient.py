@@ -770,10 +770,6 @@ solutions = [
     # Build the snapshot configuration string
     if self._options.snapshot:
       url = entries.pop(name)
-
-    # Build the snapshot configuration string
-    if self._options.snapshot:
-      url = entries.pop(name)
       custom_deps = ''.join(['      \"%s\": \"%s\",\n' % (x, entries[x])
                              for x in sorted(entries.keys())])
 
