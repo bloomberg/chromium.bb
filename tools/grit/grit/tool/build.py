@@ -56,6 +56,11 @@ Options:
 
   -E NAME=VALUE     Set environment variable NAME to VALUE (within grit).
 
+  -f FIRSTIDFILE    Path to a python file that specifies the first id of
+                    value to use for resources.  Defaults to the file
+                    resources_ids next to grit.py.  Set to an empty string
+                    if you don't want to use a first id file.
+
 
 Conditional inclusion of resources only affects the output of files which
 control which resources get linked into a binary, e.g. it affects .rc files
@@ -69,7 +74,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
 
   def Run(self, opts, args):
     self.output_directory = '.'
-    (own_opts, args) = getopt.getopt(args, 'o:D:E:')
+    first_id_filename = None
+    (own_opts, args) = getopt.getopt(args, 'o:D:E:f:')
     for (key, val) in own_opts:
       if key == '-o':
         self.output_directory = val
@@ -79,6 +85,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
       elif key == '-E':
         (env_name, env_value) = val.split('=')
         os.environ[env_name] = env_value
+      elif key == '-f':
+        first_id_filename = val
 
     if len(args):
       print "This tool takes no tool-specific arguments."
@@ -90,7 +98,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
       self.VerboseOut('Output directory: %s (absolute path: %s)\n' %
                       (self.output_directory,
                        os.path.abspath(self.output_directory)))
-    self.res = grd_reader.Parse(opts.input, debug=opts.extra_verbose)
+    self.res = grd_reader.Parse(opts.input, first_id_filename=first_id_filename,
+                                debug=opts.extra_verbose)
     self.res.SetDefines(self.defines)
     self.res.RunGatherers(recursive = True)
     self.Process()

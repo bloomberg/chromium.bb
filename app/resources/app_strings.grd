@@ -177,7 +177,7 @@ need to be translated for each locale.-->
     <file path="app_strings_zh-TW.xtb" lang="zh-TW" />
   </translations>
   <release seq="1" allow_pseudo="false">
-    <messages fallback_to_english="true" first_id="30000">
+    <messages fallback_to_english="true">
     
       <!-- Menus -->
       <message name="IDS_APP_MENU_EMPTY_SUBMENU" desc="Used when a submenu has no entries">

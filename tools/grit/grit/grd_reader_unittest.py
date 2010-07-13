@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,6 +16,7 @@ import StringIO
 from grit import grd_reader
 from grit import constants
 from grit import util
+from grit.node import empty
 
 
 class GrdReaderUnittest(unittest.TestCase):
@@ -96,6 +97,53 @@ class GrdReaderUnittest(unittest.TestCase):
     self.failUnless(greeting.GetCliques()[0].GetMessage().GetRealContent() ==
                     'This is a very long line with no linebreaks yes yes it '
                     'stretches on and on and on!')
+
+  def testAssignFirstIds(self):
+    input = u'''<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
+  <release seq="3">
+    <messages>
+      <message name="IDS_TEST" desc="test">
+        test
+      </message>
+    </messages>
+  </release>
+</grit>'''
+    pseudo_file = StringIO.StringIO(input)
+    root = grd_reader.Parse(pseudo_file, '.')
+    root.AssignFirstIds("../../chrome/app/generated_resources.grd", None)
+    messages_node = root.children[0].children[0]
+    self.failUnless(isinstance(messages_node, empty.MessagesNode))
+    self.failUnless(messages_node.attrs["first_id"] !=
+        empty.MessagesNode().DefaultAttributes()["first_id"])
+
+  def testAssignFirstIdsMultipleMessages(self):
+    """If there are multiple messages sections, the resource_ids file
+    needs to list multiple first_id values."""
+    input = u'''<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
+  <release seq="3">
+    <messages>
+      <message name="IDS_TEST" desc="test">
+        test
+      </message>
+    </messages>
+    <messages>
+      <message name="IDS_TEST2" desc="test">
+        test2
+      </message>
+    </messages>
+  </release>
+</grit>'''
+    pseudo_file = StringIO.StringIO(input)
+    root = grd_reader.Parse(pseudo_file, '.')
+    root.AssignFirstIds("../../test.grd", "grit/test/data/resource_ids")
+    messages_node = root.children[0].children[0]
+    self.failUnless(isinstance(messages_node, empty.MessagesNode))
+    self.failUnless(messages_node.attrs["first_id"] == 100)
+    messages_node = root.children[0].children[1]
+    self.failUnless(isinstance(messages_node, empty.MessagesNode))
+    self.failUnless(messages_node.attrs["first_id"] == 10000)
 
 if __name__ == '__main__':
   unittest.main()

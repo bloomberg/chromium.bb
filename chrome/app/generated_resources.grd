@@ -8707,7 +8707,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
     </messages>
 
-    <structures first_id="50000" fallback_to_english="true">
+    <structures fallback_to_english="true">
       <structure name="IDD_CHROME_FRAME_FIND_DIALOG" file="cf_resources.rc" type="dialog" >
       </structure>
     </structures>

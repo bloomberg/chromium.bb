@@ -20,7 +20,7 @@ for localizable strings
     <output filename="chrome_frame_resources.rc" type="rc_all" lang="en"/>
   </outputs>
   <release seq="1">
-    <structures first_id="50005">
+    <structures>
       <structure name="IDR_CHROME_FRAME_IE_FULL_TAB" file="structured_resources.rc" type="accelerators" >
       </structure>
     </structures>

@@ -62,7 +62,8 @@ def Inputs(filename):
   # grit.
   grit_root_dir = os.path.dirname(__file__)
   for root, dirs, filenames in os.walk(grit_root_dir):
-    grit_src = [os.path.join(root, f) for f in filenames if f.endswith('.py')]
+    grit_src = [os.path.join(root, f) for f in filenames
+                if f.endswith('.py') or f == 'resource_ids']
     files.extend(grit_src)
 
   return [f.replace('\\', '/') for f in files]

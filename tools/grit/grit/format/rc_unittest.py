@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -189,7 +189,7 @@ END'''.strip())
       <includes>
         <include name="HTML_FILE1" flattenhtml="true" file="%s" type="BINDATA" />
       </includes>''' % input_file), flexible_root = True)
-    util.FixRootForUnittest(root, tempfile.gettempdir())
+    util.FixRootForUnittest(root, '.')
 
     buf = StringIO.StringIO()
     build.RcBuilder.ProcessNode(root, DummyOutput('rc_all', 'en', output_file),
