@@ -5237,13 +5237,15 @@ bool RenderView::IsNonLocalTopLevelNavigation(
     if (last_top_level_navigation_page_id_ != page_id_ &&
         // Not interested in reloads.
         type != WebKit::WebNavigationTypeReload &&
-        type != WebKit::WebNavigationTypeFormSubmitted) {
+        type != WebKit::WebNavigationTypeFormSubmitted &&
+        type != WebKit::WebNavigationTypeBackForward) {
       return true;
     }
   }
   // Not interested in reloads.
   if (type != WebKit::WebNavigationTypeReload &&
-      type != WebKit::WebNavigationTypeFormSubmitted) {
+      type != WebKit::WebNavigationTypeFormSubmitted &&
+      type != WebKit::WebNavigationTypeBackForward) {
     // The opener relationship between the new window and the parent allows the
     // new window to script the parent and vice versa. This is not allowed if
     // the origins of the two domains are different. This can be treated as a

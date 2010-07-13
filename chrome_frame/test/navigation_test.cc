@@ -632,4 +632,49 @@ TEST_F(NavigationTest, DISABLED_DownloadInNewWindow) {
   LaunchIEAndNavigate(kDownloadFromNewWin);
 }
 
+TEST_P(FullTabNavigationTest, FLAKY_FormPostBackForward) {
+  bool in_cf = GetParam().invokes_cf();
+  // Navigate to the form-get.html page:
+  // - First set focus to chrome renderer window
+  // - Send over a character to the window.
+  // - This should initiate a form post which eventually navigates to the
+  //   action.html page.
+  // Navigate backwards from the action.html page and then navigate forward
+  // from the form-get.html page.
+
+  std::wstring kFormPostUrl =
+      GetTestUrl(L"form-get.html");
+
+  std::wstring kFormPostActionUrl =
+      GetTestUrl(L"action.html?field1=a&field2=b&submit=Submit");
+
+  server_mock_.ExpectAndServeAnyRequests(GetParam());
+  InSequence expect_in_sequence_for_scope;
+
+  ie_mock_.ExpectNavigation(in_cf, kFormPostUrl);
+  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kFormPostUrl)))
+      .WillOnce(testing::DoAll(
+          SetFocusToRenderer(&ie_mock_),
+          DelaySendChar(&loop_, 500, 'C', simulate_input::NONE)));
+
+  ie_mock_.ExpectNavigation(in_cf, kFormPostActionUrl);
+  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kFormPostActionUrl)))
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&ie_mock_),
+          DelayGoBack(&ie_mock_, &loop_, 0)));
+
+  ie_mock_.ExpectNavigation(in_cf, kFormPostUrl);
+  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kFormPostUrl)))
+      .WillOnce(testing::DoAll(
+          VerifyAddressBarUrl(&ie_mock_),
+          DelayGoForward(&ie_mock_, &loop_, 0)));
+
+  ie_mock_.ExpectNavigation(in_cf, kFormPostActionUrl);
+  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kFormPostActionUrl)))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(kFormPostUrl);
+}
+
 }  // namespace chrome_frame_test
+
