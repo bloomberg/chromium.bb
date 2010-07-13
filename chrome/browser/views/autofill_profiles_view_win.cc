@@ -26,6 +26,7 @@
 #include "gfx/size.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "views/border.h"
