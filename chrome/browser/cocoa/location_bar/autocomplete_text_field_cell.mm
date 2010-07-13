@@ -4,11 +4,9 @@
 
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #import "chrome/browser/cocoa/image_utils.h"
-#include "gfx/font.h"
-#include "grit/theme_resources.h"
+#import "chrome/browser/cocoa/location_bar/location_bar_decoration.h"
 
 @interface AutocompleteTextAttachmentCell : NSTextAttachmentCell {
 }
@@ -30,13 +28,6 @@ const CGFloat kBaselineAdjust = 2.0;
 // Matches the clipping radius of |GradientButtonCell|.
 const CGFloat kCornerRadius = 4.0;
 
-// How far to offset the keyword token into the field.
-const NSInteger kKeywordXOffset = 3;
-
-// How much width (beyond text) to add to the keyword token on each
-// side.
-const NSInteger kKeywordTokenInset = 3;
-
 // Gap to leave between hint and right-hand-side of cell.
 const NSInteger kHintXOffset = 4;
 
@@ -44,21 +35,11 @@ const NSInteger kHintXOffset = 4;
 // Assumes -setFlipped:YES.
 const NSInteger kHintYOffset = 4;
 
-// How far to inset the keywork token from sides.
-const NSInteger kKeywordYInset = 4;
-
 // TODO(shess): The keyword hint image wants to sit on the baseline.
 // This moves it down so that there is approximately as much image
 // above the lowercase ascender as below the baseline.  A better
 // technique would be nice to have, though.
 const NSInteger kKeywordHintImageBaseline = -6;
-
-// Drops the magnifying glass icon so that it looks centered in the
-// keyword-search bubble.
-const NSInteger kKeywordSearchImageBaseline = -5;
-
-// The amount of padding on either side reserved for drawing an icon.
-const NSInteger kIconHorizontalPad = 3;
 
 // How far to shift bounding box of hint icon label down from top of field.
 const NSInteger kIconLabelYOffset = 7;
@@ -67,9 +48,11 @@ const NSInteger kIconLabelYOffset = 7;
 // decorations need to be trimmed.
 const CGFloat kEditorHorizontalInset = 3.0;
 
-// Cause the location icon to line up above the icons in the popup.
-const CGFloat kLocationIconXOffset = 6.0;
-const CGFloat kLocationIconXPad = 1.0;
+// How far to inset the left-hand decorations from the field's bounds.
+const CGFloat kLeftDecorationXOffset = 3.0;
+
+// The amount of padding on either side reserved for drawing decorations.
+const NSInteger kDecorationHorizontalPad = 3;
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
@@ -78,10 +61,6 @@ const NSTimeInterval kLocationIconDragTimeout = 0.25;
 // Conveniences to centralize width+offset calculations.
 CGFloat WidthForHint(NSAttributedString* hintString) {
   return kHintXOffset + ceil([hintString size].width);
-}
-CGFloat WidthForKeyword(NSAttributedString* keywordString) {
-  return kKeywordXOffset + ceil([keywordString size].width) +
-      2 * kKeywordTokenInset;
 }
 
 // Convenience to draw |image| in the |rect| portion of |view|.
@@ -116,6 +95,62 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
       range:NSMakeRange(0, [as length])];
 
   return [[as copy] autorelease];
+}
+
+// Helper function for calculating placement of decorations w/in the
+// cell.  |frame| is the cell's boundary rectangle.
+// |left_decorations| is a set of decorations for the left-hand side
+// of the cell, before the text.  |decorations| will contain the
+// resulting visible decorations, and |decoration_frames| will contain
+// their frames in the same coordinates as |frame|.  |remaining_frame|
+// will contain the frame left over for the field editor.
+void CalculatePositionsInFrame(
+    const NSRect cell_frame,
+    const std::vector<LocationBarDecoration*>& left_decorations,
+    std::vector<LocationBarDecoration*>* decorations,
+    std::vector<NSRect>* decoration_frames,
+    NSRect* remaining_frame) {
+  NSRect frame = cell_frame;
+
+  // The left-most decoration will be inset a bit further from the edge.
+  CGFloat left_padding = kLeftDecorationXOffset;
+
+  decorations->clear();
+  decoration_frames->clear();
+
+  for (size_t i = 0; i < left_decorations.size(); ++i) {
+    if (left_decorations[i]->IsVisible()) {
+      NSRect padding, available;
+
+      // Peel off the left-side padding.
+      NSDivideRect(frame, &padding, &available, left_padding, NSMinXEdge);
+
+      // Find out how large the decoration will be in the remaining
+      // space.
+      const CGFloat used_width =
+          left_decorations[i]->GetWidthForSpace(NSWidth(available));
+
+      if (used_width != LocationBarDecoration::kOmittedWidth) {
+        DCHECK_GT(used_width, 0.0);
+        NSRect decoration_frame;
+
+        // Peel off the desired width, leaving the remainder in
+        // |frame|.
+        NSDivideRect(available, &decoration_frame, &frame,
+                     used_width, NSMinXEdge);
+
+        decorations->push_back(left_decorations[i]);
+        decoration_frames->push_back(decoration_frame);
+        DCHECK_EQ(decorations->size(), decoration_frames->size());
+
+        // Adjust padding for between decorations.
+        left_padding = kDecorationHorizontalPad;
+      }
+    }
+  }
+
+  *remaining_frame = frame;
+  DCHECK_EQ(decorations->size(), decoration_frames->size());
 }
 
 }  // namespace
@@ -188,9 +223,6 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 @implementation AutocompleteTextFieldCell
 
 // @synthesize doesn't seem to compile for this transition.
-- (NSAttributedString*)keywordString {
-  return keywordString_.get();
-}
 - (NSAttributedString*)hintString {
   return hintString_.get();
 }
@@ -201,52 +233,6 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 
 - (CGFloat)cornerRadius {
   return kCornerRadius;
-}
-
-- (void)setKeywordString:(NSString*)fullString
-           partialString:(NSString*)partialString
-          availableWidth:(CGFloat)width {
-  DCHECK(fullString != nil);
-
-  hintString_.reset();
-
-  // Adjust for space between editor and decorations.
-  width -= 2 * kEditorHorizontalInset;
-
-  // Get the magnifying glass to put at the front of the string.
-  NSImage* image =
-      AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
-  const NSSize imageSize = [image size];
-
-  // Based on what fits, choose |fullString| with the image,
-  // |fullString| without the image, or |partialString|.
-  NSDictionary* attributes =
-      [NSDictionary dictionaryWithObject:[self font]
-                                  forKey:NSFontAttributeName];
-  NSString* s = fullString;
-  const CGFloat sWidth = [s sizeWithAttributes:attributes].width;
-  if (sWidth + imageSize.width > width) {
-    image = nil;
-  }
-  if (sWidth > width) {
-    if (partialString) {
-      s = partialString;
-    }
-  }
-
-  scoped_nsobject<NSMutableAttributedString> as(
-      [[NSMutableAttributedString alloc] initWithString:s
-                                             attributes:attributes]);
-
-  // Insert the image at the front of the string if it didn't make
-  // things too wide.
-  if (image) {
-    NSAttributedString* is =
-        AttributedStringForImage(image, kKeywordSearchImageBaseline);
-    [as insertAttributedString:is atIndex:0];
-  }
-
-  keywordString_.reset([as copy]);
 }
 
 // Convenience for the attributes used in the right-justified info
@@ -271,15 +257,13 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   DCHECK(anImage != nil);
   DCHECK(suffixString != nil);
 
-  keywordString_.reset();
-
   // Adjust for space between editor and decorations.
   width -= 2 * kEditorHorizontalInset;
 
   // If |hintString_| is now too wide, clear it so that we don't pass
   // the equality tests.
   if (hintString_ && WidthForHint(hintString_) > width) {
-    [self clearKeywordAndHint];
+    [self clearHint];
   }
 
   // TODO(shess): Also check the length?
@@ -312,12 +296,10 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   // Adjust for space between editor and decorations.
   width -= 2 * kEditorHorizontalInset;
 
-  keywordString_.reset();
-
   // If |hintString_| is now too wide, clear it so that we don't pass
   // the equality tests.
   if (hintString_ && WidthForHint(hintString_) > width) {
-    [self clearKeywordAndHint];
+    [self clearHint];
   }
 
   if (![[hintString_ string] isEqualToString:aString]) {
@@ -330,8 +312,7 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   }
 }
 
-- (void)clearKeywordAndHint {
-  keywordString_.reset();
+- (void)clearHint {
   hintString_.reset();
 }
 
@@ -339,16 +320,8 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   page_action_views_ = list;
 }
 
-- (void)setLocationIconView:(LocationBarViewMac::LocationIconView*)view {
-  locationIconView_ = view;
-}
-
 - (void)setStarIconView:(LocationBarViewMac::LocationBarImageView*)view {
   starIconView_ = view;
-}
-
-- (void)setSecurityLabelView:(LocationBarViewMac::LocationBarImageView*)view {
-  securityLabelView_ = view;
 }
 
 - (void)setContentSettingViewsList:
@@ -356,20 +329,63 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   content_setting_views_ = views;
 }
 
+- (void)clearDecorations {
+  leftDecorations_.clear();
+}
+
+- (void)addLeftDecoration:(LocationBarDecoration*)decoration {
+  leftDecorations_.push_back(decoration);
+}
+
+- (CGFloat)availableWidthInFrame:(const NSRect)frame {
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  NSRect textFrame;
+  CalculatePositionsInFrame(frame, leftDecorations_,
+                            &decorations, &decorationFrames, &textFrame);
+
+  return NSWidth(textFrame);
+}
+
+- (NSRect)frameForDecoration:(const LocationBarDecoration*)aDecoration
+                     inFrame:(NSRect)cellFrame {
+  // Short-circuit if the decoration is known to be not visible.
+  if (aDecoration && !aDecoration->IsVisible())
+    return NSZeroRect;
+
+  // Layout the decorations.
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  NSRect textFrame;
+  CalculatePositionsInFrame(cellFrame, leftDecorations_,
+                            &decorations, &decorationFrames, &textFrame);
+
+  // Find our decoration and return the corresponding frame.
+  std::vector<LocationBarDecoration*>::const_iterator iter =
+      std::find(decorations.begin(), decorations.end(), aDecoration);
+  if (iter != decorations.end()) {
+    const size_t index = iter - decorations.begin();
+    return decorationFrames[index];
+  }
+
+  // Decorations which are not visible should have been filtered out
+  // at the top, but return |NSZeroRect| rather than a 0-width rect
+  // for consistency.
+  NOTREACHED();
+  return NSZeroRect;
+}
+
 // Overriden to account for the hint strings and hint icons.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
-  NSRect textFrame([super textFrameForFrame:cellFrame]);
+  // Get the frame adjusted for decorations.
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  NSRect textFrame = [super textFrameForFrame:cellFrame];
+  CalculatePositionsInFrame(textFrame, leftDecorations_,
+                            &decorations, &decorationFrames, &textFrame);
 
   // NOTE: This function must closely match the logic in
   // |-drawInteriorWithFrame:inView:|.
-
-  // Location icon is not shown in keyword search mode.
-  if (!keywordString_ && locationIconView_ && locationIconView_->IsVisible()) {
-    const NSRect iconFrame = [self locationIconFrameForFrame:cellFrame];
-    const CGFloat newOrigin = NSMaxX(iconFrame) + kLocationIconXPad;
-    textFrame.size.width = NSMaxX(textFrame) - newOrigin;
-    textFrame.origin.x = newOrigin;
-  }
 
   // Leave room for items on the right (SSL label, page actions, etc).
   // Icons are laid out in |cellFrame| rather than |textFrame| for
@@ -382,16 +398,7 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   }
 
   // Keyword string or hint string if they fit.
-  if (keywordString_) {
-    DCHECK(!hintString_);
-    const CGFloat keywordWidth(WidthForKeyword(keywordString_));
-
-    if (keywordWidth < NSWidth(textFrame)) {
-      textFrame.origin.x += keywordWidth;
-      textFrame.size.width -= keywordWidth;
-    }
-  } else if (hintString_) {
-    DCHECK(!keywordString_);
+  if (hintString_) {
     const CGFloat hintWidth(WidthForHint(hintString_));
 
     // TODO(shess): This could be better.  Show the hint until the
@@ -401,28 +408,7 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
     }
   }
 
-  // SSL label if it fits.
-  if (securityLabelView_ && securityLabelView_->IsVisible() &&
-      securityLabelView_->GetLabel()) {
-    NSAttributedString* label = securityLabelView_->GetLabel();
-    const CGFloat labelWidth = ceil([label size].width) + kIconHorizontalPad;
-    if (NSWidth(textFrame) > labelWidth) {
-      textFrame.size.width -= labelWidth;
-    }
-  }
-
   return textFrame;
-}
-
-- (NSRect)locationIconFrameForFrame:(NSRect)cellFrame {
-  if (!locationIconView_ || !locationIconView_->IsVisible())
-    return NSZeroRect;
-
-  const NSSize imageSize = locationIconView_->GetImageSize();
-  const CGFloat yOffset = floor((NSHeight(cellFrame) - imageSize.height) / 2);
-  return NSMakeRect(NSMinX(cellFrame) + kLocationIconXOffset,
-                    NSMinY(cellFrame) + yOffset,
-                    imageSize.width, imageSize.height);
 }
 
 - (NSRect)starIconFrameForFrame:(NSRect)cellFrame {
@@ -486,49 +472,21 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   [hintString_.get() drawInRect:infoFrame];
 }
 
-- (void)drawKeywordWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  DCHECK(keywordString_);
-
-  NSRect textFrame = [self textFrameForFrame:cellFrame];
-  const CGFloat x = NSMinX(cellFrame) + kKeywordXOffset;
-  NSRect infoFrame(NSMakeRect(x,
-                              cellFrame.origin.y + kKeywordYInset,
-                              NSMinX(textFrame) - x,
-                              cellFrame.size.height - 2 * kKeywordYInset));
-
-  // Draw the token rectangle with rounded corners.
-  NSRect frame(NSInsetRect(infoFrame, 0.5, 0.5));
-  NSBezierPath* path =
-      [NSBezierPath bezierPathWithRoundedRect:frame xRadius:4.0 yRadius:4.0];
-
-  // Matches the color of the highlighted line in the popup.
-  [[NSColor selectedControlColor] set];
-  [path fill];
-
-  // Border around token rectangle, match focus ring's inner color.
-  [[[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:0.5] set];
-  [path setLineWidth:1.0];
-  [path stroke];
-
-  // Draw text w/in the rectangle.
-  infoFrame.origin.x += 3.0;
-  [keywordString_.get() drawInRect:infoFrame];
-}
-
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  NSRect workingFrame = cellFrame;
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  NSRect workingFrame;
+  CalculatePositionsInFrame(cellFrame, leftDecorations_,
+                            &decorations, &decorationFrames, &workingFrame);
+
+  // Draw the decorations first.
+  for (size_t i = 0; i < decorations.size(); ++i) {
+    if (decorations[i])
+      decorations[i]->DrawInFrame(decorationFrames[i], controlView);
+  }
 
   // NOTE: This function must closely match the logic in
   // |-textFrameForFrame:|.
-
-  // Location icon is not shown in keyword search mode.
-  if (!keywordString_ && locationIconView_ && locationIconView_->IsVisible()) {
-    const NSRect iconFrame = [self locationIconFrameForFrame:cellFrame];
-    DrawImageInRect(locationIconView_->GetImage(), controlView, iconFrame);
-    const CGFloat newOrigin = NSMaxX(iconFrame) + kLocationIconXPad;
-    workingFrame.size.width = NSMaxX(workingFrame) - newOrigin;
-    workingFrame.origin.x = newOrigin;
-  }
 
   NSArray* icons = [self layedOutIcons:cellFrame];
   for (AutocompleteTextFieldIcon* icon in icons) {
@@ -541,17 +499,7 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   }
 
   // Keyword string or hint string if they fit.
-  if (keywordString_) {
-    DCHECK(!hintString_);
-    const CGFloat keywordWidth(WidthForKeyword(keywordString_));
-
-    if (keywordWidth < NSWidth(workingFrame)) {
-      [self drawKeywordWithFrame:cellFrame inView:controlView];
-      workingFrame.origin.x += keywordWidth;
-      workingFrame.size.width -= keywordWidth;
-    }
-  } else if (hintString_) {
-    DCHECK(!keywordString_);
+  if (hintString_) {
     const CGFloat hintWidth(WidthForHint(hintString_));
 
     // TODO(shess): This could be better.  Show the hint until the
@@ -559,24 +507,6 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
     if (hintWidth < NSWidth(workingFrame)) {
       [self drawHintWithFrame:cellFrame inView:controlView];
       workingFrame.size.width -= hintWidth;
-    }
-  }
-
-  // SSL label if it fits.
-  if (securityLabelView_ && securityLabelView_->IsVisible() &&
-      securityLabelView_->GetLabel()) {
-    NSAttributedString* label = securityLabelView_->GetLabel();
-    const CGFloat labelWidth = ceil([label size].width) + kIconHorizontalPad;
-    if (NSWidth(workingFrame) > labelWidth) {
-      workingFrame.size.width -= kIconHorizontalPad;
-
-      scoped_nsobject<AutocompleteTextFieldIcon> icon(
-          [[AutocompleteTextFieldIcon alloc]
-            initLabelWithView:securityLabelView_]);
-      [icon positionInFrame:workingFrame];
-      [icon drawInView:controlView];
-      DCHECK_EQ(labelWidth, NSWidth([icon rect]) + kIconHorizontalPad);
-      workingFrame.size.width -= NSWidth([icon rect]);
     }
   }
 
@@ -630,9 +560,33 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
     [icon positionInFrame:cellFrame];
 
     // Trim the icon's space from the frame.
-    cellFrame.size.width = NSMinX([icon rect]) - kIconHorizontalPad;
+    cellFrame.size.width = NSMinX([icon rect]) - kDecorationHorizontalPad;
   }
   return result;
+}
+
+// Returns the decoration under |theEvent|, or NULL if none.
+// Like |-iconForEvent:inRect:ofView:|, but for decorations.
+- (LocationBarDecoration*)decorationForEvent:(NSEvent*)theEvent
+                                      inRect:(NSRect)cellFrame
+                                      ofView:(AutocompleteTextField*)controlView
+{
+  const BOOL flipped = [controlView isFlipped];
+  const NSPoint location =
+      [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
+
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  NSRect textFrame;
+  CalculatePositionsInFrame(cellFrame, leftDecorations_,
+                            &decorations, &decorationFrames, &textFrame);
+
+  for (size_t i = 0; i < decorations.size(); ++i) {
+    if (NSMouseInRect(location, decorationFrames[i], flipped))
+      return decorations[i];
+  }
+
+  return NULL;
 }
 
 - (AutocompleteTextFieldIcon*)iconForEvent:(NSEvent*)theEvent
@@ -641,17 +595,6 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   const BOOL flipped = [controlView isFlipped];
   const NSPoint location =
       [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
-
-  // Special check for location image, it is not in |-layedOutIcons:|.
-  const NSRect locationIconFrame = [self locationIconFrameForFrame:cellFrame];
-  if (NSMouseInRect(location, locationIconFrame, flipped)) {
-    // Make up an icon to return.
-    AutocompleteTextFieldIcon* icon =
-        [[[AutocompleteTextFieldIcon alloc]
-           initImageWithView:locationIconView_] autorelease];
-    [icon setRect:locationIconFrame];
-    return icon;
-  }
 
   for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
     if (NSMouseInRect(location, [icon rect], flipped))
@@ -664,6 +607,11 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 - (NSMenu*)actionMenuForEvent:(NSEvent*)theEvent
                        inRect:(NSRect)cellFrame
                        ofView:(AutocompleteTextField*)controlView {
+  LocationBarDecoration* decoration =
+      [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
+  if (decoration)
+    return decoration->GetMenu();
+
   AutocompleteTextFieldIcon*
       icon = [self iconForEvent:theEvent inRect:cellFrame ofView:controlView];
   if (icon)
@@ -674,14 +622,25 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
 - (BOOL)mouseDown:(NSEvent*)theEvent
            inRect:(NSRect)cellFrame
            ofView:(AutocompleteTextField*)controlView {
+  LocationBarDecoration* decoration =
+      [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
   AutocompleteTextFieldIcon* icon =
       [self iconForEvent:theEvent inRect:cellFrame ofView:controlView];
-  if (!icon)
+  if (!decoration && !icon)
     return NO;
+
+  NSRect decorationRect = NSZeroRect;
+  if (icon) {
+    decorationRect = [icon rect];
+  } else if (decoration) {
+    decorationRect = [self frameForDecoration:decoration inFrame:cellFrame];
+  }
 
   // If the icon is draggable, then initiate a drag if the user drags
   // or holds the mouse down for awhile.
-  if ([icon view]->IsDraggable()) {
+  if ((icon && [icon view]->IsDraggable()) ||
+      (decoration && decoration->IsDraggable())) {
+    DCHECK(icon || decoration);
     NSDate* timeout =
         [NSDate dateWithTimeIntervalSinceNow:kLocationIconDragTimeout];
     NSEvent* event = [NSApp nextEventMatchingMask:(NSLeftMouseDraggedMask |
@@ -690,7 +649,9 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
                                            inMode:NSEventTrackingRunLoopMode
                                           dequeue:YES];
     if (!event || [event type] == NSLeftMouseDragged) {
-      NSPasteboard* pboard = [icon view]->GetDragPasteboard();
+      NSPasteboard* pboard;
+      if (icon) pboard = [icon view]->GetDragPasteboard();
+      if (decoration) pboard = decoration->GetDragPasteboard();
       DCHECK(pboard);
 
       // TODO(shess): My understanding is that the -isFlipped
@@ -698,11 +659,14 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
       // image is nowhere near the cursor.  Perhaps the icon's rect is
       // incorrectly calculated?
       // http://crbug.com/40711
-      NSPoint dragPoint = [icon rect].origin;
+      NSPoint dragPoint = decorationRect.origin;
       if ([controlView isFlipped])
-        dragPoint.y += NSHeight([icon rect]);
+        dragPoint.y += NSHeight(decorationRect);
 
-      [controlView dragImage:[icon view]->GetImage()
+      NSImage* image;
+      if (icon) image = [icon view]->GetImage();
+      if (decoration) image = decoration->GetDragImage();
+      [controlView dragImage:image
                           at:dragPoint
                       offset:NSZeroSize
                        event:event ? event : theEvent
@@ -716,19 +680,18 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
     DCHECK_EQ([event type], NSLeftMouseUp);
   }
 
-  [icon view]->OnMousePressed([icon rect]);
+  if (icon) {
+    [icon view]->OnMousePressed(decorationRect);
+  } else if (decoration) {
+    if (!decoration->OnMousePressed(decorationRect))
+      return NO;
+  }
+
   return YES;
 }
 
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
   return NSDragOperationCopy;
-}
-
-- (NSPasteboard*)locationDragPasteboard {
-  if (locationIconView_ && locationIconView_->IsDraggable())
-    return locationIconView_->GetDragPasteboard();
-
-  return nil;
 }
 
 @end

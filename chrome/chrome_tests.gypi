@@ -721,7 +721,7 @@
         'browser/cocoa/location_bar/autocomplete_text_field_editor_unittest.mm',
         'browser/cocoa/location_bar/autocomplete_text_field_unittest.mm',
         'browser/cocoa/location_bar/autocomplete_text_field_unittest_helper.mm',
-        'browser/cocoa/location_bar/location_bar_view_mac_unittest.mm',
+        'browser/cocoa/location_bar/selected_keyword_decoration_unittest.mm',
         'browser/cocoa/menu_button_unittest.mm',
         'browser/cocoa/menu_controller_unittest.mm',
         'browser/cocoa/notifications/balloon_controller_unittest.mm',

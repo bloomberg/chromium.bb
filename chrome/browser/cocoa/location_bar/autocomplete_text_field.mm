@@ -211,9 +211,9 @@
   for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:fieldBounds])
     [self addCursorRect:[icon rect] cursor:[NSCursor arrowCursor]];
 
-  // Special-case the location image, since it is not in |-layedOutIcons|.
-  const NSRect locationIconFrame = [cell locationIconFrameForFrame:fieldBounds];
-  [self addCursorRect:locationIconFrame cursor:[NSCursor arrowCursor]];
+  // TODO(shess): This needs to traverse the LocationBarDecorations
+  // and put up a cursor for them, too.  Except for the keyword-search
+  // stuff?  Sigh.
 }
 
 // TODO(shess): -resetFieldEditorFrameIfNeeded is the place where
@@ -403,10 +403,6 @@
 - (NSMenu*)actionMenuForEvent:(NSEvent*)event {
   return [[self autocompleteTextFieldCell]
            actionMenuForEvent:event inRect:[self bounds] ofView:self];
-}
-
-- (NSPasteboard*)locationDragPasteboard {
-  return [[self autocompleteTextFieldCell] locationDragPasteboard];
 }
 
 @end

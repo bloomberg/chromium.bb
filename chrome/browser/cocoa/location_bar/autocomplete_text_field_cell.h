@@ -10,6 +10,7 @@
 #include "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 
 class ExtensionAction;
+class LocationBarDecoration;
 
 // Holds a |LocationBarImageView| and its current rect. Do not keep references
 // to this object, only use it directly after calling |-layedOutIcons:|.
@@ -52,25 +53,17 @@ class ExtensionAction;
 // a button-like token on the left-hand side).
 @interface AutocompleteTextFieldCell : StyledTextFieldCell {
  @private
-  // Set if there is a string to display in a rounded rect on the
-  // left-hand side of the field.  Exclusive WRT |hintString_|.
-  scoped_nsobject<NSAttributedString> keywordString_;
+  // Decorations which live to the left of the text.  Owned by
+  // |LocationBarViewMac|.
+  std::vector<LocationBarDecoration*> leftDecorations_;
 
   // Set if there is a string to display as a hint on the right-hand
   // side of the field.  Exclusive WRT |keywordString_|;
   scoped_nsobject<NSAttributedString> hintString_;
 
-  // The location icon sits at the left-hand side of the field.
-  // |keywordString_| overrides.
-  LocationBarViewMac::LocationIconView* locationIconView_;
-
   // The star icon sits at the right-hand side of the field when an
   // URL is being shown.
   LocationBarViewMac::LocationBarImageView* starIconView_;
-
-  // The security label floats to the left of page actions at the
-  // right-hand side.
-  LocationBarViewMac::LocationBarImageView* securityLabelView_;
 
   // List of views showing visible Page Actions. Owned by the location bar.
   // Display is exclusive WRT the |hintString_| and |keywordString_|.
@@ -80,12 +73,6 @@ class ExtensionAction;
   // List of content blocked icons. This may be NULL during testing.
   LocationBarViewMac::ContentSettingViews* content_setting_views_;
 }
-
-// Chooses |partialString| if |width| won't fit |fullString|.  Strings
-// must be non-nil.
-- (void)setKeywordString:(NSString*)fullString
-           partialString:(NSString*)partialString
-          availableWidth:(CGFloat)width;
 
 // Chooses |anImage| only if all pieces won't fit w/in |width|.
 // Inputs must be non-nil.
@@ -98,18 +85,22 @@ class ExtensionAction;
 // String must be non-nil.
 - (void)setSearchHintString:(NSString*)aString
              availableWidth:(CGFloat)width;
-- (void)clearKeywordAndHint;
+- (void)clearHint;
 
-- (void)setLocationIconView:(LocationBarViewMac::LocationIconView*)view;
+// Clear |leftDecorations_|.
+- (void)clearDecorations;
+
+// Add a new left-side decoration to the right of the existing
+// left-side decorations.
+- (void)addLeftDecoration:(LocationBarDecoration*)decoration;
+
+// The width available after accounting for decorations.
+- (CGFloat)availableWidthInFrame:(const NSRect)frame;
+
 - (void)setStarIconView:(LocationBarViewMac::LocationBarImageView*)view;
-- (void)setSecurityLabelView:(LocationBarViewMac::LocationBarImageView*)view;
 - (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list;
 - (void)setContentSettingViewsList:
     (LocationBarViewMac::ContentSettingViews*)views;
-
-// Returns the portion of the cell to use for displaying the location
-// icon.
-- (NSRect)locationIconFrameForFrame:(NSRect)cellFrame;
 
 // Returns an array of the visible AutocompleteTextFieldIcon objects. Returns
 // only visible icons.
@@ -118,6 +109,12 @@ class ExtensionAction;
 // Return the rectangle the star is being shown in, for purposes of
 // positioning the bookmark bubble.
 - (NSRect)starIconFrameForFrame:(NSRect)cellFrame;
+
+// Return the frame for |aDecoration| if the cell is in |cellFrame|.
+// Returns |NSZeroRect| for decorations which are not currently
+// visible.
+- (NSRect)frameForDecoration:(const LocationBarDecoration*)aDecoration
+                     inFrame:(NSRect)cellFrame;
 
 // Returns the portion of the cell to use for displaying the Page
 // Action icon at the given index. May be NSZeroRect if the index's
@@ -150,15 +147,11 @@ class ExtensionAction;
            inRect:(NSRect)cellFrame
            ofView:(AutocompleteTextField*)controlView;
 
-// If the location icon is draggable, return its drag pasteboard.
-- (NSPasteboard*)locationDragPasteboard;
-
 @end
 
 // Internal methods here exposed for unit testing.
 @interface AutocompleteTextFieldCell (UnitTesting)
 
-@property(nonatomic, readonly) NSAttributedString* keywordString;
 @property(nonatomic, readonly) NSAttributedString* hintString;
 @property(nonatomic, readonly) NSAttributedString* hintIconLabel;
 

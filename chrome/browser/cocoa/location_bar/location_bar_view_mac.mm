@@ -23,6 +23,9 @@
 #import "chrome/browser/cocoa/first_run_bubble_controller.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/location_bar/ev_bubble_decoration.h"
+#import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
+#import "chrome/browser/cocoa/location_bar/selected_keyword_decoration.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/content_setting_bubble_model.h"
@@ -44,23 +47,10 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/mozilla/NSPasteboard+Utils.h"
 
 
 // TODO(shess): This code is mostly copied from the gtk
 // implementation.  Make sure it's all appropriate and flesh it out.
-
-namespace {
-
-// Values for the label colors for different security states.
-static const CGFloat kEVSecureTextColorRedComponent = 0.03;
-static const CGFloat kEVSecureTextColorGreenComponent = 0.58;
-static const CGFloat kEVSecureTextColorBlueComponent = 0.0;
-static const CGFloat kSecurityErrorTextColorRedComponent = 0.63;
-static const CGFloat kSecurityErrorTextColorGreenComponent = 0.0;
-static const CGFloat kSecurityErrorTextColorBlueComponent = 0.0;
-
-}  // namespace
 
 LocationBarViewMac::LocationBarViewMac(
     AutocompleteTextField* field,
@@ -73,8 +63,12 @@ LocationBarViewMac::LocationBarViewMac(
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),
-      location_icon_view_(this),
-      security_label_view_(),
+      location_icon_decoration_(new LocationIconDecoration(this)),
+      selected_keyword_decoration_(
+          new SelectedKeywordDecoration([field_ font])),
+      ev_bubble_decoration_(
+          new EVBubbleDecoration(location_icon_decoration_.get(),
+                                 [field_ font])),
       star_icon_view_(command_updater),
       page_action_views_(this, profile, toolbar_model),
       profile_(profile),
@@ -91,8 +85,6 @@ LocationBarViewMac::LocationBarViewMac(
   }
 
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  [cell setLocationIconView:&location_icon_view_];
-  [cell setSecurityLabelView:&security_label_view_];
   [cell setStarIconView:&star_icon_view_];
   [cell setPageActionViewList:&page_action_views_];
   [cell setContentSettingViewsList:&content_setting_views_];
@@ -106,8 +98,6 @@ LocationBarViewMac::~LocationBarViewMac() {
   // Disconnect from cell in case it outlives us.
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setPageActionViewList:NULL];
-  [cell setLocationIconView:NULL];
-  [cell setSecurityLabelView:NULL];
   [cell setStarIconView:NULL];
 }
 
@@ -193,11 +183,11 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
-  SetIcon(edit_view_->GetIcon());
   page_action_views_.RefreshViews();
   RefreshContentSettingsViews();
   // AutocompleteEditView restores state if the tab is non-NULL.
   edit_view_->Update(should_restore_state ? contents : NULL);
+  OnChanged();
 }
 
 void LocationBarViewMac::OnAutocompleteAccept(const GURL& url,
@@ -235,92 +225,13 @@ void LocationBarViewMac::OnAutocompleteAccept(const GURL& url,
   }
 }
 
-void LocationBarViewMac::OnChangedImpl(AutocompleteTextField* field,
-                                       const std::wstring& keyword,
-                                       const std::wstring& short_name,
-                                       const bool is_keyword_hint,
-                                       const bool is_extension_keyword,
-                                       NSImage* image) {
-  AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
-  const CGFloat availableWidth([field availableDecorationWidth]);
-
-  if (!keyword.empty() && !is_keyword_hint) {
-    // Keyword search mode.  The text will be like "Search Engine:".
-    // "Engine" is a parameter to be replaced by text based on the
-    // keyword.
-
-    const std::wstring min_name(
-        location_bar_util::CalculateMinString(short_name));
-    NSString* partial_string = nil;
-    int message_id = is_extension_keyword ?
-        IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
-    if (!min_name.empty()) {
-      partial_string =
-          l10n_util::GetNSStringF(message_id, WideToUTF16(min_name));
-    }
-
-    NSString* keyword_string =
-        l10n_util::GetNSStringF(message_id, WideToUTF16(short_name));
-    [cell setKeywordString:keyword_string
-             partialString:partial_string
-            availableWidth:availableWidth];
-  } else if (!keyword.empty() && is_keyword_hint) {
-    // Keyword is a hint, like "Press [Tab] to search Engine".  [Tab]
-    // is a parameter to be replaced by an image.  "Engine" is a
-    // parameter to be replaced by text based on the keyword.
-    std::vector<size_t> content_param_offsets;
-    int message_id = is_extension_keyword ?
-        IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
-    const std::wstring keyword_hint(
-        l10n_util::GetStringF(message_id,
-                              std::wstring(), short_name,
-                              &content_param_offsets));
-
-    // Should always be 2 offsets, see the comment in
-    // location_bar_view.cc after IDS_OMNIBOX_KEYWORD_HINT fetch.
-    DCHECK_EQ(content_param_offsets.size(), 2U);
-
-    // Where to put the [TAB] image.
-    const size_t split(content_param_offsets.front());
-
-    NSString* prefix = base::SysWideToNSString(keyword_hint.substr(0, split));
-    NSString* suffix = base::SysWideToNSString(keyword_hint.substr(split));
-
-    [cell setKeywordHintPrefix:prefix image:image suffix:suffix
-                availableWidth:availableWidth];
-  } else {
-    // Nothing interesting to show, plain old text field.
-    [cell clearKeywordAndHint];
-  }
-
-  // The field needs to re-layout if the visible decoration changed.
-  [field resetFieldEditorFrameIfNeeded];
-}
-
 void LocationBarViewMac::OnChanged() {
   // Update the location-bar icon.
-  SetIcon(edit_view_->GetIcon());
-
-  // Unfortunately, the unit-test Profile doesn't have the right stuff
-  // setup to do what GetKeywordName() needs to do.  So do that out
-  // here where we have a Profile and pass it into OnChangedImpl().
-  const std::wstring keyword(edit_view_->model()->keyword());
-  std::wstring short_name;
-  bool is_extension_keyword = false;
-  if (!keyword.empty()) {
-    short_name = profile_->GetTemplateURLModel()->
-        GetKeywordShortName(keyword, &is_extension_keyword);
-  }
-
-  // TODO(shess): Implementation exported to a static so that it can
-  // be unit tested without having to setup the entire object.  This
-  // makes me sad.  I should fix that.
-  OnChangedImpl(field_,
-                keyword,
-                short_name,
-                edit_view_->model()->is_keyword_hint(),
-                is_extension_keyword,
-                GetTabButtonImage());
+  const int resource_id = edit_view_->GetIcon();
+  NSImage* image = AutocompleteEditViewMac::ImageForResource(resource_id);
+  location_icon_decoration_->SetImage(image);
+  ev_bubble_decoration_->SetImage(image);
+  Layout();
 }
 
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {
@@ -447,6 +358,7 @@ void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   star_icon_view_.SetVisible(editable);
   UpdatePageActions();
+  Layout();
 }
 
 bool LocationBarViewMac::IsEditable() {
@@ -455,6 +367,9 @@ bool LocationBarViewMac::IsEditable() {
 
 void LocationBarViewMac::SetStarred(bool starred) {
   star_icon_view_.SetStarred(starred);
+
+  // TODO(shess): The field-editor frame and cursor rects should not
+  // change, here.
   [field_ updateCursorAndToolTipRects];
   [field_ resetFieldEditorFrameIfNeeded];
   [field_ setNeedsDisplay:YES];
@@ -479,39 +394,6 @@ NSImage* LocationBarViewMac::GetTabButtonImage() {
     }
   }
   return tab_button_image_;
-}
-
-void LocationBarViewMac::SetIcon(int resource_id) {
-  DCHECK(resource_id != 0);
-
-  // The icon is always visible except when there is a keyword hint.
-  if (!edit_view_->model()->keyword().empty() &&
-      !edit_view_->model()->is_keyword_hint()) {
-    location_icon_view_.SetVisible(false);
-  } else {
-    NSImage* image = AutocompleteEditViewMac::ImageForResource(resource_id);
-    location_icon_view_.SetImage(image);
-    location_icon_view_.SetVisible(true);
-    SetSecurityLabel();
-  }
-  [field_ resetFieldEditorFrameIfNeeded];
-}
-
-void LocationBarViewMac::SetSecurityLabel() {
-  if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
-    std::wstring security_info_text(toolbar_model_->GetEVCertName());
-    NSString* icon_label = base::SysWideToNSString(security_info_text);
-    NSColor* color =
-        [NSColor colorWithCalibratedRed:kEVSecureTextColorRedComponent
-                                  green:kEVSecureTextColorGreenComponent
-                                   blue:kEVSecureTextColorBlueComponent
-                                  alpha:1.0];
-    security_label_view_.SetLabel(icon_label, [field_ font], color);
-    security_label_view_.SetVisible(true);
-  } else {
-    security_label_view_.SetLabel(nil, nil, nil);
-    security_label_view_.SetVisible(false);
-  }
 }
 
 void LocationBarViewMac::Observe(NotificationType type,
@@ -593,53 +475,6 @@ NSSize LocationBarViewMac::LocationBarImageView::GetImageSize() const {
   if (image)
     return [image size];
   return GetDefaultImageSize();
-}
-
-// LocationIconView ------------------------------------------------------------
-
-LocationBarViewMac::LocationIconView::LocationIconView(
-    LocationBarViewMac* owner)
-    : owner_(owner) {
-}
-
-LocationBarViewMac::LocationIconView::~LocationIconView() {}
-
-void LocationBarViewMac::LocationIconView::OnMousePressed(NSRect bounds) {
-  // Do not show page info if the user has been editing the location
-  // bar, or the location bar is at the NTP.
-  if (owner_->location_entry()->IsEditingOrEmpty())
-    return;
-
-  TabContents* tab = owner_->GetTabContents();
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
-  if (!nav_entry) {
-    NOTREACHED();
-    return;
-  }
-  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
-}
-
-bool LocationBarViewMac::LocationIconView::IsDraggable() {
-  // Do not drag if the user has been editing the location bar, or the
-  // location bar is at the NTP.
-  if (owner_->location_entry()->IsEditingOrEmpty())
-    return false;
-
-  return true;
-}
-
-NSPasteboard* LocationBarViewMac::LocationIconView::GetDragPasteboard() {
-  TabContents* tab = owner_->GetTabContents();
-  DCHECK(tab);
-
-  NSString* url = base::SysUTF8ToNSString(tab->GetURL().spec());
-  NSString* title = base::SysUTF16ToNSString(tab->GetTitle());
-
-  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
-                                            owner:nil];
-  [pboard setDataForURL:url title:title];
-  return pboard;
 }
 
 // StarIconView-----------------------------------------------------------------
@@ -1014,3 +849,92 @@ void LocationBarViewMac::PageActionViewList::OnMousePressed(NSRect iconFrame,
   ViewAt(index)->OnMousePressed(iconFrame);
 }
 
+// TODO(shess): This function should over time grow to closely match
+// the views Layout() function.
+void LocationBarViewMac::Layout() {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+
+  // Reset the left-hand decorations.
+  // TODO(shess): Shortly, this code will live somewhere else, like in
+  // the constructor.  I am still wrestling with how best to deal with
+  // right-hand decorations, which are not a static set.
+  [cell clearDecorations];
+  [cell addLeftDecoration:location_icon_decoration_.get()];
+  [cell addLeftDecoration:selected_keyword_decoration_.get()];
+  [cell addLeftDecoration:ev_bubble_decoration_.get()];
+
+  // By default only the location icon is visible.
+  location_icon_decoration_->SetVisible(true);
+  selected_keyword_decoration_->SetVisible(false);
+  ev_bubble_decoration_->SetVisible(false);
+
+  // Get the keyword to use for keyword-search and hinting.
+  const std::wstring keyword(edit_view_->model()->keyword());
+  std::wstring short_name;
+  bool is_extension_keyword = false;
+  if (!keyword.empty()) {
+    short_name = profile_->GetTemplateURLModel()->
+        GetKeywordShortName(keyword, &is_extension_keyword);
+  }
+
+  const bool is_keyword_hint = edit_view_->model()->is_keyword_hint();
+
+  if (!keyword.empty() && !is_keyword_hint) {
+    // Switch from location icon to keyword mode.
+    location_icon_decoration_->SetVisible(false);
+    selected_keyword_decoration_->SetVisible(true);
+
+    selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
+
+    // TODO(shess): This goes away once the hints are decorations.
+    [cell clearHint];
+  } else if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
+    // Switch from location icon to show the EV bubble instead.
+    location_icon_decoration_->SetVisible(false);
+    ev_bubble_decoration_->SetVisible(true);
+
+    std::wstring label(toolbar_model_->GetEVCertName());
+    ev_bubble_decoration_->SetLabel(base::SysWideToNSString(label));
+
+    // TODO(shess): This goes away once the hints are decorations.
+    [cell clearHint];
+  } else if (!keyword.empty() && is_keyword_hint) {
+    // Keyword is a hint, like "Press [Tab] to search Engine".  [Tab]
+    // is a parameter to be replaced by an image.  "Engine" is a
+    // parameter to be replaced by text based on the keyword.
+    std::vector<size_t> content_param_offsets;
+    int message_id = is_extension_keyword ?
+        IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
+    const std::wstring keyword_hint(
+        l10n_util::GetStringF(message_id,
+                              std::wstring(), short_name,
+                              &content_param_offsets));
+
+    // Should always be 2 offsets, see the comment in
+    // location_bar_view.cc after IDS_OMNIBOX_KEYWORD_HINT fetch.
+    DCHECK_EQ(content_param_offsets.size(), 2U);
+
+    // Where to put the [TAB] image.
+    const size_t split(content_param_offsets.front());
+
+    NSString* prefix = base::SysWideToNSString(keyword_hint.substr(0, split));
+    NSString* suffix = base::SysWideToNSString(keyword_hint.substr(split));
+
+    NSImage* image = GetTabButtonImage();
+    const CGFloat availableWidth([field_ availableDecorationWidth]);
+    [cell setKeywordHintPrefix:prefix image:image suffix:suffix
+                availableWidth:availableWidth];
+  } else {
+    // Nothing interesting to show, plain old text field.
+    [cell clearHint];
+  }
+
+  // These need to change anytime the layout changes.
+  // TODO(shess): Anytime the field editor might have changed, the
+  // cursor rects almost certainly should have changed.  The tooltips
+  // might change even when the rects don't change.
+  [field_ resetFieldEditorFrameIfNeeded];
+  [field_ updateCursorAndToolTipRects];
+
+  [field_ setNeedsDisplay:YES];
+}

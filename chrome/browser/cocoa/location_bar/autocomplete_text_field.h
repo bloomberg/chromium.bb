@@ -130,9 +130,6 @@ class AutocompleteTextFieldObserver {
 // is not over an action.
 - (NSMenu*)actionMenuForEvent:(NSEvent*)event;
 
-// If the location icon is draggable, return its drag pasteboard.
-- (NSPasteboard*)locationDragPasteboard;
-
 @end
 
 #endif  // CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_

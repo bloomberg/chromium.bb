@@ -8,9 +8,17 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/location_bar/ev_bubble_decoration.h"
+#import "chrome/browser/cocoa/location_bar/location_bar_decoration.h"
+#import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
+#import "chrome/browser/cocoa/location_bar/selected_keyword_decoration.h"
 #include "grit/theme_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using ::testing::StrictMock;
+using ::testing::_;
 
 namespace {
 
@@ -20,6 +28,17 @@ const CGFloat kWidth(300.0);
 
 // A narrow width for tests which test things that don't fit.
 const CGFloat kNarrowWidth(5.0);
+
+class MockDecoration : public LocationBarDecoration {
+ public:
+  virtual CGFloat GetWidthForSpace(CGFloat width) { return 20.0; }
+  virtual bool IsVisible() const { return visible_; }
+  void SetVisible(bool visible) { visible_ = visible; }
+
+  MOCK_METHOD2(DrawInFrame, void(NSRect frame, NSView* control_view));
+
+  bool visible_;
+};
 
 // A testing subclass that doesn't bother hooking up the Page Action itself.
 class TestPageActionImageView : public LocationBarViewMac::PageActionImageView {
@@ -45,8 +64,7 @@ class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
 
 class AutocompleteTextFieldCellTest : public CocoaTest {
  public:
-  AutocompleteTextFieldCellTest() : location_icon_view_(NULL),
-                                    page_action_views_() {
+  AutocompleteTextFieldCellTest() : page_action_views_() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
@@ -59,17 +77,19 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
         [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
     [cell setEditable:YES];
     [cell setBordered:YES];
-    [cell setLocationIconView:&location_icon_view_];
-    [cell setSecurityLabelView:&security_label_view_];
     [cell setPageActionViewList:&page_action_views_];
+
+    [cell clearDecorations];
+    mock_left_decoration_.SetVisible(false);
+    [cell addLeftDecoration:&mock_left_decoration_];
+
     [view_ setCell:cell.get()];
 
     [[test_window() contentView] addSubview:view_];
   }
 
   NSTextField* view_;
-  LocationBarViewMac::LocationIconView location_icon_view_;
-  LocationBarViewMac::LocationBarImageView security_label_view_;
+  MockDecoration mock_left_decoration_;
   TestPageActionViewList page_action_views_;
 };
 
@@ -97,47 +117,56 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
               availableWidth:kWidth];
   [view_ display];
 
-  [cell setKeywordString:@"Search Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
+  // Load available decorations and try drawing.
+  SelectedKeywordDecoration selected_keyword_decoration([view_ font]);
+  selected_keyword_decoration.SetVisible(true);
+  selected_keyword_decoration.SetKeyword(std::wstring(L"Google"), false);
+  [cell addLeftDecoration:&selected_keyword_decoration];
+
+  // TODO(shess): This really wants a |LocationBarViewMac|, but only a
+  // few methods reference it, so this works well enough.  But
+  // something better would be nice.
+  LocationIconDecoration location_icon_decoration(NULL);
+  location_icon_decoration.SetVisible(true);
+  location_icon_decoration.SetImage([NSImage imageNamed:@"NSApplicationIcon"]);
+  [cell addLeftDecoration:&location_icon_decoration];
+
+  EVBubbleDecoration ev_bubble_decoration(&location_icon_decoration,
+                                          [view_ font]);
+  ev_bubble_decoration.SetVisible(true);
+  ev_bubble_decoration.SetImage([NSImage imageNamed:@"NSApplicationIcon"]);
+  ev_bubble_decoration.SetLabel(@"Application");
+  [cell addLeftDecoration:&ev_bubble_decoration];
+
+  // Make sure we're actually calling |DrawInFrame()|.
+  StrictMock<MockDecoration> mock_decoration;
+  mock_decoration.SetVisible(true);
+  [cell addLeftDecoration:&mock_decoration];
+  EXPECT_CALL(mock_decoration, DrawInFrame(_, _));
+
   [view_ display];
+
+  [cell clearDecorations];
 }
 
-// Verify that transitions between states clear other states.
-TEST_F(AutocompleteTextFieldCellTest, StateTransitionsResetOthers) {
+TEST_F(AutocompleteTextFieldCellTest, ClearKeywordAndHint) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
+  EXPECT_FALSE([cell hintString]);
 
-  // Setting hint leaves keyword empty.
+  // Check that the search hint can be cleared.
   [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
   EXPECT_TRUE([cell hintString]);
-  EXPECT_FALSE([cell keywordString]);
-
-  // Setting keyword clears hint.
-  [cell setKeywordString:@"Search Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
+  [cell clearHint];
   EXPECT_FALSE([cell hintString]);
-  EXPECT_TRUE([cell keywordString]);
 
-  // Setting hint clears keyword.
+  // Check that the keyword hint can be cleared.
+  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
   [cell setKeywordHintPrefix:@"Press " image:image suffix:@" to search Engine"
               availableWidth:kWidth];
   EXPECT_TRUE([cell hintString]);
-  EXPECT_FALSE([cell keywordString]);
-
-  // Clear clears keyword.
-  [cell clearKeywordAndHint];
+  [cell clearHint];
   EXPECT_FALSE([cell hintString]);
-  EXPECT_FALSE([cell keywordString]);
-
-  // Clear clears hint.
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-  EXPECT_TRUE([cell hintString]);
-  [cell clearKeywordAndHint];
-  EXPECT_FALSE([cell hintString]);
-  EXPECT_FALSE([cell keywordString]);
 }
 
 TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
@@ -182,37 +211,13 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_LT(NSMaxX(textFrame), searchHintMaxX);
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
-  // Keyword search leaves text area to right.
-  [cell setKeywordString:@"Search Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  textFrame = [cell textFrameForFrame:bounds];
-  EXPECT_FALSE(NSIsEmptyRect(textFrame));
-  EXPECT_TRUE(NSContainsRect(bounds, textFrame));
-  EXPECT_GT(NSMinX(textFrame), NSMinX(bounds));
-  EXPECT_LT(NSMinX(textFrame), searchHintMaxX);
-  EXPECT_GT(NSMaxX(textFrame), searchHintMaxX);
-  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
-
   // Text frame should take everything over again on reset.
-  [cell clearKeywordAndHint];
+  [cell clearHint];
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
   EXPECT_EQ(NSMinX(bounds), NSMinX(textFrame));
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
-  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
-
-  // Location icon takes up space on the left
-  location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  location_icon_view_.SetVisible(true);
-
-  textFrame = [cell textFrameForFrame:bounds];
-  EXPECT_FALSE(NSIsEmptyRect(textFrame));
-  EXPECT_TRUE(NSContainsRect(bounds, textFrame));
-  EXPECT_GT(NSMinX(textFrame), NSMinX(bounds));
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Search hint text takes precedence over the hint icon; the text frame
@@ -222,6 +227,14 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   NSRect textFrameWithHintText = [cell textFrameForFrame:bounds];
   EXPECT_TRUE(NSContainsRect(textFrame, textFrameWithHintText));
   EXPECT_LT(NSWidth(textFrameWithHintText), NSWidth(textFrame));
+
+  // Decoration on the left takes up space.
+  mock_left_decoration_.SetVisible(true);
+  textFrame = [cell textFrameForFrame:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(textFrame));
+  EXPECT_TRUE(NSContainsRect(bounds, textFrame));
+  EXPECT_GT(NSMinX(textFrame), NSMinX(bounds));
+  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 }
 
 // The editor frame should be slightly inset from the text frame.
@@ -255,86 +268,39 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
 
-  [cell setKeywordString:@"Search Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  textFrame = [cell textFrameForFrame:bounds];
-  drawingRect = [cell drawingRectForBounds:bounds];
-  EXPECT_FALSE(NSIsEmptyRect(drawingRect));
-  EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
-
-  [cell clearKeywordAndHint];
+  [cell clearHint];
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
   EXPECT_TRUE(NSEqualRects(drawingRect, originalDrawingRect));
 
-  location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  location_icon_view_.SetVisible(true);
-
+  mock_left_decoration_.SetVisible(true);
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
 }
 
-// Test that the location icon is at the right side of the cell.
-TEST_F(AutocompleteTextFieldCellTest, LocationIconFrame) {
+// Test that left decorations are at the correct edge of the cell.
+TEST_F(AutocompleteTextFieldCellTest, LeftDecorationFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-  const NSRect bounds([view_ bounds]);
-  location_icon_view_.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
+  const NSRect bounds = [view_ bounds];
 
-  location_icon_view_.SetVisible(true);
-  const NSRect iconRect = [cell locationIconFrameForFrame:bounds];
-  EXPECT_FALSE(NSIsEmptyRect(iconRect));
-  EXPECT_TRUE(NSContainsRect(bounds, iconRect));
+  mock_left_decoration_.SetVisible(true);
+  const NSRect decorationRect =
+      [cell frameForDecoration:&mock_left_decoration_ inFrame:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(decorationRect));
+  EXPECT_TRUE(NSContainsRect(bounds, decorationRect));
 
-  // Location icon should be left of |drawingRect|.
+  // Decoration should be left of |drawingRect|.
   const NSRect drawingRect = [cell drawingRectForBounds:bounds];
-  EXPECT_GT(NSMinX(drawingRect), NSMinX(iconRect));
+  EXPECT_GT(NSMinX(drawingRect), NSMinX(decorationRect));
 
-  // Location icon should be left of |textFrame|.
+  // Decoration should be left of |textFrame|.
   const NSRect textFrame = [cell textFrameForFrame:bounds];
-  EXPECT_GT(NSMinX(textFrame), NSMinX(iconRect));
-}
-
-// Test that security label takes space to the right.
-TEST_F(AutocompleteTextFieldCellTest, SecurityLabelFrame) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-  const NSRect bounds([view_ bounds]);
-
-  // No label shows nothing, regardless of visibility setting.
-  security_label_view_.SetVisible(false);
-  const NSRect baseTextFrame = [cell textFrameForFrame:bounds];
-  security_label_view_.SetVisible(true);
-  EXPECT_TRUE(NSEqualRects(baseTextFrame, [cell textFrameForFrame:bounds]));
-
-  // Still not visible even with a label.
-  NSFont* font = [NSFont controlContentFontOfSize:12.0];
-  NSColor* color = [NSColor blackColor];
-  security_label_view_.SetLabel(@"Label", font, color);
-  security_label_view_.SetVisible(false);
-  EXPECT_TRUE(NSEqualRects(baseTextFrame, [cell textFrameForFrame:bounds]));
-
-  // Visible with a label is strictly narrower than without.
-  security_label_view_.SetVisible(true);
-  NSRect textFrame = [cell textFrameForFrame:bounds];
-  const CGFloat labelWidth = [security_label_view_.GetLabel() size].width;
-  EXPECT_TRUE(NSContainsRect(baseTextFrame, textFrame));
-  EXPECT_LT(NSWidth(textFrame), NSWidth(baseTextFrame) - labelWidth);
-
-  NSString* longLabel =
-      @"Really super-long labels will not show up if there's not enough room.";
-  security_label_view_.SetLabel(longLabel, font, color);
-  textFrame = [cell textFrameForFrame:bounds];
-  EXPECT_TRUE(NSEqualRects(baseTextFrame, [cell textFrameForFrame:bounds]));
+  EXPECT_GT(NSMinX(textFrame), NSMinX(decorationRect));
 }
 
 // Test Page Action counts.
@@ -427,48 +393,6 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect1));
   EXPECT_LE(NSMaxX(iconRect1), NSMinX(iconRect0));
   EXPECT_LE(NSMaxX(labelRect), NSMinX(iconRect0));
-}
-
-// Test that the cell correctly chooses the partial keyword if there's
-// not enough room.
-TEST_F(AutocompleteTextFieldCellTest, UsesPartialKeywordIfNarrow) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-
-  NSString* const kFullString = @"Search Engine:";
-  NSString* const kPartialString = @"Search Eng:";
-
-  // Wide width chooses the full string, including an image on the
-  // left.
-  [cell setKeywordString:kFullString
-           partialString:kPartialString
-          availableWidth:kWidth];
-  EXPECT_TRUE([cell keywordString]);
-  EXPECT_TRUE([[[cell keywordString] string] hasSuffix:kFullString]);
-  EXPECT_TRUE([[cell keywordString] containsAttachments]);
-
-  // If not enough space to include the image, uses exactly the full
-  // string.
-  CGFloat allWidth = [[cell keywordString] size].width;
-  [cell setKeywordString:kFullString
-           partialString:kPartialString
-          availableWidth:allWidth - 5.0];
-  EXPECT_TRUE([cell keywordString]);
-  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kFullString]);
-
-  // Narrow width chooses the partial string.
-  [cell setKeywordString:kFullString
-           partialString:kPartialString
-          availableWidth:kNarrowWidth];
-  EXPECT_TRUE([cell keywordString]);
-  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kPartialString]);
-
-  // But not if there isn't one!
-  [cell setKeywordString:kFullString
-           partialString:nil
-          availableWidth:kNarrowWidth];
-  EXPECT_TRUE([cell keywordString]);
-  EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kFullString]);
 }
 
 // Test that the cell drops the search hint if there is no room for

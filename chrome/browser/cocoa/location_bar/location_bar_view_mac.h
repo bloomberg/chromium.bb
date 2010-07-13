@@ -26,8 +26,11 @@
 @class AutocompleteTextField;
 class CommandUpdater;
 class ContentSettingImageModel;
+class EVBubbleDecoration;
 @class ExtensionPopupController;
+class LocationIconDecoration;
 class Profile;
+class SelectedKeywordDecoration;
 class ToolbarModel;
 
 // A C++ bridge class that represents the location bar UI element to
@@ -91,6 +94,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   // saved state from the tab (for tab switching).
   void Update(const TabContents* tab, bool should_restore_state);
 
+  // Layout the various decorations which live in the field.
+  void Layout();
+
   // Returns the current TabContents.
   TabContents* GetTabContents() const;
 
@@ -129,16 +135,6 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   NSImage* GetTabButtonImage();
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
-
-  // Internals of OnChanged(), pulled out for purposes of unit
-  // testing.  Sets up |field| based on the parameters, which are
-  // pulled from edit_view->model().
-  static void OnChangedImpl(AutocompleteTextField* field,
-                            const std::wstring& keyword,
-                            const std::wstring& short_name,
-                            const bool is_keyword_hint,
-                            const bool is_extension_keyword,
-                            NSImage* image);
 
   // Overridden from NotificationObserver.
   virtual void Observe(NotificationType type,
@@ -201,28 +197,6 @@ class LocationBarViewMac : public AutocompleteEditController,
     bool visible_;
 
     DISALLOW_COPY_AND_ASSIGN(LocationBarImageView);
-  };
-
-  // LocationIconView is used to display an icon to the left of the address.
-  class LocationIconView : public LocationBarImageView {
-   public:
-    explicit LocationIconView(LocationBarViewMac* owner);
-    virtual ~LocationIconView();
-
-    // Is draggable if the autocomplete edit view has not be changed.
-    virtual bool IsDraggable();
-
-    // Drag the URL and title from the current tab.
-    virtual NSPasteboard* GetDragPasteboard();
-
-    // Shows the page info dialog.
-    virtual void OnMousePressed(NSRect bounds);
-
-   private:
-    // The location bar view that owns us.
-    LocationBarViewMac* owner_;
-
-    DISALLOW_COPY_AND_ASSIGN(LocationIconView);
   };
 
   // Used to display the bookmark star in the RHS.
@@ -418,12 +392,6 @@ class LocationBarViewMac : public AutocompleteEditController,
   };
 
  private:
-  // Sets the location icon we should be showing.
-  void SetIcon(int resource_id);
-
-  // Sets the label for the SSL state.
-  void SetSecurityLabel();
-
   // Posts |notification| to the default notification center.
   void PostNotification(NSString* notification);
 
@@ -447,11 +415,15 @@ class LocationBarViewMac : public AutocompleteEditController,
   // The user's desired disposition for how their input should be opened.
   WindowOpenDisposition disposition_;
 
-  // A view that shows an icon to the left of the address.
-  LocationIconView location_icon_view_;
+  // A decoration that shows an icon to the left of the address.
+  scoped_ptr<LocationIconDecoration> location_icon_decoration_;
 
-  // Security info as text which floats left of the page actions.
-  LocationBarImageView security_label_view_;
+  // A decoration that shows the keyword-search bubble on the left.
+  scoped_ptr<SelectedKeywordDecoration> selected_keyword_decoration_;
+
+  // A decoration that shows a lock icon and ev-cert label in a bubble
+  // on the left.
+  scoped_ptr<EVBubbleDecoration> ev_bubble_decoration_;
 
   // Bookmark star right of page actions.
   StarIconView star_icon_view_;

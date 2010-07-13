@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_unittest_helper.h"
+#import "chrome/browser/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,37 +21,20 @@
 using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::_;
 
 namespace {
-class MockLocationIconView : public LocationBarViewMac::LocationIconView {
+
+class MockDecoration : public LocationBarDecoration {
  public:
-  MockLocationIconView()
-      : LocationBarViewMac::LocationIconView(NULL),
-        is_draggable_(false),
-        mouse_was_pressed_(false) {}
+  virtual CGFloat GetWidthForSpace(CGFloat width) { return 20.0; }
+  virtual bool IsVisible() const { return visible_; }
+  void SetVisible(bool visible) { visible_ = visible; }
 
-  // |LocationBarViewMac::LocationIconView| dragging support needs
-  // more setup than this test provides.
-  bool IsDraggable() {
-    return is_draggable_;
-  }
-  virtual NSPasteboard* GetDragPasteboard() {
-    return [NSPasteboard pasteboardWithUniqueName];
-  }
-  void SetDraggable(bool is_draggable) {
-    is_draggable_ = is_draggable;
-  }
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) { ; }
+  MOCK_METHOD1(OnMousePressed, bool(NSRect frame));
 
-  // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
-  // NSRect argument to OnMousePressed.
-  virtual void OnMousePressed(NSRect bounds) {
-    mouse_was_pressed_ = true;
-  }
-  bool MouseWasPressed() { return mouse_was_pressed_; }
-
- private:
-  bool is_draggable_;
-  bool mouse_was_pressed_;
+  bool visible_;
 };
 
 class MockPageActionImageView : public LocationBarViewMac::PageActionImageView {
@@ -137,6 +121,11 @@ class AutocompleteTextFieldTest : public CocoaTest {
     [field_ setStringValue:@"Test test"];
     [[test_window() contentView] addSubview:field_];
 
+    AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+    [cell clearDecorations];
+    mock_left_decoration_.SetVisible(false);
+    [cell addLeftDecoration:&mock_left_decoration_];
+
     window_delegate_.reset(
         [[AutocompleteTextFieldWindowTestDelegate alloc] init]);
     [test_window() setDelegate:window_delegate_.get()];
@@ -169,6 +158,7 @@ class AutocompleteTextFieldTest : public CocoaTest {
   }
 
   AutocompleteTextField* field_;
+  MockDecoration mock_left_decoration_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 };
 
@@ -275,12 +265,7 @@ TEST_F(AutocompleteTextFieldTest, Display) {
               availableWidth:kWidth];
   [field_ display];
 
-  [cell setKeywordString:@"Search Engine:"
-           partialString:@"Search Eng:"
-          availableWidth:kWidth];
-  [field_ display];
-
-  [cell clearKeywordAndHint];
+  [cell clearHint];
   [field_ display];
 }
 
@@ -344,7 +329,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
 
   // Clearing hint string and using -resetFieldEditorFrameIfNeeded
   // should result in the same frame as the standard focus machinery.
-  [cell clearKeywordAndHint];
+  [cell clearHint];
   EXPECT_FALSE([cell hintString]);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
@@ -367,7 +352,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
 
   // Clearing the hint should result in a strictly larger editor
   // frame.
-  [cell clearKeywordAndHint];
+  [cell clearHint];
   EXPECT_FALSE([cell hintString]);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
@@ -388,33 +373,31 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  NSString* const kFullString = @"Search Engine:";
-  NSString* const kPartialString = @"Search Eng:";
+  // Make sure decoration isn't already visible, then make it visible.
+  EXPECT_TRUE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+                                             inFrame:[field_ bounds]]));
+  mock_left_decoration_.SetVisible(true);
+  EXPECT_FALSE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+                                              inFrame:[field_ bounds]]));
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
-  [cell setKeywordString:kFullString
-           partialString:kPartialString
-          availableWidth:kWidth];
-  EXPECT_TRUE([cell keywordString]);
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   const NSRect baseEditorFrame(EditorFrame());
 
-  // Clearing the hint should result in a strictly larger editor
-  // frame.
-  [cell clearKeywordAndHint];
-  EXPECT_FALSE([cell keywordString]);
+  // When the decoration is not visible the frame should be strictly larger.
+  mock_left_decoration_.SetVisible(false);
+  EXPECT_TRUE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+                                             inFrame:[field_ bounds]]));
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
   EXPECT_TRUE(NSContainsRect(EditorFrame(), baseEditorFrame));
 
-  // Setting the same hint string and using
-  // -resetFieldEditorFrameIfNeeded should result in the same frame as
-  // the standard focus machinery.
-  [cell setKeywordString:kFullString
-           partialString:kPartialString
-          availableWidth:kWidth];
-  EXPECT_TRUE([cell keywordString]);
+  // When the decoration is visible, -resetFieldEditorFrameIfNeeded
+  // should result in the same frame as the standard focus machinery.
+  mock_left_decoration_.SetVisible(true);
+  EXPECT_FALSE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
+                                              inFrame:[field_ bounds]]));
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
 }
@@ -463,29 +446,37 @@ TEST_F(AutocompleteTextFieldTest, ClickSearchHintPutsCaretRightmost) {
   EXPECT_EQ(selectedRange.length, 0U);
 }
 
-// Clicking in the keyword-search should put the caret in the
-// leftmost position.
-TEST_F(AutocompleteTextFieldTest, ClickKeywordPutsCaretLeftmost) {
+// Clicking in a left-side decoration which doesn't handle the event
+// puts the selection in the leftmost position.
+TEST_F(AutocompleteTextFieldTest, ClickLeftDecorationPutsCaretLeftmost) {
+  // Decoration does not handle the mouse event, so the cell should
+  // process it.
+  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_))
+      .WillRepeatedly(Return(false));
+
   // Set the decoration before becoming responder.
   EXPECT_FALSE([field_ currentEditor]);
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  [cell setKeywordString:@"Search Engine:"
-           partialString:@"Search:"
-          availableWidth:kWidth];
+  mock_left_decoration_.SetVisible(true);
 
-  // Can't rely on the window machinery to make us first responder,
-  // here.
+  // Make first responder should select all.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   EXPECT_TRUE([field_ currentEditor]);
+  const NSRange allRange = NSMakeRange(0, [[field_ stringValue] length]);
+  EXPECT_TRUE(NSEqualRanges(allRange, [[field_ currentEditor] selectedRange]));
 
-  const NSPoint point(NSMakePoint(20.0, 5.0));
+  // Generate a click on the decoration.
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  const NSRect iconFrame =
+      [cell frameForDecoration:&mock_left_decoration_ inFrame:[field_ bounds]];
+  const NSPoint point = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   NSEvent* downEvent(Event(field_, point, NSLeftMouseDown));
   NSEvent* upEvent(Event(field_, point, NSLeftMouseUp));
   [NSApp postEvent:upEvent atStart:YES];
   [field_ mouseDown:downEvent];
-  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
-  EXPECT_EQ(selectedRange.location, 0U);
-  EXPECT_EQ(selectedRange.length, 0U);
+
+  // Selection should be a left-hand-side caret.
+  EXPECT_TRUE(NSEqualRanges(NSMakeRange(0, 0),
+                            [[field_ currentEditor] selectedRange]));
 }
 
 // Clicks not in the text area or the cell's decorations fall through
@@ -600,30 +591,49 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
   EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
 }
 
-// Clicking the security icon should call its OnMousePressed.
-TEST_F(AutocompleteTextFieldTest, LocationIconMouseDown) {
+// Clicking a decoration should call decoration's OnMousePressed.
+TEST_F(AutocompleteTextFieldTest, DecorationMouseDown) {
+  // At this point, not focussed.
+  EXPECT_FALSE([field_ currentEditor]);
+
+  mock_left_decoration_.SetVisible(true);
+
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-
-  MockLocationIconView location_icon_view;
-  [cell setLocationIconView:&location_icon_view];
-  location_icon_view.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  location_icon_view.SetVisible(true);
-
-  NSRect iconFrame([cell locationIconFrameForFrame:[field_ bounds]]);
-  NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
-  NSEvent* downEvent(Event(field_, location, NSLeftMouseDown, 1));
-  NSEvent* upEvent(Event(field_, location, NSLeftMouseUp, 1));
+  const NSRect iconFrame =
+      [cell frameForDecoration:&mock_left_decoration_ inFrame:[field_ bounds]];
+  const NSPoint location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  NSEvent* downEvent = Event(field_, location, NSLeftMouseDown, 1);
+  NSEvent* upEvent = Event(field_, location, NSLeftMouseUp, 1);
 
   // Since location icon can be dragged, the mouse-press is sent on
   // mouse-up.
   [NSApp postEvent:upEvent atStart:YES];
+
+  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_))
+      .WillOnce(Return(true));
   [field_ mouseDown:downEvent];
-  EXPECT_TRUE(location_icon_view.MouseWasPressed());
+
+  // Focus the field and test that handled clicks don't affect selection.
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
+  EXPECT_TRUE([field_ currentEditor]);
+  const NSRange allRange = NSMakeRange(0, [[field_ stringValue] length]);
+  EXPECT_TRUE(NSEqualRanges(allRange, [[field_ currentEditor] selectedRange]));
+
+  // Generate another click on the decoration.
+  downEvent = Event(field_, location, NSLeftMouseDown, 1);
+  upEvent = Event(field_, location, NSLeftMouseUp, 1);
+  [NSApp postEvent:upEvent atStart:YES];
+  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_))
+      .WillOnce(Return(true));
+  [field_ mouseDown:downEvent];
+
+  // The selection should not have changed.
+  EXPECT_TRUE(NSEqualRanges(allRange, [[field_ currentEditor] selectedRange]));
 
   // TODO(shess): Test that mouse drags are initiated if the next
   // event is a drag, or if the mouse-up takes too long to arrive.
+  // IDEA: mock decoration to return a pasteboard which a mock
+  // AutocompleteTextField notes in -dragImage:*.
 }
 
 // Clicking a Page Action icon should call its OnMousePressed.
@@ -873,24 +883,6 @@ TEST_F(AutocompleteTextFieldObserverTest, ClosePopupOnResignKey) {
   [[test_window() contentView] addSubview:field_];
   EXPECT_CALL(field_observer_, ClosePopup());
   [test_window() resignKeyWindow];
-}
-
-TEST_F(AutocompleteTextFieldTest, LocationDragPasteboard) {
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-
-  MockLocationIconView location_icon_view;
-  location_icon_view.SetImage(
-      ResourceBundle::GetSharedInstance().GetNSImageNamed(
-          IDR_OMNIBOX_HTTPS_VALID));
-  location_icon_view.SetVisible(true);
-  [cell setLocationIconView:&location_icon_view];
-
-  // Not draggable, so no pasteboard.
-  EXPECT_FALSE([field_ locationDragPasteboard]);
-
-  // Gets a pasteboard when draggable.
-  location_icon_view.SetDraggable(true);
-  EXPECT_TRUE([field_ locationDragPasteboard]);
 }
 
 }  // namespace
