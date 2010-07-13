@@ -187,7 +187,11 @@ BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
 cairo_t* BitmapPlatformDevice::beginPlatformPaint() {
-  return data_->GetContext();
+  cairo_t* cairo = data_->GetContext();
+  // Tell Cairo that we've (probably) modified its pixel buffer without
+  // its knowledge.
+  cairo_surface_mark_dirty(cairo_get_target(cairo));
+  return cairo;
 }
 
 void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
