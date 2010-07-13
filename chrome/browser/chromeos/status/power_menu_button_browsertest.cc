@@ -59,8 +59,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {
   EXPECT_EQ(IDR_STATUSBAR_BATTERY_CHARGED, CallPowerChangedAndGetIconId());
 }
 
-// http://crbug.com/48912
-IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAILS_BatteryChargingTest) {
+IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
   EXPECT_CALL(*mock_power_library_, battery_is_present())
       .WillRepeatedly((Return(true)));
   EXPECT_CALL(*mock_power_library_, battery_fully_charged())
@@ -69,17 +68,33 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAILS_BatteryChargingTest) {
       .WillRepeatedly((Return(true)));
 
   // Test the 12 battery charging states.
-  int id = IDR_STATUSBAR_BATTERY_CHARGING_1;
-  for (float precent = 6.0; precent < 100.0; precent += 8.0) {
+  // NOTE: Use an array rather than just calculating a resource number to avoid
+  // creating implicit ordering dependencies on the resource values.
+  static const int kChargingImages[] = {
+    IDR_STATUSBAR_BATTERY_CHARGING_1,
+    IDR_STATUSBAR_BATTERY_CHARGING_2,
+    IDR_STATUSBAR_BATTERY_CHARGING_3,
+    IDR_STATUSBAR_BATTERY_CHARGING_4,
+    IDR_STATUSBAR_BATTERY_CHARGING_5,
+    IDR_STATUSBAR_BATTERY_CHARGING_6,
+    IDR_STATUSBAR_BATTERY_CHARGING_7,
+    IDR_STATUSBAR_BATTERY_CHARGING_8,
+    IDR_STATUSBAR_BATTERY_CHARGING_9,
+    IDR_STATUSBAR_BATTERY_CHARGING_10,
+    IDR_STATUSBAR_BATTERY_CHARGING_11,
+    IDR_STATUSBAR_BATTERY_CHARGING_12,
+  };
+  size_t id = 0;
+  for (float percent = 6.0; percent < 100.0; percent += 8.0) {
     EXPECT_CALL(*mock_power_library_, battery_percentage())
-        .WillRepeatedly((Return(precent)));
-    EXPECT_EQ(id, CallPowerChangedAndGetIconId());
+        .WillRepeatedly((Return(percent)));
+    ASSERT_LT(id, arraysize(kChargingImages));
+    EXPECT_EQ(kChargingImages[id], CallPowerChangedAndGetIconId());
     id++;
   }
 }
 
-// http://crbug.com/48912
-IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAILS_BatteryDischargingTest) {
+IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryDischargingTest) {
   EXPECT_CALL(*mock_power_library_, battery_is_present())
       .WillRepeatedly((Return(true)));
   EXPECT_CALL(*mock_power_library_, battery_fully_charged())
@@ -88,11 +103,28 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAILS_BatteryDischargingTest) {
       .WillRepeatedly((Return(false)));
 
   // Test the 12 battery discharing states.
-  int id = IDR_STATUSBAR_BATTERY_DISCHARGING_1;
-  for (float precent = 6.0; precent < 100.0; precent += 8.0) {
+  // NOTE: Use an array rather than just calculating a resource number to avoid
+  // creating implicit ordering dependencies on the resource values.
+  static const int kDischargingImages[] = {
+    IDR_STATUSBAR_BATTERY_DISCHARGING_1,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_2,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_3,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_4,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_5,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_6,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_7,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_8,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_9,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_10,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_11,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_12,
+  };
+  size_t id = 0;
+  for (float percent = 6.0; percent < 100.0; percent += 8.0) {
     EXPECT_CALL(*mock_power_library_, battery_percentage())
-        .WillRepeatedly((Return(precent)));
-    EXPECT_EQ(id, CallPowerChangedAndGetIconId());
+        .WillRepeatedly((Return(percent)));
+    ASSERT_LT(id, arraysize(kDischargingImages));
+    EXPECT_EQ(kDischargingImages[id], CallPowerChangedAndGetIconId());
     id++;
   }
 }
