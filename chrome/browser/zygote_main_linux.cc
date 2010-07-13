@@ -93,6 +93,10 @@ static void SELinuxTransitionToTypeOrDie(const char* type) {
 // runs it.
 class Zygote {
  public:
+  explicit Zygote(int sandbox_flags)
+      : sandbox_flags_(sandbox_flags) {
+  }
+
   bool ProcessRequests() {
     // A SOCK_SEQPACKET socket is installed in fd 3. We get commands from the
     // browser on it.
@@ -165,6 +169,9 @@ class Zygote {
           if (!fds.empty())
             break;
           HandleDidProcessCrash(fd, pickle, iter);
+          return false;
+        case ZygoteHost::kCmdGetSandboxStatus:
+          HandleGetSandboxStatus(fd, pickle, iter);
           return false;
         default:
           NOTREACHED();
@@ -351,11 +358,22 @@ class Zygote {
     return false;
   }
 
+  bool HandleGetSandboxStatus(int fd, const Pickle& pickle, void* iter) {
+    if (HANDLE_EINTR(write(fd, &sandbox_flags_, sizeof(sandbox_flags_)) !=
+                     sizeof(sandbox_flags_))) {
+      PLOG(ERROR) << "write";
+    }
+
+    return false;
+  }
+
   // In the SUID sandbox, we try to use a new PID namespace. Thus the PIDs
   // fork() returns are not the real PIDs, so we need to map the Real PIDS
   // into the sandbox PID namespace.
   typedef base::hash_map<base::ProcessHandle, base::ProcessHandle> ProcessMap;
   ProcessMap real_pids_to_sandbox_pids;
+
+  const int sandbox_flags_;
 };
 
 // With SELinux we can carve out a precise sandbox, so we don't have to play
@@ -655,6 +673,14 @@ bool ZygoteMain(const MainFunctionParams& params) {
     return false;
   }
 
+  int sandbox_flags = 0;
+  if (getenv("SBX_D"))
+    sandbox_flags |= ZygoteHost::kSandboxSUID;
+  if (getenv("SBX_PID_NS"))
+    sandbox_flags |= ZygoteHost::kSandboxPIDNS;
+  if (getenv("SBX_NET_NS"))
+    sandbox_flags |= ZygoteHost::kSandboxNetNS;
+
 #if defined(SECCOMP_SANDBOX)
   // The seccomp sandbox will be turned on when the renderers start. But we can
   // already check if sufficient support is available so that we only need to
@@ -670,11 +696,12 @@ bool ZygoteMain(const MainFunctionParams& params) {
                     "sandboxing disabled.";
     } else {
       LOG(INFO) << "Enabling experimental Seccomp sandbox.";
+      sandbox_flags |= ZygoteHost::kSandboxSeccomp;
     }
   }
 #endif  // SECCOMP_SANDBOX
 
-  Zygote zygote;
+  Zygote zygote(sandbox_flags);
   // This function call can return multiple times, once per fork().
   return zygote.ProcessRequests();
 }

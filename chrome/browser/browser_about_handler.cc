@@ -63,6 +63,8 @@
 #include "chrome/browser/chromeos/version_loader.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/cocoa/about_ipc_dialog.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/zygote_host_linux.h"
 #endif
 
 #if defined(USE_TCMALLOC)
@@ -103,6 +105,7 @@ const char kPluginsPath[] = "plugins";
 
 #if defined(OS_LINUX)
 const char kLinuxProxyConfigPath[] = "linux-proxy-config";
+const char kSandboxPath[] = "sandbox";
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -128,6 +131,7 @@ const char *kAllAboutPaths[] = {
   kVersionPath,
 #if defined(OS_LINUX)
   kLinuxProxyConfigPath,
+  kSandboxPath,
 #endif
 #if defined(OS_CHROMEOS)
   kNetworkPath,
@@ -527,6 +531,67 @@ std::string AboutLinuxProxyConfig() {
   data.append("</body></html>\n");
   return data;
 }
+
+void AboutSandboxRow(std::string* data, const std::string& prefix, int name_id,
+                     bool good) {
+  data->append("<tr><td>");
+  data->append(prefix);
+  data->append(l10n_util::GetStringUTF8(name_id));
+  if (good) {
+    data->append("</td><td style=\"color: green;\">");
+    data->append(
+        l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL));
+  } else {
+    data->append("</td><td style=\"color: red;\">");
+    data->append(
+        l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
+  }
+  data->append("</td></tr>");
+}
+
+std::string AboutSandbox() {
+  std::string data;
+  data.append("<!DOCTYPE HTML>\n");
+  data.append("<html><head><meta charset=\"utf-8\"><title>");
+  data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
+  data.append("</title>");
+  data.append("</head><body>\n");
+  data.append("<h1>");
+  data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_TITLE));
+  data.append("</h1>");
+
+  const int status = Singleton<ZygoteHost>()->sandbox_status();
+
+  data.append("<table>");
+
+  AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SUID_SANDBOX,
+                  status & ZygoteHost::kSandboxSUID);
+  if (status & ZygoteHost::kSandboxPIDNS) {
+    AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_PID_NAMESPACES,
+                    status & ZygoteHost::kSandboxPIDNS);
+    AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_NET_NAMESPACES,
+                    status & ZygoteHost::kSandboxNetNS);
+  }
+  AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SECCOMP_SANDBOX,
+                  status & ZygoteHost::kSandboxSeccomp);
+
+  data.append("</table>");
+
+  bool good = ((status & ZygoteHost::kSandboxSUID) &&
+               (status & ZygoteHost::kSandboxPIDNS)) ||
+              (status & ZygoteHost::kSandboxSeccomp);
+  if (good) {
+    data.append("<p style=\"color: green\">");
+    data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_OK));
+  } else {
+    data.append("<p style=\"color: red\">");
+    data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_BAD));
+  }
+  data.append("</p>");
+
+  data.append("</body></html>\n");
+  return data;
+}
 #endif
 
 std::string AboutVersion(DictionaryValue* localized_strings) {
@@ -816,6 +881,8 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 #if defined(OS_LINUX)
   } else if (path == kLinuxProxyConfigPath) {
     response = AboutLinuxProxyConfig();
+  } else if (path == kSandboxPath) {
+    response = AboutSandbox();
 #endif
   } else if (path == kSyncPath) {
     response = AboutSync();

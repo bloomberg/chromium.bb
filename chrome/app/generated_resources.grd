@@ -8682,6 +8682,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
         &lt;p&gt;But you can still configure via the command line.  Please see &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME">$2<ex>google-chrome</ex></ph>&lt;/code&gt; for more information on flags and environment variables.&lt;/p&gt;
       </message>
+      <message name="IDS_ABOUT_SANDBOX_TITLE" desc="Title of HTML page which contains the status of the sandbox.">
+        Sandbox Status
+      </message>
+      <message name="IDS_ABOUT_SANDBOX_SUID_SANDBOX" desc="The name of a type of sandbox used by Chrome on UNIX like systems. The name 'SUID' stands for 'Set User ID', however it's a technical term and may be best left untranslated.">
+        SUID Sandbox
+      </message>
+      <message name="IDS_ABOUT_SANDBOX_PID_NAMESPACES" desc="This a technical term for an attribute of the SUID sandbox. PID stands for 'Process ID' but, as a technical term, may be best left untranslated. A namespace is another technical term which refers to set of names for objects which are disjoint from the members of all other namespaces.">
+        PID namespaces
+      </message>
+      <message name="IDS_ABOUT_SANDBOX_NET_NAMESPACES" desc="This a technical term for an attribute of the SUID sandbox. A namespace is a technical term which refers to set of names for objects which are disjoint from the members of all other namespaces.">
+        Network namespaces
+      </message>
+      <message name="IDS_ABOUT_SANDBOX_SECCOMP_SANDBOX" desc="The name of a type of sandbox used by Chrome on UNIX like systems. 'Seccomp' is a technical term which should be left untranslated.">
+        Seccomp sandbox
+      </message>
+      <message name="IDS_ABOUT_SANDBOX_OK" desc="A message telling the user that their sandbox is sufficient.">
+        You are adequately sandboxed.
+      </message>
+      <message name="IDS_ABOUT_SANDBOX_BAD" desc="A message telling the user that their sandbox is insufficient.">
+        You are not adequately sandboxed!
+      </message>
     </if>
 
     </messages>

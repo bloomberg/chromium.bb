@@ -50,7 +50,8 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
 ZygoteHost::ZygoteHost()
     : pid_(-1),
       init_(false),
-      using_suid_sandbox_(false) {
+      using_suid_sandbox_(false),
+      have_read_sandbox_status_word_(false) {
 }
 
 ZygoteHost::~ZygoteHost() {
@@ -188,6 +189,29 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 
   close(fds[1]);
   control_fd_ = fds[0];
+
+  Pickle pickle;
+  pickle.WriteInt(kCmdGetSandboxStatus);
+  std::vector<int> empty_fds;
+  if (!base::SendMsg(control_fd_, pickle.data(), pickle.size(), empty_fds))
+    LOG(FATAL) << "Cannot communicate with zygote";
+  // We don't wait for the reply. We'll read it in ReadReply.
+}
+
+ssize_t ZygoteHost::ReadReply(void* buf, size_t buf_len) {
+  // At startup we send a kCmdGetSandboxStatus request to the zygote, but don't
+  // wait for the reply. Thus, the first time that we read from the zygote, we
+  // get the reply to that request.
+  if (!have_read_sandbox_status_word_) {
+    if (HANDLE_EINTR(read(control_fd_, &sandbox_status_,
+                          sizeof(sandbox_status_))) !=
+        sizeof(sandbox_status_)) {
+      return -1;
+    }
+    have_read_sandbox_status_word_ = true;
+  }
+
+  return HANDLE_EINTR(read(control_fd_, buf, buf_len));
 }
 
 pid_t ZygoteHost::ForkRenderer(
@@ -217,7 +241,7 @@ pid_t ZygoteHost::ForkRenderer(
     if (!base::SendMsg(control_fd_, pickle.data(), pickle.size(), fds))
       return base::kNullProcessHandle;
 
-    if (HANDLE_EINTR(read(control_fd_, &pid, sizeof(pid))) != sizeof(pid))
+    if (ReadReply(&pid, sizeof(pid)) != sizeof(pid))
       return base::kNullProcessHandle;
   }
 
@@ -302,7 +326,7 @@ bool ZygoteHost::DidProcessCrash(base::ProcessHandle handle,
     if (HANDLE_EINTR(write(control_fd_, pickle.data(), pickle.size())) < 0)
       PLOG(ERROR) << "write";
 
-    len = HANDLE_EINTR(read(control_fd_, buf, sizeof(buf)));
+    len = ReadReply(buf, sizeof(buf));
   }
 
   if (len == -1) {

@@ -282,8 +282,21 @@ static bool MoveToNewNamespaces() {
     if (pid > 0)
       _exit(0);
 
-    if (pid == 0)
+    if (pid == 0) {
+      if (kCloneExtraFlags[i] & CLONE_NEWPID) {
+        setenv("SBX_PID_NS", "", 1 /* overwrite */);
+      } else {
+        unsetenv("SBX_PID_NS");
+      }
+
+      if (kCloneExtraFlags[i] & CLONE_NEWPID) {
+        setenv("SBX_NET_NS", "", 1 /* overwrite */);
+      } else {
+        unsetenv("SBX_NET_NS");
+      }
+
       break;
+    }
 
     if (errno != EINVAL) {
       perror("Failed to move to new PID namespace");
