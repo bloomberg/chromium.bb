@@ -519,6 +519,12 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
         SetFocus();
       } else {
         m_hWnd = Create(parent_window, position_rect, 0, 0, WS_EX_CLIENTEDGE);
+        if (!IsWindow()) {
+          // This might happen if the automation server couldn't be
+          // instantiated.  If so, a NOTREACHED() will have already been hit.
+          DLOG(ERROR) << "Failed to create Ax window";
+          return AtlHresultFromLastError();
+        }
       }
 
       ScopedComPtr<IWebBrowser2> web_browser2;

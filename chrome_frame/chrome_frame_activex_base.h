@@ -467,7 +467,12 @@ END_MSG_MAP()
                    BOOL& handled) {  // NO_LINT
     ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0);
     url_fetcher_.put_notification_window(m_hWnd);
-    automation_client_->SetParentWindow(m_hWnd);
+    if (automation_client_.get()) {
+      automation_client_->SetParentWindow(m_hWnd);
+    } else {
+      NOTREACHED() << "No automation server";
+      return -1;
+    }
     // Only fire the 'interactive' ready state if we aren't there already.
     if (ready_state_ < READYSTATE_INTERACTIVE) {
       ready_state_ = READYSTATE_INTERACTIVE;
