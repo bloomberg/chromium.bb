@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {
 }
 
 // http://crbug.com/48912
-IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAIL_BatteryChargingTest) {
+IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAILS_BatteryChargingTest) {
   EXPECT_CALL(*mock_power_library_, battery_is_present())
       .WillRepeatedly((Return(true)));
   EXPECT_CALL(*mock_power_library_, battery_fully_charged())
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAIL_BatteryChargingTest) {
 }
 
 // http://crbug.com/48912
-IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAIL_BatteryDischargingTest) {
+IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, FAILS_BatteryDischargingTest) {
   EXPECT_CALL(*mock_power_library_, battery_is_present())
       .WillRepeatedly((Return(true)));
   EXPECT_CALL(*mock_power_library_, battery_fully_charged())
