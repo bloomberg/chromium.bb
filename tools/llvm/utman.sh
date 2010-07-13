@@ -125,7 +125,7 @@ readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/bitcode"
 
 
 # Current milestones within each Hg repo:
-readonly LLVM_REV=4ba1d70f4f13
+readonly LLVM_REV=0641eda8c15b
 readonly LLVM_GCC_REV=3cd265c841c6
 readonly NEWLIB_REV=5d64fed35b93
 readonly BINUTILS_REV=80d1927e7089
