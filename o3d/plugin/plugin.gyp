@@ -337,12 +337,16 @@
             'dependencies': [
               '../breakpad/breakpad.gyp:o3dBreakpad',
             ],
+            'include_dirs': [
+              # So that o3dPlugin.rc can find resource.h.
+              'win',
+            ],
             'sources': [
               'win/config.cc',
               'win/logger_main.cc',
               'win/main_win.cc',
-              'win/o3dPlugin.def',
-              'win/o3dPlugin.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/plugin/o3dPlugin.def',
+              '<(SHARED_INTERMEDIATE_DIR)/plugin/o3dPlugin.rc',
               'win/plugin_logging-win32.cc',
               'win/resource.h',
               'win/update_lock.cc',
@@ -514,12 +518,16 @@
                   'dependencies': [
                     '../breakpad/breakpad.gyp:o3dBreakpad',
                   ],
+                  'include_dirs': [
+                    # So that o3dPlugin.rc can find resource.h.
+                    'win',
+                  ],
                   'sources': [
                     'win/config.cc',
                     'win/logger_main.cc',
                     'win/main_win.cc',
-                    'win/o3dPlugin.def',
-                    'win/o3dPlugin.rc',
+                    '<(SHARED_INTERMEDIATE_DIR)/plugin/o3dPlugin.def',
+                    '<(SHARED_INTERMEDIATE_DIR)/plugin/o3dPlugin.rc',
                     'win/plugin_logging-win32.cc',
                     'win/resource.h',
                     'win/update_lock.cc',
@@ -597,7 +605,7 @@
                         'win/o3dPlugin.rc_template',
                       ],
                       'outputs': [
-                        'win/o3dPlugin.rc'
+                        '<(SHARED_INTERMEDIATE_DIR)/plugin/o3dPlugin.rc'
                       ],
                       'action': ['python',
                         'version_info.py',
@@ -606,7 +614,7 @@
                         '--set_npapi_filename=<(plugin_npapi_filename)',
                         '--set_npapi_mimetype=<(plugin_npapi_mimetype)',
                         'win/o3dPlugin.rc_template',
-                        'win/o3dPlugin.rc'],
+                        '<(SHARED_INTERMEDIATE_DIR)/plugin/o3dPlugin.rc'],
                     },
                   ],
                   ['OS=="mac"',
@@ -660,13 +668,13 @@
                         'win/o3dPlugin.def_template',
                       ],
                       'outputs': [
-                        'win/o3dPlugin.def',
+                        '<(SHARED_INTERMEDIATE_DIR)/plugin/o3dPlugin.def',
                       ],
                       'action': ['python',
                         'version_info.py',
                         '--set_npapi_filename=<(plugin_npapi_filename)',
                         'win/o3dPlugin.def_template',
-                        'win/o3dPlugin.def'],
+                        '<(SHARED_INTERMEDIATE_DIR)/plugin/o3dPlugin.def'],
                     },
                   ],
                 },
@@ -690,7 +698,7 @@
                   'npapi_host_control/win/host_control.rgs_template',
                 ],
                 'outputs': [
-                  'npapi_host_control/win/host_control.rgs',
+                  '<(SHARED_INTERMEDIATE_DIR)/plugin/host_control.rgs',
                 ],
                 'action': ['python',
                   'version_info.py',
@@ -702,7 +710,7 @@
                       '<(plugin_activex_hostcontrol_name)',
                   '--set_activex_typelib_name=<(plugin_activex_typelib_name)',
                   'npapi_host_control/win/host_control.rgs_template',
-                  'npapi_host_control/win/host_control.rgs',
+                  '<(SHARED_INTERMEDIATE_DIR)/plugin/host_control.rgs',
                 ],
               },
             ],
@@ -718,7 +726,7 @@
                   'npapi_host_control/win/npapi_host_control.idl_template',
                 ],
                 'outputs': [
-                  'npapi_host_control/win/npapi_host_control.idl',
+                  '<(SHARED_INTERMEDIATE_DIR)/plugin/npapi_host_control.idl',
                 ],
                 'action': ['python',
                   'version_info.py',
@@ -730,7 +738,7 @@
                       '<(plugin_activex_hostcontrol_name)',
                   '--set_activex_typelib_name=<(plugin_activex_typelib_name)',
                   'npapi_host_control/win/npapi_host_control.idl_template',
-                  'npapi_host_control/win/npapi_host_control.idl',
+                  '<(SHARED_INTERMEDIATE_DIR)/plugin/npapi_host_control.idl',
                 ],
               },
             ],
@@ -744,6 +752,8 @@
             ],
             'include_dirs': [
               '<(INTERMEDIATE_DIR)',
+              # So that npapi_host_control.rc can find host_control.rgs.
+              '<(SHARED_INTERMEDIATE_DIR)/plugin',
             ],
             'sources': [
               '<(INTERMEDIATE_DIR)/npapi_host_control_i.c',
@@ -759,7 +769,7 @@
               'npapi_host_control/win/np_plugin_proxy.cc',
               'npapi_host_control/win/np_plugin_proxy.h',
               'npapi_host_control/win/npapi_host_control.cc',
-              'npapi_host_control/win/npapi_host_control.idl',
+              '<(SHARED_INTERMEDIATE_DIR)/plugin/npapi_host_control.idl',
               'npapi_host_control/win/npapi_host_control.rc',
               'npapi_host_control/win/precompile.h',
               'npapi_host_control/win/resource.h',
