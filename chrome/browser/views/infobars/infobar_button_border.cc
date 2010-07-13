@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "gfx/canvas.h"
-#include "grit/app_resources.h"
+#include "grit/theme_resources.h"
 #include "views/controls/button/text_button.h"
 
 // Preferred padding between text and edge

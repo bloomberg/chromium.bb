@@ -345,6 +345,9 @@
             ['chromeos==1', {
               'action': ['-D', 'chromeos'],
             }],
+            ['toolkit_views==1', {
+              'action': ['-D', 'toolkit_views'],
+            }],
             ['use_titlecase_in_grd_files==1', {
               'action': ['-D', 'use_titlecase'],
             }],
