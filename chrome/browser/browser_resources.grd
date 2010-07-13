@@ -33,7 +33,12 @@ without changes to the corresponding grd file. eadee -->
       <include name="IDR_DOM_UI2_CSS" file="resources\dom_ui2.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSION_DEFAULT_ICON" file="resources\extension_default_icon.png" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />
+      <if expr="os == 'darwin'">
+        <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar_mac.css" flattenhtml="true" type="BINDATA" />
+      </if>
+      <if expr="os != 'darwin'">
+        <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />
+      </if>    
       <include name="IDR_EXTENSIONS_TOOLSTRIP_THEME_CSS" file="resources\extensions_toolstrip.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSIONS_UI_HTML" file="resources\extensions_ui.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />

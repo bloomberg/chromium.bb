@@ -243,6 +243,7 @@ int CurrentTabId() {
           (AutocompleteTextField*)locationBar->location_entry()->
           GetNativeView();
       AutocompleteTextFieldCell* fieldCell = [field autocompleteTextFieldCell];
+      DCHECK(action_);
       NSRect popupRect =
           [fieldCell pageActionFrameForExtensionAction:action_
                                                inFrame:[field bounds]];
@@ -276,8 +277,8 @@ int CurrentTabId() {
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  if([menuItem isEqualTo: inspectorItem_.get()]) {
-    return (action_->HasPopup(CurrentTabId()));
+  if([menuItem isEqualTo:inspectorItem_.get()]) {
+    return action_ && action_->HasPopup(CurrentTabId());
   }
   return YES;
 }

@@ -23,8 +23,7 @@ class DevmodeObserver;
 
 }  // namespace extension_action_context_menu
 
-// A context menu used by the Browser and Page Action components that appears
-// if a user right-clicks the view of the given extension.
+// A context menu used by any extension UI components that require it.
 @interface ExtensionActionContextMenu : NSMenu {
  @private
   // The extension that this menu belongs to. Weak.
