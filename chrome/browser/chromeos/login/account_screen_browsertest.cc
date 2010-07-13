@@ -41,7 +41,8 @@ class AccountScreenTest : public WizardInProcessBrowserTest {
 // A basic test. It does not care how things evolve after the URL is
 // loaded. Thus no message loop is started. Just check that initial
 // status is expected.
-IN_PROC_BROWSER_TEST_F(AccountScreenTest, TestBasic) {
+// This test is flaky. See http://crbug.com/49004 .
+IN_PROC_BROWSER_TEST_F(AccountScreenTest, FLAKY_TestBasic) {
   ASSERT_TRUE(controller());
   EXPECT_EQ(controller()->GetAccountScreen(), controller()->current_screen());
 }
