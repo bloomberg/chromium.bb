@@ -22,9 +22,11 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_T, true, false, true, IDC_FOCUS_TOOLBAR },
   { base::VKEY_B, true, false, true, IDC_FOCUS_BOOKMARKS },
   { base::VKEY_S, true, false, true, IDC_FOCUS_CHROMEOS_STATUS },
+#if !defined(OS_CHROMEOS)
   { base::VKEY_F6, false, false, false, IDC_FOCUS_NEXT_PANE },
   { base::VKEY_F6, true, false, false, IDC_FOCUS_PREVIOUS_PANE },
   { base::VKEY_F10, false, false, false, IDC_FOCUS_MENU_BAR },
+#endif
   { base::VKEY_MENU, false, false, false, IDC_FOCUS_MENU_BAR },
 
   // Tab/window controls.
@@ -80,8 +82,10 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_NUMPAD8, false, false, true, IDC_SELECT_TAB_7 },
   { base::VKEY_NUMPAD9, false, false, true, IDC_SELECT_LAST_TAB },
 
+#if !defined(OS_CHROMEOS)
   { base::VKEY_F4, false, true, false, IDC_CLOSE_TAB },
   { base::VKEY_F4, false, false, true, IDC_CLOSE_WINDOW },
+#endif
 
   // Zoom level.
   { base::VKEY_OEM_PLUS, false, true, false, IDC_ZOOM_PLUS },
@@ -93,24 +97,33 @@ const AcceleratorMapping kAcceleratorMap[] = {
   // Find in page.
   { base::VKEY_F, false, true, false, IDC_FIND },
   { base::VKEY_G, false, true, false, IDC_FIND_NEXT },
+#if !defined(OS_CHROMEOS)
   { base::VKEY_F3, false, false, false, IDC_FIND_NEXT },
+#endif
   { base::VKEY_G, true, true, false, IDC_FIND_PREVIOUS },
+#if !defined(OS_CHROMEOS)
   { base::VKEY_F3, true, false, false, IDC_FIND_PREVIOUS },
+#endif
 
   // Navigation / toolbar buttons.
   { base::VKEY_HOME, false, false, true, IDC_HOME },
   { base::VKEY_ESCAPE, false, false, false, IDC_STOP },
   { base::VKEY_LEFT, false, false, true, IDC_BACK },
   { base::VKEY_BACK, false, false, false, IDC_BACK },
-  { base::VKEY_RIGHT, false, false, true, IDC_FORWARD },
-  { base::VKEY_BACK, true, false, false, IDC_FORWARD },
-  { base::VKEY_R, false, true, false, IDC_RELOAD },
-  { base::VKEY_F5, false, false, false, IDC_RELOAD },
-  { base::VKEY_F5, false,  true, false, IDC_RELOAD },
-  { base::VKEY_F5, true, false, false, IDC_RELOAD },
 #if defined(OS_CHROMEOS)
   { base::VKEY_F1, false, false, false, IDC_BACK },
+#endif
+  { base::VKEY_RIGHT, false, false, true, IDC_FORWARD },
+  { base::VKEY_BACK, true, false, false, IDC_FORWARD },
+#if defined(OS_CHROMEOS)
   { base::VKEY_F2, false, false, false, IDC_FORWARD },
+#endif
+  { base::VKEY_R, false, true, false, IDC_RELOAD },
+  { base::VKEY_R, true, true, false, IDC_RELOAD_IGNORING_CACHE },
+#if !defined(OS_CHROMEOS)
+  { base::VKEY_F5, false, false, false, IDC_RELOAD },
+  { base::VKEY_F5, false,  true, false, IDC_RELOAD_IGNORING_CACHE },
+  { base::VKEY_F5, true, false, false, IDC_RELOAD_IGNORING_CACHE },
 #endif
 
   // AutoFill.
@@ -123,15 +136,25 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_H, false, true, false, IDC_SHOW_HISTORY },
   { base::VKEY_J, false, true, false, IDC_SHOW_DOWNLOADS },
   { base::VKEY_O, false, true, false, IDC_OPEN_FILE },
+#if !defined(OS_CHROMEOS)
   { base::VKEY_F11, false, false, false, IDC_FULLSCREEN },
+#endif
+#if defined(OS_CHROMEOS)
+  { base::VKEY_F4, false, false, false, IDC_FULLSCREEN },
+#endif
   { base::VKEY_U, false, true, false, IDC_VIEW_SOURCE },
   { base::VKEY_I, true, true, false, IDC_DEV_TOOLS },
   { base::VKEY_J, true, true, false, IDC_DEV_TOOLS_CONSOLE },
   { base::VKEY_P, false, true, false, IDC_PRINT},
   { base::VKEY_ESCAPE, true, false, false, IDC_TASK_MANAGER },
+#if !defined(OS_CHROMEOS)
   { base::VKEY_F11, false, true, true, IDC_FULLSCREEN },
+#endif
   { base::VKEY_DELETE, false, true, true, IDC_TASK_MANAGER },
   { base::VKEY_OEM_COMMA, false, true, false, IDC_SYSTEM_OPTIONS },
+#if defined(OS_CHROMEOS)
+  { base::VKEY_F5, false, false, false, IDC_SYSTEM_OPTIONS },
+#endif
   { base::VKEY_B, true, true, false, IDC_SHOW_BOOKMARK_BAR },
 #if !defined(OS_CHROMEOS)
   { base::VKEY_F1, false, false, false, IDC_HELP_PAGE },
