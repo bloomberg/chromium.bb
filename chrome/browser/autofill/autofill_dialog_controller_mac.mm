@@ -21,7 +21,6 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/app_resources.h"
-#include "grit/theme_resources.h"
 
 // Delegate protocol that needs to be in place for the AutoFillTableView's
 // handling of delete and backspace keys.

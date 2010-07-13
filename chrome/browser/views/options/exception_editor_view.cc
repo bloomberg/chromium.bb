@@ -12,7 +12,6 @@
 #include "googleurl/src/url_parse.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "views/grid_layout.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"

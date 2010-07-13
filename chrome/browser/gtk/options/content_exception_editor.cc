@@ -13,7 +13,6 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 
 ContentExceptionEditor::ContentExceptionEditor(
     GtkWindow* parent,
