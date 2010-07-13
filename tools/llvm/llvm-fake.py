@@ -280,7 +280,7 @@ def Run(args):
     LogFatal('failed command: ' + StringifyCommand(args), ret)
 
 
-def SfiCompile(argv):
+def SfiCompile(argv, llc_flags, assembler, as_flags):
   "Run llc and the assembler to convert a bitcode file to ELF."
   obj_pos = FindObjectFilePos(argv)
 
@@ -291,11 +291,11 @@ def SfiCompile(argv):
       [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
   llc = [LLC] + global_config_flags['LLC_SFI_SANDBOXING']
-  llc += global_config_flags['LLC_SHARED_ARM']
+  llc += llc_flags
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
-  AssembleArm(['foo', '-c', filename + '.s', '-o', filename])
+  Assemble(assembler, as_flags, ['foo', '-c', filename + '.s', '-o', filename])
 
 def FindObjectFilePos(argv):
   """Return argv index if there is and object file is being generated
@@ -437,21 +437,44 @@ def CompileToBC(argv, llvm_binary, temp = False):
   argv.append('-fno-expand-va-arg')
   Run(argv)
 
-def Incarnation_gcclike(argv, tool):
+def Incarnation_gcclike(argv, tool, llc_flags, assembler, as_flags):
   argv = argv[:]
   argv[0] = tool
   if IsDiagnosticMode(argv) or FindAssemblerFilePos(argv):
     Run(argv)
     return;
   CompileToBC(argv, tool, True)
-  SfiCompile(argv)
-
-def Incarnation_sfigccarm(argv):
-  Incarnation_gcclike(argv, LLVM_GCC)
+  SfiCompile(argv, llc_flags, assembler, as_flags)
 
 
-def Incarnation_sfigplusplusarm(argv):
-  Incarnation_gcclike(argv, LLVM_GXX)
+def Incarnation_sfigcc_arm(argv):
+  Incarnation_gcclike(argv, LLVM_GCC, global_config_flags['LLC_SHARED_ARM'],
+                      AS_ARM, global_config_flags['AS_ARM'])
+
+
+def Incarnation_sfigplusplus_arm(argv):
+  Incarnation_gcclike(argv, LLVM_GXX, global_config_flags['LLC_SHARED_ARM'],
+                      AS_ARM, global_config_flags['AS_ARM'])
+
+
+def Incarnation_sfigcc_x8632(argv):
+  Incarnation_gcclike(argv, LLVM_GCC, global_config_flags['LLC_SHARED_X8632'],
+                      AS_X86, global_config_flags['AS_X8632'])
+
+
+def Incarnation_sfigplusplus_x8632(argv):
+  Incarnation_gcclike(argv, LLVM_GXX, global_config_flags['LLC_SHARED_X8632'],
+                      AS_X86, global_config_flags['AS_X8632'])
+
+
+def Incarnation_sfigcc_x8664(argv):
+  Incarnation_gcclike(argv, LLVM_GCC, global_config_flags['LLC_SHARED_X8664'],
+                      AS_X86, global_config_flags['AS_X8664'])
+
+
+def Incarnation_sfigplusplus_x8664(argv):
+  Incarnation_gcclike(argv, LLVM_GXX, global_config_flags['LLC_SHARED_X8664'],
+                      AS_X86, global_config_flags['AS_X8664'])
 
 
 def Incarnation_bcgcc(argv):
@@ -721,8 +744,14 @@ def Incarnation_sfild(argv):
 ######################################################################
 
 INCARNATIONS = {
-   'llvm-fake-sfigcc-arm': Incarnation_sfigccarm,
-   'llvm-fake-sfig++-arm': Incarnation_sfigplusplusarm,
+   'llvm-fake-sfigcc-arm': Incarnation_sfigcc_arm,
+   'llvm-fake-sfig++-arm': Incarnation_sfigplusplus_arm,
+
+   'llvm-fake-sfigcc-x86-32': Incarnation_sfigcc_x8632,
+   'llvm-fake-sfig++-x86-32': Incarnation_sfigplusplus_x8632,
+
+   'llvm-fake-sfigcc-x86-64': Incarnation_sfigcc_x8664,
+   'llvm-fake-sfig++-x86-64': Incarnation_sfigplusplus_x8664,
 
    'llvm-fake-bcgcc': Incarnation_bcgcc,
    'llvm-fake-bcg++': Incarnation_bcgplusplus,
