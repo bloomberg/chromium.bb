@@ -222,7 +222,6 @@
       <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON" file="ntp_welcome_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="ntp_welcome_thumb.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CLOSED_WINDOW" file="closed_window.png" type="BINDATA" />
       <include name="IDR_NEWTAB_EXTENSIONS_PROMO" file="ntp_extensions_promo.png" type="BINDATA" />
       <include name="IDR_NEWTAB_LIST_OFF" file="ntp_list_off.png" type="BINDATA" />
       <include name="IDR_NEWTAB_LIST_OFF_H" file="ntp_list_off_h.png" type="BINDATA" />
