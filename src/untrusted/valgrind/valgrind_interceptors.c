@@ -57,6 +57,13 @@ int have_nacl_valgrind_interceptors;
 #define VG_NACL_ANN(f) \
   I_WRAP_SONAME_FNNAME_ZZ(NaCl, DYNAMIC_ANNOTATIONS_NAME(f))
 
+
+#define VG_CREQ_v_v(_req)                                               \
+  do {                                                                  \
+    uint64_t _res;                                                      \
+    VALGRIND_DO_CLIENT_REQUEST(_res, 0, _req, 0, 0, 0, 0, 0);           \
+  } while (0)
+
 #define VG_CREQ_v_W(_req, _arg1)                                        \
   do {                                                                  \
     uint64_t _res;                                                      \
@@ -264,8 +271,8 @@ void VG_NACL_FUNC(nc_thread_starter)(size_t func, size_t state) {
 }
 
 
-/*----------------------------------------------------------------*/
-/* pthread_mutex_t functions */
+/* ------------------------------------------------------------------*/
+/*                        PThread mutex.                             */
 
 /* pthread_mutex_init */
 int VG_NACL_FUNC(pthreadZumutexZuinit)(pthread_mutex_t *mutex,
@@ -370,6 +377,101 @@ int VG_NACL_FUNC(pthreadZumutexZuunlock)(pthread_mutex_t *mutex) {
 }
 
 /* ------------------------------------------------------------------*/
+/*                     Conditional variables.                        */
+
+/* pthread_cond_wait */
+int VG_NACL_FUNC(pthreadZucondZuwait)(size_t cond, size_t mutex) {
+  int ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  VG_CREQ_v_W(TSREQ_PTHREAD_RWLOCK_UNLOCK_PRE, VALGRIND_SANDBOX_PTR(mutex));
+
+  start_ignore_all_accesses();
+  CALL_FN_W_WW(ret, fn, cond, mutex);
+  stop_ignore_all_accesses();
+
+  VG_CREQ_v_W(TSREQ_WAIT, VALGRIND_SANDBOX_PTR(cond));
+  VG_CREQ_v_WW(TSREQ_PTHREAD_RWLOCK_LOCK_POST, VALGRIND_SANDBOX_PTR(mutex), 1);
+
+  return ret;
+}
+
+/* pthread_cond_signal */
+int VG_NACL_FUNC(pthreadZucondZusignal)(size_t cond) {
+  int ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  VG_CREQ_v_W(TSREQ_SIGNAL, VALGRIND_SANDBOX_PTR(cond));
+
+  start_ignore_all_accesses();
+  CALL_FN_W_W(ret, fn, cond);
+  stop_ignore_all_accesses();
+
+  return ret;
+}
+
+/* ------------------------------------------------------------------*/
+/*                       POSIX semaphores.                           */
+
+static int handle_sem_wait(void* sem) {
+  OrigFn fn;
+  int    ret;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  start_ignore_all_accesses();
+  CALL_FN_W_W(ret, fn, (size_t)sem);
+  stop_ignore_all_accesses();
+
+  if (!ret)
+    VG_CREQ_v_W(TSREQ_WAIT, VALGRIND_SANDBOX_PTR((size_t)sem));
+
+  return ret;
+}
+
+/* sem_wait */
+int VG_NACL_FUNC(semZuwait)(void* sem) {
+  return handle_sem_wait(sem);
+}
+
+/* sem_trywait */
+int VG_NACL_FUNC(semZutrywait)(void* sem) {
+  return handle_sem_wait(sem);
+}
+
+/* sem_timedwait */
+int VG_NACL_FUNC(semZutimedwait)(void* sem, void* abs_timeout) {
+  OrigFn fn;
+  int    ret;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  start_ignore_all_accesses();
+  CALL_FN_W_WW(ret, fn, (size_t)sem, (size_t)abs_timeout);
+  stop_ignore_all_accesses();
+
+  if (!ret)
+    VG_CREQ_v_W(TSREQ_WAIT, VALGRIND_SANDBOX_PTR((size_t)sem));
+
+  return ret;
+}
+
+/* sem_post */
+int VG_NACL_FUNC(semZupost)(void* sem) {
+  OrigFn fn;
+  int    ret;
+  VALGRIND_GET_ORIG_FN(fn);
+
+  VG_CREQ_v_W(TSREQ_SIGNAL, VALGRIND_SANDBOX_PTR((size_t)sem));
+
+  start_ignore_all_accesses();
+  CALL_FN_W_W(ret, fn, (size_t)sem);
+  stop_ignore_all_accesses();
+
+  return ret;
+}
+
+/* ------------------------------------------------------------------*/
 /*             Limited support for dynamic annotations.              */
 
 void VG_NACL_ANN(AnnotateTraceMemory)(char *file, int line, void *mem) {
@@ -384,4 +486,21 @@ void VG_NACL_ANN(AnnotateExpectRace)(char *file, int line, void *addr,
     void* desc) {
   VG_CREQ_v_WWW(TSREQ_EXPECT_RACE, VALGRIND_SANDBOX_PTR((size_t)addr), 1,
       VALGRIND_SANDBOX_PTR((size_t)desc));
+}
+
+void VG_NACL_ANN(AnnotateCondVarSignal)(char *file, int line, void *cv) {
+  VG_CREQ_v_W(TSREQ_SIGNAL, VALGRIND_SANDBOX_PTR((size_t)cv));
+}
+
+void VG_NACL_ANN(AnnotateCondVarWait)(char *file, int line, void *cv,
+    void *unused_mu) {
+  VG_CREQ_v_W(TSREQ_WAIT, VALGRIND_SANDBOX_PTR((size_t)cv));
+}
+
+void VG_NACL_ANN(AnnotateIgnoreWritesBegin)(char *file, int line) {
+  VG_CREQ_v_v(TSREQ_IGNORE_WRITES_BEGIN);
+}
+
+void VG_NACL_ANN(AnnotateIgnoreWritesEnd)(char *file, int line) {
+  VG_CREQ_v_v(TSREQ_IGNORE_WRITES_END);
 }

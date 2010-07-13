@@ -15,6 +15,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <unistd.h>
+
+#include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
 #define ARRAY_SIZE(x) (sizeof (x) / sizeof (x)[0])
 
@@ -514,6 +517,7 @@ static void* WorkerThread(void *data) {
   /* NB, gets stuck on ARM QEMU. */
   while (!workers_begin)
     ;
+  ANNOTATE_HAPPENS_AFTER(&workers_begin);
 
   for (ii = 0; ii < 1000000; ++ii) {
     switch (intrinsic) {
@@ -547,7 +551,12 @@ static void CheckAtomicityUnderConcurrency() {
   for (ii = 0; ii < ARRAY_SIZE(threads); ++ii)
     EXPECT_EQ(0, pthread_create(&threads[ii], NULL, &WorkerThread,
                                 (void*) &counter));
+
+  ANNOTATE_HAPPENS_BEFORE(&workers_begin);
+  ANNOTATE_IGNORE_WRITES_BEGIN();
   workers_begin = 1; /* Thunderbirds are go! */
+  ANNOTATE_IGNORE_WRITES_END();
+
   for (ii = 0; ii < ARRAY_SIZE(threads); ++ii)
     EXPECT_EQ(0, pthread_join(threads[ii], NULL));
   EXPECT_EQ(10000000, counter);

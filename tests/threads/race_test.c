@@ -5,6 +5,7 @@
  */
 #include <assert.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -167,11 +168,67 @@ void negative_locked_access_test() {
 }
 
 /* -------------------------------------------------------------------------- */
+/* negative_posix_sem_test */
+
+int     posix_sem_test_glob = 0;
+sem_t   posix_sem_test_sem[2];
+
+void* posix_sem_test_poster(void* unused) {
+  posix_sem_test_glob = 1;
+  sem_post(&posix_sem_test_sem[0]);
+  sem_post(&posix_sem_test_sem[1]);
+  return NULL;
+}
+
+void* posix_sem_test_waiter(void* unused) {
+  sem_wait(&posix_sem_test_sem[0]);
+  assert(posix_sem_test_glob == 1);
+  return NULL;
+}
+
+void negative_posix_sem_test() {
+  ThreadCallback t[2] = {posix_sem_test_poster, posix_sem_test_waiter};
+  SHOW_ME;
+  sem_init(&posix_sem_test_sem[0], 0, 0);
+  sem_init(&posix_sem_test_sem[1], 0, 0);
+
+  create_and_join_threads(t, 2);
+
+  sem_destroy(&posix_sem_test_sem[0]);
+  sem_destroy(&posix_sem_test_sem[1]);
+}
+
+/* -------------------------------------------------------------------------- */
+/* pthread_create_and_join_test */
+/* Test that thread creation and joining adds happens-before arcs. */
+
+int thread_create_and_join_test_glob;
+
+void* thread_create_and_join_test_thread1(void* unused) {
+  thread_create_and_join_test_glob = 2;
+  return NULL;
+}
+
+void thread_create_and_join_test() {
+  ThreadCallback t[1] = {thread_create_and_join_test_thread1};
+
+  SHOW_ME;
+  ANNOTATE_TRACE_MEMORY(&thread_create_and_join_test_glob);
+
+  thread_create_and_join_test_glob = 1;
+
+  create_and_join_threads(t, 1);
+
+  assert(thread_create_and_join_test_glob == 2);
+}
+
+/* -------------------------------------------------------------------------- */
 int main() {
   if (1) positive_race_on_global_test();
   if (1) positive_race_on_heap_test();
   if (1) positive_wrong_lock_test();
   if (1) negative_locked_access_test();
-  fprintf(stderr, "PASSED\n");
+  if (1) negative_posix_sem_test();
+  if (1) thread_create_and_join_test();
   return 0;
 }

@@ -220,6 +220,41 @@ void function_wrapping_test() {
   assert(wrap_me_3(1, 2, 3) == 7 * 321);
 }
 
+/* test that interceptors with a large number of arguments work and do not mess
+   up stack traces */
+NOINLINE
+int zz_wrap_me(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
+  fprintf(stderr, "wrapped: %d, %d, %d, %d, %d, %d, %d\n", a1, a2, a3, a4, a5,
+      a6, a7);
+  VALGRIND_PRINTF_BACKTRACE("many_args BACKTRACE:\n");
+  return a1 + a2 + a3 + a4 + a5 + a6 + a7;
+}
+
+NOINLINE
+int I_WRAP_SONAME_FNNAME_ZZ(NaCl, zz_wrap_me)(int a1, int a2, int a3, int a4,
+    int a5, int a6, int a7) {
+  int ret;
+  OrigFn fn;
+  VALGRIND_GET_ORIG_FN(fn);
+  SHOW_ME;
+  CALL_FN_W_7W(ret, fn, a1, a2, a3, a4, a5, a6, a7);
+  return ret * 7;  /* change the return value */
+}
+
+NOINLINE
+int zz_wrap_me0(int a1, int a2, int a3, int a4, int a5, int a6, int a7) {
+  int ret = zz_wrap_me(a1, a2, a3, a4, a5, a6, a7);
+  break_optimization();
+  return ret;
+}
+
+NOINLINE
+void many_args_wrapping_test() {
+  SHOW_ME;
+  assert(zz_wrap_me0(1, 2, 3, 4, 5, 6, 7) == 7 * 28);
+}
+
+
 /* run all tests */
 int main() {
   if (!RUNNING_ON_VALGRIND) {
@@ -238,6 +273,7 @@ int main() {
   if (1) test_backtrace3();
   if (1) test_printf();
   if (1) function_wrapping_test();
+  if (1) many_args_wrapping_test();
   SHOW_ME;
   return 0;
 }

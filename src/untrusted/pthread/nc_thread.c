@@ -504,6 +504,8 @@ int __pthread_shutdown() {
   while (1 != __nc_running_threads_counter) {
     pthread_cond_wait(&__nc_last_thread_cond, &__nc_thread_management_lock);
   }
+  ANNOTATE_CONDVAR_LOCK_WAIT(&__nc_last_thread_cond,
+                             &__nc_thread_management_lock);
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
   return 0;
@@ -621,6 +623,8 @@ int pthread_join(pthread_t thread_id, void **thread_return) {
                         &__nc_thread_management_lock);
     }
   }
+  ANNOTATE_CONDVAR_LOCK_WAIT(&basic_data->join_condvar,
+                             &__nc_thread_management_lock);
   /* The thread has already terminated */
   /* save the return value */
   if (thread_return != NULL) {
