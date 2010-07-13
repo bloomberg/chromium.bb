@@ -91,6 +91,19 @@ void checked_fclose(FILE *stream) {
   }
 }
 
+Module::Function *generate_duplicate_function(const string &name) {
+  const Module::Address DUP_ADDRESS = 0xd35402aac7a7ad5cLL;
+  const Module::Address DUP_SIZE = 0x200b26e605f99071LL;
+  const Module::Address DUP_PARAMETER_SIZE = 0xf14ac4fed48c4a99LL;
+
+  Module::Function *function = new(Module::Function);
+  function->name = name;
+  function->address = DUP_ADDRESS;
+  function->size = DUP_SIZE;
+  function->parameter_size = DUP_PARAMETER_SIZE;
+  return function;
+}
+
 #define MODULE_NAME "name with spaces"
 #define MODULE_OS "os-name"
 #define MODULE_ARCH "architecture"
@@ -222,7 +235,7 @@ TEST(Write, OmitUnusedFiles) {
   m.AddFunction(function);
 
   m.AssignSourceIds();
-  
+
   vector<Module::File *> vec;
   m.GetFiles(&vec);
   EXPECT_EQ((size_t) 3, vec.size());
@@ -280,10 +293,10 @@ TEST(Construct, AddFunctions) {
   string contents = checked_read(f);
   checked_fclose(f);
   EXPECT_STREQ("MODULE os-name architecture id-string name with spaces\n"
-               "FUNC d35024aa7ca7da5c 200b26e605f99071 f14ac4fed48c4a99"
-               " _without_form\n"
                "FUNC 2987743d0b35b13f b369db048deb3010 938e556cb5a79988"
-               " _and_void\n",
+               " _and_void\n"
+               "FUNC d35024aa7ca7da5c 200b26e605f99071 f14ac4fed48c4a99"
+               " _without_form\n",
                contents.c_str());
 
   // Check that m.GetFunctions returns the functions we expect.
@@ -303,7 +316,7 @@ TEST(Construct, AddFrames) {
   entry1->address = 0xddb5f41285aa7757ULL;
   entry1->size = 0x1486493370dc5073ULL;
   m.AddStackFrameEntry(entry1);
-  
+
   // Second STACK CFI entry, with initial rules but no deltas.
   Module::StackFrameEntry *entry2 = new Module::StackFrameEntry();
   entry2->address = 0x8064f3af5e067e38ULL;
@@ -395,4 +408,50 @@ TEST(Construct, UniqueFiles) {
   EXPECT_EQ(file2, file4);
   EXPECT_EQ(file1, m.FindExistingFile("foo"));
   EXPECT_TRUE(m.FindExistingFile("baz") == NULL);
+}
+
+TEST(Construct, DuplicateFunctions) {
+  FILE *f = checked_tmpfile();
+  Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
+
+  // Two functions.
+  Module::Function *function1 = generate_duplicate_function("_without_form");
+  Module::Function *function2 = generate_duplicate_function("_without_form");
+
+  m.AddFunction(function1);
+  m.AddFunction(function2);
+
+  m.Write(f);
+  checked_fflush(f);
+  rewind(f);
+  string contents = checked_read(f);
+  checked_fclose(f);
+  EXPECT_STREQ("MODULE os-name architecture id-string name with spaces\n"
+               "FUNC d35402aac7a7ad5c 200b26e605f99071 f14ac4fed48c4a99"
+               " _without_form\n",
+               contents.c_str());
+}
+
+TEST(Construct, FunctionsWithSameAddress) {
+  FILE *f = checked_tmpfile();
+  Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
+
+  // Two functions.
+  Module::Function *function1 = generate_duplicate_function("_without_form");
+  Module::Function *function2 = generate_duplicate_function("_and_void");
+
+  m.AddFunction(function1);
+  m.AddFunction(function2);
+
+  m.Write(f);
+  checked_fflush(f);
+  rewind(f);
+  string contents = checked_read(f);
+  checked_fclose(f);
+  EXPECT_STREQ("MODULE os-name architecture id-string name with spaces\n"
+               "FUNC d35402aac7a7ad5c 200b26e605f99071 f14ac4fed48c4a99"
+               " _and_void\n"
+               "FUNC d35402aac7a7ad5c 200b26e605f99071 f14ac4fed48c4a99"
+               " _without_form\n",
+               contents.c_str());
 }
