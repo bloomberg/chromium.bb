@@ -82,7 +82,7 @@ extern int NaClPluginDebugPrintCheckEnv();
           ::plugin::NaClPluginDebugPrintCheckEnv();                   \
     }                                                                 \
     if (0 != ::plugin::gNaClPluginDebugPrintEnabled) {                \
-      printf("%08"NACL_PRIx32":", NaClThreadId());                    \
+      printf("%08"NACL_PRIx32": ", NaClThreadId());                    \
       printf args;                                                    \
       fflush(stdout);                                                 \
     }                                                                 \
