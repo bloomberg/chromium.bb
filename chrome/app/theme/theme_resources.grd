@@ -49,7 +49,6 @@
       <if expr="os == 'darwin'">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
       </if>
-      <include name="IDR_BOOKMARK_BAR_RECENTLY_BOOKMARKED_ICON" file="star_small.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_RECENT_ICON" file="bookmark_manager_recent.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_SEARCH_ICON" file="bookmark_manager_search.png" type="BINDATA" />
       <include name="IDR_BUBBLE_B" file="bubble_b.png" type="BINDATA" />
@@ -65,7 +64,6 @@
       <include name="IDR_BUBBLE_TR" file="bubble_tr.png" type="BINDATA" />
       <include name="IDR_BUBBLE_T_ARROW" file="bubble_t_arrow.png" type="BINDATA" />
       <include name="IDR_BUTTON_MASK" file="button_mask.png" type="BINDATA" />
-      <include name="IDR_CLOSED_WINDOW" file="closed_window.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
@@ -94,7 +92,6 @@
       <include name="IDR_DOCK_MAX" file="dock_tab_max.png" type="BINDATA" />
       <include name="IDR_DOCK_WIDE" file="dock_tab_wide.png" type="BINDATA" />
       <include name="IDR_DOWNLOADS_FAVICON" file="downloads_favicon.png" type="BINDATA" />
-      <include name="IDR_DOWNLOADS_SECTION" file="downloads_section.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="download_animation_begin.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM" file="download_button_center_bottom.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_H" file="download_button_center_bottom_h.png" type="BINDATA" />
@@ -177,7 +174,6 @@
       <include name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="geolocation_denied_locationbar_icon.png" type="BINDATA" />
       <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="geolocation_infobar_icon.png" type="BINDATA" />
       <include name="IDR_HISTORY_FAVICON" file="history_favicon.png" type="BINDATA" />
-      <include name="IDR_HISTORY_SECTION" file="history_section.png" type="BINDATA" />
       <include name="IDR_HOME" file="home.png" type="BINDATA" />
       <include name="IDR_HOME_H" file="home_h.png" type="BINDATA" />
       <include name="IDR_HOME_P" file="home_p.png" type="BINDATA" />
@@ -224,14 +220,9 @@
       <include name="IDR_NEWTAB_BUTTON_H" file="newtab_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CHECKBOX_BLACK" file="checkbox_black.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CHECKBOX_WHITE" file="checkbox_white.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON" file="ntp_welcome_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="ntp_welcome_thumb.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CLOSE" file="ntp_close.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CLOSED_WINDOW" file="closed_window.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CLOSE_H" file="ntp_close_h.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_CLOSE_P" file="ntp_close_p.png" type="BINDATA" />
       <include name="IDR_NEWTAB_EXTENSIONS_PROMO" file="ntp_extensions_promo.png" type="BINDATA" />
       <include name="IDR_NEWTAB_LIST_OFF" file="ntp_list_off.png" type="BINDATA" />
       <include name="IDR_NEWTAB_LIST_OFF_H" file="ntp_list_off_h.png" type="BINDATA" />
@@ -243,12 +234,6 @@
       <include name="IDR_NEWTAB_OPTION" file="ntp_option.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION_H" file="ntp_option_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_OPTION_P" file="ntp_option_p.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_PIN_OFF" file="ntp_pin_off.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_PIN_OFF_H" file="ntp_pin_off_h.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_PIN_OFF_P" file="ntp_pin_off_p.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_PIN_ON" file="ntp_pin_on.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_PIN_ON_H" file="ntp_pin_on_h.png" type="BINDATA" />
-      <include name="IDR_NEWTAB_PIN_ON_P" file="ntp_pin_on_p.png" type="BINDATA" />
       <include name="IDR_NEWTAB_REMOVE_ICON" file="ntp_x_icon_small.png" type="BINDATA" />
       <include name="IDR_NEWTAB_REMOVE_THUMBNAIL" file="ntp_x_icon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_REMOVE_THUMBNAIL_ACTIVE" file="ntp_x_icon_active.png" type="BINDATA" />
@@ -296,7 +281,6 @@
       <include name="IDR_OMNIBOX_STAR_LIT" file="omnibox_star_lit.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_STAR_SELECTED" file="omnibox_star_selected.png" type="BINDATA" />
       <include name="IDR_OTR_ICON" file="otr_icon.png" type="BINDATA" />
-      <include name="IDR_OTR_ICON_STANDALONE" file="otr_icon_standalone.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_GOOD" file="pageinfo_good.png" type="BINDATA" />
       <include name="IDR_PLUGIN" file="plugin.png" type="BINDATA" />
@@ -470,27 +454,13 @@
         <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
-        <include name="IDR_FILEBROWSER_BACK" file="filebrowse_back.png" type="BINDATA" />
-        <include name="IDR_FILEBROWSER_FULLSCREEN" file="filebrowse_fullscreen.png" type="BINDATA" />
         <include name="IDR_FILEBROWSER_FWD" file="filebrowse_forward.png" type="BINDATA" />
-        <include name="IDR_FILEBROWSER_MENU" file="filebrowse_menu.png" type="BINDATA" />
         <include name="IDR_FILEBROWSER_UPLOAD" file="filebrowse_upload.png" type="BINDATA" />
         <include name="IDR_ICON_APP" file="icon_app.png" type="BINDATA" />
-        <include name="IDR_ICON_FILE" file="icon_file.png" type="BINDATA" />
-        <include name="IDR_ICON_FOLDER" file="icon_folder.png" type="BINDATA" />
-        <include name="IDR_ICON_MEDIA" file="icon_media.png" type="BINDATA" />
-        <include name="IDR_ICON_PHOTO" file="icon_photo.png" type="BINDATA" />
         <include name="IDR_ICON_WEBPAGE" file="icon_webpage.png" type="BINDATA" />
         <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
         <include name="IDR_LOGIN_OTHER_USER" file="login_other.png" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYER_FULL_SCREEN" file="mediaplayer_full_screen.png" type="BINDATA" />
         <include name="IDR_MEDIAPLAYER_MENU" file="mediaplayer_menu.png" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYER_NEXT" file="mediaplayer_next.png" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYER_PAUSE" file="mediaplayer_pause.png" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYER_PLAY" file="mediaplayer_play.png" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYER_PLAYLIST" file="mediaplayer_playlist.png" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYER_PREV" file="mediaplayer_prev.png" type="BINDATA" />
-        <include name="IDR_MEDIAPLAYER_VOL_HIGH" file="mediaplayer_vol_high.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_LOW_BATTERY" file="notification_battery_low.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_NETWORK_FAILED" file="notification_network_failed.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_NETWORK_OPEN" file="notification_network_open.png" type="BINDATA" />

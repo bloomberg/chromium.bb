@@ -20,17 +20,13 @@ without changes to the corresponding grd file. eadee -->
       <if expr="os != 'linux2' and os != 'darwin' and os.find('bsd') == -1">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory.html" flattenhtml="true" type="BINDATA" />
       </if>
-      <include name="IDR_ABOUT_STATS_HTML" file="resources\about_stats.html" type="BINDATA" />
+      <include name="IDR_ABOUT_STATS_HTML" file="resources\about_stats.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_ABOUT_SYNC_HTML" file="sync\resources\about_sync.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_ABOUT_VERSION_HTML" file="resources\about_version.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_APP_GALLERY_ICON" file="resources\app_gallery_icon.png" type="BINDATA" />
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
       <include name="IDR_CALENDAR_APP_MANIFEST" file="resources\calendar_app\manifest.json" type="BINDATA" />
-      <include name="IDR_CHAT_MANAGER_MANIFEST" file="resources\chat_manager\manifest.json" type="BINDATA" />
       <include name="IDR_CREDITS_HTML" file="resources\about_credits.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DOCS_APP_MANIFEST" file="resources\docs_app\manifest.json" type="BINDATA" />
-      <include name="IDR_DOM_UI_CSS" file="resources\dom_ui.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_DOM_UI2_CSS" file="resources\dom_ui2.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DOWNLOADS_HTML" file="resources\downloads.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSION_DEFAULT_ICON" file="resources\extension_default_icon.png" type="BINDATA" />
       <if expr="os == 'darwin'">
@@ -46,14 +42,11 @@ without changes to the corresponding grd file. eadee -->
       <include name="IDR_HISTORY_HTML" file="resources\history.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY2_HTML" file="resources\history2.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_LOCAL_STRINGS_JS" file="resources\shared\js\local_strings.js" type="BINDATA" />
       <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_NEW_NEW_TAB_CSS" file="resources\new_new_tab.css" type="BINDATA" />
       <include name="IDR_NEW_NEW_TAB_HTML" file="resources\new_new_tab.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_NEW_NEW_TAB_JS" file="resources\new_new_tab.js" type="BINDATA" />
       <include name="IDR_NEW_TAB_THEME_CSS" file="resources\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" type="BINDATA" />
-      <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" type="BINDATA" />
+      <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
       <include name="IDR_OPTIONS_HTML" file="resources\options.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" type="BINDATA" />
@@ -75,14 +68,14 @@ without changes to the corresponding grd file. eadee -->
       <include name="IDR_AUTOFILL_CC_SOLO" file="resources\solo.png" type="BINDATA" />
       <include name="IDR_AUTOFILL_CC_VISA" file="resources\visa.png" type="BINDATA" />
 
-      <if expr="pp_ifdef('chromeos') or pp_ifdef('toolkit_views')">
-          <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
-          <include name="IDR_FILEBROWSE_HTML" file="resources\filebrowse.html" flattenhtml="true" type="BINDATA" />
-          <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\host_registration_page.html" flattenhtml="true" type="BINDATA" />
-          <include name="IDR_MEDIAPLAYER_HTML" file="resources\mediaplayer.html" flattenhtml="true" type="BINDATA" />
-          <include name="IDR_MEDIAPLAYERPLAYLIST_HTML" file="resources\playlist.html" flattenhtml="true" type="BINDATA" />
-          <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
-          <include name="IDR_SLIDESHOW_HTML" file="resources\slideshow.html" flattenhtml="true" type="BINDATA" />
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILEBROWSE_HTML" file="resources\filebrowse.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\host_registration_page.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MEDIAPLAYER_HTML" file="resources\mediaplayer.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MEDIAPLAYERPLAYLIST_HTML" file="resources\playlist.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_SLIDESHOW_HTML" file="resources\slideshow.html" flattenhtml="true" type="BINDATA" />
       </if>
     </includes>
   </release>

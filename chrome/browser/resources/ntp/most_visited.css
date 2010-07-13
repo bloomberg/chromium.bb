@@ -120,39 +120,39 @@
 }
 
 .edit-bar > .pin {
-  background-image: url(chrome://theme/IDR_NEWTAB_PIN_OFF);
+  background-image: url('ntp_pin_off.png');
 }
 
 .edit-bar > .pin:hover {
-  background-image: url(chrome://theme/IDR_NEWTAB_PIN_OFF_H);
+  background-image: url('ntp_pin_off_h.png');
 }
 
 .edit-bar > .pin:active {
-  background-image: url(chrome://theme/IDR_NEWTAB_PIN_OFF_P);
+  background-image: url('ntp_pin_off_p.png');
 }
 
 .pinned .edit-bar > .pin {
-  background-image: url(chrome://theme/IDR_NEWTAB_PIN_ON);
+  background-image: url('ntp_pin_on.png');
 }
 
 .pinned .edit-bar > .pin:hover {
-  background-image: url(chrome://theme/IDR_NEWTAB_PIN_ON_H);
+  background-image: url(ntp_pin_on_h.png');
 }
 
 .pinned .edit-bar > .pin:active {
-  background-image: url(chrome://theme/IDR_NEWTAB_PIN_ON_P);
+  background-image: url(ntp_pin_on_p.png');
 }
 
 .edit-bar > .remove {
-  background-image: url(chrome://theme/IDR_NEWTAB_CLOSE);
+  background-image: url('ntp_close.png');
 }
 
 .edit-bar > .remove:hover {
-  background-image: url(chrome://theme/IDR_NEWTAB_CLOSE_H);
+  background-image: url('ntp_close_h.png');
 }
 
 .edit-bar > .remove:active {
-  background-image: url(chrome://theme/IDR_NEWTAB_CLOSE_P);
+  background-image: url('ntp_close_p.png');
 }
 
 .thumbnail-container > .title > div {

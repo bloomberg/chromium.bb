@@ -156,7 +156,7 @@ html[dir=rtl] .item {
                         on :hover. To get this to work we have to set visibility
                         to visible which unfortunately breaks the ellipsis for t
                         he window items */
-  background-image: url(chrome://theme/IDR_NEWTAB_CLOSED_WINDOW);
+  background-image: url('ntp/closed_window.png');
 }
 
 .window-menu {
@@ -340,11 +340,11 @@ html[dir=rtl] #option-menu > [command=hide]:before {
 }
 
 #option-menu > [command=hide]:before {
-  background-image: url(chrome://theme/IDR_NEWTAB_CHECKBOX_BLACK);
+  background-image: url('ntp/checkbox_black.png');
 }
 
 #option-menu > [selected][command=hide]:active:before {
-  background-image: url(chrome://theme/IDR_NEWTAB_CHECKBOX_WHITE);
+  background-image: url('ntp/checkbox_white.png');
 }
 
 #attribution {
