@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
@@ -525,6 +526,10 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
                                                AutoFillType type,
                                                std::vector<string16>* values,
                                                std::vector<string16>* labels) {
+  // Don't return CC suggestions for non-HTTPS pages.
+  if (!form->ConvertToFormData().origin.SchemeIs(chrome::kHttpsScheme))
+    return;
+
   for (std::vector<CreditCard*>::const_iterator iter =
            personal_data_->credit_cards().begin();
        iter != personal_data_->credit_cards().end(); ++iter) {

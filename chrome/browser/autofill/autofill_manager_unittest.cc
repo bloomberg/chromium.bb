@@ -164,8 +164,8 @@ void CreateTestFormData(FormData* form) {
 void CreateTestFormDataBilling(FormData* form) {
   form->name = ASCIIToUTF16("MyForm");
   form->method = ASCIIToUTF16("POST");
-  form->origin = GURL("http://myform.com/form.html");
-  form->action = GURL("http://myform.com/submit.html");
+  form->origin = GURL("https://myform.com/form.html");
+  form->action = GURL("https://myform.com/submit.html");
 
   webkit_glue::FormField field;
   autofill_unittest::CreateTestFormField(
@@ -520,6 +520,27 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
   EXPECT_EQ(ASCIIToUTF16("Home; 8765; 8765"), labels[7]);
 }
 
+TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
+  FormData form;
+  CreateTestFormDataBilling(&form);
+  form.origin = GURL("http://myform.com/form.html");
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+
+  webkit_glue::FormField field;
+  autofill_unittest::CreateTestFormField(
+      "Card Number", "cardnumber", "", "text", &field);
+  EXPECT_FALSE(
+      autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
+}
+
 TEST_F(AutoFillManagerTest, GetCombinedAutoFillAndAutocompleteSuggestions) {
   FormData form;
   CreateTestFormData(&form);
@@ -700,8 +721,8 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
   EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
   EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
-  EXPECT_EQ(GURL("http://myform.com/form.html"), results.origin);
-  EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
+  EXPECT_EQ(GURL("https://myform.com/form.html"), results.origin);
+  EXPECT_EQ(GURL("https://myform.com/submit.html"), results.action);
   ASSERT_EQ(15U, results.fields.size());
 
   webkit_glue::FormField field;
@@ -854,8 +875,8 @@ TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
   EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
   EXPECT_EQ(ASCIIToUTF16("MyForm"), results.name);
   EXPECT_EQ(ASCIIToUTF16("POST"), results.method);
-  EXPECT_EQ(GURL("http://myform.com/form.html"), results.origin);
-  EXPECT_EQ(GURL("http://myform.com/submit.html"), results.action);
+  EXPECT_EQ(GURL("https://myform.com/form.html"), results.origin);
+  EXPECT_EQ(GURL("https://myform.com/submit.html"), results.action);
   ASSERT_EQ(15U, results.fields.size());
 
   webkit_glue::FormField field;

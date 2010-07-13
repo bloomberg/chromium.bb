@@ -137,7 +137,7 @@ class FormStructure {
   bool has_autofillable_field_;
   bool has_password_fields_;
 
-  // The number of fields able to be autofilled.
+  // The number of fields able to be auto-filled.
   size_t autofill_count_;
 
   // A vector of all the input fields in the form.  The vector is terminated by
