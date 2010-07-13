@@ -1,7 +1,7 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
+#include "base/scoped_temp_dir.h"
 #include "base/scoped_vector.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -77,4 +77,51 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
       unique_ids.insert(urls[turl_i]->prepopulate_id());
     }
   }
+}
+
+// Verifies that default search providers from the preferences file
+// override the built-in ones.
+TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
+  const char pref_data[] =
+      "{ "
+      "  \"search_provider_overrides_version\":1,"
+      "  \"search_provider_overrides\": ["
+      "     { \"name\":\"foo\","
+      "       \"keyword\":\"fook\","
+      "       \"search_url\":\"http://foo.com/s?q={searchTerms}\","
+      "       \"favicon_url\":\"http://foi.com/favicon.ico\","
+      "       \"suggest_url\":\"\","
+      "       \"encoding\":\"UTF-8\","
+      "       \"id\":1001"
+      "     }"
+      "   ]"
+      "}";
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath preferences_file = temp_dir.path().AppendASCII("Preferences");
+  file_util::WriteFile(preferences_file, pref_data, sizeof(pref_data));
+
+  scoped_ptr<PrefService> prefs(new PrefService(new PrefValueStore(
+      NULL, new JsonPrefStore(preferences_file,
+      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+      NULL, NULL)));
+
+  TemplateURLPrepopulateData::RegisterUserPrefs(prefs.get());
+
+  int version = TemplateURLPrepopulateData::GetDataVersion(prefs.get());
+  EXPECT_EQ(1, version);
+
+  std::vector<TemplateURL*> t_urls;
+  size_t default_index;
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(
+      prefs.get(), &t_urls, &default_index);
+
+  ASSERT_EQ(1u, t_urls.size());
+  EXPECT_EQ(L"foo", t_urls[0]->short_name());
+  EXPECT_EQ(L"fook", t_urls[0]->keyword());
+  EXPECT_EQ("foo.com", t_urls[0]->url()->GetHost());
+  EXPECT_EQ("foi.com", t_urls[0]->GetFavIconURL().host());
+  EXPECT_EQ(1u, t_urls[0]->input_encodings().size());
+  EXPECT_EQ(1001, t_urls[0]->prepopulate_id());
 }

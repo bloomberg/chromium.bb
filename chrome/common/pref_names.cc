@@ -145,6 +145,15 @@ const wchar_t kDefaultSearchProviderID[] = L"default_search_provider.id";
 const wchar_t kDefaultSearchProviderPrepopulateID[] =
     L"default_search_provider.prepopulate_id";
 
+// The dictionary key used when the default search providers are given
+// in the preferences file. Normally they are copied from the master
+// preferences file.
+const wchar_t kSearchProviderOverrides[] =
+    L"search_provider_overrides";
+// The format version for the dictionary above.
+const wchar_t kSearchProviderOverridesVersion[] =
+    L"search_provider_overrides_version";
+
 // Boolean which specifies whether we should ask the user if we should download
 // a file (true) or just download it automatically.
 const wchar_t kPromptForDownload[] = L"download.prompt_for_download";

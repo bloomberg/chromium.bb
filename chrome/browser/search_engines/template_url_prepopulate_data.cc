@@ -62,6 +62,9 @@ struct PrepopulatedEngine {
   //    33, 34, 36, 39, 42, 43, 47, 48, 49, 50, 52, 53, 56, 58, 60, 61, 64, 65,
   //    66, 70, 74, 78, 79, 80, 81, 84, 86, 88, 91, 92, 93, 94, 95, 96, 97, 98,
   //    102+
+  //
+  // IDs > 1000 are reserved for distribution custom engines.
+  //
   // NOTE: CHANGE THE ABOVE NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
   const int id;
 };
@@ -2790,44 +2793,120 @@ namespace TemplateURLPrepopulateData {
 
 void RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kCountryIDAtInstall, kCountryIDUnknown);
-
+  prefs->RegisterListPref(prefs::kSearchProviderOverrides);
+  prefs->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion, -1);
   // Obsolete pref, for migration.
   prefs->RegisterIntegerPref(prefs::kGeoIDAtInstall, -1);
 }
 
-int GetDataVersion() {
-  return 28;  // Increment this if you change the above data in ways that mean
-              // users with existing data should get a new version.
+int GetDataVersion(PrefService* prefs) {
+  // Increment this if you change the above data in ways that mean users with
+  // existing data should get a new version.
+  const int kCurrentDataVersion = 28;
+  if (!prefs)
+    return kCurrentDataVersion;
+  // If a version number exist in the preferences file, it overrides the
+  // version of the built-in data.
+  int version =
+    prefs->GetInteger(prefs::kSearchProviderOverridesVersion);
+  return (version >= 0) ? version : kCurrentDataVersion;
+}
+
+TemplateURL* MakePrepopulatedTemplateURL(const wchar_t* name,
+                                         const wchar_t* keyword,
+                                         const wchar_t* search_url,
+                                         const char* favicon_url,
+                                         const wchar_t* suggest_url,
+                                         const char* encoding,
+                                         int id) {
+  TemplateURL* new_turl = new TemplateURL();
+  new_turl->SetURL(WideToUTF8(search_url), 0, 0);
+  if (favicon_url)
+    new_turl->SetFavIconURL(GURL(favicon_url));
+  if (suggest_url)
+    new_turl->SetSuggestionsURL(WideToUTF8(suggest_url), 0, 0);
+  new_turl->set_short_name(name);
+  if (keyword == NULL)
+    new_turl->set_autogenerate_keyword(true);
+  else
+    new_turl->set_keyword(keyword);
+  new_turl->set_show_in_default_list(true);
+  new_turl->set_safe_for_autoreplace(true);
+  new_turl->set_date_created(Time());
+  std::vector<std::string> turl_encodings;
+  turl_encodings.push_back(encoding);
+  new_turl->set_input_encodings(turl_encodings);
+  new_turl->set_prepopulate_id(id);
+  return new_turl;
+}
+
+void GetPrepopulatedTemplatefromPrefs(PrefService* prefs,
+                                      std::vector<TemplateURL*>* t_urls) {
+  const ListValue* list =
+      prefs->GetList(prefs::kSearchProviderOverrides);
+  if (!list)
+    return;
+
+  std::wstring name;
+  std::wstring keyword;
+  std::wstring search_url;
+  std::wstring suggest_url;
+  std::string favicon_url;
+  std::string encoding;
+  int id;
+
+  size_t num_engines = list->GetSize();
+  for (size_t i = 0; i != num_engines; ++i) {
+    Value* val;
+    DictionaryValue* engine;
+    list->GetDictionary(i, &engine);
+    if (engine->Get(L"name", &val) && val->GetAsString(&name) &&
+        engine->Get(L"keyword", &val) && val->GetAsString(&keyword) &&
+        engine->Get(L"search_url", &val) && val->GetAsString(&search_url) &&
+        engine->Get(L"suggest_url", &val) && val->GetAsString(&suggest_url) &&
+        engine->Get(L"favicon_url", &val) && val->GetAsString(&favicon_url) &&
+        engine->Get(L"encoding", &val) && val->GetAsString(&encoding) &&
+        engine->Get(L"id", &val) && val->GetAsInteger(&id)) {
+      // These next fields are not allowed to be empty.
+      if (search_url.empty() || favicon_url.empty() || encoding.empty())
+        return;
+    } else {
+      // Got a parsing error. No big deal.
+      continue;
+    }
+    t_urls->push_back(MakePrepopulatedTemplateURL(name.c_str(),
+                                                  keyword.c_str(),
+                                                  search_url.c_str(),
+                                                  favicon_url.c_str(),
+                                                  suggest_url.c_str(),
+                                                  encoding.c_str(),
+                                                  id));
+  }
 }
 
 void GetPrepopulatedEngines(PrefService* prefs,
                             std::vector<TemplateURL*>* t_urls,
                             size_t* default_search_provider_index) {
+  // If there if there is a set of search engines in the preferences
+  // file, it overrides the built-in set.
+  *default_search_provider_index = 0;
+  GetPrepopulatedTemplatefromPrefs(prefs, t_urls);
+  if (!t_urls->empty())
+    return;
+
   const PrepopulatedEngine** engines;
   size_t num_engines;
   GetPrepopulationSetFromCountryID(prefs, &engines, &num_engines);
-  *default_search_provider_index = 0;
-
-  for (size_t i = 0; i < num_engines; ++i) {
-    TemplateURL* new_turl = new TemplateURL();
-    new_turl->SetURL(WideToUTF8(engines[i]->search_url), 0, 0);
-    if (engines[i]->favicon_url)
-      new_turl->SetFavIconURL(GURL(engines[i]->favicon_url));
-    if (engines[i]->suggest_url)
-      new_turl->SetSuggestionsURL(WideToUTF8(engines[i]->suggest_url), 0, 0);
-    new_turl->set_short_name(engines[i]->name);
-    if (engines[i]->keyword == NULL)
-      new_turl->set_autogenerate_keyword(true);
-    else
-      new_turl->set_keyword(engines[i]->keyword);
-    new_turl->set_show_in_default_list(true);
-    new_turl->set_safe_for_autoreplace(true);
-    new_turl->set_date_created(Time());
-    std::vector<std::string> turl_encodings;
-    turl_encodings.push_back(engines[i]->encoding);
-    new_turl->set_input_encodings(turl_encodings);
-    new_turl->set_prepopulate_id(engines[i]->id);
-    t_urls->push_back(new_turl);
+  for (size_t i = 0; i != num_engines; ++i) {
+    TemplateURL* turl =
+        MakePrepopulatedTemplateURL(engines[i]->name,
+                                    engines[i]->keyword,
+                                    engines[i]->search_url,
+                                    engines[i]->favicon_url,
+                                    engines[i]->suggest_url,
+                                    engines[i]->encoding,
+                                    engines[i]->id);
+    t_urls->push_back(turl);
   }
 }
 
@@ -2859,7 +2938,5 @@ SearchEngineType GetSearchEngineType(const TemplateURL* search_engine) {
       return SEARCH_ENGINE_OTHER;
   }
 }
-
-
 
 }  // namespace TemplateURLPrepopulateData

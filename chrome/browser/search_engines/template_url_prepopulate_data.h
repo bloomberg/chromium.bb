@@ -32,8 +32,9 @@ enum SearchEngineType {
 void RegisterUserPrefs(PrefService* prefs);
 
 // Returns the current version of the prepopulate data, so callers can know when
-// they need to re-merge.
-int GetDataVersion();
+// they need to re-merge. If the prepopulate data comes from the preferences
+// file then it returns the version specified there.
+int GetDataVersion(PrefService* prefs);
 
 // Loads the set of TemplateURLs from the prepopulate data.  Ownership of the
 // TemplateURLs is passed to the caller.  On return,

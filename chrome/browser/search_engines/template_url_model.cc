@@ -600,7 +600,7 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
                                                 keyword_result.keywords.end());
 
   const int resource_keyword_version =
-      TemplateURLPrepopulateData::GetDataVersion();
+      TemplateURLPrepopulateData::GetDataVersion(GetPrefs());
   if (keyword_result.builtin_keyword_version != resource_keyword_version) {
     // There should never be duplicate TemplateURLs. We had a bug such that
     // duplicate TemplateURLs existed for one locale. As such we invoke

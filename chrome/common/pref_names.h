@@ -55,6 +55,8 @@ extern const wchar_t kDefaultSearchProviderSuggestURL[];
 extern const wchar_t kDefaultSearchProviderName[];
 extern const wchar_t kDefaultSearchProviderID[];
 extern const wchar_t kDefaultSearchProviderPrepopulateID[];
+extern const wchar_t kSearchProviderOverrides[];
+extern const wchar_t kSearchProviderOverridesVersion[];
 extern const wchar_t kPromptForDownload[];
 extern const wchar_t kAlternateErrorPagesEnabled[];
 extern const wchar_t kDnsPrefetchingEnabled[];
