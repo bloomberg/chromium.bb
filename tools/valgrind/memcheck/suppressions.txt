@@ -3561,13 +3561,6 @@
    fun:_ZN17AudioRendererHost14OnCreateStreamERKN3IPC7MessageEiRK37ViewHostMsg_Audio_CreateStream_Paramsb
    fun:_ZN21AudioRendererHostTest16CreateLowLatencyEv
    fun:_ZN54AudioRendererHostTest_CreateLowLatencyAndShutdown_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 
 {
@@ -3579,13 +3572,6 @@
    fun:_ZN17AudioRendererHost14OnCreateStreamERKN3IPC7MessageEiRK37ViewHostMsg_Audio_CreateStream_Paramsb
    fun:_ZN21AudioRendererHostTest16CreateLowLatencyEv
    fun:_ZN51AudioRendererHostTest_CreateLowLatencyAndClose_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 
 {
@@ -3606,10 +3592,25 @@
    fun:_ZN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc_9D292295_6F30AFB218SpdyHttpStreamTestC2Ev
    fun:_ZN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc_9D292295_6F30AFB235SpdyHttpStreamTest_SendRequest_TestC1Ev
    fun:_ZN7testing8internal15TestFactoryImplIN3net66_GLOBAL__N_net_spdy_spdy_http_stream_unittest.cc_9D292295_6F30AFB235SpdyHttpStreamTest_SendRequest_TestEE10CreateTestEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
+}
+{
+   bug_48980_a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN18ExtensionPrefStore20InstallExtensionPrefESsPKwP5Value
+   fun:_ZN56ExtensionPrefStoreTest_*_Test8TestBodyEv
+}
+{
+   bug_48980_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5Value17CreateStringValueERKSs
+   fun:_ZN56ExtensionPrefStoreTest_*_Test8TestBodyEv
+}
+{
+   bug_48980_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN44ExtensionPrefStoreTest_NotifyWhenNeeded_Test8TestBodyEv
 }
