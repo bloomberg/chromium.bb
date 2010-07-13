@@ -280,8 +280,7 @@ def Run(args):
     LogFatal('failed command: ' + StringifyCommand(args), ret)
 
 
-
-def SfiCompile(argv, sfi):
+def SfiCompile(argv):
   "Run llc and the assembler to convert a bitcode file to ELF."
   obj_pos = FindObjectFilePos(argv)
 
@@ -291,10 +290,7 @@ def SfiCompile(argv, sfi):
       global_config_flags['OPT'] +
       [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
-  if sfi:
-    llc = [LLC] + global_config_flags['LLC_SFI_SANDBOXING']
-  else:
-    llc = [LLC]
+  llc = [LLC] + global_config_flags['LLC_SFI_SANDBOXING']
   llc += global_config_flags['LLC_SHARED_ARM']
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
@@ -441,29 +437,21 @@ def CompileToBC(argv, llvm_binary, temp = False):
   argv.append('-fno-expand-va-arg')
   Run(argv)
 
-def Incarnation_gcclike(argv, tool, temp, sfi):
+def Incarnation_gcclike(argv, tool):
   argv = argv[:]
   argv[0] = tool
   if IsDiagnosticMode(argv) or FindAssemblerFilePos(argv):
     Run(argv)
     return;
-  CompileToBC(argv, tool, temp)
-  SfiCompile(argv, sfi)
+  CompileToBC(argv, tool, True)
+  SfiCompile(argv)
 
 def Incarnation_sfigccarm(argv):
-  Incarnation_gcclike(argv, LLVM_GCC, True, True)
+  Incarnation_gcclike(argv, LLVM_GCC)
 
 
 def Incarnation_sfigplusplusarm(argv):
-  Incarnation_gcclike(argv, LLVM_GXX, True, True)
-
-
-def Incarnation_gcc(argv):
-  Incarnation_gcclike(argv, LLVM_GCC, True, False)
-
-
-def Incarnation_gplusplus(argv):
-  Incarnation_gcclike(argv, LLVM_GXX, True, False)
+  Incarnation_gcclike(argv, LLVM_GXX)
 
 
 def Incarnation_bcgcc(argv):
@@ -735,9 +723,6 @@ def Incarnation_sfild(argv):
 INCARNATIONS = {
    'llvm-fake-sfigcc-arm': Incarnation_sfigccarm,
    'llvm-fake-sfig++-arm': Incarnation_sfigplusplusarm,
-
-   'llvm-fake-gcc': Incarnation_gcc,
-   'llvm-fake-g++': Incarnation_gplusplus,
 
    'llvm-fake-bcgcc': Incarnation_bcgcc,
    'llvm-fake-bcg++': Incarnation_bcgplusplus,
