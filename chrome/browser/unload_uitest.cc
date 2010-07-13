@@ -407,7 +407,7 @@ TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseTwoSecondBeforeUnloadAlert)) {
 #elif defined(OS_WIN)
 // http://crbug.com/45281
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    DISABLED_BrowserCloseTabWhenOtherTabHasListener
+    FAILS_BrowserCloseTabWhenOtherTabHasListener
 #else
 // Flaky on Linux as well. http://crbug.com/45562
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
