@@ -103,6 +103,9 @@ PluginService::PluginService()
     NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
   }
 
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path))
+    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
+
 #ifndef DISABLE_NACL
   if (command_line->HasSwitch(switches::kInternalNaCl))
     RegisterInternalNaClPlugin();
