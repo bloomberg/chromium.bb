@@ -26,6 +26,10 @@ fi
 
 if [ ! -f "$repo/git-cl" ]; then
   git clone $url $repo -q
+elif [ ! -e "$base_dir/git-cl-repo/.git" ]; then
+  echo "$0: $base_dir/git-cl-repo does not appear to be a git repo"
+elif [ "X$DEPOT_TOOLS_UPDATE" != "X0" ]; then
+  (cd "$base_dir/git-cl-repo"; git pull -q)
 fi
 
 $repo/git-cl "$@"
