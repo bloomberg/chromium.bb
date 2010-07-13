@@ -82,10 +82,6 @@ bool EnvQueryStr(const wchar_t* key_name, std::wstring* value) {
   return true;
 }
 
-bool IsRunningHeadless() {
-  return (0 != ::GetEnvironmentVariableW(L"CHROME_HEADLESS", NULL, 0));
-}
-
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
 // value not being null to dermine if this path contains a valid dll.
@@ -112,8 +108,7 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   // Experimental pre-reading optimization
   // The idea is to pre read significant portion of chrome.dll in advance
   // so that subsequent hard page faults are avoided.
-  if (!cmd_line.HasSwitch(switches::kProcessType) &&
-      (IsRunningHeadless() || InstallUtil::IsChromeFrameProcess())) {
+  if (!cmd_line.HasSwitch(switches::kProcessType)) {
     // The kernel brings in 8 pages for the code section at a time and 4 pages
     // for other sections. We can skip over these pages to avoid a soft page
     // fault which may not occur during code execution. However skipping 4K at
