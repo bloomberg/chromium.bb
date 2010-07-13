@@ -199,7 +199,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       instance_interface_(instance_interface),
       container_(NULL),
       full_frame_(false),
-      find_identifier_(-1) {
+      find_identifier_(-1),
+      plugin_find_interface_(NULL) {
   DCHECK(delegate);
   module_->InstanceCreated(this);
   delegate_->InstanceCreated(this);
@@ -386,33 +387,35 @@ void PluginInstance::Zoom(float factor, bool text_only) {
 bool PluginInstance::StartFind(const string16& search_text,
                                bool case_sensitive,
                                int identifier) {
+  if (!LoadFindInterface())
+    return false;
+  find_identifier_ = identifier;
+  return plugin_find_interface_->StartFind(
+      GetPPInstance(),
+      UTF16ToUTF8(search_text.c_str()).c_str(),
+      case_sensitive);
+}
+
+void PluginInstance::SelectFindResult(bool forward) {
+  if (LoadFindInterface())
+    plugin_find_interface_->SelectFindResult(GetPPInstance(), forward);
+}
+
+void PluginInstance::StopFind() {
+  if (!LoadFindInterface())
+    return;
+  find_identifier_ = -1;
+  plugin_find_interface_->StopFind(GetPPInstance());
+}
+
+bool PluginInstance::LoadFindInterface() {
   if (!plugin_find_interface_) {
     plugin_find_interface_ =
         reinterpret_cast<const PPP_Find*>(module_->GetPluginInterface(
             PPP_FIND_INTERFACE));
   }
 
-  if (plugin_find_interface_)
-    return false;
-
-  find_identifier_ = identifier;
-  return plugin_find_interface_->StartFind(
-      GetPPInstance(),
-      reinterpret_cast<const char*>(search_text.c_str()),
-      case_sensitive);
-}
-
-void PluginInstance::SelectFindResult(bool forward) {
-  DCHECK(plugin_find_interface_);
-
-  plugin_find_interface_->SelectFindResult(GetPPInstance(), forward);
-}
-
-void PluginInstance::StopFind() {
-  DCHECK(plugin_find_interface_);
-
-  find_identifier_ = -1;
-  plugin_find_interface_->StopFind(GetPPInstance());
+  return !!plugin_find_interface_;
 }
 
 }  // namespace pepper

@@ -114,6 +114,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   void StopFind();
 
  private:
+  bool LoadFindInterface();
+
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   const PPP_Instance* instance_interface_;
