@@ -22,7 +22,7 @@
 #include "net/url_request/url_request_unittest.h"
 
 // http://code.google.com/p/chromium/issues/detail?id=14774
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if (defined(OS_WIN) || defined(OS_CHROMEOS)) && !defined(NDEBUG)
 #define MAYBE_BasicRestoreFromClosedWindow DISABLED_BasicRestoreFromClosedWindow
 #else
 #define MAYBE_BasicRestoreFromClosedWindow BasicRestoreFromClosedWindow
