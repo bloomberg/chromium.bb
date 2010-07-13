@@ -38,7 +38,7 @@
 // on Windows. TODO(estade): investigate.
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 // TODO(jcampan): http://crbug.com/23683
-#define MAYBE_TabsRememberFocusFindInPage DISABLED_TabsRememberFocusFindInPage
+#define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #else
 #define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
 #define MAYBE_TabsRememberFocusFindInPage TabsRememberFocusFindInPage
