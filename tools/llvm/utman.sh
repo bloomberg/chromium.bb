@@ -430,13 +430,21 @@ download-trusted() {
     mv "${installdir}" "${tmpdir}"
   fi
 
-  ./scons platform=arm --download sdl=none
-  ./scons platform=x86-64 --download sdl=none
+  download-toolchains
 
   mv "${installdir}" "${dldir}"
   if [ -d "${tmpdir}" ]; then
     mv "${tmpdir}" "${installdir}"
   fi
+}
+
+#@-------------------------------------------------------------------------
+
+#@ download-toolchains - Download and Install all SDKs (arm,x86-32,x86-64)
+
+download-toolchains() {
+  ./scons platform=arm --download sdl=none
+  ./scons platform=x86-64 --download sdl=none
 }
 
 #@-------------------------------------------------------------------------
