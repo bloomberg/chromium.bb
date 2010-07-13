@@ -3539,7 +3539,7 @@
    fun:malloc
    fun:pa_xmalloc
    obj:/usr/lib/libpulse.so.0.4.1
-   fun:pa_threaded_mainloop_wait
+   ...
    fun:_ZN8chromeos15PulseAudioMixer14PulseAudioInitEv
    fun:_ZN8chromeos15PulseAudioMixer6DoInitEP14CallbackRunnerI6Tuple1IbEE
    fun:_Z16DispatchToMethodIN8chromeos15PulseAudioMixerEMS1_FvP14CallbackRunnerI6Tuple1IbEEES6_EvPT_T0_RKS3_IT1_E
