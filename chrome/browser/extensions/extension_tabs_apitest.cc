@@ -9,8 +9,16 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
+// Tabs is flaky on chromeos debug build.
+// http://crbug.com/48920
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_Tabs FLAKY_Tabs
+#else
+#define MAYBE_Tabs Tabs
+#endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(StartHTTPServer());
 
   // The test creates a tab and checks that the URL of the new tab
