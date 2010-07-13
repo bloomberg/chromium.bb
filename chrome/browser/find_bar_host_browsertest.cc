@@ -509,9 +509,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
 }
 
 // This tests bug 11761: FindInPage terminates search prematurely.
-// This test will be enabled once the bug is fixed.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
-                       DISABLED_FindInPagePrematureEnd) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FAILS_FindInPagePrematureEnd) {
   HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
