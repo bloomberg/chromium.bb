@@ -47,3 +47,12 @@ DownloadTest.*
 DefaultPluginUITest.DefaultPluginLoadTest
 # See http://crbug.com/38575
 WorkerTest.*
+
+# See http://crbug.com/48975
+DesktopNotificationsTest.TestCancel
+DesktopNotificationsTest.TestClose
+DesktopNotificationsTest.TestEarlyDestruction
+DesktopNotificationsTest.TestQueueing
+DesktopNotificationsTest.TestShow
+DesktopNotificationsTest.TestUserInputEscaping
+
