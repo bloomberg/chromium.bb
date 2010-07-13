@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
+#include "chrome/browser/chromeos/cros/update_library.h"
 
 namespace chromeos {
 
@@ -33,6 +34,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              synaptics_lib_(NULL),
                              syslogs_lib_(NULL),
                              system_lib_(NULL),
+                             update_lib_(NULL),
                              own_library_loader_(true),
                              own_cryptohome_lib_(true),
                              own_keyboard_lib_(true),
@@ -46,6 +48,7 @@ CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              own_synaptics_lib_(true),
                              own_syslogs_lib_(true),
                              own_system_lib_(true),
+                             own_update_lib_(true),
                              loaded_(false),
                              load_error_(false),
                              test_api_(NULL) {
@@ -79,6 +82,8 @@ CrosLibrary::~CrosLibrary() {
     delete syslogs_lib_;
   if (own_system_lib_)
     delete system_lib_;
+  if (own_update_lib_)
+    delete update_lib_;
   delete test_api_;
 }
 
@@ -157,6 +162,12 @@ SystemLibrary* CrosLibrary::GetSystemLibrary() {
   if (!system_lib_)
     system_lib_ = new SystemLibraryImpl();
   return system_lib_;
+}
+
+UpdateLibrary* CrosLibrary::GetUpdateLibrary() {
+  if (!update_lib_)
+    update_lib_ = new UpdateLibraryImpl();
+  return update_lib_;
 }
 
 bool CrosLibrary::EnsureLoaded() {
@@ -279,6 +290,14 @@ void CrosLibrary::TestApi::SetSystemLibrary(SystemLibrary* library,
     delete library_->system_lib_;
   library_->own_system_lib_ = own;
   library_->system_lib_ = library;
+}
+
+void CrosLibrary::TestApi::SetUpdateLibrary(UpdateLibrary* library,
+                                            bool own) {
+  if (library_->update_lib_)
+    delete library_->update_lib_;
+  library_->own_update_lib_ = own;
+  library_->update_lib_ = library;
 }
 
 } // namespace chromeos

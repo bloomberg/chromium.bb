@@ -1374,6 +1374,7 @@
         'browser/chromeos/status/clock_menu_button_browsertest.cc',
         'browser/chromeos/status/language_menu_button_browsertest.cc',
         'browser/chromeos/status/power_menu_button_browsertest.cc',
+        'browser/chromeos/update_browsertest.cc',
         'browser/crash_recovery_browsertest.cc',
         'browser/dom_ui/file_browse_browsertest.cc',
         'browser/dom_ui/mediaplayer_browsertest.cc',

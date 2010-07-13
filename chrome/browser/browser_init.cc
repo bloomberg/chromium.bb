@@ -78,6 +78,7 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/chromeos/update_observer.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "chrome/browser/chromeos/wm_overview_controller.h"
@@ -431,6 +432,11 @@ bool BrowserInit::LaunchBrowser(
         new chromeos::LowBatteryObserver(profile);
     chromeos::CrosLibrary::Get()->GetPowerLibrary()->AddObserver(
         low_battery_observer);
+
+    static chromeos::UpdateObserver* update_observer =
+        new chromeos::UpdateObserver(profile);
+    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(
+        update_observer);
 
     static chromeos::NetworkMessageObserver* network_message_observer =
         new chromeos::NetworkMessageObserver(profile);

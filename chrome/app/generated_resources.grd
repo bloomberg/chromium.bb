@@ -7596,6 +7596,28 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOW_BATTERY_MESSAGE" desc="Message for low battery notification">
         Less than <ph name="MINUTES">$1<ex>15 mins left</ex></ph>.
       </message>
+      <message name="IDS_UPDATE_TITLE" desc="Title for update notification">
+      	System Update
+      </message>
+      <message name="IDS_UPDATE_ERROR" desc="Notification for failed update">
+      	System update failed.
+      </message>
+      <message name="IDS_UPDATE_AVAILABLE" desc="Notification for available update">
+      	System update available&#x2026;
+      </message>
+      <message name="IDS_UPDATE_DOWNLOADING" desc="Notification for update download progress">
+      	System update downloading: <ph name="PERCENT">$1<ex>10</ex></ph>&#37; complete.
+      </message>
+      <message name="IDS_UPDATE_VERIFYING" desc="Notification for update verifying">
+      	Verifying system update&#x2026;
+      </message>
+      <message name="IDS_UPDATE_FINALIZING" desc="Notification for update finalizing">
+      	Finalizing system update&#x2026;
+      </message>
+      <message name="IDS_UPDATE_COMPLETED" desc="Notification for update completed">
+      	System update complete. Please restart the system by pressing the power
+      	button, wait for the system to power down, then press the power button again.
+      </message>
       <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen">
         Please wait while <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> installs an important update.\nYour computer will restart after this is complete.
       </message>

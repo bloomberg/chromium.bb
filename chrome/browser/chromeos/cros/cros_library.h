@@ -24,6 +24,7 @@ class SpeechSynthesisLibrary;
 class SynapticsLibrary;
 class SyslogsLibrary;
 class SystemLibrary;
+class UpdateLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
 // a level of indirection so individual libraries that it exposes can
@@ -64,6 +65,8 @@ class CrosLibrary {
     void SetSyslogsLibrary(SyslogsLibrary* library, bool own);
     // Setter for SystemLibrary.
     void SetSystemLibrary(SystemLibrary* library, bool own);
+    // Setter for UpdateLibrary.
+    void SetUpdateLibrary(UpdateLibrary* library, bool own);
 
    private:
     friend class CrosLibrary;
@@ -110,6 +113,9 @@ class CrosLibrary {
   // This gets the singleton SystemLibrary.
   SystemLibrary* GetSystemLibrary();
 
+  // This gets the singleton UpdateLibrary.
+  UpdateLibrary* GetUpdateLibrary();
+
   // Getter for Test API that gives access to internal members of this class.
   TestApi* GetTestApi();
 
@@ -142,6 +148,7 @@ class CrosLibrary {
   SynapticsLibrary* synaptics_lib_;
   SyslogsLibrary* syslogs_lib_;
   SystemLibrary* system_lib_;
+  UpdateLibrary* update_lib_;
 
   bool own_library_loader_;
   bool own_cryptohome_lib_;
@@ -156,6 +163,7 @@ class CrosLibrary {
   bool own_synaptics_lib_;
   bool own_syslogs_lib_;
   bool own_system_lib_;
+  bool own_update_lib_;
 
   // True if libcros was successfully loaded.
   bool loaded_;

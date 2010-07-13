@@ -462,6 +462,7 @@
         <include name="IDR_NOTIFICATION_NETWORK_FAILED" file="notification_network_failed.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_NETWORK_OPEN" file="notification_network_open.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_NETWORK_WARNING" file="notification_network_warning.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_UPDATE" file="notification_update.png" type="BINDATA" />
         <include name="IDR_SPINNER" file="spinner.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGED" file="statusbar_battery_charged.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_1" file="statusbar_battery1c.png" type="BINDATA" />
