@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/version_loader.h"
+#include "chrome/browser/zygote_host_linux.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/cocoa/about_ipc_dialog.h"
 #elif defined(OS_LINUX)
