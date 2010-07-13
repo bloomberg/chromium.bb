@@ -12,8 +12,10 @@ In order to use this with spec2k you will need to:
 If you want to build pnacl.arm target, should also:
 
 * setup a nacl client and run
-  tools/llvm/pnacl-helper.sh download-toolchains
-  tools/llvm/pnacl-helper.sh organize-native-code
-  tools/llvm/pnacl-helper.sh build-bitcode
+  tools/llvm/utman.sh download-toolchains
+  tools/llvm/utman.sh organize-native-code
+  tools/llvm/utman.sh newlib-bitcode
+  tools/llvm/utman.sh extrasdk-bitcode
+  tools/llvm/utman.sh libstdcpp-bitcode
 
 
