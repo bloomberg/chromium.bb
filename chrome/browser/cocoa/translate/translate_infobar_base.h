@@ -83,6 +83,12 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 
 @interface TranslateInfoBarControllerBase (ProtectedAPI)
 
+// Resizes or hides the options button based on how much space is available
+// so that it doesn't overlap other buttons.
+// lastView is the rightmost view, the first one that the options button
+// would overlap with.
+- (void)adjustOptionsButtonSizeAndVisibilityForView:(NSView*)lastView;
+
 // Move all the currently visible views into the correct place for the
 // current mode.
 // Must be implemented by the subclass.
@@ -118,14 +124,21 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 - (void)languageMenuChanged:(id)item;
 - (void)optionsMenuChanged:(id)item;
 
-// Teardown and rebuild the options menu.
-- (void)rebuildOptionsMenu;
+// Teardown and rebuild the options menu.  When the infobar is small, the
+// options menu is shrunk to just a drop down arrow, so the title needs
+// to be empty.
+- (void)rebuildOptionsMenu:(BOOL)hideTitle;
 
 @end // TranslateInfoBarControllerBase (ProtectedAPI)
 
 #pragma mark TestingAPI
 
 @interface TranslateInfoBarControllerBase (TestingAPI)
+
+// All the controls used in any of the translate states.
+// This is used for verifying layout and for setting the
+// correct styles on each button.
+- (NSArray*)allControls;
 
 // Verifies that the layout of the infobar is correct.
 // Must be implmented by the subclass.

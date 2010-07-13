@@ -6,6 +6,7 @@
 #include "base/sys_string_conversions.h"
 
 using TranslateInfoBarUtilities::MoveControl;
+using TranslateInfoBarUtilities::VerifyControlOrderAndSpacing;
 
 @implementation AfterTranslateInfobarController
 
@@ -34,9 +35,9 @@ using TranslateInfoBarUtilities::MoveControl;
   }
   NSView* lastControl = lastPopup;
 
-  MoveControl(label1_, firstPopup, 0, true);
-  MoveControl(firstPopup, label2_, 0, true);
-  MoveControl(label2_, lastPopup, 0, true);
+  MoveControl(label1_, firstPopup, spaceBetweenControls_ / 2, true);
+  MoveControl(firstPopup, label2_, spaceBetweenControls_ / 2, true);
+  MoveControl(label2_, lastPopup, spaceBetweenControls_ / 2, true);
   MoveControl(lastPopup, label3_, 0, true);
   lastControl = label3_;
 

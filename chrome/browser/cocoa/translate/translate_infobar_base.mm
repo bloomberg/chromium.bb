@@ -122,6 +122,18 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   return new InfoBar(infobar_controller);
 }
 
+@implementation TranslateInfoBarControllerBase (FrameChangeObserver)
+
+// Triggered when the frame changes.  This will figure out what size and
+// visibility the options popup should be.
+- (void)didChangeFrame:(NSNotification*)notification {
+  [self adjustOptionsButtonSizeAndVisibilityForView:
+      [[self visibleControls] lastObject]];
+}
+
+@end
+
+
 @interface TranslateInfoBarControllerBase (Private)
 
 // Removes all controls so that layout can add in only the controls
@@ -224,6 +236,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   [self clearAllControls];
   [self showVisibleControls:[self visibleControls]];
   [self layout];
+  [self adjustOptionsButtonSizeAndVisibilityForView:
+      [[self visibleControls] lastObject]];
 }
 
 - (void)setInfoBarGradientColor {
@@ -250,9 +264,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 
 - (void)clearAllControls {
   // Step 1: remove all controls from the infobar so we have a clean slate.
-  NSArray *allControls = [NSArray arrayWithObjects:label2_.get(), label3_.get(),
-      fromLanguagePopUp_.get(), toLanguagePopUp_.get(),
-      showOriginalButton_.get(), tryAgainButton_.get(), nil];
+  NSArray *allControls = [self allControls];
 
   for (NSControl* control in allControls) {
     if ([control superview])
@@ -292,7 +304,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   return [NSArray array];
 }
 
-- (void) rebuildOptionsMenu {
+- (void)rebuildOptionsMenu:(BOOL)hideTitle {
   // The options model doesn't know how to handle state transitions, so rebuild
   // it each time through here.
   optionsMenuModel_.reset(
@@ -300,7 +312,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 
   [optionsPopUp_ removeAllItems];
   // Set title.
-  NSString* optionsLabel =
+  NSString* optionsLabel = hideTitle ? @"" :
       l10n_util::GetNSString(IDS_TRANSLATE_INFOBAR_OPTIONS);
   [optionsPopUp_ addItemWithTitle:optionsLabel];
 
@@ -395,7 +407,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   label_.reset(); // Now released.
 
   // Populate contextual menus.
-  [self rebuildOptionsMenu];
+  [self rebuildOptionsMenu:NO];
   [self populateLanguageMenus];
 
   // Set OK & Cancel text.
@@ -403,10 +415,25 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   [cancelButton_ setTitle:GetNSStringWithFixup(IDS_TRANSLATE_INFOBAR_DENY)];
 
   // Set up "Show original" and "Try again" buttons.
-  [showOriginalButton_ setBezelStyle:NSRoundRectBezelStyle];
   [showOriginalButton_ setFrame:okButtonFrame];
-  [tryAgainButton_ setBezelStyle:NSRoundRectBezelStyle];
   [tryAgainButton_ setFrame:okButtonFrame];
+
+  // Set each of the buttons and popups to the NSTexturedRoundedBezelStyle
+  // (metal-looking) style.
+  NSArray* allControls = [self allControls];
+  for (NSControl* control in allControls) {
+    if (![control isKindOfClass:[NSButton class]])
+      continue;
+    NSButton* button = (NSButton*)control;
+    [button setBezelStyle:NSTexturedRoundedBezelStyle];
+    if ([button isKindOfClass:[NSPopUpButton class]]) {
+      [[button cell] setArrowPosition:NSPopUpArrowAtBottom];
+    }
+  }
+  // The options button is handled differently than the rest as it floats
+  // to the right.
+  [optionsPopUp_ setBezelStyle:NSTexturedRoundedBezelStyle];
+  [[optionsPopUp_ cell] setArrowPosition:NSPopUpArrowAtBottom];
 
   [showOriginalButton_ setTarget:self];
   [showOriginalButton_ setAction:@selector(showOriginal:)];
@@ -430,8 +457,34 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   MoveControl(closeButton_, optionsPopUp_, spaceBetweenControls_, false);
   VerticallyCenterView(optionsPopUp_);
 
+  [infoBarView_ setPostsFrameChangedNotifications:YES];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(didChangeFrame:)
+             name:NSViewFrameDidChangeNotification
+           object:infoBarView_];
   // Show and place GUI elements.
   [self updateState];
+}
+
+- (void)adjustOptionsButtonSizeAndVisibilityForView:(NSView*)lastView {
+  [optionsPopUp_ setHidden:NO];
+  [self rebuildOptionsMenu:NO];
+  [[optionsPopUp_ cell] setArrowPosition:NSPopUpArrowAtBottom];
+  [optionsPopUp_ sizeToFit];
+  
+  MoveControl(closeButton_, optionsPopUp_, spaceBetweenControls_, false);
+  if (!VerifyControlOrderAndSpacing(lastView, optionsPopUp_)) {
+    [self rebuildOptionsMenu:YES];
+    NSRect oldFrame = [optionsPopUp_ frame];
+    oldFrame.size.width = NSHeight(oldFrame);
+    [optionsPopUp_ setFrame:oldFrame];
+    [[optionsPopUp_ cell] setArrowPosition:NSPopUpArrowAtCenter];
+    MoveControl(closeButton_, optionsPopUp_, spaceBetweenControls_, false);
+    if (!VerifyControlOrderAndSpacing(lastView, optionsPopUp_)) {
+      [optionsPopUp_ setHidden:YES];
+    }
+  }
 }
 
 // Called when "Translate" button is clicked.
@@ -487,16 +540,29 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   }
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 #pragma mark NSMenuDelegate
 
 // Invoked by virtue of us being set as the delegate for the options menu.
 - (void)menuNeedsUpdate:(NSMenu *)menu {
-  [self rebuildOptionsMenu];
+  [self adjustOptionsButtonSizeAndVisibilityForView:
+      [[self visibleControls] lastObject]];
 }
 
 @end
 
 @implementation TranslateInfoBarControllerBase (TestingAPI)
+
+- (NSArray*)allControls {
+  return [NSArray arrayWithObjects:label1_.get(),fromLanguagePopUp_.get(),
+      label2_.get(), toLanguagePopUp_.get(), label3_.get(), okButton_,
+      cancelButton_, showOriginalButton_.get(), tryAgainButton_.get(),
+      nil];
+}
 
 - (NSMenu*)optionsMenu {
   return [optionsPopUp_ menu];
@@ -510,9 +576,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   // All the controls available to translate infobars, except the options popup.
   // The options popup is shown/hidden instead of actually removed.  This gets
   // checked in the subclasses.
-  NSArray* allControls = [NSArray arrayWithObjects:label1_.get(),
-      fromLanguagePopUp_.get(), label2_.get(), toLanguagePopUp_.get(),
-      label3_.get(), showOriginalButton_.get(), tryAgainButton_.get(), nil];
+  NSArray* allControls = [self allControls];
   NSArray* visibleControls = [self visibleControls];
 
   // Step 1: Make sure control visibility is what we expect.
@@ -540,6 +604,11 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   id previousControl = nil;
   for (NSUInteger i = 0; i < [visibleControls count]; ++i) {
     id control = [visibleControls objectAtIndex:i];
+    // The options pop up doesn't lay out like the rest of the controls as
+    // it floats to the right.  It has some known issues shown in
+    // http://crbug.com/47941.
+    if (control == optionsPopUp_.get())
+      continue;
     if (previousControl &&
         !VerifyControlOrderAndSpacing(previousControl, control)) {
       NSString *title = @"";

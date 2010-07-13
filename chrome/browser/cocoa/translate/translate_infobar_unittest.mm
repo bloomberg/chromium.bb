@@ -103,7 +103,10 @@ class TranslationInfoBarTest : public CocoaTest {
     infobar_controller.reset(
         reinterpret_cast<TranslateInfoBarControllerBase*>(
             infobar->controller()));
-    // Need to call this to get the view to load from nib.
+    // We need to set the window to be wide so that the options button
+    // doesn't overlap the other buttons.
+    [test_window() setContentSize:NSMakeSize(2000, 500)];
+    [[infobar_controller view] setFrame:NSMakeRect(0, 0, 2000, 500)];
     [[test_window() contentView] addSubview:[infobar_controller view]];
   }
 };
@@ -145,7 +148,7 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   EXPECT_CALL(*infobar_delegate, Translate())
     .Times(0);
 
-  [infobar_controller rebuildOptionsMenu];
+  [infobar_controller rebuildOptionsMenu:NO];
   NSMenu* optionsMenu = [infobar_controller optionsMenu];
   NSArray* optionsMenuItems = [optionsMenu itemArray];
 

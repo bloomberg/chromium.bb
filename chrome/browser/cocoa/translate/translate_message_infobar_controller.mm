@@ -30,6 +30,10 @@ using TranslateInfoBarUtilities::MoveControl;
     MoveControl(label1_, tryAgainButton_, spaceBetweenControls_ * 2, true);
 }
 
+- (void)adjustOptionsButtonSizeAndVisibilityForView:(NSView*)lastView {
+  // Do nothing, but stop the options button from showing up.
+}
+
 - (NSArray*)visibleControls {
   NSMutableArray* visibleControls =
       [NSMutableArray arrayWithObjects:label1_.get(), nil];

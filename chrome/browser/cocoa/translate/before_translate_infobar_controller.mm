@@ -9,13 +9,13 @@
 #include "grit/generated_resources.h"
 
 using TranslateInfoBarUtilities::MoveControl;
+using TranslateInfoBarUtilities::VerifyControlOrderAndSpacing;
 
 @implementation BeforeTranslateInfobarController
 
 - (void)layout {
-  [optionsPopUp_ setHidden:NO];
-  MoveControl(label1_, fromLanguagePopUp_, 0, true);
-  MoveControl(fromLanguagePopUp_, label2_, 0, true);
+  MoveControl(label1_, fromLanguagePopUp_, spaceBetweenControls_ / 2, true);
+  MoveControl(fromLanguagePopUp_, label2_, spaceBetweenControls_, true);
   MoveControl(label2_, okButton_, spaceBetweenControls_, true);
   MoveControl(okButton_, cancelButton_, spaceBetweenControls_, true);
 }
@@ -35,7 +35,6 @@ using TranslateInfoBarUtilities::MoveControl;
 - (NSArray*)visibleControls {
   return [NSArray arrayWithObjects:label1_.get(), fromLanguagePopUp_.get(),
       label2_.get(), okButton_, cancelButton_, nil];
-
 }
 
 - (bool)verifyLayout {
