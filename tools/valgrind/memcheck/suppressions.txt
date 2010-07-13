@@ -3614,3 +3614,12 @@
    fun:_Znw*
    fun:_ZN44ExtensionPrefStoreTest_NotifyWhenNeeded_Test8TestBodyEv
 }
+{
+   bug_48998
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN21BrowserMainPartsPosix16TemporaryPosix_1Ev
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
