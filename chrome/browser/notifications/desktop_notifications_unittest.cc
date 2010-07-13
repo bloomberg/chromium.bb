@@ -98,6 +98,7 @@ DesktopNotificationsTest::StandardTestNotification() {
   params.icon_url = GURL("/icon.png");
   params.title = ASCIIToUTF16("Title");
   params.body = ASCIIToUTF16("Text");
+  params.direction = WebKit::WebTextDirectionDefault;
   return params;
 }
 
