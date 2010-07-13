@@ -9,11 +9,14 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_CHROME_SYSTEM_RESOURCES_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_CHROME_SYSTEM_RESOURCES_H_
 
+#include <set>
+
+#include "base/non_thread_safe.h"
+#include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 
 namespace sync_notifier {
-
-// TODO(akalin): Add a NonThreadSafe member to this class and use it.
 
 class ChromeSystemResources : public invalidation::SystemResources {
  public:
@@ -21,16 +24,12 @@ class ChromeSystemResources : public invalidation::SystemResources {
 
   ~ChromeSystemResources();
 
+  // invalidation::SystemResources implementation.
+
   virtual invalidation::Time current_time();
 
   virtual void StartScheduler();
 
-  // We assume that the current message loop is stopped shortly after
-  // this is called, i.e. that any in-flight delayed tasks won't get
-  // run.
-  //
-  // TODO(akalin): Make sure that the above actually holds.  Use a
-  // ScopedRunnableMethodFactory for better safety.
   virtual void StopScheduler();
 
   virtual void ScheduleWithDelay(invalidation::TimeDelta delay,
@@ -42,7 +41,19 @@ class ChromeSystemResources : public invalidation::SystemResources {
                    const char* format, ...);
 
  private:
-  bool scheduler_active_;
+  NonThreadSafe non_thread_safe_;
+  scoped_ptr<ScopedRunnableMethodFactory<ChromeSystemResources> >
+      scoped_runnable_method_factory_;
+  // Holds all posted tasks that have not yet been run.
+  std::set<invalidation::Closure*> posted_tasks_;
+
+  // If the scheduler has been started, inserts |task| into
+  // |posted_tasks_| and returns a Task* to post.  Otherwise,
+  // immediately deletes |task| and returns NULL.
+  Task* MakeTaskToPost(invalidation::Closure* task);
+
+  // Runs the task, deletes it, and removes it from |posted_tasks_|.
+  void RunPostedTask(invalidation::Closure* task);
 };
 
 }  // namespace sync_notifier
