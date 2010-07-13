@@ -126,6 +126,7 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
   app_menu_.reset();
   page_menu_button_.Destroy();
   app_menu_button_.Destroy();
+  app_menu_image_.Destroy();
 }
 
 void BrowserToolbarGtk::Init(Profile* profile,
@@ -225,10 +226,10 @@ void BrowserToolbarGtk::Init(Profile* profile,
           WideToUTF16(l10n_util::GetString(IDS_PRODUCT_NAME))),
       &app_menu_button_);
   menu_bar_helper_.Add(app_menu_button_.get());
-  app_menu_image_ = gtk_image_new_from_pixbuf(
-      theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
-  gtk_container_add(GTK_CONTAINER(chrome_menu), app_menu_image_);
-  g_signal_connect_after(app_menu_image_, "expose-event",
+  app_menu_image_.Own(gtk_image_new_from_pixbuf(
+      theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME)));
+  gtk_container_add(GTK_CONTAINER(chrome_menu), app_menu_image_.get());
+  g_signal_connect_after(app_menu_image_.get(), "expose-event",
                          G_CALLBACK(OnAppMenuImageExposeThunk), this);
 
   if (use_wrench_menu)
@@ -425,7 +426,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
       gtk_image_set_from_pixbuf(GTK_IMAGE(page_menu_image_),
           theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_PAGE));
     }
-    gtk_image_set_from_pixbuf(GTK_IMAGE(app_menu_image_),
+    gtk_image_set_from_pixbuf(GTK_IMAGE(app_menu_image_.get()),
         theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
 
     // Force the height of the toolbar so we get the right amount of padding
@@ -783,7 +784,7 @@ void BrowserToolbarGtk::AnimationEnded(const Animation* animation) {
 
 void BrowserToolbarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, &upgrade_reminder_animation_);
-  gtk_widget_queue_draw(app_menu_image_);
+  gtk_widget_queue_draw(app_menu_image_.get());
 }
 
 void BrowserToolbarGtk::AnimationCanceled(const Animation* animation) {

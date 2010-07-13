@@ -230,7 +230,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Keep a pointer to the menu button images because we change them when
   // the theme changes.
   GtkWidget* page_menu_image_;
-  GtkWidget* app_menu_image_;
+  OwnedWidgetGtk app_menu_image_;
 
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
