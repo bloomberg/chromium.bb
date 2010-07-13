@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #import "chrome/browser/cocoa/simple_content_exceptions_window_controller.h"
 #import "chrome/browser/cocoa/l10n_util.h"
+#import "chrome/browser/cocoa/tab_view_picker_table.h"
 #import "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #import "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #import "chrome/browser/host_content_settings_map.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
+#include "grit/generated_resources.h"
 
 namespace {
 
@@ -168,6 +170,8 @@ class PrefObserverDisabler {
 
 - (void)awakeFromNib {
   DCHECK([self window]);
+  DCHECK(tabView_);
+  DCHECK(tabViewPicker_);
   DCHECK_EQ(self, [[self window] delegate]);
 
   // Adapt views to potentially long localized strings.
@@ -185,6 +189,11 @@ class PrefObserverDisabler {
       [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
     }
   }
+
+  NSString* label =
+      l10n_util::GetNSStringWithFixup(IDS_CONTENT_SETTINGS_FEATURES_LABEL);
+  label = [label stringByReplacingOccurrencesOfString:@":" withString:@""];
+  [tabViewPicker_ setHeading:label];
 
   NSRect frame = [[self window] frame];
   frame.origin.y -= windowDelta;

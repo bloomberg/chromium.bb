@@ -5,20 +5,25 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/cocoa_protocols_mac.h"
+#include "base/scoped_nsobject.h"
 
-// TabViewPickerTable is an NSTableView that can be used to switch between the
+// TabViewPickerTable is an NSOutlineView that can be used to switch between the
 // NSTabViewItems of an NSTabView. To use this, just create a
 // TabViewPickerTable in Interface Builder and connect the |tabView_| outlet
 // to an NSTabView. Now the table is automatically populated with the tab labels
 // of the tab view, clicking the table updates the tab view, and switching
 // tab view items updates the selection of the table.
-@interface TabViewPickerTable : NSTableView <NSTabViewDelegate,
-                                            NSTableViewDelegate,
-                                            NSTableViewDataSource> {
+@interface TabViewPickerTable : NSOutlineView <NSTabViewDelegate,
+                                              NSOutlineViewDelegate,
+                                              NSOutlineViewDataSource> {
  @public
   IBOutlet NSTabView* tabView_;  // Visible for testing.
 
  @private
   id oldTabViewDelegate_;
+
+  // Shown above all the tab names. May be |nil|.
+  scoped_nsobject<NSString> heading_;
 }
+@property (nonatomic, copy) NSString* heading;
 @end

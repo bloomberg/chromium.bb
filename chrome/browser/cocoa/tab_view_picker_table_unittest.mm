@@ -95,22 +95,42 @@ TEST_F(TabViewPickerTableTest, TestDelegateStillWorks) {
 
 TEST_F(TabViewPickerTableTest, RowsCorrect) {
   EXPECT_EQ(2, [view_ numberOfRows]);
-  EXPECT_EQ(2, [[view_ dataSource] numberOfRowsInTableView:view_]);
+  EXPECT_EQ(2,
+            [[view_ dataSource] outlineView:view_ numberOfChildrenOfItem:nil]);
 
+  id item;
+  item = [[view_ dataSource] outlineView:view_ child:0 ofItem:nil];
   EXPECT_TRUE([@"label 1" isEqualToString:[[view_ dataSource]
-                      tableView:view_
+                    outlineView:view_
       objectValueForTableColumn:nil  // ignored
-                            row:0]]);
+                         byItem:item]]);
+  item = [[view_ dataSource] outlineView:view_ child:1 ofItem:nil];
   EXPECT_TRUE([@"label 2" isEqualToString:[[view_ dataSource]
-                      tableView:view_
+                    outlineView:view_
       objectValueForTableColumn:nil  // ignored
-                            row:1]]);
+                         byItem:item]]);
 }
 
 TEST_F(TabViewPickerTableTest, TestListUpdatesTabView) {
   [view_   selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
       byExtendingSelection:NO];
   EXPECT_EQ(0, [view_ selectedRow]);  // sanity
+  EXPECT_EQ(0, [tabView_ indexOfTabViewItem:[tabView_ selectedTabViewItem]]);
+}
+
+TEST_F(TabViewPickerTableTest, TestWithHeadingNotEmpty) {
+  [view_ setHeading:@"disregard this"];
+
+  EXPECT_EQ(2, [view_ selectedRow]);
+
+  [tabView_ selectTabViewItemAtIndex:0];
+  EXPECT_EQ(1, [view_ selectedRow]);
+  [tabView_ selectTabViewItemAtIndex:1];
+  EXPECT_EQ(2, [view_ selectedRow]);
+
+  [view_   selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
+      byExtendingSelection:NO];
+  EXPECT_EQ(1, [view_ selectedRow]);  // sanity
   EXPECT_EQ(0, [tabView_ indexOfTabViewItem:[tabView_ selectedTabViewItem]]);
 }
 

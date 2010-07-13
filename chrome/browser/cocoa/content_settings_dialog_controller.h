@@ -34,6 +34,7 @@ class PrefObserverBridge;
 }
 
 class Profile;
+@class TabViewPickerTable;
 
 // This controller manages a dialog that lets the user manage the content
 // settings for several content setting types.
@@ -41,6 +42,7 @@ class Profile;
     : NSWindowController<NSWindowDelegate, NSTabViewDelegate> {
  @private
   IBOutlet NSTabView* tabView_;
+  IBOutlet TabViewPickerTable* tabViewPicker_;
   Profile* profile_;  // weak
   IntegerPrefMember lastSelectedTab_;
   BooleanPrefMember clearSiteDataOnExit_;
