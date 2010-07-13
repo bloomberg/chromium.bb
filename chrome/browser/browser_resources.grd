@@ -66,6 +66,14 @@ without changes to the corresponding grd file. eadee -->
       <include name="IDR_SYNC_SETUP_DONE_HTML" file="sync\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_AMEX" file="resources\amex.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_GENERIC" file="resources\cc-generic.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_DINERS" file="resources\diners.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_DISCOVER" file="resources\discover.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_JCB" file="resources\jcb.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_MASTERCARD" file="resources\mastercard.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_SOLO" file="resources\solo.png" type="BINDATA" />
+      <include name="IDR_AUTOFILL_CC_VISA" file="resources\visa.png" type="BINDATA" />
 
       <if expr="pp_ifdef('chromeos') or pp_ifdef('toolkit_views')">
           <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
