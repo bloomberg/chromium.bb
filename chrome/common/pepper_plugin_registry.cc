@@ -67,6 +67,8 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
 // static
 void PepperPluginRegistry::GetExtraPlugins(
     std::vector<PepperPluginInfo>* plugins) {
+  /*
+  // Pepper v2 plugin isn't ready yet.
   FilePath path;
   if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path) &&
       file_util::PathExists(path)) {
@@ -78,6 +80,7 @@ void PepperPluginRegistry::GetExtraPlugins(
     pdf.type_descriptions = "Portable Document Format";
     plugins->push_back(pdf);
   }
+  */
 }
 
 // static
