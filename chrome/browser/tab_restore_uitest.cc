@@ -28,6 +28,15 @@
 #define MAYBE_BasicRestoreFromClosedWindow BasicRestoreFromClosedWindow
 #endif
 
+// http://crbug.com/
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_RestoreWindowAndTab DISABLED_RestoreWindowAndTab
+#define MAYBE_RestoreWindow DISABLED_RestoreWindow
+#else
+#define MAYBE_RestoreWindowAndTab RestoreWindowAndTab
+#define MAYBE_RestoreWindow RestoreWindow
+#endif
+
 class TabRestoreUITest : public UITest {
  public:
   TabRestoreUITest() : UITest() {
@@ -335,7 +344,7 @@ TEST_F(TabRestoreUITest, DontLoadRestoredTab) {
 
 // Open a window with multiple tabs, close a tab, then close the window.
 // Restore both and make sure the tab goes back into the window.
-TEST_F(TabRestoreUITest, RestoreWindowAndTab) {
+TEST_F(TabRestoreUITest, MAYBE_RestoreWindowAndTab) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   CheckActiveWindow(browser_proxy.get());
@@ -548,7 +557,7 @@ TEST_F(TabRestoreUITest, RestoreCrossSiteWithExistingSiteInstance) {
   EXPECT_EQ(http_url2, GetActiveTabURL());
 }
 
-TEST_F(TabRestoreUITest, RestoreWindow) {
+TEST_F(TabRestoreUITest, MAYBE_RestoreWindow) {
   // Create a new window.
   int window_count;
   ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
