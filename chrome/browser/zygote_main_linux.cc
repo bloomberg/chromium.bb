@@ -532,7 +532,7 @@ static void PreSandboxInit() {
   FilePath module_path;
   if (PathService::Get(base::DIR_MODULE, &module_path))
     media::InitializeMediaLibrary(module_path);
-
+/*
   // Load the PDF plugin before the sandbox is turned on.
   FilePath pdf;
   if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
@@ -542,6 +542,7 @@ static void PreSandboxInit() {
     bool rv = pdf_lib && pdf_lib->EnsureAlwaysLoaded();
     DCHECK(rv) << "Couldn't load PDF plugin";
   }
+*/
 }
 
 #if !defined(CHROMIUM_SELINUX)

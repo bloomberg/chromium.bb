@@ -179,27 +179,23 @@ RenderProcessImpl::RenderProcessImpl()
     media::InitializeOpenMaxLibrary(module_path);
   }
 #endif
-
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Load the pdf plugin before the sandbox is turned on.  This is for Mac and
   // Windows.  On Linux, this needs to be done in the zygote process.
   FilePath pdf;
   if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
       file_util::PathExists(pdf)) {
+/*
     static scoped_refptr<NPAPI::PluginLib> pdf_lib =
         NPAPI::PluginLib::CreatePluginLib(pdf);
     bool rv = pdf_lib && pdf_lib->EnsureAlwaysLoaded();
     DCHECK(rv) << "Couldn't load PDF plugin";
-
+*/
 #if defined(OS_WIN)
-    if (rv) {
-      g_iat_patch_createdca.Patch(
-          pdf_lib->plugin_info().path.value().c_str(),
-          "gdi32.dll", "CreateDCA", CreateDCAPatch);
-      g_iat_patch_get_font_data.Patch(
-          pdf_lib->plugin_info().path.value().c_str(),
-          "gdi32.dll", "GetFontData", GetFontDataPatch);
-    }
+    g_iat_patch_createdca.Patch(
+        pdf.value().c_str(), "gdi32.dll", "CreateDCA", CreateDCAPatch);
+    g_iat_patch_get_font_data.Patch(
+        pdf.value().c_str(), "gdi32.dll", "GetFontData", GetFontDataPatch);
 #endif
   }
 #endif
