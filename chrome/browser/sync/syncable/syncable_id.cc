@@ -28,12 +28,6 @@ FastDump& operator << (FastDump& dump, const syncable::Id& id) {
 
 namespace syncable {
 
-string Id::AsQueryParam() const {
-  if ('s' == s_[0])
-    return s_.c_str() + 1;
-  return "";
-}
-
 string Id::GetServerId() const {
   // Currently root is the string "0". We need to decide on a true value.
   // "" would be convenient here, as the IsRoot call would not be needed.

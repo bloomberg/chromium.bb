@@ -42,7 +42,8 @@ class SyncerProtoUtil {
   // Returns true on success.  Also handles store birthday verification:
   // session->status()->syncer_stuck_ is set true if the birthday is
   // incorrect.  A false value will always be returned if birthday is bad.
-  static bool PostClientToServerMessage(ClientToServerMessage* msg,
+  static bool PostClientToServerMessage(
+      const ClientToServerMessage& msg,
       sync_pb::ClientToServerResponse* response,
       sessions::SyncSession* session);
 
@@ -66,8 +67,8 @@ class SyncerProtoUtil {
                                      std::string* proto_bytes);
 
   // Extract the name field from a sync entity.
-  static const std::string& NameFromSyncEntity(const SyncEntity& entry);
-
+  static const std::string& NameFromSyncEntity(
+      const sync_pb::SyncEntity& entry);
 
   // Extract the name field from a commit entry response.
   static const std::string& NameFromCommitEntryResponse(
@@ -87,6 +88,10 @@ class SyncerProtoUtil {
   // to have a smaller footprint than the protobuf's built-in pretty printer.
   static std::string SyncEntityDebugString(const sync_pb::SyncEntity& entry);
 
+  // Pull the birthday from the dir and put it into the msg.
+  static void AddRequestBirthday(syncable::Directory* dir,
+                                 ClientToServerMessage* msg);
+
  private:
   SyncerProtoUtil() {}
 
@@ -97,15 +102,11 @@ class SyncerProtoUtil {
   static bool VerifyResponseBirthday(syncable::Directory* dir,
       const sync_pb::ClientToServerResponse* response);
 
-  // Pull the birthday from the dir and put it into the msg.
-  static void AddRequestBirthday(syncable::Directory* dir,
-                                 ClientToServerMessage* msg);
-
   // Post the message using the scm, and do some processing on the returned
   // headers. Decode the server response.
   static bool PostAndProcessHeaders(browser_sync::ServerConnectionManager* scm,
                                     browser_sync::AuthWatcher* authwatcher,
-                                    ClientToServerMessage* msg,
+                                    const ClientToServerMessage& msg,
                                     sync_pb::ClientToServerResponse* response);
 
   friend class SyncerProtoUtilTest;

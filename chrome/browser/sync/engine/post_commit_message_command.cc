@@ -28,11 +28,11 @@ void PostCommitMessageCommand::ExecuteImpl(sessions::SyncSession* session) {
   if (!dir.good())
     return;
   sessions::StatusController* status = session->status_controller();
-  if (!SyncerProtoUtil::PostClientToServerMessage(
-      status->mutable_commit_message(), &response, session)) {
+  if (!SyncerProtoUtil::PostClientToServerMessage(status->commit_message(),
+          &response, session)) {
     // None of our changes got through.  Clear the SYNCING bit which was
     // set to true during BuildCommitCommand, and which may still be true.
-    // Not to be confused with IS_UNSYNCED.  This bit is used to detect local
+    // Not to be confused with IS_UNSYNCED, this bit is used to detect local
     // changes to items that happen during the server Commit operation.
     status->increment_num_consecutive_errors();
     syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);

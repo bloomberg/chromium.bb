@@ -119,11 +119,11 @@ void SyncerProtoUtil::AddRequestBirthday(syncable::Directory* dir,
 // static
 bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
                                             AuthWatcher* auth_watcher,
-                                            ClientToServerMessage* msg,
+                                            const ClientToServerMessage& msg,
                                             ClientToServerResponse* response) {
 
   std::string tx, rx;
-  msg->SerializeToString(&tx);
+  msg.SerializeToString(&tx);
 
   HttpResponse http_response;
   ServerConnectionManager::PostBufferParams params = {
@@ -165,18 +165,22 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
 }
 
 // static
-bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
-    ClientToServerResponse* response, SyncSession* session) {
+bool SyncerProtoUtil::PostClientToServerMessage(
+    const ClientToServerMessage& msg,
+    ClientToServerResponse* response,
+    SyncSession* session) {
 
   CHECK(response);
+  DCHECK(msg.has_store_birthday() || (msg.has_get_updates() &&
+                                      msg.get_updates().has_from_timestamp() &&
+                                      msg.get_updates().from_timestamp() == 0))
+      << "Must call AddRequestBirthday to set birthday.";
 
   ScopedDirLookup dir(session->context()->directory_manager(),
       session->context()->account_name());
   if (!dir.good()) {
     return false;
   }
-
-  AddRequestBirthday(dir, msg);
 
   if (!PostAndProcessHeaders(session->context()->connection_manager(),
                              session->context()->auth_watcher(),
@@ -287,10 +291,10 @@ void SyncerProtoUtil::CopyBlobIntoProtoBytes(const syncable::Blob& blob,
 
 // static
 const std::string& SyncerProtoUtil::NameFromSyncEntity(
-    const SyncEntity& entry) {
+    const sync_pb::SyncEntity& entry) {
 
   if (entry.has_non_unique_name()) {
-      return entry.non_unique_name();
+    return entry.non_unique_name();
   }
 
   return entry.name();

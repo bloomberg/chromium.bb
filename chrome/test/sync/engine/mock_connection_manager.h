@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/scoped_vector.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -57,6 +58,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // once. This mock object doesn't simulate a changelist, it simulates server
   // responses.
   void ResetUpdates();
+
   // Generic versions of AddUpdate functions. Tests using these function should
   // compile for both the int64 and string id based versions of the server.
   // The SyncEntity returned is only valid until the Sync is completed
@@ -94,6 +96,17 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                                          string name,
                                          int64 version,
                                          int64 sync_ts);
+
+  // Find the last commit sent by the client, and replay it for the next get
+  // updates command.  This can be used to simulate the GetUpdates that happens
+  // immediately after a successful commit.
+  sync_pb::SyncEntity* AddUpdateFromLastCommit();
+
+  // Add a deleted item.  Deletion records typically contain no
+  // additional information beyond the deletion, and no specifics.
+  // The server may send the originator fields.
+  void AddUpdateTombstone(const syncable::Id& id);
+
   void SetLastUpdateDeleted();
   void SetLastUpdateServerTag(const string& tag);
   void SetLastUpdateClientTag(const string& tag);
@@ -134,10 +147,16 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     return committed_ids_;
   }
   const std::vector<sync_pb::CommitMessage*>& commit_messages() const {
-    return commit_messages_;
+    return commit_messages_.get();
+  }
+  const std::vector<sync_pb::CommitResponse*>& commit_responses() const {
+    return commit_responses_.get();
   }
   // Retrieve the last sent commit message.
   const sync_pb::CommitMessage& last_sent_commit() const;
+
+  // Retrieve the last returned commit response.
+  const sync_pb::CommitResponse& last_commit_response() const;
 
   // Retrieve the last request submitted to the server (regardless of type).
   const sync_pb::ClientToServerMessage& last_request() const {
@@ -179,6 +198,11 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void SetServerNotReachable();
 
+  std::string store_birthday() { return store_birthday_; }
+
+  // Locate the most recent update message for purpose of alteration.
+  sync_pb::SyncEntity* GetMutableLastUpdate();
+
  private:
   sync_pb::SyncEntity* AddUpdateFull(syncable::Id id, syncable::Id parentid,
                                      string name, int64 version,
@@ -197,9 +221,6 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                      sync_pb::ClientToServerResponse* response_buffer);
 
   void AddDefaultBookmarkData(sync_pb::SyncEntity* entity, bool is_folder);
-
-  // Locate the most recent update message for purpose of alteration.
-  sync_pb::SyncEntity* GetMutableLastUpdate();
 
   // Determine if one entry in a commit should be rejected with a conflict.
   bool ShouldConflictThisCommit();
@@ -224,8 +245,9 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   bool conflict_all_commits_;
   int conflict_n_commits_;
 
-  // Commit messages we've sent
-  std::vector<sync_pb::CommitMessage*> commit_messages_;
+  // Commit messages we've sent, and responses we've returned.
+  ScopedVector<sync_pb::CommitMessage> commit_messages_;
+  ScopedVector<sync_pb::CommitResponse> commit_responses_;
 
   // The next id the mock will return to a commit.
   int next_new_id_;
@@ -245,7 +267,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // The updates we'll return to the next request.
   sync_pb::GetUpdatesResponse updates_;
-  Closure* mid_commit_callback_;
+  scoped_ptr<Closure> mid_commit_callback_;
   MidCommitObserver* mid_commit_observer_;
 
   // The AUTHENTICATE response we'll return for auth requests.

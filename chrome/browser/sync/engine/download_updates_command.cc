@@ -72,8 +72,10 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   get_updates->mutable_caller_info()->set_notifications_enabled(
       session->context()->notifications_enabled());
 
+  SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
+
   bool ok = SyncerProtoUtil::PostClientToServerMessage(
-      &client_to_server_message,
+      client_to_server_message,
       &update_response,
       session);
 

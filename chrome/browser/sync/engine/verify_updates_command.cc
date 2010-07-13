@@ -94,10 +94,6 @@ VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
     LOG(ERROR) << "Illegal negative id in received updates";
     return result;
   }
-  if (!entry.parent_id().ServerKnows()) {
-    LOG(ERROR) << "Illegal parent id in received updates";
-    return result;
-  }
   {
     const std::string name = SyncerProtoUtil::NameFromSyncEntity(entry);
     if (name.empty() && !deleted) {

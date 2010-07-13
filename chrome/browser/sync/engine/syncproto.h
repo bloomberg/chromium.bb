@@ -19,6 +19,9 @@ namespace browser_sync {
 template<class Base>
 class IdWrapper : public Base {
  public:
+  IdWrapper() {}
+  explicit IdWrapper(const Base& other) : Base(other) {
+  }
   syncable::Id id() const {
     return syncable::Id::CreateFromServerId(Base::id_string());
   }
@@ -31,6 +34,11 @@ class IdWrapper : public Base {
 // them directly.
 class SyncEntity : public IdWrapper<sync_pb::SyncEntity> {
  public:
+  SyncEntity() {}
+  explicit SyncEntity(const sync_pb::SyncEntity& other)
+      : IdWrapper<sync_pb::SyncEntity>(other) {
+  }
+
   void set_parent_id(const syncable::Id& id) {
     set_parent_id_string(id.GetServerId());
   }

@@ -84,6 +84,7 @@ using syncable::SERVER_VERSION;
 using syncable::UNIQUE_CLIENT_TAG;
 using syncable::UNIQUE_SERVER_TAG;
 using syncable::SPECIFICS;
+using syncable::SYNCING;
 using syncable::UNITTEST;
 
 using sessions::ConflictProgress;
@@ -389,6 +390,51 @@ class SyncerTest : public testing::Test,
   void DisableDatatype(syncable::ModelType model_type) {
     enabled_datatypes_[model_type] = false;
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
+  }
+
+  template<typename FieldType, typename ValueType>
+  ValueType GetField(int64 metahandle, FieldType field,
+      ValueType default_value) const {
+    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    EXPECT_TRUE(dir.good());
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+    Entry entry(&trans, GET_BY_HANDLE, metahandle);
+    EXPECT_TRUE(entry.good());
+    if (!entry.good()) {
+      return default_value;
+    }
+    EXPECT_EQ(metahandle, entry.Get(META_HANDLE));
+    return entry.Get(field);
+  }
+
+  // Helper getters that work without a transaction, to reduce boilerplate.
+  Id Get(int64 metahandle, syncable::IdField field) const {
+    return GetField(metahandle, field, syncable::kNullId);
+  }
+
+  string Get(int64 metahandle, syncable::StringField field) const {
+    return GetField(metahandle, field, string());
+  }
+
+  int64 Get(int64 metahandle, syncable::Int64Field field) const {
+    return GetField(metahandle, field, syncable::kInvalidMetaHandle);
+  }
+
+  int64 Get(int64 metahandle, syncable::BaseVersion field) const {
+    const int64 kDefaultValue = -100;
+    return GetField(metahandle, field, kDefaultValue);
+  }
+
+  bool Get(int64 metahandle, syncable::IndexedBitField field) const {
+    return GetField(metahandle, field, false);
+  }
+
+  bool Get(int64 metahandle, syncable::IsDelField field) const {
+    return GetField(metahandle, field, false);
+  }
+
+  bool Get(int64 metahandle, syncable::BitField field) const {
+    return GetField(metahandle, field, false);
   }
 
   // Some ids to aid tests. Only the root one's value is specific. The rest
@@ -1640,7 +1686,8 @@ class EntryCreatedInNewFolderTest : public SyncerTest {
 
 TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
+  ASSERT_TRUE(dir.good());
+  dir->set_store_birthday(mock_server_->store_birthday());
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, syncable::CREATE, trans.root_id(),
@@ -1709,7 +1756,7 @@ TEST_F(SyncerTest, UnappliedUpdateOnCreatedItemItemDoesNotCrash) {
   }
   // Run the syncer.
   for (int i = 0 ; i < 30 ; ++i) {
-  syncer_->SyncShare(this);
+    syncer_->SyncShare(this);
   }
 }
 
@@ -1789,8 +1836,12 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
     version = entry.Get(BASE_VERSION);
     server_position_in_parent = entry.Get(SERVER_POSITION_IN_PARENT);
   }
-  mock_server_->AddUpdateDirectory(id, root_id_, "Pete", version, 10);
-  mock_server_->SetLastUpdatePosition(server_position_in_parent);
+  sync_pb::SyncEntity* update = mock_server_->AddUpdateFromLastCommit();
+  EXPECT_EQ("Pete", update->name());
+  EXPECT_EQ(id.GetServerId(), update->id_string());
+  EXPECT_EQ(root_id_.GetServerId(), update->parent_id_string());
+  EXPECT_EQ(version, update->version());
+  EXPECT_EQ(server_position_in_parent, update->position_in_parent());
   syncer_->SyncShare(this);
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
@@ -2547,7 +2598,6 @@ TEST_F(SyncerTest, DISABLED_ServerDeletingFolderWeHaveAnOpenEntryIn) {
   syncer_events_.clear();
 }
 
-
 TEST_F(SyncerTest, WeMovedSomethingIntoAFolderServerHasDeleted) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -2604,44 +2654,39 @@ TEST_F(SyncerTest, WeMovedSomethingIntoAFolderServerHasDeleted) {
 
 class FolderMoveDeleteRenameTest : public SyncerTest {
  public:
-  FolderMoveDeleteRenameTest() : move_bob_count_(0), done_(false) {}
+  FolderMoveDeleteRenameTest() : done_(false) {}
 
   static const int64 bob_id_number = 1;
   static const int64 fred_id_number = 2;
 
   void MoveBobIntoID2Runner() {
     if (!done_) {
-      done_ = MoveBobIntoID2();
+      MoveBobIntoID2();
+      done_ = true;
     }
   }
 
  protected:
-  int move_bob_count_;
-  bool done_;
-
-  bool MoveBobIntoID2() {
+  void MoveBobIntoID2() {
     ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
     CHECK(dir.good());
 
-    if (--move_bob_count_ > 0) {
-    return false;
-    }
-
-    if (move_bob_count_ == 0) {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-      Entry alice(&trans, GET_BY_ID,
-                  TestIdFactory::FromNumber(fred_id_number));
+    Entry alice(&trans, GET_BY_ID,
+                TestIdFactory::FromNumber(fred_id_number));
     CHECK(alice.good());
-    CHECK(!alice.Get(IS_DEL));
-      MutableEntry bob(&trans, GET_BY_ID,
-                       TestIdFactory::FromNumber(bob_id_number));
+    EXPECT_TRUE(!alice.Get(IS_DEL));
+    EXPECT_TRUE(alice.Get(SYNCING)) << "Expected to be called mid-commit.";
+    MutableEntry bob(&trans, GET_BY_ID,
+                     TestIdFactory::FromNumber(bob_id_number));
     CHECK(bob.good());
     bob.Put(IS_UNSYNCED, true);
+
+    bob.Put(SYNCING, false);
     bob.Put(PARENT_ID, alice.Get(ID));
-    return true;
   }
-  return false;
-}
+
+  bool done_;
 };
 
 TEST_F(FolderMoveDeleteRenameTest,
@@ -2664,6 +2709,7 @@ TEST_F(FolderMoveDeleteRenameTest,
     MutableEntry fred(&trans, GET_BY_ID, fred_id);
     ASSERT_TRUE(fred.good());
     fred.Put(IS_UNSYNCED, true);
+    fred.Put(SYNCING, false);
     fred.Put(NON_UNIQUE_NAME, "Alice");
   }
   mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
@@ -2673,7 +2719,6 @@ TEST_F(FolderMoveDeleteRenameTest,
   // This test is a little brittle. We want to move the item into the folder
   // such that we think we're dealing with a simple conflict, but in reality
   // it's actually a conflict set.
-  move_bob_count_ = 2;
   mock_server_->SetMidCommitCallback(
       NewCallback<FolderMoveDeleteRenameTest>(this,
           &FolderMoveDeleteRenameTest::MoveBobIntoID2Runner));
@@ -3981,29 +4026,61 @@ TEST_F(SyncerTest, ClientTagIllegalUpdateIgnored) {
   }
 }
 
-TEST_F(SyncerTest, ClientTagClientCreatedConflictUpdate) {
+TEST_F(SyncerTest, ClientTagUncommittedTagMatchesUpdate) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
-  int64 original_metahandle;
+  int64 original_metahandle = 0;
+
+  sync_pb::EntitySpecifics local_bookmark(DefaultBookmarkSpecifics());
+  local_bookmark.MutableExtension(sync_pb::bookmark)->
+      set_url("http://foo/localsite");
+  sync_pb::EntitySpecifics server_bookmark(DefaultBookmarkSpecifics());
+  server_bookmark.MutableExtension(sync_pb::bookmark)->
+      set_url("http://bar/serversite");
 
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry perm_folder(&trans, CREATE, ids_.root(), "clientname");
     ASSERT_TRUE(perm_folder.good());
     perm_folder.Put(UNIQUE_CLIENT_TAG, "clientperm");
-    perm_folder.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    perm_folder.Put(SPECIFICS, local_bookmark);
     perm_folder.Put(IS_UNSYNCED, true);
     EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(perm_folder.Get(ID).ServerKnows());
     original_metahandle = perm_folder.Get(META_HANDLE);
   }
 
-  mock_server_->AddUpdateDirectory(1, 0, "permitem_renamed", 10, 100);
+  mock_server_->AddUpdateBookmark(1, 0, "permitem_renamed", 10, 100);
   mock_server_->SetLastUpdateClientTag("clientperm");
+  mock_server_->GetMutableLastUpdate()->mutable_specifics()->
+      CopyFrom(server_bookmark);
   mock_server_->set_conflict_all_commits(true);
 
   syncer_->SyncShare(this);
-  // This should cause client tag overwrite.
+  // This should cause client tag reunion, preserving the metahandle.
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+
+    Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "clientperm");
+    ASSERT_TRUE(perm_folder.good());
+    EXPECT_FALSE(perm_folder.Get(IS_DEL));
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_EQ(10, perm_folder.Get(BASE_VERSION));
+    // Entry should have been given the new ID while preserving the
+    // metahandle; client should have won the conflict resolution.
+    EXPECT_EQ(original_metahandle, perm_folder.Get(META_HANDLE));
+    EXPECT_EQ("clientperm", perm_folder.Get(UNIQUE_CLIENT_TAG));
+    EXPECT_EQ("clientname", perm_folder.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(local_bookmark.SerializeAsString(),
+              perm_folder.Get(SPECIFICS).SerializeAsString());
+    EXPECT_TRUE(perm_folder.Get(ID).ServerKnows());
+  }
+
+  mock_server_->set_conflict_all_commits(false);
+  syncer_->SyncShare(this);
+
+  // The resolved entry ought to commit cleanly.
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
 
@@ -4012,19 +4089,19 @@ TEST_F(SyncerTest, ClientTagClientCreatedConflictUpdate) {
     EXPECT_FALSE(perm_folder.Get(IS_DEL));
     EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
-    EXPECT_EQ(perm_folder.Get(BASE_VERSION), 10);
-    // Entry should have been moved aside.
-    EXPECT_NE(perm_folder.Get(META_HANDLE), original_metahandle);
-    EXPECT_EQ(perm_folder.Get(UNIQUE_CLIENT_TAG), "clientperm");
-    EXPECT_TRUE(perm_folder.Get(NON_UNIQUE_NAME) == "permitem_renamed");
-
-    Entry moved_aside(&trans, GET_BY_HANDLE, original_metahandle);
-    EXPECT_TRUE(moved_aside.good());
-    EXPECT_TRUE(moved_aside.Get(IS_DEL));
+    EXPECT_TRUE(10 < perm_folder.Get(BASE_VERSION));
+    // Entry should have been given the new ID while preserving the
+    // metahandle; client should have won the conflict resolution.
+    EXPECT_EQ(original_metahandle, perm_folder.Get(META_HANDLE));
+    EXPECT_EQ("clientperm", perm_folder.Get(UNIQUE_CLIENT_TAG));
+    EXPECT_EQ("clientname", perm_folder.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(local_bookmark.SerializeAsString(),
+              perm_folder.Get(SPECIFICS).SerializeAsString());
+    EXPECT_TRUE(perm_folder.Get(ID).ServerKnows());
   }
 }
 
-TEST_F(SyncerTest, ClientTagOverwitesDeletedClientEntry) {
+TEST_F(SyncerTest, ClientTagConflictWithDeletedLocalEntry) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
 
@@ -4032,7 +4109,9 @@ TEST_F(SyncerTest, ClientTagOverwitesDeletedClientEntry) {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry perm_folder(&trans, CREATE, ids_.root(), "clientname");
     ASSERT_TRUE(perm_folder.good());
+    ASSERT_FALSE(perm_folder.Get(ID).ServerKnows());
     perm_folder.Put(UNIQUE_CLIENT_TAG, "clientperm");
+    perm_folder.Put(SPECIFICS, DefaultBookmarkSpecifics());
     perm_folder.Put(IS_UNSYNCED, true);
     perm_folder.Put(IS_DEL, true);
   }
@@ -4048,12 +4127,12 @@ TEST_F(SyncerTest, ClientTagOverwitesDeletedClientEntry) {
 
     Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "clientperm");
     ASSERT_TRUE(perm_folder.good());
-    EXPECT_FALSE(perm_folder.Get(IS_DEL));
+    ASSERT_TRUE(perm_folder.Get(ID).ServerKnows());
+    EXPECT_TRUE(perm_folder.Get(IS_DEL));
     EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
-    EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_TRUE(perm_folder.Get(IS_UNSYNCED));
     EXPECT_EQ(perm_folder.Get(BASE_VERSION), 10);
     EXPECT_EQ(perm_folder.Get(UNIQUE_CLIENT_TAG), "clientperm");
-    EXPECT_TRUE(perm_folder.Get(NON_UNIQUE_NAME) == "permitem_renamed");
   }
 }
 
@@ -4139,6 +4218,473 @@ TEST_F(SyncerTest, GetUpdatesSetsRequestedTypes) {
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 }
 
+// Test what happens if a client deletes, then recreates, an object very
+// quickly.  It is possible that the deletion gets sent as a commit, and
+// the undelete happens during the commit request.  The principle here
+// is that with a single committing client, conflicts should never
+// be encountered, and a client encountering its past actions during
+// getupdates should never feed back to override later actions.
+//
+// In cases of ordering A-F below, the outcome should be the same.
+//   Exercised by UndeleteDuringCommit:
+//     A. Delete - commit - undelete - commitresponse.
+//     B. Delete - commit - undelete - commitresponse - getupdates.
+//   Exercised by UndeleteBeforeCommit:
+//     C. Delete - undelete - commit - commitresponse.
+//     D. Delete - undelete - commit - commitresponse - getupdates.
+//   Exercised by UndeleteAfterCommit:
+//     E. Delete - commit - commitresponse - undelete - commit
+//        - commitresponse.
+//     F. Delete - commit - commitresponse - undelete - commit -
+//        - commitresponse - getupdates.
+class SyncerUndeletionTest : public SyncerTest {
+ public:
+  SyncerUndeletionTest()
+      : client_tag_("foobar"),
+        metahandle_(syncable::kInvalidMetaHandle) {
+  }
+
+  void Create() {
+    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    EXPECT_TRUE(dir.good());
+    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry perm_folder(&trans, CREATE, ids_.root(), "clientname");
+    ASSERT_TRUE(perm_folder.good());
+    perm_folder.Put(UNIQUE_CLIENT_TAG, client_tag_);
+    perm_folder.Put(IS_UNSYNCED, true);
+    perm_folder.Put(SYNCING, false);
+    perm_folder.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(perm_folder.Get(ID).ServerKnows());
+    metahandle_ = perm_folder.Get(META_HANDLE);
+  }
+
+  void Delete() {
+    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    EXPECT_TRUE(dir.good());
+    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry entry(&trans, GET_BY_CLIENT_TAG, client_tag_);
+    ASSERT_TRUE(entry.good());
+    EXPECT_EQ(metahandle_, entry.Get(META_HANDLE));
+    entry.Put(IS_DEL, true);
+    entry.Put(IS_UNSYNCED, true);
+    entry.Put(SYNCING, false);
+  }
+
+  void Undelete() {
+    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    EXPECT_TRUE(dir.good());
+    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry entry(&trans, GET_BY_CLIENT_TAG, client_tag_);
+    ASSERT_TRUE(entry.good());
+    EXPECT_EQ(metahandle_, entry.Get(META_HANDLE));
+    EXPECT_TRUE(entry.Get(IS_DEL));
+    entry.Put(IS_DEL, false);
+    entry.Put(IS_UNSYNCED, true);
+    entry.Put(SYNCING, false);
+  }
+
+  int64 GetMetahandleOfTag() {
+    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    EXPECT_TRUE(dir.good());
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+    Entry entry(&trans, GET_BY_CLIENT_TAG, client_tag_);
+    EXPECT_TRUE(entry.good());
+    if (!entry.good()) {
+      return syncable::kInvalidMetaHandle;
+    }
+    return entry.Get(META_HANDLE);
+  }
+
+  void ExpectUnsyncedCreation() {
+    EXPECT_EQ(metahandle_, GetMetahandleOfTag());
+    EXPECT_FALSE(Get(metahandle_, IS_DEL));
+    EXPECT_FALSE(Get(metahandle_, SERVER_IS_DEL));  // Never been committed.
+    EXPECT_GE(0, Get(metahandle_, BASE_VERSION));
+    EXPECT_TRUE(Get(metahandle_, IS_UNSYNCED));
+    EXPECT_FALSE(Get(metahandle_, IS_UNAPPLIED_UPDATE));
+  }
+
+  void ExpectUnsyncedUndeletion() {
+    EXPECT_EQ(metahandle_, GetMetahandleOfTag());
+    EXPECT_FALSE(Get(metahandle_, IS_DEL));
+    EXPECT_TRUE(Get(metahandle_, SERVER_IS_DEL));
+    EXPECT_EQ(0, Get(metahandle_, BASE_VERSION));
+    EXPECT_TRUE(Get(metahandle_, IS_UNSYNCED));
+    EXPECT_FALSE(Get(metahandle_, IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(Get(metahandle_, ID).ServerKnows());
+  }
+
+  void ExpectUnsyncedEdit() {
+    EXPECT_EQ(metahandle_, GetMetahandleOfTag());
+    EXPECT_FALSE(Get(metahandle_, IS_DEL));
+    EXPECT_FALSE(Get(metahandle_, SERVER_IS_DEL));
+    EXPECT_LT(0, Get(metahandle_, BASE_VERSION));
+    EXPECT_TRUE(Get(metahandle_, IS_UNSYNCED));
+    EXPECT_FALSE(Get(metahandle_, IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(Get(metahandle_, ID).ServerKnows());
+  }
+
+  void ExpectUnsyncedDeletion() {
+    EXPECT_EQ(metahandle_, GetMetahandleOfTag());
+    EXPECT_TRUE(Get(metahandle_, IS_DEL));
+    EXPECT_FALSE(Get(metahandle_, SERVER_IS_DEL));
+    EXPECT_TRUE(Get(metahandle_, IS_UNSYNCED));
+    EXPECT_FALSE(Get(metahandle_, IS_UNAPPLIED_UPDATE));
+    EXPECT_LT(0, Get(metahandle_, BASE_VERSION));
+    EXPECT_LT(0, Get(metahandle_, SERVER_VERSION));
+  }
+
+  void ExpectSyncedAndCreated() {
+    EXPECT_EQ(metahandle_, GetMetahandleOfTag());
+    EXPECT_FALSE(Get(metahandle_, IS_DEL));
+    EXPECT_FALSE(Get(metahandle_, SERVER_IS_DEL));
+    EXPECT_LT(0, Get(metahandle_, BASE_VERSION));
+    EXPECT_EQ(Get(metahandle_, BASE_VERSION), Get(metahandle_, SERVER_VERSION));
+    EXPECT_FALSE(Get(metahandle_, IS_UNSYNCED));
+    EXPECT_FALSE(Get(metahandle_, IS_UNAPPLIED_UPDATE));
+  }
+
+  void ExpectSyncedAndDeleted() {
+    EXPECT_EQ(metahandle_, GetMetahandleOfTag());
+    EXPECT_TRUE(Get(metahandle_, IS_DEL));
+    EXPECT_TRUE(Get(metahandle_, SERVER_IS_DEL));
+    EXPECT_FALSE(Get(metahandle_, IS_UNSYNCED));
+    EXPECT_FALSE(Get(metahandle_, IS_UNAPPLIED_UPDATE));
+    EXPECT_GE(0, Get(metahandle_, BASE_VERSION));
+    EXPECT_GE(0, Get(metahandle_, SERVER_VERSION));
+  }
+
+ protected:
+  const std::string client_tag_;
+  int64 metahandle_;
+};
+
+TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
+  StatusController* status = session_->status_controller();
+
+  Create();
+  ExpectUnsyncedCreation();
+  syncer_->SyncShare(this);
+
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Delete, begin committing the delete, then undelete while committing.
+  Delete();
+  ExpectUnsyncedDeletion();
+  mock_server_->SetMidCommitCallback(
+      NewCallback<SyncerUndeletionTest>(this,
+          &SyncerUndeletionTest::Undelete));
+  syncer_->SyncShare(this);
+
+  // The item ought to exist as an unsynced undeletion (meaning,
+  // we think that the next commit ought to be a recreation commit).
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectUnsyncedUndeletion();
+
+  // Now, encounter a GetUpdates corresponding to the deletion from
+  // the server.  The undeletion should prevail again and be committed.
+  // None of this should trigger any conflict detection -- it is perfectly
+  // normal to recieve updates from our own commits.
+  mock_server_->SetMidCommitCallback(NULL);
+  mock_server_->AddUpdateTombstone(Get(metahandle_, ID));
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+}
+
+TEST_F(SyncerUndeletionTest, UndeleteBeforeCommit) {
+  StatusController* status = session_->status_controller();
+
+  Create();
+  ExpectUnsyncedCreation();
+  syncer_->SyncShare(this);
+
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Delete and undelete, then sync to pick up the result.
+  Delete();
+  ExpectUnsyncedDeletion();
+  Undelete();
+  ExpectUnsyncedEdit();  // Edit, not undelete: server thinks it exists.
+  syncer_->SyncShare(this);
+
+  // The item ought to have committed successfully.
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+  EXPECT_EQ(2, Get(metahandle_, BASE_VERSION));
+
+  // Now, encounter a GetUpdates corresponding to the just-committed
+  // update.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+}
+
+TEST_F(SyncerUndeletionTest, UndeleteAfterCommitButBeforeGetUpdates) {
+  StatusController* status = session_->status_controller();
+
+  Create();
+  ExpectUnsyncedCreation();
+  syncer_->SyncShare(this);
+
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Delete and commit.
+  Delete();
+  ExpectUnsyncedDeletion();
+  syncer_->SyncShare(this);
+
+  // The item ought to have committed successfully.
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndDeleted();
+
+  // Before the GetUpdates, the item is locally undeleted.
+  Undelete();
+  ExpectUnsyncedUndeletion();
+
+  // Now, encounter a GetUpdates corresponding to the just-committed
+  // deletion update.  The undeletion should prevail.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+}
+
+TEST_F(SyncerUndeletionTest, UndeleteAfterDeleteAndGetUpdates) {
+  StatusController* status = session_->status_controller();
+
+  Create();
+  ExpectUnsyncedCreation();
+  syncer_->SyncShare(this);
+
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Delete and commit.
+  Delete();
+  ExpectUnsyncedDeletion();
+  syncer_->SyncShare(this);
+
+  // The item ought to have committed successfully.
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndDeleted();
+
+  // Now, encounter a GetUpdates corresponding to the just-committed
+  // deletion update.  Should be consistent.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndDeleted();
+
+  // After the GetUpdates, the item is locally undeleted.
+  Undelete();
+  ExpectUnsyncedUndeletion();
+
+  // Now, encounter a GetUpdates corresponding to the just-committed
+  // deletion update.  The undeletion should prevail.
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+}
+
+// Test processing of undeletion GetUpdateses.
+TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletes) {
+  StatusController* status = session_->status_controller();
+
+  Create();
+  ExpectUnsyncedCreation();
+  syncer_->SyncShare(this);
+
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Add a delete from the server.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Some other client deletes the item.
+  mock_server_->AddUpdateTombstone(Get(metahandle_, ID));
+  syncer_->SyncShare(this);
+
+  // The update ought to have applied successfully.
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndDeleted();
+
+  // Undelete it locally.
+  Undelete();
+  ExpectUnsyncedUndeletion();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+
+  // Now, encounter a GetUpdates corresponding to the just-committed
+  // deletion update.  The undeletion should prevail.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+}
+
+TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletesImmediately) {
+  StatusController* status = session_->status_controller();
+
+  Create();
+  ExpectUnsyncedCreation();
+  syncer_->SyncShare(this);
+
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Some other client deletes the item before we get a chance
+  // to GetUpdates our original request.
+  mock_server_->AddUpdateTombstone(Get(metahandle_, ID));
+  syncer_->SyncShare(this);
+
+  // The update ought to have applied successfully.
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndDeleted();
+
+  // Undelete it locally.
+  Undelete();
+  ExpectUnsyncedUndeletion();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+
+  // Now, encounter a GetUpdates corresponding to the just-committed
+  // deletion update.  The undeletion should prevail.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+}
+
+TEST_F(SyncerUndeletionTest, OtherClientUndeletes) {
+  StatusController* status = session_->status_controller();
+
+  Create();
+  ExpectUnsyncedCreation();
+  syncer_->SyncShare(this);
+
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Get the updates of our just-committed entry.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // We delete the item.
+  Delete();
+  ExpectUnsyncedDeletion();
+  syncer_->SyncShare(this);
+
+  // The update ought to have applied successfully.
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndDeleted();
+
+  // Now, encounter a GetUpdates corresponding to the just-committed
+  // deletion update.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndDeleted();
+
+  // Some other client undeletes the item.
+  mock_server_->AddUpdateBookmark(Get(metahandle_, ID),
+                                  Get(metahandle_, PARENT_ID),
+                                  "Thadeusz", 100, 1000);
+  mock_server_->SetLastUpdateClientTag(client_tag_);
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+  EXPECT_EQ("Thadeusz", Get(metahandle_, NON_UNIQUE_NAME));
+}
+
+TEST_F(SyncerUndeletionTest, OtherClientUndeletesImmediately) {
+  StatusController* status = session_->status_controller();
+
+  Create();
+  ExpectUnsyncedCreation();
+  syncer_->SyncShare(this);
+
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // Get the updates of our just-committed entry.
+  mock_server_->AddUpdateFromLastCommit();
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  ExpectSyncedAndCreated();
+
+  // We delete the item.
+  Delete();
+  ExpectUnsyncedDeletion();
+  syncer_->SyncShare(this);
+
+  // The update ought to have applied successfully.
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndDeleted();
+
+  // Some other client undeletes before we see the update from our
+  // commit.
+  mock_server_->AddUpdateBookmark(Get(metahandle_, ID),
+                                  Get(metahandle_, PARENT_ID),
+                                  "Thadeusz", 100, 1000);
+  mock_server_->SetLastUpdateClientTag(client_tag_);
+  syncer_->SyncShare(this);
+  EXPECT_EQ(0, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  ExpectSyncedAndCreated();
+  EXPECT_EQ("Thadeusz", Get(metahandle_, NON_UNIQUE_NAME));
+}
+
+// A group of tests exercising the syncer's handling of sibling ordering, as
+// represented in the sync protocol.
 class SyncerPositionUpdateTest : public SyncerTest {
  public:
   SyncerPositionUpdateTest() : next_update_id_(1), next_revision_(1) {}

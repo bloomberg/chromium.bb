@@ -73,6 +73,9 @@ class StatusController {
   }
 
   // ClientToServer messages.
+  const ClientToServerMessage& commit_message() {
+    return shared_.commit_message;
+  }
   ClientToServerMessage* mutable_commit_message() {
     return &shared_.commit_message;
   }

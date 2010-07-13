@@ -44,7 +44,6 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       fail_next_postbuffer_(false),
       directory_manager_(dirmgr),
       directory_name_(name),
-      mid_commit_callback_(NULL),
       mid_commit_observer_(NULL),
       throttling_(false),
       fail_with_auth_invalid_(false),
@@ -57,9 +56,6 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
 };
 
 MockConnectionManager::~MockConnectionManager() {
-  for (size_t i = 0; i < commit_messages_.size(); i++)
-    delete commit_messages_[i];
-  delete mid_commit_callback_;
 }
 
 void MockConnectionManager::SetCommitTimeRename(string prepend) {
@@ -67,7 +63,7 @@ void MockConnectionManager::SetCommitTimeRename(string prepend) {
 }
 
 void MockConnectionManager::SetMidCommitCallback(Closure* callback) {
-  mid_commit_callback_ = callback;
+  mid_commit_callback_.reset(callback);
 }
 
 void MockConnectionManager::SetMidCommitObserver(
@@ -148,7 +144,8 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   }
 
   response.SerializeToString(params->buffer_out);
-  if (mid_commit_callback_) {
+  if (post.message_contents() == ClientToServerMessage::COMMIT &&
+      mid_commit_callback_.get()) {
     mid_commit_callback_->Run();
   }
   if (mid_commit_observer_) {
@@ -250,8 +247,47 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(string id,
   return AddUpdateFull(id, parent_id, name, version, sync_ts, false);
 }
 
+SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
+  EXPECT_EQ(1, last_sent_commit().entries_size());
+  EXPECT_EQ(1, last_commit_response().entryresponse_size());
+  EXPECT_EQ(CommitResponse::SUCCESS,
+      last_commit_response().entryresponse(0).response_type());
+
+  if (last_sent_commit().entries(0).deleted()) {
+    AddUpdateTombstone(syncable::Id::CreateFromServerId(
+        last_sent_commit().entries(0).id_string()));
+  } else {
+    SyncEntity* ent = updates_.add_entries();
+    ent->CopyFrom(last_sent_commit().entries(0));
+    ent->clear_insert_after_item_id();
+    ent->clear_old_parent_id();
+    ent->set_position_in_parent(
+        last_commit_response().entryresponse(0).position_in_parent());
+    ent->set_version(
+        last_commit_response().entryresponse(0).version());
+    ent->set_id_string(
+        last_commit_response().entryresponse(0).id_string());
+    // Tests don't currently care about the following:
+    // originator_cache_guid, originator_client_item_id, parent_id_string,
+    // name, non_unique_name.
+  }
+  return GetMutableLastUpdate();
+}
+
+void MockConnectionManager::AddUpdateTombstone(const syncable::Id& id) {
+  // Tombstones have only the ID set and dummy values for the required fields.
+  SyncEntity* ent = updates_.add_entries();
+  ent->set_id_string(id.GetServerId());
+  ent->set_version(0);
+  ent->set_name("");
+  ent->set_deleted(true);
+}
+
 void MockConnectionManager::SetLastUpdateDeleted() {
-  GetMutableLastUpdate()->set_deleted(true);
+  // Tombstones have only the ID set.  Wipe anything else.
+  string id_string = GetMutableLastUpdate()->id_string();
+  updates_.mutable_entries()->RemoveLast();
+  AddUpdateTombstone(syncable::Id::CreateFromServerId(id_string));
 }
 
 void MockConnectionManager::SetLastUpdateOriginatorFields(
@@ -368,8 +404,8 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
   map <string, string> changed_ids;
   const CommitMessage& commit_message = csm->commit();
   CommitResponse* commit_response = response_buffer->mutable_commit();
-  commit_messages_.push_back(new CommitMessage);
-  commit_messages_.back()->CopyFrom(commit_message);
+  commit_messages_->push_back(new CommitMessage);
+  commit_messages_->back()->CopyFrom(commit_message);
   map<string, CommitResponse_EntryResponse*> response_map;
   for (int i = 0; i < commit_message.entries_size() ; i++) {
     const sync_pb::SyncEntity& entry = commit_message.entries(i);
@@ -411,6 +447,7 @@ void MockConnectionManager::ProcessCommit(ClientToServerMessage* csm,
       er->set_id_string(new_id);
     }
   }
+  commit_responses_->push_back(new CommitResponse(*commit_response));
 }
 
 SyncEntity* MockConnectionManager::AddUpdateDirectory(
@@ -428,13 +465,18 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(
 }
 
 SyncEntity* MockConnectionManager::GetMutableLastUpdate() {
-  DCHECK(updates_.entries_size() > 0);
+  EXPECT_TRUE(updates_.entries_size() > 0);
   return updates_.mutable_entries()->Mutable(updates_.entries_size() - 1);
 }
 
 const CommitMessage& MockConnectionManager::last_sent_commit() const {
-  DCHECK(!commit_messages_.empty());
-  return *commit_messages_.back();
+  EXPECT_TRUE(!commit_messages_.empty());
+  return *commit_messages_->back();
+}
+
+const CommitResponse& MockConnectionManager::last_commit_response() const {
+  EXPECT_TRUE(!commit_responses_.empty());
+  return *commit_responses_->back();
 }
 
 void MockConnectionManager::ThrottleNextRequest(

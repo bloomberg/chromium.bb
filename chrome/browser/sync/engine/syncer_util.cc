@@ -132,6 +132,10 @@ void SyncerUtil::ChangeEntryIDAndUpdateChildren(
 // static
 void SyncerUtil::AttemptReuniteClientTag(syncable::WriteTransaction* trans,
                                          const SyncEntity& server_entry) {
+  if (!server_entry.has_client_defined_unique_tag() ||
+      server_entry.client_defined_unique_tag().empty()) {
+    return;
+  }
 
   // Expected entry points of this function:
   // SyncEntity has NOT been applied to SERVER fields.
@@ -148,9 +152,9 @@ void SyncerUtil::AttemptReuniteClientTag(syncable::WriteTransaction* trans,
   // work just fine. Update will end up in the proper entry, via ID lookup.
   // Case 2 - Should never happen. We'd need to change the
   // ID of the local entry, we refuse. We'll skip this in VERIFY.
-  // Case 3 - We need to replace the local ID with the server ID. Conflict
-  // resolution must occur, but this is prior to update application! This case
-  // should be rare. For now, clobber client changes entirely.
+  // Case 3 - We need to replace the local ID with the server ID so that
+  // this update gets targeted at the correct local entry; we expect conflict
+  // resolution to occur.
   // Case 4 - Perfect. Same as case 1.
 
   syncable::MutableEntry local_entry(trans, syncable::GET_BY_CLIENT_TAG,
@@ -167,18 +171,13 @@ void SyncerUtil::AttemptReuniteClientTag(syncable::WriteTransaction* trans,
       DCHECK(local_entry.Get(ID) == server_entry.id());
     } else {
       // Case 3: We have a local entry with the same client tag.
-      // We can't have two updates with the same client tag though.
-      // One of these has to go. Let's delete the client entry and move it
-      // aside. This will cause a delete + create. The client API user must
-      // handle this correctly. In this situation the client must have created
-      // this entry but not yet committed it for the first time. Usually the
-      // client probably wants the server data for this instead.
-      // Other strategies to handle this are a bit flaky.
-      DCHECK(local_entry.Get(IS_UNAPPLIED_UPDATE) == false);
-      local_entry.Put(IS_UNSYNCED, false);
-      local_entry.Put(IS_DEL, true);
-      // Needs to get out of the index before our update can be put in.
-      local_entry.Put(UNIQUE_CLIENT_TAG, "");
+      // We should change the ID of the local entry to the server entry.
+      // This will result in an server ID with base version == 0, but that's
+      // a legal state for an item with a client tag.  By changing the ID,
+      // server_entry will now be applied to local_entry.
+      ChangeEntryIDAndUpdateChildren(trans, &local_entry, server_entry.id());
+      DCHECK(0 == local_entry.Get(BASE_VERSION) ||
+             CHANGES_VERSION == local_entry.Get(BASE_VERSION));
     }
   }
   // Case 4: Client has no entry for tag, all green.
@@ -201,7 +200,7 @@ void SyncerUtil::AttemptReuniteLostCommitResponses(
   // a reasonable span, our commit batches have to be small enough
   // to process within our HTTP response "assumed alive" time.
 
-  // We need to check if we have a  that didn't get its server
+  // We need to check if we have an entry that didn't get its server
   // id updated correctly. The server sends down a client ID
   // and a local (negative) id. If we have a entry by that
   // description, we should update the ID and version to the
@@ -210,21 +209,21 @@ void SyncerUtil::AttemptReuniteLostCommitResponses(
       server_entry.originator_cache_guid() == client_id) {
     syncable::Id server_id = syncable::Id::CreateFromClientString(
         server_entry.originator_client_item_id());
-    CHECK(!server_id.ServerKnows());
+    DCHECK(!server_id.ServerKnows());
     syncable::MutableEntry local_entry(trans, GET_BY_ID, server_id);
 
     // If it exists, then our local client lost a commit response.
     if (local_entry.good() && !local_entry.Get(IS_DEL)) {
       int64 old_version = local_entry.Get(BASE_VERSION);
       int64 new_version = server_entry.version();
-      CHECK(old_version <= 0);
-      CHECK(new_version > 0);
+      DCHECK(old_version <= 0);
+      DCHECK(new_version > 0);
       // Otherwise setting the base version could cause a consistency failure.
       // An entry should never be version 0 and SYNCED.
-      CHECK(local_entry.Get(IS_UNSYNCED));
+      DCHECK(local_entry.Get(IS_UNSYNCED));
 
       // Just a quick sanity check.
-      CHECK(!local_entry.Get(ID).ServerKnows());
+      DCHECK(!local_entry.Get(ID).ServerKnows());
 
       LOG(INFO) << "Reuniting lost commit response IDs" <<
         " server id: " << server_entry.id() << " local id: " <<
@@ -238,8 +237,8 @@ void SyncerUtil::AttemptReuniteLostCommitResponses(
       // reunited its ID.
     }
     // !local_entry.Good() means we don't have a left behind entry for this
-    // ID. We successfully committed before. In the future we should get rid
-    // of this system and just have client side generated IDs as a whole.
+    // ID in sync database.  This could happen if we crashed after successfully
+    // committing an item that never was flushed to disk.
   }
 }
 
@@ -352,17 +351,31 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
     const SyncEntity& server_entry,
     const string& name) {
   if (server_entry.deleted()) {
+    if (local_entry->Get(SERVER_IS_DEL)) {
+      // If we already think the item is server-deleted, we're done.
+      // Skipping these cases prevents our committed deletions from coming
+      // back and overriding subsequent undeletions.  For non-deleted items,
+      // the version number check has a similar effect.
+      return;
+    }
     // The server returns very lightweight replies for deletions, so we don't
     // clobber a bunch of fields on delete.
     local_entry->Put(SERVER_IS_DEL, true);
-    local_entry->Put(SERVER_VERSION,
-        std::max(local_entry->Get(SERVER_VERSION),
-          local_entry->Get(BASE_VERSION)) + 1L);
+    if (!local_entry->Get(UNIQUE_CLIENT_TAG).empty()) {
+      // Items identified by the client unique tag are undeletable; when
+      // they're deleted, they go back to version 0.
+      local_entry->Put(SERVER_VERSION, 0);
+    } else {
+      // Otherwise, fake a server version by bumping the local number.
+      local_entry->Put(SERVER_VERSION,
+          std::max(local_entry->Get(SERVER_VERSION),
+                   local_entry->Get(BASE_VERSION)) + 1);
+    }
     local_entry->Put(IS_UNAPPLIED_UPDATE, true);
     return;
   }
 
-  CHECK(local_entry->Get(ID) == server_entry.id())
+  DCHECK(local_entry->Get(ID) == server_entry.id())
       << "ID Changing not supported here";
   local_entry->Put(SERVER_PARENT_ID, server_entry.parent_id());
   local_entry->Put(SERVER_NON_UNIQUE_NAME, name);
@@ -505,8 +518,8 @@ void SyncerUtil::SplitServerInformationIntoNewEntry(
 void SyncerUtil::UpdateLocalDataFromServerData(
     syncable::WriteTransaction* trans,
     syncable::MutableEntry* entry) {
-  CHECK(!entry->Get(IS_UNSYNCED));
-  CHECK(entry->Get(IS_UNAPPLIED_UPDATE));
+  DCHECK(!entry->Get(IS_UNSYNCED));
+  DCHECK(entry->Get(IS_UNAPPLIED_UPDATE));
 
   LOG(INFO) << "Updating entry : " << *entry;
   // Start by setting the properties that determine the model_type.
@@ -723,9 +736,8 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
           same_id->Get(BASE_VERSION) > 0))) {
       // An undelete. The latter case in the above condition is for
       // when the server does not give us an update following the
-      // commit of a delete, before undeleting.  Undeletion is possible
-      // in the server's storage backend, so it's possible on the client,
-      // though not expected to be something that is commonly possible.
+      // commit of a delete, before undeleting.
+      // Undeletion is common for items that reuse the client-unique tag.
       VerifyResult result =
           SyncerUtil::VerifyUndelete(trans, entry, same_id);
       if (VERIFY_UNDECIDED != result)
@@ -769,12 +781,22 @@ VerifyResult SyncerUtil::VerifyUpdateConsistency(
 VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
                                         const SyncEntity& entry,
                                         syncable::MutableEntry* same_id) {
+  // TODO(nick): We hit this path for items deleted items that the server
+  // tells us to re-create; only deleted items with positive base versions
+  // will hit this path.  However, it's not clear how such an undeletion
+  // would actually succeed on the server; in the protocol, a base
+  // version of 0 is required to undelete an object.  This codepath
+  // should be deprecated in favor of client-tag style undeletion
+  // (where items go to version 0 when they're deleted), or else
+  // removed entirely (if this type of undeletion is indeed impossible).
   CHECK(same_id->good());
   LOG(INFO) << "Server update is attempting undelete. " << *same_id
             << "Update:" << SyncerProtoUtil::SyncEntityDebugString(entry);
   // Move the old one aside and start over.  It's too tricky to get the old one
   // back into a state that would pass CheckTreeInvariants().
   if (same_id->Get(IS_DEL)) {
+    DCHECK(same_id->Get(UNIQUE_CLIENT_TAG).empty())
+        << "Doing move-aside undeletion on client-tagged item.";
     same_id->Put(ID, trans->directory()->NextId());
     same_id->Put(UNIQUE_CLIENT_TAG, "");
     same_id->Put(BASE_VERSION, CHANGES_VERSION);

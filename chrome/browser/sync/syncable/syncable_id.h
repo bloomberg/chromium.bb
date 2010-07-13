@@ -84,7 +84,6 @@ class Id {
   inline void Clear() {
     s_ = "r";
   }
-  std::string AsQueryParam() const;
   // Must never allow id == 0 or id < 0 to compile.
   inline bool operator == (const Id& that) const {
     return s_ == that.s_;
@@ -99,13 +98,13 @@ class Id {
     return s_ > that.s_;
   }
 
- public:
-  // Three functions used to work with our proto buffers.
+  // Three functions are used to work with our proto buffers.
   std::string GetServerId() const;
   static Id CreateFromServerId(const std::string& server_id);
   // This should only be used if you get back a reference to a local
   // id from the server. Returns a client only opaque id.
   static Id CreateFromClientString(const std::string& local_id);
+
  protected:
   std::string s_;
 };

@@ -32,23 +32,58 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
  private:
   CommitResponse::ResponseType ProcessSingleCommitResponse(
       syncable::WriteTransaction* trans,
-      const sync_pb::CommitResponse_EntryResponse& pb_server_entry,
-      const syncable::Id& pre_commit_id, std::set<syncable::Id>*
-      conflicting_new_directory_ids,
+      const sync_pb::CommitResponse_EntryResponse& pb_commit_response,
+      const sync_pb::SyncEntity& pb_committed_entry,
+      const syncable::Id& pre_commit_id,
+      std::set<syncable::Id>* conflicting_new_directory_ids,
       std::set<syncable::Id>* deleted_folders);
 
   // Actually does the work of execute.
   void ProcessCommitResponse(sessions::SyncSession* session);
 
-  void ProcessSuccessfulCommitResponse(syncable::WriteTransaction* trans,
-      const CommitResponse_EntryResponse& server_entry,
+  void ProcessSuccessfulCommitResponse(
+      const sync_pb::SyncEntity& committed_entry,
+      const CommitResponse_EntryResponse& entry_response,
       const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
       bool syncing_was_set, std::set<syncable::Id>* deleted_folders);
 
-  void PerformCommitTimeNameAside(
-      syncable::WriteTransaction* trans,
-      const CommitResponse_EntryResponse& server_entry,
+  // Update the BASE_VERSION and SERVER_VERSION, post-commit.
+  // Helper for ProcessSuccessfulCommitResponse.
+  bool UpdateVersionAfterCommit(
+      const sync_pb::SyncEntity& committed_entry,
+      const CommitResponse_EntryResponse& entry_response,
+      const syncable::Id& pre_commit_id,
       syncable::MutableEntry* local_entry);
+
+  // If the server generated an ID for us during a commit, apply the new ID.
+  // Helper for ProcessSuccessfulCommitResponse.
+  bool ChangeIdAfterCommit(
+      const CommitResponse_EntryResponse& entry_response,
+      const syncable::Id& pre_commit_id,
+      syncable::MutableEntry* local_entry);
+
+  // Update the SERVER_ fields to reflect the server state after committing.
+  // Helper for ProcessSuccessfulCommitResponse.
+  void UpdateServerFieldsAfterCommit(
+      const sync_pb::SyncEntity& committed_entry,
+      const CommitResponse_EntryResponse& entry_response,
+      syncable::MutableEntry* local_entry);
+
+  // The server can override some values during a commit; the overridden values
+  // are returned as fields in the CommitResponse_EntryResponse.  This method
+  // stores the fields back in the client-visible (i.e. not the SERVER_* fields)
+  // fields of the entry.  This should only be done if the item did not change
+  // locally while the commit was in flight.
+  // Helper for ProcessSuccessfulCommitResponse.
+  void OverrideClientFieldsAfterCommit(
+      const sync_pb::SyncEntity& committed_entry,
+      const CommitResponse_EntryResponse& entry_response,
+      syncable::MutableEntry* local_entry);
+
+  // Helper to extract the final name from the protobufs.
+  const string& GetResultingPostCommitName(
+      const sync_pb::SyncEntity& committed_entry,
+      const CommitResponse_EntryResponse& entry_response);
 
   DISALLOW_COPY_AND_ASSIGN(ProcessCommitResponseCommand);
 };

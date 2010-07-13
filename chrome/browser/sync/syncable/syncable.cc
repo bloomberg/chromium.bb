@@ -863,23 +863,38 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
     }
     int64 base_version = e.Get(BASE_VERSION);
     int64 server_version = e.Get(SERVER_VERSION);
+    bool using_unique_client_tag = !e.Get(UNIQUE_CLIENT_TAG).empty();
     if (CHANGES_VERSION == base_version || 0 == base_version) {
       if (e.Get(IS_UNAPPLIED_UPDATE)) {
-        // Unapplied new item.
-        CHECK(e.Get(IS_DEL)) << e;
+        // Must be a new item, or a de-duplicated unique client tag
+        // that was created both locally and remotely.
+        if (!using_unique_client_tag) {
+          CHECK(e.Get(IS_DEL)) << e;
+        }
+        // It came from the server, so it must have a server ID.
         CHECK(id.ServerKnows()) << e;
       } else {
         if (e.Get(IS_DIR)) {
           // TODO(chron): Implement this mode if clients ever need it.
           // For now, you can't combine a client tag and a directory.
-          CHECK(e.Get(UNIQUE_CLIENT_TAG).empty()) << e;
+          CHECK(!using_unique_client_tag) << e;
         }
-        // Uncommitted item.
+        // Should be an uncomitted item, or a successfully deleted one.
         if (!e.Get(IS_DEL)) {
           CHECK(e.Get(IS_UNSYNCED)) << e;
         }
+        // If the next check failed, it would imply that an item exists
+        // on the server, isn't waiting for application locally, but either
+        // is an unsynced create or a sucessful delete in the local copy.
+        // Either way, that's a mismatch.
         CHECK(0 == server_version) << e;
-        CHECK(!id.ServerKnows()) << e;
+        // Items that aren't using the unique client tag should have a zero
+        // base version only if they have a local ID.  Items with unique client
+        // tags are allowed to use the zero base version for undeletion and
+        // de-duplication; the unique client tag trumps the server ID.
+        if (!using_unique_client_tag) {
+          CHECK(!id.ServerKnows()) << e;
+        }
       }
     } else {
       CHECK(id.ServerKnows());
@@ -892,9 +907,6 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
       return;
     }
   }
-  // I did intend to add a check here to ensure no entries had been pulled into
-  // memory by this function, but we can't guard against another ReadTransaction
-  // pulling entries into RAM
 }
 
 browser_sync::ChannelHookup<DirectoryChangeEvent>* Directory::AddChangeObserver(

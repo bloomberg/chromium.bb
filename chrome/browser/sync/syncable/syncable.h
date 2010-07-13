@@ -422,7 +422,6 @@ class Entry {
     return *kernel_;
   }
 
-
  protected:  // Don't allow creation on heap, except by sync API wrappers.
   friend class sync_api::ReadNode;
   void* operator new(size_t size) { return (::operator new)(size); }

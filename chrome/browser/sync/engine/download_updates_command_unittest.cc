@@ -111,6 +111,8 @@ TEST_F(DownloadUpdatesCommandTest, OldestTimestampPicked) {
         dir->set_last_download_timestamp(type_k, 1000 + i);
 
         ConfigureMockServerConnection();
+        dir->set_store_birthday(mock_server()->store_birthday());
+
         syncable::ModelTypeBitSet expected_request_types;
         expected_request_types[j] = true;
         expected_request_types[k] = true;

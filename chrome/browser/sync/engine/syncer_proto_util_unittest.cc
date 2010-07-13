@@ -87,11 +87,6 @@ TEST(SyncerProtoUtil, NameExtractionOneName) {
   const std::string name_a =
       SyncerProtoUtil::NameFromSyncEntity(one_name_entity);
   EXPECT_EQ(one_name_string, name_a);
-
-  const std::string name_b =
-      SyncerProtoUtil::NameFromCommitEntryResponse(one_name_response);
-  EXPECT_EQ(one_name_string, name_b);
-  EXPECT_TRUE(name_a == name_b);
 }
 
 TEST(SyncerProtoUtil, NameExtractionOneUniqueName) {
@@ -106,11 +101,6 @@ TEST(SyncerProtoUtil, NameExtractionOneUniqueName) {
   const std::string name_a =
       SyncerProtoUtil::NameFromSyncEntity(one_name_entity);
   EXPECT_EQ(one_name_string, name_a);
-
-  const std::string name_b =
-      SyncerProtoUtil::NameFromCommitEntryResponse(one_name_response);
-  EXPECT_EQ(one_name_string, name_b);
-  EXPECT_TRUE(name_a == name_b);
 }
 
 // Tests NameFromSyncEntity and NameFromCommitEntryResponse when both the name
@@ -132,12 +122,6 @@ TEST(SyncerProtoUtil, NameExtractionTwoNames) {
   const std::string name_a =
       SyncerProtoUtil::NameFromSyncEntity(two_name_entity);
   EXPECT_EQ(neuro, name_a);
-
-  const std::string name_b =
-      SyncerProtoUtil::NameFromCommitEntryResponse(two_name_response);
-  EXPECT_EQ(neuro, name_b);
-
-  EXPECT_TRUE(name_a == name_b);
 }
 
 class SyncerProtoUtilTest : public testing::Test {
@@ -237,15 +221,15 @@ TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
 
   dcm.set_send_error(true);
   EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL,
-      &msg, &response));
+      msg, &response));
 
   dcm.set_send_error(false);
   EXPECT_TRUE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL,
-      &msg, &response));
+      msg, &response));
 
   dcm.set_access_denied(true);
   EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL,
-      &msg, &response));
+      msg, &response));
 }
 
 }  // namespace browser_sync

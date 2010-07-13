@@ -95,11 +95,12 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
   }
 
   if (!entry.Get(syncable::SERVER_IS_DEL)) {
-    // TODO(chron): Should we check more fields? Since IS_UNSYNCED is
-    // turned on, this is really probably enough as fields will be overwritten.
-    // Check if there's no changes.
-
-    // Verbose but easier to debug.
+    // This logic determines "client wins" vs. "server wins" strategy picking.
+    // TODO(nick): The current logic is arbitrary; instead, it ought to be made
+    // consistent with the ModelAssociator behavior for a datatype.  It would
+    // be nice if we could route this back to ModelAssociator code to pick one
+    // of three options: CLIENT, SERVER, or MERGE.  Some datatypes (autofill)
+    // are easily mergeable.
     bool name_matches = entry.Get(syncable::NON_UNIQUE_NAME) ==
                         entry.Get(syncable::SERVER_NON_UNIQUE_NAME);
     bool parent_matches = entry.Get(syncable::PARENT_ID) ==
@@ -130,17 +131,28 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       }
     }
 
-    // If the entry's deleted on the server, we can have a directory here.
-    entry.Put(syncable::IS_UNSYNCED, true);
+    // The entry is deleted on the server but still exists locally.
+    if (!entry.Get(syncable::UNIQUE_CLIENT_TAG).empty()) {
+      // If we've got a client-unique tag, we can undelete while retaining
+      // our present ID.
+      DCHECK_EQ(entry.Get(syncable::SERVER_VERSION), 0)
+          << "For the server to know to re-create, client-tagged items should "
+          << "revert to version 0 when server-deleted.";
+      OverwriteServerChanges(trans, &entry);
+      // Clobber the versions, just in case the above DCHECK is violated.
+      entry.Put(syncable::SERVER_VERSION, 0);
+      entry.Put(syncable::BASE_VERSION, 0);
+    } else {
+      // Otherwise, we've got to undelete by creating a new locally
+      // uncommitted entry.
+      SyncerUtil::SplitServerInformationIntoNewEntry(trans, &entry);
 
-    SyncerUtil::SplitServerInformationIntoNewEntry(trans, &entry);
-
-    MutableEntry server_update(trans, syncable::GET_BY_ID, id);
-    CHECK(server_update.good());
-    CHECK(server_update.Get(syncable::META_HANDLE) !=
-          entry.Get(syncable::META_HANDLE))
-        << server_update << entry;
-
+      MutableEntry server_update(trans, syncable::GET_BY_ID, id);
+      CHECK(server_update.good());
+      CHECK(server_update.Get(syncable::META_HANDLE) !=
+            entry.Get(syncable::META_HANDLE))
+          << server_update << entry;
+    }
     return SYNC_PROGRESS;
   }
 }
@@ -244,7 +256,6 @@ bool AttemptToFixUnsyncedEntryInDeletedServerTree(WriteTransaction* trans,
   }
   return true;
 }
-
 
 // TODO(chron): needs unit test badly
 bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,

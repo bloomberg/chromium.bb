@@ -33,8 +33,10 @@ using syncable::IS_DIR;
 using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::IS_UNSYNCED;
 using syncable::PARENT_ID;
+using syncable::SERVER_IS_DEL;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
+using syncable::SERVER_VERSION;
 using syncable::SYNCER;
 using syncable::SYNCING;
 
@@ -118,6 +120,8 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   StatusController* status = session->status_controller();
   const ClientToServerResponse& response(status->commit_response());
   const CommitResponse& cr = response.commit();
+  const sync_pb::CommitMessage& commit_message =
+      status->commit_message().commit();
 
   // If we try to commit a parent and child together and the parent conflicts
   // the child will have a bad parent causing an error. As this is not a
@@ -137,6 +141,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
     for (size_t i = 0; i < proj.size(); i++) {
       CommitResponse::ResponseType response_type =
           ProcessSingleCommitResponse(&trans, cr.entryresponse(proj[i]),
+                                      commit_message.entries(proj[i]),
                                       status->GetCommitIdAt(proj[i]),
                                       &conflicting_new_folder_ids,
                                       &deleted_folders);
@@ -206,6 +211,7 @@ CommitResponse::ResponseType
 ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     syncable::WriteTransaction* trans,
     const sync_pb::CommitResponse_EntryResponse& pb_server_entry,
+    const sync_pb::SyncEntity& commit_request_entry,
     const syncable::Id& pre_commit_id,
     std::set<syncable::Id>* conflicting_new_folder_ids,
     set<syncable::Id>* deleted_folders) {
@@ -236,6 +242,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
   }
   if (CommitResponse::CONFLICT == response) {
     LOG(INFO) << "Conflict Committing: " << local_entry;
+    // TODO(nick): conflicting_new_folder_ids is a purposeless anachronism.
     if (!pre_commit_id.ServerKnows() && local_entry.Get(IS_DIR)) {
       conflicting_new_folder_ids->insert(pre_commit_id);
     }
@@ -271,112 +278,217 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     LOG(WARNING) << "Server returned a zero version on a commit response.";
   }
 
-  ProcessSuccessfulCommitResponse(trans, server_entry, pre_commit_id,
-                                  &local_entry, syncing_was_set,
-                                  deleted_folders);
+  ProcessSuccessfulCommitResponse(commit_request_entry, server_entry,
+      pre_commit_id, &local_entry, syncing_was_set, deleted_folders);
   return response;
 }
 
-void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
-    syncable::WriteTransaction* trans,
-    const CommitResponse_EntryResponse& server_entry,
-    const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
-    bool syncing_was_set, set<syncable::Id>* deleted_folders) {
+const string& ProcessCommitResponseCommand::GetResultingPostCommitName(
+    const sync_pb::SyncEntity& committed_entry,
+    const CommitResponse_EntryResponse& entry_response) {
+  const string& response_name =
+      SyncerProtoUtil::NameFromCommitEntryResponse(entry_response);
+  if (!response_name.empty())
+    return response_name;
+  return SyncerProtoUtil::NameFromSyncEntity(committed_entry);
+}
+
+bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
+    const sync_pb::SyncEntity& committed_entry,
+    const CommitResponse_EntryResponse& entry_response,
+    const syncable::Id& pre_commit_id,
+    syncable::MutableEntry* local_entry) {
   int64 old_version = local_entry->Get(BASE_VERSION);
-  int64 new_version = server_entry.version();
+  int64 new_version = entry_response.version();
   bool bad_commit_version = false;
-  // TODO(sync): The !server_entry.has_id_string() clauses below were
-  // introduced when working with the new protocol.
-  if (!pre_commit_id.ServerKnows())
+  if (committed_entry.deleted() &&
+      !local_entry->Get(syncable::UNIQUE_CLIENT_TAG).empty()) {
+    // If the item was deleted, and it's undeletable (uses the client tag),
+    // change the version back to zero.  We must set the version to zero so
+    // that the server knows to re-create the item if it gets committed
+    // later for undeletion.
+    new_version = 0;
+  } else if (!pre_commit_id.ServerKnows()) {
     bad_commit_version = 0 == new_version;
-  else
+  } else {
     bad_commit_version = old_version > new_version;
+  }
   if (bad_commit_version) {
-    LOG(ERROR) << "Bad version in commit return for " << *local_entry <<
-        " new_id:" << server_entry.id() << " new_version:" <<
-        server_entry.version();
+    LOG(ERROR) << "Bad version in commit return for " << *local_entry
+               << " new_id:" << entry_response.id() << " new_version:"
+               << entry_response.version();
+    return false;
+  }
+
+  // Update the base version and server version.  The base version must change
+  // here, even if syncing_was_set is false; that's because local changes were
+  // on top of the successfully committed version.
+  local_entry->Put(BASE_VERSION, new_version);
+  LOG(INFO) << "Commit is changing base version of "
+            << local_entry->Get(ID) << " to: " << new_version;
+  local_entry->Put(SERVER_VERSION, new_version);
+  return true;
+}
+
+bool ProcessCommitResponseCommand::ChangeIdAfterCommit(
+    const CommitResponse_EntryResponse& entry_response,
+    const syncable::Id& pre_commit_id,
+    syncable::MutableEntry* local_entry) {
+  syncable::WriteTransaction* trans = local_entry->write_transaction();
+  if (entry_response.id() != pre_commit_id) {
+    if (pre_commit_id.ServerKnows()) {
+      // The server can sometimes generate a new ID on commit; for example,
+      // when committing an undeletion.
+      LOG(INFO) << " ID changed while committing an old entry. "
+                << pre_commit_id << " became " << entry_response.id() << ".";
+    }
+    MutableEntry same_id(trans, GET_BY_ID, entry_response.id());
+    // We should trap this before this function.
+    if (same_id.good()) {
+      LOG(ERROR) << "ID clash with id " << entry_response.id()
+                 << " during commit " << same_id;
+      return false;
+    }
+    SyncerUtil::ChangeEntryIDAndUpdateChildren(
+        trans, local_entry, entry_response.id());
+    LOG(INFO) << "Changing ID to " << entry_response.id();
+  }
+  return true;
+}
+
+void ProcessCommitResponseCommand::UpdateServerFieldsAfterCommit(
+    const sync_pb::SyncEntity& committed_entry,
+    const CommitResponse_EntryResponse& entry_response,
+    syncable::MutableEntry* local_entry) {
+
+  // We just committed an entry successfully, and now we want to make our view
+  // of the server state consistent with the server state. We must be careful;
+  // |entry_response| and |committed_entry| have some identically named
+  // fields.  We only want to consider fields from |committed_entry| when there
+  // is not an overriding field in the |entry_response|.  We do not want to
+  // update the server data from the local data in the entry -- it's possible
+  // that the local data changed during the commit, and even if not, the server
+  // has the last word on the values of several properties.
+
+  local_entry->Put(SERVER_IS_DEL, committed_entry.deleted());
+  if (committed_entry.deleted()) {
+    // Don't clobber any other fields of deleted objects.
     return;
   }
-  if (server_entry.id() != pre_commit_id) {
-    if (pre_commit_id.ServerKnows()) {
-      // TODO(sync): In future it's possible that we'll want the opportunity
-      // to do a server triggered move aside here.
-      LOG(ERROR) << " ID change but not committing a new entry. " <<
-          pre_commit_id << " became " << server_entry.id() << ".";
-      return;
-    }
-    if (!server_entry.id().ServerKnows()) {
-      LOG(ERROR) << " New entries id < 0." << pre_commit_id << " became " <<
-          server_entry.id() << ".";
-      return;
-    }
-    MutableEntry same_id(trans, GET_BY_ID, server_entry.id());
-    // We should trap this before this function.
-    CHECK(!same_id.good()) << "ID clash with id " << server_entry.id() <<
-        " during commit " << same_id;
-    SyncerUtil::ChangeEntryIDAndUpdateChildren(
-        trans, local_entry, server_entry.id());
-    LOG(INFO) << "Changing ID to " << server_entry.id();
-  }
 
-  local_entry->Put(BASE_VERSION, new_version);
-  LOG(INFO) << "Commit is changing base version of " <<
-    local_entry->Get(ID) << " to: " << new_version;
+  local_entry->Put(syncable::SERVER_IS_DIR,
+      (committed_entry.folder() ||
+       committed_entry.bookmarkdata().bookmark_folder()));
+  local_entry->Put(syncable::SERVER_SPECIFICS,
+      committed_entry.specifics());
+  local_entry->Put(syncable::SERVER_MTIME,
+      committed_entry.mtime());
+  local_entry->Put(syncable::SERVER_CTIME,
+      committed_entry.ctime());
+  local_entry->Put(syncable::SERVER_POSITION_IN_PARENT,
+      entry_response.position_in_parent());
+  // TODO(nick): The server doesn't set entry_response.server_parent_id in
+  // practice; to update SERVER_PARENT_ID appropriately here we'd need to
+  // get the post-commit ID of the parent indicated by
+  // committed_entry.parent_id_string(). That should be inferrable from the
+  // information we have, but it's a bit convoluted to pull it out directly.
+  // Getting this right is important: SERVER_PARENT_ID gets fed back into
+  // old_parent_id during the next commit.
+  local_entry->Put(syncable::SERVER_PARENT_ID,
+      local_entry->Get(syncable::PARENT_ID));
+  local_entry->Put(syncable::SERVER_NON_UNIQUE_NAME,
+      GetResultingPostCommitName(committed_entry, entry_response));
 
   if (local_entry->Get(IS_UNAPPLIED_UPDATE)) {
-    // This is possible, but very unlikely.
+    // This shouldn't happen; an unapplied update shouldn't be committed, and
+    // if it were, the commit should have failed.  But if it does happen: we've
+    // just overwritten the update info, so clear the flag.
     local_entry->Put(IS_UNAPPLIED_UPDATE, false);
   }
+}
 
-  if (server_entry.has_name()) {
-    if (syncing_was_set) {
-      PerformCommitTimeNameAside(trans, server_entry, local_entry);
-    } else {
-      // IS_UNSYNCED will ensure that this entry gets committed again, even if
-      // we skip this name aside. IS_UNSYNCED was probably previously set, but
-      // let's just set it anyway.
-      local_entry->Put(IS_UNSYNCED, true);
-      LOG(INFO) << "Skipping commit time name aside because" <<
-          " entry was changed during commit.";
-    }
+void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
+    const sync_pb::SyncEntity& committed_entry,
+    const CommitResponse_EntryResponse& entry_response,
+    syncable::MutableEntry* local_entry) {
+  if (committed_entry.deleted()) {
+    // If an entry's been deleted, nothing else matters.
+    DCHECK(local_entry->Get(IS_DEL));
+    return;
   }
 
-  if (syncing_was_set && server_entry.has_position_in_parent()) {
-    // The server has the final say on positioning, so apply the absolute
-    // position that it returns.
-    local_entry->Put(SERVER_POSITION_IN_PARENT,
-        server_entry.position_in_parent());
+  // Update the name.
+  const string& server_name =
+      GetResultingPostCommitName(committed_entry, entry_response);
+  const string& old_name =
+      local_entry->Get(syncable::NON_UNIQUE_NAME);
+
+  if (!server_name.empty() && old_name != server_name) {
+    LOG(INFO) << "During commit, server changed name: " << old_name
+              << " to new name: " << server_name;
+    local_entry->Put(syncable::NON_UNIQUE_NAME, server_name);
+  }
+
+  // The server has the final say on positioning, so apply the absolute
+  // position that it returns.
+  if (entry_response.has_position_in_parent()) {
+    // The SERVER_ field should already have been written.
+    DCHECK_EQ(entry_response.position_in_parent(),
+        local_entry->Get(SERVER_POSITION_IN_PARENT));
 
     // We just committed successfully, so we assume that the position
     // value we got applies to the PARENT_ID we submitted.
     syncable::Id new_prev = SyncerUtil::ComputePrevIdFromServerPosition(
-        trans, local_entry, local_entry->Get(PARENT_ID));
+        local_entry->write_transaction(), local_entry,
+        local_entry->Get(PARENT_ID));
     if (!local_entry->PutPredecessor(new_prev)) {
       LOG(WARNING) << "PutPredecessor failed after successful commit";
     }
   }
-
-  if (syncing_was_set) {
-    local_entry->Put(IS_UNSYNCED, false);
-  }
-  if (local_entry->Get(IS_DIR) && local_entry->Get(IS_DEL)) {
-    deleted_folders->insert(local_entry->Get(ID));
-  }
 }
 
-void ProcessCommitResponseCommand::PerformCommitTimeNameAside(
-    syncable::WriteTransaction* trans,
-    const CommitResponse_EntryResponse& server_entry,
-    syncable::MutableEntry* local_entry) {
-  string old_name = local_entry->Get(syncable::NON_UNIQUE_NAME);
-  const string server_name =
-      SyncerProtoUtil::NameFromCommitEntryResponse(server_entry);
+void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
+    const sync_pb::SyncEntity& committed_entry,
+    const CommitResponse_EntryResponse& entry_response,
+    const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
+    bool syncing_was_set, set<syncable::Id>* deleted_folders) {
+  DCHECK(local_entry->Get(IS_UNSYNCED));
 
-  if (!server_name.empty() && old_name != server_name) {
-    LOG(INFO) << "Server commit moved aside entry: " << old_name
-              << " to new name " << server_name;
-    // Should be safe since we're in a "commit lock."
-    local_entry->Put(syncable::NON_UNIQUE_NAME, server_name);
+  // Update SERVER_VERSION and BASE_VERSION.
+  if (!UpdateVersionAfterCommit(committed_entry, entry_response, pre_commit_id,
+                                local_entry)) {
+    LOG(ERROR) << "Bad version in commit return for " << *local_entry
+               << " new_id:" << entry_response.id() << " new_version:"
+               << entry_response.version();
+    return;
+  }
+
+  // If the server gave us a new ID, apply it.
+  if (!ChangeIdAfterCommit(entry_response, pre_commit_id, local_entry)) {
+    return;
+  }
+
+  // Update our stored copy of the server state.
+  UpdateServerFieldsAfterCommit(committed_entry, entry_response, local_entry);
+
+  // If the item doesn't need to be committed again (a situation that
+  // happens if it changed locally during the commit), we can remove
+  // it from the unsynced list.  Also, we should change the locally-
+  // visible properties to apply any canonicalizations or fixups
+  // that the server introduced during the commit.
+  if (syncing_was_set) {
+    OverrideClientFieldsAfterCommit(committed_entry, entry_response,
+                                    local_entry);
+    local_entry->Put(IS_UNSYNCED, false);
+  }
+
+  // Make a note of any deleted folders, whose children would have
+  // been recursively deleted.
+  // TODO(nick): Here, commit_message.deleted() would be more correct than
+  // local_entry->Get(IS_DEL).  For example, an item could be renamed, and then
+  // deleted during the commit of the rename.  Unit test & fix.
+  if (local_entry->Get(IS_DIR) && local_entry->Get(IS_DEL)) {
+    deleted_folders->insert(local_entry->Get(ID));
   }
 }
 
