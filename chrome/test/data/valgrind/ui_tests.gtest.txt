@@ -56,15 +56,3 @@ DesktopNotificationsTest.TestQueueing
 DesktopNotificationsTest.TestShow
 DesktopNotificationsTest.TestUserInputEscaping
 
-# See http://crbug.com/48980
-ExtensionPrefStoreTest.InstallInterleavedExtensions
-ExtensionPrefStoreTest.InstallMultipleExtensions
-ExtensionPrefStoreTest.InstallOneExtension
-ExtensionPrefStoreTest.InstallOverwrittenExtensions
-ExtensionPrefStoreTest.NotifyWhenNeeded
-ExtensionPrefStoreTest.UninstallExtensionFromMiddle
-ExtensionPrefStoreTest.UninstallExtensionFromTop
-ExtensionPrefStoreTest.UninstallIrrelevantExtension
-ExtensionPrefStoreTest.UninstallOnlyExtension
-
-
