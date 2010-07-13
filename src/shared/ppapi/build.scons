@@ -2,22 +2,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file needs to be in sync with $SOURCE_ROOT/ppapi/ppapi.gyp
+# at the revision specified in $SOURCE_ROOT/native_client/DEPS.
+
 Import('env')
 
-# Disable certain warnings treated as errors
+# Don't treat warnings as errors on Windows
 if env.Bit('windows'):
-   env.FilterOut(CCFLAGS=['/WX'])  # don't treat all warnings as errors
-else:
-   env.Append(CCFLAGS=['-Wno-unused-parameter'])
+  env.FilterOut(CCFLAGS=['/WX'])
 
 cpp_sources = [
+    '$SOURCE_ROOT/ppapi/cpp/buffer.cc',
+    '$SOURCE_ROOT/ppapi/cpp/core.cc',
     '$SOURCE_ROOT/ppapi/cpp/device_context_2d.cc',
+    '$SOURCE_ROOT/ppapi/cpp/directory_entry.cc',
+    '$SOURCE_ROOT/ppapi/cpp/directory_reader.cc',
+    '$SOURCE_ROOT/ppapi/cpp/file_chooser.cc',
+    '$SOURCE_ROOT/ppapi/cpp/file_io.cc',
+    '$SOURCE_ROOT/ppapi/cpp/file_ref.cc',
+    '$SOURCE_ROOT/ppapi/cpp/file_system.cc',
     '$SOURCE_ROOT/ppapi/cpp/image_data.cc',
     '$SOURCE_ROOT/ppapi/cpp/instance.cc',
     '$SOURCE_ROOT/ppapi/cpp/module.cc',
     '$SOURCE_ROOT/ppapi/cpp/scriptable_object.cc',
     '$SOURCE_ROOT/ppapi/cpp/resource.cc',
+    '$SOURCE_ROOT/ppapi/cpp/url_loader.cc',
+    '$SOURCE_ROOT/ppapi/cpp/url_request_info.cc',
+    '$SOURCE_ROOT/ppapi/cpp/url_response_info.cc',
     '$SOURCE_ROOT/ppapi/cpp/var.cc',
+
+    # from ppapi.gyp::ppapi_cpp
+    '$SOURCE_ROOT/ppapi/cpp/ppp_entrypoints.cc',
     ]
 
 env.DualLibrary('ppapi_cpp', cpp_sources)

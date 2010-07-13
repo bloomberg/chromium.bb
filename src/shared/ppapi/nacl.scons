@@ -2,22 +2,44 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file needs to be in sync with $SOURCE_ROOT/ppapi/ppapi.gyp
+# at the revision specified in $SOURCE_ROOT/native_client/DEPS.
+
 Import('env')
 
 cpp_sources = [
+    # from ppapi.gyp:ppapi_cpp_objects
+    '$SOURCE_ROOT/ppapi/cpp/buffer.cc',
+    '$SOURCE_ROOT/ppapi/cpp/core.cc',
     '$SOURCE_ROOT/ppapi/cpp/device_context_2d.cc',
+    '$SOURCE_ROOT/ppapi/cpp/directory_entry.cc',
+    '$SOURCE_ROOT/ppapi/cpp/directory_reader.cc',
+    '$SOURCE_ROOT/ppapi/cpp/file_chooser.cc',
+    '$SOURCE_ROOT/ppapi/cpp/file_io.cc',
+    '$SOURCE_ROOT/ppapi/cpp/file_ref.cc',
+    '$SOURCE_ROOT/ppapi/cpp/file_system.cc',
     '$SOURCE_ROOT/ppapi/cpp/image_data.cc',
     '$SOURCE_ROOT/ppapi/cpp/instance.cc',
     '$SOURCE_ROOT/ppapi/cpp/module.cc',
     '$SOURCE_ROOT/ppapi/cpp/scriptable_object.cc',
     '$SOURCE_ROOT/ppapi/cpp/resource.cc',
+    '$SOURCE_ROOT/ppapi/cpp/url_loader.cc',
+    '$SOURCE_ROOT/ppapi/cpp/url_request_info.cc',
+    '$SOURCE_ROOT/ppapi/cpp/url_response_info.cc',
     '$SOURCE_ROOT/ppapi/cpp/var.cc',
+
+    # from ppapi.gyp::ppapi_cpp
+    '$SOURCE_ROOT/ppapi/cpp/ppp_entrypoints.cc',
     ]
 
 env.ComponentLibrary('ppapi_cpp', cpp_sources)
 
 c_headers = [
+    # from ppapi.gyp:ppapi_c
+    '$SOURCE_ROOT/ppapi/c/pp_completion_callback.h',
+    '$SOURCE_ROOT/ppapi/c/pp_errors.h',
     '$SOURCE_ROOT/ppapi/c/pp_event.h',
+    '$SOURCE_ROOT/ppapi/c/pp_file_info.h',
     '$SOURCE_ROOT/ppapi/c/pp_instance.h',
     '$SOURCE_ROOT/ppapi/c/pp_module.h',
     '$SOURCE_ROOT/ppapi/c/pp_point.h',
@@ -27,26 +49,53 @@ c_headers = [
     '$SOURCE_ROOT/ppapi/c/pp_stdint.h',
     '$SOURCE_ROOT/ppapi/c/pp_var.h',
     '$SOURCE_ROOT/ppapi/c/ppb.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_buffer.h',
     '$SOURCE_ROOT/ppapi/c/ppb_core.h',
     '$SOURCE_ROOT/ppapi/c/ppb_device_context_2d.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_directory_reader.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_file_chooser.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_file_io.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_file_io_trusted.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_file_ref.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_file_system.h',
     '$SOURCE_ROOT/ppapi/c/ppb_image_data.h',
     '$SOURCE_ROOT/ppapi/c/ppb_instance.h',
     '$SOURCE_ROOT/ppapi/c/ppb_testing.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_url_loader.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_url_request_info.h',
+    '$SOURCE_ROOT/ppapi/c/ppb_url_response_info.h',
     '$SOURCE_ROOT/ppapi/c/ppb_var.h',
     '$SOURCE_ROOT/ppapi/c/ppp.h',
     '$SOURCE_ROOT/ppapi/c/ppp_class.h',
-    '$SOURCE_ROOT/ppapi/c/ppp_instance.h'
+    '$SOURCE_ROOT/ppapi/c/ppp_instance.h',
+    '$SOURCE_ROOT/ppapi/c/ppp_printing.h',
     ]
 
 cpp_headers = [
+    # from  ppapi.gyp:ppapi_cpp_objects
+    '$SOURCE_ROOT/ppapi/cpp/buffer.h',
+    '$SOURCE_ROOT/ppapi/cpp/completion_callback.h',
+    '$SOURCE_ROOT/ppapi/cpp/core.h',
     '$SOURCE_ROOT/ppapi/cpp/device_context_2d.h',
+    '$SOURCE_ROOT/ppapi/cpp/directory_entry.h',
+    '$SOURCE_ROOT/ppapi/cpp/directory_reader.h',
+    '$SOURCE_ROOT/ppapi/cpp/file_chooser.h',
+    '$SOURCE_ROOT/ppapi/cpp/file_io.h',
+    '$SOURCE_ROOT/ppapi/cpp/file_ref.h',
+    '$SOURCE_ROOT/ppapi/cpp/file_system.h',
     '$SOURCE_ROOT/ppapi/cpp/image_data.h',
     '$SOURCE_ROOT/ppapi/cpp/instance.h',
     '$SOURCE_ROOT/ppapi/cpp/module.h',
     '$SOURCE_ROOT/ppapi/cpp/scriptable_object.h',
     '$SOURCE_ROOT/ppapi/cpp/rect.h',
     '$SOURCE_ROOT/ppapi/cpp/resource.h',
-    '$SOURCE_ROOT/ppapi/cpp/var.h'
+    '$SOURCE_ROOT/ppapi/cpp/url_loader.h',
+    '$SOURCE_ROOT/ppapi/cpp/url_request_info.h',
+    '$SOURCE_ROOT/ppapi/cpp/url_response_info.h',
+    '$SOURCE_ROOT/ppapi/cpp/var.h',
+
+    # from  ppapi.gyp:ppapi_cpp
+    '$SOURCE_ROOT/ppapi/cpp/module_embedder.h'
     ]
 
 header_install = env.AddHeaderToSdk(c_headers + cpp_headers)
