@@ -649,7 +649,7 @@ void CalculatePositionsInFrame(
                                            inMode:NSEventTrackingRunLoopMode
                                           dequeue:YES];
     if (!event || [event type] == NSLeftMouseDragged) {
-      NSPasteboard* pboard;
+      NSPasteboard* pboard = nil;
       if (icon) pboard = [icon view]->GetDragPasteboard();
       if (decoration) pboard = decoration->GetDragPasteboard();
       DCHECK(pboard);
@@ -663,7 +663,7 @@ void CalculatePositionsInFrame(
       if ([controlView isFlipped])
         dragPoint.y += NSHeight(decorationRect);
 
-      NSImage* image;
+      NSImage* image = nil;
       if (icon) image = [icon view]->GetImage();
       if (decoration) image = decoration->GetDragImage();
       [controlView dragImage:image
