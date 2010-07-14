@@ -33,6 +33,7 @@ class ScreenObserver {
     UPDATE_ERROR_UPDATING,
     USER_IMAGE_SELECTED,
     USER_IMAGE_SKIPPED,
+    EULA_ACCEPTED,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 

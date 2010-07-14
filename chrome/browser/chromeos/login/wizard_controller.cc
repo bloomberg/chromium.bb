@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/background_view.h"
+#include "chrome/browser/chromeos/login/eula_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
@@ -39,11 +40,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "unicode/timezone.h"
 #include "views/accelerator.h"
 #include "views/painter.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
-#include "unicode/timezone.h"
 
 namespace {
 
@@ -72,12 +73,15 @@ class ContentView : public views::View {
         accel_update_screen_(views::Accelerator(base::VKEY_U,
                                                 false, true, true)),
         accel_image_screen_(views::Accelerator(base::VKEY_I,
+                                               false, true, true)),
+        accel_eula_screen_(views::Accelerator(base::VKEY_E,
                                                 false, true, true)) {
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
     AddAccelerator(accel_update_screen_);
     AddAccelerator(accel_image_screen_);
+    AddAccelerator(accel_eula_screen_);
   }
 
   ~ContentView() {
@@ -102,6 +106,8 @@ class ContentView : public views::View {
       controller->ShowUpdateScreen();
     } else if (accel == accel_image_screen_) {
       controller->ShowUserImageScreen();
+    } else if (accel == accel_eula_screen_) {
+      controller->ShowEulaScreen();
     } else {
       return false;
     }
@@ -140,6 +146,7 @@ class ContentView : public views::View {
   views::Accelerator accel_network_screen_;
   views::Accelerator accel_update_screen_;
   views::Accelerator accel_image_screen_;
+  views::Accelerator accel_eula_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
@@ -162,6 +169,7 @@ const char WizardController::kLoginScreenName[] = "login";
 const char WizardController::kAccountScreenName[] = "account";
 const char WizardController::kUpdateScreenName[] = "update";
 const char WizardController::kUserImageScreenName[] = "image";
+const char WizardController::kEulaScreenName[] = "eula";
 const char WizardController::kRegistrationScreenName[] = "register";
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
@@ -294,6 +302,12 @@ chromeos::UserImageScreen* WizardController::GetUserImageScreen() {
   return user_image_screen_.get();
 }
 
+chromeos::EulaScreen* WizardController::GetEulaScreen() {
+  if (!eula_screen_.get())
+    eula_screen_.reset(new chromeos::EulaScreen(this));
+  return eula_screen_.get();
+}
+
 chromeos::RegistrationScreen* WizardController::GetRegistrationScreen() {
   if (!registration_screen_.get())
     registration_screen_.reset(new chromeos::RegistrationScreen(this));
@@ -344,6 +358,11 @@ void WizardController::ShowUpdateScreen() {
 void WizardController::ShowUserImageScreen() {
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUserImageScreen());
+}
+
+void WizardController::ShowEulaScreen() {
+  SetStatusAreaVisible(false);
+  SetCurrentScreen(GetEulaScreen());
 }
 
 void WizardController::ShowRegistrationScreen() {
@@ -432,18 +451,21 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
+  ShowEulaScreen();
+}
+
+void WizardController::OnEulaAccepted() {
   MarkOobeCompleted();
   ShowLoginScreen();
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {
-  MarkOobeCompleted();
   // TODO(nkostylev): Update should be required during OOBE.
   // We do not want to block users from being able to proceed to the login
   // screen if there is any error checking for an update.
   // They could use "browse without sign-in" feature to set up the network to be
   // able to perform the update later.
-  ShowLoginScreen();
+  ShowEulaScreen();
 }
 
 void WizardController::OnUpdateErrorUpdating() {
@@ -452,8 +474,7 @@ void WizardController::OnUpdateErrorUpdating() {
   // TODO(nkostylev): Show message to the user explaining update error.
   // TODO(nkostylev): Update should be required during OOBE.
   // Temporary fix, need to migrate to new API. http://crosbug.com/4321
-  MarkOobeCompleted();
-  ShowLoginScreen();
+  ShowEulaScreen();
 }
 
 void WizardController::OnUserImageSelected() {
@@ -508,6 +529,8 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
     GetUpdateScreen()->StartUpdate();
   } else if (first_screen_name == kUserImageScreenName) {
     ShowUserImageScreen();
+  } else if (first_screen_name == kEulaScreenName) {
+    ShowEulaScreen();
   } else if (first_screen_name == kRegistrationScreenName) {
     ShowRegistrationScreen();
   } else if (first_screen_name != kTestNoScreenName) {
@@ -569,6 +592,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case USER_IMAGE_SKIPPED:
       OnUserImageSkipped();
+      break;
+    case EULA_ACCEPTED:
+      OnEulaAccepted();
       break;
     default:
       NOTREACHED();

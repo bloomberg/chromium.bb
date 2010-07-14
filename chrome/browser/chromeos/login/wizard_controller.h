@@ -21,12 +21,13 @@ class WizardScreen;
 namespace chromeos {
 class AccountScreen;
 class BackgroundView;
+class EulaScreen;
 class LoginScreen;
 class NetworkScreen;
 class RegistrationScreen;
-class UserImageScreen;
-class UpdateScreen;
 class StartupCustomizationDocument;
+class UpdateScreen;
+class UserImageScreen;
 }
 
 namespace gfx {
@@ -76,6 +77,7 @@ class WizardController : public chromeos::ScreenObserver,
   chromeos::AccountScreen* GetAccountScreen();
   chromeos::UpdateScreen* GetUpdateScreen();
   chromeos::UserImageScreen* GetUserImageScreen();
+  chromeos::EulaScreen* GetEulaScreen();
   chromeos::RegistrationScreen* GetRegistrationScreen();
 
   // Show specific screen.
@@ -84,6 +86,7 @@ class WizardController : public chromeos::ScreenObserver,
   void ShowAccountScreen();
   void ShowUpdateScreen();
   void ShowUserImageScreen();
+  void ShowEulaScreen();
   void ShowRegistrationScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
@@ -109,6 +112,7 @@ class WizardController : public chromeos::ScreenObserver,
   static const char kRegistrationScreenName[];
   static const char kOutOfBoxScreenName[];
   static const char kTestNoScreenName[];
+  static const char kEulaScreenName[];
 
  private:
   // Exit handlers:
@@ -121,6 +125,7 @@ class WizardController : public chromeos::ScreenObserver,
   void OnAccountCreated();
   void OnConnectionFailed();
   void OnUpdateCompleted();
+  void OnEulaAccepted();
   void OnUpdateErrorCheckingForUpdate();
   void OnUpdateErrorUpdating();
   void OnUserImageSelected();
@@ -164,6 +169,7 @@ class WizardController : public chromeos::ScreenObserver,
   scoped_ptr<chromeos::AccountScreen> account_screen_;
   scoped_ptr<chromeos::UpdateScreen> update_screen_;
   scoped_ptr<chromeos::UserImageScreen> user_image_screen_;
+  scoped_ptr<chromeos::EulaScreen> eula_screen_;
   scoped_ptr<chromeos::RegistrationScreen> registration_screen_;
 
   // Screen that's currently active.

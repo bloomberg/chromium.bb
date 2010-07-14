@@ -439,6 +439,8 @@
         'browser/chromeos/login/client_login_response_handler.h',
         'browser/chromeos/login/cookie_fetcher.cc',
         'browser/chromeos/login/cookie_fetcher.h',
+        'browser/chromeos/login/eula_view.cc',
+        'browser/chromeos/login/eula_view.h',
         'browser/chromeos/login/existing_user_controller.cc',
         'browser/chromeos/login/existing_user_controller.h',
         'browser/chromeos/login/image_decoder.cc',
