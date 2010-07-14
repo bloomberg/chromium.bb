@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 
+#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
@@ -116,9 +117,12 @@ class SyncerThreadWithSyncerTest : public testing::Test,
 
   bool Pause(ListenerMock* listener) {
     WaitableEvent event(false, false);
-    EXPECT_CALL(*listener, HandleChannelEvent(
-        Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
-        WillOnce(SignalEvent(&event));
+    {
+      AutoLock lock(syncer_thread()->lock_);
+      EXPECT_CALL(*listener, HandleChannelEvent(
+          Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
+          WillOnce(SignalEvent(&event));
+    }
     if (!syncer_thread()->RequestPause())
       return false;
     return event.TimedWait(max_wait_time_);
@@ -126,9 +130,12 @@ class SyncerThreadWithSyncerTest : public testing::Test,
 
   bool Resume(ListenerMock* listener) {
     WaitableEvent event(false, false);
-    EXPECT_CALL(*listener, HandleChannelEvent(
-        Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
-        WillOnce(SignalEvent(&event));
+    {
+      AutoLock lock(syncer_thread()->lock_);
+      EXPECT_CALL(*listener, HandleChannelEvent(
+          Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
+          WillOnce(SignalEvent(&event));
+    }
     if (!syncer_thread()->RequestResume())
       return false;
     return event.TimedWait(max_wait_time_);
@@ -800,15 +807,7 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
 // I have been unable to reproduce this hang after extensive testing
 // on a local Windows machine so these tests will remain flaky in
 // order to help diagnose the problem.
-// oshima: this is actually crashing and cause failure on XP Tests.
-// Disabling on windows.
-// This issue is tracked at http://crbug.com/39070.
-#if defined(OS_WIN)
-#define MAYBE_Pause DISABLED_Pause
-#else
-#define MAYBE_Pause Pause
-#endif
-TEST_F(SyncerThreadWithSyncerTest, MAYBE_Pause) {
+TEST_F(SyncerThreadWithSyncerTest, FLAKY_Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
