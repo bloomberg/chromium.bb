@@ -29,11 +29,16 @@ TestAutomationProvider::TestAutomationProvider(
     Profile* profile,
     TestAutomationProviderDelegate* delegate)
     : AutomationProvider(profile), tab_handle_(-1), delegate_(delegate) {
-  filter_ = new TestAutomationResourceMessageFilter(this);
+  // We need to register the protocol factory before the
+  // AutomationResourceMessageFilter registers the automation job factory to
+  // ensure that we don't inadvarently end up handling http requests which
+  // we don't expect. The initial chrome frame page for the network tests
+  // issues http requests which our test factory should not handle.
   URLRequest::RegisterProtocolFactory("http",
                                       TestAutomationProvider::Factory);
   URLRequest::RegisterProtocolFactory("https",
                                       TestAutomationProvider::Factory);
+  filter_ = new TestAutomationResourceMessageFilter(this);
   g_provider_instance_ = this;
 }
 
