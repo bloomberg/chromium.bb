@@ -54,6 +54,7 @@ static void HistogramPreconnectStatus(ProxyStatus status) {
 
 // static
 void Preconnect::PreconnectOnIOThread(const GURL& url) {
+  // TODO(jar): This does not handle proxies currently.
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   if (!getter)
     return;
@@ -85,24 +86,45 @@ void Preconnect::PreconnectOnIOThread(const GURL& url) {
 
   net::HttpTransactionFactory* factory = context->http_transaction_factory();
   net::HttpNetworkSession* session = factory->GetSession();
-  scoped_refptr<net::TCPClientSocketPool> pool = session->tcp_socket_pool();
-
-  scoped_refptr<net::TCPSocketParams> params =
-      new net::TCPSocketParams(url.host(), url.EffectiveIntPort(), net::LOW,
-                               GURL(), false);
 
   net::ClientSocketHandle handle;
   if (!callback_instance_)
     callback_instance_ = new Preconnect;
 
+  scoped_refptr<net::TCPSocketParams> tcp_params =
+      new net::TCPSocketParams(url.host(), url.EffectiveIntPort(), net::LOW,
+                               GURL(), false);
+
   net::HostPortPair endpoint(url.host(), url.EffectiveIntPort());
   std::string group_name = endpoint.ToString();
-  if (url.SchemeIs("https"))
+
+  if (url.SchemeIs("https")) {
     group_name = StringPrintf("ssl/%s", group_name.c_str());
 
-  // TODO(jar): This does not handle proxies currently.
-  handle.Init(group_name, params, net::LOWEST,
-              callback_instance_, pool, net::BoundNetLog());
+    net::SSLConfig ssl_config;
+    session->ssl_config_service()->GetSSLConfig(&ssl_config);
+    // All preconnects should be for main pages.
+    ssl_config.verify_ev_cert = true;
+
+    scoped_refptr<net::SSLSocketParams> ssl_params =
+        new net::SSLSocketParams(tcp_params, NULL, NULL,
+                                 net::ProxyServer::SCHEME_DIRECT,
+                                 url.HostNoBrackets(), ssl_config,
+                                 0, false);
+
+    const scoped_refptr<net::SSLClientSocketPool>& pool =
+        session->ssl_socket_pool();
+
+    handle.Init(group_name, ssl_params, net::LOWEST, callback_instance_, pool,
+                net::BoundNetLog());
+    handle.Reset();
+    return;
+  }
+
+  const scoped_refptr<net::TCPClientSocketPool>& pool =
+      session->tcp_socket_pool();
+  handle.Init(group_name, tcp_params, net::LOWEST, callback_instance_, pool,
+              net::BoundNetLog());
   handle.Reset();
 }
 

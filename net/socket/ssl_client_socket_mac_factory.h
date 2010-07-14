@@ -11,7 +11,7 @@ namespace net {
 
 // Creates SSLClientSocketMac objects.
 SSLClientSocket* SSLClientSocketMacFactory(
-    ClientSocket* transport_socket,
+    ClientSocketHandle* transport_socket,
     const std::string& hostname,
     const SSLConfig& ssl_config);
 

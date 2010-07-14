@@ -49,6 +49,8 @@ class TCPSocketParams : public base::RefCounted<TCPSocketParams> {
   }
 
   HostResolver::RequestInfo destination_;
+
+  DISALLOW_COPY_AND_ASSIGN(TCPSocketParams);
 };
 
 // TCPConnectJob handles the host resolution necessary for socket creation

@@ -18,7 +18,7 @@
 namespace net {
 
 SSLClientSocket* SSLClientSocketNSSFactory(
-    ClientSocket* transport_socket,
+    ClientSocketHandle* transport_socket,
     const std::string& hostname,
     const SSLConfig& ssl_config) {
   // TODO(wtc): SSLClientSocketNSS can't do SSL client authentication using

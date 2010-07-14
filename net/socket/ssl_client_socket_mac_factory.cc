@@ -9,7 +9,7 @@
 namespace net {
 
 SSLClientSocket* SSLClientSocketMacFactory(
-    ClientSocket* transport_socket,
+    ClientSocketHandle* transport_socket,
     const std::string& hostname,
     const SSLConfig& ssl_config) {
   return new SSLClientSocketMac(transport_socket, hostname, ssl_config);
