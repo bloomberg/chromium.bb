@@ -147,6 +147,10 @@ void GpuProcessHost::Synchronize(IPC::Message* reply,
   Send(new GpuMsg_Synchronize());
 }
 
+GPUInfo GpuProcessHost::gpu_info() const {
+  return gpu_info_;
+}
+
 void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
@@ -159,10 +163,12 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
 }
 
 void GpuProcessHost::OnChannelEstablished(
-    const IPC::ChannelHandle& channel_handle) {
+    const IPC::ChannelHandle& channel_handle,
+    const GPUInfo& gpu_info) {
   const ChannelRequest& request = sent_requests_.front();
   ReplyToRenderer(channel_handle, request.filter);
   sent_requests_.pop();
+  gpu_info_ = gpu_info;
 }
 
 void GpuProcessHost::OnSynchronizeReply() {

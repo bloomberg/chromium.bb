@@ -9,7 +9,9 @@
 
 #include "base/command_line.h"
 #include "chrome/common/child_process.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
+#include "chrome/gpu/gpu_info_collector.h"
 
 #if defined(OS_WIN)
 #include "chrome/gpu/gpu_view_win.h"
@@ -111,7 +113,10 @@ void GpuThread::OnEstablishChannel(int renderer_id) {
 #endif
   }
 
-  Send(new GpuHostMsg_ChannelEstablished(channel_handle));
+  GPUInfo gpu_info;
+  gpu_info_collector::CollectGraphicsInfo(gpu_info);
+
+  Send(new GpuHostMsg_ChannelEstablished(channel_handle, gpu_info));
 }
 
 void GpuThread::OnSynchronize() {

@@ -9,6 +9,7 @@
 // This file needs to be included again, even though we're actually included
 // from it via utility_messages.h.
 #include "base/shared_memory.h"
+#include "chrome/common/gpu_info.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -90,8 +91,9 @@ IPC_BEGIN_MESSAGES(GpuHost)
   IPC_MESSAGE_ROUTED0(GpuHostMsg_PaintToVideoLayer_ACK)
 
   // Response to a GpuHostMsg_EstablishChannel message.
-  IPC_MESSAGE_CONTROL1(GpuHostMsg_ChannelEstablished,
-                       IPC::ChannelHandle /* channel_handle */)
+  IPC_MESSAGE_CONTROL2(GpuHostMsg_ChannelEstablished,
+                       IPC::ChannelHandle, /* channel_handle */
+                       GPUInfo /* GPU logging stats */)
 
   // Response to a GpuMsg_Synchronize message.
   IPC_MESSAGE_CONTROL0(GpuHostMsg_SynchronizeReply)

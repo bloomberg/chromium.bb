@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/common/gpu_info.h"
 #include "gfx/native_widget_types.h"
 
 class ChildProcessLauncher;
@@ -46,6 +47,9 @@ class GpuProcessHost : public BrowserChildProcessHost {
   void Synchronize(IPC::Message* reply,
                    ResourceMessageFilter* filter);
 
+  // Return the stored gpu_info as this class the
+  // browser's point of contact with the gpu
+  GPUInfo gpu_info() const;
  private:
   // Used to queue pending channel requests.
   struct ChannelRequest {
@@ -78,7 +82,8 @@ class GpuProcessHost : public BrowserChildProcessHost {
   void OnControlMessageReceived(const IPC::Message& message);
 
   // Message handlers.
-  void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
+  void OnChannelEstablished(const IPC::ChannelHandle& channel_handle,
+                            const GPUInfo& gpu_info);
   void OnSynchronizeReply();
 #if defined(OS_LINUX)
   void OnGetViewXID(gfx::NativeViewId id, unsigned long* xid);
@@ -102,6 +107,9 @@ class GpuProcessHost : public BrowserChildProcessHost {
 
   bool initialized_;
   bool initialized_successfully_;
+
+  // GPUInfo class used for collecting gpu stats
+  GPUInfo gpu_info_;
 
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.
