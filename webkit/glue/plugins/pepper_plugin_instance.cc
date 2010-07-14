@@ -17,6 +17,7 @@
 #include "third_party/ppapi/c/ppb_instance.h"
 #include "third_party/ppapi/c/ppp_find.h"
 #include "third_party/ppapi/c/ppp_instance.h"
+#include "third_party/ppapi/c/ppp_zoom.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
@@ -200,7 +201,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       container_(NULL),
       full_frame_(false),
       find_identifier_(-1),
-      plugin_find_interface_(NULL) {
+      plugin_find_interface_(NULL),
+      plugin_zoom_interface_(NULL) {
   DCHECK(delegate);
   module_->InstanceCreated(this);
   delegate_->InstanceCreated(this);
@@ -381,7 +383,9 @@ string16 PluginInstance::GetSelectedText(bool html) {
 }
 
 void PluginInstance::Zoom(float factor, bool text_only) {
-  // TODO: implement me
+  if (!LoadZoomInterface())
+    return;
+  plugin_zoom_interface_->Zoom(GetPPInstance(), factor, text_only);
 }
 
 bool PluginInstance::StartFind(const string16& search_text,
@@ -416,6 +420,16 @@ bool PluginInstance::LoadFindInterface() {
   }
 
   return !!plugin_find_interface_;
+}
+
+bool PluginInstance::LoadZoomInterface() {
+  if (!plugin_zoom_interface_) {
+    plugin_zoom_interface_ =
+        reinterpret_cast<const PPP_Zoom*>(module_->GetPluginInterface(
+            PPP_ZOOM_INTERFACE));
+  }
+
+  return !!plugin_zoom_interface_;
 }
 
 }  // namespace pepper

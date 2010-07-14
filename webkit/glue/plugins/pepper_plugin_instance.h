@@ -16,13 +16,14 @@
 #include "third_party/ppapi/c/pp_cursor_type.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
-#include "third_party/ppapi/c/ppb_find.h"
-#include "third_party/ppapi/c/ppp_find.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 
 typedef struct _pp_Var PP_Var;
 typedef struct _ppb_Instance PPB_Instance;
+typedef struct _ppb_Find PPB_Find;
+typedef struct _ppp_Find PPP_Find;
 typedef struct _ppp_Instance PPP_Instance;
+typedef struct _ppp_Zoom PPP_Zoom;
 
 namespace gfx {
 class Rect;
@@ -115,6 +116,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
  private:
   bool LoadFindInterface();
+  bool LoadZoomInterface();
 
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
@@ -143,8 +145,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
 
-  // The plugin find interface.
+  // The plugin find and zoom interfaces.
   const PPP_Find* plugin_find_interface_;
+  const PPP_Zoom* plugin_zoom_interface_;
 
   // Containes the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;
