@@ -245,8 +245,6 @@
                 'app/nibs/Toolbar.xib',
                 'app/theme/back_Template.pdf',
                 'app/theme/chevron.pdf',
-                'app/theme/find_next_Template.pdf',
-                'app/theme/find_prev_Template.pdf',
                 'app/theme/forward_Template.pdf',
                 'app/theme/home_Template.pdf',
                 'app/theme/menu_chrome_rtl_Template.pdf',
