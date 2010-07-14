@@ -60,7 +60,7 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
 TEST_F(PhoneFieldTest, ParseOneLinePhoneEcml) {
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
-                                               kEcmlShipToPhone,
+                                               ASCIIToUTF16(kEcmlShipToPhone),
                                                string16(),
                                                ASCIIToUTF16("text"),
                                                0),
@@ -105,15 +105,16 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
 
 TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlShipTo) {
   list_.push_back(
-      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Area Code"),
-                                               kEcmlShipToPostalCode,
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0),
-                        ASCIIToUTF16("areacode1")));
+      new AutoFillField(
+          webkit_glue::FormField(ASCIIToUTF16("Area Code"),
+                                 ASCIIToUTF16(kEcmlShipToPostalCode),
+                                 string16(),
+                                 ASCIIToUTF16("text"),
+                                 0),
+          ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
-                                               kEcmlShipToPhone,
+                                               ASCIIToUTF16(kEcmlShipToPhone),
                                                string16(),
                                                ASCIIToUTF16("text"),
                                                0),
@@ -133,15 +134,16 @@ TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlShipTo) {
 
 TEST_F(PhoneFieldTest, ParseTwoLinePhoneEcmlBillTo) {
   list_.push_back(
-      new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Area Code"),
-                                               kEcmlBillToPostalCode,
-                                               string16(),
-                                               ASCIIToUTF16("text"),
-                                               0),
-                        ASCIIToUTF16("areacode1")));
+      new AutoFillField(
+          webkit_glue::FormField(ASCIIToUTF16("Area Code"),
+                                 ASCIIToUTF16(kEcmlBillToPostalCode),
+                                 string16(),
+                                 ASCIIToUTF16("text"),
+                                 0),
+          ASCIIToUTF16("areacode1")));
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Phone"),
-                                               kEcmlBillToPhone,
+                                               ASCIIToUTF16(kEcmlBillToPhone),
                                                string16(),
                                                ASCIIToUTF16("text"),
                                                0),

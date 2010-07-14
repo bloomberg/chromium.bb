@@ -12,47 +12,47 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/form_structure.h"
 
-extern string16 kEcmlShipToTitle;
-extern string16 kEcmlShipToFirstName;
-extern string16 kEcmlShipToMiddleName;
-extern string16 kEcmlShipToLastName;
-extern string16 kEcmlShipToNameSuffix;
-extern string16 kEcmlShipToCompanyName;
-extern string16 kEcmlShipToAddress1;
-extern string16 kEcmlShipToAddress2;
-extern string16 kEcmlShipToAddress3;
-extern string16 kEcmlShipToCity;
-extern string16 kEcmlShipToStateProv;
-extern string16 kEcmlShipToPostalCode;
-extern string16 kEcmlShipToCountry;
-extern string16 kEcmlShipToPhone;
-extern string16 kEcmlShipToEmail;
+extern const char kEcmlShipToTitle[];
+extern const char kEcmlShipToFirstName[];
+extern const char kEcmlShipToMiddleName[];
+extern const char kEcmlShipToLastName[];
+extern const char kEcmlShipToNameSuffix[];
+extern const char kEcmlShipToCompanyName[];
+extern const char kEcmlShipToAddress1[];
+extern const char kEcmlShipToAddress2[];
+extern const char kEcmlShipToAddress3[];
+extern const char kEcmlShipToCity[];
+extern const char kEcmlShipToStateProv[];
+extern const char kEcmlShipToPostalCode[];
+extern const char kEcmlShipToCountry[];
+extern const char kEcmlShipToPhone[];
+extern const char kEcmlShipToEmail[];
 
 // billing name/address fields
-extern string16 kEcmlBillToTitle;
-extern string16 kEcmlBillToFirstName;
-extern string16 kEcmlBillToMiddleName;
-extern string16 kEcmlBillToLastName;
-extern string16 kEcmlBillToNameSuffix;
-extern string16 kEcmlBillToCompanyName;
-extern string16 kEcmlBillToAddress1;
-extern string16 kEcmlBillToAddress2;
-extern string16 kEcmlBillToAddress3;
-extern string16 kEcmlBillToCity;
-extern string16 kEcmlBillToStateProv;
-extern string16 kEcmlBillToPostalCode;
-extern string16 kEcmlBillToCountry;
-extern string16 kEcmlBillToPhone;
-extern string16 kEcmlBillToEmail;
+extern const char kEcmlBillToTitle[];
+extern const char kEcmlBillToFirstName[];
+extern const char kEcmlBillToMiddleName[];
+extern const char kEcmlBillToLastName[];
+extern const char kEcmlBillToNameSuffix[];
+extern const char kEcmlBillToCompanyName[];
+extern const char kEcmlBillToAddress1[];
+extern const char kEcmlBillToAddress2[];
+extern const char kEcmlBillToAddress3[];
+extern const char kEcmlBillToCity[];
+extern const char kEcmlBillToStateProv[];
+extern const char kEcmlBillToPostalCode[];
+extern const char kEcmlBillToCountry[];
+extern const char kEcmlBillToPhone[];
+extern const char kEcmlBillToEmail[];
 
 // credit card fields
-extern string16 kEcmlCardHolder;
-extern string16 kEcmlCardType;
-extern string16 kEcmlCardNumber;
-extern string16 kEcmlCardVerification;
-extern string16 kEcmlCardExpireDay;
-extern string16 kEcmlCardExpireMonth;
-extern string16 kEcmlCardExpireYear;
+extern const char kEcmlCardHolder[];
+extern const char kEcmlCardType[];
+extern const char kEcmlCardNumber[];
+extern const char kEcmlCardVerification[];
+extern const char kEcmlCardExpireDay[];
+extern const char kEcmlCardExpireMonth[];
+extern const char kEcmlCardExpireYear[];
 
 enum FormFieldType {
   kAddressType,
@@ -128,10 +128,10 @@ class FormField {
   // be prefixed with an ECML compiant name in order to accommodate checkout.
   // Additionally we allow the use of '.' as a word delimiter in addition to the
   // ECML standard '_' (see FormField::FormField for details).
-  static string16 GetEcmlPattern(const string16& ecml_name);
-  static string16 GetEcmlPattern(const string16& ecml_name1,
-                                 const string16& ecml_name2,
-                                 string16::value_type pattern_operator);
+  static string16 GetEcmlPattern(const char* ecml_name);
+  static string16 GetEcmlPattern(const char* ecml_name1,
+                                 const char* ecml_name2,
+                                 char pattern_operator);
 
  private:
   static bool ParseText(std::vector<AutoFillField*>::const_iterator* iter,

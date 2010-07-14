@@ -19,47 +19,47 @@
 // lowercase before searching.
 
 // shipping name/address fields
-string16 kEcmlShipToTitle = ASCIIToUTF16("ecom_shipto_postal_name_prefix");
-string16 kEcmlShipToFirstName = ASCIIToUTF16("ecom_shipto_postal_name_first");
-string16 kEcmlShipToMiddleName = ASCIIToUTF16("ecom_shipto_postal_name_middle");
-string16 kEcmlShipToLastName = ASCIIToUTF16("ecom_shipto_postal_name_last");
-string16 kEcmlShipToNameSuffix = ASCIIToUTF16("ecom_shipto_postal_name_suffix");
-string16 kEcmlShipToCompanyName = ASCIIToUTF16("ecom_shipto_postal_company");
-string16 kEcmlShipToAddress1 = ASCIIToUTF16("ecom_shipto_postal_street_line1");
-string16 kEcmlShipToAddress2 = ASCIIToUTF16("ecom_shipto_postal_street_line2");
-string16 kEcmlShipToAddress3 = ASCIIToUTF16("ecom_shipto_postal_street_line3");
-string16 kEcmlShipToCity = ASCIIToUTF16("ecom_shipto_postal_city");
-string16 kEcmlShipToStateProv = ASCIIToUTF16("ecom_shipto_postal_stateprov");
-string16 kEcmlShipToPostalCode = ASCIIToUTF16("ecom_shipto_postal_postalcode");
-string16 kEcmlShipToCountry = ASCIIToUTF16("ecom_shipto_postal_countrycode");
-string16 kEcmlShipToPhone = ASCIIToUTF16("ecom_shipto_telecom_phone_number");
-string16 kEcmlShipToEmail = ASCIIToUTF16("ecom_shipto_online_email");
+const char kEcmlShipToTitle[] = "ecom_shipto_postal_name_prefix";
+const char kEcmlShipToFirstName[] = "ecom_shipto_postal_name_first";
+const char kEcmlShipToMiddleName[] = "ecom_shipto_postal_name_middle";
+const char kEcmlShipToLastName[] = "ecom_shipto_postal_name_last";
+const char kEcmlShipToNameSuffix[] = "ecom_shipto_postal_name_suffix";
+const char kEcmlShipToCompanyName[] = "ecom_shipto_postal_company";
+const char kEcmlShipToAddress1[] = "ecom_shipto_postal_street_line1";
+const char kEcmlShipToAddress2[] = "ecom_shipto_postal_street_line2";
+const char kEcmlShipToAddress3[] = "ecom_shipto_postal_street_line3";
+const char kEcmlShipToCity[] = "ecom_shipto_postal_city";
+const char kEcmlShipToStateProv[] = "ecom_shipto_postal_stateprov";
+const char kEcmlShipToPostalCode[] = "ecom_shipto_postal_postalcode";
+const char kEcmlShipToCountry[] = "ecom_shipto_postal_countrycode";
+const char kEcmlShipToPhone[] = "ecom_shipto_telecom_phone_number";
+const char kEcmlShipToEmail[] = "ecom_shipto_online_email";
 
 // billing name/address fields
-string16 kEcmlBillToTitle = ASCIIToUTF16("ecom_billto_postal_name_prefix");
-string16 kEcmlBillToFirstName = ASCIIToUTF16("ecom_billto_postal_name_first");
-string16 kEcmlBillToMiddleName = ASCIIToUTF16("ecom_billto_postal_name_middle");
-string16 kEcmlBillToLastName = ASCIIToUTF16("ecom_billto_postal_name_last");
-string16 kEcmlBillToNameSuffix = ASCIIToUTF16("ecom_billto_postal_name_suffix");
-string16 kEcmlBillToCompanyName = ASCIIToUTF16("ecom_billto_postal_company");
-string16 kEcmlBillToAddress1 = ASCIIToUTF16("ecom_billto_postal_street_line1");
-string16 kEcmlBillToAddress2 = ASCIIToUTF16("ecom_billto_postal_street_line2");
-string16 kEcmlBillToAddress3 = ASCIIToUTF16("ecom_billto_postal_street_line3");
-string16 kEcmlBillToCity = ASCIIToUTF16("ecom_billto_postal_city");
-string16 kEcmlBillToStateProv = ASCIIToUTF16("ecom_billto_postal_stateprov");
-string16 kEcmlBillToPostalCode = ASCIIToUTF16("ecom_billto_postal_postalcode");
-string16 kEcmlBillToCountry = ASCIIToUTF16("ecom_billto_postal_countrycode");
-string16 kEcmlBillToPhone = ASCIIToUTF16("ecom_billto_telecom_phone_number");
-string16 kEcmlBillToEmail = ASCIIToUTF16("ecom_billto_online_email");
+const char kEcmlBillToTitle[] = "ecom_billto_postal_name_prefix";
+const char kEcmlBillToFirstName[] = "ecom_billto_postal_name_first";
+const char kEcmlBillToMiddleName[] = "ecom_billto_postal_name_middle";
+const char kEcmlBillToLastName[] = "ecom_billto_postal_name_last";
+const char kEcmlBillToNameSuffix[] = "ecom_billto_postal_name_suffix";
+const char kEcmlBillToCompanyName[] = "ecom_billto_postal_company";
+const char kEcmlBillToAddress1[] = "ecom_billto_postal_street_line1";
+const char kEcmlBillToAddress2[] = "ecom_billto_postal_street_line2";
+const char kEcmlBillToAddress3[] = "ecom_billto_postal_street_line3";
+const char kEcmlBillToCity[] = "ecom_billto_postal_city";
+const char kEcmlBillToStateProv[] = "ecom_billto_postal_stateprov";
+const char kEcmlBillToPostalCode[] = "ecom_billto_postal_postalcode";
+const char kEcmlBillToCountry[] = "ecom_billto_postal_countrycode";
+const char kEcmlBillToPhone[] = "ecom_billto_telecom_phone_number";
+const char kEcmlBillToEmail[] = "ecom_billto_online_email";
 
 // credit card fields
-string16 kEcmlCardHolder = ASCIIToUTF16("ecom_payment_card_name");
-string16 kEcmlCardType = ASCIIToUTF16("ecom_payment_card_type");
-string16 kEcmlCardNumber = ASCIIToUTF16("ecom_payment_card_number");
-string16 kEcmlCardVerification = ASCIIToUTF16("ecom_payment_card_verification");
-string16 kEcmlCardExpireDay = ASCIIToUTF16("ecom_payment_card_expdate_day");
-string16 kEcmlCardExpireMonth = ASCIIToUTF16("ecom_payment_card_expdate_month");
-string16 kEcmlCardExpireYear = ASCIIToUTF16("ecom_payment_card_expdate_year");
+const char kEcmlCardHolder[] = "ecom_payment_card_name";
+const char kEcmlCardType[] = "ecom_payment_card_type";
+const char kEcmlCardNumber[] = "ecom_payment_card_number";
+const char kEcmlCardVerification[] = "ecom_payment_card_verification";
+const char kEcmlCardExpireDay[] = "ecom_payment_card_expdate_day";
+const char kEcmlCardExpireMonth[] = "ecom_payment_card_expdate_month";
+const char kEcmlCardExpireYear[] = "ecom_payment_card_expdate_year";
 
 namespace {
 
@@ -249,15 +249,15 @@ bool FormField::Add(FieldTypeMap* field_type_map, AutoFillField* field,
   return true;
 }
 
-string16 FormField::GetEcmlPattern(const string16& ecml_name) {
-  return ASCIIToUTF16("^") + ecml_name;
+string16 FormField::GetEcmlPattern(const char* ecml_name) {
+  return ASCIIToUTF16(std::string("^") + ecml_name);
 }
 
-string16 FormField::GetEcmlPattern(const string16& ecml_name1,
-                                   const string16& ecml_name2,
-                                   string16::value_type pattern_operator) {
-  string16 begins_with = ASCIIToUTF16("^");
-  return begins_with + ecml_name1 + pattern_operator + begins_with + ecml_name2;
+string16 FormField::GetEcmlPattern(const char* ecml_name1,
+                                   const char* ecml_name2,
+                                   char pattern_operator) {
+  return ASCIIToUTF16(StringPrintf("^%s%c^%s",
+      ecml_name1, pattern_operator, ecml_name2));
 }
 
 FormFieldSet::FormFieldSet(FormStructure* fields) {
@@ -312,49 +312,65 @@ FormFieldSet::FormFieldSet(FormStructure* fields) {
 
 bool FormFieldSet::CheckECML(FormStructure* fields) {
   size_t num_fields = fields->field_count();
+  struct EcmlField {
+    const char* name_;
+    const int length_;
+  } form_fields[] = {
+#define ECML_STRING_ENTRY(x) { x, arraysize(x) - 1 },
+    ECML_STRING_ENTRY(kEcmlShipToTitle)
+    ECML_STRING_ENTRY(kEcmlShipToFirstName)
+    ECML_STRING_ENTRY(kEcmlShipToMiddleName)
+    ECML_STRING_ENTRY(kEcmlShipToLastName)
+    ECML_STRING_ENTRY(kEcmlShipToNameSuffix)
+    ECML_STRING_ENTRY(kEcmlShipToCompanyName)
+    ECML_STRING_ENTRY(kEcmlShipToAddress1)
+    ECML_STRING_ENTRY(kEcmlShipToAddress2)
+    ECML_STRING_ENTRY(kEcmlShipToAddress3)
+    ECML_STRING_ENTRY(kEcmlShipToCity)
+    ECML_STRING_ENTRY(kEcmlShipToStateProv)
+    ECML_STRING_ENTRY(kEcmlShipToPostalCode)
+    ECML_STRING_ENTRY(kEcmlShipToCountry)
+    ECML_STRING_ENTRY(kEcmlShipToPhone)
+    ECML_STRING_ENTRY(kEcmlShipToPhone)
+    ECML_STRING_ENTRY(kEcmlShipToEmail)
+    ECML_STRING_ENTRY(kEcmlBillToTitle)
+    ECML_STRING_ENTRY(kEcmlBillToFirstName)
+    ECML_STRING_ENTRY(kEcmlBillToMiddleName)
+    ECML_STRING_ENTRY(kEcmlBillToLastName)
+    ECML_STRING_ENTRY(kEcmlBillToNameSuffix)
+    ECML_STRING_ENTRY(kEcmlBillToCompanyName)
+    ECML_STRING_ENTRY(kEcmlBillToAddress1)
+    ECML_STRING_ENTRY(kEcmlBillToAddress2)
+    ECML_STRING_ENTRY(kEcmlBillToAddress3)
+    ECML_STRING_ENTRY(kEcmlBillToCity)
+    ECML_STRING_ENTRY(kEcmlBillToStateProv)
+    ECML_STRING_ENTRY(kEcmlBillToPostalCode)
+    ECML_STRING_ENTRY(kEcmlBillToCountry)
+    ECML_STRING_ENTRY(kEcmlBillToPhone)
+    ECML_STRING_ENTRY(kEcmlBillToPhone)
+    ECML_STRING_ENTRY(kEcmlBillToEmail)
+    ECML_STRING_ENTRY(kEcmlCardHolder)
+    ECML_STRING_ENTRY(kEcmlCardType)
+    ECML_STRING_ENTRY(kEcmlCardNumber)
+    ECML_STRING_ENTRY(kEcmlCardVerification)
+    ECML_STRING_ENTRY(kEcmlCardExpireMonth)
+    ECML_STRING_ENTRY(kEcmlCardExpireYear)
+#undef ECML_STRING_ENTRY
+  };
+
+  const string16 ecom(ASCIIToUTF16("ecom"));
   for (size_t index = 0; index < num_fields; ++index) {
-    string16 name(fields->field(index)->name());
-    if (name.substr(0, 4) == ASCIIToUTF16("ecom") &&
-        (StartsWith(name, kEcmlShipToTitle, false) ||
-         StartsWith(name, kEcmlShipToFirstName, false) ||
-         StartsWith(name, kEcmlShipToMiddleName, false) ||
-         StartsWith(name, kEcmlShipToLastName, false) ||
-         StartsWith(name, kEcmlShipToNameSuffix, false) ||
-         StartsWith(name, kEcmlShipToCompanyName, false) ||
-         StartsWith(name, kEcmlShipToAddress1, false) ||
-         StartsWith(name, kEcmlShipToAddress2, false) ||
-         StartsWith(name, kEcmlShipToAddress3, false) ||
-         StartsWith(name, kEcmlShipToCity, false) ||
-         StartsWith(name, kEcmlShipToStateProv, false) ||
-         StartsWith(name, kEcmlShipToPostalCode, false) ||
-         StartsWith(name, kEcmlShipToCountry, false) ||
-         StartsWith(name, kEcmlShipToPhone, false) ||
-         StartsWith(name, kEcmlShipToPhone, false) ||
-         StartsWith(name, kEcmlShipToEmail, false) ||
-         StartsWith(name, kEcmlBillToTitle, false) ||
-         StartsWith(name, kEcmlBillToFirstName, false) ||
-         StartsWith(name, kEcmlBillToMiddleName, false) ||
-         StartsWith(name, kEcmlBillToLastName, false) ||
-         StartsWith(name, kEcmlBillToNameSuffix, false) ||
-         StartsWith(name, kEcmlBillToCompanyName, false) ||
-         StartsWith(name, kEcmlBillToAddress1, false) ||
-         StartsWith(name, kEcmlBillToAddress2, false) ||
-         StartsWith(name, kEcmlBillToAddress3, false) ||
-         StartsWith(name, kEcmlBillToCity, false) ||
-         StartsWith(name, kEcmlBillToStateProv, false) ||
-         StartsWith(name, kEcmlBillToPostalCode, false) ||
-         StartsWith(name, kEcmlBillToCountry, false) ||
-         StartsWith(name, kEcmlBillToPhone, false) ||
-         StartsWith(name, kEcmlBillToPhone, false) ||
-         StartsWith(name, kEcmlBillToEmail, false) ||
-         StartsWith(name, kEcmlCardHolder, false) ||
-         StartsWith(name, kEcmlCardType, false) ||
-         StartsWith(name, kEcmlCardNumber, false) ||
-         StartsWith(name, kEcmlCardVerification, false) ||
-         StartsWith(name, kEcmlCardExpireMonth, false) ||
-         StartsWith(name, kEcmlCardExpireYear, false))) {
-      return true;
+    const string16& utf16_name = fields->field(index)->name();
+    if (StartsWith(utf16_name, ecom, true)) {
+      std::string name(UTF16ToASCII(utf16_name));
+      for (size_t i = 0; i < ARRAYSIZE_UNSAFE(form_fields); ++i) {
+        if (base::strncasecmp(name.c_str(), form_fields[i].name_,
+                              form_fields[i].length_) == 0) {
+          return true;
+        }
+      }
     }
   }
+
   return false;
 }

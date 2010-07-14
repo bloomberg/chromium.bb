@@ -300,9 +300,10 @@ bool AddressField::ParseZipCode(
   // Note: comparisons using the ecml compliant name as a prefix must be used in
   // order to accommodate Google Checkout. See FormFieldSet::GetEcmlPattern for
   // more detail.
-  if (StartsWith(name, kEcmlBillToPostalCode, false)) {
+  string16 bill_to_postal_code_field(ASCIIToUTF16(kEcmlBillToPostalCode));
+  if (StartsWith(name, bill_to_postal_code_field, false)) {
     tempType = kBillingAddress;
-  } else if (StartsWith(name, kEcmlShipToPostalCode, false)) {
+  } else if (StartsWith(name, bill_to_postal_code_field, false)) {
     tempType = kShippingAddress;
   } else {
     tempType = kGenericAddress;
