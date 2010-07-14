@@ -1,6 +1,6 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "webkit/glue/webcursor.h"
 
@@ -86,23 +86,23 @@ int WebCursor::GetCursorType() const {
     case WebCursorInfo::TypeRowResize:
       return GDK_SB_V_DOUBLE_ARROW;  // TODO(evanm): is this correct?
     case WebCursorInfo::TypeMiddlePanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_FLEUR;
     case WebCursorInfo::TypeEastPanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_SB_RIGHT_ARROW;
     case WebCursorInfo::TypeNorthPanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_SB_UP_ARROW;
     case WebCursorInfo::TypeNorthEastPanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_TOP_RIGHT_CORNER;
     case WebCursorInfo::TypeNorthWestPanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_TOP_LEFT_CORNER;
     case WebCursorInfo::TypeSouthPanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_SB_DOWN_ARROW;
     case WebCursorInfo::TypeSouthEastPanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_BOTTOM_RIGHT_CORNER;
     case WebCursorInfo::TypeSouthWestPanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_BOTTOM_LEFT_CORNER;
     case WebCursorInfo::TypeWestPanning:
-      NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
+      return GDK_SB_LEFT_ARROW;
     case WebCursorInfo::TypeMove:
       return GDK_FLEUR;
     case WebCursorInfo::TypeVerticalText:
