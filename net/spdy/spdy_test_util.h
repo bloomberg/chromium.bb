@@ -120,6 +120,16 @@ spdy::SpdyFrame* ConstructSpdySettings(spdy::SpdySettings settings);
 // Returns the constructed frame.  The caller takes ownership of the frame.
 spdy::SpdyFrame* ConstructSpdyGoAway();
 
+// Construct a SPDY WINDOW_UPDATE frame.
+// Returns the constructed frame.  The caller takes ownership of the frame.
+spdy::SpdyFrame* ConstructSpdyWindowUpdate(spdy::SpdyStreamId,
+                                           uint32 delta_window_size);
+
+// Construct a SPDY RST_STREAM frame.
+// Returns the constructed frame.  The caller takes ownership of the frame.
+spdy::SpdyFrame* ConstructSpdyRstStream(spdy::SpdyStreamId stream_id,
+                                        spdy::SpdyStatusCodes status);
+
 // Construct a single SPDY header entry, for validation.
 // |extra_headers| are the extra header-value pairs.
 // |buffer| is the buffer we're filling in.
