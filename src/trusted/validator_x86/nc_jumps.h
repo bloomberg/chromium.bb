@@ -55,8 +55,8 @@ void NaClJumpValidator(struct NaClValidatorState* state,
 /* Compares the collected actual jumps and the set of possible jump points,
  * and reports any descrepancies that don't follow NACL rules.
  */
-void NaClJumpValidatorSummarize(FILE* file,
-                                struct NaClValidatorState* state,
+void NaClJumpValidatorSummarize(struct NaClValidatorState* state,
+                                struct NaClInstIter* iter,
                                 struct NaClJumpSets* jump_sets);
 
 /* Cleans up memory used by the jump validator. */

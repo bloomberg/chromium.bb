@@ -87,10 +87,7 @@ static Bool NaClIsValidMemOffset(
       base_reg != RegRSP &&
       base_reg != RegRBP &&
       base_reg != RegRIP) {
-    /* Don't print warning about non-set memory offset, unless
-     * read sandboxing.
-     */
-    if (print_messages && IsPossibleSandboxingNode(node)) {
+    if (print_messages) {
       NaClValidatorInstMessage(
           LOG_ERROR, state, inst,
           (base_reg == RegUnknown
@@ -139,7 +136,7 @@ static Bool NaClIsValidMemOffset(
         (ExprConstant64 == vector->node[disp_index].kind)) {
       if (print_messages) {
         NaClValidatorInstMessage(LOG_ERROR, state, inst,
-                                 "Invalid index register in memory offset\n");
+                                 "Invalid displacement in memory offset\n");
       }
       return FALSE;
     }
@@ -164,6 +161,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
   /* Look for assignments on a memory offset. */
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     NaClExp* node = &vector->node[i];
+    if (NaClValidatorQuit(state)) break;
     DEBUG(printf("processing argument %"NACL_PRIu32"\n", i));
     if (IsPossibleSandboxingNode(node)) {
       DEBUG(printf("found possible sandboxing reference\n"));
@@ -261,17 +259,16 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
       } else if (UndefinedExp == node->kind ||
                  (ExprRegister == node->kind &&
                   RegUnknown == NaClGetExpRegister(node))) {
-        /* First rule out case where the base or index registers of the memory
+        /* First rule out case where the index registers of the memory
          * offset may be unknown.
          */
         int parent_index = NaClGetExpParentIndex(vector, i);
         if (parent_index >= 0 &&
-            (i == NaClGetExpKidIndex(vector, parent_index, 0) ||
-             i == NaClGetExpKidIndex(vector, parent_index, 1))) {
-          /* Special case of memory offsets that we allow, ignore.
-             That is, memory offsets can optionally define a base and
-             an index register. If they aren't specified, the value
-             RegUnknown is used as a placeholder (and hence legal).
+            (i == NaClGetExpKidIndex(vector, parent_index, 1))) {
+          /* Special case of memory offsets that we allow. That is, memory
+           * offsets can optionally define index register. If the index
+           * register isn't specified, the value RegUnknown is used as
+           * a placeholder (and hence legal).
            */
         } else {
           /* This shouldn't happpen, but if it does, its because either:

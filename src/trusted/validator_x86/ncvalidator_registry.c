@@ -59,13 +59,6 @@ void NaClValidatorInit() {
   }
 
   NaClRegisterValidator(
-      (NaClValidator) NaClJumpValidator,
-      (NaClValidatorPostValidate) NULL,
-      (NaClValidatorPrintStats) NaClJumpValidatorSummarize,
-      (NaClValidatorMemoryCreate) NaClJumpValidatorCreate,
-      (NaClValidatorMemoryDestroy) NaClJumpValidatorDestroy);
-
-  NaClRegisterValidator(
       (NaClValidator) NaClCpuCheck,
       (NaClValidatorPostValidate) NULL,
       (NaClValidatorPrintStats) NaClCpuCheckSummary,
@@ -92,6 +85,18 @@ void NaClValidatorInit() {
       (NaClValidatorPrintStats) NULL,
       (NaClValidatorMemoryCreate) NULL,
       (NaClValidatorMemoryDestroy) NULL);
+
+  /* Thie comes last, since we want error messages that may come
+   * from other summarizers (i.e. NaClBaseRegisterSummarize in
+   * particular) to come before the summarization error messages
+   * of NaClJumpValidatorSummarize.
+   */
+  NaClRegisterValidator(
+      (NaClValidator) NaClJumpValidator,
+      (NaClValidatorPostValidate) NaClJumpValidatorSummarize,
+      (NaClValidatorPrintStats) NULL,
+      (NaClValidatorMemoryCreate) NaClJumpValidatorCreate,
+      (NaClValidatorMemoryDestroy) NaClJumpValidatorDestroy);
 
   if (NACL_FLAGS_opcode_histogram) {
     NaClRegisterValidator(

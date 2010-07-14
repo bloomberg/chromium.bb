@@ -18,6 +18,7 @@
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"
+#include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
 
@@ -44,6 +45,7 @@ static int NaClGrokFlags(int argc, const char* argv[]) {
   int i;
   int new_argc;
   char* error_level = NULL;
+  Bool write_sandbox = !NACL_FLAGS_read_sandbox;
   if (argc == 0) return 0;
   new_argc = 1;
   /* TODO(karl) Allow command line option to set base register. */
@@ -57,6 +59,12 @@ static int NaClGrokFlags(int argc, const char* argv[]) {
         GrokIntFlag("-alignment", arg, &NACL_FLAGS_block_alignment) ||
         GrokBoolFlag("--quit-on-error", arg, &NACL_FLAGS_quit_on_error) ||
         GrokBoolFlag("--identity_mask", arg, &NACL_FLAGS_identity_mask)) {
+      continue;
+    } else if (GrokBoolFlag("-write_sfi", arg, &write_sandbox)) {
+      NACL_FLAGS_read_sandbox = !write_sandbox;
+      continue;
+    } else if (GrokBoolFlag("-readwrite_sfi", arg, &NACL_FLAGS_read_sandbox)) {
+      write_sandbox = !NACL_FLAGS_read_sandbox;
       continue;
     } else if (GrokCstringFlag("-error_level", arg, &error_level)) {
       int i;

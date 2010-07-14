@@ -143,7 +143,7 @@ void NaClValidatorInstMessage(int level,
   }
 }
 
-static INLINE Bool NaClValidatorQuit(NaClValidatorState* state) {
+Bool NaClValidatorQuit(NaClValidatorState* state) {
   return state->quit_after_first_error && !state->validates_ok;
 }
 

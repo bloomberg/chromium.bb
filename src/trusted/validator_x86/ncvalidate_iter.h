@@ -235,4 +235,7 @@ void NaClValidatorInstMessage(int level,
                               const char* format,
                               ...) ATTRIBUTE_FORMAT_PRINTF(4, 5);
 
+/* Returns true if the validator should quit due to previous errors. */
+Bool NaClValidatorQuit(NaClValidatorState* state);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_ITER_H__ */

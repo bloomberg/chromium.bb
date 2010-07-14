@@ -99,15 +99,6 @@ static void NaClAddressSetAdd(NaClAddressSet set, NaClPcAddress address,
   }
 }
 
-/* Removes the given address from the given address set. */
-static void NaClAddressSetRemove(NaClAddressSet set, NaClPcAddress address,
-                                 NaClValidatorState* state) {
-  if (NaClCheckAddressRange(address, state)) {
-    NaClPcAddress offset = address - state->vbase;
-    set[NaClPcAddressToOffset(offset)] &= ~(NaClPcAddressToMask(offset));
-  }
-}
-
 /* Create an address set for the range 0..Size. */
 static INLINE NaClAddressSet NaClAddressSetCreate(NaClMemorySize size) {
   /* Be sure to add an element for partial overlaps. */
@@ -138,6 +129,13 @@ typedef struct NaClJumpSets {
    * only having the first address in the set).
    */
   NaClAddressSet possible_targets;
+  /* Removed targets, due to instruction being in the middle of an atomic
+   * sequence. Note: This is needed so that we can allow validators to
+   * run in any order. If we didn't do this, then we are very timing dependent
+   * on calls to NaClMarkInstructionJumpIllegal, which must appear after
+   * the call to NaClJumpValidator.
+   */
+  NaClAddressSet removed_targets;
 } NaClJumpSets;
 
 /* Generates a jump validator. */
@@ -149,8 +147,11 @@ NaClJumpSets* NaClJumpValidatorCreate(NaClValidatorState* state) {
         NaClAddressSetCreate(state->vlimit - align_base);
     jump_sets->possible_targets =
         NaClAddressSetCreate(state->vlimit - align_base);
+    jump_sets->removed_targets =
+        NaClAddressSetCreate(state->vlimit - align_base);
     if (jump_sets->actual_targets == NULL ||
-        jump_sets->possible_targets == NULL) {
+        jump_sets->possible_targets == NULL ||
+        jump_sets->removed_targets == NULL) {
       NaClValidatorMessage(LOG_FATAL, state, "unable to allocate jump sets");
     }
   }
@@ -571,6 +572,7 @@ static void NaClRememberIp(NaClValidatorState* state,
     NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
                              "Instruction pc out of range\n");
   } else {
+    DEBUG(printf("Add possible jump address: %"NACL_PRIxNaClPcAddress"\n", pc));
     NaClAddressSetAdd(jump_sets->possible_targets, pc, state);
   }
 }
@@ -617,13 +619,30 @@ void NaClJumpValidator(NaClValidatorState* state,
   }
 }
 
-void NaClJumpValidatorSummarize(FILE* file,
-                                NaClValidatorState* state,
+/* Returns true if the given address corresponds to the beginning
+ * of an atomic sequence of instructions, and hence can be branched to.
+ */
+static Bool IsNaClReachableAddress(NaClValidatorState* state,
+                                   NaClPcAddress addr,
+                                   NaClJumpSets* jump_sets) {
+  DEBUG(printf("possible contains: %d\n",
+               (int) NaClAddressSetContains(jump_sets->possible_targets,
+                                            addr, state)));
+  DEBUG(printf("removed contains: %d\n",
+               (int) NaClAddressSetContains(jump_sets->removed_targets,
+                                            addr, state)));
+  return NaClAddressSetContains(jump_sets->possible_targets, addr, state) &&
+      !NaClAddressSetContains(jump_sets->removed_targets, addr, state);
+}
+
+void NaClJumpValidatorSummarize(NaClValidatorState* state,
+                                NaClInstIter* iter,
                                 NaClJumpSets* jump_sets) {
   /* Check that any explicit jump is to a possible (atomic) sequence
    * of disassembled instructions.
    */
   NaClPcAddress addr;
+  if (NaClValidatorQuit(state)) return;
   NaClValidatorMessage(
       LOG_INFO, state,
       "Checking jump targets: %"NACL_PRIxNaClPcAddress
@@ -631,7 +650,8 @@ void NaClJumpValidatorSummarize(FILE* file,
       state->vbase, state->vlimit);
   for (addr = state->vbase; addr < state->vlimit; addr++) {
     if (NaClAddressSetContains(jump_sets->actual_targets, addr, state)) {
-      if (!NaClAddressSetContains(jump_sets->possible_targets, addr, state)) {
+      DEBUG(printf("Checking jump address: %"NACL_PRIxNaClPcAddress"\n", addr));
+      if (!IsNaClReachableAddress(state, addr, jump_sets)) {
         NaClValidatorPcAddressMessage(LOG_ERROR, state, addr,
                                       "Bad jump target\n");
       }
@@ -648,7 +668,9 @@ void NaClJumpValidatorSummarize(FILE* file,
                          state->vbase);
   } else {
     for (addr = state->vbase; addr < state->vlimit; addr += state->alignment) {
-      if (!NaClAddressSetContains(jump_sets->possible_targets, addr, state)) {
+      DEBUG(printf("Checking block address: %"NACL_PRIxNaClPcAddress"\n",
+                   addr));
+      if (!IsNaClReachableAddress(state, addr, jump_sets)) {
         NaClValidatorPcAddressMessage(
             LOG_ERROR, state, addr, "Bad basic block alignment.\n");
       }
@@ -660,6 +682,7 @@ void NaClJumpValidatorDestroy(NaClValidatorState* state,
                               NaClJumpSets* jump_sets) {
   NaClAddressSetDestroy(jump_sets->actual_targets);
   NaClAddressSetDestroy(jump_sets->possible_targets);
+  NaClAddressSetDestroy(jump_sets->removed_targets);
   free(jump_sets);
 }
 
@@ -679,6 +702,6 @@ void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* state,
     DEBUG(printf("Mark instruction as jump illegal: %"NACL_PRIxNaClPcAddress
                  "\n",
                  pc));
-    NaClAddressSetRemove(jump_sets->possible_targets, pc, state);
+    NaClAddressSetAdd(jump_sets->removed_targets, pc, state);
   }
 }
