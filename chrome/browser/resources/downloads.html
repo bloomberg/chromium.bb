@@ -585,7 +585,10 @@ Download.prototype.update = function(download) {
 
     this.nodeSince_.innerHTML = this.since_;
     this.nodeDate_.innerHTML = this.date_;
-    this.nodeURL_.textContent = this.url_;
+    // Don't unnecessarily update the url, as doing so will remove any
+    // text selection the user has started (http://crbug.com/44982).
+    if (this.nodeURL_.textContent != this.url_)
+      this.nodeURL_.textContent = this.url_;
     this.nodeStatus_.innerHTML = this.getStatusText_();
 
     this.danger_.style.display = 'none';
