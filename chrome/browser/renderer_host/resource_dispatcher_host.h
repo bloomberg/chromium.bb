@@ -401,6 +401,16 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
                         bool has_new_first_party_for_cookies,
                         const GURL& new_first_party_for_cookies);
 
+  ResourceHandler* CreateSafeBrowsingResourceHandler(
+      ResourceHandler* handler, int child_id, int route_id,
+      ResourceType::Type resource_type);
+
+  // Creates ResourceDispatcherHostRequestInfo for a browser-initiated request
+  // (a download or a page save). |download| should be true if the request
+  // is a file download.
+  ResourceDispatcherHostRequestInfo* CreateRequestInfoForBrowserRequest(
+      ResourceHandler* handler, int child_id, int route_id, bool download);
+
   // Returns true if |request| is in |pending_requests_|.
   bool IsValidRequest(URLRequest* request);
 

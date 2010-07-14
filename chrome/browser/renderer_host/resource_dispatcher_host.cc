@@ -443,13 +443,8 @@ void ResourceDispatcherHost::BeginRequest(
   // Insert safe browsing at the front of the chain, so it gets to decide
   // on policies first.
   if (safe_browsing_->enabled()) {
-    handler = new SafeBrowsingResourceHandler(handler,
-                                              child_id,
-                                              route_id,
-                                              request_data.resource_type,
-                                              safe_browsing_,
-                                              this,
-                                              receiver_);
+    handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
+                                                request_data.resource_type);
   }
 
   // Make extra info and read footer (contains request ID).
@@ -533,6 +528,36 @@ void ResourceDispatcherHost::OnFollowRedirect(
                          new_first_party_for_cookies);
 }
 
+ResourceHandler* ResourceDispatcherHost::CreateSafeBrowsingResourceHandler(
+    ResourceHandler* handler, int child_id, int route_id,
+    ResourceType::Type resource_type) {
+  return new SafeBrowsingResourceHandler(handler,
+                                         child_id,
+                                         route_id,
+                                         resource_type,
+                                         safe_browsing_,
+                                         this,
+                                         receiver_);
+}
+
+ResourceDispatcherHostRequestInfo*
+ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
+    ResourceHandler* handler, int child_id, int route_id, bool download) {
+  return new ResourceDispatcherHostRequestInfo(handler,
+                                               ChildProcessInfo::RENDER_PROCESS,
+                                               child_id,
+                                               route_id,
+                                               request_id_,
+                                               "null",  // frame_origin
+                                               "null",  // main_frame_origin
+                                               ResourceType::SUB_RESOURCE,
+                                               0,  // upload_size
+                                               download,  // is_download
+                                               download, // allow_download
+                                               -1, // Host renderer id
+                                               -1); // Host render view id
+}
+
 void ResourceDispatcherHost::OnClosePageACK(
     const ViewMsg_ClosePage_Params& params) {
   if (params.for_cross_site_transition) {
@@ -594,15 +619,9 @@ void ResourceDispatcherHost::BeginDownload(
                                   true,
                                   save_info);
 
-
   if (safe_browsing_->enabled()) {
-    handler = new SafeBrowsingResourceHandler(handler,
-                                              child_id,
-                                              route_id,
-                                              ResourceType::MAIN_FRAME,
-                                              safe_browsing_,
-                                              this,
-                                              receiver_);
+    handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
+                                                ResourceType::MAIN_FRAME);
   }
 
   if (!URLRequest::IsHandledURL(url)) {
@@ -619,19 +638,7 @@ void ResourceDispatcherHost::BeginDownload(
       net::LOAD_IS_DOWNLOAD);
 
   ResourceDispatcherHostRequestInfo* extra_info =
-      new ResourceDispatcherHostRequestInfo(handler,
-                                            ChildProcessInfo::RENDER_PROCESS,
-                                            child_id,
-                                            route_id,
-                                            request_id_,
-                                            "null",  // frame_origin
-                                            "null",  // main_frame_origin
-                                            ResourceType::SUB_RESOURCE,
-                                            0,  // upload_size
-                                            true,  // is_download
-                                            true, // allow_download
-                                            -1, // Host renderer id
-                                            -1); // Host render view id
+      CreateRequestInfoForBrowserRequest(handler, child_id, route_id, true);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(child_id, request);
 
@@ -678,20 +685,7 @@ void ResourceDispatcherHost::BeginSaveFile(const GURL& url,
 
   // Since we're just saving some resources we need, disallow downloading.
   ResourceDispatcherHostRequestInfo* extra_info =
-      new ResourceDispatcherHostRequestInfo(handler,
-                                            ChildProcessInfo::RENDER_PROCESS,
-                                            child_id,
-                                            route_id,
-                                            request_id_,
-                                            "null",  // frame_origin
-                                            "null",  // main_frame_origin
-                                            ResourceType::SUB_RESOURCE,
-                                            0,  // upload_size
-                                            false,  // is_download
-                                            false,  // allow_download
-                                            -1, // Host renderer id
-                                            -1); // Host render view id
-
+      CreateRequestInfoForBrowserRequest(handler, child_id, route_id, false);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(child_id, request);
 
