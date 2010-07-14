@@ -235,31 +235,21 @@ int CurrentTabId() {
       break;
     }
     case kExtensionContextInspect: {
-      NSPoint popupPoint;
       BrowserWindowCocoa* window =
           static_cast<BrowserWindowCocoa*>(browser->window());
-      LocationBar* locationBar = window->GetLocationBar();
-      AutocompleteTextField* field =
-          (AutocompleteTextField*)locationBar->location_entry()->
-          GetNativeView();
-      AutocompleteTextFieldCell* fieldCell = [field autocompleteTextFieldCell];
-      DCHECK(action_);
-      NSRect popupRect =
-          [fieldCell pageActionFrameForExtensionAction:action_
-                                               inFrame:[field bounds]];
-      if (!NSEqualRects(popupRect, NSZeroRect)) {
-        popupRect = [[field superview] convertRect:popupRect toView:nil];
-        popupPoint = popupRect.origin;
-        NSRect fieldFrame = [field bounds];
-        fieldFrame = [field convertRect:fieldFrame toView:nil];
-        popupPoint.x += fieldFrame.origin.x + popupRect.size.width / 2;
-      } else {
-        ToolbarController* toolbarController =
-            [window->cocoa_controller() toolbarController];
+      ToolbarController* toolbarController =
+          [window->cocoa_controller() toolbarController];
+      LocationBarViewMac* locationBarView =
+          [toolbarController locationBarBridge];
+      NSPoint popupPoint = locationBarView->GetPageActionBubblePoint(action_);
+
+      // If there was no matching page action, it was a browser action.
+      if (NSEqualPoints(popupPoint, NSZeroPoint)) {
         BrowserActionsController* controller =
             [toolbarController browserActionsController];
         popupPoint = [controller popupPointForBrowserAction:extension_];
       }
+
       int tabId = CurrentTabId();
       GURL url = action_->GetPopupUrl(tabId);
       DCHECK(url.is_valid());

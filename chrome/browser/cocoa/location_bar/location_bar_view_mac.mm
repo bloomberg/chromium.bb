@@ -284,8 +284,11 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
   page_action_views_.RefreshViews();
   [field_ setNeedsDisplay:YES];
 
-  LocationBarViewMac::PageActionImageView* page_action_image_view =
-      GetPageActionImageView(page_action);
+  LocationBarViewMac::PageActionImageView* page_action_image_view = NULL;
+  for (size_t i = 0; i < page_action_views_.Count(); ++i) {
+    if (page_action_views_.ViewAt(i)->page_action() == page_action)
+      page_action_image_view = page_action_views_.ViewAt(i);
+  }
   DCHECK(page_action_image_view);
   if (!page_action_image_view)
     return;
@@ -295,33 +298,27 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
       GURL(WideToUTF8(toolbar_model_->GetText())));
 }
 
-NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
-  const size_t index = GetPageActionIndex(page_action);
+NSPoint LocationBarViewMac::GetPageActionBubblePoint(
+    ExtensionAction* page_action) {
+  DCHECK(page_action);
+  size_t index = 0;
+  for (; index < page_action_views_.Count(); ++index) {
+    if (page_action_views_.ViewAt(index)->page_action() == page_action)
+      break;
+  }
+  DCHECK_LT(index, page_action_views_.Count());
+  if (index == page_action_views_.Count())
+    return NSZeroPoint;
+
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  const NSRect iconRect =
-      [cell pageActionFrameForIndex:index inFrame:[field_ bounds]];
-  return [field_ convertRect:iconRect toView:nil];
-}
-
-size_t LocationBarViewMac::GetPageActionIndex(ExtensionAction* page_action) {
-  DCHECK(page_action);
-  for (size_t i = 0; i < page_action_views_.Count(); ++i) {
-    if (page_action_views_.ViewAt(i)->page_action() == page_action)
-      return i;
+  NSRect frame = [cell pageActionFrameForIndex:index inFrame:[field_ bounds]];
+  if (!NSIsEmptyRect(frame)) {
+    frame = [field_ convertRect:frame toView:nil];
+    return NSMakePoint(NSMidX(frame), NSMinY(frame));
   }
-  NOTREACHED();
-  return 0;
-}
 
-LocationBarViewMac::PageActionImageView*
-    LocationBarViewMac::GetPageActionImageView(ExtensionAction* page_action) {
-  DCHECK(page_action);
-  for (size_t i = 0; i < page_action_views_.Count(); ++i) {
-    if (page_action_views_.ViewAt(i)->page_action() == page_action)
-      return page_action_views_.ViewAt(i);
-  }
   NOTREACHED();
-  return NULL;
+  return NSZeroPoint;
 }
 
 ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {

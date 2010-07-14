@@ -109,7 +109,7 @@ class WrenchMenuModel;
      resizeDelegate:(id<ViewResizer>)resizeDelegate;
 
 // Get the C++ bridge object representing the location bar for this tab.
-- (LocationBar*)locationBarBridge;
+- (LocationBarViewMac*)locationBarBridge;
 
 // Called by the Window delegate so we can provide a custom field editor if
 // needed.

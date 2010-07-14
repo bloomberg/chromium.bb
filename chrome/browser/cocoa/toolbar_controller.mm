@@ -358,7 +358,7 @@ class PrefObserverBridge : public NotificationObserver {
   [self mouseMoved:event];
 }
 
-- (LocationBar*)locationBarBridge {
+- (LocationBarViewMac*)locationBarBridge {
   return locationBarView_.get();
 }
 

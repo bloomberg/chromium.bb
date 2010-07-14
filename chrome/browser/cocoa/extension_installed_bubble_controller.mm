@@ -143,11 +143,11 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   if (!extension_->page_action() || pageActionRemoved_)
     return;
   pageActionRemoved_ = YES;
-  BrowserWindowCocoa* window = static_cast<BrowserWindowCocoa*>(
-      browser_->window());
-  LocationBarViewMac* locationBarView = static_cast<LocationBarViewMac*>(
-      [[window->cocoa_controller() toolbarController] locationBarBridge]);
 
+  BrowserWindowCocoa* window =
+      static_cast<BrowserWindowCocoa*>(browser_->window());
+  LocationBarViewMac* locationBarView =
+      [window->cocoa_controller() locationBarBridge];
   locationBarView->SetPreviewEnabledPageAction(extension_->page_action(),
                                                false);  // disables preview.
 }
@@ -173,9 +173,8 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
     }
     case extension_installed_bubble::kPageAction: {
       LocationBarViewMac* locationBarView =
-          static_cast<LocationBarViewMac*>(
-              [[window->cocoa_controller() toolbarController]
-               locationBarBridge]);
+          [window->cocoa_controller() locationBarBridge];
+
       // Tell the location bar to show a preview of the page action icon, which
       // would ordinarily only be displayed on a page of the appropriate type.
       // We remove this preview when the extension installed bubble closes.
@@ -183,9 +182,8 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
                                                    true);
 
       // Find the center of the bottom of the page action icon.
-      const NSRect frame =
-          locationBarView->GetPageActionFrame(extension_->page_action());
-      arrowPoint = NSMakePoint(NSMidX(frame), NSMinY(frame));
+      arrowPoint =
+          locationBarView->GetPageActionBubblePoint(extension_->page_action());
       break;
     }
     default: {

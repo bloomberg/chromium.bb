@@ -346,7 +346,7 @@
   return statusBubble_;
 }
 
-- (LocationBar*)locationBarBridge {
+- (LocationBarViewMac*)locationBarBridge {
   return [toolbarController_ locationBarBridge];
 }
 
@@ -1637,8 +1637,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   if (toolbarCollapsed_ == collapsed)
     return;
 
-  static_cast<LocationBarViewMac*>([self locationBarBridge])->
-      SetEditable(!collapsed);
+  [self locationBarBridge]->SetEditable(!collapsed);
 
   // TODO(andybons): Actually hide toolbar if collapsed.
 

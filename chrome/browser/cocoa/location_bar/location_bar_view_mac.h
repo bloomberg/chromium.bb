@@ -108,19 +108,14 @@ class LocationBarViewMac : public AutocompleteEditController,
   void SetPreviewEnabledPageAction(ExtensionAction* page_action,
                                    bool preview_enabled);
 
-  // Return |page_action|'s frame in window coordinates.
-  NSRect GetPageActionFrame(ExtensionAction* page_action);
-
-  // Return the index of a given page_action.
-  size_t GetPageActionIndex(ExtensionAction* page_action);
+  // Return |page_action|'s info-bubble point in window coordinates.
+  // Returns |NSZeroPoint| if |page_action| is not present.
+  NSPoint GetPageActionBubblePoint(ExtensionAction* page_action);
 
   // PageActionImageView is nested in LocationBarViewMac, and only needed
   // here so that we can access the icon of a page action when preview_enabled_
   // has been set.
   class PageActionImageView;
-
-  // Return the PageActionImageView associated with |page_action|.
-  PageActionImageView* GetPageActionImageView(ExtensionAction* page_action);
 
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,

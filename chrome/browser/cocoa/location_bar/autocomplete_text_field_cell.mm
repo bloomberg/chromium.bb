@@ -450,17 +450,6 @@ void CalculatePositionsInFrame(
   return NSZeroRect;
 }
 
-- (NSRect)pageActionFrameForExtensionAction:(ExtensionAction*)action
-                                    inFrame:(NSRect)cellFrame {
-  const size_t pageActionCount = [self pageActionCount];
-  size_t pos = 0;
-  while (pos < pageActionCount &&
-      action != page_action_views_->ViewAt(pos)->page_action())
-    ++pos;
-  return (pos == pageActionCount) ? NSZeroRect :
-      [self pageActionFrameForIndex:pos inFrame:cellFrame];
-}
-
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   DCHECK(hintString_);
 

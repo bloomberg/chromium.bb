@@ -35,7 +35,7 @@ class ConstrainedWindowMac;
 @class GTMWindowSheetController;
 @class IncognitoImageView;
 @class InfoBarContainerController;
-class LocationBar;
+class LocationBarViewMac;
 class StatusBubbleMac;
 class TabContents;
 @class TabStripController;
@@ -156,7 +156,7 @@ class TabStripModelObserverBridge;
 - (StatusBubbleMac*)statusBubble;
 
 // Access the C++ bridge object representing the location bar.
-- (LocationBar*)locationBarBridge;
+- (LocationBarViewMac*)locationBarBridge;
 
 // Updates the toolbar (and transitively the location bar) with the states of
 // the specified |tab|.  If |shouldRestore| is true, we're switching
