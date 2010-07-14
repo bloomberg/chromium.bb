@@ -45,6 +45,9 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kGeolocationContentSettings,
   prefs::kGeolocationDefaultContentSetting,
 
+  // Options dialog: under the hood -> Content Settings -> Notifications.
+  prefs::kDesktopNotificationDefaultContentSetting,
+
   // Options dialog: Under the hood -> Clear browsing data.
   //  All working but no live update.
   prefs::kDeleteBrowsingHistory,
