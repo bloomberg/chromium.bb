@@ -50,6 +50,11 @@ function load() {
                                       localStrings.getString('labsPage'),
                                       'labsPage');
     OptionsPage.register(labsOptions);
+    var languageSettings = new OptionsPage('language',
+                                           localStrings.getString(
+                                               'languagePage'),
+                                           'languagePage');
+    OptionsPage.registerSubPage(languageSettings);
   }
 
   var syncSettings = new OptionsPage('sync',
@@ -103,6 +108,7 @@ window.onpopstate = function(e) {
   <div id="mainview">
      <if expr="pp_ifdef('chromeos')">
         <include src="options/chromeos_system_options.html">
+        <include src="options/chromeos_language_options.html">
         <include src="options/chromeos_labs.html">
         <!-- TODO(mazda): include options/chromeos_language_hangul_options.html
              once the language options dialog is ready. -->

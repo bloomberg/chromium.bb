@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/dom_ui/sync_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/labs_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_hangul_options_handler.h"
+#include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
 
@@ -115,6 +116,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new LabsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageHangulOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
 #endif
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
 

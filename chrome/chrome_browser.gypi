@@ -396,6 +396,8 @@
         'browser/chromeos/dom_ui/labs_handler.h',
         'browser/chromeos/dom_ui/language_hangul_options_handler.cc',
         'browser/chromeos/dom_ui/language_hangul_options_handler.h',
+        'browser/chromeos/dom_ui/language_options_handler.cc',
+        'browser/chromeos/dom_ui/language_options_handler.h',
         'browser/chromeos/dom_ui/system_options_handler.cc',
         'browser/chromeos/dom_ui/system_options_handler.h',
         'browser/chromeos/drop_shadow_label.cc',

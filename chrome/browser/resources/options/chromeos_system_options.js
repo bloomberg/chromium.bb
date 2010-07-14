@@ -36,7 +36,7 @@ SystemOptions.prototype = {
     }
 
     $('language-button').onclick = function(event) {
-      // TODO: Open ChromeOS language settings page.
+      OptionsPage.showPageByName('language');
     };
   },
 };
