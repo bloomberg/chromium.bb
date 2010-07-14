@@ -91,7 +91,7 @@ OptionsPage.registerSubPage = function(page) {
   OptionsPage.registeredPages_[page.name] = page;
   var pageNav = document.createElement('li');
   pageNav.id = page.name + 'PageNav';
-  pageNav.className = 'navbar-item subpage-nav';
+  pageNav.className = 'navbar-item hidden';
   pageNav.setAttribute('pageName', page.name);
   pageNav.textContent = page.title;
   var subpagesnav = $('subpagesnav');
@@ -146,6 +146,8 @@ OptionsPage.prototype = {
       }
       if (this.tab) {
         this.tab.classList.add('navbar-item-selected');
+        if (this.tab.parentNode && this.tab.parentNode.id == 'subpagesnav')
+          this.tab.classList.remove('hidden');
       }
     } else {
       if (this.isOverlay) {
@@ -156,6 +158,8 @@ OptionsPage.prototype = {
       this.pageDiv.style.display = 'none';
       if (this.tab) {
         this.tab.classList.remove('navbar-item-selected');
+        if (this.tab.parentNode && this.tab.parentNode.id == 'subpagesnav')
+          this.tab.classList.add('hidden');
       }
     }
   }

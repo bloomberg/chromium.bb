@@ -10,18 +10,11 @@
 #include "base/values.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
 namespace {
-
-// The list of content settings types that we display in the tabbed options
-// under the Content Settings page. This should be filled in as more pages
-// are added.
-ContentSettingsType kContentSettingsTypes[] = {
-  CONTENT_SETTINGS_TYPE_COOKIES,
-  CONTENT_SETTINGS_TYPE_IMAGES,
-};
 
 std::wstring ContentSettingsTypeToGroupName(ContentSettingsType type) {
   switch (type) {
@@ -29,6 +22,16 @@ std::wstring ContentSettingsTypeToGroupName(ContentSettingsType type) {
       return L"cookies";
     case CONTENT_SETTINGS_TYPE_IMAGES:
       return L"images";
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+      return L"javascript";
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      return L"plugins";
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      return L"popups";
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      return L"location";
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return L"notifications";
 
     default:
       NOTREACHED();
@@ -41,6 +44,16 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
     return CONTENT_SETTINGS_TYPE_COOKIES;
   if (name == "images")
     return CONTENT_SETTINGS_TYPE_IMAGES;
+  if (name == "javascript")
+    return CONTENT_SETTINGS_TYPE_JAVASCRIPT;
+  if (name == "plugins")
+    return CONTENT_SETTINGS_TYPE_PLUGINS;
+  if (name == "popups")
+    return CONTENT_SETTINGS_TYPE_POPUPS;
+  if (name == "location")
+    return CONTENT_SETTINGS_TYPE_GEOLOCATION;
+  if (name == "notifications")
+    return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
 
   NOTREACHED();
   return CONTENT_SETTINGS_TYPE_DEFAULT;
@@ -121,6 +134,64 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_IMAGES_LOAD_RADIO));
   localized_strings->SetString(L"images_block",
       l10n_util::GetString(IDS_IMAGES_NOLOAD_RADIO));
+
+  // JavaScript filter.
+  localized_strings->SetString(L"javascript_tab_label",
+      l10n_util::GetString(IDS_JAVASCRIPT_TAB_LABEL));
+  localized_strings->SetString(L"javascript_setting",
+      l10n_util::GetString(IDS_JS_SETTING_LABEL));
+  localized_strings->SetString(L"javascript_allow",
+      l10n_util::GetString(IDS_JS_ALLOW_RADIO));
+  localized_strings->SetString(L"javascript_block",
+      l10n_util::GetString(IDS_JS_DONOTALLOW_RADIO));
+
+  // Plug-ins filter.
+  localized_strings->SetString(L"plugins_tab_label",
+      l10n_util::GetString(IDS_PLUGIN_TAB_LABEL));
+  localized_strings->SetString(L"plugins_setting",
+      l10n_util::GetString(IDS_PLUGIN_SETTING_LABEL));
+  localized_strings->SetString(L"plugins_allow",
+      l10n_util::GetString(IDS_PLUGIN_LOAD_RADIO));
+  localized_strings->SetString(L"plugins_block",
+      l10n_util::GetString(IDS_PLUGIN_NOLOAD_RADIO));
+  localized_strings->SetString(L"disable_individual_plugins",
+      l10n_util::GetString(IDS_PLUGIN_SELECTIVE_DISABLE));
+  localized_strings->SetString(L"chrome_plugin_url",
+      chrome::kChromeUIPluginsURL);
+
+  // Pop-ups filter.
+  localized_strings->SetString(L"popups_tab_label",
+      l10n_util::GetString(IDS_POPUP_TAB_LABEL));
+  localized_strings->SetString(L"popups_setting",
+      l10n_util::GetString(IDS_POPUP_SETTING_LABEL));
+  localized_strings->SetString(L"popups_allow",
+      l10n_util::GetString(IDS_POPUP_ALLOW_RADIO));
+  localized_strings->SetString(L"popups_block",
+      l10n_util::GetString(IDS_POPUP_BLOCK_RADIO));
+
+  // Location filter.
+  localized_strings->SetString(L"location_tab_label",
+      l10n_util::GetString(IDS_GEOLOCATION_TAB_LABEL));
+  localized_strings->SetString(L"location_setting",
+      l10n_util::GetString(IDS_GEOLOCATION_SETTING_LABEL));
+  localized_strings->SetString(L"location_allow",
+      l10n_util::GetString(IDS_GEOLOCATION_ALLOW_RADIO));
+  localized_strings->SetString(L"location_ask",
+      l10n_util::GetString(IDS_GEOLOCATION_ASK_RADIO));
+  localized_strings->SetString(L"location_block",
+      l10n_util::GetString(IDS_GEOLOCATION_BLOCK_RADIO));
+
+  // Notifications filter.
+  localized_strings->SetString(L"notifications_tab_label",
+      l10n_util::GetString(IDS_NOTIFICATIONS_TAB_LABEL));
+  localized_strings->SetString(L"notifications_setting",
+      l10n_util::GetString(IDS_NOTIFICATIONS_SETTING_LABEL));
+  localized_strings->SetString(L"notifications_allow",
+      l10n_util::GetString(IDS_NOTIFICATIONS_ALLOW_RADIO));
+  localized_strings->SetString(L"notifications_ask",
+      l10n_util::GetString(IDS_NOTIFICATIONS_ASK_RADIO));
+  localized_strings->SetString(L"notifications_block",
+      l10n_util::GetString(IDS_NOTIFICATIONS_BLOCK_RADIO));
 }
 
 void ContentSettingsHandler::RegisterMessages() {
@@ -141,8 +212,9 @@ void ContentSettingsHandler::GetContentFilterSettings(const Value* value) {
 
   const HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
-  for (size_t i = 0; i < arraysize(kContentSettingsTypes); ++i) {
-    ContentSettingsType type = kContentSettingsTypes[i];
+  for (int i = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
+       i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    ContentSettingsType type = static_cast<ContentSettingsType>(i);
     ContentSetting default_setting = settings_map->
         GetDefaultContentSetting(type);
 

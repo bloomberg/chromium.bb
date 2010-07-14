@@ -17,8 +17,8 @@
 }
 
 #navbar-container {
-  background: -webkit-gradient(linear, 
-                               left top, 
+  background: -webkit-gradient(linear,
+                               left top,
                                left bottom,
                                from(rgba(255,255,255,0)),
                                color-stop(0.7, rgba(255,255,255,0)),

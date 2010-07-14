@@ -28,7 +28,7 @@ AdvancedOptions.prototype = {
 
     // Setup function handlers for buttons.
     $('privacyContentSettingsButton').onclick = function(event) {
-      // TODO(csilv): spawn content settings sub-dialog.
+      OptionsPage.showPageByName('content');
     };
     $('privacyClearDataButton').onclick = function(event) {
       // TODO(csilv): spawn clear data overlay dialog.

@@ -36,10 +36,12 @@ function load() {
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
   }
+
   OptionsPage.register(BrowserOptions.getInstance());
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.register(AdvancedOptions.getInstance());
-  OptionsPage.register(ContentSettings.getInstance());
+  OptionsPage.registerSubPage(ContentSettings.getInstance());
+
   if (cr.isChromeOS) {
     var labsOptions = new OptionsPage('labs',
                                       localStrings.getString('labsPage'),

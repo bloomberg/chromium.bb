@@ -1,96 +1,243 @@
 <div class="page hidden" id="contentSettingsPage">
+  <h1>
+    <span i18n-content="advancedPage"></span>
+    &gt;
+    <span i18n-content="contentSettingsPage"></span>
+  </h1>
+
   <!-- Navigation tabs -->
   <div id="content-settings-nav-tabs">
     <span i18n-content="cookies_tab_label" id="cookies-nav-tab"
           class="inactive-tab" tab-contents="cookiesFilterTab"></span>
     <span i18n-content="images_tab_label" id="images-nav-tab"
           class="inactive-tab" tab-contents="imagesFilterTab"></span>
+    <span i18n-content="javascript_tab_label" id="javascript-nav-tab"
+          class="inactive-tab" tab-contents="javascriptFilterTab"></span>
+    <span i18n-content="plugins_tab_label" id="plugins-nav-tab"
+          class="inactive-tab" tab-contents="pluginsFilterTab"></span>
+    <span i18n-content="popups_tab_label" id="popups-nav-tab"
+          class="inactive-tab" tab-contents="popupsFilterTab"></span>
+    <span i18n-content="location_tab_label" id="location-nav-tab"
+          class="inactive-tab" tab-contents="locationFilterTab"></span>
+    <span i18n-content="notifications_tab_label" id="notifications-nav-tab"
+          class="inactive-tab" tab-contents="notificationsFilterTab"></span>
   </div>
   <br>
 
   <!-- Cookie filter tab contents -->
   <div id="cookiesFilterTab" class="content-settings-tab-contents">
-    <section>
-      <span i18n-content="cookies_modify"></span>
-      <table class="option-control-table">
-      <tr>
-         <td class="option-name"><label>
-           <input type="radio" name="cookies" value="allow">
-             <span i18n-content="cookies_allow"></span>
-         </label></td>
-      </tr>
-      <tr>
-         <td class="option-name"><label>
-           <input type="radio" name="cookies" value="ask">
-             <span i18n-content="cookies_ask"></span>
-         </label></td>
-      </tr>
-      <tr>
-         <td class="option-name"><label>
-           <input type="radio" name="cookies" value="block">
-            <span i18n-content="cookies_block"></span>
-         </label></td>
-      </tr>
-      <tr>
-         <td class="option-name"><button id="cookies-exceptions-button"
-             i18n-content="content_exceptions"></button>
-         </td>
-      </tr>
-      </table>
-    </section>
+    <span i18n-content="cookies_modify"></span>
+    <table class="option-control-table">
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="cookies" value="allow">
+           <span i18n-content="cookies_allow"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="cookies" value="ask">
+           <span i18n-content="cookies_ask"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="cookies" value="block">
+          <span i18n-content="cookies_block"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><button id="cookies-exceptions-button"
+           i18n-content="content_exceptions"></button>
+       </td>
+    </tr>
+    </table>
 
-    <section>
-      <table class="option-control-table">
-      <tr>
-         <td class="option-name"><label>
-           <input id="block-third-party-cookies" type="checkbox">
-             <span i18n-content="cookies_block_3rd_party"></span>
-         </label></td>
-      </tr>
-      <tr>
-        <td class="option-name"><label>
-           <input id="clear-cookies-on-exit"
-                  pref="profile.clear_site_data_on_exit" type="checkbox">
-             <span i18n-content="cookies_clear_on_exit"></span>
-         </label></td>
-      </tr>
-      <tr>
-         <td class="option-name"><button id="show-cookies-button"
-             i18n-content="cookies_show_cookies"></button>
-         </td>
-      </tr>
-      <tr>
-         <td class="option-name"><a i18n-values="href:flash_storage_url">
-           <span i18n-content="flash_storage_settings"></span></a>
-         </td>
-      </tr>
-      </table>
-    </section>
+    <table class="option-control-table">
+    <tr>
+       <td class="option-name"><label>
+         <input id="block-third-party-cookies" type="checkbox">
+           <span i18n-content="cookies_block_3rd_party"></span>
+       </label></td>
+    </tr>
+    <tr>
+      <td class="option-name"><label>
+         <input id="clear-cookies-on-exit"
+                pref="profile.clear_site_data_on_exit" type="checkbox">
+           <span i18n-content="cookies_clear_on_exit"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><button id="show-cookies-button"
+           i18n-content="cookies_show_cookies"></button>
+       </td>
+    </tr>
+    <tr>
+       <td><a i18n-values="href:flash_storage_url">
+         <span i18n-content="flash_storage_settings"></span></a>
+       </td>
+    </tr>
+    </table>
   </div>
 
   <!-- Image filter tab contents -->
   <div id="imagesFilterTab" class="content-settings-tab-contents">
-    <section>
-      <span i18n-content="images_setting"></span>
-      <table class="option-control-table">
-      <tr>
-         <td class="option-name"><label>
-           <input type="radio" name="images" value="allow">
-             <span i18n-content="images_allow"></span>
-         </label></td>
-      </tr>
-      <tr>
-         <td class="option-name"><label>
-           <input type="radio" name="images" value="block">
-             <span i18n-content="images_block"></span>
-         </label></td>
-      </tr>
-      <tr>
-         <td class="option-name"><button id="images-exceptions-button"
-             i18n-content="content_exceptions"></button>
-         </td>
-      </tr>
-      </table>
-    </section>
+    <span i18n-content="images_setting"></span>
+    <table class="option-control-table">
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="images" value="allow">
+           <span i18n-content="images_allow"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="images" value="block">
+           <span i18n-content="images_block"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><button id="images-exceptions-button"
+           i18n-content="content_exceptions"></button>
+       </td>
+    </tr>
+    </table>
+  </div>
+
+  <!-- JavaScript filter tab contents -->
+  <div id="javascriptFilterTab" class="content-settings-tab-contents">
+    <span i18n-content="javascript_setting"></span>
+    <table class="option-control-table">
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="javascript" value="allow">
+           <span i18n-content="javascript_allow"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="javascript" value="block">
+           <span i18n-content="javascript_block"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><button id="javascript-exceptions-button"
+           i18n-content="content_exceptions"></button>
+       </td>
+    </tr>
+    </table>
+  </div>
+
+  <!-- Plug-ins filter tab contents -->
+  <div id="pluginsFilterTab" class="content-settings-tab-contents">
+    <span i18n-content="plugins_setting"></span>
+    <table class="option-control-table">
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="plugins" value="allow">
+           <span i18n-content="plugins_allow"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="plugins" value="block">
+           <span i18n-content="plugins_block"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><button id="plugins-exceptions-button"
+           i18n-content="content_exceptions"></button>
+       </td>
+    </tr>
+    <tr>
+       <td><a i18n-values="href:chrome_plugin_url">
+         <span i18n-content="disable_individual_plugins"></span></a>
+       </td>
+    </tr>
+    </table>
+  </div>
+
+  <!-- Pop-ups filter tab contents -->
+  <div id="popupsFilterTab" class="content-settings-tab-contents">
+    <span i18n-content="popups_setting"></span>
+    <table class="option-control-table">
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="popups" value="allow">
+           <span i18n-content="popups_allow"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="popups" value="block">
+           <span i18n-content="popups_block"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><button id="popups-exceptions-button"
+           i18n-content="content_exceptions"></button>
+       </td>
+    </tr>
+    </table>
+  </div>
+
+  <!-- Location filter tab contents -->
+  <div id="locationFilterTab" class="content-settings-tab-contents">
+    <span i18n-content="location_setting"></span>
+    <table class="option-control-table">
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="location" value="allow">
+           <span i18n-content="location_allow"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="location" value="ask">
+           <span i18n-content="location_ask"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="location" value="block">
+           <span i18n-content="location_block"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><button id="location-exceptions-button"
+           i18n-content="content_exceptions"></button>
+       </td>
+    </tr>
+    </table>
+  </div>
+
+  <!-- Notifications filter tab contents -->
+  <div id="notificationsFilterTab" class="content-settings-tab-contents">
+    <span i18n-content="notifications_setting"></span>
+    <table class="option-control-table">
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="noticiations" value="allow">
+           <span i18n-content="notifications_allow"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="notifications" value="ask">
+           <span i18n-content="notifications_ask"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><label>
+         <input type="radio" name="notifications" value="block">
+           <span i18n-content="notifications_block"></span>
+       </label></td>
+    </tr>
+    <tr>
+       <td class="option-name"><button id="notifications-exceptions-button"
+           i18n-content="content_exceptions"></button>
+       </td>
+    </tr>
+    </table>
   </div>
 </div>
