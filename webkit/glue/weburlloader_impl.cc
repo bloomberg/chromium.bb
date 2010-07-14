@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "net/base/data_url.h"

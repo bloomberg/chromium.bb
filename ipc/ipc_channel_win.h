@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 
 class NonThreadSafe;
 

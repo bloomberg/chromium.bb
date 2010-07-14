@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "base/message_loop.h"
 #include "base/thread.h"
+#include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 
 namespace base {

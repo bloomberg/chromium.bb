@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/net/predictor_common.h"

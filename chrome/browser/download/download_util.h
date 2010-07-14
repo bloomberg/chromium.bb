@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/task.h"
 #include "gfx/native_widget_types.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -29,23 +28,6 @@ class FilePath;
 class SkBitmap;
 
 namespace download_util {
-
-// DownloadProgressTask --------------------------------------------------------
-
-// A class for managing the timed progress animations for a download view. The
-// view must implement an UpdateDownloadProgress() method.
-template<class DownloadView>
-class DownloadProgressTask : public Task {
- public:
-  explicit DownloadProgressTask(DownloadView* view) : view_(view) {}
-  virtual ~DownloadProgressTask() {}
-  virtual void Run() {
-    view_->UpdateDownloadProgress();
-  }
- private:
-  DownloadView* view_;
-  DISALLOW_COPY_AND_ASSIGN(DownloadProgressTask);
-};
 
 // Download opening ------------------------------------------------------------
 

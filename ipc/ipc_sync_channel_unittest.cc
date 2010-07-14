@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
+#include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
