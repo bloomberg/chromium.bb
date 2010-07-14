@@ -6,8 +6,6 @@
 
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 
-#include <string>
-
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
@@ -89,8 +87,6 @@ bool BrowserInterfacePpapi::GetOrigin(InstanceIdentifier instance_id,
 
 ScriptableHandle* BrowserInterfacePpapi::NewScriptableHandle(
     PortableHandle* handle) {
-  UNREFERENCED_PARAMETER(handle);
-  NACL_UNIMPLEMENTED();
   return ScriptableHandlePpapi::New(handle);
 }
 

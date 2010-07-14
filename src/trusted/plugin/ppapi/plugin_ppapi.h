@@ -22,8 +22,13 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Factory method for creation.
   static PluginPpapi* New(PP_Instance instance);
 
-  // TODO(polina): override pp::Instance methods.
-  // TODO(polina): override Plugin methods.
+  // Overriden pp::Instance methods:
+
+  // Initializes this plugin with argument count |argc|, names |argn|
+  // and values |argn|. Called right after New.
+  virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
+
+  // Overriden Plugin methods:
 
   // Request a nacl module download.
   virtual bool RequestNaClModule(const nacl::string& url);

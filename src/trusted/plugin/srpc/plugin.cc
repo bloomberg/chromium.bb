@@ -266,7 +266,8 @@ bool Plugin::Init(BrowserInterface* browser_interface,
                   int argc,
                   char* argn[],
                   char* argv[]) {
-  PLUGIN_PRINTF(("Plugin::Init(%p)\n", reinterpret_cast<void*>(instance_id)));
+  PLUGIN_PRINTF(("Plugin::Init: instance_id=%p\n",
+                 reinterpret_cast<void*>(instance_id)));
 
   browser_interface_ = browser_interface;
   instance_id_ = instance_id;
@@ -304,12 +305,14 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   if (NULL == wrapper_factory_) {
     return false;
   }
+  PLUGIN_PRINTF(("Plugin::Init: wrapper_factory=%p\n",
+                 reinterpret_cast<void*>(wrapper_factory_)));
 
   // Check that the origin is allowed.
   nacl::string href = "";
   if (browser_interface_->GetOrigin(instance_id_, &href)) {
     origin_ = nacl::UrlToOrigin(href);
-    PLUGIN_PRINTF(("Plugin::New: origin %s\n", origin_.c_str()));
+    PLUGIN_PRINTF(("Plugin::Init: origin=%s\n", origin_.c_str()));
     // Check that origin is in the list of permitted origins.
     origin_valid_ = nacl::OriginIsInWhitelist(origin_);
     // This implementation of same-origin policy does not take
@@ -329,6 +332,7 @@ bool Plugin::Init(BrowserInterface* browser_interface,
     }
   }
 
+  PLUGIN_PRINTF(("Plugin::Init: done\n"));
   // Return success.
   return true;
 }

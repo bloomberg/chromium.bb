@@ -11,10 +11,8 @@
 namespace plugin {
 
 ScriptableHandlePpapi* ScriptableHandlePpapi::New(PortableHandle* handle) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::New(%p)\n",
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::New: handle=%p\n",
                  static_cast<void*>(handle)));
-  NACL_UNIMPLEMENTED();
-
   if (handle == NULL) {
     return NULL;
   }
@@ -23,6 +21,9 @@ ScriptableHandlePpapi* ScriptableHandlePpapi::New(PortableHandle* handle) {
   if (scriptable_handle == NULL) {
     return NULL;
   }
+  scriptable_handle->set_handle(handle);
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::New: scriptable_handle=%p - done\n",
+                 static_cast<void*>(scriptable_handle)));
   return scriptable_handle;
 }
 
@@ -40,13 +41,14 @@ void ScriptableHandlePpapi::Unref() {
 
 ScriptableHandlePpapi::ScriptableHandlePpapi(PortableHandle* handle)
   : ScriptableHandle(handle) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::ScriptableHandlePpapi(%p, %p)\n",
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::ScriptableHandlePpapi: this=%p, "
+                 "handle=%p\n",
                  static_cast<void*>(this), static_cast<void*>(handle)));
 }
 
 
 ScriptableHandlePpapi::~ScriptableHandlePpapi() {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi(%p)\n",
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::~ScriptableHandlePpapi: this=%p\n",
                  static_cast<void*>(this)));
 }
 

@@ -245,6 +245,7 @@ elif nptest_env['TARGET_ARCHITECTURE'] == 'x86' and nptest_env.Bit('mac'):
 # soon require a library for proxying PPAPI to NaCl modules.
 ppapi_inputs = [
     'ppapi/browser_interface_ppapi.cc',
+    'ppapi/module_ppapi.cc',
     'ppapi/plugin_ppapi.cc',
     'ppapi/scriptable_handle_ppapi.cc',
 ]
