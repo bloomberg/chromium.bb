@@ -107,11 +107,10 @@ ListValue* SystemOptionsHandler::GetTimezoneList() {
   for (std::vector<icu::TimeZone*>::iterator iter = timezones_.begin();
        iter != timezones_.end(); ++iter) {
     const icu::TimeZone* timezone = *iter;
-    static const std::wstring delimiter(L"|");
-    std::wstring value = GetTimezoneID(timezone);
-    value += delimiter;
-    value += GetTimezoneName(timezone);
-    timezoneList->Append(Value::CreateStringValue(value));
+    ListValue* option = new ListValue();
+    option->Append(Value::CreateStringValue(GetTimezoneID(timezone)));
+    option->Append(Value::CreateStringValue(GetTimezoneName(timezone)));
+    timezoneList->Append(option);
   }
   return timezoneList;
 }

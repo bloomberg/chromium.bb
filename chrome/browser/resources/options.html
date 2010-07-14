@@ -17,6 +17,7 @@
 <script src="options/pref_ui.js"></script>
 <script src="options/options_page.js"></script>
 <if expr="pp_ifdef('chromeos')">
+  <script src="options/chromeos_language_hangul_options.js"></script>
   <script src="options/chromeos_system_options.js"></script>
 </if>
 <script src="options/advanced_options.js"></script>
@@ -35,6 +36,8 @@ function load() {
   localStrings = new LocalStrings();
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
+    // TODO(mazda): uncomment this once the language options is ready
+    // OptionsPage.register(LanguageHangulOptions.getInstance());
   }
 
   OptionsPage.register(BrowserOptions.getInstance());
@@ -101,6 +104,9 @@ window.onpopstate = function(e) {
      <if expr="pp_ifdef('chromeos')">
         <include src="options/chromeos_system_options.html">
         <include src="options/chromeos_labs.html">
+        <!-- TODO(mazda): include options/chromeos_language_hangul_options.html
+             once the language options dialog is ready. -->
+        <include src="options/sync_options.html" >
      </if>
      <include src="options/browser_options.html">
      <include src="options/personal_options.html">

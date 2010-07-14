@@ -132,16 +132,15 @@ PrefSelect.prototype = {
   /**
    * Sets up options in select element.
    * @param {Array} options List of option and their display text.
-   * Each string in the array contains options value and display text split
-   * with '|' character.
+   * Each element in the array is an array of length 2 which contains options
+   * value in the first element and display text in the second element.
    *
    * TODO(zelidrag): move this to that i18n template classes.
    */
   initializeValues: function(options) {
     var self = this;
-    options.forEach(function (option) {
-      var values = option.split('|');
-      self.appendChild(new Option(values[1], values[0], false, false));
+    options.forEach(function (values) {
+      self.appendChild(new Option(values[1], values[0]));
     });
   },
   /**
