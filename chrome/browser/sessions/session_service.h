@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SESSIONS_SESSION_SERVICE_H_
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -175,9 +176,10 @@ class SessionService : public BaseSessionService,
   virtual void Save();
 
  private:
-  typedef std::map<SessionID::id_type,std::pair<int,int> > IdToRange;
-  typedef std::map<SessionID::id_type,SessionTab*> IdToSessionTab;
-  typedef std::map<SessionID::id_type,SessionWindow*> IdToSessionWindow;
+  typedef std::map<SessionID::id_type, std::pair<int, int> > IdToRange;
+  typedef std::map<SessionID::id_type, SessionTab*> IdToSessionTab;
+  typedef std::map<SessionID::id_type, SessionWindow*> IdToSessionWindow;
+
 
   virtual ~SessionService();
 
@@ -285,13 +287,13 @@ class SessionService : public BaseSessionService,
   // . Sorts the tabs in windows with valid tabs based on the tabs
   //   visual order, and adds the valid windows to windows.
   void SortTabsBasedOnVisualOrderAndPrune(
-      std::map<int,SessionWindow*>* windows,
+      std::map<int, SessionWindow*>* windows,
       std::vector<SessionWindow*>* valid_windows);
 
   // Adds tabs to their parent window based on the tab's window_id. This
   // ignores tabs with no navigations.
-  void AddTabsToWindows(std::map<int,SessionTab*>* tabs,
-                        std::map<int,SessionWindow*>* windows);
+  void AddTabsToWindows(std::map<int, SessionTab*>* tabs,
+                        std::map<int, SessionWindow*>* windows);
 
   // Creates tabs and windows from the specified commands. The created tabs
   // and windows are added to |tabs| and |windows| respectively. It is up to
@@ -300,8 +302,8 @@ class SessionService : public BaseSessionService,
   // This does NOT add any created SessionTabs to SessionWindow.tabs, that is
   // done by AddTabsToWindows.
   bool CreateTabsAndWindows(const std::vector<SessionCommand*>& data,
-                            std::map<int,SessionTab*>* tabs,
-                            std::map<int,SessionWindow*>* windows);
+                            std::map<int, SessionTab*>* tabs,
+                            std::map<int, SessionWindow*>* windows);
 
   // Adds commands to commands that will recreate the state of the specified
   // NavigationController. This adds at most kMaxNavigationCountToPersist
@@ -381,8 +383,21 @@ class SessionService : public BaseSessionService,
          BrowserList::size() > 1);
   }
 
-  // Call when a Save() occurs to record this in UMA stats.
-  void RecordSaveHistogramData();
+  // Call when certain session relevant notifications
+  // (tab_closed, nav_list_pruned) occur.  In addition, this is
+  // currently called when Save() is called to compare how often the
+  // session data is currently saved verses when we may want to save it.
+  // It records the data in UMA stats.
+  void RecordSessionUpdateHistogramData(NotificationType type,
+    base::TimeTicks* last_updated_time);
+
+  // Helper methods to record the histogram data
+  void RecordUpdatedTabClosed(base::TimeDelta delta, bool use_long_period);
+  void RecordUpdatedNavListPruned(base::TimeDelta delta, bool use_long_period);
+  void RecordUpdatedNavEntryCommit(base::TimeDelta delta, bool use_long_period);
+  void RecordUpdatedSaveTime(base::TimeDelta delta, bool use_long_period);
+  void RecordUpdatedSessionNavigationOrTab(base::TimeDelta delta,
+                                           bool use_long_period);
 
   // Convert back/forward between the Browser and SessionService DB window
   // types.
@@ -429,8 +444,16 @@ class SessionService : public BaseSessionService,
   // current/previous session.
   bool move_on_new_browser_;
 
-  // Used for reporting frequency of Save() operations.
-  base::TimeTicks last_save_time_;
+  // Used for reporting frequency of session alteriing operations.
+  base::TimeTicks last_updated_tab_closed_time_;
+  base::TimeTicks last_updated_nav_list_pruned_time_;
+  base::TimeTicks last_updated_nav_entry_commit_time_;
+  base::TimeTicks last_updated_save_time_;
+
+  // Constants used in calculating histogram data.
+  const base::TimeDelta save_delay_in_millis_;
+  const base::TimeDelta save_delay_in_mins_;
+  const base::TimeDelta save_delay_in_hrs_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionService);
 };

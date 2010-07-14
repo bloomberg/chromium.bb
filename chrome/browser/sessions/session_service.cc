@@ -130,14 +130,20 @@ struct PinnedStatePayload {
 SessionService::SessionService(Profile* profile)
     : BaseSessionService(SESSION_RESTORE, profile, FilePath()),
       has_open_trackable_browsers_(false),
-      move_on_new_browser_(false) {
+      move_on_new_browser_(false),
+      save_delay_in_millis_(base::TimeDelta::FromMilliseconds(2500)),
+      save_delay_in_mins_(base::TimeDelta::FromMinutes(10)),
+      save_delay_in_hrs_(base::TimeDelta::FromHours(8)) {
   Init();
 }
 
 SessionService::SessionService(const FilePath& save_path)
     : BaseSessionService(SESSION_RESTORE, NULL, save_path),
       has_open_trackable_browsers_(false),
-      move_on_new_browser_(false) {
+      move_on_new_browser_(false),
+      save_delay_in_millis_(base::TimeDelta::FromMilliseconds(2500)),
+      save_delay_in_mins_(base::TimeDelta::FromMinutes(10)),
+      save_delay_in_hrs_(base::TimeDelta::FromHours(8)) {
   Init();
 }
 
@@ -432,14 +438,14 @@ void SessionService::Save() {
   bool had_commands = !pending_commands().empty();
   BaseSessionService::Save();
   if (had_commands) {
-    RecordSaveHistogramData();
+    RecordSessionUpdateHistogramData(NotificationType::SESSION_SERVICE_SAVED,
+        &last_updated_save_time_);
     NotificationService::current()->Notify(
         NotificationType::SESSION_SERVICE_SAVED,
         NotificationService::AllSources(),
         NotificationService::NoDetails());
   }
 }
-
 
 void SessionService::Init() {
   // Register for the notifications we're interested in.
@@ -523,6 +529,8 @@ void SessionService::Observe(NotificationType type,
           Source<NavigationController>(source).ptr();
       TabClosed(controller->window_id(), controller->session_id(),
                 controller->tab_contents()->closed_by_user_gesture());
+      RecordSessionUpdateHistogramData(NotificationType::TAB_CLOSED,
+          &last_updated_tab_closed_time_);
       break;
     }
 
@@ -539,6 +547,8 @@ void SessionService::Observe(NotificationType type,
                                         controller->session_id(),
                                         controller->entry_count());
       }
+      RecordSessionUpdateHistogramData(NotificationType::NAV_LIST_PRUNED,
+          &last_updated_nav_list_pruned_time_);
       break;
     }
 
@@ -561,6 +571,12 @@ void SessionService::Observe(NotificationType type,
       UpdateTabNavigation(controller->window_id(), controller->session_id(),
                           current_entry_index,
                           *controller->GetEntryAtIndex(current_entry_index));
+      Details<NavigationController::LoadCommittedDetails> changed(details);
+      if (changed->type == NavigationType::NEW_PAGE ||
+        changed->type == NavigationType::EXISTING_PAGE) {
+        RecordSessionUpdateHistogramData(NotificationType::NAV_ENTRY_COMMITTED,
+            &last_updated_nav_entry_commit_time_);
+      }
       break;
     }
 
@@ -1323,27 +1339,133 @@ Browser::Type SessionService::BrowserTypeForWindowType(
   }
 }
 
-void SessionService::RecordSaveHistogramData() {
-  if (!last_save_time_.is_null()) {
-    base::TimeDelta delta = base::TimeTicks::Now() - last_save_time_;
-    // We're interested in frequent updates, and group all periods longer than
-    // 10 minutes together.
-    UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.SavePeriod",
-        delta,
-        // 2500ms is the default save delay for coaelescing.  This parameter
-        // only impacts histogram creation, and not steady-state sampling.
-        base::TimeDelta::FromMilliseconds(2500),
-        base::TimeDelta::FromMinutes(10),
-        50);
-
-    if (delta >= base::TimeDelta::FromMinutes(10)) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.LongSavePeriod",
-          delta,
-          base::TimeDelta::FromMinutes(10),
-          base::TimeDelta::FromHours(8),
-          50);
+void SessionService::RecordSessionUpdateHistogramData(NotificationType type,
+    base::TimeTicks* last_updated_time) {
+  if (!last_updated_time->is_null()) {
+    base::TimeDelta delta = base::TimeTicks::Now() - *last_updated_time;
+    // We're interested in frequent updates periods longer than
+    // 10 minutes.
+    bool use_long_period = false;
+    if (delta >= save_delay_in_mins_) {
+      use_long_period = true;
+    }
+    switch (type.value) {
+      case NotificationType::SESSION_SERVICE_SAVED :
+        RecordUpdatedSaveTime(delta, use_long_period);
+        RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
+        break;
+      case NotificationType::TAB_CLOSED:
+        RecordUpdatedTabClosed(delta, use_long_period);
+        RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
+        break;
+      case NotificationType::NAV_LIST_PRUNED:
+        RecordUpdatedNavListPruned(delta, use_long_period);
+        RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
+        break;
+      case NotificationType::NAV_ENTRY_COMMITTED:
+        RecordUpdatedNavEntryCommit(delta, use_long_period);
+        RecordUpdatedSessionNavigationOrTab(delta, use_long_period);
+        break;
+      default:
+        NOTREACHED() << "Bad type sent to RecordSessionUpdateHistogramData";
+        break;
     }
   }
-
-  last_save_time_ = base::TimeTicks::Now();
+  (*last_updated_time) = base::TimeTicks::Now();
 }
+
+void SessionService::RecordUpdatedTabClosed(base::TimeDelta delta,
+                                            bool use_long_period) {
+  std::string name("SessionRestore.TabClosedPeriod");
+  UMA_HISTOGRAM_CUSTOM_TIMES(name,
+      delta,
+      // 2500ms is the default save delay.
+      save_delay_in_millis_,
+      save_delay_in_mins_,
+      50);
+  if (use_long_period) {
+    std::string long_name_("SessionRestore.TabClosedLongPeriod");
+    UMA_HISTOGRAM_CUSTOM_TIMES(long_name_,
+        delta,
+        save_delay_in_mins_,
+        save_delay_in_hrs_,
+        50);
+  }
+}
+
+void SessionService::RecordUpdatedNavListPruned(base::TimeDelta delta,
+                                                bool use_long_period) {
+  std::string name("SessionRestore.NavigationListPrunedPeriod");
+  UMA_HISTOGRAM_CUSTOM_TIMES(name,
+      delta,
+      // 2500ms is the default save delay.
+      save_delay_in_millis_,
+      save_delay_in_mins_,
+      50);
+  if (use_long_period) {
+    std::string long_name_("SessionRestore.NavigationListPrunedLongPeriod");
+    UMA_HISTOGRAM_CUSTOM_TIMES(long_name_,
+        delta,
+        save_delay_in_mins_,
+        save_delay_in_hrs_,
+        50);
+  }
+}
+
+void SessionService::RecordUpdatedNavEntryCommit(base::TimeDelta delta,
+                                                 bool use_long_period) {
+  std::string name("SessionRestore.NavEntryCommittedPeriod");
+  UMA_HISTOGRAM_CUSTOM_TIMES(name,
+      delta,
+      // 2500ms is the default save delay.
+      save_delay_in_millis_,
+      save_delay_in_mins_,
+      50);
+  if (use_long_period) {
+    std::string long_name_("SessionRestore.NavEntryCommittedLongPeriod");
+    UMA_HISTOGRAM_CUSTOM_TIMES(long_name_,
+        delta,
+        save_delay_in_mins_,
+        save_delay_in_hrs_,
+        50);
+  }
+}
+
+void SessionService::RecordUpdatedSessionNavigationOrTab(base::TimeDelta delta,
+                                                         bool use_long_period) {
+  std::string name("SessionRestore.NavOrTabUpdatePeriod");
+  UMA_HISTOGRAM_CUSTOM_TIMES(name,
+      delta,
+      // 2500ms is the default save delay.
+      save_delay_in_millis_,
+      save_delay_in_mins_,
+      50);
+  if (use_long_period) {
+    std::string long_name_("SessionRestore.NavOrTabUpdateLongPeriod");
+    UMA_HISTOGRAM_CUSTOM_TIMES(long_name_,
+        delta,
+        save_delay_in_mins_,
+        save_delay_in_hrs_,
+        50);
+  }
+}
+
+void SessionService::RecordUpdatedSaveTime(base::TimeDelta delta,
+                                           bool use_long_period) {
+  std::string name("SessionRestore.SavePeriod");
+  UMA_HISTOGRAM_CUSTOM_TIMES(name,
+      delta,
+      // 2500ms is the default save delay.
+      save_delay_in_millis_,
+      save_delay_in_mins_,
+      50);
+  if (use_long_period) {
+    std::string long_name_("SessionRestore.SaveLongPeriod");
+    UMA_HISTOGRAM_CUSTOM_TIMES(long_name_,
+        delta,
+        save_delay_in_mins_,
+        save_delay_in_hrs_,
+        50);
+  }
+}
+
