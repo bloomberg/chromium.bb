@@ -160,8 +160,11 @@
     // borderless).
     [[overlayWindow_ contentView] addSubview:cachedContentView_];
   } else {
-    [[[[self window] contentView] superview] addSubview:[self tabStripView]];
     [[self window] setContentView:cachedContentView_];
+    // The TabStripView always needs to be in front of the window's content
+    // view and therefore it should always be added after the content view is
+    // set.
+    [[[[self window] contentView] superview] addSubview:[self tabStripView]];
     [[[[self window] contentView] superview] updateTrackingAreas];
   }
 }

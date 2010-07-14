@@ -244,7 +244,7 @@ private:
 // special need be done to handle "new tab" animation.
 //
 // This all goes out the window with the "close tab" animation. The animation
-// kicks off in |-tabDetachedWithContents:atIndex:| with the notifiation that
+// kicks off in |-tabDetachedWithContents:atIndex:| with the notification that
 // the tab has been removed from the model. The simplest solution at this
 // point would be to remove the views and controllers as well, however once
 // the TabView is removed from the view list, the tab z-order code takes care of

@@ -29,7 +29,7 @@
 }
 
 // Draw bottom border (a dark border and light highlight). Each tab is
-// responsible for mimicing this bottom border, unless it's the selected
+// responsible for mimicking this bottom border, unless it's the selected
 // tab.
 - (void)drawBorder:(NSRect)bounds {
   NSRect borderRect, contentRect;
