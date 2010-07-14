@@ -298,7 +298,7 @@
       <message name="IDS_CUSTOMIZE_SYNC_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         10
       </message>
-      
+
       <!-- The width and height of the Bug Reporting dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_BUGREPORT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -596,7 +596,7 @@
 
       <!-- The width for the "create application shortcuts" dialog in characters. -->
       <message name="IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        55
+        65
       </message>
 
       <!-- The width and height for the "create application shortcuts error" dialog. -->
@@ -670,7 +670,7 @@
         <message name="IDS_LANGUAGES_INPUT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
           26
         </message>
-        
+
         <!-- The width and height of the CAPTCHA challenge dialog box in -->
         <!-- characters and lines (See above). -->
         <message name="IDS_CAPTCHA_INPUT_DIALOG_WIDTH_CHARS" use_name_for_id="true">

@@ -53,6 +53,12 @@ class CreateApplicationShortcutsDialogGtk
   // TabContents for which the shortcut will be created.
   TabContents* tab_contents_;
 
+  // ShortcutInfo for the new shortcut.
+  ShellIntegration::ShortcutInfo shortcut_info_;
+
+  // Image associated with the site.
+  GdkPixbuf* favicon_pixbuf_;
+
   // Dialog box that allows the user to create an application shortcut.
   GtkWidget* create_dialog_;
 

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/env_var.h"
 #include "chrome/browser/chrome_thread.h"
@@ -14,9 +15,20 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+
+namespace {
+
+// Size (in pixels) of the icon preview.
+const int kIconPreviewSizePixels = 32;
+
+// Height (in lines) of the shortcut description label.
+const int kDescriptionLabelHeightLines = 3;
+
+}  // namespace
 
 // static
 void CreateApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
@@ -33,6 +45,29 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
 
   // Will be balanced by Release later.
   AddRef();
+
+  // Get shortcut information now, it's needed for our UI.
+  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
+
+  // Prepare the icon. Try to scale it if it's too small, otherwise it would
+  // look weird.
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&shortcut_info_.favicon);
+  int pixbuf_width = gdk_pixbuf_get_width(pixbuf);
+  int pixbuf_height = gdk_pixbuf_get_height(pixbuf);
+  if (pixbuf_width == pixbuf_height && pixbuf_width < kIconPreviewSizePixels) {
+    // Only scale the pixbuf if it's a square (for simplicity).
+    // Generally it should be square, if it's a favicon.
+    // Use the highest quality interpolation. The scaling is
+    // going to have low quality anyway, because the initial image
+    // is likely small.
+    favicon_pixbuf_ = gdk_pixbuf_scale_simple(pixbuf,
+                                              kIconPreviewSizePixels,
+                                              kIconPreviewSizePixels,
+                                              GDK_INTERP_HYPER);
+    g_object_unref(pixbuf);
+  } else {
+    favicon_pixbuf_ = pixbuf;
+  }
 
   // Build the dialog.
   create_dialog_ = gtk_dialog_new_with_buttons(
@@ -57,11 +92,38 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(content_area), vbox);
 
+  // Create a box containing basic information about the new shortcut: an image
+  // on the left, and a description on the right.
+  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+  gtk_container_set_border_width(GTK_CONTAINER(hbox),
+                                 gtk_util::kControlSpacing);
+
+  // Put the icon preview in place.
+  GtkWidget* favicon_image = gtk_image_new_from_pixbuf(favicon_pixbuf_);
+  gtk_box_pack_start(GTK_BOX(hbox), favicon_image, FALSE, FALSE, 0);
+
+  // Create the label with application shortcut description.
+  GtkWidget* description_label = gtk_label_new(NULL);
+  gtk_box_pack_start(GTK_BOX(hbox), description_label, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap(GTK_LABEL(description_label), TRUE);
+  gtk_widget_realize(description_label);
+  int label_height;
+  gtk_util::GetWidgetSizeFromCharacters(description_label, -1,
+                                        kDescriptionLabelHeightLines, NULL,
+                                        &label_height);
+  gtk_widget_set_size_request(description_label, -1, label_height);
+  gtk_misc_set_alignment(GTK_MISC(description_label), 0, 0.5);
+  std::string description(UTF16ToUTF8(shortcut_info_.description));
+  std::string title(UTF16ToUTF8(shortcut_info_.title));
+  gtk_label_set_text(GTK_LABEL(description_label),
+                     (description.empty() ? title : description).c_str());
+
   // Label on top of the checkboxes.
-  GtkWidget* description = gtk_label_new(
+  GtkWidget* checkboxes_label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_LABEL).c_str());
-  gtk_misc_set_alignment(GTK_MISC(description), 0, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), description, FALSE, FALSE, 0);
+  gtk_misc_set_alignment(GTK_MISC(checkboxes_label), 0, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), checkboxes_label, FALSE, FALSE, 0);
 
   // Desktop checkbox.
   desktop_checkbox_ = gtk_check_button_new_with_label(
@@ -91,6 +153,8 @@ CreateApplicationShortcutsDialogGtk::~CreateApplicationShortcutsDialogGtk() {
 
   if (error_dialog_)
     gtk_widget_destroy(error_dialog_);
+
+  g_object_unref(favicon_pixbuf_);
 }
 
 void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
@@ -98,16 +162,14 @@ void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   if (response == GTK_RESPONSE_ACCEPT) {
-    ShellIntegration::ShortcutInfo shortcut_info;
-    web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info);
-    shortcut_info.create_on_desktop =
+    shortcut_info_.create_on_desktop =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_));
-    shortcut_info.create_in_applications_menu =
+    shortcut_info_.create_in_applications_menu =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_));
     ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
          NewRunnableMethod(this,
              &CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
-             shortcut_info));
+             shortcut_info_));
 
     if (tab_contents_->delegate())
       tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
