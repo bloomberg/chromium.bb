@@ -5,6 +5,5 @@
    "name": "Chromium Search",
    "omnibox_keyword": "src",
    "permissions": [ "experimental", "tabs", "http://www.google.com/" ],
-   "update_url": "http://dl.dropbox.com/u/124107/chromium-search/update.xml",
    "version": "4"
 }

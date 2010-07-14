@@ -27,14 +27,28 @@ chrome.experimental.omnibox.onInputChanged.addListener(
         var description = entry.getElementsByTagName("content")[0].textContent;
         description = description.replace(/<\/?.+?>/g, '');
         description = file + ': ' + description; 
+        descriptionStyles = [
+            chrome.experimental.omnibox.styleUrl(0),
+            chrome.experimental.omnibox.styleNone(file.length),
+        ]
+
+        // Highlight all occurrences of the match text.
+        var index = -1;
+        for (;;) {
+          var index = description.indexOf(text, index+1);
+          if (index < 0) break;
+          if (index > file.length) {
+            descriptionStyles.push(
+                chrome.experimental.omnibox.styleMatch(index),
+                chrome.experimental.omnibox.styleNone(index + text.length)
+            );
+          }
+        }
 
         results.push({
           content: path + '@' + line,
           description: description,
-          descriptionStyles: [
-            chrome.experimental.omnibox.styleMatch(0),
-            chrome.experimental.omnibox.styleNone(file.length),
-          ],
+          descriptionStyles: descriptionStyles,
         });
       }
 
@@ -45,7 +59,7 @@ chrome.experimental.omnibox.onInputChanged.addListener(
 
 function search(query, callback) {
   var url = "http://www.google.com/codesearch/feeds/search?" +
-      "q=package:git.chromium.org/chromium.git+" + query;
+      "q=package:chromium.git+" + query;
   var req = new XMLHttpRequest();
   req.open("GET", url, true);
   req.setRequestHeader("GData-Version", "2");

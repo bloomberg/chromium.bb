@@ -3074,9 +3074,9 @@
             "optional": true,
             "items": {
               "type": "object",
-              "description": "A style object, created using styleNone, styleMatch, or styleDim. A style applies to the region of text starting at the style's offset, until either the next style or the end of the description.",
+              "description": "A style object, created using styleNone, styleUrl, styleMatch, or styleDim. A style applies to the region of text starting at the style's offset, until either the next style or the end of the description.",
               "properties": {
-                "type": {"type": "string", "enum": ["none", "match", "dim"]},
+                "type": {"type": "string", "enum": ["none", "url", "match", "dim"]},
                 "offset": {"type": "integer"}
               }
             }
@@ -3105,6 +3105,12 @@
         "name": "styleNone",
         "type": "function",
         "description": "Constructor for the descriptionStyles parameter of the suggest callback.",
+        "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
+      },
+      {
+        "name": "styleUrl",
+        "type": "function",
+        "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename.",
         "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
       },
       {

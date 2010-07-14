@@ -126,6 +126,7 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
 
         int type_class =
             (type == "none") ? ACMatchClassification::NONE :
+            (type == "url") ? ACMatchClassification::URL :
             (type == "match") ? ACMatchClassification::MATCH :
             (type == "dim") ? ACMatchClassification::DIM : -1;
         EXTENSION_FUNCTION_VALIDATE(type_class != -1);

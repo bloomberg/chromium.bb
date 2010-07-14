@@ -637,6 +637,10 @@ var chrome = chrome || {};
         function(offset) {
       return {type: "none", offset: offset};
     }
+    apiFunctions["experimental.omnibox.styleUrl"].handleRequest =
+        function(offset) {
+      return {type: "url", offset: offset};
+    }
     apiFunctions["experimental.omnibox.styleMatch"].handleRequest =
         function(offset) {
       return {type: "match", offset: offset};
