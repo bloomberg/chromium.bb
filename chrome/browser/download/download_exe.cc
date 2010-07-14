@@ -152,13 +152,17 @@ static const char* const g_executables[] = {
   "dmg",
 #elif defined(OS_POSIX)
   // TODO(estade): lengthen this list.
+  "bash",
+  "csh",
+  "deb",
   "exe",
+  "ksh",
   "pl",
   "py",
   "rb",
-  "sh",
-  "deb",
   "rpm",
+  "sh",
+  "tcsh",
 #endif
 };
 
