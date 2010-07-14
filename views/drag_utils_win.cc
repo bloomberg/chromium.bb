@@ -13,7 +13,6 @@
 #include "gfx/canvas_skia.h"
 #include "gfx/gdi_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkUnPreMultiply.h"
 
 namespace drag_utils {
 
@@ -62,32 +61,8 @@ void SetDragImageOnDataObject(const SkBitmap& sk_bitmap,
                               const gfx::Point& cursor_offset,
                               OSExchangeData* data_object) {
   gfx::CanvasSkia canvas(sk_bitmap.width(), sk_bitmap.height(),
-                         /*is_opaque=*/true);
-  SkBitmap opaque_bitmap;
-  if (sk_bitmap.isOpaque()) {
-    opaque_bitmap = sk_bitmap;
-  } else {
-    // InitializeFromBitmap() doesn't expect an alpha channel and is confused
-    // by premultiplied colors, so unpremultiply the bitmap.
-    SkBitmap tmp_bitmap;
-    tmp_bitmap.setConfig(
-        sk_bitmap.config(), sk_bitmap.width(), sk_bitmap.height());
-    tmp_bitmap.allocPixels();
-
-    SkAutoLockPixels lock(tmp_bitmap);
-    const int kBytesPerPixel = 4;
-    for (int y = 0; y < tmp_bitmap.height(); y++) {
-      for (int x = 0; x < tmp_bitmap.width(); x++) {
-        uint32 src_pixel = *sk_bitmap.getAddr32(x, y);
-        uint32* dst_pixel = tmp_bitmap.getAddr32(x, y);
-        SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(src_pixel);
-        *dst_pixel = unmultiplied;
-      }
-    }
-    tmp_bitmap.setIsOpaque(true);
-    opaque_bitmap = tmp_bitmap;
-  }
-  canvas.DrawBitmapInt(opaque_bitmap, 0, 0);
+                         /*is_opaque=*/false);
+  canvas.DrawBitmapInt(sk_bitmap, 0, 0);
 
   DCHECK(data_object && !size.IsEmpty());
   // SetDragImageOnDataObject(HBITMAP) takes ownership of the bitmap.
