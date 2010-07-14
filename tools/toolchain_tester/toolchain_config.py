@@ -149,7 +149,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc64_O9'] = ToolchainConfig(
 
 DRIVER_PATH = 'toolchain/linux_arm-untrusted/arm-none-linux-gnueabi'
 
-NACL_LLVM_GCC_ARM = DRIVER_PATH + '/llvm-fake-sfigcc'
+NACL_LLVM_GCC_ARM = DRIVER_PATH + '/llvm-fake-sfigcc-arm'
 
 NACL_LD_ARM = DRIVER_PATH + '/llvm-fake-sfild'
 
@@ -178,7 +178,7 @@ TOOLCHAIN_CONFIGS['llvm_nacl_sfi_arm_O0'] = ToolchainConfig(
     EMU = EMU_SCRIPT,
     LIB_DIR = LIB_DIR,
     SEL_LDR = SEL_LDR_ARM,
-    CFLAGS = '-arch arm -O0  -fnested-functions ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0  -fnested-functions ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [ARM]
