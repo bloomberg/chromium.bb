@@ -3450,16 +3450,6 @@
    fun:yy_reduce
 }
 {
-   bug_46894
-   Memcheck:Addr4
-   fun:_ZNK12BookmarkNode9is_folderEv
-   fun:-[BookmarkButton isFolder]
-   fun:-[BookmarkBarFolderController openBookmarkFolderFromButtonAndCloseOldOne:]
-   fun:__NSFireDelayedPerform
-   fun:CFRunLoopRunSpecific
-}
-
-{
    bug_47331_part_1
    Memcheck:Leak
    fun:malloc

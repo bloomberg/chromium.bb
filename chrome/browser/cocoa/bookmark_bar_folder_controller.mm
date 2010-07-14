@@ -713,6 +713,10 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 
 // Delegate callback.
 - (void)windowWillClose:(NSNotification*)notification {
+  // If a "hover open" is pending when the bookmark bar folder is
+  // closed, be sure it gets cancelled.
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
   [barController_ childFolderWillClose:self];
   [self closeBookmarkFolder:self];
   [self autorelease];
