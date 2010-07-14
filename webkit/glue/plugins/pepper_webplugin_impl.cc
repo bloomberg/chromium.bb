@@ -161,23 +161,11 @@ void WebPluginImpl::setZoomFactor(float scale, bool text_only) {
   instance_->Zoom(scale, text_only);
 }
 
-#if defined(WEBPLUGIN_FIND_HAS_RETURN_TYPE)
 bool WebPluginImpl::startFind(const WebKit::WebString& search_text,
                               bool case_sensitive,
                               int identifier) {
   return instance_->StartFind(search_text, case_sensitive, identifier);
 }
-#else
-bool WebPluginImpl::supportsFind() {
-  return true;
-}
-
-void WebPluginImpl::startFind(const WebString& search_text,
-                              bool case_sensitive,
-                              int identifier) {
-  instance_->StartFind(search_text, case_sensitive, identifier);
-}
-#endif
 
 void WebPluginImpl::selectFindResult(bool forward) {
   instance_->SelectFindResult(forward);

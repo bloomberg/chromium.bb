@@ -3550,14 +3550,8 @@ void RenderView::OnFind(int request_id, const string16& search_text,
       // Just navigate back/forward.
       GetWebPluginFromPluginDocument()->selectFindResult(options.forward);
     } else {
-#if defined(WEBPLUGIN_FIND_HAS_RETURN_TYPE)
       if (GetWebPluginFromPluginDocument()->startFind(
           search_text, options.matchCase, request_id)) {
-#else
-      if (GetWebPluginFromPluginDocument()->supportsFind()) {
-        GetWebPluginFromPluginDocument()->startFind(
-            search_text, options.matchCase, request_id);
-#endif
       } else {
         ReportNoFindInPageResults(request_id);
       }
