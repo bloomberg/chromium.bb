@@ -104,7 +104,7 @@ class KeywordEditorView : public TableModelObserver,
                                     gpointer user_data);
 
   // Callback for when user selects something.
-  static void OnSelectionChanged(GtkTreeSelection *selection,
+  static void OnSelectionChanged(GtkTreeSelection* selection,
                                  KeywordEditorView* editor);
 
   // Callbacks for user actions modifying the table.

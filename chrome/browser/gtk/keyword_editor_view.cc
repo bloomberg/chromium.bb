@@ -417,9 +417,9 @@ gboolean KeywordEditorView::OnCheckRowIsSeparator(GtkTreeModel* model,
 }
 
 // static
-gboolean KeywordEditorView::OnSelectionFilter(GtkTreeSelection *selection,
-                                              GtkTreeModel *model,
-                                              GtkTreePath *path,
+gboolean KeywordEditorView::OnSelectionFilter(GtkTreeSelection* selection,
+                                              GtkTreeModel* model,
+                                              GtkTreePath* path,
                                               gboolean path_currently_selected,
                                               gpointer user_data) {
   GtkTreeIter iter;
@@ -434,7 +434,7 @@ gboolean KeywordEditorView::OnSelectionFilter(GtkTreeSelection *selection,
 
 // static
 void KeywordEditorView::OnSelectionChanged(
-    GtkTreeSelection *selection, KeywordEditorView* editor) {
+    GtkTreeSelection* selection, KeywordEditorView* editor) {
   editor->EnableControls();
 }
 

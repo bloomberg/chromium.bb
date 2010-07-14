@@ -18,7 +18,9 @@ class Profile;
 class AutoFillDialogObserver {
  public:
   // The user has confirmed changes by clicking "Apply" or "OK".  Any of the
-  // parameters may be NULL.
+  // parameters may be NULL. A NULL parameter is treated as not changing the
+  // existing data. For example, |OnAutoFillDialogApply(new_profiles, NULL)|
+  // only sets the profiles and not the credit cards.
   virtual void OnAutoFillDialogApply(
       std::vector<AutoFillProfile>* profiles,
       std::vector<CreditCard>* credit_cards) = 0;
@@ -28,9 +30,9 @@ class AutoFillDialogObserver {
 };
 
 // Shows the AutoFill dialog, which allows the user to edit profile information.
-// |profile| is profile from which you can get vectors of of autofill profiles
-// that contains the current profile information and credit cards.
-// The dialog fills out the profile fields using this data.
+// |profile| is profile from which you can get vectors of autofill profiles that
+// contains the current profile information and credit cards.  The dialog fills
+// out the profile fields using this data.
 //
 // |observer| will be notified by OnAutoFillDialogAccept when the user has
 // applied changes.  May not be NULL.

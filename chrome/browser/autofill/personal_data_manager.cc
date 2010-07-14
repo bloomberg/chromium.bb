@@ -71,16 +71,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If both requests have responded, then all personal data is loaded.
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0) {
     is_data_loaded_ = true;
-    // Copy is needed as observer can unsubscribe itself when notified.
-    std::vector<PersonalDataManager::Observer*> temporary_copy;
-    temporary_copy.resize(observers_.size());
-    std::copy(observers_.begin(), observers_.end(), temporary_copy.begin());
-    for (std::vector<PersonalDataManager::Observer*>::iterator
-         iter = temporary_copy.begin();
-         iter != temporary_copy.end();
-         ++iter) {
-      (*iter)->OnPersonalDataLoaded();
-    }
+    FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataLoaded());
   }
 }
 
@@ -103,29 +94,15 @@ void PersonalDataManager::OnAutoFillDialogApply(
 }
 
 void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
-  for (std::vector<PersonalDataManager::Observer*>::iterator
-       iter = observers_.begin();
-       iter != observers_.end();
-       ++iter) {
-    if (*iter == observer) {
-      // Already have this observer.
-      return;
-    }
-  }
-  observers_.push_back(observer);
+  // TODO: RemoveObserver is for compatability with old code, it should be
+  // nuked.
+  observers_.RemoveObserver(observer);
+  observers_.AddObserver(observer);
 }
 
 void PersonalDataManager::RemoveObserver(
     PersonalDataManager::Observer* observer) {
-  for (std::vector<PersonalDataManager::Observer*>::iterator
-       iter = observers_.begin();
-       iter != observers_.end();
-       ++iter) {
-    if (*iter == observer) {
-      observers_.erase(iter);
-      return;
-    }
-  }
+  observers_.RemoveObserver(observer);
 }
 
 bool PersonalDataManager::ImportFormData(
@@ -315,6 +292,8 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
 
   // Read our writes to ensure consistency with the database.
   Refresh();
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
 void PersonalDataManager::SetCreditCards(
@@ -384,6 +363,8 @@ void PersonalDataManager::SetCreditCards(
        iter != credit_cards->end(); ++iter) {
     credit_cards_.push_back(new CreditCard(*iter));
   }
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
 void PersonalDataManager::GetPossibleFieldTypes(const string16& text,

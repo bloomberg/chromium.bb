@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
@@ -36,7 +37,12 @@ class PersonalDataManager
   class Observer {
    public:
     // Notifies the observer that the PersonalDataManager has finished loading.
+    // TODO: OnPersonalDataLoaded should be nuked in favor of only
+    // OnPersonalDataChanged.
     virtual void OnPersonalDataLoaded() = 0;
+
+    // Notifies the observer that the PersonalDataManager changed in some way.
+    virtual void OnPersonalDataChanged() {}
 
    protected:
     virtual ~Observer() {}
@@ -240,8 +246,8 @@ class PersonalDataManager
   WebDataService::Handle pending_profiles_query_;
   WebDataService::Handle pending_creditcards_query_;
 
-  // The observers.  This can be empty.
-  std::vector<PersonalDataManager::Observer*> observers_;
+  // The observers.
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

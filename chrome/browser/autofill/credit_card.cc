@@ -39,7 +39,8 @@ CreditCard::CreditCard(const CreditCard& card) : FormGroup() {
 
 CreditCard::CreditCard()
     : expiration_month_(0),
-      expiration_year_(0) {
+      expiration_year_(0),
+      unique_id_(0) {
 }
 
 FormGroup* CreditCard::Clone() const {

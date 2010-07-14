@@ -57,7 +57,6 @@ class ContentPageGtk : public OptionsPageBase,
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnShowPasswordsButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnPasswordRadioToggled);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutoFillButtonClicked);
-  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnAutoFillRadioToggled);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncStartStopButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncCustomizeButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncActionLinkClicked);
@@ -67,11 +66,6 @@ class ContentPageGtk : public OptionsPageBase,
   // Widgets for the Password saving group.
   GtkWidget* passwords_asktosave_radio_;
   GtkWidget* passwords_neversave_radio_;
-
-  // Widgets for the Form AutoFill group.
-  GtkWidget* form_autofill_enable_radio_;
-  GtkWidget* form_autofill_disable_radio_;
-  GtkWidget* autofill_button_;
 
   // Widgets for the Appearance group.
   GtkWidget* system_title_bar_show_radio_;
@@ -97,7 +91,6 @@ class ContentPageGtk : public OptionsPageBase,
 
   // Pref members.
   BooleanPrefMember ask_to_save_passwords_;
-  BooleanPrefMember enable_form_autofill_;
   BooleanPrefMember use_custom_chrome_frame_;
 
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid

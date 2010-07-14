@@ -145,6 +145,7 @@
         'browser/autofill/autofill_manager.h',
         'browser/autofill/autofill_profile.cc',
         'browser/autofill/autofill_profile.h',
+        'browser/autofill/auto_fill_editor_gtk.cc',
         'browser/autofill/autofill_text_field_mac.h',
         'browser/autofill/autofill_text_field_mac.mm',
         'browser/autofill/autofill_type.cc',
