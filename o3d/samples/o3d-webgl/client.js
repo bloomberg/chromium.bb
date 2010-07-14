@@ -652,6 +652,31 @@ o3d.Client.prototype.initWithCanvas = function(canvas) {
                     height: canvas.height};
   o3d.State.createDefaultState_(gl).push_();
 
+  // Create the default error texture.
+  var defaultTexture = new o3d.Texture2D();
+  defaultTexture.gl = this.gl;
+  defaultTexture.init_(8, 8, o3d.Texture.ARGB8, 1, false);
+  var r = [1, 0, 0, 1];
+  var Y = [1, 1, 0, 1];
+  var error = [r, r, r, r, r, r, r, r,
+               r, r, Y, Y, Y, Y, r, r,
+               r, Y, r, r, r, Y, Y, r,
+               r, Y, r, r, Y, r, Y, r,
+               r, Y, r, Y, r, r, Y, r,
+               r, Y, Y, r, r, r, Y, r,
+               r, r, Y, Y, Y, Y, r, r,
+               r, r, r, r, r, r, r, r];
+  var pixels = [];
+  for (var i = 0; i < error.length; i++) {
+    for (var j = 0; j < 4; j++) {
+      pixels[i * 4 + j] = error[i][j];
+    }
+  }
+  defaultTexture.set(0, pixels);
+  defaultTexture.name = 'DefaultTexture';
+  this.fallback_error_texture_ = defaultTexture;
+  this.error_texture_ = defaultTexture;
+
   return true;
 };
 
@@ -917,7 +942,7 @@ o3d.Client.prototype.clearEventCallback =
  */
 o3d.Client.prototype.setErrorTexture =
     function(texture) {
-  o3d.notImplemented();
+  this.error_texture_ = texture;
 };
 
 
@@ -978,11 +1003,29 @@ o3d.Client.prototype.setErrorCallback =
     function(error_callback) {
   // Other code expects to not see a null error callback.
   if (error_callback) {
-    this.error_callback = error_callback;
+    this.error_callback = this.wrapErrorCallback_(error_callback);
   } else {
-    this.error_callback = function(string) {};
+    this.error_callback = function(string) {
+      this.last_error_ = string;
+    };
   }
 };
+
+
+/**
+ * Wraps a callback function, saving the error string so that the
+ * lastError variable can access it.
+ *
+ * @param {function} error_callback User-defined error callback.
+ * @return {function} Wrapped error callback.
+ * @private
+ */
+o3d.Client.prototype.wrapErrorCallback_ = function(error_callback) {
+  return function(string) {
+    this.last_error_ = string;
+    error_callback(string);
+  }
+}
 
 
 /**
@@ -1102,7 +1145,6 @@ o3d.Client.prototype.getState_ = function(name) {
 o3d.Client.prototype.renderer_init_status = 0;
 
 
-
 /**
  * Gets / Sets the cursor's shape.
  *
@@ -1112,12 +1154,49 @@ o3d.Client.prototype.cursor = null;
 
 
 /**
+ * The current error texture.
+ *
+ * @type {o3d.Texture}
+ * @private
+ */
+o3d.Client.prototype.error_texture_ = null;
+
+
+/**
+ * The fallback error texture. Should only be initialized once per client and
+ * is read-only.
+ *
+ * @type {!o3d.Texture}
+ * @private
+ */
+o3d.Client.prototype.fallback_error_texture_ = null;
+
+
+/**
  * The last error reported by the plugin.
  *
  * @type {string}
+ * @private
  */
 o3d.Client.prototype.last_error_ = '';
+o3d.Client.prototype.__defineGetter__('lastError',
+    function() {
+      return this.last_error_;
+    }
+);
 
+/**
+ * Returns true if missing textures, samplers or ParamSamplers should be
+ * reported by calling the error callback. We assume that if the user
+ * explicitly sets the error texture to null, then they want such errors to
+ * trigger the error callback.
+ *
+ * @return {boolean}
+ * @private
+ */
+o3d.Client.prototype.reportErrors_ = function() {
+  return (this.error_texture_ == null);
+}
 
 
 /**
@@ -1146,7 +1225,7 @@ o3d.Client.prototype.objects = [];
  * Clears the error returned in lastError.
  */
 o3d.Client.prototype.clearLastError = function () {
-  o3d.notImplemented();
+  this.last_error_ = '';
 };
 
 
@@ -1190,5 +1269,3 @@ o3d.Client.prototype.clientInfo = null;
  * @type {Element}
  */
 o3d.Client.prototype.canvas = null;
-
-

@@ -234,6 +234,7 @@ o3d.include('object_base');
 o3d.include('named_object_base');
 o3d.include('named_object');
 o3d.include('param_object');
+o3d.include('param_array');
 o3d.include('param');
 o3d.include('event');
 o3d.include('raw_data');
