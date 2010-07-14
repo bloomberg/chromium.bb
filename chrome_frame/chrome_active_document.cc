@@ -235,7 +235,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   }
 
   NavigationManager* mgr = NavigationManager::GetThreadInstance();
-  DCHECK(mgr);
+  DLOG_IF(ERROR, !mgr) << "Couldn't get instance of NavigationManager";
 
   std::wstring url;
 
