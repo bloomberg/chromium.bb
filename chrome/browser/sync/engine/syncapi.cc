@@ -48,7 +48,6 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
-#include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
