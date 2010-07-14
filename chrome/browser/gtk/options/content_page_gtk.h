@@ -62,6 +62,7 @@ class ContentPageGtk : public OptionsPageBase,
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncCustomizeButtonClicked);
   CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnSyncActionLinkClicked);
   CHROMEGTK_CALLBACK_1(ContentPageGtk, void, OnStopSyncDialogResponse, int);
+  CHROMEGTK_CALLBACK_0(ContentPageGtk, void, OnPrivacyDashboardLinkClicked);
 
   // Widgets for the Password saving group.
   GtkWidget* passwords_asktosave_radio_;
@@ -89,6 +90,7 @@ class ContentPageGtk : public OptionsPageBase,
   GtkWidget* sync_start_stop_button_;
 #endif
   GtkWidget* sync_customize_button_;
+  GtkWidget* privacy_dashboard_link_;
 
   // The parent GtkTable widget
   GtkWidget* page_;
