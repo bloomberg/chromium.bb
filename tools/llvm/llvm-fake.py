@@ -80,28 +80,6 @@ arm_flags = ['-mfpu=vfp3',
              '-march=armv7-a']
 
 global_config_flags = {
-  'AS_ARM': arm_flags,
-
-
-  'AS_X8632': [
-    '--32',
-    '--nacl-align', '5',
-    # turn off nop
-    '-n',
-    '-march=pentium4',
-    '-mtune=i386',
-  ],
-
-
-  'AS_X8664': [
-    '--64',
-    '--nacl-align', '5',
-    # turn off nop
-    '-n',
-    '-mtune=core2',
-  ],
-
-
   'LLVM_GCC_COMPILE': [
     '-nostdinc',
     '-D__native_client__=1',
@@ -111,7 +89,6 @@ global_config_flags = {
     '-DNACL_LINUX=1',
     '-ffixed-r9',
   ] + arm_flags,
-
 
   'LLVM_GCC_COMPILE_HEADERS': [
     # NOTE: the two competing approaches here
@@ -138,32 +115,6 @@ global_config_flags = {
     #  BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include',
   ],
 
-
-  'LLC_SHARED_ARM': [
-    '-march=arm',
-    # c.f. lib/Target/ARM/ARMGenSubtarget.inc
-    '-mcpu=cortex-a8',
-    '-mattr=-neon',
-    '-mattr=+vfp3',
-    '-mtriple=armv7a-*-*eabi*',
-    '-arm-reserve-r9',
-    '-inline-all-const-memcpy'
-  ],
-
-
-  'LLC_SHARED_X8632': [
-    '-march=x86',
-    '-mcpu=pentium4',
-  ],
-
-
-
-  'LLC_SHARED_X8664': [
-    '-march=x86-64',
-    '-mcpu=core2',
-  ],
-
-
   'LLC_SFI_SANDBOXING': [
     # The following options might come in hand and are left
     # here as comments:
@@ -182,38 +133,72 @@ global_config_flags = {
     '-no-inline-jumptables'
   ],
 
-
   'OPT': [
     '-O3',
     '-std-compile-opts'
   ],
 
+  'AS': {
+    'arm' : arm_flags,
+    'x86-32': [
+      '--32',
+      '--nacl-align', '5',
+      # turn off nop
+      '-n',
+      '-march=pentium4',
+      '-mtune=i386',
+      ],
+    'x86-64': [
+      '--64',
+      '--nacl-align', '5',
+      # turn off nop
+      '-n',
+      '-mtune=core2',
+      ]
+    },
 
-    # Our linker scripts ensure that the section layout follows the nacl abi
-  'LD_ARM': [
-    '--native-client',
-    '-nostdlib',
-    '-T', LD_SCRIPT_ARM,
-    '-static',
-  ],
+  'LLC': {
+    'arm': [
+      '-march=arm',
+      # c.f. lib/Target/ARM/ARMGenSubtarget.inc
+      '-mcpu=cortex-a8',
+      '-mattr=-neon',
+      '-mattr=+vfp3',
+      '-mtriple=armv7a-*-*eabi*',
+      '-arm-reserve-r9',
+      '-inline-all-const-memcpy'
+      ],
+    'x86-32': [
+      '-march=x86',
+      '-mcpu=pentium4',
+      ],
+    'x86-64': [
+      '-march=x86-64',
+      '-mcpu=core2',
+      ],
+    },
 
-
-  'LD_X8632': [
-    '--native-client',
-    '-nostdlib',
-    '-T', LD_SCRIPT_X8632,
-#    '-melf_nacl',
-    '-static',
-  ],
-
-
-
-  'LD_X8664': [
-    '--native-client',
-    '-nostdlib',
-    '-T', LD_SCRIPT_X8664,
-    '-static',
-  ],
+  'LD': {
+    'arm': [
+      '--native-client',
+      '-nostdlib',
+      '-T', LD_SCRIPT_ARM,
+      '-static',
+      ],
+    'x86-32': [
+      '--native-client',
+      '-nostdlib',
+      '-T', LD_SCRIPT_X8632,
+      #    '-melf_nacl',
+      '-static',
+      ],
+    'x86-64': [
+      '--native-client',
+      '-nostdlib',
+      '-T', LD_SCRIPT_X8664,
+      '-static',
+      ],
+    }
 }
 
 ######################################################################
@@ -238,6 +223,12 @@ AS_ARM = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-as'
 AS_X86 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
 
 ELF_LD = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ld'
+
+global_assemblers = {
+  'arm' : AS_ARM,
+  'x86-32' : AS_X86,
+  'x86-64' : AS_X86
+}
 
 # NOTE(adonovan): this should _not_ be the Gold linker, e.g. 2.18.*.
 # Beware, one of the Chrome installation scripts may have changed
@@ -393,15 +384,15 @@ def Assemble(asm, flags, argv):
 
 
 def AssembleArm(argv):
-  Assemble(AS_ARM, global_config_flags['AS_ARM'], argv)
+  Assemble(AS_ARM, global_config_flags['AS']['arm'], argv)
 
 
 def AssembleX8632(argv):
-  Assemble(AS_X86, global_config_flags['AS_X8632'], argv)
+  Assemble(AS_X86, global_config_flags['AS']['x86-32'], argv)
 
 
 def AssembleX8664(argv):
-  Assemble(AS_X86, global_config_flags['AS_X8664'], argv)
+  Assemble(AS_X86, global_config_flags['AS']['x86-64'], argv)
 
 
 def CompileToBC(argv, llvm_binary, temp = False):
@@ -437,44 +428,61 @@ def CompileToBC(argv, llvm_binary, temp = False):
   argv.append('-fno-expand-va-arg')
   Run(argv)
 
-def Incarnation_gcclike(argv, tool, llc_flags, assembler, as_flags):
-  argv = argv[:]
+def Incarnation_gcclike(argv, tool):
+  arch = None
+
+  if '-arch' in argv:
+    i = argv.index('-arch')
+    arch = argv[i + 1]
+    argv = argv[:i] + argv[i + 2:]
+  else:
+    argv = argv[:]
+
   argv[0] = tool
   if IsDiagnosticMode(argv) or FindAssemblerFilePos(argv):
     Run(argv)
     return;
+
+  assert arch
+
+  llc_flags = global_config_flags['LLC'][arch]
+  assembler = global_assemblers[arch]
+  as_flags = global_config_flags['AS'][arch]
+
   CompileToBC(argv, tool, True)
   SfiCompile(argv, llc_flags, assembler, as_flags)
 
 
+def Incarnation_sfigcc_generic(argv):
+  Incarnation_gcclike(argv, LLVM_GCC)
+
+
 def Incarnation_sfigcc_arm(argv):
-  Incarnation_gcclike(argv, LLVM_GCC, global_config_flags['LLC_SHARED_ARM'],
-                      AS_ARM, global_config_flags['AS_ARM'])
-
-
-def Incarnation_sfigplusplus_arm(argv):
-  Incarnation_gcclike(argv, LLVM_GXX, global_config_flags['LLC_SHARED_ARM'],
-                      AS_ARM, global_config_flags['AS_ARM'])
+  Incarnation_sfigcc_generic(argv + ['-arch', 'arm'])
 
 
 def Incarnation_sfigcc_x8632(argv):
-  Incarnation_gcclike(argv, LLVM_GCC, global_config_flags['LLC_SHARED_X8632'],
-                      AS_X86, global_config_flags['AS_X8632'])
-
-
-def Incarnation_sfigplusplus_x8632(argv):
-  Incarnation_gcclike(argv, LLVM_GXX, global_config_flags['LLC_SHARED_X8632'],
-                      AS_X86, global_config_flags['AS_X8632'])
+  Incarnation_sfigcc_generic(argv + ['-arch', 'x86-32'])
 
 
 def Incarnation_sfigcc_x8664(argv):
-  Incarnation_gcclike(argv, LLVM_GCC, global_config_flags['LLC_SHARED_X8664'],
-                      AS_X86, global_config_flags['AS_X8664'])
+  Incarnation_sfigcc_generic(argv + ['-arch', 'x86-64'])
+
+
+def Incarnation_sfigplusplus_generic(argv):
+  Incarnation_gcclike(argv, LLVM_GXX)
+
+
+def Incarnation_sfigplusplus_arm(argv):
+  Incarnation_sfigplusplus_generic(argv + ['-arch', 'arm'])
+
+
+def Incarnation_sfigplusplus_x8632(argv):
+  Incarnation_sfigplusplus_generic(argv + ['-arch', 'x86-32'])
 
 
 def Incarnation_sfigplusplus_x8664(argv):
-  Incarnation_gcclike(argv, LLVM_GXX, global_config_flags['LLC_SHARED_X8664'],
-                      AS_X86, global_config_flags['AS_X8664'])
+  Incarnation_sfigplusplus_generic(argv + ['-arch', 'x86-64'])
 
 
 def Incarnation_bcgcc(argv):
@@ -506,7 +514,7 @@ def Incarnation_illegal(argv):
 
 
 def MassageFinalLinkCommandArm(args):
-  out = global_config_flags['LD_ARM']
+  out = global_config_flags['LD']['arm']
 
   # add init code
   if '-nostdlib' not in args:
@@ -700,34 +708,34 @@ def BitcodeToNative(argv, llc, llc_flags, ascom, as_flags, ld, ld_flags, root):
 def Incarnation_bcldarm(argv):
   output = BitcodeToNative(argv,
                            LLC,
-                           global_config_flags['LLC_SHARED_ARM'] +
+                           global_config_flags['LLC']['arm'] +
                            global_config_flags['LLC_SFI_SANDBOXING'],
                            AS_ARM,
-                           global_config_flags['AS_ARM'],
+                           global_config_flags['AS']['arm'],
                            ELF_LD,
-                           global_config_flags['LD_ARM'],
+                           global_config_flags['LD']['arm'],
                            PNACL_ARM_ROOT)
 
 
 def Incarnation_bcldx8632(argv):
   output = BitcodeToNative(argv,
                            LLC,
-                           global_config_flags['LLC_SHARED_X8632'],
+                           global_config_flags['LLC']['x86-32'],
                            AS_X86,
-                           global_config_flags['AS_X8632'],
+                           global_config_flags['AS']['x86-32'],
                            ELF_LD,
-                           global_config_flags['LD_X8632'],
+                           global_config_flags['LD']['x86-32'],
                            PNACL_X8632_ROOT)
 
 
 def Incarnation_bcldx8664(argv):
   output = BitcodeToNative(argv,
                            LLC,
-                           global_config_flags['LLC_SHARED_X8664'],
+                           global_config_flags['LLC']['x86-64'],
                            AS_X86,
-                           global_config_flags['AS_X8664'],
+                           global_config_flags['AS']['x86-64'],
                            ELF_LD,
-                           global_config_flags['LD_X8664'],
+                           global_config_flags['LD']['x86-64'],
                            PNACL_X8664_ROOT)
 
 
@@ -744,6 +752,9 @@ def Incarnation_sfild(argv):
 ######################################################################
 
 INCARNATIONS = {
+   'llvm-fake-sfigcc': Incarnation_sfigcc_generic,
+   'llvm-fake-sfig++': Incarnation_sfigplusplus_generic,
+
    'llvm-fake-sfigcc-arm': Incarnation_sfigcc_arm,
    'llvm-fake-sfig++-arm': Incarnation_sfigplusplus_arm,
 
