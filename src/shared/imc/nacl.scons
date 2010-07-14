@@ -46,7 +46,4 @@ env.ComponentLibrary('google_nacl_imc_c', nacl_imc_c_inputs)
 
 
 env.AddLibraryToSdk(['google_nacl_imc', 'google_nacl_imc_c'])
-env.AddHeaderToSdk(['nacl_imc.h',
-                    'nacl_imc_c.h',
-                    'nacl_htp.h',
-                    'nacl_htp_c.h'])
+env.AddHeaderToSdk(['nacl_imc.h', 'nacl_imc_c.h'])

@@ -19,7 +19,7 @@
 #include "native_client/src/include/portability.h"
 
 /* For NaClHandle */
-#include "native_client/src/shared/imc/nacl_htp_c.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 
 /* for nacl_off64_t */
 #include "native_client/src/shared/platform/nacl_host_desc.h"

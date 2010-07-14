@@ -34,13 +34,9 @@
     'common_sources': [
       'nacl_imc_common.cc',
       'nacl_imc.h',
-      'nacl_htp.cc',
-      'nacl_htp.h',
     ],
     'c_sources': [
         '<@(common_sources)',
-        'nacl_htp_c.cc',
-        'nacl_htp_c.h',
         'nacl_imc_c.cc',
         'nacl_imc_c.h',
     ],
