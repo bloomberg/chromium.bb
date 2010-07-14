@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -465,9 +465,8 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new MetricsHandler())->Attach(this));
     if (WebResourcesEnabled())
       AddMessageHandler((new TipsHandler())->Attach(this));
-    if (ProfileSyncService::IsSyncEnabled()) {
+    if (GetProfile()->IsSyncAccessible())
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
-    }
     if (Extension::AppsAreEnabled()) {
       ExtensionsService* service = GetProfile()->GetExtensionsService();
       // We might not have an ExtensionsService (on ChromeOS when not logged in

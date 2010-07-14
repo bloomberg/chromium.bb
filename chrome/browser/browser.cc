@@ -236,12 +236,18 @@ Browser::Browser(Type type, Profile* profile)
     tab_restore_service_->AddObserver(this);
     TabRestoreServiceChanged(tab_restore_service_);
   }
+
+  if (profile_->GetProfileSyncService())
+    profile_->GetProfileSyncService()->AddObserver(this);
 }
 
 Browser::~Browser() {
   // The tab strip should not have any significant tabs at this point.
   DCHECK(!tabstrip_model_.HasNonPhantomTabs());
   tabstrip_model_.RemoveObserver(this);
+
+  if (profile_->GetProfileSyncService())
+    profile_->GetProfileSyncService()->RemoveObserver(this);
 
   BrowserList::RemoveBrowser(this);
 
@@ -1059,8 +1065,8 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(
-      IDC_SYNC_BOOKMARKS, show_main_ui && ProfileSyncService::IsSyncEnabled());
+  command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
+      show_main_ui && profile_->IsSyncAccessible());
   command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
@@ -3037,6 +3043,21 @@ void Browser::Observe(NotificationType type,
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Browser, ProfileSyncServiceObserver implementation:
+
+void Browser::OnStateChanged() {
+  DCHECK(profile_->GetProfileSyncService());
+
+#if !defined(OS_MACOSX)
+  const bool show_main_ui = (type() == TYPE_NORMAL) && !window_->IsFullscreen();
+#else
+  const bool show_main_ui = (type() == TYPE_NORMAL);
+#endif
+
+  command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
+      show_main_ui && profile_->IsSyncAccessible());
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Command and state updating (private):

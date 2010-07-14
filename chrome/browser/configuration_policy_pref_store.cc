@@ -224,6 +224,19 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
   return result;
 }
 
+bool ConfigurationPolicyPrefStore::ApplySyncPolicy(PolicyType policy,
+                                                   Value* value) {
+  if (policy == ConfigurationPolicyStore::kPolicySyncDisabled) {
+    bool disable_sync;
+    if (value->GetAsBoolean(&disable_sync) && disable_sync)
+      prefs_->Set(prefs::kSyncManaged, value);
+    else
+      delete value;
+    return true;
+  }
+  return false;
+}
+
 bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(PolicyType policy,
     Value* value, const PolicyToPreferenceMapEntry map[], int size) {
   const PolicyToPreferenceMapEntry* end = map + size;
@@ -242,6 +255,9 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
   if (ApplyProxyPolicy(policy, value))
     return;
 
+  if (ApplySyncPolicy(policy, value))
+    return;
+
   if (ApplyPolicyFromMap(policy, value, simple_policy_map_,
                          arraysize(simple_policy_map_)))
     return;
@@ -249,4 +265,3 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
   // Other policy implementations go here.
   NOTIMPLEMENTED();
 }
-

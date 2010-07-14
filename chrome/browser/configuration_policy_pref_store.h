@@ -85,8 +85,11 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // of |value| in the case that the policy is proxy-specific.
   bool ApplyProxyPolicy(PolicyType policy, Value* value);
 
+  // Handles sync-related policies. Returns true if the policy was handled.
+  // Assumes ownership of |value| in that case.
+  bool ApplySyncPolicy(PolicyType policy, Value* value);
+
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };
 
 #endif  // CHROME_BROWSER_CONFIGURATION_POLICY_PREF_STORE_H_
-

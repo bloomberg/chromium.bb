@@ -76,6 +76,11 @@ static const wchar_t* kGeneralPolicyConstrainedPrefs[] = {
   prefs::kHomePageIsNewTabPage
 };
 
+// Content page preferences that are potentially constrained by policy.
+static const wchar_t* kContentPolicyConstrainedPrefs[] = {
+  prefs::kSyncManaged
+};
+
 std::string GetNewTabUIURLString() {
   return URLFixerUpper::FixupURL(chrome::kChromeUINewTabURL,
       std::string()).possibly_invalid_spec();
@@ -412,6 +417,9 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
             kGeneralPolicyConstrainedPrefs,
             arraysize(kGeneralPolicyConstrainedPrefs));
       case OPTIONS_PAGE_CONTENT:
+        return new ManagedPrefsBannerState(controller, page, prefs,
+            kContentPolicyConstrainedPrefs,
+            arraysize(kContentPolicyConstrainedPrefs));
         break;
       case OPTIONS_PAGE_ADVANCED:
         break;
@@ -1235,7 +1243,7 @@ const int kDisabledIndex = 1;
 - (void)stopSyncAlertDidEnd:(NSAlert*)alert
                  returnCode:(int)returnCode
                 contextInfo:(void*)contextInfo {
-  DCHECK(syncService_);
+  DCHECK(syncService_ && !syncService_->IsManaged());
   if (returnCode == NSAlertFirstButtonReturn) {
     syncService_->DisableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
@@ -1245,7 +1253,7 @@ const int kDisabledIndex = 1;
 // Called when the user clicks the multi-purpose sync button in the
 // "Personal Stuff" pane.
 - (IBAction)doSyncAction:(id)sender {
-  DCHECK(syncService_);
+  DCHECK(syncService_ && !syncService_->IsManaged());
   if (syncService_->HasSyncSetupCompleted()) {
     // If sync setup has completed that means the sync button was a
     // "stop syncing" button.  Bring up a confirmation dialog before
@@ -1292,7 +1300,7 @@ const int kDisabledIndex = 1;
 }
 
 - (IBAction)doSyncReauthentication:(id)sender {
-  DCHECK(syncService_);
+  DCHECK(syncService_ && !syncService_->IsManaged());
   syncService_->ShowLoginDialog();
 }
 
@@ -1720,6 +1728,7 @@ const int kDisabledIndex = 1;
   string16 statusLabel, linkLabel;
   sync_ui_util::MessageType status =
       sync_ui_util::GetStatusLabels(syncService_, &statusLabel, &linkLabel);
+  bool managed = syncService_->IsManaged();
 
   [syncButton_ setEnabled:!syncService_->WizardIsVisible()];
   NSString* buttonLabel;
@@ -1736,11 +1745,14 @@ const int kDisabledIndex = 1;
         IDS_SYNC_START_SYNC_BUTTON_LABEL);
     [syncCustomizeButton_ setHidden:true];
   }
+  [syncCustomizeButton_ setEnabled:!managed];
   [syncButton_ setTitle:buttonLabel];
+  [syncButton_ setEnabled:!managed];
 
   [syncStatus_ setStringValue:base::SysUTF16ToNSString(statusLabel)];
   [syncLink_ setHidden:linkLabel.empty()];
   [syncLink_ setTitle:base::SysUTF16ToNSString(linkLabel)];
+  [syncLink_ setEnabled:!managed];
 
   NSButtonCell* syncLinkCell = static_cast<NSButtonCell*>([syncLink_ cell]);
   if (!syncStatusNoErrorBackgroundColor_) {

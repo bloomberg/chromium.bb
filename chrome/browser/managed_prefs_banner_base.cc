@@ -12,11 +12,15 @@
 ManagedPrefsBannerBase::ManagedPrefsBannerBase(PrefService* prefs,
                                                const wchar_t** relevant_prefs,
                                                size_t count)
-    : prefs_(prefs),
-      relevant_prefs_(relevant_prefs, relevant_prefs + count) {
-  for (PrefSet::const_iterator pref(relevant_prefs_.begin());
-       pref != relevant_prefs_.end(); ++pref)
-    prefs_->AddPrefObserver(pref->c_str(), this);
+    : prefs_(prefs) {
+  for (size_t i = 0; i < count; ++i) {
+    // Ignore prefs that are not registered.
+    const wchar_t* pref = relevant_prefs[i];
+    if (prefs->FindPreference(pref)) {
+      prefs_->AddPrefObserver(pref, this);
+      relevant_prefs_.insert(pref);
+    }
+  }
 }
 
 ManagedPrefsBannerBase::~ManagedPrefsBannerBase() {

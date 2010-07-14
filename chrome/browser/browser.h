@@ -17,6 +17,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -50,7 +51,8 @@ class Browser : public TabStripModelDelegate,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public NotificationObserver,
                 public SelectFileDialog::Listener,
-                public TabRestoreService::Observer {
+                public TabRestoreService::Observer,
+                public ProfileSyncServiceObserver {
  public:
   // If you change the values in this enum you'll need to update browser_proxy.
   // TODO(sky): move into a common place that is referenced by both ui_tests
@@ -736,6 +738,9 @@ class Browser : public TabStripModelDelegate,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Overridden from ProfileSyncServiceObserver:
+  virtual void OnStateChanged();
 
   // Command and state updating ///////////////////////////////////////////////
 

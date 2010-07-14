@@ -1187,7 +1187,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   // Show the login wizard if the user clicked the re-login button.
   if (sender->tag() == kSyncErrorButtonTag) {
     DCHECK(sender == sync_error_button_);
-    DCHECK(sync_service_);
+    DCHECK(sync_service_ && !sync_service_->IsManaged());
     sync_service_->ShowLoginDialog();
     return;
   }

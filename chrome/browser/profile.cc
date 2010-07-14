@@ -277,6 +277,11 @@ URLRequestContextGetter* Profile::GetDefaultRequestContext() {
   return default_request_context_;
 }
 
+bool Profile::IsSyncAccessible() {
+  ProfileSyncService* syncService = GetProfileSyncService();
+  return syncService && !syncService->IsManaged();
+}
+
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_store_win.h"
 #elif defined(OS_MACOSX)
@@ -1642,9 +1647,6 @@ TokenService* ProfileImpl::GetTokenService() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
-  if (!ProfileSyncService::IsSyncEnabled()) {
-    return NULL;
-  }
   if (!sync_service_.get())
     InitSyncService();
   return sync_service_.get();

@@ -634,8 +634,8 @@ void RecordLastRunAppBundlePath() {
                 << "NULL defaultProfile detected -- not doing anything";
             break;
           }
-          enable = ProfileSyncService::IsSyncEnabled() &&
-                   [self keyWindowIsNotModal];
+          enable = defaultProfile->IsSyncAccessible() &&
+              [self keyWindowIsNotModal];
           sync_ui_util::UpdateSyncItem(item, enable, defaultProfile);
           break;
         }
@@ -848,8 +848,7 @@ void RecordLastRunAppBundlePath() {
   menuState_->UpdateCommandEnabled(IDC_HELP_PAGE, true);
   menuState_->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
   menuState_->UpdateCommandEnabled(IDC_REPORT_BUG, true);
-  menuState_->UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
-                                   ProfileSyncService::IsSyncEnabled());
+  menuState_->UpdateCommandEnabled(IDC_SYNC_BOOKMARKS, true);
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
 }
 

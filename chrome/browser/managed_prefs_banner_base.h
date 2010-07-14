@@ -40,7 +40,7 @@ class ManagedPrefsBannerBase : public NotificationObserver {
  private:
   PrefService* prefs_;
   typedef std::set<std::wstring> PrefSet;
-  const PrefSet relevant_prefs_;
+  PrefSet relevant_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedPrefsBannerBase);
 };

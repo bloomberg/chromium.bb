@@ -126,6 +126,16 @@ void ProfileSyncService::Initialize() {
   InitSettings();
   RegisterPreferences();
 
+  // Watch the preference that indicates sync is managed so we can take
+  // appropriate action.
+  pref_sync_managed_.Init(prefs::kSyncManaged, profile_->GetPrefs(), this);
+
+  // For now, the only thing we can do through policy is to turn sync off.
+  if (IsManaged()) {
+    DisableForUser();
+    return;
+  }
+
   if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
 
@@ -218,6 +228,8 @@ void ProfileSyncService::RegisterPreferences() {
 
   pref_service->RegisterBooleanPref(prefs::kKeepEverythingSynced,
       enable_by_default);
+
+  pref_service->RegisterBooleanPref(prefs::kSyncManaged, false);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -732,6 +744,17 @@ void ProfileSyncService::Observe(NotificationType type,
       FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
       break;
     }
+    case NotificationType::PREF_CHANGED: {
+      std::wstring* pref_name = Details<std::wstring>(details).ptr();
+      if (*pref_name == prefs::kSyncManaged) {
+        FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+        if (*pref_sync_managed_)
+          DisableForUser();
+        else if (HasSyncSetupCompleted())
+          StartUp();
+      }
+      break;
+    }
     default: {
       NOTREACHED();
     }
@@ -750,10 +773,16 @@ void ProfileSyncService::SyncEvent(SyncEventCodes code) {
   UMA_HISTOGRAM_ENUMERATION("Sync.EventCodes", code, MAX_SYNC_EVENT_CODE);
 }
 
+// static
 bool ProfileSyncService::IsSyncEnabled() {
   // We have switches::kEnableSync just in case we need to change back to
   // sync-disabled-by-default on a platform.
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync);
+}
+
+bool ProfileSyncService::IsManaged() {
+  // Some tests use ProfileSyncServiceMock which doesn't have a profile.
+  return profile_ && profile_->GetPrefs()->GetBoolean(prefs::kSyncManaged);
 }
 
 bool ProfileSyncService::ShouldPushChanges() {

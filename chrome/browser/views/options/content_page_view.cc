@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/views/importer_view.h"
+#include "chrome/browser/views/options/managed_prefs_banner_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
 #include "chrome/browser/views/options/passwords_exceptions_window_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,6 +49,12 @@ const int kFormAutofillRadioGroup = 202;
 
 // Background color for the status label when it's showing an error.
 static const SkColor kSyncLabelErrorBgColor = SkColorSetRGB(0xff, 0x9a, 0x9a);
+
+// All content related preferences that are potentially managed by policy. We'll
+// display the warning banner if one of these have the managed bit set.
+const wchar_t* kContentPolicyConstrainedPrefs[] = {
+  prefs::kSyncManaged
+};
 
 static views::Background* CreateErrorBackground() {
   return views::Background::CreateSolidBackground(kSyncLabelErrorBgColor);
@@ -136,7 +143,7 @@ void ContentPageView::ButtonPressed(
       gfx::Rect(),
       new ImporterView(profile(), importer::ALL))->Show();
   } else if (sender == sync_start_stop_button_) {
-    DCHECK(sync_service_);
+    DCHECK(sync_service_ && !sync_service_->IsManaged());
 
     if (sync_service_->HasSyncSetupCompleted()) {
       ConfirmMessageBoxDialog::RunWithCustomConfiguration(
@@ -170,7 +177,7 @@ void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
     return;
   }
   if (source == sync_action_link_) {
-    DCHECK(sync_service_);
+    DCHECK(sync_service_ && !sync_service_->IsManaged());
     sync_service_->ShowLoginDialog();
     return;
   }
@@ -197,6 +204,11 @@ void ContentPageView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(
+      new ManagedPrefsBannerView(profile()->GetPrefs(),
+                                 kContentPolicyConstrainedPrefs,
+                                 arraysize(kContentPolicyConstrainedPrefs)));
   if (sync_service_) {
     layout->StartRow(0, single_column_view_set_id);
     InitSyncGroup();
@@ -489,6 +501,7 @@ void ContentPageView::UpdateSyncControls() {
   std::wstring link_label;
   std::wstring customize_button_label;
   std::wstring button_label;
+  bool managed = sync_service_->IsManaged();
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(sync_service_,
       &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
@@ -503,12 +516,15 @@ void ContentPageView::UpdateSyncControls() {
   }
 
   sync_status_label_->SetText(status_label);
-  sync_start_stop_button_->SetEnabled(!sync_service_->WizardIsVisible());
+  sync_start_stop_button_->SetEnabled(
+      !sync_service_->WizardIsVisible() && !managed);
   sync_start_stop_button_->SetLabel(button_label);
   sync_customize_button_->SetLabel(customize_button_label);
   sync_customize_button_->SetVisible(sync_setup_completed && !status_has_error);
+  sync_customize_button_->SetEnabled(!managed);
   sync_action_link_->SetText(link_label);
   sync_action_link_->SetVisible(!link_label.empty());
+  sync_action_link_->SetEnabled(!managed);
 
   if (status_has_error) {
     sync_status_label_->set_background(CreateErrorBackground());

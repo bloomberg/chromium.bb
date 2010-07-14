@@ -874,6 +874,10 @@ const wchar_t kSyncThemes[] = L"sync.themes";
 const wchar_t kSyncTypedUrls[] = L"sync.typed_urls";
 const wchar_t kSyncExtensions[] = L"sync.extensions";
 
+// Boolean used by enterprise configuration management in order to lock down
+// sync.
+const wchar_t kSyncManaged[] = L"sync.managed";
+
 // Create web application shortcut dialog preferences.
 const wchar_t kWebAppCreateOnDesktop[] = L"browser.web_app.create_on_desktop";
 const wchar_t kWebAppCreateInAppsMenu[] =

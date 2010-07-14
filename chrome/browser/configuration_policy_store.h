@@ -26,6 +26,7 @@ class ConfigurationPolicyStore {
     kPolicyDnsPrefetchingEnabled,
     kPolicySafeBrowsingEnabled,
     kPolicyMetricsReportingEnabled,
+    kPolicySyncDisabled
   };
 
   static const int kPolicyNoProxyServerMode = 0;
@@ -43,4 +44,3 @@ class ConfigurationPolicyStore {
 };
 
 #endif  // CHROME_BROWSER_CONFIGURATION_POLICY_STORE_H_
-

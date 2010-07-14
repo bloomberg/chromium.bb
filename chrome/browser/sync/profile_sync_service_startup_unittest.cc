@@ -121,6 +121,40 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartNormal)) {
   service_->Initialize();
 }
 
+TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(ManagedStartup)) {
+  // Disable sync through policy.
+  profile_.GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
+
+  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+
+  // Service should not be started by Initialize() since it's managed.
+  service_->Initialize();
+}
+
+TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(SwitchManaged)) {
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
+
+  service_->Initialize();
+
+  // The service should stop when switching to managed mode.
+  Mock::VerifyAndClearExpectations(data_type_manager);
+  EXPECT_CALL(*data_type_manager, state()).
+      WillOnce(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, Stop()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(2);
+  profile_.GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
+
+  // When switching back to unmanaged, the state should change, but the service
+  // should not start up automatically (kSyncSetupCompleted will be false).
+  Mock::VerifyAndClearExpectations(data_type_manager);
+  EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  profile_.GetPrefs()->ClearPref(prefs::kSyncManaged);
+}
+
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureResult result =

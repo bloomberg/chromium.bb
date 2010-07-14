@@ -452,6 +452,10 @@ class Profile {
     return 0 == accessibility_pause_level_;
   }
 
+  // Checks whether sync is configurable by the user. Returns false if sync is
+  // disabled or controlled by configuration management.
+  bool IsSyncAccessible();
+
  protected:
   static URLRequestContextGetter* default_request_context_;
 

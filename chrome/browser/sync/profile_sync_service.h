@@ -14,10 +14,12 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/google_service_auth_error.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/notification_method.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
@@ -30,21 +32,6 @@ class NotificationSource;
 class NotificationType;
 class Profile;
 class ProfileSyncFactory;
-
-// Various UI components such as the New Tab page can be driven by observing
-// the ProfileSyncService through this interface.
-class ProfileSyncServiceObserver {
- public:
-  // When one of the following events occurs, OnStateChanged() is called.
-  // Observers should query the service to determine what happened.
-  // - We initialized successfully.
-  // - There was an authentication error and the user needs to reauthenticate.
-  // - The sync servers are unavailable at this time.
-  // - Credentials are now in flight for authentication.
-  virtual void OnStateChanged() = 0;
- protected:
-  virtual ~ProfileSyncServiceObserver() { }
-};
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.  Each subsystem is logically thought of as being
@@ -258,6 +245,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // command-line switches).
   static bool IsSyncEnabled();
 
+  // Retuns whether sync is managed, i.e. controlled by configuration
+  // management. If so, the user is not allowed to configure sync.
+  bool IsManaged();
+
   // UnrecoverableErrorHandler implementation.
   virtual void OnUnrecoverableError(
       const tracked_objects::Location& from_here,
@@ -441,6 +432,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   ScopedRunnableMethodFactory<ProfileSyncService>
     scoped_runnable_method_factory_;
+
+  // The preference that controls whether sync is under control by configuration
+  // management.
+  BooleanPrefMember pref_sync_managed_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

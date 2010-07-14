@@ -9,6 +9,7 @@
 
 #include "app/gtk_signal.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/gtk/options/managed_prefs_banner_gtk.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"
@@ -102,6 +103,9 @@ class ContentPageGtk : public OptionsPageBase,
   // Cached pointer to ProfileSyncService, if it exists. Kept up to date
   // and NULL-ed out on destruction.
   ProfileSyncService* sync_service_;
+
+  // Tracks managed preference warning banner state.
+  ManagedPrefsBannerGtk managed_prefs_banner_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentPageGtk);
 };

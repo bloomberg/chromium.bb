@@ -878,7 +878,7 @@
           break;
         }
         case IDC_SYNC_BOOKMARKS:
-          enable &= ProfileSyncService::IsSyncEnabled();
+          enable &= browser_->profile()->IsSyncAccessible();
           sync_ui_util::UpdateSyncItem(item, enable, browser_->profile());
           break;
         default:

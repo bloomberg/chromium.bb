@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,6 +98,7 @@ NewTabPageSyncHandler::MessageType
 DOMMessageHandler* NewTabPageSyncHandler::Attach(DOMUI* dom_ui) {
   sync_service_ = dom_ui->GetProfile()->GetProfileSyncService();
   DCHECK(sync_service_);  // This shouldn't get called by an incognito NTP.
+  DCHECK(!sync_service_->IsManaged());  // And neither if sync is managed.
   sync_service_->AddObserver(this);
   return DOMMessageHandler::Attach(dom_ui);
 }
@@ -121,8 +122,8 @@ void NewTabPageSyncHandler::HideSyncStatusSection() {
 void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   DCHECK(!waiting_for_initial_page_load_);
 
-  // Hide the sync status section if sync is disabled entirely.
-  if (!sync_service_) {
+  // Hide the sync status section if sync is managed or disabled entirely.
+  if (!sync_service_ || sync_service_->IsManaged()) {
     HideSyncStatusSection();
     return;
   }
@@ -149,6 +150,8 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
 void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
   DCHECK(!waiting_for_initial_page_load_);
   DCHECK(sync_service_);
+  if (!sync_service_->IsSyncEnabled())
+    return;
   if (sync_service_->HasSyncSetupCompleted()) {
     if (sync_service_->GetAuthError().state() ==
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||

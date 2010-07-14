@@ -42,6 +42,11 @@ namespace {
 // Background color for the status label when it's showing an error.
 static const GdkColor kSyncLabelErrorBgColor = GDK_COLOR_RGB(0xff, 0x9a, 0x9a);
 
+// Set of preferences which might be unavailable for editing when managed.
+const wchar_t* kContentManagablePrefs[] = {
+  prefs::kSyncManaged
+};
+
 // Helper for WrapLabelAtAllocationHack.
 void OnLabelAllocate(GtkWidget* label, GtkAllocation* allocation) {
   gtk_widget_set_size_request(label, allocation->width, -1);
@@ -80,7 +85,9 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
       sync_customize_button_(NULL),
       privacy_dashboard_link_(NULL),
       initializing_(true),
-      sync_service_(NULL) {
+      sync_service_(NULL),
+      managed_prefs_banner_(profile->GetPrefs(), kContentManagablePrefs,
+                            arraysize(kContentManagablePrefs)) {
   if (profile->GetProfileSyncService()) {
     sync_service_ = profile->GetProfileSyncService();
     sync_service_->AddObserver(this);
@@ -89,6 +96,7 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
   // Prepare the group options layout.
   scoped_ptr<OptionsLayoutBuilderGtk>
     options_builder(OptionsLayoutBuilderGtk::CreateOptionallyCompactLayout());
+  options_builder->AddWidget(managed_prefs_banner_.banner_widget(), false);
   if (sync_service_) {
     options_builder->AddOptionGroup(
         l10n_util::GetStringUTF8(IDS_SYNC_OPTIONS_GROUP_NAME),
@@ -391,6 +399,7 @@ void ContentPageGtk::UpdateSyncControls() {
   string16 link_label;
   std::string customize_button_label;
   std::string button_label;
+  bool managed = sync_service_->IsManaged();
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(sync_service_,
       &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
@@ -408,7 +417,7 @@ void ContentPageGtk::UpdateSyncControls() {
                       UTF16ToUTF8(status_label).c_str());
 #if !defined(OS_CHROMEOS)
   gtk_widget_set_sensitive(sync_start_stop_button_,
-                           !sync_service_->WizardIsVisible());
+                           !sync_service_->WizardIsVisible() && !managed);
   gtk_button_set_label(GTK_BUTTON(sync_start_stop_button_),
                        button_label.c_str());
 #endif
@@ -417,6 +426,7 @@ void ContentPageGtk::UpdateSyncControls() {
       sync_setup_completed && !status_has_error);
   gtk_button_set_label(GTK_BUTTON(sync_customize_button_),
                        customize_button_label.c_str());
+  gtk_widget_set_sensitive(sync_customize_button_, !managed);
 #if !defined(OS_CHROMEOS)
   gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(sync_action_link_),
                                    UTF16ToUTF8(link_label).c_str());
@@ -427,6 +437,7 @@ void ContentPageGtk::UpdateSyncControls() {
     gtk_widget_set_no_show_all(sync_action_link_background_, FALSE);
     gtk_widget_show(sync_action_link_background_);
   }
+  gtk_widget_set_sensitive(sync_action_link_, !managed);
 #endif
   if (status_has_error) {
     gtk_widget_modify_bg(sync_status_label_background_, GTK_STATE_NORMAL,
@@ -529,7 +540,7 @@ void ContentPageGtk::OnPasswordRadioToggled(GtkWidget* widget) {
 }
 
 void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
-  DCHECK(sync_service_);
+  DCHECK(sync_service_ && !sync_service_->IsManaged());
 
   if (sync_service_->HasSyncSetupCompleted()) {
     GtkWidget* dialog = gtk_message_dialog_new(
@@ -567,12 +578,13 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
 
 void ContentPageGtk::OnSyncCustomizeButtonClicked(GtkWidget* widget) {
   // sync_customize_button_ should be invisible if sync is not yet set up.
-  DCHECK(sync_service_->HasSyncSetupCompleted());
+  DCHECK(sync_service_ && !sync_service_->IsManaged() &&
+         sync_service_->HasSyncSetupCompleted());
   sync_service_->ShowChooseDataTypes();
 }
 
 void ContentPageGtk::OnSyncActionLinkClicked(GtkWidget* widget) {
-  DCHECK(sync_service_);
+  DCHECK(sync_service_ && !sync_service_->IsManaged());
   sync_service_->ShowLoginDialog();
 }
 
