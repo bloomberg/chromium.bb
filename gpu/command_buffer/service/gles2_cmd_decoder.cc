@@ -536,7 +536,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual bool UpdateOffscreenFrameBufferSize();
   virtual bool MakeCurrent();
   virtual GLES2Util* GetGLES2Util() { return &util_; }
-  virtual gfx::GLContext* GetGLContext() { return context_; }
+  virtual gfx::GLContext* GetGLContext() { return context_.get(); }
 
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
 
@@ -1051,7 +1051,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   #undef GLES2_CMD_OP
 
   // The GL context this decoder renders to on behalf of the client.
-  gfx::GLContext* context_;
+  scoped_ptr<gfx::GLContext> context_;
 
   // A GLContext that is kept in its default state. It is used to perform
   // operations that should not be dependent on client set GLContext state, like
@@ -1397,7 +1397,6 @@ GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
 
 GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(group),
-      context_(NULL),
       error_bits_(0),
       util_(0),  // TODO(gman): Set to actual num compress texture formats.
       pack_alignment_(4),
@@ -1431,12 +1430,15 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
                                   GLES2Decoder* parent,
                                   uint32 parent_client_texture_id) {
   DCHECK(context);
-  DCHECK(!context_);
-  context_ = context;
+  DCHECK(!context_.get());
+
+  // Take ownership of the GLContext.
+  context_.reset(context);
 
   // Create a GL context that is kept in a default state and shares a namespace
   // with the main GL context.
-  default_context_.reset(gfx::GLContext::CreateOffscreenGLContext(context_));
+  default_context_.reset(gfx::GLContext::CreateOffscreenGLContext(
+      context_.get()));
   if (!default_context_.get()) {
     Destroy();
     return false;
@@ -1672,7 +1674,7 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
 // }  // anonymous namespace
 
 bool GLES2DecoderImpl::MakeCurrent() {
-  return context_->MakeCurrent();
+  return context_.get() ? context_->MakeCurrent() : false;
 }
 
 gfx::Size GLES2DecoderImpl::GetBoundFrameBufferSize() {
@@ -1881,7 +1883,7 @@ void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
 }
 
 void GLES2DecoderImpl::Destroy() {
-  if (context_) {
+  if (context_.get()) {
     MakeCurrent();
 
     if (black_2d_texture_id_) {
@@ -1931,6 +1933,9 @@ void GLES2DecoderImpl::Destroy() {
       offscreen_saved_color_texture_->Destroy();
       offscreen_saved_color_texture_.reset();
     }
+
+    context_->Destroy();
+    context_.reset();
   }
 
   if (default_context_.get()) {

@@ -44,6 +44,7 @@ class GLES2Decoder : public CommonDecoder {
 
   // Initializes the graphics context. Can create an offscreen
   // decoder with a frame buffer that can be referenced from the parent.
+  // Takes ownership of GLContext.
   // Parameters:
   //  context: the GL context to render to.
   //  size: the size if the GL context is offscreen.

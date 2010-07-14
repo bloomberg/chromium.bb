@@ -37,11 +37,11 @@ GPUProcessor::~GPUProcessor() {
   Destroy();
 }
 
-bool GPUProcessor::InitializeCommon(const gfx::Size& size,
+bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
+                                    const gfx::Size& size,
                                     gles2::GLES2Decoder* parent_decoder,
                                     uint32 parent_texture_id) {
-  // Context should have been created by platform specific Initialize().
-  DCHECK(context_.get());
+  DCHECK(context);
 
   // Map the ring buffer and create the parser.
   Buffer ring_buffer = command_buffer_->GetRingBuffer();
@@ -58,7 +58,7 @@ bool GPUProcessor::InitializeCommon(const gfx::Size& size,
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
-  if (!decoder_->Initialize(context_.get(),
+  if (!decoder_->Initialize(context,
                             size,
                             parent_decoder,
                             parent_texture_id)) {
@@ -78,11 +78,6 @@ void GPUProcessor::DestroyCommon() {
   }
 
   group_.Destroy(have_context);
-
-  if (context_.get()) {
-    context_->Destroy();
-    context_.reset();
-  }
 
   parser_.reset();
 }

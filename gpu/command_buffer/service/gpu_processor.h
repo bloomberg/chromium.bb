@@ -43,12 +43,15 @@ class GPUProcessor : public CommandBufferEngine {
 
   virtual ~GPUProcessor();
 
+  // Perform platform specific and common initialization.
   bool Initialize(gfx::PluginWindowHandle hwnd,
                   const gfx::Size& size,
                   GPUProcessor* parent,
                   uint32 parent_texture_id);
 
-  bool InitializeCommon(const gfx::Size& size,
+  // Perform common initialization. Takes ownership of GLContext.
+  bool InitializeCommon(gfx::GLContext* context,
+                        const gfx::Size& size,
                         gles2::GLES2Decoder* parent_decoder,
                         uint32 parent_texture_id);
 
@@ -103,7 +106,6 @@ class GPUProcessor : public CommandBufferEngine {
   gles2::ContextGroup group_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
-  scoped_ptr<gfx::GLContext> context_;
 
 #if defined(OS_MACOSX)
   scoped_ptr<AcceleratedSurface> surface_;

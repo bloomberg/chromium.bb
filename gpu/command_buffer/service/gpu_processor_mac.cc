@@ -13,10 +13,6 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
                               const gfx::Size& size,
                               GPUProcessor* parent,
                               uint32 parent_texture_id) {
-  // Cannot reinitialize.
-  if (context_.get())
-    return false;
-
   // Get the parent decoder and the GLContext to share IDs with, if any.
   gles2::GLES2Decoder* parent_decoder = NULL;
   gfx::GLContext* parent_context = NULL;
@@ -28,8 +24,9 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
     DCHECK(parent_context);
   }
 
-  context_.reset(gfx::GLContext::CreateOffscreenGLContext(parent_context));
-  if (!context_.get())
+  scoped_ptr<gfx::GLContext> context(
+      gfx::GLContext::CreateOffscreenGLContext(parent_context));
+  if (!context.get())
     return false;
 
   // On Mac OS X since we can not render on-screen we don't even
@@ -39,14 +36,21 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
   // rendering results back to the browser.
   if (window) {
     surface_.reset(new AcceleratedSurface());
-    // TODO(apatrick): AcceleratedSurface will not work with an OSMesa context.
-    if (!surface_->Initialize(context_.get(), false)) {
+
+    // Note that although the GLContext is passed to Initialize and the
+    // GLContext will later be owned by the decoder, AcceleratedSurface does
+    // not hold on to the reference. It simply extracts the underlying GL
+    // context in order to share the namespace with another context.
+    if (!surface_->Initialize(context.get(), false)) {
       Destroy();
       return false;
     }
   }
 
-  return InitializeCommon(size, parent_decoder, parent_texture_id);
+  return InitializeCommon(context.release(),
+                          size,
+                          parent_decoder,
+                          parent_texture_id);
 
   return true;
 }
@@ -54,8 +58,9 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
 void GPUProcessor::Destroy() {
   if (surface_.get()) {
     surface_->Destroy();
+    surface_.reset();
   }
-  surface_.reset();
+
   DestroyCommon();
 }
 
@@ -79,7 +84,10 @@ void GPUProcessor::SetTransportDIBAllocAndFree(
 }
 
 void GPUProcessor::WillSwapBuffers() {
-  DCHECK(context_->IsCurrent());
+  DCHECK(decoder_.get());
+  DCHECK(decoder_->GetGLContext());
+  DCHECK(decoder_->GetGLContext()->IsCurrent());
+
   if (surface_.get()) {
     surface_->SwapBuffers();
   }
