@@ -59,7 +59,7 @@ void InitCrashReporter() {
   }
 
   if (!enable_breakpad) {
-    LOG_IF(WARNING, is_browser) << "Breakpad disabled";
+    LOG_IF(INFO, is_browser) << "Breakpad disabled";
     return;
   }
 
