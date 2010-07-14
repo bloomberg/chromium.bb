@@ -151,7 +151,9 @@ URLLoader::URLLoader(PluginInstance* instance)
       bytes_sent_(0),
       total_bytes_to_be_sent_(0),
       bytes_received_(0),
-      total_bytes_to_be_received_(0) {
+      total_bytes_to_be_received_(0),
+      user_buffer_(NULL),
+      user_buffer_size_(0) {
 }
 
 URLLoader::~URLLoader() {
