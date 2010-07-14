@@ -9,7 +9,6 @@
 
 #include "base/scoped_nsobject.h"
 
-@class ThrobberTimerTarget;
 @protocol ThrobberDataDelegate;
 
 // A class that knows how to draw an animated state to indicate progress.
@@ -25,7 +24,6 @@
 
 @interface ThrobberView : NSView {
  @private
-  scoped_nsobject<ThrobberTimerTarget> target_;  // Target of animation timer.
   id<ThrobberDataDelegate> dataDelegate_;
   NSTimer* timer_;  // Animation timer. Weak, owned by runloop.
 }

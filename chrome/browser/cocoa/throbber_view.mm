@@ -353,8 +353,8 @@ typedef std::set<ThrobberView*> ThrobberSet;
   [super viewDidUnhide];
 }
 
-// Called when the ThrobberTimerTarget gets tickled by our timer. Advance the
-// frame, dirty the display, and kill the timer when it's no longer needed.
+// Called when the timer fires. Advance the frame, dirty the display, and remove
+// the throbber if it's no longer needed.
 - (void)animate {
   [dataDelegate_ advanceFrame];
   [self setNeedsDisplay:YES];
