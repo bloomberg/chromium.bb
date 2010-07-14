@@ -547,6 +547,7 @@ class SandboxIPCProcess  {
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("sk"));
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("hu"));
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("hr"));
+        break;
       case NPCharsetGreek:
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("el"));
         break;
