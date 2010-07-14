@@ -620,7 +620,10 @@ bool UITestBase::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
   const int kCycles = 10;
   for (int i = 0; i < kCycles; i++) {
     // Give it a chance to catch up.
-    PlatformThread::Sleep(sleep_timeout_ms() / kCycles);
+    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
 
     bool visible = !wait_for_open;
     if (!browser->IsShelfVisible(&visible))
@@ -628,6 +631,8 @@ bool UITestBase::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
     if (visible == wait_for_open)
       return true;  // Got the download shelf.
   }
+
+  ADD_FAILURE() << "Timeout reached in WaitForDownloadShelfVisibilityChange";
   return false;
 }
 
@@ -642,8 +647,13 @@ bool UITestBase::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
       return true;  // Find window visibility change complete.
 
     // Give it a chance to catch up.
-    PlatformThread::Sleep(sleep_timeout_ms() / kCycles);
+    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
   }
+
+  ADD_FAILURE() << "Timeout reached in WaitForFindWindowVisibilityChange";
   return false;
 }
 
@@ -659,8 +669,13 @@ bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
       return true;  // Bookmark bar visibility change complete.
 
     // Give it a chance to catch up.
-    PlatformThread::Sleep(sleep_timeout_ms() / kCycles);
+    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
   }
+
+  ADD_FAILURE() << "Timeout reached in WaitForBookmarkBarVisibilityChange";
   return false;
 }
 
@@ -775,6 +790,7 @@ bool UITestBase::WaitUntilCookieValue(TabProxy* tab,
       return true;
   }
 
+  ADD_FAILURE() << "Timeout reached in WaitUntilCookieValue";
   return false;
 }
 
@@ -797,6 +813,7 @@ std::string UITestBase::WaitUntilCookieNonEmpty(TabProxy* tab,
       return cookie_value;
   }
 
+  ADD_FAILURE() << "Timeout reached in WaitUntilCookieNonEmpty";
   return std::string();
 }
 
@@ -824,16 +841,24 @@ bool UITestBase::WaitUntilJavaScriptCondition(TabProxy* tab,
       return true;
   }
 
+  ADD_FAILURE() << "Timeout reached in WaitUntilJavaScriptCondition";
   return false;
 }
 
 void UITestBase::WaitUntilTabCount(int tab_count) {
-  for (int i = 0; i < 10; ++i) {
-    PlatformThread::Sleep(sleep_timeout_ms() / 10);
+  const int kMaxIntervals = 10;
+  const int kIntervalMs = sleep_timeout_ms() / kMaxIntervals;
+
+  for (int i = 0; i < kMaxIntervals; ++i) {
+    bool browser_survived = CrashAwareSleep(kIntervalMs);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return;
     if (GetTabCount() == tab_count)
-      break;
+      return;
   }
-  EXPECT_EQ(tab_count, GetTabCount());
+
+  ADD_FAILURE() << "Timeout reached in WaitUntilTabCount";
 }
 
 FilePath UITestBase::GetDownloadDirectory() {
