@@ -117,11 +117,17 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
               availableWidth:kWidth];
   [view_ display];
 
-  // Load available decorations and try drawing.
+  // Load available decorations and try drawing.  To make sure that
+  // they are actually drawn, check that |GetWidthForSpace()| doesn't
+  // indicate that they should be omitted.
+  const CGFloat kVeryWide = 1000.0;
+
   SelectedKeywordDecoration selected_keyword_decoration([view_ font]);
   selected_keyword_decoration.SetVisible(true);
   selected_keyword_decoration.SetKeyword(std::wstring(L"Google"), false);
   [cell addLeftDecoration:&selected_keyword_decoration];
+  EXPECT_NE(selected_keyword_decoration.GetWidthForSpace(kVeryWide),
+            LocationBarDecoration::kOmittedWidth);
 
   // TODO(shess): This really wants a |LocationBarViewMac|, but only a
   // few methods reference it, so this works well enough.  But
@@ -130,6 +136,8 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   location_icon_decoration.SetVisible(true);
   location_icon_decoration.SetImage([NSImage imageNamed:@"NSApplicationIcon"]);
   [cell addLeftDecoration:&location_icon_decoration];
+  EXPECT_NE(location_icon_decoration.GetWidthForSpace(kVeryWide),
+            LocationBarDecoration::kOmittedWidth);
 
   EVBubbleDecoration ev_bubble_decoration(&location_icon_decoration,
                                           [view_ font]);
@@ -137,12 +145,16 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   ev_bubble_decoration.SetImage([NSImage imageNamed:@"NSApplicationIcon"]);
   ev_bubble_decoration.SetLabel(@"Application");
   [cell addLeftDecoration:&ev_bubble_decoration];
+  EXPECT_NE(ev_bubble_decoration.GetWidthForSpace(kVeryWide),
+            LocationBarDecoration::kOmittedWidth);
 
   // Make sure we're actually calling |DrawInFrame()|.
   StrictMock<MockDecoration> mock_decoration;
   mock_decoration.SetVisible(true);
   [cell addLeftDecoration:&mock_decoration];
   EXPECT_CALL(mock_decoration, DrawInFrame(_, _));
+  EXPECT_NE(mock_decoration.GetWidthForSpace(kVeryWide),
+            LocationBarDecoration::kOmittedWidth);
 
   [view_ display];
 

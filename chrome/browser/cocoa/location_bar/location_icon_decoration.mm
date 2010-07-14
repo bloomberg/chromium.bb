@@ -30,7 +30,7 @@ CGFloat LocationIconDecoration::GetWidthForSpace(CGFloat width) {
   NSImage* image = GetImage();
   if (image) {
     const CGFloat image_width = [image size].width;
-    if (image_width >= width)
+    if (image_width <= width)
       return image_width;
   }
   return kOmittedWidth;
