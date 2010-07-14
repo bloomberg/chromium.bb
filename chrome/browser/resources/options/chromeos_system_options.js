@@ -38,11 +38,5 @@ SystemOptions.prototype = {
     $('language-button').onclick = function(event) {
       // TODO: Open ChromeOS language settings page.
     };
-    $('sync-button').onclick = function(event) {
-      OptionsPage.showPageByName('sync');
-    }
-    $('dummy-button').onclick = function(event) {
-      OptionsPage.showOverlay('dummy');
-    }
   },
 };
