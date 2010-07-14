@@ -1114,8 +1114,59 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   for (size_t i = 0; i < arraysize(kDisabledIDs); i++) {
     View* v = FindViewByID(kDisabledIDs[i]);
     ASSERT_TRUE(v != NULL);
-    if (v)
-      v->SetEnabled(false);
+    v->SetEnabled(false);
+  }
+
+  // Uncomment the following line if you want to test manually the UI of this
+  // test.
+  // MessageLoopForUI::current()->Run(new AcceleratorHandler());
+
+  View* focused_view;
+  // Let's do one traversal (several times, to make sure it loops ok).
+  GetFocusManager()->ClearFocus();
+  for (int i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < arraysize(kTraversalIDs); j++) {
+      GetFocusManager()->AdvanceFocus(false);
+      focused_view = GetFocusManager()->GetFocusedView();
+      EXPECT_TRUE(focused_view != NULL);
+      if (focused_view)
+        EXPECT_EQ(kTraversalIDs[j], focused_view->GetID());
+    }
+  }
+
+  // Same thing in reverse.
+  GetFocusManager()->ClearFocus();
+  for (int i = 0; i < 3; ++i) {
+    for (int j = arraysize(kTraversalIDs) - 1; j >= 0; --j) {
+      GetFocusManager()->AdvanceFocus(true);
+      focused_view = GetFocusManager()->GetFocusedView();
+      EXPECT_TRUE(focused_view != NULL);
+      if (focused_view)
+        EXPECT_EQ(kTraversalIDs[j], focused_view->GetID());
+    }
+  }
+}
+
+TEST_F(FocusTraversalTest, TraversalWithInvisibleViews) {
+  const int kInvisibleIDs[] = { kTopCheckBoxID, kOKButtonID,
+      kThumbnailContainerID };
+
+  const int kTraversalIDs[] = { kAppleTextfieldID, kOrangeTextfieldID,
+      kBananaTextfieldID, kKiwiTextfieldID, kFruitButtonID, kFruitCheckBoxID,
+      kComboboxID, kBroccoliButtonID, kRosettaLinkID,
+      kStupeurEtTremblementLinkID, kDinerGameLinkID, kRidiculeLinkID,
+      kClosetLinkID, kVisitingLinkID, kAmelieLinkID, kJoyeuxNoelLinkID,
+      kCampingLinkID, kBriceDeNiceLinkID, kTaxiLinkID, kAsterixLinkID,
+      kCancelButtonID, kHelpButtonID, kStyleContainerID, kBoldCheckBoxID,
+      kItalicCheckBoxID, kUnderlinedCheckBoxID, kStyleHelpLinkID,
+      kStyleTextEditID, kSearchTextfieldID, kSearchButtonID, kHelpLinkID };
+
+
+  // Let's make some views invisible.
+  for (size_t i = 0; i < arraysize(kInvisibleIDs); i++) {
+    View* v = FindViewByID(kInvisibleIDs[i]);
+    ASSERT_TRUE(v != NULL);
+    v->SetVisible(false);
   }
 
   // Uncomment the following line if you want to test manually the UI of this

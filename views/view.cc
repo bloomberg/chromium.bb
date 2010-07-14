@@ -264,7 +264,7 @@ void View::SetEnabled(bool state) {
 }
 
 bool View::IsFocusable() const {
-  return focusable_ && IsEnabled() && IsVisible();
+  return focusable_ && IsEnabled() && IsVisibleInRootView();
 }
 
 void View::SetFocusable(bool focusable) {
@@ -272,7 +272,8 @@ void View::SetFocusable(bool focusable) {
 }
 
 bool View::IsAccessibilityFocusable() const {
-  return (focusable_ || accessibility_focusable_) && IsEnabled() && IsVisible();
+  return (focusable_ || accessibility_focusable_) && IsEnabled() &&
+      IsVisibleInRootView();
 }
 
 FocusManager* View::GetFocusManager() {
