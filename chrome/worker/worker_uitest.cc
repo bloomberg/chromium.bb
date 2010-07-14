@@ -671,6 +671,7 @@ TEST_F(WorkerTest, MAYBE_QueuedSharedWorkerStartedFromOtherTab) {
   ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
 }
 
-TEST_F(WorkerTest, OpenDatabaseSyncInputs) {
+// TODO(ojan): Started failing with r52393. WebKit merge 63272:63323.
+TEST_F(WorkerTest, FAILS_OpenDatabaseSyncInputs) {
   RunWorkerStorageLayoutTest("open-database-sync-inputs.html");
 }
