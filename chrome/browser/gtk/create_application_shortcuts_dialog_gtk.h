@@ -13,6 +13,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "googleurl/src/gurl.h"
 
+typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
