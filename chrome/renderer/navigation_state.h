@@ -259,6 +259,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         user_script_idle_scheduler_(NULL),
         was_fetched_via_spdy_(false),
         was_npn_negotiated_(false),
+        was_alternate_protocol_available_(false),
         was_fetched_via_proxy_(false),
         was_translated_(false) {
   }
@@ -292,9 +293,9 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
 
   bool was_fetched_via_spdy_;
   bool was_npn_negotiated_;
+  bool was_alternate_protocol_available_;
   bool was_fetched_via_proxy_;
   bool was_translated_;
-  bool was_alternate_protocol_available_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };
