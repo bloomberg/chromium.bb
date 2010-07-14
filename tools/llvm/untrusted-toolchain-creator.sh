@@ -97,11 +97,15 @@ readonly AR_FOR_SFI_TARGET=${AR_FOR_TARGET}
 readonly NM_FOR_SFI_TARGET=${NM_FOR_TARGET}
 readonly RANLIB_FOR_SFI_TARGET=${RANLIB_FOR_TARGET}
 
-readonly CXXFLAGS_FOR_SFI_TARGET="-D__native_client__=1"
-readonly CFLAGS_FOR_SFI_TARGET="-march=${ARM_ARCH} \
-                                -DMISSING_SYSCALL_NAMES=1 \
-                                -ffixed-r9 \
-                                -D__native_client__=1"
+# Preprocessor flags
+readonly CPPFLAGS_FOR_SFI_TARGET="-D__native_client__=1 \
+                                  -DMISSING_SYSCALL_NAMES=1"
+# C flags
+readonly CFLAGS_FOR_SFI_TARGET="${CPPFLAGS_FOR_SFI_TARGET} \
+                               -march=${ARM_ARCH} \
+                               -ffixed-r9"
+# C++ flags
+readonly CXXFLAGS_FOR_SFI_TARGET=${CFLAGS_FOR_SFI_TARGET}
 
 # The gold plugin that we use is documented at
 # http://llvm.org/docs/GoldPlugin.html
@@ -358,7 +362,7 @@ ConfigureAndBuildGccStage1() {
 
 STD_ENV_FOR_GCC_ETC=(
     CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
-    CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}"
+    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
     CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
@@ -408,11 +412,11 @@ STD_ENV_FOR_LIBSTDCPP=(
   CXX="${CXX_FOR_SFI_TARGET}"
   RAW_CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
   LD="${LD_FOR_SFI_TARGET}"
-  CFLAGS="${CXXFLAGS_FOR_SFI_TARGET}"
-  CPPFLAGS="${CXXFLAGS_FOR_SFI_TARGET}"
+  CFLAGS="${CFLAGS_FOR_SFI_TARGET}"
+  CPPFLAGS="${CPPFLAGS_FOR_SFI_TARGET}"
   CXXFLAGS="${CXXFLAGS_FOR_SFI_TARGET}"
   CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
-  CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}"
+  CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
   CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
   GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
   CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
@@ -638,7 +642,7 @@ InstallDriver() {
 # NOTE: we do not expect the assembler or linker to be used to build newlib.a
 STD_ENV_FOR_NEWLIB=(
     CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
-    CPPFLAGS_FOR_TARGET="${CXXFLAGS_FOR_SFI_TARGET}"
+    CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
     CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     CXX_FOR_TARGET="${CXX_FOR_SFI_TARGET}"
