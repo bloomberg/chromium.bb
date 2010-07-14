@@ -53,9 +53,6 @@ class SpdyNetworkTransaction : public HttpTransaction {
   virtual uint64 GetUploadProgress() const;
 
  private:
-  FRIEND_TEST(SpdyNetworkTransactionTest, WindowUpdate);
-  FRIEND_TEST(SpdyNetworkTransactionTest, WindowUpdateOverflow);
-
   enum State {
     STATE_INIT_CONNECTION,
     STATE_INIT_CONNECTION_COMPLETE,

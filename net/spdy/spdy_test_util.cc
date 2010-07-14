@@ -190,22 +190,6 @@ spdy::SpdyFrame* ConstructSpdyGoAway() {
   return framer.CreateGoAway(0);
 }
 
-// Construct a SPDY WINDOW_UPDATE frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-spdy::SpdyFrame* ConstructSpdyWindowUpdate(
-    const spdy::SpdyStreamId stream_id, uint32 delta_window_size) {
-  spdy::SpdyFramer framer;
-  return framer.CreateWindowUpdate(stream_id, delta_window_size);
-}
-
-// Construct a SPDY RST_STREAM frame.
-// Returns the constructed frame.  The caller takes ownership of the frame.
-spdy::SpdyFrame* ConstructSpdyRstStream(spdy::SpdyStreamId stream_id,
-                                        spdy::SpdyStatusCodes status) {
-  spdy::SpdyFramer framer;
-  return framer.CreateRstStream(stream_id, status);
-}
-
 // Construct a single SPDY header entry, for validation.
 // |extra_headers| are the extra header-value pairs.
 // |buffer| is the buffer we're filling in.
