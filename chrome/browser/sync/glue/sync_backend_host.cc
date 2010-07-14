@@ -103,7 +103,7 @@ void SyncBackendHost::Initialize(
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
                         Core::DoInitializeOptions(
-                            sync_service_url, true,
+                            sync_service_url, lsid.empty(),
                             new HttpBridgeFactory(baseline_context_getter),
                             new HttpBridgeFactory(baseline_context_getter),
                             lsid,
