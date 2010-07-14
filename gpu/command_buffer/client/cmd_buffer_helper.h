@@ -109,6 +109,10 @@ class CommandBufferHelper {
     return *reinterpret_cast<T*>(data);
   }
 
+  int32 last_token_read() const {
+    return last_token_read_;
+  }
+
   error::Error GetError();
 
   // Common Commands
@@ -194,6 +198,10 @@ class CommandBufferHelper {
              size,
              shared_memory_id,
              shared_memory_offset);
+  }
+
+  CommandBuffer* command_buffer() const {
+    return command_buffer_;
   }
 
  private:

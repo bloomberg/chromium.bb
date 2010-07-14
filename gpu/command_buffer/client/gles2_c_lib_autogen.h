@@ -522,6 +522,22 @@ void GLES2RegisterSharedIds(
 GLboolean GLES2CommandBufferEnable(const char* feature) {
   return gles2::GetGLContext()->CommandBufferEnable(feature);
 }
+void* GLES2MapBufferSubData(
+    GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {
+  return gles2::GetGLContext()->MapBufferSubData(target, offset, size, access);
+}
+void GLES2UnmapBufferSubData(const void* mem) {
+  gles2::GetGLContext()->UnmapBufferSubData(mem);
+}
+void* GLES2MapTexSubImage2D(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLenum type, GLenum access) {
+  return gles2::GetGLContext()->MapTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, access);
+}
+void GLES2UnmapTexSubImage2D(const void* mem) {
+  gles2::GetGLContext()->UnmapTexSubImage2D(mem);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

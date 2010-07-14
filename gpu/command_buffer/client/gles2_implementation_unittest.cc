@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/GLES2/gles2_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -636,7 +637,7 @@ TEST_F(GLES2ImplementationTest, ReservedIds) {
   Cmds expected;
   expected.get.Init(kTransferBufferId, 0);
 
-  // One call to flush to way for GetError
+  // One call to flush to wait for GetError
   EXPECT_CALL(*command_buffer_, OnFlush(_))
       .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
       .RetiresOnSaturation();
@@ -687,6 +688,190 @@ TEST_F(GLES2ImplementationTest, ReadPixels2Reads) {
 
   gl_->ReadPixels(0, 0, kWidth, kHeight, kFormat, kType, buffer.get());
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, MapUnMapBufferSubData) {
+  struct Cmds {
+    BufferSubData buf;
+    cmd::SetToken set_token;
+  };
+  const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
+  const GLintptr kOffset = 15;
+  const GLsizeiptr kSize = 16;
+
+  int32 token = 1;
+  uint32 offset = 0;
+  Cmds expected;
+  expected.buf.Init(
+    kTarget, kOffset, kSize, kTransferBufferId, offset);
+  expected.set_token.Init(token++);
+
+  void* mem = gl_->MapBufferSubData(kTarget, kOffset, kSize, GL_WRITE_ONLY);
+  ASSERT_TRUE(mem != NULL);
+  gl_->UnmapBufferSubData(mem);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, MapUnMapBufferSubDataBadArgs) {
+  const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
+  const GLintptr kOffset = 15;
+  const GLsizeiptr kSize = 16;
+
+  // Calls to flush to wait for GetError
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  void* mem;
+  mem = gl_->MapBufferSubData(kTarget, -1, kSize, GL_WRITE_ONLY);
+  ASSERT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  mem = gl_->MapBufferSubData(kTarget, kOffset, -1, GL_WRITE_ONLY);
+  ASSERT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  mem = gl_->MapBufferSubData(kTarget, kOffset, kSize, GL_READ_ONLY);
+  ASSERT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), gl_->GetError());
+  const char* kPtr = "something";
+  gl_->UnmapBufferSubData(kPtr);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+}
+
+TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2D) {
+  struct Cmds {
+    TexSubImage2D tex;
+    cmd::SetToken set_token;
+  };
+  const GLint kLevel = 1;
+  const GLint kXOffset = 2;
+  const GLint kYOffset = 3;
+  const GLint kWidth = 4;
+  const GLint kHeight = 5;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+
+  int32 token = 1;
+  uint32 offset = 0;
+  Cmds expected;
+  expected.tex.Init(
+      GL_TEXTURE_2D, kLevel, kXOffset, kYOffset, kWidth, kHeight, kFormat,
+      kType, kTransferBufferId, offset);
+  expected.set_token.Init(token++);
+
+  void* mem = gl_->MapTexSubImage2D(
+      GL_TEXTURE_2D,
+      kLevel,
+      kXOffset,
+      kYOffset,
+      kWidth,
+      kHeight,
+      kFormat,
+      kType,
+      GL_WRITE_ONLY);
+  ASSERT_TRUE(mem != NULL);
+  gl_->UnmapTexSubImage2D(mem);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, MapUnMapTexSubImage2DBadArgs) {
+  const GLint kLevel = 1;
+  const GLint kXOffset = 2;
+  const GLint kYOffset = 3;
+  const GLint kWidth = 4;
+  const GLint kHeight = 5;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+
+  // Calls to flush to wait for GetError
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .WillOnce(SetMemory(GLuint(GL_NO_ERROR)))
+      .RetiresOnSaturation();
+
+  void* mem;
+  mem = gl_->MapTexSubImage2D(
+    GL_TEXTURE_2D,
+    -1,
+    kXOffset,
+    kYOffset,
+    kWidth,
+    kHeight,
+    kFormat,
+    kType,
+    GL_WRITE_ONLY);
+  EXPECT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  mem = gl_->MapTexSubImage2D(
+    GL_TEXTURE_2D,
+    kLevel,
+    -1,
+    kYOffset,
+    kWidth,
+    kHeight,
+    kFormat,
+    kType,
+    GL_WRITE_ONLY);
+  EXPECT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  mem = gl_->MapTexSubImage2D(
+    GL_TEXTURE_2D,
+    kLevel,
+    kXOffset,
+    -1,
+    kWidth,
+    kHeight,
+    kFormat,
+    kType,
+    GL_WRITE_ONLY);
+  EXPECT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  mem = gl_->MapTexSubImage2D(
+    GL_TEXTURE_2D,
+    kLevel,
+    kXOffset,
+    kYOffset,
+    -1,
+    kHeight,
+    kFormat,
+    kType,
+    GL_WRITE_ONLY);
+  EXPECT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  mem = gl_->MapTexSubImage2D(
+    GL_TEXTURE_2D,
+    kLevel,
+    kXOffset,
+    kYOffset,
+    kWidth,
+    -1,
+    kFormat,
+    kType,
+    GL_WRITE_ONLY);
+  EXPECT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
+  mem = gl_->MapTexSubImage2D(
+    GL_TEXTURE_2D,
+    kLevel,
+    kXOffset,
+    kYOffset,
+    kWidth,
+    kHeight,
+    kFormat,
+    kType,
+    GL_READ_ONLY);
+  EXPECT_TRUE(mem == NULL);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), gl_->GetError());
+  const char* kPtr = "something";
+  gl_->UnmapTexSubImage2D(kPtr);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
 }
 
 }  // namespace gles2

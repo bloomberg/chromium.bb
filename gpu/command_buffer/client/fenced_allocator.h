@@ -65,7 +65,10 @@ class FencedAllocator {
   // Parameters:
   //   offset: the offset of the memory block to free.
   //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(Offset offset, unsigned int token);
+  void FreePendingToken(Offset offset, int32 token);
+
+  // Frees any blocks pending a token for which the token has been read.
+  void FreeUnused();
 
   // Gets the size of the largest free block that is available without waiting.
   unsigned int GetLargestFreeSize();
@@ -92,7 +95,7 @@ class FencedAllocator {
     State state;
     Offset offset;
     unsigned int size;
-    unsigned int token;  // token to wait for in the FREE_PENDING_TOKEN case.
+    int32 token;  // token to wait for in the FREE_PENDING_TOKEN case.
   };
 
   // Comparison functor for memory block sorting.
@@ -106,7 +109,7 @@ class FencedAllocator {
   typedef std::vector<Block> Container;
   typedef unsigned int BlockIndex;
 
-  static const unsigned int kUnusedToken = 0;
+  static const int32 kUnusedToken = 0;
 
   // Gets the index of a memory block, given its offset.
   BlockIndex GetBlockByOffset(Offset offset);
@@ -189,9 +192,14 @@ class FencedAllocatorWrapper {
   // Parameters:
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(void *pointer, unsigned int token) {
+  void FreePendingToken(void *pointer, int32 token) {
     DCHECK(pointer);
     allocator_.FreePendingToken(GetOffset(pointer), token);
+  }
+
+  // Frees any blocks pending a token for which the token has been read.
+  void FreeUnused() {
+    allocator_.FreeUnused();
   }
 
   // Gets a pointer to a memory block given the base memory and the offset.

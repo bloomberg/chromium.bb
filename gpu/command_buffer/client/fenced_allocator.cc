@@ -21,8 +21,9 @@ FencedAllocator::~FencedAllocator() {
       i = WaitForTokenAndFreeBlock(i);
     }
   }
-  DCHECK_EQ(blocks_.size(), 1u);
-  DCHECK_EQ(blocks_[0].state, FREE);
+  // These checks are not valid if the service has crashed or lost the context.
+  // DCHECK_EQ(blocks_.size(), 1u);
+  // DCHECK_EQ(blocks_[0].state, FREE);
 }
 
 // Looks for a non-allocated block that is big enough. Search in the FREE
@@ -65,8 +66,8 @@ void FencedAllocator::Free(FencedAllocator::Offset offset) {
 }
 
 // Looks for the corresponding block, mark it FREE_PENDING_TOKEN.
-void FencedAllocator::FreePendingToken(FencedAllocator::Offset offset,
-                                       unsigned int token) {
+void FencedAllocator::FreePendingToken(
+    FencedAllocator::Offset offset, int32 token) {
   BlockIndex index = GetBlockByOffset(offset);
   Block &block = blocks_[index];
   block.state = FREE_PENDING_TOKEN;
@@ -152,6 +153,20 @@ FencedAllocator::BlockIndex FencedAllocator::WaitForTokenAndFreeBlock(
   helper_->WaitForToken(block.token);
   block.state = FREE;
   return CollapseFreeBlock(index);
+}
+
+// Frees any blocks pending a token for which the token has been read.
+void FencedAllocator::FreeUnused() {
+  int32 last_token_read = helper_->last_token_read();
+  for (unsigned int i = 0; i < blocks_.size();) {
+    Block& block = blocks_[i];
+    if (block.state == FREE_PENDING_TOKEN && block.token <= last_token_read) {
+      block.state = FREE;
+      i = CollapseFreeBlock(i);
+    } else {
+      ++i;
+    }
+  }
 }
 
 // If the block is exactly the requested size, simply mark it IN_USE, otherwise

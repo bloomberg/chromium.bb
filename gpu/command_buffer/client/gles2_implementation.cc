@@ -5,6 +5,8 @@
 // A class to emluate GLES2 over command buffers.
 
 #include "../client/gles2_implementation.h"
+#include <GLES2/gles2_command_buffer.h>
+#include "../client/mapped_memory.h"
 #include "../common/gles2_cmd_utils.h"
 #include "../common/id_allocator.h"
 
@@ -419,6 +421,8 @@ GLES2Implementation::GLES2Implementation(
   // Allocate space for simple GL results.
   result_buffer_ = transfer_buffer;
   result_shm_offset_ = 0;
+
+  mapped_memory_.reset(new MappedMemoryManager(helper_));
 
   if (share_resources) {
     buffer_id_handler_.reset(
@@ -1461,6 +1465,104 @@ GLboolean GLES2Implementation::CommandBufferEnable(const char* feature) {
 }
 
 #endif  // defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)
+
+void* GLES2Implementation::MapBufferSubData(
+    GLuint target, GLintptr offset, GLsizeiptr size, GLenum access) {
+  // NOTE: target is NOT checked because the service will check it
+  // and we don't know what targets are valid.
+  if (access != GL_WRITE_ONLY) {
+    SetGLError(GL_INVALID_ENUM, "MapBufferSubData: bad access mode");
+    return NULL;
+  }
+  if (offset < 0 || size < 0) {
+    SetGLError(GL_INVALID_VALUE, "MapBufferSubData: bad range");
+    return NULL;
+  }
+  int32 shm_id;
+  unsigned int shm_offset;
+  void* mem = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
+  if (!mem) {
+    SetGLError(GL_OUT_OF_MEMORY, "MapBufferSubData: out of memory");
+    return NULL;
+  }
+
+  std::pair<MappedBufferMap::iterator, bool> result =
+     mapped_buffers_.insert(std::make_pair(
+         mem,
+         MappedBuffer(
+             access, shm_id, mem, shm_offset, target, offset, size)));
+  return mem;
+}
+
+void GLES2Implementation::UnmapBufferSubData(const void* mem) {
+  MappedBufferMap::iterator it = mapped_buffers_.find(mem);
+  if (it == mapped_buffers_.end()) {
+    SetGLError(GL_INVALID_VALUE, "UnmapBufferSubData: buffer not mapped");
+    return;
+  }
+  const MappedBuffer& mb = it->second;
+  helper_->BufferSubData(
+      mb.target, mb.offset, mb.size, mb.shm_id, mb.shm_offset);
+  mapped_memory_->FreePendingToken(mb.shm_memory, helper_->InsertToken());
+  mapped_buffers_.erase(it);
+}
+
+void* GLES2Implementation::MapTexSubImage2D(
+     GLenum target,
+     GLint level,
+     GLint xoffset,
+     GLint yoffset,
+     GLsizei width,
+     GLsizei height,
+     GLenum format,
+     GLenum type,
+     GLenum access) {
+  if (access != GL_WRITE_ONLY) {
+    SetGLError(GL_INVALID_ENUM, "MapTexSubImage2D: bad access mode");
+    return NULL;
+  }
+  // NOTE: target is NOT checked because the service will check it
+  // and we don't know what targets are valid.
+  if (level < 0 || xoffset < 0 || yoffset < 0 || width < 0 || height < 0) {
+    SetGLError(GL_INVALID_VALUE, "MapTexSubImage2D: bad dimensions");
+    return NULL;
+  }
+  uint32 size;
+  if (!GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_, &size)) {
+    SetGLError(GL_INVALID_VALUE, "MapTexSubImage2D: image size too large");
+    return NULL;
+  }
+  int32 shm_id;
+  unsigned int shm_offset;
+  void* mem = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
+  if (!mem) {
+    SetGLError(GL_OUT_OF_MEMORY, "MapTexSubImage2D: out of memory");
+    return NULL;
+  }
+
+  std::pair<MappedTextureMap::iterator, bool> result =
+     mapped_textures_.insert(std::make_pair(
+         mem,
+         MappedTexture(
+             access, shm_id, mem, shm_offset,
+             target, level, xoffset, yoffset, width, height, format, type)));
+  return mem;
+}
+
+void GLES2Implementation::UnmapTexSubImage2D(const void* mem) {
+  MappedTextureMap::iterator it = mapped_textures_.find(mem);
+  if (it == mapped_textures_.end()) {
+    SetGLError(GL_INVALID_VALUE, "UnmapTexSubImage2D: texture not mapped");
+    return;
+  }
+  const MappedTexture& mt = it->second;
+  helper_->TexSubImage2D(
+      mt.target, mt.level, mt.xoffset, mt.yoffset, mt.width, mt.height,
+      mt.format, mt.type, mt.shm_id, mt.shm_offset);
+  mapped_memory_->FreePendingToken(mt.shm_memory, helper_->InsertToken());
+  mapped_textures_.erase(it);
+}
 
 }  // namespace gles2
 }  // namespace gpu

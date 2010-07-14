@@ -5,6 +5,7 @@ include_rules = [
   "+../command_buffer",
   "+../client",
   "+../common",
+  "+../GLES2",
   "+../service",
 
   # For IOSurface and TransportDIB support on OS X, and X11 utilities.

@@ -19,6 +19,9 @@
 #define GLES2_SUPPORT_CLIENT_SIDE_BUFFERS 1
 
 namespace gpu {
+
+class MappedMemoryManager;
+
 namespace gles2 {
 
 class ClientSideBufferHelper;
@@ -145,15 +148,15 @@ class GLES2Implementation {
     }
   #endif
 
-   GLuint MakeTextureId() {
-     GLuint id;
-     texture_id_handler_->MakeIds(0, 1, &id);
-     return id;
-   }
+  GLuint MakeTextureId() {
+    GLuint id;
+    texture_id_handler_->MakeIds(0, 1, &id);
+    return id;
+  }
 
-   void FreeTextureId(GLuint id) {
-     texture_id_handler_->FreeIds(1, &id);
-   }
+  void FreeTextureId(GLuint id) {
+    texture_id_handler_->FreeIds(1, &id);
+  }
 
  private:
   // Wraps RingBufferWrapper to provide aligned allocations.
@@ -179,6 +182,87 @@ class GLES2Implementation {
     template <typename T> T *AllocTyped(unsigned int count) {
       return static_cast<T *>(Alloc(count * sizeof(T)));
     }
+  };
+
+  // Base class for mapped resources.
+  struct MappedResource {
+    MappedResource(GLenum _access, int _shm_id, void* mem, unsigned int offset)
+        : access(_access),
+          shm_id(_shm_id),
+          shm_memory(mem),
+          shm_offset(offset) {
+    }
+
+    // access mode. Currently only GL_WRITE_ONLY is valid
+    GLenum access;
+
+    // Shared memory ID for buffer.
+    int shm_id;
+
+    // Address of shared memory
+    void* shm_memory;
+
+    // Offset of shared memory
+    unsigned int shm_offset;
+  };
+
+  // Used to track mapped textures.
+  struct MappedTexture : public MappedResource {
+    MappedTexture(
+        GLenum access,
+        int shm_id,
+        void* shm_mem,
+        unsigned int shm_offset,
+        GLenum _target,
+        GLint _level,
+        GLint _xoffset,
+        GLint _yoffset,
+        GLsizei _width,
+        GLsizei _height,
+        GLenum _format,
+        GLenum _type)
+        : MappedResource(access, shm_id, shm_mem, shm_offset),
+          target(_target),
+          level(_level),
+          xoffset(_xoffset),
+          yoffset(_yoffset),
+          width(_width),
+          height(_height),
+          format(_format),
+          type(_type) {
+    }
+
+    // These match the arguments to TexSubImage2D.
+    GLenum target;
+    GLint level;
+    GLint xoffset;
+    GLint yoffset;
+    GLsizei width;
+    GLsizei height;
+    GLenum format;
+    GLenum type;
+  };
+
+  // Used to track mapped buffers.
+  struct MappedBuffer : public MappedResource {
+    MappedBuffer(
+        GLenum access,
+        int shm_id,
+        void* shm_mem,
+        unsigned int shm_offset,
+        GLenum _target,
+        GLintptr _offset,
+        GLsizeiptr _size)
+        : MappedResource(access, shm_id, shm_mem, shm_offset),
+          target(_target),
+          offset(_offset),
+          size(_size) {
+    }
+
+    // These match the arguments to BufferSubData.
+    GLenum target;
+    GLintptr offset;
+    GLsizeiptr size;
   };
 
   // Gets the shared memory id for the result buffer.
@@ -290,6 +374,14 @@ class GLES2Implementation {
   // the pointer passed back to the client has to remain valid for eternity.
   typedef std::map<uint32, std::string> GLStringMap;
   GLStringMap gl_strings_;
+
+  typedef std::map<const void*, MappedBuffer> MappedBufferMap;
+  MappedBufferMap mapped_buffers_;
+
+  typedef std::map<const void*, MappedTexture> MappedTextureMap;
+  MappedTextureMap mapped_textures_;
+
+  scoped_ptr<MappedMemoryManager> mapped_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };

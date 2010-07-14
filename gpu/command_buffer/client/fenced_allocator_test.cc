@@ -206,6 +206,66 @@ TEST_F(FencedAllocatorTest, TestFreePendingToken) {
   }
 }
 
+// Checks the free-pending-token mechanism using FreeUnused
+TEST_F(FencedAllocatorTest, FreeUnused) {
+  EXPECT_TRUE(allocator_->CheckConsistency());
+
+  const unsigned int kSize = 16;
+  const unsigned int kAllocCount = kBufferSize / kSize;
+  CHECK(kAllocCount * kSize == kBufferSize);
+
+  // Allocate several buffers to fill in the memory.
+  FencedAllocator::Offset offsets[kAllocCount];
+  for (unsigned int i = 0; i < kAllocCount; ++i) {
+    offsets[i] = allocator_->Alloc(kSize);
+    EXPECT_NE(FencedAllocator::kInvalidOffset, offsets[i]);
+    EXPECT_GE(kBufferSize, offsets[i]+kSize);
+    EXPECT_TRUE(allocator_->CheckConsistency());
+  }
+
+  // No memory should be available.
+  EXPECT_EQ(0u, allocator_->GetLargestFreeSize());
+
+  // Free one successful allocation, pending fence.
+  int32 token = helper_.get()->InsertToken();
+  allocator_->FreePendingToken(offsets[0], token);
+  EXPECT_TRUE(allocator_->CheckConsistency());
+
+  // Force the command buffer to process the token.
+  helper_->Finish();
+
+  // Tell the allocator to update what's available based on the current token.
+  allocator_->FreeUnused();
+
+  // Check that the new largest free size takes into account the unused block.
+  EXPECT_EQ(kSize, allocator_->GetLargestFreeSize());
+
+  // Free two more.
+  token = helper_.get()->InsertToken();
+  allocator_->FreePendingToken(offsets[1], token);
+  token = helper_.get()->InsertToken();
+  allocator_->FreePendingToken(offsets[2], token);
+  EXPECT_TRUE(allocator_->CheckConsistency());
+
+  // Check that nothing has changed.
+  EXPECT_EQ(kSize, allocator_->GetLargestFreeSize());
+
+  // Force the command buffer to process the token.
+  helper_->Finish();
+
+  // Tell the allocator to update what's available based on the current token.
+  allocator_->FreeUnused();
+
+  // Check that the new largest free size takes into account the unused blocks.
+  EXPECT_EQ(kSize * 3, allocator_->GetLargestFreeSize());
+
+  // Free up everything.
+  for (unsigned int i = 3; i < kAllocCount; ++i) {
+    allocator_->Free(offsets[i]);
+    EXPECT_TRUE(allocator_->CheckConsistency());
+  }
+}
+
 // Tests GetLargestFreeSize
 TEST_F(FencedAllocatorTest, TestGetLargestFreeSize) {
   EXPECT_TRUE(allocator_->CheckConsistency());

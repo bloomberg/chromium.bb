@@ -792,5 +792,16 @@ void RegisterSharedIds(GLuint namespace_id, GLsizei n, const GLuint* ids);
 
 GLboolean CommandBufferEnable(const char* feature);
 
+void* MapBufferSubData(
+    GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+
+void UnmapBufferSubData(const void* mem);
+
+void* MapTexSubImage2D(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLenum type, GLenum access);
+
+void UnmapTexSubImage2D(const void* mem);
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

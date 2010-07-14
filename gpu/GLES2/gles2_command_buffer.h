@@ -15,6 +15,14 @@
 #define PEPPER3D_SKIP_GLSL_TRANSLATION \
     "pepper3d_skip_glsl_translation"
 
+// TODO(gman): move this somewhere else.
+#ifndef GL_READ_ONLY
+#define GL_READ_ONLY 0x88B8
+#endif
+#ifndef GL_WRITE_ONLY
+#define GL_WRITE_ONLY 0x88B9
+#endif
+
 #endif  // GPU_GLES2_GLES2_COMMAND_BUFFER_H_
 
 

@@ -182,6 +182,10 @@ GL_APICALL void         GL_APIENTRY glGenSharedIds (GLuint namespace_id, GLuint 
 GL_APICALL void         GL_APIENTRY glDeleteSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
 GL_APICALL void         GL_APIENTRY glRegisterSharedIds (GLuint namespace_id, GLsizei n, const GLuint* ids);
 GL_APICALL GLboolean    GL_APIENTRY glCommandBufferEnable (const char* feature);
+GL_APICALL void*        GL_APIENTRY glMapBufferSubData (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+GL_APICALL void         GL_APIENTRY glUnmapBufferSubData (const void* mem);
+GL_APICALL void*        GL_APIENTRY glMapTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
+GL_APICALL void         GL_APIENTRY glUnmapTexSubImage2D (const void* mem);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -971,6 +975,7 @@ _ENUM_LISTS = {
 #               them based on the GL function arguments.
 #               a NonImmediate type is a type that stays a pointer even in
 #               and immediate version of acommand.
+# gen_cmd:      Whether or not this function geneates a command. Default = True.
 # immediate:    Whether or not to generate an immediate command for the GL
 #               function. The default is if there is exactly 1 pointer argument
 #               in the GL function an immediate command is generated.
@@ -1310,6 +1315,8 @@ _FUNCTION_INFO = {
     'expectation': False,
   },
   'LinkProgram': {'decoder_func': 'DoLinkProgram'},
+  'MapBufferSubData': {'gen_cmd': False},
+  'MapTexSubImage2D': {'gen_cmd': False},
   'PixelStorei': {'type': 'Manual'},
   'RenderbufferStorage': {
     'decoder_func': 'DoRenderbufferStorage',
@@ -1415,6 +1422,8 @@ _FUNCTION_INFO = {
   'UniformMatrix2fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 4},
   'UniformMatrix3fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 9},
   'UniformMatrix4fv': {'type': 'PUTn', 'data_type': 'GLfloat', 'count': 16},
+  'UnmapBufferSubData': {'gen_cmd': False},
+  'UnmapTexSubImage2D': {'gen_cmd': False},
   'UseProgram': {'decoder_func': 'DoUseProgram', 'unit_test': False},
   'ValidateProgram': {'decoder_func': 'DoValidateProgram'},
   'VertexAttrib1f': {'decoder_func': 'DoVertexAttrib1f'},
@@ -4775,9 +4784,11 @@ class GLGenerator(object):
           f = Function(func_name, func_name, func_info, return_type, args,
                        args_for_cmds, cmd_args, init_args, num_pointer_args)
           self.original_functions.append(f)
-          self.AddFunction(f)
-          f.type_handler.AddImmediateFunction(self, f)
-          f.type_handler.AddBucketFunction(self, f)
+          gen_cmd = f.GetInfo('gen_cmd')
+          if gen_cmd == True or gen_cmd == None:
+            self.AddFunction(f)
+            f.type_handler.AddImmediateFunction(self, f)
+            f.type_handler.AddBucketFunction(self, f)
 
     self.Log("Auto Generated Functions    : %d" %
              len([f for f in self.functions if f.can_auto_generate or
@@ -4797,9 +4808,12 @@ class GLGenerator(object):
     file.Write("#define GLES2_COMMAND_LIST(OP) \\\n")
     by_id = {}
     for func in self.functions:
-      if not func.name in _CMD_ID_TABLE:
-        self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
-      by_id[_CMD_ID_TABLE[func.name]] = func
+      if True:
+      #gen_cmd = func.GetInfo('gen_cmd')
+      #if gen_cmd == True or gen_cmd == None:
+        if not func.name in _CMD_ID_TABLE:
+          self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
+        by_id[_CMD_ID_TABLE[func.name]] = func
     for id in sorted(by_id.keys()):
       file.Write("  %-60s /* %d */ \\\n" %
                  ("OP(%s)" % by_id[id].name, id))
@@ -4820,7 +4834,10 @@ class GLGenerator(object):
     """Writes the command buffer format"""
     file = CHeaderWriter(filename)
     for func in self.functions:
-      func.WriteStruct(file)
+      if True:
+      #gen_cmd = func.GetInfo('gen_cmd')
+      #if gen_cmd == True or gen_cmd == None:
+        func.WriteStruct(file)
     file.Write("\n")
     file.Close()
 
@@ -4828,7 +4845,10 @@ class GLGenerator(object):
     """Writes the command buffer doc version of the commands"""
     file = CWriter(filename)
     for func in self.functions:
-      func.WriteDocs(file)
+      if True:
+      #gen_cmd = func.GetInfo('gen_cmd')
+      #if gen_cmd == True or gen_cmd == None:
+        func.WriteDocs(file)
     file.Write("\n")
     file.Close()
 
@@ -4841,7 +4861,10 @@ class GLGenerator(object):
       "\n")
 
     for func in self.functions:
-      func.WriteFormatTest(file)
+      if True:
+      #gen_cmd = func.GetInfo('gen_cmd')
+      #if gen_cmd == True or gen_cmd == None:
+        func.WriteFormatTest(file)
 
     file.Close()
 
@@ -4855,11 +4878,14 @@ class GLGenerator(object):
     file.Write("// Changing them will break all client programs.\n")
     file.Write("TEST(GLES2CommandIdTest, CommandIdsMatch) {\n")
     for func in self.functions:
-      if not func.name in _CMD_ID_TABLE:
-        self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
-      file.Write("  COMPILE_ASSERT(%s::kCmdId == %d,\n" %
-                 (func.name, _CMD_ID_TABLE[func.name]))
-      file.Write("                 GLES2_%s_kCmdId_mismatch);\n" % func.name)
+      if True:
+      #gen_cmd = func.GetInfo('gen_cmd')
+      #if gen_cmd == True or gen_cmd == None:
+        if not func.name in _CMD_ID_TABLE:
+          self.Error("Command %s not in _CMD_ID_TABLE" % func.name)
+        file.Write("  COMPILE_ASSERT(%s::kCmdId == %d,\n" %
+                   (func.name, _CMD_ID_TABLE[func.name]))
+        file.Write("                 GLES2_%s_kCmdId_mismatch);\n" % func.name)
 
     file.Write("}\n")
     file.Write("\n")
@@ -4870,7 +4896,10 @@ class GLGenerator(object):
     file = CHeaderWriter(filename)
 
     for func in self.functions:
-      func.WriteCmdHelper(file)
+      if True:
+      #gen_cmd = func.GetInfo('gen_cmd')
+      #if gen_cmd == True or gen_cmd == None:
+        func.WriteCmdHelper(file)
 
     file.Close()
 
@@ -4881,7 +4910,10 @@ class GLGenerator(object):
         "// It is included by gles2_cmd_decoder.cc\n")
 
     for func in self.functions:
-      func.WriteServiceImplementation(file)
+      if True:
+      #gen_cmd = func.GetInfo('gen_cmd')
+      #if gen_cmd == True or gen_cmd == None:
+        func.WriteServiceImplementation(file)
 
     file.Close()
 
@@ -4902,10 +4934,13 @@ class GLGenerator(object):
         end = num_tests
       for idx in range(test_num, end):
         func = self.functions[idx]
-        if func.GetInfo('unit_test') == False:
-          file.Write("// TODO(gman): %s\n" % func.name)
-        else:
-          func.WriteServiceUnitTest(file)
+        if True:
+        #gen_cmd = func.GetInfo('gen_cmd')
+        #if gen_cmd == True or gen_cmd == None:
+          if func.GetInfo('unit_test') == False:
+            file.Write("// TODO(gman): %s\n" % func.name)
+          else:
+            func.WriteServiceUnitTest(file)
 
       file.Close()
 
