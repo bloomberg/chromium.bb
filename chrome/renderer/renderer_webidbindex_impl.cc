@@ -31,7 +31,7 @@ WebString RendererWebIDBIndexImpl::name() {
 }
 
 WebString RendererWebIDBIndexImpl::keyPath() {
-  string16 result;
+  NullableString16 result;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexKeyPath(idb_index_id_, &result));
   return result;

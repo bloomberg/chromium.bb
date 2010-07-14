@@ -842,18 +842,24 @@ IPC_BEGIN_MESSAGES(View)
                        ViewMsg_DOMStorageEvent_Params)
 
   // IDBCallback message handlers.
-  IPC_MESSAGE_CONTROL1(ViewMsg_IDBCallbackSuccessReturnNull,
+  IPC_MESSAGE_CONTROL1(ViewMsg_IDBCallbacksSuccessNull,
                        int32 /* response_id */)
-  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbackSuccessCreateIDBDatabase,
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBDatabase,
                        int32 /* response_id */,
                        int32 /* idb_database_id */)
-  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbackSuccessCreateIDBObjectStore,
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIndexedDBKey,
                        int32 /* response_id */,
-                       int32 /* idb_callback_id */)
-  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbackSuccessCreateIDBIndex,
+                       IndexedDBKey /* indexed_db_key */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBObjectStore,
+                       int32 /* response_id */,
+                       int32 /* idb_object_store_id */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBIndex,
                        int32 /* response_id */,
                        int32 /* idb_index_id */)
-  IPC_MESSAGE_CONTROL3(ViewMsg_IDBCallbackError,
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessSerializedScriptValue,
+                       int32 /* response_id */,
+                       SerializedScriptValue /* serialized_script_value */)
+  IPC_MESSAGE_CONTROL3(ViewMsg_IDBCallbacksError,
                        int32 /* response_id */,
                        int /* code */,
                        string16 /* message */)
@@ -2229,7 +2235,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebIDBIndex::keyPath() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexKeyPath,
                               int32, /* idb_index_id */
-                              string16 /* key_path */)
+                              NullableString16 /* key_path */)
 
   // WebIDBIndex::unique() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexUnique,
@@ -2248,12 +2254,32 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebIDBObjectStore::keyPath() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreKeyPath,
                               int32, /* idb_object_store_id */
-                              string16 /* keyPath */)
+                              NullableString16 /* keyPath */)
 
   // WebIDBObjectStore::indexNames() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreIndexNames,
                               int32, /* idb_object_store_id */
                               std::vector<string16> /* index_names */)
+
+  // WebIDBObjectStore::get() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBObjectStoreGet,
+                       int32, /* idb_object_store_id */
+                       int32, /* response_id */
+                       IndexedDBKey /* key */)
+
+  // WebIDBObjectStore::put() message.
+  IPC_MESSAGE_CONTROL5(ViewHostMsg_IDBObjectStorePut,
+                       int32, /* idb_object_store_id */
+                       int32, /* response_id */
+                       SerializedScriptValue, /* serialized_value */
+                       IndexedDBKey, /* key */
+                       bool /* add_only */)
+
+  // WebIDBObjectStore::remove() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBObjectStoreRemove,
+                       int32, /* idb_object_store_id */
+                       int32, /* response_id */
+                       IndexedDBKey /* key */)
 
   // WebIDBObjectStore::createIndex() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreCreateIndex,

@@ -13,18 +13,25 @@ namespace WebKit {
 class WebFrame;
 class WebIDBCallbacks;
 class WebIDBIndex;
+class WebIDBKey;
 class WebString;
 }
 
 class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
  public:
   explicit RendererWebIDBObjectStoreImpl(int32 idb_object_store_id);
-  virtual ~RendererWebIDBObjectStoreImpl();
+  ~RendererWebIDBObjectStoreImpl();
 
   // WebKit::WebIDBObjectStore
-  virtual WebKit::WebString name() const;
-  virtual WebKit::WebString keyPath() const;
-  virtual WebKit::WebDOMStringList indexNames() const;
+  WebKit::WebString name() const;
+  WebKit::WebString keyPath() const;
+  WebKit::WebDOMStringList indexNames() const;
+
+  void get(const WebKit::WebIDBKey& key, WebKit::WebIDBCallbacks* callbacks);
+  void put(const WebKit::WebSerializedScriptValue& value,
+           const WebKit::WebIDBKey& key, bool add_only,
+           WebKit::WebIDBCallbacks* callbacks);
+  void remove(const WebKit::WebIDBKey& key, WebKit::WebIDBCallbacks* callbacks);
 
   void createIndex(const WebKit::WebString& name,
                    const WebKit::WebString& key_path, bool unique,

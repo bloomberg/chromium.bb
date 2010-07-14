@@ -5,6 +5,7 @@
 #include "chrome/renderer/indexed_db_dispatcher.h"
 
 #include "chrome/common/render_messages.h"
+#include "chrome/common/serialized_script_value.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webidbdatabase_impl.h"
@@ -29,15 +30,19 @@ IndexedDBDispatcher::~IndexedDBDispatcher() {
 bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(IndexedDBDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbackSuccessReturnNull,
-                        OnSuccessReturnNull)
-    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbackSuccessCreateIDBDatabase,
-                        OnSuccessCreateIDBDatabase)
-    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbackSuccessCreateIDBObjectStore,
-                        OnSuccessCreateIDBObjectStore)
-    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbackSuccessCreateIDBIndex,
-                        OnSuccessCreateIDBIndex)
-    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbackError,
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksSuccessNull,
+                        OnSuccessNull)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksSuccessIDBDatabase,
+                        OnSuccessIDBDatabase)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksSuccessIndexedDBKey,
+                        OnSuccessIndexedDBKey)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksSuccessIDBObjectStore,
+                        OnSuccessIDBObjectStore)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksSuccessIDBIndex,
+                        OnSuccessIDBIndex)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksSuccessSerializedScriptValue,
+                        OnSuccessSerializedScriptValue)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksError,
                         OnError)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -66,14 +71,14 @@ void IndexedDBDispatcher::RequestIndexedDatabaseOpen(
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseCreateObjectStore(
-    const string16& name, const string16& keypath, bool auto_increment,
+    const string16& name, const NullableString16& key_path, bool auto_increment,
     WebIDBCallbacks* callbacks_ptr, int32 idb_database_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   ViewHostMsg_IDBDatabaseCreateObjectStore_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
   params.name_ = name;
-  params.keypath_ = keypath;
+  params.key_path_ = key_path;
   params.auto_increment_ = auto_increment;
   params.idb_database_id_ = idb_database_id;
   RenderThread::current()->Send(
@@ -90,15 +95,49 @@ void IndexedDBDispatcher::RequestIDBDatabaseRemoveObjectStore(
           idb_database_id, pending_callbacks_.Add(callbacks.release()), name));
 }
 
+void IndexedDBDispatcher::RequestIDBObjectStoreGet(
+    const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks_ptr,
+    int32 idb_object_store_id) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBObjectStoreGet(
+          idb_object_store_id, pending_callbacks_.Add(callbacks.release()),
+          key));
+}
+
+void IndexedDBDispatcher::RequestIDBObjectStorePut(
+    const SerializedScriptValue& value, const IndexedDBKey& key,
+    bool add_only, WebKit::WebIDBCallbacks* callbacks_ptr,
+    int32 idb_object_store_id) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBObjectStorePut(
+          idb_object_store_id, pending_callbacks_.Add(callbacks.release()),
+          value, key, add_only));
+}
+
+void IndexedDBDispatcher::RequestIDBObjectStoreRemove(
+    const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks_ptr,
+    int32 idb_object_store_id) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBObjectStoreRemove(
+          idb_object_store_id, pending_callbacks_.Add(callbacks.release()),
+          key));
+}
+
 void IndexedDBDispatcher::RequestIDBObjectStoreCreateIndex(
-    const string16& name, const string16& keypath, bool unique,
+    const string16& name, const NullableString16& key_path, bool unique,
     WebIDBCallbacks* callbacks_ptr, int32 idb_object_store_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   ViewHostMsg_IDBObjectStoreCreateIndex_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
   params.name_ = name;
-  params.keypath_ = keypath;
+  params.key_path_ = key_path;
   params.unique_ = unique;
   params.idb_object_store_id_ = idb_object_store_id;
   RenderThread::current()->Send(
@@ -116,30 +155,44 @@ void IndexedDBDispatcher::RequestIDBObjectStoreRemoveIndex(
           name));
 }
 
-void IndexedDBDispatcher::OnSuccessReturnNull(int32 response_id) {
+void IndexedDBDispatcher::OnSuccessNull(int32 response_id) {
   WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess();
   pending_callbacks_.Remove(response_id);
 }
 
-void IndexedDBDispatcher::OnSuccessCreateIDBDatabase(int32 response_id,
-                                                     int32 object_id) {
+void IndexedDBDispatcher::OnSuccessIDBDatabase(int32 response_id,
+                                               int32 object_id) {
   WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess(new RendererWebIDBDatabaseImpl(object_id));
   pending_callbacks_.Remove(response_id);
 }
 
-void IndexedDBDispatcher::OnSuccessCreateIDBObjectStore(int32 response_id,
-                                                     int32 object_id) {
+void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32 response_id,
+                                                const IndexedDBKey& key) {
+  WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  callbacks->onSuccess(key);
+  pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnSuccessIDBObjectStore(int32 response_id,
+                                                  int32 object_id) {
   WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess(new RendererWebIDBObjectStoreImpl(object_id));
   pending_callbacks_.Remove(response_id);
 }
 
-void IndexedDBDispatcher::OnSuccessCreateIDBIndex(int32 response_id,
-                                               int32 object_id) {
+void IndexedDBDispatcher::OnSuccessIDBIndex(int32 response_id,
+                                            int32 object_id) {
   WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess(new RendererWebIDBIndexImpl(object_id));
+  pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
+    int32 response_id, const SerializedScriptValue& value) {
+  WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  callbacks->onSuccess(value);
   pending_callbacks_.Remove(response_id);
 }
 

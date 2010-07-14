@@ -6,10 +6,13 @@
 #define CHROME_RENDERER_INDEXED_DB_DISPATCHER_H_
 
 #include "base/id_map.h"
-#include "base/string16.h"
+#include "base/nullable_string16.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
+
+class IndexedDBKey;
+class SerializedScriptValue;
 
 namespace WebKit {
 class WebFrame;
@@ -31,15 +34,29 @@ class IndexedDBDispatcher {
       WebKit::WebFrame* web_frame);
 
   void RequestIDBDatabaseCreateObjectStore(
-      const string16& name, const string16& keypath, bool auto_increment,
-      WebKit::WebIDBCallbacks* callbacks, int32 idb_database_id);
+      const string16& name, const NullableString16& key_path,
+      bool auto_increment, WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_database_id);
 
   void RequestIDBDatabaseRemoveObjectStore(
       const string16& name, WebKit::WebIDBCallbacks* callbacks,
       int32 idb_database_id);
 
+  void RequestIDBObjectStoreGet(
+      const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id);
+
+  void RequestIDBObjectStorePut(
+      const SerializedScriptValue& value, const IndexedDBKey& key,
+      bool add_only, WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id);
+
+  void RequestIDBObjectStoreRemove(
+      const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id);
+
   void RequestIDBObjectStoreCreateIndex(
-      const string16& name, const string16& keypath, bool unique,
+      const string16& name, const NullableString16& key_path, bool unique,
       WebKit::WebIDBCallbacks* callbacks, int32 idb_object_store_id);
 
   void RequestIDBObjectStoreRemoveIndex(
@@ -48,10 +65,13 @@ class IndexedDBDispatcher {
 
  private:
   // IDBCallback message handlers.
-  void OnSuccessReturnNull(int32 response_id);
-  void OnSuccessCreateIDBDatabase(int32 response_id, int32 object_id);
-  void OnSuccessCreateIDBObjectStore(int32 response_id, int32 object_id);
-  void OnSuccessCreateIDBIndex(int32 response_id, int32 object_id);
+  void OnSuccessNull(int32 response_id);
+  void OnSuccessIDBDatabase(int32 response_id, int32 object_id);
+  void OnSuccessIndexedDBKey(int32 response_id, const IndexedDBKey& key);
+  void OnSuccessIDBObjectStore(int32 response_id, int32 object_id);
+  void OnSuccessIDBIndex(int32 response_id, int32 object_id);
+  void OnSuccessSerializedScriptValue(int32 response_id,
+                                      const SerializedScriptValue& value);
   void OnError(int32 response_id, int code, const string16& message);
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be

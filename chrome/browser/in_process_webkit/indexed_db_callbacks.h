@@ -9,7 +9,9 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
+#include "chrome/common/indexed_db_key.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/serialized_script_value.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
 
@@ -17,13 +19,13 @@
 // which (overloaded) onSuccess method we expect to be called.
 template <class Type> struct WebIDBToMsgHelper { };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBDatabase> {
-  typedef ViewMsg_IDBCallbackSuccessCreateIDBDatabase MsgType;
+  typedef ViewMsg_IDBCallbacksSuccessIDBDatabase MsgType;
 };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBIndex> {
-  typedef ViewMsg_IDBCallbackSuccessCreateIDBIndex MsgType;
+  typedef ViewMsg_IDBCallbacksSuccessIDBIndex MsgType;
 };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBObjectStore> {
-  typedef ViewMsg_IDBCallbackSuccessCreateIDBObjectStore MsgType;
+  typedef ViewMsg_IDBCallbacksSuccessIDBObjectStore MsgType;
 };
 
 // The code the following two classes share.
@@ -34,7 +36,7 @@ class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
       : dispatcher_host_(dispatcher_host), response_id_(response_id) { }
 
   virtual void onError(const WebKit::WebIDBDatabaseError& error) {
-    dispatcher_host_->Send(new ViewMsg_IDBCallbackError(
+    dispatcher_host_->Send(new ViewMsg_IDBCallbacksError(
         response_id_, error.code(), error.message()));
   }
 
@@ -70,6 +72,48 @@ class IndexedDBCallbacks : public IndexedDBCallbacksBase {
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 
+// WebIDBKey is implemented in WebKit as opposed to being an interface Chromium
+// implements.  Thus we pass a const ___& version and thus we need this
+// specialization.
+template <>
+class IndexedDBCallbacks<WebKit::WebIDBKey>
+    : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+
+  virtual void onSuccess(const WebKit::WebIDBKey& value) {
+    dispatcher_host()->Send(
+        new ViewMsg_IDBCallbacksSuccessIndexedDBKey(
+            response_id(), IndexedDBKey(value)));
+  }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
+// WebSerializedScriptValue is implemented in WebKit as opposed to being an
+// interface Chromium implements.  Thus we pass a const ___& version and thus
+// we need this specialization.
+template <>
+class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
+    : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+
+  virtual void onSuccess(const WebKit::WebSerializedScriptValue& value) {
+    dispatcher_host()->Send(
+        new ViewMsg_IDBCallbacksSuccessSerializedScriptValue(
+            response_id(), SerializedScriptValue(value)));
+  }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
 // A WebIDBCallbacks implementation that doesn't return a result.
 template <>
 class IndexedDBCallbacks<void> : public IndexedDBCallbacksBase {
@@ -80,7 +124,7 @@ class IndexedDBCallbacks<void> : public IndexedDBCallbacksBase {
 
   virtual void onSuccess() {
     dispatcher_host()->Send(
-        new ViewMsg_IDBCallbackSuccessReturnNull(response_id()));
+        new ViewMsg_IDBCallbacksSuccessNull(response_id()));
   }
 
  private:
