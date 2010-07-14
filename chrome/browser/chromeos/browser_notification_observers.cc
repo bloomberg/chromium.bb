@@ -28,7 +28,10 @@ void InitialTabNotificationObserver::Observe(
     const NotificationDetails& details) {
   // Only log for first tab to render.  Make sure this is only done once.
   if (type == NotificationType::LOAD_START && num_tabs_.GetNext() == 0) {
-    // If we can't post it, it doesn't matter.
+    // Post difference between first tab and login succeess time as login time.
+    UMA_HISTOGRAM_TIMES("BootTime.Login",
+                        base::Time::NowFromSystemTime() - login_success_time_);
+    // Post chrome first render stat.
     BootTimesLoader::RecordCurrentStats("chrome-first-render");
     registrar_.Remove(this, NotificationType::LOAD_START,
                       NotificationService::AllSources());
@@ -49,7 +52,7 @@ void LogLoginSuccessObserver::Observe(NotificationType type,
   DCHECK(type == NotificationType::LOGIN_AUTHENTICATION);
   Details<AuthenticationNotificationDetails> auth_details(details);
   if (auth_details->success()) {
-    // If we can't post it, it doesn't matter.
+    InitialTabNotificationObserver::Get()->SetLoginSuccessTime();
     BootTimesLoader::RecordCurrentStats("login-successful");
     registrar_.Remove(this, NotificationType::LOGIN_AUTHENTICATION,
                       NotificationService::AllSources());
