@@ -50,11 +50,6 @@ void SandboxWarmup();
 bool EnableSandbox(SandboxProcessType sandbox_type,
                    const FilePath& allowed_dir);
 
-// Convert provided path into a "canonical" path matching what the Sandbox
-// expects i.e. one without symlinks.
-// This path is not necessarily unique e.g. in the face of hardlinks.
-void GetCanonicalSandboxPath(FilePath* path);
-
 }  // namespace sandbox
 
 #endif  // CHROME_COMMON_SANDBOX_MAC_H_
