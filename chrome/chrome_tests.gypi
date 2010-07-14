@@ -1052,6 +1052,7 @@
         'renderer/net/predictor_queue_unittest.cc',
         'renderer/net/renderer_predictor_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',
+        'renderer/password_autocomplete_manager_unittest.cc',
         'renderer/pepper_devices_unittest.cc',
         'renderer/render_process_unittest.cc',
         'renderer/render_thread_unittest.cc',

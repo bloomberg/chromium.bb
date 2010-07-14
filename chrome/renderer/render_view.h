@@ -37,6 +37,7 @@
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/form_manager.h"
 #include "chrome/renderer/notification_provider.h"
+#include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/render_view_visitor.h"
@@ -107,6 +108,8 @@ class WebDocument;
 class WebDragData;
 class WebGeolocationServiceInterface;
 class WebImage;
+class WebInputElement;
+class WebKeyboardEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebPlugin;
@@ -330,6 +333,12 @@ class RenderView : public RenderWidget,
   virtual bool isSelectTrailingWhitespaceEnabled();
   virtual void didChangeSelection(bool is_selection_empty);
   virtual void didExecuteCommand(const WebKit::WebString& command_name);
+  virtual void textFieldDidBeginEditing(const WebKit::WebInputElement& element);
+  virtual void textFieldDidEndEditing(const WebKit::WebInputElement& element);
+  virtual void textFieldDidChange(const WebKit::WebInputElement& element);
+  virtual void textFieldDidReceiveKeyDown(
+      const WebKit::WebInputElement& element,
+      const WebKit::WebKeyboardEvent& event);
   virtual bool handleCurrentKeyboardEvent();
   virtual void spellCheck(const WebKit::WebString& text,
                           int& offset,
@@ -397,6 +406,8 @@ class RenderView : public RenderWidget,
                                            const WebKit::WebString& value,
                                            const WebKit::WebString& label);
   virtual void didClearAutoFillSelection(const WebKit::WebNode& node);
+  virtual void didAcceptAutocompleteSuggestion(
+      const WebKit::WebInputElement& element);
   virtual WebKit::WebGeolocationService* geolocationService();
 
   // WebKit::WebFrameClient implementation -------------------------------------
@@ -1197,6 +1208,9 @@ class RenderView : public RenderWidget,
 
   // Responsible for translating the page contents to other languages.
   TranslateHelper translate_helper_;
+
+  // Responsible for automatically filling login and password textfields.
+  PasswordAutocompleteManager password_autocomplete_manager_;
 
   RendererWebCookieJarImpl cookie_jar_;
 

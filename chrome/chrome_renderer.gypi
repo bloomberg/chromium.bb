@@ -107,6 +107,8 @@
         'renderer/notification_provider.cc',
         'renderer/notification_provider.h',
         'renderer/paint_aggregator.cc',
+        'renderer/password_autocomplete_manager.cc',
+        'renderer/password_autocomplete_manager.h',
         'renderer/pepper_devices.cc',
         'renderer/pepper_devices.h',
         'renderer/pepper_plugin_delegate_impl.cc',

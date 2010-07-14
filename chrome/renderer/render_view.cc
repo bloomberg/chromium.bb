@@ -439,6 +439,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(password_autocomplete_manager_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           notification_provider_(new NotificationProvider(this))),
@@ -1797,6 +1798,34 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
   UserMetricsRecordAction(name);
 }
 
+void RenderView::textFieldDidBeginEditing(
+    const WebKit::WebInputElement& element) {
+#if defined(WEBKIT_BUG_41283_IS_FIXED)
+  password_autocomplete_manager_.TextFieldDidBeginEditing(element);
+#endif
+}
+
+void RenderView::textFieldDidEndEditing(
+    const WebKit::WebInputElement& element) {
+#if defined(WEBKIT_BUG_41283_IS_FIXED)
+  password_autocomplete_manager_.TextFieldDidEndEditing(element);
+#endif
+}
+
+void RenderView::textFieldDidChange(const WebKit::WebInputElement& element) {
+#if defined(WEBKIT_BUG_41283_IS_FIXED)
+  password_autocomplete_manager_.TextDidChangeInTextField(element);
+#endif
+}
+
+void RenderView::textFieldDidReceiveKeyDown(
+    const WebKit::WebInputElement& element,
+    const WebKit::WebKeyboardEvent& event) {
+#if defined(WEBKIT_BUG_41283_IS_FIXED)
+  password_autocomplete_manager_.TextFieldHandlingKeyDown(element, event);
+#endif
+}
+
 bool RenderView::handleCurrentKeyboardEvent() {
   if (edit_commands_.empty())
     return false;
@@ -2166,6 +2195,16 @@ void RenderView::didClearAutoFillSelection(const WebKit::WebNode& node) {
           element, FormManager::REQUIRE_NONE, &form))
     return;
   form_manager_.ClearPreviewedForm(form);
+}
+
+void RenderView::didAcceptAutocompleteSuggestion(
+    const WebKit::WebInputElement& user_element) {
+#if defined(WEBKIT_BUG_41283_IS_FIXED)
+  bool result = password_autocomplete_manager_.FillPassword(user_element);
+  // Since this user name was selected from a suggestion list, we should always
+  // have password for it.
+  DCHECK(result);
+#endif
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -3867,7 +3906,10 @@ void RenderView::OnDragSourceSystemDragEnded() {
 
 void RenderView::OnFillPasswordForm(
     const webkit_glue::PasswordFormDomManager::FillData& form_data) {
-  webkit_glue::FillPasswordForm(this->webview(), form_data);
+#if defined(WEBKIT_BUG_41283_IS_FIXED)
+  password_autocomplete_manager_.ReceivedPasswordFormFillData(webview(),
+                                                              form_data);
+#endif
 }
 
 void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
