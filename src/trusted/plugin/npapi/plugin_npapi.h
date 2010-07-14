@@ -25,7 +25,7 @@ class VideoMap;
 
 class PluginNpapi : public nacl::NPInstance, public Plugin {
  public:
-  static PluginNpapi* New(InstanceIdentifier instance_id,
+  static PluginNpapi* New(NPP npp,
                           int argc,
                           char* argn[],
                           char* argv[]);

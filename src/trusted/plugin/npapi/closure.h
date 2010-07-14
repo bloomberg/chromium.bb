@@ -14,6 +14,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
+#include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 
 namespace plugin {
@@ -30,7 +31,7 @@ class Closure {
   Closure(Plugin* plugin, nacl::string requested_url) :
     plugin_(plugin), requested_url_(requested_url), buffer_(NULL) {
     if (NULL != plugin_) {
-      instance_id_ = plugin_->instance_id();
+      npp_ = InstanceIdentifierToNPP(plugin_->instance_id());
     }
   }
   virtual ~Closure() {}
@@ -43,7 +44,7 @@ class Closure {
 
   void set_plugin(Plugin* plugin) {
     plugin_ = plugin;
-    instance_id_ = plugin_->instance_id();
+    npp_ = InstanceIdentifierToNPP(plugin_->instance_id());
   }
   void set_buffer(StreamShmBuffer* buffer) { buffer_ = buffer; }
   StreamShmBuffer* buffer() const { return buffer_; }
@@ -57,7 +58,7 @@ class Closure {
   Plugin* plugin_;
   nacl::string requested_url_;
   StreamShmBuffer* buffer_;
-  InstanceIdentifier instance_id_;
+  NPP npp_;
 };
 
 class LoadNaClAppNotify : public Closure {
@@ -85,7 +86,7 @@ class UrlAsNaClDescNotify : public Closure {
 
 class NpGetUrlClosure : public Closure {
  public:
-  NpGetUrlClosure(InstanceIdentifier instance_id,
+  NpGetUrlClosure(NPP npp,
                   nacl::NPModule* module,
                   nacl::string url,
                   int32_t notify_data,
@@ -97,7 +98,7 @@ class NpGetUrlClosure : public Closure {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(NpGetUrlClosure);
   nacl::NPModule* module_;
-  InstanceIdentifier instance_id_;
+  NPP npp_;
   int32_t notify_data_;
   bool call_url_notify_;
 };

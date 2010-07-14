@@ -57,6 +57,11 @@ class BrowserImplNpapi : public BrowserInterface {
   NACL_DISALLOW_COPY_AND_ASSIGN(BrowserImplNpapi);
 };
 
+// Convert from the API-independent instance identifier to the NPAPI NPP.
+NPP InstanceIdentifierToNPP(InstanceIdentifier id);
+// Convert from the NPAPI NPP type to the API-independent instance identifier.
+InstanceIdentifier NPPToInstanceIdentifier(NPP npp);
+
 }  // namespace plugin
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NPAPI_BROWSER_IMPL_NPAPI_H_

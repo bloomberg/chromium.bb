@@ -13,6 +13,11 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
+#include "ppapi/cpp/instance.h"
+
+namespace pp {
+class Instance;
+}  // namespace
 
 namespace plugin {
 
@@ -50,6 +55,13 @@ class BrowserInterfacePpapi : public BrowserInterface {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(BrowserInterfacePpapi);
 };
+
+// Convert from the API-independent instance identifier to the PPAPI
+// PP_Instance.
+pp::Instance* InstanceIdentifierToPPInstance(InstanceIdentifier id);
+// Convert from the PPAPI PP_Instance type to the API-independent instance
+// identifier.
+InstanceIdentifier PPInstanceToInstanceIdentifier(pp::Instance* instance);
 
 }  // namespace plugin
 

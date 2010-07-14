@@ -81,7 +81,7 @@ nacl::string BrowserImplNpapi::IdentifierToString(uintptr_t ident) {
 
 bool BrowserImplNpapi::EvalString(InstanceIdentifier instance_id,
                                   const nacl::string& expression) {
-  NPP instance = instance_id;
+  NPP instance = InstanceIdentifierToNPP(instance_id);
   NPVariant dummy_return;
 
   VOID_TO_NPVARIANT(dummy_return);
@@ -116,7 +116,7 @@ bool BrowserImplNpapi::Alert(InstanceIdentifier instance_id,
   puts(text.c_str());
 
   NPObject* window;
-  NPP npp = instance_id;
+  NPP npp = InstanceIdentifierToNPP(instance_id);
   if (NPN_GetValue(npp, NPNVWindowNPObject, &window) != NPERR_NO_ERROR) {
     return false;
   }
@@ -137,6 +137,7 @@ bool BrowserImplNpapi::Alert(InstanceIdentifier instance_id,
 
 bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
                                  nacl::string* origin) {
+  NPP npp = InstanceIdentifierToNPP(instance_id);
   NPObject* win_obj = NULL;
   NPVariant loc_value;
   NPVariant href_value;
@@ -149,12 +150,12 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
   // TODO(gregoryd): consider making this block a function returning origin.
   do {
     if (NPERR_NO_ERROR !=
-        NPN_GetValue(instance_id, NPNVWindowNPObject, &win_obj)) {
+        NPN_GetValue(npp, NPNVWindowNPObject, &win_obj)) {
         PLUGIN_PRINTF(("GetOrigin: No window object\n"));
         // no window; no URL as NaCl descriptors will be allowed
         break;
     }
-    if (!NPN_GetProperty(instance_id,
+    if (!NPN_GetProperty(npp,
                          win_obj,
                          PluginNpapi::kLocationIdent,
                          &loc_value)) {
@@ -163,7 +164,7 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
     }
     NPObject* loc_obj = NPVARIANT_TO_OBJECT(loc_value);
 
-    if (!NPN_GetProperty(instance_id,
+    if (!NPN_GetProperty(npp,
                          loc_obj,
                          PluginNpapi::kHrefIdent,
                          &href_value)) {
@@ -189,6 +190,14 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
 ScriptableHandle* BrowserImplNpapi::NewScriptableHandle(
     PortableHandle* handle) {
   return ScriptableImplNpapi::New(handle);
+}
+
+NPP InstanceIdentifierToNPP(InstanceIdentifier id) {
+  return reinterpret_cast<NPP>(assert_cast<intptr_t>(id));
+}
+
+InstanceIdentifier NPPToInstanceIdentifier(NPP npp) {
+  return assert_cast<InstanceIdentifier>(reinterpret_cast<intptr_t>(npp));
 }
 
 }  // namespace plugin

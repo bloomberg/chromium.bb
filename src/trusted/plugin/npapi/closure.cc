@@ -14,11 +14,11 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/npapi_native.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
 #include "native_client/src/trusted/plugin/origin.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
@@ -30,11 +30,11 @@ struct NPObject;
 namespace plugin {
 
 bool Closure::StartDownload() {
-  PLUGIN_PRINTF(("StartDownload instance_id_=%p, requested_url_=%s, this=%p\n",
-                 reinterpret_cast<void*>(instance_id_),
+  PLUGIN_PRINTF(("StartDownload npp_=%p, requested_url_=%s, this=%p\n",
+                 reinterpret_cast<void*>(npp_),
                  requested_url_.c_str(),
                  reinterpret_cast<void*>(this)));
-  NPError err = NPN_GetURLNotify(instance_id_,
+  NPError err = NPN_GetURLNotify(npp_,
                                  requested_url_.c_str(),
                                  NULL,
                                  this);
@@ -148,7 +148,8 @@ void UrlAsNaClDescNotify::RunFromFile(NPStream* stream,
                  static_cast<void*>(np_callback_),
                  static_cast<void*>(nacl_desc),
                  static_cast<void*>(&status)));
-  NPN_Invoke(plugin()->instance_id(),
+  NPP npp = InstanceIdentifierToNPP(plugin()->instance_id());
+  NPN_Invoke(npp,
              np_callback_,
              callback_selector,
              &status,
@@ -218,7 +219,8 @@ void UrlAsNaClDescNotify::RunFromBuffer(const nacl::string& url,
                   static_cast<void*>(np_callback_),
            static_cast<void*>(nacl_desc),
            static_cast<void*>(&status)));
-  NPN_Invoke(plugin()->instance_id(),
+  NPP npp = InstanceIdentifierToNPP(plugin()->instance_id());
+  NPN_Invoke(npp,
              np_callback_,
              callback_selector,
              &status,
@@ -230,17 +232,17 @@ void UrlAsNaClDescNotify::RunFromBuffer(const nacl::string& url,
   NPN_ReleaseVariantValue(&retval);
 }
 
-NpGetUrlClosure::NpGetUrlClosure(InstanceIdentifier instance_id,
+NpGetUrlClosure::NpGetUrlClosure(NPP npp,
                                  nacl::NPModule* module,
                                  nacl::string url,
                                  int32_t notify_data,
                                  bool call_url_notify) :
   Closure(NULL, url),
   module_(module),
-  instance_id_(instance_id),
+  npp_(npp),
   notify_data_(notify_data),
   call_url_notify_(call_url_notify) {
-  PluginNpapi* plugin = reinterpret_cast<PluginNpapi*>(instance_id_->pdata);
+  PluginNpapi* plugin = reinterpret_cast<PluginNpapi*>(npp->pdata);
   set_plugin(plugin);
   PLUGIN_PRINTF(("NpGetUrlClosure ctor\n"));
 }
@@ -248,7 +250,7 @@ NpGetUrlClosure::NpGetUrlClosure(InstanceIdentifier instance_id,
 NpGetUrlClosure::~NpGetUrlClosure() {
   PLUGIN_PRINTF(("NpGetUrlClosure dtor\n"));
   module_ = NULL;
-  instance_id_ = NULL;
+  npp_ = NULL;
 }
 
 void NpGetUrlClosure::RunFromFile(NPStream* stream,
@@ -298,7 +300,7 @@ void NpGetUrlClosure::RunFromFile(NPStream* stream,
 
   // If successful, invoke NPP_StreamAsFile.
   if (NULL != ndiod) {
-    module_->StreamAsFile(instance_id_,
+    module_->StreamAsFile(npp_,
                           ndiod->desc(),
                           const_cast<char*>(stream->url),
                           stream->end);
@@ -310,7 +312,7 @@ void NpGetUrlClosure::RunFromFile(NPStream* stream,
   }
   // If the user requested a notification, invoke URLNotify.
   if (call_url_notify_) {
-    module_->URLNotify(instance_id_,
+    module_->URLNotify(npp_,
                        notify_url.c_str(),
                        notify_reason,
                        reinterpret_cast<void*>(notify_data_));
@@ -357,7 +359,7 @@ void NpGetUrlClosure::RunFromBuffer(const nacl::string& url,
     }
     nacl::DescWrapper* wrapped_shm =
         plugin()->wrapper_factory()->MakeGeneric(NaClDescRef(raw_desc));
-    module_->StreamAsFile(instance_id_,
+    module_->StreamAsFile(npp_,
                           wrapped_shm->desc(),
                           const_cast<char*>(url.c_str()),
                           size);
@@ -370,7 +372,7 @@ void NpGetUrlClosure::RunFromBuffer(const nacl::string& url,
 
   // If the user requested a notification, invoke NPP_URLNotify.
   if (call_url_notify_) {
-    module_->URLNotify(instance_id_,
+    module_->URLNotify(npp_,
                        notify_url.c_str(),
                        notify_reason,
                        reinterpret_cast<void*>(notify_data_));

@@ -45,7 +45,8 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   set_scriptable_handle(handle);
   bool status =
       Plugin::Init(browser_interface,
-                   reinterpret_cast<InstanceIdentifier>(pp_instance()),
+                   PPInstanceToInstanceIdentifier(
+                       static_cast<pp::Instance*>(this)),
                    static_cast<int>(argc),
                    const_cast<char**>(argn),
                    const_cast<char**>(argv));

@@ -6,6 +6,7 @@
 
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
@@ -14,13 +15,12 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
 
-// TODO(polina,sehr): InstanceIdentifier should be typedefed to pp::Instance*.
-// for v2 plugins.
+using nacl::assert_cast;
 
 namespace {
 
 bool GetWindow(plugin::InstanceIdentifier instance_id, pp::Var* window) {
-  pp::Instance* instance = reinterpret_cast<pp::Instance*>(instance_id);
+  pp::Instance* instance = plugin::InstanceIdentifierToPPInstance(instance_id);
   *window = instance->GetWindowObject();
   return window->is_void();
 }
@@ -88,6 +88,16 @@ bool BrowserInterfacePpapi::GetOrigin(InstanceIdentifier instance_id,
 ScriptableHandle* BrowserInterfacePpapi::NewScriptableHandle(
     PortableHandle* handle) {
   return ScriptableHandlePpapi::New(handle);
+}
+
+
+pp::Instance* InstanceIdentifierToPPInstance(InstanceIdentifier instance_id) {
+  return reinterpret_cast<pp::Instance*>(assert_cast<intptr_t>(instance_id));
+}
+
+
+InstanceIdentifier PPInstanceToInstanceIdentifier(pp::Instance* instance) {
+  return assert_cast<InstanceIdentifier>(reinterpret_cast<intptr_t>(instance));
 }
 
 }  // namespace plugin

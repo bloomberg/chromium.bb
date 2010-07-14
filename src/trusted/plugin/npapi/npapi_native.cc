@@ -8,9 +8,9 @@
 #include <string.h>
 
 #include "native_client/src/include/checked_cast.h"
+#include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/npapi_native.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
@@ -127,7 +127,7 @@ bool NPVariantToScalar(const NPVariant* var, NPObject** obj) {
 }
 
 // Utility function to get the property of an object.
-static bool GetNPObjectProperty(InstanceIdentifier npp,
+static bool GetNPObjectProperty(NPP npp,
                                 const NPVariant* variant,
                                 NPIdentifier ident,
                                 NPVariant* value) {
@@ -150,7 +150,7 @@ static bool GetNPObjectProperty(InstanceIdentifier npp,
 
 // Utility function to get the length property of an array object.
 bool NPVariantObjectLength(const NPVariant* variant,
-                           InstanceIdentifier npp,
+                           NPP npp,
                            uint32_t* length) {
   // Initialize the length for error returns.
   *length = 0;

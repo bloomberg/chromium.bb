@@ -79,13 +79,11 @@ NPIdentifier PluginNpapi::kHrefIdent;
 NPIdentifier PluginNpapi::kLengthIdent;
 NPIdentifier PluginNpapi::kLocationIdent;
 
-PluginNpapi* PluginNpapi::New(InstanceIdentifier instance_id,
+PluginNpapi* PluginNpapi::New(NPP npp,
                               int argc,
                               char* argn[],
                               char* argv[]) {
-  PLUGIN_PRINTF(("PluginNpapi::New(%p, %d)\n",
-                 static_cast<void*>(instance_id),
-                 argc));
+  PLUGIN_PRINTF(("PluginNpapi::New(%p, %d)\n", static_cast<void*>(npp), argc));
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   if (!NaClHandlePassBrowserCtor()) {
     return NULL;
@@ -99,6 +97,7 @@ PluginNpapi* PluginNpapi::New(InstanceIdentifier instance_id,
     return NULL;
   }
   PluginNpapi* plugin = new(std::nothrow) PluginNpapi();
+  InstanceIdentifier instance_id = NPPToInstanceIdentifier(npp);
   if (plugin == NULL ||
       !plugin->Init(browser_interface, instance_id, argc, argn, argv)) {
     PLUGIN_PRINTF(("PluginNpapi::New: Init failed\n"));
@@ -177,7 +176,8 @@ NPError PluginNpapi::SetWindow(NPWindow* window) {
     return ret;
   } else {
     // Send NPP_SetWindow to NPModule.
-    return module_->SetWindow(instance_id(), window);
+    NPP npp = InstanceIdentifierToNPP(instance_id());
+    return module_->SetWindow(npp, window);
   }
 }
 
@@ -237,7 +237,8 @@ int16_t PluginNpapi::HandleEvent(void* param) {
       ret = 0;
     }
   } else {
-    return module_->HandleEvent(instance_id(), param);
+    NPP npp = InstanceIdentifierToNPP(instance_id());
+    return module_->HandleEvent(npp, param);
   }
   return ret;
 }
@@ -441,20 +442,21 @@ void PluginNpapi::set_module(nacl::NPModule* module) {
     module_->Initialize();
     // Create a new instance of that group.
     const char mime_type[] = "application/nacl-npapi-over-srpc";
+    NPP npp = InstanceIdentifierToNPP(instance_id());
     NPError err = module->New(const_cast<char*>(mime_type),
-                              instance_id(),
+                              npp,
                               argc(),
                               argn(),
                               argv());
     // Remember the scriptable version of the NaCl instance.
-    err = module_->GetValue(instance_id(),
+    err = module_->GetValue(npp,
                             NPPVpluginScriptableNPObject,
                             reinterpret_cast<void*>(&nacl_instance_));
     // Send an initial NPP_SetWindow to the plugin.
     NPWindow window;
     window.height = height();
     window.width = width();
-    module->SetWindow(instance_id(), &window);
+    module->SetWindow(npp, &window);
   }
 }
 

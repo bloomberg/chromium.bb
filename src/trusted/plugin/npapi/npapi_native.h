@@ -24,7 +24,7 @@ namespace plugin {
 // A utility method that gets the length value from an array NPVariant.
 // It returns true if the NPVariant is an array, false otherwise.
 extern bool NPVariantObjectLength(const NPVariant* variant,
-                                  InstanceIdentifier npp,
+                                  NPP npp,
                                   uint32_t* length);
 
 // ScalarToNPVariant converts a given native type to an NPVariant.
@@ -43,10 +43,10 @@ bool ScalarToNPVariant(NPObject* value, NPVariant* var);
 
 template<typename T> bool ArrayToNPVariant(T* array,
                                            uint32_t length,
-                                           InstanceIdentifier instance_id,
+                                           NPP npp,
                                            NPVariant* value) {
   // Create an array object that can be indexed from NPAPI.
-  RetArray nparray(instance_id);
+  RetArray nparray(npp);
   // Create an object for the elements of the array.
   NPVariant element;
   for (uint32_t i = 0; i < length; ++i) {
@@ -94,7 +94,7 @@ bool NPVariantToScalar(const NPVariant* var, NPObject** obj);
 // to zero and returns false.
 template<typename T> bool NPVariantToArray(
     const NPVariant* nparg,
-    InstanceIdentifier npp,
+    NPP npp,
     uint32_t* array_length,
     T* array_data) {
   // Initialize result values for error cases.

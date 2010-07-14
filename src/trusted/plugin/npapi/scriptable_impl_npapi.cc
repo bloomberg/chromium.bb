@@ -17,10 +17,10 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/npapi_native.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/ret_array.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/socket_address.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -60,6 +60,7 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
   plugin::PortableHandle* handle = scriptable_handle->handle();
   plugin::PluginNpapi* portable_plugin =
       static_cast<plugin::PluginNpapi*>(handle->plugin());
+  NPP npp = plugin::InstanceIdentifierToNPP(portable_plugin->instance_id());
 
   UNREFERENCED_PARAMETER(argc);
   // TODO(gregoryd): we should be checking argc also.
@@ -117,7 +118,7 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
         /* SCOPE */ {
           if (!plugin::NPVariantToArray(&args[i],
-                                        portable_plugin->instance_id(),
+                                        npp,
                                         &inputs[i]->u.caval.count,
                                         &inputs[i]->u.caval.carr)) {
             return false;
@@ -128,7 +129,7 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
       case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
         /* SCOPE */ {
           if (!plugin::NPVariantToArray(&args[i],
-                                        portable_plugin->instance_id(),
+                                        npp,
                                         &inputs[i]->u.daval.count,
                                         &inputs[i]->u.daval.darr)) {
             return false;
@@ -139,7 +140,7 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
       case NACL_SRPC_ARG_TYPE_INT_ARRAY:
         /* SCOPE */ {
           if (!plugin::NPVariantToArray(&args[i],
-                                        portable_plugin->instance_id(),
+                                        npp,
                                         &inputs[i]->u.iaval.count,
                                         &inputs[i]->u.iaval.iarr)) {
             return false;
@@ -237,6 +238,7 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
   plugin::PortableHandle* handle = scriptable_handle->handle();
   plugin::PluginNpapi* portable_plugin =
       static_cast<plugin::PluginNpapi*>(handle->plugin());
+  NPP npp = plugin::InstanceIdentifierToNPP(portable_plugin->instance_id());
 
   // Find the length of the return vector.
   uint32_t length = params.OutputLength();
@@ -257,8 +259,7 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
   } else if (1 == length) {
     retvalue = result;
   } else {
-    retarray =
-        new(std::nothrow) plugin::RetArray(portable_plugin->instance_id());
+    retarray = new(std::nothrow) plugin::RetArray(npp);
     if (NULL == retarray) {
       return false;
     }
@@ -318,7 +319,7 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
       if (!plugin::ArrayToNPVariant(outs[i]->u.caval.carr,
                                     outs[i]->u.caval.count,
-                                    portable_plugin->instance_id(),
+                                    npp,
                                     retvalue)) {
         return false;
       }
@@ -326,7 +327,7 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
       if (!plugin::ArrayToNPVariant(outs[i]->u.daval.darr,
                                     outs[i]->u.daval.count,
-                                    portable_plugin->instance_id(),
+                                    npp,
                                     retvalue)) {
         return false;
       }
@@ -334,7 +335,7 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       if (!plugin::ArrayToNPVariant(outs[i]->u.iaval.iarr,
                                     outs[i]->u.iaval.count,
-                                    portable_plugin->instance_id(),
+                                    npp,
                                     retvalue)) {
         return false;
       }
@@ -720,11 +721,10 @@ ScriptableImplNpapi* ScriptableImplNpapi::New(PortableHandle* handle) {
   }
 
   // Create the browser scriptable object.
+  NPP npp = InstanceIdentifierToNPP(handle->plugin()->instance_id());
   ScriptableImplNpapi* scriptable_handle =
       static_cast<ScriptableImplNpapi*>(
-          NPN_CreateObject(
-              handle->plugin()->instance_id(),
-              &scriptableHandleClass));
+          NPN_CreateObject(npp, &scriptableHandleClass));
   if (scriptable_handle == NULL) {
     return NULL;
   }

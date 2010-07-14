@@ -23,6 +23,7 @@
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/checked_cast.h"
+#include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
@@ -1174,7 +1175,8 @@ void VideoMap::Invalidate() {
     rect.top = 0;
     rect.right = window_->width;
     rect.bottom = window_->height;
-    ::NPN_InvalidateRect(plugin_->instance_id(), const_cast<NPRect*>(&rect));
+    NPP npp = InstanceIdentifierToNPP(plugin_->instance_id());
+    ::NPN_InvalidateRect(npp, const_cast<NPRect*>(&rect));
 #endif
   }
 }

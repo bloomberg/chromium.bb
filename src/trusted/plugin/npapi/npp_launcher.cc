@@ -35,6 +35,7 @@
 #if NACL_OSX
 #include "native_client/src/trusted/plugin/osx/open_mac_file.h"
 #endif  // NACL_OSX
+#include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/service_runtime/expiration.h"
 
@@ -78,7 +79,7 @@ void NPP_Shutdown() {
 }
 
 NPError NPP_New(NPMIMEType plugin_type,
-                NPP instance,
+                NPP npp,
                 uint16_t mode,
                 int16_t argc,
                 char* argn[],
@@ -95,58 +96,58 @@ NPError NPP_New(NPMIMEType plugin_type,
   if (NaClHasExpired()) {
     return NPERR_INCOMPATIBLE_VERSION_ERROR;
   }
-  if (instance == NULL) {
+  if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
   if (strcmp(plugin_type, "application/x-nacl-srpc") == 0) {
-    instance->pdata = static_cast<nacl::NPInstance*>(
-        plugin::PluginNpapi::New(instance, argc, argn, argv));
-    if (instance->pdata == NULL) {
+    npp->pdata = static_cast<nacl::NPInstance*>(
+        plugin::PluginNpapi::New(npp, argc, argn, argv));
+    if (npp->pdata == NULL) {
       return NPERR_OUT_OF_MEMORY_ERROR;
     }
   }
-  if (instance->pdata == NULL) {
+  if (npp->pdata == NULL) {
     return NPERR_OUT_OF_MEMORY_ERROR;
   }
 #ifndef NACL_STANDALONE
   // NaCl is a windowless plugin in Chrome.
-  NPN_SetValue(instance, NPPVpluginWindowBool, false);
+  NPN_SetValue(npp, NPPVpluginWindowBool, false);
 #endif
   return NPERR_NO_ERROR;
 }
 
-NPError NPP_Destroy(NPP instance, NPSavedData** save) {
+NPError NPP_Destroy(NPP npp, NPSavedData** save) {
   NPError nperr = NPERR_NO_ERROR;
 
   DebugPrintf("NPP_Destroy\n");
-  if (instance == NULL) {
+  if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   if (module != NULL) {
-    instance->pdata = NULL;
+    npp->pdata = NULL;
     nperr = module->Destroy(save);  // module must delete itself.
   }
   // TODO(sehr): we are leaking browser_interface, extension, and SRPC_Plugin.
   return nperr;
 }
 
-NPError NPP_SetWindow(NPP instance, NPWindow* window) {
+NPError NPP_SetWindow(NPP npp, NPWindow* window) {
   DebugPrintf("NPP_SetWindow\n");
-  if (instance == NULL) {
+  if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
   if (window == NULL) {
     return NPERR_GENERIC_ERROR;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   if (module != NULL) {
     return module->SetWindow(window);
   }
   return NPERR_GENERIC_ERROR;
 }
 
-NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
+NPError NPP_GetValue(NPP npp, NPPVariable variable, void *value) {
   DebugPrintf("NPP_GetValue\n");
   if (variable == NPPVpluginNameString) {
     *static_cast<const char**>(value) = kPluginName;
@@ -156,67 +157,67 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
     *static_cast<const char**>(value) = kPluginDescription;
     return NPERR_NO_ERROR;
   }
-  if (instance == NULL) {
+  if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   if (module != NULL) {
     return module->GetValue(variable, value);
   }
   return NPERR_GENERIC_ERROR;
 }
 
-int16_t NPP_HandleEvent(NPP instance, void* event) {
+int16_t NPP_HandleEvent(NPP npp, void* event) {
   DebugPrintf("NPP_HandleEvent\n");
-  if (instance == NULL) {
+  if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   if (module != NULL) {
     return module->HandleEvent(event);
   }
   return 0;
 }
 
-NPError NPP_NewStream(NPP instance, NPMIMEType type,
+NPError NPP_NewStream(NPP npp, NPMIMEType type,
                       NPStream* stream, NPBool seekable,
                       uint16_t* stype) {
   DebugPrintf("NPP_NewStream\n");
-  if (instance == NULL) {
+  if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   if (module != NULL) {
     return module->NewStream(type, stream, seekable, stype);
   }
   return NPERR_GENERIC_ERROR;
 }
 
-int32_t NPP_WriteReady(NPP instance, NPStream* stream) {
+int32_t NPP_WriteReady(NPP npp, NPStream* stream) {
   DebugPrintf("NPP_WriteReady \n");
-  if ((NULL == instance) || (NULL == instance->pdata)) {
+  if ((NULL == npp) || (NULL == npp->pdata)) {
     return 0;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   return module->WriteReady(stream);
 }
 
-int32_t NPP_Write(NPP instance, NPStream* stream, int32_t offset, int32_t len,
+int32_t NPP_Write(NPP npp, NPStream* stream, int32_t offset, int32_t len,
                   void* buffer) {
   DebugPrintf("NPP_Write: offset %d, len %d\n", offset, len);
-  if ((NULL == instance) || (NULL == instance->pdata)) {
+  if ((NULL == npp) || (NULL == npp->pdata)) {
     return -1;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   return module->Write(stream, offset, len, buffer);
 }
 
-void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* filename) {
+void NPP_StreamAsFile(NPP npp, NPStream* stream, const char* filename) {
   DebugPrintf("NPP_StreamAsFile: %s\n", filename);
-  if (instance == NULL) {
+  if (npp == NULL) {
     return;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   if (module != NULL) {
 #if NACL_OSX
     OpenMacFile(stream, filename, module);
@@ -228,25 +229,25 @@ void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* filename) {
 
 // Note Safari running on OS X removes the loaded file at this point.
 // To keep the file, it must be opened in NPP_StreamAsFile().
-NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPError reason) {
+NPError NPP_DestroyStream(NPP npp, NPStream *stream, NPError reason) {
   DebugPrintf("NPP_DestroyStream %d\n", reason);
-  if (instance == NULL) {
+  if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   if (module != NULL) {
     return module->DestroyStream(stream, reason);
   }
   return NPERR_GENERIC_ERROR;
 }
 
-void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
+void NPP_URLNotify(NPP npp, const char* url, NPReason reason,
                    void* notify_data) {
   DebugPrintf("NPP_URLNotify(%s)\n", url);
-  if (instance == NULL) {
+  if (npp == NULL) {
     return;
   }
-  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(npp->pdata);
   if (module != NULL) {
     module->URLNotify(url, reason, notify_data);
   }
