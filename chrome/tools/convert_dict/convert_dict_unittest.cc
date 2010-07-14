@@ -90,17 +90,10 @@ void RunDictionaryTest(const char* codepage,
   {
     // Read the above affix file with AffReader and read the dictionary file
     // with DicReader, respectively.
-#if defined(OS_WIN)
-    std::string aff_path = WideToUTF8(aff_file.value());
-    std::string dic_path = WideToUTF8(dic_file.value());
-#else
-    std::string aff_path = aff_file.value();
-    std::string dic_path = dic_file.value();
-#endif
-    convert_dict::AffReader aff_reader(aff_path);
+    convert_dict::AffReader aff_reader(aff_file);
     EXPECT_TRUE(aff_reader.Read());
 
-    convert_dict::DicReader dic_reader(dic_path);
+    convert_dict::DicReader dic_reader(dic_file);
     EXPECT_TRUE(dic_reader.Read(&aff_reader));
 
     // Verify this DicReader includes all the input words.

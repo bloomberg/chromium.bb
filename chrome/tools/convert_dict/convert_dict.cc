@@ -14,6 +14,7 @@
 #include <stdio.h>
 
 #include "base/at_exit.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
@@ -82,7 +83,11 @@ int PrintHelp() {
 
 }  // namespace
 
+#if defined(OS_WIN)
+int wmain(int argc, wchar_t* argv[]) {
+#else
 int main(int argc, char* argv[]) {
+#endif
   base::EnableTerminationOnHeapCorruption();
   if (argc != 2)
     return PrintHelp();
@@ -90,19 +95,19 @@ int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
   icu_util::Initialize();
 
-  std::string file_base = argv[1];
+  FilePath file_base = FilePath(argv[1]);
 
-  std::string aff_name = file_base + ".aff";
-  printf("Reading %s ...\n", aff_name.c_str());
-  convert_dict::AffReader aff_reader(aff_name.c_str());
+  FilePath aff_path = file_base.ReplaceExtension(FILE_PATH_LITERAL(".aff"));
+  printf("Reading %" PRFilePath " ...\n", aff_path.value().c_str());
+  convert_dict::AffReader aff_reader(aff_path);
   if (!aff_reader.Read()) {
     printf("Unable to read the aff file.\n");
     return 1;
   }
 
-  std::string dic_name = file_base + ".dic";
-  printf("Reading %s ...\n", dic_name.c_str());
-  convert_dict::DicReader dic_reader(dic_name.c_str());
+  FilePath dic_path = file_base.ReplaceExtension(FILE_PATH_LITERAL(".dic"));
+  printf("Reading %" PRFilePath " ...\n", dic_path.value().c_str());
+  convert_dict::DicReader dic_reader(dic_path);
   if (!dic_reader.Read(&aff_reader)) {
     printf("Unable to read the dic file.\n");
     return 1;
@@ -125,9 +130,9 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  std::string out_name = file_base + ".bdic";
-  printf("Writing %s ...\n", out_name.c_str());
-  FILE* out_file = file_util::OpenFile(out_name, "wb");
+  FilePath out_path = file_base.ReplaceExtension(FILE_PATH_LITERAL(".bdic"));
+  printf("Writing %" PRFilePath " ...\n", out_path.value().c_str());
+  FILE* out_file = file_util::OpenFile(out_path, "wb");
   if (!out_file) {
     printf("ERROR writing file\n");
     return 1;

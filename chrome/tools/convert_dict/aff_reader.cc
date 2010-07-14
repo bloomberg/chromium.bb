@@ -46,9 +46,8 @@ void CollapseDuplicateSpaces(std::string* str) {
 
 }  // namespace
 
-AffReader::AffReader(const std::string& filename)
+AffReader::AffReader(const FilePath& path)
     : has_indexed_affixes_(false) {
-  FilePath path = FilePath::FromWStringHack(ASCIIToWide(filename));
   file_ = file_util::OpenFile(path, "r");
 
   // Default to Latin1 in case the file doesn't specify it.
