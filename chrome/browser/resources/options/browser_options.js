@@ -26,12 +26,10 @@ BrowserOptions.prototype = {
     // Call base class implementation to start preference initialization.
     OptionsPage.prototype.initializePage.call(this);
 
-    $('defaultSearchManageEnginesButton').onclick = function(event) {
-      // TODO(stuartmorgan): Spawn search engine management sub-dialog.
-    };
-    $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
-      // TODO(stuartmorgan): Handle making browser default.
-    };
+    // Fetch initial state of the default browser pref section.
+    chrome.send('updateDefaultBrowserState');
+
+    // Wire up buttons.
     $('startupAddButton').onclick = function(event) {
       // TODO(stuartmorgan): Spawn add sub-dialog.
     };
@@ -41,6 +39,31 @@ BrowserOptions.prototype = {
     $('startupUseCurrentButton').onclick = function(event) {
       // TODO(stuartmorgan): Add all open tabs (except this one).
     };
+    $('defaultSearchManageEnginesButton').onclick = function(event) {
+      // TODO(stuartmorgan): Spawn search engine management sub-dialog.
+    };
+    $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
+      chrome.send('becomeDefaultBrowser');
+    };
+  },
+
+  // Update the Default Browsers section based on the current state.
+  updateDefaultBrowserState_: function(statusString, isDefault) {
+    var label = $('defaultBrowserState');
+    label.textContent = statusString;
+    if (isDefault) {
+      label.classList.add('current');
+    } else {
+      label.classList.remove('current');
+    }
+
+    $('defaultBrowserUseAsDefaultButton').disabled = isDefault;
   },
 };
+
+BrowserOptions.updateDefaultBrowserStateCallback = function(statusString,
+                                                            isDefault) {
+  BrowserOptions.getInstance().updateDefaultBrowserState_(statusString,
+                                                          isDefault);
+}
 
