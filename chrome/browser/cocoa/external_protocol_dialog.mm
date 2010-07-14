@@ -5,7 +5,6 @@
 #import "chrome/browser/cocoa/external_protocol_dialog.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

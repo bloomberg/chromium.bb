@@ -12,7 +12,6 @@
 #include "app/text_elider.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/histogram.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/browser.h"

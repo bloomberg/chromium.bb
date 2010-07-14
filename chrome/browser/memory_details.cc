@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
-#include "base/histogram.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_child_process_host.h"

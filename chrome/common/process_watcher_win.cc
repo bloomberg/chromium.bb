@@ -4,7 +4,6 @@
 
 #include "chrome/common/process_watcher.h"
 
-#include "base/scoped_ptr.h"
 #include "base/env_var.h"
 #include "base/message_loop.h"
 #include "base/object_watcher.h"

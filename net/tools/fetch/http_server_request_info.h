@@ -5,7 +5,6 @@
 #ifndef NET_BASE_TOOLS_HTTP_SERVER_REQUEST_INFO_H_
 #define NET_BASE_TOOLS_HTTP_SERVER_REQUEST_INFO_H_
 
-#include <map>
 #include <string>
 
 #include "net/http/http_request_info.h"

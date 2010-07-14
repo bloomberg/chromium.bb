@@ -96,7 +96,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 
 class CancelableRequestBase;
