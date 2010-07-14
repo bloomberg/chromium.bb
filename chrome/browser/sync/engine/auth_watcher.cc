@@ -215,20 +215,13 @@ bool AuthWatcher::AuthenticateLocally(string email, const string& password) {
 void AuthWatcher::ProcessGaiaAuthFailure() {
   DCHECK_EQ(MessageLoop::current(), message_loop());
   gaia::GaiaAuthenticator::AuthResults results = gaia_->results();
-  if (LOCALLY_AUTHENTICATED == status_) {
-    return;  // nothing todo
-  } else if (AuthenticateLocally(results.email, results.password)) {
+  if (LOCALLY_AUTHENTICATED != status_ &&
+      AuthenticateLocally(results.email, results.password)) {
     // TODO(chron): Do we really want a bogus token?
     const string auth_token("bogus");
     user_settings_->SetAuthTokenForService(results.email,
                                            SYNC_SERVICE_NAME,
                                            auth_token);
-    const bool unavailable =
-        gaia::ConnectionUnavailable == results.auth_error ||
-        gaia::Unknown == results.auth_error ||
-        gaia::ServiceUnavailable == results.auth_error;
-    if (unavailable)
-      return;
   }
   AuthWatcherEvent myevent = { AuthWatcherEvent::GAIA_AUTH_FAILED, &results };
   NotifyListeners(&myevent);
