@@ -30,6 +30,12 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+Bool NACL_FLAGS_print_validator_messages = TRUE;
+
+Bool NaClPrintValidatorMessages(int level) {
+  return NACL_FLAGS_print_validator_messages && (level <= NaClLogGetVerbosity());
+}
+
 FILE* NaClValidatorStateLogFile(NaClValidatorState* state) {
   return state->log_file;
 }
@@ -74,7 +80,7 @@ void NaClValidatorMessage(int level,
                           const char* format,
                           ...) {
   level = NaClRecordIfValidatorError(state, level);
-  if (level <= NaClLogGetVerbosity()) {
+  if (NaClPrintValidatorMessages(level)) {
     va_list ap;
 
     NaClLogLock();
@@ -91,7 +97,7 @@ void NaClValidatorVarargMessage(int level,
                                 const char* format,
                                 va_list ap) {
   level = NaClRecordIfValidatorError(state, level);
-  if (level <= NaClLogGetVerbosity()) {
+  if (NaClPrintValidatorMessages(level)) {
     NaClLogLock();
     NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
     NaClLogV_mu(level, format, ap);
@@ -105,7 +111,7 @@ void NaClValidatorPcAddressMessage(int level,
                                    const char* format,
                                    ...) {
   level = NaClRecordIfValidatorError(state, level);
-  if (level <= NaClLogGetVerbosity()) {
+  if (NaClPrintValidatorMessages(level)) {
     va_list ap;
 
     NaClLogLock();
@@ -125,7 +131,7 @@ void NaClValidatorInstMessage(int level,
                               const char* format,
                               ...) {
   level = NaClRecordIfValidatorError(state, level);
-  if (level <= NaClLogGetVerbosity()) {
+  if (NaClPrintValidatorMessages(level)) {
     va_list ap;
 
     NaClLogLock();

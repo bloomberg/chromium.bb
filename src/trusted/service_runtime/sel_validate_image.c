@@ -55,6 +55,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   struct NaClValidatorState *vstate;
   int is_ok;
 
+  NACL_FLAGS_print_validator_messages = FALSE;
   vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
                                     RegR15, 1, stderr);
   if (vstate == NULL) {

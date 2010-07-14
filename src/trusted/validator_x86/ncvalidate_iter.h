@@ -34,6 +34,16 @@
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 
+/* Control flag that when set to FALSE, turns of the printing of validator
+ * messages.
+ */
+extern Bool NACL_FLAGS_print_validator_messages;
+
+/* Returns true iff validator messages should be printed for the given
+ * nacl_log level.
+ */
+Bool NaClPrintValidatorMessages(int level);
+
 /* The model of a validator state. */
 typedef struct NaClValidatorState NaClValidatorState;
 
