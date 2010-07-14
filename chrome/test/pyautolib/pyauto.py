@@ -757,6 +757,31 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     finally:
       shutil.rmtree(tempdir)
 
+  def ClearBrowsingData(self, to_remove, time_period):
+    """Clear the specified browsing data. Implements the features available in
+       the "ClearBrowsingData" UI.
+
+    Args:
+      to_remove: a list of strings indicating which types of browsing data
+                 should be removed. Strings that can be in the list are:
+                 HISTORY, DOWNLOADS, COOKIES, PASSWORDS, FORM_DATA, CACHE
+      time_period: a string indicating the time period for the removal.
+                   Possible strings are:
+                   LAST_HOUR, LAST_DAY, LAST_WEEK, FOUR_WEEKS, EVERYTHING
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'ClearBrowsingData',
+      'to_remove': to_remove,
+      'time_period': time_period
+    }
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
+
   def SetTheme(self, crx_file_path):
     """Installs the given theme synchronously.
 

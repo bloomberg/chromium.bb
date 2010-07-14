@@ -2349,6 +2349,78 @@ void AutomationProvider::SaveTabContents(Browser* browser,
   Send(reply_message);
 }
 
+// Refer to ClearBrowsingData() in chrome/test/pyautolib/pyauto.py for sample
+// json input.
+// Sample json output: {}
+void AutomationProvider::ClearBrowsingData(Browser* browser,
+                                           DictionaryValue* args,
+                                           IPC::Message* reply_message) {
+  std::string json_return = "{}";
+
+  std::map<std::string, BrowsingDataRemover::TimePeriod> string_to_time_period;
+  string_to_time_period["LAST_HOUR"] = BrowsingDataRemover::LAST_HOUR;
+  string_to_time_period["LAST_DAY"] = BrowsingDataRemover::LAST_DAY;
+  string_to_time_period["LAST_WEEK"] = BrowsingDataRemover::LAST_WEEK;
+  string_to_time_period["FOUR_WEEKS"] = BrowsingDataRemover::FOUR_WEEKS;
+  string_to_time_period["EVERYTHING"] = BrowsingDataRemover::EVERYTHING;
+
+  std::map<std::string, int> string_to_mask_value;
+  string_to_mask_value["HISTORY"] = BrowsingDataRemover::REMOVE_HISTORY;
+  string_to_mask_value["DOWNLOADS"] = BrowsingDataRemover::REMOVE_DOWNLOADS;
+  string_to_mask_value["COOKIES"] = BrowsingDataRemover::REMOVE_COOKIES;
+  string_to_mask_value["PASSWORDS"] = BrowsingDataRemover::REMOVE_PASSWORDS;
+  string_to_mask_value["FORM_DATA"] = BrowsingDataRemover::REMOVE_FORM_DATA;
+  string_to_mask_value["CACHE"] = BrowsingDataRemover::REMOVE_CACHE;
+
+  std::string time_period;
+  ListValue* to_remove;
+  if (!args->GetString(L"time_period", &time_period) ||
+      !args->GetList(L"to_remove", &to_remove)) {
+    // TODO(nirnimesh): Here and below refactor returns with pending CL.
+    std::string json_return =
+         JSONErrorString("time_period must be a string and to_remove a list.");
+    AutomationMsg_SendJSONRequest::WriteReplyParams(
+         reply_message, json_return, false);
+    Send(reply_message);
+    return;
+  }
+
+  int remove_mask = 0;
+  int num_removals = to_remove->GetSize();
+  for (int i = 0; i < num_removals; i++) {
+    std::string removal;
+    to_remove->GetString(i, &removal);
+    // If the provided string is not part of the map, then error out.
+    if (!ContainsKey(string_to_mask_value, removal)) {
+      std::string json_return =
+          JSONErrorString("Invalid browsing data string found in to_remove.");
+      AutomationMsg_SendJSONRequest::WriteReplyParams(
+          reply_message, json_return, false);
+      Send(reply_message);
+      return;
+    }
+    remove_mask |= string_to_mask_value[removal];
+  }
+
+  if (!ContainsKey(string_to_time_period, time_period)) {
+    std::string json_return =
+        JSONErrorString("Invalid string for time_period.");
+    AutomationMsg_SendJSONRequest::WriteReplyParams(
+        reply_message, json_return, false);
+    Send(reply_message);
+    return;
+  }
+
+  BrowsingDataRemover* remover = new BrowsingDataRemover(
+      profile(), string_to_time_period[time_period], base::Time());
+
+  remover->AddObserver(
+      new AutomationProviderBrowsingDataObserver(this, reply_message));
+  remover->Remove(remove_mask);
+  // BrowsingDataRemover deletes itself using DeleteTask.
+  // The observer also deletes itself after sending the reply.
+}
+
 // Sample json input: { "command": "GetThemeInfo" }
 // Refer GetThemeInfo() in chrome/test/pyautolib/pyauto.py for sample output.
 void AutomationProvider::GetThemeInfo(Browser* browser,
@@ -2699,6 +2771,8 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetInitialLoadTimes"] = &AutomationProvider::GetInitialLoadTimes;
 
   handler_map["SaveTabContents"] = &AutomationProvider::SaveTabContents;
+
+  handler_map["ClearBrowsingData"] = &AutomationProvider::ClearBrowsingData;
 
   // SetTheme() implemented using InstallExtension().
   handler_map["GetThemeInfo"] = &AutomationProvider::GetThemeInfo;

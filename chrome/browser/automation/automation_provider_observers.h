@@ -10,6 +10,7 @@
 #include <set>
 
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -605,6 +606,22 @@ class AutomationProviderHistoryObserver {
   ~AutomationProviderHistoryObserver() {}
   void HistoryQueryComplete(HistoryService::Handle request_handle,
                             history::QueryResults* results);
+
+ private:
+  AutomationProvider* provider_;
+  IPC::Message* reply_message_;
+};
+
+// Allows the automation provider to wait for clearing browser data to finish.
+class AutomationProviderBrowsingDataObserver :
+    public BrowsingDataRemover::Observer {
+ public:
+  AutomationProviderBrowsingDataObserver(
+      AutomationProvider* provider,
+      IPC::Message* reply_message)
+    : provider_(provider),
+      reply_message_(reply_message) {}
+  void OnBrowsingDataRemoverDone();
 
  private:
   AutomationProvider* provider_;

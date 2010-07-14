@@ -441,6 +441,13 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                        DictionaryValue* args,
                        IPC::Message* reply_message);
 
+  // Clear the specified browsing data. This call provides similar
+  // functionality to RemoveBrowsingData but is synchronous.
+  // Uses the JSON interface for input/output.
+  void ClearBrowsingData(Browser* browser,
+                         DictionaryValue* args,
+                         IPC::Message* reply_message);
+
   // Get info about theme.
   // Uses the JSON interface for input/output.
   void GetThemeInfo(Browser* browser,
