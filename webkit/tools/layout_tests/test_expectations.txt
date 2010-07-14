@@ -48,3 +48,6 @@ BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-25.html = FAIL
 BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-26.html = FAIL
 BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-27.html = FAIL
 BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.14-2-6.html = FAIL
+
+// TODO(podivilov): Remove on next roll.
+BUG_PODIVILOV MAC : svg/custom/clip-path-child-changes.svg = TEXT
