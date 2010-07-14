@@ -3,23 +3,23 @@
   <section>
     <h3 i18n-content="startupGroupName"></h3>
     <div>
-      <label><input type="radio" name="startup"
+      <label><input type="radio" name="startup" disabled
           value="ShowDefaultAndNewTab"><span
           i18n-content="startupShowDefaultAndNewTab"></span></label><br>
-      <label><input type="radio" name="startup"
+      <label><input type="radio" name="startup" disabled
           value="ShowLastSession"><span
           i18n-content="startupShowLastSession"></span></label><br>
-      <label><input type="radio" name="startup"
+      <label><input type="radio" name="startup" disabled
           value="ShowPages"><span
           i18n-content="startupShowPages"></span></label>
       <div class="suboption">
         <select size="3" style="width:100%">
         </select><br>
-        <button id="startupAddButton"
+        <button id="startupAddButton" disabled
             i18n-content="startupAddButton"></button>
-        <button id="startupRemoveButton"
+        <button id="startupRemoveButton" disabled
             i18n-content="startupRemoveButton"></button>
-        <button id="startupUseCurrentButton"
+        <button id="startupUseCurrentButton" disabled
             i18n-content="startupUseCurrent"></button>
       </div>
     </div>
@@ -27,14 +27,14 @@
   <section>
     <h3 i18n-content="homepageGroupName"></h3>
     <div>
-      <label><input type="radio" name="homepage"
+      <label><input type="radio" name="homepage" disabled
           value="UseNewTab"><span
           i18n-content="homepageUseNewTab"></span></label><br>
-      <label><input type="radio" name="homepage"
-          value="UseNewTab"><span
+      <label><input type="radio" name="homepage" disabled
+          value="UseURL"><span
           i18n-content="homepageUseURL"></span></label><br>
       <div class="suboption">
-        <input type="url">
+        <input type="url" style="width:100%" disabled>
       </div>
       <div class="option">
         <label><input id="homepageShowButton"
@@ -46,17 +46,17 @@
   <section>
     <h3 i18n-content="defaultSearchGroupName"></h3>
     <div>
-      <select>
+      <select disabled>
         <option value="TODO" i18n-content="TODO"></option>
       </select>
-      <button id="defaultSearchManageEnginesButton"
+      <button id="defaultSearchManageEnginesButton" disabled
           i18n-content="defaultSearchManageEnginesLink"></button>
     </div>
   </section>
   <section>
     <h3 i18n-content="defaultBrowserGroupName"></h3>
     <div>
-      <p><span i18n-content="TODO"></span></p>
+      <p id="defaultBrowserState" i18n-content="defaultBrowserUnknown"></p>
       <button id="defaultBrowserUseAsDefaultButton"
           i18n-content="defaultBrowserUseAsDefault"></button>
     </div>
