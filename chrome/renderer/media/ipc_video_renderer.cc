@@ -113,6 +113,7 @@ void IPCVideoRenderer::DoUpdateVideo() {
   scoped_refptr<media::VideoFrame> frame;
   GetCurrentFrame(&frame);
   if (!frame) {
+    PutCurrentFrame(frame);
     return;
   }
 
@@ -149,6 +150,8 @@ void IPCVideoRenderer::DoUpdateVideo() {
     dest += frame->width() / 2;
     src += stride;
   }
+
+  PutCurrentFrame(frame);
 
   // Sanity check!
   uint8* expected = reinterpret_cast<uint8*>(transport_dib_->memory()) +

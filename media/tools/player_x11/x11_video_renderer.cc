@@ -139,9 +139,11 @@ void X11VideoRenderer::OnFrameAvailable() {
 void X11VideoRenderer::Paint() {
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
-
-  if (!image_ ||!video_frame)
+  if (!image_ || !video_frame) {
+    // TODO(jiesun): Use color fill rather than create black frame then scale.
+    PutCurrentFrame(video_frame);
     return;
+  }
 
   // Convert YUV frame to RGB.
   DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
@@ -164,6 +166,7 @@ void X11VideoRenderer::Paint() {
                            video_frame->stride(media::VideoFrame::kUPlane),
                            image_->bytes_per_line,
                            yuv_type);
+  PutCurrentFrame(video_frame);
 
   if (use_render_) {
     // If XRender is used, we'll upload the image to a pixmap. And then

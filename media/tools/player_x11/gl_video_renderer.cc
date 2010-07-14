@@ -250,8 +250,11 @@ void GlVideoRenderer::Paint() {
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
 
-  if (!video_frame)
+  if (!video_frame) {
+    // TODO(jiesun): Use color fill rather than create black frame then scale.
+    PutCurrentFrame(video_frame);
     return;
+  }
 
   // Convert YUV frame to RGB.
   DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
@@ -275,6 +278,7 @@ void GlVideoRenderer::Paint() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
                  GL_LUMINANCE, GL_UNSIGNED_BYTE, video_frame->data(i));
   }
+  PutCurrentFrame(video_frame);
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glXSwapBuffers(display_, window_);

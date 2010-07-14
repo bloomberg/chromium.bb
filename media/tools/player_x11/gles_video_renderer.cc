@@ -175,8 +175,8 @@ void GlesVideoRenderer::Paint() {
 
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
-
   if (!video_frame.get()) {
+    PutCurrentFrame(video_frame);
     return;
   }
 
@@ -191,6 +191,8 @@ void GlesVideoRenderer::Paint() {
         eglSwapBuffers(egl_display_, egl_surface_);
       }
     }
+    // TODO(jiesun/wjia): use fence before call put.
+    PutCurrentFrame(video_frame);
     return;
   }
 
@@ -237,6 +239,7 @@ void GlesVideoRenderer::Paint() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
                  GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
   }
+  PutCurrentFrame(video_frame);
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   eglSwapBuffers(egl_display_, egl_surface_);

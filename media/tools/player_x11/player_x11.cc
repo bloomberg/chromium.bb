@@ -137,7 +137,10 @@ void PeriodicalUpdate(
     MessageLoop* message_loop,
     bool audio_only) {
   if (!g_running) {
-    message_loop->Quit();
+    // interrupt signal is received during lat time period.
+    // Quit message_loop only when pipeline is fully stopped.
+    pipeline->Stop(media::TaskToCallbackAdapter::NewCallback(
+        NewRunnableFunction(Quit, message_loop)));
     return;
   }
 
