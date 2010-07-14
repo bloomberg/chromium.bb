@@ -233,7 +233,7 @@
                 'app/nibs/ImportProgressDialog.xib',
                 'app/nibs/KeywordEditor.xib',
                 'app/nibs/MainMenu.xib',
-		'app/nibs/Notification.xib',
+                'app/nibs/Notification.xib',
                 'app/nibs/Preferences.xib',
                 'app/nibs/ReportBug.xib',
                 'app/nibs/SaveAccessoryView.xib',
