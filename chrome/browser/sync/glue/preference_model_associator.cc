@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
 namespace browser_sync {
@@ -93,6 +94,8 @@ bool PreferenceModelAssociator::AssociateModels() {
         // sync server.
         if (!pref->GetValue()->Equals(new_value.get()))
           pref_service->Set(pref_name.c_str(), *new_value);
+
+        AfterUpdateOperations(pref_name);
 
         // If the merge resulted in an updated value, write it back to
         // the sync node.
@@ -286,6 +289,18 @@ Value* PreferenceModelAssociator::MergeDictionaryValues(
     }
   }
   return result;
+}
+
+void PreferenceModelAssociator::AfterUpdateOperations(
+    const std::wstring& pref_name) {
+  // The bookmark bar visibility preference requires a special
+  // notification to update the UI.
+  if (0 == pref_name.compare(prefs::kShowBookmarkBar)) {
+    NotificationService::current()->Notify(
+        NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
+        Source<PreferenceModelAssociator>(this),
+        NotificationService::NoDetails());
+  }
 }
 
 }  // namespace browser_sync

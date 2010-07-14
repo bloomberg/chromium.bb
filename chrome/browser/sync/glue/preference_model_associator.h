@@ -103,6 +103,10 @@ class PreferenceModelAssociator
                                     const Value& value,
                                     sync_api::WriteNode* node);
 
+  // Perform any additional operations that need to happen after a preference
+  // has been updated.
+  void AfterUpdateOperations(const std::wstring& pref_name);
+
  protected:
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }

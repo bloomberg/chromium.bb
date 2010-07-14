@@ -162,13 +162,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
         model_associator_->Associate(preference, changes[i].id);
       }
 
-      if (0 == name.compare(prefs::kShowBookmarkBar)) {
-        // If it was the bookmark bar, send an additional notification.
-        NotificationService::current()->Notify(
-            NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
-            Source<PreferenceChangeProcessor>(this),
-            NotificationService::NoDetails());
-      }
+      model_associator_->AfterUpdateOperations(name);
     }
   }
   StartObserving();
