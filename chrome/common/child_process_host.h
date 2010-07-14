@@ -5,21 +5,23 @@
 #ifndef CHROME_COMMON_CHILD_PROCESS_HOST_H_
 #define CHROME_COMMON_CHILD_PROCESS_HOST_H_
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif  // defined(OS_WIN)
-
 #include <list>
 #include <string>
 
 // Must be included early (e.g. before chrome/common/plugin_messages.h)
 #include "ipc/ipc_logging.h"
 
+// Putting this before ipc_logging.h does not work (OS_WIN isn't defined)
+#if defined(OS_WIN)
+#include <windows.h>
+#endif  // defined(OS_WIN)
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_type.h"
 #include "ipc/ipc_channel.h"
+
 
 class CommandLine;
 
