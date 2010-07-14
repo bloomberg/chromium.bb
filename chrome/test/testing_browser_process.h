@@ -90,6 +90,10 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
+  virtual TabCloseableStateWatcher* tab_closeable_state_watcher() {
+    return NULL;
+  }
+
   virtual Clipboard* clipboard() {
     if (!clipboard_.get()) {
       // Note that we need a MessageLoop for the next call to work.

@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/tab_strip_controller.h"
+#include "chrome/common/notification_registrar.h"
 
 class BaseTab;
 class BaseTabStrip;
@@ -17,7 +18,8 @@ struct TabRendererData;
 // An implementation of TabStripController that sources data from the
 // TabContentses in a TabStripModel.
 class BrowserTabStripController : public TabStripController,
-                                  public TabStripModelObserver {
+                                  public TabStripModelObserver,
+                                  public NotificationObserver {
  public:
   explicit BrowserTabStripController(TabStripModel* model);
   virtual ~BrowserTabStripController();
@@ -42,6 +44,7 @@ class BrowserTabStripController : public TabStripController,
   virtual int GetSelectedIndex() const;
   virtual bool IsTabSelected(int model_index) const;
   virtual bool IsTabPinned(int model_index) const;
+  virtual bool IsTabCloseable(int model_index) const;
   virtual bool IsNewTabPage(int model_index) const;
   virtual void SelectTab(int model_index);
   virtual void CloseTab(int model_index);
@@ -74,6 +77,10 @@ class BrowserTabStripController : public TabStripController,
   virtual void TabMiniStateChanged(TabContents* contents, int model_index);
   virtual void TabBlockedStateChanged(TabContents* contents, int model_index);
 
+  // NotificationObserver implementation:
+  virtual void Observe(NotificationType type, const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   class TabContextMenuContents;
 
@@ -100,6 +107,8 @@ class BrowserTabStripController : public TabStripController,
 
   // If non-NULL it means we're showing a menu for the tab.
   scoped_ptr<TabContextMenuContents> context_menu_contents_;
+
+  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStripController);
 };

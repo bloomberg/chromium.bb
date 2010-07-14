@@ -145,6 +145,7 @@ class BaseTabStrip : public views::View,
   virtual void ShowContextMenu(BaseTab* tab, const gfx::Point& p);
   virtual bool IsTabSelected(const BaseTab* tab) const;
   virtual bool IsTabPinned(const BaseTab* tab) const;
+  virtual bool IsTabCloseable(const BaseTab* tab) const;
   virtual void MaybeStartDrag(BaseTab* tab,
                               const views::MouseEvent& event);
   virtual void ContinueDrag(const views::MouseEvent& event);

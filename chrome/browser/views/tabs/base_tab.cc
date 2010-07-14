@@ -235,6 +235,10 @@ bool BaseTab::IsSelected() const {
   return controller() ? controller()->IsTabSelected(this) : true;
 }
 
+bool BaseTab::IsCloseable() const {
+  return controller() ? controller()->IsTabCloseable(this) : true;
+}
+
 void BaseTab::OnMouseEntered(const views::MouseEvent& e) {
   if (!hover_animation_.get()) {
     hover_animation_.reset(new SlideAnimation(this));

@@ -30,6 +30,7 @@ class ProfileManager;
 class ResourceDispatcherHost;
 class StatusTrayManager;
 class SuspendController;
+class TabCloseableStateWatcher;
 class ThumbnailGenerator;
 class WebAppInstallerService;
 
@@ -135,6 +136,9 @@ class BrowserProcess {
   std::vector<std::wstring>& user_data_dir_profiles() {
     return user_data_dir_profiles_;
   }
+
+  // Returns the object that watches for changes in the closeable state of tab.
+  virtual TabCloseableStateWatcher* tab_closeable_state_watcher() = 0;
 
   // Trigger an asynchronous check to see if we have the inspector's files on
   // disk.

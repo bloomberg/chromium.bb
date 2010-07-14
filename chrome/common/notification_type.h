@@ -1060,6 +1060,12 @@ class NotificationType {
     // host as it not always just the host).
     ZOOM_LEVEL_CHANGED,
 
+    // Sent when the tab's closeable state has changed due to increase/decrease
+    // in number of tabs in browser or increase/decrease in number of browsers.
+    // Details<bool> contain the closeable flag while source is AllSources.
+    // This is only sent from ChromeOS's TabCloseableStateWatcher.
+    TAB_CLOSEABLE_STATE_CHANGED,
+
     // Password Store ----------------------------------------------------------
     // This notification is sent whenenever login entries stored in the password
     // store are changed. The detail of this notification is a list of changes

@@ -226,6 +226,12 @@ const char kDisableSyncThemes[]             = "disable-sync-themes";
 // Disable syncing of typed urls.
 const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 
+// TabCloseableStateWatcher disallows closing of tabs and browsers under certain
+// situations on ChromeOS.  Some tests expect tabs or browsers to close, so we
+// need a switch to disable the watcher.
+const char kDisableTabCloseableStateWatcher[] =
+    "disable-tab-closeable-state-watcher";
+
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const char kDisableWebResources[]           = "disable-web-resources";

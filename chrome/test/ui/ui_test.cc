@@ -1190,6 +1190,9 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   // The tests assume that file:// URIs can freely access other file:// URIs.
   command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
 
+  // Disable TabCloseableStateWatcher for tests.
+  command_line.AppendSwitch(switches::kDisableTabCloseableStateWatcher);
+
   DebugFlags::ProcessDebugFlags(
       &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
   command_line.AppendArguments(arguments, false);

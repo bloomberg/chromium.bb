@@ -646,6 +646,7 @@ class Browser : public TabStripModelDelegate,
   virtual bool CanCloseContentsAt(int index);
   virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
+  virtual bool CanCloseTab() const;
   virtual bool UseVerticalTabs() const;
   virtual void ToggleUseVerticalTabs();
   virtual bool CanRestoreTab();
@@ -913,6 +914,15 @@ class Browser : public TabStripModelDelegate,
   // the browser.
   bool SupportsWindowFeatureImpl(WindowFeature feature,
                                  bool check_fullscreen) const;
+
+  // Determines if closing of browser can really be permitted after normal
+  // sequence of downloads and unload handlers have given the go-ahead to close.
+  // It is called from ShouldCloseWindow.  It checks with
+  // TabCloseableStateWatcher to confirm if browser can really be closed.
+  // Appropriate action is taken by watcher as it sees fit.
+  // If watcher denies closing of browser, CancelWindowClose is called to
+  // cancel closing of window.
+  bool IsClosingPermitted();
 
   // Calculate a new window open disposition for a navigation. The return
   // value will usually be |original_disposition|, but for some pinned tab cases

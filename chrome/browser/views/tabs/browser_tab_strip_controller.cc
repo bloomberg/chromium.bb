@@ -16,6 +16,7 @@
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_renderer_data.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/widget.h"
@@ -116,6 +117,10 @@ BrowserTabStripController::BrowserTabStripController(TabStripModel* model)
     : model_(model),
       tabstrip_(NULL) {
   model_->AddObserver(this);
+
+  notification_registrar_.Add(this,
+      NotificationType::TAB_CLOSEABLE_STATE_CHANGED,
+      NotificationService::AllSources());
 }
 
 BrowserTabStripController::~BrowserTabStripController() {
@@ -200,6 +205,11 @@ bool BrowserTabStripController::IsTabSelected(int model_index) const {
 
 bool BrowserTabStripController::IsTabPinned(int model_index) const {
   return model_->ContainsIndex(model_index) && model_->IsTabPinned(model_index);
+}
+
+bool BrowserTabStripController::IsTabCloseable(int model_index) const {
+  return !model_->ContainsIndex(model_index) ||
+      model_->delegate()->CanCloseTab();
 }
 
 bool BrowserTabStripController::IsNewTabPage(int model_index) const {
@@ -417,4 +427,20 @@ void BrowserTabStripController::StopHighlightTabsForCommand(
     // Just tell all Tabs to stop pulsing - it's safe.
     tabstrip_->StopAllHighlighting();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserTabStripController, NotificationObserver implementation:
+
+void BrowserTabStripController::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  DCHECK(type.value == NotificationType::TAB_CLOSEABLE_STATE_CHANGED);
+  // Note that this notification may be fired during a model mutation and
+  // possibly before the tabstrip has processed the change.
+  // Here, we just re-layout each existing tab to reflect the change in its
+  // closeable state, and then schedule paint for entire tabstrip.
+  for (int i = 0; i < tabstrip_->tab_count(); ++i) {
+    tabstrip_->base_tab_at_tab_index(i)->Layout();
+  }
+  tabstrip_->SchedulePaint();
 }

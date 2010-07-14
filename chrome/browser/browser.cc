@@ -67,6 +67,7 @@
 #include "chrome/browser/status_bubble.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -782,7 +783,7 @@ bool Browser::ShouldCloseWindow() {
     return false;
 
   if (HasCompletedUnloadProcessing())
-    return true;
+    return IsClosingPermitted();
 
   is_attempting_to_close_browser_ = true;
 
@@ -793,7 +794,7 @@ bool Browser::ShouldCloseWindow() {
   }
 
   if (tabs_needing_before_unload_fired_.empty())
-    return true;
+    return IsClosingPermitted();
 
   ProcessPendingTabs();
   return false;
@@ -1161,6 +1162,15 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
   return !!(features & feature);
 }
 
+bool Browser::IsClosingPermitted() {
+  TabCloseableStateWatcher* watcher =
+      g_browser_process->tab_closeable_state_watcher();
+  bool can_close = !watcher || watcher->CanCloseBrowser(this);
+  if (!can_close && is_attempting_to_close_browser_)
+    CancelWindowClose();
+  return can_close;
+}
+
 void Browser::GoBack(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("Back"), profile_);
 
@@ -1315,10 +1325,12 @@ void Browser::NewTab() {
 void Browser::CloseTab() {
   UserMetrics::RecordAction(UserMetricsAction("CloseTab_Accelerator"),
                             profile_);
-  tabstrip_model_.CloseTabContentsAt(
-      tabstrip_model_.selected_index(),
-      TabStripModel::CLOSE_USER_GESTURE |
-      TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+  if (CanCloseTab()) {
+    tabstrip_model_.CloseTabContentsAt(
+        tabstrip_model_.selected_index(),
+        TabStripModel::CLOSE_USER_GESTURE |
+        TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+  }
 }
 
 void Browser::SelectNextTab() {
@@ -2309,6 +2321,8 @@ bool Browser::CanReloadContents(TabContents* source) const {
 }
 
 bool Browser::CanCloseContentsAt(int index) {
+  if (!CanCloseTab())
+    return false;
   if (tabstrip_model_.count() > 1)
     return true;
   // We are closing the last tab for this browser. Make sure to check for
@@ -2335,6 +2349,12 @@ void Browser::BookmarkAllTabs() {
   BookmarkEditor::Show(window()->GetNativeHandle(), profile_,
                        model->GetParentForNewNodes(),  details,
                        BookmarkEditor::SHOW_TREE);
+}
+
+bool Browser::CanCloseTab() const {
+  TabCloseableStateWatcher* watcher =
+      g_browser_process->tab_closeable_state_watcher();
+  return !watcher || watcher->CanCloseTab(this);
 }
 
 bool Browser::UseVerticalTabs() const {
@@ -2899,7 +2919,6 @@ void Browser::FileSelected(const FilePath& path, int index, void* params) {
   if (!file_url.is_empty())
     OpenURL(file_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, NotificationObserver implementation:
@@ -3488,14 +3507,19 @@ bool Browser::HasCompletedUnloadProcessing() const {
 }
 
 void Browser::CancelWindowClose() {
+  // Closing of window can be canceled from:
+  // - canceling beforeunload
+  // - disallowing closing from IsClosingPermitted.
   DCHECK(is_attempting_to_close_browser_);
-  // Only cancelling beforeunload should be able to cancel the window's close.
-  // So there had better be a tab that we think needs beforeunload fired.
-  DCHECK(!tabs_needing_before_unload_fired_.empty());
-
   tabs_needing_before_unload_fired_.clear();
   tabs_needing_unload_fired_.clear();
   is_attempting_to_close_browser_ = false;
+
+  // Inform TabCloseableStateWatcher that closing of window has been canceled.
+  TabCloseableStateWatcher* watcher =
+      g_browser_process->tab_closeable_state_watcher();
+  if (watcher)
+    watcher->OnWindowCloseCanceled(this);
 }
 
 bool Browser::RemoveFromSet(UnloadListenerSet* set, TabContents* tab) {
@@ -3510,10 +3534,14 @@ bool Browser::RemoveFromSet(UnloadListenerSet* set, TabContents* tab) {
 }
 
 void Browser::ClearUnloadState(TabContents* tab) {
-  DCHECK(is_attempting_to_close_browser_);
-  RemoveFromSet(&tabs_needing_before_unload_fired_, tab);
-  RemoveFromSet(&tabs_needing_unload_fired_, tab);
-  ProcessPendingTabs();
+  // Closing of browser could be canceled (via IsClosingPermitted) between the
+  // time when request was initiated and when this method is called, so check
+  // for is_attempting_to_close_browser_ flag before proceeding.
+  if (is_attempting_to_close_browser_) {
+    RemoveFromSet(&tabs_needing_before_unload_fired_, tab);
+    RemoveFromSet(&tabs_needing_unload_fired_, tab);
+    ProcessPendingTabs();
+  }
 }
 
 

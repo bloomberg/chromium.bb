@@ -782,6 +782,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // BrowserProcessImpl's constructor should set g_browser_process.
   DCHECK(g_browser_process);
 
+  // This forces the TabCloseableStateWatcher to be created and, on chromeos,
+  // register for the notifications it needs to track the closeable state of
+  // tabs.
+  g_browser_process->tab_closeable_state_watcher();
+
 #if defined(USE_LINUX_BREAKPAD)
   // Needs to be called after we have chrome::DIR_USER_DATA and
   // g_browser_process.

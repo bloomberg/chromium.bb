@@ -115,6 +115,9 @@ class InProcessBrowserTest : public testing::Test {
   // constructor.
   void set_show_window(bool show) { show_window_ = show; }
   void EnableDOMAutomation() { dom_automation_enabled_ = true; }
+  void EnableTabCloseableStateWatcher() {
+    tab_closeable_state_watcher_enabled_ = true;
+  }
 
  private:
   // This is invoked from main after browser_init/browser_main have completed.
@@ -138,6 +141,9 @@ class InProcessBrowserTest : public testing::Test {
   // Whether the JavaScript can access the DOMAutomationController (a JS object
   // that can send messages back to the browser).
   bool dom_automation_enabled_;
+
+  // Whether this test requires the TabCloseableStateWatcher.
+  bool tab_closeable_state_watcher_enabled_;
 
   // We muck with the global command line for this process.  Keep the original
   // so we can reset it when we're done.  This matters when running the browser

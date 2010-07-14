@@ -228,6 +228,11 @@ class TabStripModelDelegate {
   // Creates a bookmark folder containing a bookmark for all open tabs.
   virtual void BookmarkAllTabs() = 0;
 
+  // Returns true if any of the tabs can be closed.
+  virtual bool CanCloseTab() const {
+    return true;
+  }
+
   // Returns true if the vertical tabstrip presentation should be used.
   virtual bool UseVerticalTabs() const = 0;
 
@@ -570,6 +575,14 @@ class TabStripModel : public NotificationObserver {
   // 0 and IndexOfFirstNonMiniTab. If |mini_tab| is false, the returned index
   // is between IndexOfFirstNonMiniTab and count().
   int ConstrainInsertionIndex(int index, bool mini_tab);
+
+  // Returns the index of the first tab that is not a phantom tab. This returns
+  // kNoTab if all of the tabs are phantom tabs.
+  int IndexOfFirstNonPhantomTab() const;
+
+  // Returns the number of non phantom tabs in the TabStripModel.
+  int GetNonPhantomTabCount() const;
+
 
   // Command level API /////////////////////////////////////////////////////////
 

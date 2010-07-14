@@ -43,6 +43,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/status_icons/status_tray_manager.h"
+#include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -186,6 +187,10 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // Wait for the pending print jobs to finish.
   print_job_manager_->OnQuit();
   print_job_manager_.reset();
+
+  // Destroy TabCloseableStateWatcher before NotificationService since the
+  // former registers for notifications.
+  tab_closeable_state_watcher_.reset();
 
   // Now OK to destroy NotificationService.
   main_notification_service_.reset();
@@ -459,6 +464,11 @@ void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
 void BrowserProcessImpl::CreateStatusTrayManager() {
   DCHECK(status_tray_manager_.get() == NULL);
   status_tray_manager_.reset(new StatusTrayManager());
+}
+
+void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
+  DCHECK(tab_closeable_state_watcher_.get() == NULL);
+  tab_closeable_state_watcher_.reset(TabCloseableStateWatcher::Create());
 }
 
 // The BrowserProcess object must outlive the file thread so we use traits

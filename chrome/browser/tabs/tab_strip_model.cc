@@ -193,6 +193,7 @@ TabContents* TabStripModel::DetachTabContentsAt(int index) {
     return NULL;
 
   DCHECK(ContainsIndex(index));
+
   TabContents* removed_contents = GetContentsAt(index);
   int next_selected_index =
       order_controller_->DetermineNewSelectedIndex(index, true);
@@ -499,6 +500,23 @@ int TabStripModel::ConstrainInsertionIndex(int index, bool mini_tab) {
       std::min(count(), std::max(index, IndexOfFirstNonMiniTab()));
 }
 
+int TabStripModel::IndexOfFirstNonPhantomTab() const {
+  for (int i = 0; i < count(); ++i) {
+    if (!IsPhantomTab(i))
+      return i;
+  }
+  return kNoTab;
+}
+
+int TabStripModel::GetNonPhantomTabCount() const {
+  int tabs = 0;
+  for (int i = 0; i < count(); ++i) {
+    if (!IsPhantomTab(i))
+      ++tabs;
+  }
+  return tabs;
+}
+
 void TabStripModel::AddTabContents(TabContents* contents,
                                    int index,
                                    PageTransition::Type transition,
@@ -605,7 +623,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
   switch (command_id) {
     case CommandNewTab:
     case CommandCloseTab:
-      return true;
+      return delegate_->CanCloseTab();
     case CommandReload:
       if (TabContents* contents = GetTabContentsAt(context_index)) {
         return contents->delegate()->CanReloadContents(contents);

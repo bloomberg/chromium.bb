@@ -267,6 +267,12 @@ bool BaseTabStrip::IsTabPinned(const BaseTab* tab) const {
       controller_->IsTabPinned(model_index);
 }
 
+bool BaseTabStrip::IsTabCloseable(const BaseTab* tab) const {
+  int model_index = GetModelIndexOfBaseTab(tab);
+  return !IsValidModelIndex(model_index) ||
+      controller_->IsTabCloseable(model_index);
+}
+
 void BaseTabStrip::MaybeStartDrag(BaseTab* tab,
                                   const views::MouseEvent& event) {
   // Don't accidentally start any drag operations during animations if the

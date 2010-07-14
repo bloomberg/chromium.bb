@@ -26,6 +26,7 @@ class CommandLine;
 class DebuggerWrapper;
 class FilePath;
 class NotificationService;
+class TabCloseableStateWatcher;
 
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
@@ -194,6 +195,13 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return shutdown_event_.get();
   }
 
+  virtual TabCloseableStateWatcher* tab_closeable_state_watcher() {
+    DCHECK(CalledOnValidThread());
+    if (!tab_closeable_state_watcher_.get())
+      CreateTabCloseableStateWatcher();
+    return tab_closeable_state_watcher_.get();
+  }
+
   virtual void CheckForInspectorFiles();
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -235,6 +243,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
   void CreateStatusTrayManager();
+  void CreateTabCloseableStateWatcher();
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabledForChildProcesses(bool enabled);
@@ -295,6 +304,8 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
 
   scoped_ptr<NotificationService> main_notification_service_;
+
+  scoped_ptr<TabCloseableStateWatcher> tab_closeable_state_watcher_;
 
   unsigned int module_ref_count_;
   bool did_start_;

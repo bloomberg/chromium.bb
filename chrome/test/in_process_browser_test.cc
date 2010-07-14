@@ -78,6 +78,7 @@ InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       show_window_(false),
       dom_automation_enabled_(false),
+      tab_closeable_state_watcher_enabled_(false),
       original_single_process_(false),
       initial_timeout_(kInitialTimeoutInMS) {
 }
@@ -171,6 +172,10 @@ void InProcessBrowserTest::SetUp() {
   command_line->AppendSwitch(switches::kEnableLogging);
   command_line->AppendSwitchWithValue(switches::kLoggingLevel,
                                       IntToWString(1));  // warning
+
+  // If ncecessary, disable TabCloseableStateWatcher.
+  if (!tab_closeable_state_watcher_enabled_)
+    command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
 
   SandboxInitWrapper sandbox_wrapper;
   MainFunctionParams params(*command_line, sandbox_wrapper, NULL);

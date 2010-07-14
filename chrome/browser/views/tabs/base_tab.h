@@ -74,6 +74,9 @@ class BaseTab : public AnimationDelegate,
   // Returns true if the tab is selected.
   virtual bool IsSelected() const;
 
+  // Returns true if the tab is closeable.
+  bool IsCloseable() const;
+
   // views::View overrides:
   virtual void OnMouseEntered(const views::MouseEvent& event);
   virtual void OnMouseExited(const views::MouseEvent& event);
