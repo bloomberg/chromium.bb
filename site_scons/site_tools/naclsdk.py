@@ -57,30 +57,30 @@ NACL_CANONICAL_PLATFORM_MAP = {
 NACL_PLATFORM_DIR_MAP = {
     'win': {
         'x86': {
-            '32': 'win_x86',
-            '64': 'win_x86',
+            '32': ['win_x86'],
+            '64': ['win_x86'],
         },
     },
     'linux': {
         'x86': {
-            '32': 'linux_x86',
-            '64': 'linux_x86',
+            '32': ['linux_x86'],
+            '64': ['linux_x86'],
         },
         'arm': {
-            '32': 'linux_arm-untrusted',
+            '32': ['linux_arm-untrusted', 'linux_arm-trusted'],
         },
     },
     'mac': {
         'x86': {
-            '32': 'mac_x86',
-            '64': 'mac_x86',
+            '32': ['mac_x86'],
+            '64': ['mac_x86'],
         },
     },
 }
 
 
 
-def _PlatformSubdir(env):
+def _PlatformSubdirs(env):
   platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
   arch = env['BUILD_ARCHITECTURE']
   subarch = env['TARGET_SUBARCH']
@@ -134,14 +134,14 @@ def _GetNaclSdkRoot(env, sdk_mode):
       return '/usr/local/nacl-sdk'
 
   elif sdk_mode == 'download':
-    platform = _PlatformSubdir(env)
+    platforms = _PlatformSubdirs(env)
     if env['TARGET_ARCHITECTURE'] == 'arm':
-      root = os.path.join(env['MAIN_DIR'], 'toolchain', platform)
+      root = os.path.join(env['MAIN_DIR'], 'toolchain', platforms[-1])
     else:
       # TODO(bradnelson): Once the toolchain tarballs have been made to match,
       #     this should become the same as arm.
       root = os.path.join(env['MAIN_DIR'], 'toolchain',
-                          platform, 'sdk', 'nacl-sdk')
+                          platforms[-1], 'sdk', 'nacl-sdk')
     return root
 
   elif sdk_mode.startswith('custom:'):
@@ -167,31 +167,27 @@ def DownloadSdk(env):
   except AttributeError:
     __builtin__.nacl_sdk_downloaded = True
 
-  # Get path to extract to.
-  target = env.subst('$MAIN_DIR/toolchain/%s' % _PlatformSubdir(env))
+  for psubdir in _PlatformSubdirs(env):
+    # Get path to extract to.
+    target = env.subst('$MAIN_DIR/toolchain/%s' % psubdir)
 
-  # Set NATIVE_CLIENT_SDK_PLATFORM before substitution.
-  env['NATIVE_CLIENT_SDK_PLATFORM'] = _PlatformSubdir(env)
+    # Set NATIVE_CLIENT_SDK_PLATFORM before substitution.
+    env['NATIVE_CLIENT_SDK_PLATFORM'] = psubdir
 
-  # Allow sdk selection function to be used instead.
-  if env.get('NATIVE_CLIENT_SDK_SOURCE'):
-    url = env['NATIVE_CLIENT_SDK_SOURCE'](env)
-  else:
-    # Pick download url.
-    url = [
-        env.subst(env.get(
-            'NATIVE_CLIENT_SDK_URL',
-            _DefaultDownloadUrl(env))),
-        env.get('NATIVE_CLIENT_SDK_USERNAME'),
-        env.get('NATIVE_CLIENT_SDK_PASSWORD'),
-    ]
+    # Allow sdk selection function to be used instead.
+    if env.get('NATIVE_CLIENT_SDK_SOURCE'):
+      url = env['NATIVE_CLIENT_SDK_SOURCE'](env)
+    else:
+      # Pick download url.
+      url = [
+          env.subst(env.get(
+              'NATIVE_CLIENT_SDK_URL',
+              _DefaultDownloadUrl(env))),
+          env.get('NATIVE_CLIENT_SDK_USERNAME'),
+          env.get('NATIVE_CLIENT_SDK_PASSWORD'),
+      ]
 
-  sync_tgz.SyncTgz(url[0], target, url[1], url[2])
-
-  # For arm also add trusted toolchain.
-  if env['TARGET_ARCHITECTURE'] == 'arm':
-    sync_tgz.SyncTgz(url[0].replace('-untrusted', '-trusted'),
-                     target.replace('-untrusted', '-trusted'), url[1], url[2])
+    sync_tgz.SyncTgz(url[0], target, url[1], url[2])
 
 
 def _SetEnvForX86Sdk(env, sdk_path):
