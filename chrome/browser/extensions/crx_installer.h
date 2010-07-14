@@ -9,7 +9,6 @@
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "base/task.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"

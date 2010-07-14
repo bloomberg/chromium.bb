@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"

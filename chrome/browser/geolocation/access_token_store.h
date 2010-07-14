@@ -17,7 +17,6 @@
 
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "chrome/browser/cancelable_request.h"
 #include "googleurl/src/gurl.h"
 

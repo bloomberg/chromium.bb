@@ -5,6 +5,7 @@
 #include "app/animation_container.h"
 #include "app/linear_animation.h"
 #include "app/test_animation_delegate.h"
+#include "base/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

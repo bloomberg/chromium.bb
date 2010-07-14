@@ -12,6 +12,7 @@
 #include "app/theme_provider.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/histogram.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
