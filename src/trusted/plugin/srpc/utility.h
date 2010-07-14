@@ -26,18 +26,14 @@ namespace plugin {
 class ScopedCatchSignals {
  public:
   typedef void (*SigHandlerType)(int signal_number);
-  // Installs handler as the signal handler for SIGSEGV and SIGILL.
+  // Installs handler as the signal handler for SIGPIPE.
   explicit ScopedCatchSignals(SigHandlerType handler) {
-    prev_segv_handler_ = signal(SIGSEGV, handler);
-    prev_ill_handler_ = signal(SIGILL, handler);
 #ifndef _MSC_VER
     prev_pipe_handler_ = signal(SIGPIPE, handler);
 #endif
   }
   // Restores the previous signal handler
   ~ScopedCatchSignals() {
-    signal(SIGSEGV, prev_segv_handler_);
-    signal(SIGILL, prev_ill_handler_);
 #ifndef _MSC_VER
     signal(SIGPIPE, prev_pipe_handler_);
 #endif
@@ -45,8 +41,6 @@ class ScopedCatchSignals {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ScopedCatchSignals);
-  SigHandlerType prev_segv_handler_;
-  SigHandlerType prev_ill_handler_;
 #ifndef _MSC_VER
   SigHandlerType prev_pipe_handler_;
 #endif
