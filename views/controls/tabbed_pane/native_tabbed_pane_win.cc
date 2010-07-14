@@ -60,6 +60,13 @@ class TabLayout : public LayoutManager {
         child->SetBounds(gfx::Rect(host->size()));
       child->SetVisible(child == page);
     }
+
+    FocusManager* focus_manager = page->GetFocusManager();
+    DCHECK(focus_manager);
+    View* focused_view = focus_manager->GetFocusedView();
+    if (focused_view && host->IsParentOf(focused_view) &&
+        !page->IsParentOf(focused_view))
+      focus_manager->SetFocusedView(page);
   }
 
  private:
@@ -367,13 +374,6 @@ void NativeTabbedPaneWin::DoSelectTabAt(int index, boolean invoke_listener) {
   selected_index_ = index;
   if (content_window_) {
     RootView* content_root = content_window_->GetRootView();
-
-    // Clear the focus if the focused view was on the tab.
-    FocusManager* focus_manager = GetFocusManager();
-    DCHECK(focus_manager);
-    View* focused_view = focus_manager->GetFocusedView();
-    if (focused_view && content_root->IsParentOf(focused_view))
-      focus_manager->ClearFocus();
     tab_layout_manager_->SwitchToPage(content_root, tab_views_.at(index));
   }
   if (invoke_listener && tabbed_pane_->listener())
