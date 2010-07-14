@@ -3588,7 +3588,7 @@
    Memcheck:Leak
    ...
    fun:_ZN18ExtensionPrefStore20InstallExtensionPrefESsPKwP5Value
-   fun:_ZN56ExtensionPrefStoreTest_*_Test8TestBodyEv
+   fun:_ZN*ExtensionPrefStoreTest_*_Test8TestBodyEv
 }
 {
    bug_48980_b
