@@ -13,39 +13,41 @@
 #include <pk11pub.h>
 #include <secmod.h>
 
+#if defined(OS_LINUX)
+#include <linux/magic.h>
+#include <sys/vfs.h>
+#endif
+
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 
+// USE_NSS means we use NSS for everything crypto-related.  If USE_NSS is not
+// defined, such as on Mac and Windows, we use NSS for SSL only -- we don't
+// use NSS for crypto or certificate verification, and we don't use the NSS
+// certificate and key databases.
 #if defined(USE_NSS)
+#include "base/env_var.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
-#endif // defined(USE_NSS)
-
-// On some platforms, we use NSS for SSL only -- we don't use NSS for crypto
-// or certificate verification, and we don't use the NSS certificate and key
-// databases.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define USE_NSS_FOR_SSL_ONLY 1
-#endif
+#endif  // defined(USE_NSS)
 
 namespace {
 
-#if !defined(USE_NSS_FOR_SSL_ONLY)
-std::string GetDefaultConfigDirectory() {
-  FilePath home = file_util::GetHomeDir();
-  if (home.empty()) {
-    LOG(ERROR) << "$HOME is not set.";
-    return std::string();
+#if defined(USE_NSS)
+FilePath GetDefaultConfigDirectory() {
+  FilePath dir = file_util::GetHomeDir();
+  if (dir.empty()) {
+    LOG(ERROR) << "Failed to get home directory.";
+    return dir;
   }
-  FilePath dir(home);
   dir = dir.AppendASCII(".pki").AppendASCII("nssdb");
   if (!file_util::CreateDirectory(dir)) {
     LOG(ERROR) << "Failed to create ~/.pki/nssdb directory.";
-    return std::string();
+    dir.clear();
   }
-  return dir.value();
+  return dir;
 }
 
 // On non-chromeos platforms, return the default config directory.
@@ -54,13 +56,37 @@ std::string GetDefaultConfigDirectory() {
 // by the local Google Accounts server mock we use when testing our login code.
 // If this directory is not present, NSS_Init() will fail.  It is up to the
 // caller to failover to NSS_NoDB_Init() at that point.
-std::string GetInitialConfigDirectory() {
+FilePath GetInitialConfigDirectory() {
 #if defined(OS_CHROMEOS)
-  static const char kReadOnlyCertDB[] = "/etc/fake_root_ca/nssdb";
-  return std::string(kReadOnlyCertDB);
+  static const FilePath::CharType kReadOnlyCertDB[] =
+      FILE_PATH_LITERAL("/etc/fake_root_ca/nssdb");
+  return FilePath(kReadOnlyCertDB);
 #else
   return GetDefaultConfigDirectory();
 #endif  // defined(OS_CHROMEOS)
+}
+
+// NSS creates a local cache of the sqlite database if it detects that the
+// filesystem the database is on is much slower than the local disk.  The
+// detection doesn't work with the latest versions of sqlite, such as 3.6.22
+// (NSS bug https://bugzilla.mozilla.org/show_bug.cgi?id=578561).  So we set
+// the NSS environment variable NSS_SDB_USE_CACHE to "yes" to override NSS's
+// detection when database_dir is on NFS.  See http://crbug.com/48585.
+//
+// TODO(wtc): port this function to other USE_NSS platforms.  It is defined
+// only for OS_LINUX simply because the statfs structure is OS-specific.
+void UseLocalCacheOfNSSDatabaseIfNFS(const FilePath& database_dir) {
+#if defined(OS_LINUX)
+  struct statfs buf;
+  if (statfs(database_dir.value().c_str(), &buf) == 0) {
+    if (buf.f_type == NFS_SUPER_MAGIC) {
+      scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+      const char* use_cache_env_var = "NSS_SDB_USE_CACHE";
+      if (!env->HasEnv(use_cache_env_var))
+        env->SetEnv(use_cache_env_var, "yes");
+    }
+  }
+#endif  // defined(OS_LINUX)
 }
 
 // Load nss's built-in root certs.
@@ -78,7 +104,7 @@ SECMODModule *InitDefaultRootCerts() {
   NOTREACHED();
   return NULL;
 }
-#endif  // !defined(USE_NSS_FOR_SSL_ONLY)
+#endif  // defined(USE_NSS)
 
 // A singleton to initialize/deinitialize NSPR.
 // Separate from the NSS singleton because we initialize NSPR on the UI thread.
@@ -127,7 +153,7 @@ class NSSInitSingleton {
     }
 
     SECStatus status = SECFailure;
-#if defined(USE_NSS_FOR_SSL_ONLY)
+#if !defined(USE_NSS)
     // Use the system certificate store, so initialize NSS without database.
     status = NSS_NoDB_Init(NULL);
     if (status != SECSuccess) {
@@ -135,12 +161,14 @@ class NSSInitSingleton {
                     "database: NSS error code " << PR_GetError();
     }
 #else
-    std::string database_dir = GetInitialConfigDirectory();
+    FilePath database_dir = GetInitialConfigDirectory();
     if (!database_dir.empty()) {
+      UseLocalCacheOfNSSDatabaseIfNFS(database_dir);
+
       // Initialize with a persistent database (likely, ~/.pki/nssdb).
       // Use "sql:" which can be shared by multiple processes safely.
       std::string nss_config_dir =
-          StringPrintf("sql:%s", database_dir.c_str());
+          StringPrintf("sql:%s", database_dir.value().c_str());
 #if defined(OS_CHROMEOS)
       status = NSS_Init(nss_config_dir.c_str());
 #else
@@ -181,7 +209,7 @@ class NSSInitSingleton {
     write_lock_.reset(new Lock());
 
     root_ = InitDefaultRootCerts();
-#endif  // defined(USE_NSS_FOR_SSL_ONLY)
+#endif  // !defined(USE_NSS)
   }
 
   ~NSSInitSingleton() {
@@ -212,7 +240,7 @@ class NSSInitSingleton {
 
       const std::string modspec =
           StringPrintf("configDir='%s' tokenDescription='Real NSS database'",
-                       GetDefaultConfigDirectory().c_str());
+                       GetDefaultConfigDirectory().value().c_str());
       real_db_slot_ = SECMOD_OpenUserDB(modspec.c_str());
       if (real_db_slot_ == NULL) {
         LOG(ERROR) << "Error opening persistent database (" << modspec
@@ -235,7 +263,7 @@ class NSSInitSingleton {
   Lock* write_lock() {
     return write_lock_.get();
   }
-#endif // defined(USE_NSS)
+#endif  // defined(USE_NSS)
 
  private:
   PK11SlotInfo* real_db_slot_;  // Overrides internal key slot if non-NULL.
@@ -243,7 +271,7 @@ class NSSInitSingleton {
   bool chromeos_user_logged_in_;
 #if defined(USE_NSS)
   scoped_ptr<Lock> write_lock_;
-#endif // defined(USE_NSS)
+#endif  // defined(USE_NSS)
 };
 
 }  // namespace
