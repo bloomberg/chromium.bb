@@ -23,6 +23,8 @@ class BaseEGLContext : public GLContext {
   // Implement GLContext.
   virtual EGLSurface GetSurface() = 0;
 
+  static bool InitializeOneOff();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseEGLContext);
 };

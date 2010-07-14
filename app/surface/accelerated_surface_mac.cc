@@ -5,6 +5,7 @@
 #include "app/surface/accelerated_surface_mac.h"
 
 #include "app/gfx/gl/gl_bindings.h"
+#include "app/gfx/gl/gl_implementation.h"
 #include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
 #include "gfx/rect.h"
@@ -187,6 +188,12 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
     // allocation occurred.
     return 0;
   }
+
+  // Only support IO surfaces if the GL implementation is the native desktop GL.
+  // IO surfaces will not work with, for example, OSMesa software renderer
+  // GL contexts.
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
+    return 0;
 
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (!io_surface_support)

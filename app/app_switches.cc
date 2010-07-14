@@ -10,4 +10,12 @@ namespace switches {
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[]                          = "lang";
 
+// Select which implementation of GL the GPU process should use. Options are:
+//  desktop: whatever desktop OpenGL the user has installed (Linux and Mac
+//           default).
+//  egl: whatever EGL / GLES2 the user has installed (Windows default - actually
+//       ANGLE).
+//  osmesa: The OSMesa software renderer.
+const char kUseGL[]                         = "use-gl";
+
 }  // namespace switches

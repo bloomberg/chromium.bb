@@ -2,75 +2,79 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <dlfcn.h>
-
-#include "base/logging.h"
 #include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "base/base_paths.h"
+#include "base/file_path.h"
+#include "base/logging.h"
+#include "base/native_library.h"
+#include "base/path_service.h"
 
 namespace gfx {
 namespace {
-typedef void* (*GetProcAddressProc)(const char* name);
-
-GLImplementation g_gl_implementation = kGLImplementationNone;
-void* g_shared_library;
-GetProcAddressProc g_get_proc_address;
+const char kOpenGLFrameworkPath[] =
+    "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL";
 }  // namespace anonymous
 
 bool InitializeGLBindings(GLImplementation implementation) {
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
-  if (g_gl_implementation != kGLImplementationNone)
+  if (GetGLImplementation() != kGLImplementationNone)
     return true;
 
   switch (implementation) {
-    case kGLImplementationDesktopGL:
-      g_shared_library = dlopen(
-          "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL",
-          RTLD_LAZY | RTLD_LOCAL);
-      if (!g_shared_library)
+    case kGLImplementationOSMesaGL: {
+      FilePath exe_path;
+      if (!PathService::Get(base::DIR_EXE, &exe_path))
         return false;
 
-      g_gl_implementation = kGLImplementationDesktopGL;
-      g_get_proc_address = NULL;
+      // When using OSMesa, just use OSMesaGetProcAddress to find entry points.
+      base::NativeLibrary library = base::LoadNativeLibrary(
+          exe_path.Append("libosmesa.dylib"));
+      if (!library) {
+        LOG(INFO) << "libosmesa.so not found";
+        return false;
+      }
+
+      GLGetProcAddressProc get_proc_address =
+          reinterpret_cast<GLGetProcAddressProc>(
+              base::GetFunctionPointerFromNativeLibrary(
+                  library, "OSMesaGetProcAddress"));
+
+      SetGLGetProcAddressProc(get_proc_address);
+      AddGLNativeLibrary(library);
+      SetGLImplementation(kGLImplementationOSMesaGL);
+
+      InitializeGLBindingsGL();
+      InitializeGLBindingsOSMESA();
+      break;
+    }
+    case kGLImplementationDesktopGL: {
+      base::NativeLibrary library = base::LoadNativeLibrary(
+          FilePath(kOpenGLFrameworkPath));
+      if (!library) {
+        LOG(INFO) << "OpenGL framework not found";
+        return false;
+      }
+
+      AddGLNativeLibrary(library);
+      SetGLImplementation(kGLImplementationDesktopGL);
 
       InitializeGLBindingsGL();
       break;
-
-    case kGLImplementationMockGL:
-      g_get_proc_address = GetMockGLProcAddress;
-      g_gl_implementation = kGLImplementationMockGL;
+    }
+    case kGLImplementationMockGL: {
+      SetGLGetProcAddressProc(GetMockGLProcAddress);
+      SetGLImplementation(kGLImplementationMockGL);
       InitializeGLBindingsGL();
       break;
-
+    }
     default:
       return false;
   }
 
   return true;
-}
-
-GLImplementation GetGLImplementation() {
-  return g_gl_implementation;
-}
-
-void* GetGLProcAddress(const char* name) {
-  DCHECK(g_gl_implementation != kGLImplementationNone);
-
-  if (g_get_proc_address) {
-    void* proc = g_get_proc_address(name);
-    if (proc)
-      return proc;
-  }
-
-  if (g_shared_library) {
-    void* proc = dlsym(g_shared_library, name);
-    if (proc)
-      return proc;
-  }
-
-  return NULL;
 }
 
 }  // namespace gfx

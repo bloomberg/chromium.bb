@@ -389,6 +389,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
     switches::kUseLowFragHeapCrt,
     switches::kEnableStatsTable,
     switches::kEnableGPUPlugin,
+    switches::kUseGL,
 #if defined(OS_CHROMEOS)
     switches::kProfile,
 #endif

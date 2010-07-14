@@ -4,16 +4,20 @@
 
 // This file implements the NativeViewGLContext and PbufferGLContext classes.
 
+#include "app/gfx/gl/gl_context.h"
+
+#include <GL/osmesa.h>
+
 #include <algorithm>
 
-#include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_context_egl.h"
 #include "app/gfx/gl/gl_context_osmesa.h"
 #include "app/gfx/gl/gl_context_stub.h"
 #include "app/gfx/gl/gl_implementation.h"
+
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
 
 namespace gfx {
 
@@ -148,20 +152,22 @@ LRESULT CALLBACK IntermediateWindowProc(HWND window,
 
 // Helper routine that does one-off initialization like determining the
 // pixel format and initializing glew.
-static bool InitializeOneOff() {
+bool GLContext::InitializeOneOff() {
   static bool initialized = false;
   if (initialized)
     return true;
 
-  if (!InitializeGLBindings(kGLImplementationOSMesaGL)) {
-    if (!InitializeGLBindings(kGLImplementationEGLGLES2)) {
-      if (!InitializeGLBindings(kGLImplementationDesktopGL)) {
-        LOG(ERROR) << "Could not initialize GL.";
-        return false;
-      }
-    }
-  }
+  static const GLImplementation kAllowedGLImplementations[] = {
+    kGLImplementationEGLGLES2,
+    kGLImplementationDesktopGL,
+    kGLImplementationOSMesaGL
+  };
 
+  if (!InitializeBestGLBindings(
+           kAllowedGLImplementations,
+           kAllowedGLImplementations + arraysize(kAllowedGLImplementations))) {
+    return false;
+  }
 
   // We must initialize a GL context before we can determine the multi-
   // sampling supported on the current hardware, so we create an intermediate
@@ -209,86 +215,90 @@ static bool InitializeOneOff() {
   }
 
   // Early out if OSMesa offscreen renderer or EGL is present.
-  if (GetGLImplementation() != kGLImplementationDesktopGL) {
-    initialized = true;
-    return true;
-  }
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL: {
+      HDC intermediate_dc = ::GetDC(g_window);
+      g_regular_pixel_format = ::ChoosePixelFormat(intermediate_dc,
+                                                   &kPixelFormatDescriptor);
+      if (g_regular_pixel_format == 0) {
+        DLOG(ERROR) << "Unable to get the pixel format for GL context.";
+        ::ReleaseDC(g_window, intermediate_dc);
+        ::DestroyWindow(g_window);
+        ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                          module_handle);
+        return false;
+      }
+      if (!::SetPixelFormat(intermediate_dc, g_regular_pixel_format,
+                            &kPixelFormatDescriptor)) {
+        DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+        ::ReleaseDC(g_window, intermediate_dc);
+        ::DestroyWindow(g_window);
+        ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                          module_handle);
+        return false;
+      }
 
-  HDC intermediate_dc = ::GetDC(g_window);
-  g_regular_pixel_format = ::ChoosePixelFormat(intermediate_dc,
-                                               &kPixelFormatDescriptor);
-  if (g_regular_pixel_format == 0) {
-    DLOG(ERROR) << "Unable to get the pixel format for GL context.";
-    ::ReleaseDC(g_window, intermediate_dc);
-    ::DestroyWindow(g_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return false;
-  }
-  if (!::SetPixelFormat(intermediate_dc, g_regular_pixel_format,
-                        &kPixelFormatDescriptor)) {
-    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
-    ::ReleaseDC(g_window, intermediate_dc);
-    ::DestroyWindow(g_window);
-    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                      module_handle);
-    return false;
-  }
+      // Create a temporary GL context to query for multisampled pixel formats.
+      HGLRC gl_context = wglCreateContext(intermediate_dc);
+      if (wglMakeCurrent(intermediate_dc, gl_context)) {
+        // Get bindings to extension functions that cannot be acquired without a
+        // current context.
+        InitializeGLBindingsGL();
+        InitializeGLBindingsWGL();
 
-  // Create a temporary GL context to query for multisampled pixel formats.
-  HGLRC gl_context = wglCreateContext(intermediate_dc);
-  if (wglMakeCurrent(intermediate_dc, gl_context)) {
-    // Get bindings to extension functions that cannot be acquired without a
-    // current context.
-    InitializeGLBindingsGL();
-    InitializeGLBindingsWGL();
+        // If the multi-sample extensions are present, query the api to
+        // determine the pixel format.
+        if (wglGetExtensionsStringARB) {
+          std::string extensions =
+              std::string(wglGetExtensionsStringARB(intermediate_dc));
+          extensions += std::string(" ");
+          if (extensions.find("WGL_ARB_pixel_format ")) {
+            int pixel_attributes[] = {
+              WGL_SAMPLES_ARB, 4,
+              WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+              WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+              WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+              WGL_COLOR_BITS_ARB, 24,
+              WGL_ALPHA_BITS_ARB, 8,
+              WGL_DEPTH_BITS_ARB, 24,
+              WGL_STENCIL_BITS_ARB, 8,
+              WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+              WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+              0, 0};
 
-    // If the multi-sample extensions are present, query the api to determine
-    // the pixel format.
-    if (wglGetExtensionsStringARB) {
-      std::string extensions =
-          std::string(wglGetExtensionsStringARB(intermediate_dc));
-      extensions += std::string(" ");
-      if (extensions.find("WGL_ARB_pixel_format ")) {
-        int pixel_attributes[] = {
-          WGL_SAMPLES_ARB, 4,
-          WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-          WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-          WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
-          WGL_COLOR_BITS_ARB, 24,
-          WGL_ALPHA_BITS_ARB, 8,
-          WGL_DEPTH_BITS_ARB, 24,
-          WGL_STENCIL_BITS_ARB, 8,
-          WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
-          WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
-          0, 0};
+            float pixel_attributes_f[] = {0, 0};
+            unsigned int num_formats;
 
-        float pixel_attributes_f[] = {0, 0};
-        unsigned int num_formats;
-
-        // Query for the highest sampling rate supported, starting at 4x.
-        static const int kSampleCount[] = {4, 2};
-        static const int kNumSamples = 2;
-        for (int sample = 0; sample < kNumSamples; ++sample) {
-          pixel_attributes[1] = kSampleCount[sample];
-          if (GL_TRUE == wglChoosePixelFormatARB(intermediate_dc,
-                                                 pixel_attributes,
-                                                 pixel_attributes_f,
-                                                 1,
-                                                 &g_multisampled_pixel_format,
-                                                 &num_formats)) {
-            break;
+            // Query for the highest sampling rate supported, starting at 4x.
+            static const int kSampleCount[] = {4, 2};
+            static const int kNumSamples = 2;
+            for (int sample = 0; sample < kNumSamples; ++sample) {
+              pixel_attributes[1] = kSampleCount[sample];
+              if (wglChoosePixelFormatARB(intermediate_dc,
+                                          pixel_attributes,
+                                          pixel_attributes_f,
+                                          1,
+                                          &g_multisampled_pixel_format,
+                                          &num_formats)) {
+                break;
+              }
+            }
           }
         }
       }
-    }
-  }
 
-  wglMakeCurrent(intermediate_dc, NULL);
-  wglDeleteContext(gl_context);
-  ReleaseDC(g_window, intermediate_dc);
-  UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
-                  module_handle);
+      wglMakeCurrent(intermediate_dc, NULL);
+      wglDeleteContext(gl_context);
+      ReleaseDC(g_window, intermediate_dc);
+      UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                      module_handle);
+      break;
+    }
+    case kGLImplementationEGLGLES2:
+      if (!BaseEGLContext::InitializeOneOff())
+        return false;
+      break;
+  }
 
   initialized = true;
   return true;
@@ -381,7 +391,7 @@ bool OSMesaViewGLContext::Initialize() {
   // The GL context will render to this window.
   device_context_ = GetDC(window_);
 
-  if (!osmesa_context_.Initialize(NULL)) {
+  if (!osmesa_context_.Initialize(OSMESA_RGBA, NULL)) {
     Destroy();
     return false;
   }
@@ -426,9 +436,11 @@ void OSMesaViewGLContext::SwapBuffers() {
 
   gfx::Size size = osmesa_context_.GetSize();
 
+  // Note: negating the height below causes GDI to treat the bitmap data as row
+  // 0 being at the top.
   BITMAPV4HEADER info = { sizeof(BITMAPV4HEADER) };
   info.bV4Width = size.width();
-  info.bV4Height = size.height();
+  info.bV4Height = -size.height();
   info.bV4Planes = 1;
   info.bV4BitCount = 32;
   info.bV4V4Compression = BI_BITFIELDS;
@@ -467,9 +479,6 @@ void OSMesaViewGLContext::UpdateSize() {
 
 GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
                                           bool multisampled) {
-  if (!InitializeOneOff())
-    return NULL;
-
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_ptr<OSMesaViewGLContext> context(new OSMesaViewGLContext(window));
@@ -608,13 +617,10 @@ void* PbufferGLContext::GetHandle() {
 }
 
 GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
-  if (!InitializeOneOff())
-    return NULL;
-
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
-      if (!context->Initialize(shared_context))
+      if (!context->Initialize(OSMESA_RGBA, shared_context))
         return NULL;
 
       return context.release();

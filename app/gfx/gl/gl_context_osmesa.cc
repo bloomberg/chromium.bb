@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GL/osmesa.h>
+
 #include <algorithm>
 
 #include "app/gfx/gl/gl_bindings.h"
@@ -16,7 +18,7 @@ OSMesaGLContext::OSMesaGLContext() : context_(NULL)
 OSMesaGLContext::~OSMesaGLContext() {
 }
 
-bool OSMesaGLContext::Initialize(GLContext* shared_context) {
+bool OSMesaGLContext::Initialize(GLuint format, GLContext* shared_context) {
   DCHECK(!context_);
 
   size_ = gfx::Size(1, 1);
@@ -26,7 +28,11 @@ bool OSMesaGLContext::Initialize(GLContext* shared_context) {
   if (shared_context)
     shared_handle = static_cast<OSMesaContext>(shared_context->GetHandle());
 
-  context_ = OSMesaCreateContext(GL_RGBA, shared_handle);
+  context_ = OSMesaCreateContextExt(format,
+                                    24,  // depth bits
+                                    8,  // stencil bits
+                                    0,  // accum bits
+                                    shared_handle);
   if (!context_)
     return false;
 
@@ -34,6 +40,9 @@ bool OSMesaGLContext::Initialize(GLContext* shared_context) {
     Destroy();
     return false;
   }
+
+  // Row 0 is at the top.
+  OSMesaPixelStore(OSMESA_Y_UP, 0);
 
   if (!InitializeCommon()) {
     Destroy();

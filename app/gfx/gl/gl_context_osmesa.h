@@ -20,7 +20,7 @@ class OSMesaGLContext : public GLContext {
   virtual ~OSMesaGLContext();
 
   // Initialize an OSMesa GL context with the default 1 x 1 initial size.
-  bool Initialize(GLContext* shared_context);
+  bool Initialize(GLuint format, GLContext* shared_context);
 
   // Implement GLContext.
   virtual void Destroy();

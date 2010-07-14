@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gpu_process_host.h"
 
+#include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
@@ -86,6 +87,18 @@ bool GpuProcessHost::Init() {
                                   switches::kGpuProcess);
   cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
                                   ASCIIToWide(channel_id()));
+
+  // Propagate relevant command line switches.
+  static const char* const switch_names[] = {
+    switches::kUseGL,
+  };
+
+  for (size_t i = 0; i < arraysize(switch_names); ++i) {
+    if (browser_command_line.HasSwitch(switch_names[i])) {
+      cmd_line->AppendSwitchWithValue(switch_names[i],
+          browser_command_line.GetSwitchValueASCII(switch_names[i]));
+    }
+  }
 
   const CommandLine& browser_cmd_line = *CommandLine::ForCurrentProcess();
   PropagateBrowserCommandLineToGpu(browser_cmd_line, cmd_line);

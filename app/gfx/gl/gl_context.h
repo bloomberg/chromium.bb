@@ -40,6 +40,8 @@ class GLContext {
   // Get the underlying platform specific GL context "handle".
   virtual void* GetHandle() = 0;
 
+  static bool InitializeOneOff();
+
 #if !defined(OS_MACOSX)
   // Create a GL context that renders directly to a view.
   static GLContext* CreateViewGLContext(gfx::PluginWindowHandle window,

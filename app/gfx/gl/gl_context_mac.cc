@@ -4,14 +4,18 @@
 
 // This file implements the ViewGLContext and PbufferGLContext classes.
 
+#include "app/gfx/gl/gl_context.h"
+
+#include <GL/osmesa.h>
 #include <OpenGL/OpenGL.h>
 
-#include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_context.h"
+#include "app/gfx/gl/gl_context_osmesa.h"
 #include "app/gfx/gl/gl_context_stub.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
 
 namespace gfx {
 
@@ -46,13 +50,19 @@ class PbufferGLContext : public GLContext {
   DISALLOW_COPY_AND_ASSIGN(PbufferGLContext);
 };
 
-static bool InitializeOneOff() {
+bool GLContext::InitializeOneOff() {
   static bool initialized = false;
   if (initialized)
     return true;
 
-  if (!InitializeGLBindings(kGLImplementationDesktopGL)) {
-    LOG(ERROR) << "Could not initialize GL.";
+  static const GLImplementation kAllowedGLImplementations[] = {
+    kGLImplementationDesktopGL,
+    kGLImplementationOSMesaGL
+  };
+
+  if (!InitializeBestGLBindings(
+           kAllowedGLImplementations,
+           kAllowedGLImplementations + arraysize(kAllowedGLImplementations))) {
     return false;
   }
 
@@ -162,13 +172,17 @@ void* PbufferGLContext::GetHandle() {
 }
 
 GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
-  if (!InitializeOneOff())
-    return NULL;
-
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL: {
       scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
       if (!context->Initialize(shared_context))
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationOSMesaGL: {
+      scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
+      if (!context->Initialize(OSMESA_RGBA, shared_context))
         return NULL;
 
       return context.release();

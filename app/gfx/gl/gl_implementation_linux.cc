@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <dlfcn.h>
 #include <vector>
 
-#include "base/at_exit.h"
-#include "base/logging.h"
+#include "app/app_switches.h"
 #include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context_stub.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "base/base_paths.h"
+#include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/logging.h"
+#include "base/native_library.h"
+#include "base/path_service.h"
 
 namespace gfx {
 namespace {
-typedef void* (*GetProcAddressProc)(const char* name);
-
-GLImplementation g_gl_implementation = kGLImplementationNone;
-typedef std::vector<void*> PointerArray;
-PointerArray* g_shared_libraries = NULL;
-GetProcAddressProc g_get_proc_address;
 
 // TODO(piman): it should be Desktop GL marshalling from double to float. Today
 // on native GLES, we do float->double->float.
@@ -31,80 +29,87 @@ void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
 }
 
-void CleanupSharedLibraries(void* unused) {
-  if (g_shared_libraries) {
-    for (PointerArray::iterator it = g_shared_libraries->begin();
-         it != g_shared_libraries->end(); ++it) {
-      dlclose(*it);
-    }
-    delete g_shared_libraries;
-    g_shared_libraries = NULL;
-  }
-}
-
 }  // namespace anonymous
 
 bool InitializeGLBindings(GLImplementation implementation) {
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
-  if (g_gl_implementation != kGLImplementationNone)
+  if (GetGLImplementation() != kGLImplementationNone)
     return true;
 
-  if (!g_shared_libraries) {
-    g_shared_libraries = new PointerArray();
-    base::AtExitManager::RegisterCallback(CleanupSharedLibraries, NULL);
-  }
-
-  void* shared_library = NULL;
-
   switch (implementation) {
-    case kGLImplementationDesktopGL:
-      DLOG(INFO) << "Initializing Desktop GL";
-      shared_library = dlopen("libGL.so.1", RTLD_LAZY | RTLD_LOCAL);
-      if (!shared_library) {
-        DLOG(ERROR) << "Failed to load libGL.so.1";
+    case kGLImplementationOSMesaGL: {
+      FilePath exe_path;
+      if (!PathService::Get(base::DIR_EXE, &exe_path))
+        return false;
+
+      base::NativeLibrary library = base::LoadNativeLibrary(
+          exe_path.Append("libosmesa.so"));
+      if (!library) {
+        DLOG(INFO) << "libosmesa.so not found";
         return false;
       }
 
-      g_shared_libraries->push_back(shared_library);
+      GLGetProcAddressProc get_proc_address =
+          reinterpret_cast<GLGetProcAddressProc>(
+              base::GetFunctionPointerFromNativeLibrary(
+                  library, "OSMesaGetProcAddress"));
 
-      g_gl_implementation = kGLImplementationDesktopGL;
+      SetGLGetProcAddressProc(get_proc_address);
+      AddGLNativeLibrary(library);
+      SetGLImplementation(kGLImplementationOSMesaGL);
 
-      g_get_proc_address = reinterpret_cast<GetProcAddressProc>(
-          dlsym(shared_library, "glXGetProcAddress"));
-      CHECK(g_get_proc_address);
+      InitializeGLBindingsGL();
+      InitializeGLBindingsOSMESA();
+      break;
+    }
+    case kGLImplementationDesktopGL: {
+      base::NativeLibrary library = base::LoadNativeLibrary(
+          FilePath("libGL.so.1"));
+      if (!library) {
+        DLOG(INFO) << "libGL.so.1 not found.";
+        return false;
+      }
+
+      GLGetProcAddressProc get_proc_address =
+          reinterpret_cast<GLGetProcAddressProc>(
+              base::GetFunctionPointerFromNativeLibrary(
+                  library, "glXGetProcAddress"));
+
+      SetGLGetProcAddressProc(get_proc_address);
+      AddGLNativeLibrary(library);
+      SetGLImplementation(kGLImplementationDesktopGL);
 
       InitializeGLBindingsGL();
       InitializeGLBindingsGLX();
       break;
-
-    case kGLImplementationEGLGLES2:
-      DLOG(INFO) << "Initializing EGL";
-      shared_library = dlopen("libEGL.so", RTLD_LAZY | RTLD_LOCAL);
-      if (!shared_library) {
-        DLOG(ERROR) << "Failed to load libEGL.so";
+    }
+    case kGLImplementationEGLGLES2: {
+      base::NativeLibrary egl_library = base::LoadNativeLibrary(
+          FilePath("libEGL.so"));
+      if (!egl_library) {
+        DLOG(INFO) << "libEGL.so not found";
         return false;
       }
 
-      g_gl_implementation = kGLImplementationEGLGLES2;
+      GLGetProcAddressProc get_proc_address =
+          reinterpret_cast<GLGetProcAddressProc>(
+              base::GetFunctionPointerFromNativeLibrary(
+                  egl_library, "eglGetProcAddress"));
 
-      g_get_proc_address = reinterpret_cast<GetProcAddressProc>(
-          dlsym(shared_library, "eglGetProcAddress"));
-      DCHECK(g_get_proc_address);
-
-      g_shared_libraries->push_back(shared_library);
-
-      shared_library = dlopen("libGLESv2.so", RTLD_LAZY | RTLD_LOCAL);
-      if (!shared_library) {
-        DLOG(ERROR) << "Failed to load libGLESv2.so";
-        g_shared_libraries->clear();
+      base::NativeLibrary gles_library = base::LoadNativeLibrary(
+          FilePath("libGLESv2.so"));
+      if (!gles_library) {
+        base::UnloadNativeLibrary(egl_library);
+        DLOG(INFO) << "libGLESv2.so not found";
         return false;
       }
 
-      DCHECK(shared_library);
-
-      g_shared_libraries->push_back(shared_library);
+      SetGLGetProcAddressProc(get_proc_address);
+      AddGLNativeLibrary(egl_library);
+      AddGLNativeLibrary(gles_library);
+      SetGLImplementation(kGLImplementationEGLGLES2);
 
       InitializeGLBindingsGL();
       InitializeGLBindingsEGL();
@@ -114,44 +119,19 @@ bool InitializeGLBindings(GLImplementation implementation) {
       ::gfx::g_glClearDepth = MarshalClearDepthToClearDepthf;
       ::gfx::g_glDepthRange = MarshalDepthRangeToDepthRangef;
       break;
-
-    case kGLImplementationMockGL:
-      g_get_proc_address = GetMockGLProcAddress;
-      g_gl_implementation = kGLImplementationMockGL;
+    }
+    case kGLImplementationMockGL: {
+      SetGLGetProcAddressProc(GetMockGLProcAddress);
+      SetGLImplementation(kGLImplementationMockGL);
       InitializeGLBindingsGL();
       break;
-
+    }
     default:
       return false;
   }
 
 
   return true;
-}
-
-GLImplementation GetGLImplementation() {
-  return g_gl_implementation;
-}
-
-void* GetGLProcAddress(const char* name) {
-  DCHECK(g_gl_implementation != kGLImplementationNone);
-
-  if (g_get_proc_address) {
-    void* proc = g_get_proc_address(name);
-    if (proc)
-      return proc;
-  }
-
-  if (g_shared_libraries) {
-    for (PointerArray::iterator it = g_shared_libraries->begin();
-         it != g_shared_libraries->end(); ++it) {
-      void* proc = dlsym(*it, name);
-      if (proc)
-        return proc;
-    }
-  }
-
-  return NULL;
 }
 
 }  // namespace gfx

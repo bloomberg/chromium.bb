@@ -4,15 +4,19 @@
 
 // This file implements the ViewGLContext and PbufferGLContext classes.
 
-#include "app/x11_util.h"
-#include "base/logging.h"
-#include "base/scoped_ptr.h"
-#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context.h"
+
+#include <GL/osmesa.h>
+
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context_egl.h"
 #include "app/gfx/gl/gl_context_osmesa.h"
 #include "app/gfx/gl/gl_context_stub.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "app/x11_util.h"
+#include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
 
 namespace gfx {
 
@@ -45,6 +49,41 @@ class ViewGLContext : public GLContext {
   GLContextHandle context_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewGLContext);
+};
+
+// This class is a wrapper around a GL context that uses OSMesa to render
+// to an offscreen buffer and then blits it to a window.
+class OSMesaViewGLContext : public GLContext {
+ public:
+  explicit OSMesaViewGLContext(gfx::PluginWindowHandle window)
+      : window_graphics_context_(0),
+        window_(window),
+        pixmap_graphics_context_(0),
+        pixmap_(0) {
+    DCHECK(window);
+  }
+
+  // Initializes the GL context.
+  bool Initialize();
+
+  virtual void Destroy();
+  virtual bool MakeCurrent();
+  virtual bool IsCurrent();
+  virtual bool IsOffscreen();
+  virtual void SwapBuffers();
+  virtual gfx::Size GetSize();
+  virtual void* GetHandle();
+
+ private:
+  bool UpdateSize();
+
+  GC window_graphics_context_;
+  gfx::PluginWindowHandle window_;
+  GC pixmap_graphics_context_;
+  Pixmap pixmap_;
+  OSMesaGLContext osmesa_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(OSMesaViewGLContext);
 };
 
 // This class is a wrapper around a GL context used for offscreen rendering.
@@ -113,19 +152,21 @@ class ScopedPtrXFree {
   }
 };
 
-static bool InitializeOneOff() {
+bool GLContext::InitializeOneOff() {
   static bool initialized = false;
   if (initialized)
     return true;
 
-  // Initialize the GL bindings if they haven't already been initialized. If
-  // the GPU unit tests are running, the mock GL implementation will already
-  // have been initialized.
-  if (!InitializeGLBindings(kGLImplementationEGLGLES2)) {
-    if (!InitializeGLBindings(kGLImplementationDesktopGL)) {
-      LOG(ERROR) << "Could not initialize GL.";
-      return false;
-    }
+  static const GLImplementation kAllowedGLImplementations[] = {
+    kGLImplementationEGLGLES2,
+    kGLImplementationDesktopGL,
+    kGLImplementationOSMesaGL
+  };
+
+  if (!InitializeBestGLBindings(
+           kAllowedGLImplementations,
+           kAllowedGLImplementations + arraysize(kAllowedGLImplementations))) {
+    return false;
   }
 
   // Only check the GLX version if we are in fact using GLX. We might actually
@@ -244,11 +285,153 @@ void* ViewGLContext::GetHandle() {
   return context_;
 }
 
+bool OSMesaViewGLContext::Initialize() {
+  if (!osmesa_context_.Initialize(OSMESA_BGRA, NULL)) {
+    Destroy();
+    return false;
+  }
+
+  window_graphics_context_ = XCreateGC(x11_util::GetXDisplay(),
+                                       window_,
+                                       0,
+                                       NULL);
+  if (!window_graphics_context_) {
+    LOG(ERROR) << "XCreateGC failed.";
+    Destroy();
+    return false;
+  }
+
+  UpdateSize();
+
+  return true;
+}
+
+void OSMesaViewGLContext::Destroy() {
+  osmesa_context_.Destroy();
+
+  Display* display = x11_util::GetXDisplay();
+
+  if (pixmap_graphics_context_) {
+    XFreeGC(display, pixmap_graphics_context_);
+    pixmap_graphics_context_ = NULL;
+  }
+
+  if (pixmap_) {
+    XFreePixmap(display, pixmap_);
+    pixmap_ = NULL;
+  }
+
+  if (window_graphics_context_) {
+    XFreeGC(display, window_graphics_context_);
+    window_graphics_context_ = NULL;
+  }
+}
+
+bool OSMesaViewGLContext::MakeCurrent() {
+  // TODO(apatrick): This is a bit of a hack. The window might have had zero
+  // size when the context was initialized. Assume it has a valid size when
+  // MakeCurrent is called and resize the back buffer if necessary.
+  UpdateSize();
+  return osmesa_context_.MakeCurrent();
+}
+
+bool OSMesaViewGLContext::IsCurrent() {
+  return osmesa_context_.IsCurrent();
+}
+
+bool OSMesaViewGLContext::IsOffscreen() {
+  return false;
+}
+
+void OSMesaViewGLContext::SwapBuffers() {
+  // Update the size before blitting so that the blit size is exactly the same
+  // as the window.
+  if (!UpdateSize())
+    return;
+
+  gfx::Size size = osmesa_context_.GetSize();
+
+  Display* display = x11_util::GetXDisplay();
+
+  // Copy the frame into the pixmap.
+  XWindowAttributes attributes;
+  XGetWindowAttributes(display, window_, &attributes);
+  x11_util::PutARGBImage(display,
+                         attributes.visual,
+                         attributes.depth,
+                         pixmap_,
+                         pixmap_graphics_context_,
+                         static_cast<const uint8*>(osmesa_context_.buffer()),
+                         size.width(),
+                         size.height());
+
+  // Copy the pixmap to the window.
+  XCopyArea(display,
+            pixmap_,
+            window_,
+            window_graphics_context_,
+            0, 0,
+            size.width(), size.height(),
+            0, 0);
+}
+
+gfx::Size OSMesaViewGLContext::GetSize() {
+  return osmesa_context_.GetSize();
+}
+
+void* OSMesaViewGLContext::GetHandle() {
+  return osmesa_context_.GetHandle();
+}
+
+bool OSMesaViewGLContext::UpdateSize() {
+  // Get the window size.
+  XWindowAttributes attributes;
+  Display* display = x11_util::GetXDisplay();
+  XGetWindowAttributes(display, window_, &attributes);
+  gfx::Size window_size = gfx::Size(std::max(1, attributes.width),
+                                    std::max(1, attributes.height));
+
+  // Early out if the size has not changed.
+  gfx::Size osmesa_size = osmesa_context_.GetSize();
+  if (pixmap_graphics_context_ && pixmap_ && window_size == osmesa_size)
+    return true;
+
+  // Change osmesa surface size to that of window.
+  osmesa_context_.Resize(window_size);
+
+  // Destroy the previous pixmap and graphics context.
+  if (pixmap_graphics_context_) {
+    XFreeGC(display, pixmap_graphics_context_);
+    pixmap_graphics_context_ = NULL;
+  }
+  if (pixmap_) {
+    XFreePixmap(display, pixmap_);
+    pixmap_ = NULL;
+  }
+
+  // Recreate a pixmap to hold the frame.
+  pixmap_ = XCreatePixmap(display,
+                          window_,
+                          window_size.width(),
+                          window_size.height(),
+                          attributes.depth);
+  if (!pixmap_) {
+    LOG(ERROR) << "XCreatePixmap failed.";
+    return false;
+  }
+
+  // Recreate a graphics context for the pixmap.
+  pixmap_graphics_context_ = XCreateGC(display, pixmap_, 0, NULL);
+  if (!pixmap_graphics_context_) {
+    LOG(ERROR) << "XCreateGC failed";
+    return false;
+  }
+
+  return true;
+}
+
 GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
                                           bool multisampled) {
-  if (!InitializeOneOff())
-    return NULL;
-
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL: {
       scoped_ptr<ViewGLContext> context(new ViewGLContext(window));
@@ -261,6 +444,14 @@ GLContext* GLContext::CreateViewGLContext(gfx::PluginWindowHandle window,
     case kGLImplementationEGLGLES2: {
       scoped_ptr<NativeViewEGLContext> context(
           new NativeViewEGLContext(reinterpret_cast<void *>(window)));
+      if (!context->Initialize())
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationOSMesaGL: {
+      scoped_ptr<OSMesaViewGLContext> context(new OSMesaViewGLContext(window));
+
       if (!context->Initialize())
         return NULL;
 
@@ -514,9 +705,6 @@ void* PixmapGLContext::GetHandle() {
 }
 
 GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
-  if (!InitializeOneOff())
-    return NULL;
-
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL: {
       scoped_ptr<PbufferGLContext> context(new PbufferGLContext);
@@ -533,6 +721,13 @@ GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
       scoped_ptr<SecondaryEGLContext> context(
           new SecondaryEGLContext());
       if (!context->Initialize(shared_context))
+        return NULL;
+
+      return context.release();
+    }
+    case kGLImplementationOSMesaGL: {
+      scoped_ptr<OSMesaGLContext> context(new OSMesaGLContext);
+      if (!context->Initialize(OSMESA_RGBA, shared_context))
         return NULL;
 
       return context.release();

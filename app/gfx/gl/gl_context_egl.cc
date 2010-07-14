@@ -21,7 +21,9 @@ namespace {
 EGLDisplay g_display;
 EGLConfig g_config;
 
-bool InitializeOneOff() {
+}  // namespace anonymous
+
+bool BaseEGLContext::InitializeOneOff() {
   static bool initialized = false;
   if (initialized)
     return true;
@@ -81,7 +83,6 @@ bool InitializeOneOff() {
   initialized = true;
   return true;
 }
-}  // namespace anonymous
 
 NativeViewEGLContext::NativeViewEGLContext(void* window)
     : window_(window),
@@ -95,9 +96,6 @@ NativeViewEGLContext::~NativeViewEGLContext() {
 
 bool NativeViewEGLContext::Initialize() {
   DCHECK(!context_);
-
-  if (!InitializeOneOff())
-    return NULL;
 
   // Create a surface for the native window.
   EGLNativeWindowType native_window =
@@ -197,9 +195,6 @@ SecondaryEGLContext::~SecondaryEGLContext() {
 
 bool SecondaryEGLContext::Initialize(GLContext* shared_context) {
   DCHECK(!context_);
-
-  if (!InitializeOneOff())
-    return NULL;
 
   static const EGLint kContextAttributes[] = {
     EGL_CONTEXT_CLIENT_VERSION, 2,

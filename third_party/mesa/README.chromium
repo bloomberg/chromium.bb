@@ -30,3 +30,8 @@ Later modifications:
 #if (defined(__BEOS__) && defined(__POWERPC__)) || defined(__QUICKDRAW__)
 #  define PRAGMA_EXPORT_SUPPORTED		1
 #endif
+
+- Commented out this in osmesa.h:
+#if defined(__BEOS__) || defined(__QUICKDRAW__)
+#pragma export on
+#endif
