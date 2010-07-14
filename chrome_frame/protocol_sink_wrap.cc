@@ -183,6 +183,38 @@ bool IsTextHtml(const wchar_t* status_text) {
   return is_text_html;
 }
 
+// Returns:
+// CHROME: if suggested mime type is "text/html" and at least one of the
+//         following is true: 1) X-UA-Compatible tag is in HTTP headers.
+//                            2) Url is listed in OptInURLs registry key.
+// OTHER: if suggested mime type is not text/html.
+// UNDETERMINED: if suggested mime type is text/html.
+RendererType DetermineRendererTypeFromMetaData(
+    const wchar_t* suggested_mime_type,
+    const std::wstring& url,
+    IWinInetHttpInfo* info) {
+  if (!IsTextHtml(suggested_mime_type)) {
+    return OTHER;
+  }
+
+  if (!url.empty() && IsOptInUrl(url.c_str())) {
+    return CHROME;
+  }
+
+  if (info) {
+    char buffer[32] = "x-ua-compatible";
+    DWORD len = sizeof(buffer);
+    DWORD flags = 0;
+    HRESULT hr = info->QueryInfo(HTTP_QUERY_CUSTOM, buffer, &len, &flags, NULL);
+    if (hr == S_OK && len > 0) {
+      if (StrStrIA(buffer, "chrome=1")) {
+        return CHROME;
+      }
+    }
+  }
+  return UNDETERMINED;
+}
+
 RendererType DetermineRendererType(void* buffer, DWORD size, bool last_chance) {
   RendererType type = UNDETERMINED;
   if (last_chance)
@@ -208,7 +240,7 @@ RendererType DetermineRendererType(void* buffer, DWORD size, bool last_chance) {
 ProtData::ProtData(IInternetProtocol* protocol,
                    InternetProtocol_Read_Fn read_fun, const wchar_t* url)
     : has_suggested_mime_type_(false), has_server_mime_type_(false),
-      report_data_received_(false), buffer_size_(0), buffer_pos_(0),
+      buffer_size_(0), buffer_pos_(0),
       renderer_type_(UNDETERMINED), protocol_(protocol), read_fun_(read_fun),
       url_(url) {
   memset(buffer_, 0, arraysize(buffer_));
@@ -259,7 +291,6 @@ HRESULT ProtData::Read(void* buffer, ULONG size, ULONG* size_read) {
   return read_fun_(protocol_, buffer, size, size_read);
 }
 
-
 HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
                                  ULONG status_code, LPCWSTR status_text) {
   switch (status_code) {
@@ -282,6 +313,27 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
     case BINDSTATUS_MIMETYPEAVAILABLE:
     case BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE:
       SaveSuggestedMimeType(status_text);
+
+      ScopedComPtr<IWinInetHttpInfo> info;
+      info.QueryFrom(delegate);
+      renderer_type_ = DetermineRendererTypeFromMetaData(suggested_mime_type_,
+                                                         url_, info);
+
+      if (renderer_type_ == CHROME) {
+        // Suggested mime type is "text/html" and we either have OptInUrl
+        // or X-UA-Compatible HTTP headers.
+        DLOG(INFO) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
+                   << kChromeMimeType;
+        delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
+      } else if (renderer_type_ == OTHER) {
+        // Suggested mime type is not "text/html" - we are not interested in
+        // this request anymore.
+        FireSugestedMimeType(delegate);
+      } else {
+        // Suggested mime type is "text/html"; We will try to sniff the
+        // HTML content in ReportData.
+        DCHECK_EQ(UNDETERMINED, renderer_type_);
+      }
       return S_OK;
   }
 
@@ -292,30 +344,6 @@ HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
                               DWORD flags, ULONG progress, ULONG max_progress) {
   if (renderer_type_ != UNDETERMINED) {
     return delegate->ReportData(flags, progress, max_progress);
-  }
-
-  // Do these checks only once.
-  if (!report_data_received_) {
-    report_data_received_ = true;
-
-    DLOG_IF(INFO, (flags & BSCF_FIRSTDATANOTIFICATION) == 0) <<
-      "BUGBUG: BSCF_FIRSTDATANOTIFICATION is not set properly!";
-
-
-    // We check here, instead in ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE)
-    // to be safe when following multiple redirects.?
-    if (!IsTextHtml(suggested_mime_type_)) {
-      renderer_type_ = OTHER;
-      FireSugestedMimeType(delegate);
-      return delegate->ReportData(flags, progress, max_progress);
-    }
-
-    if (!url_.empty() && IsOptInUrl(url_.c_str())) {
-      // TODO(stoyan): We may attempt to remove ourselves from the bind context.
-      renderer_type_ = CHROME;
-      delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
-      return delegate->ReportData(flags, progress, max_progress);
-    }
   }
 
   HRESULT hr = FillBuffer();
@@ -342,7 +370,8 @@ HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
     FireSugestedMimeType(delegate);
   }
 
-  // This is the first data notification we forward.
+  // This is the first data notification we forward, since up to now we hold
+  // the content received.
   flags |= BSCF_FIRSTDATANOTIFICATION;
 
   if (hr == S_FALSE) {

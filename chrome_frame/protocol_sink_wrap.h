@@ -134,8 +134,6 @@ class ProtData : public base::RefCounted<ProtData> {
   // BINDSTATUS_SERVER_MIMETYPEAVAILABLE received, so we shall fire one.
   bool has_server_mime_type_;
 
-  // Did we received ReportData()
-  bool report_data_received_;
   RendererType renderer_type_;
 
   // Buffer for accumulated data including 1 extra for NULL-terminator

@@ -173,17 +173,21 @@ HRESULT HttpNegotiatePatch::PatchHttpNegotiate(IUnknown* to_patch) {
         << StringPrintf("IHttpNegotiate not supported 0x%08X", hr);
   }
 
-  ScopedComPtr<IBindStatusCallback> bscb;
-  hr = bscb.QueryFrom(to_patch);
+  // CTransaction patch supports sniffing HTTP headers, so no need of
+  // sniffing inside HttpNegotiatePatch::ReportProgress.
+  if (GetPatchMethod() != PATCH_METHOD_INET_PROTOCOL) {
+    ScopedComPtr<IBindStatusCallback> bscb;
+    hr = bscb.QueryFrom(to_patch);
 
-  if (bscb) {
-    hr = vtable_patch::PatchInterfaceMethods(bscb,
-                                             IBindStatusCallback_PatchInfo);
-    DLOG_IF(ERROR, FAILED(hr))
-        << StringPrintf("BindStatusCallback patch failed 0x%08X", hr);
-  } else {
-    DLOG(WARNING) << StringPrintf("IBindStatusCallback not supported 0x%08X",
-                                  hr);
+    if (bscb) {
+      hr = vtable_patch::PatchInterfaceMethods(bscb,
+                                               IBindStatusCallback_PatchInfo);
+      DLOG_IF(ERROR, FAILED(hr))
+          << StringPrintf("BindStatusCallback patch failed 0x%08X", hr);
+    } else {
+      DLOG(WARNING) << StringPrintf("IBindStatusCallback not supported 0x%08X",
+                                    hr);
+    }
   }
   return hr;
 }
