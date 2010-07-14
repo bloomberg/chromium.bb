@@ -80,10 +80,18 @@ class PrefValueStore {
   // or recommended this function should have no effect.
   void RemoveUserPrefValue(const wchar_t* name);
 
-  // Returns true if the preference with the given name is managed.
-  // A preference is managed if a managed value is available for that
-  // preference.
-  bool PrefValueIsManaged(const wchar_t* name);
+  // These methods return true if a preference with the given name is in the
+  // indicated pref store, even if that value is currently being overridden by
+  // a higher-priority source.
+  bool PrefValueInManagedStore(const wchar_t* name);
+  bool PrefValueInExtensionStore(const wchar_t* name);
+  bool PrefValueInUserStore(const wchar_t* name);
+
+  // These methods return true if a preference with the given name is actually
+  // being controlled by the indicated pref store and not being overridden by
+  // a higher-priority source.
+  bool PrefValueFromExtensionStore(const wchar_t* name);
+  bool PrefValueFromUserStore(const wchar_t* name);
 
  private:
   // PrefStores must be listed here in order from highest to lowest priority.
@@ -96,6 +104,10 @@ class PrefValueStore {
   };
 
   scoped_ptr<PrefStore> pref_stores_[PREF_STORE_TYPE_MAX + 1];
+
+  bool PrefValueInStore(const wchar_t* name, PrefStoreType type);
+
+  bool PrefValueFromStore(const wchar_t* name, PrefStoreType type);
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };

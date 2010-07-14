@@ -837,6 +837,21 @@ bool PrefService::Preference::IsDefaultValue() const {
 }
 
 bool PrefService::Preference::IsManaged() const {
-  return pref_value_store_->PrefValueIsManaged(name_.c_str());
+  return pref_value_store_->PrefValueInManagedStore(name_.c_str());
 }
 
+bool PrefService::Preference::HasExtensionSetting() const {
+  return pref_value_store_->PrefValueInExtensionStore(name_.c_str());
+}
+
+bool PrefService::Preference::HasUserSetting() const {
+  return pref_value_store_->PrefValueInUserStore(name_.c_str());
+}
+
+bool PrefService::Preference::IsExtensionControlled() const {
+  return pref_value_store_->PrefValueFromExtensionStore(name_.c_str());
+}
+
+bool PrefService::Preference::IsUserControlled() const {
+  return pref_value_store_->PrefValueFromUserStore(name_.c_str());
+}

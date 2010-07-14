@@ -52,9 +52,26 @@ class PrefService : public NonThreadSafe {
     // Returns true if the current value matches the default value.
     bool IsDefaultValue() const;
 
-    // Returns true if the Preference is managed, i.e. not changeable
-    // by the user.
+    // Returns true if the Preference is managed, i.e. set by an admin policy.
+    // Since managed prefs have the highest priority, this also indicates
+    // whether the pref is actually being controlled by the policy setting.
     bool IsManaged() const;
+
+    // Returns true if the Preference has a value set by an extension, even if
+    // that value is being overridden by a higher-priority source.
+    bool HasExtensionSetting() const;
+
+    // Returns true if the Preference has a user setting, even if that value is
+    // being overridden by a higher-priority source.
+    bool HasUserSetting() const;
+
+    // Returns true if the Preference value is currently being controlled by an
+    // extension, and not by any higher-priority source.
+    bool IsExtensionControlled() const;
+
+    // Returns true if the Preference value is currently being controlled by a
+    // user setting, and not by any higher-priority source.
+    bool IsUserControlled() const;
 
    private:
     friend class PrefService;

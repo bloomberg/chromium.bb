@@ -18,7 +18,6 @@ using testing::Mock;
 namespace prefs {
   const wchar_t kCurrentThemeID[] = L"extensions.theme.id";
   const wchar_t kDeleteCache[] = L"browser.clear_data.cache";
-  const wchar_t kExtensionPref[] = L"extension.pref";
   const wchar_t kHomepage[] = L"homepage";
   const wchar_t kMaxTabs[] = L"tabs.max_tabs";
   const wchar_t kMissingPref[] = L"this.pref.does_not_exist";
@@ -237,7 +236,7 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   Value* actual_value = NULL;
 
   // Test that enforced values can not be set.
-  ASSERT_TRUE(pref_value_store_->PrefValueIsManaged(prefs::kHomepage));
+  ASSERT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomepage));
   // The Ownership is tranfered to |PrefValueStore|.
   new_value = Value::CreateStringValue(L"http://www.youtube.com");
   pref_value_store_->SetUserPrefValue(prefs::kHomepage, new_value);
@@ -248,7 +247,7 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   ASSERT_EQ(enforced_pref::kHomepageValue, value_str);
 
   // User preferences values can be set
-  ASSERT_FALSE(pref_value_store_->PrefValueIsManaged(prefs::kMaxTabs));
+  ASSERT_FALSE(pref_value_store_->PrefValueInManagedStore(prefs::kMaxTabs));
   actual_value = NULL;
   pref_value_store_->GetValue(prefs::kMaxTabs, &actual_value);
   int int_value;
@@ -284,21 +283,91 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   ASSERT_TRUE(expected_list_value->Equals(actual_value));
 }
 
-TEST_F(PrefValueStoreTest, PrefValueIsManaged) {
+TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
   // Test an enforced preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
-  EXPECT_TRUE(pref_value_store_->PrefValueIsManaged(prefs::kHomepage));
+  EXPECT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomepage));
+
+  // Test an extension preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kCurrentThemeID));
 
   // Test a user preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
-  EXPECT_FALSE(pref_value_store_->PrefValueIsManaged(prefs::kMaxTabs));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(prefs::kMaxTabs));
 
   // Test a preference from the recommended pref store.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueIsManaged(prefs::kRecommendedPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kRecommendedPref));
 
   // Test a preference for which the PrefValueStore does not contain a value.
   ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
-  EXPECT_FALSE(pref_value_store_->PrefValueIsManaged(prefs::kMissingPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(prefs::kMissingPref));
 }
 
+TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
+  // Test an enforced preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
+  EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(prefs::kHomepage));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kHomepage));
+
+  // Test an extension preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
+  EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kCurrentThemeID));
+  EXPECT_TRUE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kCurrentThemeID));
+
+  // Test a user preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
+  EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(prefs::kMaxTabs));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(prefs::kMaxTabs));
+
+  // Test a preference from the recommended pref store.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kRecommendedPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kRecommendedPref));
+
+  // Test a preference for which the PrefValueStore does not contain a value.
+  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kMissingPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kMissingPref));
+}
+
+TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
+  // Test an enforced preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
+  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(prefs::kHomepage));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kHomepage));
+
+  // Test an extension preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
+  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
+      prefs::kCurrentThemeID));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kCurrentThemeID));
+
+  // Test a user preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
+  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(prefs::kMaxTabs));
+  EXPECT_TRUE(pref_value_store_->PrefValueFromUserStore(prefs::kMaxTabs));
+
+  // Test a preference from the recommended pref store.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(
+      prefs::kRecommendedPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kRecommendedPref));
+
+  // Test a preference for which the PrefValueStore does not contain a value.
+  ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kMissingPref));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kMissingPref));
+}

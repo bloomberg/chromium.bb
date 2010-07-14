@@ -68,18 +68,6 @@ bool PrefValueStore::HasPrefPath(const wchar_t* path) const {
   return rv;
 }
 
-// The value of a Preference is managed if the PrefStore for managed
-// preferences contains a value for the given preference |name|.
-bool PrefValueStore::PrefValueIsManaged(const wchar_t* name) {
-  if (pref_stores_[MANAGED].get() == NULL) {
-    // No managed PreferenceStore set, hence there are no managed
-    // preferences.
-    return false;
-  }
-  Value* tmp_value;
-  return pref_stores_[MANAGED]->prefs()->Get(name, &tmp_value);
-}
-
 // Note the |DictionaryValue| referenced by the |PrefStore| user_prefs_
 // (returned by the method prefs()) takes the ownership of the Value referenced
 // by in_value.
@@ -95,4 +83,43 @@ void PrefValueStore::RemoveUserPrefValue(const wchar_t* name) {
   if (pref_stores_[USER].get()) {
     pref_stores_[USER]->prefs()->Remove(name, NULL);
   }
+}
+
+bool PrefValueStore::PrefValueInManagedStore(const wchar_t* name) {
+  return PrefValueInStore(name, MANAGED);
+}
+
+bool PrefValueStore::PrefValueInExtensionStore(const wchar_t* name) {
+  return PrefValueInStore(name, EXTENSION);
+}
+
+bool PrefValueStore::PrefValueInUserStore(const wchar_t* name) {
+  return PrefValueInStore(name, USER);
+}
+
+bool PrefValueStore::PrefValueFromExtensionStore(const wchar_t* name) {
+  return PrefValueFromStore(name, EXTENSION);
+}
+
+bool PrefValueStore::PrefValueFromUserStore(const wchar_t* name) {
+  return PrefValueFromStore(name, USER);
+}
+
+bool PrefValueStore::PrefValueInStore(const wchar_t* name, PrefStoreType type) {
+  if (pref_stores_[type].get() == NULL) {
+    // No store of that type set, so this pref can't be in it.
+    return false;
+  }
+  Value* tmp_value;
+  return pref_stores_[type]->prefs()->Get(name, &tmp_value);
+}
+
+bool PrefValueStore::PrefValueFromStore(const wchar_t* name,
+                                        PrefStoreType type) {
+  // No need to look in PrefStores with lower priority than the one we want.
+  for (int i = 0; i <= type; ++i) {
+    if (PrefValueInStore(name, static_cast<PrefStoreType>(i)))
+      return (i == type);
+  }
+  return false;
 }
