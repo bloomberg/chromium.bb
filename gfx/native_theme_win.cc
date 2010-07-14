@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_handle.h"
+#include "base/win_util.h"
 #include "gfx/gdi_util.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
@@ -499,6 +500,12 @@ static int ComputeAnimationProgress(int frame_width,
   return static_cast<int>(animation_width * ratio) - object_width;
 }
 
+static RECT InsetRect(const RECT* rect, int size) {
+  gfx::Rect result(*rect);
+  result.Inset(size, size);
+  return result.ToRECT();
+}
+
 HRESULT NativeTheme::PaintProgressBar(HDC hdc,
                                       RECT* bar_rect,
                                       RECT* value_rect,
@@ -511,35 +518,74 @@ HRESULT NativeTheme::PaintProgressBar(HDC hdc,
   const int kDeteminateOverlayPixelsPerSecond = 300;
   const int kDeteminateOverlayWidth = 120;
   const int kIndeterminateOverlayPixelsPerSecond =  175;
-  const int kIndeterminateOverlayWidth = 120;
+  const int kVistaIndeterminateOverlayWidth = 120;
+  const int kXPIndeterminateOverlayWidth = 55;
+  // The thickness of the bar frame inside |value_rect|
+  const int kXPBarPadding = 3;
 
+  bool pre_vista = win_util::GetWinVersion() < win_util::WINVERSION_VISTA;
   HANDLE handle = GetThemeHandle(PROGRESS);
-  if (handle && draw_theme_) {
+  if (handle && draw_theme_ && draw_theme_ex_) {
     draw_theme_(handle, hdc, PP_BAR, 0, bar_rect, NULL);
 
     int bar_width = bar_rect->right - bar_rect->left;
     if (determinate) {
-      draw_theme_(handle, hdc, PP_FILL, 0, value_rect, bar_rect);
-      int dx = ComputeAnimationProgress(bar_width,
-                                        kDeteminateOverlayWidth,
-                                        kDeteminateOverlayPixelsPerSecond,
-                                        animated_seconds);
-      RECT overlay_rect = *value_rect;
-      overlay_rect.left += dx;
-      overlay_rect.right = overlay_rect.left + kDeteminateOverlayWidth;
-      draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, value_rect);
+      // TODO(morrita): this RTL guess can be wrong.
+      // We should pass the direction from WebKit side.
+      bool is_rtl = (bar_rect->right == value_rect->right &&
+                     bar_rect->left != value_rect->left);
+      // We should care the direction here because PP_CNUNK painting
+      // is asymmetric.
+      DTBGOPTS value_draw_options;
+      value_draw_options.dwSize = sizeof(DTBGOPTS);
+      value_draw_options.dwFlags = is_rtl ? DTBG_MIRRORDC : 0;
+      value_draw_options.rcClip = *bar_rect;
+
+      if (pre_vista) {
+        // On XP, progress bar is chunk-style and has no glossy effect.
+        // We need to shrink destination rect to fit the part inside the bar
+        // with an appropriate margin.
+        RECT shrunk_value_rect = InsetRect(value_rect, kXPBarPadding);
+        draw_theme_ex_(handle, hdc, PP_CHUNK, 0,
+                       &shrunk_value_rect, &value_draw_options);
+      } else  {
+        // On Vista or later, the progress bar part has a
+        // single-block value part. It also has glossy effect.
+        // And the value part has exactly same height as the bar part
+        // so we don't need to shrink the rect.
+        draw_theme_ex_(handle, hdc, PP_FILL, 0,
+                       value_rect, &value_draw_options);
+
+        int dx = ComputeAnimationProgress(bar_width,
+                                          kDeteminateOverlayWidth,
+                                          kDeteminateOverlayPixelsPerSecond,
+                                          animated_seconds);
+        RECT overlay_rect = *value_rect;
+        overlay_rect.left += dx;
+        overlay_rect.right = overlay_rect.left + kDeteminateOverlayWidth;
+        draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, value_rect);
+      }
     } else {
-      // A glossy overlay for determinate progress bar as small pause
-      // during each interval. we emulate it using a margin value.
+      // A glossy overlay for indeterminate progress bar has small pause
+      // after each animation. We emulate this by adding an invisible margin
+      // the animation has to traverse.
       int width_with_margin = bar_width + kIndeterminateOverlayPixelsPerSecond;
+      int overlay_width = pre_vista ?
+          kXPIndeterminateOverlayWidth : kVistaIndeterminateOverlayWidth;
       int dx = ComputeAnimationProgress(width_with_margin,
-                                        kIndeterminateOverlayWidth,
+                                        overlay_width,
                                         kIndeterminateOverlayPixelsPerSecond,
                                         animated_seconds);
       RECT overlay_rect = *bar_rect;
       overlay_rect.left += dx;
-      overlay_rect.right = overlay_rect.left + kIndeterminateOverlayWidth;
-      draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, bar_rect);
+      overlay_rect.right = overlay_rect.left + overlay_width;
+      if (pre_vista) {
+        RECT shrunk_rect = InsetRect(&overlay_rect, kXPBarPadding);
+        RECT shrunk_bar_rect = InsetRect(bar_rect, kXPBarPadding);
+        draw_theme_(handle, hdc, PP_CHUNK, 0, &shrunk_rect, &shrunk_bar_rect);
+      } else {
+        draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, bar_rect);
+      }
     }
 
     return S_OK;
