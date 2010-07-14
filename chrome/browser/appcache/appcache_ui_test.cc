@@ -34,6 +34,7 @@ TEST_F(AppCacheUITest, FLAKY_AppCacheLayoutTests) {
       "navigating-away-while-cache-attempt-in-progress.html",
       "offline-access.html",
       "online-whitelist.html",
+      "progress-counter.html",
       "reload.html",
       "remove-cache.html",
       "resource-redirect-2.html",
