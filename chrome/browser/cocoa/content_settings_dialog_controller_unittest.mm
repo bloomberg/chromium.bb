@@ -55,10 +55,6 @@ TEST_F(ContentSettingsDialogControllerTest, CookieSetting) {
   EXPECT_EQ([controller_ cookieSettingIndex], kCookieEnabledIndex);
 
   settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
-                                         CONTENT_SETTING_ASK);
-  EXPECT_EQ([controller_ cookieSettingIndex], kCookieAskIndex);
-
-  settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                          CONTENT_SETTING_BLOCK);
   EXPECT_EQ([controller_ cookieSettingIndex], kCookieDisabledIndex);
 
@@ -68,11 +64,6 @@ TEST_F(ContentSettingsDialogControllerTest, CookieSetting) {
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
-
-  [controller_ setCookieSettingIndex:kCookieAskIndex];
-  setting =
-      settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES);
-  EXPECT_EQ(setting, CONTENT_SETTING_ASK);
 
   [controller_ setCookieSettingIndex:kCookieDisabledIndex];
   setting =

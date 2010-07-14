@@ -234,7 +234,6 @@ class PrefObserverDisabler {
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
   switch (value) {
     case kCookieEnabledIndex:  setting = CONTENT_SETTING_ALLOW; break;
-    case kCookieAskIndex:      setting = CONTENT_SETTING_ASK;   break;
     case kCookieDisabledIndex: setting = CONTENT_SETTING_BLOCK; break;
     default:
       NOTREACHED();
@@ -249,9 +248,8 @@ class PrefObserverDisabler {
 - (NSInteger)cookieSettingIndex {
   switch (profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES)) {
-    case CONTENT_SETTING_ALLOW: return kCookieEnabledIndex;
-    case CONTENT_SETTING_ASK:   return kCookieAskIndex;
-    case CONTENT_SETTING_BLOCK: return kCookieDisabledIndex;
+    case CONTENT_SETTING_ALLOW:        return kCookieEnabledIndex;
+    case CONTENT_SETTING_BLOCK:        return kCookieDisabledIndex;
     default:
       NOTREACHED();
       return kCookieEnabledIndex;

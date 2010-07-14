@@ -569,6 +569,9 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
       }
     }
   }
+  // Migrate obsolete cookie prompt mode.
+  if (settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] == CONTENT_SETTING_ASK)
+    settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
 }
 
 void HostContentSettingsMap::ForceDefaultsToBeExplicit() {

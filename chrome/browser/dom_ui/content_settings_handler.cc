@@ -63,8 +63,6 @@ std::string ContentSettingToString(ContentSetting setting) {
   switch (setting) {
     case CONTENT_SETTING_ALLOW:
       return "allow";
-    case CONTENT_SETTING_ASK:
-      return "ask";
     case CONTENT_SETTING_BLOCK:
       return "block";
 
@@ -77,8 +75,6 @@ std::string ContentSettingToString(ContentSetting setting) {
 ContentSetting ContentSettingFromString(const std::string& name) {
   if (name == "allow")
     return CONTENT_SETTING_ALLOW;
-  if (name == "ask")
-    return CONTENT_SETTING_ASK;
   if (name == "block")
     return CONTENT_SETTING_BLOCK;
 
@@ -110,8 +106,6 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_MODIFY_COOKIE_STORING_LABEL));
   localized_strings->SetString(L"cookies_allow",
       l10n_util::GetString(IDS_COOKIES_ALLOW_RADIO));
-  localized_strings->SetString(L"cookies_ask",
-      l10n_util::GetString(IDS_COOKIES_ASK_EVERY_TIME_RADIO));
   localized_strings->SetString(L"cookies_block",
       l10n_util::GetString(IDS_COOKIES_BLOCK_RADIO));
   localized_strings->SetString(L"cookies_block_3rd_party",

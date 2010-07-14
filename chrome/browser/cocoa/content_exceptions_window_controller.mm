@@ -123,15 +123,14 @@ NSString* GetWindowTitle(ContentSettingsType settingsType) {
 
 const CGFloat kButtonBarHeight = 35.0;
 
-// The settings shown in the combobox if showAsk_ is false;
-const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                          CONTENT_SETTING_BLOCK };
+// The settings shown in the combobox if showSession_ is false;
+const ContentSetting kNoSessionSettings[] = { CONTENT_SETTING_ALLOW,
+                                              CONTENT_SETTING_BLOCK };
 
-// The settings shown in the combobox if showAsk_ is true;
-const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                        CONTENT_SETTING_ASK,
-                                        CONTENT_SETTING_SESSION_ONLY,
-                                        CONTENT_SETTING_BLOCK };
+// The settings shown in the combobox if showSession_ is true;
+const ContentSetting kSessionSettings[] = { CONTENT_SETTING_ALLOW,
+                                            CONTENT_SETTING_SESSION_ONLY,
+                                            CONTENT_SETTING_BLOCK };
 
 }  // namespace
 
@@ -168,7 +167,7 @@ static ContentExceptionsWindowController*
     otrSettingsMap_ = otrSettingsMap;
     model_.reset(new ContentExceptionsTableModel(
         settingsMap_, otrSettingsMap_, settingsType_));
-    showAsk_ = settingsType_ == CONTENT_SETTINGS_TYPE_COOKIES;
+    showSession_ = settingsType_ == CONTENT_SETTINGS_TYPE_COOKIES;
     otrAllowed_ = otrSettingsMap != NULL;
     tableObserver_.reset(new UpdatingContentSettingsObserver(self));
     updatesEnabled_ = YES;
@@ -494,7 +493,8 @@ static ContentExceptionsWindowController*
 }
 
 - (size_t)menuItemCount {
-  return showAsk_ ? arraysize(kAskSettings) : arraysize(kNoAskSettings);
+  return showSession_ ?
+      arraysize(kSessionSettings) : arraysize(kNoSessionSettings);
 }
 
 - (NSString*)titleForIndex:(size_t)index {
@@ -503,8 +503,6 @@ static ContentExceptionsWindowController*
       return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_ALLOW_BUTTON);
     case CONTENT_SETTING_BLOCK:
       return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_BLOCK_BUTTON);
-    case CONTENT_SETTING_ASK:
-      return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_ASK_BUTTON);
     case CONTENT_SETTING_SESSION_ONLY:
       return l10n_util::GetNSStringWithFixup(
           IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
@@ -515,7 +513,7 @@ static ContentExceptionsWindowController*
 }
 
 - (ContentSetting)settingForIndex:(size_t)index {
-  return showAsk_ ? kAskSettings[index] : kNoAskSettings[index];
+  return showSession_ ? kSessionSettings[index] : kNoSessionSettings[index];
 }
 
 - (size_t)indexForSetting:(ContentSetting)setting {

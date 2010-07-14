@@ -220,7 +220,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddExistingEditAdd) {
 TEST_F(ContentExceptionsWindowControllerTest, AddExistingDoesNotOverwrite) {
   settingsMap_->SetContentSetting(HostContentSettingsMap::Pattern("myhost"),
                                   CONTENT_SETTINGS_TYPE_COOKIES,
-                                  CONTENT_SETTING_ASK);
+                                  CONTENT_SETTING_SESSION_ONLY);
 
   ContentExceptionsWindowController* controller =
       GetController(CONTENT_SETTINGS_TYPE_COOKIES);
@@ -235,7 +235,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddExistingDoesNotOverwrite) {
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_COOKIES,
                                       &settings);
   EXPECT_EQ(1u, settings.size());
-  EXPECT_EQ(CONTENT_SETTING_ASK, settings[0].second);
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY, settings[0].second);
 }
 
 

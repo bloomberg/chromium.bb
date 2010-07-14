@@ -9,27 +9,27 @@
 
 namespace {
 
-// The settings shown in the combobox if show_ask_ is false;
-const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                          CONTENT_SETTING_BLOCK };
+// The settings shown in the combobox if show_session_ is false;
+const ContentSetting kNoSessionSettings[] = { CONTENT_SETTING_ALLOW,
+                                              CONTENT_SETTING_BLOCK };
 
-// The settings shown in the combobox if show_ask_ is true;
-const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                        CONTENT_SETTING_ASK,
-                                        CONTENT_SETTING_SESSION_ONLY,
-                                        CONTENT_SETTING_BLOCK };
+// The settings shown in the combobox if show_session_ is true;
+const ContentSetting kSessionSettings[] = { CONTENT_SETTING_ALLOW,
+                                            CONTENT_SETTING_SESSION_ONLY,
+                                            CONTENT_SETTING_BLOCK };
 
 }  // namespace
 
-ContentSettingComboModel::ContentSettingComboModel(bool show_ask)
-    : show_ask_(show_ask) {
+ContentSettingComboModel::ContentSettingComboModel(bool show_session)
+    : show_session_(show_session) {
 }
 
 ContentSettingComboModel::~ContentSettingComboModel() {
 }
 
 int ContentSettingComboModel::GetItemCount() {
-  return show_ask_ ? arraysize(kAskSettings) : arraysize(kNoAskSettings);
+  return show_session_ ?
+      arraysize(kSessionSettings) : arraysize(kNoSessionSettings);
 }
 
 std::wstring ContentSettingComboModel::GetItemAt(int index) {
@@ -38,8 +38,6 @@ std::wstring ContentSettingComboModel::GetItemAt(int index) {
       return l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON);
     case CONTENT_SETTING_BLOCK:
       return l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON);
-    case CONTENT_SETTING_ASK:
-      return l10n_util::GetString(IDS_EXCEPTIONS_ASK_BUTTON);
     case CONTENT_SETTING_SESSION_ONLY:
       return l10n_util::GetString(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
     default:
@@ -49,7 +47,7 @@ std::wstring ContentSettingComboModel::GetItemAt(int index) {
 }
 
 ContentSetting ContentSettingComboModel::SettingForIndex(int index) {
-  return show_ask_ ? kAskSettings[index] : kNoAskSettings[index];
+  return show_session_ ? kSessionSettings[index] : kNoSessionSettings[index];
 }
 
 int ContentSettingComboModel::IndexForSetting(ContentSetting setting) {

@@ -31,8 +31,8 @@ class UpdatingContentSettingsObserver;
   HostContentSettingsMap* otrSettingsMap_;  // weak
   scoped_ptr<ContentExceptionsTableModel> model_;
 
-  // Is set if "Ask" should be a valid option in the "action" popup.
-  BOOL showAsk_;
+  // Is set if "Session" should be a valid option in the "action" popup.
+  BOOL showSession_;
 
   // Is set if adding and editing exceptions for the current OTR session should
   // be allowed.

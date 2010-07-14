@@ -88,7 +88,7 @@ void ContentFilterPageView::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   static const int kAskIDs[] = {
-    IDS_COOKIES_ASK_EVERY_TIME_RADIO,
+    0,
     0,
     0,
     0,

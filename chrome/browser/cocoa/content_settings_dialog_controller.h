@@ -16,8 +16,7 @@ const NSInteger kContentSettingsDisabledIndex = 1;
 
 // Indices of the various cookie settings in the cookie radio group.
 const NSInteger kCookieEnabledIndex = 0;
-const NSInteger kCookieAskIndex = 1;
-const NSInteger kCookieDisabledIndex = 2;
+const NSInteger kCookieDisabledIndex = 1;
 
 // Indices of the various geolocation settings in the geolocation radio group.
 const NSInteger kGeolocationEnabledIndex = 0;

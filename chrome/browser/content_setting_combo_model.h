@@ -12,7 +12,7 @@
 
 class ContentSettingComboModel : public ComboboxModel {
  public:
-  explicit ContentSettingComboModel(bool show_ask);
+  explicit ContentSettingComboModel(bool show_session);
   virtual ~ContentSettingComboModel();
 
   virtual int GetItemCount();
@@ -24,7 +24,7 @@ class ContentSettingComboModel : public ComboboxModel {
   int IndexForSetting(ContentSetting);
 
  private:
-  const bool show_ask_;
+  const bool show_session_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingComboModel);
 };
