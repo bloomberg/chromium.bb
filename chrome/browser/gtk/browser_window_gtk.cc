@@ -333,6 +333,10 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        maximize_after_show_(false),
        suppress_window_raise_(false),
        accel_group_(NULL) {
+  // We register first so that other views like the toolbar can use the
+  // is_active() function in their ActiveWindowChanged() handlers.
+  ActiveWindowWatcherX::AddObserver(this);
+
   use_custom_frame_pref_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
 
@@ -374,8 +378,6 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
 
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
-
-  ActiveWindowWatcherX::AddObserver(this);
 }
 
 BrowserWindowGtk::~BrowserWindowGtk() {

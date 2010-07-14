@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #include <string>
 
+#include "app/active_window_watcher_x.h"
 #include "app/gtk_signal.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/throb_animation.h"
@@ -44,7 +45,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
                           public MenuBarHelper::Delegate,
-                          public AnimationDelegate {
+                          public AnimationDelegate,
+                          public ActiveWindowWatcherX::Observer {
  public:
   explicit BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
   virtual ~BrowserToolbarGtk();
@@ -126,6 +128,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual void AnimationProgressed(const Animation* animation);
   virtual void AnimationCanceled(const Animation* animation);
 
+  // ActiveWindowWatcher::Observer implementation ------------------------------
+  virtual void ActiveWindowChanged(GdkWindow* active_window);
+
  private:
   // Builds a toolbar button with all the properties set.
   // |spacing| is the width of padding (in pixels) on the left and right of the
@@ -156,6 +161,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // was taken (the roundedness was already correct), true otherwise.
   bool UpdateRoundedness();
 
+  // Calculates whether the upgrade notification dot should be faded at all
+  // (as opposed to solid).
+  bool UpgradeAnimationIsFaded();
+
   // Gtk callback for the "expose-event" signal.
   // The alignment contains the toolbar.
   CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnAlignmentExpose,
@@ -185,8 +194,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Updates preference-dependent state.
   void NotifyPrefChanged(const std::wstring* pref);
 
-  // Start the upgrade notification animation.
-  void ShowUpgradeReminder();
+  // Start the upgrade notification animation if we have detected an upgrade
+  // and the current toolbar is focused.
+  void MaybeShowUpgradeReminder();
 
   static void SetSyncMenuLabel(GtkWidget* widget, gpointer userdata);
 
@@ -267,6 +277,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   scoped_ptr<GtkSignalRegistrar> drop_handler_;
 
   ThrobAnimation upgrade_reminder_animation_;
+
+  // We have already shown and dismissed the upgrade reminder animation.
+  bool upgrade_reminder_canceled_;
 
   // When collapsed, the toolbar is just a tiny strip, no controls are visible.
   bool collapsed_;

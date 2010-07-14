@@ -95,6 +95,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       profile_(NULL),
       menu_bar_helper_(this),
       upgrade_reminder_animation_(this),
+      upgrade_reminder_canceled_(false),
       collapsed_(false) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
@@ -110,11 +111,13 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
 
   upgrade_reminder_animation_.SetThrobDuration(kThrobDuration);
 
-  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
-    ShowUpgradeReminder();
+  ActiveWindowWatcherX::AddObserver(this);
+  MaybeShowUpgradeReminder();
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
+  ActiveWindowWatcherX::RemoveObserver(this);
+
   browser_->command_updater()->RemoveCommandObserver(IDC_BACK, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_HOME, this);
@@ -448,7 +451,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
 
     UpdateRoundedness();
   } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
-    ShowUpgradeReminder();
+    MaybeShowUpgradeReminder();
   } else {
     NOTREACHED();
   }
@@ -745,8 +748,15 @@ void BrowserToolbarGtk::NotifyPrefChanged(const std::wstring* pref) {
                            !home_page_is_new_tab_page_.IsManaged());
 }
 
-void BrowserToolbarGtk::ShowUpgradeReminder() {
-  upgrade_reminder_animation_.StartThrobbing(-1);
+void BrowserToolbarGtk::MaybeShowUpgradeReminder() {
+  // Only show the upgrade reminder animation for the currently active window.
+  if (window_->IsActive() &&
+      Singleton<UpgradeDetector>::get()->notify_upgrade() &&
+      !upgrade_reminder_canceled_) {
+    upgrade_reminder_animation_.StartThrobbing(-1);
+  } else {
+    upgrade_reminder_animation_.Reset();
+  }
 }
 
 bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
@@ -779,20 +789,29 @@ void BrowserToolbarGtk::PopupForButtonNextTo(GtkWidget* button,
 }
 
 void BrowserToolbarGtk::AnimationEnded(const Animation* animation) {
-  AnimationProgressed(animation);
-}
-
-void BrowserToolbarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, &upgrade_reminder_animation_);
   gtk_widget_queue_draw(app_menu_image_.get());
 }
 
+void BrowserToolbarGtk::AnimationProgressed(const Animation* animation) {
+  DCHECK_EQ(animation, &upgrade_reminder_animation_);
+  if (UpgradeAnimationIsFaded())
+    gtk_widget_queue_draw(app_menu_image_.get());
+}
+
 void BrowserToolbarGtk::AnimationCanceled(const Animation* animation) {
-  AnimationProgressed(animation);
+  AnimationEnded(animation);
+}
+
+void BrowserToolbarGtk::ActiveWindowChanged(GdkWindow* active_window) {
+  MaybeShowUpgradeReminder();
 }
 
 void BrowserToolbarGtk::OnAppMenuShow(GtkWidget* sender) {
-  upgrade_reminder_animation_.Reset();
+  if (upgrade_reminder_animation_.is_animating()) {
+    upgrade_reminder_canceled_ = true;
+    MaybeShowUpgradeReminder();
+  }
 }
 
 gboolean BrowserToolbarGtk::OnAppMenuImageExpose(GtkWidget* sender,
@@ -801,10 +820,7 @@ gboolean BrowserToolbarGtk::OnAppMenuImageExpose(GtkWidget* sender,
     return FALSE;
 
   SkBitmap badge;
-  if (upgrade_reminder_animation_.cycles_remaining() > 0 &&
-      // This funky looking math makes the badge throb for 2 seconds once
-      // every 8 seconds.
-      ((upgrade_reminder_animation_.cycles_remaining() - 1) / 2) % 4 == 0) {
+  if (UpgradeAnimationIsFaded()) {
     badge = SkBitmapOperations::CreateBlendedBitmap(
         *theme_provider_->GetBitmapNamed(IDR_UPGRADE_DOT_ACTIVE),
         *theme_provider_->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE),
@@ -824,4 +840,11 @@ gboolean BrowserToolbarGtk::OnAppMenuImageExpose(GtkWidget* sender,
       sender->allocation.y + sender->allocation.height - badge.height());
 
   return FALSE;
+}
+
+bool BrowserToolbarGtk::UpgradeAnimationIsFaded() {
+  return upgrade_reminder_animation_.cycles_remaining() > 0 &&
+      // This funky looking math makes the badge throb for 2 seconds once
+      // every 8 seconds.
+      ((upgrade_reminder_animation_.cycles_remaining() - 1) / 2) % 4 == 0;
 }
