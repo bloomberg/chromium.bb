@@ -155,9 +155,9 @@ const int64 kOneMeg = 1024 * kOneKilo;
 
 const TestPathInfo kPathsToTest[] = {
   {"User data Directory", chrome::DIR_USER_DATA,
-      true, false, true, 250 * kOneMeg},
+      true, false, true, 850 * kOneMeg},
   {"Local state file", chrome::FILE_LOCAL_STATE,
-      false, false, true, 100 * kOneKilo},
+      false, false, true, 500 * kOneKilo},
   {"Dictionaries Directory", chrome::DIR_APP_DICTIONARIES,
       true, true, false, 0},
   {"Inspector Directory", chrome::DIR_INSPECTOR,
