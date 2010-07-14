@@ -93,3 +93,71 @@ TEST(CookieMonsterTest, TestAddCookieOnManyHosts) {
   cm->DeleteAll(false);
   timer3.Done();
 }
+
+TEST(CookieMonsterTest, TestDomainTree) {
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL, NULL));
+  std::string cookie(kCookieLine);
+  std::string domain_base("top.com");
+
+  std::vector<GURL> gurl_list;
+
+  // Create a balanced binary tree of domains on which the cookie is set.
+  for (int i1=0; i1 < 2; i1++) {
+    std::string domain_base_1((i1 ? "a." : "b.") + domain_base);
+    gurl_list.push_back(GURL(StringPrintf("http://%s",
+                                          domain_base_1.c_str())));
+    for (int i2=0; i2 < 2; i2++) {
+      std::string domain_base_2((i1 ? "a." : "b.") + domain_base_1);
+      gurl_list.push_back(GURL(StringPrintf("http://%s",
+                                            domain_base_2.c_str())));
+      for (int i3=0; i3 < 2; i3++) {
+        std::string domain_base_3((i1 ? "a." : "b.") + domain_base_2);
+        gurl_list.push_back(GURL(StringPrintf("http://%s",
+                                              domain_base_3.c_str())));
+        for (int i4=0; i4 < 2; i4++) {
+          gurl_list.push_back(GURL(StringPrintf("http://%s.%s",
+                                                i4 ? "a" : "b",
+                                                domain_base_3.c_str())));
+        }
+      }
+    }
+  }
+
+  for (std::vector<GURL>::const_iterator it = gurl_list.begin();
+       it != gurl_list.end(); it++) {
+    EXPECT_TRUE(cm->SetCookie(*it, cookie));
+  }
+
+  GURL probe_gurl("http://b.a.b.a.top.com/");
+  PerfTimeLogger timer("Cookie_monster_query_domain_tree");
+  for (int i = 0; i < kNumCookies; i++) {
+    cm->GetCookies(probe_gurl);
+  }
+  timer.Done();
+
+  cm->DeleteAll(false);
+  gurl_list.clear();
+
+  // Create a line of 32 domain cookies such that all cookies stored
+  // by effective TLD+1 will apply to probe GURL.
+  // (TLD + 1 is the level above .com/org/net/etc, e.g. "top.com"
+  // or "google.com".  "Effective" is added to include sites like
+  // bbc.co.uk, where the effetive TLD+1 is more than one level
+  // below the top level.)
+  gurl_list.push_back(GURL("http://a.top.com"));
+  gurl_list.push_back(GURL("http://b.a.top.com"));
+  gurl_list.push_back(GURL("http://a.b.a.top.com"));
+  gurl_list.push_back(GURL("http://b.a.b.a.top.com"));
+
+  for (int i = 0; i < 8; i++) {
+    for (std::vector<GURL>::const_iterator it = gurl_list.begin();
+         it != gurl_list.end(); it++) {
+      EXPECT_TRUE(cm->SetCookie(*it, StringPrintf("a%03d=b", i)));
+    }
+  }
+  PerfTimeLogger timer2("Cookie_monster_query_domain_line");
+  for (int i = 0; i < kNumCookies; i++) {
+    cm->GetCookies(probe_gurl);
+  }
+  timer2.Done();
+}

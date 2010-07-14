@@ -318,9 +318,15 @@ class CookieMonster : public CookieStore {
 
 class CookieMonster::CanonicalCookie {
  public:
+
+  // These constructors do no validation or canonicalization of their inputs;
+  // the resulting CanonicalCookies should not be relied on to be canonical
+  // unless the caller has done appropriate validation and canonicalization
+  // themselves.
   CanonicalCookie() { }
   CanonicalCookie(const std::string& name,
                   const std::string& value,
+                  const std::string& domain,
                   const std::string& path,
                   bool secure,
                   bool httponly,
@@ -330,6 +336,7 @@ class CookieMonster::CanonicalCookie {
                   const base::Time& expires)
       : name_(name),
         value_(value),
+        domain_(domain),
         path_(path),
         creation_date_(creation),
         last_access_date_(last_access),
@@ -338,19 +345,26 @@ class CookieMonster::CanonicalCookie {
         secure_(secure),
         httponly_(httponly) {
   }
+
+  // This constructor does canonicalization but not validation.
+  // The result of this constructor should not be relied on in contexts
+  // in which pre-validation of the ParsedCookie has not been done.
   CanonicalCookie(const GURL& url, const ParsedCookie& pc);
 
   // Supports the default copy constructor.
 
-  // Creates a canonical cookie from unparsed attribute values. May return
-  // NULL if an attribute value is invalid.
+  // Creates a canonical cookie from unparsed attribute values.
+  // Canonicalizes and validates inputs.  May return NULL if an attribute
+  // value is invalid.
   static CanonicalCookie* Create(
       const GURL& url, const std::string& name, const std::string& value,
-      const std::string& path, const base::Time& creation_time,
-      const base::Time& expiration_time, bool secure, bool http_only);
+      const std::string& domain, const std::string& path,
+      const base::Time& creation_time, const base::Time& expiration_time,
+      bool secure, bool http_only);
 
   const std::string& Name() const { return name_; }
   const std::string& Value() const { return value_; }
+  const std::string& Domain() const { return domain_; }
   const std::string& Path() const { return path_; }
   const base::Time& CreationDate() const { return creation_date_; }
   const base::Time& LastAccessDate() const { return last_access_date_; }
@@ -364,13 +378,18 @@ class CookieMonster::CanonicalCookie {
     return has_expires_ && current >= expiry_date_;
   }
 
-  // Are the cookies considered equivalent in the eyes of the RFC.
-  // This says that the domain and path should string match identically.
+  // Are the cookies considered equivalent in the eyes of RFC 2965.
+  // The RFC says that name must match (case-sensitive), domain must
+  // match (case insensitive), and path must match (case sensitive).
+  // For the case insensitive domain compare, we rely on the domain
+  // having been canonicalized (in
+  // GetCookieDomainKeyWithString->CanonicalizeHost).
   bool IsEquivalent(const CanonicalCookie& ecc) const {
     // It seems like it would make sense to take secure and httponly into
     // account, but the RFC doesn't specify this.
     // NOTE: Keep this logic in-sync with TrimDuplicateCookiesForHost().
-    return name_ == ecc.Name() && path_ == ecc.Path();
+    return (name_ == ecc.Name() && domain_ == ecc.Domain()
+            && path_ == ecc.Path());
   }
 
   void SetLastAccessDate(const base::Time& date) {
@@ -383,6 +402,7 @@ class CookieMonster::CanonicalCookie {
  private:
   std::string name_;
   std::string value_;
+  std::string domain_;
   std::string path_;
   base::Time creation_date_;
   base::Time last_access_date_;

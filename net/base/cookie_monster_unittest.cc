@@ -152,7 +152,7 @@ void AddKeyedCookieToList(
 
   scoped_ptr<net::CookieMonster::CanonicalCookie> cookie(
       new net::CookieMonster::CanonicalCookie(
-          pc.Name(), pc.Value(), cookie_path,
+          pc.Name(), pc.Value(), key, cookie_path,
           pc.IsSecure(), pc.IsHttpOnly(),
           creation_time, creation_time,
           !cookie_expires.is_null(),
@@ -1684,6 +1684,7 @@ TEST(CookieMonsterTest, SetCookieWithDetails) {
   EXPECT_EQ("A", it->second.Name());
   EXPECT_EQ("B", it->second.Value());
   EXPECT_EQ("www.google.izzle", it->first);
+  EXPECT_EQ("www.google.izzle", it->second.Domain());
   EXPECT_EQ("/foo", it->second.Path());
   EXPECT_FALSE(it->second.DoesExpire());
   EXPECT_FALSE(it->second.IsSecure());
@@ -1698,6 +1699,7 @@ TEST(CookieMonsterTest, SetCookieWithDetails) {
   EXPECT_EQ("C", it->second.Name());
   EXPECT_EQ("D", it->second.Value());
   EXPECT_EQ(".google.izzle", it->first);
+  EXPECT_EQ(".google.izzle", it->second.Domain());
   EXPECT_EQ("/bar", it->second.Path());
   EXPECT_FALSE(it->second.IsSecure());
   EXPECT_TRUE(it->second.IsHttpOnly());
@@ -1711,6 +1713,7 @@ TEST(CookieMonsterTest, SetCookieWithDetails) {
   EXPECT_EQ("E", it->second.Name());
   EXPECT_EQ("F", it->second.Value());
   EXPECT_EQ("/", it->second.Path());
+  EXPECT_EQ("www.google.izzle", it->second.Domain());
   EXPECT_TRUE(it->second.IsSecure());
   EXPECT_FALSE(it->second.IsHttpOnly());
 

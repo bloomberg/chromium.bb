@@ -174,14 +174,45 @@ void CookieMonster::EnsureCookiesMapIsValid() {
 //     {list of cookies with this signature, sorted by creation time}.
 // (2) For each list with more than 1 entry, keep the cookie having the
 //     most recent creation time, and delete the others.
+namespace {
+// Two cookies are considered equivalent if they have the same domain,
+// name, and path.
+struct CookieSignature {
+ public:
+  CookieSignature(const std::string& name, const std::string& domain,
+                  const std::string& path)
+      : name(name),
+        domain(domain),
+        path(path) {}
+
+  // To be a key for a map this class needs to be assignable, copyable,
+  // and have an operator<.  The default assignment operator
+  // and copy constructor are exactly what we want.
+
+  bool operator<(const CookieSignature& cs) const {
+    // Name compare dominates, then domain, then path.
+    int diff = name.compare(cs.name);
+    if (diff != 0)
+      return diff < 0;
+
+    diff = domain.compare(cs.domain);
+    if (diff != 0)
+      return diff < 0;
+
+    return path.compare(cs.path) < 0;
+  }
+
+  std::string name;
+  std::string domain;
+  std::string path;
+};
+}
+
 int CookieMonster::TrimDuplicateCookiesForHost(
     const std::string& key,
     CookieMap::iterator begin,
     CookieMap::iterator end) {
   lock_.AssertAcquired();
-
-  // Two cookies are considered equivalent if they have the same name and path.
-  typedef std::pair<std::string, std::string> CookieSignature;
 
   // List of cookies ordered by creation time.
   typedef std::set<CookieMap::iterator, OrderByCreationTimeDesc> CookieList;
@@ -199,7 +230,8 @@ int CookieMonster::TrimDuplicateCookiesForHost(
     DCHECK_EQ(key, it->first);
     CanonicalCookie* cookie = it->second;
 
-    CookieSignature signature(cookie->Name(), cookie->Path());
+    CookieSignature signature(cookie->Name(), cookie->Domain(),
+                              cookie->Path());
     CookieList& list = equivalent_cookies[signature];
 
     // We found a duplicate!
@@ -231,11 +263,12 @@ int CookieMonster::TrimDuplicateCookiesForHost(
     dupes.erase(dupes.begin());
 
     LOG(ERROR) << StringPrintf("Found %d duplicate cookies for host='%s', "
-                               "with {name='%s', path='%s'}",
+                               "with {name='%s', domain='%s', path='%s'}",
                                static_cast<int>(dupes.size()),
                                key.c_str(),
-                               signature.first.c_str(),
-                               signature.second.c_str());
+                               signature.name.c_str(),
+                               signature.domain.c_str(),
+                               signature.path.c_str());
 
     // Remove all the cookies identified by |dupes|. It is valid to delete our
     // list of iterators one at a time, since |cookies_| is a multimap (they
@@ -606,7 +639,8 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
   scoped_ptr<CanonicalCookie> cc;
   Time cookie_expires = CanonExpiration(pc, creation_time, options);
 
-  cc.reset(new CanonicalCookie(pc.Name(), pc.Value(), cookie_path,
+  cc.reset(new CanonicalCookie(pc.Name(), pc.Value(), cookie_domain,
+                               cookie_path,
                                pc.IsSecure(), pc.IsHttpOnly(),
                                creation_time, creation_time,
                                !cookie_expires.is_null(), cookie_expires));
@@ -623,14 +657,6 @@ bool CookieMonster::SetCookieWithDetails(
     const std::string& domain, const std::string& path,
     const base::Time& expiration_time, bool secure, bool http_only) {
 
-  // Expect a valid domain attribute with no illegal characters.
-  std::string parsed_domain = ParsedCookie::ParseValueString(domain);
-  if (parsed_domain != domain)
-    return false;
-  std::string cookie_domain;
-  if (!GetCookieDomainKeyWithString(url, parsed_domain, &cookie_domain))
-    return false;
-
   AutoLock autolock(lock_);
 
   if (!HasCookieableScheme(url))
@@ -643,7 +669,8 @@ bool CookieMonster::SetCookieWithDetails(
 
   scoped_ptr<CanonicalCookie> cc;
   cc.reset(CanonicalCookie::Create(
-      url, name, value, path, creation_time, expiration_time,
+      url, name, value, domain, path,
+      creation_time, expiration_time,
       secure, http_only));
 
   if (!cc.get())
@@ -651,7 +678,7 @@ bool CookieMonster::SetCookieWithDetails(
 
   CookieOptions options;
   options.set_include_httponly();
-  return SetCanonicalCookie(&cc, cookie_domain, creation_time, options);
+  return SetCanonicalCookie(&cc, cc->Domain(), creation_time, options);
 }
 
 bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
@@ -1500,12 +1527,26 @@ CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
       httponly_(pc.IsHttpOnly()) {
   if (has_expires_)
     expiry_date_ = CanonExpiration(pc, creation_date_, CookieOptions());
+
+  // Do the best we can with the domain.
+  std::string cookie_domain;
+  std::string domain_string;
+  if (pc.HasDomain()) {
+    domain_string = pc.Domain();
+  }
+  bool result
+      = GetCookieDomainKeyWithString(url, domain_string,
+                                     &cookie_domain);
+  // Caller is responsible for passing in good arguments.
+  DCHECK(result);
+  domain_ = cookie_domain;
 }
 
 CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
       const GURL& url, const std::string& name, const std::string& value,
-      const std::string& path, const base::Time& creation_time,
-      const base::Time& expiration_time, bool secure, bool http_only) {
+      const std::string& domain, const std::string& path,
+      const base::Time& creation_time, const base::Time& expiration_time,
+      bool secure, bool http_only) {
   // Expect valid attribute tokens and values, as defined by the ParsedCookie
   // logic, otherwise don't create the cookie.
   std::string parsed_name = ParsedCookie::ParseTokenString(name);
@@ -1514,6 +1555,14 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
   std::string parsed_value = ParsedCookie::ParseValueString(value);
   if (parsed_value != value)
     return NULL;
+
+  std::string parsed_domain = ParsedCookie::ParseValueString(domain);
+  if (parsed_domain != domain)
+    return NULL;
+  std::string cookie_domain;
+  if (!GetCookieDomainKeyWithString(url, parsed_domain, &cookie_domain))
+    return false;
+
   std::string parsed_path = ParsedCookie::ParseValueString(path);
   if (parsed_path != path)
     return NULL;
@@ -1531,8 +1580,9 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
   cookie_path = std::string(canon_path.data() + canon_path_component.begin,
                             canon_path_component.len);
 
-  return new CanonicalCookie(parsed_name, parsed_value, cookie_path,
-                             secure, http_only, creation_time, creation_time,
+  return new CanonicalCookie(parsed_name, parsed_value, cookie_domain,
+                             cookie_path, secure, http_only,
+                             creation_time, creation_time,
                              !expiration_time.is_null(), expiration_time);
 }
 
@@ -1573,8 +1623,10 @@ bool CookieMonster::CanonicalCookie::IsOnPath(
 }
 
 std::string CookieMonster::CanonicalCookie::DebugString() const {
-  return StringPrintf("name: %s value: %s path: %s creation: %" PRId64,
-                      name_.c_str(), value_.c_str(), path_.c_str(),
+  return StringPrintf("name: %s value: %s domain: %s path: %s creation: %"
+                      PRId64,
+                      name_.c_str(), value_.c_str(),
+                      domain_.c_str(), path_.c_str(),
                       static_cast<int64>(creation_date_.ToTimeT()));
 }
 

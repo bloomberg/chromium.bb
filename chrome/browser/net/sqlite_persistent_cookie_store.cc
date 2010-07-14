@@ -338,6 +338,7 @@ bool SQLitePersistentCookieStore::Load(
         new net::CookieMonster::CanonicalCookie(
             smt.ColumnString(2),                            // name
             smt.ColumnString(3),                            // value
+            smt.ColumnString(1),                            // domain
             smt.ColumnString(4),                            // path
             smt.ColumnInt(6) != 0,                          // secure
             smt.ColumnInt(7) != 0,                          // httponly

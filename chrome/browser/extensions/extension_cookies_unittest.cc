@@ -102,7 +102,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   Value* value;
 
   net::CookieMonster::CanonicalCookie cookie1(
-      "ABC", "DEF", "/", false, false,
+      "ABC", "DEF", "www.foobar.com", "/", false, false,
       base::Time(), base::Time(), false, base::Time());
   net::CookieMonster::CookieListPair cookie_pair1("www.foobar.com", cookie1);
   scoped_ptr<DictionaryValue> cookie_value1(
@@ -130,7 +130,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_EQ("some cookie store", string_value);
 
   net::CookieMonster::CanonicalCookie cookie2(
-      "ABC", "DEF", "/", false, false,
+      "ABC", "DEF", ".foobar.com", "/", false, false,
       base::Time(), base::Time(), true, base::Time::FromDoubleT(10000));
   net::CookieMonster::CookieListPair cookie_pair2(".foobar.com", cookie2);
   scoped_ptr<DictionaryValue> cookie_value2(
@@ -155,7 +155,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
 
 TEST_F(ExtensionCookiesTest, GetURLFromCookiePair) {
   net::CookieMonster::CanonicalCookie cookie1(
-      "ABC", "DEF", "/", false, false,
+      "ABC", "DEF", "www.foobar.com", "/", false, false,
       base::Time(), base::Time(), false, base::Time());
   net::CookieMonster::CookieListPair cookie_pair1("www.foobar.com", cookie1);
   EXPECT_EQ("http://www.foobar.com/",
@@ -163,7 +163,7 @@ TEST_F(ExtensionCookiesTest, GetURLFromCookiePair) {
                 cookie_pair1).spec());
 
   net::CookieMonster::CanonicalCookie cookie2(
-      "ABC", "DEF", "/", true, false,
+      "ABC", "DEF", ".helloworld.com", "/", true, false,
       base::Time(), base::Time(), false, base::Time());
   net::CookieMonster::CookieListPair cookie_pair2(".helloworld.com", cookie2);
   EXPECT_EQ("https://helloworld.com/",
