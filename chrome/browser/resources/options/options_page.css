@@ -120,7 +120,7 @@ section > div:only-of-type  {
 }
 
 .suboption {
-  -webkit-margin-start: 18px;
+  margin-left: 18px;
 }
 
 .hidden {
