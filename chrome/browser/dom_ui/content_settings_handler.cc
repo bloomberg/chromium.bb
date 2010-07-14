@@ -63,6 +63,8 @@ std::string ContentSettingToString(ContentSetting setting) {
   switch (setting) {
     case CONTENT_SETTING_ALLOW:
       return "allow";
+    case CONTENT_SETTING_ASK:
+      return "ask";
     case CONTENT_SETTING_BLOCK:
       return "block";
 
@@ -75,6 +77,8 @@ std::string ContentSettingToString(ContentSetting setting) {
 ContentSetting ContentSettingFromString(const std::string& name) {
   if (name == "allow")
     return CONTENT_SETTING_ALLOW;
+  if (name == "ask")
+    return CONTENT_SETTING_ASK;
   if (name == "block")
     return CONTENT_SETTING_BLOCK;
 
