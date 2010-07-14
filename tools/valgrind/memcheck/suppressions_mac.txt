@@ -208,6 +208,42 @@
    fun:_dyld_start
    obj:*
 }
+{
+   # jrg thinks this is probably a bug in Cocoa but is harmless.  We
+   # can hit it by using --homepage=about:blank, which triggers a
+   # location bar focus earlier than normal (earlier than when a
+   # window is shown).  To "work around" the problem for valgrind, we
+   # could call for example call [NSWindow setInitialFirstResponder:]
+   # instead of [NSWindow makeFirstResponder:] if the window isn't
+   # visible.  However, these contortions are ugly.  since the
+   # needsDisplay region gets reset when the window is shown, it
+   # really doesn't matter what we do with it before then.
+   Memcheck:Cond
+   fun:NSIsEmptyRect
+   fun:-[NSRegion isEmpty]
+   fun:-[NSRegion subtractRegion:]
+   fun:-[NSWindow _subtractFromNeedsDisplayRegion:]
+   ...
+   fun:-[NSWindow makeKeyAndOrderFront:]
+   fun:_ZN18BrowserWindowCocoa4ShowEv
+   ...
+   fun:_ZN11BrowserInit17LaunchWithProfile17OpenURLsInBrowserEP7BrowserbRKSt6vectorI4GURLSaIS4_EE
+   ...
+   fun:ChromeMain
+   fun:main
+}
+{
+   # Same as above -- touching a region we'll throw away soon.
+   Memcheck:Cond
+   fun:NSUnionRect
+   fun:-[NSRegion addRect:]
+   ...
+   fun:-[AutocompleteTextField becomeFirstResponder]
+   fun:-[NSWindow makeFirstResponder:]
+   fun:_ZN23AutocompleteEditViewMac13FocusLocationEb
+   ...
+   fun:_ZN13TabStripModel14AddTabContentsEP11TabContentsiji
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
