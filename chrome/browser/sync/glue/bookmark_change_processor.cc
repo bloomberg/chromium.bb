@@ -50,7 +50,8 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
   // Set the properties of the item.
   dst->SetIsFolder(src->is_folder());
   dst->SetTitle(src->GetTitle());
-  dst->SetURL(src->GetURL());
+  if (!src->is_folder())
+    dst->SetURL(src->GetURL());
   SetSyncNodeFavicon(src, model, dst);
 }
 
