@@ -885,9 +885,10 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
   // TODO(jcampan): We need to refactor the code of
   // AutocompleteEditViewWin::SkipDefaultKeyEventProcessing into this class so
   // it can be shared between Windows and Linux.
-  // For now, we just override back-space as it is the accelerator for back
-  // navigation.
-  if (e.GetKeyCode() == base::VKEY_BACK)
+  // For now, we just override back-space and tab keys, as back-space is the
+  // accelerator for back navigation and tab key is used by some input methods.
+  if (e.GetKeyCode() == base::VKEY_BACK ||
+      views::FocusManager::IsTabTraversalKeyEvent(e))
     return true;
   return false;
 #endif
