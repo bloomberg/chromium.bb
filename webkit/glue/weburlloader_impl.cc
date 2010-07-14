@@ -20,6 +20,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoadTiming.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
@@ -38,6 +39,7 @@ using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
+using WebKit::WebURLLoadTiming;
 using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderClient;
 using WebKit::WebURLRequest;
@@ -170,11 +172,30 @@ void PopulateURLResponse(
   response->setSecurityInfo(info.security_info);
   response->setAppCacheID(info.appcache_id);
   response->setAppCacheManifestURL(info.appcache_manifest_url);
+  response->setWasCached(info.request_time > info.response_time);
   response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
   response->setWasNpnNegotiated(info.was_npn_negotiated);
   response->setWasAlternateProtocolAvailable(
       info.was_alternate_protocol_available);
   response->setWasFetchedViaProxy(info.was_fetched_via_proxy);
+  response->setConnectionID(info.connection_id);
+
+  WebURLLoadTiming timing;
+  timing.initialize();
+  const ResourceLoaderBridge::LoadTimingInfo& timing_info = info.load_timing;
+  timing.setRequestTime(timing_info.base_time.ToDoubleT());
+  timing.setProxyStart(timing_info.proxy_start);
+  timing.setProxyEnd(timing_info.proxy_end);
+  timing.setDNSStart(timing_info.dns_start);
+  timing.setDNSEnd(timing_info.dns_end);
+  timing.setConnectStart(timing_info.connect_start);
+  timing.setConnectEnd(timing_info.connect_end);
+  timing.setSSLStart(timing_info.ssl_start);
+  timing.setSSLEnd(timing_info.ssl_end);
+  timing.setSendStart(timing_info.send_start);
+  timing.setSendEnd(timing_info.send_end);
+  timing.setReceiveHeadersEnd(timing_info.receive_headers_end);
+  response->setLoadTiming(timing);
 
   const net::HttpResponseHeaders* headers = info.headers;
   if (!headers)
@@ -331,6 +352,8 @@ void WebURLLoaderImpl::Context::Start(
 
   if (request.reportUploadProgress())
     load_flags |= net::LOAD_ENABLE_UPLOAD_PROGRESS;
+  if (request.reportLoadTiming())
+    load_flags |= net::LOAD_ENABLE_LOAD_TIMING;
 
   if (!request.allowCookies() || !request.allowStoredCredentials()) {
     load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;

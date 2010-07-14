@@ -1406,6 +1406,72 @@ struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
   }
 };
 
+// Traits for webkit_glue::ResourceLoaderBridge::LoadTimingInfo
+template <>
+struct ParamTraits<webkit_glue::ResourceLoaderBridge::LoadTimingInfo> {
+  typedef webkit_glue::ResourceLoaderBridge::LoadTimingInfo param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.base_time);
+    WriteParam(m, p.proxy_start);
+    WriteParam(m, p.proxy_end);
+    WriteParam(m, p.dns_start);
+    WriteParam(m, p.dns_end);
+    WriteParam(m, p.connect_start);
+    WriteParam(m, p.connect_end);
+    WriteParam(m, p.ssl_start);
+    WriteParam(m, p.ssl_end);
+    WriteParam(m, p.send_start);
+    WriteParam(m, p.send_end);
+    WriteParam(m, p.receive_headers_start);
+    WriteParam(m, p.receive_headers_end);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return
+        ReadParam(m, iter, &r->base_time) &&
+        ReadParam(m, iter, &r->proxy_start) &&
+        ReadParam(m, iter, &r->proxy_end) &&
+        ReadParam(m, iter, &r->dns_start) &&
+        ReadParam(m, iter, &r->dns_end) &&
+        ReadParam(m, iter, &r->connect_start) &&
+        ReadParam(m, iter, &r->connect_end) &&
+        ReadParam(m, iter, &r->ssl_start) &&
+        ReadParam(m, iter, &r->ssl_end) &&
+        ReadParam(m, iter, &r->send_start) &&
+        ReadParam(m, iter, &r->send_end) &&
+        ReadParam(m, iter, &r->receive_headers_start) &&
+        ReadParam(m, iter, &r->receive_headers_end);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.base_time, l);
+    l->append(L", ");
+    LogParam(p.proxy_start, l);
+    l->append(L", ");
+    LogParam(p.proxy_end, l);
+    l->append(L", ");
+    LogParam(p.dns_start, l);
+    l->append(L", ");
+    LogParam(p.dns_end, l);
+    l->append(L", ");
+    LogParam(p.connect_start, l);
+    l->append(L", ");
+    LogParam(p.connect_end, l);
+    l->append(L", ");
+    LogParam(p.ssl_start, l);
+    l->append(L", ");
+    LogParam(p.ssl_end, l);
+    l->append(L", ");
+    LogParam(p.send_start, l);
+    l->append(L", ");
+    LogParam(p.send_end, l);
+    l->append(L", ");
+    LogParam(p.receive_headers_start, l);
+    l->append(L", ");
+    LogParam(p.receive_headers_end, l);
+    l->append(L")");
+  }
+};
+
 // Traits for webkit_glue::ResourceLoaderBridge::ResponseInfo
 template <>
 struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
@@ -1420,6 +1486,8 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     WriteParam(m, p.content_length);
     WriteParam(m, p.appcache_id);
     WriteParam(m, p.appcache_manifest_url);
+    WriteParam(m, p.connection_id);
+    WriteParam(m, p.load_timing);
     WriteParam(m, p.was_fetched_via_spdy);
     WriteParam(m, p.was_npn_negotiated);
     WriteParam(m, p.was_alternate_protocol_available);
@@ -1436,6 +1504,8 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
       ReadParam(m, iter, &r->content_length) &&
       ReadParam(m, iter, &r->appcache_id) &&
       ReadParam(m, iter, &r->appcache_manifest_url) &&
+      ReadParam(m, iter, &r->connection_id) &&
+      ReadParam(m, iter, &r->load_timing) &&
       ReadParam(m, iter, &r->was_fetched_via_spdy) &&
       ReadParam(m, iter, &r->was_npn_negotiated) &&
       ReadParam(m, iter, &r->was_alternate_protocol_available) &&
@@ -1460,6 +1530,10 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     LogParam(p.appcache_id, l);
     l->append(L", ");
     LogParam(p.appcache_manifest_url, l);
+    l->append(L", ");
+    LogParam(p.connection_id, l);
+    l->append(L", ");
+    LogParam(p.load_timing, l);
     l->append(L", ");
     LogParam(p.was_fetched_via_spdy, l);
     l->append(L", ");

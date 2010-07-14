@@ -142,6 +142,9 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     virtual void Clear();
     virtual void AppendAllEntries(EntryList* out) const;
 
+    // Finds a source info with given id.
+    SourceInfo* GetSourceInfo(uint32 id);
+
 #ifdef UNIT_TEST
     // Helper used to inspect the current state by unit-tests.
     // Retuns a copy of the source infos held by the tracker.
