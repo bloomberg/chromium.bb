@@ -1,14 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_updater.h"
+#include "chrome/common/plugin_group.h"
 
 #include <string>
 #include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/plugins/webplugininfo.h"
@@ -39,10 +40,10 @@ static WebPluginInfo kPlugin4043 = {
     ASCIIToUTF16("MyPlugin"), FilePath(), ASCIIToUTF16("4.0.43"), string16(),
     std::vector<WebPluginMimeType>(), true };
 
-class PluginUpdaterTest : public testing::Test {
+class PluginGroupTest : public testing::Test {
 };
 
-TEST(PluginUpdaterTest, PluginGroupMatch) {
+TEST(PluginGroupTest, PluginGroupMatch) {
   scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
       kPluginDef3));
   EXPECT_TRUE(group->Match(kPlugin3045));
@@ -50,7 +51,7 @@ TEST(PluginUpdaterTest, PluginGroupMatch) {
   EXPECT_FALSE(group->IsVulnerable());
 }
 
-TEST(PluginUpdaterTest, PluginGroupMatchMultipleFiles) {
+TEST(PluginGroupTest, PluginGroupMatchMultipleFiles) {
   scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
       kPluginDef3));
   EXPECT_TRUE(group->Match(kPlugin3043));
@@ -62,7 +63,7 @@ TEST(PluginUpdaterTest, PluginGroupMatchMultipleFiles) {
   EXPECT_FALSE(group->IsVulnerable());
 }
 
-TEST(PluginUpdaterTest, PluginGroupMatchCorrectVersion) {
+TEST(PluginGroupTest, PluginGroupMatchCorrectVersion) {
   scoped_ptr<PluginGroup> group(PluginGroup::FromPluginGroupDefinition(
       kPluginDef3));
   EXPECT_TRUE(group->Match(kPlugin2043));
@@ -75,10 +76,10 @@ TEST(PluginUpdaterTest, PluginGroupMatchCorrectVersion) {
   EXPECT_TRUE(group->Match(kPlugin4043));
 }
 
-TEST(PluginUpdaterTest, PluginGroupDefinition) {
+TEST(PluginGroupTest, PluginGroupDefinition) {
   const PluginGroupDefinition* definitions =
-      PluginUpdater::GetPluginGroupDefinitions();
-  for (size_t i = 0; i < PluginUpdater::GetPluginGroupDefinitionsSize(); ++i) {
+      PluginGroup::GetPluginGroupDefinitions();
+  for (size_t i = 0; i < PluginGroup::GetPluginGroupDefinitionsSize(); ++i) {
     scoped_ptr<PluginGroup> def_group(
         PluginGroup::FromPluginGroupDefinition(definitions[i]));
     ASSERT_TRUE(def_group.get() != NULL);
@@ -86,7 +87,7 @@ TEST(PluginUpdaterTest, PluginGroupDefinition) {
   }
 }
 
-TEST(PluginUpdaterTest, VersionExtraction) {
+TEST(PluginGroupTest, VersionExtraction) {
   // Some real-world plugin versions (spaces, commata, parentheses, 'r', oh my)
   const char* versions[][2] = {
     { "7.6.6 (1671)", "7.6.6.1671" },  // Quicktime
@@ -104,7 +105,7 @@ TEST(PluginUpdaterTest, VersionExtraction) {
     scoped_ptr<PluginGroup> group(PluginGroup::FromWebPluginInfo(plugin));
     EXPECT_TRUE(group->Match(plugin));
     group->AddPlugin(plugin, 0);
-    scoped_ptr<DictionaryValue> data(group->GetData());
+    scoped_ptr<DictionaryValue> data(group->GetDataForUI());
     std::string version;
     data->GetString(L"version", &version);
     EXPECT_EQ(versions[i][1], version);

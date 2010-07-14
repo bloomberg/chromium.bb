@@ -167,7 +167,7 @@ void PluginsDOMHandler::HandleRequestPluginsData(const Value* value) {
   DictionaryValue* results = new DictionaryValue();
 
   // Grouped plugins.
-  results->Set(L"plugins", PluginUpdater::GetInstance()->GetPluginGroupsData());
+  results->Set(L"plugins", plugin_updater::GetPluginGroupsData());
 
   dom_ui_->CallJavascriptFunction(L"returnPluginsData", *results);
 }
@@ -184,8 +184,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
 
   std::string enable_str;
   std::string is_group_str;
-  if (!list->GetString(1, &enable_str) ||
-      !list->GetString(2, &is_group_str))
+  if (!list->GetString(1, &enable_str) || !list->GetString(2, &is_group_str))
     return;
 
   if (is_group_str == "true") {
@@ -193,21 +192,20 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
     if (!list->GetString(0, &group_name))
       return;
 
-    PluginUpdater::GetInstance()->EnablePluginGroup(enable_str == "true",
-                                                    WideToUTF16(group_name));
+    plugin_updater::EnablePluginGroup(enable_str == "true",
+                                     WideToUTF16(group_name));
   } else {
     FilePath::StringType file_path;
     if (!list->GetString(0, &file_path))
       return;
 
-    PluginUpdater::GetInstance()->EnablePluginFile(enable_str == "true",
-                                                   file_path);
+    plugin_updater::EnablePluginFile(enable_str == "true", file_path);
   }
 
   // TODO(viettrungluu): We might also want to ensure that the plugins
   // list is always written to prefs even when the user hasn't disabled a
   // plugin. <http://crbug.com/39101>
-  PluginUpdater::GetInstance()->UpdatePreferences(dom_ui_->GetProfile());
+  plugin_updater::UpdatePreferences(dom_ui_->GetProfile());
 }
 
 void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const Value* value) {
