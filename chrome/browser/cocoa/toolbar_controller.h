@@ -30,7 +30,7 @@ class LocationBarViewMac;
 namespace ToolbarControllerInternal {
 class MenuDelegate;
 class PrefObserverBridge;
-}
+}  // namespace ToolbarControllerInternal
 class Profile;
 @class ReloadButton;
 class TabContents;

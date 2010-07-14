@@ -10,11 +10,11 @@
 #include "grit/generated_resources.h"
 
 TabMenuModel::TabMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+                           bool is_pinned,
                            bool allow_toolbar_toggle,
-                           bool is_app_tab,
                            bool is_toolbar_visible)
     : menus::SimpleMenuModel(delegate) {
-  Build(allow_toolbar_toggle, is_app_tab, is_toolbar_visible);
+  Build(is_pinned, allow_toolbar_toggle, is_toolbar_visible);
 }
 
 // static

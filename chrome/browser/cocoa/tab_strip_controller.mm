@@ -35,7 +35,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/extension.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -58,8 +57,8 @@ const CGFloat kUseFullAvailableWidth = -1.0;
 // The amount by which tabs overlap.
 const CGFloat kTabOverlap = 20.0;
 
-// The amount by which app tabs overlap with themselves and normal tabs.
-const CGFloat kAppTabOverlap = 5.0;
+// The width and height for a tab's icon.
+const CGFloat kIconWidthAndHeight = 16.0;
 
 // The amount by which the new tab button is offset (from the tabs).
 const CGFloat kNewTabButtonOffset = 8.0;
@@ -1156,19 +1155,21 @@ private:
 // for |contents|.
 - (NSImageView*)iconImageViewForContents:(TabContents*)contents {
   BOOL isApp = contents->is_app();
-
-  NSImage* image = gfx::SkBitmapToNSImage(
-      isApp ? *(contents->GetExtensionAppIcon()) : contents->GetFavIcon());
+  NSImage* image = nil;
+  if (isApp) {
+    SkBitmap* icon = contents->GetExtensionAppIcon();
+    if (icon)
+      image = gfx::SkBitmapToNSImage(*icon);
+  } else {
+    image = gfx::SkBitmapToNSImage(contents->GetFavIcon());
+  }
 
   // Either we don't have a valid favicon or there was some issue converting it
   // from an SkBitmap. Either way, just show the default.
   if (!image)
     image = defaultFavIcon_.get();
-
-  CGFloat iconWidthAndHeight = isApp ? Extension::EXTENSION_ICON_SMALLISH : 16;
-  NSRect iconFrame = NSMakeRect(0, 0, iconWidthAndHeight, iconWidthAndHeight);
-  NSImageView* view = [[[NSImageView alloc] initWithFrame:iconFrame]
-                          autorelease];
+  NSRect frame = NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
+  NSImageView* view = [[[NSImageView alloc] initWithFrame:frame] autorelease];
   [view setImage:image];
   return view;
 }
@@ -1234,12 +1235,14 @@ private:
         iconView = [self iconImageViewForContents:contents];
       } else if (newState == kTabCrashed) {
         NSImage* oldImage = [[self iconImageViewForContents:contents] image];
-        NSRect frame = NSMakeRect(0, 0, 16, 16);
+        NSRect frame =
+            NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
         iconView = [ThrobberView toastThrobberViewWithFrame:frame
                                                 beforeImage:oldImage
                                                  afterImage:sadFaviconImage];
       } else {
-        NSRect frame = NSMakeRect(0, 0, 16, 16);
+        NSRect frame =
+            NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
         iconView = [ThrobberView filmstripThrobberViewWithFrame:frame
                                                           image:throbberImage];
       }

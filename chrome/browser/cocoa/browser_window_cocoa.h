@@ -105,7 +105,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void Copy();
   virtual void Paste();
   virtual void ToggleTabStripMode();
-  virtual void SetToolbarCollapsedMode(bool collapsed);
+  virtual void SetToolbarCollapsedMode(bool val) {};
 
   // Overridden from NotificationObserver
   virtual void Observe(NotificationType type,

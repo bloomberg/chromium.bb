@@ -464,7 +464,8 @@ bool TabStripModel::IsMiniTab(int index) const {
 }
 
 bool TabStripModel::IsAppTab(int index) const {
-  return GetTabContentsAt(index)->is_app();
+  TabContents* contents = GetTabContentsAt(index);
+  return contents && contents->is_app();
 }
 
 bool TabStripModel::IsToolbarVisible(int index) const {

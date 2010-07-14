@@ -550,10 +550,6 @@ void BrowserWindowCocoa::ToggleTabStripMode() {
   [controller_ toggleTabStripDisplayMode];
 }
 
-void BrowserWindowCocoa::SetToolbarCollapsedMode(bool collapsed) {
-  [controller_ setToolbarCollapsedMode:collapsed];
-}
-
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

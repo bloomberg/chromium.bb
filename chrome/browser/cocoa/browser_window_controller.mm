@@ -793,7 +793,7 @@
 }
 
 // Update a toggle state for an NSMenuItem if modified.
-// Take care to insure |item| looks like a NSMenuItem.
+// Take care to ensure |item| looks like a NSMenuItem.
 // Called by validateUserInterfaceItem:.
 - (void)updateToggleStateWithTag:(NSInteger)tag forItem:(id)item {
   if (![item respondsToSelector:@selector(state)] ||
@@ -1631,17 +1631,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 - (BOOL)useVerticalTabs {
   return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
-}
-
-- (void)setToolbarCollapsedMode:(BOOL)collapsed {
-  if (toolbarCollapsed_ == collapsed)
-    return;
-
-  [self locationBarBridge]->SetEditable(!collapsed);
-
-  // TODO(andybons): Actually hide toolbar if collapsed.
-
-  toolbarCollapsed_ = collapsed;
 }
 
 - (void)sheetDidEnd:(NSWindow*)sheet

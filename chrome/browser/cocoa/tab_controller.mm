@@ -23,10 +23,6 @@
 @synthesize pinned = pinned_;
 @synthesize target = target_;
 
-namespace {
-const CGFloat kAppIconTopOffsetPx = 2.0;
-}  // anonymous namespace
-
 namespace TabControllerInternal {
 
 // A C++ delegate that handles enabling/disabling menu items and handling when
@@ -68,7 +64,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 + (CGFloat)minSelectedTabWidth { return 46; }
 + (CGFloat)maxTabWidth { return 220; }
 + (CGFloat)miniTabWidth { return 53; }
-+ (CGFloat)appTabWidth { return 46; }
++ (CGFloat)appTabWidth { return 66; }
 
 - (TabView*)tabView {
   return static_cast<TabView*>([self view]);
@@ -134,7 +130,10 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   contextMenuDelegate_.reset(
       new TabControllerInternal::MenuDelegate(target_, self));
   contextMenuModel_.reset(new TabMenuModel(contextMenuDelegate_.get(),
-                                           [self pinned], false, true));
+                                           [self pinned],
+                                           false,   // allow_toolbar_toggle
+                                           true));  // is_toolbar_visible
+
   contextMenuController_.reset(
       [[MenuController alloc] initWithModel:contextMenuModel_.get()
                      useWithPopUpButtonCell:NO]);
@@ -173,8 +172,6 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   if ([self app]) {
     NSRect appIconFrame = [iconView frame];
     appIconFrame.origin = originalIconFrame_.origin;
-    // Adjust the position to prevent clipping due to the icon's larger size.
-    appIconFrame.origin.y -= kAppIconTopOffsetPx;
     // Center the icon.
     appIconFrame.origin.x = ([TabController appTabWidth] -
         NSWidth(appIconFrame)) / 2.0;
