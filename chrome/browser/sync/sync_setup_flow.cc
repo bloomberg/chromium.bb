@@ -299,6 +299,7 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
     case SyncSetupWizard::CHOOSE_DATA_TYPES:
       ProfileSyncService::SyncEvent(
           ProfileSyncService::CANCEL_FROM_CHOOSE_DATA_TYPES);
+      break;
     case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
       // TODO(sync): rename this histogram; it's tracking authorization AND
