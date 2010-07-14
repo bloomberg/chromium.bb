@@ -24,10 +24,8 @@ extern const std::wstring kXmppAuthTokenConfigPath;
 extern const std::wstring kHostIdConfigPath;
 // Readable host name.
 extern const std::wstring kHostNameConfigPath;
-// Public key used by the host for authentication.
-extern const std::wstring kPublicKeyConfigPath;
-
-// TODO(sergeyu): Add a property for private key.
+// Private keys used for host authentication.
+extern const std::wstring kPrivateKeyConfigPath;
 
 // HostConfig interace provides read-only access to host configuration.
 class HostConfig : public base::RefCountedThreadSafe<HostConfig> {

@@ -16,6 +16,7 @@ import socket
 import sys
 
 import gaia_auth
+import keygen
 
 server = 'www-googleapis-test.sandbox.google.com'
 url = 'http://' + server + '/chromoting/v1/@me/hosts'
@@ -34,19 +35,17 @@ host_id = str(uuid.uuid1())
 print "HostId:", host_id
 host_name = socket.gethostname()
 print "HostName:", host_name
-# TODO(sergeyu): Implement keypair generation.
-public_key = '123123'
-jingle_id = ''
 
-#f = urllib.urlopen(url, params);
-#print params
+print "Generating RSA key pair...",
+(private_key, public_key) = keygen.generateRSAKeyPair()
+print "Done"
+
 params = ('{"data":{' + \
           '"host_id": "%(host_id)s",' + \
           '"host_name": "%(host_name)s",' + \
-          '"public_key": "%(public_key)s",' + \
-          '"jingle_id": "%(jingle_id)s"}}') % \
+          '"public_key": "%(public_key)s"}}') % \
           {'host_id': host_id, 'host_name': host_name,
-           'public_key': public_key, 'jingle_id': jingle_id}
+           'public_key': public_key}
 headers = {"Authorization": "GoogleLogin auth=" + xapi_token,
            "Content-Type": "application/json" }
 request = urllib2.Request(url, params, headers)
@@ -78,7 +77,7 @@ settings_file.write('  "xmpp_login" : "' + email + '",\n')
 settings_file.write('  "xmpp_auth_token" : "' + auth_token + '",\n')
 settings_file.write('  "host_id" : "' + host_id + '",\n')
 settings_file.write('  "host_name" : "' + host_name + '",\n')
-settings_file.write('  "public_key" : "' + public_key + '"\n')
+settings_file.write('  "private_key" : "' + private_key + '",\n')
 settings_file.write('}\n')
 settings_file.close()
 

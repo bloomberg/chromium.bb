@@ -250,6 +250,19 @@
     },  # end of target 'chromoting_simple_host'
 
     {
+      'target_name': 'chromoting_host_keygen',
+      'type': 'executable',
+      'dependencies': [
+        'chromoting_base',
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+      ],
+      'sources': [
+        'host/keygen_main.cc',
+      ],
+    },  # end of target 'chromoting_simple_host'
+
+    {
       'target_name': 'chromoting_simple_client',
       'type': 'executable',
       'dependencies': [

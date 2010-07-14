@@ -20,7 +20,7 @@ const char *kTestConfig =
 "  \"xmpp_auth_token\" : \"TEST_AUTH_TOKEN\",\n"
 "  \"host_id\" : \"TEST_HOST_ID\",\n"
 "  \"host_name\" : \"TEST_MACHINE_NAME\",\n"
-"  \"public_key\" : \"TEST_PUBLIC_KEY\"\n"
+"  \"private_key\" : \"TEST_PRIVATE_KEY\"\n"
 "}\n";
 
 // Helper for Update test.
@@ -76,8 +76,8 @@ TEST_F(JsonHostConfigTest, Read) {
   EXPECT_EQ("TEST_HOST_ID", value);
   EXPECT_TRUE(target->GetString(kHostNameConfigPath, &value));
   EXPECT_EQ("TEST_MACHINE_NAME", value);
-  EXPECT_TRUE(target->GetString(kPublicKeyConfigPath, &value));
-  EXPECT_EQ("TEST_PUBLIC_KEY", value);
+  EXPECT_TRUE(target->GetString(kPrivateKeyConfigPath, &value));
+  EXPECT_EQ("TEST_PRIVATE_KEY", value);
 
   EXPECT_FALSE(target->GetString(L"non_existent_value", &value));
 }
@@ -114,8 +114,8 @@ TEST_F(JsonHostConfigTest, Write) {
   EXPECT_EQ("TEST_HOST_ID", value);
   EXPECT_TRUE(reader->GetString(kHostNameConfigPath, &value));
   EXPECT_EQ("TEST_MACHINE_NAME", value);
-  EXPECT_TRUE(reader->GetString(kPublicKeyConfigPath, &value));
-  EXPECT_EQ("TEST_PUBLIC_KEY", value);
+  EXPECT_TRUE(reader->GetString(kPrivateKeyConfigPath, &value));
+  EXPECT_EQ("TEST_PRIVATE_KEY", value);
 }
 
 }
