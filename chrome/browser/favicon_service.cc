@@ -51,12 +51,8 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
   AddRequest(request, consumer);
   FaviconService::Handle handle = request->handle();
   if (page_url.SchemeIs(chrome::kChromeUIScheme) ||
-    page_url.SchemeIs(chrome::kExtensionScheme)) {
-    scoped_refptr<RefCountedMemory> icon_data =
-        DOMUIFactory::GetFaviconResourceBytes(profile_, page_url);
-    bool know_icon = icon_data.get() != NULL && icon_data->size() > 0;
-    request->ForwardResultAsync(FaviconDataCallback::TupleType(handle,
-        know_icon, icon_data, false, GURL()));
+      page_url.SchemeIs(chrome::kExtensionScheme)) {
+    DOMUIFactory::GetFaviconForURL(profile_, request, page_url);
   } else {
     HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (hs)

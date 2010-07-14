@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "chrome/browser/favicon_service.h"
+
 class DOMUI;
 class GURL;
 class Profile;
@@ -42,14 +44,20 @@ class DOMUIFactory {
   // the returned pointer is passed to the caller.
   static DOMUI* CreateDOMUIForURL(TabContents* tab_contents, const GURL& url);
 
-  // Gets the data for the favicon for a DOMUI page. Returns false if the DOMUI
-  // does not have a favicon.
-  static RefCountedMemory* GetFaviconResourceBytes(Profile* profile,
-                                                   const GURL& page_url);
+  // Get the favicon for |page_url| and forward the result to the |request|
+  // when loaded.
+  static void GetFaviconForURL(Profile* profile,
+                               FaviconService::GetFaviconRequest* request,
+                               const GURL& page_url);
 
  private:
   // Class is for scoping only.
   DOMUIFactory() {}
+
+  // Gets the data for the favicon for a DOMUI page. Returns NULL if the DOMUI
+  // does not have a favicon.
+  static RefCountedMemory* GetFaviconResourceBytes(Profile* profile,
+                                                   const GURL& page_url);
 };
 
 #endif  // CHROME_BROWSER_DOM_UI_DOM_UI_FACTORY_H_

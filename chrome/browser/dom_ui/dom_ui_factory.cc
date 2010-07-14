@@ -172,6 +172,25 @@ DOMUI* DOMUIFactory::CreateDOMUIForURL(TabContents* tab_contents,
 }
 
 // static
+void DOMUIFactory::GetFaviconForURL(Profile* profile,
+                                    FaviconService::GetFaviconRequest* request,
+                                    const GURL& page_url) {
+  // All extensions but the bookmark manager get their favicon from the icons
+  // part of the manifest.
+  if (page_url.SchemeIs(chrome::kExtensionScheme) &&
+      page_url.host() != extension_misc::kBookmarkManagerId) {
+    ExtensionDOMUI::GetFaviconForURL(profile, request, page_url);
+  } else {
+    scoped_refptr<RefCountedMemory> icon_data =
+        DOMUIFactory::GetFaviconResourceBytes(profile, page_url);
+    bool know_icon = icon_data.get() != NULL && icon_data->size() > 0;
+    request->ForwardResultAsync(
+        FaviconService::FaviconDataCallback::TupleType(request->handle(),
+            know_icon, icon_data, false, GURL()));
+  }
+}
+
+// static
 RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
                                                         const GURL& page_url) {
   // The bookmark manager is a chrome extension, so we have to check for it
@@ -179,8 +198,11 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
   if (page_url.host() == extension_misc::kBookmarkManagerId)
     return BookmarksUI::GetFaviconResourceBytes();
 
-  if (page_url.SchemeIs(chrome::kExtensionScheme))
-    return ExtensionDOMUI::GetFaviconResourceBytes(profile, page_url);
+  // The extension scheme is handled in GetFaviconForURL.
+  if (page_url.SchemeIs(chrome::kExtensionScheme)) {
+    NOTREACHED();
+    return NULL;
+  }
 
   if (!HasDOMUIScheme(page_url))
     return NULL;

@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -24,27 +25,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/codec/png_codec.h"
+#include "gfx/favicon_size.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
-// Returns a piece of memory with the contents of the file |path|.
-RefCountedMemory* ReadFileData(const FilePath& path) {
-  // TODO(arv): We currently read this on the UI thread since extension objects
-  // can only safely be accessed on the UI thread. Read the file on the FILE
-  // thread and cache the result on the UI thread instead.
-  if (path.empty())
-    return NULL;
-
-  RefCountedBytes* result = new RefCountedBytes;
-  std::string content;
-  if (!file_util::ReadFileToString(path, &content))
-    return NULL;
-
-  result->data.resize(content.size());
-  std::copy(content.begin(), content.end(),
-            result->data.begin());
-
-  return result;
-}
 
 // De-dupes the items in |list|. Assumes the values are strings.
 void CleanUpDuplicates(ListValue* list) {
@@ -64,6 +49,70 @@ void CleanUpDuplicates(ListValue* list) {
       list->Remove(i, NULL);
   }
 }
+
+// Helper class that is used to track the loading of the favicon of an
+// extension.
+class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
+ public:
+  ExtensionDOMUIImageLoadingTracker(Profile* profile,
+                                    FaviconService::GetFaviconRequest* request,
+                                    const GURL& page_url)
+      : ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
+        request_(request),
+        extension_(NULL) {
+    // Even when the extensions service is enabled by default, it's still
+    // disabled in incognito mode.
+    ExtensionsService* service = profile->GetExtensionsService();
+    if (service)
+      extension_ = service->GetExtensionByURL(page_url);
+  }
+
+  void Init() {
+    if (extension_) {
+      ExtensionResource icon_resource =
+          extension_->GetIconPath(Extension::EXTENSION_ICON_BITTY);
+
+      tracker_.LoadImage(extension_, icon_resource,
+                         gfx::Size(kFavIconSize, kFavIconSize),
+                         ImageLoadingTracker::DONT_CACHE);
+    } else {
+      ForwardResult(NULL);
+    }
+  }
+
+  virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+                             int index) {
+    if (image) {
+      std::vector<unsigned char> image_data;
+      if (!gfx::PNGCodec::EncodeBGRASkBitmap(*image, false, &image_data)) {
+        NOTREACHED() << "Could not encode extension favicon";
+      }
+      ForwardResult(RefCountedBytes::TakeVector(&image_data));
+    } else {
+      ForwardResult(NULL);
+    }
+  }
+
+ private:
+  ~ExtensionDOMUIImageLoadingTracker() {}
+
+  // Forwards the result on the request. If no favicon was available then
+  // |icon_data| may be backed by NULL. Once the result has been forwarded the
+  // instance is deleted.
+  void ForwardResult(scoped_refptr<RefCountedMemory> icon_data) {
+    bool know_icon = icon_data.get() != NULL && icon_data->size() > 0;
+    request_->ForwardResultAsync(
+        FaviconService::FaviconDataCallback::TupleType(request_->handle(),
+            know_icon, icon_data, false, GURL()));
+    delete this;
+  }
+
+  ImageLoadingTracker tracker_;
+  scoped_refptr<FaviconService::GetFaviconRequest> request_;
+  Extension* extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionDOMUIImageLoadingTracker);
+};
 
 }  // namespace
 
@@ -335,23 +384,10 @@ void ExtensionDOMUI::UnregisterChromeURLOverrides(
 }
 
 // static
-RefCountedMemory* ExtensionDOMUI::GetFaviconResourceBytes(Profile* profile,
-                                                          GURL page_url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI)) << "The extension "
-      "objects should only be accessed on the UI thread.";
-
-  // Even when the extensions service is enabled by default, it's still
-  // disabled in incognito mode.
-  ExtensionsService* service = profile->GetExtensionsService();
-  if (!service)
-    return NULL;
-
-  Extension* extension = service->GetExtensionByURL(page_url);
-  if (!extension)
-    return NULL;
-
-  // TODO(arv): Move this off of the UI thread and onto the File thread. If
-  //            possible to do this asynchronously, use ImageLoadingTracker.
-  return ReadFileData(extension->GetIconPath(
-      Extension::EXTENSION_ICON_BITTY).GetFilePathOnAnyThreadHack());
+void ExtensionDOMUI::GetFaviconForURL(Profile* profile,
+    FaviconService::GetFaviconRequest* request, const GURL& page_url) {
+  // tracker deletes itself when done.
+  ExtensionDOMUIImageLoadingTracker* tracker =
+      new ExtensionDOMUIImageLoadingTracker(profile, request, page_url);
+  tracker->Init();
 }
