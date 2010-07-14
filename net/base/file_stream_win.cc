@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "base/file_path.h"
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "net/base/net_errors.h"

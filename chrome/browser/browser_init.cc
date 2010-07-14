@@ -10,7 +10,6 @@
 #include "app/resource_bundle.h"
 #include "base/env_var.h"
 #include "base/event_recorder.h"
-#include "base/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/automation/automation_provider.h"

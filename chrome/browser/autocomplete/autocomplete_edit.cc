@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"

@@ -7,7 +7,6 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
-#include "base/histogram.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"

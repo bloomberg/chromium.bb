@@ -58,7 +58,6 @@
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/waitable_event.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"

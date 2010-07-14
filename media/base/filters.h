@@ -31,7 +31,6 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
-#include "base/scoped_ptr.h"
 #include "media/base/media_format.h"
 
 namespace media {

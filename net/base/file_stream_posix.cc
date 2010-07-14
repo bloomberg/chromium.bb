@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

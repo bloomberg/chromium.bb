@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/file_util.h"
-#include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/sha2.h"

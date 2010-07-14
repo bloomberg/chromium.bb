@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"

@@ -16,7 +16,6 @@
 #include <arpa/inet.h>
 #endif
 
-#include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"

@@ -9,7 +9,6 @@
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/common/net/url_fetcher.h"

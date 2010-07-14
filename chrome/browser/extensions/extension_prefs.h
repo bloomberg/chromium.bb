@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/linked_ptr.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/extensions/extension.h"
