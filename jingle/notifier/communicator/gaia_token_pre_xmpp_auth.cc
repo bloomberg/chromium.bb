@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/basictypes.h"
 #include "talk/base/socketaddress.h"
 #include "talk/xmpp/constants.h"
 #include "talk/xmpp/saslcookiemechanism.h"
@@ -13,7 +14,39 @@
 namespace notifier {
 
 namespace {
+
 const char kGaiaAuthMechanism[] = "X-GOOGLE-TOKEN";
+
+class GaiaCookieMechanism : public buzz::SaslCookieMechanism {
+ public:
+  GaiaCookieMechanism(const std::string & mechanism,
+                      const std::string & username,
+                      const std::string & cookie,
+                      const std::string & token_service)
+      : buzz::SaslCookieMechanism(
+          mechanism, username, cookie, token_service) {}
+
+  virtual ~GaiaCookieMechanism() {}
+
+  virtual buzz::XmlElement* StartSaslAuth() {
+    buzz::XmlElement* auth = buzz::SaslCookieMechanism::StartSaslAuth();
+    // These attributes are necessary for working with non-gmail gaia
+    // accounts.
+    const std::string NS_GOOGLE_AUTH_PROTOCOL(
+        "http://www.google.com/talk/protocol/auth");
+    const buzz::QName QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN(
+        true, NS_GOOGLE_AUTH_PROTOCOL, "allow-generated-jid");
+    const buzz::QName QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT(
+        true, NS_GOOGLE_AUTH_PROTOCOL, "client-uses-full-bind-result");
+    auth->SetAttr(QN_GOOGLE_ALLOW_GENERATED_JID_XMPP_LOGIN, "true");
+    auth->SetAttr(QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT, "true");
+    return auth;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GaiaCookieMechanism);
+};
+
 }  // namespace
 
 GaiaTokenPreXmppAuth::GaiaTokenPreXmppAuth(
@@ -69,7 +102,7 @@ buzz::SaslMechanism* GaiaTokenPreXmppAuth::CreateSaslMechanism(
     const std::string& mechanism) {
   if (mechanism != kGaiaAuthMechanism)
     return NULL;
-  return new buzz::SaslCookieMechanism(
+  return new GaiaCookieMechanism(
       kGaiaAuthMechanism, username_, token_, token_service_);
 }
 
