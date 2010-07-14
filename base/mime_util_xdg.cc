@@ -396,8 +396,8 @@ void AddXDGDataDir(const FilePath& dir) {
 // Add all the xdg icon directories.
 void InitIconDir() {
   Singleton<MimeUtilConstants>::get()->icon_dirs_->clear();
-  const char* home = getenv("HOME");
-  if (home) {
+  FilePath home = file_util::GetHomeDir();
+  if (!home.empty()) {
       FilePath legacy_data_dir(home);
       legacy_data_dir = legacy_data_dir.AppendASCII(".icons");
       if (file_util::DirectoryExists(legacy_data_dir))
@@ -406,7 +406,7 @@ void InitIconDir() {
   const char* env = getenv("XDG_DATA_HOME");
   if (env) {
     AddXDGDataDir(FilePath(env));
-  } else if (home) {
+  } else if (!home.empty()) {
     FilePath local_data_dir(home);
     local_data_dir = local_data_dir.AppendASCII(".local");
     local_data_dir = local_data_dir.AppendASCII("share");

@@ -34,16 +34,16 @@ namespace {
 
 #if !defined(USE_NSS_FOR_SSL_ONLY)
 std::string GetDefaultConfigDirectory() {
-  const char* home = getenv("HOME");
-  if (home == NULL) {
+  FilePath home = file_util::GetHomeDir();
+  if (home.empty()) {
     LOG(ERROR) << "$HOME is not set.";
-    return "";
+    return std::string();
   }
   FilePath dir(home);
   dir = dir.AppendASCII(".pki").AppendASCII("nssdb");
   if (!file_util::CreateDirectory(dir)) {
     LOG(ERROR) << "Failed to create ~/.pki/nssdb directory.";
-    return "";
+    return std::string();
   }
   return dir.value();
 }
