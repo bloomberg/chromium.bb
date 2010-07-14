@@ -10,6 +10,7 @@
 extern "C" {
 #include <sandbox.h>
 }
+#include <sys/param.h>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -118,27 +119,26 @@ bool QuotePlainString(const std::string& str_utf8, std::string* dst) {
 //
 // Returns: true on success, false otherwise.
 bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst) {
-  // List of chars with special meaning to regex.
-  // This list is derived from http://perldoc.perl.org/perlre.html .
+  // Characters with special meanings in sandbox profile syntax.
+  // Note: ]} are notably absent from this list although in practice escaping
+  // them has no ill effect.
   const char regex_special_chars[] = {
     '\\',
 
     // Metacharacters
     '^',
     '.',
+    '[',
     '$',
-    '|',
     '(',
     ')',
-    '[',
-    ']',
+    '|',
 
     // Quantifiers
     '*',
     '+',
     '?',
     '{',
-    '}',
   };
 
   // Anchor regex at start of path.
@@ -345,14 +345,11 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
     // needed so the caller doesn't need to worry about things like /var
     // being a link to /private/var (like in the paths CreateNewTempDirectory()
     // returns).
-    FilePath allowed_dir_absolute(allowed_dir);
-    if (!file_util::AbsolutePath(&allowed_dir_absolute)) {
-      PLOG(FATAL) << "Failed to resolve absolute path";
-      return false;
-    }
+    FilePath allowed_dir_canonical(allowed_dir);
+    GetCanonicalSandboxPath(&allowed_dir_canonical);
 
     std::string allowed_dir_escaped;
-    if (!QuoteStringForRegex(allowed_dir_absolute.value(),
+    if (!QuoteStringForRegex(allowed_dir_canonical.value(),
                              &allowed_dir_escaped)) {
       LOG(FATAL) << "Regex string quoting failed " << allowed_dir.value();
       return false;
@@ -384,8 +381,12 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
     // If we ever need this on pre-10.6 OSs then we'll have to rethink the
     // surrounding sandbox syntax.
     std::string home_dir = base::SysNSStringToUTF8(NSHomeDirectory());
+
+    FilePath home_dir_canonical(home_dir);
+    GetCanonicalSandboxPath(&home_dir_canonical);
+
     std::string home_dir_escaped;
-    if (!QuotePlainString(home_dir, &home_dir_escaped)) {
+    if (!QuotePlainString(home_dir_canonical.value(), &home_dir_escaped)) {
       LOG(FATAL) << "Sandbox string quoting failed";
       return false;
     }
@@ -409,6 +410,25 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
                           << error_buff;
   sandbox_free_error(error_buff);
   return success;
+}
+
+void GetCanonicalSandboxPath(FilePath* path) {
+  int fd = HANDLE_EINTR(open(path->value().c_str(), O_RDONLY));
+  if (fd < 0) {
+    PLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
+                << path->value();
+    return;
+  }
+  file_util::ScopedFD file_closer(&fd);
+
+  FilePath::CharType canonical_path[MAXPATHLEN];
+  if (HANDLE_EINTR(fcntl(fd, F_GETPATH, canonical_path)) != 0) {
+    PLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
+                << path->value();
+    return;
+  }
+
+  *path = FilePath(canonical_path);
 }
 
 }  // namespace sandbox

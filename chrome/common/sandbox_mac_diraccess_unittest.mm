@@ -147,7 +147,7 @@ TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
   // This step is important on OS X since the sandbox only understands "real"
   // paths and the paths CreateNewTempDirectory() returns are empirically in
   // /var which is a symlink to /private/var .
-  ASSERT_TRUE(file_util::AbsolutePath(&tmp_dir));
+  sandbox::GetCanonicalSandboxPath(&tmp_dir);
   ScopedDirectory cleanup(&tmp_dir);
 
   const char* sandbox_dir_cases[] = {
