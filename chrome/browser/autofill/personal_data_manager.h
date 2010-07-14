@@ -205,6 +205,10 @@ class PersonalDataManager
   // True if personal data has been loaded from the web database.
   bool is_data_loaded_;
 
+  // The set of already created unique IDs, shared by both profiles and credit
+  // cards, since IDs must be unique among the two groups.
+  std::set<int> unique_ids_;
+
   // The set of already created unique profile IDs, used to create a new unique
   // profile ID.
   std::set<int> unique_profile_ids_;

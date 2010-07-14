@@ -254,6 +254,9 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   for (std::set<int>::iterator iter = unique_profile_ids_.begin();
        iter != unique_profile_ids_.end(); ++iter) {
     wds->RemoveAutoFillProfile(*iter);
+
+    // Also remove these IDs from the total set of unique IDs.
+    unique_ids_.erase(*iter);
   }
 
   // Clear the unique IDs.  The set of unique IDs is updated for each profile
@@ -279,8 +282,11 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
     // unique ID.  This also means we need to add this profile to the web
     // database.
     if (iter->unique_id() == 0) {
-      iter->set_unique_id(CreateNextUniqueID(&unique_profile_ids_));
+      iter->set_unique_id(CreateNextUniqueID(&unique_ids_));
       wds->AddAutoFillProfile(*iter);
+
+      // Update the list of unique profile IDs.
+      unique_profile_ids_.insert(iter->unique_id());
     }
   }
 
@@ -328,6 +334,9 @@ void PersonalDataManager::SetCreditCards(
   for (std::set<int>::iterator iter = unique_creditcard_ids_.begin();
        iter != unique_creditcard_ids_.end(); ++iter) {
     wds->RemoveCreditCard(*iter);
+
+    // Also remove these IDs from the total set of unique IDs.
+    unique_ids_.erase(*iter);
   }
 
   // Clear the unique IDs.  The set of unique IDs is updated for each credit
@@ -353,8 +362,11 @@ void PersonalDataManager::SetCreditCards(
     // unique ID.  This also means we need to add this credit card to the web
     // database.
     if (iter->unique_id() == 0) {
-      iter->set_unique_id(CreateNextUniqueID(&unique_creditcard_ids_));
+      iter->set_unique_id(CreateNextUniqueID(&unique_ids_));
       wds->AddCreditCard(*iter);
+
+      // Update the list of unique credit card IDs.
+      unique_creditcard_ids_.insert(iter->unique_id());
     }
   }
 

@@ -119,7 +119,7 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
   // The message loop will exit when the mock observer is notified.
   MessageLoop::current()->Run();
 
-  // Add the three test profiles to the database.
+  // Add two test profiles to the database.
   std::vector<AutoFillProfile> update;
   update.push_back(profile0);
   update.push_back(profile1);
@@ -155,7 +155,7 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
   ASSERT_EQ(2U, results2.size());
   EXPECT_EQ(profile0, *results2.at(0));
   EXPECT_EQ(profile2, *results2.at(1));
-  EXPECT_EQ(profile2.unique_id(), profile1.unique_id());
+  EXPECT_EQ(profile1.unique_id(), profile2.unique_id());
 
   // Reset the PersonalDataManager.  This tests that the personal data was saved
   // to the web database, and that we can load the profiles from the web
@@ -199,7 +199,7 @@ TEST_F(PersonalDataManagerTest, SetCreditCards) {
   // The message loop will exit when the mock observer is notified.
   MessageLoop::current()->Run();
 
-  // Add the three test credit cards to the database.
+  // Add two test credit cards to the database.
   std::vector<CreditCard> update;
   update.push_back(creditcard0);
   update.push_back(creditcard1);
@@ -255,6 +255,78 @@ TEST_F(PersonalDataManagerTest, SetCreditCards) {
   ASSERT_EQ(2U, results3.size());
   EXPECT_EQ(creditcard0, *results3.at(0));
   EXPECT_EQ(creditcard2, *results3.at(1));
+}
+
+TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
+  AutoFillProfile profile0(string16(), 0);
+  autofill_unittest::SetProfileInfo(&profile0,
+      "Billing", "Marion", "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910", "01987654321");
+
+  AutoFillProfile profile1(string16(), 0);
+  autofill_unittest::SetProfileInfo(&profile1,
+      "Home", "Josephine", "Alicia", "Saenz",
+      "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
+      "US", "19482937549", "13502849239");
+
+  CreditCard creditcard0(string16(), 0);
+  autofill_unittest::SetCreditCardInfo(&creditcard0, "Corporate",
+      "John Dillinger", "Visa", "123456789012", "01", "2010", "Chicago");
+
+  CreditCard creditcard1(string16(), 0);
+  autofill_unittest::SetCreditCardInfo(&creditcard1, "Personal",
+      "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", "Dallas");
+
+  // This will verify that the web database has been loaded and the notification
+  // sent out.
+  EXPECT_CALL(
+      personal_data_observer_,
+      OnPersonalDataLoaded()).Times(2).WillRepeatedly(QuitUIMessageLoop());
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+
+  // Add two test profiles to the database.
+  std::vector<AutoFillProfile> update;
+  update.push_back(profile0);
+  update.push_back(profile1);
+  personal_data_->SetProfiles(&update);
+
+  // The PersonalDataManager will update the unique IDs when saving the
+  // profiles, so we have to update the expectations.
+  profile0.set_unique_id(update[0].unique_id());
+  profile1.set_unique_id(update[1].unique_id());
+
+  const std::vector<AutoFillProfile*>& results1 = personal_data_->profiles();
+  ASSERT_EQ(2U, results1.size());
+  EXPECT_EQ(profile0, *results1.at(0));
+  EXPECT_EQ(profile1, *results1.at(1));
+
+  // Add two test credit cards to the database.
+  std::vector<CreditCard> update_cc;
+  update_cc.push_back(creditcard0);
+  update_cc.push_back(creditcard1);
+  personal_data_->SetCreditCards(&update_cc);
+
+  // The PersonalDataManager will update the unique IDs when saving the
+  // credit cards, so we have to update the expectations.
+  creditcard0.set_unique_id(update_cc[0].unique_id());
+  creditcard1.set_unique_id(update_cc[1].unique_id());
+
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(2U, results2.size());
+  EXPECT_EQ(creditcard0, *results2.at(0));
+  EXPECT_EQ(creditcard1, *results2.at(1));
+
+  // Determine uniqueness by inserting all of the IDs into a set and verifying
+  // the size of the set matches the number of IDs.
+  std::set<int> ids;
+  ids.insert(profile0.unique_id());
+  ids.insert(profile1.unique_id());
+  ids.insert(creditcard0.unique_id());
+  ids.insert(creditcard1.unique_id());
+  EXPECT_EQ(4U, ids.size());
 }
 
 TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
