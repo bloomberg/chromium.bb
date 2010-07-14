@@ -126,6 +126,58 @@ FilePath::StringType StripOrdinalNumber(
   return pure_file_name.substr(0, l_paren_index);
 }
 
+// Check whether we can save page as complete-HTML for the contents which
+// have specified a MIME type. Now only contents which have the MIME type
+// "text/html" can be saved as complete-HTML.
+bool CanSaveAsComplete(const std::string& contents_mime_type) {
+  return contents_mime_type == "text/html" ||
+         contents_mime_type == "application/xhtml+xml";
+}
+
+// File name is considered being consist of pure file name, dot and file
+// extension name. File name might has no dot and file extension, or has
+// multiple dot inside file name. The dot, which separates the pure file
+// name and file extension name, is last dot in the whole file name.
+// This function is for making sure the length of specified file path is not
+// great than the specified maximum length of file path and getting safe pure
+// file name part if the input pure file name is too long.
+// The parameter |dir_path| specifies directory part of the specified
+// file path. The parameter |file_name_ext| specifies file extension
+// name part of the specified file path (including start dot). The parameter
+// |max_file_path_len| specifies maximum length of the specified file path.
+// The parameter |pure_file_name| input pure file name part of the specified
+// file path. If the length of specified file path is great than
+// |max_file_path_len|, the |pure_file_name| will output new pure file name
+// part for making sure the length of specified file path is less than
+// specified maximum length of file path. Return false if the function can
+// not get a safe pure file name, otherwise it returns true.
+bool GetSafePureFileName(const FilePath& dir_path,
+                         const FilePath::StringType& file_name_ext,
+                         uint32 max_file_path_len,
+                         FilePath::StringType* pure_file_name) {
+  DCHECK(!pure_file_name->empty());
+  int available_length = static_cast<int>(
+    max_file_path_len - dir_path.value().length() - file_name_ext.length());
+  // Need an extra space for the separator.
+  if (!file_util::EndsWithSeparator(dir_path))
+    --available_length;
+
+  // Plenty of room.
+  if (static_cast<int>(pure_file_name->length()) <= available_length)
+    return true;
+
+  // Limited room. Truncate |pure_file_name| to fit.
+  if (available_length > 0) {
+    *pure_file_name =
+        pure_file_name->substr(0, available_length);
+    return true;
+  }
+
+  // Not enough room to even use a shortened |pure_file_name|.
+  pure_file_name->clear();
+  return false;
+}
+
 // This task creates a directory and then posts a task on the given thread.
 class CreateDownloadDirectoryTask : public Task {
  public:
@@ -1317,40 +1369,6 @@ bool SavePackage::IsSavableContents(const std::string& contents_mime_type) {
          contents_mime_type == "text/plain" ||
          contents_mime_type == "text/css" ||
          net::IsSupportedJavascriptMimeType(contents_mime_type.c_str());
-}
-
-// Static
-bool SavePackage::CanSaveAsComplete(const std::string& contents_mime_type) {
-  return contents_mime_type == "text/html" ||
-         contents_mime_type == "application/xhtml+xml";
-}
-
-// Static
-bool SavePackage::GetSafePureFileName(const FilePath& dir_path,
-                                      const FilePath::StringType& file_name_ext,
-                                      uint32 max_file_path_len,
-                                      FilePath::StringType* pure_file_name) {
-  DCHECK(!pure_file_name->empty());
-  int available_length = static_cast<int>(
-    max_file_path_len - dir_path.value().length() - file_name_ext.length());
-  // Need an extra space for the separator.
-  if (!file_util::EndsWithSeparator(dir_path))
-    --available_length;
-
-  // Plenty of room.
-  if (static_cast<int>(pure_file_name->length()) <= available_length)
-    return true;
-
-  // Limited room. Truncate |pure_file_name| to fit.
-  if (available_length > 0) {
-    *pure_file_name =
-        pure_file_name->substr(0, available_length);
-    return true;
-  }
-
-  // Not enough room to even use a shortened |pure_file_name|.
-  pure_file_name->clear();
-  return false;
 }
 
 // SelectFileDialog::Listener interface.

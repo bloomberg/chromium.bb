@@ -84,6 +84,14 @@ bool CompareStartTime(DownloadItem* first, DownloadItem* second) {
   return first->start_time() > second->start_time();
 }
 
+void DeleteDownloadedFile(const FilePath& path) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  // Make sure we only delete files.
+  if (!file_util::DirectoryExists(path))
+    file_util::Delete(path, false);
+}
+
 }  // namespace
 
 // DownloadItem implementation -------------------------------------------------
@@ -1661,9 +1669,8 @@ void DownloadManager::FileSelectionCanceled(void* params) {
 void DownloadManager::DeleteDownload(const FilePath& path) {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&DownloadFileManager::DeleteFile, FilePath(path)));
+      NewRunnableFunction(&DeleteDownloadedFile, path));
 }
-
 
 void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
   DCHECK_EQ(DownloadItem::DANGEROUS, download->safety_state());

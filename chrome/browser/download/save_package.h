@@ -159,34 +159,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // have the specified MIME type.
   static bool IsSavableContents(const std::string& contents_mime_type);
 
-  // Check whether we can save page as complete-HTML for the contents which
-  // have specified a MIME type. Now only contents which have the MIME type
-  // "text/html" can be saved as complete-HTML.
-  static bool CanSaveAsComplete(const std::string& contents_mime_type);
-
-  // File name is considered being consist of pure file name, dot and file
-  // extension name. File name might has no dot and file extension, or has
-  // multiple dot inside file name. The dot, which separates the pure file
-  // name and file extension name, is last dot in the whole file name.
-  // This function is for making sure the length of specified file path is not
-  // great than the specified maximum length of file path and getting safe pure
-  // file name part if the input pure file name is too long.
-  // The parameter |dir_path| specifies directory part of the specified
-  // file path. The parameter |file_name_ext| specifies file extension
-  // name part of the specified file path (including start dot). The parameter
-  // |max_file_path_len| specifies maximum length of the specified file path.
-  // The parameter |pure_file_name| input pure file name part of the specified
-  // file path. If the length of specified file path is great than
-  // |max_file_path_len|, the |pure_file_name| will output new pure file name
-  // part for making sure the length of specified file path is less than
-  // specified maximum length of file path. Return false if the function can
-  // not get a safe pure file name, otherwise it returns true.
-  static bool GetSafePureFileName(const FilePath& dir_path,
-                                  const FilePath::StringType& file_name_ext,
-                                  uint32 max_file_path_len,
-                                  FilePath::StringType* pure_file_name);
-
-  // SelectFileDialog::Listener interface.
+  // SelectFileDialog::Listener ------------------------------------------------
   virtual void FileSelected(const FilePath& path, int index, void* params);
   virtual void FileSelectionCanceled(void* params);
 

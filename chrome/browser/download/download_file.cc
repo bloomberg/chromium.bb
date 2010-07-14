@@ -37,24 +37,6 @@
 // cause it to become unresponsive (in milliseconds).
 static const int kUpdatePeriodMs = 500;
 
-// Timer task for posting UI updates. This task is created and maintained by
-// the DownloadFileManager long as there is an in progress download. The task
-// is cancelled when all active downloads have completed, or in the destructor
-// of the DownloadFileManager.
-class DownloadFileUpdateTask : public Task {
- public:
-  explicit DownloadFileUpdateTask(DownloadFileManager* manager)
-      : manager_(manager) {}
-  virtual void Run() {
-    manager_->UpdateInProgressDownloads();
-  }
-
- private:
-  DownloadFileManager* manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadFileUpdateTask);
-};
-
 // DownloadFile implementation -------------------------------------------------
 
 DownloadFile::DownloadFile(const DownloadCreateInfo* info)
@@ -243,6 +225,84 @@ void DownloadFileManager::OnShutdown() {
   downloads_.clear();
 }
 
+// Initiate a request for URL to be downloaded. Called from UI thread,
+// runs on IO thread.
+void DownloadFileManager::OnDownloadUrl(
+    const GURL& url,
+    const GURL& referrer,
+    const std::string& referrer_charset,
+    const DownloadSaveInfo& save_info,
+    int render_process_host_id,
+    int render_view_id,
+    URLRequestContextGetter* request_context_getter) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  URLRequestContext* context = request_context_getter->GetURLRequestContext();
+  context->set_referrer_charset(referrer_charset);
+
+  resource_dispatcher_host_->BeginDownload(url,
+                                           referrer,
+                                           save_info,
+                                           render_process_host_id,
+                                           render_view_id,
+                                           context);
+}
+
+// Notifications sent from the download thread and run on the UI thread.
+
+// Lookup the DownloadManager for this TabContents' profile and inform it of
+// a new download.
+// TODO(paulg): When implementing download restart via the Downloads tab,
+//              there will be no 'render_process_id' or 'render_view_id'.
+void DownloadFileManager::OnStartDownload(DownloadCreateInfo* info) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DownloadManager* manager = DownloadManagerFromRenderIds(info->child_id,
+                                                          info->render_view_id);
+  if (!manager) {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableFunction(&DownloadManager::OnCancelDownloadRequest,
+                            resource_dispatcher_host_,
+                            info->child_id,
+                            info->request_id));
+    delete info;
+    return;
+  }
+
+  StartUpdateTimer();
+
+  // Add the download manager to our request maps for future updates. We want to
+  // be able to cancel all in progress downloads when a DownloadManager is
+  // deleted, such as when a profile is closed. We also want to be able to look
+  // up the DownloadManager associated with a given request without having to
+  // rely on using tab information, since a tab may be closed while a download
+  // initiated from that tab is still in progress.
+  DownloadRequests& downloads = requests_[manager];
+  downloads.insert(info->download_id);
+
+  // TODO(paulg): The manager will exist when restarts are implemented.
+  DownloadManagerMap::iterator dit = managers_.find(info->download_id);
+  if (dit == managers_.end())
+    managers_[info->download_id] = manager;
+  else
+    NOTREACHED();
+
+  // StartDownload will clean up |info|.
+  manager->StartDownload(info);
+}
+
+// Update the Download Manager with the finish state, and remove the request
+// tracking entries.
+void DownloadFileManager::OnDownloadFinished(int id,
+                                             int64 bytes_so_far) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DownloadManager* manager = LookupManager(id);
+  if (manager)
+    manager->DownloadFinished(id, bytes_so_far);
+  RemoveDownload(id, manager);
+  RemoveDownloadFromUIProgress(id);
+}
+
 // Lookup one in-progress download.
 DownloadFile* DownloadFileManager::LookupDownload(int id) {
   DownloadFileMap::iterator it = downloads_.find(id);
@@ -270,6 +330,20 @@ void DownloadFileManager::StartUpdateTimer() {
 void DownloadFileManager::StopUpdateTimer() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   update_timer_.Stop();
+}
+
+// Our periodic timer has fired so send the UI thread updates on all in progress
+// downloads.
+void DownloadFileManager::UpdateInProgressDownloads() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  AutoLock lock(progress_lock_);
+  ProgressMap::iterator it = ui_progress_.begin();
+  for (; it != ui_progress_.end(); ++it) {
+    const int id = it->first;
+    DownloadManager* manager = LookupManager(id);
+    if (manager)
+      manager->UpdateDownload(id, it->second);
+  }
 }
 
 // Called on the IO thread once the ResourceDispatcherHost has decided that a
@@ -405,75 +479,6 @@ void DownloadFileManager::CancelDownload(int id) {
   }
 }
 
-// Our periodic timer has fired so send the UI thread updates on all in progress
-// downloads.
-void DownloadFileManager::UpdateInProgressDownloads() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  AutoLock lock(progress_lock_);
-  ProgressMap::iterator it = ui_progress_.begin();
-  for (; it != ui_progress_.end(); ++it) {
-    const int id = it->first;
-    DownloadManager* manager = LookupManager(id);
-    if (manager)
-      manager->UpdateDownload(id, it->second);
-  }
-}
-
-// Notifications sent from the download thread and run on the UI thread.
-
-// Lookup the DownloadManager for this TabContents' profile and inform it of
-// a new download.
-// TODO(paulg): When implementing download restart via the Downloads tab,
-//              there will be no 'render_process_id' or 'render_view_id'.
-void DownloadFileManager::OnStartDownload(DownloadCreateInfo* info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DownloadManager* manager = DownloadManagerFromRenderIds(info->child_id,
-                                                          info->render_view_id);
-  if (!manager) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableFunction(&DownloadManager::OnCancelDownloadRequest,
-                            resource_dispatcher_host_,
-                            info->child_id,
-                            info->request_id));
-    delete info;
-    return;
-  }
-
-  StartUpdateTimer();
-
-  // Add the download manager to our request maps for future updates. We want to
-  // be able to cancel all in progress downloads when a DownloadManager is
-  // deleted, such as when a profile is closed. We also want to be able to look
-  // up the DownloadManager associated with a given request without having to
-  // rely on using tab information, since a tab may be closed while a download
-  // initiated from that tab is still in progress.
-  DownloadRequests& downloads = requests_[manager];
-  downloads.insert(info->download_id);
-
-  // TODO(paulg): The manager will exist when restarts are implemented.
-  DownloadManagerMap::iterator dit = managers_.find(info->download_id);
-  if (dit == managers_.end())
-    managers_[info->download_id] = manager;
-  else
-    NOTREACHED();
-
-  // StartDownload will clean up |info|.
-  manager->StartDownload(info);
-}
-
-// Update the Download Manager with the finish state, and remove the request
-// tracking entries.
-void DownloadFileManager::OnDownloadFinished(int id,
-                                             int64 bytes_so_far) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DownloadManager* manager = LookupManager(id);
-  if (manager)
-    manager->DownloadFinished(id, bytes_so_far);
-  RemoveDownload(id, manager);
-  RemoveDownloadFromUIProgress(id);
-}
-
 void DownloadFileManager::DownloadUrl(
     const GURL& url,
     const GURL& referrer,
@@ -567,31 +572,6 @@ void DownloadFileManager::RemoveDownloadManager(DownloadManager* manager) {
   requests_.erase(it);
 }
 
-
-// Notifications from the UI thread and run on the IO thread
-
-// Initiate a request for URL to be downloaded.
-void DownloadFileManager::OnDownloadUrl(
-    const GURL& url,
-    const GURL& referrer,
-    const std::string& referrer_charset,
-    const DownloadSaveInfo& save_info,
-    int render_process_host_id,
-    int render_view_id,
-    URLRequestContextGetter* request_context_getter) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-
-  URLRequestContext* context = request_context_getter->GetURLRequestContext();
-  context->set_referrer_charset(referrer_charset);
-
-  resource_dispatcher_host_->BeginDownload(url,
-                                           referrer,
-                                           save_info,
-                                           render_process_host_id,
-                                           render_view_id,
-                                           context);
-}
-
 // Actions from the UI thread and run on the download thread
 
 // Open a download, or show it in a file explorer window. We run on this
@@ -681,9 +661,3 @@ void DownloadFileManager::OnFinalDownloadName(int id,
   }
 }
 
-// static
-void DownloadFileManager::DeleteFile(const FilePath& path) {
-  // Make sure we only delete files.
-  if (!file_util::DirectoryExists(path))
-    file_util::Delete(path, false);
-}

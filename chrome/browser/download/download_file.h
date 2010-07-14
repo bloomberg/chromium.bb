@@ -197,11 +197,6 @@ class DownloadFileManager
   void CancelDownload(int id);
   void DownloadFinished(int id, DownloadBuffer* buffer);
 
-  // Handlers for notifications sent from the download thread and run on
-  // the UI thread.
-  void OnStartDownload(DownloadCreateInfo* info);
-  void OnDownloadFinished(int id, int64 bytes_so_far);
-
   // Download the URL. Called on the UI thread and forwarded to the
   // ResourceDispatcherHost on the IO thread.
   void DownloadUrl(const GURL& url,
@@ -211,15 +206,6 @@ class DownloadFileManager
                    int render_process_host_id,
                    int render_view_id,
                    URLRequestContextGetter* request_context_getter);
-
-  // Run on the IO thread to initiate the download of a URL.
-  void OnDownloadUrl(const GURL& url,
-                     const GURL& referrer,
-                     const std::string& referrer_charset,
-                     const DownloadSaveInfo& save_info,
-                     int render_process_host_id,
-                     int render_view_id,
-                     URLRequestContextGetter* request_context_getter);
 
   // Called on the UI thread to remove a download item or manager.
   void RemoveDownloadManager(DownloadManager* manager);
@@ -243,12 +229,6 @@ class DownloadFileManager
   void OnFinalDownloadName(int id, const FilePath& full_path,
                            DownloadManager* download_manager);
 
-  // Timer notifications.
-  void UpdateInProgressDownloads();
-
-  // Called by the download manager to delete non validated dangerous downloads.
-  static void DeleteFile(const FilePath& path);
-
  private:
   friend class base::RefCountedThreadSafe<DownloadFileManager>;
 
@@ -257,9 +237,24 @@ class DownloadFileManager
   // Timer helpers for updating the UI about the current progress of a download.
   void StartUpdateTimer();
   void StopUpdateTimer();
+  void UpdateInProgressDownloads();
 
   // Clean up helper that runs on the download thread.
   void OnShutdown();
+
+  // Run on the IO thread to initiate the download of a URL.
+  void OnDownloadUrl(const GURL& url,
+                     const GURL& referrer,
+                     const std::string& referrer_charset,
+                     const DownloadSaveInfo& save_info,
+                     int render_process_host_id,
+                     int render_view_id,
+                     URLRequestContextGetter* request_context_getter);
+
+  // Handlers for notifications sent from the download thread and run on
+  // the UI thread.
+  void OnStartDownload(DownloadCreateInfo* info);
+  void OnDownloadFinished(int id, int64 bytes_so_far);
 
   // Called only on UI thread to get the DownloadManager for a tab's profile.
   static DownloadManager* DownloadManagerFromRenderIds(int render_process_id,
