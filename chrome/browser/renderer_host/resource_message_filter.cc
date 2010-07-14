@@ -50,6 +50,7 @@
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
+#include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -776,45 +777,7 @@ void ResourceMessageFilter::OnLoadFont(const FontDescriptor& font,
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
 void ResourceMessageFilter::OnPreCacheFont(LOGFONT font) {
-  // If the renderer is running in a sandbox, GetTextMetrics()
-  // can sometimes fail. If a font has not been loaded
-  // previously, GetTextMetrics() will try to load the font
-  // from the font file. However, the sandboxed renderer does
-  // not have permissions to access any font files and
-  // the call fails. So we make the browser pre-load the
-  // font for us by using a dummy call to GetTextMetrics of
-  // the same font.
-
-  // Maintain a circular queue for the fonts and DCs to be cached.
-  // font_index maintains next available location in the queue.
-  static const int kFontCacheSize = 32;
-  static HFONT fonts[kFontCacheSize] = {0};
-  static HDC hdcs[kFontCacheSize] = {0};
-  static size_t font_index = 0;
-
-  UMA_HISTOGRAM_COUNTS_100("Memory.CachedFontAndDC",
-      fonts[kFontCacheSize-1] ? kFontCacheSize : static_cast<int>(font_index));
-
-  HDC hdc = GetDC(NULL);
-  HFONT font_handle = CreateFontIndirect(&font);
-  DCHECK(NULL != font_handle);
-
-  HGDIOBJ old_font = SelectObject(hdc, font_handle);
-  DCHECK(NULL != old_font);
-
-  TEXTMETRIC tm;
-  BOOL ret = GetTextMetrics(hdc, &tm);
-  DCHECK(ret);
-
-  if (fonts[font_index] || hdcs[font_index]) {
-    // We already have too many fonts, we will delete one and take it's place.
-    DeleteObject(fonts[font_index]);
-    ReleaseDC(NULL, hdcs[font_index]);
-  }
-
-  fonts[font_index] = font_handle;
-  hdcs[font_index] = hdc;
-  font_index = (font_index + 1) % kFontCacheSize;
+  ChildProcessHost::PreCacheFont(font);
 }
 #endif  // OS_WIN
 

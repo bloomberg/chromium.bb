@@ -1471,7 +1471,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
 #if defined(OS_WIN)
   // Request that the given font be loaded by the browser so it's cached by the
-  // OS. Please see ResourceMessageFilter::OnPreCacheFont for details.
+  // OS. Please see ChildProcessHost::PreCacheFont for details.
   IPC_SYNC_MESSAGE_CONTROL1_0(ViewHostMsg_PreCacheFont,
                               LOGFONT /* font data */)
 #endif  // defined(OS_WIN)

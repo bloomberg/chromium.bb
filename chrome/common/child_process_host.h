@@ -5,6 +5,10 @@
 #ifndef CHROME_COMMON_CHILD_PROCESS_HOST_H_
 #define CHROME_COMMON_CHILD_PROCESS_HOST_H_
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif  // defined(OS_WIN)
+
 #include <list>
 #include <string>
 
@@ -42,6 +46,12 @@ class ChildProcessHost : public IPC::Channel::Listener {
   //
   // On failure, returns an empty FilePath.
   static FilePath GetChildPath(bool allow_self);
+
+#if defined(OS_WIN)
+  // See comments in the cc file. This is a common hack needed for a process
+  // hosting a sandboxed child process. Hence it lives in this file.
+  static void PreCacheFont(LOGFONT font);
+#endif  // defined(OS_WIN)
 
  protected:
   ChildProcessHost();
