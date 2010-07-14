@@ -443,8 +443,8 @@ download-trusted() {
 #@ download-toolchains - Download and Install all SDKs (arm,x86-32,x86-64)
 
 download-toolchains() {
-  ./scons platform=arm --download sdl=none
-  ./scons platform=x86-64 --download sdl=none
+  ./scons platform=arm --download --help sdl=none
+  ./scons platform=x86-64 --download --help sdl=none
 }
 
 #@-------------------------------------------------------------------------
