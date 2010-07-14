@@ -1723,8 +1723,7 @@ const int kDisabledIndex = 1;
 
   [syncButton_ setEnabled:!syncService_->WizardIsVisible()];
   NSString* buttonLabel;
-  if (syncService_->HasSyncSetupCompleted()
-      && status != sync_ui_util::SYNC_ERROR) {
+  if (syncService_->HasSyncSetupCompleted()) {
     buttonLabel = l10n_util::GetNSStringWithFixup(
         IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
     [syncCustomizeButton_ setHidden:false];
