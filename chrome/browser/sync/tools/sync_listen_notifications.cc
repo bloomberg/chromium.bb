@@ -17,13 +17,15 @@
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/sync_constants.h"
+#include "chrome/browser/sync/tools/chrome_async_socket.h"
 #include "chrome/common/chrome_switches.h"
-#include "google/cacheinvalidation/invalidation-client.h"
 #include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/communicator/xmpp_socket_adapter.h"
 #include "jingle/notifier/listener/listen_task.h"
 #include "jingle/notifier/listener/notification_constants.h"
 #include "jingle/notifier/listener/subscribe_task.h"
+#include "net/base/ssl_config_service.h"
+#include "net/socket/client_socket_factory.h"
 #include "talk/base/cryptstring.h"
 #include "talk/base/logging.h"
 #include "talk/base/sigslot.h"
@@ -81,7 +83,8 @@ class XmppNotificationClient : public sigslot::has_slots<> {
   }
 
   // Connect with the given XMPP settings and run until disconnected.
-  void Run(const buzz::XmppClientSettings& xmpp_client_settings) {
+  void Run(const buzz::XmppClientSettings& xmpp_client_settings,
+           bool use_chrome_async_socket) {
     CHECK(!xmpp_client_);
     xmpp_client_settings_ = xmpp_client_settings;
     xmpp_client_ = new buzz::XmppClient(&task_pump_);
@@ -93,17 +96,26 @@ class XmppNotificationClient : public sigslot::has_slots<> {
     xmpp_client_->SignalStateChange.connect(
         this, &XmppNotificationClient::OnXmppClientStateChange);
 
-    notifier::XmppSocketAdapter* xmpp_socket_adapter =
-        new notifier::XmppSocketAdapter(xmpp_client_settings_, false);
-    CHECK(xmpp_socket_adapter);
-    // Transfers ownership of xmpp_socket_adapter.
+    net::SSLConfig ssl_config;
+    buzz::AsyncSocket* buzz_async_socket =
+        use_chrome_async_socket ?
+        static_cast<buzz::AsyncSocket*>(
+            new sync_tools::ChromeAsyncSocket(
+                net::ClientSocketFactory::GetDefaultFactory(),
+                ssl_config, 4096, 64 * 1024, NULL)) :
+        static_cast<buzz::AsyncSocket*>(
+            new notifier::XmppSocketAdapter(xmpp_client_settings_, false));
+    CHECK(buzz_async_socket);
+    // Transfers ownership of buzz_async_socket.
     buzz::XmppReturnStatus connect_status =
         xmpp_client_->Connect(xmpp_client_settings_, "",
-                              xmpp_socket_adapter, NULL);
+                              buzz_async_socket, NULL);
     CHECK_EQ(connect_status, buzz::XMPP_RETURN_OK);
     xmpp_client_->Start();
-    MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableFunction(&PumpAuxiliaryLoops));
+    if (!use_chrome_async_socket) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE, NewRunnableFunction(&PumpAuxiliaryLoops));
+    }
     MessageLoop::current()->Run();
     DCHECK(!xmpp_client_);
   }
@@ -265,7 +277,8 @@ int main(int argc, char* argv[]) {
   if (email.empty()) {
     printf("Usage: %s --email=foo@bar.com [--password=mypassword] "
            "[--server=talk.google.com] [--port=5222] [--allow-plain] "
-           "[--disable-tls] [--use-cache-invalidation] [--use-ssl-tcp]\n",
+           "[--disable-tls] [--use-cache-invalidation] [--use-ssl-tcp] "
+           "[--use-chrome-async-socket]\n",
            argv[0]);
     return -1;
   }
@@ -310,8 +323,12 @@ int main(int argc, char* argv[]) {
   insecure_crypt_string.password() = password;
   xmpp_client_settings.set_pass(
       talk_base::CryptString(insecure_crypt_string));
-  xmpp_client_settings.set_server(
-      talk_base::SocketAddress(server, port));
+  talk_base::SocketAddress addr(server, port);
+  if (!addr.ResolveIP()) {
+    LOG(ERROR) << "Could not resolve " << addr.ToString();
+    return -1;
+  }
+  xmpp_client_settings.set_server(addr);
 
   // Set up message loops and socket servers.
   talk_base::PhysicalSocketServer physical_socket_server;
@@ -329,8 +346,13 @@ int main(int argc, char* argv[]) {
   } else {
     delegate = &legacy_notifier_delegate;
   }
+  // TODO(akalin): Revert the move of all switches in this file into
+  // chrome_switches.h.
+  bool use_chrome_async_socket =
+      command_line.HasSwitch("use-chrome-async-socket");
   XmppNotificationClient xmpp_notification_client(delegate);
-  xmpp_notification_client.Run(xmpp_client_settings);
+  xmpp_notification_client.Run(xmpp_client_settings,
+                               use_chrome_async_socket);
 
   return 0;
 }
