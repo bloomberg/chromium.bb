@@ -43,7 +43,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <nacl/nacl_av.h>
-#include <nacl/nacl_htp.h>
+#include <nacl/nacl_imc.h>
 #include <nacl/nacl_npapi.h>
 #include <nacl/nacl_srpc.h>
 #include <nacl/npruntime.h>
@@ -78,7 +78,7 @@ static void TestLibsPresent() {
 
   // Test that libgoogle_nacl_imc is present.
   if (run_tests)
-    nacl::CreateIoDesc(NULL);
+    nacl::Close(nacl::kInvalidHandle);
 
   // Test that libgoogle_nacl_npruntime is present.
   if (run_tests) {

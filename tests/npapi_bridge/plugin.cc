@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <string.h>
+#include <unistd.h>
 #include <nacl/nacl_srpc.h>
 
 // TODO(sehr): Break this test into multiple NPAPI feature tests.
@@ -573,7 +574,7 @@ NPError Plugin::SetWindow(NPWindow* window) {
     bitmap_data_ = nacl::Map(NULL, bitmap_size_,
                              nacl::kProtRead | nacl::kProtWrite,
                              nacl::kMapShared,
-                             reinterpret_cast<nacl::HtpHandle>(window->window),
+                             reinterpret_cast<nacl::Handle>(window->window),
                              0);
   }
   window_ = window;

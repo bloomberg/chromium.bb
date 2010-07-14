@@ -10,7 +10,7 @@
 
 #include <map>
 
-#include <nacl/nacl_htp.h>
+#include <nacl/nacl_imc.h>
 #include <nacl/nacl_npapi.h>
 #include "native_client/tests/npapi_bridge/base_object.h"
 
@@ -100,7 +100,7 @@ class ScriptablePluginObject : public BaseObject {
 
   static void Notify(const char* url,
                      void* notify_data,
-                     nacl::HtpHandle handle);
+                     nacl::Handle handle);
 
   NPP npp_;
 
