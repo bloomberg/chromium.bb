@@ -98,7 +98,15 @@ abs_obj := $(abspath $(obj))
 all_deps :=
 
 # C++ apps need to be linked with g++.  Not sure what's appropriate.
-LINK ?= $(CXX)
+#
+# Note, the flock is used to seralize linking. Linking is a memory-intensive
+# process so running parallel links can often lead to thrashing.  To disable
+# the serialization, override LINK via an envrionment variable as follows:
+#
+#   export LINK="$(CXX)"
+#
+# This will allow make to invoke N linker processes as specified in -jN.
+LINK ?= flock $(builddir)/linker.lock $(CXX)
 
 # We want to use GNU ar's T option if available because it's much faster.
 # We try to archive and link a file to see ar and ld support this feature.
