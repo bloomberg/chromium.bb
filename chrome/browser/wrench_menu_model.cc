@@ -46,6 +46,15 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   AddSeparator();
 
+#if !defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
+  AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_APPLICATION_MAC);
+#else
+  AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
+#endif
+  AddSeparator();
+#endif
+
   AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
   AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
