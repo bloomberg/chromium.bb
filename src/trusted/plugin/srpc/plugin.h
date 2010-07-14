@@ -64,7 +64,7 @@ class Plugin : public PortableHandle {
                             SrpcParams* params);
 
   // The unique identifier for this plugin instance.
-  virtual InstanceIdentifier instance_id() { return instance_id_; }
+  InstanceIdentifier instance_id() { return instance_id_; }
 
   // The embed/object tag argument list.
   int argc() const { return argc_; }
@@ -150,11 +150,11 @@ class Plugin : public PortableHandle {
  protected:
   Plugin();
   virtual ~Plugin();
-  virtual bool Init(BrowserInterface* browser_interface,
-                    InstanceIdentifier instance_id,
-                    int argc,
-                    char* argn[],
-                    char* argv[]);
+  bool Init(BrowserInterface* browser_interface,
+            InstanceIdentifier instance_id,
+            int argc,
+            char* argn[],
+            char* argv[]);
   void LoadMethods();
   ServiceRuntime* service_runtime_;
 
