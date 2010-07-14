@@ -299,21 +299,6 @@ env.AddNodeToTestSuite(ncdis_internal_test,
                        ['small_tests'],
                        NCDIS_ITER_TEST_NAME)
 
-# Test that we can textually define a code segment using hex values.
-ncdis_iter_hex_txt = env.File(TESTDATA_DIR + "test_hex.txt")
-
-ncdis_iter_hex_golden = env.File(TESTDATA_DIR + "test_hex.gold")
-
-ncdis_iter_hex_test = env.CommandTest(
-    NCDIS_ITER_TEST_NAME + "_hex.out",
-    [ncdis[0], "-use_iter", "-hex_text=-"],
-    stdin=ncdis_iter_hex_txt,
-    stdout_golden=ncdis_iter_hex_golden)
-
-env.AddNodeToTestSuite(ncdis_iter_hex_test,
-                       ['small_tests'],
-                       NCDIS_ITER_TEST_NAME)
-
 # ======================================================================
 # Segment register validator.
 ncval = env.ComponentProgram('ncval',
@@ -373,6 +358,32 @@ def __FilterOutTestFileBaseGen(files, ext):
   for f in files:
     yield os.path.basename(f.path).replace('.' + ext, "")
 
+# Run tests using ncdis on test files. Assumes that extension
+# dis implies to use the iterator model, while ndis does not.
+def __AddNcDisTests(use_iter):
+  if use_iter:
+    ext = "dis"
+  else:
+    ext = "ndis"
+  golden_files = Glob(TESTDATA_DIR + '*.' + ext)
+  options = ['-hex_text=-']
+  if use_iter:
+    options.append('-use_iter');
+  for vtest in __FilterOutTestFileBaseGen(golden_files, ext):
+    TEST_PREFIX = 'ncval_test_' + vtest + "_" + ext
+    DIS_TEST_NAME = TEST_PREFIX + "_dis"
+    node_dis = env.CommandTest(
+        DIS_TEST_NAME + ".out",
+        ['$OBJ_ROOT/src/trusted/validator_x86/ncdis'] + options,
+        stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
+        stdout_golden = env.File(TESTDATA_DIR + vtest + "." + ext))
+
+    env.AddNodeToTestSuite(node_dis, ['small_tests', 'validator_tests'],
+                           DIS_TEST_NAME)
+
+__AddNcDisTests(True)
+__AddNcDisTests(False)
+
 # Run tests using ncval_sfi, on test files. Assume that write sandbox tests
 # use extension 'val' while read/write sandbox tests use extention 'rval'.
 def __AddNcvalSfiTests(test_readwrite):
@@ -384,16 +395,6 @@ def __AddNcvalSfiTests(test_readwrite):
     golden_files = Glob(TESTDATA_DIR + '*.' + ext)
     for vtest in __FilterOutTestFileBaseGen(golden_files, ext):
       TEST_PREFIX = 'ncval_test_' + vtest + "_" + ext
-      DIS_TEST_NAME = TEST_PREFIX + "_dis"
-      node_dis = env.CommandTest(
-          DIS_TEST_NAME + ".out",
-          ['$OBJ_ROOT/src/trusted/validator_x86/ncdis',
-           '-use_iter', '-hex_text=-'],
-          stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
-          stdout_golden = env.File(TESTDATA_DIR + vtest + ".dis"))
-
-      env.AddNodeToTestSuite(node_dis, ['small_tests', 'validator_tests'],
-                             DIS_TEST_NAME)
 
       VAL_TEST_NAME = TEST_PREFIX + "_" + ext
       VAL_TEST_CL = [ncval_iter_test[0]]
