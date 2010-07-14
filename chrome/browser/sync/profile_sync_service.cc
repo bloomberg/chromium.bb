@@ -22,6 +22,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -132,7 +133,8 @@ void ProfileSyncService::Initialize() {
     if (bootstrap_sync_authentication_) {
       // If the LSID is empty, we're in a CrOS UI test that is not testing sync
       // behavior, so we don't want the sync service to start.
-      if (GetLsidForAuthBootstraping().empty()) {
+      if (profile()->GetTokenService() &&
+          !profile()->GetTokenService()->HasLsid()) {
         LOG(WARNING) << "Skipping CrOS sync startup, no LSID present.";
         return;
       }
@@ -227,30 +229,6 @@ void ProfileSyncService::ClearPreferences() {
   pref_service->ScheduleSavePersistentPrefs();
 }
 
-// The domain and name of the LSID cookie which we use to bootstrap the sync
-// authentication in Chromium OS.
-const char kLsidCookieDomain[] = "www.google.com";
-const char kLsidCookieName[]   = "LSID";
-
-std::string ProfileSyncService::GetLsidForAuthBootstraping() {
-  if (bootstrap_sync_authentication_ && profile()->GetRequestContext()) {
-    // If we're running inside Chromium OS, bootstrap the sync authentication by
-    // using the LSID cookie provided by the Chromium OS login manager.
-    net::CookieMonster::CookieList cookies = profile()->GetRequestContext()->
-        GetCookieStore()->GetCookieMonster()->GetAllCookies();
-    for (net::CookieMonster::CookieList::const_iterator it = cookies.begin();
-         it != cookies.end(); ++it) {
-      if (kLsidCookieDomain == it->first) {
-        const net::CookieMonster::CanonicalCookie& cookie = it->second;
-        if (kLsidCookieName == cookie.Name()) {
-          return cookie.Value();
-        }
-      }
-    }
-  }
-  return std::string();
-}
-
 void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   if (!backend_.get()) {
     NOTREACHED();
@@ -275,7 +253,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   backend_->Initialize(sync_service_url_,
                        types,
                        profile_->GetRequestContext(),
-                       GetLsidForAuthBootstraping(),
+                       profile_->GetTokenService()->GetLsid(),
                        delete_sync_data_folder,
                        invalidate_sync_login,
                        invalidate_sync_xmpp_login,

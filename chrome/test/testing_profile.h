@@ -283,6 +283,7 @@ class TestingProfile : public Profile {
   void BlockUntilHistoryProcessesPendingRequests();
 
   // Creates and initializes a profile sync service if the tests require one.
+  virtual TokenService* GetTokenService();
   virtual ProfileSyncService* GetProfileSyncService();
   virtual CloudPrintProxyService* GetCloudPrintProxyService() { return NULL; }
 
@@ -313,6 +314,9 @@ class TestingProfile : public Profile {
 
   // The BookmarkModel. Only created if CreateBookmarkModel is invoked.
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
+
+  // The TokenService. Created by CreateTokenService. Filled with dummy data.
+  scoped_ptr<TokenService> token_service_;
 
   // The ProfileSyncService.  Created by CreateProfileSyncService.
   scoped_ptr<ProfileSyncService> profile_sync_service_;

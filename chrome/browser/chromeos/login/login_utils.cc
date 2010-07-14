@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
@@ -22,7 +23,7 @@
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/logging_chrome.h"
@@ -197,6 +198,8 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       *(CommandLine::ForCurrentProcess()),
       logging::DELETE_OLD_LOG_FILE);
 
+  // Supply credentials for sync and others to use
+  profile->GetTokenService()->SetClientLoginResult(credentials);
 
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is

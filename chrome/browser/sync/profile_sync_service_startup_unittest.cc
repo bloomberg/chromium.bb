@@ -7,11 +7,13 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
@@ -162,6 +164,12 @@ TEST_F(ProfileSyncServiceStartupBootstrapTest, SKIP_MACOSX(StartFirstTime)) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(4);
 
   profile_.GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
+
+  // Pretend the login screen worked.
+  GaiaAuthConsumer::ClientLoginResult result;
+  result.sid = "sid";
+  result.lsid = "lsid";
+  profile_.GetTokenService()->SetClientLoginResult(result);
   // Will start sync even though setup hasn't been completed (since
   // setup is bypassed when bootstrapping is enabled).
   service_->Initialize();

@@ -43,6 +43,7 @@
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
@@ -582,6 +583,10 @@ class OffTheRecordProfileImpl : public Profile,
           this, g_browser_process->notification_ui_manager()));
     }
     return desktop_notification_service_.get();
+  }
+
+  virtual TokenService* GetTokenService() {
+    return NULL;
   }
 
   virtual ProfileSyncService* GetProfileSyncService() {
@@ -1627,6 +1632,13 @@ void ProfileImpl::Observe(NotificationType type,
 
 void ProfileImpl::StopCreateSessionServiceTimer() {
   create_session_service_timer_.Stop();
+}
+
+TokenService* ProfileImpl::GetTokenService() {
+  if (!token_service_.get()) {
+    token_service_.reset(new TokenService());
+  }
+  return token_service_.get();
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {

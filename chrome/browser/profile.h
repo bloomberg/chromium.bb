@@ -72,6 +72,7 @@ class TabRestoreService;
 class TemplateURLFetcher;
 class TemplateURLModel;
 class ThemeProvider;
+class TokenService;
 class URLRequestContextGetter;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
@@ -359,6 +360,9 @@ class Profile {
   // Returns the BookmarkModel, creating if not yet created.
   virtual BookmarkModel* GetBookmarkModel() = 0;
 
+  // Returns the Gaia Token Service, creating if not yet created.
+  virtual TokenService* GetTokenService() = 0;
+
   // Returns the ProfileSyncService, creating if not yet created.
   virtual ProfileSyncService* GetProfileSyncService() = 0;
 
@@ -540,6 +544,7 @@ class ProfileImpl : public Profile,
   virtual FilePath last_selected_directory();
   virtual void set_last_selected_directory(const FilePath& path);
   virtual ProfileSyncService* GetProfileSyncService();
+  virtual TokenService* GetTokenService();
   void InitSyncService();
   virtual CloudPrintProxyService* GetCloudPrintProxyService();
   void InitCloudPrintProxyService();
@@ -595,6 +600,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebResourceService> web_resource_service_;
   scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 
+  scoped_ptr<TokenService> token_service_;
   scoped_ptr<ProfileSyncFactory> profile_sync_factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
   scoped_ptr<CloudPrintProxyService> cloud_print_proxy_service_;

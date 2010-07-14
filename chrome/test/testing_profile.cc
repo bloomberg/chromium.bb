@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_constants.h"
@@ -336,6 +337,13 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   CancelableRequestConsumer consumer;
   history_service_->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
   MessageLoop::current()->Run();
+}
+
+TokenService* TestingProfile::GetTokenService() {
+  if (!token_service_.get()) {
+    token_service_.reset(new TokenService());
+  }
+  return token_service_.get();
 }
 
 ProfileSyncService* TestingProfile::GetProfileSyncService() {

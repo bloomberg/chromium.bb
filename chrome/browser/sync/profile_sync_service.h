@@ -368,10 +368,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   static const wchar_t* GetPrefNameForDataType(syncable::ModelType data_type);
 
-  // When running inside Chrome OS, extract the LSID cookie from the cookie
-  // store to bootstrap the authentication process.
-  virtual std::string GetLsidForAuthBootstraping();
-
   // Time at which we begin an attempt a GAIA authorization.
   base::TimeTicks auth_start_time_;
 
