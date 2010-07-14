@@ -9,9 +9,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-// Tabs is flaky on chromeos debug build.
+// Tabs is flaky on chromeos and linux views debug build.
 // http://crbug.com/48920
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS) && !defined(NDEBUG)
 #define MAYBE_Tabs FLAKY_Tabs
 #else
 #define MAYBE_Tabs Tabs
