@@ -763,9 +763,15 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
 // I have been unable to reproduce this hang after extensive testing
 // on a local Windows machine so these tests will remain flaky in
 // order to help diagnose the problem.
-//
+// oshima: this is actually crashing and cause failure on XP Tests.
+// Disabling on windows.
 // This issue is tracked at http://crbug.com/39070.
-TEST_F(SyncerThreadWithSyncerTest, FLAKY_Pause) {
+#if defined(OS_WIN)
+#define MAYBE_Pause DISABLED_Pause
+#else
+#define MAYBE_Pause Pause
+#endif
+TEST_F(SyncerThreadWithSyncerTest, MAYBE_Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
