@@ -13,6 +13,7 @@
 #include "base/string16.h"
 #include "base/scoped_vector.h"
 #include "chrome/common/page_transition_types.h"
+#include "chrome/browser/extensions/extension_menu_manager.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -127,7 +128,7 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
 
   // Maps the id from a context menu item to the ExtensionMenuItem's internal
   // id.
-  std::map<int, int> extension_item_map_;
+  std::map<int, ExtensionMenuItem::Id> extension_item_map_;
 
   menus::SimpleMenuModel spellcheck_submenu_model_;
   menus::SimpleMenuModel bidi_submenu_model_;

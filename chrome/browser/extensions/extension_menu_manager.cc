@@ -8,6 +8,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -24,13 +25,13 @@
 #include "skia/ext/image_operations.h"
 #include "webkit/glue/context_menu.h"
 
-ExtensionMenuItem::ExtensionMenuItem(const std::string& extension_id,
+ExtensionMenuItem::ExtensionMenuItem(const Id& id,
                                      std::string title,
-                                     bool checked, Type type,
+                                     bool checked,
+                                     Type type,
                                      const ContextList& contexts)
-    : extension_id_(extension_id),
+    : id_(id),
       title_(title),
-      id_(0),
       type_(type),
       checked_(checked),
       contexts_(contexts),
@@ -40,7 +41,7 @@ ExtensionMenuItem::~ExtensionMenuItem() {
   STLDeleteElements(&children_);
 }
 
-bool ExtensionMenuItem::RemoveChild(int child_id) {
+bool ExtensionMenuItem::RemoveChild(const Id& child_id) {
   ExtensionMenuItem* child = ReleaseChild(child_id, true);
   if (child) {
     delete child;
@@ -50,7 +51,7 @@ bool ExtensionMenuItem::RemoveChild(int child_id) {
   }
 }
 
-ExtensionMenuItem* ExtensionMenuItem::ReleaseChild(int child_id,
+ExtensionMenuItem* ExtensionMenuItem::ReleaseChild(const Id& child_id,
                                                    bool recursive) {
   for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
     ExtensionMenuItem* child = NULL;
@@ -67,12 +68,12 @@ ExtensionMenuItem* ExtensionMenuItem::ReleaseChild(int child_id,
   return NULL;
 }
 
-std::set<int> ExtensionMenuItem::RemoveAllDescendants() {
-  std::set<int> result;
+std::set<ExtensionMenuItem::Id> ExtensionMenuItem::RemoveAllDescendants() {
+  std::set<Id> result;
   for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
     ExtensionMenuItem* child = *i;
     result.insert(child->id());
-    std::set<int> removed = child->RemoveAllDescendants();
+    std::set<Id> removed = child->RemoveAllDescendants();
     result.insert(removed.begin(), removed.end());
   }
   STLDeleteElements(&children_);
@@ -96,13 +97,12 @@ bool ExtensionMenuItem::SetChecked(bool checked) {
 }
 
 void ExtensionMenuItem::AddChild(ExtensionMenuItem* item) {
-  item->parent_id_ = id_;
+  item->parent_id_.reset(new Id(id_));
   children_.push_back(item);
 }
 
 ExtensionMenuManager::ExtensionMenuManager()
-    : next_item_id_(1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(image_tracker_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(image_tracker_(this)) {
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
 }
@@ -132,17 +132,15 @@ const ExtensionMenuItem::List* ExtensionMenuManager::MenuItems(
   return NULL;
 }
 
-int ExtensionMenuManager::AddContextItem(Extension* extension,
-                                         ExtensionMenuItem* item) {
+bool ExtensionMenuManager::AddContextItem(Extension* extension,
+                                          ExtensionMenuItem* item) {
   const std::string& extension_id = item->extension_id();
-  // The item must have a non-empty extension id.
-  if (extension_id.empty())
-    return 0;
+  // The item must have a non-empty extension id, and not have already been
+  // added.
+  if (extension_id.empty() || ContainsKey(items_by_id_, item->id()))
+    return false;
 
   DCHECK_EQ(extension->id(), extension_id);
-
-  DCHECK_EQ(0, item->id());
-  item->set_id(next_item_id_++);
 
   bool first_item = !ContainsKey(context_items_, extension_id);
   context_items_[extension_id].push_back(item);
@@ -164,32 +162,31 @@ int ExtensionMenuManager::AddContextItem(Extension* extension,
     }
   }
 
-  return item->id();
+  return true;
 }
 
-int ExtensionMenuManager::AddChildItem(int parent_id,
-                                       ExtensionMenuItem* child) {
+bool ExtensionMenuManager::AddChildItem(const ExtensionMenuItem::Id& parent_id,
+                                        ExtensionMenuItem* child) {
   ExtensionMenuItem* parent = GetItemById(parent_id);
   if (!parent || parent->type() != ExtensionMenuItem::NORMAL ||
-      parent->extension_id() != child->extension_id())
-    return 0;
-  child->set_id(next_item_id_++);
+      parent->extension_id() != child->extension_id() ||
+      ContainsKey(items_by_id_, child->id()))
+    return false;
   parent->AddChild(child);
   items_by_id_[child->id()] = child;
-  return child->id();
+  return true;
 }
 
-bool ExtensionMenuManager::DescendantOf(ExtensionMenuItem* item,
-                                        int ancestor_id) {
-  DCHECK_GT(ancestor_id, 0);
-
-  // Work our way up the tree until we find the ancestor or 0.
-  int id = item->parent_id();
-  while (id > 0) {
-    DCHECK(id != item->id());  // Catch circular graphs.
-    if (id == ancestor_id)
+bool ExtensionMenuManager::DescendantOf(
+    ExtensionMenuItem* item,
+    const ExtensionMenuItem::Id& ancestor_id) {
+  // Work our way up the tree until we find the ancestor or NULL.
+  ExtensionMenuItem::Id* id = item->parent_id();
+  while (id != NULL) {
+    DCHECK(*id != item->id());  // Catch circular graphs.
+    if (*id == ancestor_id)
       return true;
-    ExtensionMenuItem* next = GetItemById(id);
+    ExtensionMenuItem* next = GetItemById(*id);
     if (!next) {
       NOTREACHED();
       return false;
@@ -199,17 +196,20 @@ bool ExtensionMenuManager::DescendantOf(ExtensionMenuItem* item,
   return false;
 }
 
-bool ExtensionMenuManager::ChangeParent(int child_id, int parent_id) {
+bool ExtensionMenuManager::ChangeParent(
+    const ExtensionMenuItem::Id& child_id,
+    const ExtensionMenuItem::Id* parent_id) {
   ExtensionMenuItem* child = GetItemById(child_id);
-  ExtensionMenuItem* new_parent = GetItemById(parent_id);
-  if (child_id == parent_id || !child || (!new_parent && parent_id > 0) ||
+  ExtensionMenuItem* new_parent = parent_id ? GetItemById(*parent_id) : NULL;
+  if ((parent_id && (child_id == *parent_id)) || !child ||
+      (!new_parent && parent_id != NULL) ||
       (new_parent && (DescendantOf(new_parent, child_id) ||
                       child->extension_id() != new_parent->extension_id())))
     return false;
 
-  int old_parent_id = child->parent_id();
-  if (old_parent_id > 0) {
-    ExtensionMenuItem* old_parent = GetItemById(old_parent_id);
+  ExtensionMenuItem::Id* old_parent_id = child->parent_id();
+  if (old_parent_id != NULL) {
+    ExtensionMenuItem* old_parent = GetItemById(*old_parent_id);
     if (!old_parent) {
       NOTREACHED();
       return false;
@@ -220,7 +220,6 @@ bool ExtensionMenuManager::ChangeParent(int child_id, int parent_id) {
   } else {
     // This is a top-level item, so we need to pull it out of our list of
     // top-level items.
-    DCHECK_EQ(0, old_parent_id);
     MenuItemMap::iterator i = context_items_.find(child->extension_id());
     if (i == context_items_.end()) {
       NOTREACHED();
@@ -240,12 +239,13 @@ bool ExtensionMenuManager::ChangeParent(int child_id, int parent_id) {
     new_parent->AddChild(child);
   } else {
     context_items_[child->extension_id()].push_back(child);
-    child->parent_id_ = 0;
+    child->parent_id_.reset(NULL);
   }
   return true;
 }
 
-bool ExtensionMenuManager::RemoveContextMenuItem(int id) {
+bool ExtensionMenuManager::RemoveContextMenuItem(
+    const ExtensionMenuItem::Id& id) {
   if (!ContainsKey(items_by_id_, id))
     return false;
 
@@ -289,9 +289,9 @@ void ExtensionMenuManager::RemoveAllContextItems(std::string extension_id) {
     items_by_id_.erase(item->id());
 
     // Remove descendants from this item and erase them from the lookup cache.
-    std::set<int> removed_ids = item->RemoveAllDescendants();
-    for (std::set<int>::const_iterator j = removed_ids.begin();
-        j != removed_ids.end(); ++j) {
+    std::set<ExtensionMenuItem::Id> removed_ids = item->RemoveAllDescendants();
+    std::set<ExtensionMenuItem::Id>::const_iterator j;
+    for (j = removed_ids.begin(); j != removed_ids.end(); ++j) {
       items_by_id_.erase(*j);
     }
   }
@@ -302,8 +302,10 @@ void ExtensionMenuManager::RemoveAllContextItems(std::string extension_id) {
     extension_icons_.erase(extension_id);
 }
 
-ExtensionMenuItem* ExtensionMenuManager::GetItemById(int id) const {
-  std::map<int, ExtensionMenuItem*>::const_iterator i = items_by_id_.find(id);
+ExtensionMenuItem* ExtensionMenuManager::GetItemById(
+    const ExtensionMenuItem::Id& id) const {
+  std::map<ExtensionMenuItem::Id, ExtensionMenuItem*>::const_iterator i =
+      items_by_id_.find(id);
   if (i != items_by_id_.end())
     return i->second;
   else
@@ -315,7 +317,7 @@ void ExtensionMenuManager::RadioItemSelected(ExtensionMenuItem* item) {
   // parent. Otherwise get a handle to the top-level list.
   const ExtensionMenuItem::List* list = NULL;
   if (item->parent_id()) {
-    ExtensionMenuItem* parent = GetItemById(item->parent_id());
+    ExtensionMenuItem* parent = GetItemById(*item->parent_id());
     if (!parent) {
       NOTREACHED();
       return;
@@ -367,10 +369,11 @@ static void AddURLProperty(DictionaryValue* dictionary,
     dictionary->SetString(key, url.possibly_invalid_spec());
 }
 
-void ExtensionMenuManager::ExecuteCommand(Profile* profile,
-                                          TabContents* tab_contents,
-                                          const ContextMenuParams& params,
-                                          int menuItemId) {
+void ExtensionMenuManager::ExecuteCommand(
+    Profile* profile,
+    TabContents* tab_contents,
+    const ContextMenuParams& params,
+    const ExtensionMenuItem::Id& menuItemId) {
   ExtensionMessageService* service = profile->GetExtensionMessageService();
   if (!service)
     return;
@@ -385,9 +388,9 @@ void ExtensionMenuManager::ExecuteCommand(Profile* profile,
   ListValue args;
 
   DictionaryValue* properties = new DictionaryValue();
-  properties->SetInteger(L"menuItemId", item->id());
+  properties->SetInteger(L"menuItemId", item->id().second);
   if (item->parent_id())
-    properties->SetInteger(L"parentMenuItemId", item->parent_id());
+    properties->SetInteger(L"parentMenuItemId", item->parent_id()->second);
 
   switch (params.media_type) {
     case WebKit::WebContextMenuData::MediaTypeImage:

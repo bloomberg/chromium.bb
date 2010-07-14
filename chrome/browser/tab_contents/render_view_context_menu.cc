@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <functional>
+#include <algorithm>
+#include <set>
 
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
@@ -21,7 +22,6 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -66,12 +66,6 @@ bool RenderViewContextMenu::IsSyncResourcesURL(const GURL& url) {
 }
 
 static const int kSpellcheckRadioGroup = 1;
-
-// For extensions that have multiple top level menu items, we automatically
-// create a submenu item and push the top level menu items into it. This special
-// value takes the place of the ExtensionMenuItem's internal ID for the submenu
-// item inside the extension_item_map_ member variable.
-static const int kExtensionTopLevelItem = -1;
 
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,
@@ -178,7 +172,6 @@ void RenderViewContextMenu::AppendExtensionItems(
   ExtensionMenuItem::List submenu_items;
   if (items.size() > 1 || items[0]->type() != ExtensionMenuItem::NORMAL) {
     title = UTF8ToUTF16(extension->name());
-    extension_item_map_[menu_id] = kExtensionTopLevelItem;
     submenu_items = items;
   } else {
     ExtensionMenuItem* item = items[0];
@@ -667,7 +660,8 @@ void RenderViewContextMenu::AppendBidiSubMenu() {
 ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
   ExtensionMenuManager* manager =
       profile_->GetExtensionsService()->menu_manager();
-  std::map<int, int>::const_iterator i = extension_item_map_.find(id);
+  std::map<int, ExtensionMenuItem::Id>::const_iterator i =
+      extension_item_map_.find(id);
   if (i != extension_item_map_.end()) {
     ExtensionMenuItem* item = manager->GetItemById(i->second);
     if (item)
@@ -700,7 +694,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   // Extension items.
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    return ContainsKey(extension_item_map_, id);
+    // In the future we may add APIs for extensions to disable items, but for
+    // now all items are implicitly enabled.
+    return true;
   }
 
   switch (id) {
@@ -978,7 +974,8 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     ExtensionMenuManager* manager =
         profile_->GetExtensionsService()->menu_manager();
-    std::map<int, int>::const_iterator i = extension_item_map_.find(id);
+    std::map<int, ExtensionMenuItem::Id>::const_iterator i =
+        extension_item_map_.find(id);
     if (i != extension_item_map_.end()) {
       manager->ExecuteCommand(profile_, source_tab_contents_, params_,
                               i->second);

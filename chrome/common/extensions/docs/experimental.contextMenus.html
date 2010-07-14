@@ -312,7 +312,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
               <a name="method-create"></a> <!-- method-anchor -->
               <h4>create</h4>
 
-              <div class="summary"><span style="display: none; ">void</span>
+              <div class="summary"><span>integer</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.contextMenus.create</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>createProperties</span></var></span><span class="optional"><span>, </span><span>function</span>
@@ -320,7 +320,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>An API to add items to context menus.</p>
+                <p>Creates a new context menu item. Note that if an error occurs during creation, you may not find out until the creation callback fires (the details will be in chrome.extension.lastError).</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -507,7 +507,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd> For items of type checkbox or radio, should this be selected (radio) or checked (checkbox)? Only one radio item can be selected at a time in a given group of radio items, with the last one to have checked == true winning.</dd>
+          <dd>This only applies to the initial state of a checkbox or radio item. It indicates if the item should initially be checked/selected. Only one radio item can be selected at a time in a given group of radio items.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -727,12 +727,10 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>Called when the item has been created in the browser. If there were any problems creating the item, details will be avilable in chrome.extension.lastError.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -757,34 +755,12 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
                 </dl>
 
                 <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
+                <h4>Returns</h4>
                 <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
                   <div>
-                  <h4>Callback function</h4>
-                  <p style="display: none; ">
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>integer menuItemId</span>) <span class="subdued">{...}</span>);</pre>
-                  <dl>
                     <div>
-                      <div>
           <dt>
-            <var>menuItemId</var>
+            <var style="display: none; ">paramName</var>
               <em>
 
                 <!-- TYPE -->
@@ -812,7 +788,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the newly created context menu item.</dd>
+          <dd>The id of the newly created item.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -833,6 +809,28 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
             </dl>
           </dd>
         </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p style="display: none; ">
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>);</pre>
+                  <dl>
+                    <div style="display: none; ">
+                      <div>
+                      </div>
                     </div>
                   </dl>
                   </div>

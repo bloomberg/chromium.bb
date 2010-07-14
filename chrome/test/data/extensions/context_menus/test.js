@@ -26,7 +26,7 @@ function onclick(info) {
 
 window.onload = function() {
   chrome.experimental.contextMenus.create({"title":"Extension Item 1",
-                                          "onclick": onclick}, function(id) {
+                                          "onclick": onclick}, function() {
     if (!chrome.extension.lastError) {
       navigateCurrentTab(chrome.extension.getURL("test.html"));
     }

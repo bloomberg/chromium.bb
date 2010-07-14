@@ -21,14 +21,16 @@ var tests = [
   },
 
   function remove() {
-    chrome.contextMenus.create({"title":"1"}, function(id) {
+    var id;
+    id = chrome.contextMenus.create({"title":"1"}, function() {
       assertNoLastError();
       chrome.contextMenus.remove(id, chrome.test.callbackPass());
     });
   },
 
   function update() {
-    chrome.contextMenus.create({"title":"update test"}, function(id) {
+    var id;
+    id = chrome.contextMenus.create({"title":"update test"}, function() {
       assertNoLastError();
       chrome.contextMenus.update(id, {"title": "test2"},
                                 chrome.test.callbackPass());
@@ -36,9 +38,9 @@ var tests = [
   },
 
   function removeAll() {
-    chrome.contextMenus.create({"title":"1"}, function(id) {
+    chrome.contextMenus.create({"title":"1"}, function() {
       assertNoLastError();
-      chrome.contextMenus.create({"title":"2"}, function(id2) {
+      chrome.contextMenus.create({"title":"2"}, function() {
         assertNoLastError();
         chrome.contextMenus.removeAll(chrome.test.callbackPass());
       });
@@ -46,10 +48,11 @@ var tests = [
   },
 
   function hasParent() {
-    chrome.contextMenus.create({"title":"parent"}, function(id) {
+    var id;
+    id = chrome.contextMenus.create({"title":"parent"}, function() {
       assertNoLastError();
       chrome.contextMenus.create({"title":"child", "parentId":id},
-                                function(id2) {
+                                function() {
         assertNoLastError();
         chrome.test.succeed();
       });
