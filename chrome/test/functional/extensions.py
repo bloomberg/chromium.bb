@@ -55,9 +55,10 @@ class ExtensionsTest(pyauto.PyUITest):
       # Navigate to the top urls and verify there is still one window
       for url in top_urls[:num_urls_to_visit]:
         self.NavigateToURL(url)
-      self.assertEqual(1, self.GetBrowserWindowCount(),
-                       'Extensions in failing group: %s' %
-                        extensions[curr_extension:group_end])
+      # Assert that there is at least 1 browser window.
+      self.assertTrue(self.GetBrowserWindowCount(),
+                      'Extensions in failing group: %s' %
+                      extensions[curr_extension:group_end])
       curr_extension = group_end
 
 
