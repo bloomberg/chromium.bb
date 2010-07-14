@@ -176,7 +176,7 @@ Chrome supports. -->
         Google Chrome
       </message>
       <message name="IDS_SXS_SHORTCUT_NAME" desc="The Chrome short cut name for SxS channel">
-        Google Chrome Canary
+        Google Chrome Canary Build
       </message>
       <message name="IDS_PRODUCT_DESCRIPTION" desc="Browser description">
         Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable, and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.

@@ -11,7 +11,7 @@
 namespace {
 
 const wchar_t kChromeSxSGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
-const wchar_t kChannelName[] = L"canary";
+const wchar_t kChannelName[] = L"canary build";
 const wchar_t kBrowserAppId[] = L"ChromeCanary";
 const int kSxSIconIndex = 4;
 
