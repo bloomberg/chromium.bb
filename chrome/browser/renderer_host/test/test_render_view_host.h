@@ -16,8 +16,16 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// Utility function to initialize ViewHostMsg_NavigateParams_Params
+// with given |page_id|, |url| and |transition_type|.
+void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
+                        int page_id,
+                        const GURL& url,
+                        PageTransition::Type transition_type);
 
 // This file provides a testing framework for mocking out the RenderProcessHost
 // layer. It allows you to test RenderViewHost, TabContents,

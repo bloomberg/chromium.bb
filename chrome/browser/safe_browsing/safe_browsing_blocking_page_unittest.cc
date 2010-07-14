@@ -7,32 +7,12 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/common/render_messages.h"
-
-using webkit_glue::PasswordForm;
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";
 static const char* kBadURL = "http://www.badguys.com/";
 static const char* kBadURL2 = "http://www.badguys2.com/";
 static const char* kBadURL3 = "http://www.badguys3.com/";
-
-static void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
-                               int page_id,
-                               const GURL& url) {
-  params->page_id = page_id;
-  params->url = url;
-  params->referrer = GURL();
-  params->transition = PageTransition::TYPED;
-  params->redirects = std::vector<GURL>();
-  params->should_update_history = false;
-  params->searchable_form_url = GURL();
-  params->searchable_form_encoding = std::string();
-  params->password_form = PasswordForm();
-  params->security_info = std::string();
-  params->gesture = NavigationGestureUser;
-  params->is_post = false;
-}
 
 // A SafeBrowingBlockingPage class that does not create windows.
 class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
@@ -100,7 +80,7 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
 
   void Navigate(const char* url, int page_id) {
     ViewHostMsg_FrameNavigate_Params params;
-    InitNavigateParams(&params, page_id, GURL(url));
+    InitNavigateParams(&params, page_id, GURL(url), PageTransition::TYPED);
     contents()->TestDidNavigate(contents_->render_view_host(), params);
   }
 

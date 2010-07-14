@@ -14,6 +14,24 @@
 
 using webkit_glue::PasswordForm;
 
+void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
+                        int page_id,
+                        const GURL& url,
+                        PageTransition::Type transition) {
+  params->page_id = page_id;
+  params->url = url;
+  params->referrer = GURL();
+  params->transition = transition;
+  params->redirects = std::vector<GURL>();
+  params->should_update_history = false;
+  params->searchable_form_url = GURL();
+  params->searchable_form_encoding = std::string();
+  params->password_form = PasswordForm();
+  params->security_info = std::string();
+  params->gesture = NavigationGestureUser;
+  params->is_post = false;
+}
+
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
                                        int routing_id)
