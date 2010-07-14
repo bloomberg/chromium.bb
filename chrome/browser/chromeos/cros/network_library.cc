@@ -540,11 +540,8 @@ std::string NetworkLibraryImpl::GetHtmlInfo(int refresh) {
 // static
 void NetworkLibraryImpl::NetworkStatusChangedHandler(void* object) {
   NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
-  SystemInfo* system = GetSystemInfo();
-  if (system) {
-    network->UpdateNetworkStatus(system);
-    FreeSystemInfo(system);
-  }
+  DCHECK(network);
+  network->UpdateNetworkStatus();
 }
 
 // static
@@ -613,11 +610,7 @@ void NetworkLibraryImpl::Init() {
 }
 
 void NetworkLibraryImpl::UpdateSystemInfo() {
-  SystemInfo* system = GetSystemInfo();
-  if (system) {
-    UpdateNetworkStatus(system);
-    FreeSystemInfo(system);
-  }
+  UpdateNetworkStatus();
 }
 
 WifiNetwork* NetworkLibraryImpl::GetPreferredNetwork() {
@@ -683,15 +676,19 @@ void NetworkLibraryImpl::EnableNetworkDeviceType(ConnectionType device,
   EnableNetworkDevice(device, enable);
 }
 
-void NetworkLibraryImpl::UpdateNetworkStatus(SystemInfo* system) {
+void NetworkLibraryImpl::UpdateNetworkStatus() {
   // Make sure we run on UI thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
-            &NetworkLibraryImpl::UpdateNetworkStatus, system));
+                          &NetworkLibraryImpl::UpdateNetworkStatus));
     return;
   }
+
+  SystemInfo* system = GetSystemInfo();
+  if (!system)
+    return;
 
   wifi_networks_.clear();
   cellular_networks_.clear();
@@ -721,6 +718,7 @@ void NetworkLibraryImpl::UpdateNetworkStatus(SystemInfo* system) {
   offline_mode_ = system->offline_mode;
 
   FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
+  FreeSystemInfo(system);
 }
 
 void NetworkLibraryImpl::CheckNetworkTraffic(bool download) {

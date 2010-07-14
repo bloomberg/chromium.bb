@@ -528,9 +528,9 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // Enables/disables the specified network device.
   void EnableNetworkDeviceType(ConnectionType device, bool enable);
 
-  // Update the network with the SystemInfo object.
+  // Update the cached network status.
   // This will notify all the Observers.
-  void UpdateNetworkStatus(SystemInfo* system);
+  void UpdateNetworkStatus();
 
   // Checks network traffic to see if there is any uploading.
   // If there is download traffic, then true is passed in for download.
