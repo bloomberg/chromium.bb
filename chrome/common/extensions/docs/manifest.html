@@ -550,15 +550,20 @@ The following table lists the permissions an extension can use.
        <a href="http://code.google.com/chrome/extensions/dev/experimental.html">chrome.experimental.* APIs</a>.</td>
 </tr>
 <tr>
+  <td> "geolocation" </td>
+  <td> Allows the extension to use the proposed HTML5
+       <a href="http://dev.w3.org/geo/api/spec-source.html">geolocation API</a>
+       without prompting the user for permission. </td>
+</tr>
+<tr>
   <td> "history" </td>
   <td> Required if the extension uses the
        <a href="history.html">chrome.history</a> module. </td>
 </tr>
 <tr>
-  <td> "geolocation" </td>
-  <td> Allows the extension to use the proposed HTML5
-       <a href="http://dev.w3.org/geo/api/spec-source.html">geolocation API</a>
-       without prompting the user for permission. </td>
+  <td> "idle" </td>
+  <td> Required if the extension uses the
+       <a href="idle.html">chrome.idle</a> module. </td>
 </tr>
 <tr>
   <td> "notifications" </td>
