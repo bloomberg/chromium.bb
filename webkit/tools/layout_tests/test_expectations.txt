@@ -4,3 +4,47 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// TODO(ager): Get rid of these once they have been upstreamed as part
+// of a V8 update.
+//
+// These tests all fail because the expected output is wrong. The
+// reason is that JSC does not currently implement Object.freeze and
+// Object.isFrozen. These test has intentionally been marked as FAIL,
+// which makes it easy to fix this when webkit implements these ES5 features.
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.3-4-21.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.3-4-24.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.9-0-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.9-0-2.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.9-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-0-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-0-2.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-2.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-3.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-4.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-5.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-6.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-7.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-8.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-9.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-10.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-11.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-12.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-13.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-14.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-15.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-16.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-17.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-18.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-19.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-20.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-21.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-22.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-23.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-24.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-25.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-26.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-27.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.14-2-6.html = FAIL
