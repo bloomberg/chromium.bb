@@ -47,6 +47,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"
@@ -1274,6 +1275,15 @@ const int kDisabledIndex = 1;
   }
 }
 
+// Called when the user clicks on the link to the privacy dashboard.
+- (IBAction)showPrivacyDashboard:(id)sender {
+  Browser* browser = BrowserList::GetLastActive();
+
+  if (!browser || !browser->GetSelectedTabContents())
+    browser = Browser::Create(profile_);
+  browser->OpenPrivacyDashboardTabAndActivate();
+}
+
 // Called when the user clicks the "Customize Sync" button in the
 // "Personal Stuff" pane.  Spawns a dialog-modal sheet that cleans
 // itself up on close.
@@ -1750,6 +1760,10 @@ const int kDisabledIndex = 1;
     [syncStatus_ setBackgroundColor:syncStatusNoErrorBackgroundColor_];
     [syncLinkCell setBackgroundColor:syncLinkNoErrorBackgroundColor_];
   }
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kShowPrivacyDashboardLink))
+    [privacyDashboardLink_ setHidden:YES];
 }
 
 // Show the preferences window.
