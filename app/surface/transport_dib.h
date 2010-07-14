@@ -122,7 +122,8 @@ class TransportDIB {
   // renderer.
   static TransportDIB* Create(size_t size, uint32 sequence_num);
 
-  // Map the referenced transport DIB. Returns NULL on failure.
+  // Map the referenced transport DIB.  The caller owns the returned object.
+  // Returns NULL on failure.
   static TransportDIB* Map(Handle transport_dib);
 
   // Returns true if the handle is valid.

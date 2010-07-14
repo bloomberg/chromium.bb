@@ -63,7 +63,7 @@ void GpuBackingStoreGLX::OnPaintToBackingStore(
     TransportDIB::Id id,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects) {
-  TransportDIB* dib = TransportDIB::Map(id);
+  scoped_ptr<TransportDIB> dib(TransportDIB::Map(id));
   view_->BindContext();
 
   scoped_ptr<skia::PlatformCanvas> canvas(

@@ -130,8 +130,8 @@ void GpuBackingStoreWin::OnPaintToBackingStore(
   HANDLE section = win_util::GetSectionFromProcess(
       id.handle, source_process_handle, false /* read write */);
   CHECK(section);
-  TransportDIB* dib = TransportDIB::Map(section);
-  CHECK(dib);
+  scoped_ptr<TransportDIB> dib(TransportDIB::Map(section));
+  CHECK(dib.get());
 
   if (!backing_store_dib_) {
     backing_store_dib_ = CreateDIB(hdc_, size_.width(),
