@@ -108,8 +108,13 @@ void TabbedPane::Layout() {
 
 void TabbedPane::Focus() {
   // Forward the focus to the wrapper.
-  if (native_tabbed_pane_)
+  if (native_tabbed_pane_) {
     native_tabbed_pane_->SetFocus();
+
+    View* selected_tab = GetSelectedTab();
+    if (selected_tab)
+       selected_tab->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+  }
   else
     View::Focus();  // Will focus the RootView window (so we still get keyboard
                     // messages).
