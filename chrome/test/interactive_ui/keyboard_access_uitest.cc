@@ -59,10 +59,14 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
   int original_view_id = -1;
   ASSERT_TRUE(window->GetFocusedViewID(&original_view_id));
 
-  if (alternate_key_sequence)
-    ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_MENU, 0));
-  else
-    ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_F10, 0));
+  base::KeyboardCode menu_key =
+      alternate_key_sequence ? base::VKEY_MENU : base::VKEY_F10;
+#if defined(OS_CHROMEOS)
+  // Chrome OS has different function key accelerators, so we always use the
+  // menu key there.
+  menu_key = base::VKEY_MENU;
+#endif
+  ASSERT_TRUE(window->SimulateOSKeyPress(menu_key, 0));
 
   int new_view_id = -1;
   ASSERT_TRUE(window->WaitForFocusedViewIDToChange(
