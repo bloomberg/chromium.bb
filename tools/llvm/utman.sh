@@ -443,8 +443,11 @@ download-trusted() {
 #@ download-toolchains - Download and Install all SDKs (arm,x86-32,x86-64)
 
 download-toolchains() {
+  # "--help" prevents building libs after the download
+  # TODO(robertm): fix this in the SConstruct file to be less of a hack
   ./scons platform=arm --download --help sdl=none
-  ./scons platform=x86-64 --download --help sdl=none
+  # we use "targetplatform" so that this works on both 32 and 64bit systems
+  ./scons targetplatform=x86-64 --download --help sdl=none
 }
 
 #@-------------------------------------------------------------------------
@@ -2330,12 +2333,25 @@ test-all() {
 #@ test-spec <official-spec-dir> <setup> -  run spec tests
 test-spec() {
   official=$(readlink -f $1)
-  cd  tests/spec2k
+  spushd tests/spec2k
   ./run_all.sh CleanBenchmarks
   ./run_all.sh PoplateFromSpecHarness ${official}
   ./run_all.sh BuildAndRunBenchmarks $2
+  spopd
 }
 
+
+#@ test-bot-base         - tests that must pass on the bots to validate a TC
+test-bot-base() {
+  test-all
+}
+
+
+#@ test-bot-extra <spec-official> - additional tests run on the bots
+test-bot-extra() {
+  test-spec "$1" SetupNaclX8632Opt
+  test-spec "$1" SetupNaclX8632
+}
 ######################################################################
 ######################################################################
 #
