@@ -32,6 +32,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
     virtual void OnEventRaised(const std::vector<int>& host_ids,
                                appcache::EventID event_id) {}
 
+    virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
+                                    const std::string& message) {}
+
     virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                        const GURL& url,
                                        int num_total, int num_complete) {}

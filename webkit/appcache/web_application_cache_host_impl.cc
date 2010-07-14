@@ -26,6 +26,13 @@ namespace appcache {
 
 typedef IDMap<WebApplicationCacheHostImpl> HostsMap;
 
+// Note: the order of the elements in this array must match those
+// of the EventID enum in appcache_interfaces.h.
+static const char* kEventNames[] = {
+  "Checking", "Error", "NoUpdate", "Downloading", "Progress",
+  "UpdateReady", "Cached", "Obsolete"
+};
+
 static HostsMap* all_hosts() {
   return Singleton<HostsMap>::get();
 }
@@ -81,6 +88,14 @@ void WebApplicationCacheHostImpl::OnStatusChanged(appcache::Status status) {
 
 void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
   DCHECK(event_id != PROGRESS_EVENT);  // See OnProgressEventRaised.
+  DCHECK(event_id != ERROR_EVENT);  // See OnErrorEventRaised.
+
+  // Emit logging output prior to calling out to script as we can get
+  // deleted within the script event handler.
+  const char* kFormatString = "Application Cache %s event";
+  std::string message = StringPrintf(kFormatString, kEventNames[event_id]);
+  OnLogMessage(LOG_INFO, message);
+
   // Most events change the status. Clear out what we know so that the latest
   // status will be obtained from the backend.
   has_status_ = false;
@@ -90,7 +105,29 @@ void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
 
 void WebApplicationCacheHostImpl::OnProgressEventRaised(
     const GURL& url, int num_total, int num_complete) {
+  // Emit logging output prior to calling out to script as we can get
+  // deleted within the script event handler.
+  const char* kFormatString = "Application Cache Progress event (%d of %d) %s";
+  std::string message = StringPrintf(kFormatString, num_complete,
+                                     num_total, url.spec().c_str());
+  OnLogMessage(LOG_INFO, message);
+
   client_->notifyProgressEventListener(url, num_total, num_complete);
+}
+
+void WebApplicationCacheHostImpl::OnErrorEventRaised(
+    const std::string& message) {
+  // Emit logging output prior to calling out to script as we can get
+  // deleted within the script event handler.
+  const char* kFormatString = "Application Cache Error event: %s";
+  std::string full_message = StringPrintf(kFormatString, message.c_str());
+  OnLogMessage(LOG_ERROR, full_message);
+
+  // Most events change the status. Clear out what we know so that the latest
+  // status will be obtained from the backend.
+  has_status_ = false;
+  has_cached_status_ = false;
+  client_->notifyEventListener(static_cast<EventID>(ERROR_EVENT));
 }
 
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(

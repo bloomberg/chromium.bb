@@ -104,7 +104,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void CheckPolicy();
   void OnPolicyCheckComplete(int rv);
 
-  void HandleCacheFailure();
+  void HandleCacheFailure(const std::string& error_message);
 
   void FetchManifest(bool is_first_fetch);
 
@@ -143,10 +143,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void StoreGroupAndCache();
 
   void NotifySingleHost(AppCacheHost* host, EventID event_id);
-  void NotifyAllPendingMasterHosts(EventID event_id);
   void NotifyAllAssociatedHosts(EventID event_id);
-  void NotifyProgress(const GURL& url);
-  void NotifyFinalProgress();
+  void NotifyAllProgress(const GURL& url);
+  void NotifyAllFinalProgress();
+  void NotifyAllError(const std::string& error_message);
   void AddAllAssociatedHostsToNotifier(HostNotifier* notifier);
 
   // Checks if manifest is byte for byte identical with the manifest
@@ -173,7 +173,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void AddMasterEntryToFetchList(AppCacheHost* host, const GURL& url,
                                  bool is_new);
   void FetchMasterEntries();
-  void CancelAllMasterEntryFetches();
+  void CancelAllMasterEntryFetches(const std::string& error_message);
 
   // Asynchronously loads the entry from the newest complete cache if the
   // HTTP caching semantics allow.

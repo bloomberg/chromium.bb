@@ -51,6 +51,11 @@ class AppCacheHostTest : public testing::Test {
       last_event_id_ = event_id;
     }
 
+    virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
+                                    const std::string& message) {
+      last_event_id_ = ERROR_EVENT;
+    }
+
     virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                        const GURL& url,
                                        int num_total, int num_complete) {

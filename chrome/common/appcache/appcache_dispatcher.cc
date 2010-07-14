@@ -14,6 +14,7 @@ bool AppCacheDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AppCacheMsg_StatusChanged, OnStatusChanged)
     IPC_MESSAGE_HANDLER(AppCacheMsg_EventRaised, OnEventRaised)
     IPC_MESSAGE_HANDLER(AppCacheMsg_ProgressEventRaised, OnProgressEventRaised)
+    IPC_MESSAGE_HANDLER(AppCacheMsg_ErrorEventRaised, OnErrorEventRaised)
     IPC_MESSAGE_HANDLER(AppCacheMsg_LogMessage, OnLogMessage)
     IPC_MESSAGE_HANDLER(AppCacheMsg_ContentBlocked, OnContentBlocked)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -40,6 +41,12 @@ void AppCacheDispatcher::OnProgressEventRaised(
     const std::vector<int>& host_ids,
     const GURL& url, int num_total, int num_complete) {
   frontend_impl_.OnProgressEventRaised(host_ids, url, num_total, num_complete);
+}
+
+void AppCacheDispatcher::OnErrorEventRaised(
+    const std::vector<int>& host_ids,
+    const std::string& message) {
+  frontend_impl_.OnErrorEventRaised(host_ids, message);
 }
 
 void AppCacheDispatcher::OnLogMessage(

@@ -317,7 +317,7 @@ void AppCacheHost::FinishCacheSelection(
     DCHECK(new_master_entry_url_.is_empty());
     AppCacheGroup* owing_group = cache->owning_group();
     const char* kFormatString =
-        "Document was loaded from appcache with manifest %s";
+        "Document was loaded from Application Cache with manifest %s";
     frontend_->OnLogMessage(
         host_id_, LOG_INFO,
         StringPrintf(
@@ -336,8 +336,8 @@ void AppCacheHost::FinishCacheSelection(
     DCHECK(!group->is_obsolete());
     DCHECK(new_master_entry_url_.is_valid());
     const char* kFormatString = group->HasCache() ?
-        "Adding master entry to appcache with manifest %s" :
-        "Creating appcache with manifest %s";
+        "Adding master entry to Application Cache with manifest %s" :
+        "Creating Application Cache with manifest %s";
     frontend_->OnLogMessage(
         host_id_, LOG_INFO,
         StringPrintf(kFormatString, group->manifest_url().spec().c_str()));

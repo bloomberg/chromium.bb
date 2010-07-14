@@ -29,6 +29,13 @@ void AppCacheFrontendProxy::OnProgressEventRaised(
       host_ids, url, num_total, num_complete));
 }
 
+void AppCacheFrontendProxy::OnErrorEventRaised(
+    const std::vector<int>& host_ids,
+    const std::string& message) {
+  sender_->Send(new AppCacheMsg_ErrorEventRaised(
+      host_ids, message));
+}
+
 void AppCacheFrontendProxy::OnLogMessage(int host_id,
                                          appcache::LogLevel log_level,
                                          const std::string& message) {

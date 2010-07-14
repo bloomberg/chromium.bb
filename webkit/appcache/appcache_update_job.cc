@@ -106,6 +106,15 @@ class HostNotifier {
     }
   }
 
+  void SendErrorNotifications(const std::string& error_message) {
+    DCHECK(!error_message.empty());
+    for (NotifyHostMap::iterator it = hosts_to_notify.begin();
+         it != hosts_to_notify.end(); ++it) {
+      AppCacheFrontend* frontend = it->first;
+      frontend->OnErrorEventRaised(it->second, error_message);
+    }
+  }
+
  private:
   NotifyHostMap hosts_to_notify;
 };
@@ -236,20 +245,25 @@ void AppCacheUpdateJob::OnPolicyCheckComplete(int rv) {
 
   group_->NotifyContentBlocked();
 
+  const char* kErrorMessage =
+      "Cache creation was blocked by the content policy";
   MessageLoop::current()->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(
-          &AppCacheUpdateJob::HandleCacheFailure));
+          &AppCacheUpdateJob::HandleCacheFailure,
+          kErrorMessage));
 }
 
-void AppCacheUpdateJob::HandleCacheFailure() {
-  // TODO(michaeln): For now this is only invoked from one point
-  // of failure. Overtime, attempt the migrate the various places
-  // where we can detect a failure condition to use this same
-  // method to enter the cache_failure state.
+void AppCacheUpdateJob::HandleCacheFailure(const std::string& error_message) {
+  // 6.9.4 cache failure steps 2-8.
+  DCHECK(internal_state_ != CACHE_FAILURE);
+  DCHECK(!error_message.empty());
   internal_state_ = CACHE_FAILURE;
   CancelAllUrlFetches();
-  CancelAllMasterEntryFetches();
-  MaybeCompleteUpdate();
+  CancelAllMasterEntryFetches(error_message);
+  NotifyAllError(error_message);
+  DiscardInprogressCache();
+  internal_state_ = COMPLETED;
+  DeleteSoon();  // To unwind the stack prior to deletion.
 }
 
 void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
@@ -512,25 +526,26 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
   } else if (response_code == 404 || response_code == 410) {
     service_->storage()->MakeGroupObsolete(group_, this);  // async
   } else {
-    internal_state_ = CACHE_FAILURE;
-    CancelAllMasterEntryFetches();
-    MaybeCompleteUpdate();  // if not done, run async cache failure steps
+    const char* kFormatString = "Manifest fetch failed (%d) %s";
+    const std::string message = StringPrintf(kFormatString, response_code,
+                                             manifest_url_.spec().c_str());
+    HandleCacheFailure(message);
   }
 }
 
 void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
                                             bool success) {
   DCHECK(master_entry_fetches_.empty());
-  CancelAllMasterEntryFetches();
+  CancelAllMasterEntryFetches("The group has been made obsolete");
   if (success) {
     DCHECK(group->is_obsolete());
     NotifyAllAssociatedHosts(OBSOLETE_EVENT);
     internal_state_ = COMPLETED;
+    MaybeCompleteUpdate();
   } else {
     // Treat failure to mark group obsolete as a cache failure.
-    internal_state_ = CACHE_FAILURE;
+    HandleCacheFailure("Failed to make the group as obsolete");
   }
-  MaybeCompleteUpdate();
 }
 
 void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
@@ -549,10 +564,11 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   Manifest manifest;
   if (!ParseManifest(manifest_url_, manifest_data_.data(),
                      manifest_data_.length(), manifest)) {
-    LOG(INFO) << "Failed to parse manifest: " << manifest_url_;
-    internal_state_ = CACHE_FAILURE;
-    CancelAllMasterEntryFetches();
-    MaybeCompleteUpdate();  // if not done, run async cache failure steps
+    const char* kFormatString = "Failed to parse manifest %s";
+    const std::string message = StringPrintf(kFormatString,
+                                             manifest_url_.spec().c_str());
+    HandleCacheFailure(message);
+    LOG(INFO) << message;
     return;
   }
 
@@ -585,7 +601,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
 
   const GURL& url = request->original_url();
   pending_url_fetches_.erase(url);
-  NotifyProgress(url);
+  NotifyAllProgress(url);
   ++url_fetches_completed_;
 
   int response_code = request->status().is_success()
@@ -613,9 +629,11 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
     if (entry.IsExplicit() || entry.IsFallback()) {
-      internal_state_ = CACHE_FAILURE;
-      CancelAllUrlFetches();
-      CancelAllMasterEntryFetches();
+      const char* kFormatString = "Resource fetch failed (%d) %s";
+      const std::string message = StringPrintf(kFormatString, response_code,
+                                               request->url().spec().c_str());
+      HandleCacheFailure(message);
+      return;
     } else if (response_code == 404 || response_code == 410) {
       // Entry is skipped.  They are dropped from the cache.
     } else if (update_type_ == UPGRADE_ATTEMPT) {
@@ -631,9 +649,8 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
   }
 
   // Fetch another URL now that one request has completed.
-  if (internal_state_ != CACHE_FAILURE)
-    FetchUrls();
-
+  DCHECK(internal_state_ != CACHE_FAILURE);
+  FetchUrls();
   MaybeCompleteUpdate();
 }
 
@@ -693,7 +710,11 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
       host->RemoveObserver(this);
     }
     hosts.clear();
-    host_notifier.SendNotifications(ERROR_EVENT);
+
+    const char* kFormatString = "Master entry fetch failed (%d) %s";
+    const std::string message = StringPrintf(kFormatString, response_code,
+                                             request->url().spec().c_str());
+    host_notifier.SendErrorNotifications(message);
 
     // In downloading case, update result is different if all master entries
     // failed vs. only some failing.
@@ -704,15 +725,14 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
 
       // Section 6.9.4, step 22.3.
       if (update_type_ == CACHE_ATTEMPT && pending_master_entries_.empty()) {
-        CancelAllUrlFetches();
-        internal_state_ = CACHE_FAILURE;
+        HandleCacheFailure(message);
+        return;
       }
     }
   }
 
-  if (internal_state_ != CACHE_FAILURE)
-    FetchMasterEntries();
-
+  DCHECK(internal_state_ != CACHE_FAILURE);
+  FetchMasterEntries();
   MaybeCompleteUpdate();
 }
 
@@ -743,8 +763,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
     ScheduleUpdateRetry(kRerunDelayMs);
-    internal_state_ = CACHE_FAILURE;
-    MaybeCompleteUpdate();  // will definitely complete
+    HandleCacheFailure("Manifest changed during update, scheduling retry");
   }
 }
 
@@ -755,8 +774,7 @@ void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
     manifest_response_writer_->WriteData(io_buffer, manifest_data_.length(),
                                          &manifest_data_write_callback_);
   } else {
-    internal_state_ = CACHE_FAILURE;
-    MaybeCompleteUpdate();  // will definitely complete
+    HandleCacheFailure("Failed to write the manifest headers to storage");
   }
 }
 
@@ -769,8 +787,7 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
       duplicate_response_ids_.push_back(entry.response_id());
     StoreGroupAndCache();
   } else {
-    internal_state_ = CACHE_FAILURE;
-    MaybeCompleteUpdate();  // will definitely complete
+    HandleCacheFailure("Failed to write the manifest data to storage");
   }
 }
 
@@ -793,15 +810,15 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
   DCHECK(stored_state_ == STORING);
   if (success) {
     stored_state_ = STORED;
+    MaybeCompleteUpdate();  // will definitely complete
   } else {
-    internal_state_ = CACHE_FAILURE;
-
     // Restore inprogress_cache_ to get the proper events delivered
     // and the proper cleanup to occur.
     if (newest_cache != group->newest_complete_cache())
       inprogress_cache_ = newest_cache;
+
+    HandleCacheFailure("Failed to commit new cache to storage");
   }
-  MaybeCompleteUpdate();  // will definitely complete
 }
 
 void AppCacheUpdateJob::NotifySingleHost(AppCacheHost* host,
@@ -810,39 +827,28 @@ void AppCacheUpdateJob::NotifySingleHost(AppCacheHost* host,
   host->frontend()->OnEventRaised(ids, event_id);
 }
 
-void AppCacheUpdateJob::NotifyAllPendingMasterHosts(EventID event_id) {
-  // Collect hosts so we only send one notification per frontend.
-  // A host can only be associated with a single pending master entry
-  // so no need to worry about duplicate hosts being added to the notifier.
-  HostNotifier host_notifier;
-  for (PendingMasters::iterator it = pending_master_entries_.begin();
-       it != pending_master_entries_.end(); ++it) {
-    PendingHosts& hosts = it->second;
-    for (PendingHosts::iterator host_it = hosts.begin();
-         host_it != hosts.end(); ++host_it) {
-      host_notifier.AddHost(*host_it);
-    }
-  }
-
-  host_notifier.SendNotifications(event_id);
-}
-
 void AppCacheUpdateJob::NotifyAllAssociatedHosts(EventID event_id) {
   HostNotifier host_notifier;
   AddAllAssociatedHostsToNotifier(&host_notifier);
   host_notifier.SendNotifications(event_id);
 }
 
-void AppCacheUpdateJob::NotifyProgress(const GURL& url) {
+void AppCacheUpdateJob::NotifyAllProgress(const GURL& url) {
   HostNotifier host_notifier;
   AddAllAssociatedHostsToNotifier(&host_notifier);
   host_notifier.SendProgressNotifications(
       url, url_file_list_.size(), url_fetches_completed_);
 }
 
-void AppCacheUpdateJob::NotifyFinalProgress() {
+void AppCacheUpdateJob::NotifyAllFinalProgress() {
   DCHECK(url_file_list_.size() == url_fetches_completed_);
-  NotifyProgress(GURL());
+  NotifyAllProgress(GURL());
+}
+
+void AppCacheUpdateJob::NotifyAllError(const std::string& error_message) {
+  HostNotifier host_notifier;
+  AddAllAssociatedHostsToNotifier(&host_notifier);
+  host_notifier.SendErrorNotifications(error_message);
 }
 
 void AppCacheUpdateJob::AddAllAssociatedHostsToNotifier(
@@ -958,10 +964,10 @@ void AppCacheUpdateJob::FetchUrls() {
     DCHECK(it != url_file_list_.end());
     AppCacheEntry& entry = it->second;
     if (ShouldSkipUrlFetch(entry)) {
-      NotifyProgress(url);
+      NotifyAllProgress(url);
       ++url_fetches_completed_;
     } else if (AlreadyFetchedEntry(url, entry.types())) {
-      NotifyProgress(url);
+      NotifyAllProgress(url);
       ++url_fetches_completed_;  // saved a URL request
     } else if (!storage_checked && MaybeLoadFromNewestCache(url, entry)) {
       // Continues asynchronously after data is loaded from newest cache.
@@ -1089,7 +1095,8 @@ void AppCacheUpdateJob::FetchMasterEntries() {
   }
 }
 
-void AppCacheUpdateJob::CancelAllMasterEntryFetches() {
+void AppCacheUpdateJob::CancelAllMasterEntryFetches(
+    const std::string& error_message) {
   // For now, cancel all in-progress fetches for master entries and pretend
   // all master entries fetches have completed.
   // TODO(jennb): Delete this when update no longer fetches master entries
@@ -1125,7 +1132,7 @@ void AppCacheUpdateJob::CancelAllMasterEntryFetches() {
 
     master_entries_to_fetch_.erase(master_entries_to_fetch_.begin());
   }
-  host_notifier.SendNotifications(ERROR_EVENT);
+  host_notifier.SendErrorNotifications(error_message);
 }
 
 bool AppCacheUpdateJob::MaybeLoadFromNewestCache(const GURL& url,
@@ -1174,6 +1181,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
                                                http_info->response_time,
                                                base::Time::Now()) ||
         http_info->headers->EnumerateHeader(&iter, name, &value)) {
+      // TODO(michaeln): Make a conditional request when we can in this case.
       LoadFromNewestCacheFailed(url);
     } else {
       DCHECK(group_->newest_complete_cache());
@@ -1187,7 +1195,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
       entry.set_response_id(response_id);
       entry.set_response_size(copy_me->response_size());
       inprogress_cache_->AddOrModifyEntry(url, entry);
-      NotifyProgress(url);
+      NotifyAllProgress(url);
       ++url_fetches_completed_;
     }
   }
@@ -1206,6 +1214,8 @@ void AppCacheUpdateJob::LoadFromNewestCacheFailed(const GURL& url) {
 }
 
 void AppCacheUpdateJob::MaybeCompleteUpdate() {
+  DCHECK(internal_state_ != CACHE_FAILURE);
+
   // Must wait for any pending master entries or url fetches to complete.
   if (master_entries_completed_ != pending_master_entries_.size() ||
       url_fetches_completed_ != url_file_list_.size()) {
@@ -1237,7 +1247,7 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
       break;
     case REFETCH_MANIFEST:
       DCHECK(stored_state_ == STORED);
-      NotifyFinalProgress();
+      NotifyAllFinalProgress();
       if (update_type_ == CACHE_ATTEMPT)
         NotifyAllAssociatedHosts(CACHED_EVENT);
       else
@@ -1246,13 +1256,7 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
       internal_state_ = COMPLETED;
       break;
     case CACHE_FAILURE:
-      // 6.9.4 cache failure steps 2-8.
-      NotifyAllAssociatedHosts(ERROR_EVENT);
-      DiscardInprogressCache();
-      // For a CACHE_ATTEMPT, group will be discarded when the host(s) that
-      // started this update removes its reference to the group. Nothing more
-      // to do here.
-      internal_state_ = COMPLETED;
+      NOTREACHED();  // See HandleCacheFailure
       break;
     default:
       break;

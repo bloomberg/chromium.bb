@@ -620,6 +620,11 @@ IPC_BEGIN_MESSAGES(View)
                        int /* total */,
                        int /* complete */)
 
+  // Notifies the renderer of an AppCache error event.
+  IPC_MESSAGE_CONTROL2(AppCacheMsg_ErrorEventRaised,
+                       std::vector<int> /* host_ids */,
+                       std::string /* error_message */)
+
   // Notifies the renderer of an AppCache logging message.
   IPC_MESSAGE_CONTROL3(AppCacheMsg_LogMessage,
                        int /* host_id */,
