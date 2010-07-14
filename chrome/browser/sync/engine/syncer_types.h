@@ -107,6 +107,15 @@ struct SyncerEvent {
     // This event is sent when a connection has been established and
     // the thread continues.
     CONNECTED,
+
+    // This is sent after the Syncer (and SyncerThread) have initiated self
+    // halt due to no longer being permitted to communicate with the server.
+    // The listener should sever the sync / browser connections and delete sync
+    // data (i.e. as if the user clicked 'Stop Syncing' in the browser.
+    STOP_SYNCING_PERMANENTLY,
+
+    // Sent when the main syncer loop finishes.
+    SYNCER_THREAD_EXITING,
   };
 
   explicit SyncerEvent(EventCause cause) : what_happened(cause),

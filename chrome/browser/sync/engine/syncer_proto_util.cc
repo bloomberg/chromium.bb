@@ -83,6 +83,9 @@ bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
 
   std::string local_birthday = dir->store_birthday();
 
+  // TODO(tim): Bug 46807. Check for new response code denoting a clear store
+  // operation is in progress.
+
   if (local_birthday.empty()) {
     if (!response->has_store_birthday()) {
       LOG(WARNING) << "Expected a birthday on first sync.";
@@ -193,6 +196,7 @@ bool SyncerProtoUtil::PostClientToServerMessage(
     // TODO(ncarter): Add a unit test for the case where the syncer becomes
     // stuck due to a bad birthday.
     session->status_controller()->set_syncer_stuck(true);
+    session->delegate()->OnShouldStopSyncingPermanently();
     return false;
   }
 
@@ -200,9 +204,6 @@ bool SyncerProtoUtil::PostClientToServerMessage(
     case ClientToServerResponse::SUCCESS:
       LogResponseProfilingData(*response);
       return true;
-    case ClientToServerResponse::NOT_MY_BIRTHDAY:
-      LOG(WARNING) << "Server thought we had wrong birthday.";
-      return false;
     case ClientToServerResponse::THROTTLED:
       LOG(WARNING) << "Client silenced by server.";
       session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +

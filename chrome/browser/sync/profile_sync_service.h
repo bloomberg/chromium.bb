@@ -156,6 +156,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnBackendInitialized();
   virtual void OnSyncCycleCompleted();
   virtual void OnAuthError();
+  virtual void OnStopSyncingPermanently();
 
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,

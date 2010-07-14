@@ -207,20 +207,14 @@ void AllStatus::HandleChannelEvent(const SyncerEvent& event) {
       lock.NotifyOverQuota();
       break;
     case SyncerEvent::REQUEST_SYNC_NUDGE:
-      lock.set_notify_plan(DONT_NOTIFY);
-      break;
     case SyncerEvent::PAUSED:
-      lock.set_notify_plan(DONT_NOTIFY);
-      break;
     case SyncerEvent::RESUMED:
-      lock.set_notify_plan(DONT_NOTIFY);
-      break;
     case SyncerEvent::WAITING_FOR_CONNECTION:
-      lock.set_notify_plan(DONT_NOTIFY);
-      break;
     case SyncerEvent::CONNECTED:
-      lock.set_notify_plan(DONT_NOTIFY);
-      break;
+    case SyncerEvent::STOP_SYNCING_PERMANENTLY:
+    case SyncerEvent::SYNCER_THREAD_EXITING:
+       lock.set_notify_plan(DONT_NOTIFY);
+       break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
       lock.set_notify_plan(DONT_NOTIFY);

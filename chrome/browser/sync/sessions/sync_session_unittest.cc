@@ -50,6 +50,9 @@ class SyncSessionTest : public testing::Test,
       const base::TimeDelta& new_interval) {
     FailControllerInvocationIfDisabled("OnReceivedShortPollIntervalUpdate");
   }
+  virtual void OnShouldStopSyncingPermanently() {
+      FailControllerInvocationIfDisabled("OnShouldStopSyncingPermanently");
+  }
 
   // ModelSafeWorkerRegistrar implementation.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}

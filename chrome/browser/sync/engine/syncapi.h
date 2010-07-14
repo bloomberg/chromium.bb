@@ -662,6 +662,12 @@ class SyncManager {
     // The syncer thread has been resumed.
     virtual void OnResumed() = 0;
 
+    // We are no longer permitted to communicate with the server. Sync should
+    // be disabled and state cleaned up at once.  This can happen for a number
+    // of reasons, e.g. swapping from a test instance to production, or a
+    // global stop syncing operation has wiped the store.
+    virtual void OnStopSyncingPermanently() = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };

@@ -322,11 +322,6 @@ void ProfileSyncService::EnableForUser() {
 }
 
 void ProfileSyncService::DisableForUser() {
-  if (WizardIsVisible()) {
-    // TODO(timsteele): Focus wizard.
-    return;
-  }
-
   LOG(INFO) << "Clearing Sync DB.";
 
   // Clear prefs (including  SyncSetupHasCompleted) before shutting down so
@@ -403,7 +398,7 @@ void ProfileSyncService::OnUnrecoverableError(
   from_here.Write(true, true, &location);
   LOG(ERROR) << location;
 
-  if (WizardIsVisible()) {
+  if (SetupInProgress()) {
     // We've hit an error in the middle of a startup process- shutdown all the
     // backend stuff, and then restart it, so we're in the same state as before.
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -466,6 +461,13 @@ void ProfileSyncService::OnAuthError() {
   is_auth_in_progress_ = false;
   // Fan the notification out to interested UI-thread components.
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+}
+
+void ProfileSyncService::OnStopSyncingPermanently() {
+  if (SetupInProgress())
+    wizard_.Step(SyncSetupWizard::FATAL_ERROR);
+
+  DisableForUser();
 }
 
 void ProfileSyncService::ShowLoginDialog() {

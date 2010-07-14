@@ -177,6 +177,10 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     use_legacy_bookmarks_protocol_ = value;
   }
 
+  void set_store_birthday(string new_birthday) {
+    store_birthday_ = new_birthday;
+  }
+
   // Retrieve the number of GetUpdates requests that the mock server has
   // seen since the last time this function was called.  Can be used to
   // verify that a GetUpdates actually did or did not happen after running

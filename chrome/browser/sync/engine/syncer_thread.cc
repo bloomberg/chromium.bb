@@ -128,6 +128,14 @@ bool SyncerThread::Start() {
 // Stop processing. A max wait of at least 2*server RTT time is recommended.
 // Returns true if we stopped, false otherwise.
 bool SyncerThread::Stop(int max_wait) {
+  RequestSyncerExitAndSetThreadStopConditions();
+
+  // This will join, and finish when ThreadMain terminates.
+  thread_.Stop();
+  return true;
+}
+
+void SyncerThread::RequestSyncerExitAndSetThreadStopConditions() {
   {
     AutoLock lock(lock_);
     // If the thread has been started, then we either already have or are about
@@ -135,7 +143,7 @@ bool SyncerThread::Stop(int max_wait) {
     // it to finish.  If the thread has not been started --and we now own the
     // lock-- then we can early out because the caller has not called Start().
     if (!thread_.IsRunning())
-      return true;
+      return;
 
     LOG(INFO) << "SyncerThread::Stop - setting ThreadMain exit condition to "
               << "true (vault_.stop_syncer_thread_)";
@@ -155,10 +163,6 @@ bool SyncerThread::Stop(int max_wait) {
     // end of ThreadMain.
     vault_field_changed_.Broadcast();
   }
-
-  // This will join, and finish when ThreadMain terminates.
-  thread_.Stop();
-  return true;
 }
 
 bool SyncerThread::RequestPause() {
@@ -231,6 +235,13 @@ bool SyncerThread::IsSyncingCurrentlySilenced() {
   bool ret = (silenced_until_ - TimeTicks::Now()) >= TimeDelta::FromSeconds(0);
   ANNOTATE_IGNORE_READS_END();
   return ret;
+}
+
+void SyncerThread::OnShouldStopSyncingPermanently() {
+  RequestSyncerExitAndSetThreadStopConditions();
+
+  SyncerEvent event(SyncerEvent::STOP_SYNCING_PERMANENTLY);
+  relay_channel()->Notify(event);
 }
 
 void SyncerThread::ThreadMainLoop() {
@@ -386,14 +397,18 @@ void SyncerThread::PauseUntilResumedOrQuit() {
 }
 
 void SyncerThread::EnterPausedState() {
+  lock_.AssertAcquired();
   vault_.pause_requested_ = false;
   vault_.paused_ = true;
+  vault_field_changed_.Broadcast();
   SyncerEvent event(SyncerEvent::PAUSED);
   relay_channel()->Notify(event);
 }
 
 void SyncerThread::ExitPausedState() {
+  lock_.AssertAcquired();
   vault_.paused_ = false;
+  vault_field_changed_.Broadcast();
   SyncerEvent event(SyncerEvent::RESUMED);
   relay_channel()->Notify(event);
 }
@@ -488,6 +503,8 @@ void SyncerThread::ThreadMain() {
   thread_main_started_.Signal();
   ThreadMainLoop();
   LOG(INFO) << "Syncer thread ThreadMain is done.";
+  SyncerEvent event(SyncerEvent::SYNCER_THREAD_EXITING);
+  relay_channel()->Notify(event);
 }
 
 void SyncerThread::SyncMain(Syncer* syncer) {

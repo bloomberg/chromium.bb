@@ -44,6 +44,9 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
       const base::TimeDelta& new_interval) {
     FAIL() << "Should not get poll interval update.";
   }
+  virtual void OnShouldStopSyncingPermanently() {
+    FAIL() << "Shouldn't be forced to stop syncing.";
+  }
 
   // ModelSafeWorkerRegistrar implementation.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {

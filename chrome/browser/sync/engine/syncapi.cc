@@ -1869,6 +1869,11 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
     observer_->OnResumed();
     return;
   }
+
+  if (event.what_happened == SyncerEvent::STOP_SYNCING_PERMANENTLY) {
+    observer_->OnStopSyncingPermanently();
+    return;
+  }
 }
 
 void SyncManager::SyncInternal::HandleAuthWatcherEvent(

@@ -592,6 +592,15 @@ void SyncBackendHost::Core::OnResumed() {
       NewRunnableMethod(this, &Core::NotifyResumed));
 }
 
+void SyncBackendHost::Core::OnStopSyncingPermanently() {
+  host_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &Core::HandleStopSyncingPermanentlyOnFrontendLoop));
+}
+
+void SyncBackendHost::Core::HandleStopSyncingPermanentlyOnFrontendLoop() {
+  host_->frontend_->OnStopSyncingPermanently();
+}
+
 void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
     const GoogleServiceAuthError& new_auth_error) {
   if (!host_ || !host_->frontend_)

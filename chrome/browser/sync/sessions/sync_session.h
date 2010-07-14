@@ -65,6 +65,12 @@ class SyncSession {
     virtual void OnReceivedLongPollIntervalUpdate(
         const base::TimeDelta& new_interval) = 0;
 
+    // The client needs to cease and desist syncing at once.  This occurs when
+    // the Syncer detects that the backend store has fundamentally changed or
+    // is a different instance altogether (e.g. swapping from a test instance
+    // to production, or a global stop syncing operation has wiped the store).
+    virtual void OnShouldStopSyncingPermanently() = 0;
+
    protected:
     virtual ~Delegate() {}
   };

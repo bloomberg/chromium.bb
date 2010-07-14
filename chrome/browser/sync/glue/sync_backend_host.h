@@ -58,6 +58,10 @@ class SyncFrontend {
   // credentials to be provided. See SyncBackendHost::Authenticate for details.
   virtual void OnAuthError() = 0;
 
+  // We are no longer permitted to communicate with the server. Sync should
+  // be disabled and state cleaned up at once.
+  virtual void OnStopSyncingPermanently() = 0;
+
  protected:
   // Don't delete through SyncFrontend interface.
   virtual ~SyncFrontend() {
@@ -230,6 +234,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnPassphraseAccepted();
     virtual void OnPaused();
     virtual void OnResumed();
+    virtual void OnStopSyncingPermanently();
 
     struct DoInitializeOptions {
       DoInitializeOptions(
@@ -373,6 +378,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // thread components.
     void HandleSyncCycleCompletedOnFrontendLoop(
         sessions::SyncSessionSnapshot* snapshot);
+
+    void HandleStopSyncingPermanentlyOnFrontendLoop();
 
     // Called from Core::OnInitializationComplete to handle updating
     // frontend thread components.

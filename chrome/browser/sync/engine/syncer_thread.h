@@ -57,6 +57,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Pause);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, StartWhenNotConnected);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, PauseWhenNotConnected);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, StopSyncPermanently);
   friend class SyncerThreadWithSyncerTest;
   friend class SyncerThreadFactory;
  public:
@@ -236,6 +237,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
       const base::TimeDelta& new_interval);
   virtual void OnReceivedLongPollIntervalUpdate(
       const base::TimeDelta& new_interval);
+  virtual void OnShouldStopSyncingPermanently();
 
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
@@ -287,6 +289,11 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   // For unit tests only.
   virtual void DisableIdleDetection() { disable_idle_detection_ = true; }
+
+  // This sets all conditions for syncer thread termination but does not
+  // actually join threads.  It is expected that Stop will be called at some
+  // time after to fully stop and clean up.
+  void RequestSyncerExitAndSetThreadStopConditions();
 
   // State of the notification framework is tracked by these values.
   bool p2p_authenticated_;

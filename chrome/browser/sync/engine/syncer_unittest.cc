@@ -115,6 +115,8 @@ class SyncerTest : public testing::Test,
       const base::TimeDelta& new_interval) {
     last_short_poll_interval_received_ = new_interval;
   }
+  virtual void OnShouldStopSyncingPermanently() {
+  }
 
   // ModelSafeWorkerRegistrar implementation.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {

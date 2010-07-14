@@ -716,6 +716,43 @@ TEST_F(SyncerThreadWithSyncerTest, Throttling) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
+TEST_F(SyncerThreadWithSyncerTest, StopSyncPermanently) {
+  // The SyncerThread should request an exit from the Syncer and set
+  // conditions for termination.
+  const TimeDelta poll_interval = TimeDelta::FromMilliseconds(10);
+  syncer_thread()->SetSyncerShortPollInterval(poll_interval);
+
+  ListenerMock listener;
+  WaitableEvent sync_cycle_ended_event(false, false);
+  WaitableEvent syncer_thread_exiting_event(false, false);
+  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
+  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
+
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+      Times(AnyNumber());
+
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+      Times(AnyNumber()).
+      WillOnce(SignalEvent(&sync_cycle_ended_event));
+
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened,
+          SyncerEvent::STOP_SYNCING_PERMANENTLY)));
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING))).
+      WillOnce(SignalEvent(&syncer_thread_exiting_event));
+
+  EXPECT_TRUE(syncer_thread()->Start());
+  metadb()->Open();
+  ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
+
+  connection()->set_store_birthday("NotYourLuckyDay");
+  ASSERT_TRUE(syncer_thread_exiting_event.TimedWait(max_wait_time_));
+  EXPECT_TRUE(syncer_thread()->Stop(0));
+}
+
 TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
   SyncShareIntercept interceptor;
   connection()->SetMidCommitObserver(&interceptor);
@@ -789,6 +826,8 @@ TEST_F(SyncerThreadWithSyncerTest, MAYBE_Pause) {
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
   ASSERT_TRUE(syncer_thread()->Start());
   metadb()->Open();
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
@@ -829,6 +868,8 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
       Times(AnyNumber());
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
 
   connection()->SetServerNotReachable();
   metadb()->Open();
@@ -928,6 +969,9 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_PauseWhenNotConnected) {
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
+
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
@@ -959,9 +1003,11 @@ TEST_F(SyncerThreadWithSyncerTest, PauseResumeWhenNotRunning) {
   EXPECT_CALL(listener, HandleChannelEvent(
       Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
+  EXPECT_CALL(listener, HandleChannelEvent(
+      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
+
   ASSERT_TRUE(Resume(&listener));
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
-
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
