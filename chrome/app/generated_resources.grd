@@ -3116,10 +3116,10 @@ each locale. -->
         Client Certificate Error
       </message>
       <message name="IDS_ADD_CERT_ERR_INVALID_CERT" desc="Error message when the server returns an invalid client certificate after key generation">
-        The server returned an invalid client certificate.
+        The server returned an invalid client certificate. Error <ph name="ERROR_number">$1<ex>207</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_CERT_INVALID</ex></ph>).
       </message>
       <message name="IDS_ADD_CERT_ERR_FAILED" desc="Generic error message for a failure to add the generated certificate to the cert store/keychain">
-        There was an error while trying to store the client certificate.
+        There was an error while trying to store the client certificate. Error <ph name="ERROR_number">$1<ex>207</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_CERT_INVALID</ex></ph>).
       </message>
 
       <!-- Basic Auth Dialog -->

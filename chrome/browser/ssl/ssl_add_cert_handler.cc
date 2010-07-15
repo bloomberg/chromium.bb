@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 
 #include "app/l10n_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -34,7 +35,10 @@ void SSLAddCertHandler::RunUI() {
   }
   if (cert_error != net::OK) {
     // TODO(snej): Map cert_error to a more specific error message.
-    ShowError(l10n_util::GetStringUTF16(IDS_ADD_CERT_ERR_INVALID_CERT));
+    ShowError(l10n_util::GetStringFUTF16(
+        IDS_ADD_CERT_ERR_INVALID_CERT,
+        IntToString16(-cert_error),
+        ASCIIToUTF16(net::ErrorToString(cert_error))));
     Finished(false);
     return;
   }
@@ -54,7 +58,10 @@ void SSLAddCertHandler::Finished(bool add_cert) {
     int cert_error = db.AddUserCert(cert_);
     if (cert_error != net::OK) {
       // TODO(snej): Map cert_error to a more specific error message.
-      ShowError(l10n_util::GetStringUTF16(IDS_ADD_CERT_ERR_FAILED));
+      ShowError(l10n_util::GetStringFUTF16(
+          IDS_ADD_CERT_ERR_FAILED,
+          IntToString16(-cert_error),
+          ASCIIToUTF16(net::ErrorToString(cert_error))));
     }
   }
   Release();
