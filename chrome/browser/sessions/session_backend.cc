@@ -352,7 +352,7 @@ void SessionBackend::ResetFile() {
 
 net::FileStream* SessionBackend::OpenAndWriteHeader(const FilePath& path) {
   DCHECK(!path.empty());
-  net::FileStream* file = new net::FileStream();
+  scoped_ptr<net::FileStream> file(new net::FileStream());
   file->Open(path, base::PLATFORM_FILE_CREATE_ALWAYS |
              base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
              base::PLATFORM_FILE_EXCLUSIVE_READ);
@@ -365,7 +365,7 @@ net::FileStream* SessionBackend::OpenAndWriteHeader(const FilePath& path) {
                           sizeof(header), NULL);
   if (wrote != sizeof_header())
     return NULL;
-  return file;
+  return file.release();
 }
 
 FilePath SessionBackend::GetLastSessionPath() {
