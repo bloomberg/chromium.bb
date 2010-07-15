@@ -14,15 +14,14 @@ namespace base {
 // These are used to derive mocks for unittests.
 class EnvVarGetter {
  public:
-  virtual ~EnvVarGetter() {}
+  virtual ~EnvVarGetter();
+
   // Gets an environment variable's value and stores it in |result|.
   // Returns false if the key is unset.
   virtual bool GetEnv(const char* variable_name, std::string* result) = 0;
 
   // Syntactic sugar for GetEnv(variable_name, NULL);
-  virtual bool HasEnv(const char* variable_name) {
-    return GetEnv(variable_name, NULL);
-  }
+  virtual bool HasEnv(const char* variable_name);
 
   virtual void SetEnv(const char* variable_name,
                       const std::string& new_value) = 0;

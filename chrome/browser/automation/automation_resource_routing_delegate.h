@@ -15,14 +15,14 @@ class AutomationResourceRoutingDelegate {
  public:
   // Call to register |render_view_host| for resource routing automation
   // by the delegate.
-  virtual void RegisterRenderViewHost(RenderViewHost* render_view_host) {}
+  virtual void RegisterRenderViewHost(RenderViewHost* render_view_host);
 
   // Call to unregister |render_view_host| from resource routing automation.
-  virtual void UnregisterRenderViewHost(RenderViewHost* render_view_host) {}
+  virtual void UnregisterRenderViewHost(RenderViewHost* render_view_host);
 
  protected:
-  AutomationResourceRoutingDelegate() {}
-  virtual ~AutomationResourceRoutingDelegate() {}
+  AutomationResourceRoutingDelegate();
+  virtual ~AutomationResourceRoutingDelegate();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutomationResourceRoutingDelegate);

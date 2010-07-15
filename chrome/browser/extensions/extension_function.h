@@ -37,7 +37,7 @@ class QuotaLimitHeuristic;
 // knows how to dispatch to.
 class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
  public:
-  ExtensionFunction() : request_id_(-1), name_(""), has_callback_(false) {}
+  ExtensionFunction();
 
   // Specifies the name of the function.
   void set_name(const std::string& name) { name_ = name; }
@@ -97,7 +97,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
  protected:
   friend class base::RefCountedThreadSafe<ExtensionFunction>;
 
-  virtual ~ExtensionFunction() {}
+  virtual ~ExtensionFunction();
 
   // Gets the extension that called this function. This can return NULL for
   // async functions, for example if the extension is unloaded while the
@@ -120,9 +120,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
   // This method can return NULL if there is no matching browser, which can
   // happen if only incognito windows are open, or early in startup or shutdown
   // shutdown when there are no active windows.
-  Browser* GetCurrentBrowser() {
-    return dispatcher()->GetCurrentBrowser(include_incognito_);
-  }
+  Browser* GetCurrentBrowser();
 
   // The peer to the dispatcher that will service this extension function call.
   scoped_refptr<ExtensionFunctionDispatcher::Peer> peer_;
@@ -160,22 +158,19 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
 // parsing JSON (and instead uses custom serialization of Value objects).
 class AsyncExtensionFunction : public ExtensionFunction {
  public:
-  AsyncExtensionFunction() : args_(NULL), bad_message_(false) {}
+  AsyncExtensionFunction();
 
   virtual void SetArgs(const ListValue* args);
   virtual const std::string GetResult();
-  virtual const std::string GetError() { return error_; }
-  virtual void Run() {
-    if (!RunImpl())
-      SendResponse(false);
-  }
+  virtual const std::string GetError();
+  virtual void Run();
 
   // Derived classes should implement this method to do their work and return
   // success/failure.
   virtual bool RunImpl() = 0;
 
  protected:
-  virtual ~AsyncExtensionFunction() {}
+  virtual ~AsyncExtensionFunction();
 
   void SendResponse(bool success);
 
@@ -210,18 +205,16 @@ class AsyncExtensionFunction : public ExtensionFunction {
 // need to interact with things on the browser UI thread.
 class SyncExtensionFunction : public AsyncExtensionFunction {
  public:
-  SyncExtensionFunction() {}
+  SyncExtensionFunction();
 
   // Derived classes should implement this method to do their work and return
   // success/failure.
   virtual bool RunImpl() = 0;
 
-  virtual void Run() {
-    SendResponse(RunImpl());
-  }
+  virtual void Run();
 
  protected:
-  virtual ~SyncExtensionFunction() {}
+  virtual ~SyncExtensionFunction();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncExtensionFunction);

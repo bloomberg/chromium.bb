@@ -26,7 +26,7 @@ class CommandUpdater {
     virtual void ExecuteCommand(int id) = 0;
 
    protected:
-    virtual ~CommandUpdaterDelegate() {}
+    virtual ~CommandUpdaterDelegate();
   };
 
   // Create a CommandUpdater with a CommandUpdaterDelegate to handle execution
@@ -55,7 +55,7 @@ class CommandUpdater {
     virtual void EnabledStateChangedForCommand(int id, bool enabled) = 0;
 
    protected:
-    virtual ~CommandObserver() {}
+    virtual ~CommandObserver();
   };
 
   // Adds an observer to the state of a particular command. If the command does

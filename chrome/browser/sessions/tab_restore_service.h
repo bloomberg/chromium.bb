@@ -48,7 +48,7 @@ class TabRestoreService : public BaseSessionService {
   // Interface used to allow the test to provide a custom time.
   class TimeFactory {
    public:
-    virtual ~TimeFactory() {}
+    virtual ~TimeFactory();
     virtual base::Time TimeNow() = 0;
   };
 
@@ -61,7 +61,7 @@ class TabRestoreService : public BaseSessionService {
   struct Entry {
     Entry();
     explicit Entry(Type type);
-    virtual ~Entry() {}
+    virtual ~Entry();
 
     // Unique id for this entry. The id is guaranteed to be unique for a
     // session.
@@ -82,6 +82,7 @@ class TabRestoreService : public BaseSessionService {
   // Represents a previously open tab.
   struct Tab : public Entry {
     Tab();
+    virtual ~Tab();
 
     bool has_browser() const { return browser_id > 0; }
 
@@ -108,6 +109,7 @@ class TabRestoreService : public BaseSessionService {
   // Represents a previously open window.
   struct Window : public Entry {
     Window();
+    virtual ~Window();
 
     // The tabs that comprised the window, in order.
     std::vector<Tab> tabs;
@@ -147,7 +149,7 @@ class TabRestoreService : public BaseSessionService {
 
   // Returns the entries, ordered with most recently closed entries at the
   // front.
-  virtual const Entries& entries() const { return entries_; }
+  virtual const Entries& entries() const;
 
   // Restores the most recently closed entry. Does nothing if there are no
   // entries to restore. If the most recently restored entry is a tab, it is

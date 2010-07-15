@@ -141,8 +141,8 @@ class PrefMember : public subtle::PrefMemberBase {
 
 class BooleanPrefMember : public PrefMember<bool> {
  public:
-  BooleanPrefMember() : PrefMember<bool>() { }
-  virtual ~BooleanPrefMember() { }
+  BooleanPrefMember();
+  virtual ~BooleanPrefMember();
 
  protected:
   virtual void UpdateValueFromPref();
@@ -154,8 +154,8 @@ class BooleanPrefMember : public PrefMember<bool> {
 
 class IntegerPrefMember : public PrefMember<int> {
  public:
-  IntegerPrefMember() : PrefMember<int>() { }
-  virtual ~IntegerPrefMember() { }
+  IntegerPrefMember();
+  virtual ~IntegerPrefMember();
 
  protected:
   virtual void UpdateValueFromPref();
@@ -167,8 +167,8 @@ class IntegerPrefMember : public PrefMember<int> {
 
 class RealPrefMember : public PrefMember<double> {
  public:
-  RealPrefMember() : PrefMember<double>() { }
-  virtual ~RealPrefMember() { }
+  RealPrefMember();
+  virtual ~RealPrefMember();
 
  protected:
   virtual void UpdateValueFromPref();
@@ -180,8 +180,8 @@ class RealPrefMember : public PrefMember<double> {
 
 class StringPrefMember : public PrefMember<std::string> {
  public:
-  StringPrefMember() : PrefMember<std::string>() { }
-  virtual ~StringPrefMember() { }
+  StringPrefMember();
+  virtual ~StringPrefMember();
 
  protected:
   virtual void UpdateValueFromPref();
@@ -193,8 +193,8 @@ class StringPrefMember : public PrefMember<std::string> {
 
 class FilePathPrefMember : public PrefMember<FilePath> {
  public:
-  FilePathPrefMember() : PrefMember<FilePath>() { }
-  virtual ~FilePathPrefMember() { }
+  FilePathPrefMember();
+  virtual ~FilePathPrefMember();
 
  protected:
   virtual void UpdateValueFromPref();

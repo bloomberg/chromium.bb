@@ -680,8 +680,8 @@ class TabContents : public PageNavigator,
                                   bool success,
                                   const std::wstring& prompt);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
-  virtual TabContents* AsTabContents() { return this; }
-  virtual ExtensionHost* AsExtensionHost() { return NULL; }
+  virtual TabContents* AsTabContents();
+  virtual ExtensionHost* AsExtensionHost();
 
   // The BookmarkDragDelegate is used to forward bookmark drag and drop events
   // to extensions.
@@ -983,20 +983,12 @@ class TabContents : public PageNavigator,
       bool proceed,
       bool* proceed_to_fire_unload);
   virtual void DidStartLoadingFromRenderManager(
-      RenderViewHost* render_view_host) {
-    DidStartLoading();
-  }
+      RenderViewHost* render_view_host);
   virtual void RenderViewGoneFromRenderManager(
-      RenderViewHost* render_view_host) {
-    RenderViewGone(render_view_host);
-  }
+      RenderViewHost* render_view_host);
   virtual void UpdateRenderViewSizeForRenderManager();
-  virtual void NotifySwappedFromRenderManager() {
-    NotifySwapped();
-  }
-  virtual NavigationController& GetControllerForRenderManager() {
-    return controller();
-  }
+  virtual void NotifySwappedFromRenderManager();
+  virtual NavigationController& GetControllerForRenderManager();
   virtual DOMUI* CreateDOMUIForRenderManager(const GURL& url);
   virtual NavigationEntry* GetLastCommittedNavigationEntryForRenderManager();
 

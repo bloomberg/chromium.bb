@@ -36,6 +36,13 @@ using base::TimeDelta;
 
 // AutocompleteInput ----------------------------------------------------------
 
+AutocompleteInput::AutocompleteInput()
+  : type_(INVALID),
+    prevent_inline_autocomplete_(false),
+    prefer_keyword_(false),
+    synchronous_only_(false) {
+}
+
 AutocompleteInput::AutocompleteInput(const std::wstring& text,
                                      const std::wstring& desired_tld,
                                      bool prevent_inline_autocomplete,
@@ -66,6 +73,9 @@ AutocompleteInput::AutocompleteInput(const std::wstring& text,
 
   if (type_ == FORCED_QUERY && text_[0] == L'?')
     text_.erase(0, 1);
+}
+
+AutocompleteInput::~AutocompleteInput() {
 }
 
 // static
@@ -407,6 +417,9 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       starred(false) {
 }
 
+AutocompleteMatch::~AutocompleteMatch() {
+}
+
 // static
 std::string AutocompleteMatch::TypeToString(Type type) {
   const char* strings[NUM_TYPES] = {
@@ -561,14 +574,33 @@ void AutocompleteMatch::ValidateClassifications(
 // static
 const size_t AutocompleteProvider::kMaxMatches = 3;
 
-AutocompleteProvider::~AutocompleteProvider() {
-  Stop();
+AutocompleteProvider::ACProviderListener::~ACProviderListener() {
+}
+
+AutocompleteProvider::AutocompleteProvider(ACProviderListener* listener,
+                                           Profile* profile,
+                                           const char* name)
+    : profile_(profile),
+      listener_(listener),
+      done_(true),
+      name_(name) {
 }
 
 void AutocompleteProvider::SetProfile(Profile* profile) {
   DCHECK(profile);
   DCHECK(done_);  // The controller should have already stopped us.
   profile_ = profile;
+}
+
+void AutocompleteProvider::Stop() {
+  done_ = true;
+}
+
+void AutocompleteProvider::DeleteMatch(const AutocompleteMatch& match) {
+}
+
+AutocompleteProvider::~AutocompleteProvider() {
+  Stop();
 }
 
 // static

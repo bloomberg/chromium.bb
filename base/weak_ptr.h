@@ -65,24 +65,11 @@ class WeakReference {
  public:
   class Flag : public RefCounted<Flag>, public NonThreadSafe {
    public:
-    Flag(Flag** handle) : handle_(handle) {
-    }
+    Flag(Flag** handle);
+    ~Flag();
 
-    ~Flag() {
-      if (handle_)
-        *handle_ = NULL;
-    }
-
-    void AddRef() {
-      DCHECK(CalledOnValidThread());
-      RefCounted<Flag>::AddRef();
-    }
-
-    void Release() {
-      DCHECK(CalledOnValidThread());
-      RefCounted<Flag>::Release();
-    }
-
+    void AddRef();
+    void Release();
     void Invalidate() { handle_ = NULL; }
     bool is_valid() const { return handle_ != NULL; }
 
@@ -90,10 +77,10 @@ class WeakReference {
     Flag** handle_;
   };
 
-  WeakReference() {}
-  WeakReference(Flag* flag) : flag_(flag) {}
+  WeakReference();
+  WeakReference(Flag* flag);
 
-  bool is_valid() const { return flag_ && flag_->is_valid(); }
+  bool is_valid() const;
 
  private:
   scoped_refptr<Flag> flag_;
@@ -101,29 +88,16 @@ class WeakReference {
 
 class WeakReferenceOwner {
  public:
-  WeakReferenceOwner() : flag_(NULL) {
-  }
+  WeakReferenceOwner();
+  ~WeakReferenceOwner();
 
-  ~WeakReferenceOwner() {
-    Invalidate();
-  }
-
-  WeakReference GetRef() const {
-    if (!flag_)
-      flag_ = new WeakReference::Flag(&flag_);
-    return WeakReference(flag_);
-  }
+  WeakReference GetRef() const;
 
   bool HasRefs() const {
     return flag_ != NULL;
   }
 
-  void Invalidate() {
-    if (flag_) {
-      flag_->Invalidate();
-      flag_ = NULL;
-    }
-  }
+  void Invalidate();
 
  private:
   mutable WeakReference::Flag* flag_;
@@ -135,12 +109,10 @@ class WeakReferenceOwner {
 // base class gives us a way to access ref_ in a protected fashion.
 class WeakPtrBase {
  public:
-  WeakPtrBase() {
-  }
+  WeakPtrBase();
 
  protected:
-  WeakPtrBase(const WeakReference& ref) : ref_(ref) {
-  }
+  WeakPtrBase(const WeakReference& ref);
 
   WeakReference ref_;
 };

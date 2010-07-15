@@ -2855,6 +2855,16 @@ void TabContents::BeforeUnloadFiredFromRenderManager(
     delegate()->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
 }
 
+void TabContents::DidStartLoadingFromRenderManager(
+      RenderViewHost* render_view_host) {
+  DidStartLoading();
+}
+
+void TabContents::RenderViewGoneFromRenderManager(
+    RenderViewHost* render_view_host) {
+  RenderViewGone(render_view_host);
+}
+
 void TabContents::UpdateRenderViewSizeForRenderManager() {
   // TODO(brettw) this is a hack. See TabContentsView::SizeContents.
   gfx::Size size = view_->GetContainerSize();
@@ -2864,6 +2874,14 @@ void TabContents::UpdateRenderViewSizeForRenderManager() {
   // normal size later so just ignore it.
   if (!size.IsEmpty())
     view_->SizeContents(size);
+}
+
+void TabContents::NotifySwappedFromRenderManager() {
+  NotifySwapped();
+}
+
+NavigationController& TabContents::GetControllerForRenderManager() {
+  return controller();
 }
 
 DOMUI* TabContents::CreateDOMUIForRenderManager(const GURL& url) {
@@ -3061,6 +3079,14 @@ void TabContents::OnMessageBoxClosed(IPC::Message* reply_msg,
 
 void TabContents::SetSuppressMessageBoxes(bool suppress_message_boxes) {
   set_suppress_javascript_messages(suppress_message_boxes);
+}
+
+TabContents* TabContents::AsTabContents() {
+  return this;
+}
+
+ExtensionHost* TabContents::AsExtensionHost() {
+  return NULL;
 }
 
 void TabContents::set_encoding(const std::string& encoding) {

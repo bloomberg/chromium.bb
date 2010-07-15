@@ -30,6 +30,30 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutocompleteEditController
+
+AutocompleteEditController::~AutocompleteEditController() {
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutocompleteEditModel::State
+
+AutocompleteEditModel::State::State(bool user_input_in_progress,
+                                    const std::wstring& user_text,
+                                    const std::wstring& keyword,
+                                    bool is_keyword_hint,
+                                    KeywordUIState keyword_ui_state)
+    : user_input_in_progress(user_input_in_progress),
+      user_text(user_text),
+      keyword(keyword),
+      is_keyword_hint(is_keyword_hint),
+      keyword_ui_state(keyword_ui_state) {
+}
+
+AutocompleteEditModel::State::~State() {
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditModel
 
 AutocompleteEditModel::AutocompleteEditModel(
@@ -50,6 +74,9 @@ AutocompleteEditModel::AutocompleteEditModel(
       keyword_ui_state_(NORMAL),
       paste_and_go_transition_(PageTransition::TYPED),
       profile_(profile) {
+}
+
+AutocompleteEditModel::~AutocompleteEditModel() {
 }
 
 void AutocompleteEditModel::SetPopupModel(AutocompletePopupModel* popup_model) {

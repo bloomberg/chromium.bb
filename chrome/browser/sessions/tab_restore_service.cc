@@ -24,6 +24,10 @@
 
 using base::Time;
 
+// TimeFactory-----------------------------------------------------------------
+
+TabRestoreService::TimeFactory::~TimeFactory() {}
+
 // Entry ----------------------------------------------------------------------
 
 // ID of the next Entry.
@@ -38,6 +42,8 @@ TabRestoreService::Entry::Entry(Type type)
     : id(next_entry_id++),
       type(type),
       from_last_session(false) {}
+
+TabRestoreService::Entry::~Entry() {}
 
 // TabRestoreService ----------------------------------------------------------
 
@@ -151,7 +157,13 @@ TabRestoreService::Tab::Tab()
       pinned(false) {
 }
 
+TabRestoreService::Tab::~Tab() {
+}
+
 TabRestoreService::Window::Window() : Entry(WINDOW), selected_tab_index(-1) {
+}
+
+TabRestoreService::Window::~Window() {
 }
 
 TabRestoreService::TabRestoreService(Profile* profile,
@@ -258,6 +270,10 @@ void TabRestoreService::ClearEntries() {
 
   STLDeleteElements(&entries_);
   NotifyTabsChanged();
+}
+
+const TabRestoreService::Entries& TabRestoreService::entries() const {
+  return entries_;
 }
 
 void TabRestoreService::RestoreMostRecentEntry(Browser* browser) {

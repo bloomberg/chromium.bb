@@ -10,6 +10,9 @@
 #include "base/observer_list.h"
 #include "base/stl_util-inl.h"
 
+CommandUpdater::CommandUpdaterDelegate::~CommandUpdaterDelegate() {
+}
+
 class CommandUpdater::Command {
  public:
   bool enabled;
@@ -40,6 +43,9 @@ bool CommandUpdater::SupportsCommand(int id) const {
 void CommandUpdater::ExecuteCommand(int id) {
   if (IsCommandEnabled(id))
     delegate_->ExecuteCommand(id);
+}
+
+CommandUpdater::CommandObserver::~CommandObserver() {
 }
 
 void CommandUpdater::UpdateCommandEnabled(int id, bool enabled) {

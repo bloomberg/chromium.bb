@@ -18,8 +18,8 @@
 
 class Task : public tracked_objects::Tracked {
  public:
-  Task() {}
-  virtual ~Task() {}
+  Task();
+  virtual ~Task();
 
   // Tasks are automatically deleted after Run is called.
   virtual void Run() = 0;
@@ -27,6 +27,9 @@ class Task : public tracked_objects::Tracked {
 
 class CancelableTask : public Task {
  public:
+  CancelableTask();
+  virtual ~CancelableTask();
+
   // Not all tasks support cancellation.
   virtual void Cancel() = 0;
 };

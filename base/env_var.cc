@@ -85,6 +85,12 @@ class EnvVarGetterImpl : public base::EnvVarGetter {
 
 namespace base {
 
+EnvVarGetter::~EnvVarGetter() {}
+
+bool EnvVarGetter::HasEnv(const char* variable_name) {
+  return GetEnv(variable_name, NULL);
+}
+
 // static
 EnvVarGetter* EnvVarGetter::Create() {
   return new EnvVarGetterImpl();

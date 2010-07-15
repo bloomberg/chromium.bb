@@ -10,10 +10,28 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 
+ExtensionFunction::ExtensionFunction()
+    : request_id_(-1), name_(""), has_callback_(false) {
+}
+
+ExtensionFunction::~ExtensionFunction() {
+}
+
 Extension* ExtensionFunction::GetExtension() {
   ExtensionsService* service = profile_->GetExtensionsService();
   DCHECK(service);
   return service->GetExtensionById(extension_id_, false);
+}
+
+Browser* ExtensionFunction::GetCurrentBrowser() {
+  return dispatcher()->GetCurrentBrowser(include_incognito_);
+}
+
+AsyncExtensionFunction::AsyncExtensionFunction()
+    : args_(NULL), bad_message_(false) {
+}
+
+AsyncExtensionFunction::~AsyncExtensionFunction() {
 }
 
 void AsyncExtensionFunction::SetArgs(const ListValue* args) {
@@ -29,6 +47,15 @@ const std::string AsyncExtensionFunction::GetResult() {
   return json;
 }
 
+const std::string AsyncExtensionFunction::GetError() {
+  return error_;
+}
+
+void AsyncExtensionFunction::Run() {
+  if (!RunImpl())
+    SendResponse(false);
+}
+
 void AsyncExtensionFunction::SendResponse(bool success) {
   if (!dispatcher())
     return;
@@ -42,4 +69,14 @@ void AsyncExtensionFunction::SendResponse(bool success) {
 bool AsyncExtensionFunction::HasOptionalArgument(size_t index) {
   Value* value;
   return args_->Get(index, &value) && !value->IsType(Value::TYPE_NULL);
+}
+
+SyncExtensionFunction::SyncExtensionFunction() {
+}
+
+SyncExtensionFunction::~SyncExtensionFunction() {
+}
+
+void SyncExtensionFunction::Run() {
+  SendResponse(RunImpl());
 }

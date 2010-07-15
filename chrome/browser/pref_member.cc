@@ -61,12 +61,24 @@ void PrefMemberBase::VerifyValuePrefName() {
 
 }  // namespace subtle
 
+BooleanPrefMember::BooleanPrefMember() : PrefMember<bool>() {
+}
+
+BooleanPrefMember::~BooleanPrefMember() {
+}
+
 void BooleanPrefMember::UpdateValueFromPref() {
   value_ = prefs()->GetBoolean(pref_name().c_str());
 }
 
 void BooleanPrefMember::UpdatePref(const bool& value) {
   prefs()->SetBoolean(pref_name().c_str(), value);
+}
+
+IntegerPrefMember::IntegerPrefMember() : PrefMember<int>() {
+}
+
+IntegerPrefMember::~IntegerPrefMember() {
 }
 
 void IntegerPrefMember::UpdateValueFromPref() {
@@ -77,6 +89,12 @@ void IntegerPrefMember::UpdatePref(const int& value) {
   prefs()->SetInteger(pref_name().c_str(), value);
 }
 
+RealPrefMember::RealPrefMember() : PrefMember<double>() {
+}
+
+RealPrefMember::~RealPrefMember() {
+}
+
 void RealPrefMember::UpdateValueFromPref() {
   value_ = prefs()->GetReal(pref_name().c_str());
 }
@@ -85,12 +103,24 @@ void RealPrefMember::UpdatePref(const double& value) {
   prefs()->SetReal(pref_name().c_str(), value);
 }
 
+StringPrefMember::StringPrefMember() : PrefMember<std::string>() {
+}
+
+StringPrefMember::~StringPrefMember() {
+}
+
 void StringPrefMember::UpdateValueFromPref() {
   value_ = prefs()->GetString(pref_name().c_str());
 }
 
 void StringPrefMember::UpdatePref(const std::string& value) {
   prefs()->SetString(pref_name().c_str(), value);
+}
+
+FilePathPrefMember::FilePathPrefMember() : PrefMember<FilePath>() {
+}
+
+FilePathPrefMember::~FilePathPrefMember() {
 }
 
 void FilePathPrefMember::UpdateValueFromPref() {

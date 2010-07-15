@@ -61,7 +61,7 @@ class AutocompleteEditController {
   virtual std::wstring GetTitle() const = 0;
 
  protected:
-  virtual ~AutocompleteEditController() {}
+  virtual ~AutocompleteEditController();
 };
 
 class AutocompleteEditModel : public NotificationObserver {
@@ -84,13 +84,8 @@ class AutocompleteEditModel : public NotificationObserver {
           const std::wstring& user_text,
           const std::wstring& keyword,
           bool is_keyword_hint,
-          KeywordUIState keyword_ui_state)
-        : user_input_in_progress(user_input_in_progress),
-          user_text(user_text),
-          keyword(keyword),
-          is_keyword_hint(is_keyword_hint),
-          keyword_ui_state(keyword_ui_state) {
-    }
+          KeywordUIState keyword_ui_state);
+    ~State();
 
     bool user_input_in_progress;
     const std::wstring user_text;
@@ -102,7 +97,7 @@ class AutocompleteEditModel : public NotificationObserver {
   AutocompleteEditModel(AutocompleteEditView* view,
                         AutocompleteEditController* controller,
                         Profile* profile);
-  ~AutocompleteEditModel() {}
+  ~AutocompleteEditModel();
 
   void SetPopupModel(AutocompletePopupModel* popup_model);
 

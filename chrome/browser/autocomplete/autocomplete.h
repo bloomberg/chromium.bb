@@ -173,18 +173,13 @@ class AutocompleteInput {
     FORCED_QUERY,   // Input forced to be a query by an initial '?'
   };
 
-  AutocompleteInput()
-      : type_(INVALID),
-        prevent_inline_autocomplete_(false),
-        prefer_keyword_(false),
-        synchronous_only_(false) {
-  }
-
+  AutocompleteInput();
   AutocompleteInput(const std::wstring& text,
                     const std::wstring& desired_tld,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
                     bool synchronous_only);
+  ~AutocompleteInput();
 
   // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(Type type);
@@ -347,6 +342,7 @@ struct AutocompleteMatch {
                     int relevance,
                     bool deletable,
                     Type type);
+  ~AutocompleteMatch();
 
   // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(Type type);
@@ -491,17 +487,12 @@ class AutocompleteProvider
     virtual void OnProviderUpdate(bool updated_matches) = 0;
 
    protected:
-    virtual ~ACProviderListener() {}
+    virtual ~ACProviderListener();
   };
 
   AutocompleteProvider(ACProviderListener* listener,
                        Profile* profile,
-                       const char* name)
-      : profile_(profile),
-        listener_(listener),
-        done_(true),
-        name_(name) {
-  }
+                       const char* name);
 
   // Invoked when the profile changes.
   // NOTE: Do not access any previous Profile* at this point as it may have
@@ -530,9 +521,7 @@ class AutocompleteProvider
   // Called when a provider must not make any more callbacks for the current
   // query. This will be called regardless of whether the provider is already
   // done.
-  virtual void Stop() {
-    done_ = true;
-  }
+  virtual void Stop();
 
   // Returns the set of matches for the current query.
   const ACMatches& matches() const { return matches_; }
@@ -548,7 +537,7 @@ class AutocompleteProvider
   // called for matches the provider marks as deletable.  This should only be
   // called when no query is running.
   // NOTE: Remember to call OnProviderUpdate() if matches_ is updated.
-  virtual void DeleteMatch(const AutocompleteMatch& match) {}
+  virtual void DeleteMatch(const AutocompleteMatch& match);
 
   // A suggested upper bound for how many matches a provider should return.
   // TODO(pkasting): http://b/1111299 , http://b/933133 This should go away once

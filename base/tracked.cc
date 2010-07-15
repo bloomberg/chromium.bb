@@ -12,6 +12,20 @@ using base::TimeTicks;
 namespace tracked_objects {
 
 //------------------------------------------------------------------------------
+
+Location::Location(const char* function_name, const char* file_name,
+                   int line_number)
+    : function_name_(function_name),
+      file_name_(file_name),
+      line_number_(line_number) {
+}
+
+Location::Location()
+    : function_name_("Unknown"),
+      file_name_("Unknown"),
+      line_number_(-1) {
+}
+
 void Location::Write(bool display_filename, bool display_function_name,
                      std::string* output) const {
   StringAppendF(output, "%s[%d] ",

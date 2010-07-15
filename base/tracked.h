@@ -39,16 +39,10 @@ class Location {
   // Constructor should be called with a long-lived char*, such as __FILE__.
   // It assumes the provided value will persist as a global constant, and it
   // will not make a copy of it.
-  Location(const char* function_name, const char* file_name, int line_number)
-      : function_name_(function_name),
-        file_name_(file_name),
-        line_number_(line_number) { }
+  Location(const char* function_name, const char* file_name, int line_number);
 
   // Provide a default constructor for easy of debugging.
-  Location()
-      : function_name_("Unknown"),
-        file_name_("Unknown"),
-        line_number_(-1) { }
+  Location();
 
   // Comparison operator for insertion into a std::map<> hash tables.
   // All we need is *some* (any) hashing distinction.  Strings should already
