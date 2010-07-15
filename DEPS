@@ -40,7 +40,7 @@ deps = {
    "/trunk/deps/third_party/hunspell128@50872",
 
   "src/third_party/hunspell_dictionaries":
-   "/trunk/deps/third_party/hunspell_dictionaries@50872",
+   "/trunk/deps/third_party/hunspell_dictionaries@51875",
 
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@327",
