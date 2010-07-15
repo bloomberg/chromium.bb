@@ -12,9 +12,6 @@ namespace {
 // Padding between the icon/label and bubble edges.
 const CGFloat kBubblePadding = 7.0;
 
-// How far to inset image from boundary rect.
-const CGFloat kImageInset = 3.0;
-
 // How far to inset the keywork token from sides.
 const NSInteger kKeywordYInset = 4;
 
@@ -74,7 +71,7 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   [path setLineWidth:1.0];
   [path stroke];
 
-  NSRect imageRect = NSOffsetRect(decorationFrame, kImageInset, kImageInset);
+  NSRect imageRect = decorationFrame;
   if (image_) {
     imageRect.size = [image_ size];
     [image_ drawInRect:imageRect
