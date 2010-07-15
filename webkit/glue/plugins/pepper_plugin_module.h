@@ -14,6 +14,8 @@
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/ppb.h"
 
+typedef struct _ppb_Core PPB_Core;
+
 namespace pepper {
 
 class PluginDelegate;
@@ -46,6 +48,8 @@ class PluginModule : public base::RefCounted<PluginModule> {
   // Converts the given module ID to an actual module object. Will return NULL
   // if the module is invalid.
   static PluginModule* FromPPModule(PP_Module module);
+
+  static const PPB_Core* GetCore();
 
   PP_Module GetPPModule() const;
 

@@ -251,6 +251,11 @@ PluginModule* PluginModule::FromPPModule(PP_Module module) {
   return lib;
 }
 
+// static
+const PPB_Core* PluginModule::GetCore() {
+  return &core_interface;
+}
+
 bool PluginModule::InitFromEntryPoints(const EntryPoints& entry_points) {
   if (initialized_)
     return true;

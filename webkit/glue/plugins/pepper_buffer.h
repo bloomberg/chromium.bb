@@ -20,6 +20,7 @@ class Buffer : public Resource {
   virtual ~Buffer();
 
   int size() const { return size_; }
+  unsigned char* mapped_buffer() { return mem_buffer_.get(); }
 
   // Returns true if this buffer is mapped. False means that the buffer is
   // either invalid or not mapped.

@@ -16,6 +16,8 @@
 #include "third_party/ppapi/c/pp_cursor_type.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
+#include "third_party/ppapi/c/ppp_printing.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 
 typedef struct _pp_Var PP_Var;
@@ -24,6 +26,8 @@ typedef struct _ppb_Find PPB_Find;
 typedef struct _ppp_Find PPP_Find;
 typedef struct _ppp_Instance PPP_Instance;
 typedef struct _ppp_Zoom PPP_Zoom;
+
+class SkBitmap;
 
 namespace gfx {
 class Rect;
@@ -114,9 +118,31 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   void SelectFindResult(bool forward);
   void StopFind();
 
+  bool SupportsPrintInterface();
+  int PrintBegin(const gfx::Rect& printable_area, int printer_dpi);
+  bool PrintPage(int page_number, WebKit::WebCanvas* canvas);
+  void PrintEnd();
+
  private:
   bool LoadFindInterface();
   bool LoadZoomInterface();
+
+  // Queries the plugin for supported print formats and sets |format| to the
+  // best format to use. Returns false if the plugin does not support any
+  // print format that we can handle (we can handle raster and PDF).
+  bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat* format);
+  bool PrintPDFOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
+  bool PrintRasterOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
+#if defined(OS_WIN)
+  bool DrawJPEGToPlatformDC(const SkBitmap& bitmap,
+                            const gfx::Rect& printable_area,
+                            WebKit::WebCanvas* canvas);
+#elif defined(OS_MACOSX)
+  // Draws the given kARGB_8888_Config bitmap to the specified canvas starting
+  // at the specified destination rect.
+  void DrawSkBitmapToCanvas(const SkBitmap& bitmap, WebKit::WebCanvas* canvas,
+                            const gfx::Rect& dest_rect, int canvas_height);
+#endif  // OS_MACOSX
 
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
@@ -148,6 +174,30 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // The plugin find and zoom interfaces.
   const PPP_Find* plugin_find_interface_;
   const PPP_Zoom* plugin_zoom_interface_;
+
+  // This is only valid between a successful PrintBegin call and a PrintEnd
+  // call.
+  PP_PrintSettings current_print_settings_;
+#if defined(OS_MACOSX)
+  // On the Mac, when we draw the bitmap to the PDFContext, it seems necessary
+  // to keep the pixels valid until CGContextEndPage is called. We use this
+  // variable to hold on to the pixels.
+  SkBitmap last_printed_page_;
+#elif defined(OS_LINUX)
+  // On Linux, we always send all pages from the renderer to the browser.
+  // So, if the plugin supports printPagesAsPDF we print the entire output
+  // in one shot in the first call to PrintPage.
+  // (This is a temporary hack until we change the WebFrame and WebPlugin print
+  // interfaces).
+  // Specifies the total number of pages to be printed. It it set in PrintBegin.
+  int32 num_pages_;
+  // Specifies whether we have already output all pages. This is used to ignore
+  // subsequent PrintPage requests.
+  bool pdf_output_done_;
+#endif  // defined(OS_LINUX)
+
+  // The plugin print interface.
+  const PPP_Printing* plugin_print_interface_;
 
   // Containes the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;

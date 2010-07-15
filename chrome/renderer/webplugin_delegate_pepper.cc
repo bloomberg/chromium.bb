@@ -91,7 +91,7 @@ static const float kPointsPerInch = 72.0;
 
 #if defined(OS_WIN)
 // Exported by pdf.dll
-typedef bool (__stdcall *RenderPDFPageToDCProc)(
+typedef bool (*RenderPDFPageToDCProc)(
     const unsigned char* pdf_buffer, int buffer_size, int page_number, HDC dc,
     int dpi_x, int dpi_y, int bounds_origin_x, int bounds_origin_y,
     int bounds_width, int bounds_height, bool fit_to_bounds,

@@ -175,4 +175,22 @@ void WebPluginImpl::stopFind() {
   instance_->StopFind();
 }
 
+bool WebPluginImpl::supportsPaginatedPrint() {
+  return instance_->SupportsPrintInterface();
+}
+
+int WebPluginImpl::printBegin(const WebKit::WebRect& printable_area,
+                              int printer_dpi) {
+  return instance_->PrintBegin(printable_area, printer_dpi);
+}
+
+bool WebPluginImpl::printPage(int page_number,
+                              WebKit::WebCanvas* canvas) {
+  return instance_->PrintPage(page_number, canvas);
+}
+
+void WebPluginImpl::printEnd() {
+  return instance_->PrintEnd();
+}
+
 }  // namespace pepper
