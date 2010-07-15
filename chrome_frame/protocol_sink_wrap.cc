@@ -145,7 +145,13 @@ ScopedComPtr<IBindCtx> BindCtxFromIBindInfo(IInternetBindInfo* bind_info) {
 }
 
 bool ShouldWrapSink(IInternetProtocolSink* sink, const wchar_t* url) {
-  // TODO(stoyan): check the url scheme for http/https.
+  // Ignore everything that does not start with http:// or https://.
+  // |url| is already normalized (i.e. no leading spaces, capital letters in
+  // protocol etc) and non-null (we check in Hook_Start).
+  DCHECK(url != NULL);
+  if ((url != StrStrW(url, L"http://")) && (url != StrStrW(url, L"https://")))
+    return false;
+
   ScopedComPtr<IHttpNegotiate> http_negotiate;
   HRESULT hr = DoQueryService(GUID_NULL, sink, http_negotiate.Receive());
   if (http_negotiate && !IsSubFrameRequest(http_negotiate))
