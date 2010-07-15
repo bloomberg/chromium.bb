@@ -115,7 +115,8 @@ ProfileSyncService::ProfileSyncService()
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
       notification_method_(browser_sync::kDefaultNotificationMethod),
-      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
+      expect_sync_configuration_aborted_(false) {
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -477,8 +478,10 @@ void ProfileSyncService::OnAuthError() {
 }
 
 void ProfileSyncService::OnStopSyncingPermanently() {
-  if (SetupInProgress())
-    wizard_.Step(SyncSetupWizard::FATAL_ERROR);
+  if (SetupInProgress()) {
+    wizard_.Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
+    expect_sync_configuration_aborted_ = true;
+  }
 
   DisableForUser();
 }
@@ -719,6 +722,11 @@ void ProfileSyncService::Observe(NotificationType type,
     case NotificationType::SYNC_CONFIGURE_DONE: {
       DataTypeManager::ConfigureResult result =
           *(Details<DataTypeManager::ConfigureResult>(details).ptr());
+      if (result == DataTypeManager::ABORTED &&
+          expect_sync_configuration_aborted_) {
+        expect_sync_configuration_aborted_ = false;
+        return;
+      }
       if (result != DataTypeManager::OK) {
         OnUnrecoverableError(FROM_HERE, "Sync Configuration failed.");
         return;

@@ -120,36 +120,38 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
   } else if (path_raw == kSyncChooseDataTypesPath) {
     DictionaryValue localized_strings;
     localized_strings.SetString(L"choosedatatypesheader",
-      l10n_util::GetString(IDS_SYNC_CHOOSE_DATATYPES_HEADER));
+        l10n_util::GetString(IDS_SYNC_CHOOSE_DATATYPES_HEADER));
     localized_strings.SetString(L"choosedatatypesinstructions",
-      l10n_util::GetStringF(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS,
-      l10n_util::GetString(IDS_PRODUCT_NAME)));
+        l10n_util::GetStringF(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS,
+        l10n_util::GetString(IDS_PRODUCT_NAME)));
     localized_strings.SetString(L"keepeverythingsynced",
-      l10n_util::GetString(IDS_SYNC_EVERYTHING));
+        l10n_util::GetString(IDS_SYNC_EVERYTHING));
     localized_strings.SetString(L"choosedatatypes",
-      l10n_util::GetString(IDS_SYNC_CHOOSE_DATATYPES));
+        l10n_util::GetString(IDS_SYNC_CHOOSE_DATATYPES));
     localized_strings.SetString(L"bookmarks",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_BOOKMARKS));
+        l10n_util::GetString(IDS_SYNC_DATATYPE_BOOKMARKS));
     localized_strings.SetString(L"preferences",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_PREFERENCES));
+        l10n_util::GetString(IDS_SYNC_DATATYPE_PREFERENCES));
     localized_strings.SetString(L"autofill",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_AUTOFILL));
+        l10n_util::GetString(IDS_SYNC_DATATYPE_AUTOFILL));
     localized_strings.SetString(L"themes",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES));
+        l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES));
     localized_strings.SetString(L"passwords",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_PASSWORDS));
+        l10n_util::GetString(IDS_SYNC_DATATYPE_PASSWORDS));
     localized_strings.SetString(L"extensions",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_EXTENSIONS));
+        l10n_util::GetString(IDS_SYNC_DATATYPE_EXTENSIONS));
     localized_strings.SetString(L"typedurls",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_TYPED_URLS));
+        l10n_util::GetString(IDS_SYNC_DATATYPE_TYPED_URLS));
     localized_strings.SetString(L"synczerodatatypeserror",
-      l10n_util::GetString(IDS_SYNC_ZERO_DATA_TYPES_ERROR));
+        l10n_util::GetString(IDS_SYNC_ZERO_DATA_TYPES_ERROR));
+    localized_strings.SetString(L"setupabortederror",
+        l10n_util::GetString(IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR));
     localized_strings.SetString(L"ok",
-      l10n_util::GetString(IDS_OK));
+        l10n_util::GetString(IDS_OK));
     localized_strings.SetString(L"cancel",
-      l10n_util::GetString(IDS_CANCEL));
+        l10n_util::GetString(IDS_CANCEL));
     localized_strings.SetString(L"settingup",
-      l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP));
+        l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP));
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_SYNC_CHOOSE_DATATYPES_HTML));
     SetFontAndTextDirection(&localized_strings);
@@ -235,7 +237,8 @@ bool SyncSetupWizard::IsTerminalState(State advance_state) {
   return advance_state == GAIA_SUCCESS ||
          advance_state == DONE ||
          advance_state == DONE_FIRST_TIME ||
-         advance_state == FATAL_ERROR;
+         advance_state == FATAL_ERROR ||
+         advance_state == SETUP_ABORTED_BY_PENDING_CLEAR;
 }
 
 bool SyncSetupWizard::IsVisible() const {

@@ -58,6 +58,9 @@ input[type='submit'] {
   min-width: 87px;
   min-height: 26px;
 }
+.errormsg {
+  color: red;
+}
 </style>
 <script>
 
@@ -66,6 +69,11 @@ input[type='submit'] {
     setInterval(advanceThrobber, 30);
     var args = JSON.parse(chrome.dialogArguments);
     setChooseDataTypesCheckboxes(args);
+  }
+
+  function setCheckboxesAndErrors(args) {
+    setChooseDataTypesCheckboxes(args);
+    setErrorState(args);
   }
 
   // Can be called multiple times.
@@ -127,6 +135,15 @@ input[type='submit'] {
     }
   }
 
+  function setErrorState(args) {
+    if (!args.was_aborted)
+      return;
+    document.getElementById("aborted_text").style.display = "inline";
+    document.getElementById("okButton").disabled = true;
+    document.getElementById("keepEverythingSyncedRadio").disabled = true;
+    document.getElementById("chooseDataTypesRadio").disabled = true;
+  }
+
   function setDataTypeCheckboxesEnabled(enabled) {
     var checkboxes = document.getElementsByName("dataTypeCheckbox");
     for (var i = 0; i < checkboxes.length; i++) {
@@ -145,7 +162,7 @@ input[type='submit'] {
     throbberContainer.style.visibility = isThrobbing ? "visible" : "hidden";
 
     var okButton = document.getElementById('okButton');
-    okButton.disabled = isThrobbing;
+    okButton.disabled = isThrobbing || templateData["was_aborted"];
     okButton.value = isThrobbing ? templateData['settingup'] :
         templateData['ok'];
   }
@@ -169,9 +186,11 @@ input[type='submit'] {
   }
 
   function sendChooseDataTypesAndClose() {
+    // The user is trying again, so we don't need the aborted text.
+    document.getElementById("aborted_text").style.display = "none";
 
     if (noDataTypesChecked()) {
-      document.getElementById("error_text").style.visibility = "visible";
+      document.getElementById("error_text").style.display = "inline";
       return;
     }
 
@@ -262,7 +281,8 @@ input[type='submit'] {
   </tr>
   <tr>
     <td>
-      <span id="error_text" i18n-content="synczerodatatypeserror" style="visibility:hidden"></span>
+      <span id="error_text" i18n-content="synczerodatatypeserror" style="display:none"></span>
+      <span id="aborted_text" class="errormsg" i18n-content="setupabortederror" style="display:none"></span>
     </td>
   </tr>
   <tr valign="bottom">

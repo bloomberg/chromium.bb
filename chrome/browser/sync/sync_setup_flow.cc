@@ -191,7 +191,7 @@ void FlowHandler::ShowChooseDataTypes(const DictionaryValue& args) {
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
-  std::wstring javascript = std::wstring(L"setChooseDataTypesCheckboxes") +
+  std::wstring javascript = std::wstring(L"setCheckboxesAndErrors") +
       L"(" + UTF8ToWide(json) + L");";
   ExecuteJavascriptInIFrame(kChooseDataTypesIFrameXPath, javascript);
 }
@@ -385,6 +385,8 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::CHOOSE_DATA_TYPES:
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
+    case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
+      return current_state_ == SyncSetupWizard::CHOOSE_DATA_TYPES;
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE_FIRST_TIME:
@@ -417,6 +419,13 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
     case SyncSetupWizard::CHOOSE_DATA_TYPES: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForChooseDataTypes(service_, &args);
+      flow_handler_->ShowChooseDataTypes(args);
+      break;
+    }
+    case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR: {
+      DictionaryValue args;
+      SyncSetupFlow::GetArgsForChooseDataTypes(service_, &args);
+      args.SetBoolean(L"was_aborted", true);
       flow_handler_->ShowChooseDataTypes(args);
       break;
     }

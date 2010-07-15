@@ -83,8 +83,11 @@ bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
 
   std::string local_birthday = dir->store_birthday();
 
-  // TODO(tim): Bug 46807. Check for new response code denoting a clear store
-  // operation is in progress.
+  if (response->error_code() == ClientToServerResponse::CLEAR_PENDING) {
+    // Birthday verification failures result in stopping sync and deleting
+    // local sync data.
+    return false;
+  }
 
   if (local_birthday.empty()) {
     if (!response->has_store_birthday()) {
@@ -193,8 +196,6 @@ bool SyncerProtoUtil::PostClientToServerMessage(
   }
 
   if (!VerifyResponseBirthday(dir, response)) {
-    // TODO(ncarter): Add a unit test for the case where the syncer becomes
-    // stuck due to a bad birthday.
     session->status_controller()->set_syncer_stuck(true);
     session->delegate()->OnShouldStopSyncingPermanently();
     return false;

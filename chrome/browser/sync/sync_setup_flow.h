@@ -106,7 +106,11 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DialogCancelled);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InvalidTransitions);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, FullSuccessfulRunSetsPref);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRun);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, AbortedByPendingClear);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRunGaiaLogin);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRunChooseDataTypes);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
+                           DiscreteRunChooseDataTypesAbortedByPendingClear);
 
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,

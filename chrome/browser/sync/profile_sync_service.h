@@ -437,6 +437,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // management.
   BooleanPrefMember pref_sync_managed_;
 
+  // This allows us to gracefully handle an ABORTED return code from the
+  // DataTypeManager in the event that the server informed us to cease and
+  // desist syncing immediately.
+  bool expect_sync_configuration_aborted_;
+
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
 

@@ -6846,6 +6846,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_SETUP_ERROR" desc="The message displayed when an unspecified but unrecoverable error occurs during sync setup.">
         An error occurred while trying to set up sync.
       </message>
+      <message name="IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR" desc="The error message displayed to the user when setup was aborted because the server reported that a pending clear private data operation is in progress">
+        The sync server is busy, please try again later.
+      </message>
       <message name="IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
         Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Last synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
       </message>

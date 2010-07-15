@@ -371,7 +371,13 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
 
+  wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
+  EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN,
+            test_window_->flow()->current_state_);
+
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  EXPECT_EQ(SyncSetupWizard::CHOOSE_DATA_TYPES,
+            test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
   EXPECT_EQ(SyncSetupWizard::FATAL_ERROR, test_window_->flow()->current_state_);
@@ -399,7 +405,56 @@ TEST_F(SyncSetupWizardTest, FirstFullSuccessfulRunSetsPref) {
       prefs::kSyncHasSetupCompleted));
 }
 
-TEST_F(SyncSetupWizardTest, DiscreteRun) {
+TEST_F(SyncSetupWizardTest, AbortedByPendingClear) {
+  SKIP_TEST_ON_MACOSX();
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
+  EXPECT_EQ(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR,
+            test_window_->flow()->current_state_);
+  test_window_->CloseDialog();
+  EXPECT_FALSE(wizard_->IsVisible());
+}
+
+TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypes) {
+  SKIP_TEST_ON_MACOSX();
+  // For a discrete run, we need to have ran through setup once.
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::DONE);
+  test_window_->CloseDialog();
+  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+
+  wizard_->Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
+  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
+
+  wizard_->Step(SyncSetupWizard::DONE);
+  test_window_->CloseDialog();
+  EXPECT_FALSE(wizard_->IsVisible());
+}
+
+TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypesAbortedByPendingClear) {
+  SKIP_TEST_ON_MACOSX();
+  // For a discrete run, we need to have ran through setup once.
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::DONE);
+  test_window_->CloseDialog();
+  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+
+  wizard_->Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
+  EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
+  EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
+   wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
+  EXPECT_EQ(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR,
+            test_window_->flow()->current_state_);
+
+  test_window_->CloseDialog();
+  EXPECT_FALSE(wizard_->IsVisible());
+}
+
+TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
   SKIP_TEST_ON_MACOSX();
   DictionaryValue dialog_args;
   // For a discrete run, we need to have ran through setup once.

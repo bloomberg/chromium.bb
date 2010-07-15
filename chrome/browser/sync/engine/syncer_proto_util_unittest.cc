@@ -160,6 +160,9 @@ TEST_F(SyncerProtoUtilTest, VerifyResponseBirthday) {
   // Doesn't match
   response.set_store_birthday("meat");
   EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
+
+  response.set_error_code(ClientToServerResponse::CLEAR_PENDING);
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
 }
 
 TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {

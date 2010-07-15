@@ -43,7 +43,7 @@ Authenticator::AuthenticationResult Authenticator::Authenticate(
   return AuthenticateToken(auth_service.auth_token());
 }
 
-COMPILE_ASSERT(sync_pb::ClientToServerResponse::ErrorType_MAX == 6,
+COMPILE_ASSERT(sync_pb::ClientToServerResponse::ErrorType_MAX == 7,
                client_to_server_response_errors_changed);
 
 Authenticator::AuthenticationResult Authenticator::HandleSuccessfulTokenRequest(
@@ -98,6 +98,8 @@ Authenticator::AuthenticationResult Authenticator::AuthenticateToken(
     case sync_pb::ClientToServerResponse::THROTTLED:
     // should never happen (only for stores).
     case sync_pb::ClientToServerResponse::ACCESS_DENIED:
+    // should never happen (only sent on get updates / commit)
+    case sync_pb::ClientToServerResponse::CLEAR_PENDING:
     default:
       LOG(ERROR) << "Corrupt Server packet received by auth, error code " <<
         response.error_code();

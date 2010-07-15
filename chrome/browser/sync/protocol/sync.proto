@@ -419,6 +419,9 @@ message ClientToServerResponse {
     USER_NOT_ACTIVATED = 5; // User doesn't have the Chrome bit set on that
                             // Google Account.
     AUTH_INVALID       = 6; // Auth token or cookie is otherwise invalid.
+    CLEAR_PENDING      = 7; // A clear of the user data is pending (e.g.
+                            // initiated by privacy request).  Client should
+                            // come back later.
   }
   optional ErrorType error_code = 4 [default = SUCCESS];
   optional string error_message = 5;

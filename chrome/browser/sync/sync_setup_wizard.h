@@ -33,6 +33,9 @@ class SyncSetupWizard {
     // The panic switch.  Something went terribly wrong during setup and we
     // can't recover.
     FATAL_ERROR,
+    // The client can't set up sync at the moment due to a concurrent operation
+    // to clear cloud data being in progress on the server.
+    SETUP_ABORTED_BY_PENDING_CLEAR,
     // A final state for when setup completes and it is possible it is the
     // user's first time (globally speaking) as the cloud doesn't have any
     // bookmarks.  We show additional info in this case to explain setting up
