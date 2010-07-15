@@ -37,11 +37,11 @@ const CGFloat kPopupFieldGap = 2.0;
 // autocomplete_popup_contents_view.cc, kGlassPopupTransparency).
 const CGFloat kPopupAlpha = 240.0 / 255.0;
 
-// How much space to leave for the left and right margins.
-const CGFloat kLeftRightMargin = 5.0;
+// How far to offset image column from the left.
+const CGFloat kImageXOffset = 2.0;
 
 // How far to offset the text column from the left.
-const CGFloat kTextXOffset = 29.0;
+const CGFloat kTextXOffset = 25.0;
 
 // Animation duration when animating the popup window smaller.
 const NSTimeInterval kShrinkAnimationDuration = 0.1;
@@ -195,7 +195,7 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
     // partially visible.
     // TODO(shess): Consider revising our NSCell subclass to have two
     // bits and just draw them right, rather than truncating here.
-    const float textWidth = cellWidth - kTextXOffset - kLeftRightMargin;
+    const float textWidth = cellWidth - kTextXOffset;
     as = ElideString(as, match.contents, font,
                      textWidth * kMaxContentsFraction);
 
@@ -494,7 +494,7 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
     imageRect.size = [image size];
     imageRect.origin.y += kImageBaselineAdjust +
         floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2);
-    imageRect.origin.x += kLeftRightMargin;
+    imageRect.origin.x += kImageXOffset;
     [image drawInRect:imageRect
              fromRect:NSZeroRect  // Entire image
             operation:NSCompositeSourceOver
@@ -506,7 +506,7 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   NSAttributedString* title = [self attributedTitle];
   if (title) {
     NSRect titleRect = cellFrame;
-    titleRect.size.width -= (kTextXOffset + kLeftRightMargin);
+    titleRect.size.width -= kTextXOffset;
     titleRect.origin.x += kTextXOffset;
     [self drawTitle:title withFrame:titleRect inView:controlView];
   }
