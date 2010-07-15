@@ -42,6 +42,13 @@ void BlitCanvasToCanvas(skia::PlatformCanvas *dst_canvas,
                         skia::PlatformCanvas *src_canvas,
                         const Point& src_origin);
 
+// Scrolls the given subset of the given canvas by the given amount.
+// The canvas should not have a clip or a transform applied, since platforms
+// may implement those operations differently.
+void ScrollCanvas(skia::PlatformCanvas* canvas,
+                  const Rect& clip,
+                  const Point& amount);
+
 }  // namespace gfx
 
 #endif  // GFX_BLIT_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_GFX_SKBITMAP_OPERATIONS_H_
-#define APP_GFX_SKBITMAP_OPERATIONS_H_
+#ifndef GFX_SKBITMAP_OPERATIONS_H_
+#define GFX_SKBITMAP_OPERATIONS_H_
 
 #include "gfx/color_utils.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -81,6 +81,7 @@ class SkBitmapOperations {
   // Makes a bitmap half has large in each direction by averaging groups of
   // 4 pixels. This is one step in generating a mipmap.
   static SkBitmap DownsampleByTwo(const SkBitmap& bitmap);
+
  private:
   SkBitmapOperations();  // Class for scoping only.
 
@@ -88,4 +89,4 @@ class SkBitmapOperations {
   FRIEND_TEST(SkBitmapOperationsTest, DownsampleByTwoSmall);
 };
 
-#endif  // APP_GFX_SKBITMAP_OPERATIONS_H_
+#endif  // GFX_SKBITMAP_OPERATIONS_H_

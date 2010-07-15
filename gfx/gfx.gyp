@@ -17,6 +17,7 @@
         '../testing/gtest.gyp:gtest',
       ],
       'sources': [
+        'blit_unittest.cc',
         'codec/jpeg_codec_unittest.cc',
         'codec/png_codec_unittest.cc',
         'color_utils_unittest.cc',
