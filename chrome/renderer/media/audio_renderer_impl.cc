@@ -137,16 +137,36 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   }
 }
 
-void AudioRendererImpl::Seek(base::TimeDelta time,
-                             media::FilterCallback* callback) {
-  AudioRendererBase::Seek(time, callback);
-
+void AudioRendererImpl::Pause(media::FilterCallback* callback) {
+  AudioRendererBase::Pause(callback);
   AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
   io_loop_->PostTask(FROM_HERE,
-    NewRunnableMethod(this, &AudioRendererImpl::SeekTask));
+      NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
+}
+
+void AudioRendererImpl::Seek(base::TimeDelta time,
+                             media::FilterCallback* callback) {
+  AudioRendererBase::Seek(time, callback);
+  AutoLock auto_lock(lock_);
+  if (stopped_)
+    return;
+
+  io_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &AudioRendererImpl::SeekTask));
+}
+
+
+void AudioRendererImpl::Play(media::FilterCallback* callback) {
+  AudioRendererBase::Play(callback);
+  AutoLock auto_lock(lock_);
+  if (stopped_)
+    return;
+
+  io_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
 }
 
 void AudioRendererImpl::SetVolume(float volume) {
@@ -268,6 +288,8 @@ void AudioRendererImpl::PauseTask() {
 void AudioRendererImpl::SeekTask() {
   DCHECK(MessageLoop::current() == io_loop_);
 
+  // We have to pause the audio stream before we can flush.
+  filter_->Send(new ViewHostMsg_PauseAudioStream(0, stream_id_));
   filter_->Send(new ViewHostMsg_FlushAudioStream(0, stream_id_));
 }
 

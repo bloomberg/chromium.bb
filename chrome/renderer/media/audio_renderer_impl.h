@@ -33,60 +33,6 @@
 //    Properties of this filter is also set in this thread.
 // 3. Audio decoder thread (If there's one.)
 //    Responsible for decoding audio data and gives raw PCM data to this object.
-//
-// Methods categorized according to the thread(s) they are running on.
-//
-// Render thread
-// +-- CreateFactory()
-// |     Helper method for construction this class.
-// \-- IsMediaFormatSupported()
-//       Helper method to identify media formats accepted by this class for
-//       construction.
-//
-// IO thread (Main thread in render process)
-// +-- OnCreateStream()
-// |     Sends an IPC message to browser to create audio output stream and
-// |     register this object with AudioMessageFilter.
-// |-- OnSetVolume()
-// |     Sends an IPC message to browser to set volume.
-// |-- OnNotifyPacketReady
-// |     Try to fill the shared memory with decoded audio packet and sends IPC
-// |     messages to browser if packet is ready.
-// |-- OnRequestPacket()
-// |     Called from AudioMessageFilter when an audio packet requested is
-// |     received from browser process.
-// |-- OnStateChanged()
-// |     Called from AudioMessageFilter upon state change of the audio output
-// |     stream in the browser process. Error of the stream is reported here.
-// |-- OnCreated()
-// |     Called from AudioMessageFilter upon successful creation of audio output
-// |     stream in the browser process, called along with a SharedMemoryHandle.
-// |-- OnVolume()
-// |     Called from AudioMessageFilter about the volume of the audio output
-// |     stream.
-// \-- OnDestroy()
-//       Release resources that live inside io thread.
-//
-// Pipeline thread
-// +-- AudioRendererImpl()
-// |     Constructor method.
-// |-- ~AudioRendererImpl()
-// |     Destructor method.
-// |-- SetPlaybackRate()
-// |     Given the playback rate information.
-// |-- GetMediaFormat()
-// |     Obtain the current media format of this unit.
-// |-- SetVolume()
-// |     Given the volume information.
-// |-- OnInitialize()
-// |     Called from AudioRendererBase for initialization event.
-// \-- OnStop()
-//       Called from AudioRendererBase for stop event.
-//
-// Audio decoder thread (If there's one.)
-// \-- OnReadComplete()
-//       A raw PCM audio packet buffer is received here, this method is called
-//       from pipeline thread if audio decoder thread does not exist.
 
 #ifndef CHROME_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
 #define CHROME_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
@@ -130,7 +76,9 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // Methods called on pipeline thread ----------------------------------------
   // media::MediaFilter implementation.
   virtual void SetPlaybackRate(float rate);
+  virtual void Pause(media::FilterCallback* callback);
   virtual void Seek(base::TimeDelta time, media::FilterCallback* callback);
+  virtual void Play(media::FilterCallback* callback);
 
   // media::AudioRenderer implementation.
   virtual void SetVolume(float volume);
