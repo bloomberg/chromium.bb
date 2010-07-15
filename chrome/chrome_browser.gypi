@@ -2832,6 +2832,11 @@
             ],
           },
         }],
+        ['touchui==0', {
+          'sources!': [
+            # Nothing yet.
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',
