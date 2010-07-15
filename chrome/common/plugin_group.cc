@@ -68,6 +68,9 @@ static const PluginGroupDefinition kGroupDefinitions[] = {};
 #endif
 
 /*static*/
+std::set<string16>* PluginGroup::policy_disabled_puglins_;
+
+/*static*/
 const PluginGroupDefinition* PluginGroup::GetPluginGroupDefinitions() {
   return kGroupDefinitions;
 }
@@ -76,6 +79,36 @@ const PluginGroupDefinition* PluginGroup::GetPluginGroupDefinitions() {
 size_t PluginGroup::GetPluginGroupDefinitionsSize() {
   // TODO(viettrungluu): |arraysize()| doesn't work with zero-size arrays.
   return ARRAYSIZE_UNSAFE(kGroupDefinitions);
+}
+
+/*static*/
+void PluginGroup::SetPolicyDisabledPluginSet(const std::set<string16>& set) {
+  if (!policy_disabled_puglins_) {
+    policy_disabled_puglins_ = new std::set<string16>();
+    *policy_disabled_puglins_ = set;
+  }
+}
+
+/*static*/
+bool PluginGroup::IsPluginNameDisabledByPolicy(const string16& plugin_name) {
+  return policy_disabled_puglins_ &&
+      policy_disabled_puglins_->find(plugin_name) !=
+          policy_disabled_puglins_->end();
+}
+
+/*static*/
+bool PluginGroup::IsPluginPathDisabledByPolicy(const FilePath& plugin_path) {
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
+  for (std::vector<WebPluginInfo>::const_iterator it = plugins.begin();
+       it != plugins.end();
+       ++it) {
+    if (FilePath::CompareEqualIgnoreCase(it->path.value(),
+        plugin_path.value()) && IsPluginNameDisabledByPolicy(it->name)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 PluginGroup::PluginGroup(const string16& group_name,
@@ -231,7 +264,14 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
   result->SetString(L"version", max_version_->GetString());
   result->SetString(L"update_url", update_url_);
   result->SetBoolean(L"critical", IsVulnerable());
-  result->SetBoolean(L"enabled", enabled_);
+
+  bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
+  if (group_disabled_by_policy) {
+    result->SetString(L"enabledMode", L"disabledByPolicy");
+  } else {
+    result->SetString(L"enabledMode",
+                      enabled_ ? L"enabled" : L"disabledByUser");
+  }
 
   ListValue* plugin_files = new ListValue();
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
@@ -242,7 +282,14 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
     plugin_file->SetStringFromUTF16(L"description", web_plugin.desc);
     plugin_file->SetString(L"path", web_plugin.path.value());
     plugin_file->SetStringFromUTF16(L"version", web_plugin.version);
-    plugin_file->SetBoolean(L"enabled", web_plugin.enabled);
+    bool plugin_disabled_by_policy = group_disabled_by_policy ||
+        IsPluginNameDisabledByPolicy(web_plugin.name);
+    if (plugin_disabled_by_policy) {
+      result->SetString(L"enabledMode", L"disabledByPolicy");
+    } else {
+      result->SetString(L"enabledMode",
+                        web_plugin.enabled ? L"enabled" : L"disabledByUser");
+    }
     plugin_file->SetInteger(L"priority", priority);
 
     ListValue* mime_types = new ListValue();
@@ -286,10 +333,11 @@ void PluginGroup::Enable(bool enable) {
   for (std::vector<WebPluginInfo>::const_iterator it =
        web_plugin_infos_.begin();
        it != web_plugin_infos_.end(); ++it) {
-    if (enable) {
+    if (enable && !IsPluginNameDisabledByPolicy(it->name)) {
       NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(it->path));
     } else {
       NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(it->path));
     }
   }
 }
+

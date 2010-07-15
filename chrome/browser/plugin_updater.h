@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PLUGIN_UPDATER_H_
 #define CHROME_BROWSER_PLUGIN_UPDATER_H_
 
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"

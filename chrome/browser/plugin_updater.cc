@@ -80,11 +80,12 @@ void EnablePluginGroup(bool enable, const string16& group_name) {
   }
 }
 
-void EnablePluginFile(bool enable, const FilePath::StringType& file_path) {
-  if (enable)
-    NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(file_path));
+void EnablePluginFile(bool enable, const FilePath::StringType& path) {
+  FilePath file_path(path);
+  if (enable && !PluginGroup::IsPluginPathDisabledByPolicy(file_path))
+    NPAPI::PluginList::Singleton()->EnablePlugin(file_path);
   else
-    NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(file_path));
+    NPAPI::PluginList::Singleton()->DisablePlugin(file_path);
 }
 
 #if defined(OS_CHROMEOS)
@@ -164,6 +165,42 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
         EnablePluginGroup(false, group_name);
       }
     }
+  }
+
+  // Build the set of policy-disabled plugins once and cache it.
+  // Don't do this in the constructor, there's no profile available there.
+  std::set<string16> policy_disabled_plugins;
+  const ListValue* plugin_blacklist =
+      profile->GetPrefs()->GetList(prefs::kPluginsPluginsBlacklist);
+  if (plugin_blacklist) {
+    ListValue::const_iterator end(plugin_blacklist->end());
+    for (ListValue::const_iterator current(plugin_blacklist->begin());
+         current != end; ++current) {
+      string16 plugin_name;
+      if ((*current)->GetAsUTF16(&plugin_name)) {
+        policy_disabled_plugins.insert(plugin_name);
+      }
+    }
+  }
+  PluginGroup::SetPolicyDisabledPluginSet(policy_disabled_plugins);
+
+  // Disable all of the plugins and plugin groups that are disabled by policy.
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
+  for (std::vector<WebPluginInfo>::const_iterator it = plugins.begin();
+       it != plugins.end();
+       ++it) {
+    if (PluginGroup::IsPluginNameDisabledByPolicy(it->name))
+      NPAPI::PluginList::Singleton()->DisablePlugin(it->path);
+  }
+
+  std::vector<linked_ptr<PluginGroup> > plugin_groups;
+  GetPluginGroups(&plugin_groups);
+  std::vector<linked_ptr<PluginGroup> >::const_iterator it;
+  for (it = plugin_groups.begin(); it != plugin_groups.end(); ++it) {
+    string16 current_group_name = (*it)->GetGroupName();
+    if (PluginGroup::IsPluginNameDisabledByPolicy(current_group_name))
+      EnablePluginGroup(false, current_group_name);
   }
 
   if (!enable_internal_pdf_ && !found_internal_pdf) {

@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_PLUGIN_GROUP_H_
 #define CHROME_COMMON_PLUGIN_GROUP_H_
 
+#include <set>
 #include <vector>
 
 #include "base/linked_ptr.h"
@@ -40,6 +41,17 @@ class PluginGroup {
 
   // Find a plugin group matching |info| in the list of hardcoded plugins.
   static PluginGroup* FindHardcodedPluginGroup(const WebPluginInfo& info);
+
+  // Configures the set of plugin names that are disabled by policy.
+  static void SetPolicyDisabledPluginSet(const std::set<string16>& set);
+
+  // Tests to see if a plugin is on the blacklist using its name as
+  // the lookup key.
+  static bool IsPluginNameDisabledByPolicy(const string16& plugin_name);
+
+  // Tests to see if a plugin is on the blacklist using its path as
+  // the lookup key.
+  static bool IsPluginPathDisabledByPolicy(const FilePath& plugin_path);
 
   // Find the PluginGroup matching a Plugin in a list of plugin groups. Returns
   // NULL if no matching PluginGroup is found.
@@ -93,6 +105,8 @@ class PluginGroup {
               const std::string& version_range_high,
               const std::string& min_version,
               const std::string& update_url);
+
+  static std::set<string16>* policy_disabled_puglins_;
 
   string16 group_name_;
   string16 name_matcher_;

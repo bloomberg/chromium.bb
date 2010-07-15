@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/string16.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/configuration_policy_provider.h"
 #include "chrome/common/chrome_switches.h"
@@ -224,6 +226,41 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
   return result;
 }
 
+bool ConfigurationPolicyPrefStore::ApplyPluginPolicy(PolicyType policy,
+                                                     Value* value) {
+  if (policy == kPolicyDisabledPlugins) {
+    string16 plugin_list;
+    if (value->GetAsUTF16(&plugin_list)) {
+      std::vector<string16> plugin_names;
+      // Change commas into tabs so that we can change escaped
+      // tabs back into commas, leaving non-escaped commas as tabs
+      // that can be used for splitting the string. Note that plugin
+      // names must not contain backslashes, since a trailing backslash
+      // in a plugin name before a comma would get swallowed during the
+      // splitting.
+      std::replace(plugin_list.begin(), plugin_list.end(), L',', L'\t');
+      ReplaceSubstringsAfterOffset(&plugin_list, 0,
+                                   ASCIIToUTF16("\\\t"), ASCIIToUTF16(","));
+      SplitString(plugin_list, L'\t', &plugin_names);
+      bool added_plugin = false;
+      scoped_ptr<ListValue> list(new ListValue());
+      for (std::vector<string16>::const_iterator i(plugin_names.begin());
+           i != plugin_names.end(); ++i) {
+        if (!i->empty()) {
+          list->Append(Value::CreateStringValueFromUTF16(*i));
+          added_plugin = true;
+        }
+      }
+      if (added_plugin) {
+        prefs_->Set(prefs::kPluginsPluginsBlacklist, list.release());
+        delete value;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 bool ConfigurationPolicyPrefStore::ApplySyncPolicy(PolicyType policy,
                                                    Value* value) {
   if (policy == ConfigurationPolicyStore::kPolicySyncDisabled) {
@@ -255,6 +292,9 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
   if (ApplyProxyPolicy(policy, value))
     return;
 
+  if (ApplyPluginPolicy(policy, value))
+    return;
+
   if (ApplySyncPolicy(policy, value))
     return;
 
@@ -264,4 +304,5 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
 
   // Other policy implementations go here.
   NOTIMPLEMENTED();
+  delete value;
 }

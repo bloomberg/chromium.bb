@@ -26,7 +26,13 @@ class ConfigurationPolicyStore {
     kPolicyDnsPrefetchingEnabled,
     kPolicySafeBrowsingEnabled,
     kPolicyMetricsReportingEnabled,
-    kPolicySyncDisabled
+    kPolicySyncDisabled,
+
+    // A policy for allowing administrators to forcibly disable
+    // specific plugins. This policy is a comma-separated list of
+    // plugin names. Plugin names must not include the backslash
+    // character.
+    kPolicyDisabledPlugins
   };
 
   static const int kPolicyNoProxyServerMode = 0;

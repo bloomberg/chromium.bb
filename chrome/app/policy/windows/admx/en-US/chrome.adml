@@ -73,6 +73,11 @@ If you enable this setting, anonymous reporting of usage and crash-related data 
 If you disable this setting, anonymous reporting of usage and crash-related data will never be sent to Google.
 
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
+      <string id="DisabledPlugins">Specify a list of plugins that are disabled</string>
+      <string id="DisabledPlugins_Explain">Specifies a list of plugins that are disabled and prevents users from changing this setting.
+
+value is a comma-separated list of the names of plugins to be disabled.</string>
+      <string id="DisabledPluginsList">Comma-separated list of disabled plugins:</string>
       <string id="Sync">Disallow synchronization of data with Google</string>
       <string id="Sync_Explain">Disallows data synchronization using Google-hosted sync services and prevents users from changing this setting.
 
@@ -92,6 +97,11 @@ If you enable this setting, users cannot change or override this setting in Goog
       <presentation id="DnsPrefetchingEnabled" />
       <presentation id="SafeBrowsingEnabled" />
       <presentation id="MetricsReportingEnabled" />
+      <presentation id="DisabledPlugins">
+        <textBox refId="DisabledPluginsList">
+          <label>Comma-separated list of disabled plugins:</label>
+        </textBox>
+      </presentation>
       <presentation id="Sync" />
       <presentation id="Proxy">
         <dropdownList refId="ProxyServerMode">Choose how to specify proxy server settings:</dropdownList>

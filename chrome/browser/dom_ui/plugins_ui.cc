@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/plugins_ui.h"
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -71,6 +72,10 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_PLUGINS_NONE_INSTALLED));
   localized_strings.SetString(L"pluginDisabled",
       l10n_util::GetString(IDS_PLUGINS_DISABLED_PLUGIN));
+  localized_strings.SetString(L"pluginDisabledByPolicy",
+      l10n_util::GetString(IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN));
+  localized_strings.SetString(L"pluginCannotBeEnabledDueToPolicy",
+      l10n_util::GetString(IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY));
   localized_strings.SetString(L"pluginDownload",
       l10n_util::GetString(IDS_PLUGINS_DOWNLOAD));
   localized_strings.SetString(L"pluginName",
@@ -143,6 +148,12 @@ class PluginsDOMHandler : public DOMMessageHandler {
   void HandleShowTermsOfServiceMessage(const Value* value);
 
  private:
+  // Creates a dictionary containing all the information about the given plugin;
+  // this is put into the list to "return" for the "requestPluginsData" message.
+  DictionaryValue* CreatePluginDetailValue(
+      const WebPluginInfo& plugin,
+      const std::set<string16>& plugin_blacklist_set);
+
   // Creates a dictionary containing the important parts of the information
   // about the given plugin; this is put into a list and saved in prefs.
   DictionaryValue* CreatePluginSummaryValue(const WebPluginInfo& plugin);
@@ -165,8 +176,6 @@ void PluginsDOMHandler::RegisterMessages() {
 
 void PluginsDOMHandler::HandleRequestPluginsData(const Value* value) {
   DictionaryValue* results = new DictionaryValue();
-
-  // Grouped plugins.
   results->Set(L"plugins", plugin_updater::GetPluginGroupsData());
 
   dom_ui_->CallJavascriptFunction(L"returnPluginsData", *results);
@@ -193,7 +202,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
       return;
 
     plugin_updater::EnablePluginGroup(enable_str == "true",
-                                     WideToUTF16(group_name));
+                                      WideToUTF16(group_name));
   } else {
     FilePath::StringType file_path;
     if (!list->GetString(0, &file_path))
@@ -251,6 +260,7 @@ void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
                               internal_dir);
 
+  prefs->RegisterListPref(prefs::kPluginsPluginsBlacklist);
   prefs->RegisterListPref(prefs::kPluginsPluginsList);
   prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF, false);
 }

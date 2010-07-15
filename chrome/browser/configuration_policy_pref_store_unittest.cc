@@ -12,6 +12,12 @@
 
 class ConfigurationPolicyPrefStoreTest : public testing::Test {
  public:
+  // Applies a policy that has a string value.
+  void ApplyStringPolicyValue(
+      ConfigurationPolicyPrefStore* store,
+      ConfigurationPolicyStore::PolicyType type,
+      const wchar_t* policy_value);
+
   // The following three methods test a policy which controls a string
   // preference.
   // Checks that by default, it's an empty string.
@@ -46,6 +52,13 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
                          ConfigurationPolicyStore::PolicyType type);
 };
 
+void ConfigurationPolicyPrefStoreTest::ApplyStringPolicyValue(
+    ConfigurationPolicyPrefStore* store,
+    ConfigurationPolicyStore::PolicyType type,
+    const wchar_t* policy_value) {
+  store->Apply(type, Value::CreateStringValue(policy_value));
+}
+
 void ConfigurationPolicyPrefStoreTest::TestStringPolicyGetDefault(
     const wchar_t* pref_name) {
   ConfigurationPolicyPrefStore store(NULL, NULL);
@@ -57,7 +70,7 @@ void ConfigurationPolicyPrefStoreTest::TestStringPolicyGetDefault(
 void ConfigurationPolicyPrefStoreTest::TestStringPolicySetValue(
     const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
   ConfigurationPolicyPrefStore store(NULL, NULL);
-  store.Apply(type, Value::CreateStringValue("http://chromium.org"));
+  ApplyStringPolicyValue(&store, type, L"http://chromium.org");
   std::wstring result;
   store.prefs()->GetString(pref_name, &result);
   EXPECT_EQ(result, L"http://chromium.org");
@@ -389,5 +402,63 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
   EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
                                          &bool_result));
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest,
+    TestPolicyProxyDisabledPlugin) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+
+  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ApplyStringPolicyValue(&store,
+      ConfigurationPolicyStore::kPolicyDisabledPlugins,
+      L"plugin1");
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  ListValue* plugin_blacklist = NULL;
+  EXPECT_TRUE(store.prefs()->GetList(prefs::kPluginsPluginsBlacklist,
+                                     &plugin_blacklist));
+
+  ListValue::const_iterator current(plugin_blacklist->begin());
+  ListValue::const_iterator end(plugin_blacklist->end());
+
+  ASSERT_TRUE(current != end);
+  std::string plugin_name;
+  (*current)->GetAsString(&plugin_name);
+  EXPECT_EQ("plugin1", plugin_name);
+  ++current;
+  EXPECT_TRUE(current == end);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreTest,
+    TestPolicyProxyDisabledPluginEscapedComma) {
+  FilePath unused_path(FILE_PATH_LITERAL("foo.exe"));
+  CommandLine command_line(unused_path);
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+     new MockConfigurationPolicyProvider());
+
+  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ApplyStringPolicyValue(&store,
+                         ConfigurationPolicyStore::kPolicyDisabledPlugins,
+                         L"plugin1,plugin2\\,");
+  EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
+
+  ListValue* plugin_blacklist = NULL;
+  EXPECT_TRUE(store.prefs()->GetList(prefs::kPluginsPluginsBlacklist,
+                                     &plugin_blacklist));
+  ListValue::const_iterator current(plugin_blacklist->begin());
+  ListValue::const_iterator end(plugin_blacklist->end());
+  ASSERT_TRUE(current != end);
+  std::string plugin_name;
+  (*current)->GetAsString(&plugin_name);
+  EXPECT_EQ("plugin1", plugin_name);
+  ++current;
+  ASSERT_TRUE(current != end);
+  (*current)->GetAsString(&plugin_name);
+  EXPECT_EQ("plugin2,", plugin_name);
+  ++current;
+  EXPECT_TRUE(current == end);
 }
 

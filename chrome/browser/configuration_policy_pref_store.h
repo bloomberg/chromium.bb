@@ -85,6 +85,11 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // of |value| in the case that the policy is proxy-specific.
   bool ApplyProxyPolicy(PolicyType policy, Value* value);
 
+  // Processes plugin policies. Returns true if the specified policy
+  // is a plugin-related policy. ApplyPluginPolicy assumes the ownership
+  // of |value| in the case that the policy is plugin-specific.
+  bool ApplyPluginPolicy(PolicyType policy, Value* value);
+
   // Handles sync-related policies. Returns true if the policy was handled.
   // Assumes ownership of |value| in that case.
   bool ApplySyncPolicy(PolicyType policy, Value* value);

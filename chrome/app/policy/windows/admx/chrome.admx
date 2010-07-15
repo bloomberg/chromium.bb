@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitions revision="1.0" schemaVersion="1.0">
   <policyNamespaces>
-    <target prefix="fullarmor" namespace="FullArmor.4dd057b3-7d4f-4b0e-b832-fd4cd2c92884" />
+    <target prefix="fullarmor" namespace="FullArmor.3cca6b27-3c82-4689-8f0b-4ab08f8341da" />
     <using prefix="windows" namespace="Microsoft.Policies.Windows" />
   </policyNamespaces>
   <supersededAdm fileName="C:\Development\src\chrome\app\policy\windows\adm\en-US\chrome.adm" />
@@ -87,6 +87,19 @@
       <disabledValue>
         <decimal value="0" />
       </disabledValue>
+    </policy>
+    <policy name="DisabledPlugins" class="Machine" displayName="$(string.DisabledPlugins)" explainText="$(string.DisabledPlugins_Explain)" presentation="$(presentation.DisabledPlugins)" key="Software\Policies\Google\Chrome" valueName="DisabledPlugins">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+      <elements>
+        <text id="DisabledPluginsList" valueName="DisabledPluginsList" />
+      </elements>
     </policy>
     <policy name="Sync" class="Machine" displayName="$(string.Sync)" explainText="$(string.Sync_Explain)" presentation="$(presentation.Sync)" key="Software\Policies\Google\Chrome" valueName="SyncDisabled">
       <parentCategory ref="googlechrome" />

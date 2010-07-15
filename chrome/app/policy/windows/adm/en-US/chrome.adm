@@ -83,6 +83,20 @@ CLASS MACHINE
            VALUEOFF NUMERIC 0
        END POLICY
 
+       POLICY !!DisabledPlugins
+           #if version >= 4
+             SUPPORTED !!SUPPORTED_WINXPSP2
+           #endif
+           EXPLAIN !!DisabledPlugins_Explain
+           VALUENAME "DisabledPlugins"
+           VALUEON NUMERIC 1
+           VALUEOFF NUMERIC 0
+
+           PART !!DisabledPluginsList EDITTEXT
+              VALUENAME "DisabledPluginsList"
+           END PART
+       END POLICY
+
        POLICY !!Sync
            #if version >= 4
              SUPPORTED !!SUPPORTED_WINXPSP2
@@ -178,6 +192,10 @@ and crash-related data to Google and prevents users from changing this setting.\
 If you enable this setting, anonymous reporting of usage and crash-related data will be sent to Google.\n\n\
 If you disable this setting, anonymous reporting of usage and crash-related data will never be sent to Google.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
+DisabledPlugins="Specify a list of plugins that are disabled"
+DisabledPlugins_Explain="Specifies a list of plugins that are disabled and prevents users from changing this setting.\n\n\
+value is a comma-separated list of the names of plugins to be disabled."
+DisabledPluginsList="Comma-separated list of disabled plugins:"
 Sync="Disallow synchronization of data with Google"
 Sync_Explain="Disallows data synchronization using Google-hosted sync services and prevents users from changing this setting.\n\n\
 If you enable this setting, users cannot change or override this setting in Google Chrome."

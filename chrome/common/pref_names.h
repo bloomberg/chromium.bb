@@ -162,6 +162,7 @@ extern const wchar_t kExtensionsUIDeveloperMode[];
 extern const wchar_t kExtensionToolbarSize[];
 extern const wchar_t kPluginsLastInternalDirectory[];
 extern const wchar_t kPluginsPluginsList[];
+extern const wchar_t kPluginsPluginsBlacklist[];
 extern const wchar_t kPluginsEnabledInternalPDF[];
 extern const wchar_t kCheckDefaultBrowser[];
 #if defined(OS_MACOSX)

@@ -40,6 +40,8 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
       Value::TYPE_BOOLEAN, "SafeBrowsingEnabled" },
   { ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
       Value::TYPE_BOOLEAN, "MetricsReportingEnabled" },
+  { ConfigurationPolicyStore::kPolicyDisabledPlugins,
+      Value::TYPE_STRING, "DisabledPluginsList" },
   { ConfigurationPolicyStore::kPolicySyncDisabled,
       Value::TYPE_BOOLEAN, "SyncDisabled" }
 };
