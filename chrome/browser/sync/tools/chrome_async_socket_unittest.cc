@@ -97,7 +97,6 @@ class ChromeAsyncSocketTest
     : public testing::Test,
       public sigslot::has_slots<> {
  protected:
-  // TODO(akalin): test SSL states other than connection success.
   ChromeAsyncSocketTest()
       : ssl_socket_data_provider_(true, net::OK),
         capturing_net_log_(net::CapturingNetLog::kUnbounded),
@@ -529,6 +528,12 @@ TEST_F(ChromeAsyncSocketTest, EmptyRead) {
 
 TEST_F(ChromeAsyncSocketTest, WrongRead) {
   EXPECT_DEBUG_DEATH({
+    async_socket_data_provider_.set_connect_data(
+        net::MockConnect(true, net::OK));
+    EXPECT_TRUE(chrome_async_socket_.Connect(addr_));
+    ExpectNonErrorState(ChromeAsyncSocket::STATE_CONNECTING);
+    ExpectNoSignal();
+
     char buf[4096];
     size_t len_read;
     EXPECT_FALSE(chrome_async_socket_.Read(buf, sizeof(buf), &len_read));
@@ -536,6 +541,15 @@ TEST_F(ChromeAsyncSocketTest, WrongRead) {
                      ChromeAsyncSocket::ERROR_WRONGSTATE);
     EXPECT_TRUE(chrome_async_socket_.Close());
   }, "non-open");
+}
+
+TEST_F(ChromeAsyncSocketTest, WrongReadClosed) {
+  char buf[4096];
+  size_t len_read;
+  EXPECT_FALSE(chrome_async_socket_.Read(buf, sizeof(buf), &len_read));
+  ExpectErrorState(ChromeAsyncSocket::STATE_CLOSED,
+                   ChromeAsyncSocket::ERROR_WRONGSTATE);
+  EXPECT_TRUE(chrome_async_socket_.Close());
 }
 
 const char kReadData[] = "mydatatoread";
@@ -821,6 +835,26 @@ TEST_F(ChromeAsyncSocketTest, DoubleSSLConnect) {
                           ChromeAsyncSocket::ERROR_WRONGSTATE,
                           net::OK));
   }, "wrong state");
+}
+
+TEST_F(ChromeAsyncSocketTest, FailedSSLConnect) {
+  ssl_socket_data_provider_.connect =
+      net::MockConnect(true, net::ERR_CERT_COMMON_NAME_INVALID),
+
+  async_socket_data_provider_.AddRead(net::MockRead(kReadData));
+  DoOpenClosed();
+  ExpectReadSignal();
+
+  EXPECT_TRUE(chrome_async_socket_.StartTls("fakedomain.com"));
+  message_loop_.RunAllPending();
+  ExpectSignalSocketState(
+      SignalSocketState(
+          SIGNAL_CLOSE, ChromeAsyncSocket::STATE_CLOSED,
+          ChromeAsyncSocket::ERROR_WINSOCK,
+          net::ERR_CERT_COMMON_NAME_INVALID));
+
+  EXPECT_TRUE(chrome_async_socket_.Close());
+  ExpectClosed();
 }
 
 TEST_F(ChromeAsyncSocketTest, ReadDuringSSLConnecting) {

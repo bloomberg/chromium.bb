@@ -249,7 +249,14 @@ void ChromeAsyncSocket::ProcessReadDone(int status) {
 
 bool ChromeAsyncSocket::Read(char* data, size_t len, size_t* len_read) {
   if (!IsOpen() && (state_ != STATE_TLS_CONNECTING)) {
-    LOG(DFATAL) << "Read() called on non-open non-tls-connecting socket";
+    // Read() may be called on a closed socket if a previous read
+    // causes a socket close (e.g., client sends wrong password and
+    // server terminates connection).
+    //
+    // TODO(akalin): Fix handling of this on the libjingle side.
+    if (state_ != STATE_CLOSED) {
+      LOG(DFATAL) << "Read() called on non-open non-tls-connecting socket";
+    }
     DoNonNetError(ERROR_WRONGSTATE);
     return false;
   }
@@ -457,6 +464,7 @@ void ChromeAsyncSocket::ProcessSSLConnectDone(int status) {
   DCHECK_EQ(write_state_, IDLE);
   if (status != net::OK) {
     DoNetErrorFromStatus(status);
+    DoClose();
     return;
   }
   state_ = STATE_TLS_OPEN;
