@@ -62,6 +62,12 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
 
   virtual ~ClientConnection();
 
+  // Creates a DataBuffer object that wraps around HostMessage. The DataBuffer
+  // object will be responsible for serializing and framing the message.
+  // DataBuffer will also own |msg| after this call.
+  static scoped_refptr<media::DataBuffer> CreateWireFormatDataBuffer(
+      const HostMessage* msg);
+
   virtual void set_jingle_channel(JingleChannel* channel) {
     channel_ = channel;
   }
@@ -75,10 +81,15 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // Notifies the viewer the start of an update stream.
   virtual void SendBeginUpdateStreamMessage();
 
-  // Send encoded update stream data to the viewer. The viewer
-  // should not take ownership of the data.
+  // Send encoded update stream data to the viewer.
+  //
+  // |data| is the actual bytes in wire format. That means it is fully framed
+  // and serialized from a HostMessage. This is a special case only for
+  // UpdateStreamPacket to reduce the amount of memory copies.
+  //
+  // |data| should be created by calling to
+  // CreateWireFormatDataBuffer(HostMessage).
   virtual void SendUpdateStreamPacketMessage(
-      const UpdateStreamPacketHeader* header,
       scoped_refptr<media::DataBuffer> data);
 
   // Notifies the viewer the update stream has ended.

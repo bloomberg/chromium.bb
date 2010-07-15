@@ -61,9 +61,8 @@ class MockClientConnection : public ClientConnection {
 
   MOCK_METHOD2(SendInitClientMessage, void(int width, int height));
   MOCK_METHOD0(SendBeginUpdateStreamMessage, void());
-  MOCK_METHOD2(SendUpdateStreamPacketMessage,
-               void(const UpdateStreamPacketHeader* header,
-                    scoped_refptr<media::DataBuffer> data));
+  MOCK_METHOD1(SendUpdateStreamPacketMessage,
+               void(scoped_refptr<media::DataBuffer> data));
   MOCK_METHOD0(SendEndUpdateStreamMessage, void());
   MOCK_METHOD0(GetPendingUpdateStreamMessages, int());
 

@@ -57,9 +57,20 @@ class Decoder {
   // Give a HostMessage that contains the update stream packet that contains
   // the encoded data to the decoder.
   // The decoder will own |message| and is responsible for deleting it.
+  //
   // If the decoder has written something into |frame|,
   // |partial_decode_done_| is called with |frame| and updated regions.
   // Return true if the decoder can accept |message| and decode it.
+  //
+  // HostMessage returned by this method will contain a
+  // UpdateStreamPacketMessage.
+  // This message will contain either:
+  // 1. UpdateStreamBeginRect
+  // 2. UpdateStreamRectData
+  // 3. UpdateStreamEndRect
+  //
+  // See remoting/base/protocol/chromotocol.proto for more information about
+  // these messages.
   virtual bool PartialDecode(HostMessage* message) = 0;
 
   // Notify the decoder that we have received the last update stream packet.
@@ -68,6 +79,34 @@ class Decoder {
   // If the update stream is not received fully and this method is called the
   // decoder should also call |decode_done_| as soon as possible.
   virtual void EndDecode() = 0;
+
+ protected:
+  // Every decoder will have two internal states because there are three
+  // kinds of messages send to PartialDecode().
+  //
+  // Here's a state diagram:
+  //
+  //                UpdateStreamBeginRect       UpdateStreamRectData
+  //                    ..............              ............
+  //                   .              .            .            .
+  //                  .                v          .              .
+  // kWaitingForBeginRect         kWaitingForRectData            .
+  //                  ^                .          ^              .
+  //                   .              .            .            .
+  //                    ..............              ............
+  //                    UpdateStreaEndRect
+  enum State {
+    // In this state the decoder is waiting for UpdateStreamBeginRect.
+    // After receiving UpdateStreaBeginRect, the encoder will transit to
+    // to kWaitingForRectData state.
+    kWaitingForBeginRect,
+
+    // In this state the decoder is waiting for UpdateStreamRectData.
+    // The decode remains in this state if UpdateStreamRectData is received.
+    // The decoder will transit to kWaitingForBeginRect if UpdateStreamEndRect
+    // is received.
+    kWaitingForRectData,
+  };
 };
 
 }  // namespace remoting

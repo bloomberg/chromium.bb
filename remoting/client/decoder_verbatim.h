@@ -22,6 +22,20 @@ class DecoderVerbatim : public Decoder {
   virtual void EndDecode();
 
  private:
+  bool HandleBeginRect(HostMessage* message);
+  bool HandleRectData(HostMessage* message);
+  bool HandleEndRect(HostMessage* message);
+
+  // The internal state of the decoder.
+  State state_;
+
+  // Keeps track of the updating rect.
+  int rect_x_;
+  int rect_y_;
+  int rect_width_;
+  int rect_height_;
+  int bytes_per_pixel_;
+
   // Tasks to call when decode is done.
   scoped_ptr<Task> partial_decode_done_;
   scoped_ptr<Task> decode_done_;

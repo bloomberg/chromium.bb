@@ -20,13 +20,22 @@ TEST(DecoderVerbatimTest, SimpleDecode) {
   const size_t kHeight = 1;
   const char kData[] = "ABCDEFGHIJ";
   scoped_ptr<HostMessage> msg(new HostMessage());
-  msg->mutable_update_stream_packet()->mutable_header()->set_width(kWidth);
-  msg->mutable_update_stream_packet()->mutable_header()->set_height(kHeight);
-  msg->mutable_update_stream_packet()->mutable_header()->set_x(0);
-  msg->mutable_update_stream_packet()->mutable_header()->set_y(0);
-  msg->mutable_update_stream_packet()->mutable_header()->set_pixel_format(
-      PixelFormatAscii);
-  msg->mutable_update_stream_packet()->set_data(kData, sizeof(kData));
+
+  // Prepare the begin rect message.
+  UpdateStreamBeginRect* begin_rect =
+      msg->mutable_update_stream_packet()->mutable_begin_rect();
+  begin_rect->set_width(kWidth);
+  begin_rect->set_height(kHeight);
+  begin_rect->set_x(0);
+  begin_rect->set_y(0);
+  begin_rect->set_pixel_format(PixelFormatAscii);
+
+  // Prepare the rect data.
+  msg->mutable_update_stream_packet()->mutable_rect_data()->set_data(
+      kData, sizeof(kData));
+
+  // Prepare the end rect.
+  msg->mutable_update_stream_packet()->mutable_end_rect();
 
   scoped_refptr<media::VideoFrame> frame;
   media::VideoFrame::CreateFrame(media::VideoFrame::ASCII, kWidth, kHeight,

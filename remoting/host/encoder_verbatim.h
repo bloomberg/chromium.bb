@@ -9,6 +9,8 @@
 
 namespace remoting {
 
+class UpdateStreamPacket;
+
 // EncoderVerbatim implements Encoder and simply copies input to the output
 // buffer verbatim.
 class EncoderVerbatim : public Encoder {
@@ -21,12 +23,12 @@ class EncoderVerbatim : public Encoder {
                       DataAvailableCallback* data_available_callback);
 
  private:
-  // Encode a single dirty rect. Called by Encode().
+  // Encode a single dirty rect. Called by Encode(). Output is written
+  // to |msg|.
   // Returns false if there is an error.
   bool EncodeRect(const gfx::Rect& dirty,
                   const scoped_refptr<Capturer::CaptureData>& capture_data,
-                  UpdateStreamPacketHeader* header,
-                  scoped_refptr<media::DataBuffer>* output_data);
+                  UpdateStreamPacketMessage* msg);
 };
 
 }  // namespace remoting

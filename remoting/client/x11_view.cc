@@ -20,6 +20,9 @@ X11View::X11View(Display* display, XID window, int width, int height)
       width_(width),
       height_(height),
       picture_(0) {
+  media::VideoFrame::CreateFrame(media::VideoFrame::RGB32, width_, height_,
+                                 base::TimeDelta(), base::TimeDelta(), &frame_);
+  DCHECK(frame_);
 }
 
 X11View::~X11View() {
@@ -30,7 +33,7 @@ void X11View::Paint() {
   all_update_rects_.clear();
 
   // If we have not initialized the render target then do it now.
-  if (!frame_)
+  if (!picture_)
     InitPaintTarget();
 
   // Upload the image to a pixmap. And then create a picture from the pixmap
@@ -112,11 +115,6 @@ void X11View::InitPaintTarget() {
 
   picture_ = XRenderCreatePicture(display_, window_, pictformat, 0, NULL);
   CHECK(picture_) << "Backing picture not created";
-
-  // Create the video frame to carry the decoded image.
-  media::VideoFrame::CreateFrame(media::VideoFrame::RGB32, width_, height_,
-                                 base::TimeDelta(), base::TimeDelta(), &frame_);
-  DCHECK(frame_);
 }
 
 void X11View::HandleBeginUpdateStream(HostMessage* msg) {

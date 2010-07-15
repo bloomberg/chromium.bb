@@ -7,6 +7,7 @@
 #include "gfx/rect.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/protocol_util.h"
+#include "remoting/base/protocol/chromotocol.pb.h"
 
 namespace remoting {
 
@@ -17,13 +18,14 @@ void EncoderVerbatim::Encode(scoped_refptr<Capturer::CaptureData> capture_data,
                              DataAvailableCallback* data_available_callback) {
   int num_rects = capture_data->dirty_rects().size();
   for (int i = 0; i < num_rects; i++) {
-    scoped_refptr<DataBuffer> data;
     const gfx::Rect& dirty_rect = capture_data->dirty_rects()[i];
-    scoped_ptr<UpdateStreamPacketHeader> header(new UpdateStreamPacketHeader);
-    if (EncodeRect(dirty_rect,
-                   capture_data,
-                   header.get(),
-                   &data)) {
+    HostMessage* msg = new HostMessage();
+    UpdateStreamPacketMessage* packet = msg->mutable_update_stream_packet();
+
+    if (EncodeRect(dirty_rect, capture_data, packet)) {
+      // Prepare the end rect content.
+      packet->mutable_end_rect();
+
       EncodingState state = EncodingInProgress;
       if (i == 0) {
         state |= EncodingStarting;
@@ -31,9 +33,7 @@ void EncoderVerbatim::Encode(scoped_refptr<Capturer::CaptureData> capture_data,
       if (i == num_rects - 1) {
         state |= EncodingEnded;
       }
-      data_available_callback->Run(header.release(),
-                                   data,
-                                   state);
+      data_available_callback->Run(msg, state);
     }
   }
 
@@ -43,12 +43,18 @@ void EncoderVerbatim::Encode(scoped_refptr<Capturer::CaptureData> capture_data,
 bool EncoderVerbatim::EncodeRect(
     const gfx::Rect& dirty,
     const scoped_refptr<Capturer::CaptureData>& capture_data,
-    UpdateStreamPacketHeader* header,
-    scoped_refptr<DataBuffer>* output_data) {
-  int bytes_per_pixel = GetBytesPerPixel(capture_data->pixel_format());
-  int row_size = bytes_per_pixel * dirty.width();
+    UpdateStreamPacketMessage* packet) {
+  // Prepare the begin rect content.
+  packet->mutable_begin_rect()->set_x(dirty.x());
+  packet->mutable_begin_rect()->set_y(dirty.y());
+  packet->mutable_begin_rect()->set_width(dirty.width());
+  packet->mutable_begin_rect()->set_height(dirty.height());
+  packet->mutable_begin_rect()->set_encoding(EncodingNone);
+  packet->mutable_begin_rect()->set_pixel_format(capture_data->pixel_format());
 
   // Calculate the size of output.
+  int bytes_per_pixel = GetBytesPerPixel(capture_data->pixel_format());
+  int row_size = bytes_per_pixel * dirty.width();
   int output_size = 0;
   for (int i = 0; i < Capturer::DataPlanes::kPlaneCount; ++i) {
     // TODO(hclam): Handle YUV since the height would be different.
@@ -57,15 +63,10 @@ bool EncoderVerbatim::EncodeRect(
     output_size += row_size * dirty.height();
   }
 
-  header->set_x(dirty.x());
-  header->set_y(dirty.y());
-  header->set_width(dirty.width());
-  header->set_height(dirty.height());
-  header->set_encoding(EncodingNone);
-  header->set_pixel_format(capture_data->pixel_format());
-
-  *output_data = new DataBuffer(new uint8[output_size], output_size);
-  uint8* out = (*output_data)->GetWritableData();
+  // Resize the output data buffer.
+  packet->mutable_rect_data()->mutable_data()->resize(output_size);
+  uint8* out = reinterpret_cast<uint8*>(
+      &((*packet->mutable_rect_data()->mutable_data())[0]));
 
   for (int i = 0; i < Capturer::DataPlanes::kPlaneCount; ++i) {
     const uint8* in = capture_data->data_planes().data[i];

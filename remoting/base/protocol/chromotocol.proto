@@ -51,9 +51,10 @@ enum PixelFormat {
   PixelFormatAscii = 9;
 }
 
-// A message with info about the update stream.
+// A message that denotes the beginning of an updating rectangle in an update
+// stream packet.
 // NEXT ID: 6
-message UpdateStreamPacketHeader {
+message UpdateStreamBeginRect {
   // X,Y coordinates (in screen pixels) for origin of this update.
   required int32 x = 1;
   required int32 y = 2;
@@ -69,12 +70,28 @@ message UpdateStreamPacketHeader {
   optional PixelFormat pixel_format = 6 [default=PixelFormatRgb24];
 }
 
-// A message to denote a partial update stream.
+// A message that contains partial data for updating an rectangle in an
+// update stream packet.
 // NEXT ID: 3
+message UpdateStreamRectData {
+  // The sequence number of the partial data for updating a rectangle.
+  optional int32 sequence_number = 1 [default=0];
+
+  // The partial data for updating a rectangle.
+  required bytes data = 2;
+}
+
+// A message that denotes the end of an updating rectangle.
+// NEXT ID: 1
+message UpdateStreamEndRect {
+}
+
+// A message to denote a partial update stream.
+// NEXT ID: 4
 message UpdateStreamPacketMessage {
-  // TODO(garykac): Make this required and fix unit tests.
-  optional UpdateStreamPacketHeader header = 2;
-  optional bytes data = 1;
+  optional UpdateStreamBeginRect begin_rect = 1;
+  optional UpdateStreamRectData rect_data = 2;
+  optional UpdateStreamEndRect end_rect = 3;
 }
 
 // Defines the message that is sent from the host to the client.

@@ -58,18 +58,11 @@ ACTION_P2(RunCallback, rects, data) {
   delete arg0;
 }
 
-ACTION_P3(FinishDecode, rects, buffer, header) {
-  gfx::Rect& rect = (*rects)[0];
+ACTION_P(FinishEncode, msg) {
   Encoder::EncodingState state = (Encoder::EncodingStarting |
                                   Encoder::EncodingInProgress |
                                   Encoder::EncodingEnded);
-  header->set_x(rect.x());
-  header->set_y(rect.y());
-  header->set_width(rect.width());
-  header->set_height(rect.height());
-  header->set_encoding(kEncoding);
-  header->set_pixel_format(kFormat);
-  arg2->Run(header, *buffer, state);
+  arg2->Run(msg, state);
 }
 
 ACTION_P(AssignCaptureData, data) {
@@ -111,15 +104,13 @@ TEST_F(SessionManagerTest, OneRecordCycle) {
       .WillOnce(RunCallback(update_rects, data));
 
   // Expect the encoder be called.
-  scoped_refptr<media::DataBuffer> buffer = new media::DataBuffer(0);
-  UpdateStreamPacketHeader *header = new UpdateStreamPacketHeader;
+  HostMessage* msg = new HostMessage();
   EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
-      .WillOnce(FinishDecode(&update_rects, &buffer, header));
+      .WillOnce(FinishEncode(msg));
 
   // Expect the client be notified.
   EXPECT_CALL(*client_, SendBeginUpdateStreamMessage());
-
-  EXPECT_CALL(*client_, SendUpdateStreamPacketMessage(header ,buffer));
+  EXPECT_CALL(*client_, SendUpdateStreamPacketMessage(_));
   EXPECT_CALL(*client_, SendEndUpdateStreamMessage());
   EXPECT_CALL(*client_, GetPendingUpdateStreamMessages())
       .Times(AtLeast(0))

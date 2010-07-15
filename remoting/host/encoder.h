@@ -17,6 +17,8 @@ namespace media {
 
 namespace remoting {
 
+class HostMessage;
+
 // A class to perform the task of encoding a continous stream of
 // images.
 // This class operates asynchronously to enable maximum throughput.
@@ -34,11 +36,11 @@ class Encoder {
   typedef int EncodingState;
 
   // DataAvailableCallback is called as blocks of data are made available
-  // from the encoder. The callback takes ownership of header and is
-  // responsible for deleting it.
-  typedef Callback3<const UpdateStreamPacketHeader*,
-                    const scoped_refptr<media::DataBuffer>&,
-                    EncodingState>::Type DataAvailableCallback;
+  // from the encoder. Data made available by the encoder is in the form
+  // of HostMessage to reduce the amount of memory copies.
+  // The callback takes ownership of the HostMessage and is responsible for
+  // deleting it.
+  typedef Callback2<HostMessage*, EncodingState>::Type DataAvailableCallback;
 
   virtual ~Encoder() {}
 

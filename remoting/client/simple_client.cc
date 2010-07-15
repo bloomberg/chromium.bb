@@ -86,9 +86,13 @@ class SimpleHostEventCallback : public HostConnection::HostEventCallback {
 
   void HandleUpdateStreamPacketMessage(HostMessage* host_msg) {
     const UpdateStreamPacketMessage& msg = host_msg->update_stream_packet();
-    std::cout << "UpdateStreamPacket (" << msg.header().x()
-              << ", " << msg.header().y() << ") ["
-              << msg.header().width() << " x " << msg.header().height() << "]"
+    if (!msg.has_begin_rect())
+      return;
+
+    std::cout << "UpdateStreamPacket (" << msg.begin_rect().x()
+              << ", " << msg.begin_rect().y() << ") ["
+              << msg.begin_rect().width() << " x "
+              << msg.begin_rect().height() << "]"
               << std::endl;
   }
 

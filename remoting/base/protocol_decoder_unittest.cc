@@ -43,7 +43,10 @@ static void PrepareData(uint8** buffer, int* size) {
     AppendMessage(msg, &encoded_data);
     msg.Clear();
 
-    msg.mutable_update_stream_packet()->set_data(kTestData);
+    msg.mutable_update_stream_packet()->mutable_rect_data()->
+        set_sequence_number(0);
+    msg.mutable_update_stream_packet()->mutable_rect_data()->
+        set_data(kTestData);
     AppendMessage(msg, &encoded_data);
     msg.Clear();
 
@@ -101,7 +104,8 @@ TEST(ProtocolDecoderTest, BasicOperations) {
     } else if (type == 1) {
       // Partial update stream.
       EXPECT_TRUE(message_list[i]->has_update_stream_packet());
-      EXPECT_EQ(kTestData, message_list[i]->update_stream_packet().data());
+      EXPECT_EQ(kTestData,
+                message_list[i]->update_stream_packet().rect_data().data());
     } else if (type == 2) {
       // End update stream.
       EXPECT_TRUE(message_list[i]->has_end_update_stream());

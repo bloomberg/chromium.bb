@@ -35,6 +35,16 @@ ClientConnection::~ClientConnection() {
   // jingle channel.
 }
 
+// static
+scoped_refptr<media::DataBuffer>
+    ClientConnection::CreateWireFormatDataBuffer(
+        const HostMessage* msg) {
+  // TODO(hclam): Instead of serializing |msg| create an DataBuffer
+  // object that wraps around it.
+  scoped_ptr<const HostMessage> message_deleter(msg);
+  return SerializeAndFrameMessage(*msg);
+}
+
 void ClientConnection::SendInitClientMessage(int width, int height) {
   DCHECK_EQ(loop_, MessageLoop::current());
   DCHECK(!update_stream_size_);
@@ -68,7 +78,6 @@ void ClientConnection::SendBeginUpdateStreamMessage() {
 }
 
 void ClientConnection::SendUpdateStreamPacketMessage(
-    const UpdateStreamPacketHeader* header,
     scoped_refptr<DataBuffer> data) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
@@ -76,16 +85,8 @@ void ClientConnection::SendUpdateStreamPacketMessage(
   if (!channel_)
     return;
 
-  HostMessage msg;
-  msg.mutable_update_stream_packet()->mutable_header()->CopyFrom(*header);
-  // TODO(hclam): This introduce one memory copy. Eliminate it.
-  msg.mutable_update_stream_packet()->set_data(
-      data->GetData(), data->GetDataSize());
-  DCHECK(msg.IsInitialized());
-
-  scoped_refptr<DataBuffer> encoded_data = SerializeAndFrameMessage(msg);
   update_stream_size_ += data->GetDataSize();
-  channel_->Write(encoded_data);
+  channel_->Write(data);
 }
 
 void ClientConnection::SendEndUpdateStreamMessage() {

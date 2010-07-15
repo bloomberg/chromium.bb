@@ -55,14 +55,8 @@ TEST_F(ClientConnectionTest, SendUpdateStream) {
 
   // Then send the actual data.
   EXPECT_CALL(*channel_, Write(_));
-  scoped_ptr<UpdateStreamPacketHeader> header(new UpdateStreamPacketHeader);
-  header->set_x(0);
-  header->set_y(0);
-  header->set_width(640);
-  header->set_height(480);
-
   scoped_refptr<media::DataBuffer> data = new media::DataBuffer(10);
-  viewer_->SendUpdateStreamPacketMessage(header.get(), data);
+  viewer_->SendUpdateStreamPacketMessage(data);
 
   // Send the end of update message.
   EXPECT_CALL(*channel_, Write(_));
@@ -105,15 +99,8 @@ TEST_F(ClientConnectionTest, Close) {
   EXPECT_CALL(*channel_, Close());
   viewer_->Disconnect();
 
-  viewer_->SendBeginUpdateStreamMessage();
-  scoped_ptr<UpdateStreamPacketHeader> header(new UpdateStreamPacketHeader);
-  header->set_x(0);
-  header->set_y(0);
-  header->set_width(640);
-  header->set_height(480);
-
   scoped_refptr<media::DataBuffer> data = new media::DataBuffer(10);
-  viewer_->SendUpdateStreamPacketMessage(header.get(), data);
+  viewer_->SendUpdateStreamPacketMessage(data);
   viewer_->SendEndUpdateStreamMessage();
   viewer_->Disconnect();
 }

@@ -322,25 +322,26 @@ void SessionManager::DoRateControl() {
   ScheduleNextRateControl();
 }
 
-void SessionManager::DoSendUpdate(const UpdateStreamPacketHeader* header,
-                                  const scoped_refptr<media::DataBuffer> data,
+void SessionManager::DoSendUpdate(HostMessage* message,
                                   Encoder::EncodingState state) {
-  // Take ownership of header.
-  scoped_ptr<const UpdateStreamPacketHeader> header_owner(header);
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
+  // Create a data buffer in wire format from |message|.
+  scoped_refptr<media::DataBuffer> data =
+      ClientConnection::CreateWireFormatDataBuffer(message);
+
   for (ClientConnectionList::const_iterator i = clients_.begin();
-       i < clients_.end();
-       ++i) {
+       i < clients_.end(); ++i) {
+    // TODO(hclam): Merge BeginUpdateStreamMessage into |message|.
     if (state & Encoder::EncodingStarting) {
       (*i)->SendBeginUpdateStreamMessage();
     }
 
-    (*i)->SendUpdateStreamPacketMessage(header, data);
+    (*i)->SendUpdateStreamPacketMessage(data);
 
-    if (state & Encoder::EncodingEnded) {
+    // TODO(hclam): Merge EndUpdateStreamMessage into |message|.
+    if (state & Encoder::EncodingEnded)
       (*i)->SendEndUpdateStreamMessage();
-    }
   }
 }
 
@@ -390,9 +391,7 @@ void SessionManager::DoEncode(
 }
 
 void SessionManager::EncodeDataAvailableTask(
-    const UpdateStreamPacketHeader *header,
-    const scoped_refptr<media::DataBuffer>& data,
-    Encoder::EncodingState state) {
+    HostMessage* message, Encoder::EncodingState state) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
   // Before a new encode task starts, notify clients a new update
@@ -401,11 +400,7 @@ void SessionManager::EncodeDataAvailableTask(
   // task. The ownership will eventually pass to the ClientConnections.
   network_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &SessionManager::DoSendUpdate,
-                        header,
-                        data,
-                        state));
+      NewRunnableMethod(this, &SessionManager::DoSendUpdate, message, state));
 
   if (state & Encoder::EncodingEnded) {
     capture_loop_->PostTask(
