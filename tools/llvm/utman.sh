@@ -103,7 +103,6 @@ readonly TC_BUILD_BINUTILS_ARM_SB="${TC_BUILD}/binutils-arm-sandboxed"
 readonly TC_BUILD_BINUTILS_X86_SB="${TC_BUILD}/binutils-x86-sandboxed"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
-readonly TC_BUILD_LLC_SB="${TC_BUILD}/llc-sandboxed"
 
 # This apparently has to be at this location or gcc install breaks.
 readonly TC_BUILD_LIBSTDCPP=\
@@ -1496,91 +1495,6 @@ binutils-arm-install() {
 #########################################################################
 #     CLIENT BINARIES (SANDBOXED)
 #########################################################################
-
-#+-------------------------------------------------------------------------
-#+ llc-sb       - build and install llc (sandboxed)
-llc-sb() {
-  StepBanner "LLC-SB"
-
-  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
-    echo "ERROR: install Native Client toolchain"
-    exit -1
-  fi
-
-  # TODO(pdox): make this incremental
-  llc-sb-clean
-  llc-sb-configure
-  llc-sb-make
-  llc-sb-install
-}
-
-#+ llc-sb-clean - clean llvm-trunk (sandboxed)
-llc-sb-clean() {
-  StepBanner "LLC-SB" "Clean"
-  local objdir="${TC_BUILD_LLC_SB}"
-
-  rm -rf "${objdir}"
-  mkdir -p "${objdir}"
-}
-
-#+ llc-sb-configure - configure binutils (sandboxed)
-llc-sb-configure() {
-  StepBanner "LLC-SB" "Configure"
-  local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_LLC_SB}"
-
-  mkdir ${TC_BUILD_LLC_SB}/opcodes
-  spushd ${objdir}
-  cp ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ./opcodes/.
-  RunWithLog \
-    binutils.x86.sandboxed.configure \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
-    AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
-    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc" \
-    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++" \
-    EMULATOR_FOR_BUILD="$(pwd)/scons-out/dbg-linux-x86-32/staging/sel_ldr -d" \
-    LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
-    RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
-    CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
-    LDFLAGS="-s" \
-    LDFLAGS_FOR_BUILD="-L." \
-    ${srcdir}/binutils-2.20/configure \
-                             --prefix=${PNACL_CLIENT_TC_X86} \
-                             --host=nacl \
-                             --target=nacl64 \
-                             --disable-nls \
-                             --enable-static \
-                             --enable-shared=no \
-                             --with-sysroot=${NEWLIB_INSTALL_DIR}
-  spopd
-}
-
-#+ binutils-x86-sb-make - Install binutils (sandboxed) for x86
-binutils-x86-sb-make() {
-  StepBanner "BINUTILS-X86-SB" "Make"
-  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
-  spushd ${objdir}
-
-  RunWithLog binutils.x86.sandboxed.make \
-    env -i PATH="/usr/bin:/bin" \
-    make ${MAKE_OPTS} all-gas
-  spopd
-}
-
-#+ binutils-x86-sb-install - Install binutils (sandboxed) for x86
-binutils-x86-sb-install() {
-  StepBanner "BINUTILS-X86-SB" "Install"
-  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
-  spushd ${objdir}
-
-  RunWithLog binutils.x86.sandboxed.install \
-    env -i PATH="/usr/bin:/bin" \
-    make install-gas
-
-  spopd
-}
 
 #+-------------------------------------------------------------------------
 #+ binutils-arm-sb       - build and install binutils (sandboxed) for ARM
