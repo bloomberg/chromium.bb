@@ -129,6 +129,7 @@ FileRef::FileRef(PluginModule* module,
       fs_type_(file_system_type),
       path_(validated_path),
       origin_(origin) {
+  // TODO(darin): Need to initialize system_path_.
 }
 
 FileRef::~FileRef() {

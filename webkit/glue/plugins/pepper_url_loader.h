@@ -81,6 +81,7 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   int64_t total_bytes_to_be_received_;
   char* user_buffer_;
   size_t user_buffer_size_;
+  bool done_;
 };
 
 }  // namespace pepper

@@ -14,6 +14,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 #include "webkit/glue/plugins/pepper_url_response_info.h"
@@ -153,7 +154,8 @@ URLLoader::URLLoader(PluginInstance* instance)
       bytes_received_(0),
       total_bytes_to_be_received_(0),
       user_buffer_(NULL),
-      user_buffer_size_(0) {
+      user_buffer_size_(0),
+      done_(false) {
 }
 
 URLLoader::~URLLoader() {
@@ -173,14 +175,10 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   if (!callback.func)
     return PP_ERROR_BADARGUMENT;
 
-  WebURLRequest web_request(request->web_request());
-
   WebFrame* frame = instance_->container()->element().document().frame();
   if (!frame)
     return PP_ERROR_FAILED;
-  web_request.setURL(
-      frame->document().completeURL(WebString::fromUTF8(request->url())));
-  frame->setReferrerForRequest(web_request, WebURL());  // Use default.
+  WebURLRequest web_request(request->ToWebURLRequest(frame));
   frame->dispatchWillSendRequest(web_request);
 
   loader_.reset(WebKit::webKitClient()->createURLLoader());
@@ -217,6 +215,12 @@ int32_t URLLoader::ReadResponseBody(char* buffer, int32_t bytes_to_read,
 
   if (!buffer_.empty())
     return FillUserBuffer();
+
+  if (done_) {
+    user_buffer_ = NULL;
+    user_buffer_size_ = 0;
+    return 0;
+  }
 
   pending_callback_ = callback;
   return PP_ERROR_WOULDBLOCK;
@@ -258,10 +262,12 @@ void URLLoader::didReceiveData(WebURLLoader* loader,
 }
 
 void URLLoader::didFinishLoading(WebURLLoader* loader) {
+  done_ = true;
   RunCallback(PP_OK);
 }
 
 void URLLoader::didFail(WebURLLoader* loader, const WebURLError& error) {
+  done_ = true;
   // TODO(darin): Provide more detailed error information.
   RunCallback(PP_ERROR_FAILED);
 }

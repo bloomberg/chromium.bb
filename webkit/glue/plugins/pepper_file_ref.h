@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/file_path.h"
 #include "third_party/ppapi/c/ppb_file_ref.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
@@ -34,9 +35,16 @@ class FileRef : public Resource {
   scoped_refptr<FileRef> GetParent();
 
   PP_FileSystemType file_system_type() const { return fs_type_; }
+
+  // Returns the virtual path (i.e., the path that the pepper plugin sees)
+  // corresponding to this file.
   const std::string& path() const { return path_; }
 
+  // Returns the system path corresponding to this file.
+  const FilePath& system_path() const { return system_path_; }
+
  private:
+  FilePath system_path_;
   PP_FileSystemType fs_type_;
   std::string path_;  // UTF-8 encoded.
   std::string origin_;
