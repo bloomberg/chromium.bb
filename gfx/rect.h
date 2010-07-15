@@ -39,7 +39,7 @@ class Rect {
 #elif defined(USE_X11)
   explicit Rect(const GdkRectangle& r);
 #endif
-  Rect(const gfx::Size& size);
+  explicit Rect(const gfx::Size& size);
   Rect(const gfx::Point& origin, const gfx::Size& size);
 
   ~Rect() {}
@@ -59,10 +59,10 @@ class Rect {
   void set_y(int y) { origin_.set_y(y); }
 
   int width() const { return size_.width(); }
-  void set_width(int width);
+  void set_width(int width) { size_.set_width(width); }
 
   int height() const { return size_.height(); }
-  void set_height(int height);
+  void set_height(int height) { size_.set_height(height); }
 
   const gfx::Point& origin() const { return origin_; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }

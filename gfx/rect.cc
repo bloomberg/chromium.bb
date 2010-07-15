@@ -93,13 +93,6 @@ Rect& Rect::operator=(const GdkRectangle& r) {
 }
 #endif
 
-void Rect::set_width(int width) {
-  size_.set_width(width);
-}
-void Rect::set_height(int height) {
-  size_.set_height(height);
-}
-
 void Rect::SetRect(int x, int y, int width, int height) {
   origin_.SetPoint(x, y);
   set_width(width);
