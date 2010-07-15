@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "base/hash_tables.h"
-#include "base/ref_counted.h"
+#include "base/id_map.h"
 #include "base/scoped_open_process.h"
+#include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/message_router.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
@@ -88,7 +88,7 @@ class GpuChannel : public IPC::Channel::Listener,
   MessageRouter router_;
 
 #if defined(ENABLE_GPU)
-  typedef base::hash_map<int32, scoped_refptr<GpuCommandBufferStub> > StubMap;
+  typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
 #endif
 

@@ -30,6 +30,9 @@ class GpuThread : public ChildThread {
   Display* display() const { return display_; }
 #endif
 
+  // Remove the channel for a particular renderer.
+  void RemoveChannel(int renderer_id);
+
  private:
   // ChildThread overrides.
   virtual void OnControlMessageReceived(const IPC::Message& msg);

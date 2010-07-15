@@ -8,7 +8,7 @@
 #if defined(ENABLE_GPU)
 
 #include "base/process.h"
-#include "base/ref_counted.h"
+#include "base/weak_ptr.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -21,7 +21,7 @@ class GpuChannel;
 class GpuCommandBufferStub
     : public IPC::Channel::Listener,
       public IPC::Message::Sender,
-      public base::RefCountedThreadSafe<GpuCommandBufferStub> {
+      public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
   GpuCommandBufferStub(GpuChannel* channel,
                        gfx::PluginWindowHandle handle,
@@ -54,9 +54,13 @@ class GpuCommandBufferStub
                            uint32* size);
   void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
-  scoped_refptr<GpuChannel> channel_;
+  // The lifetime of objects of this class is managed by a GpuChannel. The
+  // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
+  // are destroyed. So a raw pointer is safe.
+  GpuChannel* channel_;
+
   gfx::PluginWindowHandle handle_;
-  scoped_refptr<GpuCommandBufferStub> parent_;
+  base::WeakPtr<GpuCommandBufferStub> parent_;
   gfx::Size initial_size_;
   uint32 parent_texture_id_;
   int32 route_id_;

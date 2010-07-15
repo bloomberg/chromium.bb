@@ -21,7 +21,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(GpuChannel* channel,
                                            int32 route_id)
     : channel_(channel),
       handle_(handle),
-      parent_(parent),
+      parent_(
+          parent ? parent->AsWeakPtr() : base::WeakPtr<GpuCommandBufferStub>()),
       initial_size_(size),
       parent_texture_id_(parent_texture_id),
       route_id_(route_id) {
