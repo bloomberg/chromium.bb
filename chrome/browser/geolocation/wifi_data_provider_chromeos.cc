@@ -45,22 +45,21 @@ NetworkLibraryWlanApi::~NetworkLibraryWlanApi() {
 }
 
 bool NetworkLibraryWlanApi::GetAccessPointData(
-    WifiData::AccessPointDataSet* data) {
-  const WifiNetworkVector& networks = network_library_->wifi_networks();
-  for (WifiNetworkVector::const_iterator i = networks.begin();
-       i != networks.end(); ++i) {
-    for (WifiNetwork::AccessPointVector::const_iterator j =
-         i->access_points().begin(); j != i->access_points().end(); ++j) {
-      AccessPointData ap_data;
-      ap_data.mac_address = ASCIIToUTF16(j->mac_address);
-      ap_data.radio_signal_strength = j->signal_strength;
-      ap_data.channel = j->channel;
-      ap_data.signal_to_noise = j->signal_to_noise;
-      ap_data.ssid = UTF8ToUTF16(i->name());
-      data->insert(ap_data);
-    }
+    WifiData::AccessPointDataSet* result) {
+  WifiAccessPointVector access_points;
+  if (!network_library_->GetWifiAccessPoints(&access_points))
+    return false;
+  for (WifiAccessPointVector::const_iterator i = access_points.begin();
+       i != access_points.end(); ++i) {
+    AccessPointData ap_data;
+    ap_data.mac_address = ASCIIToUTF16(i->mac_address);
+    ap_data.radio_signal_strength = i->signal_strength;
+    ap_data.channel = i->channel;
+    ap_data.signal_to_noise = i->signal_to_noise;
+    ap_data.ssid = UTF8ToUTF16(i->name);
+    result->insert(ap_data);
   }
-  return !data->empty() || network_library_->wifi_available();
+  return !result->empty() || network_library_->wifi_enabled();
 }
 
 }  // namespace

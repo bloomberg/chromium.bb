@@ -110,56 +110,19 @@ class WirelessNetwork : public Network {
 
 class CellularNetwork : public WirelessNetwork {
  public:
-  struct CellTower {
-    enum RadioType {
-      RADIOTYPE_GSM,
-      RADIOTYPE_CDMA,
-      RADIOTYPE_WCDMA,
-    } radio_type;                   // GSM/WCDMA     CDMA
-    int mobile_country_code;        //   MCC          MCC
-    int mobile_network_code;        //   MNC          SID
-    int location_area_code;         //   LAC          NID
-    int cell_id;                    //   CID          BID
-    base::Time timestamp; // Timestamp when this cell was primary
-    int signal_strength;  // Radio signal strength measured in dBm.
-    int timing_advance;   // Represents the distance from the cell tower. Each
-                          // unit is roughly 550 meters.
-  };
-  typedef std::vector<CellTower> CellTowerVector;
-
   CellularNetwork() : WirelessNetwork() {}
   explicit CellularNetwork(const ServiceInfo& service)
       : WirelessNetwork() {
     ConfigureFromService(service);
   }
-  // Returns list of recently visible cell towers for this network. If the
-  // network is not visible (e.g. if this object was obtained from a remembered
-  // networks call) then this list will be empty.
-  // TODO(joth): Provide implementation in NetworkLibraryImpl to fill this.
-  const CellTowerVector& cell_towers() const { return cell_towers_; }
-  void set_cell_towers(const CellTowerVector& cell_towers) {
-    cell_towers_ = cell_towers;
-  }
 
   // WirelessNetwork overrides.
   virtual void Clear();
   virtual void ConfigureFromService(const ServiceInfo& service);
-
- protected:
-  CellTowerVector cell_towers_;
 };
 
 class WifiNetwork : public WirelessNetwork {
  public:
-  struct AccessPoint {
-    std::string mac_address;  // The mac address of the WiFi node.
-    base::Time timestamp;     // Timestamp when this AP was detected.
-    int signal_strength;      // Radio signal strength measured in dBm.
-    int signal_to_noise;      // Current signal to noise ratio measured in dB.
-    int channel;              // Wifi channel number.
-  };
-  typedef std::vector<AccessPoint> AccessPointVector;
-
   WifiNetwork()
       : WirelessNetwork(),
         encryption_(SECURITY_NONE) {}
@@ -186,16 +149,6 @@ class WifiNetwork : public WirelessNetwork {
   void set_cert_path(const std::string& cert_path) {
     cert_path_ = cert_path;
   }
-  // Returns list of recently visible access points (base stations) for this
-  // network. If the network is not visible (e.g. if this object was obtained
-  // from a remembered networks call) then this list will be empty.
-  // TODO(joth): Provide implementation in NetworkLibraryImpl to fill this.
-  const AccessPointVector& access_points() const {
-    return access_points_;
-  }
-  void set_access_points(const AccessPointVector& access_points) {
-    access_points_ = access_points;
-  }
 
   // WirelessNetwork overrides.
   virtual void Clear();
@@ -210,11 +163,38 @@ class WifiNetwork : public WirelessNetwork {
   std::string passphrase_;
   std::string identity_;
   std::string cert_path_;
-  AccessPointVector access_points_;
 };
 
 typedef std::vector<WifiNetwork> WifiNetworkVector;
 typedef std::vector<CellularNetwork> CellularNetworkVector;
+
+struct CellTower {
+  enum RadioType {
+    RADIOTYPE_GSM,
+    RADIOTYPE_CDMA,
+    RADIOTYPE_WCDMA,
+  } radio_type;                   // GSM/WCDMA     CDMA
+  int mobile_country_code;        //   MCC          MCC
+  int mobile_network_code;        //   MNC          SID
+  int location_area_code;         //   LAC          NID
+  int cell_id;                    //   CID          BID
+  base::Time timestamp; // Timestamp when this cell was primary
+  int signal_strength;  // Radio signal strength measured in dBm.
+  int timing_advance;   // Represents the distance from the cell tower. Each
+                        // unit is roughly 550 meters.
+};
+
+struct WifiAccessPoint {
+  std::string mac_address;  // The mac address of the WiFi node.
+  std::string name;         // The SSID of the WiFi node.
+  base::Time timestamp;     // Timestamp when this AP was detected.
+  int signal_strength;      // Radio signal strength measured in dBm.
+  int signal_to_noise;      // Current signal to noise ratio measured in dB.
+  int channel;              // Wifi channel number.
+};
+
+typedef std::vector<CellTower> CellTowerVector;
+typedef std::vector<WifiAccessPoint> WifiAccessPointVector;
 
 struct NetworkIPConfig {
   NetworkIPConfig(const std::string& device_path, IPConfigType type,
@@ -307,6 +287,16 @@ class NetworkLibrary {
 
   // Request a scan for new wifi networks.
   virtual void RequestWifiScan() = 0;
+
+  // Reads out the results of the last wifi scan. These results are not
+  // pre-cached in the library, so the call may block whilst the results are
+  // read over IPC.
+  // Returns false if an error occurred in reading the results. Note that
+  // a true return code only indicates the result set was successfully read,
+  // it does not imply a scan has successfully completed yet.
+  virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) = 0;
+
+  // TODO(joth): Add GetCellTowers to retrieve a CellTowerVector.
 
   // Attempt to connect to the preferred network if available and it is set up.
   // This call will return true if connection is started.
@@ -438,6 +428,7 @@ class NetworkLibraryImpl : public NetworkLibrary,
                                          CellularNetwork* network) const;
 
   virtual void RequestWifiScan();
+  virtual bool GetWifiAccessPoints(WifiAccessPointVector* result);
   virtual bool ConnectToPreferredNetworkIfAvailable();
   virtual bool PreferredNetworkConnected();
   virtual bool PreferredNetworkFailed();

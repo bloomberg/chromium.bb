@@ -84,11 +84,13 @@ bool LibGps::Start() {
   if (library().is_open())
     return true;
   errno = 0;
+  static int fail_count = 0;
   if (!library().open(NULL, NULL)) {
     // See gps.h NL_NOxxx for definition of gps_open() error numbers.
-    LOG(INFO) << "gps_open() failed: " << errno;
+    LOG_IF(WARNING, 0 == fail_count++) << "gps_open() failed: " << errno;
     return false;
   }
+  fail_count = 0;
   if (!StartStreaming()) {
     LOG(INFO) << "StartStreaming failed";
     library().close();

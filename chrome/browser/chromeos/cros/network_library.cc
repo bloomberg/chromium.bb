@@ -158,12 +158,10 @@ void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
 
 void CellularNetwork::Clear() {
   WirelessNetwork::Clear();
-  cell_towers_.clear();
 }
 
 void CellularNetwork::ConfigureFromService(const ServiceInfo& service) {
   WirelessNetwork::ConfigureFromService(service);
-  // TODO(joth): Update |cell_towers_| once ChromeOS side is implemented.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -175,7 +173,6 @@ void WifiNetwork::Clear() {
   passphrase_.clear();
   identity_.clear();
   cert_path_.clear();
-  access_points_.clear();
 }
 
 void WifiNetwork::ConfigureFromService(const ServiceInfo& service) {
@@ -184,7 +181,6 @@ void WifiNetwork::ConfigureFromService(const ServiceInfo& service) {
   passphrase_ = service.passphrase;
   identity_ = service.identity;
   cert_path_ = service.cert_path;
-  // TODO(joth): Update |access_points_| once ChromeOS side is implemented.
 }
 
 std::string WifiNetwork::GetEncryptionString() {
@@ -293,6 +289,31 @@ void NetworkLibraryImpl::RequestWifiScan() {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     RequestScan(TYPE_WIFI);
   }
+}
+
+bool NetworkLibraryImpl::GetWifiAccessPoints(WifiAccessPointVector* result) {
+  if (!CrosLibrary::Get()->EnsureLoaded())
+    return false;
+  DeviceNetworkList* network_list = GetDeviceNetworkList();
+  if (network_list == NULL)
+    return false;
+  result->clear();
+  result->reserve(network_list->network_size);
+  const base::Time now = base::Time::Now();
+  for (size_t i = 0; i < network_list->network_size; ++i) {
+    DCHECK(network_list->networks[i].address);
+    DCHECK(network_list->networks[i].name);
+    WifiAccessPoint ap;
+    ap.mac_address = network_list->networks[i].address;
+    ap.name = network_list->networks[i].name;
+    ap.timestamp = now -
+        base::TimeDelta::FromSeconds(network_list->networks[i].age_seconds);
+    ap.signal_strength = network_list->networks[i].strength;
+    ap.channel = network_list->networks[i].channel;
+    result->push_back(ap);
+  }
+  FreeDeviceNetworkList(network_list);
+  return true;
 }
 
 bool NetworkLibraryImpl::ConnectToPreferredNetworkIfAvailable() {
