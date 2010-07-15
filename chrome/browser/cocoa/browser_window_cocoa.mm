@@ -17,6 +17,7 @@
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
+#import "chrome/browser/cocoa/collected_cookies_mac.h"
 #import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
@@ -341,6 +342,11 @@ void BrowserWindowCocoa::ShowContentSettingsWindow(
     Profile* profile) {
   [ContentSettingsDialogController showContentSettingsForType:settings_type
                                                       profile:profile];
+}
+
+void BrowserWindowCocoa::ShowCollectedCookiesDialog(TabContents* tab_contents) {
+  // Deletes itself on close.
+  new CollectedCookiesMac(GetNativeHandle(), tab_contents);
 }
 
 void BrowserWindowCocoa::ShowProfileErrorDialog(int message_id) {

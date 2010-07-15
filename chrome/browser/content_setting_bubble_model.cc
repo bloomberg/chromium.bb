@@ -95,7 +95,14 @@ class ContentSettingTitleLinkAndInfoModel
 
   virtual void OnInfoLinkClicked() {
     DCHECK(content_type() == CONTENT_SETTINGS_TYPE_COOKIES);
-    // FIXME(jochen): show cookie info dialog.
+    if (tab_contents()) {
+      NotificationService::current()->Notify(
+          NotificationType::COLLECTED_COOKIES_SHOWN,
+          Source<TabSpecificContentSettings>(
+              tab_contents()->GetTabSpecificContentSettings()),
+          NotificationService::NoDetails());
+      tab_contents()->delegate()->ShowCollectedCookiesDialog(tab_contents());
+    }
   }
 };
 

@@ -1394,7 +1394,13 @@ IPC_BEGIN_MESSAGES(Automation)
   // profile of the tab identified by the first parameter.  The second
   // parameter is the cookie name.
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_DeleteCookie, GURL, std::string,
-                             int, bool)
+                             int /* tab handle */,
+                             bool /* result */)
+
+  // This message triggers the collected cookies dialog for a specific tab.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_ShowCollectedCookiesDialog,
+                             int /* tab handle */,
+                             bool /* result */)
 
   // This message requests the external tab identified by the tab handle
   // passed in be closed.

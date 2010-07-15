@@ -2331,7 +2331,7 @@ each locale. -->
         Manage cookie blocking...
       </message>
       <message name="IDS_BLOCKED_COOKIES_INFO" desc="Info link to a dialog showing the blocked/allowed cookies, displayed in bubble when a page tries to write cookies or other site data.">
-        See cookies and other site data...
+        Show cookies and other site data...
       </message>
       <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
         Images were blocked on this page.
@@ -6015,6 +6015,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the domain's DNS information for that URL in advance. ">
         Use DNS pre-fetching to improve page load performance
+      </message>
+
+      <!-- Collected cookies window -->
+      <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
+        Cookies were set
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL" desc="The label used to describe the cookies that were allowed">
+        The following cookies were set when you viewed this page:
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL" desc="The label used to describe the cookies that were blocked">
+        The following cookies were blocked:
       </message>
 
       <!-- Cookies Window -->

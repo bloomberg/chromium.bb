@@ -41,6 +41,7 @@
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
+#include "chrome/browser/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/gtk/create_application_shortcuts_dialog_gtk.h"
 #include "chrome/browser/gtk/download_in_progress_dialog_gtk.h"
 #include "chrome/browser/gtk/download_shelf_gtk.h"
@@ -950,6 +951,11 @@ void BrowserWindowGtk::ShowContentSettingsWindow(
     ContentSettingsType content_type,
     Profile* profile) {
   ContentSettingsWindowGtk::Show(GetNativeHandle(), content_type, profile);
+}
+
+void BrowserWindowGtk::ShowCollectedCookiesDialog(TabContents* tab_contents) {
+  // Deletes itself on close.
+  new CollectedCookiesGtk(GetNativeHandle(), tab_contents);
 }
 
 void BrowserWindowGtk::ShowProfileErrorDialog(int message_id) {

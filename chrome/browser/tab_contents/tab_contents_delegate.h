@@ -259,6 +259,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Shows the Content Settings dialog for a given content type.
   virtual void ShowContentSettingsWindow(ContentSettingsType content_type) {}
 
+  // Shows the cookies collected in the tab contents.
+  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) {}
+
   // Allows delegate to override navigation to the history entries.
   // Returns true to allow TabContents to continue with the default processing.
   virtual bool OnGoToEntryOffset(int offset) {
