@@ -24,6 +24,7 @@
 
 #if defined(OS_WIN)
 #include "base/registry.h"
+#include "base/scoped_ptr.h"
 #endif
 
 namespace IPC {

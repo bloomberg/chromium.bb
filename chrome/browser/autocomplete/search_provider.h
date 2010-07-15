@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"

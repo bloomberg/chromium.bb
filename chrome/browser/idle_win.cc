@@ -4,6 +4,9 @@
 
 #include "chrome/browser/idle.h"
 
+#include <limits.h>
+#include <windows.h>
+
 static bool IsScreensaverRunning();
 static bool IsWorkstationLocked();
 

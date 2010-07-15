@@ -5,6 +5,7 @@
 #include "app/animation_container.h"
 #include "app/linear_animation.h"
 #include "app/test_animation_delegate.h"
+#include "base/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +26,7 @@ class MockObserver : public AnimationContainer::Observer {
 
 class TestAnimation : public LinearAnimation {
  public:
-  TestAnimation(AnimationDelegate* delegate)
+  explicit TestAnimation(AnimationDelegate* delegate)
       : LinearAnimation(20, 20, delegate) {
   }
 

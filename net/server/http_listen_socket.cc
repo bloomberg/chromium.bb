@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 #endif
 
+#include <map>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/md5.h"

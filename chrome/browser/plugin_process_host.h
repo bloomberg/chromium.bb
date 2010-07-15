@@ -14,7 +14,6 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"

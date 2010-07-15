@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_UTIL_EXTENSIONS_ACTIVITY_MONITOR_H_
 #define CHROME_BROWSER_SYNC_UTIL_EXTENSIONS_ACTIVITY_MONITOR_H_
 
+#include <map>
+
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"

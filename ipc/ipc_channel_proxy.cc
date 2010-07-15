@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_logging.h"

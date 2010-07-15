@@ -8,6 +8,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include "base/scoped_ptr.h"
 #include "chrome_frame/bind_status_callback_impl.h"
 #include "chrome_frame/stream_impl.h"
 
