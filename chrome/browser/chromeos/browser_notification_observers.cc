@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/histogram.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
