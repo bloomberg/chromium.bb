@@ -53,7 +53,7 @@ TEST_F(WrenchMenuControllerTest, Initialized) {
   EXPECT_GE([[controller() menu] numberOfItems], 5);
 }
 
-TEST_F(WrenchMenuControllerTest, DispatchSimple) {
+TEST_F(WrenchMenuControllerTest, FLAKY_DispatchSimple) {
   scoped_nsobject<NSButton> button([[NSButton alloc] init]);
   [button setTag:IDC_ZOOM_PLUS];
 
