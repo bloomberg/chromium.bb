@@ -268,15 +268,21 @@ var chrome = chrome || {};
     chromeHidden.contextMenus.handlers = {};
     var eventName = "contextMenus/" + extensionId;
     chromeHidden.contextMenus.event = new chrome.Event(eventName);
-    chromeHidden.contextMenus.event.addListener(function() {
-      // An extension context menu item has been clicked on - fire the onclick
-      // if there is one.
-      var id = arguments[0].menuItemId;
-      var onclick = chromeHidden.contextMenus.handlers[id];
-      if (onclick) {
-        onclick.apply(onclick, arguments);
+    chromeHidden.contextMenus.ensureListenerSetup = function() {
+      if (chromeHidden.contextMenus.listening) {
+        return;
       }
-    });
+      chromeHidden.contextMenus.listening = true;
+      chromeHidden.contextMenus.event.addListener(function() {
+        // An extension context menu item has been clicked on - fire the onclick
+        // if there is one.
+        var id = arguments[0].menuItemId;
+        var onclick = chromeHidden.contextMenus.handlers[id];
+        if (onclick) {
+          onclick.apply(onclick, arguments);
+        }
+      });
+    };
   }
 
   function setupOmniboxEvents(extensionId) {
@@ -616,6 +622,7 @@ var chrome = chrome || {};
       // Set up the onclick handler if we were passed one in the request.
       var onclick = request.args.length ? request.args[0].onclick : null;
       if (onclick) {
+        chromeHidden.contextMenus.ensureListenerSetup();
         chromeHidden.contextMenus.handlers[id] = onclick;
       }
     };
