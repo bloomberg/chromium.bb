@@ -165,8 +165,7 @@ global_config_flags = {
       '-mattr=-neon',
       '-mattr=+vfp3',
       '-mtriple=armv7a-*-*eabi*',
-      '-arm-reserve-r9',
-      '-inline-all-const-memcpy'
+      '-arm-reserve-r9'
       ],
     'x86-32': [
       '-march=x86',
