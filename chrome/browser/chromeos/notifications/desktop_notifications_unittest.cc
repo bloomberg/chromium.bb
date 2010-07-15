@@ -65,7 +65,7 @@ int MockBalloonCollection::UppermostVerticalPosition() {
   int min = 0;
   std::set<Balloon*>::iterator iter;
   for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
-    int pos = (*iter)->position().y();
+    int pos = (*iter)->GetPosition().y();
     if (iter == balloons_.begin() || pos < min)
       min = pos;
   }
