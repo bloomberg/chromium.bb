@@ -457,32 +457,8 @@ def Incarnation_sfigcc_generic(argv):
   Incarnation_gcclike(argv, LLVM_GCC)
 
 
-def Incarnation_sfigcc_arm(argv):
-  Incarnation_sfigcc_generic(argv + ['-arch', 'arm'])
-
-
-def Incarnation_sfigcc_x8632(argv):
-  Incarnation_sfigcc_generic(argv + ['-arch', 'x86-32'])
-
-
-def Incarnation_sfigcc_x8664(argv):
-  Incarnation_sfigcc_generic(argv + ['-arch', 'x86-64'])
-
-
 def Incarnation_sfigplusplus_generic(argv):
   Incarnation_gcclike(argv, LLVM_GXX)
-
-
-def Incarnation_sfigplusplus_arm(argv):
-  Incarnation_sfigplusplus_generic(argv + ['-arch', 'arm'])
-
-
-def Incarnation_sfigplusplus_x8632(argv):
-  Incarnation_sfigplusplus_generic(argv + ['-arch', 'x86-32'])
-
-
-def Incarnation_sfigplusplus_x8664(argv):
-  Incarnation_sfigplusplus_generic(argv + ['-arch', 'x86-64'])
 
 
 def Incarnation_bcgcc(argv):
@@ -754,15 +730,6 @@ def Incarnation_sfild(argv):
 INCARNATIONS = {
    'llvm-fake-sfigcc': Incarnation_sfigcc_generic,
    'llvm-fake-sfig++': Incarnation_sfigplusplus_generic,
-
-   'llvm-fake-sfigcc-arm': Incarnation_sfigcc_arm,
-   'llvm-fake-sfig++-arm': Incarnation_sfigplusplus_arm,
-
-   'llvm-fake-sfigcc-x86-32': Incarnation_sfigcc_x8632,
-   'llvm-fake-sfig++-x86-32': Incarnation_sfigplusplus_x8632,
-
-   'llvm-fake-sfigcc-x86-64': Incarnation_sfigcc_x8664,
-   'llvm-fake-sfig++-x86-64': Incarnation_sfigplusplus_x8664,
 
    'llvm-fake-bcgcc': Incarnation_bcgcc,
    'llvm-fake-bcg++': Incarnation_bcgplusplus,
