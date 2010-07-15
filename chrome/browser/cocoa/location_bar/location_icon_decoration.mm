@@ -7,7 +7,6 @@
 #import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
 
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/cocoa/image_utils.h"
 #import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -16,35 +15,6 @@ LocationIconDecoration::LocationIconDecoration(LocationBarViewMac* owner)
     : owner_(owner) {
 }
 LocationIconDecoration::~LocationIconDecoration() {
-}
-
-NSImage* LocationIconDecoration::GetImage() {
-  return image_;
-}
-
-void LocationIconDecoration::SetImage(NSImage* image) {
-  image_.reset([image retain]);
-}
-
-CGFloat LocationIconDecoration::GetWidthForSpace(CGFloat width) {
-  NSImage* image = GetImage();
-  if (image) {
-    const CGFloat image_width = [image size].width;
-    if (image_width <= width)
-      return image_width;
-  }
-  return kOmittedWidth;
-}
-
-void LocationIconDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
-  NSImage* image = GetImage();
-  const CGFloat delta_height = NSHeight(frame) - [image size].height;
-  const CGFloat y_inset = std::floor(delta_height / 2.0);
-  [image drawInRect:NSInsetRect(frame, 0.0, y_inset)
-           fromRect:NSZeroRect  // Entire image
-          operation:NSCompositeSourceOver
-           fraction:1.0
-       neverFlipped:YES];
 }
 
 bool LocationIconDecoration::IsDraggable() {

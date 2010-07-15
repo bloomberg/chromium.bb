@@ -31,6 +31,7 @@ class EVBubbleDecoration;
 class LocationIconDecoration;
 class Profile;
 class SelectedKeywordDecoration;
+class StarDecoration;
 class ToolbarModel;
 
 // A C++ bridge class that represents the location bar UI element to
@@ -192,30 +193,6 @@ class LocationBarViewMac : public AutocompleteEditController,
     bool visible_;
 
     DISALLOW_COPY_AND_ASSIGN(LocationBarImageView);
-  };
-
-  // Used to display the bookmark star in the RHS.
-  class StarIconView : public LocationBarImageView {
-   public:
-    explicit StarIconView(CommandUpdater* command_updater);
-    virtual ~StarIconView() {}
-
-    // Shows the bookmark bubble.
-    virtual void OnMousePressed(NSRect bounds);
-
-    // Set the image and tooltip based on |starred|.
-    void SetStarred(bool starred);
-
-    virtual NSString* GetToolTip();
-
-   private:
-    // For bringing up bookmark bar.
-    CommandUpdater* command_updater_;  // Weak, owned by Browser.
-
-    // The string to show for a tooltip.
-    scoped_nsobject<NSString> tooltip_;
-
-    DISALLOW_COPY_AND_ASSIGN(StarIconView);
   };
 
   // PageActionImageView is used to display the icon for a given Page Action
@@ -421,7 +398,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   scoped_ptr<EVBubbleDecoration> ev_bubble_decoration_;
 
   // Bookmark star right of page actions.
-  StarIconView star_icon_view_;
+  scoped_ptr<StarDecoration> star_decoration_;
 
   // Any installed Page Actions.
   PageActionViewList page_action_views_;

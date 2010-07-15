@@ -12,6 +12,7 @@
 #import "chrome/browser/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/cocoa/location_bar/selected_keyword_decoration.h"
+#import "chrome/browser/cocoa/location_bar/star_decoration.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -146,6 +147,12 @@ TEST_F(AutocompleteTextFieldCellTest, FocusedDisplay) {
   ev_bubble_decoration.SetLabel(@"Application");
   [cell addLeftDecoration:&ev_bubble_decoration];
   EXPECT_NE(ev_bubble_decoration.GetWidthForSpace(kVeryWide),
+            LocationBarDecoration::kOmittedWidth);
+
+  StarDecoration star_decoration(NULL);
+  star_decoration.SetVisible(true);
+  [cell addRightDecoration:&star_decoration];
+  EXPECT_NE(star_decoration.GetWidthForSpace(kVeryWide),
             LocationBarDecoration::kOmittedWidth);
 
   // Make sure we're actually calling |DrawInFrame()|.

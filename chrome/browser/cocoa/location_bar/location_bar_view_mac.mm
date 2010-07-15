@@ -26,6 +26,7 @@
 #import "chrome/browser/cocoa/location_bar/ev_bubble_decoration.h"
 #import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/cocoa/location_bar/selected_keyword_decoration.h"
+#import "chrome/browser/cocoa/location_bar/star_decoration.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/content_setting_bubble_model.h"
@@ -69,7 +70,7 @@ LocationBarViewMac::LocationBarViewMac(
       ev_bubble_decoration_(
           new EVBubbleDecoration(location_icon_decoration_.get(),
                                  [field_ font])),
-      star_icon_view_(command_updater),
+      star_decoration_(new StarDecoration(command_updater)),
       page_action_views_(this, profile, toolbar_model),
       profile_(profile),
       browser_(browser),
@@ -85,7 +86,6 @@ LocationBarViewMac::LocationBarViewMac(
   }
 
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  [cell setStarIconView:&star_icon_view_];
   [cell setPageActionViewList:&page_action_views_];
   [cell setContentSettingViewsList:&content_setting_views_];
 
@@ -98,7 +98,7 @@ LocationBarViewMac::~LocationBarViewMac() {
   // Disconnect from cell in case it outlives us.
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setPageActionViewList:NULL];
-  [cell setStarIconView:NULL];
+  [cell clearDecorations];
 }
 
 void LocationBarViewMac::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
@@ -353,7 +353,7 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
 
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
-  star_icon_view_.SetVisible(editable);
+  star_decoration_->SetVisible(editable);
   UpdatePageActions();
   Layout();
 }
@@ -363,7 +363,7 @@ bool LocationBarViewMac::IsEditable() {
 }
 
 void LocationBarViewMac::SetStarred(bool starred) {
-  star_icon_view_.SetStarred(starred);
+  star_decoration_->SetStarred(starred);
 
   // TODO(shess): The field-editor frame and cursor rects should not
   // change, here.
@@ -374,12 +374,10 @@ void LocationBarViewMac::SetStarred(bool starred) {
 
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-  NSRect frame = [cell starIconFrameForFrame:[field_ bounds]];
-  frame = [field_ convertRect:frame toView:nil];
-
-  // Star is not exactly centered horizontally, and the tip should
-  // point to the visual bottom of the star, not the middle.
-  return NSMakePoint(NSMidX(frame), NSMinY(frame) + 4.0);
+  const NSRect frame = [cell frameForDecoration:star_decoration_.get()
+                                        inFrame:[field_ bounds]];
+  const NSPoint point = star_decoration_->GetBubblePointInFrame(frame);
+  return [field_ convertPoint:point toView:nil];
 }
 
 NSImage* LocationBarViewMac::GetTabButtonImage() {
@@ -472,34 +470,6 @@ NSSize LocationBarViewMac::LocationBarImageView::GetImageSize() const {
   if (image)
     return [image size];
   return GetDefaultImageSize();
-}
-
-// StarIconView-----------------------------------------------------------------
-
-LocationBarViewMac::StarIconView::StarIconView(CommandUpdater* command_updater)
-    : command_updater_(command_updater) {
-  SetVisible(true);
-  SetStarred(false);
-}
-
-void LocationBarViewMac::StarIconView::SetStarred(bool starred) {
-  if (starred) {
-    SetImage(AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_STAR_LIT));
-    tooltip_.reset(
-        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain]);
-  } else {
-    SetImage(AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_STAR));
-    tooltip_.reset(
-        [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STAR) retain]);
-  }
-}
-
-void LocationBarViewMac::StarIconView::OnMousePressed(NSRect bounds) {
-  command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
-}
-
-NSString* LocationBarViewMac::StarIconView::GetToolTip() {
-  return tooltip_.get();
 }
 
 // PageActionImageView----------------------------------------------------------
@@ -859,6 +829,7 @@ void LocationBarViewMac::Layout() {
   [cell addLeftDecoration:location_icon_decoration_.get()];
   [cell addLeftDecoration:selected_keyword_decoration_.get()];
   [cell addLeftDecoration:ev_bubble_decoration_.get()];
+  [cell addRightDecoration:star_decoration_.get()];
 
   // By default only the location icon is visible.
   location_icon_decoration_->SetVisible(true);

@@ -4,23 +4,19 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
+#import "chrome/browser/cocoa/location_bar/image_decoration.h"
 
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class LocationIconDecorationTest : public CocoaTest {
+class ImageDecorationTest : public CocoaTest {
  public:
-  LocationIconDecorationTest()
-      : decoration_(NULL) {
-  }
-
-  LocationIconDecoration decoration_;
+  ImageDecoration decoration_;
 };
 
-TEST_F(LocationIconDecorationTest, SetGetImage) {
+TEST_F(ImageDecorationTest, SetGetImage) {
   EXPECT_FALSE(decoration_.GetImage());
 
   const NSSize kImageSize = NSMakeSize(20.0, 20.0);
@@ -33,7 +29,7 @@ TEST_F(LocationIconDecorationTest, SetGetImage) {
   EXPECT_FALSE(decoration_.GetImage());
 }
 
-TEST_F(LocationIconDecorationTest, GetWidthForSpace) {
+TEST_F(ImageDecorationTest, GetWidthForSpace) {
   const CGFloat kWide = 100.0;
   const CGFloat kNarrow = 10.0;
 

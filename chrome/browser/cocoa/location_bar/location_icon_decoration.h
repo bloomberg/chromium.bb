@@ -7,26 +7,17 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
-#include "chrome/browser/cocoa/location_bar/location_bar_decoration.h"
+#include "chrome/browser/cocoa/location_bar/image_decoration.h"
 
 class LocationBarViewMac;
 
 // LocationIconDecoration is used to display an icon to the left of
 // the address.
 
-class LocationIconDecoration : public LocationBarDecoration {
+class LocationIconDecoration : public ImageDecoration {
  public:
   explicit LocationIconDecoration(LocationBarViewMac* owner);
   virtual ~LocationIconDecoration();
-
-  // The image to display for the location.
-  NSImage* GetImage();
-  void SetImage(NSImage* image);
-
-  // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width);
-  virtual void DrawInFrame(NSRect frame, NSView* control_view);
 
   // Allow dragging the current URL.
   virtual bool IsDraggable();
@@ -39,8 +30,6 @@ class LocationIconDecoration : public LocationBarDecoration {
  private:
   // The location bar view that owns us.
   LocationBarViewMac* owner_;
-
-  scoped_nsobject<NSImage> image_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationIconDecoration);
 };

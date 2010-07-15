@@ -53,17 +53,14 @@ class LocationBarDecoration;
 // a button-like token on the left-hand side).
 @interface AutocompleteTextFieldCell : StyledTextFieldCell {
  @private
-  // Decorations which live to the left of the text.  Owned by
-  // |LocationBarViewMac|.
+  // Decorations which live to the left and right of the text, ordered
+  // from outside in.  Decorations are owned by |LocationBarViewMac|.
   std::vector<LocationBarDecoration*> leftDecorations_;
+  std::vector<LocationBarDecoration*> rightDecorations_;
 
   // Set if there is a string to display as a hint on the right-hand
   // side of the field.  Exclusive WRT |keywordString_|;
   scoped_nsobject<NSAttributedString> hintString_;
-
-  // The star icon sits at the right-hand side of the field when an
-  // URL is being shown.
-  LocationBarViewMac::LocationBarImageView* starIconView_;
 
   // List of views showing visible Page Actions. Owned by the location bar.
   // Display is exclusive WRT the |hintString_| and |keywordString_|.
@@ -87,17 +84,20 @@ class LocationBarDecoration;
              availableWidth:(CGFloat)width;
 - (void)clearHint;
 
-// Clear |leftDecorations_|.
+// Clear |leftDecorations_| and |rightDecorations_|.
 - (void)clearDecorations;
 
 // Add a new left-side decoration to the right of the existing
 // left-side decorations.
 - (void)addLeftDecoration:(LocationBarDecoration*)decoration;
 
+// Add a new right-side decoration to the left of the existing
+// right-side decorations.
+- (void)addRightDecoration:(LocationBarDecoration*)decoration;
+
 // The width available after accounting for decorations.
 - (CGFloat)availableWidthInFrame:(const NSRect)frame;
 
-- (void)setStarIconView:(LocationBarViewMac::LocationBarImageView*)view;
 - (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list;
 - (void)setContentSettingViewsList:
     (LocationBarViewMac::ContentSettingViews*)views;
@@ -105,10 +105,6 @@ class LocationBarDecoration;
 // Returns an array of the visible AutocompleteTextFieldIcon objects. Returns
 // only visible icons.
 - (NSArray*)layedOutIcons:(NSRect)cellFrame;
-
-// Return the rectangle the star is being shown in, for purposes of
-// positioning the bookmark bubble.
-- (NSRect)starIconFrameForFrame:(NSRect)cellFrame;
 
 // Return the frame for |aDecoration| if the cell is in |cellFrame|.
 // Returns |NSZeroRect| for decorations which are not currently

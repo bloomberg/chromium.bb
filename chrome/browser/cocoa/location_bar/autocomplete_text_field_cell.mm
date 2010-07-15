@@ -28,9 +28,6 @@ const CGFloat kBaselineAdjust = 2.0;
 // Matches the clipping radius of |GradientButtonCell|.
 const CGFloat kCornerRadius = 4.0;
 
-// Gap to leave between hint and right-hand-side of cell.
-const NSInteger kHintXOffset = 4;
-
 // How far to shift bounding box of hint down from top of field.
 // Assumes -setFlipped:YES.
 const NSInteger kHintYOffset = 4;
@@ -51,8 +48,12 @@ const CGFloat kEditorHorizontalInset = 3.0;
 // How far to inset the left-hand decorations from the field's bounds.
 const CGFloat kLeftDecorationXOffset = 3.0;
 
+// How far to inset the right-hand decorations from the field's bounds.
+// TODO(shess): Why is this different from |kLeftDecorationXOffset|?
+const CGFloat kRightDecorationXOffset = 4.0;
+
 // The amount of padding on either side reserved for drawing decorations.
-const NSInteger kDecorationHorizontalPad = 3;
+const CGFloat kDecorationHorizontalPad = 3;
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
@@ -60,7 +61,7 @@ const NSTimeInterval kLocationIconDragTimeout = 0.25;
 
 // Conveniences to centralize width+offset calculations.
 CGFloat WidthForHint(NSAttributedString* hintString) {
-  return kHintXOffset + ceil([hintString size].width);
+  return kRightDecorationXOffset + ceil([hintString size].width);
 }
 
 // Convenience to draw |image| in the |rect| portion of |view|.
@@ -97,38 +98,42 @@ NSAttributedString* AttributedStringForImage(NSImage* anImage,
   return [[as copy] autorelease];
 }
 
-// Helper function for calculating placement of decorations w/in the
-// cell.  |frame| is the cell's boundary rectangle.
-// |left_decorations| is a set of decorations for the left-hand side
-// of the cell, before the text.  |decorations| will contain the
-// resulting visible decorations, and |decoration_frames| will contain
-// their frames in the same coordinates as |frame|.  |remaining_frame|
-// will contain the frame left over for the field editor.
-void CalculatePositionsInFrame(
-    const NSRect cell_frame,
-    const std::vector<LocationBarDecoration*>& left_decorations,
+// Calculate the positions for a set of decorations.  |frame| is the
+// overall frame to do layout in, |remaining_frame| will get the
+// left-over space.  |all_decorations| is the set of decorations to
+// lay out, |decorations| will be set to the decorations which are
+// visible and which fit, in the same order as |all_decorations|,
+// while |decoration_frames| will be the corresponding frames.
+// |x_edge| describes the edge to layout the decorations against
+// (|NSMinXEdge| or |NSMaxXEdge|).  |initial_padding| is the padding
+// from the edge of |cell_frame| (|kDecorationHorizontalPad| is used
+// between decorations).
+void CalculatePositionsHelper(
+    NSRect frame,
+    const std::vector<LocationBarDecoration*>& all_decorations,
+    NSRectEdge x_edge,
+    CGFloat initial_padding,
     std::vector<LocationBarDecoration*>* decorations,
     std::vector<NSRect>* decoration_frames,
     NSRect* remaining_frame) {
-  NSRect frame = cell_frame;
+  DCHECK(x_edge == NSMinXEdge || x_edge == NSMaxXEdge);
+  DCHECK_EQ(decorations->size(), decoration_frames->size());
 
-  // The left-most decoration will be inset a bit further from the edge.
-  CGFloat left_padding = kLeftDecorationXOffset;
+  // The outer-most decoration will be inset a bit further from the
+  // edge.
+  CGFloat padding = initial_padding;
 
-  decorations->clear();
-  decoration_frames->clear();
+  for (size_t i = 0; i < all_decorations.size(); ++i) {
+    if (all_decorations[i]->IsVisible()) {
+      NSRect padding_rect, available;
 
-  for (size_t i = 0; i < left_decorations.size(); ++i) {
-    if (left_decorations[i]->IsVisible()) {
-      NSRect padding, available;
-
-      // Peel off the left-side padding.
-      NSDivideRect(frame, &padding, &available, left_padding, NSMinXEdge);
+      // Peel off the outside padding.
+      NSDivideRect(frame, &padding_rect, &available, padding, x_edge);
 
       // Find out how large the decoration will be in the remaining
       // space.
       const CGFloat used_width =
-          left_decorations[i]->GetWidthForSpace(NSWidth(available));
+          all_decorations[i]->GetWidthForSpace(NSWidth(available));
 
       if (used_width != LocationBarDecoration::kOmittedWidth) {
         DCHECK_GT(used_width, 0.0);
@@ -137,20 +142,62 @@ void CalculatePositionsInFrame(
         // Peel off the desired width, leaving the remainder in
         // |frame|.
         NSDivideRect(available, &decoration_frame, &frame,
-                     used_width, NSMinXEdge);
+                     used_width, x_edge);
 
-        decorations->push_back(left_decorations[i]);
+        decorations->push_back(all_decorations[i]);
         decoration_frames->push_back(decoration_frame);
         DCHECK_EQ(decorations->size(), decoration_frames->size());
 
         // Adjust padding for between decorations.
-        left_padding = kDecorationHorizontalPad;
+        padding = kDecorationHorizontalPad;
       }
     }
   }
 
-  *remaining_frame = frame;
   DCHECK_EQ(decorations->size(), decoration_frames->size());
+  *remaining_frame = frame;
+}
+
+// Helper function for calculating placement of decorations w/in the
+// cell.  |frame| is the cell's boundary rectangle, |remaining_frame|
+// will get any space left after decorations are laid out (for text).
+// |left_decorations| is a set of decorations for the left-hand side
+// of the cell, |right_decorations| for the right-hand side.
+// |decorations| will contain the resulting visible decorations, and
+// |decoration_frames| will contain their frames in the same
+// coordinates as |frame|.  Decorations will be ordered left to right.
+void CalculatePositionsInFrame(
+    NSRect frame,
+    const std::vector<LocationBarDecoration*>& left_decorations,
+    const std::vector<LocationBarDecoration*>& right_decorations,
+    std::vector<LocationBarDecoration*>* decorations,
+    std::vector<NSRect>* decoration_frames,
+    NSRect* remaining_frame) {
+  decorations->clear();
+  decoration_frames->clear();
+
+  // Layout |left_decorations| against the LHS.
+  CalculatePositionsHelper(frame, left_decorations,
+                           NSMinXEdge, kLeftDecorationXOffset,
+                           decorations, decoration_frames, &frame);
+  DCHECK_EQ(decorations->size(), decoration_frames->size());
+
+  // Capture the number of visible left-hand decorations.
+  const size_t left_count = decorations->size();
+
+  // Layout |right_decorations| against the RHS.
+  CalculatePositionsHelper(frame, right_decorations,
+                           NSMaxXEdge, kRightDecorationXOffset,
+                           decorations, decoration_frames, &frame);
+  DCHECK_EQ(decorations->size(), decoration_frames->size());
+
+  // Reverse the right-hand decorations so that overall everything is
+  // sorted left to right.
+  std::reverse(decorations->begin() + left_count, decorations->end());
+  std::reverse(decoration_frames->begin() + left_count,
+               decoration_frames->end());
+
+  *remaining_frame = frame;
 }
 
 }  // namespace
@@ -320,10 +367,6 @@ void CalculatePositionsInFrame(
   page_action_views_ = list;
 }
 
-- (void)setStarIconView:(LocationBarViewMac::LocationBarImageView*)view {
-  starIconView_ = view;
-}
-
 - (void)setContentSettingViewsList:
     (LocationBarViewMac::ContentSettingViews*)views {
   content_setting_views_ = views;
@@ -331,17 +374,22 @@ void CalculatePositionsInFrame(
 
 - (void)clearDecorations {
   leftDecorations_.clear();
+  rightDecorations_.clear();
 }
 
 - (void)addLeftDecoration:(LocationBarDecoration*)decoration {
   leftDecorations_.push_back(decoration);
 }
 
+- (void)addRightDecoration:(LocationBarDecoration*)decoration {
+  rightDecorations_.push_back(decoration);
+}
+
 - (CGFloat)availableWidthInFrame:(const NSRect)frame {
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(frame, leftDecorations_,
+  CalculatePositionsInFrame(frame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &textFrame);
 
   return NSWidth(textFrame);
@@ -357,7 +405,7 @@ void CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_,
+  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &textFrame);
 
   // Find our decoration and return the corresponding frame.
@@ -381,7 +429,7 @@ void CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame = [super textFrameForFrame:cellFrame];
-  CalculatePositionsInFrame(textFrame, leftDecorations_,
+  CalculatePositionsInFrame(textFrame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &textFrame);
 
   // NOTE: This function must closely match the logic in
@@ -409,18 +457,6 @@ void CalculatePositionsInFrame(
   }
 
   return textFrame;
-}
-
-- (NSRect)starIconFrameForFrame:(NSRect)cellFrame {
-  if (!starIconView_ || !starIconView_->IsVisible())
-    return NSZeroRect;
-
-  // The star icon is always at the RHS.
-  scoped_nsobject<AutocompleteTextFieldIcon> icon(
-        [[AutocompleteTextFieldIcon alloc] initImageWithView:starIconView_]);
-  cellFrame.size.width -= kHintXOffset;
-  [icon positionInFrame:cellFrame];
-  return [icon rect];
 }
 
 - (size_t)pageActionCount {
@@ -465,7 +501,7 @@ void CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect workingFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_,
+  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &workingFrame);
 
   // Draw the decorations first.
@@ -504,6 +540,14 @@ void CalculatePositionsInFrame(
 }
 
 - (NSArray*)layedOutIcons:(NSRect)cellFrame {
+  // Trim the decoration area from |cellFrame|.  This is duplicate
+  // work WRT the caller in some cases, but locating this here is
+  // simpler, and this code will go away soon.
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
+                            &decorations, &decorationFrames, &cellFrame);
+
   // The set of views to display right-justified in the cell, from
   // left to right.
   NSMutableArray* result = [NSMutableArray array];
@@ -527,10 +571,6 @@ void CalculatePositionsInFrame(
     views.push_back(page_action_views_->ViewAt(i));
   }
 
-  // The star icon should always come last.
-  if (starIconView_)
-    views.push_back(starIconView_);
-
   // Load the visible views into |result|.
   for (std::vector<LocationBarViewMac::LocationBarImageView*>::const_iterator
            iter = views.begin(); iter != views.end(); ++iter) {
@@ -541,15 +581,17 @@ void CalculatePositionsInFrame(
     }
   }
 
-  // Leave a boundary at RHS of field.
-  cellFrame.size.width -= kHintXOffset;
+  // Padding from right-hand decoration.  There should always be at
+  // least one (the star).
+  cellFrame.size.width -= kDecorationHorizontalPad;
 
   // Position each view within the frame from right to left.
   for (AutocompleteTextFieldIcon* icon in [result reverseObjectEnumerator]) {
     [icon positionInFrame:cellFrame];
 
     // Trim the icon's space from the frame.
-    cellFrame.size.width = NSMinX([icon rect]) - kDecorationHorizontalPad;
+    cellFrame.size.width =
+        NSMinX([icon rect]) - NSMinX(cellFrame) - kDecorationHorizontalPad;
   }
   return result;
 }
@@ -567,7 +609,7 @@ void CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_,
+  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
