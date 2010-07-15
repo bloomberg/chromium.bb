@@ -16,13 +16,6 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 
-#if defined(OS_WIN)
-// http://crbug.com/48655
-#define SKIP_WIN(test) DISABLED_##test
-#else
-#define SKIP_WIN(test) test
-#endif
-
 namespace {
 
 class AccessibilityWinBrowserTest : public InProcessBrowserTest {
@@ -213,7 +206,7 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       SKIP_WIN(TestRendererAccessibilityTree)) {
+                       TestRendererAccessibilityTree) {
   // By requesting an accessible chrome will believe a screen reader has been
   // detected.
   ScopedComPtr<IAccessible> document_accessible(
@@ -227,6 +220,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(hr, S_OK);
   EXPECT_EQ(V_VT(&var_state), VT_I4);
   EXPECT_EQ(V_I4(&var_state), STATE_SYSTEM_BUSY);
+
+  // Wait for the initial accessibility tree to load.
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   GURL tree_url(
       "data:text/html,<html><head><title>Accessibility Win Test</title></head>"
@@ -263,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ui_test_utils::NavigateToURL(browser(), about_url);
 
   // Verify that the IAccessible reference still points to a valid object and
-  // that it calls to its methods fail since the tree is no longer valid after
+  // that calls to its methods fail since the tree is no longer valid after
   // the page navagation.
   // Todo(ctguil): Currently this is giving a false positive because E_FAIL is
   // returned when BrowserAccessibilityManager::RequestAccessibilityInfo fails
