@@ -314,7 +314,7 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
   NSRect frame = [cell pageActionFrameForIndex:index inFrame:[field_ bounds]];
   if (!NSIsEmptyRect(frame)) {
     frame = [field_ convertRect:frame toView:nil];
-    return NSMakePoint(NSMidX(frame), NSMinY(frame));
+    return NSMakePoint(NSMidX(frame), NSMaxY(frame));
   }
 
   NOTREACHED();
