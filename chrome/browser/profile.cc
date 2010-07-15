@@ -1647,6 +1647,8 @@ TokenService* ProfileImpl::GetTokenService() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
+  if (!ProfileSyncService::IsSyncEnabled())
+    return NULL;
   if (!sync_service_.get())
     InitSyncService();
   return sync_service_.get();
