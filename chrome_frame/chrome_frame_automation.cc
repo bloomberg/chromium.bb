@@ -1233,6 +1233,13 @@ void ChromeFrameAutomationClient::RemoveBrowsingData(int remove_mask) {
       new AutomationMsg_RemoveBrowsingData(0, remove_mask));
 }
 
+void ChromeFrameAutomationClient::RunUnloadHandlers(HWND notification_window,
+                                                    int notification_message) {
+  automation_server_->Send(
+      new AutomationMsg_RunUnloadHandlers(0, tab_handle_, notification_window,
+                                          notification_message));
+}
+
 //////////////////////////////////////////////////////////////////////////
 // PluginUrlRequestDelegate implementation.
 // Forward network related responses to Chrome.

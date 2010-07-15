@@ -1404,4 +1404,15 @@ IPC_BEGIN_MESSAGES(Automation)
   //   None expected
   IPC_MESSAGE_ROUTED1(AutomationMsg_CloseExternalTab, int)
 
+  // This message requests that the external tab identified by the tab handle
+  // runs unload handlers if any on the current page.
+  // Request:
+  //   -int: Tab handle
+  //   -gfx::NativeWindow: notification window
+  //   -int: notification message.
+  // Response:
+  //   None expected
+  IPC_MESSAGE_ROUTED3(AutomationMsg_RunUnloadHandlers, int, gfx::NativeWindow,
+                      int)
+
 IPC_END_MESSAGES(Automation)

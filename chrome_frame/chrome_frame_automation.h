@@ -273,6 +273,10 @@ class ChromeFrameAutomationClient
   // For IDeleteBrowsingHistorySupport
   void RemoveBrowsingData(int remove_mask);
 
+  // Sends an IPC message to the external tab container requesting it to run
+  // unload handlers on the page.
+  void RunUnloadHandlers(HWND notification_window, int notification_message);
+
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.
   virtual void LaunchComplete(ChromeFrameAutomationProxy* proxy,

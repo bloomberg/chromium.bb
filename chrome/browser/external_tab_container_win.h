@@ -206,6 +206,9 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   virtual bool infobars_enabled();
 
+  void RunUnloadHandlers(gfx::NativeWindow notification_window,
+                         int notification_message);
+
  protected:
   // Overridden from views::WidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
@@ -313,11 +316,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Set to true if the tab is waiting for the unload event to complete.
   bool waiting_for_unload_event_;
 
-  // Pointer to the innermost ExternalTabContainer instance which is waiting
-  // for the unload event listeners to finish.
-  // Used to maintain a local global stack of containers.
-  static ExternalTabContainer* innermost_tab_for_unload_event_;
-
   // Contains the list of URL requests which are pending waiting for an ack
   // from the external host.
   std::vector<PendingTopLevelNavigation> pending_open_url_requests_;
@@ -332,6 +330,9 @@ class ExternalTabContainer : public TabContentsDelegate,
   views::FocusManager* focus_manager_;
 
   views::View* external_tab_view_;
+
+  gfx::NativeWindow notification_window_;
+  int notification_message_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

@@ -842,6 +842,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   void OnBrowserMoved(int handle);
 
+  void OnRunUnloadHandlers(int handle, gfx::NativeWindow notification_window,
+                           int notification_message);
+
   ExternalTabContainer* GetExternalTabForHandle(int handle);
 #endif  // defined(OS_WIN)
 

@@ -676,5 +676,33 @@ TEST_P(FullTabNavigationTest, FLAKY_FormPostBackForward) {
   LaunchIEAndNavigate(kFormPostUrl);
 }
 
+TEST_P(FullTabNavigationTest, CF_UnloadEventTest) {
+  bool in_cf = GetParam().invokes_cf();
+  if (!in_cf) {
+    LOG(ERROR) << "Test not yet implemented.";
+    return;
+  }
+
+  std::wstring kUnloadEventTestUrl =
+      GetTestUrl(L"fulltab_before_unload_event_test.html");
+
+  std::wstring kUnloadEventMainUrl =
+      GetTestUrl(L"fulltab_before_unload_event_main.html");
+
+  server_mock_.ExpectAndServeAnyRequests(GetParam());
+  InSequence expect_in_sequence_for_scope;
+
+  ie_mock_.ExpectNavigation(in_cf, kUnloadEventTestUrl);
+  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kUnloadEventTestUrl)));
+
+  ie_mock_.ExpectNavigation(in_cf, kUnloadEventMainUrl);
+  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kUnloadEventMainUrl)));
+
+  EXPECT_CALL(ie_mock_, OnMessage(_, _, _))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(kUnloadEventTestUrl);
+}
+
 }  // namespace chrome_frame_test
 

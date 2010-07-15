@@ -40,10 +40,6 @@ static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
 base::LazyInstance<ExternalTabContainer::PendingTabs>
     ExternalTabContainer::pending_tabs_(base::LINKER_INITIALIZED);
 
-// ExternalTabContainer::PendingTabs ExternalTabContainer::pending_tabs_;
-ExternalTabContainer* ExternalTabContainer::innermost_tab_for_unload_event_
-    = NULL;
-
 ExternalTabContainer::ExternalTabContainer(
     AutomationProvider* automation, AutomationResourceMessageFilter* filter)
     : automation_(automation),
@@ -60,7 +56,9 @@ ExternalTabContainer::ExternalTabContainer(
       pending_(false),
       infobars_enabled_(true),
       focus_manager_(NULL),
-      external_tab_view_(NULL) {
+      external_tab_view_(NULL),
+      notification_window_(NULL),
+      notification_message_(NULL) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -394,17 +392,8 @@ void ExternalTabContainer::CloseContents(TabContents* source) {
   static const int kExternalTabCloseContentsDelayMS = 100;
 
   if (waiting_for_unload_event_) {
-    // If we are not the innermost tab waiting for the unload event to return
-    // then don't handle this notification right away as we need the inner
-    // message loop to terminate.
-    if (this != innermost_tab_for_unload_event_) {
-      ChromeThread::PostDelayedTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &ExternalTabContainer::CloseContents,
-                            source), kExternalTabCloseContentsDelayMS);
-      return;
-    }
-    MessageLoop::current()->Quit();
+    PostMessage(notification_window_, notification_message_, 0, 0);
+    waiting_for_unload_event_ = false;
   } else {
     if (automation_) {
       automation_->Send(new AutomationMsg_CloseExternalTab(0, tab_handle_));
@@ -690,22 +679,6 @@ LRESULT ExternalTabContainer::OnCreate(LPCREATESTRUCT create_struct) {
 }
 
 void ExternalTabContainer::OnDestroy() {
-  if (tab_contents_) {
-    waiting_for_unload_event_ = true;
-    if (Browser::RunUnloadEventsHelper(tab_contents_)) {
-      // Maintain a local global stack of Externa;TabCotainers waiting for the
-      // unload event listeners to finish. We need this as we only want to
-      // handle the CloseContents call from the TabContents when the current
-      // ExternalTabContainers message loop is active. This ensures that nested
-      // ExternalTabContainer message loops terminate correctly.
-      ExternalTabContainer* current_tab = innermost_tab_for_unload_event_;
-      innermost_tab_for_unload_event_ = this;
-      MessageLoop::current()->Run();
-      innermost_tab_for_unload_event_ = current_tab;
-    }
-    waiting_for_unload_event_ = false;
-  }
-
   Uninitialize();
   WidgetWin::OnDestroy();
   if (browser_.get()) {
@@ -716,6 +689,23 @@ void ExternalTabContainer::OnDestroy() {
 void ExternalTabContainer::OnFinalMessage(HWND window) {
   // Release the reference which we grabbed in WM_CREATE.
   Release();
+}
+
+void ExternalTabContainer::RunUnloadHandlers(
+    gfx::NativeWindow notification_window,
+    int notification_message) {
+  DCHECK(::IsWindow(notification_window));
+  if (tab_contents_) {
+    notification_window_ = notification_window;
+    notification_message_ = notification_message;
+
+    if (Browser::RunUnloadEventsHelper(tab_contents_)) {
+      waiting_for_unload_event_ = true;
+    }
+  }
+  if (!waiting_for_unload_event_) {
+    PostMessage(notification_window, notification_message, 0, 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
