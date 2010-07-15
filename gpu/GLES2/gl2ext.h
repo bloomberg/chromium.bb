@@ -368,6 +368,8 @@ typedef void* GLeglImageOES;
  * End of extension tokens, start of corresponding extension functions
  *------------------------------------------------------------------------*/
 
+
+
 /*------------------------------------------------------------------------*
  * OES extension functions
  *------------------------------------------------------------------------*/
@@ -795,6 +797,23 @@ GL_APICALL void GL_APIENTRY glEndTilingQCOM (GLbitfield preserveMask);
 typedef void (GL_APIENTRYP PFNGLSTARTTILINGQCOMPROC) (GLuint x, GLuint y, GLuint width, GLuint height, GLbitfield preserveMask);
 typedef void (GL_APIENTRYP PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
 #endif
+
+/* GL_CHROMIUM_map_sub */
+#ifndef GL_CHROMIUM_map_sub
+#define GL_CHROMIUM_map_sub 1
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void* GL_APIENTRY glMapBufferSubData (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+GL_APICALL void  GL_APIENTRY glUnmapBufferSubData (const void* mem);
+GL_APICALL void* GL_APIENTRY glMapTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
+GL_APICALL void  GL_APIENTRY glUnmapTexSubImage2D (const void* mem);
+#endif
+typedef void* (GL_APIENTRYP PFNGLMAPBUFFERSUBDATA (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+typedef void  (GL_APIENTRYP PFNGLUNMAPBUFFERSUBDATA (const void* mem);
+typedef void* (GL_APIENTRYP PFNGLMAPTEXSUBIMAGE2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
+typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2D (const void* mem);
+#endif
+#endif
+
 
 #ifdef __cplusplus
 }
