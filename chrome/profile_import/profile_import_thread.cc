@@ -49,15 +49,15 @@ void ProfileImportThread::OnImportStart(
 
   ImporterList importer_list;
   importer_ = importer_list.CreateImporterByType(profile_info.browser_type);
-  importer_->AddRef();  // Balanced in Cleanup().
-  importer_->set_import_to_bookmark_bar(import_to_bookmark_bar);
-  items_to_import_ = items;
-
   if (!importer_) {
     Send(new ProfileImportProcessHostMsg_Import_Finished(false,
         "Importer could not be created."));
     return;
   }
+
+  importer_->AddRef();  // Balanced in Cleanup().
+  importer_->set_import_to_bookmark_bar(import_to_bookmark_bar);
+  items_to_import_ = items;
 
   // Create worker thread in which importer runs.
   import_thread_.reset(new base::Thread("import_thread"));
