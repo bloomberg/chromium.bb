@@ -66,6 +66,8 @@ function load() {
   OptionsPage.registerOverlay(dummyPage);
 
   Preferences.getInstance().initialize();
+  OptionsPage.initialize();
+  
   if (cr.isChromeOS) {
     OptionsPage.showPageByName(SystemOptions.getInstance().name);
   } else {

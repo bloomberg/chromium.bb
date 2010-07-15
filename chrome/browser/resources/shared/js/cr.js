@@ -11,6 +11,12 @@ const cr = (function() {
   const isMac = /Mac/.test(navigator.platform);
 
   /**
+   * Whether this is on the Windows platform or not.
+   * @type {boolean}
+   */
+  const isWindows = /Win/.test(navigator.platform);
+
+  /**
    * Whether this is on chromeOS or not.
    * @type {boolean}
    */
@@ -323,6 +329,7 @@ const cr = (function() {
 
   return {
     isMac: isMac,
+    isWindows: isWindows,
     isChromeOS: isChromeOS,
     define: define,
     defineProperty: defineProperty,

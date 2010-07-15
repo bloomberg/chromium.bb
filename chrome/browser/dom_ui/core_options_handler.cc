@@ -67,6 +67,8 @@ void CoreOptionsHandler::Observe(NotificationType type,
 }
 
 void CoreOptionsHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback("coreOptionsInitialize",
+      NewCallback(this, &CoreOptionsHandler::HandleInitialize));
   dom_ui_->RegisterMessageCallback("fetchPrefs",
       NewCallback(this, &CoreOptionsHandler::HandleFetchPrefs));
   dom_ui_->RegisterMessageCallback("observePrefs",
@@ -79,6 +81,9 @@ void CoreOptionsHandler::RegisterMessages() {
       NewCallback(this, &CoreOptionsHandler::HandleSetStringPref));
 }
 
+void CoreOptionsHandler::HandleInitialize(const Value* value) {
+  (static_cast<OptionsUI*>(dom_ui_))->InitializeHandlers();
+}
 
 void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
   if (!value || !value->IsType(Value::TYPE_LIST))

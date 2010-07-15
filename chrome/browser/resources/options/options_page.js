@@ -112,6 +112,14 @@ OptionsPage.registerOverlay = function(page) {
   page.initializePage();
 };
 
+/**
+ * Initializes the complete options page.  This will cause
+ * all C++ handlers to be invoked to do final setup.
+ */
+OptionsPage.initialize = function() {
+  chrome.send('coreOptionsInitialize');
+};
+
 OptionsPage.prototype = {
   /**
    * Initializes page content.

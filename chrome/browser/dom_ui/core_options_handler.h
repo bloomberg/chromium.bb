@@ -31,6 +31,11 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
  private:
   typedef std::multimap<std::wstring, std::wstring> PreferenceCallbackMap;
+  // Callback for the "coreOptionsInitialize" message.  This message will
+  // trigger the Initialize() method of all other handlers so that final
+  // setup can be performed before the page is shown.
+  void HandleInitialize(const Value* value);
+
   // Callback for the "fetchPrefs" message. This message accepts the list of
   // preference names passed as |value| parameter (ListValue). It passes results
   // dictionary of preference values by calling prefsFetched() JS method on the

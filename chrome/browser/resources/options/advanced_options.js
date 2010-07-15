@@ -26,7 +26,7 @@ AdvancedOptions.prototype = {
     // Call base class implementation to starts preference initialization.
     OptionsPage.prototype.initializePage.call(this);
 
-    // Setup function handlers for buttons.
+    // Setup click handlers for buttons.
     $('privacyContentSettingsButton').onclick = function(event) {
       OptionsPage.showPageByName('content');
     };
@@ -41,26 +41,51 @@ AdvancedOptions.prototype = {
       }
     };
     $('downloadLocationBrowseButton').onclick = function(event) {
-      // TODO(csilv): spawn OS native file prompt dialog.
+      chrome.send('selectDownloadLocation');
     };
     $('autoOpenFileTypesResetToDefault').onclick = function(event) {
-      // TODO(csilv): do whatever this button must do...?
+      chrome.send('autoOpenFileTypesAction');
     };
     $('fontSettingsConfigureFontsOnlyButton').onclick = function(event) {
       // TODO(csilv): spawn font settings sub-dialog.
     };
     $('certificatesManageButton').onclick = function(event) {
-      if (cr.isMac) {
-        chrome.send('showManageSSLCertificates');
-      } else {
-        // TODO(csilv): spawn manage SSL certs sub-dialog.
-      }
+      chrome.send('showManageSSLCertificates');
     };
 
-    // Hide tabsToLinks checkbox on non-Mac platforms.
-    if (!cr.isMac) {
-      $('tabsToLinksCheckbox').style.display = 'none';
+    if (cr.isWindows) {
+      $('sslCheckRevocation').onclick = function(event) {
+        chrome.send('checkRevocationCheckboxAction',
+            [String($('sslCheckRevocation').checked)]);
+      };
+      $('sslUseSSL2').onclick = function(event) {
+        chrome.send('useSSL2CheckboxAction',
+            [String($('sslUseSSL2').checked)]);
+      };
     }
-  },
+  }
 };
 
+//
+// Chrome callbacks
+//
+
+// Set the download path.
+function advancedOptionsSetDownloadLocationPath(path) {
+  $('downloadLocationPath').value = path;
+}
+
+// Set the enabled state for the autoOpenFileTypesResetToDefault button.
+function advancedOptionsSetAutoOpenFileTypesDisabledAttribute(disabled) {
+  $('autoOpenFileTypesResetToDefault').disabled = disabled;
+}
+
+// Set the checked state for the sslCheckRevocation checkbox.
+function advancedOptionsSetCheckRevocationCheckboxState(checked) {
+  $('sslCheckRevocation').checked = checked;
+}
+
+// Set the checked state for the sslUseSSL2 checkbox.
+function advancedOptionsSetUseSSL2CheckboxState(checked) {
+  $('sslUseSSL2').checked = checked;
+}

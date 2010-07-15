@@ -50,6 +50,9 @@ class OptionsPageUIHandler : public DOMMessageHandler,
   // Collects localized strings for options page.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) = 0;
 
+  // Initialize the page.  Called once the DOM is available for manipulation.
+  virtual void Initialize() {}
+
   // DOMMessageHandler implementation.
   virtual void RegisterMessages() {}
 
@@ -74,6 +77,8 @@ class OptionsUI : public DOMUI {
   virtual ~OptionsUI() {}
 
   static RefCountedMemory* GetFaviconResourceBytes();
+
+  void InitializeHandlers();
 
  private:
   void AddOptionsPageUIHandler(DictionaryValue* localized_strings,

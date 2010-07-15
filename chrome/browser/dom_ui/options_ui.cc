@@ -141,6 +141,13 @@ RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
   return NULL;
 }
 
+void OptionsUI::InitializeHandlers() {
+  std::vector<DOMMessageHandler*>::iterator iter;
+  for (iter = handlers_.begin(); iter != handlers_.end(); ++iter) {
+    (static_cast<OptionsPageUIHandler*>(*iter))->Initialize();
+  }
+}
+
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
                                         OptionsPageUIHandler* handler) {
   DCHECK(handler);

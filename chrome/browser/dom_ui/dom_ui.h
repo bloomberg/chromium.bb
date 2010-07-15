@@ -132,15 +132,15 @@ class DOMUI {
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for
                   // this page.
 
+  // The DOMMessageHandlers we own.
+  std::vector<DOMMessageHandler*> handlers_;
+
  private:
   // Execute a string of raw Javascript on the page.
   void ExecuteJavascript(const std::wstring& javascript);
 
   // Non-owning pointer to the TabContents this DOMUI is associated with.
   TabContents* tab_contents_;
-
-  // The DOMMessageHandlers we own.
-  std::vector<DOMMessageHandler*> handlers_;
 
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
@@ -161,6 +161,7 @@ class DOMMessageHandler {
   // virtual so that subclasses can do special init work as soon as the dom_ui
   // is provided.  Returns |this| for convenience.
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
+
  protected:
   // Adds "url" and "title" keys on incoming dictionary, setting title
   // as the url as a fallback on empty title.
