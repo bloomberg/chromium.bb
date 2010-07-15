@@ -298,3 +298,35 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
 bool PyUITestBase::ResetToDefaultTheme() {
   return automation()->ResetToDefaultTheme();
 }
+
+bool PyUITestBase::SetCookie(const GURL& cookie_url,
+                             const std::string& value,
+                             int window_index,
+                             int tab_index) {
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
+  EXPECT_TRUE(browser_proxy.get());
+  if (!browser_proxy.get())
+    return false;
+  scoped_refptr<TabProxy> tab_proxy = browser_proxy->GetTab(tab_index);
+  EXPECT_TRUE(tab_proxy.get());
+  if (!tab_proxy.get())
+    return false;
+  return tab_proxy->SetCookie(cookie_url, value);
+}
+
+std::string PyUITestBase::GetCookie(const GURL& cookie_url,
+                                    int window_index,
+                                    int tab_index) {
+  std::string cookie_val;
+  scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
+  EXPECT_TRUE(browser_proxy.get());
+  // TODO(phadjan.jr): figure out a way to unambiguously report error.
+  if (!browser_proxy.get())
+    return cookie_val;
+  scoped_refptr<TabProxy> tab_proxy = browser_proxy->GetTab(tab_index);
+  EXPECT_TRUE(tab_proxy.get());
+  if (!tab_proxy.get())
+    return cookie_val;
+  EXPECT_TRUE(tab_proxy->GetCookies(cookie_url, &cookie_val));
+  return cookie_val;
+}

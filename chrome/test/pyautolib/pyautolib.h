@@ -150,6 +150,13 @@ class PyUITestBase : public UITestBase {
   // Resets to the default theme. Returns true on success.
   bool ResetToDefaultTheme();
 
+  // Sets a cookie value for a url. Returns true on success.
+  bool SetCookie(const GURL& cookie_url, const std::string& value,
+                 int window_index=0, int tab_index=0);
+  // Gets a cookie value for the given url.
+  std::string GetCookie(const GURL& cookie_url, int window_index=0,
+                        int tab_index=0);
+
  private:
   // Enables PostTask to main thread.
   // Should be shared across multiple instances of PyUITestBase so that this

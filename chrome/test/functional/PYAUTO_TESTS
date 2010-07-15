@@ -28,6 +28,7 @@
     'browsing_data',
     'codesign',
     'content',
+    'cookies',
     'downloads',
     'history',
     'navigation',

@@ -313,6 +313,19 @@ class PyUITestBase {
            "Returns True on success.") AppendTab;
   bool AppendTab(const GURL& tab_url, int window_index=0);
 
+  %feature("docstring", "Set the value of the cookie at cookie_url to value "
+           "for the given window index and tab index. "
+           "Returns True on success.") SetCookie;
+  bool SetCookie(const GURL& cookie_url, const std::string& value,
+                 int window_index=0, int tab_index=0);
+
+  %feature("docstring", "Get the value of the cokie at cookie_url for the "
+           "given window index and tab index. "
+           "Returns empty string on error or if there is no value for the "
+           "cookie.") GetCookieVal;
+  std::string GetCookie(const GURL& cookie_url, int window_index=0,
+                        int tab_index=0);
+
   // Misc methods
   %feature("docstring", "Determine if the browser is running. "
            "Returns False if user closed the window or if the browser died")
