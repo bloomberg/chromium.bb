@@ -532,6 +532,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDCHECK,
     switches::kSilentDumpOnDCHECK,
     switches::kUseLowFragHeapCrt,
+    switches::kEnableSearchProviderApiV2,
     switches::kEnableStatsTable,
     switches::kExperimentalSpellcheckerFeatures,
     switches::kDisableAudio,

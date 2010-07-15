@@ -360,6 +360,10 @@ const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 // Enable print preview (work in progress).
 const char kEnablePrintPreview[]            = "enable-print-preview";
 
+// Enable the IsSearchProviderInstalled and InstallSearchProvider with an extra
+// parameter to indicate if the provider should be the default.
+const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
+
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 

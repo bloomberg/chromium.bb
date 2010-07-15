@@ -116,6 +116,7 @@ extern const char kEnableNativeWebWorkers[];
 extern const char kEnablePreparsedJsCaching[];
 extern const char kEnablePreconnect[];
 extern const char kEnablePrintPreview[];
+extern const char kEnableSearchProviderApiV2[];
 extern const char kEnableStatsTable[];
 extern const char kEnableSync[];
 extern const char kEnableSyncAutofill[];
