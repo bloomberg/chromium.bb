@@ -248,12 +248,12 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
 }
 
 // When --use-spdy not set, users will be in A/B test for spdy.
-// group A (_npn_with_spdy): this means npn and spdy are enabled. In case server
-//                           supports spdy, browser will use spdy.
-// group B (_npn_with_http): this means npn is enabled but spdy won't be used.
-//                           Http is still used for all requests.
-//            default group: no npn or spdy is involved. The "old" non-spdy
-//                           chrome behavior.
+// group A (npn_with_spdy): this means npn and spdy are enabled. In case server
+//                          supports spdy, browser will use spdy.
+// group B (npn_with_http): this means npn is enabled but spdy won't be used.
+//                          Http is still used for all requests.
+//           default group: no npn or spdy is involved. The "old" non-spdy
+//                          chrome behavior.
 void BrowserMainParts::SpdyFieldTrial() {
   bool is_spdy_trial = false;
   if (parsed_command_line().HasSwitch(switches::kUseSpdy)) {
@@ -262,11 +262,17 @@ void BrowserMainParts::SpdyFieldTrial() {
     net::HttpNetworkLayer::EnableSpdy(spdy_mode);
   } else {
     const FieldTrial::Probability kSpdyDivisor = 1000;
-    // TODO(lzheng): Increase these values to enable more spdy tests.
     // To enable 100% npn_with_spdy, set npnhttp_probability = 0 and set
     // npnspdy_probability = FieldTrial::kAllRemainingProbability.
-    FieldTrial::Probability npnhttp_probability = 250;  // 25%
-    FieldTrial::Probability npnspdy_probability = 250;  // 25%
+    // To collect stats, make sure that FieldTrial are distributed among
+    // all the three groups:
+    // npn_with_spdy : 50%, npn_with_http : 25%, default (no npn, no spdy): 25%.
+    // a. npn_with_spdy and default: these are used to collect stats for
+    //    alternate protocol with spdy vs. no alternate protocol case.
+    // b. npn_with_spdy and npn_with_http: these are used to collect stats for
+    //    https vs. https over spdy case.
+    FieldTrial::Probability npnhttp_probability = 250;
+    FieldTrial::Probability npnspdy_probability = 500;
 #if defined(OS_WIN)
     // Enable the A/B test for SxS. SxS is only available on windows
     std::wstring channel;
