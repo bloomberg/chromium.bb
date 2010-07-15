@@ -64,6 +64,11 @@
 #include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
+// TODO(oshima): Enable this for other platforms.
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/renderer_host/offline_resource_handler.h"
+#endif
+
 // Uncomment to enable logging of request traffic.
 // #define LOG_RESOURCE_DISPATCHER_REQUESTS
 
@@ -446,6 +451,13 @@ void ResourceDispatcherHost::BeginRequest(
     handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
                                                 request_data.resource_type);
   }
+
+#if defined(OS_CHROMEOS)
+  // We check offline first, then check safe browsing so that we still can block
+  // unsafe site after we remove offline page.
+  handler =
+      new OfflineResourceHandler(handler, child_id, route_id, this, request);
+#endif
 
   // Make extra info and read footer (contains request ID).
   ResourceDispatcherHostRequestInfo* extra_info =

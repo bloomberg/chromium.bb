@@ -45,7 +45,9 @@ void ResourceQueue::AddRequest(
   GlobalRequestID request_id(request_info.child_id(),
                              request_info.request_id());
 
-  DCHECK(!ContainsKey(requests_, request_id));
+  DCHECK(!ContainsKey(requests_, request_id))
+      << "child_id:" << request_info.child_id()
+      << ", request_id:" << request_info.request_id();
   requests_[request_id] = request;
 
   DelegateSet interested_delegates;

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html id="template_root" i18n-values="dir:textdirection">
+<head>
+<title i18n-content="title"></title>
+<style>
+body {
+  background-color:#E0E0E0;
+  font-family:Helvetica,Arial,sans-serif;
+  margin:0px;
+  visibility: hidden;
+}
+.background {
+  position:absolute;
+  width:100%;
+  height:100%;
+}
+.cell {
+  padding:40px;
+}
+.box {
+  width:80%;
+  background-color:white;
+  color:black;
+  font-size:10pt;
+  line-height:16pt;
+  text-align:left;
+  padding:20px;
+  position:relative;
+  -webkit-box-shadow:3px 3px 8px #200;
+  border-radius:5px;
+}
+html[dir='rtl'] .box {
+  text-align:right;
+}
+
+.icon {
+  position:absolute;
+}
+.title {
+  margin:0px 87px 0px;
+  font-size:18pt;
+  line-height: 140%;
+  margin-bottom:6pt;
+  font-weight:bold;
+  color:#660000;
+}
+.main {
+  margin:0px 90px 0px;
+}
+.submission {
+  margin:15px 5px 15px 0px;
+  padding:0px;
+}
+input {
+  margin:0px;
+}
+
+.thumbnail {
+  background-repeat: no-repeat;
+  background-position: center center;
+  width:400px;
+  height:250px;
+  padding:20px;
+  position:relative;
+  -webkit-box-shadow:3px 3px 8px #200;
+  border-radius:5px;
+  visibility: hidden;
+}
+
+}
+</style>
+
+<script>
+function sendCommand(cmd) {
+  window.domAutomationController.setAutomationId(1);
+  window.domAutomationController.send(cmd);
+}
+// Show the offline page.
+function showPage() {
+  document.body.style.visibility = 'visible';
+}
+// Start the timer to show the page.
+function startTimer(time) {
+  // wait 2.5 seconds before showing 'load now', 'go back' button.
+  setTimeout('showPage()', time);
+}
+</script>
+</head>
+<body oncontextmenu="return false;" i18n-values="onload:on_load">
+<table width="100%" cellspacing="0" cellpadding="0">
+  <td class="cell" valign="middle" align="center">
+    <div class="box" id="box">
+      <div class="title" i18n-content="headLine"></div>
+      <div class="main" i18n-values=".innerHTML:description"></div>
+      <div class="main">
+        <form class="submission">
+          <input type="button" name="continue_button" i18n-values="value:load_button" onclick="sendCommand('proceed')"><br>
+          <input type="button" name="back_button" i18n-values="value:back_button;.style.display:display_go_back" onclick="sendCommand('dontproceed')">
+        </form>
+      </div>
+    </div>
+    <div id="thumbnail" class="thumbnail" i18n-values=".style.background-image:thumbnailUrl">
+    </div>
+  </td>
+</table>
+</body>
+</html>

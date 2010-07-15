@@ -26,6 +26,10 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/network_state_notifier.h"
+#endif
+
 // Are we in the process of restoring?
 static bool restoring = false;
 
@@ -127,17 +131,29 @@ void TabLoader::ScheduleLoad(NavigationController* controller) {
 }
 
 void TabLoader::StartLoading() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::NetworkStateNotifier::is_connected()) {
+    loading_ = true;
+    LoadNextTab();
+  } else {
+    // Start listening to network state notification now.
+    registrar_.Add(this, NotificationType::NETWORK_STATE_CHANGED,
+                   NotificationService::AllSources());
+  }
+#else
   loading_ = true;
   LoadNextTab();
+#endif
 }
 
 void TabLoader::LoadNextTab() {
   if (!tabs_to_load_.empty()) {
     NavigationController* tab = tabs_to_load_.front();
+    DCHECK(tab);
     tabs_loading_.insert(tab);
     tabs_to_load_.pop_front();
     tab->LoadIfNecessary();
-    if (tab && tab->tab_contents()) {
+    if (tab->tab_contents()) {
       int tab_index;
       Browser* browser = Browser::GetBrowserForController(tab, &tab_index);
       if (browser && browser->selected_index() != tab_index) {
@@ -169,13 +185,50 @@ void TabLoader::LoadNextTab() {
 void TabLoader::Observe(NotificationType type,
                         const NotificationSource& source,
                         const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TAB_CLOSED ||
-         type == NotificationType::LOAD_STOP);
-  NavigationController* tab = Source<NavigationController>(source).ptr();
-  RemoveTab(tab);
-  if (loading_) {
-    LoadNextTab();
-    // WARNING: if there are no more tabs to load, we have been deleted.
+  switch (type.value) {
+#if defined(OS_CHROMEOS)
+    case NotificationType::NETWORK_STATE_CHANGED: {
+      chromeos::NetworkStateDetails* state_details =
+          Details<chromeos::NetworkStateDetails>(details).ptr();
+      switch (state_details->state()) {
+        case chromeos::NetworkStateDetails::CONNECTED:
+          if (!loading_) {
+            loading_ = true;
+            LoadNextTab();
+          }
+          // start loading
+          break;
+        case chromeos::NetworkStateDetails::CONNECTING:
+          // keep it going
+          break;
+        case chromeos::NetworkStateDetails::DISCONNECTED:
+          // disconnected while loading. set loaing_ false so
+          // that it stops trying to load next tab.
+          loading_ = false;
+          break;
+        default:
+          NOTREACHED() << "Unknown nework state notification:"
+                       << state_details->state();
+      }
+      break;
+    }
+#endif
+    case NotificationType::TAB_CLOSED:
+    case NotificationType::LOAD_STOP: {
+      NavigationController* tab = Source<NavigationController>(source).ptr();
+      RemoveTab(tab);
+      if (loading_) {
+        LoadNextTab();
+        // WARNING: if there are no more tabs to load, we have been deleted.
+      } else if (tabs_to_load_.empty()) {
+        tabs_loading_.clear();
+        delete this;
+        return;
+      }
+      break;
+    }
+    default:
+      NOTREACHED() << "Unknown notification received:" << type.value;
   }
 }
 

@@ -613,6 +613,7 @@
         'browser/chromeos/login/google_authenticator_unittest.cc',
         'browser/chromeos/login/mock_auth_response_handler.cc',
         'browser/chromeos/notifications/desktop_notifications_unittest.cc',
+        'browser/chromeos/offline/offline_load_page_unittest.cc',
         'browser/chromeos/options/language_config_model_unittest.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/status/language_menu_button_unittest.cc',

@@ -9,6 +9,7 @@
 
 #include "base/singleton.h"
 #include "base/task.h"
+#include "base/time.h"
 
 namespace chromeos {
 
@@ -48,14 +49,18 @@ class NetworkStateNotifier : public NetworkLibrary::Observer {
   // Returns the singleton instance of the network state notifier;
   static NetworkStateNotifier* Get();
 
-  // NetworkLibrary::Observer implementation.
-  virtual void NetworkChanged(NetworkLibrary* cros);
-  virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type) {}
+  // The duration of being in offline. The value is undefined when
+  // when network is connected.
+  static base::TimeDelta GetOfflineDuration();
 
   // Returns true if the network is connected.
   static bool is_connected() {
     return Get()->state_ == NetworkStateDetails::CONNECTED;
   }
+
+  // NetworkLibrary::Observer implementation.
+  virtual void NetworkChanged(NetworkLibrary* cros);
+  virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type) {}
 
  private:
   friend struct DefaultSingletonTraits<NetworkStateNotifier>;
@@ -70,14 +75,18 @@ class NetworkStateNotifier : public NetworkLibrary::Observer {
   // This should be invoked in UI thread.
   void UpdateNetworkState(NetworkStateDetails::State new_state);
 
+  // A factory to post a task in UI thread.
+  ScopedRunnableMethodFactory<NetworkStateNotifier> task_factory_;
+
   // The current network state.
   NetworkStateDetails::State state_;
 
-  ScopedRunnableMethodFactory<NetworkStateNotifier> task_factory_;
+  // The start time of offline.
+  base::Time offline_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };
 
-}  // chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_NETWORK_STATE_NOTIFIER_H_

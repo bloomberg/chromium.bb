@@ -6291,6 +6291,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Options
       </message>
 
+      <!-- Offline page  -->
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_OFFLINE_LOAD_HEADLINE" desc="Offline Page HTML headline">
+          Network is not available.
+        </message>
+        <message name="IDS_OFFLINE_LOAD_DESCRIPTION" desc="Offline Page HTML description">
+          Page will be loaded when network becomes available. Press 'Load Now' if you want to load now.
+        </message>
+        <message name="IDS_OFFLINE_LOAD_BUTTON">
+          Load Now
+        </message>
+        <message name="IDS_OFFLINE_BACK_BUTTON">
+          Cancel
+        </message>
+      </if>
+
       <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">
         Malware Detected!

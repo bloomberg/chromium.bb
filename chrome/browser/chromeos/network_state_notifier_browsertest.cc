@@ -30,6 +30,8 @@ class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
     InitStatusAreaMocks();
     SetStatusAreaMocksExpectations();
     // Initialize network state notifier.
+    ASSERT_TRUE(CrosLibrary::Get()->EnsureLoaded());
+    ASSERT_TRUE(mock_network_library_);
     EXPECT_CALL(*mock_network_library_, Connected())
         .Times(1)
         .WillRepeatedly((Return(true)))
@@ -71,7 +73,6 @@ IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnected) {
       .WillRepeatedly((Return(true)))
       .RetiresOnSaturation();
   NetworkStateNotifier* notifier = NetworkStateNotifier::Get();
-  DCHECK(CrosLibrary::Get()->EnsureLoaded());
   notifier->NetworkChanged(mock_network_library_);
   WaitForNotification();
   EXPECT_EQ(chromeos::NetworkStateDetails::CONNECTED, state_);
@@ -90,7 +91,6 @@ IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnecting) {
       .WillOnce((Return(true)))
       .RetiresOnSaturation();
   NetworkStateNotifier* notifier = NetworkStateNotifier::Get();
-  DCHECK(CrosLibrary::Get()->EnsureLoaded());
   notifier->NetworkChanged(mock_network_library_);
   WaitForNotification();
   EXPECT_EQ(chromeos::NetworkStateDetails::CONNECTING, state_);
@@ -109,7 +109,6 @@ IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestDisconnected) {
       .WillOnce((Return(false)))
       .RetiresOnSaturation();
   NetworkStateNotifier* notifier = NetworkStateNotifier::Get();
-  DCHECK(CrosLibrary::Get()->EnsureLoaded());
   notifier->NetworkChanged(mock_network_library_);
   WaitForNotification();
   EXPECT_EQ(chromeos::NetworkStateDetails::DISCONNECTED, state_);
