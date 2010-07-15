@@ -29,6 +29,33 @@ E.g. window.open(someUrl). --></dd>
   of the manifest specifies
   which hosts the extension can send requests to.
   </dd>
+<dt> <strong>HTML5 and other emerging APIs</strong></dt>
+<dd> Google Chrome supports HTML5 features,
+     along with other emerging APIs.
+     Here are some of the APIs you can use:
+  <ul>
+  <li> audio
+    (<a href="http://www.html5rocks.com/tutorials/audio/quick/">tutorial</a>) </li>
+  <li> app cache
+    (<a href="http://www.html5rocks.com/tutorials/appcache/beginner/">tutorial</a>) </li>
+  <li> canvas </li>
+  <li> geolocation
+    (<a href="http://www.html5rocks.com/tutorials/geolocation/trip_meter/">tutorial</a>) </li>
+  <li> local storage </li>
+  <li> notifications
+    (<a href="http://www.html5rocks.com/tutorials/notifications/quick/">tutorial</a>) </li>
+  <li> session storage </li>
+  <li> video </li>
+  <li> web database
+    (<a href="http://www.html5rocks.com/tutorials/webdatabase/todo/">tutorial</a>) </li>
+  </ul>
+  <p>
+  See <a href="http://www.html5rocks.com">html5rocks.com</a>
+  for HTML5 information, tutorials, an interactive playground,
+  and links to other resources.
+  </p>
+</dd>
+
 <dt><strong> WebKit APIs </strong></dt>
 <dd>
   Because Google Chrome is built upon WebKit,
@@ -48,18 +75,12 @@ E.g. window.open(someUrl). --></dd>
 </dd>
 <dt><strong> V8 APIs</strong>, such as<strong> JSON </strong></dt>
 <dd> Because JSON is in V8, you don't need to include a JSON library to use JSON functions. <!-- [PENDING: what other APIs are in v8? link to complete list] --></dd>
-<dt> <strong>HTML5</strong> <strong>APIs</strong>, such as <strong>localStorage</strong></dt>
-<dd> HTML5 is still being defined and implemented,
-  but Google Chrome already supports local storage,
-  which extensions can use to store data.
-<!--
-localStorage.setItem(&quot;foo&quot;, &quot;bar&quot;); ... localStorage.getItem(&quot;foo&quot;); --> <!-- [PENDING: Other important API? link to complete list] --></dd>
 <dt><strong>APIs in bundled libraries</strong></dt>
 <dd> If you want to use a library that the browser doesn't provide
 (for example, jQuery),
 you can bundle that library's JavaScript files with your extension.
 Bundled libraries work in extensions
-just as they would in any other web pages.
+just as they do in other web pages.
 </dd>
 </dl>
 

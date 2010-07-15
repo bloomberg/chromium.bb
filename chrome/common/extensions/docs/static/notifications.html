@@ -1,4 +1,5 @@
 <div id="pageData-name" class="pageData">Desktop Notifications</div>
+<div id="pageData-showTOC" class="pageData">true</div>
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p>
@@ -52,38 +53,6 @@ There is no need to call
 <code>webkitNotifications.checkPermission()</code>.
 </p>
 
-<h2 id="api">API</h2>
-
-<p>
-The desktop notification API for extensions
-is the same one that
-is available to normal web pages.
-As the following code shows,
-you first create either a simple text notification
-or an HTML notification,
-and then you show the notification.
-</p>
-
-<pre>
-// Create a simple text notification:
-var notification = webkitNotifications.createNotification(
-  '48.png',  // icon url - can be relative
-  'Hello!',  // notification title
-  'Lorem ipsum...'  // notification body text
-);
-
-// Or create an HTML notification:
-var notification = webkitNotifications.createHTMLNotification(
-  'notification.html'  // html url - can be relative
-);
-
-// Then show the notification.
-notification.show();
-</pre>
-
-<p>For complete API details,
-see the <a href="http://dev.chromium.org/developers/design-documents/desktop-notifications/api-specification">Desktop notifications draft specification</a>.</p>
-
 <h2 id="communication">Communicating with other views</h2>
 
 <p>
@@ -115,5 +84,44 @@ For other examples
 and for help in viewing the source code,
 see <a href="samples.html">Samples</a>.
 </p>
+
+<p>
+Also see html5rocks.com's
+<a href="http://www.html5rocks.com/tutorials/notifications/quick/">notifications tutorial</a>.
+Ignore the permission-related code;
+it's unnecessary if you declare the "notifications" permission.
+</p>
+
+<h2 id="api">API</h2>
+
+<p>
+The desktop notification API for extensions
+is the same one that
+is available to normal web pages.
+As the following code shows,
+you first create either a simple text notification
+or an HTML notification,
+and then you show the notification.
+</p>
+
+<pre>
+// Create a simple text notification:
+var notification = webkitNotifications.createNotification(
+  '48.png',  // icon url - can be relative
+  'Hello!',  // notification title
+  'Lorem ipsum...'  // notification body text
+);
+
+// Or create an HTML notification:
+var notification = webkitNotifications.createHTMLNotification(
+  'notification.html'  // html url - can be relative
+);
+
+// Then show the notification.
+notification.show();
+</pre>
+
+<p>For complete API details,
+see the <a href="http://dev.chromium.org/developers/design-documents/desktop-notifications/api-specification">Desktop notifications draft specification</a>.</p>
 
 <!-- END AUTHORED CONTENT -->
