@@ -16,6 +16,8 @@
 class GURL;
 class Profile;
 class SiteContents;
+class URLRequest;
+class URLRequestJob;
 class WizardScreenDelegate;
 
 namespace chromeos {
@@ -70,6 +72,10 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   // Sets the url for registration host page. Used in tests.
   static void set_registration_host_page_url(const GURL& url);
 
+  // Handler factory for URLRequestFilter::AddHostnameHandler.
+  static URLRequestJob* Factory(URLRequest* request,
+                                const std::string& scheme);
+
  private:
   // ViewScreen implementation:
   virtual void CreateView();
@@ -77,7 +83,7 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   virtual RegistrationView* AllocateView();
 
   // TabContentsDelegate implementation:
-  virtual void LoadingStateChanged(TabContents* source) {}
+  virtual void LoadingStateChanged(TabContents* source);
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {}
 

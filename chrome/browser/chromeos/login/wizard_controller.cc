@@ -13,7 +13,7 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
-#include "base/logging.h"  // For NOTREACHED.
+#include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
@@ -493,6 +493,16 @@ void WizardController::OnUserImageSkipped() {
   OnUserImageSelected();
 }
 
+void WizardController::OnRegistrationSuccess() {
+  // TODO(nkostylev): Registration screen should be shown on first sign in.
+  ShowLoginScreen();
+}
+
+void WizardController::OnRegistrationSkipped() {
+  // TODO(nkostylev): Track in a histogram?
+  OnRegistrationSuccess();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
 
@@ -596,6 +606,11 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case EULA_ACCEPTED:
       OnEulaAccepted();
       break;
+    case REGISTRATION_SUCCESS:
+      OnRegistrationSuccess();
+      break;
+    case REGISTRATION_SKIPPED:
+      OnRegistrationSkipped();
     default:
       NOTREACHED();
   }

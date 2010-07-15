@@ -4,20 +4,34 @@
 
 #include "chrome/browser/chromeos/login/registration_screen.h"
 
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_about_job.h"
+#include "net/url_request/url_request_filter.h"
 
 namespace chromeos {
 
 namespace {
+
 // TODO(nkostylev): Create host page in resources.
-const char kRegistrationHostPageUrl[] = "about:";
+const char kRegistrationHostPageUrl[] = "about:register";
+
+// "Hostname" that is used for redirects from host registration page.
+const char kRegistrationHostnameUrl[] = "register";
+
+// Host page navigates to these URLs in case of success/skipped registration.
+const char kRegistrationSuccessUrl[] = "cros://register/success";
+const char kRegistrationSkippedUrl[] = "cros://register/skipped";
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -26,6 +40,13 @@ RegistrationScreen::RegistrationScreen(WizardScreenDelegate* delegate)
     : ViewScreen<RegistrationView>(delegate) {
   if (!host_page_url_.get())
     set_registration_host_page_url(GURL(kRegistrationHostPageUrl));
+
+  ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+      chrome::kCrosScheme);
+  URLRequestFilter::GetInstance()->AddHostnameHandler(
+      chrome::kCrosScheme,
+      kRegistrationHostnameUrl,
+      &RegistrationScreen::Factory);
 }
 
 // static
@@ -78,6 +99,20 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// RegistrationScreen, TabContentsDelegate implementation:
+void RegistrationScreen::LoadingStateChanged(TabContents* source) {
+  std::string url = source->GetURL().spec();
+  LOG(INFO) << "LoadingState changed url: " << url;
+  if (url == kRegistrationSuccessUrl) {
+    source->Stop();
+    CloseScreen(ScreenObserver::REGISTRATION_SUCCESS);
+  } else if (url == kRegistrationSkippedUrl) {
+    source->Stop();
+    CloseScreen(ScreenObserver::REGISTRATION_SKIPPED);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, private:
 void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
   StopTimeoutTimer();
@@ -89,6 +124,13 @@ void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
         locale, input_method::kKeyboardLayoutsOnly, "");
   }
   delegate()->GetObserver(this)->OnExit(code);
+}
+
+// static
+URLRequestJob* RegistrationScreen::Factory(URLRequest* request,
+                                           const std::string& scheme) {
+  LOG(INFO) << "Handling url: " << request->url().spec().c_str();
+  return new URLRequestAboutJob(request);
 }
 
 }  // namespace chromeos
