@@ -220,11 +220,11 @@ void WrenchMenuModel::Build() {
   zoom_menu_item_model_.reset(
       new menus::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddGroupItemWithStringId(
-      IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
+      IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddButtonLabel(IDC_ZOOM_PERCENT_DISPLAY,
                                         IDS_ZOOM_PLUS2);
   zoom_menu_item_model_->AddGroupItemWithStringId(
-      IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
+      IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
   zoom_menu_item_model_->AddSpace();
   zoom_menu_item_model_->AddItemWithImage(
       IDC_FULLSCREEN, IDR_FULLSCREEN_MENU_BUTTON);
