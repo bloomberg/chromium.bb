@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "gfx/blit.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
@@ -513,7 +514,9 @@ void DeviceContext2D::ExecutePaintImageData(ImageData* image,
 
 void DeviceContext2D::ExecuteScroll(const gfx::Rect& clip, int dx, int dy,
                                     gfx::Rect* invalidated_rect) {
-  // TODO(brettw): implement this.
+  gfx::ScrollCanvas(image_data_->mapped_canvas(),
+                    clip, gfx::Point(dx, dy));
+  *invalidated_rect = clip;
 }
 
 void DeviceContext2D::ExecuteReplaceContents(ImageData* image,
