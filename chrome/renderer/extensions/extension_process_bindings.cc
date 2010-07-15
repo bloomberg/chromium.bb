@@ -71,6 +71,23 @@ const char* kExtensionDeps[] = {
   ExtensionApiTestV8Extension::kName,
 };
 
+// A list of the API packages which have no associated permission.
+// TODO(erikkay) It might be nice if for consistency we could merge these with
+// the permissions list, or at least have them in one place.
+const char* kNonPermissionExtensionPackages[] = {
+  "extension",
+  // TODO(erikkay): We're inconsistent about the the package name in the events
+  // for pageAction and browserAction.
+  "pageAction",
+  "pageActions",
+  "browserAction",
+  "browserActions",
+  "contextMenus",  // TODO(asargent) remove when the permission is added
+  "i18n",
+  "devtools",
+  "test"
+};
+
 struct SingletonData {
   std::set<std::string> function_names_;
   PageActionIdMap page_action_ids_;
@@ -646,27 +663,36 @@ void ExtensionProcessBindings::SetHostPermissions(
   }
 }
 
-// Given a name like "tabs.onConnect", return the permission name required
-// to access that API ("tabs" in this example).
-static std::string GetPermissionName(const std::string& function_name) {
-  size_t first_dot = function_name.find('.');
-  std::string permission_name = function_name.substr(0, first_dot);
-  if (permission_name == "windows")
-    return "tabs";  // windows and tabs are the same permission.
-  return permission_name;
-}
-
 // static
 bool ExtensionProcessBindings::CurrentContextHasPermission(
     const std::string& function_name) {
   std::string extension_id = ExtensionImpl::ExtensionIdForCurrentContext();
-  PermissionsMap& permissions_map = *GetPermissionsMap(extension_id);
-  std::string permission_name = GetPermissionName(function_name);
-  PermissionsMap::iterator it = permissions_map.find(permission_name);
+  return HasPermission(extension_id, function_name);
+}
 
-  // We explicitly check if the permission entry is present and false, because
-  // some APIs do not have a required permission entry (ie, "chrome.extension").
-  return (it == permissions_map.end() || it->second);
+// static
+bool ExtensionProcessBindings::HasPermission(const std::string& extension_id,
+                                             const std::string& permission) {
+  std::string permission_name = permission;
+
+  // See if this is a function or event name first and strip out the package.
+  // Functions will be of the form package.function
+  // Events will be of the form package/id or package.optional.stuff
+  size_t separator = permission.find_first_of("./");
+  if (separator != std::string::npos)
+    permission_name = permission.substr(0, separator);
+
+  // windows and tabs are the same permission.
+  if (permission_name == "windows")
+    permission_name = Extension::kTabPermission;
+
+  for (size_t i = 0; i < arraysize(kNonPermissionExtensionPackages); ++i)
+    if (permission_name == kNonPermissionExtensionPackages[i])
+      return true;
+
+  PermissionsMap& permissions_map = *GetPermissionsMap(extension_id);
+  PermissionsMap::iterator it = permissions_map.find(permission_name);
+  return (it != permissions_map.end() && it->second);
 }
 
 // static
@@ -674,10 +700,9 @@ v8::Handle<v8::Value>
     ExtensionProcessBindings::ThrowPermissionDeniedException(
       const std::string& function_name) {
   static const char kMessage[] =
-      "You do not have permission to use 'chrome.%s'. Be sure to declare"
+      "You do not have permission to use '%s'. Be sure to declare"
       " in your manifest what permissions you need.";
-  std::string permission_name = GetPermissionName(function_name);
-  std::string error_msg = StringPrintf(kMessage, permission_name.c_str());
+  std::string error_msg = StringPrintf(kMessage, function_name.c_str());
 
   return v8::ThrowException(v8::Exception::Error(
       v8::String::New(error_msg.c_str())));

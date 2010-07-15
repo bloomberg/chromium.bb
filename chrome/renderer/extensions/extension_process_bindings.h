@@ -58,6 +58,14 @@ class ExtensionProcessBindings {
   // context in scope.
   static bool CurrentContextHasPermission(const std::string& function_name);
 
+  // Checks whether |permission| is enabled for |extension_id|.  |permission|
+  // may be a raw permission name (from Extension::kPermissionNames), a
+  // function name (e.g. "tabs.create") or an event name (e.g. "contextMenus/id"
+  // or "devtools.tabid.name").
+  // TODO(erikkay) We should standardize the naming scheme for our events.
+  static bool HasPermission(const std::string& extension_id,
+                            const std::string& permission);
+
   // Throw a V8 exception indicating that permission to access function_name was
   // denied. Must be called with a valid V8 context in scope.
   static v8::Handle<v8::Value> ThrowPermissionDeniedException(
