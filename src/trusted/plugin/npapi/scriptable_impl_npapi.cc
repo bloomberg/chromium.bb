@@ -202,7 +202,8 @@ bool OutputOneDescriptor(plugin::PluginNpapi* plugin,
                          NPVariant* retvalue) {
   nacl::DescWrapper* wrapper = plugin->wrapper_factory()->MakeGeneric(desc);
 
-  if (NACL_DESC_CONN_CAP == wrapper->type_tag()) {
+  if (NACL_DESC_CONN_CAP == wrapper->type_tag() ||
+      NACL_DESC_CONN_CAP_FD == wrapper->type_tag()) {
     plugin::SocketAddress* socket_address =
         plugin::SocketAddress::New(plugin, wrapper);
     NPObject* sock_addr =

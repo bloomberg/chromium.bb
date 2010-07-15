@@ -1,0 +1,23 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+
+if env.Bit('mac'):
+  test_args = []
+else:
+  # This test will hang when the SocketAddress implementation uses
+  # string tokens instead of FDs.
+  test_args = ['DISABLE_IMC_ACCEPT_EOF_TEST=1']
+
+env.ComponentProgram('socket_transfer_test.nexe', 'socket_transfer_test.c',
+                     EXTRA_LIBS=['pthread'])
+
+node = env.CommandSelLdrTestNacl(
+  'socket_transfer_test.out',
+  command=[env.File('socket_transfer_test.nexe')] + test_args,
+  sel_ldr_flags=['-X', '-1'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_socket_transfer_test')

@@ -44,8 +44,6 @@
           'nacl_desc_base.h',
           'nacl_desc_cond.c',
           'nacl_desc_cond.h',
-          'nacl_desc_conn_cap.c',
-          'nacl_desc_conn_cap.h',
           'nacl_desc_dir.c',
           'nacl_desc_dir.h',
           'nacl_desc_effector.h',
@@ -55,8 +53,6 @@
           'nacl_desc_effector_trusted_mem.h',
           'nacl_desc_imc.c',
           'nacl_desc_imc.h',
-          'nacl_desc_imc_bound_desc.c',
-          'nacl_desc_imc_bound_desc.h',
           'nacl_desc_imc_shm.c',
           'nacl_desc_imc_shm.h',
           'nacl_desc_invalid.c',
@@ -104,6 +100,22 @@
           ['OS=="win"', { 'sources': [
               'win/nacl_desc.c',
           ]}],
+          ['OS=="mac"',
+           # FD-based bound socket implementation.
+           {
+             'sources': [
+               'posix/nacl_desc_conn_cap.c',
+               'posix/nacl_desc_imc_bound_desc.c',
+               'posix/nacl_makeboundsock.c',
+             ],
+           },
+           # String-based bound socket implementation.
+           { 'sources': [
+               'nacl_desc_conn_cap.c',
+               'nacl_desc_imc_bound_desc.c',
+               'nacl_makeboundsock.c',
+             ],
+           }],
         ],
       },
     ]],

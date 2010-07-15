@@ -125,8 +125,14 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
   NaClDescInvalidInternalize,
   NaClDescDirInternalize,
   NaClDescIoInternalize,
+#if NACL_OSX
+  NaClDescInternalizeNotImplemented,
+  NaClDescConnCapFdInternalize,
+#else
   NaClDescConnCapInternalize,
-  NaClDescImcBoundDescInternalize,
+  NaClDescInternalizeNotImplemented,
+#endif
+  NaClDescInternalizeNotImplemented,  /* bound sockets cannot be transferred */
   NaClDescInternalizeNotImplemented,  /* connected abstract base class */
   NaClDescImcShmInternalize,
 #if NACL_LINUX
@@ -150,6 +156,7 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_DIR);
     MAP(NACL_DESC_HOST_IO);
     MAP(NACL_DESC_CONN_CAP);
+    MAP(NACL_DESC_CONN_CAP_FD);
     MAP(NACL_DESC_BOUND_SOCKET);
     MAP(NACL_DESC_CONNECTED_SOCKET);
     MAP(NACL_DESC_SHM);

@@ -1044,7 +1044,8 @@ void NaClDumpServiceAddressTo(struct NaClApp  *nap,
           "NaClDumpServiceAddressTo(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) nap,
           desc);
-  if (NULL == nap->service_address) {
+  if (NULL == nap->service_address ||
+      NACL_DESC_CONN_CAP != nap->service_address->vtbl->typeTag) {
     NaClLog(LOG_FATAL,
             "NaClDumpServiceAddressTo: service address not set\n");
     return;

@@ -56,10 +56,8 @@ wrapper_obj = wrapper_env.DualObject('nacl_desc_wrapper.cc')
 nrd_lib_inputs = [
     'nacl_desc_base.c',
     'nacl_desc_cond.c',
-    'nacl_desc_conn_cap.c',
     'nacl_desc_dir.c',
     'nacl_desc_imc.c',
-    'nacl_desc_imc_bound_desc.c',
     'nacl_desc_imc_shm.c',
     'nacl_desc_invalid.c',
     'nacl_desc_io.c',
@@ -88,6 +86,20 @@ else:
       'linux/nacl_desc.c',
       'linux/nacl_desc_sysv_shm.c',
   ]
+
+if env.Bit('mac'):
+  # TODO(mseaborn): Enable this for Linux as well.
+  nrd_lib_inputs += [
+      'posix/nacl_desc_conn_cap.c',
+      'posix/nacl_desc_imc_bound_desc.c',
+      'posix/nacl_makeboundsock.c',
+      ]
+else:
+  nrd_lib_inputs += [
+      'nacl_desc_conn_cap.c',
+      'nacl_desc_imc_bound_desc.c',
+      'nacl_makeboundsock.c',
+      ]
 
 env.DualLibrary('nrd_xfer', nrd_lib_inputs,
                 EXTRA_LIBS=['platform'])

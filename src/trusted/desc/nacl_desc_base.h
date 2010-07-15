@@ -75,6 +75,7 @@ enum NaClDescTypeTag {
   NACL_DESC_DIR,
   NACL_DESC_HOST_IO,
   NACL_DESC_CONN_CAP,
+  NACL_DESC_CONN_CAP_FD,
   NACL_DESC_BOUND_SOCKET,
   NACL_DESC_CONNECTED_SOCKET,
   NACL_DESC_SHM,
@@ -411,17 +412,28 @@ extern int NaClDescIoInternalize(struct NaClDesc          **baseptr,
                                  struct NaClDescXferState *xfer) NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescConnCapVtbl;
+extern struct NaClDescVtbl const kNaClDescConnCapFdVtbl;
 
 /*
- * IMC socket addresses.
+ * IMC socket addresses.  There are two variants:
+ *  1) Those based on address strings.
+ *  2) Those based on socket file descriptors.
  */
 struct NaClDescConnCap {
   struct NaClDesc           base;
   struct NaClSocketAddress  cap;
 };
 
+struct NaClDescConnCapFd {
+  struct NaClDesc base;
+  NaClHandle connect_fd;
+};
+
 extern int NaClDescConnCapInternalize(struct NaClDesc          **baseptr,
                                       struct NaClDescXferState *xfer) NACL_WUR;
+extern int NaClDescConnCapFdInternalize(struct NaClDesc          **baseptr,
+                                        struct NaClDescXferState *xfer)
+  NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescImcBoundDescVtbl;
 

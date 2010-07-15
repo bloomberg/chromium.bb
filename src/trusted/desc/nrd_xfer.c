@@ -647,64 +647,6 @@ cleanup:
   return retval;
 }
 
-int32_t NaClCommonDescMakeBoundSock(struct NaClDesc   *pair[2]) {
-  int32_t                     retval;
-  struct NaClSocketAddress    sa;
-  struct NaClDescConnCap      *ccp;
-  NaClHandle                  h;
-  struct NaClDescImcBoundDesc *idp;
-
-  retval = -NACL_ABI_ENOMEM;
-  ccp = NULL;
-  idp = NULL;
-  h = NACL_INVALID_HANDLE;
-  /*
-   * create NaClDescConnCap object, invoke NaClBoundSocket, create
-   * an NaClDescImcDesc object.  put both into open file table.
-   */
-  ccp = malloc(sizeof *ccp);
-  if (NULL == ccp) {
-    goto cleanup;
-  }
-  idp = malloc(sizeof *idp);
-  if (NULL == idp) {
-    goto cleanup;
-  }
-
-  do {
-    NaClGenerateRandomPath(&sa.path[0], NACL_PATH_MAX);
-    h = NaClBoundSocket(&sa);
-    NaClLog(3, "NaClCommonDescMakeBoundSock: sa: %s, h 0x%"NACL_PRIxPTR"\n",
-            sa.path, (uintptr_t) h);
-  } while (NACL_INVALID_HANDLE == h);
-
-  if (!NaClDescConnCapCtor(ccp, &sa)) {
-    goto cleanup;
-  }
-
-  if (!NaClDescImcBoundDescCtor(idp, h)) {
-    NaClDescConnCapDtor((struct NaClDesc *) ccp);
-    goto cleanup;
-  }
-  h = NACL_INVALID_HANDLE;  /* idp took ownership */
-
-  pair[0] = (struct NaClDesc *) idp;
-  idp = NULL;
-
-  pair[1] = (struct NaClDesc *) ccp;
-  ccp = NULL;
-
-  retval = 0;
-
- cleanup:
-  free(idp);
-  free(ccp);
-  if (NACL_INVALID_HANDLE != h) {
-    NaClClose(h);
-  }
-  return retval;
-}
-
 int32_t NaClCommonDescSocketPair(struct NaClDesc *pair[2]) {
   int32_t                         retval = -NACL_ABI_EIO;
   struct NaClDescXferableDataDesc *d0;

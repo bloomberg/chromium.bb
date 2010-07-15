@@ -1447,6 +1447,7 @@ nacl_env.Append(
     'tests/file/nacl.scons',
     'tests/hello_world/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
+    'tests/imc_sockets/nacl.scons',
     'tests/libc_free_hello_world/nacl.scons',
     'tests/loop/nacl.scons',
     'tests/mandel/nacl.scons',
