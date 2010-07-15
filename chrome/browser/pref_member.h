@@ -120,6 +120,13 @@ class PrefMember : public subtle::PrefMemberBase {
     setting_value_ = false;
   }
 
+  // Set the value of the member variable if it is not managed.
+  void SetValueIfNotManaged(const ValueType& value) {
+    if (!IsManaged()) {
+      SetValue(value);
+    }
+  }
+
  protected:
   // This methods is used to do the actual sync with pref of the specified type.
   virtual void UpdatePref(const ValueType& value) = 0;

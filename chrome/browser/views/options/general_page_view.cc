@@ -44,6 +44,9 @@ const SkColor kDefaultBrowserLabelColor = SkColorSetRGB(0, 135, 0);
 const SkColor kNotDefaultBrowserLabelColor = SkColorSetRGB(135, 0, 0);
 const int kHomePageTextfieldWidthChars = 40;
 
+bool IsNewTabUIURLString(const GURL& url) {
+  return url == GURL(chrome::kChromeUINewTabURL);
+}
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -384,19 +387,23 @@ void GeneralPageView::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name ||
       *pref_name == prefs::kHomePageIsNewTabPage ||
       *pref_name == prefs::kHomePage) {
-    bool managed =
-        new_tab_page_is_home_page_.IsManaged() || homepage_.IsManaged();
-    bool homepage_valid = homepage_.GetValue() != chrome::kChromeUINewTabURL;
-    bool use_new_tab_page_for_homepage =
-        new_tab_page_is_home_page_.GetValue() || !homepage_valid;
-    homepage_use_newtab_radio_->SetChecked(use_new_tab_page_for_homepage);
-    homepage_use_newtab_radio_->SetEnabled(!managed);
-    homepage_use_url_radio_->SetChecked(!use_new_tab_page_for_homepage);
-    homepage_use_url_radio_->SetEnabled(!managed);
-
-    if (homepage_valid)
+    bool new_tab_page_is_home_page_managed =
+        new_tab_page_is_home_page_.IsManaged();
+    bool homepage_managed = homepage_.IsManaged();
+    bool homepage_url_is_new_tab =
+        IsNewTabUIURLString(GURL(homepage_.GetValue()));
+    bool homepage_is_new_tab = homepage_url_is_new_tab ||
+        new_tab_page_is_home_page_.GetValue();
+    // If HomepageIsNewTab is managed or
+    // Homepage is 'chrome://newtab' and managed, disable the radios.
+    bool disable_homepage_choice_buttons =
+        new_tab_page_is_home_page_managed ||
+        homepage_managed && homepage_url_is_new_tab;
+    if (!homepage_url_is_new_tab)
       homepage_use_url_textfield_->SetText(UTF8ToWide(homepage_.GetValue()));
-    EnableHomepageURLField(!managed && !use_new_tab_page_for_homepage);
+    UpdateHomepageIsNewTabRadio(
+        homepage_is_new_tab, !disable_homepage_choice_buttons);
+    EnableHomepageURLField(!homepage_is_new_tab);
   }
 
   if (!pref_name || *pref_name == prefs::kShowHomeButton) {
@@ -745,14 +752,37 @@ void GeneralPageView::UpdateHomepagePrefs() {
     URLFixerUpper::FixupURL(
        UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string());
   bool new_tab_page_is_home_page = homepage_use_newtab_radio_->checked();
-  if (!homepage.is_valid() || homepage.spec() == chrome::kChromeUINewTabURL) {
+  if (IsNewTabUIURLString(homepage)) {  // 'chrome://newtab/'
+    // This should be handled differently than invalid URLs.
+    // When the control arrives here, then |homepage| contains
+    // 'chrome://newtab/', and the homepage preference contains the previous
+    // valid content of the textfield (fixed up), most likely
+    // 'chrome://newta/'. This has to be cleared, because keeping it makes no
+    // sense to the user.
     new_tab_page_is_home_page = true;
+    homepage_.SetValueIfNotManaged(std::string());
+  } else if (!homepage.is_valid()) {
+    new_tab_page_is_home_page = true;
+    // The URL is invalid either with a host (e.g. http://chr%mium.org)
+    // or without a host (e.g. http://). In case there is a host, then
+    // the URL is not cleared, saving a fragment of the URL to the
+    // preferences (e.g. http://chr in case the characters of the above example
+    // were typed by the user one by one).
+    // See bug 40996.
     if (!homepage.has_host())
-      homepage_.SetValue(std::string());
+      homepage_.SetValueIfNotManaged(std::string());
   } else {
-    homepage_.SetValue(homepage.spec());
+    homepage_.SetValueIfNotManaged(homepage.spec());
   }
-  new_tab_page_is_home_page_.SetValue(new_tab_page_is_home_page);
+  new_tab_page_is_home_page_.SetValueIfNotManaged(new_tab_page_is_home_page);
+}
+
+void GeneralPageView::UpdateHomepageIsNewTabRadio(bool homepage_is_new_tab,
+                                                  bool enabled) {
+  homepage_use_newtab_radio_->SetChecked(homepage_is_new_tab);
+  homepage_use_url_radio_->SetChecked(!homepage_is_new_tab);
+  homepage_use_newtab_radio_->SetEnabled(enabled);
+  homepage_use_url_radio_->SetEnabled(enabled);
 }
 
 void GeneralPageView::OnSelectionChanged() {
@@ -761,13 +791,11 @@ void GeneralPageView::OnSelectionChanged() {
 }
 
 void GeneralPageView::EnableHomepageURLField(bool enabled) {
-  if (enabled) {
-    homepage_use_url_textfield_->SetEnabled(true);
-    homepage_use_url_textfield_->SetReadOnly(false);
-  } else {
-    homepage_use_url_textfield_->SetEnabled(false);
-    homepage_use_url_textfield_->SetReadOnly(true);
+  if (homepage_.IsManaged()) {
+    enabled = false;
   }
+  homepage_use_url_textfield_->SetEnabled(enabled);
+  homepage_use_url_textfield_->SetReadOnly(!enabled);
 }
 
 void GeneralPageView::SetDefaultSearchProvider() {

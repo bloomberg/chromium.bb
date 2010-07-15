@@ -113,6 +113,10 @@ class GeneralPageView : public OptionsPageView,
   // Enables or disables the field for entering a custom homepage URL.
   void EnableHomepageURLField(bool enabled);
 
+  // Sets the state and enables/disables the radio buttons that control
+  // if the home page is the new tab page.
+  void UpdateHomepageIsNewTabRadio(bool homepage_is_new_tab, bool enabled);
+
   // Sets the default search provider for the selected item in the combobox.
   void SetDefaultSearchProvider();
 
