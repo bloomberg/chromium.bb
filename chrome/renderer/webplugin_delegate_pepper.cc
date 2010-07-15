@@ -719,10 +719,10 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
 
         return NPERR_NO_ERROR;
       }
-    }
 
-    nested_delegate_->DestroyCommandBuffer(command_buffer_);
-    command_buffer_ = NULL;
+      nested_delegate_->DestroyCommandBuffer(command_buffer_);
+      command_buffer_ = NULL;
+    }
   }
 
   nested_delegate_->PluginDestroyed();
