@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -606,9 +607,21 @@ std::wstring LanguageMenuButton::GetTextForIndicator(
 
   if (text.empty()) {
     const size_t kMaxLanguageNameLen = 2;
-    const std::wstring language_code = UTF8ToWide(
-        input_method::GetLanguageCodeFromDescriptor(input_method));
-    text = StringToUpperASCII(language_code).substr(0, kMaxLanguageNameLen);
+    std::string language_code =
+        input_method::GetLanguageCodeFromDescriptor(input_method);
+
+    // Use "CN" for simplified Chinese and "TW" for traditonal Chinese,
+    // rather than "ZH".
+    if (StartsWithASCII(language_code, "zh-", false)) {
+      std::vector<std::string> portions;
+      SplitString(language_code, '-', &portions);
+      if (portions.size() >= 2 && !portions[1].empty()) {
+        language_code = portions[1];
+      }
+    }
+
+    text = StringToUpperASCII(UTF8ToWide(language_code)).substr(
+        0, kMaxLanguageNameLen);
   }
   DCHECK(!text.empty());
   return text;
