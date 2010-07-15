@@ -80,6 +80,7 @@
           'nacl_bottom_half.c',
           'nacl_closure.c',
           'nacl_debug.cc',
+          'nacl_desc_effector_ldr.c',
           'nacl_globals.c',
           'nacl_memory_object.c',
           'nacl_sync_queue.c',

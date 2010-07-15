@@ -8,7 +8,7 @@
  * NaCl Server Runtime user thread state.
  */
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
+#include "native_client/src/trusted/service_runtime/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
 
 #ifdef NACL_BREAKPAD

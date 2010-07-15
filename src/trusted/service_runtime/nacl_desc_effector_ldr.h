@@ -9,8 +9,8 @@
  * Service runtime effector subclass used for all application threads.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_EFFECTOR_LDR_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_EFFECTOR_LDR_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_DESC_EFFECTOR_LDR_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_DESC_EFFECTOR_LDR_H_
 
 #include "native_client/src/include/nacl_base.h"
 
@@ -34,4 +34,4 @@ extern int NaClDescEffectorLdrCtor(struct NaClDescEffectorLdr *self,
 
 EXTERN_C_END
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_EFFECTOR_LDR_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_DESC_EFFECTOR_LDR_H_
