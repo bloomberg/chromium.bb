@@ -12,6 +12,7 @@
 #import "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/sys_string_conversions.h"
 #import "base/worker_pool_mac.h"
 #include "chrome/browser/cocoa/authorization_util.h"
 #include "chrome/common/chrome_constants.h"
@@ -125,6 +126,9 @@ NSString* SystemBrandFilePath() {
 // kAutoupdateStatusNotification notification to the default notification
 // center.
 - (void)updateStatus:(AutoupdateStatus)status version:(NSString*)version;
+
+// Returns the version of the currently-installed application on disk.
+- (NSString*)currentlyInstalledVersion;
 
 // These three methods are used to determine the version of the application
 // currently installed on disk, compare that to the currently-running version,
@@ -546,6 +550,13 @@ NSString* const kBrandKey = @"KSBrandID";
   }
 }
 
+- (NSString*)currentlyInstalledVersion {
+  NSString* appInfoPlistPath = [self appInfoPlistPath];
+  NSDictionary* infoPlist =
+      [NSDictionary dictionaryWithContentsOfFile:appInfoPlistPath];
+  return [infoPlist objectForKey:@"CFBundleShortVersionString"];
+}
+
 // Runs on the main thread.
 - (void)determineUpdateStatusAsync {
   DCHECK([NSThread isMainThread]);
@@ -564,10 +575,7 @@ NSString* const kBrandKey = @"KSBrandID";
 - (void)determineUpdateStatus {
   DCHECK(![NSThread isMainThread]);
 
-  NSString* appInfoPlistPath = [self appInfoPlistPath];
-  NSDictionary* infoPlist =
-      [NSDictionary dictionaryWithContentsOfFile:appInfoPlistPath];
-  NSString* version = [infoPlist objectForKey:@"CFBundleShortVersionString"];
+  NSString* version = [self currentlyInstalledVersion];
 
   [self performSelectorOnMainThread:@selector(determineUpdateStatusForVersion:)
                          withObject:version
@@ -898,3 +906,17 @@ NSString* const kBrandKey = @"KSBrandID";
 }
 
 @end  // @implementation KeystoneGlue
+
+namespace keystone_glue {
+
+bool KeystoneEnabled() {
+  return [KeystoneGlue defaultKeystoneGlue] != nil;
+}
+
+string16 CurrentlyInstalledVersion() {
+  KeystoneGlue* keystoneGlue = [KeystoneGlue defaultKeystoneGlue];
+  NSString* version = [keystoneGlue currentlyInstalledVersion];
+  return base::SysNSStringToUTF16(version);
+}
+
+}  // namespace keystone_glue

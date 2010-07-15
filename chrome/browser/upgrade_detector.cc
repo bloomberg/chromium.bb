@@ -22,7 +22,9 @@
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/install_util.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_MACOSX)
+#include "chrome/browser/cocoa/keystone_glue.h"
+#elif defined(OS_POSIX)
 #include "base/process_util.h"
 #include "chrome/installer/util/version.h"
 #endif
@@ -43,9 +45,10 @@ const int kNotifyUserAfterMs = 0;
 
 // The thread to run the upgrade detection code on. We use FILE for Linux
 // because we don't want to block the UI thread while launching a background
-// process and reading its output.
+// process and reading its output; on the Mac, checking for an upgrade
+// requires reading a file.
 const ChromeThread::ID kDetectUpgradeTaskID =
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
     ChromeThread::FILE;
 #else
     ChromeThread::UI;
@@ -71,19 +74,24 @@ class DetectUpgradeTask : public Task {
   virtual void Run() {
     DCHECK(ChromeThread::CurrentlyOn(kDetectUpgradeTaskID));
 
-#if defined(OS_WIN) || defined(OS_LINUX)
     using installer::Version;
+    scoped_ptr<Version> installed_version;
 
 #if defined(OS_WIN)
     // Get the version of the currently *installed* instance of Chrome,
     // which might be newer than the *running* instance if we have been
     // upgraded in the background.
-    scoped_ptr<Version> installed_version(InstallUtil::GetChromeVersion(false));
+    installed_version.reset(InstallUtil::GetChromeVersion(false));
     if (!installed_version.get()) {
       // User level Chrome is not installed, check system level.
       installed_version.reset(InstallUtil::GetChromeVersion(true));
     }
-#elif defined(OS_LINUX)
+#elif defined(OS_MACOSX)
+    installed_version.reset(
+        Version::GetVersionFromString(
+            keystone_glue::CurrentlyInstalledVersion()));
+#elif defined(OS_POSIX)
+    // POSIX but not Mac OS X: Linux, etc.
     CommandLine command_line(*CommandLine::ForCurrentProcess());
     command_line.AppendSwitch(switches::kProductVersion);
     std::string reply;
@@ -92,8 +100,7 @@ class DetectUpgradeTask : public Task {
       return;
     }
 
-    scoped_ptr<Version> installed_version(
-        Version::GetVersionFromString(ASCIIToUTF16(reply)));
+    installed_version.reset(Version::GetVersionFromString(ASCIIToUTF16(reply)));
 #endif
 
     // Get the version of the currently *running* instance of Chrome.
@@ -119,10 +126,6 @@ class DetectUpgradeTask : public Task {
                              upgrade_detected_task_);
       upgrade_detected_task_ = NULL;
     }
-#else  // !(defined(OS_WIN) || defined(OS_LINUX))
-    DCHECK(kNotifyUserAfterMs >= 0);  // Avoid error: var defined but not used.
-    NOTIMPLEMENTED();
-#endif
   }
 
  private:
@@ -139,12 +142,18 @@ void UpgradeDetector::RegisterPrefs(PrefService* prefs) {
 UpgradeDetector::UpgradeDetector()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       notify_upgrade_(false) {
-  // Upgrade notifications work on Windows (only Google Chrome) and Linux
-  // (chromium and Google Chrome).
-#if (defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)) || defined(OS_LINUX)
-  detect_upgrade_timer_.Start(
-      base::TimeDelta::FromMilliseconds(kCheckForUpgradeEveryMs),
-      this, &UpgradeDetector::CheckForUpgrade);
+  // Windows: only enable upgrade notifications for official builds.
+  // Mac: only enable them if the updater (Keystone) is present.
+  // Linux (and other POSIX): always enable regardless of branding.
+#if (defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)) || defined(OS_POSIX)
+#if defined(OS_MACOSX)
+  if (keystone_glue::KeystoneEnabled())
+#endif
+  {
+    detect_upgrade_timer_.Start(
+        base::TimeDelta::FromMilliseconds(kCheckForUpgradeEveryMs),
+        this, &UpgradeDetector::CheckForUpgrade);
+  }
 #endif
 }
 

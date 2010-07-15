@@ -16,6 +16,7 @@
         'chrome_strings',
         'chrome_version_info',
         'component_extensions',
+        'installer_util',
         'platform_locale_settings',
         'profile_import',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
@@ -3051,10 +3052,6 @@
                           '<@(_outputs)',
                           '<@(xib_files_to_scan)'],
             },
-          ],
-        }, { # OS != mac
-          'dependencies': [
-            'installer_util',
           ],
         }],
         ['OS=="win"', {

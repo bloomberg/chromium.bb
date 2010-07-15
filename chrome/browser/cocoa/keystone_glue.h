@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_
 #define CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_
 
-#import <Foundation/Foundation.h>
-#import <base/scoped_nsobject.h>
+#include "base/string16.h"
 
+#if defined(__OBJC__)
+
+#import <Foundation/Foundation.h>
+
+#import "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/scoped_authorizationref.h"
 
 // Possible outcomes of various operations.  A version may accompany some of
@@ -187,5 +191,18 @@ enum BrandFileType {
 - (void)installUpdateComplete:(NSNotification*)notification;
 
 @end  // @interface KeystoneGlue(ExposedForTesting)
+
+#endif  // __OBJC__
+
+// Functions that may be accessed from non-Objective-C C/C++ code.
+namespace keystone_glue {
+
+// True if Keystone is enabled.
+bool KeystoneEnabled();
+
+// The version of the application currently installed on disk.
+string16 CurrentlyInstalledVersion();
+
+}  // namespace keystone_glue
 
 #endif  // CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_
