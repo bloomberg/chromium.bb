@@ -425,6 +425,118 @@
       ],
     },
     {
+      'target_name': 'nacl_security_tests',
+      'type': 'shared_library',
+      'msvs_guid': 'D705E8B8-4750-4F1F-BC8F-A7806872F504',
+      'include_dirs': [
+        '..'
+      ],
+      'sources': [
+       # mostly OS dependent files below...
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          # only Mac is using gtest for now (linking issues on other plats).
+          'dependencies': [
+            '../testing/gtest.gyp:gtest'
+          ],
+          'sources': [
+            'test/nacl_security_tests/commands_posix.cc',
+            'test/nacl_security_tests/commands_posix.h',
+            'test/nacl_security_tests/nacl_security_tests_posix.h',
+            'test/nacl_security_tests/nacl_security_tests_mac.cc',
+          ],
+          'xcode_settings': {
+             'DYLIB_INSTALL_NAME_BASE': '@executable_path/',
+          },
+        },],
+        ['OS=="linux"', {
+          'sources': [
+            'test/nacl_security_tests/commands_posix.cc',
+            'test/nacl_security_tests/commands_posix.h',
+            'test/nacl_security_tests/nacl_security_tests_posix.h',
+            'test/nacl_security_tests/nacl_security_tests_linux.cc',
+          ],
+        },],
+        ['OS=="win"', {
+          'sources': [
+            '../sandbox/tests/validation_tests/commands.cc',
+            '../sandbox/tests/validation_tests/commands.h',
+            '../sandbox/tests/common/controller.h',
+            'test/nacl_security_tests/nacl_security_tests_win.h',
+            'test/nacl_security_tests/nacl_security_tests_win.cc',
+          ],
+        },],
+        # set fPIC for linux in case it isn't set.
+        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
+          'cflags': ['-fPIC'],
+        },],
+      ],
+    },
+    {
+      'target_name': 'nacl_sandbox_tests',
+      'type': 'executable',
+      'msvs_guid': '3087FC25-2C24-44B2-8253-44065EB47ACD',
+      'dependencies': [
+        'chrome',
+        'browser',
+        'debugger',
+        'common',
+        'chrome_resources',
+        'chrome_strings',
+        'test_support_ui',
+        '../base/base.gyp:base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../net/net.gyp:net',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/libxml/libxml.gyp:libxml',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/nacl/nacl_test.cc',
+        'test/nacl/nacl_sandbox_test.cc'
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            'chrome_nacl_win64',
+            'crash_service',  # run time dependency
+            'nacl_security_tests', # run time dependency
+            'test_support_common',
+            '../google_update/google_update.gyp:google_update',
+            '../views/views.gyp:views',
+            # run time dependency
+            '../webkit/webkit.gyp:npapi_test_plugin',
+            '<(allocator_target)',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lOleAcc.lib',
+            ],
+          },
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+        }], 
+        ['OS=="mac"', {
+          'dependencies': [
+            'nacl_security_tests', # run time dependency
+          ],   
+        }],
+      ],
+    },
+    {
       'target_name': 'nacl_ui_tests',
       'type': 'executable',
       'msvs_guid': '43E2004F-CD62-4595-A8A6-31E9BFA1EE5E',
@@ -449,6 +561,7 @@
       ],
       'sources': [
         'test/nacl/nacl_test.cc',
+        'test/nacl/nacl_ui_test.cc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -2226,6 +2339,26 @@
             '../sandbox/tests/validation_tests/commands.h',
           ],
         },
+        # Extra 64-bit DLL for windows
+        {
+          'target_name': 'nacl_security_tests64',
+          'type': 'shared_library',
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+          'include_dirs': [
+            '..'
+          ],
+          'sources': [
+            '../sandbox/tests/validation_tests/commands.cc',
+            '../sandbox/tests/validation_tests/commands.h',
+            '../sandbox/tests/common/controller.h',
+            'test/nacl_security_tests/nacl_security_tests_win.h',
+            'test/nacl_security_tests/nacl_security_tests_win.cc',
+          ],
+        },
         {
           'target_name': 'selenium_tests',
           'type': 'executable',
@@ -2460,6 +2593,7 @@
             # 'browser_tests',
             '../ipc/ipc.gyp:ipc_tests',
             '../media/media.gyp:media_unittests',
+            'nacl_sandbox_tests',
             'nacl_ui_tests',
             '../net/net.gyp:net_unittests',
             '../printing/printing.gyp:printing_unittests',

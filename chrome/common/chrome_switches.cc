@@ -882,8 +882,11 @@ const char kSyncUseCacheInvalidation[]      = "use-cache-invalidation";
 // Pass the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
-// Runs the security test for the sandbox.
+// Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
+
+// Runs the security test for the NaCl loader sandbox.
+const char kTestNaClSandbox[]               = "test-nacl-sandbox";
 
 // Pass the type of the current test harness ("browser" or "ui")
 const char kTestType[]                      = "test-type";

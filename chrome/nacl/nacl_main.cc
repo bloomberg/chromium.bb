@@ -25,6 +25,7 @@
 #if defined(OS_WIN)
 #include "chrome/nacl/broker_thread.h"
 #endif
+#include "chrome/nacl/nacl_main_platform_delegate.h"
 #include "chrome/nacl/nacl_thread.h"
 
 #ifdef _WIN64
@@ -86,28 +87,11 @@ static void HandleNaClTestParameters(const CommandLine& command_line) {
   }
 }
 
-// Launch the NaCl child process in its own thread.
-#if defined (OS_WIN)
-static void LaunchNaClChildProcess(bool no_sandbox,
-                                   sandbox::TargetServices* target_services) {
-  ChildProcess nacl_process;
-  nacl_process.set_main_thread(new NaClThread());
-  if (!no_sandbox && target_services) {
-    // Cause advapi32 to load before the sandbox is turned on.
-    unsigned int dummy_rand;
-    rand_s(&dummy_rand);
-    // Turn the sanbox on.
-    target_services->LowerToken();
-  }
-  MessageLoop::current()->Run();
-}
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
 static void LaunchNaClChildProcess() {
   ChildProcess nacl_process;
   nacl_process.set_main_thread(new NaClThread());
   MessageLoop::current()->Run();
 }
-#endif
 
 // main() routine for the NaCl loader process.
 int NaClMain(const MainFunctionParams& parameters) {
@@ -126,33 +110,25 @@ int NaClMain(const MainFunctionParams& parameters) {
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
 
-#if defined(OS_WIN)
-  sandbox::TargetServices* target_services =
-      parameters.sandbox_info_.TargetServices();
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  NaClMainPlatformDelegate platform(parameters);
 
-  DLOG(INFO) << "Started NaCl loader with " <<
-      parsed_command_line.command_line_string();
-
-  HMODULE sandbox_test_module = NULL;
+  platform.PlatformInitialize();
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
-  if (target_services && !no_sandbox) {
-    // The command line might specify a test plugin to load.
-    if (parsed_command_line.HasSwitch(switches::kTestSandbox)) {
-      std::wstring test_plugin_name =
-          parsed_command_line.GetSwitchValue(switches::kTestSandbox);
-      sandbox_test_module = LoadLibrary(test_plugin_name.c_str());
-      DCHECK(sandbox_test_module);
-    }
-  }
-  LaunchNaClChildProcess(no_sandbox, target_services);
+  platform.InitSandboxTests(no_sandbox);
 
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
+  if (!no_sandbox) {
+    platform.EnableSandbox();
+  }
+  platform.RunSandboxTests();
+
   LaunchNaClChildProcess();
 
 #else
   NOTIMPLEMENTED() << " not implemented startup, plugin startup dialog etc.";
 #endif
 
+  platform.PlatformUninitialize();
   return 0;
 }
 

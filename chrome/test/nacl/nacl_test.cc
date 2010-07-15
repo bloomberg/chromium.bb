@@ -21,29 +21,6 @@ const char kTestCompleteSuccess[] = "OK";
 const FilePath::CharType kBaseUrl[] =
     FILE_PATH_LITERAL("http://localhost:5103/tests/prebuilt");
 
-const FilePath::CharType kSrpcHwHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_hw.html");
-
-const FilePath::CharType kSrpcBasicHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_basic.html");
-
-const FilePath::CharType kSrpcSockAddrHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_sockaddr.html");
-
-const FilePath::CharType kSrpcShmHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_shm.html");
-
-const FilePath::CharType kSrpcPluginHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_plugin.html");
-
-const FilePath::CharType kSrpcNrdXferHtmlFileName[] =
-    FILE_PATH_LITERAL("srpc_nrd_xfer.html");
-
-const FilePath::CharType kServerHtmlFileName[] =
-    FILE_PATH_LITERAL("server_test.html");
-
-const FilePath::CharType kNpapiHwHtmlFileName[] =
-    FILE_PATH_LITERAL("npapi_hw.html");
 }  // anonymous namespace
 
 NaClTest::NaClTest()
@@ -116,44 +93,4 @@ void NaClTest::SetUp() {
 void NaClTest::TearDown() {
   StopHttpServer();
   UITest::TearDown();
-}
-
-TEST_F(NaClTest, ServerTest) {
-  FilePath test_file(kServerHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
-}
-
-TEST_F(NaClTest, SrpcHelloWorld) {
-  FilePath test_file(kSrpcHwHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
-}
-
-TEST_F(NaClTest, SrpcBasicTest) {
-  FilePath test_file(kSrpcBasicHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
-}
-
-TEST_F(NaClTest, SrpcSockAddrTest) {
-  FilePath test_file(kSrpcSockAddrHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
-}
-
-TEST_F(NaClTest, SrpcShmTest) {
-  FilePath test_file(kSrpcShmHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
-}
-
-TEST_F(NaClTest, FLAKY_SrpcPluginTest) {
-  FilePath test_file(kSrpcPluginHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
-}
-
-TEST_F(NaClTest, SrpcNrdXferTest) {
-  FilePath test_file(kSrpcNrdXferHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
-}
-
-TEST_F(NaClTest, NpapiHwTest) {
-  FilePath test_file(kNpapiHwHtmlFileName);
-  RunTest(test_file, action_max_timeout_ms());
 }

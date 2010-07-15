@@ -24,6 +24,10 @@
           # platforms, including both 32-bit and 64-bit Windows.
           # Test files are also not included.
           'nacl/nacl_main.cc',
+          'nacl/nacl_main_platform_delegate.h',
+          'nacl/nacl_main_platform_delegate_linux.cc',
+          'nacl/nacl_main_platform_delegate_mac.mm',
+          'nacl/nacl_main_platform_delegate_win.cc',
           'nacl/nacl_thread.cc',
           'nacl/nacl_thread.h',
           'nacl/sel_main.cc',

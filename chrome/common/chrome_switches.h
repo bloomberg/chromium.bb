@@ -251,6 +251,7 @@ extern const char kSyncServer[];
 extern const char kSyncServiceURL[];
 extern const char kSyncUseSslTcp[];
 extern const char kSyncUseCacheInvalidation[];
+extern const char kTestNaClSandbox[];
 extern const char kTestName[];
 extern const char kTestSandbox[];
 extern const char kTestType[];

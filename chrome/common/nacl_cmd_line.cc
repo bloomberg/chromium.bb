@@ -18,7 +18,7 @@ namespace nacl {
     // TODO(gregoryd): check which flags of those below can be supported.
     static const char* const switch_names[] = {
       switches::kNoSandbox,
-      switches::kTestSandbox,
+      switches::kTestNaClSandbox,
       switches::kDisableBreakpad,
       switches::kFullMemoryCrashReport,
       switches::kEnableLogging,
