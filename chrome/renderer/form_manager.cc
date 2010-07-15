@@ -737,6 +737,8 @@ bool FormManager::FindCachedFormElement(const FormData& form,
   for (WebFrameFormElementMap::iterator iter = form_elements_map_.begin();
        iter != form_elements_map_.end(); ++iter) {
     const WebFrame* frame = iter->first;
+    // Remove once http://crbug.com/48857.
+    CHECK(frame);
 
     for (std::vector<FormElement*>::iterator form_iter = iter->second.begin();
          form_iter != iter->second.end(); ++form_iter) {
