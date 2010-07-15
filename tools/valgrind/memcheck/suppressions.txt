@@ -689,6 +689,27 @@
    fun:_ZN12AboutHandler10AboutCrashEv
 }
 {
+   # Valgrind gives false positive on initialized fields in
+   # BufferedResourceLoader::RestartLoadingTask().
+   # see https://bugs.kde.org/show_bug.cgi?id=243992
+   valgrind_bug_243992
+   Memcheck:Cond
+   fun:_ZN11webkit_glue22BufferedResourceLoader20DisableDeferIfNeededEv
+   fun:_ZN11webkit_glue22BufferedResourceLoader13SetAllowDeferEb
+   fun:_ZN11webkit_glue18BufferedDataSource18RestartLoadingTaskEv
+   ...
+}
+{
+   # Very similar to the above bug, but in WatchDogTask().
+   # see https://bugs.kde.org/show_bug.cgi?id=243992
+   valgrind_bug_243992b
+   Memcheck:Cond
+   fun:_ZN11webkit_glue22BufferedResourceLoader20DisableDeferIfNeededEv
+   fun:_ZN11webkit_glue22BufferedResourceLoader13SetAllowDeferEb
+   fun:_ZN11webkit_glue18BufferedDataSource12WatchDogTaskEv
+   ...
+}
+{
    # Minor commandline options leak in v8
    # See http://code.google.com/p/v8/issues/detail?id=275
    v8_bug_275

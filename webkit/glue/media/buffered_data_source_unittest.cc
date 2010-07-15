@@ -79,6 +79,11 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_EQ(gurl_.spec(), loader_->GetURLForDebugging().spec());
   }
 
+  void SetLoaderBuffer(size_t forward_capacity, size_t backward_capacity) {
+    loader_->buffer_.reset(
+        new media::SeekableBuffer(backward_capacity, forward_capacity));
+  }
+
   void Start() {
     InSequence s;
     EXPECT_CALL(bridge_factory_,
@@ -140,7 +145,8 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   // Helper method to write to |loader_| from |data_|.
   void WriteLoader(int position, int size) {
-    EXPECT_CALL(*this, NetworkCallback());
+    EXPECT_CALL(*this, NetworkCallback())
+        .RetiresOnSaturation();
     loader_->OnReceivedData(reinterpret_cast<char*>(data_ + position), size);
   }
 
@@ -153,6 +159,20 @@ class BufferedResourceLoaderTest : public testing::Test {
   // Verifis that data in buffer[0...size] is equal to data_[pos...pos+size].
   void VerifyBuffer(uint8* buffer, int pos, int size) {
     EXPECT_EQ(0, memcmp(buffer, data_ + pos, size));
+  }
+
+  // Helper method to disallow deferring in |loader_|.
+  void DisallowLoaderDefer() {
+    if (loader_->deferred_) {
+      EXPECT_CALL(*bridge_, SetDefersLoading(false));
+      EXPECT_CALL(*this, NetworkCallback());
+    }
+    loader_->SetAllowDefer(false);
+  }
+
+  // Helper method to allow deferring in |loader_|.
+  void AllowLoaderDefer() {
+    loader_->SetAllowDefer(true);
   }
 
   MOCK_METHOD1(StartCallback, void(int error));
@@ -360,6 +380,131 @@ TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
   URLRequestStatus status;
   status.set_status(URLRequestStatus::FAILED);
   loader_->OnCompletedRequest(status, "");
+}
+
+// Tests the logic of caching data to disk when media is paused.
+TEST_F(BufferedResourceLoaderTest, AllowDefer_NoDataReceived) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 20);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  // Start in undeferred state, then disallow defer, then allow defer
+  // without receiving data in between.
+  DisallowLoaderDefer();
+  AllowLoaderDefer();
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, AllowDefer_ReadSameWindow) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 20);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[10];
+
+  // Start in undeferred state, disallow defer, receive data but don't shift
+  // buffer window, then allow defer and read.
+  DisallowLoaderDefer();
+  WriteLoader(10, 10);
+  AllowLoaderDefer();
+
+  EXPECT_CALL(*this, ReadCallback(10));
+  ReadLoader(10, 10, buffer);
+  VerifyBuffer(buffer, 10, 10);
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, AllowDefer_ReadPastWindow) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 20);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[10];
+
+  // Not deferred, disallow defer, received data and shift buffer window,
+  // allow defer, then read in area outside of buffer window.
+  DisallowLoaderDefer();
+  WriteLoader(10, 10);
+  WriteLoader(20, 50);
+  AllowLoaderDefer();
+
+  EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
+  ReadLoader(10, 10, buffer);
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredNoDataReceived) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 20);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[10];
+
+  // Start in deferred state, then disallow defer, receive no data, and
+  // allow defer and read.
+  EXPECT_CALL(*bridge_, SetDefersLoading(true));
+  EXPECT_CALL(*this, NetworkCallback());
+  WriteLoader(10, 40);
+
+  DisallowLoaderDefer();
+  AllowLoaderDefer();
+
+  EXPECT_CALL(*this, ReadCallback(10));
+  ReadLoader(20, 10, buffer);
+  VerifyBuffer(buffer, 20, 10);
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadSameWindow) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 20);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[10];
+
+  // Start in deferred state, disallow defer, receive data and shift buffer
+  // window, allow defer, and read in a place that's still in the window.
+  EXPECT_CALL(*bridge_, SetDefersLoading(true));
+  EXPECT_CALL(*this, NetworkCallback());
+  WriteLoader(10, 30);
+
+  DisallowLoaderDefer();
+  WriteLoader(40, 5);
+  AllowLoaderDefer();
+
+  EXPECT_CALL(*this, ReadCallback(10));
+  ReadLoader(20, 10, buffer);
+  VerifyBuffer(buffer, 20, 10);
+  StopWhenLoad();
+}
+
+TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadPastWindow) {
+  Initialize(kHttpUrl, 10, 99);
+  SetLoaderBuffer(10, 20);
+  Start();
+  PartialResponse(10, 99, 100);
+
+  uint8 buffer[10];
+
+  // Start in deferred state, disallow defer, receive data and shift buffer
+  // window, allow defer, and read outside of the buffer window.
+  EXPECT_CALL(*bridge_, SetDefersLoading(true));
+  EXPECT_CALL(*this, NetworkCallback());
+  WriteLoader(10, 40);
+
+  DisallowLoaderDefer();
+  WriteLoader(50, 20);
+  WriteLoader(70, 40);
+  AllowLoaderDefer();
+
+  EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
+  ReadLoader(20, 5, buffer);
+  StopWhenLoad();
 }
 
 // TODO(hclam): add unit test for defer loading.
