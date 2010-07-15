@@ -119,17 +119,12 @@ void OptionsGroupView::Init() {
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, two_column_layout_id);
-  // We need to do this so that the label can calculate an appropriate
-  // preferred size (width * height) based on this width constraint. Otherwise
-  // Label::GetPreferredSize will return 0,0 as the preferred size.
-  title_label_->SetBounds(0, 0, left_column_width, 0);
-  layout->AddView(title_label_);
+  layout->AddView(title_label_, 1, 1, GridLayout::FILL, GridLayout::LEADING);
   layout->AddView(contents_, 1, 3, GridLayout::FILL, GridLayout::FILL);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(1, two_column_layout_id);
-  // See comment above for title_label_.
-  description_label_->SetBounds(0, 0, left_column_width, 0);
-  layout->AddView(description_label_);
+  layout->AddView(description_label_, 1, 1,
+                  GridLayout::FILL, GridLayout::LEADING);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 
   if (show_separator_) {

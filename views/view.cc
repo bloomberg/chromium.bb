@@ -56,6 +56,7 @@ View::View()
       focusable_(false),
       accessibility_focusable_(false),
       bounds_(0, 0, 0, 0),
+      needs_layout_(true),
       parent_(NULL),
       is_visible_(true),
       is_parent_owned_(true),
@@ -165,6 +166,7 @@ void View::SizeToPreferredSize() {
 }
 
 void View::PreferredSizeChanged() {
+  InvalidateLayout();
   if (parent_)
     parent_->ChildPreferredSizeChanged(this);
 }
@@ -181,6 +183,7 @@ int View::GetHeightForWidth(int w) {
 
 void View::DidChangeBounds(const gfx::Rect& previous,
                            const gfx::Rect& current) {
+  needs_layout_ = false;
   Layout();
 }
 
@@ -203,18 +206,35 @@ void View::ScrollRectToVisible(const gfx::Rect& rect) {
 /////////////////////////////////////////////////////////////////////////////
 
 void View::Layout() {
+  needs_layout_ = false;
+
   // If we have a layout manager, let it handle the layout for us.
   if (layout_manager_.get()) {
     layout_manager_->Layout(this);
     SchedulePaint();
-    return;
   }
 
-  // Otherwise, just pass on to the child views.
+  // Make sure to propagate the Layout() call to any children that haven't
+  // received it yet through the layout manager and need to be laid out. This
+  // is needed for the case when the child requires a layout but its bounds
+  // weren't changed by the layout manager. If there is no layout manager, we
+  // just propagate the Layout() call down the hierarchy, so whoever receives
+  // the call can take appropriate action.
   for (int i = 0, count = GetChildViewCount(); i < count; ++i) {
     View* child = GetChildViewAt(i);
-    child->Layout();
+    if (child->needs_layout_ || !layout_manager_.get()) {
+      child->needs_layout_ = false;
+      child->Layout();
+    }
   }
+}
+
+void View::InvalidateLayout() {
+  if (needs_layout_)
+    return;
+  needs_layout_ = true;
+  if (parent_)
+    parent_->InvalidateLayout();
 }
 
 LayoutManager* View::GetLayoutManager() const {
@@ -705,6 +725,7 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
   }
 
   ViewHierarchyChanged(is_add, parent, child);
+  parent->needs_layout_ = true;
 }
 
 void View::PropagateVisibilityNotifications(View* start, bool is_visible) {

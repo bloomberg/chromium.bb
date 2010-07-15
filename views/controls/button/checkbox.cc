@@ -35,6 +35,7 @@ Checkbox::~Checkbox() {
 
 void Checkbox::SetMultiLine(bool multiline) {
   label_->SetMultiLine(multiline);
+  PreferredSizeChanged();
 }
 
 void Checkbox::SetChecked(bool checked) {

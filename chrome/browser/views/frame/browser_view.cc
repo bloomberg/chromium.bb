@@ -420,7 +420,7 @@ BrowserView::BrowserView(Browser* browser)
       devtools_container_(NULL),
       contents_split_(NULL),
       initialized_(false),
-      ignore_layout_(false),
+      ignore_layout_(true),
 #if defined(OS_WIN)
       hung_window_detector_(&hung_plugin_action_),
       ticker_(0),
@@ -1859,6 +1859,9 @@ void BrowserView::Init() {
 #endif
 
   browser_extender_.reset(new BrowserExtender());
+
+  // We're now initialized and ready to process Layout requests.
+  ignore_layout_ = false;
 }
 
 #if defined(OS_WIN)

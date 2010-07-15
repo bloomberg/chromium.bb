@@ -21,6 +21,7 @@ ImageView::~ImageView() {
 
 void ImageView::SetImage(const SkBitmap& bm) {
   image_ = bm;
+  PreferredSizeChanged();
   SchedulePaint();
 }
 
@@ -40,6 +41,7 @@ const SkBitmap& ImageView::GetImage() {
 void ImageView::SetImageSize(const gfx::Size& image_size) {
   image_size_set_ = true;
   image_size_ = image_size;
+  PreferredSizeChanged();
 }
 
 bool ImageView::GetImageSize(gfx::Size* image_size) {

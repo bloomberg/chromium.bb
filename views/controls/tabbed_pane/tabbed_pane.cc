@@ -27,6 +27,7 @@ void TabbedPane::SetListener(Listener* listener) {
 
 void TabbedPane::AddTab(const std::wstring& title, View* contents) {
   native_tabbed_pane_->AddTab(title, contents);
+  PreferredSizeChanged();
 }
 
 void TabbedPane::AddTabAtIndex(int index,
@@ -36,6 +37,7 @@ void TabbedPane::AddTabAtIndex(int index,
   native_tabbed_pane_->AddTabAtIndex(index, title, contents,
                                      select_if_first_tab);
   contents->SetAccessibleName(title);
+  PreferredSizeChanged();
 }
 
 int TabbedPane::GetSelectedTabIndex() {
@@ -48,6 +50,7 @@ View* TabbedPane::GetSelectedTab() {
 
 View* TabbedPane::RemoveTabAtIndex(int index) {
   return native_tabbed_pane_->RemoveTabAtIndex(index);
+  PreferredSizeChanged();
 }
 
 void TabbedPane::SelectTabAt(int index) {

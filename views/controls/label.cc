@@ -97,6 +97,7 @@ void Label::PaintBackground(gfx::Canvas* canvas) {
 void Label::SetFont(const gfx::Font& font) {
   font_ = font;
   text_size_valid_ = false;
+  PreferredSizeChanged();
   SchedulePaint();
 }
 
@@ -105,6 +106,7 @@ void Label::SetText(const std::wstring& text) {
   url_set_ = false;
   text_size_valid_ = false;
   SetAccessibleName(text);
+  PreferredSizeChanged();
   SchedulePaint();
 }
 
@@ -117,6 +119,7 @@ void Label::SetURL(const GURL& url) {
   text_ = UTF8ToWide(url_.spec());
   url_set_ = true;
   text_size_valid_ = false;
+  PreferredSizeChanged();
   SchedulePaint();
 }
 
@@ -142,6 +145,7 @@ void Label::SetMultiLine(bool multi_line) {
   if (multi_line != is_multi_line_) {
     is_multi_line_ = multi_line;
     text_size_valid_ = false;
+    PreferredSizeChanged();
     SchedulePaint();
   }
 }
@@ -150,6 +154,7 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
   if (allow_character_break != allow_character_break_) {
     allow_character_break_ = allow_character_break;
     text_size_valid_ = false;
+    PreferredSizeChanged();
     SchedulePaint();
   }
 }
@@ -159,6 +164,7 @@ void Label::SetElideInMiddle(bool elide_in_middle) {
   if (elide_in_middle != elide_in_middle_) {
     elide_in_middle_ = elide_in_middle;
     text_size_valid_ = false;
+    PreferredSizeChanged();
     SchedulePaint();
   }
 }
@@ -256,7 +262,10 @@ bool Label::GetAccessibleState(AccessibilityTypes::State* state) {
 
 void Label::SetHasFocusBorder(bool has_focus_border) {
   has_focus_border_ = has_focus_border;
-  text_size_valid_ &= !is_multi_line_;
+  if (is_multi_line_) {
+    text_size_valid_ = false;
+    PreferredSizeChanged();
+  }
 }
 
 void Label::PaintText(gfx::Canvas* canvas,

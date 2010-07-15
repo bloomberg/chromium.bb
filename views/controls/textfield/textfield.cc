@@ -163,16 +163,19 @@ void Textfield::SetFont(const gfx::Font& font) {
   font_ = font;
   if (native_wrapper_)
     native_wrapper_->UpdateFont();
+  PreferredSizeChanged();
 }
 
 void Textfield::SetHorizontalMargins(int left, int right) {
   if (native_wrapper_)
     native_wrapper_->SetHorizontalMargins(left, right);
+  PreferredSizeChanged();
 }
 
 void Textfield::SetHeightInLines(int num_lines) {
   DCHECK(IsMultiLine());
   num_lines_ = num_lines;
+  PreferredSizeChanged();
 }
 
 void Textfield::RemoveBorder() {

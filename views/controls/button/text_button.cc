@@ -386,6 +386,7 @@ void TextButton::UpdateTextSize() {
   max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
                          std::max(max_text_size_.height(),
                                   text_size_.height()));
+  PreferredSizeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

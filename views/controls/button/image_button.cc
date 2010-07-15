@@ -32,6 +32,7 @@ ImageButton::~ImageButton() {
 
 void ImageButton::SetImage(ButtonState aState, const SkBitmap* anImage) {
   images_[aState] = anImage ? *anImage : SkBitmap();
+  PreferredSizeChanged();
 }
 
 void ImageButton::SetBackground(SkColor color,
@@ -154,6 +155,7 @@ void ToggleImageButton::SetImage(ButtonState state, const SkBitmap* image) {
     if (state_ == state)
       SchedulePaint();
   }
+  PreferredSizeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

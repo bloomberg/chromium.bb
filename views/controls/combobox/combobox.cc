@@ -33,6 +33,7 @@ void Combobox::ModelChanged() {
   selected_item_ = std::min(0, model_->GetItemCount());
   if (native_wrapper_)
     native_wrapper_->UpdateFromModel();
+  PreferredSizeChanged();
 }
 
 void Combobox::SetSelectedItem(int index) {

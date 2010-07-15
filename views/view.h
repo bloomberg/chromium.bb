@@ -282,6 +282,11 @@ class View : public AcceleratorTarget {
   // specific to the current Layout Manager)
   virtual void Layout();
 
+  // Mark this view and all parents to require a relayout. This ensures the
+  // next call to Layout() will propagate to this view, even if the bounds of
+  // parent views do not change.
+  void InvalidateLayout();
+
   // Gets/Sets the Layout Manager used by this view to size and place its
   // children.
   // The LayoutManager is owned by the View and is deleted when the view is
@@ -1041,7 +1046,9 @@ class View : public AcceleratorTarget {
   // parent an opportunity to do a fresh layout if that makes sense.
   virtual void ChildPreferredSizeChanged(View* child) {}
 
-  // Simply calls ChildPreferredSizeChanged on the parent if there is one.
+  // Invalidates the layout and calls ChildPreferredSizeChanged on the parent
+  // if there is one. Be sure to call View::PreferredSizeChanged when
+  // overriding such that the layout is properly invalidated.
   virtual void PreferredSizeChanged();
 
   // Views must invoke this when the tooltip text they are to display changes.
@@ -1221,6 +1228,9 @@ class View : public AcceleratorTarget {
 
   // This View's bounds in the parent coordinate system.
   gfx::Rect bounds_;
+
+  // Whether the view needs to be laid out.
+  bool needs_layout_;
 
   // This view's parent
   View* parent_;

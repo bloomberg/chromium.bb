@@ -82,6 +82,7 @@ void NativeButton::SetLabel(const std::wstring& label) {
 
   // Update the accessible name whenever the label changes.
   SetAccessibleName(label);
+  PreferredSizeChanged();
 }
 
 void NativeButton::SetIsDefault(bool is_default) {
@@ -98,12 +99,14 @@ void NativeButton::SetNeedElevation(bool need_elevation) {
   need_elevation_ = need_elevation;
   if (native_wrapper_)
     native_wrapper_->UpdateLabel();
+  PreferredSizeChanged();
 }
 
 void NativeButton::SetAppearsAsDefault(bool appears_as_default) {
   is_default_ = appears_as_default;
   if (native_wrapper_)
     native_wrapper_->UpdateDefault();
+  PreferredSizeChanged();
 }
 
 void NativeButton::ButtonPressed() {

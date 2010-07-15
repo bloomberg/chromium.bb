@@ -57,6 +57,7 @@ void Throbber::SetFrames(SkBitmap* frames) {
   DCHECK(frames_->width() > 0 && frames_->height() > 0);
   DCHECK(frames_->width() % frames_->height() == 0);
   frame_count_ = frames_->width() / frames_->height();
+  PreferredSizeChanged();
 }
 
 void Throbber::Run() {
