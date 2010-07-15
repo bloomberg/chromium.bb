@@ -360,7 +360,8 @@ void DownloadManager::Shutdown() {
   DCHECK(shutdown_needed_) << "Shutdown called when not needed.";
 
   // Stop receiving download updates
-  file_manager_->RemoveDownloadManager(this);
+  if (file_manager_)
+    file_manager_->RemoveDownloadManager(this);
 
   // Stop making history service requests
   cancelable_consumer_.CancelAllRequests();
@@ -568,16 +569,13 @@ bool DownloadManager::Init(Profile* profile) {
   // a no op.
   CleanUpInProgressHistoryEntries();
 
+  // In test mode, there may be no ResourceDispatcherHost.  In this case it's
+  // safe to avoid setting |file_manager_| because we only call a small set of
+  // functions, none of which need it.
   ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
-  if (!rdh) {
-    NOTREACHED();
-    return false;
-  }
-
-  file_manager_ = rdh->download_file_manager();
-  if (!file_manager_) {
-    NOTREACHED();
-    return false;
+  if (rdh) {
+    file_manager_ = rdh->download_file_manager();
+    DCHECK(file_manager_);
   }
 
   // Get our user preference state.
@@ -654,26 +652,28 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
       info->is_extension_install = true;
   }
 
-  // Freeze the user's preference for showing a Save As dialog.  We're going to
-  // bounce around a bunch of threads and we don't want to worry about race
-  // conditions where the user changes this pref out from under us.
-  if (*prompt_for_download_) {
-    // But never obey the preference for the following scenarios:
-    // 1) Extension installation. Note that we only care here about the case
-    //    where an extension is installed, not when one is downloaded with
-    //    "save as...".
-    // 2) Drag-out download. Since we will save to the destination folder that
-    //    is dropped to, we should not pop up a Save As dialog.
-    if (!info->is_extension_install && info->save_info.file_path.empty())
-      info->save_as = true;
-  }
-
   if (info->save_info.file_path.empty()) {
+    FilePath generated_name;
+    GenerateFileNameFromInfo(info, &generated_name);
+
+    // Freeze the user's preference for showing a Save As dialog.  We're going
+    // to bounce around a bunch of threads and we don't want to worry about race
+    // conditions where the user changes this pref out from under us.
+    if (*prompt_for_download_) {
+      // But ignore the user's preference for the following scenarios:
+      // 1) Extension installation. Note that we only care here about the case
+      //    where an extension is installed, not when one is downloaded with
+      //    "save as...".
+      // 2) Filetypes marked "always open." If the user just wants this file
+      //    opened, don't bother asking where to keep it.
+      if (!info->is_extension_install &&
+          !ShouldOpenFileBasedOnExtension(generated_name))
+        info->save_as = true;
+    }
+
     // Determine the proper path for a download, by either one of the following:
     // 1) using the default download directory.
     // 2) prompting the user.
-    FilePath generated_name;
-    GenerateFileNameFromInfo(info, &generated_name);
     if (info->save_as && !last_download_path_.empty())
       info->suggested_path = last_download_path_;
     else
