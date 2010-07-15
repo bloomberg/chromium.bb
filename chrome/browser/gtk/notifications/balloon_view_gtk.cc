@@ -318,11 +318,17 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   int pos_y = gdk_screen_height();
   gtk_window_move(GTK_WINDOW(frame_container_), pos_x, pos_y);
   balloon_->SetPosition(gfx::Point(pos_x, pos_y), false);
-
   gtk_widget_show_all(frame_container_);
 
   notification_registrar_.Add(this,
       NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
+}
+
+void BalloonViewImpl::Update() {
+  DCHECK(html_contents_.get()) << "BalloonView::Update called before Show";
+  if (html_contents_->render_view_host())
+    html_contents_->render_view_host()->NavigateToURL(
+        balloon_->notification().content_url());
 }
 
 gfx::Point BalloonViewImpl::GetContentsOffset() const {

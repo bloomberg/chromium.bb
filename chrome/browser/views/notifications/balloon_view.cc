@@ -205,6 +205,13 @@ void BalloonViewImpl::RepositionToBalloon() {
   animation_->Show();
 }
 
+void BalloonViewImpl::Update() {
+  DCHECK(html_contents_.get()) << "BalloonView::Update called before Show";
+  if (html_contents_->render_view_host())
+    html_contents_->render_view_host()->NavigateToURL(
+        balloon_->notification().content_url());
+}
+
 void BalloonViewImpl::AnimationProgressed(const Animation* animation) {
   DCHECK(animation == animation_.get());
 

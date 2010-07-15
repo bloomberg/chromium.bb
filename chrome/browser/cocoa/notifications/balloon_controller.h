@@ -60,6 +60,9 @@
 // button handler.
 - (void)closeBalloon:(bool)byUser;
 
+// Update the contents of the balloon to match the notification.
+- (void)updateContents;
+
 // Repositions the view to match the position and size of the balloon.
 // Called by the bridge when the size changes.
 - (void)repositionToBalloon;

@@ -19,7 +19,7 @@ class BalloonViewBridge : public BalloonView {
 
   // BalloonView interface.
   virtual void Show(Balloon* balloon);
-  virtual void Update() {}
+  virtual void Update();
   virtual void RepositionToBalloon();
   virtual void Close(bool by_user);
   virtual gfx::Size GetSize() const;

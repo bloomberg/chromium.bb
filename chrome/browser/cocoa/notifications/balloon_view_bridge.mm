@@ -38,3 +38,7 @@ void BalloonViewBridge::Show(Balloon* balloon) {
 BalloonHost* BalloonViewBridge::GetHost() const {
   return [controller_ getHost];
 }
+
+void BalloonViewBridge::Update() {
+  [controller_ updateContents];
+}

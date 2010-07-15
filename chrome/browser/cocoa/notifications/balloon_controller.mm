@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -90,6 +91,13 @@ const int kRightMargin = 1;
     htmlContents_->Shutdown();
   balloon_->OnClose(byUser);
   balloon_ = NULL;
+}
+
+- (void)updateContents {
+  DCHECK(htmlContents_.get()) << "BalloonView::Update called before Show";
+  if (htmlContents_->render_view_host())
+    htmlContents_->render_view_host()->NavigateToURL(
+        balloon_->notification().content_url());
 }
 
 - (void)repositionToBalloon {
