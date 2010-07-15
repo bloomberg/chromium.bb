@@ -460,6 +460,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                           DictionaryValue* args,
                           IPC::Message* reply_message);
 
+  // Import the given settings from the given browser.
+  // Uses the JSON interface for input/output.
+  void ImportSettings(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
+
   // Fill in an AutoFillProfile with the given profile information.
   // Uses the JSON interface for input/output.
   void FillAutoFillProfile(Browser* browser,

@@ -62,6 +62,8 @@
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/importer/importer.h"
+#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/login_prompt.h"
@@ -2349,6 +2351,86 @@ void AutomationProvider::SaveTabContents(Browser* browser,
   Send(reply_message);
 }
 
+// Refer to ImportSettings() in chrome/test/pyautolib/pyauto.py for sample
+// json input.
+// Sample json output: "{}"
+void AutomationProvider::ImportSettings(Browser* browser,
+                                        DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  std::string json_return = "{}";
+
+  // Map from the json string passed over to the import item masks.
+  std::map<std::string, ImportItem> string_to_import_item;
+  string_to_import_item["HISTORY"] = importer::HISTORY;
+  string_to_import_item["FAVORITES"] = importer::FAVORITES;
+  string_to_import_item["COOKIES"] = importer::COOKIES;
+  string_to_import_item["PASSWORDS"] = importer::PASSWORDS;
+  string_to_import_item["SEARCH_ENGINES"] = importer::SEARCH_ENGINES;
+  string_to_import_item["HOME_PAGE"] = importer::HOME_PAGE;
+  string_to_import_item["ALL"] = importer::ALL;
+
+  std::wstring browser_name;
+  int import_items = 0;
+  ListValue* import_items_list = NULL;
+  bool first_run;
+
+  if (!args->GetString(L"import_from", &browser_name) ||
+      !args->GetBoolean(L"first_run", &first_run) ||
+      !args->GetList(L"import_items", &import_items_list)) {
+    std::string json_return =
+        JSONErrorString("Incorrect type for one or more of the arguments.");
+    AutomationMsg_SendJSONRequest::WriteReplyParams(
+        reply_message, json_return, false);
+    Send(reply_message);
+    return;
+  }
+
+  int num_items = import_items_list->GetSize();
+  for (int i = 0; i < num_items; i++) {
+    std::string item;
+    import_items_list->GetString(i, &item);
+    // If the provided string is not part of the map, error out.
+    if (!ContainsKey(string_to_import_item, item)) {
+      json_return =
+          JSONErrorString("Invalid item string found in import_items.");
+      AutomationMsg_SendJSONRequest::WriteReplyParams(
+          reply_message, json_return, false);
+      Send(reply_message);
+      return;
+    }
+    import_items |= string_to_import_item[item];
+  }
+
+  ImporterHost* importer_host = new ImporterHost();
+  // Get the correct ProfileInfo based on the browser they user provided.
+  importer::ProfileInfo profile_info;
+  int num_browsers = importer_host->GetAvailableProfileCount();
+  int i = 0;
+  for ( ; i < num_browsers; i++) {
+    std::wstring name = importer_host->GetSourceProfileNameAt(i);
+    if (name == browser_name) {
+      profile_info = importer_host->GetSourceProfileInfoAt(i);
+      break;
+    }
+  }
+  // If we made it to the end of the loop, then the input was bad.
+  if (i == num_browsers) {
+    json_return =
+        JSONErrorString("Invalid browser name string found.");
+    AutomationMsg_SendJSONRequest::WriteReplyParams(
+        reply_message, json_return, false);
+    Send(reply_message);
+    return;
+  }
+
+  Profile* profile = browser->profile();
+
+  importer_host->SetObserver(
+      new AutomationProviderImportSettingsObserver(this, reply_message));
+  importer_host->StartImportSettings(profile_info, profile, import_items,
+                                     new ProfileWriter(profile), first_run);
+}
+
 // Refer to ClearBrowsingData() in chrome/test/pyautolib/pyauto.py for sample
 // json input.
 // Sample json output: {}
@@ -2771,6 +2853,8 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetInitialLoadTimes"] = &AutomationProvider::GetInitialLoadTimes;
 
   handler_map["SaveTabContents"] = &AutomationProvider::SaveTabContents;
+
+  handler_map["ImportSettings"] = &AutomationProvider::ImportSettings;
 
   handler_map["ClearBrowsingData"] = &AutomationProvider::ClearBrowsingData;
 

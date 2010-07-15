@@ -757,6 +757,41 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     finally:
       shutil.rmtree(tempdir)
 
+  def ImportSettings(self, import_from, first_run, import_items):
+    """Import the specified import items from the specified browser.
+
+    Implements the features available in the "Import Settings" part of the
+    first-run UI dialog.
+
+    Args:
+      import_from: A string indicating which browser to import from. Possible
+                   strings (depending on which browsers are installed on the
+                   machine) are: 'Mozilla Firefox', 'Google Toolbar',
+                   'Microsoft Internet Explorer', 'Safari'
+      first_run: A boolean indicating whether this is the first run of
+                 the browser.
+                 If it is not the first run then:
+                 1) Bookmarks are only imported to the bookmarks bar if there
+                    aren't already bookmarks.
+                 2) The bookmark bar is shown.
+      import_items: A list of strings indicating which items to import.
+                    Strings that can be in the list are:
+                    HISTORY, FAVORITES, PASSWORDS, SEARCH_ENGINES, HOME_PAGE,
+                    ALL (note: COOKIES is not supported by the browser yet)
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'ImportSettings',
+      'import_from': import_from,
+      'first_run': first_run,
+      'import_items': import_items
+    }
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
+
   def ClearBrowsingData(self, to_remove, time_period):
     """Clear the specified browsing data. Implements the features available in
        the "ClearBrowsingData" UI.

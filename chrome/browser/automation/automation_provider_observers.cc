@@ -1012,6 +1012,14 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
   delete this;
 }
 
+void AutomationProviderImportSettingsObserver::ImportEnded() {
+  // Send back an empty success message.
+  AutomationMsg_SendJSONRequest::WriteReplyParams(
+      reply_message_, std::string("{}"), true);
+  provider_->Send(reply_message_);
+  delete this;
+}
+
 void AutomationProviderBrowsingDataObserver::OnBrowsingDataRemoverDone() {
   // Send back an empty success message
   AutomationMsg_SendJSONRequest::WriteReplyParams(
