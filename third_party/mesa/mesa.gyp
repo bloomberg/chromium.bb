@@ -5,6 +5,15 @@
 {
   'variables': {
   },
+  'target_defaults': {
+    'conditions': [
+      ['OS=="linux"', {
+        'cflags': [
+          '-fPIC',
+        ],
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'mesa',
@@ -424,7 +433,8 @@
     # replace it with a slow software renderer.
     {
       'target_name': 'osmesa',
-      'type': 'shared_library',
+      'type': 'loadable_module',
+      'mac_bundle': 0,
       'dependencies': [
         'mesa',
       ],
