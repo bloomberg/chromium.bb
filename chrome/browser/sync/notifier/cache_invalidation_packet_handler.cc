@@ -83,9 +83,15 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
 
  private:
   bool IsValidCacheInvalidationIqPacket(const buzz::XmlElement* stanza) {
+    // We make sure to compare jids (which are normalized) instead of
+    // just strings -- server may use non-normalized jids in
+    // attributes.
+    //
+    // TODO(akalin): Add unit tests for this.
+    buzz::Jid to(stanza->Attr(buzz::QN_TO));
     return
         (MatchRequestIq(stanza, buzz::STR_SET, kQnData) &&
-         (stanza->Attr(buzz::QN_TO) == GetClient()->jid().Str()));
+         (to == GetClient()->jid()));
   }
 
   bool GetCacheInvalidationIqPacketData(const buzz::XmlElement* stanza,
@@ -164,7 +170,6 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
     buzz::XmlElement* cache_invalidation_iq_packet =
         new buzz::XmlElement(kQnData, true);
     iq->AddElement(cache_invalidation_iq_packet);
-    // TODO(akalin): Remove use of seq and sid.
     cache_invalidation_iq_packet->SetAttr(kQnSeq, IntToString(seq));
     cache_invalidation_iq_packet->SetAttr(kQnSid, sid);
     cache_invalidation_iq_packet->SetAttr(kQnServiceUrl,
