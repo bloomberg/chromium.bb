@@ -230,6 +230,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_LT(NSMaxX(textFrame), searchHintMaxX);
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
+
   // Text frame should take everything over again on reset.
   [cell clearHint];
   textFrame = [cell textFrameForFrame:bounds];
@@ -288,6 +289,7 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
 
   [cell clearHint];
+
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
@@ -413,6 +415,8 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   EXPECT_LE(NSMaxX(iconRect1), NSMinX(iconRect0));
   EXPECT_LE(NSMaxX(labelRect), NSMinX(iconRect0));
 }
+
+  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
 
 // Test that the cell drops the search hint if there is no room for
 // it.

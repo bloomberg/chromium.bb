@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/location_bar/content_setting_image_view.h"
@@ -457,8 +458,20 @@ void LocationBarView::Layout() {
   selected_keyword_view_->SetVisible(show_selected_keyword);
   keyword_hint_view_->SetVisible(show_keyword_hint);
   if (show_selected_keyword) {
-    if (selected_keyword_view_->keyword() != keyword)
+    if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
+
+      const TemplateURL* template_url =
+          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+      if (template_url && template_url->IsExtensionKeyword()) {
+        const SkBitmap& bitmap = profile_->GetExtensionsService()->
+            GetOmniboxIcon(template_url->GetExtensionId());
+        selected_keyword_view_->SetImage(bitmap);
+      } else {
+        selected_keyword_view_->SetImage(*ResourceBundle::GetSharedInstance().
+            GetBitmapNamed(IDR_OMNIBOX_SEARCH));
+      }
+    }
   } else if (show_keyword_hint) {
     if (keyword_hint_view_->keyword() != keyword)
       keyword_hint_view_->SetKeyword(keyword);

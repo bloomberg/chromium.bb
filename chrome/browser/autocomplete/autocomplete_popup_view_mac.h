@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include <string>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -20,7 +21,9 @@
 class AutocompletePopupModel;
 class AutocompleteEditModel;
 class AutocompleteEditViewMac;
+@class NSImage;
 class Profile;
+class SkBitmap;
 
 // Implements AutocompletePopupView using a raw NSWindow containing an
 // NSTableView.
@@ -113,6 +116,9 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // allows existing animations to continue if the size doesn't
   // change.
   void PositionPopup(const CGFloat matrixHeight);
+
+  // Returns the NSImage that should be used as an icon for the given match.
+  NSImage* ImageForMatch(const AutocompleteMatch& match);
 
   scoped_ptr<AutocompletePopupModel> model_;
   AutocompleteEditViewMac* edit_view_;

@@ -8,6 +8,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
@@ -278,4 +279,13 @@ void AutocompletePopupModel::Observe(NotificationType type,
     SetHoveredLine(kNoMatch);
 
   view_->UpdatePopupAppearance();
+}
+
+const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(
+    const AutocompleteMatch& match) const {
+  if (!match.template_url || !match.template_url->IsExtensionKeyword())
+    return NULL;
+
+  return &profile_->GetExtensionsService()->GetOmniboxIcon(
+      match.template_url->GetExtensionId());
 }

@@ -33,6 +33,10 @@ class AutocompleteResultViewModel {
 
   // Returns true if the index is hovered.
   virtual bool IsHoveredIndex(size_t index) const = 0;
+
+  // Returns the special-case icon we should use for the given index, or NULL
+  // if we should use the default icon.
+  virtual const SkBitmap* GetSpecialIcon(size_t index) const = 0;
 };
 
 // A view representing the contents of the autocomplete popup.
@@ -63,6 +67,7 @@ class AutocompletePopupContentsView : public views::View,
   // Overridden from AutocompleteResultViewModel:
   virtual bool IsSelectedIndex(size_t index) const;
   virtual bool IsHoveredIndex(size_t index) const;
+  virtual const SkBitmap* GetSpecialIcon(size_t index) const;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const Animation* animation);

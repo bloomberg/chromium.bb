@@ -130,7 +130,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual std::wstring GetTitle() const;
 
   NSImage* GetTabButtonImage();
+  NSImage* GetKeywordImage(const std::wstring& keyword);
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
+
 
   // Overridden from NotificationObserver.
   virtual void Observe(NotificationType type,

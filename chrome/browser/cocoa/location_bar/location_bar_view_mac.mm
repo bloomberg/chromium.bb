@@ -391,6 +391,18 @@ NSImage* LocationBarViewMac::GetTabButtonImage() {
   return tab_button_image_;
 }
 
+NSImage* LocationBarViewMac::GetKeywordImage(const std::wstring& keyword) {
+  const TemplateURL* template_url =
+      profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+  if (template_url && template_url->IsExtensionKeyword()) {
+    const SkBitmap& bitmap = profile_->GetExtensionsService()->
+        GetOmniboxIcon(template_url->GetExtensionId());
+    return gfx::SkBitmapToNSImage(bitmap);
+  }
+
+  return AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
+}
+
 void LocationBarViewMac::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
@@ -851,8 +863,8 @@ void LocationBarViewMac::Layout() {
     // Switch from location icon to keyword mode.
     location_icon_decoration_->SetVisible(false);
     selected_keyword_decoration_->SetVisible(true);
-
     selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
+    selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
 
     // TODO(shess): This goes away once the hints are decorations.
     [cell clearHint];

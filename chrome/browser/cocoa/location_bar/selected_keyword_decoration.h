@@ -24,6 +24,8 @@ class SelectedKeywordDecoration : public BubbleDecoration {
   // return the resulting width.
   virtual CGFloat GetWidthForSpace(CGFloat width);
 
+  void SetImage(NSImage* image);
+
  private:
   friend class SelectedKeywordDecorationTest;
   FRIEND_TEST_ALL_PREFIXES(SelectedKeywordDecorationTest,

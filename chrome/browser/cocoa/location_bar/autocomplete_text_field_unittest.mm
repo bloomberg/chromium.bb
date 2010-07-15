@@ -266,6 +266,7 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
 
   [cell clearHint];
+
   [field_ display];
 }
 
@@ -382,6 +383,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
+
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   const NSRect baseEditorFrame(EditorFrame());
 
@@ -398,6 +400,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   mock_left_decoration_.SetVisible(true);
   EXPECT_FALSE(NSIsEmptyRect([cell frameForDecoration:&mock_left_decoration_
                                               inFrame:[field_ bounds]]));
+
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
 }

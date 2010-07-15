@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_VIEW_GTK_H_
 
 #include <gtk/gtk.h>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -16,6 +17,7 @@
 
 class AutocompleteEditModel;
 class AutocompleteEditView;
+class AutocompleteMatch;
 class AutocompletePopupModel;
 class GtkThemeProvider;
 class Profile;
@@ -55,6 +57,8 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
 
   // Accept a line of the results, for example, when the user clicks a line.
   void AcceptLine(size_t line, WindowOpenDisposition disposition);
+
+  GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected);
 
   static gboolean HandleExposeThunk(GtkWidget* widget, GdkEventExpose* event,
                                     gpointer userdata) {
@@ -98,6 +102,11 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
 
   GtkThemeProvider* theme_provider_;
   NotificationRegistrar registrar_;
+
+  // Used to cache GdkPixbufs and map them from the SkBitmaps they were created
+  // from.
+  typedef std::map<const SkBitmap*, GdkPixbuf*> PixbufMap;
+  PixbufMap pixbufs_;
 
   // A list of colors which we should use for drawing the popup. These change
   // between gtk and normal mode.

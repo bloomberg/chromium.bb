@@ -153,7 +153,7 @@ class AutocompleteResultView : public views::View {
 
   ResultViewState GetState() const;
 
-  SkBitmap* GetIcon() const;
+  const SkBitmap* GetIcon() const;
 
   // Draws the specified |text| into the canvas, using highlighting provided by
   // |classifications|. If |force_dim| is true, ACMatchClassification::DIM is
@@ -339,7 +339,11 @@ ResultViewState AutocompleteResultView::GetState() const {
   return model_->IsHoveredIndex(model_index_) ? HOVERED : NORMAL;
 }
 
-SkBitmap* AutocompleteResultView::GetIcon() const {
+const SkBitmap* AutocompleteResultView::GetIcon() const {
+  const SkBitmap* bitmap = model_->GetSpecialIcon(model_index_);
+  if (bitmap)
+    return bitmap;
+
   int icon = match_.starred ?
       IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
   if (model_->IsSelectedIndex(model_index_)) {
@@ -738,6 +742,13 @@ bool AutocompletePopupContentsView::IsSelectedIndex(size_t index) const {
 
 bool AutocompletePopupContentsView::IsHoveredIndex(size_t index) const {
   return HasMatchAt(index) ? index == model_->hovered_line() : false;
+}
+
+const SkBitmap* AutocompletePopupContentsView::GetSpecialIcon(
+    size_t index) const {
+  if (!HasMatchAt(index))
+    return NULL;
+  return model_->GetSpecialIconForMatch(GetMatchAtIndex(index));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

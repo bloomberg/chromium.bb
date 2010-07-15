@@ -186,6 +186,9 @@ ExtensionsService::ExtensionsService(Profile* profile,
   }
 
   backend_ = new ExtensionsServiceBackend(install_directory_);
+
+  // Use monochrome icons for omnibox icons.
+  omnibox_icon_manager_.set_monochrome(true);
 }
 
 ExtensionsService::~ExtensionsService() {
@@ -906,6 +909,11 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
 
   if (profile_->GetTemplateURLModel())
     profile_->GetTemplateURLModel()->RegisterExtensionKeyword(extension);
+
+  // Load the icon for omnibox-enabled extensions so it will be ready to display
+  // in the URL bar.
+  if (!extension->omnibox_keyword().empty())
+    omnibox_icon_manager_.LoadIcon(extension);
 }
 
 void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
@@ -1027,6 +1035,11 @@ Extension* ExtensionsService::GetExtensionByOverlappingWebExtent(
   }
 
   return NULL;
+}
+
+const SkBitmap& ExtensionsService::GetOmniboxIcon(
+    const std::string& extension_id) {
+  return omnibox_icon_manager_.GetIcon(extension_id);
 }
 
 void ExtensionsService::ClearProvidersForTesting() {

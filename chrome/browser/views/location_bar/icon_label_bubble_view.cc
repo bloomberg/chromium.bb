@@ -43,6 +43,10 @@ void IconLabelBubbleView::SetLabel(const std::wstring& label) {
   label_->SetText(label);
 }
 
+void IconLabelBubbleView::SetImage(const SkBitmap& bitmap) {
+  image_->SetImage(bitmap);
+}
+
 void IconLabelBubbleView::Paint(gfx::Canvas* canvas) {
   int y_offset = (GetParent()->height() - height()) / 2;
   canvas->TranslateInt(0, y_offset);

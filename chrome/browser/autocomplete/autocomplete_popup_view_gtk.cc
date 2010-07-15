@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -196,26 +197,6 @@ void SetupLayoutForMatch(PangoLayout* layout,
   pango_attr_list_unref(attrs);
 }
 
-GdkPixbuf* IconForMatch(BrowserThemeProvider* theme,
-                        const AutocompleteMatch& match,
-                        bool selected) {
-  int icon = match.starred ?
-      IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);
-  if (selected) {
-    switch (icon) {
-      case IDR_OMNIBOX_HTTP:    icon = IDR_OMNIBOX_HTTP_DARK; break;
-      case IDR_OMNIBOX_HISTORY: icon = IDR_OMNIBOX_HISTORY_DARK; break;
-      case IDR_OMNIBOX_SEARCH:  icon = IDR_OMNIBOX_SEARCH_DARK; break;
-      case IDR_OMNIBOX_MORE:    icon = IDR_OMNIBOX_MORE_DARK; break;
-      case IDR_OMNIBOX_STAR:    icon = IDR_OMNIBOX_STAR_DARK; break;
-      default:                  NOTREACHED(); break;
-    }
-  }
-
-  // TODO(estade): Do we want to flip these for RTL?  (Windows doesn't).
-  return theme->GetPixbufNamed(icon);
-}
-
 // Generates the normal URL color, a green color used in unhighlighted URL
 // text. It is a mix of |kURLTextColor| and the current text color.  Unlike the
 // selected text color, It is more important to match the qualities of the
@@ -352,6 +333,9 @@ AutocompletePopupViewGtk::~AutocompletePopupViewGtk() {
   model_.reset();
   g_object_unref(layout_);
   gtk_widget_destroy(window_);
+
+  for (PixbufMap::iterator it = pixbufs_.begin(); it != pixbufs_.end(); ++it)
+    g_object_unref(it->second);
 }
 
 void AutocompletePopupViewGtk::InvalidateLine(size_t line) {
@@ -498,6 +482,32 @@ void AutocompletePopupViewGtk::AcceptLine(size_t line,
                       is_keyword_hint ? std::wstring() : keyword);
 }
 
+GdkPixbuf* AutocompletePopupViewGtk::IconForMatch(
+    const AutocompleteMatch& match, bool selected) {
+  const SkBitmap* bitmap = model_->GetSpecialIconForMatch(match);
+  if (bitmap) {
+    if (!ContainsKey(pixbufs_, bitmap))
+      pixbufs_[bitmap] = gfx::GdkPixbufFromSkBitmap(bitmap);
+    return pixbufs_[bitmap];
+  }
+
+  int icon = match.starred ?
+      IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);
+  if (selected) {
+    switch (icon) {
+      case IDR_OMNIBOX_HTTP:    icon = IDR_OMNIBOX_HTTP_DARK; break;
+      case IDR_OMNIBOX_HISTORY: icon = IDR_OMNIBOX_HISTORY_DARK; break;
+      case IDR_OMNIBOX_SEARCH:  icon = IDR_OMNIBOX_SEARCH_DARK; break;
+      case IDR_OMNIBOX_MORE:    icon = IDR_OMNIBOX_MORE_DARK; break;
+      case IDR_OMNIBOX_STAR:    icon = IDR_OMNIBOX_STAR_DARK; break;
+      default:                  NOTREACHED(); break;
+    }
+  }
+
+  // TODO(estade): Do we want to flip these for RTL?  (Windows doesn't).
+  return theme_provider_->GetPixbufNamed(icon);
+}
+
 gboolean AutocompletePopupViewGtk::HandleMotion(GtkWidget* widget,
                                                 GdkEventMotion* event) {
   // TODO(deanm): Windows has a bunch of complicated logic here.
@@ -610,7 +620,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
         (line_rect.width() - kIconLeftPadding - kIconWidth + gtk_offset);
     // Draw the icon for this result.
     DrawFullPixbuf(drawable, gc,
-                   IconForMatch(theme_provider_, match, is_selected),
+                   IconForMatch(match, is_selected),
                    icon_start_x, line_rect.y() + kIconTopPadding);
 
     // Draw the results text vertically centered in the results space.

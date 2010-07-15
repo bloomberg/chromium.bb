@@ -20,6 +20,7 @@
 #include "base/tuple.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -275,6 +276,9 @@ class ExtensionsService
   // extent, if one exists.
   Extension* GetExtensionByOverlappingWebExtent(const ExtensionExtent& extent);
 
+  // Returns the icon to display in the omnibox for the given extension.
+  const SkBitmap& GetOmniboxIcon(const std::string& extension_id);
+
   // Clear all ExternalExtensionProviders.
   void ClearProvidersForTesting();
 
@@ -333,7 +337,6 @@ class ExtensionsService
 
   ExtensionsQuotaService* quota_service() { return &quota_service_; }
 
-  // Access to menu items added by extensions.
   ExtensionMenuManager* menu_manager() { return &menu_manager_; }
 
   // Notify the frontend that there was an error loading an extension.
@@ -435,6 +438,9 @@ class ExtensionsService
 
   // Keeps track of menu items added by extensions.
   ExtensionMenuManager menu_manager_;
+
+  // Keeps track of favicon-sized omnibox icons for extensions.
+  ExtensionIconManager omnibox_icon_manager_;
 
   // List of registered component extensions (see Extension::Location).
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;

@@ -30,12 +30,12 @@ CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width) {
   const CGFloat full_width =
       GetWidthForImageAndLabel(search_image_, full_string_);
   if (full_width <= width) {
-    SetImage(search_image_);
+    BubbleDecoration::SetImage(search_image_);
     SetLabel(full_string_);
     return full_width;
   }
 
-  SetImage(nil);
+  BubbleDecoration::SetImage(nil);
   const CGFloat no_image_width = GetWidthForImageAndLabel(nil, full_string_);
   if (no_image_width <= width || !partial_string_) {
     SetLabel(full_string_);
@@ -64,4 +64,10 @@ void SelectedKeywordDecoration::SetKeyword(const std::wstring& short_name,
     partial_string_.reset(
         [l10n_util::GetNSStringF(message_id, WideToUTF16(min_name)) copy]);
   }
+}
+
+void SelectedKeywordDecoration::SetImage(NSImage* image) {
+  if (image != search_image_)
+    search_image_.reset([image retain]);
+  BubbleDecoration::SetImage(image);
 }

@@ -12,6 +12,7 @@
 class AutocompleteEditModel;
 class AutocompleteEditView;
 class Profile;
+class SkBitmap;
 
 class AutocompletePopupView;
 
@@ -109,6 +110,10 @@ class AutocompletePopupModel : public NotificationObserver {
   // Called when the user hits shift-delete.  This should determine if the item
   // can be removed from history, and if so, remove it and update the popup.
   void TryDeletingCurrentItem();
+
+  // Returns the special icon to use for a given match, or NULL if we should
+  // use a standard style icon.
+  const SkBitmap* GetSpecialIconForMatch(const AutocompleteMatch& match) const;
 
   // The token value for selected_line_, hover_line_ and functions dealing with
   // a "line number" that indicates "no line".

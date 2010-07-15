@@ -208,9 +208,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                      tab_to_search_partial_label_, FALSE, FALSE, 0);
   GtkWidget* tab_to_search_hbox = gtk_hbox_new(FALSE, 0);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  GtkWidget* tab_to_search_lens = gtk_image_new_from_pixbuf(
+  tab_to_search_magnifier_ = gtk_image_new_from_pixbuf(
       rb.GetPixbufNamed(IDR_OMNIBOX_SEARCH));
-  gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_lens,
+  gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_magnifier_,
                      FALSE, FALSE, 0);
   gtk_util::CenterWidgetInHBox(tab_to_search_hbox, tab_to_search_label_hbox,
                                false, 0);
@@ -875,6 +875,24 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
                      WideToUTF8(full_name).c_str());
   gtk_label_set_text(GTK_LABEL(tab_to_search_partial_label_),
                      WideToUTF8(partial_name).c_str());
+
+  if (last_keyword_ != keyword) {
+    last_keyword_ = keyword;
+
+    if (is_extension_keyword) {
+      const TemplateURL* template_url =
+          profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
+      const SkBitmap& bitmap = profile_->GetExtensionsService()->
+          GetOmniboxIcon(template_url->GetExtensionId());
+      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_), pixbuf);
+      g_object_unref(pixbuf);
+    } else {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_),
+                                rb.GetPixbufNamed(IDR_OMNIBOX_SEARCH));
+    }
+  }
 }
 
 void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {

@@ -362,6 +362,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Area on the left shown when in tab to search mode.
   GtkWidget* tab_to_search_box_;
+  GtkWidget* tab_to_search_magnifier_;
   GtkWidget* tab_to_search_full_label_;
   GtkWidget* tab_to_search_partial_label_;
 
@@ -416,6 +417,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Indicate if |tab_to_search_hint_| should be shown.
   bool show_keyword_hint_;
+
+  // The last search keyword that was shown via the |tab_to_search_box_|.
+  std::wstring last_keyword_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

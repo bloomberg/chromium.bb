@@ -6,23 +6,17 @@
 
 #include <algorithm>
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/json/json_writer.h"
-#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "gfx/favicon_size.h"
-#include "gfx/size.h"
-#include "grit/theme_resources.h"
-#include "skia/ext/image_operations.h"
 #include "webkit/glue/context_menu.h"
 
 ExtensionMenuItem::ExtensionMenuItem(const Id& id,
@@ -35,7 +29,8 @@ ExtensionMenuItem::ExtensionMenuItem(const Id& id,
       type_(type),
       checked_(checked),
       contexts_(contexts),
-      parent_id_(0) {}
+      parent_id_(0) {
+}
 
 ExtensionMenuItem::~ExtensionMenuItem() {
   STLDeleteElements(&children_);
@@ -101,8 +96,7 @@ void ExtensionMenuItem::AddChild(ExtensionMenuItem* item) {
   children_.push_back(item);
 }
 
-ExtensionMenuManager::ExtensionMenuManager()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(image_tracker_(this)) {
+ExtensionMenuManager::ExtensionMenuManager() {
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
 }
@@ -150,17 +144,8 @@ bool ExtensionMenuManager::AddContextItem(Extension* extension,
     RadioItemSelected(item);
 
   // If this is the first item for this extension, start loading its icon.
-  if (first_item) {
-    ExtensionResource icon_resource;
-    extension->GetIconPathAllowLargerSize(&icon_resource,
-                                          Extension::EXTENSION_ICON_BITTY);
-    if (!icon_resource.extension_root().empty()) {
-      image_tracker_.LoadImage(extension,
-                               icon_resource,
-                               gfx::Size(kFavIconSize, kFavIconSize),
-                               ImageLoadingTracker::CACHE);
-    }
-  }
+  if (first_item)
+    icon_manager_.LoadIcon(extension);
 
   return true;
 }
@@ -275,8 +260,8 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
   }
   DCHECK(result);  // The check at the very top should have prevented this.
 
-  if (list.empty() && ContainsKey(extension_icons_, extension_id))
-    extension_icons_.erase(extension_id);
+  if (list.empty())
+    icon_manager_.RemoveIcon(extension_id);
 
   return result;
 }
@@ -297,9 +282,7 @@ void ExtensionMenuManager::RemoveAllContextItems(std::string extension_id) {
   }
   STLDeleteElements(&context_items_[extension_id]);
   context_items_.erase(extension_id);
-
-  if (ContainsKey(extension_icons_, extension_id))
-    extension_icons_.erase(extension_id);
+  icon_manager_.RemoveIcon(extension_id);
 }
 
 ExtensionMenuItem* ExtensionMenuManager::GetItemById(
@@ -461,54 +444,5 @@ void ExtensionMenuManager::Observe(NotificationType type,
 
 const SkBitmap& ExtensionMenuManager::GetIconForExtension(
     const std::string& extension_id) {
-  const SkBitmap* result = NULL;
-  if (ContainsKey(extension_icons_, extension_id)) {
-    result = &(extension_icons_[extension_id]);
-  } else {
-    EnsureDefaultIcon();
-    result = &default_icon_;
-  }
-  DCHECK(result);
-  DCHECK(result->width() == kFavIconSize);
-  DCHECK(result->height() == kFavIconSize);
-  return *result;
-}
-
-void ExtensionMenuManager::OnImageLoaded(SkBitmap* image,
-                                         ExtensionResource resource,
-                                         int index) {
-  if (!image)
-    return;
-
-  const std::string extension_id = resource.extension_id();
-
-  // Make sure we still have menu items for this extension (since image loading
-  // is asynchronous, there's a slight chance they may have all been removed
-  // while the icon was loading).
-  if (!ContainsKey(context_items_, extension_id))
-    return;
-
-  if (image->width() == kFavIconSize && image->height() == kFavIconSize)
-    extension_icons_[extension_id] = *image;
-  else
-    extension_icons_[extension_id] = ScaleToFavIconSize(*image);
-}
-
-void ExtensionMenuManager::EnsureDefaultIcon() {
-  if (default_icon_.empty()) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SkBitmap* src = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
-    if (src->width() == kFavIconSize && src->height() == kFavIconSize) {
-      default_icon_ = *src;
-    } else {
-      default_icon_ = SkBitmap(ScaleToFavIconSize(*src));
-    }
-  }
-}
-
-SkBitmap ExtensionMenuManager::ScaleToFavIconSize(const SkBitmap& source) {
-  return skia::ImageOperations::Resize(source,
-                                       skia::ImageOperations::RESIZE_LANCZOS3,
-                                       kFavIconSize,
-                                       kFavIconSize);
+  return icon_manager_.GetIcon(extension_id);
 }

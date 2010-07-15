@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
+#include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/cocoa/image_utils.h"
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
@@ -356,6 +358,17 @@ void AutocompletePopupViewMac::PositionPopup(const CGFloat matrixHeight) {
     [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
 }
 
+NSImage* AutocompletePopupViewMac::ImageForMatch(
+    const AutocompleteMatch& match) {
+  const SkBitmap* bitmap = model_->GetSpecialIconForMatch(match);
+  if (bitmap)
+    return gfx::SkBitmapToNSImage(*bitmap);
+
+  const int resource_id = match.starred ?
+      IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match.type);
+  return AutocompleteEditViewMac::ImageForResource(resource_id);
+}
+
 void AutocompletePopupViewMac::UpdatePopupAppearance() {
   DCHECK([NSThread isMainThread]);
   const AutocompleteResult& result = model_->result();
@@ -400,9 +413,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   for (size_t ii = 0; ii < rows; ++ii) {
     AutocompleteButtonCell* cell = [matrix cellAtRow:ii column:0];
     const AutocompleteMatch& match = model_->result().match_at(ii);
-    const int resource_id = match.starred ? IDR_OMNIBOX_STAR
-        : AutocompleteMatch::TypeToIcon(match.type);
-    [cell setImage:AutocompleteEditViewMac::ImageForResource(resource_id)];
+    [cell setImage:ImageForMatch(match)];
     [cell setAttributedTitle:MatchText(match, resultFont, matrixWidth)];
   }
 

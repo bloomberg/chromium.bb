@@ -20,6 +20,8 @@ class ImageView;
 class Label;
 }
 
+class SkBitmap;
+
 // View used to draw a bubble to the left of the address, containing an icon and
 // a label.  We use this as a base for the classes that handle the EV bubble and
 // tab-to-search UI.
@@ -32,6 +34,7 @@ class IconLabelBubbleView : public views::View {
 
   void SetFont(const gfx::Font& font);
   void SetLabel(const std::wstring& label);
+  void SetImage(const SkBitmap& bitmap);
 
   virtual void Paint(gfx::Canvas* canvas);
   virtual gfx::Size GetPreferredSize();
