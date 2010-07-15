@@ -12,6 +12,7 @@
 #include "app/os_exchange_data_provider_win.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/gdi_util.h"
+#include "gfx/skbitmap_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace drag_utils {
@@ -35,23 +36,18 @@ static void SetDragImageOnDataObject(HBITMAP hbitmap,
 
 // Blit the contents of the canvas to a new HBITMAP. It is the caller's
 // responsibility to release the |bits| buffer.
-static HBITMAP CreateBitmapFromCanvas(const gfx::CanvasSkia& canvas,
-                                      int width,
-                                      int height) {
+static HBITMAP CreateHBITMAPFromSkBitmap(const SkBitmap& sk_bitmap) {
   HDC screen_dc = GetDC(NULL);
   BITMAPINFOHEADER header;
-  gfx::CreateBitmapHeader(width, height, &header);
+  gfx::CreateBitmapHeader(sk_bitmap.width(), sk_bitmap.height(), &header);
   void* bits;
   HBITMAP bitmap =
       CreateDIBSection(screen_dc, reinterpret_cast<BITMAPINFO*>(&header),
                        DIB_RGB_COLORS, &bits, NULL, 0);
-  HDC compatible_dc = CreateCompatibleDC(screen_dc);
-  HGDIOBJ old_object = SelectObject(compatible_dc, bitmap);
-  BitBlt(compatible_dc, 0, 0, width, height,
-         canvas.getTopPlatformDevice().getBitmapDC(),
-         0, 0, SRCCOPY);
-  SelectObject(compatible_dc, old_object);
-  ReleaseDC(NULL, compatible_dc);
+  DCHECK(sk_bitmap.rowBytes() == sk_bitmap.width() * 4);
+  SkAutoLockPixels lock(sk_bitmap);
+  memcpy(
+      bits, sk_bitmap.getPixels(), sk_bitmap.height() * sk_bitmap.rowBytes());
   ReleaseDC(NULL, screen_dc);
   return bitmap;
 }
@@ -60,13 +56,12 @@ void SetDragImageOnDataObject(const SkBitmap& sk_bitmap,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               OSExchangeData* data_object) {
-  gfx::CanvasSkia canvas(sk_bitmap.width(), sk_bitmap.height(),
-                         /*is_opaque=*/false);
-  canvas.DrawBitmapInt(sk_bitmap, 0, 0);
-
   DCHECK(data_object && !size.IsEmpty());
+  // InitializeFromBitmap() doesn't expect an alpha channel and is confused
+  // by premultiplied colors, so unpremultiply the bitmap.
   // SetDragImageOnDataObject(HBITMAP) takes ownership of the bitmap.
-  HBITMAP bitmap = CreateBitmapFromCanvas(canvas, size.width(), size.height());
+  HBITMAP bitmap = CreateHBITMAPFromSkBitmap(
+      SkBitmapOperations::UnPreMultiply(sk_bitmap));
 
   // Attach 'bitmap' to the data_object.
   SetDragImageOnDataObject(bitmap, size, cursor_offset,

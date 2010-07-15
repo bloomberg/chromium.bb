@@ -82,6 +82,12 @@ class SkBitmapOperations {
   // 4 pixels. This is one step in generating a mipmap.
   static SkBitmap DownsampleByTwo(const SkBitmap& bitmap);
 
+  // Unpremultiplies all pixels in |bitmap|. You almost never want to call
+  // this, as |SkBitmap|s are always premultiplied by conversion. Call this
+  // only if you will pass the bitmap's data into a system function that
+  // doesn't expect premultiplied colors.
+  static SkBitmap UnPreMultiply(const SkBitmap& bitmap);
+
  private:
   SkBitmapOperations();  // Class for scoping only.
 

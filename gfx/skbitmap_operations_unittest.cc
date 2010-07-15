@@ -471,3 +471,24 @@ TEST(SkBitmapOperationsTest, DownsampleByTwoUntilSize) {
   EXPECT_EQ(25, result.width());
   EXPECT_EQ(11, result.height());
 }
+
+TEST(SkBitmapOperationsTest, UnPreMultiply) {
+  SkBitmap input;
+  input.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
+  input.allocPixels();
+
+  *input.getAddr32(0, 0) = 0x80000000;
+  *input.getAddr32(1, 0) = 0x80808080;
+  *input.getAddr32(0, 1) = 0xFF00CC88;
+  *input.getAddr32(1, 1) = 0x0000CC88;
+
+  SkBitmap result = SkBitmapOperations::UnPreMultiply(input);
+  EXPECT_EQ(2, result.width());
+  EXPECT_EQ(2, result.height());
+
+  SkAutoLockPixels lock(result);
+  EXPECT_EQ(0x80000000, *result.getAddr32(0, 0));
+  EXPECT_EQ(0x80FFFFFF, *result.getAddr32(1, 0));
+  EXPECT_EQ(0xFF00CC88, *result.getAddr32(0, 1));
+  EXPECT_EQ(0x00000000u, *result.getAddr32(1, 1));  // "Division by zero".
+}

@@ -668,3 +668,30 @@ SkBitmap SkBitmapOperations::DownsampleByTwo(const SkBitmap& bitmap) {
   return result;
 }
 
+// static
+SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
+  if (bitmap.isNull())
+    return bitmap;
+  if (bitmap.isOpaque())
+    return bitmap;
+
+  SkBitmap opaque_bitmap;
+  opaque_bitmap.setConfig(bitmap.config(), bitmap.width(), bitmap.height());
+  opaque_bitmap.allocPixels();
+
+  {
+    SkAutoLockPixels bitmap_lock(bitmap);
+    SkAutoLockPixels opaque_bitmap_lock(opaque_bitmap);
+    for (int y = 0; y < opaque_bitmap.height(); y++) {
+      for (int x = 0; x < opaque_bitmap.width(); x++) {
+        uint32 src_pixel = *bitmap.getAddr32(x, y);
+        uint32* dst_pixel = opaque_bitmap.getAddr32(x, y);
+        SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(src_pixel);
+        *dst_pixel = unmultiplied;
+      }
+    }
+  }
+
+  opaque_bitmap.setIsOpaque(true);
+  return opaque_bitmap;
+}
