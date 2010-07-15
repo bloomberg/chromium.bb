@@ -122,10 +122,20 @@ void CannedBrowsingDataDatabaseHelper::AddDatabase(
   WebKit::WebSecurityOrigin web_security_origin =
       WebKit::WebSecurityOrigin::createFromString(
           UTF8ToUTF16(origin.spec()));
+  std::string origin_identifier =
+      web_security_origin.databaseIdentifier().utf8();
+
+  for (std::vector<DatabaseInfo>::iterator database = database_info_.begin();
+       database != database_info_.end(); ++database) {
+    if (database->origin_identifier == origin_identifier &&
+        database->database_name == name)
+      return;
+  }
+
   database_info_.push_back(DatabaseInfo(
         web_security_origin.host().utf8(),
         name,
-        web_security_origin.databaseIdentifier().utf8(),
+        origin_identifier,
         description,
         0,
         base::Time()));

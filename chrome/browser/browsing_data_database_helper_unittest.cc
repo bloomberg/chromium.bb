@@ -69,3 +69,27 @@ TEST(CannedBrowsingDataDatabaseTest, AddDatabase) {
   EXPECT_STREQ(origin_str2, result[2].origin_identifier.c_str());
   EXPECT_STREQ(db3, result[2].database_name.c_str());
 }
+
+TEST(CannedBrowsingDataDatabaseTest, Unique) {
+  TestingProfile profile;
+
+  const GURL origin("http://host1:1/");
+  const char origin_str[] = "http_host1_1";
+  const char db[] = "db1";
+
+  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper =
+      new CannedBrowsingDataDatabaseHelper(&profile);
+  helper->AddDatabase(origin, db, "");
+  helper->AddDatabase(origin, db, "");
+
+  TestCompletionCallback callback;
+  helper->StartFetching(&callback);
+  ASSERT_TRUE(callback.have_result());
+
+  std::vector<BrowsingDataDatabaseHelper::DatabaseInfo> result =
+      callback.result();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_STREQ(origin_str, result[0].origin_identifier.c_str());
+  EXPECT_STREQ(db, result[0].database_name.c_str());
+}

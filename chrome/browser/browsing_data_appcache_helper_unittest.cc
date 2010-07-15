@@ -59,3 +59,26 @@ TEST(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
   EXPECT_TRUE(ContainsKey(manifest_results, manifest2));
   EXPECT_TRUE(ContainsKey(manifest_results, manifest3));
 }
+
+TEST(CannedBrowsingDataAppCacheHelperTest, Unique) {
+  TestingProfile profile;
+
+  GURL manifest("http://example.com/manifest.xml");
+
+  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper =
+      new CannedBrowsingDataAppCacheHelper(&profile);
+  helper->AddAppCache(manifest);
+  helper->AddAppCache(manifest);
+
+  TestCompletionCallback callback;
+  helper->StartFetching(&callback);
+  ASSERT_TRUE(callback.have_result());
+
+  std::map<GURL, appcache::AppCacheInfoVector>& collection =
+      helper->info_collection()->infos_by_origin;
+
+  ASSERT_EQ(1u, collection.size());
+  EXPECT_TRUE(ContainsKey(collection, manifest.GetOrigin()));
+  ASSERT_EQ(1u, collection[manifest.GetOrigin()].size());
+  EXPECT_EQ(manifest, collection[manifest.GetOrigin()].at(0).manifest_url);
+}

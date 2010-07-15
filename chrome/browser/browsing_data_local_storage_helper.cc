@@ -127,12 +127,21 @@ void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
   WebKit::WebSecurityOrigin web_security_origin =
       WebKit::WebSecurityOrigin::createFromString(
           UTF8ToUTF16(origin.spec()));
+  std::string security_origin(web_security_origin.toString().utf8());
+
+  for (std::vector<LocalStorageInfo>::iterator
+       local_storage = local_storage_info_.begin();
+       local_storage != local_storage_info_.end(); ++local_storage) {
+    if (local_storage->origin == security_origin)
+      return;
+  }
+
   local_storage_info_.push_back(LocalStorageInfo(
       web_security_origin.protocol().utf8(),
       web_security_origin.host().utf8(),
       web_security_origin.port(),
       web_security_origin.databaseIdentifier().utf8(),
-      web_security_origin.toString().utf8(),
+      security_origin,
       profile_->GetWebKitContext()->dom_storage_context()->
           GetLocalStorageFilePath(web_security_origin.databaseIdentifier()),
       0,

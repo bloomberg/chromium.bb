@@ -64,3 +64,26 @@ TEST(CannedBrowsingDataLocalStorageTest, AddLocalStorage) {
   EXPECT_EQ(FilePath(file1).value(), result[0].file_path.BaseName().value());
   EXPECT_EQ(FilePath(file2).value(), result[1].file_path.BaseName().value());
 }
+
+TEST(CannedBrowsingDataLocalStorageTest, Unique) {
+  TestingProfile profile;
+
+  const GURL origin("http://host1:1/");
+  const FilePath::CharType file[] =
+      FILE_PATH_LITERAL("http_host1_1.localstorage");
+
+  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper =
+      new CannedBrowsingDataLocalStorageHelper(&profile);
+  helper->AddLocalStorage(origin);
+  helper->AddLocalStorage(origin);
+
+  TestCompletionCallback callback;
+  helper->StartFetching(&callback);
+  ASSERT_TRUE(callback.have_result());
+
+  std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
+      callback.result();
+
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(FilePath(file).value(), result[0].file_path.BaseName().value());
+}
