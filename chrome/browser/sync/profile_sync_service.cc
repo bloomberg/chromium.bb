@@ -87,6 +87,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
   // Chrome stable and beta builds will go to the standard sync servers.
 #if defined(GOOGLE_CHROME_BUILD)
   // For stable, this is "". For dev, this is "dev". For beta, this is "beta".
+  // For daily, this is "canary build".
   // For linux Chromium builds, this could be anything depending on the
   // distribution, so always direct those users to dev server urls.
   // If this is an official build, it will always be one of the above.

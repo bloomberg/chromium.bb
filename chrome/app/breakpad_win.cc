@@ -23,6 +23,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 
@@ -405,7 +406,8 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
     string16 channel_string;
     GoogleUpdateSettings::GetChromeChannel(!is_per_user_install,
         &channel_string);
-    if (channel_string == L"dev" || channel_string == L"beta")
+    if (channel_string == L"dev" || channel_string == L"beta" ||
+        channel_string == GoogleChromeSxSDistribution::ChannelName())
       dump_type = kLargerDumpType;
   }
 
