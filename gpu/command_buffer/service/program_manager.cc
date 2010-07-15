@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/program_manager.h"
+#include <algorithm>
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -206,11 +207,6 @@ const ProgramManager::ProgramInfo::UniformInfo*
   info.texture_units.resize(num_texture_units, 0);
 
   if (size > 1) {
-    for (GLsizei ii = 1; ii < info.size; ++ii) {
-      std::string element_name(name + "[" + IntToString(ii) + "]");
-      info.element_locations[ii] =
-          glGetUniformLocation(service_id_, element_name.c_str());
-    }
     // Sadly there is no way to tell if this is an array except if the name
     // has an array string or the size > 1. That means an array of size 1 can
     // be ambiguous.
@@ -222,8 +218,18 @@ const ProgramManager::ProgramInfo::UniformInfo*
     // We can skip the first element because it's the same as the
     // the location without the array operators.
     size_t array_pos = name.rfind(kArraySpec);
-    if (name.size() > 3 && array_pos != name.size() - 3) {
-      info.name = name + kArraySpec;
+    std::string base_name = name;
+    if (name.size() > 3) {
+      if (array_pos != name.size() - 3) {
+        info.name = name + kArraySpec;
+      } else {
+        base_name = name.substr(0, name.size() - 3);
+      }
+    }
+    for (GLsizei ii = 1; ii < info.size; ++ii) {
+      std::string element_name(base_name + "[" + IntToString(ii) + "]");
+      info.element_locations[ii] =
+          glGetUniformLocation(service_id_, element_name.c_str());
     }
   }
 
