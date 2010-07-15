@@ -368,6 +368,7 @@ std::string GetOIDText(SECItem* oid) {
       break;
     case SEC_OID_OCSP_RESPONDER:
       string_id = IDS_CERT_EKU_OCSP_SIGNING;
+      break;
     case SEC_OID_PKIX_CPS_POINTER_QUALIFIER:
       string_id = IDS_CERT_PKIX_CPS_POINTER_QUALIFIER;
       break;
@@ -843,6 +844,7 @@ std::string ProcessCrlDistPoints(SECItem* extension_data) {
           if (comma)
             rv += ',';
           rv += l10n_util::GetStringUTF8(reason_string_map[i].string_id);
+          comma = true;
         }
       }
       rv += '\n';
