@@ -21,6 +21,10 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
                                     bool allocate_fbo) {
   allocate_fbo_ = allocate_fbo;
 
+  // Ensure GL is initialized before trying to create an offscreen GL context.
+  if (!gfx::GLContext::InitializeOneOff())
+    return false;
+
   gl_context_.reset(gfx::GLContext::CreateOffscreenGLContext(share_context));
   if (!gl_context_.get())
     return false;
