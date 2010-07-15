@@ -48,3 +48,6 @@ PREFIX : messageloop::runtask___messageloop::deferorrunpendingtask___messageloop
 
 # 48712
 PREFIX : npapi::plugininstance::npp_newstream
+
+# 49142
+PREFIX : std::basic_string<char,std::char_traits<char>,std::allocator<char> >::assign___net::cookiemonster::internaldeletecookie___net::cookiemonster::deleteall___net::cookiemonster::~cookiemonster___net::cookiemonster::`scalar deleting destructor'___tabspecificcontentsettings::localsharedobjectscontainer::~localsharedobjectscontainer
