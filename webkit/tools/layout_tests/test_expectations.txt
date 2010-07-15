@@ -49,6 +49,52 @@ BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-26.html = FAIL
 BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.12-3-27.html = FAIL
 BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.14-2-6.html = FAIL
 
+// TODO(ager): Get rid of these once they have been upstreamed as part
+// of a V8 update. 
+//
+// These tests all fail because the expected output is wrong. The
+// reason is that JSC does not currently implement Object.seal and
+// Object.isSealed. These test has intentionally been marked as FAIL,
+// which makes it easy to fix this when webkit implements these ES5 features.
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-0-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-0-2.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-10.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-11.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-12.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-13.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-14.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-15.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-16.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-17.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-18.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-19.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-2.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-20.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-21.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-22.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-23.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-24.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-25.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-26.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-27.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-3.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-4.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-5.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-6.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-7.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-8.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.11-4-9.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.14-2-5.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.3-4-20.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.3-4-23.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.4-4-2.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.8-0-1.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.8-0-2.html = FAIL
+BUG_RICOW WIN LINUX MAC : ietestcenter/Javascript/15.2.3.8-1.html = FAIL
+
+
 // TODO(podivilov): Remove on next roll.
 BUG_PODIVILOV MAC : svg/custom/clip-path-child-changes.svg = TEXT
 
