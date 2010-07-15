@@ -204,7 +204,6 @@
                 'app/nibs/BookmarkNameFolder.xib',
                 'app/nibs/BrowserWindow.xib',
                 'app/nibs/ClearBrowsingData.xib',
-                'app/nibs/CollectedCookies.xib',
                 'app/nibs/Cookies.xib',
                 'app/nibs/CookieDetailsView.xib',
                 'app/nibs/CookiePrompt.xib',

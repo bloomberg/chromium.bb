@@ -1089,10 +1089,6 @@ void BrowserView::ShowContentSettingsWindow(ContentSettingsType content_type,
   browser::ShowContentSettingsWindow(GetNativeHandle(), content_type, profile);
 }
 
-void BrowserView::ShowCollectedCookiesDialog(TabContents* tab_contents) {
-  browser::ShowCollectedCookiesDialog(GetNativeHandle(), tab_contents);
-}
-
 void BrowserView::ShowProfileErrorDialog(int message_id) {
 #if defined(OS_WIN)
   std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);

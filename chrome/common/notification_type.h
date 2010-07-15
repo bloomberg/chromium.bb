@@ -975,10 +975,6 @@ class NotificationType {
     // object, the details are ContentSettingsNotificationsDetails.
     CONTENT_SETTINGS_CHANGED,
 
-    // Sent when the collect cookies dialog is shown. The source is a
-    // TabSpecificContentSettings object, there are no details.
-    COLLECTED_COOKIES_SHOWN,
-
     // Sync --------------------------------------------------------------------
 
     // Sent when the sync backend has been paused.

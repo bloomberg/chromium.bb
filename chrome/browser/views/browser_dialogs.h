@@ -113,10 +113,6 @@ void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
                                ContentSettingsType content_type,
                                Profile* profile);
 
-// Shows the collected cookies dialog box.
-void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContents* tab_contents);
-
 // Shows the create web app shortcut dialog box.
 void ShowCreateShortcutsDialog(gfx::NativeWindow parent_window,
                                TabContents* tab_contents);
