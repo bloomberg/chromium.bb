@@ -103,4 +103,4 @@ BUG_PODIVILOV MAC : svg/custom/clip-path-child-changes.svg = TEXT
 BUG_AGER LINUX DEBUG : fast/js/excessive-comma-usage.html = CRASH
 
 // TODO(johhnyg): Fix this
-BUG_JOHNNYG : fast/forms/input-file-directory-upload.html = TIMEOUT
+BUG_JOHNNYG : fast/forms/input-file-directory-upload.html = CRASH TIMEOUT
