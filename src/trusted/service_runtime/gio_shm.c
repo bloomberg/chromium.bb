@@ -23,18 +23,24 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 
 /*
+ * This code maps in GIO_SHM_WINDOWSIZE bytes at a time for doing
+ * "I/O" from/to the shared memory object.  This value must be an
+ * integer multiple of NACL_MAP_PAGESIZE.
+ */
+#define GIO_SHM_WINDOWSIZE  (16 * NACL_MAP_PAGESIZE)
+
+/*
  * Release current window if it exists, then map in window at the
  * provided new_window_offset.  This is akin to filbuf.
  *
- * Precondition: 0 == (new_win_offset & (NACL_MAP_PAGESIZE - 1))
- *
- * We could have used a weaker precondition where the alignment is to
- * NACL_MAP_PAGESIZE.
+ * Preconditions: 0 == (new_win_offset & (NACL_MAP_PAGESIZE - 1))
+ *                new_win_offset < self->shm_sz
  */
 static int NaClGioShmSetWindow(struct NaClGioShm  *self,
                                size_t             new_win_offset) {
   int       rv;
   uintptr_t map_result;
+  size_t    actual_len;
 
   NaClLog(4,
           "NaClGioShmSetWindow: new_win_offset 0x%"NACL_PRIxS"\n",
@@ -46,12 +52,19 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
             new_win_offset);
   }
 
+  if (new_win_offset >= self->shm_sz) {
+    NaClLog(LOG_FATAL,
+            ("NaClGioShmSetWindow: setting window beyond end of shm object"
+             " offset 0x%"NACL_PRIxS", size 0x%"NACL_PRIxS"\n"),
+            new_win_offset, self->shm_sz);
+  }
+
   if (NULL != self->cur_window) {
     rv = (*self->shmp
           ->vtbl->UnmapUnsafe)(self->shmp,
                                (struct NaClDescEffector *) &self->eff,
                                (void *) self->cur_window,
-                               NACL_MAP_PAGESIZE);
+                               self->window_size);
     if (0 != rv) {
       NaClLog(LOG_FATAL,
               "NaClGioShmSetWindow: UnmapUnsafe returned %d\n",
@@ -59,24 +72,28 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
     }
   }
   self->cur_window = NULL;
-
-  if (NaClRoundAllocPage(new_win_offset + NACL_MAP_PAGESIZE)
-      > NaClRoundAllocPage(self->shm_sz)) {
-    NaClLog(LOG_FATAL,
-            ("NaClGioShmSetWindow: setting window beyond end of shm object"
-             " offset 0x%"NACL_PRIxS", size 0x%"NACL_PRIxS"\n"),
-            new_win_offset, self->shm_sz);
-  }
+  self->window_size = 0;
 
   /*
-   * Map will pad space beyond the end of the memory mapping object with
-   * zero-filled pages.
+   * The Map virtual function will NOT pad space beyond the end of the
+   * memory mapping object with zero-filled pages.  This is done for
+   * user code in nacl_syscall_common.c(NaClCommonSysMmap), and the
+   * Map virtual function exposes the behavioral inconsistencies wrt
+   * allowing but ignoring mapping an offset beyond the end of file
+   * (linux) versus disallowing the mapping (MapViewOfFileEx).
+   *
+   * Here, we know the actual size of the shm object, and can deal
+   * with it.
    */
+  actual_len = GIO_SHM_WINDOWSIZE;
+  if (actual_len > self->shm_sz - new_win_offset) {
+    actual_len = self->shm_sz - new_win_offset;
+  }
   map_result =
       (*self->shmp->vtbl->Map)(self->shmp,
                                (struct NaClDescEffector *) &self->eff,
                                (void *) NULL,
-                               NACL_MAP_PAGESIZE,
+                               actual_len,
                                NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                                NACL_ABI_MAP_SHARED,
                                (nacl_off64_t) new_win_offset);
@@ -86,7 +103,9 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
   if (NACL_ABI_MAP_FAILED == (void *) map_result) {
     return 0;
   }
+
   self->cur_window = (char *) map_result;
+  self->window_size = actual_len;
   self->window_offset = new_win_offset;
 
   return 1;
@@ -122,7 +141,7 @@ static ssize_t NaClGioShmReadOrWrite(struct Gio *vself,
     NaClLog(4, "window_offset 0x%"NACL_PRIxS"\n", self->window_offset);
     if (NULL == self->cur_window
         || self->io_offset < self->window_offset
-        || self->window_offset + NACL_MAP_PAGESIZE <= self->io_offset) {
+        || self->window_offset + self->window_size <= self->io_offset) {
       /*
        * io_offset is outside the window.  move the window so that
        * it's within.
@@ -150,10 +169,10 @@ static ssize_t NaClGioShmReadOrWrite(struct Gio *vself,
     NaClLog(4, "window_offset 0x%"NACL_PRIxS"\n", self->window_offset);
 
     CHECK(self->window_offset <= self->io_offset);
-    CHECK(self->io_offset < self->window_offset + NACL_MAP_PAGESIZE);
+    CHECK(self->io_offset < self->window_offset + self->window_size);
 
     transfer = count;
-    window_end = self->window_offset + NACL_MAP_PAGESIZE;
+    window_end = self->window_offset + self->window_size;
     if (window_end > self->shm_sz) {
       window_end = self->shm_sz;
     }
@@ -161,7 +180,7 @@ static ssize_t NaClGioShmReadOrWrite(struct Gio *vself,
 
     NaClLog(4, "remaining in window 0x%"NACL_PRIxS"\n", window_remain);
 
-    CHECK(window_remain <= NACL_MAP_PAGESIZE);
+    CHECK(window_remain <= GIO_SHM_WINDOWSIZE);
 
     if (transfer > window_remain) {
       transfer = window_remain;
@@ -169,19 +188,27 @@ static ssize_t NaClGioShmReadOrWrite(struct Gio *vself,
 
     NaClLog(4, "transfer 0x%"NACL_PRIxS"\n", transfer);
 
-    NaClLog(4,
-            ("about to memcpy(0x%"NACL_PRIxPTR","
-             " 0x%"NACL_PRIxPTR", 0x%"NACL_PRIxS")\n"),
-            (uintptr_t) buf,
-            (uintptr_t) (self->cur_window
-                         + (self->io_offset - self->window_offset)),
-            transfer);
-
     if (is_write) {
+      NaClLog(4,
+              ("about to \"write\" memcpy(0x%"NACL_PRIxPTR", "
+               " 0x%"NACL_PRIxPTR", 0x%"NACL_PRIxS" bytes)\n"),
+              (uintptr_t) (self->cur_window
+                           + (self->io_offset - self->window_offset)),
+              (uintptr_t) buf,
+              transfer);
+
       memcpy(self->cur_window + (self->io_offset - self->window_offset),
              buf,
              transfer);
     } else {
+      NaClLog(4,
+              ("about to \"read\" memcpy(0x%"NACL_PRIxPTR", "
+               " 0x%"NACL_PRIxPTR", 0x%"NACL_PRIxS" bytes)\n"),
+              (uintptr_t) buf,
+              (uintptr_t) (self->cur_window
+                           + (self->io_offset - self->window_offset)),
+              transfer);
+
       memcpy(buf,
              self->cur_window + (self->io_offset - self->window_offset),
              transfer);
@@ -421,6 +448,9 @@ int NaClGioShmCtor(struct NaClGioShm  *self,
                    size_t             shm_size) {
 
   int rv;
+
+  CHECK(shm_size == NaClRoundAllocPage(shm_size));
+
   if (!NaClDescEffectorTrustedMemCtor(&self->eff)) {
     return 0;
   }
@@ -437,6 +467,8 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
                         size_t            shm_size) {
   struct NaClDescImcShm *shmp;
   int                   rv;
+
+  CHECK(shm_size == NaClRoundAllocPage(shm_size));
 
   if (!NaClDescEffectorTrustedMemCtor(&self->eff)) {
     return 0;

@@ -38,6 +38,7 @@ struct NaClGioShm {
   size_t                            shm_sz;
   char                              *cur_window;
   size_t                            window_offset;
+  size_t                            window_size;
 };
 
 /*

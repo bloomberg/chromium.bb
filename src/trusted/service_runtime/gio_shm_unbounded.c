@@ -77,7 +77,7 @@ static void GioCopy(struct Gio  *dst,
 
   NaClLog(3,
           ("GioCopy: dst 0x%"NACL_PRIxPTR
-           ", src 0x%"NACL_PRIxPTR", nbytes %"NACL_PRIxS"\n"),
+           ", src 0x%"NACL_PRIxPTR", nbytes 0x%"NACL_PRIxS"\n"),
           (uintptr_t) dst,
           (uintptr_t) src,
           nbytes);
