@@ -30,7 +30,7 @@
 
 class CrossSiteResourceHandler;
 class DownloadFileManager;
-class DownloadRequestManager;
+class DownloadRequestLimiter;
 class LoginHandler;
 class PluginService;
 class ResourceDispatcherHostRequestInfo;
@@ -172,8 +172,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
     return download_file_manager_;
   }
 
-  DownloadRequestManager* download_request_manager() const {
-    return download_request_manager_.get();
+  DownloadRequestLimiter* download_request_limiter() const {
+    return download_request_limiter_.get();
   }
 
   SaveFileManager* save_file_manager() const {
@@ -441,7 +441,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   scoped_refptr<DownloadFileManager> download_file_manager_;
 
   // Determines whether a download is allowed.
-  scoped_refptr<DownloadRequestManager> download_request_manager_;
+  scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
   // We own the save file manager.
   scoped_refptr<SaveFileManager> save_file_manager_;

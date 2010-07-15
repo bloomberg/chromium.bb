@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_MANAGER_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_MANAGER_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_LIMITER_H_
+#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_LIMITER_H_
 
 #include <map>
 #include <string>
@@ -17,9 +17,9 @@ class DownloadRequestInfoBarDelegate;
 class NavigationController;
 class TabContents;
 
-// DownloadRequestManager is responsible for determining whether a download
+// DownloadRequestLimiter is responsible for determining whether a download
 // should be allowed or not. It is designed to keep pages from downloading
-// multiple files without user interaction. DownloadRequestManager is invoked
+// multiple files without user interaction. DownloadRequestLimiter is invoked
 // from ResourceDispatcherHost any time a download begins
 // (CanDownloadOnIOThread). The request is processed on the UI thread, and the
 // request is notified (back on the IO thread) as to whether the download should
@@ -39,9 +39,8 @@ class TabContents;
 //   choice stays until the user navigates to a different host. For example, if
 //   the user allowed the download, multiple downloads are allowed without any
 //   user intervention until the user navigates to a different host.
-
-class DownloadRequestManager
-    : public base::RefCountedThreadSafe<DownloadRequestManager> {
+class DownloadRequestLimiter
+    : public base::RefCountedThreadSafe<DownloadRequestLimiter> {
  public:
   // Download status for a particular page. See class description for details.
   enum DownloadStatus {
@@ -68,7 +67,7 @@ class DownloadRequestManager
   // TabDownloadState maintains the download state for a particular tab.
   // TabDownloadState prompts the user with an infobar as necessary.
   // TabDownloadState deletes itself (by invoking
-  // DownloadRequestManager::Remove) as necessary.
+  // DownloadRequestLimiter::Remove) as necessary.
   class TabDownloadState : public NotificationObserver {
    public:
     // Creates a new TabDownloadState. |controller| is the controller the
@@ -77,16 +76,16 @@ class DownloadRequestManager
     // the initial download. If |originating_controller| is null, |controller|
     // is used. |originating_controller| is typically null, but differs from
     // |controller| in the case of a constrained popup requesting the download.
-    TabDownloadState(DownloadRequestManager* host,
+    TabDownloadState(DownloadRequestLimiter* host,
                      NavigationController* controller,
                      NavigationController* originating_controller);
     virtual ~TabDownloadState();
 
     // Status of the download.
-    void set_download_status(DownloadRequestManager::DownloadStatus status) {
+    void set_download_status(DownloadRequestLimiter::DownloadStatus status) {
       status_ = status;
     }
-    DownloadRequestManager::DownloadStatus download_status() const {
+    DownloadRequestLimiter::DownloadStatus download_status() const {
       return status_;
     }
 
@@ -99,14 +98,14 @@ class DownloadRequestManager
     }
 
     // Invoked when a user gesture occurs (mouse click, enter or space). This
-    // may result in invoking Remove on DownloadRequestManager.
+    // may result in invoking Remove on DownloadRequestLimiter.
     void OnUserGesture();
 
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callback.
     void PromptUserForDownload(TabContents* tab,
-                               DownloadRequestManager::Callback* callback);
+                               DownloadRequestLimiter::Callback* callback);
 
     // Are we showing a prompt to the user?
     bool is_showing_prompt() const { return (infobar_ != NULL); }
@@ -124,7 +123,7 @@ class DownloadRequestManager
     TabDownloadState()
         : host_(NULL),
           controller_(NULL),
-          status_(DownloadRequestManager::ALLOW_ONE_DOWNLOAD),
+          status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
           download_count_(0),
           infobar_(NULL) {
     }
@@ -139,14 +138,14 @@ class DownloadRequestManager
     // Updates status_ appropriately.
     void NotifyCallbacks(bool allow);
 
-    DownloadRequestManager* host_;
+    DownloadRequestLimiter* host_;
 
     NavigationController* controller_;
 
     // Host of the first page the download started on. This may be empty.
     std::string initial_page_host_;
 
-    DownloadRequestManager::DownloadStatus status_;
+    DownloadRequestLimiter::DownloadStatus status_;
 
     size_t download_count_;
 
@@ -154,7 +153,7 @@ class DownloadRequestManager
     // dialog.
     // See description above CanDownloadOnIOThread for details on lifetime of
     // callbacks.
-    std::vector<DownloadRequestManager::Callback*> callbacks_;
+    std::vector<DownloadRequestLimiter::Callback*> callbacks_;
 
     // Used to remove observers installed on NavigationController.
     NotificationRegistrar registrar_;
@@ -165,7 +164,7 @@ class DownloadRequestManager
     DISALLOW_COPY_AND_ASSIGN(TabDownloadState);
   };
 
-  DownloadRequestManager();
+  DownloadRequestLimiter();
 
   // Returns the download status for a page. This does not change the state in
   // anyway.
@@ -174,7 +173,7 @@ class DownloadRequestManager
   // Updates the state of the page as necessary and notifies the callback.
   // WARNING: both this call and the callback are invoked on the io thread.
   //
-  // DownloadRequestManager does not retain/release the Callback. It is up to
+  // DownloadRequestLimiter does not retain/release the Callback. It is up to
   // the caller to ensure the callback is valid until the request is complete.
   void CanDownloadOnIOThread(int render_process_host_id,
                              int render_view_id,
@@ -186,11 +185,11 @@ class DownloadRequestManager
   void OnUserGesture(TabContents* tab);
 
  private:
-  friend class base::RefCountedThreadSafe<DownloadRequestManager>;
-  friend class DownloadRequestManagerTest;
+  friend class base::RefCountedThreadSafe<DownloadRequestLimiter>;
+  friend class DownloadRequestLimiterTest;
   friend class TabDownloadState;
 
-  ~DownloadRequestManager();
+  ~DownloadRequestLimiter();
 
   // For unit tests. If non-null this is used instead of creating a dialog.
   class TestingDelegate {
@@ -207,7 +206,7 @@ class DownloadRequestManager
   // See TabDownloadState's constructor description for details on the two
   // controllers.
   //
-  // The returned TabDownloadState is owned by the DownloadRequestManager and
+  // The returned TabDownloadState is owned by the DownloadRequestLimiter and
   // deleted when no longer needed (the Remove method is invoked).
   TabDownloadState* GetDownloadState(
       NavigationController* controller,
@@ -246,7 +245,7 @@ class DownloadRequestManager
 
   static TestingDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadRequestManager);
+  DISALLOW_COPY_AND_ASSIGN(DownloadRequestLimiter);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_MANAGER_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_LIMITER_H_

@@ -34,7 +34,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/download/download_request_manager.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/history/top_sites.h"
@@ -1856,9 +1856,10 @@ void TabContents::GenerateKeywordIfNecessary(
 
 void TabContents::OnUserGesture() {
   // See comment in RenderViewHostDelegate::OnUserGesture as to why we do this.
-  DownloadRequestManager* drm = g_browser_process->download_request_manager();
-  if (drm)
-    drm->OnUserGesture(this);
+  DownloadRequestLimiter* limiter =
+      g_browser_process->download_request_limiter();
+  if (limiter)
+    limiter->OnUserGesture(this);
   ExternalProtocolHandler::OnUserGesture();
   controller_.OnUserGesture();
 }

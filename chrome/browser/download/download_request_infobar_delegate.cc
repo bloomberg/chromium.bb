@@ -11,7 +11,7 @@
 #include "grit/theme_resources.h"
 
 DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(TabContents* tab,
-    DownloadRequestManager::TabDownloadState* host)
+    DownloadRequestLimiter::TabDownloadState* host)
     : ConfirmInfoBarDelegate(tab),
       host_(host) {
   if (tab)
@@ -50,9 +50,10 @@ std::wstring DownloadRequestInfoBarDelegate::GetButtonLabel(
 
 bool DownloadRequestInfoBarDelegate::Accept() {
   if (host_) {
+    // Accept() call will nullify host_ if no further prompts are required.
     host_->Accept();
   }
-  // Accept() call will nullify host_ if no furthur prompts are required.
+
   return !host_;
 }
 

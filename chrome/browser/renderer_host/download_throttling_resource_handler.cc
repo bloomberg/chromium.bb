@@ -29,7 +29,7 @@ DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(
       ignore_on_read_complete_(in_complete) {
   // Pause the request.
   host_->PauseRequest(render_process_host_id_, request_id_, true);
-  host_->download_request_manager()->CanDownloadOnIOThread(
+  host_->download_request_limiter()->CanDownloadOnIOThread(
       render_process_host_id_, render_view_id, this);
  }
 

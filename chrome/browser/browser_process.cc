@@ -8,8 +8,8 @@
 
 BrowserProcess* g_browser_process = NULL;
 
-DownloadRequestManager* BrowserProcess::download_request_manager() {
+DownloadRequestLimiter* BrowserProcess::download_request_limiter() {
   ResourceDispatcherHost* rdh = resource_dispatcher_host();
-  return rdh ? rdh->download_request_manager() : NULL;
+  return rdh ? rdh->download_request_limiter() : NULL;
 }
 

@@ -205,7 +205,7 @@ class RenderViewHostDelegate {
    public:
     // Notification the user has made a gesture while focus was on the
     // page. This is used to avoid uninitiated user downloads (aka carpet
-    // bombing), see DownloadRequestManager for details.
+    // bombing), see DownloadRequestLimiter for details.
     virtual void OnUserGesture() = 0;
 
     // A find operation in the current page completed.

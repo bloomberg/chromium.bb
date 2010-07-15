@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/download/download_request_infobar_delegate.h"
-#include "chrome/browser/download/download_request_manager.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MockTabDownloadState : public DownloadRequestManager::TabDownloadState {
+class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
  public:
   MockTabDownloadState() : responded_(false), accepted_(false) {
   }

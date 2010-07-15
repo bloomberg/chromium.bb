@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_INFOBAR_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/download/download_request_manager.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
 class TabContents;
@@ -18,11 +18,11 @@ class TabContents;
 class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   DownloadRequestInfoBarDelegate(
-      TabContents* tab, DownloadRequestManager::TabDownloadState* host);
+      TabContents* tab, DownloadRequestLimiter::TabDownloadState* host);
 
   virtual ~DownloadRequestInfoBarDelegate();
 
-  void set_host(DownloadRequestManager::TabDownloadState* host) {
+  void set_host(DownloadRequestLimiter::TabDownloadState* host) {
     host_ = host;
   }
 
@@ -42,7 +42,7 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Cancel();
 
  private:
-  DownloadRequestManager::TabDownloadState* host_;
+  DownloadRequestLimiter::TabDownloadState* host_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRequestInfoBarDelegate);
 };
