@@ -11,7 +11,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
 
-#if defined(TOOLKIT_GTK)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <cairo/cairo.h>
 #endif
 
