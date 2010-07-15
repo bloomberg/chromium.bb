@@ -650,10 +650,7 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithNonStandardEntities) {
   };
   WebString value = body_element.getAttribute("title");
   ASSERT_TRUE(UTF16ToWide(value) == parsed_value);
-  // Check the BODY content.
-  WebNode text_node = body_element.firstChild();
-  ASSERT_TRUE(text_node.isTextNode());
-  ASSERT_TRUE(UTF16ToWide(text_node.nodeValue()) == parsed_value);
+  ASSERT_TRUE(UTF16ToWide(body_element.innerText()) == parsed_value);
 
   // Do serialization.
   SerializeDomForURL(file_url, false);
