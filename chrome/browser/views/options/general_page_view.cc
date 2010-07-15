@@ -44,13 +44,6 @@ const SkColor kDefaultBrowserLabelColor = SkColorSetRGB(0, 135, 0);
 const SkColor kNotDefaultBrowserLabelColor = SkColorSetRGB(135, 0, 0);
 const int kHomePageTextfieldWidthChars = 40;
 
-// All general preferences that are potentially managed by policy. We'll
-// display the warning banner if one of these have the managed bit set.
-const wchar_t* kGeneralPolicyConstrainedPrefs[] = {
-  prefs::kHomePage,
-  prefs::kHomePageIsNewTabPage
-};
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -318,9 +311,7 @@ void GeneralPageView::InitControlLayout() {
 
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(
-      new ManagedPrefsBannerView(profile()->GetPrefs(),
-                                 kGeneralPolicyConstrainedPrefs,
-                                 arraysize(kGeneralPolicyConstrainedPrefs)));
+      new ManagedPrefsBannerView(profile()->GetPrefs(), OPTIONS_PAGE_GENERAL));
 
   layout->StartRow(0, single_column_view_set_id);
   InitStartupGroup();

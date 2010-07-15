@@ -8,12 +8,14 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/options_util.h"
+#include "chrome/browser/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 AdvancedPageGtk::AdvancedPageGtk(Profile* profile)
     : OptionsPageBase(profile),
-      advanced_contents_(profile) {
+      advanced_contents_(profile),
+      managed_prefs_banner_(profile->GetPrefs(), OPTIONS_PAGE_ADVANCED) {
   Init();
 }
 
@@ -24,6 +26,9 @@ void AdvancedPageGtk::Init() {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(page_),
                                  gtk_util::kContentAreaBorder);
+
+  gtk_box_pack_start(GTK_BOX(page_), managed_prefs_banner_.banner_widget(),
+                     false, false, 0);
 
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_container_add(GTK_CONTAINER(page_), scroll_window);

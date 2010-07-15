@@ -16,9 +16,7 @@
 // not settable by the user due to policy.
 class ManagedPrefsBannerGtk : public ManagedPrefsBannerBase {
  public:
-  ManagedPrefsBannerGtk(PrefService* prefs,
-                        const wchar_t** relevant_prefs,
-                        size_t count);
+  ManagedPrefsBannerGtk(PrefService* prefs, OptionsPage page);
   virtual ~ManagedPrefsBannerGtk() { }
 
   GtkWidget* banner_widget() { return banner_widget_; }

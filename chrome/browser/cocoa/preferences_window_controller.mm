@@ -70,17 +70,6 @@ static const double kBannerGradientColorBottom[3] =
     {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
 static const double kBannerStrokeColor = 135.0 / 255.0;
 
-// Preferences relevant to the general page potentially constrained by policy.
-static const wchar_t* kGeneralPolicyConstrainedPrefs[] = {
-  prefs::kHomePage,
-  prefs::kHomePageIsNewTabPage
-};
-
-// Content page preferences that are potentially constrained by policy.
-static const wchar_t* kContentPolicyConstrainedPrefs[] = {
-  prefs::kSyncManaged
-};
-
 std::string GetNewTabUIURLString() {
   return URLFixerUpper::FixupURL(chrome::kChromeUINewTabURL,
       std::string()).possibly_invalid_spec();
@@ -402,33 +391,15 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
  public:
   virtual ~ManagedPrefsBannerState() { }
 
+  explicit ManagedPrefsBannerState(PreferencesWindowController* controller,
+                                   OptionsPage page,
+                                   PrefService* prefs)
+      : ManagedPrefsBannerBase(prefs, page),
+        controller_(controller),
+        page_(page) { }
+
   BOOL IsVisible() {
     return DetermineVisibility() ? YES : NO;
-  }
-
-  // Create a banner state tracker object suitable for use with a given |page|.
-  static ManagedPrefsBannerState* CreateForPage(
-      PreferencesWindowController* controller,
-      OptionsPage page,
-      PrefService* prefs) {
-    switch (page) {
-      case OPTIONS_PAGE_GENERAL:
-        return new ManagedPrefsBannerState(controller, page, prefs,
-            kGeneralPolicyConstrainedPrefs,
-            arraysize(kGeneralPolicyConstrainedPrefs));
-      case OPTIONS_PAGE_CONTENT:
-        return new ManagedPrefsBannerState(controller, page, prefs,
-            kContentPolicyConstrainedPrefs,
-            arraysize(kContentPolicyConstrainedPrefs));
-        break;
-      case OPTIONS_PAGE_ADVANCED:
-        break;
-      case OPTIONS_PAGE_DEFAULT:
-      case OPTIONS_PAGE_COUNT:
-        LOG(DFATAL) << "Invalid page value " << page;
-        break;
-    }
-    return new ManagedPrefsBannerState(controller, page, prefs, NULL, 0);
   }
 
  protected:
@@ -438,15 +409,6 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
   }
 
  private:
-  explicit ManagedPrefsBannerState(PreferencesWindowController* controller,
-                                   OptionsPage page,
-                                   PrefService* prefs,
-                                   const wchar_t** relevant_prefs,
-                                   size_t count)
-      : ManagedPrefsBannerBase(prefs, relevant_prefs, count),
-        controller_(controller),
-        page_(page) { }
-
   PreferencesWindowController* controller_;  // weak, owns us
   OptionsPage page_;  // current options page
 };
@@ -1939,8 +1901,8 @@ const int kDisabledIndex = 1;
 - (void)initBannerStateForPage:(OptionsPage)page {
   page = [self normalizePage:page];
   bannerState_.reset(
-      PreferencesWindowControllerInternal::ManagedPrefsBannerState::
-          CreateForPage(self, page, prefs_));
+      new PreferencesWindowControllerInternal::ManagedPrefsBannerState(
+          self, page, prefs_));
 }
 
 - (void)switchToPage:(OptionsPage)page animate:(BOOL)animate {

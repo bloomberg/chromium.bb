@@ -56,13 +56,6 @@ enum {
   SEARCH_ENGINES_COL_COUNT,
 };
 
-// All general preferences that are potentially managed by policy. We'll
-// display the warning banner if one of these have the managed bit set.
-static const wchar_t* kGeneralPolicyConstrainedPrefs[] = {
-  prefs::kHomePage,
-  prefs::kHomePageIsNewTabPage
-};
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,9 +68,7 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
       initializing_(true),
       default_browser_worker_(
           new ShellIntegration::DefaultBrowserWorker(this)),
-      managed_prefs_banner_(profile->GetPrefs(),
-                            kGeneralPolicyConstrainedPrefs,
-                            arraysize(kGeneralPolicyConstrainedPrefs)) {
+      managed_prefs_banner_(profile->GetPrefs(), OPTIONS_PAGE_GENERAL) {
   scoped_ptr<OptionsLayoutBuilderGtk>
     options_builder(OptionsLayoutBuilderGtk::CreateOptionallyCompactLayout());
   page_ = options_builder->get_page_widget();

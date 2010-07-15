@@ -19,9 +19,8 @@ static const int kPrefsBannerPadding = 3;
 static const int kPrefsBannerBorderSize = 1;
 
 ManagedPrefsBannerView::ManagedPrefsBannerView(PrefService* prefs,
-                                               const wchar_t** relevant_prefs,
-                                               size_t count)
-    : ManagedPrefsBannerBase(prefs, relevant_prefs, count) {
+                                               OptionsPage page)
+    : ManagedPrefsBannerBase(prefs, page) {
   content_ = new views::View;
   SkColor border_color = color_utils::GetSysSkColor(COLOR_3DSHADOW);
   views::Border* border = views::Border::CreateSolidBorder(

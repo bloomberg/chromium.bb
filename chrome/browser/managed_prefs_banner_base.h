@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/common/notification_observer.h"
 
 class PrefService;
@@ -18,9 +19,10 @@ class PrefService;
 // configuration policy and thus cannot be changed by the user.
 class ManagedPrefsBannerBase : public NotificationObserver {
  public:
-  ManagedPrefsBannerBase(PrefService* prefs,
-                         const wchar_t** relevant_prefs,
-                         size_t count);
+  // Initialize the banner with a set of preferences suitable for the given
+  // options |page|. Subclasses may change that set by calling AddPref() and
+  // RemovePref() afterwards.
+  ManagedPrefsBannerBase(PrefService* prefs, OptionsPage page);
   virtual ~ManagedPrefsBannerBase();
 
   // Determine whether the banner should be visible.
@@ -32,6 +34,11 @@ class ManagedPrefsBannerBase : public NotificationObserver {
                        const NotificationDetails& details);
 
  protected:
+  // Add a preference as visibility trigger.
+  void AddPref(const wchar_t* pref);
+  // Remove a preference from being a visibility trigger.
+  void RemovePref(const wchar_t* pref);
+
   // Update banner visibility. This is called whenever a preference change is
   // observed that may lead to changed visibility of the banner. Subclasses may
   // override this in order to show/hide the banner.

@@ -50,12 +50,6 @@ const int kFormAutofillRadioGroup = 202;
 // Background color for the status label when it's showing an error.
 static const SkColor kSyncLabelErrorBgColor = SkColorSetRGB(0xff, 0x9a, 0x9a);
 
-// All content related preferences that are potentially managed by policy. We'll
-// display the warning banner if one of these have the managed bit set.
-const wchar_t* kContentPolicyConstrainedPrefs[] = {
-  prefs::kSyncManaged
-};
-
 static views::Background* CreateErrorBackground() {
   return views::Background::CreateSolidBackground(kSyncLabelErrorBgColor);
 }
@@ -206,9 +200,8 @@ void ContentPageView::InitControlLayout() {
 
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(
-      new ManagedPrefsBannerView(profile()->GetPrefs(),
-                                 kContentPolicyConstrainedPrefs,
-                                 arraysize(kContentPolicyConstrainedPrefs)));
+      new ManagedPrefsBannerView(profile()->GetPrefs(), OPTIONS_PAGE_CONTENT));
+
   if (sync_service_) {
     layout->StartRow(0, single_column_view_set_id);
     InitSyncGroup();

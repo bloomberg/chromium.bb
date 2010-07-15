@@ -42,11 +42,6 @@ namespace {
 // Background color for the status label when it's showing an error.
 static const GdkColor kSyncLabelErrorBgColor = GDK_COLOR_RGB(0xff, 0x9a, 0x9a);
 
-// Set of preferences which might be unavailable for editing when managed.
-const wchar_t* kContentManagablePrefs[] = {
-  prefs::kSyncManaged
-};
-
 // Helper for WrapLabelAtAllocationHack.
 void OnLabelAllocate(GtkWidget* label, GtkAllocation* allocation) {
   gtk_widget_set_size_request(label, allocation->width, -1);
@@ -86,8 +81,7 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
       privacy_dashboard_link_(NULL),
       initializing_(true),
       sync_service_(NULL),
-      managed_prefs_banner_(profile->GetPrefs(), kContentManagablePrefs,
-                            arraysize(kContentManagablePrefs)) {
+      managed_prefs_banner_(profile->GetPrefs(), OPTIONS_PAGE_CONTENT) {
   if (profile->GetProfileSyncService()) {
     sync_service_ = profile->GetProfileSyncService();
     sync_service_->AddObserver(this);

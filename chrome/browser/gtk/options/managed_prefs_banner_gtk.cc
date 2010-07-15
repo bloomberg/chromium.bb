@@ -18,9 +18,8 @@ const int kBannerPadding = 3;
 }
 
 ManagedPrefsBannerGtk::ManagedPrefsBannerGtk(PrefService* prefs,
-                                             const wchar_t** relevant_prefs,
-                                             size_t count)
-    : ManagedPrefsBannerBase(prefs, relevant_prefs, count),
+                                             OptionsPage page)
+    : ManagedPrefsBannerBase(prefs, page),
       banner_widget_(NULL) {
   InitWidget();
   OnUpdateVisibility();

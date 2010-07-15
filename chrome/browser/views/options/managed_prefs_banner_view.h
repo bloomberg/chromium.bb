@@ -19,12 +19,9 @@ class Label;
 class ManagedPrefsBannerView : public ManagedPrefsBannerBase,
                                public views::View {
  public:
-  // Initialize the banner. |relevant_prefs| is an array of |count| prefs
-  // holding names of the preferences that control the banner visibility
-  // through their managed flag.
-  ManagedPrefsBannerView(PrefService* pref_service,
-                         const wchar_t** relevant_prefs,
-                         size_t count);
+  // Initialize the banner. |page| is used to determine the names of the
+  // preferences that control the banner visibility through their managed flag.
+  ManagedPrefsBannerView(PrefService* pref_service, OptionsPage page);
   virtual ~ManagedPrefsBannerView() {}
 
  private:

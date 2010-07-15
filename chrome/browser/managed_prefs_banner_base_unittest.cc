@@ -9,6 +9,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+const wchar_t* kDummyPref = L"dummy";
+
+}  // namespace
+
 // Tests whether managed preferences banner base functionality correctly
 // determines banner visiblity.
 class ManagedPrefsBannerBaseTest : public testing::Test {
@@ -24,6 +30,7 @@ class ManagedPrefsBannerBaseTest : public testing::Test {
                                                            default_prefs_)));
     pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com");
     pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, false);
+    pref_service_->RegisterBooleanPref(kDummyPref, false);
   }
 
   scoped_ptr<PrefService> pref_service_;
@@ -33,15 +40,10 @@ class ManagedPrefsBannerBaseTest : public testing::Test {
   DummyPrefStore* default_prefs_;
 };
 
-static const wchar_t* managed_prefs[] = {
-  prefs::kHomePage
-};
-
 TEST_F(ManagedPrefsBannerBaseTest, VisibilityTest) {
-  ManagedPrefsBannerBase banner(pref_service_.get(), managed_prefs,
-                                arraysize(managed_prefs));
+  ManagedPrefsBannerBase banner(pref_service_.get(), OPTIONS_PAGE_GENERAL);
   EXPECT_FALSE(banner.DetermineVisibility());
-  managed_prefs_->prefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+  managed_prefs_->prefs()->SetBoolean(kDummyPref, true);
   EXPECT_FALSE(banner.DetermineVisibility());
   user_prefs_->prefs()->SetString(prefs::kHomePage, "http://foo.com");
   EXPECT_FALSE(banner.DetermineVisibility());
@@ -52,19 +54,16 @@ TEST_F(ManagedPrefsBannerBaseTest, VisibilityTest) {
 // Mock class that allows to capture the notification callback.
 class ManagedPrefsBannerBaseMock : public ManagedPrefsBannerBase {
  public:
-  ManagedPrefsBannerBaseMock(PrefService* pref_service,
-                             const wchar_t** relevant_prefs,
-                             size_t count)
-      : ManagedPrefsBannerBase(pref_service, relevant_prefs, count) { }
+  ManagedPrefsBannerBaseMock(PrefService* pref_service, OptionsPage page)
+      : ManagedPrefsBannerBase(pref_service, page) { }
 
   MOCK_METHOD0(OnUpdateVisibility, void());
 };
 
 TEST_F(ManagedPrefsBannerBaseTest, NotificationTest) {
-  ManagedPrefsBannerBaseMock banner(pref_service_.get(), managed_prefs,
-                                    arraysize(managed_prefs));
+  ManagedPrefsBannerBaseMock banner(pref_service_.get(), OPTIONS_PAGE_GENERAL);
   EXPECT_CALL(banner, OnUpdateVisibility()).Times(0);
-  pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+  pref_service_->SetBoolean(kDummyPref, true);
   EXPECT_CALL(banner, OnUpdateVisibility()).Times(1);
   pref_service_->SetString(prefs::kHomePage, "http://foo.com");
 }

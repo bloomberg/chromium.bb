@@ -8,18 +8,30 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 
 ManagedPrefsBannerBase::ManagedPrefsBannerBase(PrefService* prefs,
-                                               const wchar_t** relevant_prefs,
-                                               size_t count)
+                                               OptionsPage page)
     : prefs_(prefs) {
-  for (size_t i = 0; i < count; ++i) {
-    // Ignore prefs that are not registered.
-    const wchar_t* pref = relevant_prefs[i];
-    if (prefs->FindPreference(pref)) {
-      prefs_->AddPrefObserver(pref, this);
-      relevant_prefs_.insert(pref);
-    }
+  switch (page) {
+    case OPTIONS_PAGE_GENERAL:
+      AddPref(prefs::kHomePage);
+      AddPref(prefs::kHomePageIsNewTabPage);
+      break;
+    case OPTIONS_PAGE_CONTENT:
+      AddPref(prefs::kSyncManaged);
+      break;
+    case OPTIONS_PAGE_ADVANCED:
+      AddPref(prefs::kAlternateErrorPagesEnabled);
+      AddPref(prefs::kSearchSuggestEnabled);
+      AddPref(prefs::kDnsPrefetchingEnabled);
+      AddPref(prefs::kSafeBrowsingEnabled);
+#if defined(GOOGLE_CHROME_BUILD)
+      AddPref(prefs::kMetricsReportingEnabled);
+#endif
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
@@ -36,6 +48,23 @@ void ManagedPrefsBannerBase::Observe(NotificationType type,
     std::wstring* pref = Details<std::wstring>(details).ptr();
     if (pref && relevant_prefs_.count(*pref))
       OnUpdateVisibility();
+  }
+}
+
+void ManagedPrefsBannerBase::AddPref(const wchar_t* pref) {
+  if (!relevant_prefs_.count(pref)) {
+    if (prefs_->FindPreference(pref)) {
+      prefs_->AddPrefObserver(pref, this);
+      relevant_prefs_.insert(pref);
+    }
+  }
+}
+
+void ManagedPrefsBannerBase::RemovePref(const wchar_t* pref) {
+  PrefSet::iterator iter = relevant_prefs_.find(pref);
+  if (iter != relevant_prefs_.end()) {
+    prefs_->RemovePrefObserver(pref, this);
+    relevant_prefs_.erase(iter);
   }
 }
 
