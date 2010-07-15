@@ -64,6 +64,7 @@ for basename in ['addr_modes',
                  'switch',
                  'vtable',
                  'vaarg',
+                 'negindex',
                  ]:
   # TODO(robertm): fix this ASAP
   if env['BUILD_ARCHITECTURE'] == 'arm' and basename == 'vaarg': continue
