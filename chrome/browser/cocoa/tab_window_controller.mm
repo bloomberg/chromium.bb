@@ -65,9 +65,10 @@
 // view hierarchy as a sibling of the content view so it can overlap with the
 // window frame.
 - (void)addTopTabStripToWindow {
+  NSRect contentFrame = [tabContentArea_ frame];
   NSRect tabFrame =
-      NSMakeRect(0, NSMaxY(tabFrame),
-                 NSWidth([tabContentArea_ frame]),
+      NSMakeRect(0, NSMaxY(contentFrame),
+                 NSWidth(contentFrame),
                  NSHeight([topTabStripView_ frame]));
   [topTabStripView_ setFrame:tabFrame];
   NSView* contentParent = [[[self window] contentView] superview];
