@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@
 class SyncResourcesSource : public ChromeURLDataManager::DataSource {
  public:
   SyncResourcesSource()
-      : DataSource(chrome::kSyncResourcesHost, MessageLoop::current()) {
+      : DataSource(chrome::kChromeUISyncResourcesHost, MessageLoop::current()) {
   }
 
   virtual void StartDataRequest(const std::string& path,
@@ -33,10 +33,7 @@ class SyncResourcesSource : public ChromeURLDataManager::DataSource {
                                 int request_id);
 
   virtual std::string GetMimeType(const std::string& path) const {
-    if (path == chrome::kSyncThrobberPath)
-      return "image/png";
-    else
-      return "text/html";
+    return "text/html";
   }
 
   static const char* kInvalidPasswordHelpUrl;
@@ -63,17 +60,13 @@ const char* SyncResourcesSource::kCreateNewAccountUrl =
 
 void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     bool is_off_the_record, int request_id) {
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  if (path_raw == chrome::kSyncThrobberPath) {
-    scoped_refptr<RefCountedMemory> throbber(
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-            IDR_THROBBER));
-    SendResponse(request_id, throbber);
-    return;
-  }
+  const char kSyncGaiaLoginPath[] = "gaialogin";
+  const char kSyncChooseDataTypesPath[] = "choosedatatypes";
+  const char kSyncSetupFlowPath[] = "setup";
+  const char kSyncSetupDonePath[] = "setupdone";
 
   std::string response;
-  if (path_raw == chrome::kSyncGaiaLoginPath) {
+  if (path_raw == kSyncGaiaLoginPath) {
     DictionaryValue localized_strings;
 
     // Start by setting the per-locale URLs we show on the setup wizard.
@@ -124,7 +117,7 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
-  } else if (path_raw == chrome::kSyncChooseDataTypesPath) {
+  } else if (path_raw == kSyncChooseDataTypesPath) {
     DictionaryValue localized_strings;
     localized_strings.SetString(L"choosedatatypesheader",
       l10n_util::GetString(IDS_SYNC_CHOOSE_DATATYPES_HEADER));
@@ -162,7 +155,7 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
       html, &localized_strings);
-  } else if (path_raw == chrome::kSyncSetupDonePath) {
+  } else if (path_raw == kSyncSetupDonePath) {
     DictionaryValue localized_strings;
     localized_strings.SetString(L"success",
         l10n_util::GetString(IDS_SYNC_SUCCESS));
@@ -178,12 +171,13 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
-  } else if (path_raw == chrome::kSyncSetupFlowPath) {
+  } else if (path_raw == kSyncSetupFlowPath) {
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_SYNC_SETUP_FLOW_HTML));
     response = html.as_string();
   }
   // Send the response.
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(response.size());
   std::copy(response.begin(), response.end(), html_bytes->data.begin());
   SendResponse(request_id, html_bytes);

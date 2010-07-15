@@ -62,7 +62,7 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
 // static
 bool RenderViewContextMenu::IsSyncResourcesURL(const GURL& url) {
   return url.SchemeIs(chrome::kChromeUIScheme) &&
-      url.host() == chrome::kSyncResourcesHost;
+      url.host() == chrome::kChromeUISyncResourcesHost;
 }
 
 static const int kSpellcheckRadioGroup = 1;

@@ -98,15 +98,9 @@ const char kChromeUIPrintHost[] = "print";
 const char kChromeUIRemotingHost[] = "remoting";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUISlideshowHost[] = "slideshow";
+const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUIThemePath[] = "theme";
 const char kChromeUIThumbnailPath[] = "thumb";
-
-const char kSyncResourcesHost[] = "syncresources";
-const char kSyncGaiaLoginPath[] = "gaialogin";
-const char kSyncChooseDataTypesPath[] = "choosedatatypes";
-const char kSyncThrobberPath[] = "throbber.png";
-const char kSyncSetupFlowPath[] = "setup";
-const char kSyncSetupDonePath[] = "setupdone";
 
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";
 

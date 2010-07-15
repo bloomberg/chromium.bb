@@ -42,6 +42,14 @@ table {
 .data_type_checkboxes_table td {
   padding: 5px;
 }
+#throb {
+  background-image: url("../../../../app/resources/throbber.png");
+  width: 16px;
+  height: 16px;
+  background-position: 0px;
+  margin: -3px 10px;
+  display: inline-block;
+}
 input[type='button'] {
   min-width: 87px;
   min-height: 26px;
@@ -260,9 +268,7 @@ input[type='submit'] {
   <tr valign="bottom">
     <td width="100%" class="endaligned">
       <span id="throbber_container" style="visibility:hidden">
-        <span id="throb" style="background-image:url(throbber.png);
-             width:16px; height:16px; background-position:0px; margin:-3px 10px;
-             display:inline-block">
+        <span id="throb">
         </span>
       </span>
       <input id="okButton" type="submit" i18n-values="value:ok" />

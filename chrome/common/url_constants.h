@@ -92,16 +92,9 @@ extern const char kChromeUIPrintHost[];
 extern const char kChromeUIRemotingHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUISlideshowHost[];
+extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUIThumbnailPath[];
 extern const char kChromeUIThemePath[];
-
-// Sync related URL components.
-extern const char kSyncResourcesHost[];
-extern const char kSyncGaiaLoginPath[];
-extern const char kSyncChooseDataTypesPath[];
-extern const char kSyncSetupDonePath[];
-extern const char kSyncSetupFlowPath[];
-extern const char kSyncThrobberPath[];
 
 // AppCache related URL.
 extern const char kAppCacheViewInternalsURL[];
