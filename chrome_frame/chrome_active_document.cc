@@ -264,7 +264,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     return E_INVALIDARG;
   }
 
-  if (!LaunchUrl(url, is_new_navigation)) {
+  const std::string& referrer = mgr ? mgr->referrer() : EmptyString();
+  if (!LaunchUrl(url, referrer, is_new_navigation)) {
     NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
     return E_INVALIDARG;
   }
@@ -369,7 +370,8 @@ STDMETHODIMP ChromeActiveDocument::LoadHistory(IStream* stream,
     return E_INVALIDARG;
   }
 
-  if (!LaunchUrl(url, is_new_navigation)) {
+  const std::string& referrer = EmptyString();
+  if (!LaunchUrl(url, referrer, is_new_navigation)) {
     NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
     return E_INVALIDARG;
   }
@@ -990,12 +992,12 @@ bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
 }
 
 bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
+                                     const std::string& referrer,
                                      bool is_new_navigation) {
   DCHECK(automation_client_.get() != NULL);
 
   url_.Allocate(url.c_str());
 
-  std::string referrer;
   std::string utf8_url;
 
   if (!is_new_navigation) {
@@ -1021,11 +1023,6 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
     // cached and sent with launch settings.
     if (url_.Length()) {
       WideToUTF8(url_, url_.Length(), &utf8_url);
-
-      NavigationManager* mgr = NavigationManager::GetThreadInstance();
-      if (mgr)
-        referrer = mgr->referrer();
-
       if (!automation_client_->InitiateNavigation(utf8_url,
                                                   referrer,
                                                   is_privileged_)) {

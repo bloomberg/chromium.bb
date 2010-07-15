@@ -391,7 +391,8 @@ END_EXEC_COMMAND_MAP()
 
   // Initiates navigation to the URL passed in.
   // Returns true on success.
-  bool LaunchUrl(const std::wstring& url, bool is_new_navigation);
+  bool LaunchUrl(const std::wstring& url, const std::string& referrer,
+                 bool is_new_navigation);
 
   // Handler to set the page font size in Chrome.
   HRESULT SetPageFontSize(const GUID* cmd_group_guid,
