@@ -538,10 +538,14 @@ void SyncBackendHost::Core::OnInitializationComplete() {
 }
 
 void SyncBackendHost::Core::HandleInitalizationCompletedOnFrontendLoop() {
+  if (!host_)
+    return;
   host_->HandleInitializationCompletedOnFrontendLoop();
 }
 
 void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop() {
+  if (!frontend_)
+    return;
   frontend_->OnBackendInitialized();
 }
 
@@ -598,6 +602,8 @@ void SyncBackendHost::Core::OnStopSyncingPermanently() {
 }
 
 void SyncBackendHost::Core::HandleStopSyncingPermanentlyOnFrontendLoop() {
+  if (!host_ || !host_->frontend_)
+    return;
   host_->frontend_->OnStopSyncingPermanently();
 }
 
