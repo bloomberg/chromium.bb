@@ -45,6 +45,26 @@ TEST(LanguageMenuButtonTest, GetTextForIndicatorTest) {
   }
   {
     InputMethodDescriptor desc("pinyin", "Pinyin", "us", "zh-CN");
+    EXPECT_EQ(UTF8ToWide("\xe6\x8b\xbc"),
+              LanguageMenuButton::GetTextForIndicator(desc));
+  }
+  {
+    InputMethodDescriptor desc("chewing", "Chewing", "us", "zh-TW");
+    EXPECT_EQ(UTF8ToWide("\xe9\x85\xb7"),
+              LanguageMenuButton::GetTextForIndicator(desc));
+  }
+  {
+    InputMethodDescriptor desc("m17n:zh:cangjie", "Cangjie", "us", "zh-TW");
+    EXPECT_EQ(UTF8ToWide("\xe5\x80\x89"),
+              LanguageMenuButton::GetTextForIndicator(desc));
+  }
+  {
+    InputMethodDescriptor desc("m17n:zh:quick", "Quick", "us", "zh-TW");
+    EXPECT_EQ(UTF8ToWide("TW"),
+              LanguageMenuButton::GetTextForIndicator(desc));
+  }
+  {
+    InputMethodDescriptor desc("pinyin", "Pinyin", "us", "zh-CN");
     EXPECT_EQ(UTF8ToWide("CN"),
               LanguageMenuButton::GetTextForIndicator(desc));
   }

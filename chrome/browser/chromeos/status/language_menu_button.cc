@@ -86,6 +86,12 @@ const struct {
   { "mozc", "\xe3\x81\x82" },  // Japanese Hiragana letter A in UTF-8.
   { "mozc-dv", "\xe3\x81\x82" },
   { "mozc-jp", "\xe3\x81\x82" },
+  // For simplified Chinese input methods
+  { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
+  // For traditional Chinese input methods
+  { "chewing", "\xe9\x85\xb7" },  // U+9177
+  { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
+  // TODO(yusukes): Add m17n:zh:quick if there's a good Hanzi character for it.
 
   // Handle "m17n:t" input methods here since ICU is not able to handle the
   // language code "t". Note: most users use either latn-pre or latn-post
@@ -600,8 +606,8 @@ std::wstring LanguageMenuButton::GetTextForIndicator(
   }
 
   // TODO(yusukes): Some languages have two or more input methods. For example,
-  // Thai has 3, Traditional Chinese has many. If these input methods could be
-  // activated at the same time, we should do either of the following:
+  // Thai has 3, Vietnamese has 4. If these input methods could be activated at
+  // the same time, we should do either of the following:
   //   (1) Add mappings to |kMappingFromIdToIndicatorText|
   //   (2) Add suffix (1, 2, ...) to |text| when ambiguous.
 
