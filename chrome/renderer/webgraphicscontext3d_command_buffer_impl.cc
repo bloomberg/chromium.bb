@@ -58,7 +58,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
   if (!host)
     return false;
-  DCHECK(host->ready());
+  DCHECK(host->state() == GpuChannelHost::CONNECTED);
   context_ = ggl::CreateOffscreenContext(host, parent_context, gfx::Size(1, 1));
   if (!context_)
     return false;

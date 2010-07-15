@@ -20,6 +20,11 @@ void GpuChannelHost::Connect(const std::string& channel_name) {
       channel_name, IPC::Channel::MODE_CLIENT, this, NULL,
       ChildProcess::current()->io_message_loop(), true,
       ChildProcess::current()->GetShutDownEvent()));
+
+  // It is safe to send IPC messages before the channel completes the connection
+  // and receives the hello message from the GPU process. The messages get
+  // cached.
+  state_ = CONNECTED;
 }
 
 void GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
@@ -30,7 +35,6 @@ void GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuChannelHost::OnChannelConnected(int32 peer_pid) {
-  state_ = CONNECTED;
 }
 
 void GpuChannelHost::OnChannelError() {

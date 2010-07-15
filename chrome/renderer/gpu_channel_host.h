@@ -43,9 +43,6 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   State state() const { return state_; }
 
-  // Returns whether the channel to the GPU process is ready.
-  bool ready() const { return channel_.get() != NULL; }
-
   // IPC::Channel::Listener implementation:
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);

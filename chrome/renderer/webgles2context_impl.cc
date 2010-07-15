@@ -36,7 +36,7 @@ bool WebGLES2ContextImpl::initialize(
   GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
   if (!host)
     return false;
-  DCHECK(host->ready());
+  DCHECK(host->state() == GpuChannelHost::CONNECTED);
 
   // If a WebView is passed then create a context rendering directly
   // into the window used by the WebView, otherwise create an offscreen

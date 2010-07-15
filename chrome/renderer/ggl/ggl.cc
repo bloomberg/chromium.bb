@@ -117,7 +117,7 @@ Context::~Context() {
 bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
-  if (!channel_->ready())
+  if (channel_->state() != GpuChannelHost::CONNECTED)
     return false;
 
   // Ensure the gles2 library is initialized first in a thread safe way.
