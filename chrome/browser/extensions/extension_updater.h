@@ -110,7 +110,6 @@ class ManifestFetchesBuilder {
   void AddExtensionData(Extension::Location location,
                         const std::string& id,
                         const Version& version,
-                        bool converted_from_user_script,
                         bool is_theme,
                         GURL update_url);
 

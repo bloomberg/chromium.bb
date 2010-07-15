@@ -72,14 +72,14 @@ TEST_F(ExtensionUtilTest, IsSyncableExtension) {
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(true, GURL(), false,
+    MakePossiblySyncableExtension(false, GURL(), true,
                                   Extension::INTERNAL, &extension);
-    EXPECT_FALSE(IsExtensionSyncable(extension));
+    EXPECT_TRUE(IsExtensionSyncable(extension));
   }
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), true,
+    MakePossiblySyncableExtension(true, GURL(), false,
                                   Extension::INTERNAL, &extension);
     EXPECT_FALSE(IsExtensionSyncable(extension));
   }

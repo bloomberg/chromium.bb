@@ -161,7 +161,6 @@ void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
   AddExtensionData(extension.location(),
                    extension.id(),
                    *extension.version(),
-                   extension.converted_from_user_script(),
                    extension.is_theme(),
                    extension.update_url());
 }
@@ -175,7 +174,7 @@ void ManifestFetchesBuilder::AddPendingExtension(
   scoped_ptr<Version> version(
       Version::GetVersionFromString("0.0.0.0"));
   AddExtensionData(Extension::INTERNAL, id, *version,
-                   false, info.is_theme, info.update_url);
+                   info.is_theme, info.update_url);
 }
 
 void ManifestFetchesBuilder::ReportStats() const {
@@ -209,7 +208,6 @@ void ManifestFetchesBuilder::AddExtensionData(
     Extension::Location location,
     const std::string& id,
     const Version& version,
-    bool converted_from_user_script,
     bool is_theme,
     GURL update_url) {
   // Only internal and external extensions can be autoupdated.
@@ -228,12 +226,6 @@ void ManifestFetchesBuilder::AddExtensionData(
   // Skip extensions with empty IDs.
   if (id.empty()) {
     LOG(WARNING) << "Found extension with empty ID";
-    return;
-  }
-
-  // Skip extensions with empty update URLs converted from user
-  // scripts.
-  if (converted_from_user_script && update_url.is_empty()) {
     return;
   }
 

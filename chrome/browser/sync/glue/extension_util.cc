@@ -27,11 +27,6 @@ bool IsExtensionSyncable(const Extension& extension) {
     return false;
   }
 
-  if (extension.converted_from_user_script()) {
-    // User scripts currently don't have auto-update URLs.
-    return false;
-  }
-
   // TODO(akalin): Figure out if we need to allow some other types.
   if (extension.location() != Extension::INTERNAL) {
     // We have a non-standard location.
