@@ -32,11 +32,13 @@ set -o errexit
 
 # SAFE_MODE: When off, gcc-stage1 is not rebuilt when only llvm is modified.
 #            This should be "ok" most of the time.
-
-readonly SAFE_MODE=false
+readonly UTMAN_SAFE_MODE=${UTMAN_SAFE_MODE:-false}
 
 # Turn on debugging for this script
-readonly UTC_DEBUG=false
+readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
+
+# For different levels of make parallelism change this in your env
+readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 
 readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
 readonly CROSS_TARGET=arm-none-linux-gnueabi
@@ -63,19 +65,12 @@ readonly PATCH_DIR=$(pwd)/tools/patches
 
 readonly BFD_PLUGIN_DIR=${LLVMGCC_INSTALL_DIR}/lib/bfd-plugins
 
-readonly CONCURRENCY_FILE="$(pwd)/tools/llvm/concurrency.sh"
-if [ -f ${CONCURRENCY_FILE} ]; then
-  source ${CONCURRENCY_FILE}
-else
-  CONCURRENCY=8
-fi
 
-readonly MAKE_OPTS="-j${CONCURRENCY} VERBOSE=1"
+readonly MAKE_OPTS="-j${UTMAN_CONCURRENCY} VERBOSE=1"
 
 # For speculative build status output. ( see status function )
-# Leave this blank.
+# Leave this blank, it will be filled during processing.
 SPECULATIVE_REBUILD_SET=""
-
 
 
 # The directory in which we we keep src dirs (from hg repos)
@@ -459,6 +454,15 @@ download-toolchains() {
 }
 
 #@-------------------------------------------------------------------------
+#@ rebuild-pnacl-libs    - organized native libs and build bitcode libs
+rebuild-pnacl-libs() {
+  clean-pnacl
+  organize-native-code
+  newlib-bitcode
+  extrasdk-bitcode
+  libstdcpp-bitcode
+}
+
 
 #@ everything            - Build and install untrusted SDK.
 everything() {
@@ -486,11 +490,7 @@ everything() {
   extrasdk-arm
   misc-tools
 
-  clean-pnacl
-  organize-native-code
-  newlib-bitcode
-  extrasdk-bitcode
-  libstdcpp-bitcode
+  rebuild-pnacl-libs
 
   verify
 }
@@ -559,7 +559,7 @@ speculative-add() {
 
 speculative-check() {
   local mod="$1"
-  local search=$(echo "$SPECULATIVE_REBUILD_SET" | grep -F "$mod")
+  local search=$(echo "${SPECULATIVE_REBUILD_SET}" | grep -F "$mod")
   [ ${#search} -gt 0 ]
   return $?
 }
@@ -592,6 +592,7 @@ clean-install() {
 
 #+ clean-pnacl           - Removes the pnacl-untrusted installation directory
 clean-pnacl() {
+  StepBanner "cleaning ${PNACL_TOOLCHAIN_ROOT}"
   rm -rf "${PNACL_TOOLCHAIN_ROOT}"
 }
 
@@ -859,7 +860,7 @@ gcc-stage1-needs-make() {
   local objdir="${TC_BUILD_LLVM_GCC1}"
 
   # In safe mode, rebuild gcc-stage1 when LLVM is updated.
-  if ${SAFE_MODE}; then
+  if ${UTMAN_SAFE_MODE}; then
     speculative-check "llvm" && return 0
     ts-newer-than "${TC_BUILD_LLVM}" \
                   "${TC_BUILD_LLVM_GCC1}" && return 0
@@ -2001,7 +2002,7 @@ extrasdk-bitcode-make() {
   # Keep a backup of the files extrasdk generated
   # in case we want to re-install them again.
   local include_install="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/nacl"
-  local lib_install="${PNACL_TOOLCHAIN_ROOT}/bitcode"
+  local lib_install="${PNACL_BITCODE_ROOT}"
   local include_save="${TC_BUILD_EXTRASDK_BITCODE}/include-nacl"
   local lib_save="${TC_BUILD_EXTRASDK_BITCODE}/lib"
 
@@ -2039,7 +2040,7 @@ extrasdk-bitcode-install() {
 
   # Copy from the save directories
   local include_install="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/nacl"
-  local lib_install="${PNACL_TOOLCHAIN_ROOT}/bitcode"
+  local lib_install="${PNACL_BITCODE_ROOT}"
   local include_save="${TC_BUILD_EXTRASDK_BITCODE}/include-nacl"
   local lib_save="${TC_BUILD_EXTRASDK_BITCODE}/lib"
 
@@ -2174,7 +2175,7 @@ organize-native-code() {
     ${PNACL_ARM_ROOT}
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
-  # TODO(espindola): These files have been built with the convectional
+  # TODO(espindola): These files have been built with the conventional
   # nacl-gcc. The ABI might not be exactly the same as the one used by
   # PNaCl. We should build these files with PNaCl.
   DebugRun Banner "x86-32 native code: ${PNACL_X8632_ROOT}"
@@ -2333,13 +2334,27 @@ verify() {
 ######################################################################
 ######################################################################
 
+if ${UTMAN_DEBUG}; then
+  readonly SCONS_ARGS=(MODE=nacl
+                       --verbose
+                       platform=arm
+                       sdl=none
+                       bitcode=1)
 
-readonly SCONS_ARGS=(MODE=nacl
-                     platform=arm
-                     sdl=none
-                     naclsdk_validate=0
-                     sysinfo=
-                     bitcode=1)
+  readonly SCONS_ARGS_SEL_LDR=(sdl=none
+                               --verbose)
+else
+  readonly SCONS_ARGS=(MODE=nacl
+                       platform=arm
+                       sdl=none
+                       naclsdk_validate=0
+                       sysinfo=
+                       bitcode=1)
+
+  readonly SCONS_ARGS_SEL_LDR=(sdl=none
+                               naclsdk_validate=0
+                               sysinfo=)
+fi
 
 #@ show-tests            - see what tests can be run
 show-tests() {
@@ -2350,7 +2365,7 @@ show-tests() {
 #@ test-arm-old          - run arm tests via the old toolchain
 #@ test-arm-old <test>   - run a single arm test via the old toolchain
 test-arm-old() {
-  ./scons platform=arm sdl=none naclsdk_validate=0 sel_ldr
+  ./scons platform=arm ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
   export TARGET_CODE=sfi-arm
   rm -rf scons-out/nacl-arm
   local fixedargs=""
@@ -2365,7 +2380,7 @@ test-arm-old() {
 #@ test-arm              - run arm tests via pnacl toolchain
 #@ test-arm <test>       - run a single arm test via pnacl toolchain
 test-arm() {
-  ./scons platform=arm sdl=none naclsdk_validate=0 sel_ldr
+  ./scons platform=arm ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
   export TARGET_CODE=bc-arm
   rm -rf scons-out/nacl-arm
 
@@ -2381,7 +2396,7 @@ test-arm() {
 #@ test-x86-32           - run x86-32 tests via pnacl toolchain
 #@ test-x86-32 <test>    - run a single x86-32 test via pnacl toolchain
 test-x86-32() {
-  ./scons platform=x86-32 sdl=none naclsdk_validate=0 sel_ldr
+  ./scons platform=x86-32 ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
   export TARGET_CODE=bc-x86-32
   rm -rf scons-out/nacl-arm
 
@@ -2398,7 +2413,7 @@ test-x86-32() {
 #@ test-x86-64           - run all x86-64 tests via pnacl toolchain
 #@ test-x86-64 <test>    - run a single x86-64 test via pnacl toolchain
 test-x86-64() {
-  ./scons platform=x86-64 sdl=none sel_ldr
+  ./scons platform=x86-64 ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
   export TARGET_CODE=bc-x86-64
   rm -rf scons-out/nacl-arm
 
@@ -2459,15 +2474,15 @@ test-bot-extra() {
 ######################################################################
 
 #@-------------------------------------------------------------------------
-#@ concurrency <N>       - get/set concurrency for "-jN" (default, 8)
-concurrency() {
-  if [ $# == 0 ]; then
-    echo "Concurrency is set to ${CONCURRENCY}."
-  else
-    CONCURRENCY=$1
-    echo "CONCURRENCY=$CONCURRENCY" > "${CONCURRENCY_FILE}"
-    echo "Set concurrency to ${CONCURRENCY}."
-  fi
+#@ show-config
+show-config() {
+  Banner "Config Settings:"
+  echo "UTMAN_CONCURRENCY: ${UTMAN_CONCURRENCY}"
+  echo "UTMAN_SAFE_MODE:   ${UTMAN_SAFE_MODE}"
+  echo "UTMAN_DEBUG:       ${UTMAN_DEBUG}"
+
+  Banner "Your Environment:"
+  env | grep UTMAN
 }
 
 #@ help                  - Usage information.
@@ -2558,7 +2573,7 @@ Usage2() {
 }
 
 DebugRun() {
-  if ${UTC_DEBUG}; then
+  if ${UTMAN_DEBUG}; then
     "$@"
   fi
 }
