@@ -1235,9 +1235,15 @@ void ChromeFrameAutomationClient::RemoveBrowsingData(int remove_mask) {
 
 void ChromeFrameAutomationClient::RunUnloadHandlers(HWND notification_window,
                                                     int notification_message) {
-  automation_server_->Send(
-      new AutomationMsg_RunUnloadHandlers(0, tab_handle_, notification_window,
-                                          notification_message));
+  if (automation_server_) {
+    automation_server_->Send(
+        new AutomationMsg_RunUnloadHandlers(0, tab_handle_,
+                                            notification_window,
+                                            notification_message));
+  } else {
+    // Post this message to ensure that the caller exits his message loop.
+    ::PostMessage(notification_window, notification_message, 0, 0);
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
