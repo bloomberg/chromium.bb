@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/options/cellular_config_view.h"
 #include "chrome/browser/chromeos/options/ip_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 #include "grit/chromium_strings.h"
@@ -24,6 +25,7 @@ NetworkConfigView::NetworkConfigView(EthernetNetwork ethernet)
     : browser_mode_(true),
       flags_(FLAG_ETHERNET | FLAG_SHOW_IPCONFIG),
       ethernet_(ethernet),
+      cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
       delegate_(NULL) {
@@ -33,6 +35,7 @@ NetworkConfigView::NetworkConfigView(WifiNetwork wifi, bool login_only)
     : browser_mode_(true),
       flags_(FLAG_WIFI),
       wifi_(wifi),
+      cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
       delegate_(NULL) {
@@ -46,6 +49,7 @@ NetworkConfigView::NetworkConfigView(CellularNetwork cellular)
     : browser_mode_(true),
       flags_(FLAG_CELLULAR | FLAG_SHOW_IPCONFIG),
       cellular_(cellular),
+      cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
       delegate_(NULL) {
@@ -54,6 +58,7 @@ NetworkConfigView::NetworkConfigView(CellularNetwork cellular)
 NetworkConfigView::NetworkConfigView()
     : browser_mode_(true),
       flags_(FLAG_WIFI | FLAG_LOGIN_ONLY | FLAG_OTHER_NETWORK),
+      cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
       delegate_(NULL) {
@@ -90,6 +95,9 @@ bool NetworkConfigView::Cancel() {
 
 bool NetworkConfigView::Accept() {
   bool result = true;
+  if (flags_ & FLAG_CELLULAR) {
+    result = cellularconfig_view_->Save();
+  }
   if (flags_ & FLAG_WIFI) {
     if (flags_ & FLAG_LOGIN_ONLY)
       result = wificonfig_view_->Login();
@@ -131,7 +139,13 @@ gfx::Size NetworkConfigView::GetPreferredSize() {
       IDS_IMPORT_DIALOG_HEIGHT_LINES));
   result.set_height(0);  // IMPORT_DIALOG height is too large
   // Expand the default size to fit results if necessary
-  if (wificonfig_view_) {
+  if (cellularconfig_view_) {
+    gfx::Size s = cellularconfig_view_->GetPreferredSize();
+    s.set_height(s.height() + kPanelVertMargin * 2);
+    s.set_width(s.width() + kPanelHorizMargin * 2);
+    result = gfx::Size(std::max(result.width(), s.width()),
+                       std::max(result.height(), s.height()));
+  } else if (wificonfig_view_) {
     gfx::Size s = wificonfig_view_->GetPreferredSize();
     s.set_height(s.height() + kPanelVertMargin * 2);
     s.set_width(s.width() + kPanelHorizMargin * 2);
@@ -161,13 +175,19 @@ void NetworkConfigView::Init() {
   tabs_->SetListener(this);
   AddChildView(tabs_);
 
+  if (flags_ & FLAG_CELLULAR) {
+    cellularconfig_view_ = new CellularConfigView(this, cellular_);
+    tabs_->AddTab(
+        l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK_CONFIG),
+        cellularconfig_view_);
+  }
   if (flags_ & FLAG_WIFI) {
     if (flags_ & FLAG_OTHER_NETWORK)
       wificonfig_view_ = new WifiConfigView(this);
     else
       wificonfig_view_ = new WifiConfigView(this, wifi_);
     tabs_->AddTab(
-        l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_CONFIG),
+        l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK_CONFIG),
         wificonfig_view_);
   }
 

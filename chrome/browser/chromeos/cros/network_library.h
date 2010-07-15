@@ -330,7 +330,8 @@ class NetworkLibrary {
   virtual void DisconnectFromWirelessNetwork(
       const WirelessNetwork& network) = 0;
 
-  // Set whether or not to auto-connect to this network.
+  // Save network information including passwords (wifi) and auto-connect.
+  virtual void SaveCellularNetwork(const CellularNetwork& network) = 0;
   virtual void SaveWifiNetwork(const WifiNetwork& network) = 0;
 
   // Forget the passed in wireless (either cellular or wifi) network.
@@ -443,6 +444,7 @@ class NetworkLibraryImpl : public NetworkLibrary,
                                     bool auto_connect);
   virtual void ConnectToCellularNetwork(CellularNetwork network);
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network);
+  virtual void SaveCellularNetwork(const CellularNetwork& network);
   virtual void SaveWifiNetwork(const WifiNetwork& network);
   virtual void ForgetWirelessNetwork(const WirelessNetwork& network);
 

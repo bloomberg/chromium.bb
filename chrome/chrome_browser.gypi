@@ -520,6 +520,8 @@
         'browser/chromeos/network_state_notifier.h',
         'browser/chromeos/network_message_observer.cc',
         'browser/chromeos/network_message_observer.h',
+        'browser/chromeos/options/cellular_config_view.cc',
+        'browser/chromeos/options/cellular_config_view.h',
         'browser/chromeos/offline/offline_load_page.cc',
         'browser/chromeos/offline/offline_load_page.h',
         'browser/chromeos/offline/offline_load_service.cc',

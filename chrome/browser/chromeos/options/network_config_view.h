@@ -21,6 +21,7 @@ class Window;
 namespace chromeos {
 
 class IPConfigView;
+class CellularConfigView;
 class WifiConfigView;
 
 // A dialog box for showing a password textfield.
@@ -119,6 +120,7 @@ class NetworkConfigView : public views::View,
   WifiNetwork wifi_;
   CellularNetwork cellular_;
 
+  CellularConfigView* cellularconfig_view_;
   WifiConfigView* wificonfig_view_;
   IPConfigView* ipconfig_view_;
 

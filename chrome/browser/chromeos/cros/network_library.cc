@@ -431,6 +431,19 @@ void NetworkLibraryImpl::DisconnectFromWirelessNetwork(
   }
 }
 
+void NetworkLibraryImpl::SaveCellularNetwork(const CellularNetwork& network) {
+  // Update the wifi network in the local cache.
+  CellularNetwork* cellular = GetWirelessNetworkByPath(cellular_networks_,
+                                                       network.service_path());
+  if (cellular)
+    *cellular = network;
+
+  // Update the cellular network with libcros.
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    SetAutoConnect(network.service_path().c_str(), network.auto_connect());
+  }
+}
+
 void NetworkLibraryImpl::SaveWifiNetwork(const WifiNetwork& network) {
   // Update the wifi network in the local cache.
   WifiNetwork* wifi = GetWirelessNetworkByPath(wifi_networks_,

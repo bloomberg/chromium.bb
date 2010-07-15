@@ -218,7 +218,7 @@ void WifiConfigView::Init() {
 
   layout->StartRow(0, column_view_set_id);
   layout->AddView(new views::Label(l10n_util::GetString(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID)));
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID)));
   if (other_network_) {
     ssid_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
     ssid_textfield_->SetController(this);

@@ -7754,7 +7754,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY">
         Accessibility
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_CONFIG">
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK_CONFIG">
         Wireless
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_IP_CONFIG">
@@ -7808,7 +7808,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_OTHER_NETWORKS" desc="In the settings tab, the text on the button to display other networks.">
         Other...
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID" desc="In settings internet options, the label for the ssid.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings internet options, the label for the network id.">
         Network id:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY" desc="In settings internet options, the user identity for authentication.">
