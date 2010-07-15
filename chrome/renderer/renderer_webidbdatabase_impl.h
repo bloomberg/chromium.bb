@@ -21,10 +21,10 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual ~RendererWebIDBDatabaseImpl();
 
   // WebKit::WebIDBDatabase
-  virtual WebKit::WebString name();
-  virtual WebKit::WebString description();
-  virtual WebKit::WebString version();
-  virtual WebKit::WebDOMStringList objectStores();
+  virtual WebKit::WebString name() const;
+  virtual WebKit::WebString description() const;
+  virtual WebKit::WebString version() const;
+  virtual WebKit::WebDOMStringList objectStores() const;
   virtual void createObjectStore(
       const WebKit::WebString& name, const WebKit::WebString& key_path,
       bool auto_increment, WebKit::WebIDBCallbacks* callbacks);

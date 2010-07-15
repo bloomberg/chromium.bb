@@ -26,28 +26,28 @@ RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
       idb_database_id_));
 }
 
-WebString RendererWebIDBDatabaseImpl::name() {
+WebString RendererWebIDBDatabaseImpl::name() const {
   string16 result;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBDatabaseName(idb_database_id_, &result));
   return result;
 }
 
-WebString RendererWebIDBDatabaseImpl::description() {
+WebString RendererWebIDBDatabaseImpl::description() const {
   string16 result;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBDatabaseDescription(idb_database_id_, &result));
   return result;
 }
 
-WebString RendererWebIDBDatabaseImpl::version() {
+WebString RendererWebIDBDatabaseImpl::version() const {
   string16 result;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBDatabaseVersion(idb_database_id_, &result));
   return result;
 }
 
-WebDOMStringList RendererWebIDBDatabaseImpl::objectStores() {
+WebDOMStringList RendererWebIDBDatabaseImpl::objectStores() const {
   std::vector<string16> result;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBDatabaseObjectStores(idb_database_id_, &result));

@@ -23,21 +23,21 @@ RendererWebIDBIndexImpl::~RendererWebIDBIndexImpl() {
       idb_index_id_));
 }
 
-WebString RendererWebIDBIndexImpl::name() {
+WebString RendererWebIDBIndexImpl::name() const {
   string16 result;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexName(idb_index_id_, &result));
   return result;
 }
 
-WebString RendererWebIDBIndexImpl::keyPath() {
+WebString RendererWebIDBIndexImpl::keyPath() const {
   NullableString16 result;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexKeyPath(idb_index_id_, &result));
   return result;
 }
 
-bool RendererWebIDBIndexImpl::unique() {
+bool RendererWebIDBIndexImpl::unique() const {
   bool result;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexUnique(idb_index_id_, &result));

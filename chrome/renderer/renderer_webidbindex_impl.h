@@ -15,9 +15,9 @@ class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
   virtual ~RendererWebIDBIndexImpl();
 
   // WebKit::WebIDBIndex
-  virtual WebKit::WebString name();
-  virtual WebKit::WebString keyPath();
-  virtual bool unique();
+  virtual WebKit::WebString name() const;
+  virtual WebKit::WebString keyPath() const;
+  virtual bool unique() const;
 
  private:
   int32 idb_index_id_;
