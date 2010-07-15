@@ -54,7 +54,6 @@ readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
 # installing binutils and gcc in the same dir so that gcc
 # uses the correct as and ld even if we move the install dir.
 readonly BINUTILS_INSTALL_DIR="${LLVMGCC_INSTALL_DIR}"
-readonly SANDBOXED_BINUTILS_INSTALL_DIR="${LLVMGCC_INSTALL_DIR}/sandboxed"
 
 # This toolchain currenlty builds only on linux.
 # TODO(abetul): Remove the restriction on developer's OS choices.
@@ -90,7 +89,7 @@ readonly TC_LOG_ALL="${TC_LOG}/ALL"
 # The location of sources (absolute)
 readonly TC_SRC_LLVM="${TC_SRC}/llvm"
 readonly TC_SRC_LLVM_GCC="${TC_SRC}/llvm-gcc"
-readonly TC_SRC_BINUTILS_ARM="${TC_SRC}/binutils"
+readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 
@@ -99,10 +98,12 @@ readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
 readonly TC_BUILD_LLVM_GCC2="${TC_BUILD}/llvm-gcc-stage2"
-readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils"
-readonly TC_BUILD_BINUTILS_ARM_SANDBOXED="${TC_BUILD}/binutils_sandboxed"
+readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
+readonly TC_BUILD_BINUTILS_ARM_SB="${TC_BUILD}/binutils-arm-sandboxed"
+readonly TC_BUILD_BINUTILS_X86_SB="${TC_BUILD}/binutils-x86-sandboxed"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
+readonly TC_BUILD_LLC_SB="${TC_BUILD}/llc-sandboxed"
 
 # This apparently has to be at this location or gcc install breaks.
 readonly TC_BUILD_LIBSTDCPP=\
@@ -123,12 +124,16 @@ readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/x8632"
 readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/x8664"
 readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/bitcode"
 
+# PNaCl client-toolchain (sandboxed) binary locations
+readonly PNACL_CLIENT_TC_ROOT="$(pwd)/toolchain/sandboxed_translators"
+readonly PNACL_CLIENT_TC_ARM="${PNACL_CLIENT_TC_ROOT}/arm"
+readonly PNACL_CLIENT_TC_X86="${PNACL_CLIENT_TC_ROOT}/x86"
 
 # Current milestones within each Hg repo:
 readonly LLVM_REV=40bacb676ce7
 readonly LLVM_GCC_REV=08e173d1c977
 readonly NEWLIB_REV=5d64fed35b93
-readonly BINUTILS_REV=80d1927e7089
+readonly BINUTILS_REV=1675524d3abe
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -263,7 +268,7 @@ hg-status() {
   hg-status-common "${TC_SRC_LLVM}"       ${LLVM_REV}
   hg-status-common "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
   hg-status-common "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
-  hg-status-common "${TC_SRC_BINUTILS_ARM}"   ${BINUTILS_REV}
+  hg-status-common "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
 }
 
 hg-status-common() {
@@ -297,7 +302,7 @@ hg-update-tip() {
   hg-update-common "${TC_SRC_LLVM_GCC}"
   hg-update-common "${TC_SRC_LLVM}"
   hg-update-common "${TC_SRC_NEWLIB}"
-  hg-update-common "${TC_SRC_BINUTILS_ARM}"
+  hg-update-common "${TC_SRC_BINUTILS}"
 }
 
 #@ hg-update-stable      - Update all repos to the latest stable rev (may merge)
@@ -307,7 +312,7 @@ hg-update-stable() {
   hg-update-common "${TC_SRC_LLVM_GCC}"  ${LLVM_GCC_REV}
   hg-update-common "${TC_SRC_LLVM}"      ${LLVM_REV}
   hg-update-common "${TC_SRC_NEWLIB}"    ${NEWLIB_REV}
-  hg-update-common "${TC_SRC_BINUTILS_ARM}"  ${BINUTILS_REV}
+  hg-update-common "${TC_SRC_BINUTILS}"  ${BINUTILS_REV}
 }
 
 #@ hg-pull               - Pull all repos. (but do not update working copy)
@@ -316,7 +321,7 @@ hg-pull() {
   hg-pull-common "${TC_SRC_LLVM_GCC}"
   hg-pull-common "${TC_SRC_LLVM}"
   hg-pull-common "${TC_SRC_NEWLIB}"
-  hg-pull-common "${TC_SRC_BINUTILS_ARM}"
+  hg-pull-common "${TC_SRC_BINUTILS}"
 }
 
 hg-pull-common() {
@@ -344,7 +349,7 @@ hg-checkout() {
 
   hg-checkout-common ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_REV}
   hg-checkout-common ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_REV}
-  hg-checkout-common ${REPO_BINUTILS} ${TC_SRC_BINUTILS_ARM} ${BINUTILS_REV}
+  hg-checkout-common ${REPO_BINUTILS} ${TC_SRC_BINUTILS} ${BINUTILS_REV}
   hg-checkout-common ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
 
   if ${add_headers}; then
@@ -444,7 +449,7 @@ download-trusted() {
 
 #@-------------------------------------------------------------------------
 
-#@ download-toolchains - Download and Install all SDKs (arm,x86-32,x86-64)
+#@ download-toolchains   - Download and Install all SDKs (arm,x86-32,x86-64)
 
 download-toolchains() {
   # "--help" prevents building libs after the download
@@ -686,7 +691,7 @@ llvm-configure() {
   spushd "${objdir}"
 
   # The --with-binutils-include is to allow llvm to build the gold plugin
-  local binutils_include="${TC_SRC_BINUTILS_ARM}/binutils-2.20/include"
+  local binutils_include="${TC_SRC_BINUTILS}/binutils-2.20/include"
   RunWithLog "llvm.configure" \
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
@@ -1379,7 +1384,7 @@ arm-ncval-core ${INSTALL_ROOT}/tools-x86
 
 
 #########################################################################
-#     < BINUTILS-ARM >
+#     < BINUTILS >
 #########################################################################
 
 #+-------------------------------------------------------------------------
@@ -1387,7 +1392,7 @@ arm-ncval-core ${INSTALL_ROOT}/tools-x86
 binutils-arm() {
   StepBanner "BINUTILS-ARM"
 
-  local srcdir="${TC_SRC_BINUTILS_ARM}"
+  local srcdir="${TC_SRC_BINUTILS}"
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
@@ -1418,7 +1423,7 @@ binutils-arm-clean() {
 binutils-arm-configure() {
   StepBanner "BINUTILS-ARM" "Configure"
 
-  local srcdir="${TC_SRC_BINUTILS_ARM}"
+  local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${TC_BUILD_BINUTILS_ARM}"
 
   mkdir -p "${objdir}"
@@ -1428,7 +1433,7 @@ binutils-arm-configure() {
   #   tc-arm.c:2489: warning: empty body in an if-statement
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
-  RunWithLog binutils.configure \
+  RunWithLog binutils.arm.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     CC=${CC} \
@@ -1449,7 +1454,7 @@ binutils-arm-needs-configure() {
 }
 
 binutils-arm-needs-make() {
-  local srcdir="${TC_SRC_BINUTILS_ARM}"
+  local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${TC_BUILD_BINUTILS_ARM}"
 
   ts-modified "$srcdir" "$objdir"
@@ -1459,13 +1464,13 @@ binutils-arm-needs-make() {
 #+ binutils-arm-make     - Make binutils for ARM
 binutils-arm-make() {
   StepBanner "BINUTILS-ARM" "Make"
-  local srcdir="${TC_SRC_BINUTILS_ARM}"
+  local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${TC_BUILD_BINUTILS_ARM}"
   spushd "${objdir}"
 
   ts-touch-open "${objdir}"
 
-  RunWithLog binutils.make \
+  RunWithLog binutils.arm.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS}
 
@@ -1480,7 +1485,7 @@ binutils-arm-install() {
   local objdir="${TC_BUILD_BINUTILS_ARM}"
   spushd "${objdir}"
 
-  RunWithLog binutils.install \
+  RunWithLog binutils.arm.install \
     env -i PATH="/usr/bin:/bin" \
     make \
       install ${MAKE_OPTS}
@@ -1489,8 +1494,93 @@ binutils-arm-install() {
 }
 
 #########################################################################
-#     BINUTILS SANDBOXED
+#     CLIENT BINARIES (SANDBOXED)
 #########################################################################
+
+#+-------------------------------------------------------------------------
+#+ llc-sb       - build and install llc (sandboxed)
+llc-sb() {
+  StepBanner "LLC-SB"
+
+  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
+    echo "ERROR: install Native Client toolchain"
+    exit -1
+  fi
+
+  # TODO(pdox): make this incremental
+  llc-sb-clean
+  llc-sb-configure
+  llc-sb-make
+  llc-sb-install
+}
+
+#+ llc-sb-clean - clean llvm-trunk (sandboxed)
+llc-sb-clean() {
+  StepBanner "LLC-SB" "Clean"
+  local objdir="${TC_BUILD_LLC_SB}"
+
+  rm -rf "${objdir}"
+  mkdir -p "${objdir}"
+}
+
+#+ llc-sb-configure - configure binutils (sandboxed)
+llc-sb-configure() {
+  StepBanner "LLC-SB" "Configure"
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_LLC_SB}"
+
+  mkdir ${TC_BUILD_LLC_SB}/opcodes
+  spushd ${objdir}
+  cp ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ./opcodes/.
+  RunWithLog \
+    binutils.x86.sandboxed.configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
+    AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
+    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc" \
+    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++" \
+    EMULATOR_FOR_BUILD="$(pwd)/scons-out/dbg-linux-x86-32/staging/sel_ldr -d" \
+    LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
+    RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
+    CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
+    LDFLAGS="-s" \
+    LDFLAGS_FOR_BUILD="-L." \
+    ${srcdir}/binutils-2.20/configure \
+                             --prefix=${PNACL_CLIENT_TC_X86} \
+                             --host=nacl \
+                             --target=nacl64 \
+                             --disable-nls \
+                             --enable-static \
+                             --enable-shared=no \
+                             --with-sysroot=${NEWLIB_INSTALL_DIR}
+  spopd
+}
+
+#+ binutils-x86-sb-make - Install binutils (sandboxed) for x86
+binutils-x86-sb-make() {
+  StepBanner "BINUTILS-X86-SB" "Make"
+  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+  spushd ${objdir}
+
+  RunWithLog binutils.x86.sandboxed.make \
+    env -i PATH="/usr/bin:/bin" \
+    make ${MAKE_OPTS} all-gas
+  spopd
+}
+
+#+ binutils-x86-sb-install - Install binutils (sandboxed) for x86
+binutils-x86-sb-install() {
+  StepBanner "BINUTILS-X86-SB" "Install"
+  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+  spushd ${objdir}
+
+  RunWithLog binutils.x86.sandboxed.install \
+    env -i PATH="/usr/bin:/bin" \
+    make install-gas
+
+  spopd
+}
 
 #+-------------------------------------------------------------------------
 #+ binutils-arm-sb       - build and install binutils (sandboxed) for ARM
@@ -1511,7 +1601,7 @@ binutils-arm-sb() {
 #+ binutils-arm-sb-clean - clean binutils (sandboxed) for ARM
 binutils-arm-sb-clean() {
   StepBanner "BINUTILS-ARM-SB" "Clean"
-  local objdir="${TC_BUILD_BINUTILS_ARM_SANDBOXED}"
+  local objdir="${TC_BUILD_BINUTILS_ARM_SB}"
 
   rm -rf "${objdir}"
   mkdir -p "${objdir}"
@@ -1520,8 +1610,8 @@ binutils-arm-sb-clean() {
 #+ binutils-arm-sb-configure - configure binutils (sandboxed) for ARM
 binutils-arm-sb-configure() {
   StepBanner "BINUTILS-ARM-SB" "Configure"
-  local srcdir="${TC_SRC_BINUTILS_ARM}"
-  local objdir="${TC_BUILD_BINUTILS_ARM_SANDBOXED}"
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS_ARM_SB}"
 
   spushd ${objdir}
   # --enable-checking is to avoid a build failure:
@@ -1529,7 +1619,7 @@ binutils-arm-sb-configure() {
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
   RunWithLog \
-    binutils.sandboxed.configure \
+    binutils.arm.sandboxed.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
@@ -1542,7 +1632,7 @@ binutils-arm-sb-configure() {
     CFLAGS="-O2 -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
     LDFLAGS="-s" \
     ${srcdir}/binutils-2.20/configure \
-                             --prefix=${SANDBOXED_BINUTILS_INSTALL_DIR} \
+                             --prefix=${PNACL_CLIENT_TC_ARM} \
                              --host=nacl \
                              --target=${CROSS_TARGET} \
                              --disable-nls \
@@ -1556,10 +1646,10 @@ binutils-arm-sb-configure() {
 #+ binutils-arm-sb-make - Install binutils (sandboxed) for ARM
 binutils-arm-sb-make() {
   StepBanner "BINUTILS-ARM-SB" "Make"
-  local objdir="${TC_BUILD_BINUTILS_ARM_SANDBOXED}"
+  local objdir="${TC_BUILD_BINUTILS_ARM_SB}"
   spushd ${objdir}
 
-  RunWithLog binutils.sandboxed.make \
+  RunWithLog binutils.arm.sandboxed.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS} all-gas all-ld
   spopd
@@ -1568,12 +1658,102 @@ binutils-arm-sb-make() {
 #+ binutils-arm-sb-install - Install binutils (sandboxed) for ARM
 binutils-arm-sb-install() {
   StepBanner "BINUTILS-ARM-SB" "Install"
-  local objdir="${TC_BUILD_BINUTILS_ARM_SANDBOXED}"
+  local objdir="${TC_BUILD_BINUTILS_ARM_SB}"
   spushd ${objdir}
 
-  RunWithLog binutils.sandboxed.install \
+  RunWithLog binutils.arm.sandboxed.install \
     env -i PATH="/usr/bin:/bin" \
     make install-gas install-ld
+
+  spopd
+}
+
+#+-------------------------------------------------------------------------
+#+ binutils-x86-sb       - build and install binutils (sandboxed) for x86
+binutils-x86-sb() {
+  StepBanner "BINUTILS-X86-SB"
+
+  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
+    echo "ERROR: install Native Client toolchain"
+    exit -1
+  fi
+
+  if [ ! -f ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ] ; then
+    echo "ERROR: install Portable Native Client toolchain"
+    exit -1
+  fi
+
+  # TODO(pdox): make this incremental
+  binutils-x86-sb-clean
+  binutils-x86-sb-configure
+  binutils-x86-sb-make
+  binutils-x86-sb-install
+}
+
+#+ binutils-x86-sb-clean - clean binutils (sandboxed) for x86
+binutils-x86-sb-clean() {
+  StepBanner "BINUTILS-X86-SB" "Clean"
+  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+
+  rm -rf "${objdir}"
+  mkdir -p "${objdir}"
+}
+
+#+ binutils-x86-sb-configure - configure binutils (sandboxed) for x86
+binutils-x86-sb-configure() {
+  StepBanner "BINUTILS-X86-SB" "Configure"
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+
+  mkdir ${TC_BUILD_BINUTILS_X86_SB}/opcodes
+  spushd ${objdir}
+  cp ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ./opcodes/.
+  RunWithLog \
+    binutils.x86.sandboxed.configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
+    AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
+    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc" \
+    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++" \
+    EMULATOR_FOR_BUILD="$(pwd)/scons-out/dbg-linux-x86-32/staging/sel_ldr -d" \
+    LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
+    RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
+    CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
+    LDFLAGS="-s" \
+    LDFLAGS_FOR_BUILD="-L." \
+    ${srcdir}/binutils-2.20/configure \
+                             --prefix=${PNACL_CLIENT_TC_X86} \
+                             --host=nacl \
+                             --target=nacl64 \
+                             --disable-nls \
+                             --enable-static \
+                             --enable-shared=no \
+                             --with-sysroot=${NEWLIB_INSTALL_DIR}
+  spopd
+}
+
+#+ binutils-x86-sb-make - Install binutils (sandboxed) for x86
+binutils-x86-sb-make() {
+  StepBanner "BINUTILS-X86-SB" "Make"
+  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+  spushd ${objdir}
+
+  RunWithLog binutils.x86.sandboxed.make \
+    env -i PATH="/usr/bin:/bin" \
+    make ${MAKE_OPTS} all-gas
+  spopd
+}
+
+#+ binutils-x86-sb-install - Install binutils (sandboxed) for x86
+binutils-x86-sb-install() {
+  StepBanner "BINUTILS-X86-SB" "Install"
+  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+  spushd ${objdir}
+
+  RunWithLog binutils.x86.sandboxed.install \
+    env -i PATH="/usr/bin:/bin" \
+    make install-gas
 
   spopd
 }
