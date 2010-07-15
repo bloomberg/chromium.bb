@@ -22,6 +22,10 @@ const double kPercentBalloonFillFactor = 0.7;
 // Allow at least this number of balloons on the screen.
 const int kMinAllowedBalloonCount = 2;
 
+// Delay from the mouse leaving the balloon collection before
+// there is a relayout, in milliseconds.
+const int kRepositionDelay = 300;
+
 }  // namespace
 
 // static
@@ -32,7 +36,12 @@ BalloonCollectionImpl::Layout::Placement
     BalloonCollectionImpl::Layout::placement_ =
         Layout::VERTICALLY_FROM_BOTTOM_RIGHT;
 
-BalloonCollectionImpl::BalloonCollectionImpl() {
+BalloonCollectionImpl::BalloonCollectionImpl()
+#if USE_OFFSETS
+    : ALLOW_THIS_IN_INITIALIZER_LIST(reposition_factory_(this)),
+      added_as_message_loop_observer_(false)
+#endif
+{
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {
@@ -49,6 +58,10 @@ void BalloonCollectionImpl::Add(const Notification& notification,
                                                 layout_.max_balloon_height()));
   new_balloon->SetPosition(layout_.OffScreenLocation(), false);
   new_balloon->Show();
+#if USE_OFFSETS
+  if (balloons_.size() > 0)
+    new_balloon->set_offset(balloons_[balloons_.size() - 1]->offset());
+#endif
 
   balloons_.push_back(new_balloon);
   PositionBalloons(false);
@@ -99,12 +112,38 @@ void BalloonCollectionImpl::DisplayChanged() {
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   // We want to free the balloon when finished.
   scoped_ptr<Balloon> closed(source);
-  for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it) {
+  Balloons::iterator it = balloons_.begin();
+
+#if USE_OFFSETS
+  gfx::Point offset;
+  bool apply_offset = false;
+  while (it != balloons_.end()) {
+    if (*it == source) {
+      it = balloons_.erase(it);
+      if (it != balloons_.end()) {
+        apply_offset = true;
+        offset.set_y((source)->offset().y() - (*it)->offset().y() +
+            (*it)->content_size().height() - source->content_size().height());
+      }
+    } else {
+      if (apply_offset)
+        (*it)->add_offset(offset);
+      ++it;
+    }
+  }
+  // Start listening for UI events so we cancel the offset when the mouse
+  // leaves the balloon area.
+  if (apply_offset)
+    AddMessageLoopObserver();
+#else
+  for (; it != balloons_.end(); ++it) {
     if (*it == source) {
       balloons_.erase(it);
       break;
     }
   }
+#endif
+
   PositionBalloons(true);
 
   // There may be no listener in a unit test.
@@ -115,11 +154,55 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
 void BalloonCollectionImpl::PositionBalloons(bool reposition) {
   gfx::Point origin = layout_.GetLayoutOrigin();
   for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it) {
-    gfx::Point upper_left = layout_.NextPosition(
-        Layout::ConstrainToSizeLimits((*it)->GetViewSize()), &origin);
+    gfx::Point upper_left = layout_.NextPosition((*it)->GetViewSize(), &origin);
     (*it)->SetPosition(upper_left, reposition);
   }
 }
+
+#if USE_OFFSETS
+void BalloonCollectionImpl::AddMessageLoopObserver() {
+  if (!added_as_message_loop_observer_) {
+    MessageLoopForUI::current()->AddObserver(this);
+    added_as_message_loop_observer_ = true;
+  }
+}
+
+void BalloonCollectionImpl::RemoveMessageLoopObserver() {
+  if (added_as_message_loop_observer_) {
+    MessageLoopForUI::current()->RemoveObserver(this);
+    added_as_message_loop_observer_ = false;
+  }
+}
+
+void BalloonCollectionImpl::CancelOffsets() {
+  reposition_factory_.RevokeAll();
+
+  // Unhook from listening to all UI events.
+  RemoveMessageLoopObserver();
+
+  for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it)
+    (*it)->set_offset(gfx::Point(0, 0));
+
+  PositionBalloons(true);
+}
+
+void BalloonCollectionImpl::HandleMouseMoveEvent() {
+  if (!IsCursorInBalloonCollection()) {
+    // Mouse has left the region.  Schedule a reposition after
+    // a short delay.
+    if (reposition_factory_.empty()) {
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          reposition_factory_.NewRunnableMethod(
+              &BalloonCollectionImpl::CancelOffsets),
+          kRepositionDelay);
+    }
+  } else {
+    // Mouse moved back into the region.  Cancel the reposition.
+    reposition_factory_.RevokeAll();
+  }
+}
+#endif
 
 BalloonCollectionImpl::Layout::Layout() {
   RefreshSystemMetrics();

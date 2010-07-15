@@ -29,6 +29,34 @@ int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
   return 0;
 }
 
+void BalloonCollectionImpl::DidProcessMessage(const MSG& msg) {
+  switch (msg.message) {
+    case WM_MOUSEMOVE:
+    case WM_MOUSELEAVE:
+    case WM_NCMOUSELEAVE:
+      HandleMouseMoveEvent();
+      break;
+  }
+}
+
+bool BalloonCollectionImpl::IsCursorInBalloonCollection() const {
+  if (balloons_.empty())
+    return false;
+
+  gfx::Point upper_left = balloons_[balloons_.size() - 1]->GetPosition();
+  gfx::Point lower_right = layout_.GetLayoutOrigin();
+
+  gfx::Rect bounds = gfx::Rect(upper_left.x(),
+                               upper_left.y(),
+                               lower_right.x() - upper_left.x(),
+                               lower_right.y() - upper_left.y());
+
+  DWORD pos = GetMessagePos();
+  gfx::Point cursor(pos);
+
+  return bounds.Contains(cursor);
+}
+
 // static
 BalloonCollection* BalloonCollection::Create() {
   return new BalloonCollectionImpl();

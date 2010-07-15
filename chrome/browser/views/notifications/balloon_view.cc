@@ -186,7 +186,7 @@ void BalloonViewImpl::RepositionToBalloon() {
 
   if (!kAnimateEnabled) {
     frame_container_->SetBounds(
-        gfx::Rect(balloon_->position().x(), balloon_->position().y(),
+        gfx::Rect(balloon_->GetPosition().x(), balloon_->GetPosition().y(),
                   GetTotalWidth(), GetTotalHeight()));
     gfx::Rect contents_rect = GetContentsRectangle();
     html_container_->SetBounds(contents_rect);
@@ -198,7 +198,7 @@ void BalloonViewImpl::RepositionToBalloon() {
   }
 
   anim_frame_end_ = gfx::Rect(
-      balloon_->position().x(), balloon_->position().y(),
+      balloon_->GetPosition().x(), balloon_->GetPosition().y(),
       GetTotalWidth(), GetTotalHeight());
   frame_container_->GetBounds(&anim_frame_start_, false);
   animation_.reset(new SlideAnimation(this));
@@ -274,7 +274,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   balloon_ = balloon;
 
-  SetBounds(balloon_->position().x(), balloon_->position().y(),
+  SetBounds(balloon_->GetPosition().x(), balloon_->GetPosition().y(),
             GetTotalWidth(), GetTotalHeight());
 
   source_label_ = new views::Label(source_label_text);

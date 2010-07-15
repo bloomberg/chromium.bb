@@ -160,8 +160,8 @@ void BalloonViewImpl::RepositionToBalloon() {
   gtk_window_get_position(GTK_WINDOW(frame_container_), &start_x, &start_y);
   gtk_window_get_size(GTK_WINDOW(frame_container_), &start_w, &start_h);
 
-  int end_x = balloon_->position().x();
-  int end_y = balloon_->position().y();
+  int end_x = balloon_->GetPosition().x();
+  int end_y = balloon_->GetPosition().y();
   int end_w = GetDesiredTotalWidth();
   int end_h = GetDesiredTotalHeight();
 

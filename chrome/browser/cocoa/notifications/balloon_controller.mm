@@ -94,8 +94,8 @@ const int kRightMargin = 1;
 
 - (void)repositionToBalloon {
   DCHECK(balloon_);
-  int x = balloon_->position().x();
-  int y = balloon_->position().y();
+  int x = balloon_->GetPosition().x();
+  int y = balloon_->GetPosition().y();
   int w = [self desiredTotalWidth];
   int h = [self desiredTotalHeight];
 
