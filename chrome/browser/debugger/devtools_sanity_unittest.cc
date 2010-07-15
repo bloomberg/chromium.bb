@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
 
 // Fails after WebKit roll 59365:59477, http://crbug.com/44202.
 #if defined(OS_LINUX)
-#define MAYBE_TestResourceContentLength FAILS_TestResourceContentLength
+#define MAYBE_TestResourceContentLength FLAKY_TestResourceContentLength
 #else
 #define MAYBE_TestResourceContentLength TestResourceContentLength
 #endif  // defined(OS_LINUX)
