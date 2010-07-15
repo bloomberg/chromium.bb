@@ -923,7 +923,7 @@ NPError WebPluginDelegatePepper::Device3DGetConfigAttribs(
 
 NPError WebPluginDelegatePepper::Device3DCreateContext(
     int32 config,
-    int32* attrib_list,
+    const int32* attrib_list,
     NPDeviceContext3D** context) {
   if (!context)
     return NPERR_GENERIC_ERROR;
@@ -936,7 +936,8 @@ NPError WebPluginDelegatePepper::Device3DCreateContext(
   NPDeviceContext3DConfig old_config;
   old_config.commandBufferSize = kDefaultCommandBufferSize;
   if (attrib_list) {
-    for (int32* attrib_pair = attrib_list; *attrib_pair; attrib_pair += 2) {
+    for (const int32* attrib_pair = attrib_list; *attrib_pair;
+         attrib_pair += 2) {
       switch (attrib_pair[0]) {
         case NP3DAttrib_CommandBufferSize:
           old_config.commandBufferSize = attrib_pair[1];
@@ -1755,4 +1756,3 @@ void WebPluginDelegatePepper::DrawSkBitmapToCanvas(
   CGContextRestoreGState(canvas);
 }
 #endif  // defined(OS_MACOSX)
-

@@ -148,7 +148,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
   virtual NPError Device3DGetConfigAttribs(int32 config,
                                            int32* attrib_list);
   virtual NPError Device3DCreateContext(int32 config,
-                                        int32* attrib_list,
+                                        const int32* attrib_list,
                                         NPDeviceContext3D** context);
   virtual NPError Device3DRegisterCallback(
       NPP id,
