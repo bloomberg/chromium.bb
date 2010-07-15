@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/feedback_menu_button.h"
@@ -202,12 +203,13 @@ void BackgroundView::UpdateWindowType() {
 
 void BackgroundView::OnVersion(
     VersionLoader::Handle handle, std::string version) {
+  // TODO(jungshik): Is string concatenation OK here?
   std::string version_text = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   version_text += ' ';
   version_text += l10n_util::GetStringUTF8(IDS_VERSION_FIELD_PREFIX);
   version_text += ' ';
   version_text += version;
-  os_version_label_->SetText(ASCIIToWide(version_text));
+  os_version_label_->SetText(UTF8ToWide(version_text));
 }
 
 void BackgroundView::OnBootTimes(
@@ -239,6 +241,7 @@ void BackgroundView::OnBootTimes(
             boot_times.pre_startup,
             boot_times.system);
   }
+  // Use UTF8ToWide once this string is localized.
   boot_times_label_->SetText(ASCIIToWide(boot_times_text));
 }
 
