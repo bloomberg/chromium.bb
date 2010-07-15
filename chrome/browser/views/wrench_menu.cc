@@ -19,6 +19,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/canvas.h"
+#include "gfx/canvas_skia.h"
 #include "gfx/skia_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -367,9 +368,7 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     zoom_label_->set_border(new MenuButtonBorder());
     zoom_label_->SetFont(MenuConfig::instance().font);
     AddChildView(zoom_label_);
-    // Get the preferred width given 100%, we'll use this in calculating our
-    // preferred size.
-    zoom_label_width_ = zoom_label_->GetPreferredSize().width();
+    zoom_label_width_ = MaxWidthForZoomLabel();
 
     decrement_button_ = CreateAndConfigureButton(
         this, this, IDS_ZOOM_MINUS2, MenuButtonBackground::RIGHT_BUTTON,
@@ -456,7 +455,7 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
   void UpdateZoomControls() {
     bool enable_increment, enable_decrement;
     int zoom_percent =
-        static_cast<int>(GetZoom(&enable_increment, &enable_decrement) * 100);
+        static_cast<int>(GetZoom(&enable_increment, &enable_decrement));
     zoom_label_->SetText(l10n_util::GetStringF(
                              IDS_ZOOM_PERCENT, IntToWString(zoom_percent)));
     increment_button_->SetEnabled(enable_increment);
@@ -475,11 +474,31 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
       return 1;
 
     int zoom_level = zoom_map->GetZoomLevel(selected_tab->GetURL());
-    double value = static_cast<double>(
-        std::max(std::min(std::pow(1.2, zoom_level), 3.0), .5));
-    *enable_decrement = (value != .5);
-    *enable_increment = (value != 3.0);
+    double value = ZoomPercentFromZoomLevel(zoom_level);
+    *enable_decrement = (value != 50);
+    *enable_increment = (value != 300);
     return value;
+  }
+
+  double ZoomPercentFromZoomLevel(int level) {
+    return static_cast<double>(
+        std::max(std::min(std::pow(1.2, level), 3.0), .5)) * 100;
+  }
+
+  // Calculates the max width the zoom string can be.
+  int MaxWidthForZoomLabel() {
+    gfx::Font font = zoom_label_->font();
+    gfx::Insets insets;
+    if (zoom_label_->border())
+      zoom_label_->border()->GetInsets(&insets);
+    int max_w = 0;
+    for (int i = -4; i <= 7; ++i) {
+      int zoom_percent = static_cast<int>(ZoomPercentFromZoomLevel(i));
+      int w = font.GetStringWidth(
+          l10n_util::GetStringF(IDS_ZOOM_PERCENT, zoom_percent));
+      max_w = std::max(w, max_w);
+    }
+    return max_w + insets.width();
   }
 
   // Hosting WrenchMenu.
