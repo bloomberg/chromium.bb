@@ -27,7 +27,6 @@ namespace media {
 template <class Decoder, class Output>
 class DecoderBase : public Decoder {
  public:
-  typedef CallbackRunner< Tuple1<Output*> > ReadCallback;
 
   // MediaFilter implementation.
   virtual void Stop(FilterCallback* callback) {
@@ -188,7 +187,10 @@ class DecoderBase : public Decoder {
     expecting_discontinuous_ = true;
 
     // Signal that we're done seeking.
-    callback->Run();
+    if (callback) {
+      callback->Run();
+      delete callback;
+    }
   }
 
   void InitializeTask(DemuxerStream* demuxer_stream, FilterCallback* callback) {
@@ -301,9 +303,6 @@ class DecoderBase : public Decoder {
   // we need this extra queue.
   typedef std::deque<scoped_refptr<Output> > ResultQueue;
   ResultQueue result_queue_;
-
-  // Pause callback.
-  scoped_ptr<FilterCallback> pause_callback_;
 
   // Simple state tracking variable.
   enum State {
