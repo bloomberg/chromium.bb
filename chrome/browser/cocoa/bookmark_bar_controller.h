@@ -22,6 +22,7 @@
 @class BookmarkBarFolderController;
 @class BookmarkBarView;
 @class BookmarkButton;
+@class BookmarkButtonCell;
 @class BookmarkFolderTarget;
 class BookmarkModel;
 @class BookmarkMenu;
@@ -351,7 +352,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (int)displayedButtonCount;
 - (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition;
 - (void)clearBookmarkBar;
-- (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node;
+- (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)node;
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;
 - (void)frameDidChange;

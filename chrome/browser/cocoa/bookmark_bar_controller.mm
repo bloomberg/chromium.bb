@@ -991,7 +991,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 - (BookmarkButton*)buttonForNode:(const BookmarkNode*)node
                          xOffset:(int*)xOffset {
-  NSCell* cell = [self cellForBookmarkNode:node];
+  BookmarkButtonCell* cell = [self cellForBookmarkNode:node];
   NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:xOffset];
 
   scoped_nsobject<BookmarkButton>
@@ -1005,6 +1005,20 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // NSButton between alloc/init and setCell:.
   [button setCell:cell];
   [button setDelegate:self];
+
+  // We cannot set the button cell's text color until it is placed in
+  // the button (e.g. the [button setCell:cell] call right above).  We
+  // also cannot set the cell's text color until the view is added to
+  // the hierarchy.  If that second part is now true, set the color.
+  // (If not we'll set the color on the 1st themeChanged:
+  // notification.)
+  ThemeProvider* themeProvider = [[[self view] window] themeProvider];
+  if (themeProvider) {
+    NSColor* color =
+        themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
+                                  true);
+    [cell setTextColor:color];
+  }
 
   if (node->is_folder()) {
     [button setTarget:self];
@@ -1369,7 +1383,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // Return an autoreleased NSCell suitable for a bookmark button.
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
-- (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node {
+- (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)node {
   NSImage* image = node ? [self favIconForNode:node] : nil;
   NSMenu* menu = node && node->is_folder() ? buttonFolderContextMenu_ :
       buttonContextMenu_;
