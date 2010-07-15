@@ -40,15 +40,11 @@ SboxTestResult TestCreateProcess(const wchar_t *path_str, wchar_t *cmd_str) {
   if (!::CreateProcess(path_str, cmd_str, NULL, NULL, FALSE, 0,
                        NULL, NULL, &si, &pi)) {
     if (ERROR_ACCESS_DENIED == ::GetLastError()) {
-      fprintf(stderr, "Create process denied\n");
       return SBOX_TEST_DENIED;
     } else {
-      fprintf(stderr, "Created process denied for misc reason: %ld\n",
-              ::GetLastError());
       return SBOX_TEST_DENIED;
     }
   } else {
-    fprintf(stderr, "Created process\n");
     return SBOX_TEST_SUCCEEDED;
   }
 }
@@ -56,9 +52,6 @@ SboxTestResult TestCreateProcess(const wchar_t *path_str, wchar_t *cmd_str) {
 SboxTestResult TestConnect(const char* url) {
   WSADATA wsaData;
   int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-  if (NO_ERROR != iResult) {
-    fprintf(stderr, "Error at WSAStartup()\n");
-  }
 
   struct addrinfo hints, *servinfo, *p;
   DWORD dwRet;
@@ -69,7 +62,6 @@ SboxTestResult TestConnect(const char* url) {
 
   dwRet = getaddrinfo(url, "80", &hints, &servinfo);
   if (0 != dwRet) {
-    fprintf(stderr, "getaddrinfo failed with %d\n", dwRet);
     WSACleanup();
     return SBOX_TEST_DENIED;
   }
@@ -79,7 +71,6 @@ SboxTestResult TestConnect(const char* url) {
   SOCKET sock;
   sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
   if (INVALID_SOCKET == sock) {
-    fprintf(stderr, "Error at socket(): %ld\n", WSAGetLastError());
     freeaddrinfo(servinfo);
     WSACleanup();
     return SBOX_TEST_DENIED;
@@ -87,14 +78,12 @@ SboxTestResult TestConnect(const char* url) {
 
   if (SOCKET_ERROR == connect(sock, p->ai_addr,
                               static_cast<int>(p->ai_addrlen))) {
-    fprintf(stderr, "Failed to connect\n");
     freeaddrinfo(servinfo);
     closesocket(sock);
     WSACleanup();
     return SBOX_TEST_DENIED;
   }
 
-  fprintf(stderr, "OOPS: Connected to server.\n");
   freeaddrinfo(servinfo);
   closesocket(sock);
   WSACleanup();

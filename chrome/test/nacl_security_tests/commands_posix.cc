@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "./commands_posix.h"
+#include "chrome/test/nacl_security_tests/commands_posix.h"
 
 #include <fcntl.h>
 #include <netdb.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -22,7 +24,6 @@ SboxTestResult TestOpenReadFile(const char *path) {
   if (-1 == fd) {
     return SBOX_TEST_DENIED;
   } else {
-    fprintf(stderr, "OOPS: Opened file for read %s %d\n", path, fd);
     close(fd);
     return SBOX_TEST_SUCCEEDED;
   }
@@ -33,7 +34,6 @@ SboxTestResult TestOpenWriteFile(const char *path) {
   if (-1 == fd) {
     return SBOX_TEST_DENIED;
   } else {
-    fprintf(stderr, "OOPS: Opened file for write %s %d\n", path, fd);
     close(fd);
     return SBOX_TEST_SUCCEEDED;
   }
@@ -54,7 +54,6 @@ SboxTestResult TestCreateProcess(const char *path) {
     }
     return SBOX_TEST_SUCCEEDED;
   } else if (0 < pid) {
-    fprintf(stderr, "PARENT: Oops, forked child!\n");
     waitpid(pid, &child_stat, WNOHANG);
     return SBOX_TEST_SUCCEEDED;
   } else {
@@ -72,7 +71,6 @@ SboxTestResult TestConnect(const char *url) {
   hints.ai_socktype = SOCK_STREAM;
   rv = getaddrinfo(url, "http", &hints, &servinfo);
   if (0 != rv) {
-    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
     return SBOX_TEST_DENIED;
   }
 
@@ -82,7 +80,6 @@ SboxTestResult TestConnect(const char *url) {
   if (-1 == conn_sock) {
     perror("socket");
     freeaddrinfo(servinfo);
-    fprintf(stderr, "Error at socket()\n");
     return SBOX_TEST_DENIED;
   }
 
@@ -92,7 +89,6 @@ SboxTestResult TestConnect(const char *url) {
     return SBOX_TEST_DENIED;
   }
 
-  fprintf(stderr, "Connected to server.\n");
   shutdown(conn_sock, SHUT_RDWR);
   close(conn_sock);
   freeaddrinfo(servinfo);
@@ -105,7 +101,6 @@ SboxTestResult TestConnect(const char *url) {
 // context-independent, yet leave no traces).
 
 SboxTestResult TestDummyFails() {
-  fprintf(stderr, "Running dummy sandbox test, which should fail\n");
   return SBOX_TEST_SUCCEEDED;
 }
 
