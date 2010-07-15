@@ -987,6 +987,8 @@
         'browser/cocoa/web_drop_target.mm',
         'browser/cocoa/window_size_autosaver.h',
         'browser/cocoa/window_size_autosaver.mm',
+        'browser/cocoa/wrench_menu_controller.h',
+        'browser/cocoa/wrench_menu_controller.mm',
         'browser/command_updater.cc',
         'browser/command_updater.h',
         'browser/config_dir_policy_provider.cc',

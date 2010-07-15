@@ -57,7 +57,8 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
 
 void SimpleMenuModel::AddButtonItem(int command_id,
                                     ButtonMenuItemModel* model) {
-  Item item = { 0, string16(), SkBitmap(), TYPE_BUTTON_ITEM, -1, NULL, model };
+  Item item = { command_id, string16(), SkBitmap(), TYPE_BUTTON_ITEM, -1, NULL,
+                model };
   AppendItem(item);
 }
 

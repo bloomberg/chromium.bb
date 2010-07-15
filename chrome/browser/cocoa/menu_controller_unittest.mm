@@ -175,3 +175,23 @@ TEST_F(MenuControllerTest, Validate) {
 
   Validate(menu.get(), [menu menu]);
 }
+
+TEST_F(MenuControllerTest, DefaultInitializer) {
+  Delegate delegate;
+  menus::SimpleMenuModel model(&delegate);
+  model.AddItem(1, WideToUTF16(L"one"));
+  model.AddItem(2, WideToUTF16(L"two"));
+  model.AddItem(3, WideToUTF16(L"three"));
+
+  scoped_nsobject<MenuController> menu([[MenuController alloc] init]);
+  EXPECT_FALSE([menu menu]);
+
+  [menu setModel:&model];
+  [menu setUseWithPopUpButtonCell:NO];
+  EXPECT_TRUE([menu menu]);
+  EXPECT_EQ(3, [[menu menu] numberOfItems]);
+
+  // Check immutability.
+  model.AddItem(4, WideToUTF16(L"four"));
+  EXPECT_EQ(3, [[menu menu] numberOfItems]);
+}

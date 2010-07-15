@@ -23,6 +23,10 @@ namespace menus {
 class ButtonMenuItemModel;
 }  // namespace menus
 
+namespace {
+class MockWrenchMenuModel;
+}  // namespace
+
 class ToolsMenuModel : public menus::SimpleMenuModel {
  public:
   ToolsMenuModel(menus::SimpleMenuModel::Delegate* delegate, Browser* browser);
@@ -75,6 +79,10 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
                        const NotificationDetails& details);
 
  private:
+  // Testing constructor used for mocking.
+  friend class ::MockWrenchMenuModel;
+  WrenchMenuModel() : menus::SimpleMenuModel(NULL) {}
+
   void Build();
 
   // Adds custom items to the menu. Deprecated in favor of a cross platform

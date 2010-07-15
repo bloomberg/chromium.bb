@@ -21,10 +21,21 @@ class MenuModel;
 // that particular item. It is important that the model outlives this object
 // as it only maintains weak references.
 @interface MenuController : NSObject {
- @private
+ @protected
+  menus::MenuModel* model_;  // weak
   scoped_nsobject<NSMenu> menu_;
   BOOL useWithPopUpButtonCell_;  // If YES, 0th item is blank
 }
+
+@property (nonatomic, assign) menus::MenuModel* model;
+// Note that changing this will have no effect if you use
+// |-initWithModel:useWithPopUpButtonCell:| or after the first call to |-menu|.
+@property (nonatomic) BOOL useWithPopUpButtonCell;
+
+// NIB-based initializer. This does not create a menu. Clients can set the
+// properties of the object and the menu will be created upon the first call to
+// |-menu|. Note that the menu will be immutable after creation.
+- (id)init;
 
 // Builds a NSMenu from the pre-built model (must not be nil). Changes made
 // to the contents of the model after calling this will not be noticed. If
@@ -34,14 +45,23 @@ class MenuModel;
 - (id)initWithModel:(menus::MenuModel*)model
     useWithPopUpButtonCell:(BOOL)useWithCell;
 
-// Access to the constructed menu.
+// Access to the constructed menu if the complex initializer was used. If the
+// default initializer was used, then this will create the menu on first call.
 - (NSMenu*)menu;
 
 @end
 
 // Exposed only for unit testing, do not call directly.
-@interface MenuController(PrivateExposedForTesting)
+@interface MenuController (PrivateExposedForTesting)
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item;
+@end
+
+// Protected methods that subclassers can override.
+@interface MenuController (Protected)
+- (void)addItemToMenu:(NSMenu*)menu
+              atIndex:(NSInteger)index
+            fromModel:(menus::MenuModel*)model
+           modelIndex:(int)modelIndex;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_MENU_CONTROLLER_H_

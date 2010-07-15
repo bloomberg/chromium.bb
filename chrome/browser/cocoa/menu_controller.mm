@@ -10,33 +10,35 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 
-@interface MenuController(Private)
+@interface MenuController (Private)
 - (NSMenu*)menuFromModel:(menus::MenuModel*)model;
 - (void)addSeparatorToMenu:(NSMenu*)menu
                    atIndex:(int)index;
-- (void)addItemToMenu:(NSMenu*)menu
-              atIndex:(int)index
-            fromModel:(menus::MenuModel*)model
-           modelIndex:(int)modelIndex;
 @end
 
 @implementation MenuController
 
+@synthesize model = model_;
+@synthesize useWithPopUpButtonCell = useWithPopUpButtonCell_;
+
+- (id)init {
+  self = [super init];
+  return self;
+}
+
 - (id)initWithModel:(menus::MenuModel*)model
     useWithPopUpButtonCell:(BOOL)useWithCell {
   if ((self = [super init])) {
-    menu_.reset([[self menuFromModel:model] retain]);
-    // If this is to be used with a NSPopUpButtonCell, add an item at the 0th
-    // position that's empty. Doing it after the menu has been constructed won't
-    // complicate creation logic, and since the tags are model indexes, they
-    // are unaffected by the extra item.
-    if (useWithCell) {
-      scoped_nsobject<NSMenuItem> blankItem(
-          [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""]);
-      [menu_ insertItem:blankItem atIndex:0];
-    }
+    model_ = model;
+    useWithPopUpButtonCell_ = useWithCell;
+    [self menu];
   }
   return self;
+}
+
+- (void)dealloc {
+  model_ = NULL;
+  [super dealloc];
 }
 
 // Creates a NSMenu from the given model. If the model has submenus, this can
@@ -75,7 +77,7 @@
 // Adds an item or a hierarchical menu to the item at the |index|,
 // associated with the entry in the model indentifed by |modelIndex|.
 - (void)addItemToMenu:(NSMenu*)menu
-              atIndex:(int)index
+              atIndex:(NSInteger)index
             fromModel:(menus::MenuModel*)model
            modelIndex:(int)modelIndex {
   NSString* label =
@@ -152,6 +154,18 @@
 }
 
 - (NSMenu*)menu {
+  if (!menu_ && model_) {
+    menu_.reset([[self menuFromModel:model_] retain]);
+    // If this is to be used with a NSPopUpButtonCell, add an item at the 0th
+    // position that's empty. Doing it after the menu has been constructed won't
+    // complicate creation logic, and since the tags are model indexes, they
+    // are unaffected by the extra item.
+    if (useWithPopUpButtonCell_) {
+      scoped_nsobject<NSMenuItem> blankItem(
+          [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""]);
+      [menu_ insertItem:blankItem atIndex:0];
+    }
+  }
   return menu_.get();
 }
 

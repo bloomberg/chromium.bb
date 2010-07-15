@@ -26,7 +26,6 @@ class CommandUpdater;
 class LocationBar;
 class LocationBarViewMac;
 @class MenuButton;
-@class MenuController;
 namespace ToolbarControllerInternal {
 class MenuDelegate;
 class PrefObserverBridge;
@@ -35,6 +34,7 @@ class Profile;
 @class ReloadButton;
 class TabContents;
 class ToolbarModel;
+@class WrenchMenuController;
 class WrenchMenuModel;
 
 // A controller for the toolbar in the browser window. Manages
@@ -55,6 +55,7 @@ class WrenchMenuModel;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
   IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
+  IBOutlet WrenchMenuController* wrenchMenuController_;
 
  @private
   ToolbarModel* toolbarModel_;  // weak, one per window
@@ -69,12 +70,11 @@ class WrenchMenuModel;
   scoped_nsobject<BackForwardMenuController> forwardMenuController_;
   scoped_nsobject<BrowserActionsController> browserActionsController_;
 
-  // Lazily-instantiated model, controller, and delegate for the menu on the
+  // Lazily-instantiated model and delegate for the menu on the
   // wrench button.  Once visible, it will be non-null, but will not
   // reaped when the menu is hidden once it is initially shown.
   scoped_ptr<ToolbarControllerInternal::MenuDelegate> menuDelegate_;
   scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
-  scoped_nsobject<MenuController> wrenchMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
@@ -157,6 +157,7 @@ class WrenchMenuModel;
 
 // Return the BrowserActionsController for this toolbar.
 - (BrowserActionsController*)browserActionsController;
+
 @end
 
 // A set of private methods used by subclasses. Do not call these directly
@@ -178,6 +179,7 @@ class WrenchMenuModel;
 - (NSArray*)toolbarViews;
 - (void)showOptionalHomeButton;
 - (void)installWrenchMenu;
+- (WrenchMenuController*)wrenchMenuController;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 @end

@@ -200,19 +200,23 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 
   AddSeparator();
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
+  // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
+  // layout for this menu item in Toolbar.xib. It does, however, use the
+  // command_id value from AddButtonItem() to identify this special item.
   edit_menu_item_model_.reset(new menus::ButtonMenuItemModel(IDS_EDIT, this));
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);
-  AddButtonItem(0, edit_menu_item_model_.get());
+  AddButtonItem(IDC_EDIT_MENU, edit_menu_item_model_.get());
 #else
   // TODO(port): Move to the above.
   CreateCutCopyPaste();
 #endif
 
   AddSeparator();
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
+  // WARNING: See above comment.
   zoom_menu_item_model_.reset(
       new menus::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddGroupItemWithStringId(
@@ -224,7 +228,7 @@ void WrenchMenuModel::Build() {
   zoom_menu_item_model_->AddSpace();
   zoom_menu_item_model_->AddItemWithImage(
       IDC_FULLSCREEN, IDR_FULLSCREEN_MENU_BUTTON);
-  AddButtonItem(0, zoom_menu_item_model_.get());
+  AddButtonItem(IDC_ZOOM_MENU, zoom_menu_item_model_.get());
 #else
   // TODO(port): Move to the above.
   CreateZoomFullscreen();

@@ -8,6 +8,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/menus/accelerator_cocoa.h"
+#include "app/menus/menu_model.h"
 #include "base/keyboard_codes.h"
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
@@ -31,6 +32,7 @@
 #import "chrome/browser/cocoa/menu_controller.h"
 #import "chrome/browser/cocoa/reload_button.h"
 #import "chrome/browser/cocoa/toolbar_view.h"
+#import "chrome/browser/cocoa/wrench_menu_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -511,10 +513,13 @@ class PrefObserverBridge : public NotificationObserver {
   menuDelegate_.reset(new ToolbarControllerInternal::MenuDelegate(browser_));
 
   wrenchMenuModel_.reset(new WrenchMenuModel(menuDelegate_.get(), browser_));
-  wrenchMenuController_.reset(
-      [[MenuController alloc] initWithModel:wrenchMenuModel_.get()
-                     useWithPopUpButtonCell:YES]);
+  [wrenchMenuController_ setModel:wrenchMenuModel_.get()];
+  [wrenchMenuController_ setUseWithPopUpButtonCell:YES];
   [wrenchButton_ setAttachedMenu:[wrenchMenuController_ menu]];
+}
+
+- (WrenchMenuController*)wrenchMenuController {
+  return wrenchMenuController_;
 }
 
 - (void)prefChanged:(std::wstring*)prefName {
