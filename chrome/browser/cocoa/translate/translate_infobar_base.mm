@@ -20,7 +20,6 @@
 #include "chrome/browser/cocoa/translate/translate_message_infobar_controller.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 using TranslateInfoBarUtilities::MoveControl;

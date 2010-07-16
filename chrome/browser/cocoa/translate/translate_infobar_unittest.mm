@@ -12,12 +12,9 @@
 #import "chrome/browser/cocoa/infobar.h"
 #import "chrome/browser/cocoa/translate/translate_infobar_base.h"
 #import "chrome/browser/cocoa/translate/before_translate_infobar_controller.h"
-#import "chrome/browser/cocoa/translate/after_translate_infobar_controller.h"
-#import "chrome/browser/cocoa/translate/translate_message_infobar_controller.h"
 #import "chrome/browser/renderer_host/site_instance.h"
 #import "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/translate/translate_infobar_delegate.h"
-#import "ipc/ipc_channel.h"
 #import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"
@@ -222,4 +219,34 @@ TEST_F(TranslationInfoBarTest, Bug36895) {
   }
 }
 
-}  // namespace
+// Verify that the infobar shows the "Always translate this language" button
+// after doing 3 translations.
+TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
+  TranslatePrefs translate_prefs(browser_helper_.profile()->GetPrefs());
+  translate_prefs.ResetTranslationAcceptedCount("en");
+  for (int i = 0; i < 4; ++i) {
+    translate_prefs.IncrementTranslationAcceptedCount("en");
+  }
+  CreateInfoBar(TranslateInfoBarDelegate::kBeforeTranslate);
+  BeforeTranslateInfobarController* controller =
+      (BeforeTranslateInfobarController*)infobar_controller.get();
+  EXPECT_TRUE([[controller alwaysTranslateButton] superview] !=  nil);
+  EXPECT_TRUE([[controller neverTranslateButton] superview] == nil);
+}
+
+// Verify that the infobar shows the "Never translate this language" button
+// after denying 3 translations.
+TEST_F(TranslationInfoBarTest, TriggerShowNeverTranslateButton) {
+  TranslatePrefs translate_prefs(browser_helper_.profile()->GetPrefs());
+  translate_prefs.ResetTranslationDeniedCount("en");
+  for (int i = 0; i < 4; ++i) {
+    translate_prefs.IncrementTranslationDeniedCount("en");
+  }
+  CreateInfoBar(TranslateInfoBarDelegate::kBeforeTranslate);
+  BeforeTranslateInfobarController* controller =
+      (BeforeTranslateInfobarController*)infobar_controller.get();
+  EXPECT_TRUE([[controller alwaysTranslateButton] superview] == nil);
+  EXPECT_TRUE([[controller neverTranslateButton] superview] != nil);
+}
+
+} // namespace
