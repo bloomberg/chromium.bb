@@ -9,7 +9,7 @@
 namespace {
 
 // TODO(avi): Use this mapping to auto-generate MCX manifests and Windows
-// ADM/ADMX files. http://crbug.com/45334
+// ADM/ADMX files. http://crbug.com/49316
 
 struct InternalPolicyValueMapEntry {
   ConfigurationPolicyStore::PolicyType policy_type;

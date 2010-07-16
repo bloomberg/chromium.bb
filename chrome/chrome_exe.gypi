@@ -284,7 +284,7 @@
           'actions': [
             {
               # Generate the InfoPlist.strings file
-              'action_name': 'Generating InfoPlist.strings files',
+              'action_name': 'Generate InfoPlist.strings files',
               'variables': {
                 'tool_path': '<(PRODUCT_DIR)/infoplist_strings_tool',
                 # Unique dir to write to so the [lang].lproj/InfoPlist.strings
@@ -322,6 +322,31 @@
                 '<@(locales)',
               ],
               'message': 'Generating the language InfoPlist.strings files',
+              'process_outputs_as_mac_bundle_resources': 1,
+            },
+            {
+              # Massage the manifest and add it as a resource
+              'action_name': 'Generate MCX manifest file',
+              'variables': {
+                'tool_path': 'tools/build/mac/copy_mcx_manifest.sh',
+                'input_path': 'app/policy/mac/app-Manifest.plist',
+                'output_path': '<(INTERMEDIATE_DIR)/<(mac_bundle_id).manifest',
+              },
+              'inputs': [
+                '<(tool_path)',
+                '<(input_path)',
+              ],
+              'outputs': [
+                '<(output_path)',
+              ],
+              'action': [
+                '<(tool_path)',
+                '<(mac_product_name)',
+                '<(mac_bundle_id)',
+                '<(input_path)',
+                '<(output_path)',
+              ],
+              'message': 'Generating the MCX policy manifest file',
               'process_outputs_as_mac_bundle_resources': 1,
             },
           ],
