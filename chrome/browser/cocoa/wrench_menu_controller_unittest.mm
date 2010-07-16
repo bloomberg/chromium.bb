@@ -66,7 +66,9 @@ TEST_F(WrenchMenuControllerTest, DISABLED_DispatchSimple) {
   [controller() dispatchWrenchMenuCommand:button.get()];
 }
 
-TEST_F(WrenchMenuControllerTest, DispatchSegmentedControl) {
+// Test crashes sometimes.
+// http://code.google.com/p/chromium/issues/detail?id=49206
+TEST_F(WrenchMenuControllerTest, DISABLED_DispatchSegmentedControl) {
   // Set fake model to test dispatching.
   EXPECT_CALL(fake_model_, ExecuteCommand(IDC_CUT));
   [controller() setModel:&fake_model_];
