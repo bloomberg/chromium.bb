@@ -68,11 +68,7 @@
 #if NACL_WINDOWS
 # define INLINE __forceinline
 #else
-# if __GNUC_MINOR__ >= 2
-#  define INLINE __inline__ __attribute__((gnu_inline))
-# else
-#  define INLINE __inline__
-# endif
+# define INLINE __inline__
 #endif
 
 #if NACL_WINDOWS

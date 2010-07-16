@@ -20,8 +20,10 @@
 
 #include "native_client/src/shared/npruntime/npmodule.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 
+#include "native_client/src/trusted/plugin/npapi/async_receive.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/closure.h"
 #include "native_client/src/trusted/plugin/npapi/multimedia_socket.h"
@@ -105,6 +107,7 @@ PluginNpapi* PluginNpapi::New(NPP npp,
   }
   // Add methods only implemented by the NPAPI plugin.
   plugin->AddMethodCall(UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
+  plugin->AddMethodCall(SetAsyncCallback, "__setAsyncCallback", "o", "");
   // Set up the multimedia video support.
   plugin->video_ = new(std::nothrow) VideoMap(plugin);
   if (NULL == plugin->video_) {
@@ -509,6 +512,38 @@ bool PluginNpapi::RequestNaClModule(const nacl::string& url) {
     // callback is always deleted in URLNotify
     return false;
   }
+  return true;
+}
+
+bool PluginNpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
+  PluginNpapi* plugin =
+    static_cast<PluginNpapi*>(reinterpret_cast<Plugin*>(obj));
+  if (plugin->service_runtime_ == NULL) {
+    params->set_exception_string("No subprocess running");
+    return false;
+  }
+  if (plugin->receive_thread_running_) {
+    params->set_exception_string("A callback has already been registered");
+    return false;
+  }
+  ReceiveThreadArgs* args = new(std::nothrow) ReceiveThreadArgs;
+  if (args == NULL) {
+    params->set_exception_string("Memory allocation failed");
+    return false;
+  }
+  args->plugin = InstanceIdentifierToNPP(plugin->instance_id());
+  args->callback = reinterpret_cast<NPObject*>(params->ins()[0]->u.oval);
+  NPN_RetainObject(args->callback);
+  nacl::DescWrapper* socket = plugin->service_runtime_->async_receive_desc;
+  NaClDescRef(socket->desc());
+  args->socket = plugin->wrapper_factory()->MakeGeneric(socket->desc());
+
+  // It would be nice if the thread interface did not require us to
+  // specify a stack size.  This is fairly arbitrary.
+  size_t stack_size = 128 << 10;
+  NaClThreadCreateJoinable(&plugin->receive_thread_, AsyncReceiveThread, args,
+                           stack_size);
+  plugin->receive_thread_running_ = true;
   return true;
 }
 

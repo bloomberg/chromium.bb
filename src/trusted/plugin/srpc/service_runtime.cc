@@ -39,6 +39,8 @@ namespace plugin {
 ServiceRuntime::ServiceRuntime(
     BrowserInterface* browser_interface,
     Plugin* plugin) :
+    async_receive_desc(NULL),
+    async_send_desc(NULL),
     browser_interface_(browser_interface),
     default_socket_address_(NULL),
     default_socket_(NULL),
@@ -248,7 +250,25 @@ bool ServiceRuntime::Start(const char* nacl_file) {
                               "Could not create SelLdrLauncher");
     return false;
   }
-  if (!subprocess_->Start(nacl_file, 5, kArgv, kEmpty)) {
+  subprocess_->Init(nacl_file, 5, kArgv, kEmpty);
+
+  nacl::Handle receive_handle = subprocess_->ExportImcFD(6);
+  if (receive_handle == nacl::kInvalidHandle) {
+    browser_interface_->Alert(plugin()->instance_id(),
+                              "Failed to create async receive handle");
+    return false;
+  }
+  async_receive_desc = plugin()->wrapper_factory()->MakeImcSock(receive_handle);
+
+  nacl::Handle send_handle = subprocess_->ExportImcFD(7);
+  if (send_handle == nacl::kInvalidHandle) {
+    browser_interface_->Alert(plugin()->instance_id(),
+                              "Failed to create async send handle");
+    return false;
+  }
+  async_send_desc = plugin()->wrapper_factory()->MakeImcSock(send_handle);
+
+  if (!subprocess_->Launch()) {
     PLUGIN_PRINTF(("ServiceRuntime: Could not start SelLdrLauncher"));
     browser_interface_->Alert(plugin()->instance_id(),
                               "Could not start SelLdrLauncher");
@@ -267,6 +287,7 @@ bool ServiceRuntime::Start(const char* nacl_file) {
   return true;
 }
 
+// Chromium version.
 bool ServiceRuntime::Start(const char* url, nacl::DescWrapper* shm) {
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
@@ -317,6 +338,13 @@ ServiceRuntime::~ServiceRuntime() {
   // We do this just in case Terminate() was not called.
   delete subprocess_;
   delete runtime_channel_;
+
+  if (async_receive_desc != NULL) {
+    async_receive_desc->Delete();
+  }
+  if (async_send_desc != NULL) {
+    async_send_desc->Delete();
+  }
 }
 
 ScriptableHandle* ServiceRuntime::default_socket_address() const {

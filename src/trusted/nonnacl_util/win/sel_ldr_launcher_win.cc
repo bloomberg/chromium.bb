@@ -24,6 +24,7 @@ using std::vector;
 namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
+  CloseHandlesAfterLaunch();
   if (NULL != sock_addr_) {
     NaClDescUnref(sock_addr_);
   }
@@ -67,6 +68,34 @@ static nacl::string Escape(nacl::string s) {
   return result;
 }
 
+Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
+  Handle pair[2];
+  if (SocketPair(pair) == -1) {
+    return kInvalidHandle;
+  }
+
+  // Transfer pair[1] to child_ by inheritance.
+  // TODO(mseaborn): We could probably use SetHandleInformation() to
+  // set HANDLE_FLAG_INHERIT rather than duplicating the handle and
+  // closing the original.  But for now, we do the same as in Launch()
+  // below.
+  Handle channel;
+  if (!DuplicateHandle(GetCurrentProcess(), pair[1],
+                       GetCurrentProcess(), &channel,
+                       0, TRUE, DUPLICATE_SAME_ACCESS)) {
+    Close(pair[0]);
+    Close(pair[1]);
+    return kInvalidHandle;
+  }
+  Close(pair[1]);
+  close_after_launch_.push_back(channel);
+
+  sel_ldr_argv_.push_back("-i");
+  sel_ldr_argv_.push_back(ToString(dest_fd) + ":" +
+                          ToString(reinterpret_cast<uintptr_t>(channel)));
+  return pair[0];
+}
+
 bool SelLdrLauncher::Launch() {
   Handle pair[2];
   STARTUPINFOA startup_info;
@@ -77,6 +106,7 @@ bool SelLdrLauncher::Launch() {
   }
 
   // Transfer pair[1] to child_ by an inheritance.
+  // TODO(mseaborn): This could use ExportImcFD().
   Handle channel;
   if (!DuplicateHandle(GetCurrentProcess(), pair[1],
                        GetCurrentProcess(), &channel,
@@ -114,6 +144,7 @@ bool SelLdrLauncher::Launch() {
     return false;
   }
 
+  CloseHandlesAfterLaunch();
   Close(pair[1]);
   Close(channel);
   CloseHandle(process_infomation.hThread);

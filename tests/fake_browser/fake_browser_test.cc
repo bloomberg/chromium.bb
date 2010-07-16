@@ -12,12 +12,15 @@
 
 #include <algorithm>
 #include <map>
-#include <string>
 #include <queue>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/third_party/npapi/files/include/npupp.h"
 #include "native_client/src/trusted/service_runtime/nacl_assert.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -58,17 +61,27 @@ typedef NPError (OSCALL *NPInitializeType)(NPNetscapeFuncs*);
 typedef NPError (OSCALL *NPGetEntryPointsType)(NPPluginFuncs*);
 typedef void (OSCALL *NPShutdownType)();
 
+class Callback {
+public:
+  virtual ~Callback() { }
+  virtual void run(NPP instance) = 0;
+};
+
 NPPluginFuncs plugin_funcs;
 std::map<std::string, char*> interned_strings;
 std::vector<NPObject*> all_objects;
 std::map<std::string, std::string> url_to_filename;
 bool npn_calls_allowed = true;
+bool exception_expected = false;
+std::queue<Callback*> callback_queue;
+struct NaClMutex callback_mutex;
+struct NaClCondVar callback_condvar;
 
 void fb_NPN_ReleaseObject(NPObject* npobj);
 NPObject* MakeWindowObject();
 
 
-class Callback {
+class URLFetchCallback: public Callback {
 public:
   std::string filename;
   void* notify_data;
@@ -89,7 +102,62 @@ public:
   };
 };
 
-std::queue<Callback> callback_queue;
+class AsyncCallCallback: public Callback {
+public:
+  void (*func)(void* argument);
+  void* argument;
+  void run(NPP instance) {
+    UNREFERENCED_PARAMETER(instance);
+    func(argument);
+  }
+};
+
+void QueueCallback(Callback* cb) {
+  NaClXMutexLock(&callback_mutex);
+  callback_queue.push(cb);
+  NaClXCondVarSignal(&callback_condvar);
+  NaClXMutexUnlock(&callback_mutex);
+}
+
+void RunQueuedCallbacks(NPP plugin_instance) {
+  while (!callback_queue.empty()) {
+    Callback* cb = callback_queue.front();
+    callback_queue.pop();
+    cb->run(plugin_instance);
+    delete cb;
+  }
+}
+
+void AwaitCallbacks(NPP plugin_instance) {
+  NaClXMutexLock(&callback_mutex);
+  while (callback_queue.empty()) {
+    NaClXCondVarWait(&callback_condvar, &callback_mutex);
+  }
+  RunQueuedCallbacks(plugin_instance);
+  NaClXMutexUnlock(&callback_mutex);
+}
+
+std::string QuotedString(std::string str) {
+  std::stringstream stream;
+  for(size_t i = 0; i < str.size(); i++) {
+    if (32 <= str[i] && str[i] < 127) {
+      stream << str[i];
+    } else {
+      char buf[10];
+      sprintf(buf, "\\x%02x", static_cast<unsigned char>(str[i]));
+      stream << buf;
+    }
+  }
+  return stream.str();
+}
+
+void AssertStringsEqual(std::string str1, std::string str2) {
+  if (str1 != str2) {
+    fprintf(stderr, "Assertion failed: \"%s\" != \"%s\"",
+            QuotedString(str1).c_str(), QuotedString(str2).c_str());
+    abort();
+  }
+}
 
 
 void* fb_NPN_MemAlloc(uint32_t size) {
@@ -143,12 +211,22 @@ NPError fb_NPN_GetURLNotify(NPP instance, const char* url,
   CHECK(npn_calls_allowed);
   CHECK(url != NULL);
   CHECK(target == NULL);
-  Callback callback;
-  callback.notify_data = notify_data;
+  URLFetchCallback* callback = new URLFetchCallback;
+  callback->notify_data = notify_data;
   CHECK(url_to_filename.find(url) != url_to_filename.end());
-  callback.filename = url_to_filename[url];
-  callback_queue.push(callback);
+  callback->filename = url_to_filename[url];
+  QueueCallback(callback);
   return NPERR_NO_ERROR;
+}
+
+void fb_NPN_PluginThreadAsyncCall(NPP instance, void (*func)(void* argument),
+                                  void* argument) {
+  UNREFERENCED_PARAMETER(instance);
+  CHECK(npn_calls_allowed);
+  AsyncCallCallback* callback = new AsyncCallCallback;
+  callback->func = func;
+  callback->argument = argument;
+  QueueCallback(callback);
 }
 
 void fb_NPN_ReleaseVariantValue(NPVariant* variant) {
@@ -229,12 +307,9 @@ bool fb_NPN_Invoke(NPP npp, NPObject* npobj, NPIdentifier method_name,
 
 bool fb_NPN_InvokeDefault(NPP npp, NPObject* npobj, const NPVariant* args,
                           uint32_t arg_count, NPVariant* result) {
-  NOT_IMPLEMENTED();
+  CHECK(npn_calls_allowed);
   UNREFERENCED_PARAMETER(npp);
-  UNREFERENCED_PARAMETER(npobj);
-  UNREFERENCED_PARAMETER(args);
-  UNREFERENCED_PARAMETER(arg_count);
-  UNREFERENCED_PARAMETER(result);
+  return npobj->_class->invokeDefault(npobj, args, arg_count, result);
 }
 
 bool fb_NPN_Evaluate(NPP npp, NPObject* npobj, NPString* script,
@@ -301,6 +376,17 @@ bool fb_NPN_Construct(NPP npp, NPObject* npobj, const NPVariant* args,
   UNREFERENCED_PARAMETER(result);
 }
 
+void fb_NPN_SetException(NPObject* npobj, const NPUTF8* message) {
+  CHECK(npn_calls_allowed);
+  UNREFERENCED_PARAMETER(npobj);
+  printf("NPN_SetException called: %s\n", message);
+  if (exception_expected) {
+    exception_expected = false;
+  } else {
+    abort();
+  }
+}
+
 void InitBrowserFuncs(NPNetscapeFuncs *browser_funcs) {
   memset(reinterpret_cast<void*>(browser_funcs), 0, sizeof(*browser_funcs));
   browser_funcs->version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
@@ -310,6 +396,7 @@ void InitBrowserFuncs(NPNetscapeFuncs *browser_funcs) {
   browser_funcs->getvalue = fb_NPN_GetValue;
   browser_funcs->setvalue = fb_NPN_SetValue;
   browser_funcs->geturlnotify = fb_NPN_GetURLNotify;
+  browser_funcs->pluginthreadasynccall = fb_NPN_PluginThreadAsyncCall;
   // npruntime calls
   browser_funcs->getstringidentifier = fb_NPN_GetStringIdentifier;
   browser_funcs->identifierisstring = fb_NPN_IdentifierIsString;
@@ -328,6 +415,7 @@ void InitBrowserFuncs(NPNetscapeFuncs *browser_funcs) {
   browser_funcs->hasmethod = fb_NPN_HasMethod;
   browser_funcs->enumerate = fb_NPN_Enumerate;
   browser_funcs->construct = fb_NPN_Construct;
+  browser_funcs->setexception = fb_NPN_SetException;
 }
 
 
@@ -370,6 +458,81 @@ NPObject* MakeWindowObject() {
   return fb_NPN_CreateObject(NULL, &npclass);
 }
 
+
+// Callback object for registering with __setAsyncCallback().
+
+struct TestCallback: public NPObject {
+  std::vector<std::string> got_calls;
+};
+
+NPObject* TestCallbackAllocate(NPP npp, NPClass* this_class) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(this_class);
+  return new TestCallback;
+}
+
+void TestCallbackDeallocate(NPObject* npobj) {
+  TestCallback* self = static_cast<TestCallback*>(npobj);
+  delete self;
+}
+
+bool TestCallbackInvokeDefault(NPObject* npobj, const NPVariant* args,
+                               uint32_t argCount, NPVariant* result) {
+  TestCallback* self = static_cast<TestCallback*>(npobj);
+  ASSERT_EQ(argCount, 1);
+  CHECK(NPVARIANT_IS_STRING(args[0]));
+  std::string data(args[0].value.stringValue.UTF8Characters,
+                   args[0].value.stringValue.UTF8Length);
+  self->got_calls.push_back(data);
+  VOID_TO_NPVARIANT(*result);
+  return true;
+}
+
+TestCallback* MakeTestCallbackObject() {
+  static NPClass npclass;
+  npclass.allocate = TestCallbackAllocate;
+  npclass.deallocate = TestCallbackDeallocate;
+  npclass.invokeDefault = TestCallbackInvokeDefault;
+  return static_cast<TestCallback*>(fb_NPN_CreateObject(NULL, &npclass));
+}
+
+
+void DestroyPluginInstance(NPP plugin_instance, bool reverse_deallocate) {
+  printf("object count = %"NACL_PRIuS"\n", all_objects.size());
+
+  // NPP_Destroy
+  CheckRetval(plugin_funcs.destroy(plugin_instance, NULL));
+
+  printf("object count = %"NACL_PRIuS"\n", all_objects.size());
+
+  if (reverse_deallocate) {
+    // This helps to test for this bug:
+    // http://code.google.com/p/nativeclient/issues/detail?id=652
+    reverse(all_objects.begin(), all_objects.end());
+  }
+
+  // We avoid using an iterator to iterate across the vector in case
+  // all_objects changes during the iteration.  However, this should
+  // not happen given the uses of CHECK(npn_calls_allowed).
+  // See http://code.google.com/p/nativeclient/issues/detail?id=652
+  npn_calls_allowed = false;
+  int count = 0;
+  while (all_objects.size() > 0) {
+    NPObject* npobj = all_objects.front();
+    all_objects.erase(all_objects.begin());
+    printf("forcibly destroy object %i (%"NACL_PRIuS" remaining)...\n",
+           count++, all_objects.size());
+    if (npobj->_class->invalidate != NULL) {
+      npobj->_class->invalidate(npobj);
+    }
+    if (npobj->_class->deallocate != NULL) {
+      npobj->_class->deallocate(npobj);
+    } else {
+      free(npobj);
+    }
+  }
+  npn_calls_allowed = true;
+}
 
 void TestNewAndDestroy() {
   printf("Test NPP_New() and NPP_Destroy()...\n");
@@ -419,11 +582,7 @@ void TestHelloWorldMethod(const char* nexe_url, bool reverse_deallocate) {
   // outside the plugin helps to trigger bug 652, because the
   // NPP_Destroy() call does not free the plugin's NPObjects.
   //fb_NPN_ReleaseObject(plugin_obj);
-
-  while (!callback_queue.empty()) {
-    callback_queue.front().run(plugin_instance);
-    callback_queue.pop();
-  }
+  RunQueuedCallbacks(plugin_instance);
 
   // Test invoking an SRPC method.
   NPVariant result;
@@ -434,48 +593,120 @@ void TestHelloWorldMethod(const char* nexe_url, bool reverse_deallocate) {
   CHECK(NPVARIANT_IS_STRING(result));
   std::string actual(result.value.stringValue.UTF8Characters,
                      result.value.stringValue.UTF8Length);
-  std::string expected = "hello, world.";
-  if (actual != expected) {
-    fprintf(stderr, "Expected '%s' but got '%s'",
-            expected.c_str(), actual.c_str());
-    abort();
-  }
+  AssertStringsEqual(actual, "hello, world.");
   fb_NPN_ReleaseVariantValue(&result);
+  DestroyPluginInstance(plugin_instance, reverse_deallocate);
+}
 
-  printf("object count = %"NACL_PRIuS"\n", all_objects.size());
+void TestAsyncMessages() {
+  printf("Test asynchronous messages...\n");
+  const char* nexe_url = "http://localhost/async_message_test.nexe";
 
-  // NPP_Destroy
-  CheckRetval(plugin_funcs.destroy(plugin_instance, NULL));
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPP plugin_instance = new NPP_t;
+  CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
+                                0, NULL, NULL, NULL));
 
-  printf("object count = %"NACL_PRIuS"\n", all_objects.size());
+  NPObject* plugin_obj;
+  CheckRetval(plugin_funcs.getvalue(plugin_instance,
+                                    NPPVpluginScriptableNPObject, &plugin_obj));
+  NPVariant url;
+  STRINGZ_TO_NPVARIANT(nexe_url, url);
+  bool success = fb_NPN_SetProperty(plugin_instance, plugin_obj,
+                                    fb_NPN_GetStringIdentifier("src"), &url);
+  CHECK(success);
+  RunQueuedCallbacks(plugin_instance);
 
-  if (reverse_deallocate) {
-    // This helps to test for this bug:
-    // http://code.google.com/p/nativeclient/issues/detail?id=652
-    reverse(all_objects.begin(), all_objects.end());
+  // Register async callback.
+  TestCallback* callback = MakeTestCallbackObject();
+  NPVariant args[2];
+  OBJECT_TO_NPVARIANT(callback, args[0]);
+  NPVariant result;
+  success = fb_NPN_Invoke(plugin_instance, plugin_obj,
+                          fb_NPN_GetStringIdentifier("__setAsyncCallback"),
+                          args, 1, &result);
+  CHECK(success);
+  CHECK(NPVARIANT_IS_VOID(result));
+
+  // Attempting to register another callback should be rejected.  The
+  // plugin should not spawn two threads to listen on the same socket.
+  exception_expected = true;
+  success = fb_NPN_Invoke(plugin_instance, plugin_obj,
+                          fb_NPN_GetStringIdentifier("__setAsyncCallback"),
+                          args, 1, &result);
+  CHECK(!success);
+  CHECK(!exception_expected);
+
+  fb_NPN_ReleaseObject(plugin_obj);
+
+  printf("waiting for callback...\n");
+  // This can block indefinitely.  Might a timeout be better?
+  while (callback->got_calls.size() < 3) {
+    AwaitCallbacks(plugin_instance);
+    printf("received %"NACL_PRIuS" messages\n", callback->got_calls.size());
   }
+  ASSERT_EQ(callback->got_calls.size(), 3);
+  AssertStringsEqual(callback->got_calls[0],
+                     "Aye carumba! This is an async message.");
+  char message2[] = "Message\0containing\0NULLs";
+  AssertStringsEqual(callback->got_calls[1],
+                     std::string(message2, sizeof(message2)));
+  AssertStringsEqual(callback->got_calls[2],
+                     "Top-bit-set bytes: \xc2\x80 and \xc3\xbf");
 
-  // We avoid using an iterator to iterate across the vector in case
-  // all_objects changes during the iteration.  However, this should
-  // not happen given the uses of CHECK(npn_calls_allowed).
-  // See http://code.google.com/p/nativeclient/issues/detail?id=652
-  npn_calls_allowed = false;
-  int count = 0;
-  while (all_objects.size() > 0) {
-    NPObject* npobj = all_objects.front();
-    all_objects.erase(all_objects.begin());
-    printf("forcibly destroy object %i (%"NACL_PRIuS" remaining)...\n",
-           count++, all_objects.size());
-    if (npobj->_class->invalidate != NULL) {
-      npobj->_class->invalidate(npobj);
-    }
-    if (npobj->_class->deallocate != NULL) {
-      npobj->_class->deallocate(npobj);
-    } else {
-      free(npobj);
-    }
+  // Test sending a message.
+  printf("try sending a message...\n");
+  STRINGZ_TO_NPVARIANT("Crikey! Another async message. "
+                       "Top-bit-set bytes: \xc2\x80 and \xc3\xbf", args[0]);
+  success = fb_NPN_Invoke(plugin_instance, plugin_obj,
+                          fb_NPN_GetStringIdentifier("__sendAsyncMessage0"),
+                          args, 1, &result);
+  CHECK(success);
+  // Test getting a response back.
+  printf("waiting for response...\n");
+  while (callback->got_calls.size() < 4) {
+    AwaitCallbacks(plugin_instance);
   }
-  npn_calls_allowed = true;
+  ASSERT_EQ(callback->got_calls.size(), 4);
+  AssertStringsEqual(callback->got_calls[3],
+                     "Echoed: Crikey! Another async message. "
+                     "Top-bit-set bytes: \xc2\x80 and \xc3\xbf");
+
+  // Test attempting to send strings that cannot be converted to byte
+  // strings.  These should be rejected.
+  STRINGZ_TO_NPVARIANT("Char too big: \xc4\x80", args[0]);
+  exception_expected = true;
+  success = fb_NPN_Invoke(plugin_instance, plugin_obj,
+                          fb_NPN_GetStringIdentifier("__sendAsyncMessage0"),
+                          args, 1, &result);
+  CHECK(!success);
+  CHECK(!exception_expected);
+
+  // Test sending a message with a file descriptor.
+  // Get an example FD first.
+  success = fb_NPN_Invoke(plugin_instance, plugin_obj,
+                          fb_NPN_GetStringIdentifier("__defaultSocketAddress"),
+                          NULL, 0, &result);
+  CHECK(success);
+  CHECK(NPVARIANT_IS_OBJECT(result));
+  NPObject* example_fd = NPVARIANT_TO_OBJECT(result);
+  STRINGZ_TO_NPVARIANT("Message with FD.", args[0]);
+  OBJECT_TO_NPVARIANT(example_fd, args[1]);
+  success = fb_NPN_Invoke(plugin_instance, plugin_obj,
+                          fb_NPN_GetStringIdentifier("__sendAsyncMessage1"),
+                          args, 2, &result);
+  CHECK(success);
+  // Test getting a response back.
+  while (callback->got_calls.size() < 5) {
+    AwaitCallbacks(plugin_instance);
+  }
+  ASSERT_EQ(callback->got_calls.size(), 5);
+  AssertStringsEqual(callback->got_calls[4], "Received 16 bytes, 1 FDs");
+  fb_NPN_ReleaseObject(example_fd);
+
+  fb_NPN_ReleaseObject(callback);
+
+  DestroyPluginInstance(plugin_instance, /* reverse_deallocate= */ false);
 }
 
 int main(int argc, char** argv) {
@@ -483,6 +714,8 @@ int main(int argc, char** argv) {
   setvbuf(stdout, NULL, _IONBF, 0);
 
   NaClLogModuleInit();
+  NaClMutexCtor(&callback_mutex);
+  NaClCondVarCtor(&callback_condvar);
 
   // Usage: fake_browser_test plugin_path [leafname filename]*
   CHECK(argc >= 2);
@@ -535,6 +768,8 @@ int main(int argc, char** argv) {
   printf("Test running npapi_hw...\n");
   TestHelloWorldMethod("http://localhost/npapi_hw.nexe", true);
 
+  TestAsyncMessages();
+
   NPShutdownType shutdown_func =
     reinterpret_cast<NPShutdownType>(
       reinterpret_cast<uintptr_t>(dlsym(dl_handle, "NP_Shutdown")));
@@ -543,6 +778,9 @@ int main(int argc, char** argv) {
 
   int rc = dlclose(dl_handle);
   CHECK(rc == 0);
+
+  NaClCondVarCtor(&callback_condvar);
+  NaClMutexDtor(&callback_mutex);
 
   return 0;
 }

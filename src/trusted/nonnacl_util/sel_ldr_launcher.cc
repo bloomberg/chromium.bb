@@ -17,13 +17,6 @@
 
 using std::vector;
 
-// TODO(robertm): Move this to  new header if it becomes more popular
-template <class T> nacl::string ToString(const T& t) {
-  nacl::stringstream ss;
-  ss << t;
-  return ss.str();
-}
-
 
 namespace nacl {
 
@@ -31,7 +24,6 @@ SelLdrLauncher::SelLdrLauncher()
   : child_(kInvalidHandle),
     channel_(kInvalidHandle),
     sock_addr_(NULL),
-    is_sel_ldr_(true),
     sel_ldr_locator_(new PluginSelLdrLocator()) {
 }
 
@@ -39,7 +31,6 @@ SelLdrLauncher::SelLdrLauncher(SelLdrLocator* sel_ldr_locator)
   : child_(kInvalidHandle),
     channel_(kInvalidHandle),
     sock_addr_(NULL),
-    is_sel_ldr_(true),
     sel_ldr_locator_(sel_ldr_locator) {
 }
 
@@ -232,6 +223,13 @@ void SelLdrLauncher::InitChannelBuf(Handle imc_channel_handle) {
 #else
                  ToString(imc_channel_handle);
 #endif
+}
+
+void SelLdrLauncher::CloseHandlesAfterLaunch() {
+  for(size_t i = 0; i < close_after_launch_.size(); i++) {
+    Close(close_after_launch_[i]);
+  }
+  close_after_launch_.clear();
 }
 
 }  // namespace nacl

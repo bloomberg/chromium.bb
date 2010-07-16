@@ -18,6 +18,7 @@
 #include <unistd.h>
 
 #include "native_client/src/include/nacl_string.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -28,6 +29,7 @@ using std::vector;
 namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
+  CloseHandlesAfterLaunch();
   // sock_addr_ is non-NULL only if the Start method successfully completes.
   if (NULL != sock_addr_) {
     NaClDescUnref(sock_addr_);
@@ -51,6 +53,21 @@ nacl::string SelLdrLauncher::GetSelLdrPathName() {
   char buffer[FILENAME_MAX];
   GetPluginDirectory(buffer, sizeof(buffer));
   return nacl::string(buffer) + "/sel_ldr";
+}
+
+Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
+  Handle pair[2];
+  if (SocketPair(pair) == -1) {
+    return kInvalidHandle;
+  }
+
+  int rc = fcntl(pair[0], F_SETFD, FD_CLOEXEC);
+  CHECK(rc == 0);
+  close_after_launch_.push_back(pair[1]);
+
+  sel_ldr_argv_.push_back("-i");
+  sel_ldr_argv_.push_back(ToString(dest_fd) + ":" + ToString(pair[1]));
+  return pair[0];
 }
 
 const size_t kMaxExecArgs = 64;
@@ -103,6 +120,7 @@ bool SelLdrLauncher::Launch() {
     perror("execv");
     _exit(EXIT_FAILURE);
   }
+  CloseHandlesAfterLaunch();
   Close(pair[1]);
   channel_ = pair[0];
 

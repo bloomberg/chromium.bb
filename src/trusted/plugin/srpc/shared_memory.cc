@@ -63,7 +63,7 @@ bool RpcRead(void* obj, plugin::SrpcParams* params) {
     return false;
   }
 
-
+  // TODO(mseaborn): Change this function to use ByteStringAsUTF8().
   // UTF-8 encoding may result in a 2x size increase at the most.
   // TODO(sehr): should we do a pre-scan to get the real size?
   uint32_t utf8_buffer_len = 2 * len;
@@ -152,7 +152,7 @@ bool RpcWrite(void* obj, plugin::SrpcParams* params) {
   unsigned char* shm_addr =
     reinterpret_cast<unsigned char*>(shared_memory->shm_addr()) + offset;
 
-  // TODO(sehr): pull this code out for better testability.
+  // TODO(mseaborn): Change this function to use ByteStringFromUTF8().
   for (unsigned int i = 0; i < len;) {
     unsigned char c1 = str[0];
     unsigned char c2 = 0;

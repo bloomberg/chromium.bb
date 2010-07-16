@@ -26,6 +26,7 @@ namespace nacl {
     NaClHandlePassBrowserRememberHandle(nacl_proc_id, nacl_proc_handle);
 #endif
 
+    CloseHandlesAfterLaunch();
     // TODO(gregoryd): the handle is currently returned on Windows only.
     child_ = nacl_proc_handle;
     // The handle we get back is the plugins end of the initial communication

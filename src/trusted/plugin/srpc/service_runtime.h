@@ -53,6 +53,13 @@ class ServiceRuntime {
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
+  // We need two IMC sockets rather than one because IMC sockets are
+  // not full-duplex on Windows.
+  // See http://code.google.com/p/nativeclient/issues/detail?id=690.
+  // TODO(mseaborn): We should not have to work around this.
+  nacl::DescWrapper* async_receive_desc;
+  nacl::DescWrapper* async_send_desc;
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
   bool InitCommunication(nacl::DescWrapper*);

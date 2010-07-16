@@ -72,6 +72,8 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
   NPObject* nacl_instance() const { return nacl_instance_; }
   void StartProxiedExecution(NaClSrpcChannel* srpc_channel);
 
+  static bool SetAsyncCallback(void* obj, SrpcParams* params);
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginNpapi);
   PluginNpapi() :

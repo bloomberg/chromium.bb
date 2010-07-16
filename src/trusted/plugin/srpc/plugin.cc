@@ -22,7 +22,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/plugin/npapi/closure.h"
 #include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
@@ -33,6 +32,7 @@
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
 #include "native_client/src/trusted/plugin/srpc/socket_address.h"
 #include "native_client/src/trusted/plugin/srpc/stream_shm_buffer.h"
+#include "native_client/src/trusted/plugin/srpc/string_encoding.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 namespace {
@@ -182,6 +182,59 @@ void SignalHandler(int value) {
 
 namespace plugin {
 
+// TODO(mseaborn): Although this will usually not block, it will
+// block if the socket's buffer fills up.
+bool Plugin::SendAsyncMessage(void* obj, SrpcParams* params,
+                              nacl::DescWrapper** fds, int fds_count) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  if (plugin->service_runtime_ == NULL) {
+    params->set_exception_string("No subprocess running");
+    return false;
+  }
+
+  // TODO(mseaborn): Handle strings containing NULLs.  This might
+  // involve using a different SRPC type.
+  char* utf8string = params->ins()[0]->u.sval;
+  char* data;
+  size_t data_size;
+  if (!ByteStringFromUTF8(utf8string, strlen(utf8string), &data, &data_size)) {
+    params->set_exception_string("Invalid string");
+    return false;
+  }
+  nacl::DescWrapper::MsgIoVec iov;
+  nacl::DescWrapper::MsgHeader message;
+  iov.base = data;
+  iov.length = static_cast<nacl_abi_size_t>(data_size);
+  message.iov = &iov;
+  message.iov_length = 1;
+  message.ndescv = fds;
+  message.ndescv_length = fds_count;
+  message.flags = 0;
+  nacl::DescWrapper* socket = plugin->service_runtime_->async_send_desc;
+  ssize_t sent = socket->SendMsg(&message, 0);
+  free(data);
+  if (sent < 0) {
+    params->set_exception_string("Error sending message");
+    return false;
+  }
+  return true;
+}
+
+// TODO(mseaborn): Combine __sendAsyncMessage0 and __sendAsyncMessage1
+// into a single method that takes an array of FDs.  SRPC does not
+// provide a handle array type so there is not a simple way to do
+// this.
+bool Plugin::SendAsyncMessage0(void* obj, SrpcParams* params) {
+  return SendAsyncMessage(obj, params, NULL, 0);
+}
+
+bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  nacl::DescWrapper* fd_to_send =
+    plugin->wrapper_factory()->MakeGeneric(params->ins()[1]->u.hval);
+  return SendAsyncMessage(obj, params, &fd_to_send, 1);
+}
+
 static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 
 void Plugin::LoadMethods() {
@@ -189,6 +242,8 @@ void Plugin::LoadMethods() {
   AddMethodCall(ShmFactory, "__shmFactory", "i", "h");
   AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
   AddMethodCall(NullPluginMethod, "__nullPluginMethod", "s", "i");
+  AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
+  AddMethodCall(SendAsyncMessage1, "__sendAsyncMessage1", "sh", "");
   // Properties implemented by Plugin.
   AddPropertyGet(GetHeightProperty, "height", "i");
   AddPropertySet(SetHeightProperty, "height", "i");
@@ -257,6 +312,7 @@ bool Plugin::SetSrcPropertyImpl(const nacl::string& url) {
     service_runtime_->Shutdown();
     delete service_runtime_;
     service_runtime_ = NULL;
+    ShutDownReceiveThread();
   }
   return RequestNaClModule(url);
 }
@@ -339,6 +395,7 @@ bool Plugin::Init(BrowserInterface* browser_interface,
 
 Plugin::Plugin()
   : service_runtime_(NULL),
+    receive_thread_running_(false),
     argc_(-1),
     argn_(NULL),
     argv_(NULL),
@@ -357,6 +414,13 @@ Plugin::Plugin()
 void Plugin::Invalidate() {
   socket_address_ = NULL;
   socket_ = NULL;
+}
+
+void Plugin::ShutDownReceiveThread() {
+  if (receive_thread_running_) {
+    NaClThreadJoin(&receive_thread_);
+    receive_thread_running_ = false;
+  }
 }
 
 Plugin::~Plugin() {
@@ -383,6 +447,7 @@ Plugin::~Plugin() {
   socket_ = NULL;
   delete service_runtime_;
   service_runtime_ = NULL;
+  ShutDownReceiveThread();
   PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));
   free(local_url_);
   free(logical_url_);

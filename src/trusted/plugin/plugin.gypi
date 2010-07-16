@@ -52,10 +52,12 @@
       'srpc/srpc_client.cc',
       'srpc/srt_socket.cc',
       'srpc/stream_shm_buffer.cc',
+      'srpc/string_encoding.cc',
       'srpc/utility.cc',
     ],
     'npapi_sources': [
       # NPAPI specific code
+      'npapi/async_receive.cc',
       'npapi/browser_impl_npapi.cc',
       'npapi/closure.cc',
       'npapi/multimedia_socket.cc',
@@ -88,6 +90,15 @@
         ],
         'cflags': [
           '-Wno-long-long',
+        ],
+        'ldflags': [
+          # Catch unresolved symbols.
+          '-z', 'defs',
+        ],
+        'libraries': [
+          '-ldl',
+          '-lX11',
+          '-lXt',
         ],
       }],
       ['OS=="mac"', {

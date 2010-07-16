@@ -158,6 +158,9 @@ class Plugin : public PortableHandle {
   void LoadMethods();
   ServiceRuntime* service_runtime_;
 
+  bool receive_thread_running_;
+  struct NaClThread receive_thread_;
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
   InstanceIdentifier instance_id_;
@@ -182,6 +185,13 @@ class Plugin : public PortableHandle {
   int32_t video_update_mode_;
 
   nacl::DescWrapperFactory* wrapper_factory_;
+
+  void ShutDownReceiveThread();
+
+  static bool SendAsyncMessage(void* obj, SrpcParams* params,
+                               nacl::DescWrapper** fds, int fds_count);
+  static bool SendAsyncMessage0(void* obj, SrpcParams* params);
+  static bool SendAsyncMessage1(void* obj, SrpcParams* params);
 };
 
 // MutexLock support for video locking.  It is in this file to avoid copying

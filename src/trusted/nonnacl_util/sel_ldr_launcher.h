@@ -21,6 +21,13 @@ struct NaClDesc;
 
 namespace nacl {
 
+// TODO(robertm): Move this to new header if it becomes more popular.
+template <class T> nacl::string ToString(const T& t) {
+  nacl::stringstream ss;
+  ss << t;
+  return ss.str();
+}
+
 /*
  * This class defines an interface that locates sel_ldr.
  */
@@ -61,11 +68,26 @@ struct SelLdrLauncher {
 
   explicit SelLdrLauncher(SelLdrLocator* sel_ldr_locator);
 
+  // Creates a socket pair.  Maps the first socket into the NaCl
+  // subprocess's FD table as dest_fd.  Returns the second socket.
+  // Returns kInvalidHandle on failure.
+  Handle ExportImcFD(int dest_fd);
+
   // TODO(robertm): shouldn't some of these args go in the constructor
   // application_argv can take a "$CHAN" as an argument which will be replaced
   // with `imc_fd` number if the target application is a NaCl module
   // and with `channel_` number if the target application is a native OS
   // binary.
+
+  void Init(const nacl::string& application_name,
+            int imc_fd,
+            const std::vector<nacl::string>& sel_ldr_argv,
+            const std::vector<nacl::string>& application_argv);
+
+  // If subprocess creation fails, both child_ and channel_ are set to
+  // kInvalidHandle. We have different implementations for unix and win.
+  // NOTE: you must call Init() and InitChannelBuf() before Launch()
+  bool Launch();
 
   bool Start(const nacl::string& application_name,
              int imc_fd,
@@ -75,19 +97,6 @@ struct SelLdrLauncher {
     return Launch();
   }
 
-  // Obsolete: compatibility interface
-  bool Start(const nacl::string& application_name,
-             int imc_fd,
-             int sel_ldr_argc,
-             const char* sel_ldr_argv[],
-             int app_argc,
-             const char* app_argv[]) {
-    const std::vector<nacl::string> sel_ldr_vec(sel_ldr_argv,
-                                               sel_ldr_argv + sel_ldr_argc);
-    const std::vector<nacl::string> app_vec(app_argv,
-                                           app_argv + app_argc);
-    return Start(application_name, imc_fd, sel_ldr_vec, app_vec);
-  }
   // TODO(gregoryd): add some background story here
 #ifdef NACL_STANDALONE
   // Should never be called when not running in Chrome.
@@ -122,11 +131,6 @@ struct SelLdrLauncher {
   // Returns the socket address used to connect to the sel_ldr.
   struct NaClDesc* GetSelLdrSocketAddress() const { return sock_addr_; }
 
-  // Returns true if SelLdrLauncher has launched an instance of sel_ldr, or
-  // false if SelLdrLauncher has launched a native OS binary instead of sel_ldr
-  // for debugging.
-  bool IsSelLdr() const { return is_sel_ldr_; }
-
   // Kill the child process.  The channel() remains valid, but nobody
   // is talking on the other end.  Returns true if successful.
   bool KillChild();
@@ -140,19 +144,10 @@ struct SelLdrLauncher {
 
   void BuildArgv(std::vector<nacl::string>* argv);
 
-  // If subprocess creation fails, both child_ and channel_ are set to
-  // kInvalidHandle. We have different implementations for unix and win.
-  // NOTE: you must call Init() and InitChannelBuf() before Launch()
-  bool Launch();
-
-  void Init(const nacl::string& application_name,
-            int imc_fd,
-            const std::vector<nacl::string>& sel_ldr_argv,
-            const std::vector<nacl::string>& application_argv);
-
   void InitChannelBuf(Handle handle);
 
- private:
+  void CloseHandlesAfterLaunch();
+
   Handle child_;
   Handle channel_;
   // The following strings and vectors are used by BuildArgv to
@@ -164,14 +159,10 @@ struct SelLdrLauncher {
   std::vector<nacl::string> application_argv_;
   // unlike the others above this is set from within Launch();
   nacl::string channel_buf_;
+  std::vector<Handle> close_after_launch_;
 
   // The socket address returned from sel_ldr for connects.
   struct NaClDesc* sock_addr_;
-
-  // The following boolean value is set to true if SelLdrLauncher has launched
-  // an instance of sel_ldr, or false if child_ is executing a native OS binary
-  // instead of sel_ldr for debugging.
-  bool is_sel_ldr_;
 
   SelLdrLocator* sel_ldr_locator_;
 };

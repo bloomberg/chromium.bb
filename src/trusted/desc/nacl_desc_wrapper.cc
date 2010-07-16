@@ -585,7 +585,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   if (NULL == header.ndescv) {
     goto cleanup;
   }
-  header.ndesc_length = diov_length;
+  header.ndesc_length = ddescv_length;
   // Receive the message.
   ret = NaClImcRecvTypedMessage(desc_, common_data_->effp(), &header, flags);
   if (ret < 0) {
