@@ -394,17 +394,15 @@ class RenderView : public RenderWidget,
                                         const WebKit::WebString& value);
   virtual void removeAutofillSuggestions(const WebKit::WebString& name,
                                          const WebKit::WebString& value);
-  // DEPRECATED.
-  virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
-                                           const WebKit::WebString& value,
-                                           const WebKit::WebString& label);
   virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                            const WebKit::WebString& value,
                                            const WebKit::WebString& label,
+                                           int unique_id,
                                            unsigned index);
   virtual void didSelectAutoFillSuggestion(const WebKit::WebNode& node,
                                            const WebKit::WebString& value,
-                                           const WebKit::WebString& label);
+                                           const WebKit::WebString& label,
+                                           int unique_id);
   virtual void didClearAutoFillSelection(const WebKit::WebNode& node);
   virtual void didAcceptAutocompleteSuggestion(
       const WebKit::WebInputElement& element);
@@ -711,7 +709,8 @@ class RenderView : public RenderWidget,
   void OnAutoFillSuggestionsReturned(
       int query_id,
       const std::vector<string16>& values,
-      const std::vector<string16>& labels);
+      const std::vector<string16>& labels,
+      const std::vector<int>& unique_ids);
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
   void OnClosePage(const ViewMsg_ClosePage_Params& params);
@@ -930,12 +929,13 @@ class RenderView : public RenderWidget,
   void Print(WebKit::WebFrame* frame, bool script_initiated);
 
   // Queries the AutoFillManager for form data for the form containing |node|.
-  // |value| is the current text in the field, and |label| is the selected
-  // profile label.  |action| specifies whether to Fill or Preview the values
-  // returned from the AutoFillManager.
+  // |value| is the current text in the field, and |unique_id| is the selected
+  // profile's unique ID.  |action| specifies whether to Fill or Preview the
+  // values returned from the AutoFillManager.
   void QueryAutoFillFormData(const WebKit::WebNode& node,
                              const WebKit::WebString& value,
                              const WebKit::WebString& label,
+                             int unique_id,
                              AutoFillAction action);
 
   // Scans the given frame for forms and sends them up to the browser.

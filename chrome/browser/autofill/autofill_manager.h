@@ -53,7 +53,8 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   virtual bool FillAutoFillFormData(int query_id,
                                     const webkit_glue::FormData& form,
                                     const string16& value,
-                                    const string16& label);
+                                    const string16& label,
+                                    int unique_id);
   virtual void ShowAutoFillDialog();
 
   // Called by the AutoFillCCInfoBarDelegate when the user interacts with the
@@ -103,14 +104,16 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                              const webkit_glue::FormField& field,
                              AutoFillType type,
                              std::vector<string16>* values,
-                             std::vector<string16>* labels);
+                             std::vector<string16>* labels,
+                             std::vector<int>* unique_ids);
 
   // Same as GetProfileSuggestions, but the list of stored profiles is limited
   // to the linked billing addresses from the list of credit cards.
   void GetBillingProfileSuggestions(const webkit_glue::FormField& field,
                                     AutoFillType type,
                                     std::vector<string16>* values,
-                                    std::vector<string16>* labels);
+                                    std::vector<string16>* labels,
+                                    std::vector<int>* unique_ids);
 
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
@@ -118,7 +121,8 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                 const webkit_glue::FormField& field,
                                 AutoFillType type,
                                 std::vector<string16>* values,
-                                std::vector<string16>* labels);
+                                std::vector<string16>* labels,
+                                std::vector<int>* unique_ids);
 
   // Set |field| argument's value based on |type| and contents of the
   // |credit_card|.  The |type| field is expected to have main group type of

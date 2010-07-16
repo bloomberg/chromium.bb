@@ -388,7 +388,8 @@ class RenderViewHost : public RenderWidgetHost {
   void AutoFillSuggestionsReturned(
       int query_id,
       const std::vector<string16>& values,
-      const std::vector<string16>& labels);
+      const std::vector<string16>& labels,
+      const std::vector<int>& unique_ids);
 
   // Called by the AutocompleteHistoryManager when the list of suggestions is
   // ready.
@@ -612,7 +613,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnFillAutoFillFormData(int query_id,
                               const webkit_glue::FormData& form,
                               const string16& value,
-                              const string16& label);
+                              const string16& label,
+                              int unique_id);
 
   void OnShowDesktopNotification(
       const ViewHostMsg_ShowNotification_Params& params);
@@ -721,6 +723,7 @@ class RenderViewHost : public RenderWidgetHost {
   int autofill_query_id_;
   std::vector<string16> autofill_values_;
   std::vector<string16> autofill_labels_;
+  std::vector<int> autofill_unique_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);
 };

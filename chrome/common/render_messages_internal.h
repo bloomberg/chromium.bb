@@ -638,10 +638,11 @@ IPC_BEGIN_MESSAGES(View)
 
   // Reply to the ViewHostMsg_QueryFormFieldAutoFill message with the
   // AutoFill suggestions.
-  IPC_MESSAGE_ROUTED3(ViewMsg_AutoFillSuggestionsReturned,
+  IPC_MESSAGE_ROUTED4(ViewMsg_AutoFillSuggestionsReturned,
                       int /* id of the request message */,
                       std::vector<string16> /* names */,
-                      std::vector<string16> /* labels */)
+                      std::vector<string16> /* labels */,
+                      std::vector<int> /* unique_ids */)
 
   // Reply to the ViewHostMsg_FillAutoFillFormData message with the
   // AutoFill form data.
@@ -1869,11 +1870,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Instructs the browser to fill in the values for a form using AutoFill
   // profile data.
-  IPC_MESSAGE_ROUTED4(ViewHostMsg_FillAutoFillFormData,
+  IPC_MESSAGE_ROUTED5(ViewHostMsg_FillAutoFillFormData,
                       int /* id of this message */,
                       webkit_glue::FormData /* the form  */,
                       string16 /* profile name */,
-                      string16 /* profile label */)
+                      string16 /* profile label */,
+                      int /* profile unique ID */)
 
   // Instructs the browser to remove the specified Autocomplete entry from the
   // database.

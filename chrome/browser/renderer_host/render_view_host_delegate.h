@@ -468,12 +468,13 @@ class RenderViewHostDelegate {
         const webkit_glue::FormField& field) = 0;
 
     // Called to fill the FormData object with AutoFill profile information that
-    // matches the |value|, |label| key.  Returns true to indicate that
+    // matches the |value|, |unique_id| key. Returns true to indicate that
     // RenderViewHost::AutoFillFormDataFilled has been called.
     virtual bool FillAutoFillFormData(int query_id,
                                       const webkit_glue::FormData& form,
                                       const string16& value,
-                                      const string16& label) = 0;
+                                      const string16& label,
+                                      int unique_id) = 0;
 
     // Called when the user selects the 'AutoFill Options...' suggestions in the
     // AutoFill popup.

@@ -994,6 +994,7 @@ TEST_F(RenderViewTest, SendForms) {
   view_->didAcceptAutoFillSuggestion(firstname,
                                      WebKit::WebString::fromUTF8("Johnny"),
                                      WebKit::WebString::fromUTF8("Home"),
+                                     1,
                                      -1);
 
   ProcessPendingMessages();
@@ -1073,6 +1074,7 @@ TEST_F(RenderViewTest, FillFormElement) {
   view_->didAcceptAutoFillSuggestion(firstname,
                                      WebKit::WebString::fromUTF8("David"),
                                      WebKit::WebString(),
+                                     0,
                                      0);
 
   ProcessPendingMessages();

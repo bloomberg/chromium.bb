@@ -1513,10 +1513,12 @@ void RenderView::AddGURLSearchProvider(const GURL& osd_url, bool autodetected) {
 void RenderView::OnAutoFillSuggestionsReturned(
     int query_id,
     const std::vector<string16>& values,
-    const std::vector<string16>& labels) {
+    const std::vector<string16>& labels,
+    const std::vector<int>& unique_ids) {
   if (webview() && query_id == autofill_query_id_) {
     std::vector<string16> v(values);
     std::vector<string16> l(labels);
+    std::vector<int> ids(unique_ids);
     int separator_index = -1;
 
     // The form has been auto-filled, so give the user the chance to clear the
@@ -1524,6 +1526,7 @@ void RenderView::OnAutoFillSuggestionsReturned(
     if (form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
       v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
       l.push_back(string16());
+      ids.push_back(0);
       suggestions_clear_index_ = v.size() - 1;
       separator_index = values.size();
     }
@@ -1540,6 +1543,7 @@ void RenderView::OnAutoFillSuggestionsReturned(
       // Append the 'AutoFill Options...' menu item.
       v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
       l.push_back(string16());
+      ids.push_back(0);
       suggestions_options_index_ = v.size() - 1;
       separator_index = values.size();
     }
@@ -1547,7 +1551,7 @@ void RenderView::OnAutoFillSuggestionsReturned(
     // Send to WebKit for display.
     if (!v.empty())
       webview()->applyAutoFillSuggestions(
-          autofill_query_node_, v, l, separator_index);
+          autofill_query_node_, v, l, ids, separator_index);
   }
 }
 
@@ -2150,14 +2154,8 @@ void RenderView::removeAutofillSuggestions(const WebString& name,
 
 void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& value,
-                                             const WebKit::WebString& label) {
-  // DEPRECATED
-  didAcceptAutoFillSuggestion(node, value, label, -1);
-}
-
-void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
-                                             const WebKit::WebString& value,
                                              const WebKit::WebString& label,
+                                             int unique_id,
                                              unsigned index) {
   if (suggestions_options_index_ != -1 &&
       index == static_cast<unsigned>(suggestions_options_index_)) {
@@ -2169,8 +2167,8 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
     // The form has been auto-filled, so give the user the chance to clear the
     // form.
     form_manager_.ClearFormWithNode(node);
-  } else if (form_manager_.FormWithNodeIsAutoFilled(node) || label.isEmpty()) {
-    // User selected an unlabeled menu item, so we fill directly.
+  } else if (form_manager_.FormWithNodeIsAutoFilled(node) || !unique_id) {
+    // User selected an Autocomplete entry, so we fill directly.
     WebInputElement element = node.toConst<WebInputElement>();
     element.setValue(value);
 
@@ -2180,7 +2178,7 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
     }
   } else {
     // Fill the values for the whole form.
-    QueryAutoFillFormData(node, value, label, AUTOFILL_FILL);
+    QueryAutoFillFormData(node, value, label, unique_id, AUTOFILL_FILL);
   }
 
   suggestions_clear_index_ = -1;
@@ -2189,9 +2187,10 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
 
 void RenderView::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& value,
-                                             const WebKit::WebString& label) {
+                                             const WebKit::WebString& label,
+                                             int unique_id) {
   didClearAutoFillSelection(node);
-  QueryAutoFillFormData(node, value, label, AUTOFILL_PREVIEW);
+  QueryAutoFillFormData(node, value, label, unique_id, AUTOFILL_PREVIEW);
 }
 
 void RenderView::didClearAutoFillSelection(const WebKit::WebNode& node) {
@@ -5306,6 +5305,7 @@ bool RenderView::IsNonLocalTopLevelNavigation(
 void RenderView::QueryAutoFillFormData(const WebKit::WebNode& node,
                                        const WebKit::WebString& value,
                                        const WebKit::WebString& label,
+                                       int unique_id,
                                        AutoFillAction action) {
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
@@ -5318,5 +5318,5 @@ void RenderView::QueryAutoFillFormData(const WebKit::WebNode& node,
 
   autofill_action_ = action;
   Send(new ViewHostMsg_FillAutoFillFormData(
-      routing_id_, autofill_query_id_, form, value, label));
+      routing_id_, autofill_query_id_, form, value, label, unique_id));
 }

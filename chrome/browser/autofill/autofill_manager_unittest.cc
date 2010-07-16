@@ -30,6 +30,11 @@ using webkit_glue::FormData;
 
 namespace {
 
+typedef Tuple4<int,
+               std::vector<string16>,
+               std::vector<string16>,
+               std::vector<int> > AutoFillParam;
+
 class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager() {
@@ -61,6 +66,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                                       "3734 Elvis Presley Blvd.", "Apt. 10",
                                       "Memphis", "Tennessee", "38116", "USA",
                                       "12345678901", "");
+    profile->set_unique_id(1);
     profiles->push_back(profile);
     profile = new AutoFillProfile;
     autofill_unittest::SetProfileInfo(profile, "Work", "Charles", "Hardin",
@@ -68,10 +74,12 @@ class TestPersonalDataManager : public PersonalDataManager {
                                       "123 Apple St.", "unit 6", "Lubbock",
                                       "Texas", "79401", "USA", "23456789012",
                                       "");
+    profile->set_unique_id(2);
     profiles->push_back(profile);
     profile = new AutoFillProfile;
     autofill_unittest::SetProfileInfo(profile, "Empty", "", "", "", "", "", "",
                                       "", "", "", "", "", "", "");
+    profile->set_unique_id(3);
     profiles->push_back(profile);
   }
 
@@ -80,15 +88,18 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_unittest::SetCreditCardInfo(credit_card, "First", "Elvis Presley",
                                          "Visa", "1234567890123456", "04",
                                          "2012", "Home");
+    credit_card->set_unique_id(4);
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
                                          "Mastercard", "0987654321098765", "10",
                                          "2014", "");
+    credit_card->set_unique_id(5);
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "Empty", "", "", "", "",
                                          "", "");
+    credit_card->set_unique_id(6);
     credit_cards->push_back(credit_card);
   }
 
@@ -234,7 +245,8 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
         process()->sink().GetFirstMessageMatching(kMsgID);
     if (!message)
       return false;
-    Tuple3<int, std::vector<string16>, std::vector<string16> > autofill_param;
+
+    AutoFillParam autofill_param;
     ViewMsg_AutoFillSuggestionsReturned::Read(message, &autofill_param);
     if (page_id)
       *page_id = autofill_param.a;
@@ -714,7 +726,8 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
       autofill_manager_->FillAutoFillFormData(kPageID,
                                               form,
                                               string16(),
-                                              ASCIIToUTF16("Home; 3456")));
+                                              ASCIIToUTF16("Home; 3456"),
+                                              1));
 
   int page_id = 0;
   FormData results;
@@ -782,6 +795,7 @@ TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
                                     "916 16th St.", "Apt. 6", "Lubbock",
                                     "Texas", "79401", "USA",
                                     "12345678901", "");
+  profile->set_unique_id(6);
   autofill_manager_->AddProfile(profile);
 
   FormData form;
@@ -799,7 +813,8 @@ TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
       autofill_manager_->FillAutoFillFormData(kPageID,
                                               form,
                                               string16(),
-                                              ASCIIToUTF16("Home; 8765")));
+                                              ASCIIToUTF16("Home; 8765"),
+                                              6));
 
   int page_id = 0;
   FormData results;
@@ -854,6 +869,7 @@ TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
                                     "916 16th St.", "Apt. 6", "Lubbock",
                                     "Texas", "79401", "USA",
                                     "12345678901", "");
+  profile->set_unique_id(6);
   autofill_manager_->AddProfile(profile);
 
   FormData form;
@@ -868,7 +884,7 @@ TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
   // an IPC message back to the renderer.
   const int kPageID = 1;
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, string16(), ASCIIToUTF16("Home; 8765; 3456")));
+      kPageID, form, string16(), ASCIIToUTF16("Home; 8765; 3456"), 6));
 
   int page_id = 0;
   FormData results;
@@ -928,7 +944,7 @@ TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
 }
 
-TEST_F(AutoFillManagerTest, FillPhoneNumberTest) {
+TEST_F(AutoFillManagerTest, FillPhoneNumber) {
   FormData form;
 
   form.name = ASCIIToUTF16("MyPhoneForm");
@@ -977,10 +993,12 @@ TEST_F(AutoFillManagerTest, FillPhoneNumberTest) {
     // an IPC message back to the renderer.
     int page_id = 100 - i;
     process()->sink().ClearMessages();
-    EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(page_id,
-         form,
-         ASCIIToUTF16(test_data),
-         ASCIIToUTF16("Work")));
+    EXPECT_TRUE(
+        autofill_manager_->FillAutoFillFormData(page_id,
+                                                form,
+                                                ASCIIToUTF16(test_data),
+                                                ASCIIToUTF16("Work"),
+                                                work_profile->unique_id()));
     page_id = 0;
     FormData results;
     EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
@@ -1034,11 +1052,11 @@ TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(
-      autofill_manager_->FillAutoFillFormData(kPageID,
-                                              form,
-                                              ASCIIToUTF16("Elvis"),
-                                              ASCIIToUTF16("Home")));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(kPageID,
+                                                      form,
+                                                      ASCIIToUTF16("Elvis"),
+                                                      ASCIIToUTF16("Home"),
+                                                      1));
 
   int page_id = 0;
   FormData results;
@@ -1099,11 +1117,11 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(
-      autofill_manager_->FillAutoFillFormData(kPageID,
-                                              form,
-                                              ASCIIToUTF16("Elvis"),
-                                              ASCIIToUTF16("Home")));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(kPageID,
+                                                      form,
+                                                      ASCIIToUTF16("Elvis"),
+                                                      ASCIIToUTF16("Home"),
+                                                      1));
 
   int page_id = 0;
   FormData results;

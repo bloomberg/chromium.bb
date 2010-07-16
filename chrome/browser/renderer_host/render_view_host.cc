@@ -1601,7 +1601,8 @@ void RenderViewHost::OnQueryFormFieldAutoFill(
     // No suggestions provided, so supply an empty vector as the results.
     AutoFillSuggestionsReturned(query_id,
                                 std::vector<string16>(),
-                                std::vector<string16>());
+                                std::vector<string16>(),
+                                std::vector<int>());
   }
 
   RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
@@ -1635,46 +1636,52 @@ void RenderViewHost::OnShowAutoFillDialog() {
 void RenderViewHost::OnFillAutoFillFormData(int query_id,
                                             const FormData& form,
                                             const string16& name,
-                                            const string16& label) {
+                                            const string16& label,
+                                            int unique_id) {
   RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
   if (!autofill_delegate)
     return;
 
-  autofill_delegate->FillAutoFillFormData(query_id, form, name, label);
+  autofill_delegate->FillAutoFillFormData(
+      query_id, form, name, label, unique_id);
 }
 
 void RenderViewHost::AutoFillSuggestionsReturned(
     int query_id,
     const std::vector<string16>& names,
-    const std::vector<string16>& labels) {
+    const std::vector<string16>& labels,
+    const std::vector<int>& unique_ids) {
   autofill_query_id_ = query_id;
-  autofill_values_.clear();
-  autofill_values_.insert(autofill_values_.begin(), names.begin(), names.end());
-  autofill_labels_.clear();
-  autofill_labels_.insert(
-      autofill_labels_.begin(), labels.begin(), labels.end());
+  autofill_values_.assign(names.begin(), names.end());
+  autofill_labels_.assign(labels.begin(), labels.end());
+  autofill_unique_ids_.assign(unique_ids.begin(), unique_ids.end());
 }
 
 void RenderViewHost::AutocompleteSuggestionsReturned(
     int query_id, const std::vector<string16>& suggestions) {
-  // When query ids match we are responding to an AutoFill and Autocomplete
+  // When query IDs match we are responding to an AutoFill and Autocomplete
   // combined query response.
-  // Otherwise Autocomplete is cancelling, so we only send suggestions (usually
+  // Otherwise Autocomplete is canceling, so we only send suggestions (usually
   // an empty list).
   if (autofill_query_id_ != query_id) {
-    // Autocomplete is cancelling.
+    // Autocomplete is canceling.
     autofill_values_.clear();
     autofill_labels_.clear();
+    autofill_unique_ids_.clear();
   }
 
   // Combine AutoFill and Autocomplete values into values and labels.
   for (size_t i = 0; i < suggestions.size(); ++i) {
     autofill_values_.push_back(suggestions[i]);
     autofill_labels_.push_back(string16());
+    autofill_unique_ids_.push_back(0);  // 0 means no profile.
   }
-  Send(new ViewMsg_AutoFillSuggestionsReturned(
-      routing_id(), query_id, autofill_values_, autofill_labels_));
+  Send(new ViewMsg_AutoFillSuggestionsReturned(routing_id(),
+                                               query_id,
+                                               autofill_values_,
+                                               autofill_labels_,
+                                               autofill_unique_ids_));
 }
 
 void RenderViewHost::AutoFillFormDataFilled(int query_id,

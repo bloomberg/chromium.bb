@@ -59,13 +59,15 @@ void WebInputElementDelegate::RefreshAutofillPopup(
   if (webview) {
     std::vector<string16> names;
     std::vector<string16> labels;
+    std::vector<int> unique_ids;
 
     for (size_t i = 0; i < suggestions.size(); ++i) {
       names.push_back(suggestions[i]);
       labels.push_back(string16());
+      unique_ids.push_back(0);
     }
 
-    webview->applyAutoFillSuggestions(element_, names, labels, -1);
+    webview->applyAutoFillSuggestions(element_, names, labels, unique_ids, -1);
   }
 }
 
