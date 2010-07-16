@@ -611,6 +611,7 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case REGISTRATION_SKIPPED:
       OnRegistrationSkipped();
+      break;
     default:
       NOTREACHED();
   }

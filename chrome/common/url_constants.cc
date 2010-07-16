@@ -77,6 +77,7 @@ const char kChromeUINewTabURL[] = "chrome://newtab";
 const char kChromeUIOptionsURL[] = "chrome://options/";
 const char kChromeUIPluginsURL[] = "chrome://plugins/";
 const char kChromeUIPrintURL[] = "chrome://print/";
+const char kChromeUIRegisterPageURL[] = "chrome://register/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 
 const char kChromeUIBookmarksHost[] = "bookmarks";
@@ -95,6 +96,7 @@ const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIOptionsHost[] = "options";
 const char kChromeUIPluginsHost[] = "plugins";
 const char kChromeUIPrintHost[] = "print";
+const char kChromeUIRegisterPageHost[] = "register";
 const char kChromeUIRemotingHost[] = "remoting";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUISlideshowHost[] = "slideshow";

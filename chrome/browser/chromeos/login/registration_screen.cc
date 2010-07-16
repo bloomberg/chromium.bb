@@ -22,8 +22,7 @@ namespace chromeos {
 
 namespace {
 
-// TODO(nkostylev): Create host page in resources.
-const char kRegistrationHostPageUrl[] = "about:register";
+const char kRegistrationHostPageUrl[] = "chrome://register/";
 
 // "Hostname" that is used for redirects from host registration page.
 const char kRegistrationHostnameUrl[] = "register";
@@ -100,15 +99,22 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, TabContentsDelegate implementation:
-void RegistrationScreen::LoadingStateChanged(TabContents* source) {
-  std::string url = source->GetURL().spec();
-  LOG(INFO) << "LoadingState changed url: " << url;
-  if (url == kRegistrationSuccessUrl) {
+ void RegistrationScreen::OpenURLFromTab(TabContents* source,
+                                         const GURL& url,
+                                         const GURL& referrer,
+                                         WindowOpenDisposition disposition,
+                                         PageTransition::Type transition) {
+  if (url.spec() == kRegistrationSuccessUrl) {
     source->Stop();
     CloseScreen(ScreenObserver::REGISTRATION_SUCCESS);
-  } else if (url == kRegistrationSkippedUrl) {
+  } else if (url.spec() == kRegistrationSkippedUrl) {
     source->Stop();
     CloseScreen(ScreenObserver::REGISTRATION_SKIPPED);
+  } else {
+    source->Stop();
+    // Host registration page and actual registration page hosted by
+    // OEM partner doesn't contain links to external URLs.
+    LOG(WARNING) << "Navigate to unsupported url: " << url.spec();
   }
 }
 

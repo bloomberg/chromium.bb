@@ -65,11 +65,12 @@ extern const char kChromeUIHistoryURL[];
 extern const char kChromeUIHistory2URL[];
 extern const char kChromeUIIPCURL[];
 extern const char kChromeUIMediaplayerURL[];
-extern const char kChromeUISlideshowURL[];
-extern const char kChromeUIOptionsURL[];
 extern const char kChromeUINewTabURL[];
+extern const char kChromeUIOptionsURL[];
 extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIPrintURL[];
+extern const char kChromeUIRegisterPageURL[];
+extern const char kChromeUISlideshowURL[];
 
 // chrome components of URLs. Should be kept in sync with the full URLs
 // above.
@@ -89,6 +90,7 @@ extern const char kChromeUINewTabHost[];
 extern const char kChromeUIOptionsHost[];
 extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIPrintHost[];
+extern const char kChromeUIRegisterPageHost[];
 extern const char kChromeUIRemotingHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUISlideshowHost[];

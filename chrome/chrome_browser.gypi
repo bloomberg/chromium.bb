@@ -1112,6 +1112,8 @@
         'browser/dom_ui/options_ui.h',
         'browser/dom_ui/plugins_ui.cc',
         'browser/dom_ui/plugins_ui.h',
+        'browser/dom_ui/register_page_ui.cc',
+        'browser/dom_ui/register_page_ui.h',        
         'browser/dom_ui/remoting_ui.cc',
         'browser/dom_ui/remoting_ui.h',
         'browser/dom_ui/shared_resources_data_source.cc',
