@@ -71,9 +71,10 @@ typedef xmlEntity *xmlEntityPtr;
  */
 
 typedef enum {
-    XML_BUFFER_ALLOC_DOUBLEIT,
-    XML_BUFFER_ALLOC_EXACT,
-    XML_BUFFER_ALLOC_IMMUTABLE
+    XML_BUFFER_ALLOC_DOUBLEIT,	/* double each time one need to grow */
+    XML_BUFFER_ALLOC_EXACT,	/* grow only to the minimal size */
+    XML_BUFFER_ALLOC_IMMUTABLE, /* immutable buffer */
+    XML_BUFFER_ALLOC_IO		/* special allocation scheme used for I/O */
 } xmlBufferAllocationScheme;
 
 /**
@@ -88,6 +89,7 @@ struct _xmlBuffer {
     unsigned int use;		/* The buffer size used */
     unsigned int size;		/* The buffer size */
     xmlBufferAllocationScheme alloc; /* The realloc method */
+    xmlChar *contentIO;		/* in IO mode we may have a different base */
 };
 
 /**
@@ -482,6 +484,23 @@ struct _xmlNode {
 #define XML_GET_LINE(n)						\
     (xmlGetLineNo(n))
 
+/**
+ * xmlDocProperty
+ *
+ * Set of properties of the document as found by the parser
+ * Some of them are linked to similary named xmlParserOption
+ */
+typedef enum {
+    XML_DOC_WELLFORMED		= 1<<0, /* document is XML well formed */
+    XML_DOC_NSVALID		= 1<<1, /* document is Namespace valid */
+    XML_DOC_OLD10		= 1<<2, /* parsed with old XML-1.0 parser */
+    XML_DOC_DTDVALID		= 1<<3, /* DTD validation was successful */
+    XML_DOC_XINCLUDE		= 1<<4, /* XInclude substitution was done */
+    XML_DOC_USERBUILT		= 1<<5, /* Document was built using the API
+                                           and not by parsing an instance */
+    XML_DOC_INTERNAL		= 1<<6, /* built for internal processing */
+    XML_DOC_HTML		= 1<<7  /* parsed or built HTML document */
+} xmlDocProperties;
 
 /**
  * xmlDoc:
@@ -521,6 +540,10 @@ struct _xmlDoc {
 				   actually an xmlCharEncoding */
     struct _xmlDict *dict;      /* dict used to allocate names or NULL */
     void           *psvi;	/* for type/PSVI informations */
+    int             parseFlags;	/* set of xmlParserOption used to parse the
+				   document */
+    int             properties;	/* set of xmlDocProperties for this document
+				   set at the end of parsing */
 };
 
 
@@ -1202,6 +1225,22 @@ XMLPUBFUN int XMLCALL
 					 int deep,
 					 int options);
 
+#ifdef LIBXML_TREE_ENABLED
+/*
+ * 5 interfaces from DOM ElementTraversal, but different in entities
+ * traversal.
+ */
+XMLPUBFUN unsigned long XMLCALL
+            xmlChildElementCount        (xmlNodePtr parent);
+XMLPUBFUN xmlNodePtr XMLCALL
+            xmlNextElementSibling       (xmlNodePtr node);
+XMLPUBFUN xmlNodePtr XMLCALL
+            xmlFirstElementChild        (xmlNodePtr parent);
+XMLPUBFUN xmlNodePtr XMLCALL
+            xmlLastElementChild         (xmlNodePtr parent);
+XMLPUBFUN xmlNodePtr XMLCALL
+            xmlPreviousElementSibling   (xmlNodePtr node);
+#endif
 #ifdef __cplusplus
 }
 #endif

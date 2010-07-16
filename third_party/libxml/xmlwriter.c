@@ -129,10 +129,10 @@ xmlWriterErrMsg(xmlTextWriterPtr ctxt, xmlParserErrors error,
     if (ctxt != NULL) {
 	__xmlRaiseError(NULL, NULL, NULL, ctxt->ctxt,
 	            NULL, XML_FROM_WRITER, error, XML_ERR_FATAL,
-		    NULL, 0, NULL, NULL, NULL, 0, 0, msg);
+		    NULL, 0, NULL, NULL, NULL, 0, 0, "%s", msg);
     } else {
 	__xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_WRITER, error,
-                    XML_ERR_FATAL, NULL, 0, NULL, NULL, NULL, 0, 0, msg);
+                    XML_ERR_FATAL, NULL, 0, NULL, NULL, NULL, 0, 0, "%s", msg);
     }
 }
 
@@ -242,8 +242,8 @@ xmlNewTextWriterFilename(const char *uri, int compression)
 
     out = xmlOutputBufferCreateFilename(uri, NULL, compression);
     if (out == NULL) {
-        xmlWriterErrMsg(NULL, XML_ERR_NO_MEMORY,
-                        "xmlNewTextWriterFilename : out of memory!\n");
+        xmlWriterErrMsg(NULL, XML_IO_EIO,
+                        "xmlNewTextWriterFilename : cannot open uri\n");
         return NULL;
     }
 
@@ -370,7 +370,7 @@ xmlNewTextWriterDoc(xmlDocPtr * doc, int compression)
     ctxt = xmlCreatePushParserCtxt(&saxHandler, NULL, NULL, 0, NULL);
     if (ctxt == NULL) {
         xmlWriterErrMsg(NULL, XML_ERR_INTERNAL_ERROR,
-                        "xmlNewTextWriterDoc : error at xmlCreatePushParserCtxt!\n");
+                "xmlNewTextWriterDoc : error at xmlCreatePushParserCtxt!\n");
         return NULL;
     }
     /*
@@ -389,8 +389,10 @@ xmlNewTextWriterDoc(xmlDocPtr * doc, int compression)
 
     ret = xmlNewTextWriterPushParser(ctxt, compression);
     if (ret == NULL) {
+        xmlFreeDoc(ctxt->myDoc);
+        xmlFreeParserCtxt(ctxt);
         xmlWriterErrMsg(NULL, XML_ERR_INTERNAL_ERROR,
-                        "xmlNewTextWriterDoc : error at xmlNewTextWriterPushParser!\n");
+                "xmlNewTextWriterDoc : error at xmlNewTextWriterPushParser!\n");
         return NULL;
     }
 
@@ -898,8 +900,8 @@ xmlTextWriterWriteVFormatComment(xmlTextWriterPtr writer,
     }
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteComment(writer, buf);
 
@@ -1240,8 +1242,16 @@ xmlTextWriterFullEndElement(xmlTextWriterPtr writer)
             if (count < 0)
                 return -1;
             sum += count;
+            if (writer->indent)
+                writer->doindent = 0;
             /* fallthrough */
         case XML_TEXTWRITER_TEXT:
+            if ((writer->indent) && (writer->doindent)) {
+                count = xmlTextWriterWriteIndent(writer);
+                sum += count;
+                writer->doindent = 1;
+            } else
+                writer->doindent = 1;
             count = xmlOutputBufferWriteString(writer->out, "</");
             if (count < 0)
                 return -1;
@@ -1315,8 +1325,8 @@ xmlTextWriterWriteVFormatRaw(xmlTextWriterPtr writer, const char *format,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteRaw(writer, buf);
 
@@ -1444,8 +1454,8 @@ xmlTextWriterWriteVFormatString(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteString(writer, buf);
 
@@ -1502,12 +1512,13 @@ xmlTextWriterWriteString(xmlTextWriterPtr writer, const xmlChar * content)
 
     if (buf != NULL) {
         count = xmlTextWriterWriteRaw(writer, buf);
-        if (count < 0)
-            return -1;
-        sum += count;
 
         if (buf != content)     /* buf was allocated by us, so free it */
             xmlFree(buf);
+
+        if (count < 0)
+            return -1;
+        sum += count;
     }
 
     return sum;
@@ -1989,8 +2000,8 @@ xmlTextWriterWriteVFormatAttribute(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteAttribute(writer, name, buf);
 
@@ -2091,8 +2102,8 @@ xmlTextWriterWriteVFormatAttributeNS(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteAttributeNS(writer, prefix, name, namespaceURI,
                                        buf);
@@ -2192,8 +2203,8 @@ xmlTextWriterWriteVFormatElement(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteElement(writer, name, buf);
 
@@ -2294,8 +2305,8 @@ xmlTextWriterWriteVFormatElementNS(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteElementNS(writer, prefix, name, namespaceURI,
                                      buf);
@@ -2543,8 +2554,8 @@ xmlTextWriterWriteVFormatPI(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWritePI(writer, target, buf);
 
@@ -2756,8 +2767,8 @@ xmlTextWriterWriteVFormatCDATA(xmlTextWriterPtr writer, const char *format,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteCDATA(writer, buf);
 
@@ -3074,8 +3085,8 @@ xmlTextWriterWriteVFormatDTD(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteDTD(writer, name, pubid, sysid, buf);
 
@@ -3312,8 +3323,8 @@ xmlTextWriterWriteVFormatDTDElement(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteDTDElement(writer, name, buf);
 
@@ -3549,8 +3560,8 @@ xmlTextWriterWriteVFormatDTDAttlist(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteDTDAttlist(writer, name, buf);
 
@@ -3811,8 +3822,8 @@ xmlTextWriterWriteVFormatDTDInternalEntity(xmlTextWriterPtr writer,
         return -1;
 
     buf = xmlTextWriterVSprintf(format, argptr);
-    if (buf == 0)
-        return 0;
+    if (buf == NULL)
+        return -1;
 
     rc = xmlTextWriterWriteDTDInternalEntity(writer, pe, name, buf);
 

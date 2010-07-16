@@ -28,8 +28,32 @@ extern "C" {
 XMLPUBFUN void XMLCALL xmlInitGlobals(void);
 XMLPUBFUN void XMLCALL xmlCleanupGlobals(void);
 
+/**
+ * xmlParserInputBufferCreateFilenameFunc:
+ * @URI: the URI to read from
+ * @enc: the requested source encoding
+ *
+ * Signature for the function doing the lookup for a suitable input method
+ * corresponding to an URI.
+ *
+ * Returns the new xmlParserInputBufferPtr in case of success or NULL if no
+ *         method was found.
+ */
 typedef xmlParserInputBufferPtr (*xmlParserInputBufferCreateFilenameFunc) (const char *URI, xmlCharEncoding enc);
+
+/**
+ * xmlOutputBufferCreateFilenameFunc:
+ * @URI: the URI to write to
+ * @enc: the requested target encoding
+ *
+ * Signature for the function doing the lookup for a suitable output method
+ * corresponding to an URI.
+ *
+ * Returns the new xmlOutputBufferPtr in case of success or NULL if no
+ *         method was found.
+ */
 typedef xmlOutputBufferPtr (*xmlOutputBufferCreateFilenameFunc) (const char *URI, xmlCharEncodingHandlerPtr encoder, int compression);
+
 XMLPUBFUN xmlParserInputBufferCreateFilenameFunc
 XMLCALL xmlParserInputBufferCreateFilenameDefault (xmlParserInputBufferCreateFilenameFunc func);
 XMLPUBFUN xmlOutputBufferCreateFilenameFunc
@@ -52,6 +76,7 @@ XMLCALL xmlOutputBufferCreateFilenameDefault (xmlOutputBufferCreateFilenameFunc 
 #undef	xmlGenericError
 #undef	xmlStructuredError
 #undef	xmlGenericErrorContext
+#undef	xmlStructuredErrorContext
 #undef	xmlGetWarningsDefaultValue
 #undef	xmlIndentTreeOutput
 #undef  xmlTreeIndentString
@@ -73,12 +98,24 @@ XMLCALL xmlOutputBufferCreateFilenameDefault (xmlOutputBufferCreateFilenameFunc 
 #undef  xmlParserInputBufferCreateFilenameValue
 #undef  xmlOutputBufferCreateFilenameValue
 
+/**
+ * xmlRegisterNodeFunc:
+ * @node: the current node
+ *
+ * Signature for the registration callback of a created node
+ */
 typedef void (*xmlRegisterNodeFunc) (xmlNodePtr node);
+/**
+ * xmlDeregisterNodeFunc:
+ * @node: the current node
+ *
+ * Signature for the deregistration callback of a discarded node
+ */
 typedef void (*xmlDeregisterNodeFunc) (xmlNodePtr node);
 
 typedef struct _xmlGlobalState xmlGlobalState;
 typedef xmlGlobalState *xmlGlobalStatePtr;
-struct _xmlGlobalState 
+struct _xmlGlobalState
 {
 	const char *xmlParserVersion;
 
@@ -114,14 +151,16 @@ struct _xmlGlobalState
 	int xmlIndentTreeOutput;
 	const char *xmlTreeIndentString;
 
-  	xmlRegisterNodeFunc xmlRegisterNodeDefaultValue;
-  	xmlDeregisterNodeFunc xmlDeregisterNodeDefaultValue;
+	xmlRegisterNodeFunc xmlRegisterNodeDefaultValue;
+	xmlDeregisterNodeFunc xmlDeregisterNodeDefaultValue;
 
 	xmlMallocFunc xmlMallocAtomic;
 	xmlError xmlLastError;
 
 	xmlParserInputBufferCreateFilenameFunc xmlParserInputBufferCreateFilenameValue;
 	xmlOutputBufferCreateFilenameFunc xmlOutputBufferCreateFilenameValue;
+
+	void *xmlStructuredErrorContext;
 };
 
 #ifdef __cplusplus
@@ -143,9 +182,9 @@ XMLPUBFUN xmlRegisterNodeFunc XMLCALL xmlThrDefRegisterNodeDefault(xmlRegisterNo
 XMLPUBFUN xmlDeregisterNodeFunc XMLCALL xmlDeregisterNodeDefault(xmlDeregisterNodeFunc func);
 XMLPUBFUN xmlDeregisterNodeFunc XMLCALL xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func);
 
-XMLPUBFUN xmlOutputBufferCreateFilenameFunc XMLCALL 
+XMLPUBFUN xmlOutputBufferCreateFilenameFunc XMLCALL
 	xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc func);
-XMLPUBFUN xmlParserInputBufferCreateFilenameFunc XMLCALL 
+XMLPUBFUN xmlParserInputBufferCreateFilenameFunc XMLCALL
 	xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilenameFunc func);
 
 /** DOC_DISABLE */
@@ -316,6 +355,14 @@ XMLPUBFUN void * * XMLCALL __xmlGenericErrorContext(void);
 (*(__xmlGenericErrorContext()))
 #else
 XMLPUBVAR void * xmlGenericErrorContext;
+#endif
+
+XMLPUBFUN void * * XMLCALL __xmlStructuredErrorContext(void);
+#ifdef LIBXML_THREAD_ENABLED
+#define xmlStructuredErrorContext \
+(*(__xmlStructuredErrorContext()))
+#else
+XMLPUBVAR void * xmlStructuredErrorContext;
 #endif
 
 XMLPUBFUN int * XMLCALL __xmlGetWarningsDefaultValue(void);

@@ -622,7 +622,7 @@ var new_makefile = ".\\Makefile";
 var f = fso.FileExists(new_makefile);
 if (f) {
        var t = fso.GetFile(new_makefile);
-       t.Attributes =0;
+       t.Attributes = 0;
 }
 fso.CopyFile(makefile, new_makefile, true);
 WScript.Echo("Created Makefile.");

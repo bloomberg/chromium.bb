@@ -190,7 +190,10 @@ struct _xmlParserCtxt {
     const xmlChar    *version;        /* the XML version string */
     const xmlChar   *encoding;        /* the declared encoding, if any */
     int            standalone;        /* standalone document */
-    int                  html;        /* an HTML(1)/Docbook(2) document */
+    int                  html;        /* an HTML(1)/Docbook(2) document
+                                       * 3 is HTML after <head>
+                                       * 10 is HTML after <body>
+                                       */
 
     /* Input stream stack */
     xmlParserInputPtr  input;         /* Current input stream */
@@ -276,7 +279,6 @@ struct _xmlParserCtxt {
     int                nsNr;          /* the number of inherited namespaces */
     int                nsMax;         /* the size of the arrays */
     const xmlChar *   *nsTab;         /* the array of prefix/namespace name */
-    struct _xmlParserCtxt *nsParent;  /* parent context to inherit namespaces from */
     int               *attallocs;     /* which attribute were allocated */
     void *            *pushTab;       /* array of data for push */
     xmlHashTablePtr    attsDefault;   /* defaulted attributes if any */
@@ -298,6 +300,14 @@ struct _xmlParserCtxt {
      */
     xmlError          lastError;
     xmlParserMode     parseMode;    /* the parser mode */
+    unsigned long    nbentities;    /* number of entities references */
+    unsigned long  sizeentities;    /* size of parsed entities */
+
+    /* for use by HTML non-recursive parser */
+    xmlParserNodeInfo *nodeInfo;      /* Current NodeInfo */
+    int                nodeInfoNr;    /* Depth of the parsing stack */
+    int                nodeInfoMax;   /* Max depth of the parsing stack */
+    xmlParserNodeInfo *nodeInfoTab;   /* array of nodeInfos */
 };
 
 /**
@@ -593,7 +603,7 @@ typedef void (*cdataBlockSAXFunc) (
  * Display and format a warning messages, callback.
  */
 typedef void (XMLCDECL *warningSAXFunc) (void *ctx,
-				const char *msg, ...);
+				const char *msg, ...) LIBXML_ATTR_FORMAT(2,3);
 /**
  * errorSAXFunc:
  * @ctx:  an XML parser context
@@ -603,7 +613,7 @@ typedef void (XMLCDECL *warningSAXFunc) (void *ctx,
  * Display and format an error messages, callback.
  */
 typedef void (XMLCDECL *errorSAXFunc) (void *ctx,
-				const char *msg, ...);
+				const char *msg, ...) LIBXML_ATTR_FORMAT(2,3);
 /**
  * fatalErrorSAXFunc:
  * @ctx:  an XML parser context
@@ -615,7 +625,7 @@ typedef void (XMLCDECL *errorSAXFunc) (void *ctx,
  *       get all the callbacks for errors.
  */
 typedef void (XMLCDECL *fatalErrorSAXFunc) (void *ctx,
-				const char *msg, ...);
+				const char *msg, ...) LIBXML_ATTR_FORMAT(2,3);
 /**
  * isStandaloneSAXFunc:
  * @ctx:  the user data (XML parser context)
@@ -849,7 +859,7 @@ XMLPUBFUN int XMLCALL
  * Recovery mode 
  */
 XMLPUBFUN xmlDocPtr XMLCALL	
-		xmlRecoverDoc		(xmlChar *cur);
+		xmlRecoverDoc		(const xmlChar *cur);
 XMLPUBFUN xmlDocPtr XMLCALL	
 		xmlRecoverMemory	(const char *buffer,
 					 int size);
@@ -1090,9 +1100,13 @@ typedef enum {
     XML_PARSE_NSCLEAN	= 1<<13,/* remove redundant namespaces declarations */
     XML_PARSE_NOCDATA	= 1<<14,/* merge CDATA as text nodes */
     XML_PARSE_NOXINCNODE= 1<<15,/* do not generate XINCLUDE START/END nodes */
-    XML_PARSE_COMPACT   = 1<<16 /* compact small text nodes; no modification of
+    XML_PARSE_COMPACT   = 1<<16,/* compact small text nodes; no modification of
                                    the tree allowed afterwards (will possibly
 				   crash if you try to modify the tree) */
+    XML_PARSE_OLD10	= 1<<17,/* parse using XML-1.0 before update 5 */
+    XML_PARSE_NOBASEFIX = 1<<18,/* do not fixup XINCLUDE xml:base uris */
+    XML_PARSE_HUGE      = 1<<19, /* relax any hardcoded limit from the parser */
+    XML_PARSE_OLDSAX    = 1<<20 /* parse using SAX2 interface from before 2.7.0 */
 } xmlParserOption;
 
 XMLPUBFUN void XMLCALL
@@ -1219,3 +1233,4 @@ XMLPUBFUN int XMLCALL
 }
 #endif
 #endif /* __XML_PARSER_H__ */
+

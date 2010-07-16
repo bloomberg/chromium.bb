@@ -161,6 +161,7 @@ xmlStringComment DATA
 xmlStringText DATA
 xmlStringTextNoenc DATA
 xmlStructuredError DATA
+xmlStructuredErrorContext DATA
 #ifdef LIBXML_THREAD_ENABLED
 __xmlSubstituteEntitiesDefaultValue
 #else
@@ -660,6 +661,7 @@ xmlCheckHTTPInput
 xmlCheckLanguageID
 xmlCheckUTF8
 xmlCheckVersion
+xmlChildElementCount
 xmlCleanupCharEncodingHandlers
 xmlCleanupEncodingAliases
 xmlCleanupGlobals
@@ -854,6 +856,7 @@ xmlFileMatch
 xmlFileOpen
 xmlFileRead
 xmlFindCharEncodingHandler
+xmlFirstElementChild
 xmlFreeAttributeTable
 #ifdef LIBXML_AUTOMATA_ENABLED
 xmlFreeAutomata
@@ -1009,6 +1012,7 @@ xmlIsRef
 xmlIsXHTML
 #endif
 xmlKeepBlanksDefault
+xmlLastElementChild
 xmlLineNumbersDefault
 xmlLinkGetData
 xmlListAppend
@@ -1064,6 +1068,7 @@ xmlMallocLoc
 #endif
 xmlMemBlocks
 xmlMemDisplay
+xmlMemDisplayLast
 xmlMemFree
 xmlMemGet
 xmlMemMalloc
@@ -1226,6 +1231,7 @@ xmlNewDocText
 xmlNewDocTextLen
 xmlNewDtd
 xmlNewElementContent
+xmlNewEntity
 xmlNewEntityInputStream
 xmlNewGlobalNs
 xmlNewIOInputStream
@@ -1256,6 +1262,7 @@ xmlNewTextWriterPushParser
 xmlNewTextWriterTree
 xmlNewValidCtxt
 xmlNextChar
+xmlNextElementSibling
 xmlNoNetExternalEntityLoader
 xmlNodeAddContent
 xmlNodeAddContentLen
@@ -1390,6 +1397,7 @@ xmlPatterncompile
 xmlPedanticParserDefault
 xmlPopInput
 xmlPopInputCallbacks
+xmlPreviousElementSibling
 xmlPrintURI
 xmlPushInput
 xmlRMutexLock
@@ -1730,6 +1738,9 @@ xmlSchemaValPredefTypeNodeNoNorm
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
 xmlSchemaValidCtxtGetOptions
+#endif
+#ifdef LIBXML_SCHEMAS_ENABLED
+xmlSchemaValidCtxtGetParserCtxt
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
 xmlSchemaValidateDoc
@@ -2618,6 +2629,9 @@ xmlXIncludeProcessTree
 #endif
 #ifdef LIBXML_XINCLUDE_ENABLED
 xmlXIncludeProcessTreeFlags
+#endif
+#ifdef LIBXML_XINCLUDE_ENABLED
+xmlXIncludeProcessTreeFlagsData
 #endif
 #ifdef LIBXML_XINCLUDE_ENABLED
 xmlXIncludeSetFlags

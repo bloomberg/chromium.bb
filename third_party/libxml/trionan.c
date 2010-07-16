@@ -1,6 +1,6 @@
 /*************************************************************************
  *
- * $Id: trionan.c 2219 2003-10-15 08:18:00Z veillard $
+ * $Id$
  *
  * Copyright (C) 2001 Bjorn Reese <breese@users.sourceforge.net>
  *
@@ -112,7 +112,7 @@
  * Constants
  */
 
-static TRIO_CONST char rcsid[] = "@(#)$Id: trionan.c 2219 2003-10-15 08:18:00Z veillard $";
+static TRIO_CONST char rcsid[] = "@(#)$Id$";
 
 #if defined(USE_IEEE_754)
 
@@ -129,7 +129,11 @@ static TRIO_CONST char rcsid[] = "@(#)$Id: trionan.c 2219 2003-10-15 08:18:00Z v
  */
 #define TRIO_DOUBLE_INDEX(x) (((unsigned char *)&internalEndianMagic)[7-(x)])
 
+#if (defined(__BORLANDC__) && __BORLANDC__ >= 0x0590)
+static TRIO_CONST double internalEndianMagic = 7.949928895127362e-275;
+#else
 static TRIO_CONST double internalEndianMagic = 7.949928895127363e-275;
+#endif
 
 /* Mask for the exponent */
 static TRIO_CONST unsigned char ieee_754_exponent_mask[] = {

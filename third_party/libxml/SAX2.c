@@ -11,6 +11,7 @@
 #include "libxml.h"
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
@@ -25,6 +26,11 @@
 #include <libxml/valid.h>
 #include <libxml/HTMLtree.h>
 #include <libxml/globals.h>
+
+/* Define SIZE_T_MAX unless defined through <limits.h>. */
+#ifndef SIZE_T_MAX
+# define SIZE_T_MAX     ((size_t)-1)
+#endif /* !SIZE_T_MAX */
 
 /* #define DEBUG_SAX2 */
 /* #define DEBUG_SAX2_TREE */
@@ -580,7 +586,8 @@ xmlSAX2GetEntity(void *ctx, const xmlChar *name)
 	    return(NULL);
 	}
 	ret->owner = 1;
-	ret->checked = 1;
+	if (ret->checked == 0)
+	    ret->checked = 1;
     }
     return(ret);
 }
@@ -957,6 +964,8 @@ xmlSAX2StartDocument(void *ctx)
 #ifdef LIBXML_HTML_ENABLED
 	if (ctxt->myDoc == NULL)
 	    ctxt->myDoc = htmlNewDocNoDtD(NULL, NULL);
+	ctxt->myDoc->properties = XML_DOC_HTML;
+	ctxt->myDoc->parseFlags = ctxt->options;
 	if (ctxt->myDoc == NULL) {
 	    xmlSAX2ErrMemory(ctxt, "xmlSAX2StartDocument");
 	    return;
@@ -972,6 +981,10 @@ xmlSAX2StartDocument(void *ctx)
     } else {
 	doc = ctxt->myDoc = xmlNewDoc(ctxt->version);
 	if (doc != NULL) {
+	    doc->properties = 0;
+	    if (ctxt->options & XML_PARSE_OLD10)
+	        doc->properties |= XML_DOC_OLD10;
+	    doc->parseFlags = ctxt->options;
 	    if (ctxt->encoding != NULL)
 		doc->encoding = xmlStrdup(ctxt->encoding);
 	    else
@@ -1092,24 +1105,33 @@ xmlSAX2AttributeInternal(void *ctx, const xmlChar *fullname,
 	return;
     }
 
+#ifdef LIBXML_HTML_ENABLED
+    if ((ctxt->html) &&
+        (value == NULL) && (htmlIsBooleanAttr(fullname))) {
+            nval = xmlStrdup(fullname);
+            value = (const xmlChar *) nval;
+    } else
+#endif
+    {
 #ifdef LIBXML_VALID_ENABLED
-    /*
-     * Do the last stage of the attribute normalization
-     * Needed for HTML too:
-     *   http://www.w3.org/TR/html4/types.html#h-6.2
-     */
-    ctxt->vctxt.valid = 1;
-    nval = xmlValidCtxtNormalizeAttributeValue(&ctxt->vctxt,
-	                                   ctxt->myDoc, ctxt->node,
-					   fullname, value);
-    if (ctxt->vctxt.valid != 1) {
-	ctxt->valid = 0;
-    }
-    if (nval != NULL)
-	value = nval;
+        /*
+         * Do the last stage of the attribute normalization
+         * Needed for HTML too:
+         *   http://www.w3.org/TR/html4/types.html#h-6.2
+         */
+        ctxt->vctxt.valid = 1;
+        nval = xmlValidCtxtNormalizeAttributeValue(&ctxt->vctxt,
+                                               ctxt->myDoc, ctxt->node,
+                                               fullname, value);
+        if (ctxt->vctxt.valid != 1) {
+            ctxt->valid = 0;
+        }
+        if (nval != NULL)
+            value = nval;
 #else
-    nval = NULL;
+        nval = NULL;
 #endif /* LIBXML_VALID_ENABLED */
+    }
 
     /*
      * Check whether it's a namespace definition
@@ -1233,30 +1255,32 @@ xmlSAX2AttributeInternal(void *ctx, const xmlChar *fullname,
     }
 
     if (ns != NULL) {
-	xmlAttrPtr prop;
 	namespace = xmlSearchNs(ctxt->myDoc, ctxt->node, ns);
+
 	if (namespace == NULL) {
 	    xmlNsErrMsg(ctxt, XML_NS_ERR_UNDEFINED_NAMESPACE,
 		    "Namespace prefix %s of attribute %s is not defined\n",
 		             ns, name);
-	}
+	} else {
+            xmlAttrPtr prop;
 
-	prop = ctxt->node->properties;
-	while (prop != NULL) {
-	    if (prop->ns != NULL) {
-		if ((xmlStrEqual(name, prop->name)) &&
-		    ((namespace == prop->ns) ||
-		     (xmlStrEqual(namespace->href, prop->ns->href)))) {
-			xmlNsErrMsg(ctxt, XML_ERR_ATTRIBUTE_REDEFINED,
-			        "Attribute %s in %s redefined\n",
-			                 name, namespace->href);
-		    ctxt->wellFormed = 0;
-		    if (ctxt->recovery == 0) ctxt->disableSAX = 1;
-		    goto error;
-		}
-	    }
-	    prop = prop->next;
-	}
+            prop = ctxt->node->properties;
+            while (prop != NULL) {
+                if (prop->ns != NULL) {
+                    if ((xmlStrEqual(name, prop->name)) &&
+                        ((namespace == prop->ns) ||
+                         (xmlStrEqual(namespace->href, prop->ns->href)))) {
+                            xmlNsErrMsg(ctxt, XML_ERR_ATTRIBUTE_REDEFINED,
+                                    "Attribute %s in %s redefined\n",
+                                             name, namespace->href);
+                        ctxt->wellFormed = 0;
+                        if (ctxt->recovery == 0) ctxt->disableSAX = 1;
+                        goto error;
+                    }
+                }
+                prop = prop->next;
+            }
+        }
     } else {
 	namespace = NULL;
     }
@@ -1407,6 +1431,10 @@ process_external_subset:
 		    } else {
 			fulln = xmlStrdup(attr->name);
 		    }
+                    if (fulln == NULL) {
+                        xmlSAX2ErrMemory(ctxt, "xmlSAX2StartElement");
+                        break;
+                    }
 
 		    /*
 		     * Check that the attribute is not declared in the
@@ -1429,6 +1457,7 @@ process_external_subset:
 				    (const char *)fulln,
 				    (const char *)attr->elem);
 		    }
+                    xmlFree(fulln);
 		}
 		attr = attr->nexth;
 	    }
@@ -1836,6 +1865,9 @@ skip:
 	}
     } else
 	ret->content = (xmlChar *) intern;
+
+    if (ctxt->input != NULL)
+        ret->line = ctxt->input->line;
 
     if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
 	xmlRegisterNodeDefaultValue(ret);
@@ -2262,9 +2294,14 @@ xmlSAX2StartElementNs(void *ctx,
 	        xmlSAX2ErrMemory(ctxt, "xmlSAX2StartElementNs");
 		return;
 	    }
-	    xmlNsWarnMsg(ctxt, XML_NS_ERR_UNDEFINED_NAMESPACE,
-			"Namespace prefix %s was not found\n",
-			prefix, NULL);
+            if (prefix != NULL)
+                xmlNsWarnMsg(ctxt, XML_NS_ERR_UNDEFINED_NAMESPACE,
+                             "Namespace prefix %s was not found\n",
+                             prefix, NULL);
+            else
+                xmlNsWarnMsg(ctxt, XML_NS_ERR_UNDEFINED_NAMESPACE,
+                             "Namespace default prefix was not found\n",
+                             NULL, NULL);
 	}
     }
 
@@ -2445,9 +2482,19 @@ xmlSAX2Characters(void *ctx, const xmlChar *ch, int len)
 	               (xmlDictOwns(ctxt->dict, lastChild->content))) {
 		lastChild->content = xmlStrdup(lastChild->content);
 	    }
+            if (((size_t)ctxt->nodelen + (size_t)len > XML_MAX_TEXT_LENGTH) &&
+                ((ctxt->options & XML_PARSE_HUGE) == 0)) {
+                xmlSAX2ErrMemory(ctxt, "xmlSAX2Characters: huge text node");
+                return;
+            }
+	    if ((size_t)ctxt->nodelen > SIZE_T_MAX - (size_t)len || 
+	        (size_t)ctxt->nodemem + (size_t)len > SIZE_T_MAX / 2) {
+                xmlSAX2ErrMemory(ctxt, "xmlSAX2Characters overflow prevented");
+                return;
+	    }
 	    if (ctxt->nodelen + len >= ctxt->nodemem) {
 		xmlChar *newbuf;
-		int size;
+		size_t size;
 
 		size = ctxt->nodemem + len;
 		size *= 2;
@@ -2528,7 +2575,6 @@ xmlSAX2ProcessingInstruction(void *ctx, const xmlChar *target,
 
     ret = xmlNewDocPI(ctxt->myDoc, target, data);
     if (ret == NULL) return;
-    parent = ctxt->node;
 
     if (ctxt->linenumbers) {
 	if (ctxt->input != NULL) {

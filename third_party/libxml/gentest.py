@@ -174,7 +174,8 @@ skipped_memcheck = [ "xmlLoadCatalog", "xmlAddEncodingAlias",
    "xmlInitCharEncodingHandlers", "xmlCatalogCleanup",
    "xmlSchemaGetBuiltInType",
    "htmlParseFile", "htmlCtxtReadFile", # loads the catalogs
-   "xmlTextReaderSchemaValidate", "xmlSchemaCleanupTypes" # initialize the schemas type system
+   "xmlTextReaderSchemaValidate", "xmlSchemaCleanupTypes", # initialize the schemas type system
+   "xmlCatalogResolve", "xmlIOParseDTD" # loads the catalogs
 ]
 
 #
@@ -207,6 +208,8 @@ extra_pre_call = {
 extra_post_call = {
    "xmlAddChild": 
        "if (ret_val == NULL) { xmlFreeNode(cur) ; cur = NULL ; }",
+   "xmlAddEntity":
+       "if (ret_val != NULL) { xmlFreeNode(ret_val) ; ret_val = NULL; }",
    "xmlAddChildList": 
        "if (ret_val == NULL) { xmlFreeNodeList(cur) ; cur = NULL ; }",
    "xmlAddSibling":
@@ -257,6 +260,7 @@ extra_post_call = {
    "xmlParseChunk": "if (ctxt != NULL) {xmlFreeDoc(ctxt->myDoc); ctxt->myDoc = NULL;}",
    "xmlParseExtParsedEnt": "if (ctxt != NULL) {xmlFreeDoc(ctxt->myDoc); ctxt->myDoc = NULL;}",
    "xmlDOMWrapAdoptNode": "if ((node != NULL) && (node->parent == NULL)) {xmlUnlinkNode(node);xmlFreeNode(node);node = NULL;}",
+   "xmlBufferSetAllocationScheme": "if ((buf != NULL) && (scheme == XML_BUFFER_ALLOC_IMMUTABLE) && (buf->content != NULL) && (buf->content != static_buf_content)) { xmlFree(buf->content); buf->content = NULL;}"
 }
 
 modules = []
