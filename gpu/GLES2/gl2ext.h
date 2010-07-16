@@ -801,16 +801,28 @@ typedef void (GL_APIENTRYP PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
 /* GL_CHROMIUM_map_sub */
 #ifndef GL_CHROMIUM_map_sub
 #define GL_CHROMIUM_map_sub 1
+#ifndef GL_READ_ONLY
+#define GL_READ_ONLY 0x88B8
+#endif
+#ifndef GL_WRITE_ONLY
+#define GL_WRITE_ONLY 0x88B9
+#endif
 #ifdef GL_GLEXT_PROTOTYPES
+#define glMapBufferSubData GLES2_GET_FUN(MapBufferSubData)
+#define glUnmapBufferSubData GLES2_GET_FUN(UnmapBufferSubData)
+#define glMapTexSubImage2D GLES2_GET_FUN(MapTexSubImage2D)
+#define glUnmapTexSubImage2D GLES2_GET_FUN(UnmapTexSubImage2D)
+#if !defined(GLES2_USE_CPP_BINDINGS)
 GL_APICALL void* GL_APIENTRY glMapBufferSubData (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
 GL_APICALL void  GL_APIENTRY glUnmapBufferSubData (const void* mem);
 GL_APICALL void* GL_APIENTRY glMapTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
 GL_APICALL void  GL_APIENTRY glUnmapTexSubImage2D (const void* mem);
 #endif
-typedef void* (GL_APIENTRYP PFNGLMAPBUFFERSUBDATA (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
-typedef void  (GL_APIENTRYP PFNGLUNMAPBUFFERSUBDATA (const void* mem);
-typedef void* (GL_APIENTRYP PFNGLMAPTEXSUBIMAGE2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
-typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2D (const void* mem);
+#else
+typedef void* (GL_APIENTRYP PFNGLMAPBUFFERSUBDATA) (GLuint target, GLintptr offset, GLsizeiptr size, GLenum access);
+typedef void  (GL_APIENTRYP PFNGLUNMAPBUFFERSUBDATA) (const void* mem);
+typedef void* (GL_APIENTRYP PFNGLMAPTEXSUBIMAGE2D) (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, GLenum access);
+typedef void  (GL_APIENTRYP PFNGLUNMAPTEXSUBIMAGE2D) (const void* mem);
 #endif
 #endif
 
