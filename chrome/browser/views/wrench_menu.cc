@@ -344,8 +344,8 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
  public:
   ZoomView(WrenchMenu* menu,
            MenuModel* menu_model,
-           int increment_index,
            int decrement_index,
+           int increment_index,
            int fullscreen_index)
       : menu_(menu),
         menu_model_(menu_model),
@@ -355,9 +355,9 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
         decrement_button_(NULL),
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
-    increment_button_ = CreateAndConfigureButton(
-        this, this, IDS_ZOOM_PLUS2, MenuButtonBackground::LEFT_BUTTON,
-        menu_model, increment_index, NULL);
+    decrement_button_ = CreateAndConfigureButton(
+        this, this, IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON,
+        menu_model, decrement_index, NULL);
 
     zoom_label_ = new Label(l10n_util::GetStringF(IDS_ZOOM_PERCENT, L"100"));
     zoom_label_->SetColor(MenuConfig::instance().text_color);
@@ -370,9 +370,9 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     AddChildView(zoom_label_);
     zoom_label_width_ = MaxWidthForZoomLabel();
 
-    decrement_button_ = CreateAndConfigureButton(
-        this, this, IDS_ZOOM_MINUS2, MenuButtonBackground::RIGHT_BUTTON,
-        menu_model, decrement_index, NULL);
+    increment_button_ = CreateAndConfigureButton(
+        this, this, IDS_ZOOM_PLUS2, MenuButtonBackground::RIGHT_BUTTON,
+        menu_model, increment_index, NULL);
 
     center_bg->SetOtherButtons(increment_button_, decrement_button_);
 
@@ -415,7 +415,7 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
                                 decrement_button_->GetPreferredSize().width());
     gfx::Rect bounds(0, 0, button_width, height());
 
-    increment_button_->SetBounds(bounds);
+    decrement_button_->SetBounds(bounds);
 
     x += bounds.width();
     bounds.set_x(x);
@@ -425,7 +425,7 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     x += bounds.width();
     bounds.set_x(x);
     bounds.set_width(button_width);
-    decrement_button_->SetBounds(bounds);
+    increment_button_->SetBounds(bounds);
 
     x += bounds.width() + kZoomPadding;
     bounds.set_x(x);
@@ -575,7 +575,7 @@ bool WrenchMenu::IsCommandEnabled(int id) const {
   // The items representing the cut (cut/copy/paste) and zoom menu
   // (increment/decrement/reset) are always enabled. The child views of these
   // items enabled state updates appropriately.
-  return command_id == IDC_CUT || command_id == IDC_ZOOM_PLUS ||
+  return command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
       entry.first->IsEnabledAt(entry.second);
 }
 
@@ -583,7 +583,7 @@ void WrenchMenu::ExecuteCommand(int id) {
   const Entry& entry = id_to_entry_.find(id)->second;
   int command_id = entry.first->GetCommandIdAt(entry.second);
 
-  if (command_id == IDC_CUT || command_id == IDC_ZOOM_PLUS) {
+  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS) {
     // These items are represented by child views. If ExecuteCommand is invoked
     // it means the user clicked on the area around the buttons and we should
     // not do anyting.
@@ -596,7 +596,7 @@ void WrenchMenu::ExecuteCommand(int id) {
 bool WrenchMenu::GetAccelerator(int id, views::Accelerator* accelerator) {
   const Entry& entry = id_to_entry_.find(id)->second;
   int command_id = entry.first->GetCommandIdAt(entry.second);
-  if (command_id == IDC_CUT || command_id == IDC_ZOOM_PLUS) {
+  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS) {
     // These have special child views; don't show the accelerator for them.
     return false;
   }
@@ -632,9 +632,9 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
       item->AddChildView(
           new CutCopyPasteView(this, model, index, index + 1, index + 2));
       i += 2;
-    } else if (model->GetCommandIdAt(index) == IDC_ZOOM_PLUS) {
+    } else if (model->GetCommandIdAt(index) == IDC_ZOOM_MINUS) {
       DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(index));
-      DCHECK_EQ(IDC_ZOOM_MINUS, model->GetCommandIdAt(index + 1));
+      DCHECK_EQ(IDC_ZOOM_PLUS, model->GetCommandIdAt(index + 1));
       DCHECK_EQ(IDC_FULLSCREEN, model->GetCommandIdAt(index + 2));
       item->SetTitle(l10n_util::GetString(IDS_ZOOM_MENU2));
       item->AddChildView(

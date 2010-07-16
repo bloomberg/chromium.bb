@@ -283,8 +283,8 @@ void WrenchMenuModel::CreateCutCopyPaste() {
 void WrenchMenuModel::CreateZoomFullscreen() {
   // WARNING: views/wrench_menu assumes these items are added in this order. If
   // you change the order you'll need to update wrench_menu as well.
-  AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
   AddItemWithStringId(IDC_ZOOM_MINUS, IDS_ZOOM_MINUS);
+  AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
   AddItemWithStringId(IDC_FULLSCREEN, IDS_FULLSCREEN);
 }
 
