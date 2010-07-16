@@ -4,56 +4,57 @@
 
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 
-#include <map>
-#include <string>
-
 #include <dbus/dbus-glib.h>
 #include <dlfcn.h>
+#include <gnome-keyring.h>
+
+#include <map>
+#include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 
 using webkit_glue::PasswordForm;
 
 namespace {
 
-/* Many of the gnome_keyring_* functions use variable arguments, which makes
- * them difficult if not impossible to wrap in C. Therefore, we want the
- * actual uses below to either call the functions directly (if we are linking
- * against libgnome-keyring), or call them via appropriately-typed function
- * pointers (if we are dynamically loading libgnome-keyring).
- *
- * Thus, instead of making a wrapper class with two implementations, we use
- * the preprocessor to rename the calls below in the dynamic load case, and
- * provide a function to initialize a set of function pointers that have the
- * alternate names. We also make sure the types are correct, since otherwise
- * dynamic loading like this would leave us vulnerable to signature changes. */
+// Many of the gnome_keyring_* functions use variable arguments, which makes
+// them difficult if not impossible to wrap in C. Therefore, we want the
+// actual uses below to either call the functions directly (if we are linking
+// against libgnome-keyring), or call them via appropriately-typed function
+// pointers (if we are dynamically loading libgnome-keyring).
+
+// Thus, instead of making a wrapper class with two implementations, we use
+// the preprocessor to rename the calls below in the dynamic load case, and
+// provide a function to initialize a set of function pointers that have the
+// alternate names. We also make sure the types are correct, since otherwise
+// dynamic loading like this would leave us vulnerable to signature changes.
 
 #if defined(DLOPEN_GNOME_KEYRING)
 
-// Call a given parameter with the name of each func we use from
-// gnome keyring.
+// Call a given parameter with the name of each function we use from GNOME
+// Keyring.
 #define GNOME_KEYRING_FOR_EACH_FUNC(F)          \
   F(is_available)                               \
-  F(store_password_sync)                        \
-  F(delete_password_sync)                       \
-  F(find_itemsv_sync)                           \
+  F(store_password)                             \
+  F(delete_password)                            \
+  F(find_itemsv)                                \
   F(result_to_message)                          \
-  F(found_list_free)                            \
-  F(list_item_ids_sync)                         \
-  F(item_get_attributes_sync)                   \
-  F(attribute_list_free)                        \
-  F(item_get_info_sync)                         \
-  F(item_info_get_secret)                       \
-  F(item_info_free)
+  F(list_item_ids)                              \
+  F(item_get_attributes)                        \
+  F(item_get_info)                              \
+  F(item_info_get_secret)
 
-#define GNOME_KEYRING_DECLARE_TYPE(name) \
+// Define the actual function pointers that we'll use in application code.
+#define GNOME_KEYRING_DEFINE_WRAPPER(name) \
   typeof(&gnome_keyring_##name) wrap_gnome_keyring_##name;
-GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DECLARE_TYPE)
-#undef GNOME_KEYRING_DECLARE_TYPE
+GNOME_KEYRING_FOR_EACH_FUNC(GNOME_KEYRING_DEFINE_WRAPPER)
+#undef GNOME_KEYRING_DEFINE_WRAPPER
 
 // Make it easy to initialize the function pointers above with a loop below.
 #define GNOME_KEYRING_FUNCTION(name) \
@@ -73,28 +74,22 @@ const struct {
 // end up using the function pointers above instead.
 #define gnome_keyring_is_available \
     wrap_gnome_keyring_is_available
-#define gnome_keyring_store_password_sync \
-    wrap_gnome_keyring_store_password_sync
-#define gnome_keyring_delete_password_sync \
-    wrap_gnome_keyring_delete_password_sync
-#define gnome_keyring_find_itemsv_sync \
-    wrap_gnome_keyring_find_itemsv_sync
+#define gnome_keyring_store_password \
+    wrap_gnome_keyring_store_password
+#define gnome_keyring_delete_password \
+    wrap_gnome_keyring_delete_password
+#define gnome_keyring_find_itemsv \
+    wrap_gnome_keyring_find_itemsv
 #define gnome_keyring_result_to_message \
     wrap_gnome_keyring_result_to_message
-#define gnome_keyring_found_list_free \
-    wrap_gnome_keyring_found_list_free
-#define gnome_keyring_list_item_ids_sync \
-    wrap_gnome_keyring_list_item_ids_sync
-#define gnome_keyring_item_get_attributes_sync \
-  wrap_gnome_keyring_item_get_attributes_sync
-#define gnome_keyring_attribute_list_free \
-  wrap_gnome_keyring_attribute_list_free
-#define gnome_keyring_item_get_info_sync \
-  wrap_gnome_keyring_item_get_info_sync
+#define gnome_keyring_list_item_ids \
+    wrap_gnome_keyring_list_item_ids
+#define gnome_keyring_item_get_attributes \
+  wrap_gnome_keyring_item_get_attributes
+#define gnome_keyring_item_get_info \
+  wrap_gnome_keyring_item_get_info
 #define gnome_keyring_item_info_get_secret \
   wrap_gnome_keyring_item_info_get_secret
-#define gnome_keyring_item_info_free \
-  wrap_gnome_keyring_item_info_free
 
 /* Load the library and initialize the function pointers. */
 bool LoadGnomeKeyring() {
@@ -112,8 +107,8 @@ bool LoadGnomeKeyring() {
         dlsym(handle, gnome_keyring_functions[i].name);
     const char* error = dlerror();
     if (error) {
-      LOG(ERROR) << "Unable to load symbol " <<
-          gnome_keyring_functions[i].name << ": " << error;
+      LOG(ERROR) << "Unable to load symbol "
+                 << gnome_keyring_functions[i].name << ": " << error;
       dlclose(handle);
       return false;
     }
@@ -122,20 +117,18 @@ bool LoadGnomeKeyring() {
   return true;
 }
 
-// Older versions of GNOME Keyring have bugs that prevent them from
-// working correctly with the find_itemsv API. (In particular, the
-// non-pageable memory allocator is rather busted.) There is no
-// official way to check the version, nor could we figure out any
-// reasonable unofficial way to do it.  So we work around it by using
-// a much slower API.
-#define GNOME_KEYRING_WORKAROUND_MEMORY_CORRUPTION
+// Older versions of GNOME Keyring have bugs that prevent them from working
+// correctly with the find_itemsv API. (In particular, the non-pageable memory
+// allocator is rather busted.) There is no official way to check the version,
+// nor could we figure out any reasonable unofficial way to do it. So we work
+// around it by using a much slower API.
+#define GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION
 
 #else  // !defined(DLOPEN_GNOME_KEYRING)
 
 bool LoadGnomeKeyring() {
-  // We don't need to do anything here. When linking directly, we
-  // assume that whoever is compiling this code has checked that the
-  // version is OK.
+  // We don't need to do anything here. When linking directly, we also assume
+  // that whoever is compiling this code has checked that the version is OK.
   return true;
 }
 
@@ -143,27 +136,23 @@ bool LoadGnomeKeyring() {
 
 #define GNOME_KEYRING_APPLICATION_CHROME "chrome"
 
-// Convert the attributes of a given keyring entry into a new
-// PasswordForm.  Note: does *not* get the actual password, as that is
-// not a key attribute!  Returns NULL if the attributes are for the
-// wrong application.
+// Convert the attributes of a given keyring entry into a new PasswordForm.
+// Note: does *not* get the actual password, as that is not a key attribute!
+// Returns NULL if the attributes are for the wrong application.
 PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   // Read the string and int attributes into the appropriate map.
   std::map<std::string, std::string> string_attr_map;
   std::map<std::string, uint32_t> uint_attr_map;
   for (guint i = 0; i < attrs->len; ++i) {
     GnomeKeyringAttribute attr = gnome_keyring_attribute_list_index(attrs, i);
-    if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING) {
-      if (std::string(attr.name) == "application" &&
-          std::string(attr.value.string) != GNOME_KEYRING_APPLICATION_CHROME) {
-        // This is not a password we care about.
-        return NULL;
-      }
+    if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_STRING)
       string_attr_map[attr.name] = attr.value.string;
-    } else if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32) {
+    else if (attr.type == GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32)
       uint_attr_map[attr.name] = attr.value.integer;
-    }
   }
+  // Check to make sure this is a password we care about.
+  if (string_attr_map["application"] != GNOME_KEYRING_APPLICATION_CHROME)
+    return NULL;
 
   PasswordForm* form = new PasswordForm();
   form->origin = GURL(string_attr_map["origin_url"]);
@@ -187,10 +176,30 @@ PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   return form;
 }
 
-}  // namespace
+// Parse all the results from the given GList into a PasswordFormList, and free
+// the GList. PasswordForms are allocated on the heap, and should be deleted by
+// the consumer.
+void ConvertFormList(GList* found,
+                     NativeBackendGnome::PasswordFormList* forms) {
+  GList* element = g_list_first(found);
+  while (element != NULL) {
+    GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
+    GnomeKeyringAttributeList* attrs = data->attributes;
+
+    PasswordForm* form = FormFromAttributes(attrs);
+    if (form) {
+      form->password_value = UTF8ToUTF16(data->secret);
+      forms->push_back(form);
+    } else {
+      LOG(WARNING) << "Could not initialize PasswordForm from attributes!";
+    }
+
+    element = g_list_next(element);
+  }
+}
 
 // Schema is analagous to the fields in PasswordForm.
-const GnomeKeyringPasswordSchema NativeBackendGnome::kGnomeSchema = {
+const GnomeKeyringPasswordSchema kGnomeSchema = {
   GNOME_KEYRING_ITEM_GENERIC_SECRET, {
     { "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { "action_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
@@ -210,23 +219,99 @@ const GnomeKeyringPasswordSchema NativeBackendGnome::kGnomeSchema = {
   }
 };
 
-NativeBackendGnome::NativeBackendGnome() {
-}
+// Sadly, PasswordStore goes to great lengths to switch from the originally
+// calling thread to the DB thread, and to provide an asynchronous API to
+// callers while using a synchronous (virtual) API provided by subclasses like
+// PasswordStoreX -- but GNOME Keyring really wants to be on the GLib main
+// thread, which is the UI thread to us. So we end up having to switch threads
+// again, possibly back to the very same thread (in case the UI thread is the
+// caller, e.g. in the password management UI), and *block* the DB thread
+// waiting for a response from the UI thread to provide the synchronous API
+// PasswordStore expects of us. (It will then in turn switch back to the
+// original caller to send the asynchronous reply to the original request.)
 
-NativeBackendGnome::~NativeBackendGnome() {
-}
+// This class represents a call to a GNOME Keyring method. A RunnableMethod
+// should be posted to the UI thread to call one of its action methods, and then
+// a WaitResult() method should be called to wait for the result. Each instance
+// supports only one outstanding method at a time, though multiple instances may
+// be used in parallel.
+class GKRMethod {
+ public:
+  typedef NativeBackendGnome::PasswordFormList PasswordFormList;
 
-bool NativeBackendGnome::Init() {
-  return LoadGnomeKeyring() && gnome_keyring_is_available();
-}
+  GKRMethod() : event_(false, false), result_(GNOME_KEYRING_RESULT_CANCELLED) {}
 
-bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  GnomeKeyringResult result = gnome_keyring_store_password_sync(
+  // Action methods. These call gnome_keyring_* functions. Call from UI thread.
+  void AddLogin(const PasswordForm& form);
+  void UpdateLoginSearch(const PasswordForm& form);
+  void RemoveLogin(const PasswordForm& form);
+  void GetLogins(const PasswordForm& form);
+#if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+  void GetLoginsList(uint32_t blacklisted_by_user);
+  void GetAllLogins();
+#else
+  void GetItemIds();
+  void GetItemAttrs(guint id);
+  void GetItemInfo(guint id);
+#endif
+
+  // Use after AddLogin, RemoveLogin.
+  GnomeKeyringResult WaitResult();
+
+  // Use after UpdateLoginSearch, GetLogins, GetLoginsList, GetAllLogins.
+  GnomeKeyringResult WaitResult(PasswordFormList* forms);
+
+#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+  // Use after GetItemIds().
+  GnomeKeyringResult WaitResult(std::vector<guint>* item_ids);
+
+  // Use after GetItemAttrs().
+  GnomeKeyringResult WaitResult(PasswordForm** form);
+
+  // Use after GetItemInfo().
+  GnomeKeyringResult WaitResult(string16* password);
+#endif
+
+ private:
+  // All these callbacks are called on UI thread.
+  static void OnOperationDone(GnomeKeyringResult result, gpointer data);
+
+  static void OnOperationGetList(GnomeKeyringResult result, GList* list,
+                                 gpointer data);
+
+#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+  static void OnOperationGetIds(GnomeKeyringResult result, GList* list,
+                                gpointer data);
+
+  static void OnOperationGetAttrs(GnomeKeyringResult result,
+                                  GnomeKeyringAttributeList* attrs,
+                                  gpointer data);
+
+  static void OnOperationGetInfo(GnomeKeyringResult result,
+                                 GnomeKeyringItemInfo* info,
+                                 gpointer data);
+#endif
+
+  base::WaitableEvent event_;
+  GnomeKeyringResult result_;
+  NativeBackendGnome::PasswordFormList forms_;
+#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+  std::vector<guint> item_ids_;
+  scoped_ptr<PasswordForm> form_;
+  string16 password_;
+#endif
+};
+
+void GKRMethod::AddLogin(const PasswordForm& form) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  gnome_keyring_store_password(
       &kGnomeSchema,
       NULL,  // Default keyring.
       form.origin.spec().c_str(),  // Display name.
       UTF16ToUTF8(form.password_value).c_str(),
+      OnOperationDone,
+      this,  // data
+      NULL,  // destroy_data
       "origin_url", form.origin.spec().c_str(),
       "action_url", form.action.spec().c_str(),
       "username_element", UTF16ToUTF8(form.username_element).c_str(),
@@ -241,7 +326,237 @@ bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
       "scheme", form.scheme,
       "application", GNOME_KEYRING_APPLICATION_CHROME,
       NULL);
+}
 
+void GKRMethod::UpdateLoginSearch(const PasswordForm& form) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  // Search GNOME Keyring for matching passwords to update.
+  gnome_keyring_find_itemsv(
+      GNOME_KEYRING_ITEM_GENERIC_SECRET,
+      OnOperationGetList,
+      this,  // data
+      NULL,  // destroy_data
+      "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      form.origin.spec().c_str(),
+      "username_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      UTF16ToUTF8(form.username_element).c_str(),
+      "username_value", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      UTF16ToUTF8(form.username_value).c_str(),
+      "password_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      UTF16ToUTF8(form.password_element).c_str(),
+      "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      form.signon_realm.c_str(),
+      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      GNOME_KEYRING_APPLICATION_CHROME,
+      NULL);
+}
+
+void GKRMethod::RemoveLogin(const PasswordForm& form) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  // We find forms using the same fields as LoginDatabase::RemoveLogin().
+  gnome_keyring_delete_password(
+      &kGnomeSchema,
+      OnOperationDone,
+      this,  // data
+      NULL,  // destroy_data
+      "origin_url", form.origin.spec().c_str(),
+      "action_url", form.action.spec().c_str(),
+      "username_element", UTF16ToUTF8(form.username_element).c_str(),
+      "username_value", UTF16ToUTF8(form.username_value).c_str(),
+      "password_element", UTF16ToUTF8(form.password_element).c_str(),
+      "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
+      "signon_realm", form.signon_realm.c_str(),
+      NULL);
+}
+
+void GKRMethod::GetLogins(const PasswordForm& form) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  // Search GNOME Keyring for matching passwords.
+  gnome_keyring_find_itemsv(
+      GNOME_KEYRING_ITEM_GENERIC_SECRET,
+      OnOperationGetList,
+      this,  // data
+      NULL,  // destroy_data
+      "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      form.signon_realm.c_str(),
+      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      GNOME_KEYRING_APPLICATION_CHROME,
+      NULL);
+}
+
+#if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  // Search GNOME Keyring for matching passwords.
+  gnome_keyring_find_itemsv(
+      GNOME_KEYRING_ITEM_GENERIC_SECRET,
+      OnOperationGetList,
+      this,  // data
+      NULL,  // destroy_data
+      "blacklisted_by_user", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32,
+      blacklisted_by_user,
+      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      GNOME_KEYRING_APPLICATION_CHROME,
+      NULL);
+}
+
+void GKRMethod::GetAllLogins() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  // We need to search for something, otherwise we get no results - so
+  // we search for the fixed application string.
+  gnome_keyring_find_itemsv(
+      GNOME_KEYRING_ITEM_GENERIC_SECRET,
+      OnOperationGetList,
+      this,  // data
+      NULL,  // destroy_data
+      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
+      GNOME_KEYRING_APPLICATION_CHROME,
+      NULL);
+}
+#else
+void GKRMethod::GetItemIds() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  gnome_keyring_list_item_ids(NULL, OnOperationGetIds, this, NULL);
+}
+
+void GKRMethod::GetItemAttrs(guint id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  gnome_keyring_item_get_attributes(NULL, id, OnOperationGetAttrs, this, NULL);
+}
+
+void GKRMethod::GetItemInfo(guint id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  gnome_keyring_item_get_info(NULL, id, OnOperationGetInfo, this, NULL);
+}
+#endif
+
+GnomeKeyringResult GKRMethod::WaitResult() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  event_.Wait();
+  return result_;
+}
+
+GnomeKeyringResult GKRMethod::WaitResult(PasswordFormList* forms) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  event_.Wait();
+  forms->swap(forms_);
+  return result_;
+}
+
+#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+GnomeKeyringResult GKRMethod::WaitResult(std::vector<guint>* item_ids) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  event_.Wait();
+  item_ids->swap(item_ids_);
+  return result_;
+}
+
+GnomeKeyringResult GKRMethod::WaitResult(PasswordForm** form) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  event_.Wait();
+  *form = form_.release();
+  return result_;
+}
+
+GnomeKeyringResult GKRMethod::WaitResult(string16* password) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  event_.Wait();
+  *password = password_;
+  return result_;
+}
+#endif
+
+// static
+void GKRMethod::OnOperationDone(GnomeKeyringResult result, gpointer data) {
+  GKRMethod* method = static_cast<GKRMethod*>(data);
+  method->result_ = result;
+  method->event_.Signal();
+}
+
+// static
+void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
+                                   gpointer data) {
+  GKRMethod* method = static_cast<GKRMethod*>(data);
+  method->result_ = result;
+  method->forms_.clear();
+  // |list| will be freed after this callback returns, so convert it now.
+  ConvertFormList(list, &method->forms_);
+  method->event_.Signal();
+}
+
+#if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+// static
+void GKRMethod::OnOperationGetIds(GnomeKeyringResult result, GList* list,
+                                  gpointer data) {
+  GKRMethod* method = static_cast<GKRMethod*>(data);
+  method->result_ = result;
+  method->item_ids_.clear();
+  // |list| will be freed after this callback returns, so save it now.
+  for (GList* i = list; i; i = i->next) {
+    guint id = GPOINTER_TO_UINT(i->data);
+    method->item_ids_.push_back(id);
+  }
+  method->event_.Signal();
+}
+
+// static
+void GKRMethod::OnOperationGetAttrs(GnomeKeyringResult result,
+                                    GnomeKeyringAttributeList* attrs,
+                                    gpointer data) {
+  GKRMethod* method = static_cast<GKRMethod*>(data);
+  method->result_ = result;
+  // |attrs| will be freed after this callback returns, so convert it now.
+  if (result == GNOME_KEYRING_RESULT_OK)
+    method->form_.reset(FormFromAttributes(attrs));
+  method->event_.Signal();
+}
+
+// static
+void GKRMethod::OnOperationGetInfo(GnomeKeyringResult result,
+                                   GnomeKeyringItemInfo* info,
+                                   gpointer data) {
+  GKRMethod* method = static_cast<GKRMethod*>(data);
+  method->result_ = result;
+  // |info| will be freed after this callback returns, so use it now.
+  if (result == GNOME_KEYRING_RESULT_OK) {
+    char* secret = gnome_keyring_item_info_get_secret(info);
+    method->password_ = UTF8ToUTF16(secret);
+    // gnome_keyring_item_info_get_secret() allocates and returns a new copy
+    // of the secret, so we have to free it afterward.
+    free(secret);
+  }
+  method->event_.Signal();
+}
+#endif
+
+}  // namespace
+
+// GKRMethod isn't reference counted, but it always outlasts runnable
+// methods against it because the caller waits for those methods to run.
+template<>
+struct RunnableMethodTraits<GKRMethod> {
+  void RetainCallee(GKRMethod*) {}
+  void ReleaseCallee(GKRMethod*) {}
+};
+
+NativeBackendGnome::NativeBackendGnome() {
+}
+
+NativeBackendGnome::~NativeBackendGnome() {
+}
+
+bool NativeBackendGnome::Init() {
+  return LoadGnomeKeyring() && gnome_keyring_is_available();
+}
+
+bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  GKRMethod method;
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         NewRunnableMethod(&method,
+                                           &GKRMethod::AddLogin,
+                                           form));
+  GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring save failed: "
                << gnome_keyring_result_to_message(result);
@@ -258,32 +573,19 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
   // fields, then we add a new login with those fields updated and only delete
   // the original on success.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  GList* found = NULL;
-  // Search gnome keyring for matching passwords.
-  GnomeKeyringResult result = gnome_keyring_find_itemsv_sync(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      &found,
-      "origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      form.origin.spec().c_str(),
-      "username_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.username_element).c_str(),
-      "username_value", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.username_value).c_str(),
-      "password_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      UTF16ToUTF8(form.password_element).c_str(),
-      "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      form.signon_realm.c_str(),
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
-      NULL);
+  GKRMethod method;
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         NewRunnableMethod(&method,
+                                           &GKRMethod::UpdateLoginSearch,
+                                           form));
+  PasswordFormList forms;
+  GnomeKeyringResult result = method.WaitResult(&forms);
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring find failed: "
                << gnome_keyring_result_to_message(result);
     return false;
   }
   bool ok = true;
-  PasswordFormList forms;
-  ConvertFormList(found, &forms);
   for (size_t i = 0; i < forms.size(); ++i) {
     if (forms[i]->action != form.action ||
         forms[i]->password_value != form.password_value ||
@@ -306,17 +608,12 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
 
 bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  // We find forms using the same fields as LoginDatabase::RemoveLogin().
-  GnomeKeyringResult result = gnome_keyring_delete_password_sync(
-      &kGnomeSchema,
-      "origin_url", form.origin.spec().c_str(),
-      "action_url", form.action.spec().c_str(),
-      "username_element", UTF16ToUTF8(form.username_element).c_str(),
-      "username_value", UTF16ToUTF8(form.username_value).c_str(),
-      "password_element", UTF16ToUTF8(form.password_element).c_str(),
-      "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
-      "signon_realm", form.signon_realm.c_str(),
-      NULL);
+  GKRMethod method;
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         NewRunnableMethod(&method,
+                                           &GKRMethod::RemoveLogin,
+                                           form));
+  GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring delete failed: "
                << gnome_keyring_result_to_message(result);
@@ -350,16 +647,12 @@ bool NativeBackendGnome::RemoveLoginsCreatedBetween(
 bool NativeBackendGnome::GetLogins(const PasswordForm& form,
                                    PasswordFormList* forms) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  GList* found = NULL;
-  // Search gnome keyring for matching passwords.
-  GnomeKeyringResult result = gnome_keyring_find_itemsv_sync(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      &found,
-      "signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      form.signon_realm.c_str(),
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
-      NULL);
+  GKRMethod method;
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         NewRunnableMethod(&method,
+                                           &GKRMethod::GetLogins,
+                                           form));
+  GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
   if (result != GNOME_KEYRING_RESULT_OK) {
@@ -367,7 +660,6 @@ bool NativeBackendGnome::GetLogins(const PasswordForm& form,
                << gnome_keyring_result_to_message(result);
     return false;
   }
-  ConvertFormList(found, forms);
   return true;
 }
 
@@ -408,17 +700,13 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
 
   uint32_t blacklisted_by_user = !autofillable;
 
-#if !defined(GNOME_KEYRING_WORKAROUND_MEMORY_CORRUPTION)
-  GList* found = NULL;
-  // Search gnome keyring for matching passwords.
-  GnomeKeyringResult result = gnome_keyring_find_itemsv_sync(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      &found,
-      "blacklisted_by_user", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32,
-      blacklisted_by_user,
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
-      NULL);
+#if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+  GKRMethod method;
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         NewRunnableMethod(&method,
+                                           &GKRMethod::GetLoginsList,
+                                           blacklisted_by_user));
+  GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
   if (result != GNOME_KEYRING_RESULT_OK) {
@@ -426,13 +714,12 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
                << gnome_keyring_result_to_message(result);
     return false;
   }
-  ConvertFormList(found, forms);
   return true;
 #else
   PasswordFormList all_forms;
   if (!GetAllLogins(&all_forms))
     return false;
-  // Now manually filter the result for the values we care about.
+  // Now manually filter the results for the values we care about.
   for (size_t i = 0; i < all_forms.size(); ++i) {
     if (all_forms[i]->blacklisted_by_user == blacklisted_by_user)
       forms->push_back(all_forms[i]);
@@ -444,23 +731,12 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
 }
 
 bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
-  // Older versions of GNOME Keyring have bugs that prevent them from
-  // working correctly with the find_itemsv API. (In particular, the
-  // non-pageable memory allocator is rather busted.) There is no
-  // official way to check the version, nor could we figure out any
-  // reasonable unofficial way to do it.  So we work around it by
-  // using a much slower API.
-
-#if !defined(GNOME_KEYRING_WORKAROUND_MEMORY_CORRUPTION)
-  GList* found = NULL;
-  // We need to search for something, otherwise we get no results - so
-  // we search for the fixed application string.
-  GnomeKeyringResult result = gnome_keyring_find_itemsv_sync(
-      GNOME_KEYRING_ITEM_GENERIC_SECRET,
-      &found,
-      "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING,
-      GNOME_KEYRING_APPLICATION_CHROME,
-      NULL);
+  GKRMethod method;
+#if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         NewRunnableMethod(&method,
+                                           &GKRMethod::GetAllLogins));
+  GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
   if (result != GNOME_KEYRING_RESULT_OK) {
@@ -468,63 +744,80 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
                << gnome_keyring_result_to_message(result);
     return false;
   }
-  ConvertFormList(found, forms);
   return true;
 #else
-  GList* ids = NULL;
-  GnomeKeyringResult result = gnome_keyring_list_item_ids_sync(NULL, &ids);
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         NewRunnableMethod(&method,
+                                           &GKRMethod::GetItemIds));
+  std::vector<guint> item_ids;
+  GnomeKeyringResult result = method.WaitResult(&item_ids);
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring itemid list failed: "
                << gnome_keyring_result_to_message(result);
     return false;
   }
 
-  for (GList* i = ids; i; i = i->next) {
-    int id = GPOINTER_TO_INT(i->data);
-    GnomeKeyringAttributeList* attrs = NULL;
-    result = gnome_keyring_item_get_attributes_sync(NULL, id, &attrs);
+  // We can parallelize getting the item attributes.
+  GKRMethod* methods = new GKRMethod[item_ids.size()];
+  for (size_t i = 0; i < item_ids.size(); ++i) {
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                           NewRunnableMethod(&methods[i],
+                                             &GKRMethod::GetItemAttrs,
+                                             item_ids[i]));
+  }
+
+  bool success = true;
+
+  // We can also parallelize getting the item info (i.e. passwords).
+  PasswordFormList all_forms;
+  all_forms.resize(item_ids.size());
+  for (size_t i = 0; i < item_ids.size(); ++i) {
+    result = methods[i].WaitResult(&all_forms[i]);
     if (result != GNOME_KEYRING_RESULT_OK) {
       LOG(ERROR) << "Keyring get item attributes failed:"
                  << gnome_keyring_result_to_message(result);
-      gnome_keyring_attribute_list_free(attrs);
-      break;
+      // We explicitly do not break out here. We must wait on all the other
+      // methods first, and we may have already posted new methods. So, we just
+      // note the failure and continue.
+      success = false;
     }
-
-    PasswordForm* form = FormFromAttributes(attrs);
-    gnome_keyring_attribute_list_free(attrs);
-
-    if (form) {
-      GnomeKeyringItemInfo* info = NULL;
-      result = gnome_keyring_item_get_info_sync(NULL, id, &info);
-      if (result != GNOME_KEYRING_RESULT_OK) {
-        delete form;
-        break;
-      }
-      form->password_value = UTF8ToUTF16(
-          gnome_keyring_item_info_get_secret(info));
-
-      gnome_keyring_item_info_free(info);
-      forms->push_back(form);
+    if (all_forms[i]) {
+      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                             NewRunnableMethod(&methods[i],
+                                               &GKRMethod::GetItemInfo,
+                                               item_ids[i]));
     }
   }
-  g_list_free(ids);
 
-  return result == GNOME_KEYRING_RESULT_OK;
+  // Now just wait for all the passwords to come in.
+  for (size_t i = 0; i < item_ids.size(); ++i) {
+    if (!all_forms[i])
+      continue;
+    result = methods[i].WaitResult(&all_forms[i]->password_value);
+    if (result != GNOME_KEYRING_RESULT_OK) {
+      LOG(ERROR) << "Keyring get item info failed:"
+                 << gnome_keyring_result_to_message(result);
+      delete all_forms[i];
+      all_forms[i] = NULL;
+      // We explicitly do not break out here (see above).
+      success = false;
+    }
+  }
+
+  delete[] methods;
+
+  if (success) {
+    // If we succeeded, output all the forms.
+    for (size_t i = 0; i < item_ids.size(); ++i) {
+      if (all_forms[i])
+        forms->push_back(all_forms[i]);
+    }
+  } else {
+    // Otherwise, free them.
+    for (size_t i = 0; i < item_ids.size(); ++i)
+      delete all_forms[i];
+  }
+
+  return success;
 #endif
-}
-
-void NativeBackendGnome::ConvertFormList(GList* found,
-                                         PasswordFormList* forms) {
-  GList* element = g_list_first(found);
-  while (element != NULL) {
-    GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
-    GnomeKeyringAttributeList* attrs = data->attributes;
-
-    PasswordForm* form = FormFromAttributes(attrs);
-    form->password_value = UTF8ToUTF16(data->secret);
-    forms->push_back(form);
-
-    element = g_list_next(element);
-  }
-  gnome_keyring_found_list_free(found);
 }

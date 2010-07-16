@@ -5,10 +5,6 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_GNOME_X_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_GNOME_X_H_
 
-extern "C" {
-#include <gnome-keyring.h>
-}
-
 #include <vector>
 
 #include "base/basictypes.h"
@@ -48,13 +44,6 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend {
 
   // Helper for GetLoginsCreatedBetween().
   bool GetAllLogins(PasswordFormList* forms);
-
-  // Parse all the results from the given GList into a PasswordFormList, and
-  // free the GList. PasswordForms are allocated on the heap, and should be
-  // deleted by the consumer.
-  void ConvertFormList(GList* found, PasswordFormList* forms);
-
-  static const GnomeKeyringPasswordSchema kGnomeSchema;
 
   DISALLOW_COPY_AND_ASSIGN(NativeBackendGnome);
 };
