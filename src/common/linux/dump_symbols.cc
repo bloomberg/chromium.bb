@@ -46,7 +46,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "common/dwarf/bytereader-inl.h"
 #include "common/dwarf/dwarf2diehandler.h"
@@ -66,6 +69,64 @@ using google_breakpad::DwarfCUToModule;
 using google_breakpad::DwarfLineToModule;
 using google_breakpad::Module;
 using google_breakpad::StabsToModule;
+
+//
+// FDWrapper
+//
+// Wrapper class to make sure opened file is closed.
+//
+class FDWrapper {
+ public:
+  explicit FDWrapper(int fd) :
+    fd_(fd) {}
+  ~FDWrapper() {
+    if (fd_ != -1)
+      close(fd_);
+  }
+  int get() {
+    return fd_;
+  }
+  int release() {
+    int fd = fd_;
+    fd_ = -1;
+    return fd;
+  }
+ private:
+  int fd_;
+};
+
+//
+// MmapWrapper
+//
+// Wrapper class to make sure mapped regions are unmapped.
+//
+class MmapWrapper {
+ public:
+  MmapWrapper() : is_set_(false) {}
+  ~MmapWrapper() {
+    assert(is_set_);
+    if (base_ != NULL) {
+      assert(size_ > 0);
+      munmap(base_, size_);
+    }
+  }
+  void set(void *mapped_address, size_t mapped_size) {
+    is_set_ = true;
+    base_ = mapped_address;
+    size_ = mapped_size;
+  }
+  void release() {
+    assert(is_set_);
+    base_ = NULL;
+    size_ = 0;
+  }
+
+ private:
+  bool is_set_;
+  void *base_;
+  size_t size_;
+};
+
 
 // Fix offset into virtual address by adding the mapped base into offsets.
 // Make life easier when want to find something by offset.
@@ -160,7 +221,7 @@ static bool LoadStabs(const ElfW(Ehdr) *elf_header,
 class DumperLineToModule: public DwarfCUToModule::LineToModuleFunctor {
  public:
   // Create a line-to-module converter using BYTE_READER.
-  DumperLineToModule(dwarf2reader::ByteReader *byte_reader)
+  explicit DumperLineToModule(dwarf2reader::ByteReader *byte_reader)
       : byte_reader_(byte_reader) { }
   void operator()(const char *program, uint64 length,
                   Module *module, vector<Module::Line> *lines) {
@@ -304,6 +365,37 @@ static bool LoadDwarfCFI(const string &dwarf_filename,
   return true;
 }
 
+bool LoadELF(const std::string &obj_file, MmapWrapper* map_wrapper,
+             ElfW(Ehdr) **elf_header) {
+  int obj_fd = open(obj_file.c_str(), O_RDONLY);
+  if (obj_fd < 0) {
+    fprintf(stderr, "Failed to open ELF file '%s': %s\n",
+            obj_file.c_str(), strerror(errno));
+    return false;
+  }
+  FDWrapper obj_fd_wrapper(obj_fd);
+  struct stat st;
+  if (fstat(obj_fd, &st) != 0 && st.st_size <= 0) {
+    fprintf(stderr, "Unable to fstat ELF file '%s': %s\n",
+            obj_file.c_str(), strerror(errno));
+    return false;
+  }
+  void *obj_base = mmap(NULL, st.st_size,
+                        PROT_READ | PROT_WRITE, MAP_PRIVATE, obj_fd, 0);
+  if (obj_base == MAP_FAILED) {
+    fprintf(stderr, "Failed to mmap ELF file '%s': %s\n",
+            obj_file.c_str(), strerror(errno));
+    return false;
+  }
+  map_wrapper->set(obj_base, st.st_size);
+  *elf_header = reinterpret_cast<ElfW(Ehdr) *>(obj_base);
+  if (!IsValidElf(*elf_header)) {
+    fprintf(stderr, "Not a valid ELF file: %s\n", obj_file.c_str());
+    return false;
+  }
+  return true;
+}
+
 // Get the endianness of ELF_HEADER. If it's invalid, return false.
 bool ElfEndianness(const ElfW(Ehdr) *elf_header, bool *big_endian) {
   if (elf_header->e_ident[EI_DATA] == ELFDATA2LSB) {
@@ -320,9 +412,112 @@ bool ElfEndianness(const ElfW(Ehdr) *elf_header, bool *big_endian) {
   return false;
 }
 
+// Read the .gnu_debuglink and get the debug file name. If anything goes
+// wrong, return an empty string.
+static std::string ReadDebugLink(const ElfW(Shdr) *debuglink_section,
+                                 const std::string &obj_file,
+                                 const std::string &debug_dir) {
+  char *debuglink = reinterpret_cast<char *>(debuglink_section->sh_offset);
+  size_t debuglink_len = strlen(debuglink) + 5;  // '\0' + CRC32.
+  debuglink_len = 4 * ((debuglink_len + 3) / 4);  // Round to nearest 4 bytes.
+
+  // Sanity check.
+  if (debuglink_len != debuglink_section->sh_size) {
+    fprintf(stderr, "Mismatched .gnu_debuglink string / section size: "
+            "%zx %zx\n", debuglink_len, debuglink_section->sh_size);
+    return "";
+  }
+
+  std::string debuglink_path = debug_dir + "/" + debuglink;
+  int debuglink_fd = open(debuglink_path.c_str(), O_RDONLY);
+  if (debuglink_fd < 0) {
+    fprintf(stderr, "Failed to open debug ELF file '%s' for '%s': %s\n",
+            debuglink_path.c_str(), obj_file.c_str(), strerror(errno));
+    return "";
+  }
+  FDWrapper debuglink_fd_wrapper(debuglink_fd);
+  // TODO(thestig) check the CRC-32 at the end of the .gnu_debuglink
+  // section.
+
+  return debuglink_path;
+}
+
+//
+// LoadSymbolsInfo
+//
+// Holds the state between the two calls to LoadSymbols() in case we have to
+// follow the .gnu_debuglink section and load debug information from a
+// different file.
+//
+class LoadSymbolsInfo {
+ public:
+  explicit LoadSymbolsInfo(const std::string &dbg_dir) :
+    debug_dir_(dbg_dir),
+    has_loading_addr_(false) {}
+
+  // Keeps track of which sections have been loaded so we don't accidentally
+  // load it twice from two different files.
+  void LoadedSection(const std::string &section) {
+    if (loaded_sections_.count(section) == 0) {
+      loaded_sections_.insert(section);
+    } else {
+      fprintf(stderr, "Section %s has already been loaded.\n",
+              section.c_str());
+    }
+  }
+
+  // We expect the ELF file and linked debug file to have the same prefered
+  // loading address.
+  void set_loading_addr(ElfW(Addr) addr, const std::string &filename) {
+    if (!has_loading_addr_) {
+      loading_addr_ = addr;
+      loaded_file_ = filename;
+      return;
+    }
+
+    if (addr != loading_addr_) {
+      fprintf(stderr,
+              "ELF file '%s' and debug ELF file '%s' "
+              "have different load addresses.\n",
+              loaded_file_.c_str(), filename.c_str());
+      assert(false);
+    }
+  }
+
+  // Setters and getters
+  const std::string &debug_dir() const {
+    return debug_dir_;
+  }
+
+  std::string debuglink_file() const {
+    return debuglink_file_;
+  }
+  void set_debuglink_file(std::string file) {
+    debuglink_file_ = file;
+  }
+
+ private:
+  const std::string &debug_dir_;  // Directory with the debug ELF file.
+
+  std::string debuglink_file_;  // Full path to the debug ELF file.
+
+  bool has_loading_addr_;  // Indicate if LOADING_ADDR_ is valid.
+
+  ElfW(Addr) loading_addr_;  // Saves the prefered loading address from the
+                             // first call to LoadSymbols().
+
+  std::string loaded_file_;  // Name of the file loaded from the first call to
+                             // LoadSymbols().
+
+  std::set<std::string> loaded_sections_;  // Tracks the Loaded ELF sections
+                                           // between calls to LoadSymbols().
+};
+
 static bool LoadSymbols(const std::string &obj_file,
                         const bool big_endian,
                         ElfW(Ehdr) *elf_header,
+                        const bool read_gnu_debug_link,
+                        LoadSymbolsInfo *info,
                         Module *module) {
   // Translate all offsets in section headers into address.
   FixAddress(elf_header);
@@ -330,6 +525,7 @@ static bool LoadSymbols(const std::string &obj_file,
       reinterpret_cast<ElfW(Phdr) *>(elf_header->e_phoff),
       elf_header->e_phnum);
   module->SetLoadAddress(loading_addr);
+  info->set_loading_addr(loading_addr, obj_file);
 
   const ElfW(Shdr) *sections =
       reinterpret_cast<ElfW(Shdr) *>(elf_header->e_shoff);
@@ -344,6 +540,7 @@ static bool LoadSymbols(const std::string &obj_file,
     const ElfW(Shdr) *stabstr_section = stab_section->sh_link + sections;
     if (stabstr_section) {
       found_debug_info_section = true;
+      info->LoadedSection(".stab");
       if (!LoadStabs(elf_header, stab_section, stabstr_section, big_endian,
                      module)) {
         fprintf(stderr, "%s: \".stab\" section found, but failed to load STABS"
@@ -358,6 +555,7 @@ static bool LoadSymbols(const std::string &obj_file,
                           elf_header->e_shnum);
   if (dwarf_section) {
     found_debug_info_section = true;
+    info->LoadedSection(".debug_info");
     if (!LoadDwarf(obj_file, elf_header, big_endian, module))
       fprintf(stderr, "%s: \".debug_info\" section found, but failed to load "
               "DWARF debugging information\n", obj_file.c_str());
@@ -372,6 +570,7 @@ static bool LoadSymbols(const std::string &obj_file,
     // Ignore the return value of this function; even without call frame
     // information, the other debugging information could be perfectly
     // useful.
+    info->LoadedSection(".debug_frame");
     LoadDwarfCFI(obj_file, elf_header, ".debug_frame",
                  dwarf_cfi_section, false, 0, 0, big_endian, module);
   }
@@ -389,6 +588,7 @@ static bool LoadSymbols(const std::string &obj_file,
     const ElfW(Shdr) *text_section =
       FindSectionByName(".text", sections, section_names,
                         elf_header->e_shnum);
+    info->LoadedSection(".eh_frame");
     // As above, ignore the return value of this function.
     LoadDwarfCFI(obj_file, elf_header, ".eh_frame", eh_frame_section, true,
                  got_section, text_section, big_endian, module);
@@ -398,62 +598,31 @@ static bool LoadSymbols(const std::string &obj_file,
     fprintf(stderr, "%s: file contains no debugging information"
             " (no \".stab\" or \".debug_info\" sections)\n",
             obj_file.c_str());
+
+    // Failed, but maybe we can find a .gnu_debuglink section?
+    if (read_gnu_debug_link) {
+      const ElfW(Shdr) *gnu_debuglink_section
+          = FindSectionByName(".gnu_debuglink", sections, section_names,
+                              elf_header->e_shnum);
+      if (gnu_debuglink_section) {
+        if (!info->debug_dir().empty()) {
+          std::string debuglink_file =
+              ReadDebugLink(gnu_debuglink_section, obj_file, info->debug_dir());
+          info->set_debuglink_file(debuglink_file);
+        } else {
+          fprintf(stderr, ".gnu_debuglink section found in '%s', "
+                  "but no debug path specified.\n", obj_file.c_str());
+        }
+      } else {
+        fprintf(stderr, "%s does not contain a .gnu_debuglink section.\n",
+                obj_file.c_str());
+      }
+    }
     return false;
   }
+
   return true;
 }
-
-//
-// FDWrapper
-//
-// Wrapper class to make sure opened file is closed.
-//
-class FDWrapper {
- public:
-  explicit FDWrapper(int fd) :
-    fd_(fd) {
-    }
-  ~FDWrapper() {
-    if (fd_ != -1)
-      close(fd_);
-  }
-  int get() {
-    return fd_;
-  }
-  int release() {
-    int fd = fd_;
-    fd_ = -1;
-    return fd;
-  }
- private:
-  int fd_;
-};
-
-//
-// MmapWrapper
-//
-// Wrapper class to make sure mapped regions are unmapped.
-//
-class MmapWrapper {
-  public:
-   MmapWrapper(void *mapped_address, size_t mapped_size) :
-     base_(mapped_address), size_(mapped_size) {
-   }
-   ~MmapWrapper() {
-     if (base_ != NULL) {
-       assert(size_ > 0);
-       munmap(base_, size_);
-     }
-   }
-   void release() {
-     base_ = NULL;
-     size_ = 0;
-   }
-
-  private:
-   void *base_;
-   size_t size_;
-};
 
 // Return the breakpad symbol file identifier for the architecture of
 // ELF_HEADER.
@@ -507,33 +676,12 @@ std::string BaseFileName(const std::string &filename) {
 
 namespace google_breakpad {
 
-bool WriteSymbolFile(const std::string &obj_file, FILE *sym_file) {
-  int obj_fd = open(obj_file.c_str(), O_RDONLY);
-  if (obj_fd < 0) {
-    fprintf(stderr, "Failed to open ELF file '%s': %s\n",
-            obj_file.c_str(), strerror(errno));
+bool WriteSymbolFile(const std::string &obj_file,
+                     const std::string &debug_dir, FILE *sym_file) {
+  MmapWrapper map_wrapper;
+  ElfW(Ehdr) *elf_header = NULL;
+  if (!LoadELF(obj_file, &map_wrapper, &elf_header))
     return false;
-  }
-  FDWrapper obj_fd_wrapper(obj_fd);
-  struct stat st;
-  if (fstat(obj_fd, &st) != 0 && st.st_size <= 0) {
-    fprintf(stderr, "Unable to fstat ELF file '%s': %s\n",
-            obj_file.c_str(), strerror(errno));
-    return false;
-  }
-  void *obj_base = mmap(NULL, st.st_size,
-                        PROT_READ | PROT_WRITE, MAP_PRIVATE, obj_fd, 0);
-  if (obj_base == MAP_FAILED) {
-    fprintf(stderr, "Failed to mmap ELF file '%s': %s\n",
-            obj_file.c_str(), strerror(errno));
-    return false;
-  }
-  MmapWrapper map_wrapper(obj_base, st.st_size);
-  ElfW(Ehdr) *elf_header = reinterpret_cast<ElfW(Ehdr) *>(obj_base);
-  if (!IsValidElf(elf_header)) {
-    fprintf(stderr, "Not a valid ELF file: %s\n", obj_file.c_str());
-    return false;
-  }
 
   unsigned char identifier[16];
   google_breakpad::FileID file_id(obj_file.c_str());
@@ -559,9 +707,48 @@ bool WriteSymbolFile(const std::string &obj_file, FILE *sym_file) {
   std::string os = "Linux";
   std::string id = FormatIdentifier(identifier);
 
+  LoadSymbolsInfo info(debug_dir);
   Module module(name, os, architecture, id);
-  if (!LoadSymbols(obj_file, big_endian, elf_header, &module))
-    return false;
+  if (!LoadSymbols(obj_file, big_endian, elf_header, true, &info, &module)) {
+    const std::string debuglink_file = info.debuglink_file();
+    if (debuglink_file.empty())
+      return false;
+
+    // Load debuglink ELF file.
+    fprintf(stderr, "Found debugging info in %s\n", debuglink_file.c_str());
+    MmapWrapper debug_map_wrapper;
+    ElfW(Ehdr) *debug_elf_header = NULL;
+    if (!LoadELF(debuglink_file, &debug_map_wrapper, &debug_elf_header))
+      return false;
+    // Sanity checks to make sure everything matches up.
+    const char *debug_architecture = ElfArchitecture(debug_elf_header);
+    if (!debug_architecture) {
+      fprintf(stderr, "%s: unrecognized ELF machine architecture: %d\n",
+              debuglink_file.c_str(), debug_elf_header->e_machine);
+      return false;
+    }
+    if (strcmp(architecture, debug_architecture)) {
+      fprintf(stderr, "%s with ELF machine architecture %s does not match "
+              "%s with ELF architecture %s\n",
+              debuglink_file.c_str(), debug_architecture,
+              obj_file.c_str(), architecture);
+      return false;
+    }
+
+    bool debug_big_endian;
+    if (!ElfEndianness(debug_elf_header, &debug_big_endian))
+      return false;
+    if (debug_big_endian != big_endian) {
+      fprintf(stderr, "%s and %s does not match in endianness\n",
+              obj_file.c_str(), debuglink_file.c_str());
+      return false;
+    }
+
+    if (!LoadSymbols(debuglink_file, debug_big_endian, debug_elf_header,
+                     false, &info, &module)) {
+      return false;
+    }
+  }
   if (!module.Write(sym_file))
     return false;
 
