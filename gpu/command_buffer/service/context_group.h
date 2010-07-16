@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_CONTEXT_GROUP_H_
 
 #include <map>
+#include <string>
 #include "base/basictypes.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
@@ -96,7 +97,13 @@ class ContextGroup {
     return &validators_;
   }
 
+  const std::string& extensions() const {
+    return extensions_;
+  }
+
  private:
+  void AddExtensionString(const std::string& str);
+
   // Whether or not this context is initialized.
   bool initialized_;
 
@@ -124,6 +131,9 @@ class ContextGroup {
   IdAllocatorMap id_namespaces_;
 
   Validators validators_;
+
+  // The extensions string returned by glGetString(GL_EXTENSIONS);
+  std::string extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

@@ -44,6 +44,7 @@ ValueValidator<GLenum> string_type;
 ValueValidator<GLenum> texture_bind_target;
 ValueValidator<GLint> texture_border;
 ValueValidator<GLenum> texture_format;
+ValueValidator<GLenum> texture_internal_format;
 ValueValidator<GLenum> texture_parameter;
 ValueValidator<GLenum> texture_target;
 ValueValidator<GLint> vertex_attrib_size;

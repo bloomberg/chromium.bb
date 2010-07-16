@@ -3006,7 +3006,7 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
             uniform_info->type == GL_SAMPLER_2D ?
                 texture_unit.bound_texture_2d :
                 texture_unit.bound_texture_cube_map;
-        if (!texture_info || !texture_info->CanRender()) {
+        if (!texture_info || !texture_info->CanRender(texture_manager())) {
           textures_set = true;
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           glBindTexture(
@@ -3039,7 +3039,7 @@ void GLES2DecoderImpl::RestoreStateForNonRenderableTextures() {
             uniform_info->type == GL_SAMPLER_2D ?
                 texture_unit.bound_texture_2d :
                 texture_unit.bound_texture_cube_map;
-        if (!texture_info || !texture_info->CanRender()) {
+        if (!texture_info || !texture_info->CanRender(texture_manager())) {
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           // Get the texture info that was previously bound here.
           texture_info = texture_unit.bind_target == GL_TEXTURE_2D ?
@@ -4040,7 +4040,7 @@ error::Error GLES2DecoderImpl::HandleGetString(
       str = "OpenGL ES GLSL ES 1.0 Chromium";
       break;
     case GL_EXTENSIONS:
-      str = "";
+      str = group_->extensions().c_str();
       break;
     default:
       str = gl_str;
@@ -4323,6 +4323,11 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
   }
   texture_manager()->SetLevelInfo(info,
       target, level, internal_format, width, height, 1, border, format, type);
+  #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+  if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
+    internal_format = GL_RGBA;
+  }
+  #endif
   glTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels);

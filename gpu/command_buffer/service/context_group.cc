@@ -46,6 +46,46 @@ bool ContextGroup::Initialize() {
     return true;
   }
 
+  // Figure out what extensions to turn on.
+  const char* extensions =
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  bool npot_ok = false;
+
+  AddExtensionString("GL_CHROMIUM_map_sub");
+
+  // Check if we should allow GL_EXT_texture_compression_dxt1.
+  if (strstr(extensions, "GL_EXT_texture_compression_dxt1") ||
+      strstr(extensions, "GL_EXT_texture_compression_s3tc")) {
+    AddExtensionString("GL_EXT_texture_compression_dxt1");
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
+    validators_.compressed_texture_format.AddValue(
+        GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
+  }
+
+  // Check if we should allow GL_EXT_texture_format_BGRA8888
+  if (strstr(extensions, "GL_EXT_texture_format_BGRA8888") ||
+      strstr(extensions, "GL_APPLE_texture_format_BGRA8888") ||
+      strstr(extensions, "GL_EXT_bgra")) {
+    AddExtensionString("GL_EXT_texture_format_BGRA8888");
+    validators_.texture_internal_format.AddValue(GL_BGRA_EXT);
+    validators_.texture_format.AddValue(GL_BGRA_EXT);
+  }
+
+  // Check if we should allow GL_OES_texture_npot
+  if (strstr(extensions, "GL_ARB_texture_non_power_of_two") ||
+      strstr(extensions, "GL_OES_texture_npot")) {
+    AddExtensionString("GL_OES_texture_npot");
+    npot_ok = true;
+  }
+
+  // TODO(gman): Add support for these extensions.
+  //     GL_OES_depth24
+  //     GL_OES_depth32
+  //     GL_OES_packed_depth_stencil
+  //     GL_OES_element_index_uint
+  //     GL_EXT_texture_format_BGRA8888
+
   buffer_manager_.reset(new BufferManager());
   framebuffer_manager_.reset(new FramebufferManager());
   renderbuffer_manager_.reset(new RenderbufferManager());
@@ -65,7 +105,8 @@ bool ContextGroup::Initialize() {
   GLint max_cube_map_texture_size;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &max_cube_map_texture_size);
-  texture_manager_.reset(new TextureManager(max_texture_size,
+  texture_manager_.reset(new TextureManager(npot_ok,
+                                            max_texture_size,
                                             max_cube_map_texture_size));
 
   GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units_);
@@ -124,6 +165,10 @@ void ContextGroup::Destroy(bool have_context) {
     shader_manager_->Destroy(have_context);
     shader_manager_.reset();
   }
+}
+
+void ContextGroup::AddExtensionString(const std::string& str) {
+  extensions_ += (extensions_.empty() ? " " : "") + str;
 }
 
 IdAllocator* ContextGroup::GetIdAllocator(unsigned namespace_id) {

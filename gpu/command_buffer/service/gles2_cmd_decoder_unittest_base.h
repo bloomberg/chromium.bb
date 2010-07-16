@@ -166,6 +166,8 @@ class GLES2DecoderTestBase : public testing::Test {
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);
 
+  void InitDecoder(const char* extensions);
+
   struct AttribInfo {
     const char* name;
     GLint size;

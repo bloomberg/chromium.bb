@@ -22,6 +22,9 @@
 #ifndef GL_WRITE_ONLY
 #define GL_WRITE_ONLY 0x88B9
 #endif
+#ifndef GL_BGRA_EXT
+#define GL_BGRA_EXT 0x80E1
+#endif
 
 #endif  // GPU_GLES2_GLES2_COMMAND_BUFFER_H_
 

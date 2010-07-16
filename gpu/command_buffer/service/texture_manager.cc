@@ -76,12 +76,14 @@ void TextureManager::Destroy(bool have_context) {
   }
 }
 
-bool TextureManager::TextureInfo::CanRender() const {
+bool TextureManager::TextureInfo::CanRender(
+    const TextureManager* manager) const {
+  DCHECK(manager);
   if (target_ == 0 || IsDeleted()) {
     return false;
   }
   bool needs_mips = NeedsMips();
-  if (npot()) {
+  if (npot() && !manager->npot_ok()) {
     return !needs_mips &&
            wrap_s_ == GL_CLAMP_TO_EDGE &&
            wrap_t_ == GL_CLAMP_TO_EDGE;
@@ -97,8 +99,9 @@ bool TextureManager::TextureInfo::CanRender() const {
   }
 }
 
-bool TextureManager::TextureInfo::MarkMipmapsGenerated() {
-  if (!CanGenerateMipmaps()) {
+bool TextureManager::TextureInfo::MarkMipmapsGenerated(
+    const TextureManager* manager) {
+  if (!CanGenerateMipmaps(manager)) {
     return false;
   }
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
@@ -126,8 +129,9 @@ bool TextureManager::TextureInfo::MarkMipmapsGenerated() {
   return true;
 }
 
-bool TextureManager::TextureInfo::CanGenerateMipmaps() const {
-  if (npot() || level_infos_.empty() || IsDeleted()) {
+bool TextureManager::TextureInfo::CanGenerateMipmaps(
+    const TextureManager* manager) const {
+  if ((npot() && !manager->npot_ok()) || level_infos_.empty() || IsDeleted()) {
     return false;
   }
   const TextureInfo::LevelInfo& first = level_infos_[0][0];
@@ -272,9 +276,11 @@ void TextureManager::TextureInfo::Update() {
 }
 
 TextureManager::TextureManager(
+    bool npot_ok,
     GLint max_texture_size,
     GLint max_cube_map_texture_size)
-    : max_texture_size_(max_texture_size),
+    : npot_ok_(npot_ok),
+      max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
       max_levels_(ComputeMipMapCount(max_texture_size,
                                      max_texture_size,
@@ -329,13 +335,13 @@ void TextureManager::SetLevelInfo(
     GLenum type) {
   DCHECK(info);
   DCHECK(!info->IsDeleted());
-  if (!info->CanRender()) {
+  if (!info->CanRender(this)) {
     --num_unrenderable_textures_;
   }
   info->SetLevelInfo(
       target, level, internal_format, width, height, depth,
       border, format, type);
-  if (!info->CanRender()) {
+  if (!info->CanRender(this)) {
     ++num_unrenderable_textures_;
   }
 }
@@ -344,11 +350,11 @@ void TextureManager::SetParameter(
     TextureManager::TextureInfo* info, GLenum pname, GLint param) {
   DCHECK(info);
   DCHECK(!info->IsDeleted());
-  if (!info->CanRender()) {
+  if (!info->CanRender(this)) {
     --num_unrenderable_textures_;
   }
   info->SetParameter(pname, param);
-  if (!info->CanRender()) {
+  if (!info->CanRender(this)) {
     ++num_unrenderable_textures_;
   }
 }
@@ -356,11 +362,11 @@ void TextureManager::SetParameter(
 bool TextureManager::MarkMipmapsGenerated(TextureManager::TextureInfo* info) {
   DCHECK(info);
   DCHECK(!info->IsDeleted());
-  if (!info->CanRender()) {
+  if (!info->CanRender(this)) {
     --num_unrenderable_textures_;
   }
-  bool result = info->MarkMipmapsGenerated();
-  if (!info->CanRender()) {
+  bool result = info->MarkMipmapsGenerated(this);
+  if (!info->CanRender(this)) {
     ++num_unrenderable_textures_;
   }
   return result;
@@ -372,7 +378,7 @@ TextureManager::TextureInfo* TextureManager::CreateTextureInfo(
   std::pair<TextureInfoMap::iterator, bool> result =
       texture_infos_.insert(std::make_pair(client_id, info));
   DCHECK(result.second);
-  if (!info->CanRender()) {
+  if (!info->CanRender(this)) {
     ++num_unrenderable_textures_;
   }
   return info.get();
@@ -388,7 +394,7 @@ void TextureManager::RemoveTextureInfo(GLuint client_id) {
   TextureInfoMap::iterator it = texture_infos_.find(client_id);
   if (it != texture_infos_.end()) {
     TextureInfo* info = it->second;
-    if (!info->CanRender()) {
+    if (!info->CanRender(this)) {
       --num_unrenderable_textures_;
     }
     info->MarkAsDeleted();

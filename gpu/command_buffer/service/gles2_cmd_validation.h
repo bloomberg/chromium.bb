@@ -7,6 +7,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_H_
 
+#include <algorithm>
 #include <vector>
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -18,6 +19,8 @@ namespace gles2 {
 template <typename T>
 class ValueValidator {
  public:
+  ValueValidator() {}
+
   ValueValidator(const T* valid_values, int num_values) {
     for (int ii = 0; ii < num_values; ++ii) {
       AddValue(valid_values[ii]);

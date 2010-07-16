@@ -52,11 +52,6 @@ static GLenum valid_cmp_function_table[] = {
   GL_ALWAYS,
 };
 
-static GLenum valid_compressed_texture_format_table[] = {
-  GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-  GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
-};
-
 static GLenum valid_draw_mode_table[] = {
   GL_POINTS,
   GL_LINE_STRIP,
@@ -361,6 +356,14 @@ static GLenum valid_texture_format_table[] = {
   GL_RGBA,
 };
 
+static GLenum valid_texture_internal_format_table[] = {
+  GL_ALPHA,
+  GL_LUMINANCE,
+  GL_LUMINANCE_ALPHA,
+  GL_RGB,
+  GL_RGBA,
+};
+
 static GLenum valid_texture_parameter_table[] = {
   GL_TEXTURE_MAG_FILTER,
   GL_TEXTURE_MIN_FILTER,
@@ -409,105 +412,112 @@ static GLenum valid_vertex_pointer_table[] = {
 
 Validators::Validators()
     : attachment(
-        valid_attachment_table, arraysize(valid_attachment_table)),
+          valid_attachment_table, arraysize(valid_attachment_table)),
       buffer_parameter(
-        valid_buffer_parameter_table, arraysize(valid_buffer_parameter_table)),
+          valid_buffer_parameter_table, arraysize(
+              valid_buffer_parameter_table)),
       buffer_target(
-        valid_buffer_target_table, arraysize(valid_buffer_target_table)),
+          valid_buffer_target_table, arraysize(valid_buffer_target_table)),
       buffer_usage(
-        valid_buffer_usage_table, arraysize(valid_buffer_usage_table)),
+          valid_buffer_usage_table, arraysize(valid_buffer_usage_table)),
       capability(
-        valid_capability_table, arraysize(valid_capability_table)),
+          valid_capability_table, arraysize(valid_capability_table)),
       cmp_function(
-        valid_cmp_function_table, arraysize(valid_cmp_function_table)),
-      compressed_texture_format(
-        valid_compressed_texture_format_table, arraysize(
-            valid_compressed_texture_format_table)),
+          valid_cmp_function_table, arraysize(valid_cmp_function_table)),
+      compressed_texture_format(),
       draw_mode(
-        valid_draw_mode_table, arraysize(valid_draw_mode_table)),
+          valid_draw_mode_table, arraysize(valid_draw_mode_table)),
       dst_blend_factor(
-        valid_dst_blend_factor_table, arraysize(valid_dst_blend_factor_table)),
+          valid_dst_blend_factor_table, arraysize(
+              valid_dst_blend_factor_table)),
       equation(
-        valid_equation_table, arraysize(valid_equation_table)),
+          valid_equation_table, arraysize(valid_equation_table)),
       face_mode(
-        valid_face_mode_table, arraysize(valid_face_mode_table)),
+          valid_face_mode_table, arraysize(valid_face_mode_table)),
       face_type(
-        valid_face_type_table, arraysize(valid_face_type_table)),
+          valid_face_type_table, arraysize(valid_face_type_table)),
       false_only(
-        valid_false_only_table, arraysize(valid_false_only_table)),
+          valid_false_only_table, arraysize(valid_false_only_table)),
       frame_buffer_parameter(
-        valid_frame_buffer_parameter_table, arraysize(
-            valid_frame_buffer_parameter_table)),
+          valid_frame_buffer_parameter_table, arraysize(
+              valid_frame_buffer_parameter_table)),
       frame_buffer_target(
-        valid_frame_buffer_target_table, arraysize(
-            valid_frame_buffer_target_table)),
+          valid_frame_buffer_target_table, arraysize(
+              valid_frame_buffer_target_table)),
       g_l_state(
-        valid_g_l_state_table, arraysize(valid_g_l_state_table)),
+          valid_g_l_state_table, arraysize(valid_g_l_state_table)),
       get_max_index_type(
-        valid_get_max_index_type_table, arraysize(
-            valid_get_max_index_type_table)),
+          valid_get_max_index_type_table, arraysize(
+              valid_get_max_index_type_table)),
       hint_mode(
-        valid_hint_mode_table, arraysize(valid_hint_mode_table)),
+          valid_hint_mode_table, arraysize(valid_hint_mode_table)),
       hint_target(
-        valid_hint_target_table, arraysize(valid_hint_target_table)),
+          valid_hint_target_table, arraysize(valid_hint_target_table)),
       index_type(
-        valid_index_type_table, arraysize(valid_index_type_table)),
+          valid_index_type_table, arraysize(valid_index_type_table)),
       pixel_store(
-        valid_pixel_store_table, arraysize(valid_pixel_store_table)),
+          valid_pixel_store_table, arraysize(valid_pixel_store_table)),
       pixel_store_alignment(
-        valid_pixel_store_alignment_table, arraysize(
-            valid_pixel_store_alignment_table)),
+          valid_pixel_store_alignment_table, arraysize(
+              valid_pixel_store_alignment_table)),
       pixel_type(
-        valid_pixel_type_table, arraysize(valid_pixel_type_table)),
+          valid_pixel_type_table, arraysize(valid_pixel_type_table)),
       program_parameter(
-        valid_program_parameter_table, arraysize(
-            valid_program_parameter_table)),
+          valid_program_parameter_table, arraysize(
+              valid_program_parameter_table)),
       read_pixel_format(
-        valid_read_pixel_format_table, arraysize(
-            valid_read_pixel_format_table)),
+          valid_read_pixel_format_table, arraysize(
+              valid_read_pixel_format_table)),
       render_buffer_format(
-        valid_render_buffer_format_table, arraysize(
-            valid_render_buffer_format_table)),
+          valid_render_buffer_format_table, arraysize(
+              valid_render_buffer_format_table)),
       render_buffer_parameter(
-        valid_render_buffer_parameter_table, arraysize(
-            valid_render_buffer_parameter_table)),
+          valid_render_buffer_parameter_table, arraysize(
+              valid_render_buffer_parameter_table)),
       render_buffer_target(
-        valid_render_buffer_target_table, arraysize(
-            valid_render_buffer_target_table)),
+          valid_render_buffer_target_table, arraysize(
+              valid_render_buffer_target_table)),
       shader_parameter(
-        valid_shader_parameter_table, arraysize(valid_shader_parameter_table)),
+          valid_shader_parameter_table, arraysize(
+              valid_shader_parameter_table)),
       shader_precision(
-        valid_shader_precision_table, arraysize(valid_shader_precision_table)),
+          valid_shader_precision_table, arraysize(
+              valid_shader_precision_table)),
       shader_type(
-        valid_shader_type_table, arraysize(valid_shader_type_table)),
+          valid_shader_type_table, arraysize(valid_shader_type_table)),
       src_blend_factor(
-        valid_src_blend_factor_table, arraysize(valid_src_blend_factor_table)),
+          valid_src_blend_factor_table, arraysize(
+              valid_src_blend_factor_table)),
       stencil_op(
-        valid_stencil_op_table, arraysize(valid_stencil_op_table)),
+          valid_stencil_op_table, arraysize(valid_stencil_op_table)),
       string_type(
-        valid_string_type_table, arraysize(valid_string_type_table)),
+          valid_string_type_table, arraysize(valid_string_type_table)),
       texture_bind_target(
-        valid_texture_bind_target_table, arraysize(
-            valid_texture_bind_target_table)),
+          valid_texture_bind_target_table, arraysize(
+              valid_texture_bind_target_table)),
       texture_border(
-        valid_texture_border_table, arraysize(valid_texture_border_table)),
+          valid_texture_border_table, arraysize(valid_texture_border_table)),
       texture_format(
-        valid_texture_format_table, arraysize(valid_texture_format_table)),
+          valid_texture_format_table, arraysize(valid_texture_format_table)),
+      texture_internal_format(
+          valid_texture_internal_format_table, arraysize(
+              valid_texture_internal_format_table)),
       texture_parameter(
-        valid_texture_parameter_table, arraysize(
-            valid_texture_parameter_table)),
+          valid_texture_parameter_table, arraysize(
+              valid_texture_parameter_table)),
       texture_target(
-        valid_texture_target_table, arraysize(valid_texture_target_table)),
+          valid_texture_target_table, arraysize(valid_texture_target_table)),
       vertex_attrib_size(
-        valid_vertex_attrib_size_table, arraysize(
-            valid_vertex_attrib_size_table)),
+          valid_vertex_attrib_size_table, arraysize(
+              valid_vertex_attrib_size_table)),
       vertex_attrib_type(
-        valid_vertex_attrib_type_table, arraysize(
-            valid_vertex_attrib_type_table)),
+          valid_vertex_attrib_type_table, arraysize(
+              valid_vertex_attrib_type_table)),
       vertex_attribute(
-        valid_vertex_attribute_table, arraysize(valid_vertex_attribute_table)),
+          valid_vertex_attribute_table, arraysize(
+              valid_vertex_attribute_table)),
       vertex_pointer(
-        valid_vertex_pointer_table, arraysize(valid_vertex_pointer_table)) {
+          valid_vertex_pointer_table, arraysize(valid_vertex_pointer_table)) {
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_  // NOLINT
 

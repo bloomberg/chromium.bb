@@ -30,11 +30,18 @@ namespace gpu {
 namespace gles2 {
 
 void GLES2DecoderTestBase::SetUp() {
+  InitDecoder("");
+}
+
+void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
 
   InSequence sequence;
 
+  EXPECT_CALL(*gl_, GetString(GL_EXTENSIONS))
+      .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgumentPointee<1>(kNumVertexAttribs))
       .RetiresOnSaturation();

@@ -138,7 +138,7 @@ GL_APICALL void         GL_APIENTRY glStencilMask (GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilMaskSeparate (GLenumFaceType face, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilOp (GLenumStencilOp fail, GLenumStencilOp zfail, GLenumStencilOp zpass);
 GL_APICALL void         GL_APIENTRY glStencilOpSeparate (GLenumFaceType face, GLenumStencilOp fail, GLenumStencilOp zfail, GLenumStencilOp zpass);
-GL_APICALL void         GL_APIENTRY glTexImage2D (GLenumTextureTarget target, GLint level, GLintTextureFormat internalformat, GLsizei width, GLsizei height, GLintTextureBorder border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glTexImage2D (GLenumTextureTarget target, GLint level, GLintTextureInternalFormat internalformat, GLsizei width, GLsizei height, GLintTextureBorder border, GLenumTextureFormat format, GLenumPixelType type, const void* pixels);
 GL_APICALL void         GL_APIENTRY glTexParameterf (GLenumTextureBindTarget target, GLenumTextureParameter pname, GLfloat param);
 GL_APICALL void         GL_APIENTRY glTexParameterfv (GLenumTextureBindTarget target, GLenumTextureParameter pname, const GLfloat* params);
 GL_APICALL void         GL_APIENTRY glTexParameteri (GLenumTextureBindTarget target, GLenumTextureParameter pname, GLint param);
@@ -429,10 +429,7 @@ _ENUM_LISTS = {
   },
   'CompressedTextureFormat': {
     'type': 'GLenum',
-    # TODO(gman): Refactor validation code so these can be added at runtime
     'valid': [
-      'GL_COMPRESSED_RGB_S3TC_DXT1_EXT',
-      'GL_COMPRESSED_RGBA_S3TC_DXT1_EXT',
     ],
   },
   'GLState': {
@@ -902,6 +899,20 @@ _ENUM_LISTS = {
     ],
   },
   'TextureFormat': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_ALPHA',
+      'GL_LUMINANCE',
+      'GL_LUMINANCE_ALPHA',
+      'GL_RGB',
+      'GL_RGBA',
+    ],
+    'invalid': [
+      'GL_BGRA',
+      'GL_BGR',
+    ],
+  },
+  'TextureInternalFormat': {
     'type': 'GLenum',
     'valid': [
       'GL_ALPHA',
@@ -4991,12 +5002,13 @@ class GLGenerator(object):
     file = CHeaderWriter(filename)
     enums = sorted(_ENUM_LISTS.keys())
     for enum in enums:
-      file.Write("static %s valid_%s_table[] = {\n" %
-                 (_ENUM_LISTS[enum]['type'], ToUnderscore(enum)))
-      for value in _ENUM_LISTS[enum]['valid']:
-        file.Write("  %s,\n" % value)
-      file.Write("};\n")
-      file.Write("\n")
+      if len(_ENUM_LISTS[enum]['valid']) > 0:
+        file.Write("static %s valid_%s_table[] = {\n" %
+                   (_ENUM_LISTS[enum]['type'], ToUnderscore(enum)))
+        for value in _ENUM_LISTS[enum]['valid']:
+          file.Write("  %s,\n" % value)
+        file.Write("};\n")
+        file.Write("\n")
     file.Write("Validators::Validators()\n")
     pre = ': '
     post = ','
@@ -5005,8 +5017,12 @@ class GLGenerator(object):
       count += 1
       if count == len(enums):
         post = ' {'
-      code = """    %(pre)s%(name)s(
-        valid_%(name)s_table, arraysize(valid_%(name)s_table))%(post)s
+      if len(_ENUM_LISTS[enum]['valid']) > 0:
+        code = """    %(pre)s%(name)s(
+          valid_%(name)s_table, arraysize(valid_%(name)s_table))%(post)s
+"""
+      else:
+        code = """    %(pre)s%(name)s()%(post)s
 """
       file.Write(code % {
           'name': ToUnderscore(enum),
