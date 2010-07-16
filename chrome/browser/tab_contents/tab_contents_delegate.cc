@@ -121,6 +121,10 @@ void TabContentsDelegate::ShowContentSettingsWindow(
     ContentSettingsType content_type) {
 }
 
+void TabContentsDelegate::ShowCollectedCookiesDialog(
+    TabContents* tab_contents) {
+}
+
 bool TabContentsDelegate::OnGoToEntryOffset(int offset) {
   return true;
 }

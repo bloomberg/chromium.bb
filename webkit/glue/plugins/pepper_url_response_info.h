@@ -5,6 +5,8 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_URL_RESPONSE_INFO_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_URL_RESPONSE_INFO_H_
 
+#include <string>
+
 #include "third_party/ppapi/c/ppb_url_response_info.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 

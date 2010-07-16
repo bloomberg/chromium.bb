@@ -79,6 +79,7 @@ class WeakReference {
 
   WeakReference();
   WeakReference(Flag* flag);
+  ~WeakReference();
 
   bool is_valid() const;
 
@@ -110,6 +111,7 @@ class WeakReferenceOwner {
 class WeakPtrBase {
  public:
   WeakPtrBase();
+  ~WeakPtrBase();
 
  protected:
   WeakPtrBase(const WeakReference& ref);

@@ -31,6 +31,9 @@ WeakReference::WeakReference() {
 WeakReference::WeakReference(Flag* flag) : flag_(flag) {
 }
 
+WeakReference::~WeakReference() {
+}
+
 bool WeakReference::is_valid() const {
   return flag_ && flag_->is_valid();
 }
@@ -59,6 +62,9 @@ WeakPtrBase::WeakPtrBase() {
 }
 
 WeakPtrBase::WeakPtrBase(const WeakReference& ref) : ref_(ref) {
+}
+
+WeakPtrBase::~WeakPtrBase() {
 }
 
 }  // namespace internal

@@ -147,4 +147,6 @@ NotificationService::~NotificationService() {
   }
 }
 
+NotificationObserver::NotificationObserver() {}
+
 NotificationObserver::~NotificationObserver() {}

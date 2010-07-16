@@ -15,8 +15,8 @@
 // NotificationService::AllSources().
 class NotificationSource {
  public:
-  NotificationSource(const NotificationSource& other) : ptr_(other.ptr_) { }
-  ~NotificationSource() {}
+  NotificationSource(const NotificationSource& other);
+  ~NotificationSource();
 
   // NotificationSource can be used as the index for a map; this method
   // returns the pointer to the current source as an identifier, for use as a
@@ -31,7 +31,7 @@ class NotificationSource {
   }
 
  protected:
-  explicit NotificationSource(const void* ptr) : ptr_(ptr) {}
+  explicit NotificationSource(const void* ptr);
 
   // Declaring this const allows Source<T> to be used with both T = Foo and
   // T = const Foo.

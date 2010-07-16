@@ -13,6 +13,7 @@ class NotificationType;
 // notification is posted to the notification service, Observe is called.
 class NotificationObserver {
  public:
+  NotificationObserver();
   virtual ~NotificationObserver();
 
   virtual void Observe(NotificationType type,
