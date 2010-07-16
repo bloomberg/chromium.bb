@@ -534,6 +534,29 @@ bool GetModuleVersion(HMODULE module, uint32* high, uint32* low) {
   return ok;
 }
 
+bool ParseVersion(const std::wstring& version, uint32* high, uint32* low) {
+  DCHECK(high);
+  if (!isdigit(version[0]))
+    return false;
+
+  *high = _wtoi(version.c_str());
+  if (low) {
+    *low = 0;
+    size_t i = version.find(L'.');
+    if (i != std::wstring::npos) {
+      *low = _wtoi(version.c_str() + i + 1);
+    }
+  }
+
+  return true;
+}
+
+HMODULE GetModuleFromAddress(void* address) {
+  MEMORY_BASIC_INFORMATION info = {0};
+  ::VirtualQuery(address, &info, sizeof(info));
+  return reinterpret_cast<HMODULE>(info.AllocationBase);
+}
+
 namespace {
 
 const int kMaxSubmenuDepth = 10;

@@ -18,6 +18,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -432,7 +433,7 @@ STDMETHODIMP ChromeActiveDocument::Reset() {
   return S_OK;
 }
 
-STDMETHODIMP ChromeActiveDocument::GetSize(unsigned long* size) {
+STDMETHODIMP ChromeActiveDocument::GetSize(DWORD* size) {
   if (!size)
     return E_POINTER;
 
@@ -449,7 +450,7 @@ STDMETHODIMP ChromeActiveDocument::GetPrivacyImpacted(BOOL* privacy_impacted) {
 }
 
 STDMETHODIMP ChromeActiveDocument::Next(BSTR* url, BSTR* policy,
-                                        long* reserved, unsigned long* flags) {
+                                        LONG* reserved, DWORD* flags) {
   if (!url || !policy || !flags)
     return E_POINTER;
 
@@ -754,10 +755,12 @@ void ChromeActiveDocument::UpdateNavigationState(
       // Now call the FireNavigateCompleteEvent which makes IE update the text
       // in the address-bar.
       doc_object_svc->FireNavigateComplete2(this, 0);
-      doc_object_svc->FireDocumentComplete(this, 0);
+      if (ShouldFireDocumentComplete())
+        doc_object_svc->FireDocumentComplete(this, 0);
     } else if (web_browser_events_svc) {
       web_browser_events_svc->FireNavigateComplete2Event();
-      web_browser_events_svc->FireDocumentCompleteEvent();
+      if (ShouldFireDocumentComplete())
+        web_browser_events_svc->FireDocumentCompleteEvent();
     }
   }
 
@@ -916,8 +919,8 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
   return hr;
 }
 
-unsigned long ChromeActiveDocument::MapUrlToZone(const wchar_t* url) {
-  unsigned long zone = URLZONE_INVALID;
+DWORD ChromeActiveDocument::MapUrlToZone(const wchar_t* url) {
+  DWORD zone = URLZONE_INVALID;
   if (security_manager_.get() == NULL) {
     HRESULT hr = CoCreateInstance(
         CLSID_InternetSecurityManager,
@@ -1251,3 +1254,62 @@ LRESULT ChromeActiveDocument::OnFirePrivacyChange(UINT message, WPARAM wparam,
     NOTREACHED() << "Failed to retrieve IWebBrowser2 interface.";
   return 0;
 }
+
+namespace {
+struct ModuleAndVersion {
+  const char* module_name_;
+  const uint32 major_version_;
+  const uint32 minor_version_;
+};
+}  // end namespace
+
+// static
+bool ChromeActiveDocument::ShouldFireDocumentComplete() {
+  typedef enum ModuleCheckResult {
+    CHECK_NOT_DONE,
+    DOCUMENT_COMPLETE_OK,
+    DOCUMENT_COMPLETE_NOT_OK
+  };
+
+  static ModuleCheckResult results = CHECK_NOT_DONE;
+
+  if (results == CHECK_NOT_DONE) {
+    // These modules are missing some checks in their DocumentComplete
+    // implementation that causes a crash.
+    static const ModuleAndVersion buggy_modules[] = {
+      { "askbar.dll", 4, 1 },  // biggest troublemaker: 4.1.0.5.
+      { "gbieh.dll", 3, 8 },  // biggest troublemaker: 3.8.14.12
+      { "gbiehcef.dll", 3, 8 },  // biggest troublemaker: 3.8.11.23
+    };
+
+    for (size_t i = 0; results == CHECK_NOT_DONE &&
+                       i < arraysize(buggy_modules); ++i) {
+      const ModuleAndVersion& module = buggy_modules[i];
+      HMODULE mod = ::GetModuleHandleA(module.module_name_);
+      if (mod) {
+        wchar_t path[MAX_PATH * 2] = {0};
+        ::GetModuleFileNameW(mod, path, arraysize(path));
+        scoped_ptr<FileVersionInfo> version_info(
+            FileVersionInfo::CreateFileVersionInfo(FilePath(path)));
+        DCHECK(version_info.get());
+        if (version_info.get()) {
+          uint32 major = 0, minor = 0;
+          if (!ParseVersion(version_info->file_version(), &major, &minor))
+            ParseVersion(version_info->product_version(), &major, &minor);
+          if (major < module.major_version_ ||
+              (major == module.major_version_ &&
+               minor <= module.minor_version_)) {
+            DLOG(WARNING) << "Buggy module found: " << module.module_name_;
+            results = DOCUMENT_COMPLETE_NOT_OK;
+          }
+        }
+      }
+    }
+
+    if (results == CHECK_NOT_DONE)
+      results = DOCUMENT_COMPLETE_OK;
+  }
+
+  return results == DOCUMENT_COMPLETE_OK;
+}
+

@@ -137,3 +137,13 @@ TEST(UtilTests, ParseAttachTabUrlTest) {
                                          &disposition));
 }
 
+TEST(UtilTests, ParseVersionTest) {
+  uint32 high = 0, low = 0;
+  EXPECT_FALSE(ParseVersion(L"", &high, &low));
+  EXPECT_TRUE(ParseVersion(L"1", &high, &low) && high == 1 && low == 0);
+  EXPECT_TRUE(ParseVersion(L"1.", &high, &low) && high == 1 && low == 0);
+  EXPECT_TRUE(ParseVersion(L"1.2", &high, &low) && high == 1 && low == 2);
+  EXPECT_TRUE(ParseVersion(L"1.2.3.4", &high, &low) && high == 1 && low == 2);
+  EXPECT_TRUE(ParseVersion(L"10.20", &high, &low) && high == 10 && low == 20);
+}
+

@@ -9,9 +9,10 @@
 #include <atlcom.h>
 #include <atlctl.h>
 #include <htiframe.h>
-#include <map>
 #include <mshtmcid.h>
 #include <perhist.h>
+
+#include <map>
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_comptr_win.h"
@@ -130,16 +131,16 @@ extern const DWORD kIEEncodingIdArray[];
 
 // This macro should be defined in the public section of the class.
 #define BEGIN_EXEC_COMMAND_MAP(theClass) \
-  public: \
-   HRESULT ProcessExecCommand(const GUID* cmd_group_guid, DWORD command_id, \
-                              DWORD cmd_exec_opt, VARIANT* in_args, \
-                              VARIANT* out_args) { \
-   HRESULT hr = OLECMDERR_E_NOTSUPPORTED; \
-   do {
+ public: \
+  HRESULT ProcessExecCommand(const GUID* cmd_group_guid, DWORD command_id, \
+                             DWORD cmd_exec_opt, VARIANT* in_args, \
+                             VARIANT* out_args) { \
+  HRESULT hr = OLECMDERR_E_NOTSUPPORTED; \
+  do {
 
 #define EXEC_COMMAND_HANDLER(group, id, handler)                              \
   if ((id == command_id) && ((group != NULL && cmd_group_guid != NULL && \
-       IsEqualGUID(*(GUID*)group,*cmd_group_guid)) || \
+       IsEqualGUID(*reinterpret_cast<const GUID*>(group), *cmd_group_guid)) || \
        (group == NULL && cmd_group_guid == NULL))) {  \
     hr = S_OK;  \
     handler(cmd_group_guid, command_id, cmd_exec_opt, in_args, out_args);  \
@@ -148,7 +149,7 @@ extern const DWORD kIEEncodingIdArray[];
 
 #define EXEC_COMMAND_HANDLER_NO_ARGS(group, id, handler) \
   if ((id == command_id) && ((group != NULL && cmd_group_guid != NULL && \
-       IsEqualGUID(*(GUID*)group,*cmd_group_guid)) || \
+       IsEqualGUID(*reinterpret_cast<const GUID*>(group), *cmd_group_guid)) || \
        (group == NULL && cmd_group_guid == NULL))) {  \
     hr = S_OK;  \
     handler();  \
@@ -157,7 +158,7 @@ extern const DWORD kIEEncodingIdArray[];
 
 #define EXEC_COMMAND_HANDLER_GENERIC(group, id, code) \
   if ((id == command_id) && ((group != NULL && cmd_group_guid != NULL && \
-       IsEqualGUID(*(GUID*)group,*cmd_group_guid)) || \
+       IsEqualGUID(*reinterpret_cast<const GUID*>(group), *cmd_group_guid)) || \
        (group == NULL && cmd_group_guid == NULL))) {  \
     hr = S_OK;  \
     code;  \
@@ -176,7 +177,8 @@ extern const DWORD kIEEncodingIdArray[];
       commands++; \
     } \
     if (id_in_group_commands && ((group != NULL && cmd_group_guid != NULL && \
-        IsEqualGUID(*(GUID*)group,*cmd_group_guid)) || \
+        IsEqualGUID(*reinterpret_cast<const GUID*>(group), \
+                    *cmd_group_guid)) || \
         (group == NULL && cmd_group_guid == NULL))) { \
       hr = S_OK; \
       handler(cmd_group_guid, command_id, cmd_exec_opt, in_args, out_args); \
@@ -343,10 +345,9 @@ END_EXEC_COMMAND_MAP()
 
   // IEnumPrivacyRecords
   STDMETHOD(Reset)();
-  STDMETHOD(GetSize)(unsigned long* size);
+  STDMETHOD(GetSize)(ULONG* size);
   STDMETHOD(GetPrivacyImpacted)(BOOL* privacy_impacted);
-  STDMETHOD(Next)(BSTR* url, BSTR* policy, long* reserved,
-                  unsigned long* flags);
+  STDMETHOD(Next)(BSTR* url, BSTR* policy, LONG* reserved, DWORD* flags);
 
  protected:
   // ChromeFrameActivexBase overrides
@@ -379,7 +380,7 @@ END_EXEC_COMMAND_MAP()
   HRESULT IEExec(const GUID* cmd_group_guid, DWORD command_id,
                  DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
 
-  unsigned long MapUrlToZone(const wchar_t* url);
+  DWORD MapUrlToZone(const wchar_t* url);
 
   // Parses the URL and returns information whether it is a new navigation and
   // the actual url after stripping out the cf: prefix if any.
@@ -420,6 +421,10 @@ END_EXEC_COMMAND_MAP()
 
   LRESULT OnFirePrivacyChange(UINT message, WPARAM wparam, LPARAM lparam,
                               BOOL& handled);
+
+  // Checks for the presence of known-to-be-buggy BHOs.  If we find any
+  // we do not fire the DocumentComplete event to avoid a crash.
+  static bool ShouldFireDocumentComplete();
 
  protected:
   typedef std::map<int, bool> EnabledCommandsMap;

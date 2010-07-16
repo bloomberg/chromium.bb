@@ -189,6 +189,13 @@ FilePath GetIETemporaryFilesFolder();
 // @returns true if the version info was successfully retrieved.
 bool GetModuleVersion(HMODULE module, uint32* high, uint32* low);
 
+// Parses a version string and returns the major, minor versions or 0 if not
+// present in the string.  The rest of the version string is ignored.
+bool ParseVersion(const std::wstring& version, uint32* high, uint32* low);
+
+// @returns the module handle to which an address belongs.
+HMODULE GetModuleFromAddress(void* address);
+
 // Return if the IEXPLORE is in private mode. The IEIsInPrivateBrowsing() checks
 // whether current process is IEXPLORE.
 bool IsIEInPrivate();
