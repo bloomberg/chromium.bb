@@ -93,7 +93,7 @@
         ],
         'ldflags': [
           # Catch unresolved symbols.
-          '-z', 'defs',
+          '-Wl,-z,defs',
         ],
         'libraries': [
           '-ldl',
