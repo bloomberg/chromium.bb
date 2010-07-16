@@ -105,7 +105,7 @@ class EventLogger {
            << endl;
       return;
     default:
-      LOG(FATAL) << "Bad event.what_happened: " << event.what_happened;
+      FAIL() << "Bad event.what_happened: " << event.what_happened;
       break;
     }
     out_ << name << " heard " << event.source->name() << "'s " << what_changed
@@ -151,7 +151,7 @@ class ThreadTester : public EventListener<TestEvent>,
  public:
   explicit ThreadTester(Pair* pair)
     : pair_(pair), remove_event_(&remove_event_mutex_),
-      remove_event_bool_(false)  {
+      remove_event_bool_(false), completed_(false) {
     pair_->event_channel()->AddListener(this);
   }
   ~ThreadTester() {
@@ -163,14 +163,12 @@ class ThreadTester : public EventListener<TestEvent>,
 
   struct ThreadInfo {
     PlatformThreadHandle thread;
-    bool* completed;
   };
 
   struct ThreadArgs {
     ConditionVariable* thread_running_cond;
     Lock* thread_running_mutex;
     bool thread_running;
-    bool completed;
   };
 
   void Go() {
@@ -178,8 +176,6 @@ class ThreadTester : public EventListener<TestEvent>,
     ConditionVariable thread_running_cond(&thread_running_mutex);
     ThreadArgs args;
     ThreadInfo info;
-    info.completed = NULL;
-    args.completed = false;
     args.thread_running_cond = &(thread_running_cond);
     args.thread_running_mutex = &(thread_running_mutex);
     args.thread_running = false;
@@ -203,8 +199,8 @@ class ThreadTester : public EventListener<TestEvent>,
     MessageLoop message_loop;
     args_.thread_running_mutex->Acquire();
     args_.thread_running = true;
-    args_.thread_running_mutex->Release();
     args_.thread_running_cond->Signal();
+    args_.thread_running_mutex->Release();
 
     remove_event_mutex_.Acquire();
     while (remove_event_bool_ == false) {
@@ -215,27 +211,32 @@ class ThreadTester : public EventListener<TestEvent>,
     // Normally, you'd just delete the hookup. This is very bad style, but
     // necessary for the test.
     pair_->event_channel()->RemoveListener(this);
-    args_.completed = true;
+
+    completed_mutex_.Acquire();
+    completed_ = true;
+    completed_mutex_.Release();
   }
 
   void HandleEvent(const TestEvent& event) {
     remove_event_mutex_.Acquire();
     remove_event_bool_ = true;
-    remove_event_mutex_.Release();
     remove_event_.Broadcast();
+    remove_event_mutex_.Release();
 
     PlatformThread::YieldCurrentThread();
 
-    for (size_t i = 0; i < threads_.size(); i++) {
-      if (threads_[i].completed)
-        LOG(FATAL) << "A test thread exited too early.";
-    }
+    completed_mutex_.Acquire();
+    if (completed_)
+      FAIL() << "A test thread exited too early.";
+    completed_mutex_.Release();
   }
 
   Pair* pair_;
   ConditionVariable remove_event_;
   Lock remove_event_mutex_;
   bool remove_event_bool_;
+  Lock completed_mutex_;
+  bool completed_;
   vector<ThreadInfo> threads_;
   ThreadArgs args_;
 };
