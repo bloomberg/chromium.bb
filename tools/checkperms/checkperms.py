@@ -58,9 +58,6 @@ WHITELIST_FILES = [
     '/o3d/build/gyp_o3d',
     '/o3d/gypbuild',
     '/o3d/installer/linux/debian.in/rules',
-    '/third_party/ffmpeg/patched-ffmpeg-mt/configure',
-    '/third_party/icu/source/configure',
-    '/third_party/icu/source/install-sh',
     '/third_party/icu/source/runconfigureicu',
     '/third_party/lcov/bin/gendesc',
     '/third_party/lcov/bin/genhtml',
@@ -68,7 +65,7 @@ WHITELIST_FILES = [
     '/third_party/lcov/bin/genpng',
     '/third_party/lcov/bin/lcov',
     '/third_party/lcov/bin/mcov',
-    '/third_party/libevent/configure',
+    '/third_party/libxml/chvalid.c',  # It's +x upstream, who knows why.
     '/third_party/libxml/linux/xml2-config',
     '/third_party/lzma_sdk/executable/7za.exe',
     '/third_party/swig/linux/swig',
@@ -76,6 +73,17 @@ WHITELIST_FILES = [
     '/tools/git/post-checkout',
     '/tools/git/post-merge',
 ]
+
+# File names that are always whitelisted.  (These are all autoconf spew.)
+WHITELIST_FILENAMES = set((
+  'config.guess',
+  'config.sub',
+  'configure',
+  'depcomp',
+  'install-sh',
+  'missing',
+  'mkinstalldirs'
+))
 
 # File paths that contain these regexps will be whitelisted as well.
 WHITELIST_REGEX = [
@@ -114,18 +122,14 @@ IS_SVN = True
 EXECUTABLE_PERMISSION = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
 
 
-def IsWhiteListedExtension(file_path):
-  """Returns True if file_path has an extension we want to ignore."""
-  return WHITELIST_EXTENSIONS_REGEX.match(os.path.splitext(file_path)[1])
-
-
-def IsWhiteListedPath(file_path):
-  """Returns True if file_path ends with a path we want to ignore."""
-  return WHITELIST_FILES_REGEX.search(file_path)
-
-
-def IsWhiteListedRegex(file_path):
-  """Returns True if file_path match any of the whitelist regexps."""
+def IsWhiteListed(file_path):
+  """Returns True if file_path is in our whitelist of files to ignore."""
+  if WHITELIST_EXTENSIONS_REGEX.match(os.path.splitext(file_path)[1]):
+    return True
+  if WHITELIST_FILES_REGEX.search(file_path):
+    return True
+  if os.path.basename(file_path) in WHITELIST_FILENAMES:
+    return True
   for regex in WHITELIST_REGEX:
     if regex.search(file_path):
       return True
@@ -146,12 +150,7 @@ def CheckFile(file_path):
     print 'Checking file: ' + file_path
 
   file_path_lower = file_path.lower()
-  # Check to see if it's whitelisted.
-  if IsWhiteListedExtension(file_path_lower):
-    return None
-  if IsWhiteListedPath(file_path_lower):
-    return None
-  if IsWhiteListedRegex(file_path_lower):
+  if IsWhiteListed(file_path_lower):
     return None
 
   # Not whitelisted, stat the file and check permissions.
