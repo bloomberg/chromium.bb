@@ -323,7 +323,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   last_attempted_user_email_.clear();
 }
 
-void ProfileSyncService::EnableForUser() {
+void ProfileSyncService::EnableForUser(gfx::NativeWindow parent_window) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
@@ -331,6 +331,7 @@ void ProfileSyncService::EnableForUser() {
   expecting_first_run_auth_needed_event_ = true;
   DCHECK(!data_type_manager_.get());
 
+  wizard_.SetParent(parent_window);
   StartUp();
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
@@ -486,7 +487,7 @@ void ProfileSyncService::OnStopSyncingPermanently() {
   DisableForUser();
 }
 
-void ProfileSyncService::ShowLoginDialog() {
+void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
@@ -499,16 +500,17 @@ void ProfileSyncService::ShowLoginDialog() {
   }
 
   if (last_auth_error_.state() != AuthError::NONE) {
+    wizard_.SetParent(parent_window);
     wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
   }
 }
 
-void ProfileSyncService::ShowChooseDataTypes() {
+void ProfileSyncService::ShowChooseDataTypes(gfx::NativeWindow parent_window) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
   }
-
+  wizard_.SetParent(parent_window);
   wizard_.Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
 }
 
@@ -603,6 +605,7 @@ void ProfileSyncService::OnUserCancelledDialog() {
     // Rollback.
     DisableForUser();
   }
+  wizard_.SetParent(NULL);
 
   // Though an auth could still be in progress, once the dialog is closed we
   // don't want the UI to stay stuck in the "waiting for authentication" state

@@ -573,7 +573,7 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkWidget* widget) {
     gtk_util::ShowDialog(dialog);
     return;
   } else {
-    sync_service_->EnableForUser();
+    sync_service_->EnableForUser(NULL);
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
   }
 }
@@ -582,12 +582,12 @@ void ContentPageGtk::OnSyncCustomizeButtonClicked(GtkWidget* widget) {
   // sync_customize_button_ should be invisible if sync is not yet set up.
   DCHECK(sync_service_ && !sync_service_->IsManaged() &&
          sync_service_->HasSyncSetupCompleted());
-  sync_service_->ShowChooseDataTypes();
+  sync_service_->ShowChooseDataTypes(NULL);
 }
 
 void ContentPageGtk::OnSyncActionLinkClicked(GtkWidget* widget) {
   DCHECK(sync_service_ && !sync_service_->IsManaged());
-  sync_service_->ShowLoginDialog();
+  sync_service_->ShowChooseDataTypes(NULL);
 }
 
 void ContentPageGtk::OnStopSyncDialogResponse(GtkWidget* widget, int response) {

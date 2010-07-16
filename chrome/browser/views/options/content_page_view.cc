@@ -153,13 +153,13 @@ void ContentPageView::ButtonPressed(
               IDS_CONFIRM_STOP_SYNCING_DIALOG_HEIGHT_LINES)));
       return;
     } else {
-      sync_service_->EnableForUser();
+      sync_service_->EnableForUser(GetWindow()->GetNativeWindow());
       ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
     }
   } else if (sender == sync_customize_button_) {
     // sync_customize_button_ should be invisible if sync is not yet set up.
     DCHECK(sync_service_->HasSyncSetupCompleted());
-    sync_service_->ShowChooseDataTypes();
+    sync_service_->ShowChooseDataTypes(GetWindow()->GetNativeWindow());
   }
 }
 
@@ -172,7 +172,7 @@ void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
   }
   if (source == sync_action_link_) {
     DCHECK(sync_service_ && !sync_service_->IsManaged());
-    sync_service_->ShowLoginDialog();
+    sync_service_->ShowLoginDialog(GetWindow()->GetNativeWindow());
     return;
   }
   if (source == privacy_dashboard_link_) {

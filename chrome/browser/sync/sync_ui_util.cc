@@ -189,7 +189,7 @@ void OpenSyncMyBookmarksDialog(
   if (service->HasSyncSetupCompleted()) {
     ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile);
   } else {
-    service->EnableForUser();
+    service->EnableForUser(NULL);
     ProfileSyncService::SyncEvent(code);
   }
 }

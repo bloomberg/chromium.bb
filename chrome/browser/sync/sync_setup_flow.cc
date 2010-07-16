@@ -469,7 +469,8 @@ void SyncSetupFlow::Focus() {
 SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
                                   SyncSetupFlowContainer* container,
                                   SyncSetupWizard::State start,
-                                  SyncSetupWizard::State end) {
+                                  SyncSetupWizard::State end,
+                                  gfx::NativeWindow parent_window) {
   DictionaryValue args;
   if (start == SyncSetupWizard::GAIA_LOGIN)
     SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
@@ -492,7 +493,7 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
 #else
   Browser* b = BrowserList::GetLastActive();
   if (b) {
-    b->BrowserShowHtmlDialog(flow, NULL);
+    b->BrowserShowHtmlDialog(flow, parent_window);
   } else {
     delete flow;
     return NULL;

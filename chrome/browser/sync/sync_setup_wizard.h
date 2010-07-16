@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_SYNC_SETUP_WIZARD_H_
 
 #include "base/basictypes.h"
+#include "gfx/native_widget_types.h"
 
 class SyncSetupFlowContainer;
 
@@ -63,6 +64,8 @@ class SyncSetupWizard {
   // not visible.
   void Focus();
 
+  void SetParent(gfx::NativeWindow parent_window);
+
  private:
   // If we just need to pop open an individual dialog, say to collect
   // gaia credentials in the event of a steady-state auth failure, this is
@@ -76,6 +79,8 @@ class SyncSetupWizard {
   ProfileSyncService* service_;
 
   SyncSetupFlowContainer* flow_container_;
+
+  gfx::NativeWindow parent_window_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupWizard);
 };

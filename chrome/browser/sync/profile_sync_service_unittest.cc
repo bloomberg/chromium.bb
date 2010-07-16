@@ -1359,7 +1359,7 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
   ASSERT_FALSE(service_->HasSyncSetupCompleted());
 
   // This will actually start up the sync service.
-  service_->EnableForUser();
+  service_->EnableForUser(NULL);
   syncable::ModelTypeSet set;
   set.insert(syncable::BOOKMARKS);
   service_->OnUserChoseDatatypes(false, set);

@@ -1285,7 +1285,7 @@ const int kDisabledIndex = 1;
   } else {
     // Otherwise, the sync button was a "sync my bookmarks" button.
     // Kick off the sync setup process.
-    syncService_->EnableForUser();
+    syncService_->EnableForUser(NULL);
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
   }
 }
@@ -1303,12 +1303,12 @@ const int kDisabledIndex = 1;
 // "Personal Stuff" pane.  Spawns a dialog-modal sheet that cleans
 // itself up on close.
 - (IBAction)doSyncCustomize:(id)sender {
-  syncService_->ShowChooseDataTypes();
+  syncService_->ShowChooseDataTypes(NULL);
 }
 
 - (IBAction)doSyncReauthentication:(id)sender {
   DCHECK(syncService_ && !syncService_->IsManaged());
-  syncService_->ShowLoginDialog();
+  syncService_->ShowLoginDialog(NULL);
 }
 
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value {

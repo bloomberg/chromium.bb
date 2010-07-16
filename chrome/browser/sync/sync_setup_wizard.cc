@@ -195,7 +195,8 @@ std::string SyncResourcesSource::GetLocalizedUrl(
 
 SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
     : service_(service),
-      flow_container_(new SyncSetupFlowContainer()) {
+      flow_container_(new SyncSetupFlowContainer()),
+      parent_window_(NULL) {
   // Add our network layer data source for 'cloudy' URLs.
   SyncResourcesSource* sync_source = new SyncResourcesSource();
   ChromeThread::PostTask(
@@ -221,14 +222,16 @@ void SyncSetupWizard::Step(State advance_state) {
     // No flow is in progress, and we have never escorted the user all the
     // way through the wizard flow.
     flow_container_->set_flow(
-        SyncSetupFlow::Run(service_, flow_container_, advance_state, DONE));
+        SyncSetupFlow::Run(service_, flow_container_, advance_state, DONE,
+                           parent_window_));
   } else {
     // No flow in in progress, but we've finished the wizard flow once before.
     // This is just a discrete run.
     if (IsTerminalState(advance_state))
       return;  // Nothing to do.
     flow_container_->set_flow(SyncSetupFlow::Run(service_, flow_container_,
-        advance_state, GetEndStateForDiscreteRun(advance_state)));
+        advance_state, GetEndStateForDiscreteRun(advance_state),
+        parent_window_));
   }
 }
 
@@ -250,6 +253,10 @@ void SyncSetupWizard::Focus() {
   if (flow) {
     flow->Focus();
   }
+}
+
+void SyncSetupWizard::SetParent(gfx::NativeWindow parent_window) {
+  parent_window_ = parent_window;
 }
 
 // static

@@ -33,7 +33,8 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   static SyncSetupFlow* Run(ProfileSyncService* service,
                             SyncSetupFlowContainer* container,
                             SyncSetupWizard::State start,
-                            SyncSetupWizard::State end);
+                            SyncSetupWizard::State end,
+                            gfx::NativeWindow parent_window);
 
   // Fills |args| with "user" and "error" arguments by querying |service|.
   static void GetArgsForGaiaLogin(

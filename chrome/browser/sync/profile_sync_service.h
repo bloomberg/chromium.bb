@@ -132,7 +132,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     browser_sync::DataTypeController::StateMap* state_map) const;
 
   // Enables/disables sync for user.
-  virtual void EnableForUser();
+  virtual void EnableForUser(gfx::NativeWindow parent_window);
   virtual void DisableForUser();
 
   // Whether sync is enabled by user or not.
@@ -182,9 +182,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   bool WizardIsVisible() const {
     return wizard_.IsVisible();
   }
-  void ShowLoginDialog();
+  void ShowLoginDialog(gfx::NativeWindow parent_window);
 
-  void ShowChooseDataTypes();
+  void ShowChooseDataTypes(gfx::NativeWindow parent_window);
 
   // Pretty-printed strings for a given StatusSummary.
   static std::wstring BuildSyncStatusSummaryText(

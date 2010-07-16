@@ -157,7 +157,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
         sync_service_->GetAuthError().state() ==
         GoogleServiceAuthError::CAPTCHA_REQUIRED) {
-      sync_service_->ShowLoginDialog();
+      sync_service_->ShowLoginDialog(NULL);
       return;
     }
     DictionaryValue value;
@@ -168,7 +168,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
   } else {
     // User clicked the 'Start now' link to begin syncing.
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
-    sync_service_->EnableForUser();
+    sync_service_->EnableForUser(NULL);
   }
 }
 

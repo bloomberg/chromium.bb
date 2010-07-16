@@ -103,7 +103,7 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFirstTime)) {
       WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(4);
-  service_->EnableForUser();
+  service_->EnableForUser(NULL);
   syncable::ModelTypeSet set;
   set.insert(syncable::BOOKMARKS);
   service_->OnUserChoseDatatypes(false, set);
