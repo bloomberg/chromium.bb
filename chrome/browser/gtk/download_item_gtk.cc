@@ -176,6 +176,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   UpdateNameLabel();
 
   status_label_ = gtk_label_new(NULL);
+  g_signal_connect(status_label_, "destroy",
+                   G_CALLBACK(gtk_widget_destroyed), &status_label_);
   // Left align and vertically center the labels.
   gtk_misc_set_alignment(GTK_MISC(name_label_), 0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(status_label_), 0, 0.5);
@@ -315,6 +317,10 @@ DownloadItemGtk::~DownloadItemGtk() {
   hbox_.Destroy();
   progress_area_.Destroy();
   body_.Destroy();
+
+  // Make sure this widget has been destroyed and the pointer we hold to it
+  // NULLed.
+  DCHECK(!status_label_);
 }
 
 void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
@@ -383,11 +389,10 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
   // Remove the status text label.
   if (status_text.empty()) {
     gtk_widget_destroy(status_label_);
-    status_label_ = NULL;
     return;
   }
 
-  UpdateStatusLabel(status_label_, status_text_);
+  UpdateStatusLabel(status_text_);
 }
 
 void DownloadItemGtk::AnimationProgressed(const Animation* animation) {
@@ -437,7 +442,7 @@ void DownloadItemGtk::Observe(NotificationType type,
     }
 
     UpdateNameLabel();
-    UpdateStatusLabel(status_label_, status_text_);
+    UpdateStatusLabel(status_text_);
     UpdateDangerWarning();
   }
 }
@@ -521,9 +526,8 @@ void DownloadItemGtk::UpdateNameLabel() {
                      WideToUTF8(elided_filename).c_str());
 }
 
-void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
-                                        const std::string& status_text) {
-  if (!status_label)
+void DownloadItemGtk::UpdateStatusLabel(const std::string& status_text) {
+  if (!status_label_)
     return;
 
   GdkColor text_color;
@@ -547,9 +551,9 @@ void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
         color_utils::AlphaBlend(blend_color, color, 77));
   }
 
-  gtk_util::SetLabelColor(status_label, theme_provider_->UseGtkTheme() ?
+  gtk_util::SetLabelColor(status_label_, theme_provider_->UseGtkTheme() ?
                                         NULL : &text_color);
-  gtk_label_set_text(GTK_LABEL(status_label), status_text.c_str());
+  gtk_label_set_text(GTK_LABEL(status_label_), status_text.c_str());
 }
 
 void DownloadItemGtk::UpdateDangerWarning() {

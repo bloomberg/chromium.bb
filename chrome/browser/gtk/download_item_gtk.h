@@ -86,9 +86,8 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // Sets the name label to the correct color.
   void UpdateNameLabel();
 
-  // Sets the text with the correct color if |status_label| exists.
-  void UpdateStatusLabel(GtkWidget* status_label,
-                         const std::string& status_text);
+  // Sets the text of |status_label_| with the correct color.
+  void UpdateStatusLabel(const std::string& status_text);
 
   // Sets the components of the danger warning.
   void UpdateDangerWarning();
