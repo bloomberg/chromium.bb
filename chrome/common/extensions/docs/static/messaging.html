@@ -79,6 +79,12 @@ chrome.extension.onRequest.addListener(
   });
 </pre>
 
+<p class="note">
+<b>Note:</b> If multiple pages are listening for onRequest events, only the
+first to call sendResponse() for a particular event will succeed in sending the
+response. All other responses to that event will be ignored.
+</p>
+
 
 <h2 id="connect">Long-lived connections</h2>
 <p>
