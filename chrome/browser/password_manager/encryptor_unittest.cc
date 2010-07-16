@@ -97,9 +97,6 @@ TEST_F(EncryptorTest, EncryptionDecryption) {
   EXPECT_EQ(plaintext, "hel");
 }
 
-// Encryption currently only enabled on Mac and Windows.
-// TODO(dhollowa): http://crbug.com/49115 Implement secure store on Linux.
-#if defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(EncryptorTest, CypherTextDiffers) {
   std::string plaintext;
   std::string result;
@@ -137,11 +134,10 @@ TEST_F(EncryptorTest, DecryptError) {
   ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
   EXPECT_NE(plaintext, ciphertext);
   ASSERT_LT(4UL, ciphertext.size());
-  ciphertext[3] = ciphertext[0] + 1;
+  ciphertext[3] = ciphertext[3] + 1;
   EXPECT_FALSE(Encryptor::DecryptString(ciphertext, &result));
   EXPECT_NE(plaintext, result);
   EXPECT_TRUE(result.empty());
 }
-#endif
 
 }  // namespace
