@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/syscall.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -26,6 +27,8 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
+
+using google_breakpad::ExceptionHandler;
 
 // Since classes derived from CrashHandlerHostLinux are singletons, it's only
 // destroyed at the end of the processes lifetime, which is greater in span than
@@ -87,17 +90,20 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
       CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
   // The length of the regular payload:
   static const unsigned kCrashContextSize =
-      sizeof(google_breakpad::ExceptionHandler::CrashContext);
+      sizeof(ExceptionHandler::CrashContext);
 
   struct msghdr msg = {0};
-  struct iovec iov[4];
+  struct iovec iov[6];
   char crash_context[kCrashContextSize];
   char guid[kGuidSize + 1];
   char crash_url[kMaxActiveURLSize + 1];
   char distro[kDistroSize + 1];
+  char* tid_buf_addr = NULL;
+  int tid_fd = -1;
   char control[kControlMsgSize];
   const ssize_t expected_msg_size = sizeof(crash_context) + sizeof(guid) +
-      sizeof(crash_url) + sizeof(distro);
+      sizeof(crash_url) + sizeof(distro) +
+      sizeof(tid_buf_addr) + sizeof(tid_fd);
 
   iov[0].iov_base = crash_context;
   iov[0].iov_len = sizeof(crash_context);
@@ -107,8 +113,12 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   iov[2].iov_len = sizeof(crash_url);
   iov[3].iov_base = distro;
   iov[3].iov_len = sizeof(distro);
+  iov[4].iov_base = &tid_buf_addr;
+  iov[4].iov_len = sizeof(tid_buf_addr);
+  iov[5].iov_base = &tid_fd;
+  iov[5].iov_len = sizeof(tid_fd);
   msg.msg_iov = iov;
-  msg.msg_iovlen = 4;
+  msg.msg_iovlen = 6;
   msg.msg_control = control;
   msg.msg_controllen = kControlMsgSize;
 
@@ -183,11 +193,45 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  if (!base::FindProcessHoldingSocket(&crashing_pid, inode_number - 1)) {
+  pid_t actual_crashing_pid = -1;
+  if (!base::FindProcessHoldingSocket(&actual_crashing_pid, inode_number - 1)) {
     LOG(WARNING) << "Failed to find process holding other end of crash reply "
                     "socket";
     HANDLE_EINTR(close(signal_fd));
     return;
+  }
+  if (actual_crashing_pid != crashing_pid) {
+    crashing_pid = actual_crashing_pid;
+
+    // The crashing TID set inside the compromised context via sys_gettid()
+    // in ExceptionHandler::HandleSignal is also wrong and needs to be
+    // translated.
+    //
+    // We expect the crashing thread to be in sys_read(), waiting for use to
+    // write to |signal_fd|. Most newer kernels where we have the different pid
+    // namespaces also have /proc/[pid]/syscall, so we can look through
+    // |actual_crashing_pid|'s thread group and find the thread that's in the
+    // read syscall with the right arguments.
+
+    std::string expected_syscall_data;
+    // /proc/[pid]/syscall is formatted as follows:
+    // syscall_number arg1 ... arg6 sp pc
+    // but we just check syscall_number through arg3.
+    StringAppendF(&expected_syscall_data, "%d 0x%x %p 0x1 ",
+                  SYS_read, tid_fd, tid_buf_addr);
+    pid_t crashing_tid =
+        base::FindThreadIDWithSyscall(crashing_pid, expected_syscall_data);
+    if (crashing_tid == -1) {
+      // We didn't find the thread we want. Maybe it didn't reach sys_read()
+      // yet, or the kernel doesn't support /proc/[pid]/syscall or the thread
+      // went away.  We'll just take a guess here and assume the crashing
+      // thread is the thread group leader.
+      crashing_tid = crashing_pid;
+    }
+
+    ExceptionHandler::CrashContext* bad_context =
+        reinterpret_cast<ExceptionHandler::CrashContext*>(crash_context);
+    bad_context->tid = crashing_tid;
   }
 
   bool upload = true;

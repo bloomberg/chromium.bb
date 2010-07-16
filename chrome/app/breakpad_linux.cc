@@ -679,12 +679,17 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   memcpy(crash_url, child_process_logging::active_url.data(), crash_url_len);
   memcpy(distro, base::linux_distro.data(), distro_len);
 
+  char b;  // Dummy variable for sys_read below.
+  const char* b_addr = &b;  // Get the address of |b| so we can create the
+                            // expected /proc/[pid]/syscall content in the
+                            // browser to convert namespace tids.
+
   // The length of the control message:
   static const unsigned kControlMsgSize = CMSG_SPACE(sizeof(int));
 
   struct kernel_msghdr msg;
   my_memset(&msg, 0, sizeof(struct kernel_msghdr));
-  struct kernel_iovec iov[4];
+  struct kernel_iovec iov[6];
   iov[0].iov_base = const_cast<void*>(crash_context);
   iov[0].iov_len = crash_context_size;
   iov[1].iov_base = guid;
@@ -693,9 +698,13 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   iov[2].iov_len = kMaxActiveURLSize + 1;
   iov[3].iov_base = distro;
   iov[3].iov_len = kDistroSize + 1;
+  iov[4].iov_base = &b_addr;
+  iov[4].iov_len = sizeof(b_addr);
+  iov[5].iov_base = &fds[0];
+  iov[5].iov_len = sizeof(fds[0]);
 
   msg.msg_iov = iov;
-  msg.msg_iovlen = 4;
+  msg.msg_iovlen = 6;
   char cmsg[kControlMsgSize];
   my_memset(cmsg, 0, kControlMsgSize);
   msg.msg_control = cmsg;
@@ -710,7 +719,6 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   HANDLE_EINTR(sys_sendmsg(fd, &msg, 0));
   sys_close(fds[1]);
 
-  char b;
   HANDLE_EINTR(sys_read(fds[0], &b, 1));
 
   return true;
