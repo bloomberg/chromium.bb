@@ -19,8 +19,11 @@
 
 namespace sandbox {
 
+// Permissions for the user to read & write and others to read.
+const mode_t kCreatePermissions = 0644;
+
 SboxTestResult TestOpenReadFile(const char *path) {
-  int fd = open(path, O_RDONLY | O_CREAT);
+  int fd = open(path, O_RDONLY | O_CREAT, kCreatePermissions);
   if (-1 == fd) {
     return SBOX_TEST_DENIED;
   } else {
@@ -30,7 +33,7 @@ SboxTestResult TestOpenReadFile(const char *path) {
 }
 
 SboxTestResult TestOpenWriteFile(const char *path) {
-  int fd = open(path, O_WRONLY | O_CREAT);
+  int fd = open(path, O_WRONLY | O_CREAT, kCreatePermissions);
   if (-1 == fd) {
     return SBOX_TEST_DENIED;
   } else {
