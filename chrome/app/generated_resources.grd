@@ -8569,7 +8569,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Toggle full/half width punctuation mode
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE" desc="In the language menu button, this shows the input mode.">
-        Toogle Simplfied/Traditional Chinese mode
+        Toggle Simplified/Traditional Chinese mode
       </message>
       <message name="IDS_STATUSBAR_IME_CHINESE_CHEWING_SWITCH_CHINESE_TO_ENGLISH" desc="In the language menu button, this shows the input mode.">
         Switch to English mode
