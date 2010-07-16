@@ -9,7 +9,6 @@
 
 #include "base/string16.h"
 #include "app/menus/menu_model.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace menus {
 
@@ -34,16 +33,12 @@ class SimpleMenuModel : public MenuModel {
         menus::Accelerator* accelerator) = 0;
 
     // Some command ids have labels that change over time.
-    virtual bool IsLabelForCommandIdDynamic(int command_id) const {
-      return false;
-    }
-    virtual string16 GetLabelForCommandId(int command_id) const {
-      return string16();
-    }
+    virtual bool IsLabelForCommandIdDynamic(int command_id) const;
+    virtual string16 GetLabelForCommandId(int command_id) const;
 
     // Notifies the delegate that the item with the specified command id was
     // visually highlighted within the menu.
-    virtual void CommandIdHighlighted(int command_id) {}
+    virtual void CommandIdHighlighted(int command_id);
 
     // Performs the action associated with the specified command id.
     virtual void ExecuteCommand(int command_id) = 0;
@@ -88,9 +83,7 @@ class SimpleMenuModel : public MenuModel {
   void SetIcon(int index, const SkBitmap& icon);
 
   // Clears all items. Note that it does not free MenuModel of submenu.
-  void Clear() {
-    items_.clear();
-  }
+  void Clear();
 
   // Returns the index of the item that has the given |command_id|. Returns
   // -1 if not found.
@@ -125,15 +118,7 @@ class SimpleMenuModel : public MenuModel {
   Delegate* delegate() { return delegate_; }
 
  private:
-  struct Item {
-    int command_id;
-    string16 label;
-    SkBitmap icon;
-    ItemType type;
-    int group_id;
-    MenuModel* submenu;
-    ButtonMenuItemModel* button_model;
-  };
+  struct Item;
   std::vector<Item> items_;
 
   // Functions for inserting items into |items_|.

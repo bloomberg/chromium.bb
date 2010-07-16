@@ -25,18 +25,15 @@ class ButtonMenuItemModel {
   class Delegate {
    public:
     // Some command ids have labels that change over time.
-    virtual bool IsLabelForCommandIdDynamic(int command_id) const {
-      return false;
-    }
-    virtual string16 GetLabelForCommandId(int command_id) const {
-      return string16();
-    }
+    virtual bool IsLabelForCommandIdDynamic(int command_id) const;
+    virtual string16 GetLabelForCommandId(int command_id) const;
 
     // Performs the action associated with the specified command id.
     virtual void ExecuteCommand(int command_id) = 0;
   };
 
   ButtonMenuItemModel(int string_id, ButtonMenuItemModel::Delegate* delegate);
+  ~ButtonMenuItemModel();
 
   // Adds a button that will emit |command_id|. All buttons created through
   // this method will have the same size, based on the largest button.
@@ -85,13 +82,7 @@ class ButtonMenuItemModel {
   // The non-clickable label to the left of the buttons.
   string16 item_label_;
 
-  struct Item {
-    int command_id;
-    ButtonType type;
-    string16 label;
-    int icon_idr;
-    bool part_of_group;
-  };
+  struct Item;
   std::vector<Item> items_;
 
   Delegate* delegate_;

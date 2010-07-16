@@ -5,10 +5,36 @@
 #include "app/menus/simple_menu_model.h"
 
 #include "app/l10n_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 static const int kSeparatorId = -1;
 
 namespace menus {
+
+struct SimpleMenuModel::Item {
+  int command_id;
+  string16 label;
+  SkBitmap icon;
+  ItemType type;
+  int group_id;
+  MenuModel* submenu;
+  ButtonMenuItemModel* button_model;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SimpleMenuModel::Delegate, public:
+
+bool SimpleMenuModel::Delegate::IsLabelForCommandIdDynamic(
+    int command_id) const {
+  return false;
+}
+
+string16 SimpleMenuModel::Delegate::GetLabelForCommandId(int command_id) const {
+  return string16();
+}
+
+void SimpleMenuModel::Delegate::CommandIdHighlighted(int command_id) {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel, public:
@@ -129,6 +155,10 @@ void SimpleMenuModel::InsertSubMenuWithStringIdAt(
 
 void SimpleMenuModel::SetIcon(int index, const SkBitmap& icon) {
   items_[index].icon = icon;
+}
+
+void SimpleMenuModel::Clear() {
+  items_.clear();
 }
 
 int SimpleMenuModel::GetIndexOfCommandId(int command_id) {

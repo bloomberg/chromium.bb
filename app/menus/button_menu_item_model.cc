@@ -8,11 +8,32 @@
 
 namespace menus {
 
+bool ButtonMenuItemModel::Delegate::IsLabelForCommandIdDynamic(
+    int command_id) const {
+  return false;
+}
+
+string16 ButtonMenuItemModel::Delegate::GetLabelForCommandId(
+    int command_id) const {
+  return string16();
+}
+
+struct ButtonMenuItemModel::Item {
+  int command_id;
+  ButtonType type;
+  string16 label;
+  int icon_idr;
+  bool part_of_group;
+};
+
 ButtonMenuItemModel::ButtonMenuItemModel(
     int string_id,
     ButtonMenuItemModel::Delegate* delegate)
     : item_label_(l10n_util::GetStringUTF16(string_id)),
       delegate_(delegate) {
+}
+
+ButtonMenuItemModel::~ButtonMenuItemModel() {
 }
 
 void ButtonMenuItemModel::AddGroupItemWithStringId(
