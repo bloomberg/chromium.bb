@@ -65,6 +65,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
+      use_chrome_async_socket_(false),
       notification_method_(browser_sync::kDefaultNotificationMethod),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)) {
   DCHECK(factory);
@@ -114,6 +115,7 @@ ProfileSyncService::ProfileSyncService()
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
+      use_chrome_async_socket_(false),
       notification_method_(browser_sync::kDefaultNotificationMethod),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
       expect_sync_configuration_aborted_(false) {
@@ -194,6 +196,12 @@ void ProfileSyncService::InitSettings() {
 
   LOG(INFO) << "Using " << sync_service_url_ << " for sync server URL.";
 
+  use_chrome_async_socket_ =
+      command_line.HasSwitch(switches::kSyncUseChromeAsyncSocket);
+  if (use_chrome_async_socket_) {
+    LOG(INFO) << "Using ChromeAsyncSocket";
+  }
+
   if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
     const std::string notification_method_str(
         command_line.GetSwitchValueASCII(switches::kSyncNotificationMethod));
@@ -249,6 +257,9 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
     return;
   }
 
+  // TODO(akalin): Gather all the command-line-controlled switches
+  // into an Options struct to make passing them down less annoying.
+
   bool invalidate_sync_login = false;
   bool invalidate_sync_xmpp_login = false;
 #if !defined(NDEBUG)
@@ -271,6 +282,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
                        delete_sync_data_folder,
                        invalidate_sync_login,
                        invalidate_sync_xmpp_login,
+                       use_chrome_async_socket_,
                        notification_method_);
 }
 

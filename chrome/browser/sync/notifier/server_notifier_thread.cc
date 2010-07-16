@@ -13,7 +13,8 @@
 
 namespace sync_notifier {
 
-ServerNotifierThread::ServerNotifierThread() {}
+ServerNotifierThread::ServerNotifierThread(bool use_chrome_async_socket)
+    : notifier::MediatorThreadImpl(use_chrome_async_socket) {}
 
 ServerNotifierThread::~ServerNotifierThread() {}
 

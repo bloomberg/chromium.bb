@@ -873,6 +873,10 @@ const char kSyncServer[]                    = "server";
 // Override the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
 
+// Use the (new, untested) Chrome-socket-based buzz::AsyncSocket
+// implementation for notifications.
+const char kSyncUseChromeAsyncSocket[]      = "sync-use-chrome-async-socket";
+
 // Control Sync XMPP client settings.
 const char kSyncUseSslTcp[]                 = "use-ssl-tcp";
 

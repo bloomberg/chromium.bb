@@ -301,12 +301,13 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   // TODO(sanjeevr): Validate the tokens.
   auth_token_ = cloud_print_token;
 
+  const bool kUseChromeAsyncSocket = false;
   const bool kInitializeSsl = true;
   const bool kConnectImmediately = false;
   const bool kInvalidateXmppAuthToken = false;
   talk_mediator_.reset(new notifier::TalkMediatorImpl(
-      new notifier::MediatorThreadImpl(), kInitializeSsl, kConnectImmediately,
-      kInvalidateXmppAuthToken));
+      new notifier::MediatorThreadImpl(kUseChromeAsyncSocket),
+      kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken));
   talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
   talk_mediator_->SetDelegate(this);
   talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,

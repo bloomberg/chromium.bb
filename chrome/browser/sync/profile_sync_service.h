@@ -420,6 +420,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   std::string unrecoverable_error_message_;
   scoped_ptr<tracked_objects::Location> unrecoverable_error_location_;
 
+  // Whether to use the (new, untested) Chrome-socket-based
+  // buzz::AsyncSocket implementation for notifications.
+  bool use_chrome_async_socket_;
+
   // Which peer-to-peer notification method to use.
   browser_sync::NotificationMethod notification_method_;
 

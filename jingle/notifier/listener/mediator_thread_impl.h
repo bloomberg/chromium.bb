@@ -59,7 +59,7 @@ class MediatorThreadImpl
     : public MediatorThread,
       public sigslot::has_slots<> {
  public:
-  MediatorThreadImpl();
+  explicit MediatorThreadImpl(bool use_chrome_async_socket);
   virtual ~MediatorThreadImpl();
 
   virtual void SetDelegate(Delegate* delegate);
@@ -121,6 +121,7 @@ class MediatorThreadImpl
   void OnSubscriptionStateChangeOnParentThread(
       bool success);
 
+  const bool use_chrome_async_socket_;
   base::Thread worker_thread_;
   scoped_refptr<net::HostResolver> host_resolver_;
 
@@ -131,6 +132,7 @@ class MediatorThreadImpl
   scoped_ptr<notifier::TaskPump> pump_;
   scoped_ptr<notifier::Login> login_;
 
+  // Used only when |use_chrome_async_socket_| is false.
   scoped_ptr<talk_base::SocketServer> socket_server_;
   scoped_ptr<talk_base::Thread> libjingle_thread_;
 

@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <cstddef>
 #include <string>
 #include <vector>
 
 #include "jingle/notifier/communicator/single_login_attempt.h"
 
 #include "base/logging.h"
+#include "jingle/notifier/base/chrome_async_socket.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/connection_settings.h"
 #include "jingle/notifier/communicator/const_communicator.h"
@@ -18,6 +20,8 @@
 #include "jingle/notifier/communicator/product_info.h"
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
 #include "jingle/notifier/communicator/xmpp_socket_adapter.h"
+#include "net/base/ssl_config_service.h"
+#include "net/socket/client_socket_factory.h"
 #include "talk/base/asynchttprequest.h"
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/signalthread.h"
@@ -27,6 +31,10 @@
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "talk/xmpp/constants.h"
+
+namespace net {
+class NetLog;
+}  // namespace net
 
 namespace notifier {
 
@@ -53,8 +61,10 @@ static void GetClientErrorInformation(
 
 SingleLoginAttempt::SingleLoginAttempt(talk_base::TaskParent* parent,
                                        LoginSettings* login_settings,
+                                       bool use_chrome_async_socket,
                                        bool successful_connection)
     : talk_base::Task(parent),
+      use_chrome_async_socket_(use_chrome_async_socket),
       state_(buzz::XmppEngine::STATE_NONE),
       code_(buzz::XmppEngine::ERROR_NONE),
       subcode_(0),
@@ -210,6 +220,24 @@ void SingleLoginAttempt::OnCertificateExpired() {
 
 buzz::AsyncSocket* SingleLoginAttempt::CreateSocket(
     const buzz::XmppClientSettings& xcs) {
+  if (use_chrome_async_socket_) {
+    net::ClientSocketFactory* const client_socket_factory =
+        net::ClientSocketFactory::GetDefaultFactory();
+    // The default SSLConfig is good enough for us for now.
+    const net::SSLConfig ssl_config;
+    // A read buffer of 64k ought to be sufficient.
+    const size_t kReadBufSize = 64U * 1024U;
+    // This number was taken from a similar number in
+    // XmppSocketAdapter.
+    const size_t kWriteBufSize = 64U * 1024U;
+    // TODO(akalin): Use a real NetLog.
+    net::NetLog* const net_log = NULL;
+    return new ChromeAsyncSocket(
+        client_socket_factory, ssl_config,
+        kReadBufSize, kWriteBufSize, net_log);
+  }
+  // TODO(akalin): Always use ChromeAsyncSocket and get rid of this
+  // code.
   bool allow_unverified_certs =
       login_settings_->connection_options().allow_unverified_certs();
   XmppSocketAdapter* adapter = new XmppSocketAdapter(xcs,

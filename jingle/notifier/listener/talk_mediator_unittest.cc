@@ -39,11 +39,13 @@ class TalkMediatorImplTest : public testing::Test {
   virtual ~TalkMediatorImplTest() {}
 
   TalkMediatorImpl* NewTalkMediator() {
+    const bool kUseChromeAsyncSocket = false;
     const bool kInitializeSsl = true;
     const bool kConnectImmediately = false;
     const bool kInvalidateXmppAuthToken = false;
-    return new TalkMediatorImpl(new MediatorThreadImpl(), kInitializeSsl,
-                                kConnectImmediately, kInvalidateXmppAuthToken);
+    return new TalkMediatorImpl(
+        new MediatorThreadImpl(kUseChromeAsyncSocket),
+        kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken);
   }
 
   TalkMediatorImpl* NewMockedTalkMediator(
@@ -201,7 +203,6 @@ TEST_F(TalkMediatorImplTest, MediatorThreadCallbacks) {
   // Shouldn't trigger a call to the delegate since we disconnect
   // it before we logout.
   talk1.reset();
-  EXPECT_EQ(1, mock->logout_calls);
 }
 
 }  // namespace notifier

@@ -35,6 +35,7 @@ static const int kRedirectTimeoutMinutes = 5;
 static const int kDisconnectionDelaySecs = 10;
 
 Login::Login(talk_base::TaskParent* parent,
+             bool use_chrome_async_socket,
              const buzz::XmppClientSettings& user_settings,
              const ConnectionOptions& options,
              std::string lang,
@@ -45,6 +46,7 @@ Login::Login(talk_base::TaskParent* parent,
              bool proxy_only,
              bool previous_login_successful)
     : parent_(parent),
+      use_chrome_async_socket_(use_chrome_async_socket),
       login_settings_(new LoginSettings(user_settings,
                                         options,
                                         lang,
@@ -107,6 +109,7 @@ void Login::StartConnection() {
   }
   single_attempt_ = new SingleLoginAttempt(parent_,
                                            login_settings_.get(),
+                                           use_chrome_async_socket_,
                                            successful_connection_);
 
   // Do the signaling hook-ups.
@@ -304,28 +307,33 @@ void Login::OnIPAddressChanged() {
 }
 
 void Login::CheckConnection() {
-  LOG(INFO) << "Checking connection";
-  talk_base::PhysicalSocketServer physical;
-  scoped_ptr<talk_base::Socket> socket(physical.CreateSocket(SOCK_STREAM));
-  bool alive =
-      !socket->Connect(talk_base::SocketAddress("talk.google.com", 5222));
-  LOG(INFO) << "Network is " << (alive ? "alive" : "not alive");
-  if (alive) {
-    // Our connection is up. If we have a disconnect timer going,
-    // stop it so we don't disconnect.
-    disconnect_timer_.Stop();
-  } else {
-    // Our network connection is down. Start the disconnect timer if
-    // it's not already going.  Don't disconnect immediately to avoid
-    // constant connection/disconnection due to flaky network
-    // interfaces.
-    if (!disconnect_timer_.IsRunning()) {
-      disconnect_timer_.Start(
-          base::TimeDelta::FromSeconds(kDisconnectionDelaySecs),
-          this, &Login::OnDisconnectTimeout);
+  // We don't check the connection if we're using ChromeAsyncSocket,
+  // as this code requires a libjingle thread to be running.  This
+  // code will go away in a future cleanup CL, anyway.
+  if (!use_chrome_async_socket_) {
+    LOG(INFO) << "Checking connection";
+    talk_base::PhysicalSocketServer physical;
+    scoped_ptr<talk_base::Socket> socket(physical.CreateSocket(SOCK_STREAM));
+    bool alive =
+        !socket->Connect(talk_base::SocketAddress("talk.google.com", 5222));
+    LOG(INFO) << "Network is " << (alive ? "alive" : "not alive");
+    if (alive) {
+      // Our connection is up. If we have a disconnect timer going,
+      // stop it so we don't disconnect.
+      disconnect_timer_.Stop();
+    } else {
+      // Our network connection is down. Start the disconnect timer if
+      // it's not already going.  Don't disconnect immediately to avoid
+      // constant connection/disconnection due to flaky network
+      // interfaces.
+      if (!disconnect_timer_.IsRunning()) {
+        disconnect_timer_.Start(
+            base::TimeDelta::FromSeconds(kDisconnectionDelaySecs),
+            this, &Login::OnDisconnectTimeout);
+      }
     }
+    auto_reconnect_.NetworkStateChanged(alive);
   }
-  auto_reconnect_.NetworkStateChanged(alive);
 }
 
 void Login::OnDisconnectTimeout() {

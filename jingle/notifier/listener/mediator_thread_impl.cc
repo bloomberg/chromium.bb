@@ -26,9 +26,10 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 
 namespace notifier {
 
-MediatorThreadImpl::MediatorThreadImpl()
+MediatorThreadImpl::MediatorThreadImpl(bool use_chrome_async_socket)
     : delegate_(NULL),
       parent_message_loop_(MessageLoop::current()),
+      use_chrome_async_socket_(use_chrome_async_socket),
       worker_thread_("MediatorThread worker thread") {
   DCHECK(parent_message_loop_);
 }
@@ -50,13 +51,16 @@ void MediatorThreadImpl::Start() {
   // TODO(akalin): Make this function return a bool and remove this
   // CHECK().
   CHECK(worker_thread_.StartWithOptions(options));
-  worker_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &MediatorThreadImpl::StartLibjingleThread));
+  if (!use_chrome_async_socket_) {
+    worker_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &MediatorThreadImpl::StartLibjingleThread));
+  }
 }
 
 void MediatorThreadImpl::StartLibjingleThread() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  DCHECK(!use_chrome_async_socket_);
   socket_server_.reset(new talk_base::PhysicalSocketServer());
   libjingle_thread_.reset(new talk_base::Thread());
   talk_base::ThreadManager::SetCurrent(libjingle_thread_.get());
@@ -67,6 +71,7 @@ void MediatorThreadImpl::StartLibjingleThread() {
 
 void MediatorThreadImpl::StopLibjingleThread() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  DCHECK(!use_chrome_async_socket_);
   talk_base::ThreadManager::SetCurrent(NULL);
   libjingle_thread_.reset();
   socket_server_.reset();
@@ -74,6 +79,7 @@ void MediatorThreadImpl::StopLibjingleThread() {
 
 void MediatorThreadImpl::PumpLibjingleLoop() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  DCHECK(!use_chrome_async_socket_);
   // Pump the libjingle message loop 100ms at a time.
   if (!libjingle_thread_.get()) {
     // StopLibjingleThread() was called.
@@ -97,9 +103,11 @@ void MediatorThreadImpl::Logout() {
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &MediatorThreadImpl::DoDisconnect));
-  worker_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &MediatorThreadImpl::StopLibjingleThread));
+  if (!use_chrome_async_socket_) {
+    worker_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &MediatorThreadImpl::StopLibjingleThread));
+  }
   // TODO(akalin): Decomp this into a separate stop method.
   worker_thread_.Stop();
   // Process any messages the worker thread may be posted on our
@@ -186,6 +194,7 @@ void MediatorThreadImpl::DoLogin(
   // Language is not used in the stanza so we default to |en|.
   std::string lang = "en";
   login_.reset(new notifier::Login(pump_.get(),
+                                   use_chrome_async_socket_,
                                    settings,
                                    options,
                                    lang,

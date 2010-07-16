@@ -48,6 +48,7 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
  public:
   SingleLoginAttempt(talk_base::TaskParent* parent,
                      LoginSettings* login_settings,
+                     bool use_chrome_async_socket,
                      bool successful_connection);
   ~SingleLoginAttempt();
   virtual int ProcessStart();
@@ -119,6 +120,7 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
 
   bool auto_reconnect() const;
 
+  bool use_chrome_async_socket_;
   buzz::XmppEngine::State state_;
   buzz::XmppEngine::Error code_;
   int subcode_;

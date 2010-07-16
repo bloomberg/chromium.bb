@@ -249,6 +249,7 @@ extern const char kSyncPassword[];
 extern const char kSyncPort[];
 extern const char kSyncServer[];
 extern const char kSyncServiceURL[];
+extern const char kSyncUseChromeAsyncSocket[];
 extern const char kSyncUseSslTcp[];
 extern const char kSyncUseCacheInvalidation[];
 extern const char kTestNaClSandbox[];

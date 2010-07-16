@@ -864,6 +864,7 @@ class SyncManager::SyncInternal
         registrar_(NULL),
         notification_pending_(false),
         initialized_(false),
+        use_chrome_async_socket_(false),
         notification_method_(browser_sync::kDefaultNotificationMethod) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   }
@@ -887,6 +888,7 @@ class SyncManager::SyncInternal
             bool invalidate_xmpp_auth_token,
             const char* user_agent,
             const std::string& lsid,
+            const bool use_chrome_async_socket,
             browser_sync::NotificationMethod notification_method);
 
   // Tell sync engine to submit credentials to GAIA for verification.
@@ -1182,6 +1184,7 @@ class SyncManager::SyncInternal
   bool initialized_;
   mutable Lock initialized_mutex_;
 
+  bool use_chrome_async_socket_;
   browser_sync::NotificationMethod notification_method_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
@@ -1205,6 +1208,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        bool invalidate_xmpp_auth_token,
                        const char* user_agent,
                        const char* lsid,
+                       bool use_chrome_async_socket,
                        browser_sync::NotificationMethod notification_method) {
   DCHECK(post_factory);
   LOG(INFO) << "SyncManager starting Init...";
@@ -1223,6 +1227,7 @@ bool SyncManager::Init(const FilePath& database_location,
                      invalidate_xmpp_auth_token,
                      user_agent,
                      lsid,
+                     use_chrome_async_socket,
                      notification_method);
 }
 
@@ -1272,6 +1277,7 @@ bool SyncManager::SyncInternal::Init(
     bool invalidate_xmpp_auth_token,
     const char* user_agent,
     const std::string& lsid,
+    bool use_chrome_async_socket,
     browser_sync::NotificationMethod notification_method) {
 
   LOG(INFO) << "Starting SyncInternal initialization.";
@@ -1314,8 +1320,8 @@ bool SyncManager::SyncInternal::Init(
   // MediatorThreadImpl.
   notifier::MediatorThread* mediator_thread =
       (notification_method == browser_sync::NOTIFICATION_SERVER) ?
-      new sync_notifier::ServerNotifierThread() :
-      new notifier::MediatorThreadImpl();
+      new sync_notifier::ServerNotifierThread(use_chrome_async_socket) :
+      new notifier::MediatorThreadImpl(use_chrome_async_socket);
   const bool kInitializeSsl = true;
   const bool kConnectImmediately = false;
   talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, kInitializeSsl,

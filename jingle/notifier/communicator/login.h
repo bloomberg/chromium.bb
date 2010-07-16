@@ -48,8 +48,9 @@ class SingleLoginAttempt;
 class Login : public net::NetworkChangeNotifier::Observer,
               public sigslot::has_slots<> {
  public:
-  // network_status and firewall may be NULL.
+  // firewall may be NULL.
   Login(talk_base::TaskParent* parent,
+        bool use_chrome_async_socket,
         const buzz::XmppClientSettings& user_settings,
         const ConnectionOptions& options,
         std::string lang,
@@ -124,6 +125,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
   void OnDisconnectTimeout();
 
   talk_base::TaskParent* parent_;
+  bool use_chrome_async_socket_;
   scoped_ptr<LoginSettings> login_settings_;
   AutoReconnect auto_reconnect_;
   SingleLoginAttempt* single_attempt_;

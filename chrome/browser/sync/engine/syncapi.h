@@ -725,6 +725,7 @@ class SyncManager {
             bool invalidate_xmpp_auth_token,
             const char* user_agent,
             const char* lsid,
+            bool use_chrome_async_socket,
             browser_sync::NotificationMethod notification_method);
 
   // Returns the username last used for a successful authentication.
