@@ -54,7 +54,7 @@ class TestServerLauncher {
   // served out of. This is /files/ by default.
   // Returns true on success, false if files not found or root cert
   // not trusted.
-  bool Start(Protocol protocol,
+  bool Start(net::TestServerLauncher::Protocol protocol,
              const std::string& host_name, int port,
              const FilePath& document_root,
              const FilePath& cert_path,
