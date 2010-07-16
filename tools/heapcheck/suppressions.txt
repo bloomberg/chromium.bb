@@ -842,7 +842,7 @@
 {
    48980_a
    Heapcheck:Leak
-   fun:MockPrefService
+   ...
    fun:ExtensionPrefStoreTest_NotifyWhenNeeded_Test::TestBody
 }
 {
