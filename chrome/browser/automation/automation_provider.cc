@@ -329,6 +329,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetCookie, SetCookie)
     IPC_MESSAGE_HANDLER(AutomationMsg_DeleteCookie, DeleteCookie)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ShowCollectedCookiesDialog,
+                        ShowCollectedCookiesDialog)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_NavigateToURL, NavigateToURL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
@@ -1281,6 +1283,17 @@ void AutomationProvider::DeleteCookie(const GURL& url,
         ChromeThread::IO, FROM_HERE,
         new DeleteCookieTask(url, cookie_name,
                              tab->profile()->GetRequestContext()));
+    *success = true;
+  }
+}
+
+void AutomationProvider::ShowCollectedCookiesDialog(
+    int handle, bool* success) {
+  *success = false;
+  if (tab_tracker_->ContainsHandle(handle)) {
+    TabContents* tab_contents =
+        tab_tracker_->GetResource(handle)->tab_contents();
+    tab_contents->delegate()->ShowCollectedCookiesDialog(tab_contents);
     *success = true;
   }
 }

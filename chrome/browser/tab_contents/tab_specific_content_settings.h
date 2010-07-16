@@ -15,6 +15,7 @@
 class CannedBrowsingDataAppCacheHelper;
 class CannedBrowsingDataDatabaseHelper;
 class CannedBrowsingDataLocalStorageHelper;
+class CookiesTreeModel;
 class Profile;
 
 namespace net {
@@ -57,6 +58,12 @@ class TabSpecificContentSettings
     return geolocation_settings_state_;
   }
 
+  // Returns a CookiesTreeModel object for the recoreded allowed cookies.
+  CookiesTreeModel* GetAllowedCookiesTreeModel();
+
+  // Returns a CookiesTreeModel object for the recoreded blocked cookies.
+  CookiesTreeModel* GetBlockedCookiesTreeModel();
+
   // RenderViewHostDelegate::ContentSettings implementation.
   virtual void OnContentBlocked(ContentSettingsType type);
   virtual void OnCookieAccessed(const GURL& url,
@@ -92,6 +99,8 @@ class TabSpecificContentSettings
     CannedBrowsingDataLocalStorageHelper* local_storages() const {
       return local_storages_;
     }
+
+    CookiesTreeModel* GetCookiesTreeModel();
 
    private:
     DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);

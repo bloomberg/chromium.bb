@@ -8,6 +8,7 @@
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/cookies_tree_model.h"
 #include "net/base/cookie_monster.h"
 
 bool TabSpecificContentSettings::IsContentBlocked(
@@ -126,6 +127,14 @@ void TabSpecificContentSettings::GeolocationDidNavigate(
   geolocation_settings_state_.DidNavigate(details);
 }
 
+CookiesTreeModel* TabSpecificContentSettings::GetAllowedCookiesTreeModel() {
+  return allowed_local_shared_objects_.GetCookiesTreeModel();
+}
+
+CookiesTreeModel* TabSpecificContentSettings::GetBlockedCookiesTreeModel() {
+  return blocked_local_shared_objects_.GetCookiesTreeModel();
+}
+
 TabSpecificContentSettings::LocalSharedObjectsContainer::
     LocalSharedObjectsContainer(Profile* profile)
     : cookies_(new net::CookieMonster(NULL, NULL)),
@@ -143,4 +152,10 @@ void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
   appcaches_->Reset();
   databases_->Reset();
   local_storages_->Reset();
+}
+
+CookiesTreeModel*
+TabSpecificContentSettings::LocalSharedObjectsContainer::GetCookiesTreeModel() {
+  return new CookiesTreeModel(
+      cookies_, databases_, local_storages_, appcaches_);
 }

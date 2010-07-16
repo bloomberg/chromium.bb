@@ -11,6 +11,7 @@
 #include "chrome/browser/gtk/about_chrome_dialog.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
+#include "chrome/browser/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
 #include "chrome/browser/gtk/options/content_settings_window_gtk.h"
@@ -68,6 +69,11 @@ void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
                                ContentSettingsType content_type,
                                Profile* profile) {
   ContentSettingsWindowGtk::Show(parent_window, content_type, profile);
+}
+
+void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
+                                TabContents* tab_contents) {
+  new CollectedCookiesGtk(GTK_WINDOW(parent_window), tab_contents);
 }
 
 }  // namespace browser

@@ -2892,6 +2892,10 @@ void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
                                       profile_->GetOriginalProfile());
 }
 
+void Browser::ShowCollectedCookiesDialog(TabContents *tab_contents) {
+  window()->ShowCollectedCookiesDialog(tab_contents);
+}
+
 bool Browser::ShouldAddNavigationsToHistory() const {
   // Don't update history if running as app.
   return !IsApplication();
