@@ -3654,3 +3654,10 @@
    fun:_ZNSt3setIPN11PrefService10PreferenceENS0_24PreferencePathComparatorESaIS2_EE6insertERKS2_
    fun:_ZN11PrefService18RegisterPreferenceEPNS_10PreferenceE
 }
+{
+   bug_49266
+   Memcheck:Cond
+   fun:_ZN18ProfileSyncService7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN12browser_sync19DataTypeManagerImpl10NotifyDoneENS_15DataTypeManager15ConfigureResultE
+}
