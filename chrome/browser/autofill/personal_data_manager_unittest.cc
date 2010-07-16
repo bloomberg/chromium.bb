@@ -12,6 +12,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"
@@ -46,6 +47,10 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   virtual void SetUp() {
+#if defined(OS_MACOSX)
+    Encryptor::UseMockKeychain(true);
+#endif
+
     db_thread_.Start();
 
     profile_.reset(new TestingProfile);

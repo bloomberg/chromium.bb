@@ -61,6 +61,47 @@ OSStatus MacKeychain::AddInternetPassword(
                                         itemRef);
 }
 
+OSStatus MacKeychain::FindGenericPassword(CFTypeRef keychainOrArray,
+                                          UInt32 serviceNameLength,
+                                          const char *serviceName,
+                                          UInt32 accountNameLength,
+                                          const char *accountName,
+                                          UInt32 *passwordLength,
+                                          void **passwordData,
+                                          SecKeychainItemRef *itemRef) const {
+  return SecKeychainFindGenericPassword(keychainOrArray,
+                                        serviceNameLength,
+                                        serviceName,
+                                        accountNameLength,
+                                        accountName,
+                                        passwordLength,
+                                        passwordData,
+                                        itemRef);
+}
+
+OSStatus MacKeychain::ItemFreeContent(SecKeychainAttributeList *attrList,
+                                      void *data) const {
+  return SecKeychainItemFreeContent(attrList, data);
+}
+
+OSStatus MacKeychain::AddGenericPassword(SecKeychainRef keychain,
+                                         UInt32 serviceNameLength,
+                                         const char *serviceName,
+                                         UInt32 accountNameLength,
+                                         const char *accountName,
+                                         UInt32 passwordLength,
+                                         const void *passwordData,
+                                         SecKeychainItemRef *itemRef) const {
+  return SecKeychainAddGenericPassword(keychain,
+                                       serviceNameLength,
+                                       serviceName,
+                                       accountNameLength,
+                                       accountName,
+                                       passwordLength,
+                                       passwordData,
+                                       itemRef);
+}
+
 void MacKeychain::Free(CFTypeRef ref) const {
   if (ref) {
     CFRelease(ref);

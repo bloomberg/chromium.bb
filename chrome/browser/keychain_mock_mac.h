@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_KEYCHAIN_MOCK_MAC_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "chrome/browser/keychain_mac.h"
@@ -56,6 +57,24 @@ class MockKeychain : public MacKeychain {
                                        UInt32 passwordLength,
                                        const void *passwordData,
                                        SecKeychainItemRef *itemRef) const;
+  virtual OSStatus FindGenericPassword(CFTypeRef keychainOrArray,
+                                       UInt32 serviceNameLength,
+                                       const char *serviceName,
+                                       UInt32 accountNameLength,
+                                       const char *accountName,
+                                       UInt32 *passwordLength,
+                                       void **passwordData,
+                                       SecKeychainItemRef *itemRef) const;
+  virtual OSStatus ItemFreeContent(SecKeychainAttributeList *attrList,
+                                   void *data) const;
+  virtual OSStatus AddGenericPassword(SecKeychainRef keychain,
+                                      UInt32 serviceNameLength,
+                                      const char *serviceName,
+                                      UInt32 accountNameLength,
+                                      const char *accountName,
+                                      UInt32 passwordLength,
+                                      const void *passwordData,
+                                      SecKeychainItemRef *itemRef) const;
   virtual void Free(CFTypeRef ref) const;
 
   // Return the counts of objects returned by Create/Copy functions but never
@@ -82,6 +101,25 @@ class MockKeychain : public MacKeychain {
   };
   // Adds a keychain item with the given info to the test set.
   void AddTestItem(const KeychainTestData& item_data);
+
+  // |FindGenericPassword()| can return different results depending on user
+  // interaction with the system Keychain.  For mocking purposes we allow the
+  // user of this class to specify the result code of the
+  // |FindGenericPassword()| call so we can simulate the result of different
+  // user interactions.
+  void set_find_generic_result(OSStatus result) {
+    find_generic_result_ = result;
+  }
+
+  // Returns the true if |AddGenericPassword()| was called.
+  bool called_add_generic() const { return called_add_generic_; }
+
+  // Returns the value of the password set when |AddGenericPassword()| was
+  // called.
+  std::string add_generic_password() const { return add_generic_password_; }
+
+  // Returns the number of allocations - deallocations for password data.
+  int password_data_count() const { return password_data_count_; }
 
  private:
   // Sets the data and length of |tag| in the item-th test item.
@@ -136,6 +174,19 @@ class MockKeychain : public MacKeychain {
 
   // Tracks which items (by index) were added with AddInternetPassword.
   mutable std::set<unsigned int> added_via_api_;
+
+  // Result code for the |FindGenericPassword()| method.
+  OSStatus find_generic_result_;
+
+  // Records whether |AddGenericPassword()| gets called.
+  mutable bool called_add_generic_;
+
+  // Tracks the allocations and frees of password data in |FindGenericPassword|
+  // and |ItemFreeContent|.
+  mutable unsigned int password_data_count_;
+
+  // Records the password being set when |AddGenericPassword()| gets called.
+  mutable std::string add_generic_password_;
 };
 
 #endif  // CHROME_BROWSER_KEYCHAIN_MOCK_MAC_H_

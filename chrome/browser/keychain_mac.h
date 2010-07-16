@@ -58,6 +58,27 @@ class MacKeychain {
                                        const void *passwordData,
                                        SecKeychainItemRef *itemRef) const;
 
+  virtual OSStatus FindGenericPassword(CFTypeRef keychainOrArray,
+                                       UInt32 serviceNameLength,
+                                       const char *serviceName,
+                                       UInt32 accountNameLength,
+                                       const char *accountName,
+                                       UInt32 *passwordLength,
+                                       void **passwordData,
+                                       SecKeychainItemRef *itemRef) const;
+
+  virtual OSStatus ItemFreeContent(SecKeychainAttributeList *attrList,
+                                   void *data) const;
+
+  virtual OSStatus AddGenericPassword(SecKeychainRef keychain,
+                                      UInt32 serviceNameLength,
+                                      const char *serviceName,
+                                      UInt32 accountNameLength,
+                                      const char *accountName,
+                                      UInt32 passwordLength,
+                                      const void *passwordData,
+                                      SecKeychainItemRef *itemRef) const;
+
   // Calls CFRelease on the given ref, after checking that |ref| is non-NULL.
   virtual void Free(CFTypeRef ref) const;
 

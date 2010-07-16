@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,25 +12,46 @@
 
 namespace {
 
-TEST(EncryptorTest, String16EncryptionDecryption) {
+class EncryptorTest : public testing::Test {
+ public:
+  EncryptorTest() {}
+
+  virtual void SetUp() {
+#if defined(OS_MACOSX)
+    Encryptor::UseMockKeychain(true);
+#endif
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EncryptorTest);
+};
+
+TEST_F(EncryptorTest, String16EncryptionDecryption) {
   string16 plaintext;
   string16 result;
   std::string utf8_plaintext;
   std::string utf8_result;
   std::string ciphertext;
 
-  // test borderline cases (empty strings)
+  // Test borderline cases (empty strings).
   EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
   EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
-  // test a simple string
+  // Test a simple string.
   plaintext = ASCIIToUTF16("hello");
   EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
   EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
-  // test unicode
+  // Test a 16-byte aligned string.  This previously hit a boundary error in
+  // base::Encryptor::Crypt() on Mac.
+  plaintext = ASCIIToUTF16("1234567890123456");
+  EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
+  EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
+  EXPECT_EQ(plaintext, result);
+
+  // Test Unicode.
   char16 wchars[] = { 0xdbeb, 0xdf1b, 0x4e03, 0x6708, 0x8849,
                       0x661f, 0x671f, 0x56db, 0x597c, 0x4e03,
                       0x6708, 0x56db, 0x6708, 0xe407, 0xdbaf,
@@ -53,27 +74,74 @@ TEST(EncryptorTest, String16EncryptionDecryption) {
   EXPECT_EQ(utf8_plaintext, UTF16ToUTF8(result));
 }
 
-TEST(EncryptorTest, EncryptionDecryption) {
+TEST_F(EncryptorTest, EncryptionDecryption) {
   std::string plaintext;
   std::string result;
   std::string ciphertext;
 
-  // test borderline cases (empty strings)
-  EXPECT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  EXPECT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  // Test borderline cases (empty strings).
+  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
-  // test a simple string
+  // Test a simple string.
   plaintext = "hello";
-  EXPECT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  EXPECT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
   // Make sure it null terminates.
   plaintext.assign("hello", 3);
-  EXPECT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  EXPECT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
   EXPECT_EQ(plaintext, "hel");
 }
+
+// Encryption currently only enabled on Mac and Windows.
+// TODO(dhollowa): http://crbug.com/49115 Implement secure store on Linux.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+TEST_F(EncryptorTest, CypherTextDiffers) {
+  std::string plaintext;
+  std::string result;
+  std::string ciphertext;
+
+  // Test borderline cases (empty strings).
+  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  // |cyphertext| is empty on the Mac, different on Windows.
+  EXPECT_TRUE(ciphertext.empty() || plaintext != ciphertext);
+  EXPECT_EQ(plaintext, result);
+
+  // Test a simple string.
+  plaintext = "hello";
+  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  EXPECT_NE(plaintext, ciphertext);
+  EXPECT_EQ(plaintext, result);
+
+  // Make sure it null terminates.
+  plaintext.assign("hello", 3);
+  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  EXPECT_NE(plaintext, ciphertext);
+  EXPECT_EQ(result, "hel");
+}
+
+TEST_F(EncryptorTest, DecryptError) {
+  std::string plaintext;
+  std::string result;
+  std::string ciphertext;
+
+  // Test a simple string, messing with ciphertext prior to decrypting.
+  plaintext = "hello";
+  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
+  EXPECT_NE(plaintext, ciphertext);
+  ASSERT_LT(4UL, ciphertext.size());
+  ciphertext[3] = ciphertext[0] + 1;
+  EXPECT_FALSE(Encryptor::DecryptString(ciphertext, &result));
+  EXPECT_NE(plaintext, result);
+  EXPECT_TRUE(result.empty());
+}
+#endif
 
 }  // namespace

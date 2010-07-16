@@ -20,6 +20,7 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -94,6 +95,9 @@ class WebDatabaseTest : public testing::Test {
   typedef std::set<AutofillEntry, bool (*)(const AutofillEntry&,
     const AutofillEntry&)>::iterator AutofillEntrySetIterator;
   virtual void SetUp() {
+#if defined(OS_MACOSX)
+    Encryptor::UseMockKeychain(true);
+#endif
     PathService::Get(chrome::DIR_TEST_DATA, &file_);
     const std::string test_db = "TestWebDatabase" +
         Int64ToString(base::Time::Now().ToInternalValue()) +

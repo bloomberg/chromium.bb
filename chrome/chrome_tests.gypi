@@ -997,6 +997,7 @@
         'browser/page_menu_model_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/encryptor_unittest.cc',
+        'browser/password_manager/encryptor_password_mac_unittest.cc',
         'browser/password_manager/login_database_unittest.cc',
         'browser/password_manager/password_form_data.cc',
         'browser/password_manager/password_form_manager_unittest.cc',

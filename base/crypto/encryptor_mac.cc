@@ -51,7 +51,7 @@ bool Encryptor::Crypt(int /*CCOperation*/ op,
                                 raw_key.Data, raw_key.Length,
                                 iv_.data(),
                                 input.data(), input.size(),
-                                WriteInto(output, output_size),
+                                WriteInto(output, output_size+1),
                                 output_size,
                                 &output_size);
   if (err) {

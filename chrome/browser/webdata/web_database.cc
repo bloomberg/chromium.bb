@@ -24,12 +24,12 @@
 #include "gfx/codec/png_codec.h"
 #include "webkit/glue/password_form.h"
 
-// Encryptor is the *wrong* way of doing things; we need to turn it into a
-// bottleneck to use the platform methods (e.g. Keychain on the Mac, Gnome
-// Keyring / KWallet on Linux). That's going to take a massive change in its
-// API... see:
-//   http://code.google.com/p/chromium/issues/detail?id=25404 (Linux)
-// but the (possibly-now-unused) Mac encryptor stub code needs to die too.
+// Encryptor is now in place for Windows and Mac.  The Linux implementation
+// currently obfuscates only.  Mac Encryptor implementation can block the
+// active thread while presenting UI to the user.  See |encryptor_mac.mm| for
+// details.
+// For details on the Linux work see:
+//   http://crbug.com/25404
 #include "chrome/browser/password_manager/encryptor.h"
 
 using webkit_glue::FormField;

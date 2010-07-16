@@ -1943,6 +1943,8 @@
         'browser/password_manager/encryptor_linux.cc',
         'browser/password_manager/encryptor_mac.mm',
         'browser/password_manager/encryptor_win.cc',
+        'browser/password_manager/encryptor_password_mac.h',
+        'browser/password_manager/encryptor_password_mac.mm',
         'browser/password_manager/ie7_password.cc',
         'browser/password_manager/ie7_password.h',
         'browser/password_manager/login_database.cc',

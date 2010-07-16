@@ -1,7 +1,6 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// A class for encrypting/decrypting strings
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_H__
 #define CHROME_BROWSER_PASSWORD_MANAGER_ENCRYPTOR_H__
@@ -11,6 +10,9 @@
 #include "base/values.h"
 #include "base/string16.h"
 
+// The Encryptor class gives access to simple encryption and decryption of
+// strings.  Note that on Mac, access to the system Keychain is required and
+// these calls can block the current thread to collect user input.
 class Encryptor {
  public:
   // Encrypt a string16. The output (second argument) is
@@ -36,6 +38,12 @@ class Encryptor {
   // data into a string.
   static bool DecryptString(const std::string& ciphertext,
                             std::string* plaintext);
+
+#if defined(OS_MACOSX)
+  // For unit testing purposes we instruct the Encryptor to use a mock Keychain
+  // on the Mac.  The default is to use the real Keychain.
+  static void UseMockKeychain(bool use_mock);
+#endif
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(Encryptor);

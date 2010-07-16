@@ -8,7 +8,9 @@
 
 MockKeychain::MockKeychain(unsigned int item_capacity)
     : item_capacity_(item_capacity), item_count_(0), search_copy_count_(0),
-      keychain_item_copy_count_(0), attribute_data_copy_count_(0) {
+      keychain_item_copy_count_(0), attribute_data_copy_count_(0),
+      find_generic_result_(noErr), called_add_generic_(false),
+      password_data_count_(0) {
   UInt32 tags[] = { kSecAccountItemAttr,
                     kSecServerItemAttr,
                     kSecPortItemAttr,
@@ -331,6 +333,54 @@ OSStatus MockKeychain::SearchCopyNext(SecKeychainSearchRef searchRef,
   remaining_search_results_.erase(remaining_search_results_.begin());
   *itemRef = reinterpret_cast<SecKeychainItemRef>(index + 1);
   ++keychain_item_copy_count_;
+  return noErr;
+}
+
+OSStatus MockKeychain::FindGenericPassword(CFTypeRef keychainOrArray,
+                                           UInt32 serviceNameLength,
+                                           const char *serviceName,
+                                           UInt32 accountNameLength,
+                                           const char *accountName,
+                                           UInt32 *passwordLength,
+                                           void **passwordData,
+                                           SecKeychainItemRef *itemRef) const {
+  // When simulating |noErr| we return canned |passwordData| and
+  // |passwordLenght|.  Otherwise, just return given code.
+  if (find_generic_result_ == noErr) {
+    static char password[] = "my_password";
+
+    DCHECK(passwordData);
+    *passwordData = static_cast<void*>(password);
+    DCHECK(passwordLength);
+    *passwordLength = strlen(password);
+    password_data_count_++;
+  }
+
+  return find_generic_result_;
+}
+
+OSStatus MockKeychain::ItemFreeContent(SecKeychainAttributeList *attrList,
+                                       void *data) const {
+  // No-op.
+  password_data_count_--;
+  return noErr;
+}
+
+OSStatus MockKeychain::AddGenericPassword(SecKeychainRef keychain,
+                                          UInt32 serviceNameLength,
+                                          const char *serviceName,
+                                          UInt32 accountNameLength,
+                                          const char *accountName,
+                                          UInt32 passwordLength,
+                                          const void *passwordData,
+                                          SecKeychainItemRef *itemRef) const {
+  called_add_generic_ = true;
+
+  DCHECK(passwordLength > 0);
+  DCHECK(passwordData);
+  add_generic_password_ =
+      std::string(const_cast<char*>(static_cast<const char*>(passwordData)),
+                  passwordLength);
   return noErr;
 }
 
