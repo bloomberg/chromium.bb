@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,29 +100,6 @@ TEST_F(NPAPITester, NPObjectProxy) {
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("npobject_proxy", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
-}
-
-// Tests if a plugin executing a self deleting script using NPN_GetURL
-// works without crashing or hanging
-TEST_F(NPAPITester, SelfDeletePluginGetUrl) {
-  const FilePath test_case(FILE_PATH_LITERAL("self_delete_plugin_geturl.html"));
-  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
-  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
-  WaitForFinish("self_delete_plugin_geturl", "1", url,
-                kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
-}
-
-// Tests if a plugin executing a self deleting script using Invoke
-// works without crashing or hanging
-// Flaky. See http://crbug.com/30702
-TEST_F(NPAPITester, FLAKY_SelfDeletePluginInvoke) {
-  const FilePath test_case(FILE_PATH_LITERAL("self_delete_plugin_invoke.html"));
-  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
-  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
-  WaitForFinish("self_delete_plugin_invoke", "1", url,
-                kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -363,37 +340,6 @@ TEST_F(NPAPITester, FLAKY_NoHangIfInitCrashes) {
 }
 
 #endif
-
-TEST_F(NPAPITester, NPObjectReleasedOnDestruction) {
-  if (UITest::in_process_renderer())
-    return;
-
-  const FilePath test_case(
-      FILE_PATH_LITERAL("npobject_released_on_destruction.html"));
-  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
-  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
-
-  scoped_refptr<BrowserProxy> window_proxy(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(window_proxy);
-  ASSERT_TRUE(window_proxy->AppendTab(GURL(chrome::kAboutBlankURL)));
-
-  scoped_refptr<TabProxy> tab_proxy(window_proxy->GetTab(0));
-  ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->Close(true));
-}
-
-// Test that a dialog is properly created when a plugin throws an
-// exception.  Should be run for in and out of process plugins, but
-// the more interesting case is out of process, where we must route
-// the exception to the correct renderer.
-TEST_F(NPAPITester, NPObjectSetException) {
-  const FilePath test_case(FILE_PATH_LITERAL("npobject_set_exception.html"));
-  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
-  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
-  WaitForFinish("npobject_set_exception", "1", url,
-                kTestCompleteCookie, kTestCompleteSuccess,
-                action_max_timeout_ms());
-}
 
 TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
   if (UITest::in_process_renderer())
