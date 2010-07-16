@@ -3668,3 +3668,13 @@
    fun:_ZN19DownloadManagerTestC2Ev
    fun:_ZN45DownloadManagerTest_TestDownloadFilename_TestC1Ev
 }
+{
+   bug_49279
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_127ChromeCookieMonsterDelegateC2EP7Profile
+   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
+   fun:_ZN12_GLOBAL__N_118FactoryForOriginalC2EP7ProfileRK8FilePathS5_i
+   fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfileRK8FilePathS4_i
+   fun:_ZN11ProfileImpl17GetRequestContextEv
+}
