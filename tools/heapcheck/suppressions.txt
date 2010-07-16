@@ -891,3 +891,24 @@
    fun:disk_cache::BackendImpl::NewEntry
    fun:disk_cache::BackendImpl::MatchEntry
 }
+{
+   bug_49307_a
+   Heapcheck:Leak
+   ...
+   fun:DownloadManagerTest
+   fun:DownloadManagerTest_TestDownloadFilename_Test
+}
+{
+   bug_49307_b
+   Heapcheck:Leak
+   ...
+   fun:DownloadManagerTest
+   fun:DownloadManagerTest_StartDownload_Test
+}
+{
+   bug_49307_c
+   Heapcheck:Leak
+   ...
+   fun:DownloadManager::OpenFilesBasedOnExtension
+   fun:DownloadManagerTest_StartDownload_Test::TestBody
+}
