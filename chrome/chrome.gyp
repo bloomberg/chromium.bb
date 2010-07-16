@@ -953,7 +953,9 @@
         '../skia/skia.gyp:skia',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
-        '../third_party/protobuf2/protobuf.gyp:protobuf_lite#target',
+        # TODO(akalin): Change back to protobuf_lite once it supports
+        # preserving unknown fields.
+        '../third_party/protobuf2/protobuf.gyp:protobuf#target',
       ],
       'conditions': [
         ['OS=="win"', {

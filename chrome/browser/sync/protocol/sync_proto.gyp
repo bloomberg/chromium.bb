@@ -54,11 +54,15 @@
       'target_name': 'sync_proto_cpp',
       'type': 'none',
       'export_dependent_settings': [
-        '../../../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        # TODO(akalin): Change back to protobuf_lite once it supports
+        # preserving unknown fields.
+        '../../../../third_party/protobuf2/protobuf.gyp:protobuf',
         'sync_proto',
       ],
       'dependencies': [
-        '../../../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        # TODO(akalin): Change back to protobuf_lite once it supports
+        # preserving unknown fields.
+        '../../../../third_party/protobuf2/protobuf.gyp:protobuf',
         'sync_proto',
       ],
       'direct_dependent_settings': {
