@@ -13,7 +13,7 @@
           value="ShowPages"><span
           i18n-content="startupShowPages"></span></label>
       <div class="suboption">
-        <select size="3" style="width:100%">
+        <select id="startupPages" size="3">
         </select><br>
         <button id="startupAddButton" disabled
             i18n-content="startupAddButton"></button>
@@ -34,7 +34,7 @@
           value="UseURL"><span
           i18n-content="homepageUseURL"></span></label><br>
       <div class="suboption">
-        <input type="url" style="width:100%" disabled>
+        <input id="homepageURL" type="url" disabled>
       </div>
       <div class="option">
         <label><input id="homepageShowButton"
@@ -46,8 +46,8 @@
   <section>
     <h3 i18n-content="defaultSearchGroupName"></h3>
     <div>
-      <select disabled>
-        <option value="TODO" i18n-content="TODO"></option>
+      <select id="defaultSearchEngine"
+          onchange="BrowserOptions.getInstance().setDefaultBrowser()">
       </select>
       <button id="defaultSearchManageEnginesButton" disabled
           i18n-content="defaultSearchManageEnginesLink"></button>

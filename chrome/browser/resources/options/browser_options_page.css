@@ -1,3 +1,7 @@
+#startupPages, #homepageURL {
+  width: 100%;
+}
+
 #defaultBrowserState {
   color: #880000;
 }
