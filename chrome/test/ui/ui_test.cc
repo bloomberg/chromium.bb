@@ -81,7 +81,7 @@ bool UITestBase::dump_histograms_on_exit_ = false;
 bool UITestBase::enable_dcheck_ = false;
 bool UITestBase::silent_dump_on_dcheck_ = false;
 bool UITestBase::disable_breakpad_ = false;
-int UITestBase::timeout_ms_ =  5 * 60 * 1000;
+int UITestBase::timeout_ms_ = 10 * 60 * 1000;
 std::wstring UITestBase::js_flags_ = L"";
 std::wstring UITestBase::log_level_ = L"";
 
