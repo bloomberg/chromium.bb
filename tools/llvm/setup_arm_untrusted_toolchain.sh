@@ -17,10 +17,10 @@ NACL_SDK_INSTALL=\
 # if we use bitcode we need to redirect to the bitcode libdir
 case ${TARGET_CODE} in
   bc-*)
-    export NACL_SDK_LIB="$(pwd)/toolchain/pnacl-untrusted/bitcode"
+    export NACL_SDK_LIB="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
     # NOTE: this should really be: "export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/pnacl-untrusted/arm"
     # TOOD(robertm): change this together with the rest of the builder script
-    export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/pnacl-untrusted/bitcode"
+    export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
     ;;
 
   *)

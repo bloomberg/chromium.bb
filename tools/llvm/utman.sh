@@ -112,11 +112,11 @@ readonly TC_BUILD_EXTRASDK_BITCODE="${TC_BUILD}/extrasdk-bitcode"
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain locations (absolute!)
-readonly PNACL_TOOLCHAIN_ROOT="$(pwd)/toolchain/pnacl-untrusted"
-readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/arm"
-readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/x8632"
-readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/x8664"
-readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/bitcode"
+readonly PNACL_TOOLCHAIN_ROOT="${INSTALL_ROOT}"
+readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm"
+readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632"
+readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664"
+readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
 
 # PNaCl client-toolchain (sandboxed) binary locations
 readonly PNACL_CLIENT_TC_ROOT="$(pwd)/toolchain/sandboxed_translators"
@@ -592,8 +592,11 @@ clean-install() {
 
 #+ clean-pnacl           - Removes the pnacl-untrusted installation directory
 clean-pnacl() {
-  StepBanner "cleaning ${PNACL_TOOLCHAIN_ROOT}"
-  rm -rf "${PNACL_TOOLCHAIN_ROOT}"
+  StepBanner "pnacl" "cleaning ${PNACL_TOOLCHAIN_ROOT}/libs-*"
+  rm -rf ${PNACL_ARM_ROOT} \
+         ${PNACL_BITCODE_ROOT} \
+         ${PNACL_X8632_ROOT} \
+         ${PNACL_X8664_ROOT}
 }
 
 

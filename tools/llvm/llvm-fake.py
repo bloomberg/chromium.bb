@@ -65,13 +65,13 @@ LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 # arm libgcc
 LIBDIR_ARM_1 = BASE_ARM + '/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
 
-PNACL_ARM_ROOT =  BASE + '/../pnacl-untrusted/arm'
+PNACL_ARM_ROOT =  BASE + '/../linux_arm-untrusted/libs-arm'
 
-PNACL_X8632_ROOT = BASE + '/../pnacl-untrusted/x8632'
+PNACL_X8632_ROOT = BASE + '/../linux_arm-untrusted/libs-x8632'
 
-PNACL_X8664_ROOT = BASE + '/../pnacl-untrusted/x8664'
+PNACL_X8664_ROOT = BASE + '/../linux_arm-untrusted/libs-x8664'
 
-PNACL_BITCODE_ROOT = BASE + '/../pnacl-untrusted/bitcode'
+PNACL_BITCODE_ROOT = BASE + '/../linux_arm-untrusted/libs-bitcode'
 
 ######################################################################
 # FLAGS (can be overwritten by
