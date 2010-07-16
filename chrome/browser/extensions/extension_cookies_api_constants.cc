@@ -22,7 +22,7 @@ const wchar_t kTabIdsKey[] = L"tabIds";
 const wchar_t kUrlKey[] = L"url";
 const wchar_t kValueKey[] = L"value";
 
-const char kOnChanged[] = "experimental.cookies.onChanged";
+const char kOnChanged[] = "cookies.onChanged";
 
 const char kCookieSetFailedError[] =
     "Failed to parse or set cookie named \"*\".";

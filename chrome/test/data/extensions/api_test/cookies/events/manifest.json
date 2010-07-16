@@ -2,6 +2,6 @@
   "name": "events",
   "version": "1.0",
   "description": "Tests cookie events.",
-  "permissions": ["http://a.com/", "experimental"],
+  "permissions": ["cookies", "http://a.com/"],
   "background_page": "test.html"
 }

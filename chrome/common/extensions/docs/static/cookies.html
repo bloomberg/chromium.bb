@@ -1,0 +1,21 @@
+<!-- BEGIN AUTHORED CONTENT -->
+<h2 id="manifest">Manifest</h2>
+
+<p>To use the cookies API,
+you must declare the "cookies" permission in your manifest,
+along with <a href="manifest.html#permissions">host permissions</a>
+for any hosts whose cookies
+you want to access.
+For example:</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "cookies",
+    "*://*.google.com"
+  ]</b>,
+  ...
+}</pre>
+
+<!-- END AUTHORED CONTENT -->
