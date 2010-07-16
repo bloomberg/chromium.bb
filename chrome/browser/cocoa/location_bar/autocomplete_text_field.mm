@@ -40,7 +40,7 @@
   NSCell* cell = [super cell];
   if (!cell)
     return nil;
-  
+
   DCHECK([cell isKindOfClass:[AutocompleteTextFieldCell class]]);
   return static_cast<AutocompleteTextFieldCell*>(cell);
 }
@@ -404,9 +404,9 @@
   return [dropHandler_ performDragOperation:sender];
 }
 
-- (NSMenu*)actionMenuForEvent:(NSEvent*)event {
+- (NSMenu*)decorationMenuForEvent:(NSEvent*)event {
   AutocompleteTextFieldCell* cell = [self cell];
-  return [cell actionMenuForEvent:event inRect:[self bounds] ofView:self];
+  return [cell decorationMenuForEvent:event inRect:[self bounds] ofView:self];
 }
 
 @end

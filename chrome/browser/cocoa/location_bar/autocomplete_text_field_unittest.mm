@@ -33,49 +33,9 @@ class MockDecoration : public LocationBarDecoration {
 
   virtual void DrawInFrame(NSRect frame, NSView* control_view) { ; }
   MOCK_METHOD1(OnMousePressed, bool(NSRect frame));
+  MOCK_METHOD0(GetMenu, NSMenu*());
 
   bool visible_;
-};
-
-class MockPageActionImageView : public LocationBarViewMac::PageActionImageView {
- public:
-  MockPageActionImageView() {}
-  virtual ~MockPageActionImageView() {}
-
-  // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
-  // NSRect argument to OnMousePressed.
-  virtual void OnMousePressed(NSRect bounds) {
-    mouse_was_pressed_ = true;
-  }
-
-  bool MouseWasPressed() { return mouse_was_pressed_; }
-
-  void SetMenu(NSMenu* aMenu) {
-    menu_.reset([aMenu retain]);
-  }
-  virtual NSMenu* GetMenu() { return menu_; }
-
-private:
-  scoped_nsobject<NSMenu> menu_;
-  bool mouse_was_pressed_;
-};
-
-// TODO(shess): Consider lifting this to
-// autocomplete_text_field_unittest_helper.h to share this with the
-// cell tests.
-class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
- public:
-  TestPageActionViewList()
-      : LocationBarViewMac::PageActionViewList(NULL, NULL, NULL) {}
-  ~TestPageActionViewList() {
-    // |~PageActionViewList()| calls delete on the contents of
-    // |views_|, which here are refs to stack objects.
-    views_.clear();
-  }
-
-  void Add(LocationBarViewMac::PageActionImageView* view) {
-    views_.push_back(view);
-  }
 };
 
 // Mock up an incrementing event number.
@@ -123,8 +83,12 @@ class AutocompleteTextFieldTest : public CocoaTest {
 
     AutocompleteTextFieldCell* cell = [field_ cell];
     [cell clearDecorations];
+
     mock_left_decoration_.SetVisible(false);
     [cell addLeftDecoration:&mock_left_decoration_];
+
+    mock_right_decoration_.SetVisible(false);
+    [cell addRightDecoration:&mock_right_decoration_];
 
     window_delegate_.reset(
         [[AutocompleteTextFieldWindowTestDelegate alloc] init]);
@@ -159,6 +123,7 @@ class AutocompleteTextFieldTest : public CocoaTest {
 
   AutocompleteTextField* field_;
   MockDecoration mock_left_decoration_;
+  MockDecoration mock_right_decoration_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 };
 
@@ -587,7 +552,7 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
 }
 
 // Clicking a decoration should call decoration's OnMousePressed.
-TEST_F(AutocompleteTextFieldTest, DecorationMouseDown) {
+TEST_F(AutocompleteTextFieldTest, LeftDecorationMouseDown) {
   // At this point, not focussed.
   EXPECT_FALSE([field_ currentEditor]);
 
@@ -600,7 +565,7 @@ TEST_F(AutocompleteTextFieldTest, DecorationMouseDown) {
   NSEvent* downEvent = Event(field_, location, NSLeftMouseDown, 1);
   NSEvent* upEvent = Event(field_, location, NSLeftMouseUp, 1);
 
-  // Since location icon can be dragged, the mouse-press is sent on
+  // Since decorations can be dragged, the mouse-press is sent on
   // mouse-up.
   [NSApp postEvent:upEvent atStart:YES];
 
@@ -631,62 +596,27 @@ TEST_F(AutocompleteTextFieldTest, DecorationMouseDown) {
   // AutocompleteTextField notes in -dragImage:*.
 }
 
-// Clicking a Page Action icon should call its OnMousePressed.
-TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
+// Clicking a decoration should call decoration's OnMousePressed.
+TEST_F(AutocompleteTextFieldTest, RightDecorationMouseDown) {
+  // At this point, not focussed.
+  EXPECT_FALSE([field_ currentEditor]);
+
+  mock_right_decoration_.SetVisible(true);
+
   AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect iconFrame =
+      [cell frameForDecoration:&mock_right_decoration_ inFrame:[field_ bounds]];
+  const NSPoint location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  NSEvent* downEvent = Event(field_, location, NSLeftMouseDown, 1);
+  NSEvent* upEvent = Event(field_, location, NSLeftMouseUp, 1);
 
-  MockPageActionImageView page_action_view;
-  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  page_action_view.SetImage(image);
+  // Since decorations can be dragged, the mouse-press is sent on
+  // mouse-up.
+  [NSApp postEvent:upEvent atStart:YES];
 
-  MockPageActionImageView page_action_view2;
-  page_action_view2.SetImage(image);
-
-  TestPageActionViewList list;
-  list.Add(&page_action_view);
-  list.Add(&page_action_view2);
-  [cell setPageActionViewList:&list];
-
-  // One page action.
-  page_action_view.SetVisible(true);
-  page_action_view2.SetVisible(false);
-  NSRect iconFrame([cell pageActionFrameForIndex:0 inFrame:[field_ bounds]]);
-  NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
-  NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
-
-  [field_ mouseDown:event];
-  EXPECT_TRUE(page_action_view.MouseWasPressed());
-
-  // Two page actions, no lock.
-  page_action_view2.SetVisible(true);
-  iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
-  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
-  event = Event(field_, location, NSLeftMouseDown, 1);
-
-  [field_ mouseDown:event];
-  EXPECT_TRUE(page_action_view.MouseWasPressed());
-
-  iconFrame = [cell pageActionFrameForIndex:1 inFrame:[field_ bounds]];
-  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
-  event = Event(field_, location, NSLeftMouseDown, 1);
-
-  [field_ mouseDown:event];
-  EXPECT_TRUE(page_action_view.MouseWasPressed());
-
-  // Two page actions.
-  iconFrame = [cell pageActionFrameForIndex:0 inFrame:[field_ bounds]];
-  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
-  event = Event(field_, location, NSLeftMouseDown, 1);
-
-  [field_ mouseDown:event];
-  EXPECT_TRUE(page_action_view.MouseWasPressed());
-
-  iconFrame = [cell pageActionFrameForIndex:1 inFrame:[field_ bounds]];
-  location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
-  event = Event(field_, location, NSLeftMouseDown, 1);
-
-  [field_ mouseDown:event];
-  EXPECT_TRUE(page_action_view.MouseWasPressed());
+  EXPECT_CALL(mock_right_decoration_, OnMousePressed(_))
+      .WillOnce(Return(true));
+  [field_ mouseDown:downEvent];
 }
 
 // Test that page action menus are properly returned.
@@ -695,7 +625,7 @@ TEST_F(AutocompleteTextFieldTest, PageActionMouseDown) {
 // selected.  It's easier to mock the event here, though.  This code's
 // event-mockers might be worth promoting to |test_event_utils.h| or
 // |cocoa_test_helper.h|.
-TEST_F(AutocompleteTextFieldTest, PageActionMenu) {
+TEST_F(AutocompleteTextFieldTest, DecorationMenu) {
   AutocompleteTextFieldCell* cell = [field_ cell];
   const NSRect bounds([field_ bounds]);
 
@@ -705,37 +635,35 @@ TEST_F(AutocompleteTextFieldTest, PageActionMenu) {
 
   scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"Menu"]);
 
-  MockPageActionImageView page_action_views[2];
-  page_action_views[0].SetImage(image);
-  page_action_views[0].SetMenu(menu);
-  page_action_views[0].SetVisible(true);
-
-  page_action_views[1].SetImage(image);
-  page_action_views[1].SetVisible(true);
-
-  TestPageActionViewList list;
-  list.Add(&page_action_views[0]);
-  list.Add(&page_action_views[1]);
-  [cell setPageActionViewList:&list];
+  mock_left_decoration_.SetVisible(true);
+  mock_right_decoration_.SetVisible(true);
 
   // The item with a menu returns it.
-  NSRect actionFrame = [cell pageActionFrameForIndex:0 inFrame:bounds];
+  NSRect actionFrame = [cell frameForDecoration:&mock_right_decoration_
+                                        inFrame:bounds];
   NSPoint location = NSMakePoint(NSMidX(actionFrame), NSMidY(actionFrame));
   NSEvent* event = Event(field_, location, NSRightMouseDown, 1);
 
-  NSMenu *actionMenu = [field_ actionMenuForEvent:event];
-  EXPECT_EQ(actionMenu, menu);
+  // Check that the decoration is called, and the field returns the
+  // menu.
+  EXPECT_CALL(mock_right_decoration_, GetMenu())
+      .WillOnce(Return(menu.get()));
+  NSMenu *decorationMenu = [field_ decorationMenuForEvent:event];
+  EXPECT_EQ(decorationMenu, menu);
 
   // The item without a menu returns nil.
-  actionFrame = [cell pageActionFrameForIndex:1 inFrame:bounds];
+  EXPECT_CALL(mock_left_decoration_, GetMenu())
+      .WillOnce(Return(static_cast<NSMenu*>(nil)));
+  actionFrame = [cell frameForDecoration:&mock_left_decoration_
+                                 inFrame:bounds];
   location = NSMakePoint(NSMidX(actionFrame), NSMidY(actionFrame));
   event = Event(field_, location, NSRightMouseDown, 1);
-  EXPECT_FALSE([field_ actionMenuForEvent:event]);
+  EXPECT_FALSE([field_ decorationMenuForEvent:event]);
 
   // Something not in an action returns nil.
   location = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
   event = Event(field_, location, NSRightMouseDown, 1);
-  EXPECT_FALSE([field_ actionMenuForEvent:event]);
+  EXPECT_FALSE([field_ decorationMenuForEvent:event]);
 }
 
 // Verify that -setAttributedStringValue: works as expected when

@@ -29,6 +29,7 @@ class ContentSettingImageModel;
 class EVBubbleDecoration;
 @class ExtensionPopupController;
 class LocationIconDecoration;
+class PageActionDecoration;
 class Profile;
 class SelectedKeywordDecoration;
 class StarDecoration;
@@ -113,11 +114,6 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Returns |NSZeroPoint| if |page_action| is not present.
   NSPoint GetPageActionBubblePoint(ExtensionAction* page_action);
 
-  // PageActionImageView is nested in LocationBarViewMac, and only needed
-  // here so that we can access the icon of a page action when preview_enabled_
-  // has been set.
-  class PageActionImageView;
-
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,
       PageTransition::Type transition,
@@ -197,105 +193,6 @@ class LocationBarViewMac : public AutocompleteEditController,
     DISALLOW_COPY_AND_ASSIGN(LocationBarImageView);
   };
 
-  // PageActionImageView is used to display the icon for a given Page Action
-  // and notify the extension when the icon is clicked.
-  class PageActionImageView : public LocationBarImageView,
-                              public ImageLoadingTracker::Observer,
-                              public NotificationObserver {
-   public:
-    PageActionImageView(LocationBarViewMac* owner,
-                        Profile* profile,
-                        ExtensionAction* page_action);
-    virtual ~PageActionImageView();
-
-    ExtensionAction* page_action() { return page_action_; }
-
-    int current_tab_id() { return current_tab_id_; }
-
-    void set_preview_enabled(bool enabled) { preview_enabled_ = enabled; }
-
-    bool preview_enabled() const { return preview_enabled_; }
-
-    // When a new page action is created, all the icons are destroyed and
-    // recreated; at this point we need to calculate sizes to lay out the
-    // icons even though no images are available yet.  For this case, we return
-    // the default image size for a page icon.
-    virtual NSSize GetDefaultImageSize() const;
-
-    // Either notify listeners or show a popup depending on the Page Action.
-    virtual void OnMousePressed(NSRect bounds);
-
-    // Overridden from ImageLoadingTracker.
-    virtual void OnImageLoaded(
-        SkBitmap* image, ExtensionResource resource, int index);
-
-    // Called to notify the Page Action that it should determine whether to be
-    // visible or hidden. |contents| is the TabContents that is active, |url|
-    // is the current page URL.
-    void UpdateVisibility(TabContents* contents, const GURL& url);
-
-    // Sets the tooltip for this Page Action image.
-    void SetToolTip(NSString* tooltip);
-    void SetToolTip(std::string tooltip);
-
-    // Returns the tooltip for this Page Action image or |nil| if there is none.
-    virtual NSString* GetToolTip();
-
-    // Overridden to return a menu.
-    virtual NSMenu* GetMenu();
-
-   protected:
-    // For unit testing only.
-    PageActionImageView() : owner_(NULL),
-                            profile_(NULL),
-                            page_action_(NULL),
-                            tracker_(this),
-                            current_tab_id_(-1),
-                            preview_enabled_(false) {}
-
-   private:
-    // Overridden from NotificationObserver:
-    virtual void Observe(NotificationType type,
-                         const NotificationSource& source,
-                         const NotificationDetails& details);
-
-    // The location bar view that owns us.
-    LocationBarViewMac* owner_;
-
-    // The current profile (not owned by us).
-    Profile* profile_;
-
-    // The Page Action that this view represents. The Page Action is not owned
-    // by us, it resides in the extension of this particular profile.
-    ExtensionAction* page_action_;
-
-    // A cache of images the Page Actions might need to show, mapped by path.
-    typedef std::map<std::string, SkBitmap> PageActionMap;
-    PageActionMap page_action_icons_;
-
-    // The object that is waiting for the image loading to complete
-    // asynchronously.
-    ImageLoadingTracker tracker_;
-
-    // The tab id we are currently showing the icon for.
-    int current_tab_id_;
-
-    // The URL we are currently showing the icon for.
-    GURL current_url_;
-
-    // The string to show for a tooltip.
-    scoped_nsobject<NSString> tooltip_;
-
-    // This is used for post-install visual feedback. The page_action icon
-    // is briefly shown even if it hasn't been enabled by its extension.
-    bool preview_enabled_;
-
-    // Used to register for notifications received by NotificationObserver.
-    NotificationRegistrar registrar_;
-
-    DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
-  };
-
   // ContentSettingImageView is used to display the content settings images
   // on the current page.
   class ContentSettingImageView : public LocationBarImageView {
@@ -327,47 +224,19 @@ class LocationBarViewMac : public AutocompleteEditController,
   };
   typedef ScopedVector<ContentSettingImageView> ContentSettingViews;
 
-  class PageActionViewList {
-   public:
-    PageActionViewList(LocationBarViewMac* location_bar,
-                       Profile* profile,
-                       ToolbarModel* toolbar_model)
-        : owner_(location_bar),
-          profile_(profile),
-          toolbar_model_(toolbar_model) {}
-    ~PageActionViewList() {
-      DeleteAll();
-    }
-
-    void DeleteAll();
-    void RefreshViews();
-
-    PageActionImageView* ViewAt(size_t index);
-
-    size_t Count();
-    size_t VisibleCount();
-
-    // Called when the action at |index| is clicked. The |iconFrame| should
-    // describe the bounds of the affected action's icon.
-    void OnMousePressed(NSRect iconFrame, size_t index);
-
-   protected:
-    // Any installed Page Actions.  Exposed for unit testing only.
-    std::vector<PageActionImageView*> views_;
-
-   private:
-    // The location bar view that owns us.
-    LocationBarViewMac* owner_;
-
-    Profile* profile_;
-    ToolbarModel* toolbar_model_;
-
-    DISALLOW_COPY_AND_ASSIGN(PageActionViewList);
-  };
-
  private:
   // Posts |notification| to the default notification center.
   void PostNotification(NSString* notification);
+
+  // Return the decoration for |page_action|.
+  PageActionDecoration* GetPageActionDecoration(ExtensionAction* page_action);
+
+  // Clear the page-action decorations.
+  void DeletePageActionDecorations();
+
+  // Re-generate the page-action decorations from the profile's
+  // extension service.
+  void RefreshPageActionDecorations();
 
   // Updates visibility of the content settings icons based on the current
   // tab contents state.
@@ -403,7 +272,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   scoped_ptr<StarDecoration> star_decoration_;
 
   // Any installed Page Actions.
-  PageActionViewList page_action_views_;
+  ScopedVector<PageActionDecoration> page_action_decorations_;
 
   // The content blocked views.
   ContentSettingViews content_setting_views_;

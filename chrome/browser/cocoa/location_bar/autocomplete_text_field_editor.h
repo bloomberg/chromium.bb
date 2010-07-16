@@ -9,7 +9,6 @@
 
 @class AutocompleteTextField;
 class AutocompleteTextFieldObserver;
-class Profile;
 
 // AutocompleteTextFieldEditor customized the AutocompletTextField
 // field editor (helper text-view used in editing).  It intercepts UI
@@ -26,9 +25,6 @@ class Profile;
   // start-up time regression.
   scoped_nsobject<URLDropTargetHandler> dropHandler_;
 
-  // The browser profile for the editor. Weak.
-  Profile* profile_;
-
   scoped_nsobject<NSCharacterSet> forbiddenCharacters_;
 
   // Indicates if the field editor's interpretKeyEvents: method is being called.
@@ -42,8 +38,6 @@ class Profile;
   // Indicates if the text has been changed by key events.
   BOOL textChangedByKeyEvents_;
 }
-
-@property(nonatomic) Profile* profile;
 
 // The delegate is always an AutocompleteTextField*.  Override the superclass
 // implementations to allow for proper typing.

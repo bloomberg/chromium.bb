@@ -122,7 +122,7 @@ TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
     id delegate = [OCMockObject mockForClass:[AutocompleteTextField class]];
     [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
       isKindOfClass:[AutocompleteTextField class]];
-    [[[delegate expect] andReturn:menu.get()] actionMenuForEvent:event];
+    [[[delegate expect] andReturn:menu.get()] decorationMenuForEvent:event];
     [editor_ setDelegate:delegate];
     NSMenu* contextMenu = [editor_ menuForEvent:event];
     [delegate verify];
@@ -137,7 +137,7 @@ TEST_F(AutocompleteTextFieldEditorTest, PageActionMenus) {
     id delegate = [OCMockObject mockForClass:[AutocompleteTextField class]];
     [[[delegate stub] andReturnValue:OCMOCK_VALUE(yes)]
       isKindOfClass:[AutocompleteTextField class]];
-    [[[delegate expect] andReturn:nil] actionMenuForEvent:event];
+    [[[delegate expect] andReturn:nil] decorationMenuForEvent:event];
     [editor_ setDelegate:delegate];
     NSMenu* contextMenu = [editor_ menuForEvent:event];
     [delegate verify];

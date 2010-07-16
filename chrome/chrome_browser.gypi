@@ -892,6 +892,8 @@
         'browser/cocoa/location_bar/location_bar_view_mac.mm',
         'browser/cocoa/location_bar/location_icon_decoration.h',
         'browser/cocoa/location_bar/location_icon_decoration.mm',
+        'browser/cocoa/location_bar/page_action_decoration.h',
+        'browser/cocoa/location_bar/page_action_decoration.mm',
         'browser/cocoa/location_bar/selected_keyword_decoration.h',
         'browser/cocoa/location_bar/selected_keyword_decoration.mm',
         'browser/cocoa/location_bar/star_decoration.h',

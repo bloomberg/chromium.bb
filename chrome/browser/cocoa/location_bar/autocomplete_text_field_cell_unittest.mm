@@ -41,31 +41,9 @@ class MockDecoration : public LocationBarDecoration {
   bool visible_;
 };
 
-// A testing subclass that doesn't bother hooking up the Page Action itself.
-class TestPageActionImageView : public LocationBarViewMac::PageActionImageView {
- public:
-  TestPageActionImageView() {}
-  ~TestPageActionImageView() {}
-};
-
-class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
- public:
-  TestPageActionViewList()
-      : LocationBarViewMac::PageActionViewList(NULL, NULL, NULL) {}
-  ~TestPageActionViewList() {
-    // |~PageActionViewList()| calls delete on the contents of
-    // |views_|, which here are refs to stack objects.
-    views_.clear();
-  }
-
-  void Add(LocationBarViewMac::PageActionImageView* view) {
-    views_.push_back(view);
-  }
-};
-
 class AutocompleteTextFieldCellTest : public CocoaTest {
  public:
-  AutocompleteTextFieldCellTest() : page_action_views_() {
+  AutocompleteTextFieldCellTest() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     const NSRect frame = NSMakeRect(0, 0, kWidth, 30);
@@ -78,11 +56,14 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
         [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
     [cell setEditable:YES];
     [cell setBordered:YES];
-    [cell setPageActionViewList:&page_action_views_];
 
     [cell clearDecorations];
     mock_left_decoration_.SetVisible(false);
     [cell addLeftDecoration:&mock_left_decoration_];
+    mock_right_decoration0_.SetVisible(false);
+    mock_right_decoration1_.SetVisible(false);
+    [cell addRightDecoration:&mock_right_decoration0_];
+    [cell addRightDecoration:&mock_right_decoration1_];
 
     [view_ setCell:cell.get()];
 
@@ -91,7 +72,8 @@ class AutocompleteTextFieldCellTest : public CocoaTest {
 
   NSTextField* view_;
   MockDecoration mock_left_decoration_;
-  TestPageActionViewList page_action_views_;
+  MockDecoration mock_right_decoration0_;
+  MockDecoration mock_right_decoration1_;
 };
 
 // Basic view tests (AddRemove, Display).
@@ -301,6 +283,12 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
+
+  mock_right_decoration0_.SetVisible(true);
+  textFrame = [cell textFrameForFrame:bounds];
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(drawingRect));
+  EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
 }
 
 // Test that left decorations are at the correct edge of the cell.
@@ -324,96 +312,35 @@ TEST_F(AutocompleteTextFieldCellTest, LeftDecorationFrame) {
   EXPECT_GT(NSMinX(textFrame), NSMinX(decorationRect));
 }
 
-// Test Page Action counts.
-TEST_F(AutocompleteTextFieldCellTest, PageActionCount) {
+// Test that right decorations are at the correct edge of the cell.
+TEST_F(AutocompleteTextFieldCellTest, RightDecorationFrame) {
   AutocompleteTextFieldCell* cell =
       static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  const NSRect bounds = [view_ bounds];
 
-  TestPageActionImageView page_action_view;
-  TestPageActionImageView page_action_view2;
+  mock_right_decoration0_.SetVisible(true);
+  mock_right_decoration1_.SetVisible(true);
 
-  TestPageActionViewList list;
-  [cell setPageActionViewList:&list];
+  const NSRect decoration0Rect =
+      [cell frameForDecoration:&mock_right_decoration0_ inFrame:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(decoration0Rect));
+  EXPECT_TRUE(NSContainsRect(bounds, decoration0Rect));
 
-  EXPECT_EQ(0u, [cell pageActionCount]);
-  list.Add(&page_action_view);
-  EXPECT_EQ(1u, [cell pageActionCount]);
-  list.Add(&page_action_view2);
-  EXPECT_EQ(2u, [cell pageActionCount]);
-}
+  // Right-side decorations are ordered from rightmost to leftmost.
+  // Outer decoration (0) to right of inner decoration (1).
+  const NSRect decoration1Rect =
+      [cell frameForDecoration:&mock_right_decoration1_ inFrame:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(decoration1Rect));
+  EXPECT_TRUE(NSContainsRect(bounds, decoration1Rect));
+  EXPECT_LT(NSMinX(decoration1Rect), NSMinX(decoration0Rect));
 
-// Test that Page Action icons are properly placed.
-TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
-  AutocompleteTextFieldCell* cell =
-      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
-  const NSRect bounds([view_ bounds]);
+  // Decoration should be right of |drawingRect|.
+  const NSRect drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_LT(NSMinX(drawingRect), NSMinX(decoration1Rect));
 
-  TestPageActionImageView page_action_view;
-  // We'll assume that the extensions code enforces icons smaller than the
-  // location bar.
-  NSImage* image = [[[NSImage alloc]
-      initWithSize:NSMakeSize(NSHeight(bounds) - 4, NSHeight(bounds) - 4)]
-      autorelease];
-  page_action_view.SetImage(image);
-
-  TestPageActionImageView page_action_view2;
-  page_action_view2.SetImage(image);
-
-  TestPageActionViewList list;
-  list.Add(&page_action_view);
-  list.Add(&page_action_view2);
-  [cell setPageActionViewList:&list];
-
-  page_action_view.SetVisible(false);
-  page_action_view2.SetVisible(false);
-  EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:0 inFrame:bounds]));
-  EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:1 inFrame:bounds]));
-
-  // One page action, no lock icon.
-  page_action_view.SetVisible(true);
-  NSRect iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];
-
-  EXPECT_FALSE(NSIsEmptyRect(iconRect0));
-  EXPECT_TRUE(NSContainsRect(bounds, iconRect0));
-
-  // Make sure we are right of the |drawingRect|.
-  NSRect drawingRect = [cell drawingRectForBounds:bounds];
-  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect0));
-
-  // Make sure we're right of the |textFrame|.
-  NSRect textFrame = [cell textFrameForFrame:bounds];
-  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect0));
-
-  // Two page actions plus a security label.
-  page_action_view2.SetVisible(true);
-  NSArray* icons = [cell layedOutIcons:bounds];
-  ASSERT_EQ(2u, [icons count]);
-
-  // TODO(shess): page-action list is inverted from -layedOutIcons:
-  // Yes, this is confusing, fix it.
-  iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];
-  NSRect iconRect1 = [cell pageActionFrameForIndex:1 inFrame:bounds];
-  NSRect labelRect = [[icons objectAtIndex:0] rect];
-
-  EXPECT_TRUE(NSEqualRects(iconRect0, [[icons objectAtIndex:1] rect]));
-  EXPECT_TRUE(NSEqualRects(iconRect1, [[icons objectAtIndex:0] rect]));
-
-  // Make sure they're all in the expected order, and right of the |drawingRect|
-  // and |textFrame|.
-  drawingRect = [cell drawingRectForBounds:bounds];
-  textFrame = [cell textFrameForFrame:bounds];
-
-  EXPECT_FALSE(NSIsEmptyRect(iconRect0));
-  EXPECT_TRUE(NSContainsRect(bounds, iconRect0));
-  EXPECT_FALSE(NSIsEmptyRect(iconRect1));
-  EXPECT_TRUE(NSContainsRect(bounds, iconRect1));
-  EXPECT_FALSE(NSIsEmptyRect(labelRect));
-  EXPECT_TRUE(NSContainsRect(bounds, labelRect));
-
-  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect1));
-  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect1));
-  EXPECT_LE(NSMaxX(iconRect1), NSMinX(iconRect0));
-  EXPECT_LE(NSMaxX(labelRect), NSMinX(iconRect0));
+  // Decoration should be right of |textFrame|.
+  const NSRect textFrame = [cell textFrameForFrame:bounds];
+  EXPECT_LT(NSMinX(textFrame), NSMinX(decoration1Rect));
 }
 
   NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];

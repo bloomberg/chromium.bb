@@ -25,6 +25,7 @@
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/location_bar/ev_bubble_decoration.h"
 #import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
+#import "chrome/browser/cocoa/location_bar/page_action_decoration.h"
 #import "chrome/browser/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/cocoa/location_bar/star_decoration.h"
 #include "chrome/browser/command_updater.h"
@@ -71,7 +72,6 @@ LocationBarViewMac::LocationBarViewMac(
           new EVBubbleDecoration(location_icon_decoration_.get(),
                                  [field_ font])),
       star_decoration_(new StarDecoration(command_updater)),
-      page_action_views_(this, profile, toolbar_model),
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
@@ -86,7 +86,6 @@ LocationBarViewMac::LocationBarViewMac(
   }
 
   AutocompleteTextFieldCell* cell = [field_ cell];
-  [cell setPageActionViewList:&page_action_views_];
   [cell setContentSettingViewsList:&content_setting_views_];
 
   registrar_.Add(this,
@@ -96,9 +95,7 @@ LocationBarViewMac::LocationBarViewMac(
 
 LocationBarViewMac::~LocationBarViewMac() {
   // Disconnect from cell in case it outlives us.
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  [cell setPageActionViewList:NULL];
-  [cell clearDecorations];
+  [[field_ cell] clearDecorations];
 }
 
 void LocationBarViewMac::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
@@ -153,22 +150,22 @@ void LocationBarViewMac::UpdateContentSettingsIcons() {
 }
 
 void LocationBarViewMac::UpdatePageActions() {
-  size_t count_before = page_action_views_.Count();
-  page_action_views_.RefreshViews();
-  [field_ resetFieldEditorFrameIfNeeded];
-  if (page_action_views_.Count() != count_before) {
+  size_t count_before = page_action_decorations_.size();
+  RefreshPageActionDecorations();
+  Layout();
+  if (page_action_decorations_.size() != count_before) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         Source<LocationBar>(this),
         NotificationService::NoDetails());
   }
-  [field_ setNeedsDisplay:YES];
 }
 
 void LocationBarViewMac::InvalidatePageActions() {
-  size_t count_before = page_action_views_.Count();
-  page_action_views_.DeleteAll();
-  if (page_action_views_.Count() != count_before) {
+  size_t count_before = page_action_decorations_.size();
+  DeletePageActionDecorations();
+  Layout();
+  if (page_action_decorations_.size() != count_before) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
         Source<LocationBar>(this),
@@ -183,7 +180,7 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
-  page_action_views_.RefreshViews();
+  RefreshPageActionDecorations();
   RefreshContentSettingsViews();
   // AutocompleteEditView restores state if the tab is non-NULL.
   edit_view_->Update(should_restore_state ? contents : NULL);
@@ -264,15 +261,31 @@ void LocationBarViewMac::Revert() {
 
 // TODO(pamg): Change all these, here and for other platforms, to size_t.
 int LocationBarViewMac::PageActionCount() {
-  return static_cast<int>(page_action_views_.Count());
+  return static_cast<int>(page_action_decorations_.size());
 }
 
 int LocationBarViewMac::PageActionVisibleCount() {
-  return static_cast<int>(page_action_views_.VisibleCount());
+  int result = 0;
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
+    if (page_action_decorations_[i]->IsVisible())
+      ++result;
+  }
+  return result;
 }
 
 TabContents* LocationBarViewMac::GetTabContents() const {
   return browser_->GetSelectedTabContents();
+}
+
+PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
+    ExtensionAction* page_action) {
+  DCHECK(page_action);
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
+    if (page_action_decorations_[i]->page_action() == page_action)
+      return page_action_decorations_[i];
+  }
+  NOTREACHED();
+  return NULL;
 }
 
 void LocationBarViewMac::SetPreviewEnabledPageAction(
@@ -281,59 +294,48 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
   TabContents* contents = GetTabContents();
   if (!contents)
     return;
-  page_action_views_.RefreshViews();
-  [field_ setNeedsDisplay:YES];
+  RefreshPageActionDecorations();
+  Layout();
 
-  LocationBarViewMac::PageActionImageView* page_action_image_view = NULL;
-  for (size_t i = 0; i < page_action_views_.Count(); ++i) {
-    if (page_action_views_.ViewAt(i)->page_action() == page_action)
-      page_action_image_view = page_action_views_.ViewAt(i);
-  }
-  DCHECK(page_action_image_view);
-  if (!page_action_image_view)
+  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
+  DCHECK(decoration);
+  if (!decoration)
     return;
 
-  page_action_image_view->set_preview_enabled(preview_enabled);
-  page_action_image_view->UpdateVisibility(contents,
+  decoration->set_preview_enabled(preview_enabled);
+  decoration->UpdateVisibility(contents,
       GURL(WideToUTF8(toolbar_model_->GetText())));
 }
 
 NSPoint LocationBarViewMac::GetPageActionBubblePoint(
     ExtensionAction* page_action) {
-  DCHECK(page_action);
-  size_t index = 0;
-  for (; index < page_action_views_.Count(); ++index) {
-    if (page_action_views_.ViewAt(index)->page_action() == page_action)
-      break;
-  }
-  DCHECK_LT(index, page_action_views_.Count());
-  if (index == page_action_views_.Count())
+  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
+  if (!decoration)
     return NSZeroPoint;
 
   AutocompleteTextFieldCell* cell = [field_ cell];
-  NSRect frame = [cell pageActionFrameForIndex:index inFrame:[field_ bounds]];
-  if (!NSIsEmptyRect(frame)) {
-    frame = [field_ convertRect:frame toView:nil];
-    return NSMakePoint(NSMidX(frame), NSMaxY(frame));
-  }
+  NSRect frame = [cell frameForDecoration:decoration inFrame:[field_ bounds]];
+  DCHECK(!NSIsEmptyRect(frame));
+  if (NSIsEmptyRect(frame))
+    return NSZeroPoint;
 
-  NOTREACHED();
-  return NSZeroPoint;
+  NSPoint bubble_point = decoration->GetBubblePointInFrame(frame);
+  return [field_ convertPoint:bubble_point toView:nil];
 }
 
 ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
-  if (index < page_action_views_.Count())
-    return page_action_views_.ViewAt(index)->page_action();
+  if (index < page_action_decorations_.size())
+    return page_action_decorations_[index]->page_action();
   NOTREACHED();
   return NULL;
 }
 
 ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
   size_t current = 0;
-  for (size_t i = 0; i < page_action_views_.Count(); ++i) {
-    if (page_action_views_.ViewAt(i)->IsVisible()) {
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
+    if (page_action_decorations_[i]->IsVisible()) {
       if (current == index)
-        return page_action_views_.ViewAt(i)->page_action();
+        return page_action_decorations_[i]->page_action();
 
       ++current;
     }
@@ -344,11 +346,9 @@ ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
 }
 
 void LocationBarViewMac::TestPageActionPressed(size_t index) {
-  if (index >= page_action_views_.Count()) {
-    NOTREACHED();
-    return;
-  }
-  page_action_views_.OnMousePressed(NSZeroRect, index);
+  DCHECK_LT(index, page_action_decorations_.size());
+  if (index < page_action_decorations_.size())
+    page_action_decorations_[index]->OnMousePressed(NSZeroRect);
 }
 
 void LocationBarViewMac::SetEditable(bool editable) {
@@ -484,207 +484,6 @@ NSSize LocationBarViewMac::LocationBarImageView::GetImageSize() const {
   return GetDefaultImageSize();
 }
 
-// PageActionImageView----------------------------------------------------------
-
-LocationBarViewMac::PageActionImageView::PageActionImageView(
-    LocationBarViewMac* owner,
-    Profile* profile,
-    ExtensionAction* page_action)
-    : owner_(owner),
-      profile_(profile),
-      page_action_(page_action),
-      tracker_(this),
-      current_tab_id_(-1),
-      preview_enabled_(false) {
-  Extension* extension = profile->GetExtensionsService()->GetExtensionById(
-      page_action->extension_id(), false);
-  DCHECK(extension);
-
-  // Load all the icons declared in the manifest. This is the contents of the
-  // icons array, plus the default_icon property, if any.
-  std::vector<std::string> icon_paths(*page_action->icon_paths());
-  if (!page_action_->default_icon_path().empty())
-    icon_paths.push_back(page_action_->default_icon_path());
-
-  for (std::vector<std::string>::iterator iter = icon_paths.begin();
-       iter != icon_paths.end(); ++iter) {
-    tracker_.LoadImage(extension, extension->GetResource(*iter),
-                       gfx::Size(Extension::kPageActionIconMaxSize,
-                                 Extension::kPageActionIconMaxSize),
-                       ImageLoadingTracker::DONT_CACHE);
-  }
-
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-      Source<Profile>(profile_));
-}
-
-LocationBarViewMac::PageActionImageView::~PageActionImageView() {
-}
-
-NSSize LocationBarViewMac::PageActionImageView::GetDefaultImageSize() const {
-  return NSMakeSize(Extension::kPageActionIconMaxSize,
-                    Extension::kPageActionIconMaxSize);
-}
-
-// Overridden from LocationBarImageView. Either notify listeners or show a
-// popup depending on the Page Action.
-void LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
-  if (current_tab_id_ < 0) {
-    NOTREACHED() << "No current tab.";
-    // We don't want other code to try and handle this click.  Returning true
-    // prevents this by indicating that we handled it.
-    return;
-  }
-
-  if (page_action_->HasPopup(current_tab_id_)) {
-    AutocompleteTextField* textField = owner_->GetAutocompleteTextField();
-    NSWindow* window = [textField window];
-    NSRect relativeBounds = [[window contentView] convertRect:bounds
-                                                     fromView:textField];
-    NSPoint arrowPoint = NSMakePoint(NSMinX(relativeBounds),
-                                     NSMinY(relativeBounds));
-    // Adjust the anchor point to be at the center of the page action icon.
-    arrowPoint.x += [GetImage() size].width / 2;
-
-    [ExtensionPopupController showURL:page_action_->GetPopupUrl(current_tab_id_)
-                            inBrowser:BrowserList::GetLastActive()
-                           anchoredAt:arrowPoint
-                        arrowLocation:info_bubble::kTopRight
-                              devMode:NO];
-  } else {
-    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
-        profile_, page_action_->extension_id(), page_action_->id(),
-        current_tab_id_, current_url_.spec(),
-        1);
-  }
-}
-
-void LocationBarViewMac::PageActionImageView::OnImageLoaded(
-    SkBitmap* image, ExtensionResource resource, int index) {
-  // We loaded icons()->size() icons, plus one extra if the Page Action had
-  // a default icon.
-  int total_icons = static_cast<int>(page_action_->icon_paths()->size());
-  if (!page_action_->default_icon_path().empty())
-    total_icons++;
-  DCHECK(index < total_icons);
-
-  // Map the index of the loaded image back to its name. If we ever get an
-  // index greater than the number of icons, it must be the default icon.
-  if (image) {
-    if (index < static_cast<int>(page_action_->icon_paths()->size()))
-      page_action_icons_[page_action_->icon_paths()->at(index)] = *image;
-    else
-      page_action_icons_[page_action_->default_icon_path()] = *image;
-  }
-
-  owner_->UpdatePageActions();
-}
-
-void LocationBarViewMac::PageActionImageView::UpdateVisibility(
-    TabContents* contents, const GURL& url) {
-  // Save this off so we can pass it back to the extension when the action gets
-  // executed. See PageActionImageView::OnMousePressed.
-  current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
-  current_url_ = url;
-
-  bool visible = preview_enabled_ ||
-                 page_action_->GetIsVisible(current_tab_id_);
-  if (visible) {
-    SetToolTip(page_action_->GetTitle(current_tab_id_));
-
-    // Set the image.
-    // It can come from three places. In descending order of priority:
-    // - The developer can set it dynamically by path or bitmap. It will be in
-    //   page_action_->GetIcon().
-    // - The developer can set it dynamically by index. It will be in
-    //   page_action_->GetIconIndex().
-    // - It can be set in the manifest by path. It will be in page_action_->
-    //   default_icon_path().
-
-    // First look for a dynamically set bitmap.
-    SkBitmap skia_icon = page_action_->GetIcon(current_tab_id_);
-    if (skia_icon.isNull()) {
-      int icon_index = page_action_->GetIconIndex(current_tab_id_);
-      std::string icon_path;
-      if (icon_index >= 0)
-        icon_path = page_action_->icon_paths()->at(icon_index);
-      else
-        icon_path = page_action_->default_icon_path();
-
-      if (!icon_path.empty()) {
-        PageActionMap::iterator iter = page_action_icons_.find(icon_path);
-        if (iter != page_action_icons_.end())
-          skia_icon = iter->second;
-      }
-    }
-
-    if (!skia_icon.isNull())
-      SetImage(gfx::SkBitmapToNSImage(skia_icon));
-  }
-  if (IsVisible() != visible) {
-    SetVisible(visible);
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-        Source<ExtensionAction>(page_action_),
-        Details<TabContents>(contents));
-  }
-}
-
-void LocationBarViewMac::PageActionImageView::SetToolTip(NSString* tooltip) {
-  if (!tooltip) {
-    tooltip_.reset();
-    return;
-  }
-  tooltip_.reset([tooltip retain]);
-}
-
-void LocationBarViewMac::PageActionImageView::SetToolTip(std::string tooltip) {
-  if (tooltip.empty()) {
-    SetToolTip(nil);
-    return;
-  }
-  SetToolTip(base::SysUTF8ToNSString(tooltip));
-}
-
-NSString* LocationBarViewMac::PageActionImageView::GetToolTip() {
-  return tooltip_.get();
-}
-
-NSMenu* LocationBarViewMac::PageActionImageView::GetMenu() {
-  if (!profile_)
-    return nil;
-  ExtensionsService* service = profile_->GetExtensionsService();
-  if (!service)
-    return nil;
-  Extension* extension = service->GetExtensionById(
-      page_action_->extension_id(), false);
-  DCHECK(extension);
-  if (!extension)
-    return nil;
-  return [[[ExtensionActionContextMenu alloc]
-      initWithExtension:extension
-                profile:profile_
-        extensionAction:page_action_] autorelease];
-}
-
-void LocationBarViewMac::PageActionImageView::Observe(
-    NotificationType type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
-      ExtensionPopupController* popup = [ExtensionPopupController popup];
-      if (popup && ![popup isClosing])
-        [popup close];
-
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification";
-      break;
-  }
-}
-
 // ContentSettingsImageView-----------------------------------------------------
 LocationBarViewMac::ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType settings_type,
@@ -754,26 +553,26 @@ void LocationBarViewMac::ContentSettingImageView::SetToolTip(NSString* tooltip)
   tooltip_.reset([tooltip retain]);
 }
 
-// PageActionViewList-----------------------------------------------------------
+void LocationBarViewMac::DeletePageActionDecorations() {
+  // TODO(shess): Deleting these decorations could result in the cell
+  // refering to them before things are laid out again.  Meanwhile, at
+  // least fail safe.
+  [[field_ cell] clearDecorations];
 
-void LocationBarViewMac::PageActionViewList::DeleteAll() {
-  if (!views_.empty()) {
-    STLDeleteContainerPointers(views_.begin(), views_.end());
-    views_.clear();
-  }
+  page_action_decorations_.reset();
 }
 
-void LocationBarViewMac::PageActionViewList::RefreshViews() {
-  if (!owner_->IsEditable()) {
-    DeleteAll();
+void LocationBarViewMac::RefreshPageActionDecorations() {
+  if (!IsEditable()) {
+    DeletePageActionDecorations();
     return;
   }
 
-  std::vector<ExtensionAction*> page_actions;
   ExtensionsService* service = profile_->GetExtensionsService();
   if (!service)
     return;
 
+  std::vector<ExtensionAction*> page_actions;
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
     if (service->extensions()->at(i)->page_action())
       page_actions.push_back(service->extensions()->at(i)->page_action());
@@ -781,51 +580,25 @@ void LocationBarViewMac::PageActionViewList::RefreshViews() {
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any Page Actions) load.
-  if (page_actions.size() != views_.size()) {
-    DeleteAll();  // Delete the old views (if any).
-
-    views_.resize(page_actions.size());
+  if (page_actions.size() != page_action_decorations_.size()) {
+    DeletePageActionDecorations();  // Delete the old views (if any).
 
     for (size_t i = 0; i < page_actions.size(); ++i) {
-      views_[i] = new PageActionImageView(owner_, profile_, page_actions[i]);
-      views_[i]->SetVisible(false);
+      page_action_decorations_.push_back(
+          new PageActionDecoration(this, profile_, page_actions[i]));
     }
   }
 
-  if (views_.empty())
+  if (page_action_decorations_.empty())
     return;
 
-  TabContents* contents = owner_->GetTabContents();
+  TabContents* contents = GetTabContents();
   if (!contents)
     return;
 
   GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
-  for (size_t i = 0; i < views_.size(); ++i)
-    views_[i]->UpdateVisibility(contents, url);
-}
-
-LocationBarViewMac::PageActionImageView*
-    LocationBarViewMac::PageActionViewList::ViewAt(size_t index) {
-  CHECK(index < Count());
-  return views_[index];
-}
-
-size_t LocationBarViewMac::PageActionViewList::Count() {
-  return views_.size();
-}
-
-size_t LocationBarViewMac::PageActionViewList::VisibleCount() {
-  size_t result = 0;
-  for (size_t i = 0; i < views_.size(); ++i) {
-    if (views_[i]->IsVisible())
-      ++result;
-  }
-  return result;
-}
-
-void LocationBarViewMac::PageActionViewList::OnMousePressed(NSRect iconFrame,
-                                                            size_t index) {
-  ViewAt(index)->OnMousePressed(iconFrame);
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i)
+    page_action_decorations_[i]->UpdateVisibility(contents, url);
 }
 
 // TODO(shess): This function should over time grow to closely match
@@ -842,6 +615,11 @@ void LocationBarViewMac::Layout() {
   [cell addLeftDecoration:selected_keyword_decoration_.get()];
   [cell addLeftDecoration:ev_bubble_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
+
+  // Display order is right to left.
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
+    [cell addRightDecoration:page_action_decorations_[i]];
+  }
 
   // By default only the location icon is visible.
   location_icon_decoration_->SetVisible(true);

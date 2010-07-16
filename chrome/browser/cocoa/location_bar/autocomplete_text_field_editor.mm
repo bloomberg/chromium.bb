@@ -14,15 +14,8 @@
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
-#include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/common/extensions/extension_action.h"
-#include "chrome/browser/profile.h"
-
-class Extension;
 
 @implementation AutocompleteTextFieldEditor
-
-@synthesize profile = profile_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
@@ -131,7 +124,7 @@ class Extension;
   // the control and cell calls.
   // TODO(shess): Determine if the page-action part of this can be
   // moved to the cell.
-  NSMenu* actionMenu = [[self delegate] actionMenuForEvent:event];
+  NSMenu* actionMenu = [[self delegate] decorationMenuForEvent:event];
   if (actionMenu)
     return actionMenu;
 

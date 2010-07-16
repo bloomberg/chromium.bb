@@ -455,7 +455,6 @@ class PrefObserverBridge : public NotificationObserver {
     if (autocompleteTextFieldEditor_.get() == nil) {
       autocompleteTextFieldEditor_.reset(
           [[AutocompleteTextFieldEditor alloc] init]);
-      [autocompleteTextFieldEditor_ setProfile:profile_];
     }
 
     // This needs to be called every time, otherwise notifications

@@ -364,10 +364,6 @@ void CalculatePositionsInFrame(
   hintString_.reset();
 }
 
-- (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list {
-  page_action_views_ = list;
-}
-
 - (void)setContentSettingViewsList:
     (LocationBarViewMac::ContentSettingViews*)views {
   content_setting_views_ = views;
@@ -460,33 +456,6 @@ void CalculatePositionsInFrame(
   return textFrame;
 }
 
-- (size_t)pageActionCount {
-  // page_action_views_ may be NULL during testing, or if the
-  // containing LocationViewMac object has already been destructed
-  // (happens sometimes during window shutdown).
-  if (!page_action_views_)
-    return 0;
-  return page_action_views_->Count();
-}
-
-- (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame {
-  LocationBarViewMac::PageActionImageView* view =
-      page_action_views_->ViewAt(index);
-
-  // When this method is called, all the icon images are still loading, so
-  // just check to see whether the view is visible when deciding whether
-  // its NSRect should be made available.
-  if (!view->IsVisible())
-    return NSZeroRect;
-
-  for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
-    if (view == [icon view])
-      return [icon rect];
-  }
-  NOTREACHED();
-  return NSZeroRect;
-}
-
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   DCHECK(hintString_);
 
@@ -564,14 +533,6 @@ void CalculatePositionsInFrame(
                  content_setting_views_->end());
   }
 
-  // TODO(shess): Previous implementation of this method made a
-  // right-to-left array, so add the page-action items in that order.
-  // As part of the refactor mentioned above, lay everything out
-  // nicely left-to-right.
-  for (size_t i = [self pageActionCount]; i-- > 0;) {
-    views.push_back(page_action_views_->ViewAt(i));
-  }
-
   // Load the visible views into |result|.
   for (std::vector<LocationBarViewMac::LocationBarImageView*>::const_iterator
            iter = views.begin(); iter != views.end(); ++iter) {
@@ -636,9 +597,9 @@ void CalculatePositionsInFrame(
   return nil;
 }
 
-- (NSMenu*)actionMenuForEvent:(NSEvent*)theEvent
-                       inRect:(NSRect)cellFrame
-                       ofView:(AutocompleteTextField*)controlView {
+- (NSMenu*)decorationMenuForEvent:(NSEvent*)theEvent
+                           inRect:(NSRect)cellFrame
+                           ofView:(AutocompleteTextField*)controlView {
   LocationBarDecoration* decoration =
       [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
   if (decoration)
