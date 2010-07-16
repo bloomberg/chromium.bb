@@ -23,12 +23,9 @@ const char* GetCommandName(CommandId id) {
   #undef GLES2_CMD_OP
   };
 
-  int index = static_cast<int>(id) - kStartPoint - 1;
-  return (index >= 0 && index < kNumCommands) ?
-      names[index] : "*unknown-command*";
+  size_t index = static_cast<size_t>(id) - kStartPoint - 1;
+  return (index < arraysize(names)) ?  names[index] : "*unknown-command*";
 }
 
 }  // namespace gles2
 }  // namespace gpu
-
-
