@@ -58,6 +58,13 @@ AdvancedOptions.prototype = {
             [String($('sslUseSSL2').checked)]);
       };
     }
+
+    // Remove Windows-style accelerators from the Browse button label.
+    // TODO(csilv): Remove this after the accelerator has been removed from
+    // the localized strings file, pending removal of old options window.
+    $('downloadLocationBrowseButton').textContent =
+        localStrings.getStringWithoutAccelerator(
+            'downloadLocationBrowseButton');
   }
 };
 
