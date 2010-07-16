@@ -1,15 +1,55 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/input_window_dialog_gtk.h"
+#include "chrome/browser/input_window_dialog.h"
+
+#include <gtk/gtk.h>
 
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/gtk_util.h"
 
-InputWindowDialogGtk::InputWindowDialogGtk(GtkWindow* parent,
+class GtkInputWindowDialog : public InputWindowDialog {
+ public:
+  // Creates a dialog. Takes ownership of |delegate|.
+  GtkInputWindowDialog(GtkWindow* parent,
+                       const std::string& window_title,
+                       const std::string& label,
+                       const std::string& contents,
+                       Delegate* delegate);
+  virtual ~GtkInputWindowDialog();
+
+  virtual void Show();
+  virtual void Close();
+
+ private:
+  static void OnEntryChanged(GtkEditable* entry,
+                             GtkInputWindowDialog* window);
+
+  static void OnResponse(GtkDialog* dialog, int response_id,
+                         GtkInputWindowDialog* window);
+
+  static gboolean OnWindowDeleteEvent(GtkWidget* widget,
+                                      GdkEvent* event,
+                                      GtkInputWindowDialog* dialog);
+
+  static void OnWindowDestroy(GtkWidget* widget, GtkInputWindowDialog* dialog);
+
+  // The underlying gtk dialog window.
+  GtkWidget* dialog_;
+
+  // The GtkEntry in this form.
+  GtkWidget* input_;
+
+  // Our delegate. Consumes the window's output.
+  scoped_ptr<InputWindowDialog::Delegate> delegate_;
+};
+
+
+GtkInputWindowDialog::GtkInputWindowDialog(GtkWindow* parent,
                                            const std::string& window_title,
                                            const std::string& label,
                                            const std::string& contents,
@@ -35,7 +75,7 @@ InputWindowDialogGtk::InputWindowDialogGtk(GtkWindow* parent,
   input_ = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(input_), contents.c_str());
   g_signal_connect(input_, "changed",
-                   G_CALLBACK(OnEntryChangedThunk), this);
+                   G_CALLBACK(OnEntryChanged), this);
   g_object_set(G_OBJECT(input_), "activates-default", TRUE, NULL);
   gtk_box_pack_start(GTK_BOX(hbox), input_, TRUE, TRUE, 0);
 
@@ -44,21 +84,21 @@ InputWindowDialogGtk::InputWindowDialogGtk(GtkWindow* parent,
   gtk_box_pack_start(GTK_BOX(content_area), hbox, FALSE, FALSE, 0);
 
   g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnResponseThunk), this);
+                   G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "delete-event",
-                   G_CALLBACK(OnWindowDeleteEventThunk), this);
+                   G_CALLBACK(OnWindowDeleteEvent), this);
   g_signal_connect(dialog_, "destroy",
-                   G_CALLBACK(OnWindowDestroyThunk), this);
+                   G_CALLBACK(OnWindowDestroy), this);
 }
 
-InputWindowDialogGtk::~InputWindowDialogGtk() {
+GtkInputWindowDialog::~GtkInputWindowDialog() {
 }
 
-void InputWindowDialogGtk::Show() {
+void GtkInputWindowDialog::Show() {
   gtk_util::ShowDialog(dialog_);
 }
 
-void InputWindowDialogGtk::Close() {
+void GtkInputWindowDialog::Close() {
   // Under the model that we've inherited from Windows, dialogs can receive
   // more than one Close() call inside the current message loop event.
   if (dialog_) {
@@ -67,27 +107,35 @@ void InputWindowDialogGtk::Close() {
   }
 }
 
-void InputWindowDialogGtk::OnEntryChanged(GtkEditable* entry) {
+// static
+void GtkInputWindowDialog::OnEntryChanged(GtkEditable* entry,
+                                          GtkInputWindowDialog* window) {
   std::wstring value(UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(entry))));
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(window->dialog_),
                                     GTK_RESPONSE_ACCEPT,
-                                    delegate_->IsValid(value));
+                                    window->delegate_->IsValid(value));
 }
 
-void InputWindowDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+// static
+void GtkInputWindowDialog::OnResponse(GtkDialog* dialog, int response_id,
+                                      GtkInputWindowDialog* window) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
-    std::wstring value(UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(input_))));
-    delegate_->InputAccepted(value);
+    std::wstring value(UTF8ToWide(gtk_entry_get_text(
+                                      GTK_ENTRY(window->input_))));
+    window->delegate_->InputAccepted(value);
   } else {
-    delegate_->InputCanceled();
+    window->delegate_->InputCanceled();
   }
 
-  Close();
+  window->Close();
 }
 
-gboolean InputWindowDialogGtk::OnWindowDeleteEvent(GtkWidget* widget,
-                                                   GdkEvent* event) {
-  Close();
+// static
+gboolean GtkInputWindowDialog::OnWindowDeleteEvent(
+    GtkWidget* widget,
+    GdkEvent* event,
+    GtkInputWindowDialog* dialog) {
+  dialog->Close();
 
   // Return true to prevent the gtk dialog from being destroyed. Close will
   // destroy it for us and the default gtk_dialog_delete_event_handler() will
@@ -95,8 +143,10 @@ gboolean InputWindowDialogGtk::OnWindowDeleteEvent(GtkWidget* widget,
   return TRUE;
 }
 
-void InputWindowDialogGtk::OnWindowDestroy(GtkWidget* widget) {
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+// static
+void GtkInputWindowDialog::OnWindowDestroy(GtkWidget* widget,
+                                           GtkInputWindowDialog* dialog) {
+  MessageLoop::current()->DeleteSoon(FROM_HERE, dialog);
 }
 
 // static
@@ -105,7 +155,7 @@ InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
                                              const std::wstring& label,
                                              const std::wstring& contents,
                                              Delegate* delegate) {
-  return new InputWindowDialogGtk(parent,
+  return new GtkInputWindowDialog(parent,
                                   WideToUTF8(window_title),
                                   WideToUTF8(label),
                                   WideToUTF8(contents),
