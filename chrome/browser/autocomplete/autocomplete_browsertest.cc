@@ -18,6 +18,14 @@
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Basic test is flaky on Mac
+// http://crbug.com/49324
+#if defined(OS_MAC)
+#define MAYBE_Basic FLAKY_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
 namespace {
 
 std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
@@ -53,7 +61,7 @@ class AutocompleteBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Basic) {
   LocationBar* location_bar = GetLocationBar();
 
   EXPECT_EQ(std::wstring(), location_bar->GetInputString());
