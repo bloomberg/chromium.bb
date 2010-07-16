@@ -8,9 +8,9 @@
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/host_connection.h"
 
-static const uint32 kCreatedColor = 0xff0000ff;
-static const uint32 kDisconnectedColor = 0xff00ff00;
-static const uint32 kFailedColor = 0xffff0000;
+static const uint32 kCreatedColor = 0xffccccff;
+static const uint32 kDisconnectedColor = 0xff00ccff;
+static const uint32 kFailedColor = 0xffcc00ff;
 
 namespace remoting {
 
@@ -162,9 +162,9 @@ void ChromotingClient::DoHandleUpdate(HostMessage* msg) {
 
 void ChromotingClient::DoEndUpdate(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(msg->has_update_stream_packet());
+  DCHECK(msg->has_end_update_stream());
 
-  view_->HandleUpdateStreamPacket(msg);
+  view_->HandleEndUpdateStream(msg);
 }
 
 }  // namespace remoting

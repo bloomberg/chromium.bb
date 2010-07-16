@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(ajwong): We need to come up with a better description of the
+// responsibilities for each thread.
+
 #ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_PLUGIN_H_
 #define REMOTING_CLIENT_PLUGIN_CHROMOTING_PLUGIN_H_
 
@@ -15,11 +18,18 @@
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_resource.h"
-#include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/cpp/instance.h"
+#include "third_party/ppapi/cpp/device_context_2d.h"
+
+class MessageLoop;
 
 namespace base {
 class Thread;
 }  // namespace base
+
+namespace pp {
+class Module;
+}  // namespace pp
 
 namespace remoting {
 
@@ -28,22 +38,19 @@ class HostConnection;
 class JingleThread;
 class PepperView;
 
-class ChromotingClient;
-
-class ChromotingPlugin {
+class ChromotingPlugin : public pp::Instance {
  public:
   // The mimetype for which this plugin is registered.
-  //
-  // TODO(ajwong): Mimetype doesn't really make sense for us as the trigger
-  // point.  I think we should handle a special protocol (eg., chromotocol://)
   static const char *kMimeType;
 
-  ChromotingPlugin(PP_Instance instance, const PPB_Instance* instance_funcs);
+  ChromotingPlugin(PP_Instance instance);
   virtual ~ChromotingPlugin();
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
   virtual bool HandleEvent(const PP_Event& event);
   virtual void ViewChanged(const PP_Rect& position, const PP_Rect& clip);
+
+  virtual bool CurrentlyOnPluginThread() const;
 
  private:
   FRIEND_TEST(ChromotingPluginTest, ParseUrl);
@@ -54,14 +61,13 @@ class ChromotingPlugin {
                        std::string* auth_token,
                        std::string* host_jid);
 
-  // Size of the plugin window.
-  int width_;
-  int height_;
-
-  PP_Resource drawing_context_;
-
-  PP_Instance pp_instance_;
-  const PPB_Instance* ppb_instance_funcs_;
+  // Since we're an internal plugin, we can just grab the message loop during
+  // init to figure out which thread we're on.  This should only be used to
+  // sanity check which thread we're executing on. Do not post task here!
+  // Instead, use PPB_Core:CallOnMainThread() in the pepper api.
+  //
+  // TODO(ajwong): Think if there is a better way to safeguard this.
+  MessageLoop* pepper_main_loop_dont_post_to_me_;
 
   scoped_ptr<base::Thread> main_thread_;
   scoped_ptr<JingleThread> network_thread_;
