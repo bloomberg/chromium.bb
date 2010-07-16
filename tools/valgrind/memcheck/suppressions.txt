@@ -3662,11 +3662,19 @@
    fun:_ZN12browser_sync19DataTypeManagerImpl10NotifyDoneENS_15DataTypeManager15ConfigureResultE
 }
 {
-   bug_49268
+   bug_49268_0
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN19DownloadManagerTestC2Ev
    fun:_ZN45DownloadManagerTest_TestDownloadFilename_TestC1Ev
+}
+{
+   bug_49268_1
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15DownloadManager4InitEP7Profile
+   fun:_ZN19DownloadManagerTestC2Ev
+   fun:_ZN38DownloadManagerTest_StartDownload_TestC1Ev
 }
 {
    bug_49279
