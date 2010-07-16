@@ -806,62 +806,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
-// EditCommandMatcher ---------------------------------------------------------
-
-// This class is used to capture the shortcuts that a given key event maps to.
-// We instantiate a vanilla NSResponder, call interpretKeyEvents on it, and
-// record all of the selectors passed into doCommandBySelector while
-// interpreting the key event.  The selectors are converted into edit commands
-// which can be passed to the render process.
-//
-// Caveats:
-// - Shortcuts involving a sequence of key combinations (chords) don't work,
-// because we instantiate a new responder for each event.
-// - We ignore key combinations that don't include a modifier (ctrl, cmd, alt)
-// because this was causing strange behavior (e.g. tab always inserted a tab
-// rather than moving to the next field on the page).
-
-@interface EditCommandMatcher : NSResponder {
-  EditCommands* edit_commands_;
-}
-@end
-
-@implementation EditCommandMatcher
-
-- (id)initWithEditCommands:(EditCommands*)edit_commands {
-  if ((self = [super init]) != nil) {
-    edit_commands_ = edit_commands;
-  }
-  return self;
-}
-
-- (void)doCommandBySelector:(SEL)selector {
-  NSString* editCommand =
-      RWHVMEditCommandHelper::CommandNameForSelector(selector);
-  edit_commands_->push_back(
-      EditCommand(base::SysNSStringToUTF8(editCommand), ""));
-}
-
-- (void)insertText:(id)string {
-  // If we don't ignore this, then sometimes we get a bell.
-}
-
-+ (void)matchEditCommands:(EditCommands*)edit_commands
-                 forEvent:(NSEvent*)theEvent {
-  if ([theEvent type] != NSKeyDown)
-    return;
-  // Don't interpret plain key presses.  This screws up things like <Tab>.
-  NSUInteger flags = [theEvent modifierFlags];
-  flags &= (NSControlKeyMask | NSAlternateKeyMask | NSCommandKeyMask);
-  if (!flags)
-    return;
-  scoped_nsobject<EditCommandMatcher> matcher(
-      [[EditCommandMatcher alloc] initWithEditCommands:edit_commands]);
-  [matcher.get() interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
-}
-
-@end
-
 // RenderWidgetHostViewCocoa ---------------------------------------------------
 
 @implementation RenderWidgetHostViewCocoa
@@ -1015,19 +959,24 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // down event.
   handlingKeyDown_ = YES;
 
-  // These two variables might be set when handling the keyboard event.
+  // These variables might be set when handling the keyboard event.
   // Clear them here so that we can know whether they have changed afterwards.
   textToBeInserted_.clear();
   markedText_.clear();
   underlines_.clear();
   unmarkTextCalled_ = NO;
+  hasEditCommands_ = NO;
+  editCommands_.clear();
 
   // Sends key down events to input method first, then we can decide what should
   // be done according to input method's feedback.
-  if (renderWidgetHostView_->text_input_type_ == WebKit::WebTextInputTypeText)
-    [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+  [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 
   handlingKeyDown_ = NO;
+
+  // Indicates if we should send the key event and corresponding editor commands
+  // after processing the input method result.
+  BOOL delayEventUntilAfterImeCompostion = NO;
 
   // To emulate Windows, over-write |event.windowsKeyCode| to VK_PROCESSKEY
   // while an input method is composing or inserting a text.
@@ -1036,19 +985,25 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // If the text to be inserted has only one character, then we don't need this
   // trick, because we'll send the text as a key press event instead.
   if (hasMarkedText_ || oldHasMarkedText || textToBeInserted_.length() > 1) {
-    event.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
-    event.setKeyIdentifierFromWindowsKeyCode();
-    event.skip_in_browser = true;
+    NativeWebKeyboardEvent fakeEvent = event;
+    fakeEvent.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
+    fakeEvent.setKeyIdentifierFromWindowsKeyCode();
+    fakeEvent.skip_in_browser = true;
+    widgetHost->ForwardKeyboardEvent(fakeEvent);
+    // If this key event was handled by the input method, but
+    // -doCommandBySelector: (invoked by the call to -interpretKeyEvents: above)
+    // enqueued edit commands, then in order to let webkit handle them
+    // correctly, we need to send the real key event and corresponding edit
+    // commands after processing the input method result.
+    // We shouldn't do this if a new marked text was set by the input method,
+    // otherwise the new marked text might be cancelled by webkit.
+    if (hasEditCommands_ && !hasMarkedText_)
+      delayEventUntilAfterImeCompostion = YES;
   } else {
-    // Look up shortcut, if any, for this key combination.
-    EditCommands editCommands;
-    [EditCommandMatcher matchEditCommands:&editCommands forEvent:theEvent];
-    if (!editCommands.empty())
-      widgetHost->ForwardEditCommandsForNextKeyEvent(editCommands);
+    if (!editCommands_.empty())
+      widgetHost->ForwardEditCommandsForNextKeyEvent(editCommands_);
+    widgetHost->ForwardKeyboardEvent(event);
   }
-
-  // Forward the key down event first.
-  widgetHost->ForwardKeyboardEvent(event);
 
   // Calling ForwardKeyboardEvent() could have destroyed the widget. When the
   // widget was destroyed, |renderWidgetHostView_->render_widget_host_| will
@@ -1068,23 +1023,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // handle BMP characters here, as we can always insert non-BMP characters as
   // text.
   BOOL textInserted = NO;
-  if (textToBeInserted_.length() > (oldHasMarkedText ? 0 : 1)) {
+  if (textToBeInserted_.length() >
+      ((hasMarkedText_ || oldHasMarkedText) ? 0u : 1u)) {
     widgetHost->ImeConfirmComposition(textToBeInserted_);
     textInserted = YES;
-  } else if (textToBeInserted_.length() == 1) {
-    event.type = WebKit::WebInputEvent::Char;
-    event.text[0] = textToBeInserted_[0];
-    event.text[1] = 0;
-    event.skip_in_browser = true;
-    widgetHost->ForwardKeyboardEvent(event);
-  } else if (!hasMarkedText_ && !oldHasMarkedText &&
-             [[theEvent characters] length] > 0) {
-    // We don't get insertText: calls if ctrl is down and not even a keyDown:
-    // call if cmd is down, or in password input mode, so synthesize a keypress
-    // event for these cases.
-    event.type = WebKit::WebInputEvent::Char;
-    event.skip_in_browser = true;
-    widgetHost->ForwardKeyboardEvent(event);
   }
 
   // Updates or cancels the composition. If some text has been inserted, then
@@ -1095,13 +1037,63 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     // When marked text is available, |selectedRange_| will be the range being
     // selected inside the marked text.
     widgetHost->ImeSetComposition(markedText_, underlines_,
-                               selectedRange_.location,
-                               NSMaxRange(selectedRange_));
+                                  selectedRange_.location,
+                                  NSMaxRange(selectedRange_));
   } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
     if (unmarkTextCalled_)
       widgetHost->ImeConfirmComposition();
     else
       widgetHost->ImeCancelComposition();
+  }
+
+  // If the key event was handled by the input method but it also generated some
+  // edit commands, then we need to send the real key event and corresponding
+  // edit commands here. This usually occurs when the input method wants to
+  // finish current composition session but still wants the application to
+  // handle the key event. See http://crbug.com/48161 for reference.
+  if (delayEventUntilAfterImeCompostion) {
+    // If |delayEventUntilAfterImeCompostion| is YES, then a fake key down event
+    // with windowsKeyCode == 0xE5 has already been sent to webkit.
+    // So before sending the real key down event, we need to send a fake key up
+    // event to balance it.
+    NativeWebKeyboardEvent fakeEvent = event;
+    fakeEvent.type = WebKit::WebInputEvent::KeyUp;
+    fakeEvent.skip_in_browser = true;
+    widgetHost->ForwardKeyboardEvent(fakeEvent);
+    // Not checking |renderWidgetHostView_->render_widget_host_| here because
+    // a key event with |skip_in_browser| == true won't be handled by browser,
+    // thus it won't destroy the widget.
+
+    if (!editCommands_.empty())
+      widgetHost->ForwardEditCommandsForNextKeyEvent(editCommands_);
+    widgetHost->ForwardKeyboardEvent(event);
+
+    // Calling ForwardKeyboardEvent() could have destroyed the widget. When the
+    // widget was destroyed, |renderWidgetHostView_->render_widget_host_| will
+    // be set to NULL. So we check it here and return immediately if it's NULL.
+    if (!renderWidgetHostView_->render_widget_host_)
+      return;
+  }
+
+  // Only send a corresponding key press event if there is no marked text.
+  if (!hasMarkedText_) {
+    if (!textInserted && textToBeInserted_.length() == 1) {
+      // If a single character was inserted, then we just send it as a keypress
+      // event.
+      event.type = WebKit::WebInputEvent::Char;
+      event.text[0] = textToBeInserted_[0];
+      event.text[1] = 0;
+      event.skip_in_browser = true;
+      widgetHost->ForwardKeyboardEvent(event);
+    } else if ((!textInserted || delayEventUntilAfterImeCompostion) &&
+               editCommands_.empty() && [[theEvent characters] length] > 0) {
+      // We don't get insertText: calls if ctrl or cmd is down, or the key event
+      // generates an insert command. So synthesize a keypress event for these
+      // cases, unless the key event generated any other command.
+      event.type = WebKit::WebInputEvent::Char;
+      event.skip_in_browser = true;
+      widgetHost->ForwardKeyboardEvent(event);
+    }
   }
 
   // Possibly autohide the cursor.
@@ -1908,23 +1900,24 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (void)doCommandBySelector:(SEL)selector {
   // An input method calls this function to dispatch an editing command to be
   // handled by this view.
-  // Even though most editing commands has been already handled by the
-  // RWHVMEditCommandHelper object, we need to handle an insertNewline: command
-  // and send a '\r' character to WebKit so that WebKit dispatches this
-  // character to onkeypress() event handlers.
-  // TODO(hbono): need to handle more commands?
-  if (selector == @selector(insertNewline:)) {
-    if (handlingKeyDown_) {
-      // If we are handling a key down event, then we just need to append a '\r'
-      // character to |textToBeInserted_| which will then be handled by
-      // keyEvent: method.
-      textToBeInserted_.push_back('\r');
-    } else {
-      // This call is not initiated by a key event, so just executed the
-      // corresponding editor command.
-      renderWidgetHostView_->render_widget_host_->ForwardEditCommand(
-          "InsertNewline", "");
-    }
+  if (selector == @selector(noop:))
+    return;
+
+  std::string command(
+      [RWHVMEditCommandHelper::CommandNameForSelector(selector) UTF8String]);
+
+  // If this method is called when handling a key down event, then we need to
+  // handle the command in the key event handler. Otherwise we can just handle
+  // it here.
+  if (handlingKeyDown_) {
+    hasEditCommands_ = YES;
+    // We ignore commands that insert characters, because this was causing
+    // strange behavior (e.g. tab always inserted a tab rather than moving to
+    // the next field on the page).
+    if (!StartsWithASCII(command, "insert", false))
+      editCommands_.push_back(EditCommand(command, ""));
+  } else {
+    renderWidgetHostView_->render_widget_host_->ForwardEditCommand(command, "");
   }
 }
 

@@ -17,6 +17,7 @@
 #include "chrome/browser/cocoa/browser_accessibility_delegate.h"
 #include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/common/edit_command.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webmenuitem.h"
@@ -114,6 +115,15 @@ class RWHVMEditCommandHelper;
 
   // Underline information of the |markedText_|.
   std::vector<WebKit::WebCompositionUnderline> underlines_;
+
+  // Indicates if doCommandBySelector method receives any edit command when
+  // handling a key down event.
+  BOOL hasEditCommands_;
+
+  // Contains edit commands received by the -doCommandBySelector: method when
+  // handling a key down event, not including inserting commands, eg. insertTab,
+  // etc.
+  EditCommands editCommands_;
 }
 
 @property(assign, nonatomic) NSRect caretRect;
