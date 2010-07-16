@@ -1013,6 +1013,31 @@ void AutomationProviderImportSettingsObserver::ImportEnded() {
   delete this;
 }
 
+void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
+    int handle, const std::vector<webkit_glue::PasswordForm*>& result) {
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+  ListValue* passwords = new ListValue;
+  for (std::vector<webkit_glue::PasswordForm*>::const_iterator it =
+          result.begin(); it != result.end(); ++it) {
+    DictionaryValue* password_val = new DictionaryValue;
+    webkit_glue::PasswordForm* password_form = *it;
+    password_val->SetStringFromUTF16(L"username",
+                                     password_form->username_value);
+    password_val->SetStringFromUTF16(L"password",
+                                     password_form->password_value);
+    password_val->SetReal(
+        L"time", static_cast<double>(
+            password_form->date_created.ToDoubleT()));
+    passwords->Append(password_val);
+  }
+
+  return_value->Set(L"passwords", passwords);
+  AutomationJSONReply(provider_, reply_message_).SendSuccess(
+      return_value.get());
+  delete this;
+}
+
 void AutomationProviderBrowsingDataObserver::OnBrowsingDataRemoverDone() {
   // Send back an empty success message
   AutomationJSONReply(provider_, reply_message_).SendSuccess(NULL);

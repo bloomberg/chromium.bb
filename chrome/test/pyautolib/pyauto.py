@@ -806,6 +806,43 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
+  def AddSavedPassword(self, username, password, time=None, window_index=0):
+    """Adds the given username-password combination to the saved passwords.
+
+    Args:
+      username: a string representing the username
+      password: a string representing the password
+      window_index: window index, defaults to 0
+
+    Returns:
+      The success or failure of adding the password. In incognito mode, adding
+      the password should fail. Example return:
+      { "password_added": True }
+
+    Raises:
+      JSONInterfaceError on error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'AddSavedPassword',
+      'username': username,
+      'password': password,
+      'time': time
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def GetSavedPasswords(self):
+    """Return the passwords currently saved.
+
+    Returns:
+      A list of 2-item lists of username, password for all saved passwords.
+      Example:
+      { 'passwords': [['username1', 'password1'], ['username2', 'password2']] }
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetSavedPasswords'
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
   def SetTheme(self, crx_file_path):
     """Installs the given theme synchronously.
 

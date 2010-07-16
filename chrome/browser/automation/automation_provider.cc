@@ -96,6 +96,7 @@
 #include "net/url_request/url_request_context.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "views/event.h"
+#include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
 #if defined(OS_WIN)
@@ -2359,6 +2360,70 @@ void AutomationProvider::ImportSettings(Browser* browser,
                                      new ProfileWriter(profile), first_run);
 }
 
+// See AddSavedPassword() in chrome/test/functional/pyauto.py for sample json
+// input.
+// Sample json output: { "password_added": true }
+void AutomationProvider::AddSavedPassword(Browser* browser,
+                                          DictionaryValue* args,
+                                          IPC::Message* reply_message) {
+  string16 username;
+  string16 password;
+  base::Time time = base::Time::Now();
+  AutomationJSONReply reply(this, reply_message);
+
+  if (!args->GetStringAsUTF16(L"password", &password) ||
+      !args->GetStringAsUTF16(L"username", &username)) {
+    reply.SendError("Username and password must be strings.");
+    return;
+  }
+
+  // If the time is specified, change time to the specified time.
+  int it;
+  double dt;
+  if (args->GetInteger(L"time", &it))
+    time = base::Time::FromTimeT(it);
+  else if (args->GetReal(L"time", &dt))
+    time = base::Time::FromDoubleT(dt);
+
+  webkit_glue::PasswordForm new_password;
+  new_password.username_value = username;
+  new_password.password_value = password;
+  new_password.date_created = time;
+
+  Profile* profile = browser->profile();
+  // Use IMPLICIT_ACCESS since new passwords aren't added off the record.
+  PasswordStore* password_store =
+      profile->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+
+  // Set the return based on whether setting the password succeeded.
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
+  // It will be null if it's accessed in an incognito window.
+  if (password_store != NULL) {
+    password_store->AddLogin(new_password);
+    return_value->SetBoolean(L"password_added", true);
+  } else {
+    return_value->SetBoolean(L"password_added", false);
+  }
+
+  reply.SendSuccess(return_value.get());
+}
+
+// Sample json input: { "command": "GetSavedPasswords" }
+// Refer to GetSavedPasswords() in chrome/test/pyautolib/pyauto.py for sample
+// json output.
+void AutomationProvider::GetSavedPasswords(Browser* browser,
+                                           DictionaryValue* args,
+                                           IPC::Message* reply_message) {
+  Profile* profile = browser->profile();
+  // Use EXPLICIT_ACCESS since saved passwords can be retreived off the record.
+  PasswordStore* password_store =
+      profile->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+  password_store->GetAutofillableLogins(
+      new AutomationProviderGetPasswordsObserver(this, reply_message));
+  // Observer deletes itself after returning.
+}
+
 // Refer to ClearBrowsingData() in chrome/test/pyautolib/pyauto.py for sample
 // json input.
 // Sample json output: {}
@@ -2751,6 +2816,9 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["SaveTabContents"] = &AutomationProvider::SaveTabContents;
 
   handler_map["ImportSettings"] = &AutomationProvider::ImportSettings;
+
+  handler_map["AddSavedPassword"] = &AutomationProvider::AddSavedPassword;
+  handler_map["GetSavedPasswords"] = &AutomationProvider::GetSavedPasswords;
 
   handler_map["ClearBrowsingData"] = &AutomationProvider::ClearBrowsingData;
 

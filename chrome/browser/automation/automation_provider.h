@@ -442,6 +442,24 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                        DictionaryValue* args,
                        IPC::Message* reply_message);
 
+  // Import the given settings from the given browser.
+  // Uses the JSON interface for input/output.
+  void ImportSettings(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
+
+  // Add a new username-password combination to the saved passwords.
+  // Uses the JSON interface for input/output.
+  void AddSavedPassword(Browser* browser,
+                        DictionaryValue* args,
+                        IPC::Message* reply_message);
+
+  // Return the saved username/password combinations.
+  // Uses the JSON interface for input/output.
+  void GetSavedPasswords(Browser* browser,
+                         DictionaryValue* args,
+                         IPC::Message* reply_message);
+
   // Clear the specified browsing data. This call provides similar
   // functionality to RemoveBrowsingData but is synchronous.
   // Uses the JSON interface for input/output.
@@ -460,12 +478,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetAutoFillProfile(Browser* browser,
                           DictionaryValue* args,
                           IPC::Message* reply_message);
-
-  // Import the given settings from the given browser.
-  // Uses the JSON interface for input/output.
-  void ImportSettings(Browser* browser,
-                      DictionaryValue* args,
-                      IPC::Message* reply_message);
 
   // Fill in an AutoFillProfile with the given profile information.
   // Uses the JSON interface for input/output.

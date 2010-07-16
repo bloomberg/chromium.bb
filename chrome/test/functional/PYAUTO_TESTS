@@ -33,6 +33,7 @@
     'history',
     'navigation',
     'omnibox',
+    'passwords',
     'plugins',
     'prefs',
     'special_tabs',

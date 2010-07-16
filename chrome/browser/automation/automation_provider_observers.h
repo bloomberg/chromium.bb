@@ -14,6 +14,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
@@ -627,6 +628,24 @@ class AutomationProviderImportSettingsObserver :
   void ImportItemStarted(importer::ImportItem item) {}
   void ImportItemEnded(importer::ImportItem item) {}
   void ImportEnded();
+ private:
+  AutomationProvider* provider_;
+  IPC::Message* reply_message_;
+};
+
+// Allows automation provider to wait for getting passwords to finish.
+class AutomationProviderGetPasswordsObserver :
+    public PasswordStoreConsumer {
+ public:
+  AutomationProviderGetPasswordsObserver(
+      AutomationProvider* provider,
+      IPC::Message* reply_message)
+    : provider_(provider),
+      reply_message_(reply_message) {}
+
+  void OnPasswordStoreRequestDone(
+      int handle, const std::vector<webkit_glue::PasswordForm*>& result);
+
  private:
   AutomationProvider* provider_;
   IPC::Message* reply_message_;
