@@ -17,8 +17,8 @@
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/sync_constants.h"
-#include "chrome/browser/sync/tools/chrome_async_socket.h"
 #include "chrome/common/chrome_switches.h"
+#include "jingle/notifier/base/chrome_async_socket.h"
 #include "jingle/notifier/base/task_pump.h"
 #include "jingle/notifier/communicator/xmpp_socket_adapter.h"
 #include "jingle/notifier/listener/listen_task.h"
@@ -100,7 +100,7 @@ class XmppNotificationClient : public sigslot::has_slots<> {
     buzz::AsyncSocket* buzz_async_socket =
         use_chrome_async_socket ?
         static_cast<buzz::AsyncSocket*>(
-            new sync_tools::ChromeAsyncSocket(
+            new notifier::ChromeAsyncSocket(
                 net::ClientSocketFactory::GetDefaultFactory(),
                 ssl_config, 4096, 64 * 1024, NULL)) :
         static_cast<buzz::AsyncSocket*>(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/tools/chrome_async_socket.h"
+#include "jingle/notifier/base/chrome_async_socket.h"
 
 #if defined(OS_WIN)
 #include <winsock2.h>
@@ -25,7 +25,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "talk/base/socketaddress.h"
 
-namespace sync_tools {
+namespace notifier {
 
 ChromeAsyncSocket::ChromeAsyncSocket(
     net::ClientSocketFactory* client_socket_factory,
@@ -52,14 +52,14 @@ ChromeAsyncSocket::ChromeAsyncSocket(
           ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       read_state_(IDLE),
       read_buf_(new net::IOBufferWithSize(read_buf_size)),
-      read_start_(0),
-      read_end_(0),
+      read_start_(0U),
+      read_end_(0U),
       write_state_(IDLE),
       write_buf_(new net::IOBufferWithSize(write_buf_size)),
-      write_end_(0) {
+      write_end_(0U) {
   DCHECK(client_socket_factory_);
-  DCHECK_GT(read_buf_size, 0);
-  DCHECK_GT(write_buf_size, 0);
+  DCHECK_GT(read_buf_size, 0U);
+  DCHECK_GT(write_buf_size, 0U);
 }
 
 ChromeAsyncSocket::~ChromeAsyncSocket() {}
@@ -101,7 +101,7 @@ namespace {
 
 net::AddressList SocketAddressToAddressList(
     const talk_base::SocketAddress& address) {
-  DCHECK_NE(address.ip(), 0);
+  DCHECK_NE(address.ip(), 0U);
   // Use malloc() as net::AddressList uses free().
   addrinfo* ai = static_cast<addrinfo*>(std::malloc(sizeof *ai));
   memset(ai, 0, sizeof *ai);
@@ -181,7 +181,7 @@ void ChromeAsyncSocket::ProcessConnectDone(int status) {
   state_ = STATE_OPEN;
   PostDoRead();
   // Write buffer should be empty.
-  DCHECK_EQ(write_end_, 0);
+  DCHECK_EQ(write_end_, 0U);
   SignalConnected();
 }
 
@@ -190,8 +190,8 @@ void ChromeAsyncSocket::ProcessConnectDone(int status) {
 void ChromeAsyncSocket::PostDoRead() {
   DCHECK(IsOpen());
   DCHECK_EQ(read_state_, IDLE);
-  DCHECK_EQ(read_start_, 0);
-  DCHECK_EQ(read_end_, 0);
+  DCHECK_EQ(read_start_, 0U);
+  DCHECK_EQ(read_end_, 0U);
   MessageLoop* message_loop = MessageLoop::current();
   CHECK(message_loop);
   message_loop->PostTask(
@@ -206,8 +206,8 @@ void ChromeAsyncSocket::PostDoRead() {
 void ChromeAsyncSocket::DoRead() {
   DCHECK(IsOpen());
   DCHECK_EQ(read_state_, POSTED);
-  DCHECK_EQ(read_start_, 0);
-  DCHECK_EQ(read_end_, 0);
+  DCHECK_EQ(read_start_, 0U);
+  DCHECK_EQ(read_end_, 0U);
   // Once we call Read(), we cannot call StartTls() until the read
   // finishes.  This is okay, as StartTls() is called only from a read
   // handler (i.e., after a read finishes and before another read is
@@ -227,11 +227,11 @@ void ChromeAsyncSocket::ProcessReadDone(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
   DCHECK(IsOpen());
   DCHECK_EQ(read_state_, PENDING);
-  DCHECK_EQ(read_start_, 0);
-  DCHECK_EQ(read_end_, 0);
+  DCHECK_EQ(read_start_, 0U);
+  DCHECK_EQ(read_end_, 0U);
   read_state_ = IDLE;
   if (status > 0) {
-    read_end_ = status;
+    read_end_ = static_cast<size_t>(status);
     SignalRead();
   } else if (status == 0) {
     // Other side closed the connection.
@@ -261,10 +261,10 @@ bool ChromeAsyncSocket::Read(char* data, size_t len, size_t* len_read) {
     return false;
   }
   DCHECK_LE(read_start_, read_end_);
-  if ((state_ == STATE_TLS_CONNECTING) || read_end_ == 0) {
+  if ((state_ == STATE_TLS_CONNECTING) || read_end_ == 0U) {
     if (state_ == STATE_TLS_CONNECTING) {
       DCHECK_EQ(read_state_, IDLE);
-      DCHECK_EQ(read_end_, 0);
+      DCHECK_EQ(read_end_, 0U);
     } else {
       DCHECK_NE(read_state_, IDLE);
     }
@@ -273,12 +273,12 @@ bool ChromeAsyncSocket::Read(char* data, size_t len, size_t* len_read) {
   }
   DCHECK_EQ(read_state_, IDLE);
   *len_read = std::min(len, read_end_ - read_start_);
-  DCHECK_GT(*len_read, 0);
+  DCHECK_GT(*len_read, 0U);
   std::memcpy(data, read_buf_->data() + read_start_, *len_read);
   read_start_ += *len_read;
   if (read_start_ == read_end_) {
-    read_start_ = 0;
-    read_end_ = 0;
+    read_start_ = 0U;
+    read_end_ = 0U;
     // We defer execution of DoRead() here for similar reasons as
     // ProcessConnectDone().
     PostDoRead();
@@ -297,7 +297,7 @@ bool ChromeAsyncSocket::Write(const char* data, size_t len) {
   }
   // TODO(akalin): Avoid this check by modifying the interface to have
   // a "ready for writing" signal.
-  if ((write_buf_->size() - write_end_) < len) {
+  if ((static_cast<size_t>(write_buf_->size()) - write_end_) < len) {
     LOG(DFATAL) << "queueing " << len << " bytes would exceed the "
                 << "max write buffer size = " << write_buf_->size()
                 << " by " << (len - write_buf_->size()) << " bytes";
@@ -310,7 +310,7 @@ bool ChromeAsyncSocket::Write(const char* data, size_t len) {
   // the TLS-connect finishes.  Otherwise, start writing if we're not
   // already writing and we have something to write.
   if ((state_ != STATE_TLS_CONNECTING) &&
-      (write_state_ == IDLE) && (write_end_ > 0)) {
+      (write_state_ == IDLE) && (write_end_ > 0U)) {
     // We defer execution of DoWrite() here for similar reasons as
     // ProcessConnectDone().
     PostDoWrite();
@@ -323,7 +323,7 @@ bool ChromeAsyncSocket::Write(const char* data, size_t len) {
 void ChromeAsyncSocket::PostDoWrite() {
   DCHECK(IsOpen());
   DCHECK_EQ(write_state_, IDLE);
-  DCHECK_GT(write_end_, 0);
+  DCHECK_GT(write_end_, 0U);
   MessageLoop* message_loop = MessageLoop::current();
   CHECK(message_loop);
   message_loop->PostTask(
@@ -338,7 +338,7 @@ void ChromeAsyncSocket::PostDoWrite() {
 void ChromeAsyncSocket::DoWrite() {
   DCHECK(IsOpen());
   DCHECK_EQ(write_state_, POSTED);
-  DCHECK_GT(write_end_, 0);
+  DCHECK_GT(write_end_, 0U);
   // Once we call Write(), we cannot call StartTls() until the write
   // finishes.  This is okay, as StartTls() is called only after we
   // have received a reply to a message we sent to the server and
@@ -359,15 +359,16 @@ void ChromeAsyncSocket::ProcessWriteDone(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
   DCHECK(IsOpen());
   DCHECK_EQ(write_state_, PENDING);
-  DCHECK_GT(write_end_, 0);
+  DCHECK_GT(write_end_, 0U);
   write_state_ = IDLE;
   if (status < net::OK) {
     DoNetErrorFromStatus(status);
     DoClose();
     return;
   }
-  if (status > write_end_) {
-    LOG(DFATAL) << "bytes read = " << status
+  size_t written = static_cast<size_t>(status);
+  if (written > write_end_) {
+    LOG(DFATAL) << "bytes written = " << written
                 << " exceeds bytes requested = " << write_end_;
     DoNetError(net::ERR_UNEXPECTED);
     DoClose();
@@ -377,10 +378,10 @@ void ChromeAsyncSocket::ProcessWriteDone(int status) {
   // of DrainableIOBuffers.  This'll also allow us to not have an
   // artificial buffer size limit.
   std::memmove(write_buf_->data(),
-               write_buf_->data() + status,
-               write_end_ - status);
-  write_end_ -= status;
-  if (write_end_ > 0) {
+               write_buf_->data() + written,
+               write_end_ - written);
+  write_end_ -= written;
+  if (write_end_ > 0U) {
     PostDoWrite();
   }
 }
@@ -401,10 +402,10 @@ void ChromeAsyncSocket::DoClose() {
   }
   transport_socket_.reset();
   read_state_ = IDLE;
-  read_start_ = 0;
-  read_end_ = 0;
+  read_start_ = 0U;
+  read_end_ = 0U;
   write_state_ = IDLE;
-  write_end_ = 0;
+  write_end_ = 0U;
   if (state_ != STATE_CLOSED) {
     state_ = STATE_CLOSED;
     SignalClosed();
@@ -427,9 +428,9 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
 
   state_ = STATE_TLS_CONNECTING;
   read_state_ = IDLE;
-  read_start_ = 0;
-  read_end_ = 0;
-  DCHECK_EQ(write_end_, 0);
+  read_start_ = 0U;
+  read_end_ = 0U;
+  DCHECK_EQ(write_end_, 0U);
 
   // Clear out any posted DoRead() tasks.
   scoped_runnable_method_factory_.RevokeAll();
@@ -459,8 +460,8 @@ void ChromeAsyncSocket::ProcessSSLConnectDone(int status) {
   DCHECK_NE(status, net::ERR_IO_PENDING);
   DCHECK_EQ(state_, STATE_TLS_CONNECTING);
   DCHECK_EQ(read_state_, IDLE);
-  DCHECK_EQ(read_start_, 0);
-  DCHECK_EQ(read_end_, 0);
+  DCHECK_EQ(read_start_, 0U);
+  DCHECK_EQ(read_end_, 0U);
   DCHECK_EQ(write_state_, IDLE);
   if (status != net::OK) {
     DoNetErrorFromStatus(status);
@@ -469,10 +470,10 @@ void ChromeAsyncSocket::ProcessSSLConnectDone(int status) {
   }
   state_ = STATE_TLS_OPEN;
   PostDoRead();
-  if (write_end_ > 0) {
+  if (write_end_ > 0U) {
     PostDoWrite();
   }
   SignalSSLConnected();
 }
 
-}  // namespace sync_tools
+}  // namespace notifier

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/tools/chrome_async_socket.h"
+#include "jingle/notifier/base/chrome_async_socket.h"
 
 #include <deque>
 #include <string>
@@ -18,7 +18,7 @@
 #include "talk/base/socketaddress.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_tools {
+namespace notifier {
 
 namespace {
 
@@ -353,7 +353,7 @@ class ChromeAsyncSocketTest
         ADD_FAILURE();
         break;
       }
-      if (len_read == 0) {
+      if (len_read == 0U) {
         break;
       }
       read.append(buf.get(), len_read);
@@ -519,9 +519,9 @@ TEST_F(ChromeAsyncSocketTest, EmptyRead) {
   DoOpenClosed();
 
   char buf[4096];
-  size_t len_read = 10000;
+  size_t len_read = 10000U;
   EXPECT_TRUE(chrome_async_socket_.Read(buf, sizeof(buf), &len_read));
-  EXPECT_EQ(0, len_read);
+  EXPECT_EQ(0U, len_read);
 
   DoCloseOpenedNoError();
 }
@@ -870,9 +870,9 @@ TEST_F(ChromeAsyncSocketTest, ReadDuringSSLConnecting) {
   async_socket_data_provider_.AddRead(net::MockRead(kReadData));
 
   char buf[4096];
-  size_t len_read = 10000;
+  size_t len_read = 10000U;
   EXPECT_TRUE(chrome_async_socket_.Read(buf, sizeof(buf), &len_read));
-  EXPECT_EQ(0, len_read);
+  EXPECT_EQ(0U, len_read);
 
   message_loop_.RunAllPending();
   ExpectSSLConnectSignal();
@@ -880,7 +880,7 @@ TEST_F(ChromeAsyncSocketTest, ReadDuringSSLConnecting) {
   ExpectNoSignal();
   ExpectNonErrorState(ChromeAsyncSocket::STATE_TLS_OPEN);
 
-  len_read = 10000;
+  len_read = 10000U;
   EXPECT_TRUE(chrome_async_socket_.Read(buf, sizeof(buf), &len_read));
   EXPECT_EQ(kReadData, std::string(buf, len_read));
 
@@ -1012,4 +1012,4 @@ TEST_F(ChromeAsyncSocketTest, SSLAsyncWrite) {
 
 }  // namespace
 
-}  // namespace sync_tools
+}  // namespace notifier

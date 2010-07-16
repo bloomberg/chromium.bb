@@ -4,8 +4,8 @@
 //
 // An implementation of buzz::AsyncSocket that uses Chrome sockets.
 
-#ifndef CHROME_BROWSER_SYNC_TOOLS_CHROME_ASYNC_SOCKET_H_
-#define CHROME_BROWSER_SYNC_TOOLS_CHROME_ASYNC_SOCKET_H_
+#ifndef JINGLE_NOTIFIER_BASE_CHROME_ASYNC_SOCKET_H_
+#define JINGLE_NOTIFIER_BASE_CHROME_ASYNC_SOCKET_H_
 
 #if !defined(FEATURE_ENABLE_SSL)
 #error ChromeAsyncSocket expects FEATURE_ENABLE_SSL to be defined
@@ -30,7 +30,7 @@ class ClientSocketFactory;
 class IOBufferWithSize;
 }  // namespace net
 
-namespace sync_tools {
+namespace notifier {
 
 class ChromeAsyncSocket : public buzz::AsyncSocket {
  public:
@@ -221,6 +221,6 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   DISALLOW_COPY_AND_ASSIGN(ChromeAsyncSocket);
 };
 
-}  // namespace sync_tools
+}  // namespace notifier
 
-#endif  // CHROME_BROWSER_SYNC_TOOLS_CHROME_ASYNC_SOCKET_H_
+#endif  // JINGLE_NOTIFIER_BASE_CHROME_ASYNC_SOCKET_H_

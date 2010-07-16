@@ -15,6 +15,8 @@
       'target_name': 'notifier',
       'type': '<(library)',
       'sources': [
+        'notifier/base/chrome_async_socket.cc',
+        'notifier/base/chrome_async_socket.h',
         'notifier/base/signal_thread_task.h',
         'notifier/base/ssl_adapter.h',
         'notifier/base/ssl_adapter.cc',
@@ -96,6 +98,7 @@
         # TODO(akalin): Write our own test suite and runner.
         '../base/test/run_all_unittests.cc',
         '../base/test/test_suite.h',
+        'notifier/base/chrome_async_socket_unittest.cc',
         'notifier/listener/talk_mediator_unittest.cc',
         'notifier/listener/send_update_task_unittest.cc',
         'notifier/listener/subscribe_task_unittest.cc',
@@ -107,6 +110,8 @@
       'dependencies': [
         'notifier',
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/libjingle/libjingle.gyp:libjingle',
