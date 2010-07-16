@@ -87,6 +87,8 @@ void AboutTcmallocRendererCallback(base::ProcessId pid, std::string output) {
 namespace {
 
 // The (alphabetized) paths used for the about pages.
+// Note: Keep these in sync with url_constants.h
+const char kAppCacheInternalsPath[] = "appcache-internals";
 const char kCreditsPath[] = "credits";
 const char kCachePath[] = "view-http-cache";
 const char kDnsPath[] = "dns";
@@ -118,6 +120,7 @@ const char kSysPath[] = "system";
 
 // Add path here to be included in about:about
 const char *kAllAboutPaths[] = {
+  kAppCacheInternalsPath,
   kCachePath,
   kCreditsPath,
   kDnsPath,
@@ -248,7 +251,8 @@ std::string AboutAbout() {
   for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
     if (kAllAboutPaths[i] == kNetInternalsPath ||
         kAllAboutPaths[i] == kPluginsPath ||
-        kAllAboutPaths[i] == kCachePath)
+        kAllAboutPaths[i] == kCachePath ||
+        kAllAboutPaths[i] == kAppCacheInternalsPath)
       html.append("<li><a href='chrome://");
     else
       html.append("<li><a href='chrome://about/");
