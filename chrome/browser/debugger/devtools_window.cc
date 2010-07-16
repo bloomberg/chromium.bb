@@ -57,11 +57,12 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       browser_(NULL),
       docked_(docked),
       is_loaded_(false),
-      open_console_on_load_(false) {
+      action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE) {
   // Create TabContents with devtools.
   tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
   tab_contents_->render_view_host()->AllowBindings(BindingsPolicy::DOM_UI);
-  tab_contents_->controller().LoadURL(GetDevToolsUrl(), GURL(), PageTransition::START_PAGE);
+  tab_contents_->controller().LoadURL(
+      GetDevToolsUrl(), GURL(), PageTransition::START_PAGE);
 
   // Wipe out page icon so that the default application icon is used.
   NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
@@ -115,7 +116,7 @@ void DevToolsWindow::InspectedTabClosing() {
   }
 }
 
-void DevToolsWindow::Show(bool open_console) {
+void DevToolsWindow::Show(DevToolsToggleAction action) {
   if (docked_) {
     // Just tell inspected browser to update splitter.
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
@@ -124,8 +125,7 @@ void DevToolsWindow::Show(bool open_console) {
       inspected_window->UpdateDevTools();
       SetAttachedWindow();
       tab_contents_->view()->SetInitialFocus();
-      if (open_console)
-        ScheduleOpenConsole();
+      ScheduleAction(action);
       return;
     } else {
       // Sometimes we don't know where to dock. Stay undocked.
@@ -136,12 +136,17 @@ void DevToolsWindow::Show(bool open_console) {
   if (!browser_)
     CreateDevToolsBrowser();
 
-  browser_->window()->Show();
+  // Avoid consecutive window switching if the devtools window has been opened
+  // and the Inspect Element shortcut is pressed in the inspected tab.
+  bool should_show_window =
+      !browser_ || action != DEVTOOLS_TOGGLE_ACTION_INSPECT;
+  if (should_show_window)
+    browser_->window()->Show();
   SetAttachedWindow();
-  tab_contents_->view()->SetInitialFocus();
+  if (should_show_window)
+    tab_contents_->view()->SetInitialFocus();
 
-  if (open_console)
-    ScheduleOpenConsole();
+  ScheduleAction(action);
 }
 
 void DevToolsWindow::Activate() {
@@ -180,7 +185,7 @@ void DevToolsWindow::SetDocked(bool docked) {
       inspected_window = NULL;
     }
   }
-  Show(false);
+  Show(DEVTOOLS_TOGGLE_ACTION_NONE);
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
@@ -244,10 +249,7 @@ void DevToolsWindow::Observe(NotificationType type,
     SetAttachedWindow();
     is_loaded_ = true;
     UpdateTheme();
-    if (open_console_on_load_) {
-      DoOpenConsole();
-      open_console_on_load_ = false;
-    }
+    DoAction();
   } else if (type == NotificationType::TAB_CLOSING) {
     if (Source<NavigationController>(source).ptr() ==
             &tab_contents_->controller()) {
@@ -263,16 +265,30 @@ void DevToolsWindow::Observe(NotificationType type,
   }
 }
 
-void DevToolsWindow::ScheduleOpenConsole() {
+void DevToolsWindow::ScheduleAction(DevToolsToggleAction action) {
+  action_on_load_ = action;
   if (is_loaded_)
-    DoOpenConsole();
-  else
-    open_console_on_load_ = true;
+    DoAction();
 }
 
-void DevToolsWindow::DoOpenConsole() {
-  tab_contents_->render_view_host()->
-      ExecuteJavascriptInWebFrame(L"", L"WebInspector.showConsole();");
+void DevToolsWindow::DoAction() {
+  // TODO: these messages should be pushed through the WebKit API instead.
+  switch (action_on_load_) {
+    case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
+      tab_contents_->render_view_host()->
+          ExecuteJavascriptInWebFrame(L"", L"WebInspector.showConsole();");
+      break;
+    case DEVTOOLS_TOGGLE_ACTION_INSPECT:
+      tab_contents_->render_view_host()->
+          ExecuteJavascriptInWebFrame(
+              L"", L"WebInspector.toggleSearchingForNode();");
+    case DEVTOOLS_TOGGLE_ACTION_NONE:
+      // Do nothing.
+      break;
+    default:
+      NOTREACHED();
+  }
+  action_on_load_ = DEVTOOLS_TOGGLE_ACTION_NONE;
 }
 
 std::string SkColorToRGBAString(SkColor color) {

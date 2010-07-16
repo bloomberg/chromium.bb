@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -40,7 +41,7 @@ class DevToolsWindow
   virtual void SendMessageToClient(const IPC::Message& message);
   virtual void InspectedTabClosing();
 
-  void Show(bool open_console);
+  void Show(DevToolsToggleAction action);
   void Activate();
   void SetDocked(bool docked);
   RenderViewHost* GetRenderViewHost();
@@ -59,8 +60,8 @@ class DevToolsWindow
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  void ScheduleOpenConsole();
-  void DoOpenConsole();
+  void ScheduleAction(DevToolsToggleAction action);
+  void DoAction();
   GURL GetDevToolsUrl();
   void UpdateTheme();
 
@@ -96,7 +97,7 @@ class DevToolsWindow
   Browser* browser_;
   bool docked_;
   bool is_loaded_;
-  bool open_console_on_load_;
+  DevToolsToggleAction action_on_load_;
   NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };

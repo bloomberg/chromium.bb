@@ -145,6 +145,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_U, false, true, false, IDC_VIEW_SOURCE },
   { base::VKEY_I, true, true, false, IDC_DEV_TOOLS },
   { base::VKEY_J, true, true, false, IDC_DEV_TOOLS_CONSOLE },
+  { base::VKEY_C, true, true, false, IDC_DEV_TOOLS_INSPECT },
   { base::VKEY_P, false, true, false, IDC_PRINT},
   { base::VKEY_ESCAPE, true, false, false, IDC_TASK_MANAGER },
 #if !defined(OS_CHROMEOS)

@@ -33,6 +33,7 @@
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/dock_info.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
@@ -1669,15 +1670,21 @@ void Browser::OpenCreateShortcutsDialog() {
 #endif
 }
 
-void Browser::ToggleDevToolsWindow(bool open_console) {
-  if (open_console)
-    UserMetrics::RecordAction(UserMetricsAction("DevTools_ToggleConsole"),
-                              profile_);
-  else
-    UserMetrics::RecordAction(UserMetricsAction("DevTools_ToggleWindow"),
-                              profile_);
+void Browser::ToggleDevToolsWindow(DevToolsToggleAction action) {
+  std::string uma_string;
+  switch (action) {
+    case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
+      uma_string = "DevTools_ToggleConsole";
+      break;
+    case DEVTOOLS_TOGGLE_ACTION_NONE:
+    case DEVTOOLS_TOGGLE_ACTION_INSPECT:
+    default:
+      uma_string = "DevTools_ToggleWindow";
+      break;
+  }
+  UserMetrics::RecordAction(UserMetricsAction(uma_string.c_str()), profile_);
   DevToolsManager::GetInstance()->ToggleDevToolsWindow(
-      GetSelectedTabContents()->render_view_host(), open_console);
+      GetSelectedTabContents()->render_view_host(), action);
 }
 
 void Browser::OpenTaskManager() {
@@ -2085,8 +2092,15 @@ void Browser::ExecuteCommandWithDisposition(
     // Show various bits of UI
     case IDC_OPEN_FILE:             OpenFile();                       break;
     case IDC_CREATE_SHORTCUTS:      OpenCreateShortcutsDialog();      break;
-    case IDC_DEV_TOOLS:             ToggleDevToolsWindow(false);      break;
-    case IDC_DEV_TOOLS_CONSOLE:     ToggleDevToolsWindow(true);       break;
+    case IDC_DEV_TOOLS:             ToggleDevToolsWindow(
+                                        DEVTOOLS_TOGGLE_ACTION_NONE);
+                                    break;
+    case IDC_DEV_TOOLS_CONSOLE:     ToggleDevToolsWindow(
+                                        DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
+                                    break;
+    case IDC_DEV_TOOLS_INSPECT:     ToggleDevToolsWindow(
+                                        DEVTOOLS_TOGGLE_ACTION_INSPECT);
+                                    break;
     case IDC_TASK_MANAGER:          OpenTaskManager();                break;
     case IDC_REPORT_BUG:            OpenBugReportDialog();            break;
 
@@ -3164,6 +3178,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS, true);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE, true);
+  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_INSPECT, true);
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);

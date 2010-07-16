@@ -11,6 +11,7 @@
 
 #include "base/ref_counted.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
 
 namespace IPC {
 class Message;
@@ -54,7 +55,8 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void RequestUndockWindow(RenderViewHost* client_rvn);
 
   void OpenDevToolsWindow(RenderViewHost* inspected_rvh);
-  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh, bool open_console);
+  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
+                            DevToolsToggleAction action);
   void RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
                                   const std::string& feature,
                                   bool enabled);
@@ -103,7 +105,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
   void ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
                             bool force_open,
-                            bool open_console);
+                            DevToolsToggleAction action);
 
   void ReopenWindow(RenderViewHost* client_rvh, bool docked);
 

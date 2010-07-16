@@ -61,6 +61,7 @@ BEGIN
     VK_F1,          IDC_HELP_PAGE,              VIRTKEY
     "I",            IDC_DEV_TOOLS,              VIRTKEY, CONTROL, SHIFT
     "J",            IDC_DEV_TOOLS_CONSOLE,      VIRTKEY, CONTROL, SHIFT
+    "C",            IDC_DEV_TOOLS_INSPECT,      VIRTKEY, CONTROL, SHIFT
     "N",            IDC_NEW_INCOGNITO_WINDOW,   VIRTKEY, CONTROL, SHIFT
     "T",            IDC_NEW_TAB,                VIRTKEY, CONTROL
     "N",            IDC_NEW_WINDOW,             VIRTKEY, CONTROL
@@ -122,6 +123,7 @@ IDR_CHROMEFRAME ACCELERATORS
 BEGIN
     "I",            IDC_DEV_TOOLS,              VIRTKEY, CONTROL, SHIFT
     "J",            IDC_DEV_TOOLS_CONSOLE,      VIRTKEY, CONTROL, SHIFT
+    "C",            IDC_DEV_TOOLS_INSPECT,      VIRTKEY, CONTROL, SHIFT
     VK_OEM_MINUS,   IDC_ZOOM_MINUS,             VIRTKEY, CONTROL
     VK_OEM_MINUS,   IDC_ZOOM_MINUS,             VIRTKEY, CONTROL, SHIFT
     VK_SUBTRACT,    IDC_ZOOM_MINUS,             VIRTKEY, CONTROL

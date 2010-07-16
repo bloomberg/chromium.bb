@@ -14,6 +14,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -436,7 +437,9 @@ void ExtensionsDOMHandler::HandleInspectMessage(const Value* value) {
     return;
   }
 
-  DevToolsManager::GetInstance()->ToggleDevToolsWindow(host, true);
+  DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+      host,
+      DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
 }
 
 void ExtensionsDOMHandler::HandleReloadMessage(const Value* value) {

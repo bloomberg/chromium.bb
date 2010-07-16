@@ -131,12 +131,16 @@ void DevToolsManager::RequestUndockWindow(RenderViewHost* client_rvh) {
 }
 
 void DevToolsManager::OpenDevToolsWindow(RenderViewHost* inspected_rvh) {
-  ToggleDevToolsWindow(inspected_rvh, true, false);
+  ToggleDevToolsWindow(
+      inspected_rvh,
+      true,
+      DEVTOOLS_TOGGLE_ACTION_NONE);
 }
 
-void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
-                                           bool open_console) {
-  ToggleDevToolsWindow(inspected_rvh, false, open_console);
+void DevToolsManager::ToggleDevToolsWindow(
+    RenderViewHost* inspected_rvh,
+    DevToolsToggleAction action) {
+  ToggleDevToolsWindow(inspected_rvh, false, action);
 }
 
 void DevToolsManager::RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
@@ -345,9 +349,10 @@ void DevToolsManager::ReopenWindow(RenderViewHost* client_rvh, bool docked) {
   window->SetDocked(docked);
 }
 
-void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
-                                           bool force_open,
-                                           bool open_console) {
+void DevToolsManager::ToggleDevToolsWindow(
+    RenderViewHost* inspected_rvh,
+    bool force_open,
+    DevToolsToggleAction action) {
   bool do_open = force_open;
   DevToolsClientHost* host = GetDevToolsClientHostFor(inspected_rvh);
   if (!host) {
@@ -368,9 +373,10 @@ void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
   // undocked, we show (activate) it.
   if (!window->is_docked() || do_open) {
     AutoReset<bool> auto_reset_in_initial_show(&in_initial_show_, true);
-    window->Show(open_console);
-  } else
+    window->Show(action);
+  } else {
     UnregisterDevToolsClientHostFor(inspected_rvh);
+  }
 }
 
 void DevToolsManager::BindClientHost(RenderViewHost* inspected_rvh,

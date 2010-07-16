@@ -133,6 +133,8 @@ const struct AcceleratorMapping {
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_j, IDC_DEV_TOOLS_CONSOLE,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_c, IDC_DEV_TOOLS_INSPECT,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_Escape, IDC_TASK_MANAGER, GDK_SHIFT_MASK },
 
   // Editing.

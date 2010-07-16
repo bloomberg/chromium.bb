@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profile.h"
@@ -255,7 +256,8 @@ void ExtensionPopup::Observe(NotificationType type,
           registrar_.Add(this, NotificationType::DEVTOOLS_WINDOW_CLOSING,
               Source<Profile>(extension_host_->profile()));
           DevToolsManager::GetInstance()->ToggleDevToolsWindow(
-              extension_host_->render_view_host(), true);
+              extension_host_->render_view_host(),
+              DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
         }
       }
       break;

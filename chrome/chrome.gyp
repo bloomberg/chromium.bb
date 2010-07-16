@@ -548,6 +548,7 @@
         'browser/debugger/devtools_remote_message.h',
         'browser/debugger/devtools_remote_service.cc',
         'browser/debugger/devtools_remote_service.h',
+        'browser/debugger/devtools_toggle_action.h',
         'browser/debugger/devtools_window.cc',
         'browser/debugger/devtools_window.h',
         'browser/debugger/extension_ports_remote_service.cc',

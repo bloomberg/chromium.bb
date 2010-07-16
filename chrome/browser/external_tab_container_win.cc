@@ -15,6 +15,7 @@
 #include "chrome/browser/automation/automation_extension_function.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
@@ -827,11 +828,17 @@ bool ExternalTabContainer::AcceleratorPressed(
       break;
     case IDC_DEV_TOOLS:
       DevToolsManager::GetInstance()->ToggleDevToolsWindow(
-          tab_contents_->render_view_host(), false);
+          tab_contents_->render_view_host(), DEVTOOLS_TOGGLE_ACTION_NONE);
       break;
     case IDC_DEV_TOOLS_CONSOLE:
       DevToolsManager::GetInstance()->ToggleDevToolsWindow(
-          tab_contents_->render_view_host(), true);
+          tab_contents_->render_view_host(),
+          DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
+      break;
+    case IDC_DEV_TOOLS_INSPECT:
+      DevToolsManager::GetInstance()->ToggleDevToolsWindow(
+          tab_contents_->render_view_host(),
+          DEVTOOLS_TOGGLE_ACTION_INSPECT);
       break;
     default:
       NOTREACHED() << "Unsupported accelerator: " << command_id;

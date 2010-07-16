@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -496,7 +497,7 @@ class Browser : public TabStripModelDelegate,
   // Show various bits of UI
   void OpenFile();
   void OpenCreateShortcutsDialog();
-  void ToggleDevToolsWindow(bool open_console);
+  void ToggleDevToolsWindow(DevToolsToggleAction action);
   void OpenTaskManager();
   void OpenBugReportDialog();
 
