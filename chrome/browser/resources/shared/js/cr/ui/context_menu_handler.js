@@ -34,9 +34,11 @@ cr.define('cr.ui', function() {
 
       menu.style.display = 'block';
       // when the menu is shown we steal all keyboard events.
-      menu.ownerDocument.addEventListener('keydown', this, true);
-      menu.ownerDocument.addEventListener('mousedown', this, true);
-      menu.ownerDocument.addEventListener('blur', this, true);
+      var doc = menu.ownerDocument;
+      doc.addEventListener('keydown', this, true);
+      doc.addEventListener('mousedown', this, true);
+      doc.addEventListener('blur', this, true);
+      doc.defaultView.addEventListener('resize', this);
       menu.addEventListener('activate', this);
       this.positionMenu_(e, menu);
     },
@@ -50,9 +52,11 @@ cr.define('cr.ui', function() {
         return;
 
       menu.style.display = 'none';
-      menu.ownerDocument.removeEventListener('keydown', this, true);
-      menu.ownerDocument.removeEventListener('mousedown', this, true);
-      menu.ownerDocument.removeEventListener('blur', this, true);
+      var doc = menu.ownerDocument;
+      doc.removeEventListener('keydown', this, true);
+      doc.removeEventListener('mousedown', this, true);
+      doc.removeEventListener('blur', this, true);
+      doc.defaultView.removeEventListener('resize', this);
       menu.removeEventListener('activate', this);
       menu.selectedIndex = -1;
       this.menu_ = null;
@@ -137,6 +141,7 @@ cr.define('cr.ui', function() {
 
         case 'activate':
         case 'blur':
+        case 'resize':
           this.hideMenu();
           break;
 

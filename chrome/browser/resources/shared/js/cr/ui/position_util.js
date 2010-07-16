@@ -21,7 +21,7 @@ cr.define('cr.ui', function() {
    */
   const AnchorType = {
     /**
-     * The popop's right edge is aligned with the left edge of the anchor.
+     * The popup's right edge is aligned with the left edge of the anchor.
      * The popup's top edge is aligned with the top edge of the anchor's top
      * edge.
      */
@@ -73,20 +73,28 @@ cr.define('cr.ui', function() {
     // Flip type based on available size
     switch (type) {
       case AnchorType.BELOW:
-        if (anchorRect.bottom + popupRect.height > availRect.height)
+        if (anchorRect.bottom + popupRect.height > availRect.height &&
+            popupRect.height <= anchorRect.top) {
           type = AnchorType.ABOVE;
+        }
         break;
       case AnchorType.ABOVE:
-        if (popupRect.height > anchorRect.top)
+        if (popupRect.height > anchorRect.top &&
+            anchorRect.bottom + popupRect.height <= availRect.height) {
           type = AnchorType.BELOW;
+        }
         break;
       case AnchorType.AFTER:
-        if (anchorRect.right + popupRect.width > availRect.width)
+        if (anchorRect.right + popupRect.width > availRect.width &&
+            popupRect.width <= anchorRect.left) {
           type = AnchorType.BEFORE;
+        }
         break;
       case AnchorType.BEFORE:
-        if (popupRect.width > anchorRect.left)
+        if (popupRect.width > anchorRect.left &&
+            anchorRect.right + popupRect.width <= availRect.width) {
           type = AnchorType.AFTER;
+        }
         break;
     }
     // flipping done
@@ -98,16 +106,28 @@ cr.define('cr.ui', function() {
     // Primary direction
     switch (type) {
       case AnchorType.BELOW:
-        style.top = anchorRect.bottom + 'px';
+        if (anchorRect.bottom + popupRect.height <= availRect.height)
+          style.top = anchorRect.bottom + 'px';
+        else
+          style.bottom = '0';
         break;
       case AnchorType.ABOVE:
-        style.bottom = availRect.height - anchorRect.top + 'px';
+        if (availRect.height - anchorRect.top >= 0)
+          style.bottom = availRect.height - anchorRect.top + 'px';
+        else
+          style.top = '0';
         break;
       case AnchorType.AFTER:
-        style.left = anchorRect.right + 'px';
+        if (anchorRect.right + popupRect.width <= availRect.width)
+          style.left = anchorRect.right + 'px';
+        else
+          style.right = '0';
         break;
       case AnchorType.BEFORE:
-        style.right = availRect.width - anchorRect.left + 'px';
+        if (availRect.width - anchorRect.left >= 0)
+          style.right = availRect.width - anchorRect.left + 'px';
+        else
+          style.left = '0';
         break;
     }
 
