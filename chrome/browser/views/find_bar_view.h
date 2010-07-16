@@ -102,6 +102,15 @@ class FindBarView : public DropdownBarView,
   // between us and the TabContentsView.
   FindBarHost* find_bar_host() const;
 
+#if defined(OS_LINUX)
+  // In gtk we get changed signals if we programatically set the text. If we
+  // don't ignore them we run into problems. For example, switching tabs back
+  // to one with the find bar visible will cause a search to the next found
+  // text. Also if the find bar had been visible and then hidden and the user
+  // switches back, found text will be highlighted again.
+  bool ignore_contents_changed_;
+#endif
+
   // The controls in the window.
   views::Textfield* find_text_;
   views::Label* match_count_text_;
