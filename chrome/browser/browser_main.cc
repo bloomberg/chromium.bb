@@ -115,8 +115,6 @@
 #include "chrome/browser/views/user_data_dir_dialog.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/sandbox_policy.h"
-#include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -273,15 +271,6 @@ void BrowserMainParts::SpdyFieldTrial() {
     //    https vs. https over spdy case.
     FieldTrial::Probability npnhttp_probability = 250;
     FieldTrial::Probability npnspdy_probability = 500;
-#if defined(OS_WIN)
-    // Enable the A/B test for SxS. SxS is only available on windows
-    std::wstring channel;
-    if (BrowserDistribution::GetDistribution()->GetChromeChannel(&channel) &&
-        channel == GoogleChromeSxSDistribution::ChannelName()) {
-      npnhttp_probability = 500;
-      npnspdy_probability = 500;
-    }
-#endif
     scoped_refptr<FieldTrial> trial =
         new FieldTrial("SpdyImpact", kSpdyDivisor);
     // npn with only http support, no spdy.
