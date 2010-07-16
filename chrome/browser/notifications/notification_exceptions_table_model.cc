@@ -8,7 +8,7 @@
 #include "app/l10n_util_collator.h"
 #include "app/table_model_observer.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/common/content_settings_helper.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
@@ -64,10 +64,7 @@ std::wstring NotificationExceptionsTableModel::GetText(int row,
                                                        int column_id) {
   const Entry& entry = entries_[row];
   if (column_id == IDS_EXCEPTIONS_HOSTNAME_HEADER) {
-    // TODO(bulach): factor out in a common function so that Notifications won't
-    // depend on Geolocation.
-    return UTF8ToWide(GeolocationContentSettingsMap::OriginToString(
-        entry.origin));
+    return content_settings_helper::OriginToWString(entry.origin);
   }
 
   if (column_id == IDS_EXCEPTIONS_ACTION_HEADER) {

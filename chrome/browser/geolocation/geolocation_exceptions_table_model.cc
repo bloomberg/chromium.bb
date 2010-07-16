@@ -8,6 +8,7 @@
 #include "app/l10n_util_collator.h"
 #include "app/table_model_observer.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/content_settings_helper.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
@@ -122,12 +123,11 @@ int GeolocationExceptionsTableModel::RowCount() {
 }
 
 std::wstring GeolocationExceptionsTableModel::GetText(int row,
-                                                           int column_id) {
+                                                      int column_id) {
   const Entry& entry = entries_[row];
   if (column_id == IDS_EXCEPTIONS_HOSTNAME_HEADER) {
     if (entry.origin == entry.embedding_origin) {
-      return UTF8ToWide(GeolocationContentSettingsMap::OriginToString(
-          entry.origin));
+      return content_settings_helper::OriginToWString(entry.origin);
     }
     std::wstring indent(L"    ");
     if (entry.embedding_origin.is_empty()) {
@@ -141,8 +141,7 @@ std::wstring GeolocationExceptionsTableModel::GetText(int row,
     }
     return indent + l10n_util::GetStringF(
         IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST,
-        UTF8ToWide(GeolocationContentSettingsMap::OriginToString(
-            entry.embedding_origin)));
+        content_settings_helper::OriginToWString(entry.embedding_origin));
   }
 
   if (column_id == IDS_EXCEPTIONS_ACTION_HEADER) {
@@ -170,8 +169,8 @@ void GeolocationExceptionsTableModel::SetObserver(
 }
 
 int GeolocationExceptionsTableModel::CompareValues(int row1,
-                                                        int row2,
-                                                        int column_id) {
+                                                   int row2,
+                                                   int column_id) {
   DCHECK(row1 >= 0 && row1 < RowCount() &&
          row2 >= 0 && row2 < RowCount());
 
@@ -239,9 +238,9 @@ void GeolocationExceptionsTableModel::AddEntriesForOrigin(
   }
 }
 
-GeolocationExceptionsTableModel::Entry::Entry(
-    const GURL& in_origin, const GURL& in_embedding_origin,
-    ContentSetting in_setting)
+GeolocationExceptionsTableModel::Entry::Entry(const GURL& in_origin,
+                                              const GURL& in_embedding_origin,
+                                              ContentSetting in_setting)
     : origin(in_origin),
       embedding_origin(in_embedding_origin),
       setting(in_setting) {

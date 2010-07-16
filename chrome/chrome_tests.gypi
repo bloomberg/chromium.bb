@@ -1117,6 +1117,7 @@
         'common/bzip2_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
         'common/common_param_traits_unittest.cc',
+	'common/content_settings_helper_unittest.cc',
         'common/deprecated/event_sys_unittest.cc',
         'common/desktop_notifications/active_notification_tracker_unittest.cc',
         'common/extensions/extension_action_unittest.cc',

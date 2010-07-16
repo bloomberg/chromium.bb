@@ -34,10 +34,6 @@ class GeolocationContentSettingsMap
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Return simplified string representing origin.  If origin is using http or
-  // the standard port, those parts are not included in the output.
-  static std::string OriginToString(const GURL& origin);
-
   // Returns the default setting.
   //
   // This should only be called on the UI thread.

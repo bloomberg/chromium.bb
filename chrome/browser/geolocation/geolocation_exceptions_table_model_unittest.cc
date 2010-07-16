@@ -5,29 +5,23 @@
 #include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "chrome/common/content_settings_helper.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-std::wstring OriginToWString(const GURL& origin) {
-  return UTF8ToWide(GeolocationContentSettingsMap::OriginToString(origin));
-}
 const GURL kUrl0("http://www.example.com");
 const GURL kUrl1("http://www.example1.com");
 const GURL kUrl2("http://www.example2.com");
 }  // namespace
 
-class GeolocationExceptionsTableModelTest
-  : public RenderViewHostTestHarness {
+class GeolocationExceptionsTableModelTest : public RenderViewHostTestHarness {
  public:
   GeolocationExceptionsTableModelTest()
-     : ui_thread_(ChromeThread::UI, MessageLoop::current()) {
+      : ui_thread_(ChromeThread::UI, MessageLoop::current()) {}
 
-  }
-
-  virtual ~GeolocationExceptionsTableModelTest() {
-  }
+  virtual ~GeolocationExceptionsTableModelTest() {}
 
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
@@ -133,14 +127,16 @@ TEST_F(GeolocationExceptionsTableModelTest, GetText) {
 
   // Ensure the parent doesn't have any indentation.
   std::wstring text(model_->GetText(0, IDS_EXCEPTIONS_HOSTNAME_HEADER));
-  EXPECT_EQ(OriginToWString(kUrl0), text);
+  EXPECT_EQ(content_settings_helper::OriginToWString(kUrl0), text);
 
   // Ensure there's some indentation on the children nodes.
   text = model_->GetText(1, IDS_EXCEPTIONS_HOSTNAME_HEADER);
-  EXPECT_NE(OriginToWString(kUrl1), text);
-  EXPECT_NE(std::wstring::npos, text.find(OriginToWString(kUrl1)));
+  EXPECT_NE(content_settings_helper::OriginToWString(kUrl1), text);
+  EXPECT_NE(std::wstring::npos,
+            text.find(content_settings_helper::OriginToWString(kUrl1)));
 
   text = model_->GetText(2, IDS_EXCEPTIONS_HOSTNAME_HEADER);
-  EXPECT_NE(OriginToWString(kUrl2), text);
-  EXPECT_NE(std::wstring::npos, text.find(OriginToWString(kUrl2)));
+  EXPECT_NE(content_settings_helper::OriginToWString(kUrl2), text);
+  EXPECT_NE(std::wstring::npos,
+            text.find(content_settings_helper::OriginToWString(kUrl2)));
 }
