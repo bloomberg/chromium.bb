@@ -1576,6 +1576,7 @@
         'browser/renderer_host/test/web_cache_manager_browsertest.cc',
         'browser/renderer_host/test/render_process_host_browsertest.cc',
         'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
+        'browser/safe_browsing/safe_browsing_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager_browsertest.cc',

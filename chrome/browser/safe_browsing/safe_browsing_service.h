@@ -180,6 +180,7 @@ class SafeBrowsingService
   };
 
   friend class base::RefCountedThreadSafe<SafeBrowsingService>;
+  friend class SafeBrowsingServiceTest;
 
   ~SafeBrowsingService();
 

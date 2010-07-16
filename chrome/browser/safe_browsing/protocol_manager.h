@@ -54,6 +54,7 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
                            TestMalwareReportUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestNextChunkUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestUpdateUrl);
+  friend class SafeBrowsingServiceTest;
 
  public:
   // Constructs a SafeBrowsingProtocolManager for |sb_service| that issues
