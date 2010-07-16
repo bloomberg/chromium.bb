@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
@@ -43,7 +44,8 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
 
   // FORMAT:
   // command-line = <plugin-entry> + *( LWS + "," + LWS + <plugin-entry> )
-  // plugin-entry = <file-path> + *1( LWS + ";" + LWS + <mime-type> )
+  // plugin-entry = <file-path> + ["#" + <name> + ["#" + <description>]] +
+  //                *1( LWS + ";" + LWS + <mime-type> )
 
   std::vector<std::wstring> modules;
   SplitString(value, ',', &modules);
@@ -55,8 +57,15 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
       continue;
     }
 
+    std::vector<std::wstring> name_parts;
+    SplitString(parts[0], '#', &name_parts);
+
     PepperPluginInfo plugin;
-    plugin.path = FilePath::FromWStringHack(parts[0]);
+    plugin.path = FilePath::FromWStringHack(name_parts[0]);
+    if (name_parts.size() > 1)
+      plugin.name = WideToUTF8(name_parts[1]);
+    if (name_parts.size() > 2)
+      plugin.type_descriptions = WideToUTF8(name_parts[2]);
     for (size_t j = 1; j < parts.size(); ++j)
       plugin.mime_types.push_back(WideToASCII(parts[j]));
 
