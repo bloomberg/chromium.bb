@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
 #define WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
 
-#include "ppapi/c/pp_var.h"
+#include "third_party/ppapi/c/pp_var.h"
 
 #define PPB_PRIVATE_INTERFACE "PPB_Private;1"
 
