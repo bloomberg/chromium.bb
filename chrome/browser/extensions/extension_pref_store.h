@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/pref_store.h"
 
@@ -82,6 +83,8 @@ class ExtensionPrefStore : public PrefStore {
   // the values in the extensions' PrefValueMaps.
   typedef std::list<ExtensionPrefs*> ExtensionStack;
   ExtensionStack extension_stack_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPrefStore);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREF_STORE_H_

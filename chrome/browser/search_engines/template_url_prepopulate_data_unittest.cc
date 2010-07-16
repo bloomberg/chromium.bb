@@ -102,11 +102,8 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   FilePath preferences_file = temp_dir.path().AppendASCII("Preferences");
   file_util::WriteFile(preferences_file, pref_data, sizeof(pref_data));
 
-  scoped_ptr<PrefService> prefs(new PrefService(new PrefValueStore(
-      NULL, new JsonPrefStore(preferences_file,
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-      NULL, NULL)));
-
+  scoped_ptr<PrefService> prefs(
+      PrefService::CreateUserPrefService(preferences_file));
   TemplateURLPrepopulateData::RegisterUserPrefs(prefs.get());
 
   int version = TemplateURLPrepopulateData::GetDataVersion(prefs.get());

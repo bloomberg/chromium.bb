@@ -160,7 +160,7 @@ TEST(ChromeURLRequestContextTest, CreateProxyConfigTest) {
     CommandLine command_line(tests[i].command_line);
     PrefService prefs(new PrefValueStore(
         new ConfigurationPolicyPrefStore(&command_line, NULL),
-        NULL, NULL, NULL));  // No extension, user, or recommended prefs.
+        NULL, NULL, NULL, NULL));  // Only configuration-policy prefs.
     ChromeURLRequestContextGetter::RegisterUserPrefs(&prefs);
     scoped_ptr<net::ProxyConfig> config(CreateProxyConfig(&prefs));
 

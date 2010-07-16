@@ -29,6 +29,7 @@
 #endif
 #include "chrome/browser/dummy_configuration_policy_provider.h"
 
+#include "chrome/browser/command_line_pref_store.h"
 #include "chrome/browser/configuration_policy_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/common/chrome_paths.h"
@@ -94,6 +95,8 @@ void NotifyReadError(PrefService* pref, int message_id) {
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
   PrefStore* managed_prefs = NULL;
   ExtensionPrefStore* extension_prefs = new ExtensionPrefStore(NULL);
+  CommandLinePrefStore* command_line_prefs = new CommandLinePrefStore(
+      CommandLine::ForCurrentProcess());
   PrefStore* local_prefs = new JsonPrefStore(
       pref_filename,
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
@@ -134,6 +137,7 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
   PrefValueStore* value_store = new PrefValueStore(
       managed_prefs,
       extension_prefs,
+      command_line_prefs,
       local_prefs,
       recommended_prefs);
 
@@ -149,6 +153,7 @@ PrefService* PrefService::CreateUserPrefService(
   PrefValueStore* value_store = new PrefValueStore(
       NULL, /* no enforced prefs */
       NULL, /* no extension prefs */
+      NULL, /* no command-line prefs */
       new JsonPrefStore(
           pref_filename,
           ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),

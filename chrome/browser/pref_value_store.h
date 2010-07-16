@@ -31,10 +31,13 @@ class PrefValueStore {
   // In decreasing order of precedence:
   //   |managed_prefs| contains all managed (policy) preference values.
   //   |extension_prefs| contains preference values set by extensions.
+  //   |command_line_prefs| contains preference values set by command-line
+  //        switches.
   //   |user_prefs| contains all user-set preference values.
   //   |recommended_prefs| contains all recommended (policy) preference values.
   PrefValueStore(PrefStore* managed_prefs,
                  PrefStore* extension_prefs,
+                 PrefStore* command_line_prefs,
                  PrefStore* user_prefs,
                  PrefStore* recommended_prefs);
 
@@ -98,6 +101,7 @@ class PrefValueStore {
   enum PrefStoreType {
     MANAGED = 0,
     EXTENSION,
+    COMMAND_LINE,
     USER,
     RECOMMENDED,
     PREF_STORE_TYPE_MAX = RECOMMENDED

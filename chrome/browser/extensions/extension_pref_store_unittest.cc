@@ -259,7 +259,8 @@ TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
 
   // The PrefValueStore takes ownership of the PrefStores; in this case, that's
   // only an ExtensionPrefStore.
-  PrefValueStore* value_store = new PrefValueStore(NULL, &eps, NULL, NULL);
+  PrefValueStore* value_store = new PrefValueStore(NULL, &eps, NULL, NULL,
+      NULL);
   MockPrefService* pref_service = new MockPrefService(value_store);
   eps.SetPrefService(pref_service);
   pref_service->RegisterStringPref(kPref1, std::string());

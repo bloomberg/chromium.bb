@@ -6,10 +6,12 @@
 
 PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
                                PrefStore* extension_prefs,
+                               PrefStore* command_line_prefs,
                                PrefStore* user_prefs,
                                PrefStore* recommended_prefs) {
   pref_stores_[MANAGED].reset(managed_prefs);
   pref_stores_[EXTENSION].reset(extension_prefs);
+  pref_stores_[COMMAND_LINE].reset(command_line_prefs);
   pref_stores_[USER].reset(user_prefs);
   pref_stores_[RECOMMENDED].reset(recommended_prefs);
 }

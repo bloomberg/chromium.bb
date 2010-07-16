@@ -22,10 +22,12 @@ class ManagedPrefsBannerBaseTest : public testing::Test {
   virtual void SetUp() {
     managed_prefs_ = new DummyPrefStore;
     extension_prefs_ = new DummyPrefStore;
+    command_line_prefs_ = new DummyPrefStore;
     user_prefs_ = new DummyPrefStore;
     default_prefs_ = new DummyPrefStore;
     pref_service_.reset(new PrefService(new PrefValueStore(managed_prefs_,
                                                            extension_prefs_,
+                                                           command_line_prefs_,
                                                            user_prefs_,
                                                            default_prefs_)));
     pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com");
@@ -36,6 +38,7 @@ class ManagedPrefsBannerBaseTest : public testing::Test {
   scoped_ptr<PrefService> pref_service_;
   DummyPrefStore* managed_prefs_;
   DummyPrefStore* extension_prefs_;
+  DummyPrefStore* command_line_prefs_;
   DummyPrefStore* user_prefs_;
   DummyPrefStore* default_prefs_;
 };

@@ -879,6 +879,7 @@
         'browser/cocoa/window_size_autosaver_unittest.mm',
         'browser/cocoa/wrench_menu_controller_unittest.mm',
         'browser/config_dir_policy_provider_unittest.cc',
+        'browser/command_line_pref_store_unittest.cc',
         'browser/command_updater_unittest.cc',
         'browser/configuration_policy_pref_store_unittest.cc',
         'browser/configuration_policy_provider_mac_unittest.cc',

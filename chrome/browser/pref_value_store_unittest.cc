@@ -24,6 +24,10 @@ namespace prefs {
   const wchar_t kRecommendedPref[] = L"this.pref.recommended_value_only";
   const wchar_t kSampleDict[] = L"sample.dict";
   const wchar_t kSampleList[] = L"sample.list";
+
+  // This must match the actual pref name so the command-line store knows about
+  // it.
+  const wchar_t kApplicationLocale[] = L"intl.app_locale";
 }
 
 // Potentailly expected values of all preferences used in this test program.
@@ -34,6 +38,7 @@ namespace user_pref {
   const bool kDeleteCacheValue = true;
   const std::wstring kCurrentThemeIDValue = L"abcdefg";
   const std::wstring kHomepageValue = L"http://www.google.com";
+  const std::wstring kApplicationLocaleValue = L"is-WRONG";
 }
 
 namespace enforced_pref {
@@ -43,6 +48,12 @@ namespace enforced_pref {
 namespace extension_pref {
   const std::wstring kCurrentThemeIDValue = L"set by extension";
   const std::wstring kHomepageValue = L"http://www.chromium.org";
+}
+
+namespace command_line_pref {
+  const std::wstring kApplicationLocaleValue = L"hi-MOM";
+  const std::wstring kCurrentThemeIDValue = L"zyxwvut";
+  const std::wstring kHomepageValue = L"http://www.ferretcentral.org";
 }
 
 namespace recommended_pref {
@@ -57,12 +68,14 @@ class PrefValueStoreTest : public testing::Test {
   // |PrefStore|s are owned by the |PrefValueStore|.
   DummyPrefStore* enforced_pref_store_;
   DummyPrefStore* extension_pref_store_;
+  DummyPrefStore* command_line_pref_store_;
   DummyPrefStore* recommended_pref_store_;
   DummyPrefStore* user_pref_store_;
 
   // Preferences are owned by the individual |DummyPrefStores|.
   DictionaryValue* enforced_prefs_;
   DictionaryValue* extension_prefs_;
+  DictionaryValue* command_line_prefs_;
   DictionaryValue* user_prefs_;
   DictionaryValue* recommended_prefs_;
 
@@ -70,6 +83,7 @@ class PrefValueStoreTest : public testing::Test {
     // Create dummy user preferences.
     enforced_prefs_= CreateEnforcedPrefs();
     extension_prefs_ = CreateExtensionPrefs();
+    command_line_prefs_ = CreateCommandLinePrefs();
     user_prefs_ = CreateUserPrefs();
     recommended_prefs_ = CreateRecommendedPrefs();
 
@@ -78,6 +92,8 @@ class PrefValueStoreTest : public testing::Test {
     enforced_pref_store_->set_prefs(enforced_prefs_);
     extension_pref_store_ = new DummyPrefStore();
     extension_pref_store_->set_prefs(extension_prefs_);
+    command_line_pref_store_ = new DummyPrefStore();
+    command_line_pref_store_->set_prefs(command_line_prefs_);
     user_pref_store_ = new DummyPrefStore();
     user_pref_store_->set_read_only(false);
     user_pref_store_->set_prefs(user_prefs_);
@@ -87,6 +103,7 @@ class PrefValueStoreTest : public testing::Test {
     // Create a new pref-value-store.
     pref_value_store_.reset(new PrefValueStore(enforced_pref_store_,
                                                extension_pref_store_,
+                                               command_line_pref_store_,
                                                user_pref_store_,
                                                recommended_pref_store_));
   }
@@ -99,6 +116,8 @@ class PrefValueStoreTest : public testing::Test {
     user_prefs->SetInteger(prefs::kMaxTabs, user_pref::kMaxTabsValue);
     user_prefs->SetString(prefs::kCurrentThemeID,
         user_pref::kCurrentThemeIDValue);
+    user_prefs->SetString(prefs::kApplicationLocale,
+        user_pref::kApplicationLocaleValue);
     user_prefs->SetString(prefs::kHomepage, user_pref::kHomepageValue);
     return user_prefs;
   }
@@ -116,6 +135,17 @@ class PrefValueStoreTest : public testing::Test {
     extension_prefs->SetString(prefs::kHomepage,
         extension_pref::kHomepageValue);
     return extension_prefs;
+  }
+
+  DictionaryValue* CreateCommandLinePrefs() {
+    DictionaryValue* command_line_prefs = new DictionaryValue();
+    command_line_prefs->SetString(prefs::kCurrentThemeID,
+        command_line_pref::kCurrentThemeIDValue);
+    command_line_prefs->SetString(prefs::kApplicationLocale,
+        command_line_pref::kApplicationLocaleValue);
+    command_line_prefs->SetString(prefs::kHomepage,
+        command_line_pref::kHomepageValue);
+    return command_line_prefs;
   }
 
   DictionaryValue* CreateRecommendedPrefs() {
@@ -151,6 +181,7 @@ class PrefValueStoreTest : public testing::Test {
 TEST_F(PrefValueStoreTest, IsReadOnly) {
   enforced_pref_store_->set_read_only(true);
   extension_pref_store_->set_read_only(true);
+  command_line_pref_store_->set_read_only(true);
   user_pref_store_->set_read_only(true);
   recommended_pref_store_->set_read_only(true);
   EXPECT_TRUE(pref_value_store_->ReadOnly());
@@ -170,11 +201,18 @@ TEST_F(PrefValueStoreTest, GetValue) {
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(enforced_pref::kHomepageValue, actual_str_value);
 
-  // Test getting an extension value overwriting a user-defined value.
+  // Test getting an extension value overwriting a user-defined and
+  // command-line-defined value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kCurrentThemeID, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(extension_pref::kCurrentThemeIDValue, actual_str_value);
+
+  // Test getting a command-line value overwriting a user-defined value.
+  value = NULL;
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kApplicationLocale, &value));
+  EXPECT_TRUE(value->GetAsString(&actual_str_value));
+  EXPECT_EQ(command_line_pref::kApplicationLocaleValue, actual_str_value);
 
   // Test getting a user-set value.
   value = NULL;
@@ -293,6 +331,11 @@ TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
       prefs::kCurrentThemeID));
 
+  // Test a command-line preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kApplicationLocale));
+
   // Test a user preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
   EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(prefs::kMaxTabs));
@@ -320,6 +363,13 @@ TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
       prefs::kCurrentThemeID));
   EXPECT_TRUE(pref_value_store_->PrefValueFromExtensionStore(
       prefs::kCurrentThemeID));
+
+  // Test a command-line preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
+  EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kApplicationLocale));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kApplicationLocale));
 
   // Test a user preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
@@ -353,6 +403,13 @@ TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
       prefs::kCurrentThemeID));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
       prefs::kCurrentThemeID));
+
+  // Test a command-line preference.
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kApplicationLocale));
+  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
+      prefs::kApplicationLocale));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kApplicationLocale));
 
   // Test a user preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
