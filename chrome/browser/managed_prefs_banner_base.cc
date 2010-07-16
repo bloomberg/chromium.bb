@@ -20,6 +20,7 @@ ManagedPrefsBannerBase::ManagedPrefsBannerBase(PrefService* prefs,
       break;
     case OPTIONS_PAGE_CONTENT:
       AddPref(prefs::kSyncManaged);
+      AddPref(prefs::kPasswordManagerEnabled);
       break;
     case OPTIONS_PAGE_ADVANCED:
       AddPref(prefs::kAlternateErrorPagesEnabled);
