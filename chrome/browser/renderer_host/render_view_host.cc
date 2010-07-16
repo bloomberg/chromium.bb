@@ -636,12 +636,6 @@ void RenderViewHost::GotFocus() {
     view->GotFocus();
 }
 
-bool RenderViewHost::CanBlur() const {
-  // TODO(brettw) is seems like this function is never implemented. It and the
-  // messages leading here should be removed.
-  return delegate_->CanBlur();
-}
-
 void RenderViewHost::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(routing_id(), reverse));
 }

@@ -603,11 +603,7 @@ void RenderWidgetHostViewGtk::Focus() {
 void RenderWidgetHostViewGtk::Blur() {
   // TODO(estade): We should be clearing native focus as well, but I know of no
   // way to do that without focusing another widget.
-  // TODO(estade): it doesn't seem like the CanBlur() check should be necessary
-  // since we are only called in response to a ViewHost blur message, but this
-  // check is made on Windows so I've added it here as well.
-  if (host_->CanBlur())
-    host_->Blur();
+  host_->Blur();
 }
 
 bool RenderWidgetHostViewGtk::HasFocus() {

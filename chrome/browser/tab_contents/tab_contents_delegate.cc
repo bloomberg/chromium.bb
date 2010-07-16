@@ -23,8 +23,6 @@ bool TabContentsDelegate::IsApplication() const { return false; }
 
 void TabContentsDelegate::ConvertContentsToApplication(TabContents* source) { }
 
-bool TabContentsDelegate::CanBlur() const { return true; }
-
 bool TabContentsDelegate::CanReloadContents(TabContents* source) const {
   return true;
 }
