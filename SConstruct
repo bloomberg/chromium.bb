@@ -787,7 +787,7 @@ def CommandSelLdrTestNacl(env, name, command,
     # unconditionally below.
     command = ['${NACL_SDK_LIB}/runnable-ld.so',
                '--', '--library-path', '${NACL_SDK_LIB}'] + command
-    extra_env = 'NACLDYNCODE=1,NACL_DANGEROUS_ENABLE_FILE_ACCESS=1'
+    extra_env = 'NACL_DANGEROUS_ENABLE_FILE_ACCESS=1'
     extra['osenv'] = AddToStringifiedList(extra.get('osenv'), extra_env)
     # TODO(mseaborn): Remove the need for the -s (stub out) option.
     sel_ldr_flags += ['-s']

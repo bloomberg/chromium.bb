@@ -37,8 +37,7 @@ static int IsEnvironmentVariableSet(char const *env_name) {
 }
 
 static int ShouldEnableDynamicLoading() {
-  /* Later we will make dynamic loading enabled by default. */
-  return IsEnvironmentVariableSet("NACLDYNCODE");
+  return !IsEnvironmentVariableSet("NACL_DISABLE_DYNAMIC_LOADING");
 }
 
 int NaClAppCtor(struct NaClApp  *nap) {

@@ -45,24 +45,22 @@ tests = [
     env.CommandSelLdrTestNacl(
         'dynamic_load_test.out',
         command=[env.File('dynamic_load_test.nexe')],
-        osenv='NACLDYNCODE=1'
         ),
     env.CommandSelLdrTestNacl(
         'write_to_dyncode.out',
         command=[env.File('write_to_dyncode.nexe')],
         exit_status='segfault',
         stdout_golden=env.File('write_to_dyncode.stdout'),
-        osenv='NACLDYNCODE=1'
         ),
     env.CommandSelLdrTestNacl(
         'dyncode_disabled_test.out',
-        command=[env.File('dyncode_disabled_test.nexe')]
+        command=[env.File('dyncode_disabled_test.nexe')],
+        osenv='NACL_DISABLE_DYNAMIC_LOADING=1',
         ),
     env.CommandSelLdrTestNacl(
         'debug_mode_test.out',
         sel_ldr_flags=["-d"],
         command=[env.File('debug_mode_test.nexe')],
-        osenv='NACLDYNCODE=1',
         ),
   ]
 
