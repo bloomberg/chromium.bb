@@ -4058,6 +4058,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Never for this site
       </message>
 
+      <!-- Import bookmarks promo -->
+      <message name="IDS_IMPORT_BOOKMARKS_PROMO" desc="Text telling users to import bookmarks after initial install">
+        <ph name="BEGIN_LINK">$1</ph>Import<ph name="END_LINK">$2</ph> or add bookmarks to show your bookmarks bar.
+      </message>
+
       <!-- Import Settings Dialog -->
       <message name="IDS_IMPORT_SETTINGS_TITLE" desc="Dialog title for import dialog">
         Import Bookmarks and Settings
