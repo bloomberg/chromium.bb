@@ -382,18 +382,6 @@ def Assemble(asm, flags, argv):
   Run([asm] + flags + ['-o', obj_file, cpp_file])
 
 
-def AssembleArm(argv):
-  Assemble(AS_ARM, global_config_flags['AS']['arm'], argv)
-
-
-def AssembleX8632(argv):
-  Assemble(AS_X86, global_config_flags['AS']['x86-32'], argv)
-
-
-def AssembleX8664(argv):
-  Assemble(AS_X86, global_config_flags['AS']['x86-64'], argv)
-
-
 def CompileToBC(argv, llvm_binary, temp = False):
   """ Compile to .bc file."""
   argv = argv[:]
@@ -427,15 +415,16 @@ def CompileToBC(argv, llvm_binary, temp = False):
   argv.append('-fno-expand-va-arg')
   Run(argv)
 
-def Incarnation_gcclike(argv, tool):
-  arch = None
-
+def ExtractArch(argv):
   if '-arch' in argv:
     i = argv.index('-arch')
-    arch = argv[i + 1]
-    argv = argv[:i] + argv[i + 2:]
+    return argv[i + 1], argv[:i] + argv[i + 2:]
   else:
-    argv = argv[:]
+    return None, argv[:]
+
+
+def Incarnation_gcclike(argv, tool):
+  arch, argv = ExtractArch(argv)
 
   argv[0] = tool
   if IsDiagnosticMode(argv) or FindAssemblerFilePos(argv):
@@ -468,16 +457,21 @@ def Incarnation_bcgplusplus(argv):
   CompileToBC(argv, LLVM_GXX)
 
 
+def Incarnation_cppas_generic(argv):
+  arch, argv = ExtractArch(argv)
+  Assemble(global_assemblers[arch], global_config_flags['AS'][arch], argv)
+
+
 def Incarnation_cppasarm(argv):
-  AssembleArm(argv)
+  Incarnation_cppas_generic(argv + ['-arch', 'arm'])
 
 
 def Incarnation_cppasx8632(argv):
-  AssembleX8632(argv)
+  Incarnation_cppas_generic(argv + ['-arch', 'x86-32'])
 
 
 def Incarnation_cppasx8664(argv):
-  AssembleX8664(argv)
+  Incarnation_cppas_generic(argv + ['-arch', 'x86-64'])
 
 
 def Incarnation_nop(argv):
@@ -739,6 +733,7 @@ INCARNATIONS = {
    'llvm-fake-bcld-x86-32': Incarnation_bcldx8632,
    'llvm-fake-bcld-x86-64': Incarnation_bcldx8664,
 
+   'llvm-fake-cppas': Incarnation_cppas_generic,
    'llvm-fake-cppas-arm': Incarnation_cppasarm,
    'llvm-fake-cppas-x86-32': Incarnation_cppasx8632,
    'llvm-fake-cppas-x86-64': Incarnation_cppasx8664,
