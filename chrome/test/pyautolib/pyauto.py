@@ -28,6 +28,7 @@ to unittest.py
 import logging
 import optparse
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -259,33 +260,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       time.sleep(retry_sleep)
     return False
 
-  def _GetResultFromJSONRequest(self, cmd_dict, windex=0):
-    """Issue call over the JSON automation channel and fetch output.
-
-    This method packages the given dictionary into a json string, sends it
-    over the JSON automation channel, loads the json output string returned,
-    and returns it back as a dictionary.
-
-    Args:
-      cmd_dict: the command dictionary. It must have a 'command' key
-                Sample:
-                  {
-                    'command': 'SetOmniboxText',
-                    'text': text,
-                  }
-      windex: 0-based window index on which to work. Default: 0 (first window)
-
-    Returns:
-      a dictionary for the output returned by the automation channel.
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    ret_dict = json.loads(self._SendJSONRequest(windex, json.dumps(cmd_dict)))
-    if ret_dict.has_key('error'):
-      raise JSONInterfaceError(ret_dict['error'])
-    return ret_dict
-
   def GetBookmarkModel(self):
     """Return the bookmark model as a BookmarkModel object.
 
@@ -344,7 +318,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'command': 'SetOmniboxText',
         'text': text,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    ret_dict = json.loads(self._SendJSONRequest(windex, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def WaitUntilOmniboxQueryDone(self, windex=0):
     """Wait until omnibox has finished populating results.
@@ -372,7 +348,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'command': 'OmniboxMovePopupSelection',
         'count': count,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    ret_dict = json.loads(self._SendJSONRequest(windex, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def OmniboxAcceptInput(self, windex=0):
     """Accepts the current string of text in the omnibox.
@@ -387,7 +365,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {
         'command': 'OmniboxAcceptInput',
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    ret_dict = json.loads(self._SendJSONRequest(windex, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def GetPrefsInfo(self):
     """Return info about preferences.
@@ -429,13 +409,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'path': path,
       'value': value,
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def WaitForAllDownloadsToComplete(self):
     """Wait for all downloads to complete."""
     # Implementation detail: uses the generic "JSON command" model
     # (experimental)
-    self._GetResultFromJSONRequest({'command': 'WaitForAllDownloadsToComplete'})
+    self._SendJSONRequest(0, json.dumps({'command':
+                                         'WaitForAllDownloadsToComplete'}))
 
   def DownloadAndWaitForStart(self, file_url):
     """Trigger download for the given url and wait for downloads to start.
@@ -478,7 +461,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       cmd_dict['width'] = width
     if height:
       cmd_dict['height'] = height
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
 
   def GetBrowserInfo(self):
     """Return info about the browser.
@@ -538,7 +524,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {  # Prepare command for the json interface
       'command': 'GetBrowserInfo',
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
 
   def GetHistoryInfo(self, search_text=''):
     """Return info about browsing history.
@@ -637,7 +626,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       for credit_card in credit_cards:
         if not 'label' in credit_card:
           raise JSONInterfaceError('must specify label for all credit cards')
-    self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+    ret_dict = json.loads(self._SendJSONRequest(window_index,
+                                                json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def GetAutoFillProfile(self, tab_index=0, window_index=0):
     """Return the profile including all profiles and credit cards currently
@@ -659,7 +651,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'GetAutoFillProfile',
       'tab_index': tab_index
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+    ret_dict = json.loads(self._SendJSONRequest(window_index,
+                                                json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
 
   def AddHistoryItem(self, item):
     """Forge a history item for Chrome.
@@ -683,7 +679,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     if not 'url' in item:
       raise JSONInterfaceError('must specify url')
-    self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def GetPluginsInfo(self):
     """Return info about plugins.
@@ -708,7 +706,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'EnablePlugin',
       'path': path,
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def DisablePlugin(self, path):
     """Disable the plugin at the given path.
@@ -722,7 +722,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'DisablePlugin',
       'path': path,
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
 
   def GetTabContents(self, tab_index=0, window_index=0):
     """Get the html contents of a tab (a la "view source").
@@ -743,7 +745,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'tab_index': tab_index,
       'filename': filename
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+    ret_dict = json.loads(self._SendJSONRequest(window_index,
+                                                json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
     try:
       f = open(filename)
       all_data = f.read()
@@ -782,7 +787,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'first_run': first_run,
       'import_items': import_items
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
 
   def ClearBrowsingData(self, to_remove, time_period):
     """Clear the specified browsing data. Implements the features available in
@@ -804,7 +812,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'to_remove': to_remove,
       'time_period': time_period
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
 
   def SetTheme(self, crx_file_path):
     """Installs the given theme synchronously.
@@ -832,7 +843,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {
       'command': 'ClearTheme',
     }
-    self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
 
   def GetThemeInfo(self):
     """Get info about theme.
@@ -860,7 +874,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {
       'command': 'GetThemeInfo',
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    ret_dict = json.loads(self._SendJSONRequest(0, json.dumps(cmd_dict)))
+    if ret_dict.has_key('error'):
+      raise JSONInterfaceError(ret_dict['error'])
+    return ret_dict
 
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
