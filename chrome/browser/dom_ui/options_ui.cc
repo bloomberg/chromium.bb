@@ -40,10 +40,12 @@
 #include "grit/theme_resources.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/dom_ui/sync_options_handler.h"
+#include "chrome/browser/chromeos/dom_ui/accounts_options_handler.h"
+#include "chrome/browser/chromeos/dom_ui/core_chromeos_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/labs_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_hangul_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
+#include "chrome/browser/chromeos/dom_ui/sync_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
 
@@ -105,8 +107,14 @@ void OptionsPageUIHandler::UserMetricsRecordAction(
 OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   DictionaryValue* localized_strings = new DictionaryValue();
 
-  // TODO(zelidrag): Add all other page handlers here as we implement them.
+#if defined(OS_CHROMEOS)
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::CoreChromeOSOptionsHandler());
+#else
   AddOptionsPageUIHandler(localized_strings, new CoreOptionsHandler());
+#endif
+
+  // TODO(zelidrag): Add all other page handlers here as we implement them.
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
@@ -117,6 +125,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageHangulOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::AccountsOptionsHandler());
 #endif
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
 

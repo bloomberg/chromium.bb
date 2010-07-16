@@ -5459,7 +5459,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_OPTIONS_LABS_TAB_LABEL" desc="The title of the LABS tab">
           Labs
         </message>
-
+        <message name="IDS_OPTIONS_ACCOUNTS_TAB_LABEL" desc="The title of the Accounts tab">
+          Accounts
+        </message>
       </if>
       <message name="IDS_OPTIONS_GENERAL_TAB_LABEL" desc="The title of the Basics tab">
         Basics
@@ -7704,7 +7706,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_DESC" desc="Detailed description of the password changed dialog">
         Your Google Account password has changed since the last time you signed in on this computer.
-      </message>      
+      </message>
       <message name="IDS_LOGIN_PASSWORD_CHANGED_RESET" desc="Reset option of the password changed dialog">
         Synchronize all settings and data\n(may take some time)
       </message>
@@ -7818,6 +7820,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_OTHER_NETWORKS" desc="In the settings tab, the text on the button to display other networks.">
         Other...
+      </message>
+      <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
+        Allow browse without signing in.
+      </message>
+      <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_GUEST_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow guest to sign in.">
+        Allow guest signin.
+      </message>
+      <message name="IDS_OPTIONS_ACCOUNTS_USER_LIST_TITLE" desc="In the Accounts settings tab, the title text on top of user list table.">
+        Users
+      </message>
+      <message name="IDS_OPTIONS_ACCOUNTS_ADD_USER" desc="In the Accounts settings tab, the text on the button to add a user.">
+        Add user
+      </message>
+      <message name="IDS_OPTIONS_ACCOUNTS_REMOVE_USER" desc="In the Accounts settings tab, the text on the button to remove a user.">
+        Remove user
+      </message>
+      <message name="IDS_OPTIONS_ACCOUNTS_EMAIL_LABEL" desc="In the Accounts add user overlay, the label text for email input edit.">
+        Email:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings internet options, the label for the network id.">
         Network id:

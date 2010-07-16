@@ -33,7 +33,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Returns the item at the given index.
-     * @param {number} index The index of the element go get.
+     * @param {number} index The index of the element to get.
      * @return {*} The element at the given index.
      */
     item: function(index) {
@@ -49,6 +49,16 @@ cr.define('cr.ui', function() {
      */
     indexOf: function(item, opt_fromIndex) {
       return this.array_.indexOf(item, opt_fromIndex);
+    },
+
+    /**
+     * Returns an array of elements in a selected range.
+     * @param {number=} opt_from The starting index of the selected range.
+     * @param {number=} opt_to The ending index of selected range.
+     * @return {Array} An array of elements in the selected range.
+     */
+    slice: function(opt_from, opt_to) {
+      return this.array_.slice.apply(this.array_, arguments);
     },
 
     /**

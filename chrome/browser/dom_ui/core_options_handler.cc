@@ -72,17 +72,59 @@ void CoreOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("fetchPrefs",
       NewCallback(this, &CoreOptionsHandler::HandleFetchPrefs));
   dom_ui_->RegisterMessageCallback("observePrefs",
-      NewCallback(this, &CoreOptionsHandler::HandleObservePefs));
+      NewCallback(this, &CoreOptionsHandler::HandleObservePrefs));
   dom_ui_->RegisterMessageCallback("setBooleanPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetBooleanPref));
   dom_ui_->RegisterMessageCallback("setIntegerPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetIntegerPref));
   dom_ui_->RegisterMessageCallback("setStringPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetStringPref));
+  dom_ui_->RegisterMessageCallback("setObjectPref",
+      NewCallback(this, &CoreOptionsHandler::HandleSetObjectPref));
 }
 
 void CoreOptionsHandler::HandleInitialize(const Value* value) {
   (static_cast<OptionsUI*>(dom_ui_))->InitializeHandlers();
+}
+
+Value* CoreOptionsHandler::FetchPref(const std::wstring& pref_name) {
+  DCHECK(dom_ui_);
+  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(pref_name.c_str());
+
+  return pref ? pref->GetValue()->DeepCopy() : Value::CreateNullValue();
+}
+
+void CoreOptionsHandler::ObservePref(const std::wstring& pref_name) {
+  DCHECK(dom_ui_);
+  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+
+  pref_service->AddPrefObserver(pref_name.c_str(), this);
+}
+
+void CoreOptionsHandler::SetPref(const std::wstring& pref_name,
+                                 Value::ValueType pref_type,
+                                 const std::string& value_string) {
+  DCHECK(dom_ui_);
+  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+
+  switch (pref_type) {
+    case Value::TYPE_BOOLEAN:
+      pref_service->SetBoolean(pref_name.c_str(), value_string == "true");
+      break;
+    case Value::TYPE_INTEGER:
+      int int_value;
+      if (StringToInt(value_string, &int_value))
+        pref_service->SetInteger(pref_name.c_str(), int_value);
+      break;
+    case Value::TYPE_STRING:
+      pref_service->SetString(pref_name.c_str(), value_string);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
@@ -111,8 +153,6 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
   // Get the list of name for prefs to build the response dictionary.
   DictionaryValue result_value;
   Value* list_member;
-  DCHECK(dom_ui_);
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
 
   for (size_t i = 1; i < param_values->GetSize(); i++) {
     if (!param_values->Get(i, &list_member))
@@ -125,20 +165,15 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
     if (!list_member->GetAsString(&pref_name))
       continue;
 
-    const PrefService::Preference* pref =
-        pref_service->FindPreference(pref_name.c_str());
-    result_value.Set(pref_name.c_str(),
-        pref ? pref->GetValue()->DeepCopy() : Value::CreateNullValue());
+    result_value.Set(pref_name.c_str(), FetchPref(pref_name));
   }
   dom_ui_->CallJavascriptFunction(callback_function.c_str(), result_value);
 }
 
-void CoreOptionsHandler::HandleObservePefs(const Value* value) {
+void CoreOptionsHandler::HandleObservePrefs(const Value* value) {
   if (!value || !value->IsType(Value::TYPE_LIST))
     return;
 
-  DCHECK(dom_ui_);
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
   DictionaryValue result_value;
   const ListValue* list_value = static_cast<const ListValue*>(value);
 
@@ -150,14 +185,12 @@ void CoreOptionsHandler::HandleObservePefs(const Value* value) {
 
   // Get preference change callback function name.
   std::wstring callback_func_name;
-  Value* list_member = 0;
-  if (!list_value->Get(0, &list_member) ||
-      !list_member->IsType(Value::TYPE_STRING) ||
-      !list_member->GetAsString(&callback_func_name))
+  if (!list_value->GetString(0, &callback_func_name))
     return;
 
   // Get all other parameters - pref identifiers.
   for (size_t i = 1; i < list_value->GetSize(); i++) {
+    Value* list_member;
     if (!list_value->Get(i, &list_member))
       break;
 
@@ -168,7 +201,7 @@ void CoreOptionsHandler::HandleObservePefs(const Value* value) {
       continue;
 
     if (pref_callback_map_.find(pref_name) == pref_callback_map_.end())
-      pref_service->AddPrefObserver(pref_name.c_str(), this);
+      ObservePref(pref_name);
 
     pref_callback_map_.insert(
         PreferenceCallbackMap::value_type(pref_name, callback_func_name));
@@ -187,6 +220,10 @@ void CoreOptionsHandler::HandleSetStringPref(const Value* value) {
   HandleSetPref(value, Value::TYPE_STRING);
 }
 
+void CoreOptionsHandler::HandleSetObjectPref(const Value* value) {
+  HandleSetPref(value, Value::TYPE_NULL);
+}
+
 void CoreOptionsHandler::HandleSetPref(const Value* value,
                                        Value::ValueType type) {
   if (!value || !value->IsType(Value::TYPE_LIST))
@@ -197,38 +234,15 @@ void CoreOptionsHandler::HandleSetPref(const Value* value,
   if (param_values->GetSize() != 2)
     return;
 
-  DCHECK(dom_ui_);
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
-
-  Value* name_element;
   std::wstring pref_name;
-  if (!param_values->Get(0, &name_element) ||
-      !name_element->IsType(Value::TYPE_STRING) ||
-      !name_element->GetAsString(&pref_name))
+  if (!param_values->GetString(0, &pref_name))
     return;
 
-  Value* value_element;
   std::string value_string;
-  if (!param_values->Get(1, &value_element) ||
-      !value_element->IsType(Value::TYPE_STRING) ||
-      !value_element->GetAsString(&value_string))
+  if (!param_values->GetString(1, &value_string))
     return;
 
-  switch (type) {
-    case Value::TYPE_BOOLEAN:
-      pref_service->SetBoolean(pref_name.c_str(), value_string == "true");
-      break;
-    case Value::TYPE_INTEGER:
-      int int_value;
-      if (StringToInt(value_string, &int_value))
-        pref_service->SetInteger(pref_name.c_str(), int_value);
-      break;
-    case Value::TYPE_STRING:
-      pref_service->SetString(pref_name.c_str(), value_string);
-      break;
-    default:
-      NOTREACHED();
-  }
+  SetPref(pref_name, type, value_string);
 }
 
 void CoreOptionsHandler::NotifyPrefChanged(const std::wstring* pref_name) {

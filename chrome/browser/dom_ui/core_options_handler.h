@@ -29,6 +29,19 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 
+ protected:
+  // Fetches a pref value of given |pref_name|.
+  // Note that caller owns the returned Value.
+  virtual Value* FetchPref(const std::wstring& pref_name);
+
+  // Observes a pref of given |pref_name|.
+  virtual void ObservePref(const std::wstring& pref_name);
+
+  // Sets a pref value |value_string| of |pref_type| to given |pref_name|.
+  virtual void SetPref(const std::wstring& pref_name,
+                       Value::ValueType pref_type,
+                       const std::string& value_string);
+
  private:
   typedef std::multimap<std::wstring, std::wstring> PreferenceCallbackMap;
   // Callback for the "coreOptionsInitialize" message.  This message will
@@ -44,7 +57,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
   // Callback for the "observePrefs" message. This message initiates
   // notification observing for given array of preference names.
-  void HandleObservePefs(const Value* value);
+  void HandleObservePrefs(const Value* value);
 
   // Callbacks for the "set<type>Pref" message. This message saves the new
   // preference value. The input value is an array of strings representing
@@ -52,6 +65,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void HandleSetBooleanPref(const Value* value);
   void HandleSetIntegerPref(const Value* value);
   void HandleSetStringPref(const Value* value);
+  void HandleSetObjectPref(const Value* value);
 
   void HandleSetPref(const Value* value, Value::ValueType type);
 

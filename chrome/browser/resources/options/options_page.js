@@ -12,6 +12,7 @@
  *     containing the options view and the name of options page navigation bar
  *     item as name+'PageNav'.
  * @param {string} title Options page title, used for navigation bar
+ * @extends {EventTarget}
  */
 function OptionsPage(name, title, pageDivName) {
   this.name = name;
@@ -121,6 +122,8 @@ OptionsPage.initialize = function() {
 };
 
 OptionsPage.prototype = {
+  __proto__: cr.EventTarget.prototype,
+
   /**
    * Initializes page content.
    */
@@ -150,7 +153,6 @@ OptionsPage.prototype = {
       if (this.isOverlay) {
         var overlay = $('overlay');
         overlay.classList.remove('hidden');
-        overlay.classList.add('overlay-visible');
       }
       if (this.tab) {
         this.tab.classList.add('navbar-item-selected');
@@ -161,7 +163,6 @@ OptionsPage.prototype = {
       if (this.isOverlay) {
         var overlay = $('overlay');
         overlay.classList.add('hidden');
-        overlay.classList.remove('overlay-visible');
       }
       this.pageDiv.style.display = 'none';
       if (this.tab) {
@@ -170,5 +171,7 @@ OptionsPage.prototype = {
           this.tab.classList.add('hidden');
       }
     }
+
+    cr.dispatchPropertyChange(this, 'visible', visible, !visible);
   }
 };

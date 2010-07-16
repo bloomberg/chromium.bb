@@ -11,6 +11,10 @@
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
 <script src="chrome://resources/js/cr/ui.js"></script>
+<script src="chrome://resources/js/cr/ui/array_data_model.js"></script>
+<script src="chrome://resources/js/cr/ui/list_selection_model.js"></script>
+<script src="chrome://resources/js/cr/ui/list_item.js"></script>
+<script src="chrome://resources/js/cr/ui/list.js"></script>
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="options/preferences.js"></script>
@@ -19,6 +23,9 @@
 <if expr="pp_ifdef('chromeos')">
   <script src="options/chromeos_language_hangul_options.js"></script>
   <script src="options/chromeos_system_options.js"></script>
+  <script src="options/chromeos_accounts_options.js"></script>
+  <script src="options/chromeos_accounts_user_list.js"></script>
+  <script src="options/chromeos_accounts_add_user_overlay.js"></script>
 </if>
 <script src="options/advanced_options.js"></script>
 <script src="options/browser_options.js"></script>
@@ -36,6 +43,7 @@ function load() {
   localStrings = new LocalStrings();
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
+    OptionsPage.register(AccountsOptions.getInstance());
     // TODO(mazda): uncomment this once the language options is ready
     // OptionsPage.register(LanguageHangulOptions.getInstance());
   }
@@ -82,21 +90,29 @@ window.onpopstate = function(e) {
 };
 
 </script>
+<link rel="stylesheet" href="chrome://resources/css/list.css">
+
 <link rel="stylesheet" href="dom_ui.css">
 <link rel="stylesheet" href="options/options_page.css">
 <link rel="stylesheet" href="options/browser_options_page.css">
 <link rel="stylesheet" href="options/content_settings_page.css">
+<if expr="pp_ifdef('chromeos')">
+  <link rel="stylesheet" href="options/chromeos_accounts_options_page.css">
+</if>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div class="header">
 </div>
-<div id="overlay" class="hidden">
+<div id="overlay" class="overlay hidden">
   <div id="overlayview">
     <button id="close-overlay" onclick="OptionsPage.clearOverlays();"></button>
     <div class="page hidden" id="dummyPage">
         <!-- TODO(dhg): remove this one once we get another page here -->
         Dummy Overlay Page
-     </div>
+    </div>
+    <if expr="pp_ifdef('chromeos')">
+       <include src="options/chromeos_accounts_add_user_overlay.html">
+    </if>
   </div>
 </div>
 <div id="main-content">
@@ -113,6 +129,7 @@ window.onpopstate = function(e) {
         <include src="options/chromeos_system_options.html">
         <include src="options/chromeos_language_options.html">
         <include src="options/chromeos_labs.html">
+        <include src="options/chromeos_accounts_options.html">
         <!-- TODO(mazda): include options/chromeos_language_hangul_options.html
              once the language options dialog is ready. -->
      </if>

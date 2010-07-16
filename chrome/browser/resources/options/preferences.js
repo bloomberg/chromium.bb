@@ -63,6 +63,16 @@ Preferences.setStringPref = function(name, value) {
   chrome.send('setStringPref', [name, value]);
 };
 
+/**
+ * Sets value of a JSON preference.
+ * and signals its changed value.
+ * @param {string} name Preference name.
+ * @param {string} value New preference value.
+ */
+Preferences.setObjectPref = function(name, value) {
+  chrome.send('setObjectPref', [name, JSON.stringify(value)]);
+};
+
 Preferences.prototype = {
   __proto__: cr.EventTarget.prototype,
 
@@ -102,7 +112,8 @@ Preferences.prototype = {
    */
   flattenMapAndDispatchEvent_: function(prefix, dict) {
     for (var prefName in dict) {
-      if (typeof dict[prefName] == 'object') {
+      if (typeof dict[prefName] == 'object' &&
+          !this.registeredPreferences_[prefix + prefName]) {
         this.flattenMapAndDispatchEvent_(prefix + prefName + '.',
             dict[prefName]);
       } else {

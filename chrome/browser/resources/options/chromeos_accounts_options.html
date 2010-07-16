@@ -1,0 +1,29 @@
+<div class="page hidden" id="accountsPage">
+  <h1 i18n-content="accountsPage"></h1>
+  <div class="option">
+    <table class="option-control-table">
+    <tr>
+      <td class="option-name"><label><input id="allowBwsiCheck"
+           pref="cros.accounts.allowBWSI" type="checkbox"><span
+           i18n-content="allow_BWSI"></span></label></td>
+    </tr>
+    <tr>
+      <td class="option-name"><label><input id="allowGuestCheck"
+           pref="cros.accounts.allowGuest" type="checkbox"><span
+           i18n-content="allow_guest"></span></label></td>
+    </tr>
+    <tr>
+      <td class="option-name" i18n-content="user_list_title"></td>
+    </tr>
+    <tr><td class="option-name">
+      <list id="userList"></list>
+    </td></tr>
+    <tr><td class="option-name">
+      <button id="addUserButton"
+          i18n-content="add_user"></button>
+      <button id="removeUserButton" disabled
+          i18n-content="remove_user"></button>
+    </td></tr>
+    </table>
+  </div>
+</div>

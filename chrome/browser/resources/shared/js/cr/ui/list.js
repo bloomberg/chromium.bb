@@ -55,7 +55,7 @@ cr.define('cr.ui', function() {
     }
 
     list.removeChild(item);
-    return h;
+    return Math.max(0, h);
   }
 
   function getComputedStyle(el) {
