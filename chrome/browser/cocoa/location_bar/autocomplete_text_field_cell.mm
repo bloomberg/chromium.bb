@@ -52,8 +52,9 @@ const CGFloat kLeftDecorationXOffset = 3.0;
 // TODO(shess): Why is this different from |kLeftDecorationXOffset|?
 const CGFloat kRightDecorationXOffset = 4.0;
 
-// The amount of padding on either side reserved for drawing decorations.
-const CGFloat kDecorationHorizontalPad = 3;
+// The amount of padding on either side reserved for drawing
+// decorations.  [Views has |kItemPadding| == 3.]
+const CGFloat kDecorationHorizontalPad = 3.0;
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
