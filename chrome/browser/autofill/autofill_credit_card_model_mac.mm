@@ -11,7 +11,6 @@
 
 @implementation AutoFillCreditCardModel
 
-@synthesize label = label_;
 @synthesize nameOnCard = nameOnCard_;
 @synthesize creditCardNumber = creditCardNumber_;
 @synthesize expirationMonth = expirationMonth_;
@@ -20,7 +19,6 @@
 
 - (id)initWithCreditCard:(const CreditCard&)creditCard {
   if ((self = [super init])) {
-    [self setLabel:SysUTF16ToNSString(creditCard.Label())];
     [self setNameOnCard:SysUTF16ToNSString(
         creditCard.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))];
     [self setCreditCardNumber:SysUTF16ToNSString(
@@ -36,7 +34,6 @@
 }
 
 - (void)dealloc {
-  [label_ release];
   [nameOnCard_ release];
   [creditCardNumber_ release];
   [expirationMonth_ release];
@@ -47,7 +44,6 @@
 
 - (void)copyModelToCreditCard:(CreditCard*)creditCard {
   DCHECK(creditCard);
-  creditCard->set_label(base::SysNSStringToUTF16([self label]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_NAME),
       base::SysNSStringToUTF16([self nameOnCard]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_NUMBER),

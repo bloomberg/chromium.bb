@@ -204,7 +204,6 @@ TEST_F(AutoFillDialogControllerTest, NoEditsGiveBackOriginalProfile) {
 
   // Contents should not match a different profile.
   AutoFillProfile different_profile;
-  different_profile.set_label(ASCIIToUTF16("different"));
   different_profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("joe"));
   for (i = 0; i < count; i++)
     ASSERT_NE(observer_.profiles_[i], different_profile);
@@ -267,7 +266,6 @@ TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   AutoFillAddressSheetController* sheet = [controller_ addressSheetController];
   ASSERT_TRUE(sheet != nil);
   AutoFillAddressModel* am = [sheet addressModel];
-  EXPECT_TRUE([[am label] isEqualToString:@"Home"]);
   EXPECT_TRUE([[am fullName] isEqualToString:@"John C Smith"]);
   EXPECT_TRUE([[am email] isEqualToString:@"john@chromium.org"]);
   EXPECT_TRUE([[am companyName] isEqualToString:@"Google Inc."]);
@@ -307,7 +305,6 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
       [controller_ creditCardSheetController];
   ASSERT_TRUE(sheet != nil);
   AutoFillCreditCardModel* cm = [sheet creditCardModel];
-  EXPECT_TRUE([[cm label] isEqualToString:@"myCC"]);
   EXPECT_TRUE([[cm nameOnCard] isEqualToString:@"DCH"]);
   EXPECT_TRUE([[cm creditCardNumber] isEqualToString:@"1234 5678 9101 1121"]);
   EXPECT_TRUE([[cm expirationMonth] isEqualToString:@"01"]);
@@ -390,7 +387,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewProfile) {
   ASSERT_EQ(observer_.profiles_.size(), 2UL);
 
   // New address should match.
-  AutoFillProfile new_profile(ASCIIToUTF16("New address"), 0);
+  AutoFillProfile new_profile;
   ASSERT_EQ(observer_.profiles_[1], new_profile);
 }
 
@@ -414,7 +411,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
   ASSERT_EQ(observer_.credit_cards_.size(), 2UL);
 
   // New address should match.
-  CreditCard new_credit_card(ASCIIToUTF16("New credit card"), 0);
+  CreditCard new_credit_card;
   ASSERT_EQ(observer_.credit_cards_[1], new_credit_card);
 }
 

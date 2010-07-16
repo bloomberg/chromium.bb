@@ -475,51 +475,47 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     return @"";
 
   // Check that we're initialized before supplying data.
-  if (tableView == tableView_) {
+  if (tableView != tableView_)
+    return @"";
 
-    // Section label.
-    if ([self isProfileGroupRow:row])
-      if ([[tableColumn identifier] isEqualToString:@"Label"])
-        return @"Addresses";
-      else
-        return @"";
-
-    if (row < 0)
+  // Section label.
+  if ([self isProfileGroupRow:row]) {
+    if ([[tableColumn identifier] isEqualToString:@"Summary"])
+      return l10n_util::GetNSString(IDS_AUTOFILL_ADDRESSES_GROUP_NAME);
+    else
       return @"";
+  }
 
-    // Data row.
-    if ([self isProfileRow:row]) {
-      if ([[tableColumn identifier] isEqualToString:@"Label"])
-        return SysUTF16ToNSString(
-            profiles_[[self profileIndexFromRow:row]].Label());
+  if (row < 0)
+    return @"";
 
-      if ([[tableColumn identifier] isEqualToString:@"Summary"])
-        return SysUTF16ToNSString(
-            profiles_[[self profileIndexFromRow:row]].PreviewSummary());
-
-      return @"";
+  // Data row.
+  if ([self isProfileRow:row]) {
+    if ([[tableColumn identifier] isEqualToString:@"Summary"]) {
+      return SysUTF16ToNSString(
+          profiles_[[self profileIndexFromRow:row]].PreviewSummary());
     }
 
-    // Section label.
-    if ([self isCreditCardGroupRow:row])
-      if ([[tableColumn identifier] isEqualToString:@"Label"])
-        return @"Credit Cards";
-      else
-        return @"";
+    return @"";
+  }
 
-    // Data row.
-    if ([self isCreditCardRow:row]) {
-      if ([[tableColumn identifier] isEqualToString:@"Label"])
-        return SysUTF16ToNSString(
-            creditCards_[[self creditCardIndexFromRow:row]].Label());
-
-      if ([[tableColumn identifier] isEqualToString:@"Summary"])
-        return SysUTF16ToNSString(
-            creditCards_[
-                [self creditCardIndexFromRow:row]].PreviewSummary());
-
+  // Section label.
+  if ([self isCreditCardGroupRow:row]) {
+    if ([[tableColumn identifier] isEqualToString:@"Summary"])
+      return l10n_util::GetNSString(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME);
+    else
       return @"";
+  }
+
+  // Data row.
+  if ([self isCreditCardRow:row]) {
+    if ([[tableColumn identifier] isEqualToString:@"Summary"]) {
+      return SysUTF16ToNSString(
+          creditCards_[
+              [self creditCardIndexFromRow:row]].PreviewSummary());
     }
+
+    return @"";
   }
 
   return @"";
@@ -721,43 +717,6 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 
 - (NSInteger)rowFromCreditCardIndex:(size_t)i {
   return 1 + profiles_.size() + 1 + i;
-}
-
-@end
-
-// An NSValueTransformer subclass for use in validation of empty data entry
-// fields.  Transforms a nil or empty string into a warning image.  This data
-// transformer is used in the address and credit card sheets for empty label
-// strings.
-@interface MissingAlertTransformer : NSValueTransformer {
-}
-@end
-
-@implementation MissingAlertTransformer
-+ (Class)transformedValueClass {
-  return [NSImage class];
-}
-
-+ (BOOL)allowsReverseTransformation {
-  return NO;
-}
-
-- (id)transformedValue:(id)string {
-  NSImage* image = nil;
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (string == nil || [string length] == 0) {
-    image = rb.GetNSImageNamed(IDR_INPUT_ALERT);
-    DCHECK(image);
-    return image;
-  }
-
-  if (!image) {
-    image = rb.GetNSImageNamed(IDR_INPUT_GOOD);
-    DCHECK(image);
-    return image;
-  }
-
-  return nil;
 }
 
 @end

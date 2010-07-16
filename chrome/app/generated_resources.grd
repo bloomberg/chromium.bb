@@ -5673,7 +5673,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Do you want Chrome to save this credit card information for completing web forms?
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable AutoFill' radio button">
-        Enable AutoFill to make it easier to fill in forms
+        Enable AutoFill to fill out web forms in a single click
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable AutoFill' radio button">
         Disable AutoFill

@@ -31,7 +31,6 @@ TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);
   EXPECT_TRUE(model.get());
 
-  EXPECT_TRUE([[model label] isEqualToString:@"Corporate"]);
   EXPECT_TRUE([[model nameOnCard] isEqualToString:@"John Dillinger"]);
   EXPECT_TRUE([[model creditCardNumber] isEqualToString:@"123456789012"]);
   EXPECT_TRUE([[model expirationMonth] isEqualToString:@"01"]);
@@ -47,7 +46,6 @@ TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);
   EXPECT_TRUE(model.get());
 
-  [model setLabel:@"CorporateX"];
   [model setNameOnCard:@"John DillingerX"];
   [model setCreditCardNumber:@"223456789012"];
   [model setExpirationMonth:@"11"];
@@ -56,7 +54,6 @@ TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
 
   [model copyModelToCreditCard:&credit_card];
 
-  EXPECT_EQ(ASCIIToUTF16("CorporateX"), credit_card.Label());
   EXPECT_EQ(ASCIIToUTF16("John DillingerX"),
             credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
   EXPECT_EQ(ASCIIToUTF16("223456789012"),

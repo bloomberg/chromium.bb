@@ -20,7 +20,6 @@ class AutoFillProfile;
 @interface AutoFillAddressModel : NSObject {
  @private
   // These are not scoped_nsobjects because we use them via KVO/bindings.
-  NSString* label_;
   NSString* fullName_;
   NSString* email_;
   NSString* companyName_;
@@ -34,7 +33,6 @@ class AutoFillProfile;
   NSString* faxWholeNumber_;
 }
 
-@property (nonatomic, copy) NSString* label;
 @property (nonatomic, copy) NSString* fullName;
 @property (nonatomic, copy) NSString* email;
 @property (nonatomic, copy) NSString* companyName;

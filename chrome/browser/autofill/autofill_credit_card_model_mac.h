@@ -20,7 +20,6 @@ class CreditCard;
 @interface AutoFillCreditCardModel : NSObject {
  @private
   // These are not scoped_nsobjects because we use them via KVO/bindings.
-  NSString* label_;
   NSString* nameOnCard_;
   NSString* creditCardNumber_;
   NSString* expirationMonth_;
@@ -29,7 +28,6 @@ class CreditCard;
   NSString* shippingAddress_;
 }
 
-@property (nonatomic, copy) NSString* label;
 @property (nonatomic, copy) NSString* nameOnCard;
 @property (nonatomic, copy) NSString* creditCardNumber;
 @property (nonatomic, copy) NSString* expirationMonth;

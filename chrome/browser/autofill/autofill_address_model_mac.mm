@@ -10,7 +10,6 @@
 
 @implementation AutoFillAddressModel
 
-@synthesize label = label_;
 @synthesize fullName = fullName_;
 @synthesize email = email_;
 @synthesize companyName = companyName_;
@@ -25,7 +24,6 @@
 
 - (id)initWithProfile:(const AutoFillProfile&)profile {
   if ((self = [super init])) {
-    [self setLabel:SysUTF16ToNSString(profile.Label())];
     [self setFullName:SysUTF16ToNSString(
         profile.GetFieldText(AutoFillType(NAME_FULL)))];
     [self setEmail:SysUTF16ToNSString(
@@ -53,7 +51,6 @@
 }
 
 - (void)dealloc {
-  [label_ release];
   [fullName_ release];
   [email_ release];
   [companyName_ release];
@@ -70,7 +67,6 @@
 
 - (void)copyModelToProfile:(AutoFillProfile*)profile {
   DCHECK(profile);
-  profile->set_label(base::SysNSStringToUTF16([self label]));
   profile->SetInfo(AutoFillType(NAME_FULL),
       base::SysNSStringToUTF16([self fullName]));
   profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
