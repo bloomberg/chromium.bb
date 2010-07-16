@@ -246,7 +246,10 @@ void URLLoader::didSendData(WebURLLoader* loader,
 
 void URLLoader::didReceiveResponse(WebURLLoader* loader,
                                    const WebURLResponse& response) {
-  // TODO(darin): Initialize response_info_.
+  scoped_refptr<URLResponseInfo> response_info(new URLResponseInfo(module()));
+  if (response_info->Initialize(response))
+    response_info_ = response_info;
+
   RunCallback(PP_OK);
 }
 
