@@ -31,6 +31,7 @@
     '<(DEPTH)/chrome/browser/autocomplete/autocomplete_edit_view_browsertest.cc',
     '<(DEPTH)/chrome/browser/browser_focus_uitest.cc',
     '<(DEPTH)/chrome/browser/browser_keyevents_browsertest.cc',
+    '<(DEPTH)/chrome/browser/collected_cookies_uitest.cc',
     '<(DEPTH)/chrome/browser/debugger/devtools_sanity_unittest.cc',
     '<(DEPTH)/chrome/browser/gtk/bookmark_bar_gtk_interactive_uitest.cc',
     '<(DEPTH)/chrome/browser/notifications/notifications_interactive_uitest.cc',

@@ -286,7 +286,6 @@
         'browser/appcache/appcache_ui_test.cc',
         'browser/browser_encoding_uitest.cc',
         'browser/browser_uitest.cc',
-        'browser/collected_cookies_uitest.cc',
         'browser/cookie_modal_dialog_uitest.cc',
         'browser/dom_ui/bookmarks_ui_uitest.cc',
         'browser/dom_ui/new_tab_ui_uitest.cc',
