@@ -1,8 +1,8 @@
 #settings-title {
   height: 30px;
-  padding-right: 15px;
+  -webkit-padding-end: 15px;
   padding-top: 20px;
-  text-align: right;
+  text-align: end;
   font-size: 140%;
   color: #c7c7c7;
 }
@@ -36,18 +36,19 @@
 }
 
 #navbar-container > hr {
-  border-top: 1px solid #dbdbdb;
+  -webkit-margin-start: 35%;
+  background-color: #dbdbdb;
+  border: 0;
+  height: 1px;
   width: 65%;
-  align: right;
 }
 
 .navbar-item, .navbar-item2 {
   padding-top: 10px;
   padding-bottom: 10px;
-  padding-right: 20px;
-  text-align: right;
-  list-style-type: none;
-  list-style-image: none;
+  -webkit-padding-end: 20px;
+  text-align: end;
+  display: block
 }
 
 .navbar-item-selected {
@@ -59,22 +60,6 @@
   background-color: #dfdfdf;
 }
 
-#gradient-cover {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 250px;
-  bottom: 0;
-}
-
-#gradient {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 250px;
-  bottom: 0;
-}
-
 #mainview {
   -webkit-box-align: stretch;
   width: 600px;
@@ -84,9 +69,9 @@
 
 .page > h1 {
   height: 30px;
-  padding-right: 15px;
+  -webkit-padding-end: 15px;
   padding-top: 12px;
-  padding-left: 15px;
+  -webkit-padding-start: 15px;
   font-size: 140%;
   color: #7c90d8;
 }
@@ -95,19 +80,16 @@ section {
   margin-top: 10px;
   border-bottom: 1px solid #ededed;
   padding-bottom: 10px;
-  clear: left;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
 }
 
 section > h3 {
-  font-weight: bold; 
-  float: left;
+  font-weight: bold;
   width: 150px;
   font-size: 75%;
-  padding-left: 15px;
-}
-
-section > div:only-of-type  {
-  margin-left: 175px;
+  -webkit-padding-start: 15px;
+  vertical-align: top;
 }
 
 .option {
