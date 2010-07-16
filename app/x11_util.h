@@ -66,6 +66,8 @@ int GetDefaultScreen(Display* display);
 
 // Get the X window id for the default root window
 XID GetX11RootWindow();
+// Returns the user's current desktop.
+bool GetCurrentDesktop(int* desktop);
 // Get the X window id for the given GTK widget.
 XID GetX11WindowFromGtkWidget(GtkWidget* widget);
 XID GetX11WindowFromGdkWindow(GdkWindow* window);
@@ -91,6 +93,11 @@ XID GetParentWindow(XID window);
 
 // Walk up |window|'s hierarchy until we find a direct child of |root|.
 XID GetHighestAncestorWindow(XID window, XID root);
+
+static const int kAllDesktops = -1;
+// Queries the desktop |window| is on, kAllDesktops if sticky. Returns false if
+// property not found.
+bool GetWindowDesktop(XID window, int* desktop);
 
 // Implementers of this interface receive a notification for every X window of
 // the main display.

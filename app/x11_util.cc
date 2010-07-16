@@ -159,6 +159,10 @@ XID GetX11RootWindow() {
   return GDK_WINDOW_XID(gdk_get_default_root_window());
 }
 
+bool GetCurrentDesktop(int* desktop) {
+  return GetIntProperty(GetX11RootWindow(), "_NET_CURRENT_DESKTOP", desktop);
+}
+
 XID GetX11WindowFromGtkWidget(GtkWidget* widget) {
   return GDK_WINDOW_XID(widget->window);
 }
@@ -192,7 +196,15 @@ int BitsPerPixelForPixmapDepth(Display* dpy, int depth) {
 bool IsWindowVisible(XID window) {
   XWindowAttributes win_attributes;
   XGetWindowAttributes(GetXDisplay(), window, &win_attributes);
-  return (win_attributes.map_state == IsViewable);
+  if (win_attributes.map_state != IsViewable)
+    return false;
+  // Some compositing window managers (notably kwin) do not actually unmap
+  // windows on desktop switch, so we also must check the current desktop.
+  int window_desktop, current_desktop;
+  return (!GetWindowDesktop(window, &window_desktop) ||
+          !GetCurrentDesktop(&current_desktop) ||
+          window_desktop == kAllDesktops ||
+          window_desktop == current_desktop);
 }
 
 bool GetWindowRect(XID window, gfx::Rect* rect) {
@@ -340,6 +352,10 @@ XID GetHighestAncestorWindow(XID window, XID root) {
       return window;
     window = parent;
   }
+}
+
+bool GetWindowDesktop(XID window, int* desktop) {
+  return GetIntProperty(window, "_NET_WM_DESKTOP", desktop);
 }
 
 // Returns true if |window| is a named window.
@@ -787,7 +803,12 @@ void GrabWindowSnapshot(GtkWindow* gtk_window,
 
 bool ChangeWindowDesktop(XID window, XID destination) {
   int desktop;
-  if (!GetIntProperty(destination, "_NET_WM_DESKTOP", &desktop))
+  if (!GetWindowDesktop(destination, &desktop))
+    return false;
+
+  // If |window| is sticky, use the current desktop.
+  if (desktop == kAllDesktops &&
+      !GetCurrentDesktop(&desktop))
     return false;
 
   XEvent event;
