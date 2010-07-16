@@ -674,6 +674,11 @@ class RenderViewHostDelegate {
   // Notification from the renderer that JS runs out of memory.
   virtual void OnJSOutOfMemory() {}
 
+  // Returns true if this this object can be blurred through a javascript
+  // obj.blur() call. ConstrainedWindows shouldn't be able to be blurred, but
+  // generally most other windows will be.
+  virtual bool CanBlur() const;
+
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.
   virtual gfx::Rect GetRootWindowResizerRect() const;

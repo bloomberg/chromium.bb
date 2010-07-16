@@ -125,6 +125,10 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // a TabContents with a valid WebApp set.
   virtual void ConvertContentsToApplication(TabContents* source);
 
+  // Whether this tab can be blurred through a javascript obj.blur()
+  // call. ConstrainedWindows shouldn't be able to be blurred.
+  virtual bool CanBlur() const;
+
   // Whether the specified tab can be reloaded.
   // Reloading can be disabled e. g. for the DevTools window.
   virtual bool CanReloadContents(TabContents* source) const;

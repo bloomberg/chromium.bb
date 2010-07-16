@@ -245,6 +245,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Returns the video layer if it exists, NULL otherwise.
   VideoLayer* video_layer() const { return video_layer_.get(); }
 
+  // Checks to see if we can give up focus to this widget through a JS call.
+  virtual bool CanBlur() const { return true; }
+
   // Starts a hang monitor timeout. If there's already a hang monitor timeout
   // the new one will only fire if it has a shorter delay than the time
   // left on the existing timeouts.
