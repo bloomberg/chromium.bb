@@ -35,10 +35,11 @@
 #include <string>
 #include <vector>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/logging.h"
 #include "base/time.h"
+
+class Lock;
 
 //------------------------------------------------------------------------------
 // Provide easy general purpose histogram in a macro, just like stats counters.
@@ -361,7 +362,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   // Accessors for factory constuction, serialization and testing.
   //----------------------------------------------------------------------------
   virtual ClassType histogram_type() const { return HISTOGRAM; }
-  const std::string histogram_name() const { return histogram_name_; }
+  const std::string& histogram_name() const { return histogram_name_; }
   Sample declared_min() const { return declared_min_; }
   Sample declared_max() const { return declared_max_; }
   virtual Sample ranges(size_t i) const { return ranges_[i];}

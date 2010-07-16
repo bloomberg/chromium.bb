@@ -11,6 +11,7 @@
 #include "base/data_pack.h"
 #include "base/debug_util.h"
 #include "base/file_util.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/resource_util.h"

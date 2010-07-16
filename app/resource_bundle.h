@@ -17,7 +17,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/ref_counted_memory.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -31,6 +30,7 @@ typedef struct _GdkPixbuf GdkPixbuf;
 namespace gfx {
 class Font;
 }
+class Lock;
 class SkBitmap;
 typedef uint32 SkColor;
 namespace base {
@@ -232,7 +232,7 @@ class ResourceBundle {
 
   // Class level lock.  Used to protect internal data structures that may be
   // accessed from other threads (e.g., skia_images_).
-  Lock lock_;
+  scoped_ptr<Lock> lock_;
 
   // Handles for data sources.
   DataHandle resources_data_;

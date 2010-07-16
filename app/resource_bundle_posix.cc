@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/data_pack.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"

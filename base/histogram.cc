@@ -12,6 +12,7 @@
 #include <math.h>
 #include <string>
 
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/string_util.h"

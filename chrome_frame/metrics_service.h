@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/histogram.h"
 #include "base/lazy_instance.h"
+#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/thread_local.h"
 #include "chrome/common/metrics_helpers.h"

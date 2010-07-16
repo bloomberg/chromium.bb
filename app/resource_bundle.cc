@@ -5,6 +5,7 @@
 #include "app/resource_bundle.h"
 
 #include "base/data_pack.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "build/build_config.h"
@@ -75,7 +76,8 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 }
 
 ResourceBundle::ResourceBundle()
-    : resources_data_(NULL),
+    : lock_(new Lock),
+      resources_data_(NULL),
       locale_resources_data_(NULL) {
 }
 
@@ -121,7 +123,7 @@ RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
 SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
   // Check to see if we already have the Skia image in the cache.
   {
-    AutoLock lock_scope(lock_);
+    AutoLock lock_scope(*lock_);
     SkImageMap::const_iterator found = skia_images_.find(resource_id);
     if (found != skia_images_.end())
       return found->second;
@@ -133,7 +135,7 @@ SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
 
   if (bitmap.get()) {
     // We loaded successfully.  Cache the Skia version of the bitmap.
-    AutoLock lock_scope(lock_);
+    AutoLock lock_scope(*lock_);
 
     // Another thread raced us, and has already cached the skia image.
     if (skia_images_.count(resource_id))
@@ -148,7 +150,7 @@ SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
     LOG(WARNING) << "Unable to load bitmap with id " << resource_id;
     NOTREACHED();  // Want to assert in debug mode.
 
-    AutoLock lock_scope(lock_);  // Guard empty_bitmap initialization.
+    AutoLock lock_scope(*lock_);  // Guard empty_bitmap initialization.
 
     static SkBitmap* empty_bitmap = NULL;
     if (!empty_bitmap) {
@@ -164,7 +166,7 @@ SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
 }
 
 void ResourceBundle::LoadFontsIfNecessary() {
-  AutoLock lock_scope(lock_);
+  AutoLock lock_scope(*lock_);
   if (!base_font_.get()) {
     base_font_.reset(new gfx::Font());
 

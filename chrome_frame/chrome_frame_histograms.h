@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/lock.h"
 #include "base/histogram.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
