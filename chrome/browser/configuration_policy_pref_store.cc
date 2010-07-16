@@ -26,6 +26,8 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
       prefs::kDnsPrefetchingEnabled },
   { Value::TYPE_BOOLEAN, kPolicySafeBrowsingEnabled,
       prefs::kSafeBrowsingEnabled },
+  { Value::TYPE_BOOLEAN, kPolicyPasswordManagerEnabled,
+      prefs::kPasswordManagerEnabled },
   { Value::TYPE_BOOLEAN, kPolicyMetricsReportingEnabled,
       prefs::kMetricsReportingEnabled },
 };

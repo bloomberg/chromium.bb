@@ -232,6 +232,14 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   gtk_box_pack_start(GTK_BOX(button_hbox), show_passwords_button, FALSE,
                      FALSE, 0);
 
+  bool isPasswordManagerEnabled = !ask_to_save_passwords_.IsManaged();
+  gtk_widget_set_sensitive(passwords_asktosave_radio_,
+                           isPasswordManagerEnabled);
+  gtk_widget_set_sensitive(passwords_neversave_radio_,
+                           isPasswordManagerEnabled);
+  gtk_widget_set_sensitive(show_passwords_button,
+                           isPasswordManagerEnabled);
+
   return vbox;
 }
 

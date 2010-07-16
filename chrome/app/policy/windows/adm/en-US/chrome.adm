@@ -83,6 +83,16 @@ CLASS MACHINE
            VALUEOFF NUMERIC 0
        END POLICY
 
+       POLICY !!PasswordManagerEnabled
+           #if version >= 4
+             SUPPORTED !!SUPPORTED_WINXPSP2
+           #endif
+           EXPLAIN !!PasswordManagerEnabled_Explain
+           VALUENAME "PasswordManagerEnabled"
+           VALUEON NUMERIC 1
+           VALUEOFF NUMERIC 0
+       END POLICY
+
        POLICY !!DisabledPlugins
            #if version >= 4
              SUPPORTED !!SUPPORTED_WINXPSP2
@@ -191,6 +201,11 @@ MetricsReportingEnabled_Explain="Enables the anonymous reporting of usage \
 and crash-related data to Google and prevents users from changing this setting.\n\n\
 If you enable this setting, anonymous reporting of usage and crash-related data will be sent to Google.\n\n\
 If you disable this setting, anonymous reporting of usage and crash-related data will never be sent to Google.\n\n\
+If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
+PasswordManagerEnabled="Enable the password manager"
+PasswordManagerEnabled_Explain="Enables saving passwords and using saved passwords.\n\n\
+If you enable this setting, users can have Google Chrome memorize passwords and provide them when the form is next filled.\n\n\
+If you disable this setting, users will not be able to save passwords or use already saved passwords.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
 DisabledPlugins="Specify a list of plugins that are disabled"
 DisabledPlugins_Explain="Specifies a list of plugins that are disabled and prevents users from changing this setting.\n\n\

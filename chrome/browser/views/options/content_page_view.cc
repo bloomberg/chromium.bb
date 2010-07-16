@@ -236,6 +236,12 @@ void ContentPageView::InitControlLayout() {
                                   profile()->GetPrefs(), this);
   is_using_default_theme_.Init(prefs::kCurrentThemeID,
                                profile()->GetPrefs(), this);
+
+  // Disable UI elements that are managed via policy.
+  bool enablePasswordManagerElements = !ask_to_save_passwords_.IsManaged();
+  passwords_asktosave_radio_->SetEnabled(enablePasswordManagerElements);
+  passwords_neversave_radio_->SetEnabled(enablePasswordManagerElements);
+  show_passwords_button_->SetEnabled(enablePasswordManagerElements);
 }
 
 void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {

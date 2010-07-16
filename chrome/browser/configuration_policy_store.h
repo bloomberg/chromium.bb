@@ -26,6 +26,7 @@ class ConfigurationPolicyStore {
     kPolicyDnsPrefetchingEnabled,
     kPolicySafeBrowsingEnabled,
     kPolicyMetricsReportingEnabled,
+    kPolicyPasswordManagerEnabled,
     kPolicySyncDisabled,
 
     // A policy for allowing administrators to forcibly disable

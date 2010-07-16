@@ -171,6 +171,11 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyMetricsReportingEnabled) {
       ConfigurationPolicyStore::kPolicyMetricsReportingEnabled);
 }
 
+TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyPasswordManagerEnabled) {
+  TestBooleanPolicy(prefs::kPasswordManagerEnabled,
+      ConfigurationPolicyStore::kPolicyPasswordManagerEnabled);
+}
+
 TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingProxyServer) {
   TestStringPolicy(prefs::kProxyServer,
                    ConfigurationPolicyPrefStore::kPolicyProxyServer);

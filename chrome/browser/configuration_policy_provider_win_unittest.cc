@@ -308,3 +308,8 @@ TEST_F(ConfigurationPolicyProviderWinTest,
   TestBooleanPolicy(ConfigurationPolicyStore::kPolicyMetricsReportingEnabled);
 }
 
+TEST_F(ConfigurationPolicyProviderWinTest,
+    TestPolicyPasswordManagerEnabled) {
+  TestBooleanPolicy(ConfigurationPolicyStore::kPolicyPasswordManagerEnabled);
+}
+

@@ -3,7 +3,7 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
@@ -735,6 +735,7 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>customPagesSource.customHomePages</string>
 					<string>URL</string>
+					<string>isPasswordManagerEnabled</string>
 				</object>
 				<string key="NSObjectClassName">CustomHomePageEntry</string>
 				<bool key="NSEditable">YES</bool>
@@ -840,7 +841,7 @@ AAMAAAABABIAAAECAAMAAAAEAAAFxgEDAAMAAAABAAEAAAEGAAMAAAABAAIAAAERAAQAAAABAAAACAES
 AAMAAAABAAEAAAEVAAMAAAABAAQAAAEWAAMAAAABBxwAAAEXAAQAAAABAAAFEAEcAAMAAAABAAEAAAFS
 AAMAAAABAAEAAAFTAAMAAAAEAAAFzodzAAcAAAwYAAAF1gAAAAAACAAIAAgACAABAAEAAQABAAAMGGFw
 cGwCAAAAbW50clJHQiBYWVogB9YABAADABMALAASYWNzcEFQUEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAPbWAAEAAAAA0y1hcHBsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAPbWAAEAAAAA0y1hcHBs2U706y3Sst1fqit5+wYbUQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAOclhZWgAAASwAAAAUZ1hZWgAAAUAAAAAUYlhZWgAAAVQAAAAUd3RwdAAAAWgAAAAUY2hhZAAA
 AXwAAAAsclRSQwAAAagAAAAOZ1RSQwAAAbgAAAAOYlRSQwAAAcgAAAAOdmNndAAAAdgAAAMSbmRpbgAA
 BOwAAAY+ZGVzYwAACywAAABkZHNjbQAAC5AAAAAubW1vZAAAC8AAAAAoY3BydAAAC+gAAAAtWFlaIAAA
@@ -1253,6 +1254,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								</object>
 								<string key="NSFrame">{{1, 1}, {305, 63}}</string>
 								<reference key="NSSuperview" ref="54854923"/>
+								<reference key="NSNextKeyView" ref="165250101"/>
 								<reference key="NSDocView" ref="165250101"/>
 								<reference key="NSBGColor" ref="452188023"/>
 								<int key="NScvFlags">4</int>
@@ -1280,6 +1282,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 						<string key="NSFrame">{{213, 298}, {307, 65}}</string>
 						<reference key="NSSuperview" ref="930668015"/>
+						<reference key="NSNextKeyView" ref="570210247"/>
 						<int key="NSsFlags">530</int>
 						<reference key="NSVScroller" ref="895676258"/>
 						<reference key="NSHScroller" ref="757862790"/>
@@ -1398,7 +1401,7 @@ AAMAAAABABIAAAECAAMAAAAEAAAFxgEDAAMAAAABAAEAAAEGAAMAAAABAAIAAAERAAQAAAABAAAACAES
 AAMAAAABAAEAAAEVAAMAAAABAAQAAAEWAAMAAAABBxwAAAEXAAQAAAABAAAFEAEcAAMAAAABAAEAAAFS
 AAMAAAABAAEAAAFTAAMAAAAEAAAFzodzAAcAAAwYAAAF1gAAAAAACAAIAAgACAABAAEAAQABAAAMGGFw
 cGwCAAAAbW50clJHQiBYWVogB9YABAADABMALAASYWNzcEFQUEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAPbWAAEAAAAA0y1hcHBsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAPbWAAEAAAAA0y1hcHBs2U706y3Sst1fqit5+wYbUQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAOclhZWgAAASwAAAAUZ1hZWgAAAUAAAAAUYlhZWgAAAVQAAAAUd3RwdAAAAWgAAAAUY2hhZAAA
 AXwAAAAsclRSQwAAAagAAAAOZ1RSQwAAAbgAAAAOYlRSQwAAAcgAAAAOdmNndAAAAdgAAAMSbmRpbgAA
 BOwAAAY+ZGVzYwAACywAAABkZHNjbQAAC5AAAAAubW1vZAAAC8AAAAAoY3BydAAAC+gAAAAtWFlaIAAA
@@ -1814,7 +1817,7 @@ AAMAAAABABIAAAECAAMAAAAEAAAFxgEDAAMAAAABAAEAAAEGAAMAAAABAAIAAAERAAQAAAABAAAACAES
 AAMAAAABAAEAAAEVAAMAAAABAAQAAAEWAAMAAAABBxwAAAEXAAQAAAABAAAFEAEcAAMAAAABAAEAAAFS
 AAMAAAABAAEAAAFTAAMAAAAEAAAFzodzAAcAAAwYAAAF1gAAAAAACAAIAAgACAABAAEAAQABAAAMGGFw
 cGwCAAAAbW50clJHQiBYWVogB9YABAADABMALAASYWNzcEFQUEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAPbWAAEAAAAA0y1hcHBsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAPbWAAEAAAAA0y1hcHBs2U706y3Sst1fqit5+wYbUQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAOclhZWgAAASwAAAAUZ1hZWgAAAUAAAAAUYlhZWgAAAVQAAAAUd3RwdAAAAWgAAAAUY2hhZAAA
 AXwAAAAsclRSQwAAAagAAAAOZ1RSQwAAAbgAAAAOYlRSQwAAAcgAAAAOdmNndAAAAdgAAAMSbmRpbgAA
 BOwAAAY+ZGVzYwAACywAAABkZHNjbQAAC5AAAAAubW1vZAAAC8AAAAAoY3BydAAAC+gAAAAtWFlaIAAA
@@ -3793,6 +3796,38 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 					<int key="connectionID">712</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: isPasswordManagerEnabled</string>
+						<reference key="source" ref="1019357609"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1019357609"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: isPasswordManagerEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">isPasswordManagerEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">713</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isPasswordManagerEnabled</string>
+						<reference key="source" ref="667220499"/>
+						<reference key="destination" ref="495015235"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="667220499"/>
+							<reference key="NSDestination" ref="495015235"/>
+							<string key="NSLabel">enabled: selection.isPasswordManagerEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isPasswordManagerEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">714</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -5385,7 +5420,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSMutableArray">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 					</object>
-					<string>{{432, 451}, {540, 359}}</string>
+					<string>{{278, 451}, {540, 359}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{278, 393}, {540, 463}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5517,7 +5552,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">712</int>
+			<int key="maxID">714</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -5559,6 +5594,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">GTMIBArray</string>
+					<string key="superclassName">NSArray</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>

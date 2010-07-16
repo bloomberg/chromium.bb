@@ -73,6 +73,15 @@ If you enable this setting, anonymous reporting of usage and crash-related data 
 If you disable this setting, anonymous reporting of usage and crash-related data will never be sent to Google.
 
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
+      <string id="PasswordManagerEnabled">Enable the password manager</string>
+      <string id="PasswordManagerEnabled_Explain">Enables saving passwords and using saved passwords.
+
+If you enable this setting, users can have Google Chrome memorize passwords and provide them when the form is next filled.
+
+If you disable this setting, users will not be able to save passwords or use already saved passwords.
+
+If you enable or disable this setting, users cannot change or override this setting in Google Chrome.
+      </string>
       <string id="DisabledPlugins">Specify a list of plugins that are disabled</string>
       <string id="DisabledPlugins_Explain">Specifies a list of plugins that are disabled and prevents users from changing this setting.
 
@@ -97,6 +106,7 @@ If you enable this setting, users cannot change or override this setting in Goog
       <presentation id="DnsPrefetchingEnabled" />
       <presentation id="SafeBrowsingEnabled" />
       <presentation id="MetricsReportingEnabled" />
+      <presentation id="PasswordManagerEnabled" />
       <presentation id="DisabledPlugins">
         <textBox refId="DisabledPluginsList">
           <label>Comma-separated list of disabled plugins:</label>

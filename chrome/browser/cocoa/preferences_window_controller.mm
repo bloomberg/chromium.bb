@@ -1280,6 +1280,11 @@ const int kDisabledIndex = 1;
   return askSavePasswords_.GetValue() ? kEnabledIndex : kDisabledIndex;
 }
 
+// Returns whether the password manager buttons should be enabled.
+- (BOOL)isPasswordManagerEnabled {
+  return !askSavePasswords_.IsManaged();
+}
+
 - (void)setIsUsingDefaultTheme:(BOOL)value {
   if (value)
     [self recordUserAction:UserMetricsAction(

@@ -88,6 +88,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="PasswordManagerEnabled" class="Machine" displayName="$(string.PasswordManagerEnabled)" explainText="$(string.PasswordManagerEnabled_Explain)" presentation="$(presentation.PasswordManagerEnabled)" key="Software\Policies\Google\Chrome" valueName="PasswordManagerEnabled">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="DisabledPlugins" class="Machine" displayName="$(string.DisabledPlugins)" explainText="$(string.DisabledPlugins_Explain)" presentation="$(presentation.DisabledPlugins)" key="Software\Policies\Google\Chrome" valueName="DisabledPlugins">
       <parentCategory ref="googlechrome" />
       <supportedOn ref="SUPPORTED_WINXPSP2" />
