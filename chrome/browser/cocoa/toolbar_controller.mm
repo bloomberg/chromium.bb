@@ -67,6 +67,9 @@ const CGFloat kMinimumLocationBarWidth = 100.0;
 // The duration of any animation that occurs within the toolbar in seconds.
 const CGFloat kAnimationDuration = 0.2;
 
+// The amount of left padding that the wrench menu should have.
+const CGFloat kWrenchMenuLeftPadding = 3.0;
+
 }  // namespace
 
 @interface ToolbarController(Private)
@@ -593,7 +596,7 @@ class PrefObserverBridge : public NotificationObserver {
 
   if ([browserActionsContainerView_ isHidden]) {
     CGFloat edgeXPos = [wrenchButton_ frame].origin.x;
-    leftDistance = edgeXPos - locationBarXPos;
+    leftDistance = edgeXPos - locationBarXPos - kWrenchMenuLeftPadding;
   } else {
     NSRect containerFrame = animate ?
         [browserActionsContainerView_ animationEndFrame] :
