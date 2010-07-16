@@ -11,3 +11,12 @@ BUG_PODIVILOV MAC : svg/custom/clip-path-child-changes.svg = TEXT
 // TODO(ager): started crashing after the v8 roll of r52309.
 // http://crbug.com/49099
 BUG_AGER LINUX DEBUG : fast/js/excessive-comma-usage.html = CRASH
+
+// TODO(tonyg): Remove on next roll
+BUG_TONYG : fast/dom/navigation-type-back-forward.html = TEXT
+BUG_TONYG : fast/dom/navigation-type-reload.html = TEXT
+BUG_TONYG : fast/dom/navigation-type-navigate.html = TEXT
+BUG_TONYG : fast/dom/prototype-inheritance.html = TEXT
+BUG_TONYG : fast/dom/webtiming.html = TEXT
+BUG_TONYG : http/tests/misc/webtiming-one-redirect.php = TEXT
+BUG_TONYG : http/tests/misc/webtiming-two-redirects.php = TEXT
