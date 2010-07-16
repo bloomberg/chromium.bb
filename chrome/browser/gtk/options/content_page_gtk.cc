@@ -98,6 +98,14 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
     UpdateSyncControls();
   }
 
+  // Add preferences observers.
+  ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,
+                              profile->GetPrefs(), this);
+  if (browser_defaults::kCanToggleSystemTitleBar) {
+    use_custom_chrome_frame_.Init(prefs::kUseCustomChromeFrame,
+                                  profile->GetPrefs(), this);
+  }
+
   options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_GROUP_NAME),
       InitPasswordSavingGroup(), false);
@@ -113,15 +121,6 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
       l10n_util::GetStringUTF8(IDS_APPEARANCE_GROUP_NAME),
       InitThemesGroup(), false);
   page_ = options_builder->get_page_widget();
-
-  // Add preferences observers.
-  ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,
-                              profile->GetPrefs(), this);
-
-  if (browser_defaults::kCanToggleSystemTitleBar) {
-    use_custom_chrome_frame_.Init(prefs::kUseCustomChromeFrame,
-                                  profile->GetPrefs(), this);
-  }
 
   // Load initial values.
   NotifyPrefChanged(NULL);
