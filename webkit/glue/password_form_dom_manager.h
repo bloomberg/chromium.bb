@@ -16,27 +16,27 @@ class GURL;
 
 namespace webkit_glue {
 
-class PasswordFormDomManager {
- public:
+// Structure used for autofilling password forms.
+// basic_data identifies the HTML form on the page and preferred username/
+//            password for login, while
+// additional_logins is a list of other matching user/pass pairs for the form.
+// wait_for_username tells us whether we need to wait for the user to enter
+// a valid username before we autofill the password. By default, this is off
+// unless the PasswordManager determined there is an additional risk
+// associated with this form. This can happen, for example, if action URI's
+// of the observed form and our saved representation don't match up.
+struct PasswordFormFillData {
   typedef std::map<string16, string16> LoginCollection;
 
-  // Structure used for autofilling password forms.
-  // basic_data identifies the HTML form on the page and preferred username/
-  //            password for login, while
-  // additional_logins is a list of other matching user/pass pairs for the form.
-  // wait_for_username tells us whether we need to wait for the user to enter
-  // a valid username before we autofill the password. By default, this is off
-  // unless the PasswordManager determined there is an additional risk
-  // associated with this form. This can happen, for example, if action URI's
-  // of the observed form and our saved representation don't match up.
-  struct FillData {
-    FormData basic_data;
-    LoginCollection additional_logins;
-    bool wait_for_username;
-    FillData() : wait_for_username(false) {
-    }
-  };
+  FormData basic_data;
+  LoginCollection additional_logins;
+  bool wait_for_username;
+  PasswordFormFillData();
+  ~PasswordFormFillData();
+};
 
+class PasswordFormDomManager {
+ public:
   // Create a PasswordForm from DOM form. Webkit doesn't allow storing
   // custom metadata to DOM nodes, so we have to do this every time an event
   // happens with a given form and compare against previously Create'd forms
@@ -53,7 +53,7 @@ class PasswordFormDomManager {
                            const PasswordFormMap& matches,
                            const PasswordForm* const preferred_match,
                            bool wait_for_username_before_autofill,
-                           FillData* result);
+                           PasswordFormFillData* result);
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PasswordFormDomManager);
 };

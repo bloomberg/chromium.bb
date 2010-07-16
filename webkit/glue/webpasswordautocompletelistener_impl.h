@@ -19,7 +19,6 @@ using WebKit::WebString;
 
 namespace webkit_glue {
 
-
 // A proxy interface to a WebInputElement for inline autocomplete. The proxy
 // is overridden by webpasswordautocompletelistener_unittest.
 class WebInputElementDelegate {
@@ -49,7 +48,7 @@ class WebPasswordAutocompleteListenerImpl :
   WebPasswordAutocompleteListenerImpl(
       WebInputElementDelegate* username_element,
       WebInputElementDelegate* password_element,
-      const PasswordFormDomManager::FillData& data);
+      const PasswordFormFillData& data);
   ~WebPasswordAutocompleteListenerImpl() {
   }
 
@@ -77,7 +76,7 @@ class WebPasswordAutocompleteListenerImpl :
   scoped_ptr<WebInputElementDelegate> username_delegate_;
 
   // Contains the extra logins for matching on delta/blur.
-  PasswordFormDomManager::FillData data_;
+  PasswordFormFillData data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPasswordAutocompleteListenerImpl);
 };

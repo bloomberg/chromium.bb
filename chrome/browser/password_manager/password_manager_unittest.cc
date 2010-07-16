@@ -5,6 +5,7 @@
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/url_constants.h"
@@ -19,10 +20,10 @@ using ::testing::Exactly;
 using ::testing::WithArg;
 using ::testing::Return;
 
-class MockPasswordManagerDelegate : public PasswordManager::Delegate {
+class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
   MOCK_METHOD1(FillPasswordForm, void(
-     const webkit_glue::PasswordFormDomManager::FillData&));
+     const webkit_glue::PasswordFormFillData&));
   MOCK_METHOD1(AddSavePasswordInfoBar, void(PasswordFormManager*));
   MOCK_METHOD0(GetProfileForPasswordManager, Profile*());
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());

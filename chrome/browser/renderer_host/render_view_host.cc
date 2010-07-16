@@ -56,6 +56,7 @@ using base::TimeDelta;
 using webkit_glue::FormData;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
+using webkit_glue::PasswordFormFillData;
 using webkit_glue::WebApplicationInfo;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
@@ -430,7 +431,7 @@ void RenderViewHost::SetAlternateErrorPageURL(const GURL& url) {
 }
 
 void RenderViewHost::FillPasswordForm(
-    const PasswordFormDomManager::FillData& form_data) {
+    const webkit_glue::PasswordFormFillData& form_data) {
   Send(new ViewMsg_FillPasswordForm(routing_id(), form_data));
 }
 

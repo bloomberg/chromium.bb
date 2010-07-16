@@ -23,13 +23,13 @@ class WebView;
 class PasswordAutocompleteManager {
  public:
   explicit PasswordAutocompleteManager(RenderView* render_view);
-  virtual ~PasswordAutocompleteManager() {}
+  virtual ~PasswordAutocompleteManager();
 
   // Invoked by the renderer when it receives the password info from the
   // browser.  This triggers a password autocomplete (if wait_for_username is
   // false on |form_data|).
   void ReceivedPasswordFormFillData(WebKit::WebView* view,
-      const webkit_glue::PasswordFormDomManager::FillData& form_data);
+      const webkit_glue::PasswordFormFillData& form_data);
 
   // Invoked when the passed frame is closing.  Gives us a chance to clear any
   // reference we may have to elements in that frame.
@@ -46,7 +46,7 @@ class PasswordAutocompleteManager {
   void PerformInlineAutocomplete(
       const WebKit::WebInputElement& username,
       const WebKit::WebInputElement& password,
-      const webkit_glue::PasswordFormDomManager::FillData& fill_data);
+      const webkit_glue::PasswordFormFillData& fill_data);
 
   // WebViewClient editor related calls forwarded by the RenderView.
   void TextFieldDidBeginEditing(const WebKit::WebInputElement& element);
@@ -58,25 +58,25 @@ class PasswordAutocompleteManager {
  private:
   struct PasswordInfo {
     WebKit::WebInputElement password_field;
-    webkit_glue::PasswordFormDomManager::FillData fill_data;
+    webkit_glue::PasswordFormFillData fill_data;
     bool backspace_pressed_last;
     PasswordInfo() : backspace_pressed_last(false) {}
   };
   typedef std::map<WebKit::WebElement, PasswordInfo> LoginToPasswordInfoMap;
 
   void GetSuggestions(
-      const webkit_glue::PasswordFormDomManager::FillData& fill_data,
+      const webkit_glue::PasswordFormFillData& fill_data,
       const string16& input,
       std::vector<string16>* suggestions);
 
   bool ShowSuggestionPopup(
-      const webkit_glue::PasswordFormDomManager::FillData& fill_data,
+      const webkit_glue::PasswordFormFillData& fill_data,
       const WebKit::WebInputElement& user_input);
 
   bool FillUserNameAndPassword(
       WebKit::WebInputElement* username_element,
       WebKit::WebInputElement* password_element,
-      const webkit_glue::PasswordFormDomManager::FillData& fill_data,
+      const webkit_glue::PasswordFormFillData& fill_data,
       bool exact_username_match);
 
   // The logins we have filled so far with their associated info.

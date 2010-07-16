@@ -3904,7 +3904,7 @@ void RenderView::OnDragSourceSystemDragEnded() {
 }
 
 void RenderView::OnFillPasswordForm(
-    const webkit_glue::PasswordFormDomManager::FillData& form_data) {
+    const webkit_glue::PasswordFormFillData& form_data) {
 #if defined(WEBKIT_BUG_41283_IS_FIXED)
   password_autocomplete_manager_.ReceivedPasswordFormFillData(webview(),
                                                               form_data);

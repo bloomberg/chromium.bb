@@ -24,7 +24,7 @@
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/jsmessage_box_client.h"
-#include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
@@ -75,6 +75,7 @@ class GeolocationSettingsState;
 class InfoBarDelegate;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
+class PasswordManager;
 class PluginInstaller;
 class Profile;
 struct RendererPreferences;
@@ -104,7 +105,7 @@ class TabContents : public PageNavigator,
                     public SelectFileDialog::Listener,
                     public JavaScriptMessageBoxClient,
                     public ImageLoadingTracker::Observer,
-                    public PasswordManager::Delegate,
+                    public PasswordManagerDelegate,
                     public TabSpecificContentSettings::Delegate {
  public:
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
@@ -697,9 +698,9 @@ class TabContents : public PageNavigator,
   // state by various UI elements.
   TabSpecificContentSettings* GetTabSpecificContentSettings() const;
 
-  // PasswordManager::Delegate implementation.
+  // PasswordManagerDelegate implementation.
   virtual void FillPasswordForm(
-      const webkit_glue::PasswordFormDomManager::FillData& form_data);
+      const webkit_glue::PasswordFormFillData& form_data);
   virtual void AddSavePasswordInfoBar(PasswordFormManager* form_to_save);
   virtual Profile* GetProfileForPasswordManager();
   virtual bool DidLastPageLoadEncounterSSLErrors();

@@ -11,19 +11,23 @@
 
 #include "gfx/size.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/password_form_dom_manager.h"
 
 namespace WebKit {
+class WebDocument;
+class WebElement;
+class WebString;
 class WebView;
 }
 
 // A collection of operations that access the underlying WebKit DOM directly.
 namespace webkit_glue {
 
+struct PasswordFormFillData;
+
 // Fill matching password forms and trigger autocomplete in the case of multiple
 // matching logins.
 void FillPasswordForm(WebKit::WebView* view,
-                      const PasswordFormDomManager::FillData& data);
+                      const PasswordFormFillData& data);
 
 // Structure for storage the result of getting all savable resource links
 // for current page. The consumer of the SavableResourcesResult is responsible

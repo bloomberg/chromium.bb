@@ -95,7 +95,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
-#include "webkit/glue/password_form.h"
 #include "webkit/glue/webpreferences.h"
 
 // Cross-Site Navigations
@@ -3178,7 +3177,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 void TabContents::FillPasswordForm(
-    const webkit_glue::PasswordFormDomManager::FillData& form_data) {
+    const webkit_glue::PasswordFormFillData& form_data) {
   render_view_host()->FillPasswordForm(form_data);
 }
 

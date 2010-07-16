@@ -19,6 +19,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
 using WebKit::WebAnimationController;
@@ -272,7 +273,7 @@ static void FindFormElements(WebView* view,
 }
 
 void FillPasswordForm(WebView* view,
-                      const PasswordFormDomManager::FillData& data) {
+                      const PasswordFormFillData& data) {
   FormElementsList forms;
   // We own the FormElements* in forms.
   FindFormElements(view, data.basic_data, &forms);

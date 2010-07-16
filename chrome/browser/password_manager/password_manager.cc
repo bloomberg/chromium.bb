@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_registrar.h"
@@ -49,7 +50,7 @@ static void ReportMetrics(bool password_manager_enabled) {
     UserMetrics::RecordAction(UserMetricsAction("PasswordManager_Disabled"));
 }
 
-PasswordManager::PasswordManager(Delegate* delegate)
+PasswordManager::PasswordManager(PasswordManagerDelegate* delegate)
     : login_managers_deleter_(&pending_login_managers_),
       delegate_(delegate),
       observer_(NULL) {
@@ -195,7 +196,7 @@ void PasswordManager::Autofill(
     case PasswordForm::SCHEME_HTML: {
       // Note the check above is required because the observer_ for a non-HTML
       // schemed password form may have been freed, so we need to distinguish.
-      webkit_glue::PasswordFormDomManager::FillData fill_data;
+      webkit_glue::PasswordFormFillData fill_data;
       webkit_glue::PasswordFormDomManager::InitFillData(form_for_autofill,
                                                         best_matches,
                                                         preferred_match,

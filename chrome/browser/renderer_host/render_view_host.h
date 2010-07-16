@@ -21,11 +21,11 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
-#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class FilePath;
+class GURL;
 class ListValue;
 class RenderViewHostDelegate;
 class SiteInstance;
@@ -50,6 +50,8 @@ class Point;
 namespace webkit_glue {
 struct FormData;
 class FormField;
+struct PasswordForm;
+struct PasswordFormFillData;
 struct WebApplicationInfo;
 }  // namespace webkit_glue
 
@@ -220,7 +222,7 @@ class RenderViewHost : public RenderWidgetHost {
   // Fill out a password form and trigger DOM autocomplete in the case
   // of multiple matching logins.
   void FillPasswordForm(
-      const webkit_glue::PasswordFormDomManager::FillData& form_data);
+      const webkit_glue::PasswordFormFillData& form_data);
 
   // D&d drop target messages that get sent to WebKit.
   void DragTargetDragEnter(const WebDropData& drop_data,

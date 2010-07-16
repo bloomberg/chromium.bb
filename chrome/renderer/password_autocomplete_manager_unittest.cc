@@ -18,6 +18,7 @@
 #include "webkit/glue/form_field.h"
 
 using webkit_glue::FormField;
+using webkit_glue::PasswordFormFillData;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using WebKit::WebDocument;
@@ -53,7 +54,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
   // We use that so we don't have to make RenderView::OnFillPasswordForm()
   // protected.
   void SimulateOnFillPasswordForm(
-      const PasswordFormDomManager::FillData& fill_data) {
+      const PasswordFormFillData& fill_data) {
     ViewMsg_FillPasswordForm msg(0, fill_data);
     view_->OnMessageReceived(msg);
   }
@@ -141,7 +142,7 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
   string16 username2_;
   string16 password1_;
   string16 password2_;
-  PasswordFormDomManager::FillData fill_data_;
+  PasswordFormFillData fill_data_;
 
   WebInputElement username_element_;
   WebInputElement password_element_;

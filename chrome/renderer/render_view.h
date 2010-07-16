@@ -775,7 +775,7 @@ class RenderView : public RenderWidget,
   void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnFillPasswordForm(
-      const webkit_glue::PasswordFormDomManager::FillData& form_data);
+      const webkit_glue::PasswordFormFillData& form_data);
   void OnPaste();
   void OnPrintingDone(int document_cookie, bool success);
   void OnPrintPages();

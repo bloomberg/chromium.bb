@@ -74,7 +74,7 @@ void WebInputElementDelegate::RefreshAutofillPopup(
 WebPasswordAutocompleteListenerImpl::WebPasswordAutocompleteListenerImpl(
     WebInputElementDelegate* username_delegate,
     WebInputElementDelegate* password_delegate,
-    const PasswordFormDomManager::FillData& data)
+    const PasswordFormFillData& data)
     : password_delegate_(password_delegate),
       username_delegate_(username_delegate),
       data_(data) {
@@ -144,7 +144,7 @@ void WebPasswordAutocompleteListenerImpl::performInlineAutocomplete(
   }
 
   // Scan additional logins for a match.
-  for (PasswordFormDomManager::LoginCollection::iterator it =
+  for (PasswordFormFillData::LoginCollection::iterator it =
            data_.additional_logins.begin();
        it != data_.additional_logins.end();
        ++it) {
@@ -185,7 +185,7 @@ void WebPasswordAutocompleteListenerImpl::GetSuggestions(
   if (StartsWith(data_.basic_data.fields[0].value(), input, false))
     suggestions->push_back(data_.basic_data.fields[0].value());
 
-  for (PasswordFormDomManager::LoginCollection::iterator it =
+  for (PasswordFormFillData::LoginCollection::iterator it =
        data_.additional_logins.begin();
        it != data_.additional_logins.end();
        ++it) {

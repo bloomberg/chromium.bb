@@ -416,7 +416,7 @@ IPC_BEGIN_MESSAGES(View)
   // Fill a password form and prepare field autocomplete for multiple
   // matching logins.
   IPC_MESSAGE_ROUTED1(ViewMsg_FillPasswordForm,
-                      webkit_glue::PasswordFormDomManager::FillData)
+                      webkit_glue::PasswordFormFillData)
 
   // D&d drop target messages.
   IPC_MESSAGE_ROUTED4(ViewMsg_DragTargetDragEnter,

@@ -1234,8 +1234,8 @@ struct ParamTraits<WebPluginInfo> {
 
 // Traits for webkit_glue::PasswordFormDomManager::FillData.
 template <>
-struct ParamTraits<webkit_glue::PasswordFormDomManager::FillData> {
-  typedef webkit_glue::PasswordFormDomManager::FillData param_type;
+struct ParamTraits<webkit_glue::PasswordFormFillData> {
+  typedef webkit_glue::PasswordFormFillData param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.basic_data);
     WriteParam(m, p.additional_logins);
@@ -1248,7 +1248,7 @@ struct ParamTraits<webkit_glue::PasswordFormDomManager::FillData> {
       ReadParam(m, iter, &r->wait_for_username);
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<PasswordFormDomManager::FillData>");
+    l->append(L"<PasswordFormFillData>");
   }
 };
 

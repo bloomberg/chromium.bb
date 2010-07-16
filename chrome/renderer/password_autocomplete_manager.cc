@@ -169,9 +169,12 @@ PasswordAutocompleteManager::PasswordAutocompleteManager(
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
+PasswordAutocompleteManager::~PasswordAutocompleteManager() {
+}
+
 void PasswordAutocompleteManager::ReceivedPasswordFormFillData(
     WebKit::WebView* view,
-    const webkit_glue::PasswordFormDomManager::FillData& form_data) {
+    const webkit_glue::PasswordFormFillData& form_data) {
   FormElementsList forms;
   // We own the FormElements* in forms.
   FindFormElements(view, form_data.basic_data, &forms);
@@ -222,7 +225,7 @@ void PasswordAutocompleteManager::TextFieldDidEndEditing(
   if (iter == login_to_password_info_.end())
     return;
 
-  const webkit_glue::PasswordFormDomManager::FillData& fill_data =
+  const webkit_glue::PasswordFormFillData& fill_data =
       iter->second.fill_data;
 
   // If wait_for_username is false, we should have filled when the text changed.
@@ -303,7 +306,7 @@ bool PasswordAutocompleteManager::FillPassword(
       login_to_password_info_.find(user_input);
   if (iter == login_to_password_info_.end())
     return false;
-  const webkit_glue::PasswordFormDomManager::FillData& fill_data =
+  const webkit_glue::PasswordFormFillData& fill_data =
       iter->second.fill_data;
   WebKit::WebInputElement password = iter->second.password_field;
   WebKit::WebInputElement non_const_user_input(user_input);
@@ -314,7 +317,7 @@ bool PasswordAutocompleteManager::FillPassword(
 void PasswordAutocompleteManager::PerformInlineAutocomplete(
     const WebKit::WebInputElement& username_input,
     const WebKit::WebInputElement& password_input,
-    const webkit_glue::PasswordFormDomManager::FillData& fill_data) {
+    const webkit_glue::PasswordFormFillData& fill_data) {
   DCHECK(!fill_data.wait_for_username);
 
   // We need non-const versions of the username and password inputs.
@@ -339,13 +342,13 @@ void PasswordAutocompleteManager::PerformInlineAutocomplete(
 // PasswordAutocompleteManager, private:
 
 void PasswordAutocompleteManager::GetSuggestions(
-    const webkit_glue::PasswordFormDomManager::FillData& fill_data,
+    const webkit_glue::PasswordFormFillData& fill_data,
     const string16& input,
     std::vector<string16>* suggestions) {
   if (StartsWith(fill_data.basic_data.fields[0].value(), input, false))
     suggestions->push_back(fill_data.basic_data.fields[0].value());
 
-  webkit_glue::PasswordFormDomManager::LoginCollection::const_iterator iter;
+  webkit_glue::PasswordFormFillData::LoginCollection::const_iterator iter;
   for (iter = fill_data.additional_logins.begin();
        iter != fill_data.additional_logins.end(); ++iter) {
     if (StartsWith(iter->first, input, false))
@@ -354,7 +357,7 @@ void PasswordAutocompleteManager::GetSuggestions(
 }
 
 bool PasswordAutocompleteManager::ShowSuggestionPopup(
-    const webkit_glue::PasswordFormDomManager::FillData& fill_data,
+    const webkit_glue::PasswordFormFillData& fill_data,
     const WebKit::WebInputElement& user_input) {
   std::vector<string16> suggestions;
   GetSuggestions(fill_data, user_input.value(), &suggestions);
@@ -372,7 +375,7 @@ bool PasswordAutocompleteManager::ShowSuggestionPopup(
 bool PasswordAutocompleteManager::FillUserNameAndPassword(
     WebKit::WebInputElement* username_element,
     WebKit::WebInputElement* password_element,
-    const webkit_glue::PasswordFormDomManager::FillData& fill_data,
+    const webkit_glue::PasswordFormFillData& fill_data,
     bool exact_username_match) {
   string16 current_username = username_element->value();
   // username and password will contain the match found if any.
@@ -386,7 +389,7 @@ bool PasswordAutocompleteManager::FillUserNameAndPassword(
     password = fill_data.basic_data.fields[1].value();
   } else {
     // Scan additional logins for a match.
-    webkit_glue::PasswordFormDomManager::LoginCollection::const_iterator iter;
+    webkit_glue::PasswordFormFillData::LoginCollection::const_iterator iter;
     for (iter = fill_data.additional_logins.begin();
          iter != fill_data.additional_logins.end(); ++iter) {
       if (DoUsernamesMatch(iter->first, current_username,

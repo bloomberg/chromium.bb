@@ -16,6 +16,7 @@
 using WebKit::WebString;
 using webkit_glue::FormField;
 using webkit_glue::PasswordFormDomManager;
+using webkit_glue::PasswordFormFillData;
 using webkit_glue::WebInputElementDelegate;
 using webkit_glue::WebPasswordAutocompleteListenerImpl;
 
@@ -124,7 +125,7 @@ class PasswordManagerAutocompleteTests : public testing::Test {
   string16 password1_;
   string16 username2_;
   string16 password2_;
-  PasswordFormDomManager::FillData data_;
+  PasswordFormFillData data_;
   TestWebInputElementDelegate* username_delegate_;
   TestWebInputElementDelegate* password_delegate_;
 

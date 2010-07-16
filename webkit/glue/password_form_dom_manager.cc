@@ -15,6 +15,12 @@ using WebKit::WebPasswordFormData;
 
 namespace webkit_glue {
 
+PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {
+}
+
+PasswordFormFillData::~PasswordFormFillData() {
+}
+
 PasswordForm* PasswordFormDomManager::CreatePasswordForm(
     const WebFormElement& webform) {
   WebPasswordFormData web_password_form(webform);
@@ -29,7 +35,7 @@ void PasswordFormDomManager::InitFillData(
     const PasswordFormMap& matches,
     const PasswordForm* const preferred_match,
     bool wait_for_username_before_autofill,
-    PasswordFormDomManager::FillData* result) {
+    PasswordFormFillData* result) {
   DCHECK(preferred_match);
   // Fill basic form data.
   result->basic_data.origin = form_on_page.origin;
