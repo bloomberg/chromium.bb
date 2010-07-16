@@ -4,12 +4,12 @@
 
 #include "chrome/browser/sync/glue/password_model_worker.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/sync/util/closure.h"
 
 using base::WaitableEvent;
 
@@ -19,7 +19,7 @@ PasswordModelWorker::PasswordModelWorker(PasswordStore* password_store)
   : password_store_(password_store) {
 }
 
-void PasswordModelWorker::DoWorkAndWaitUntilDone(Closure* work) {
+void PasswordModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   WaitableEvent done(false, false);
   password_store_->ScheduleTask(
       NewRunnableMethod(this, &PasswordModelWorker::CallDoWorkAndSignalTask,
@@ -27,7 +27,7 @@ void PasswordModelWorker::DoWorkAndWaitUntilDone(Closure* work) {
   done.Wait();
 }
 
-void PasswordModelWorker::CallDoWorkAndSignalTask(Closure* work,
+void PasswordModelWorker::CallDoWorkAndSignalTask(Callback0::Type* work,
                                                   WaitableEvent* done) {
   work->Run();
   done->Signal();

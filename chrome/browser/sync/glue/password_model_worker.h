@@ -8,8 +8,8 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/sync/util/closure.h"
 
 class PasswordStore;
 
@@ -27,12 +27,13 @@ class PasswordModelWorker : public browser_sync::ModelSafeWorker {
   explicit PasswordModelWorker(PasswordStore* password_store);
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  void DoWorkAndWaitUntilDone(Closure* work);
+  void DoWorkAndWaitUntilDone(Callback0::Type* work);
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_PASSWORD; }
   virtual bool CurrentThreadIsWorkThread();
 
  private:
-  void CallDoWorkAndSignalTask(Closure* work, base::WaitableEvent* done);
+  void CallDoWorkAndSignalTask(Callback0::Type* work,
+                               base::WaitableEvent* done);
 
   scoped_refptr<PasswordStore> password_store_;
   DISALLOW_COPY_AND_ASSIGN(PasswordModelWorker);

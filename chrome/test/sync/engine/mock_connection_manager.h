@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,12 +11,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/scoped_vector.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/closure.h"
 
 namespace syncable {
 class DirectoryManager;
@@ -47,7 +47,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   virtual bool IsUserAuthenticated();
 
   // Control of commit response.
-  void SetMidCommitCallback(Closure* callback);
+  void SetMidCommitCallback(Callback0::Type* callback);
   void SetMidCommitObserver(MidCommitObserver* observer);
 
   // Set this if you want commit to perform commit time rename. Will request
@@ -271,7 +271,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // The updates we'll return to the next request.
   sync_pb::GetUpdatesResponse updates_;
-  scoped_ptr<Closure> mid_commit_callback_;
+  scoped_ptr<Callback0::Type> mid_commit_callback_;
   MidCommitObserver* mid_commit_observer_;
 
   // The AUTHENTICATE response we'll return for auth requests.

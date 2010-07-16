@@ -46,7 +46,6 @@
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/chrome_switches.h"

@@ -1,17 +1,17 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_UI_MODEL_WORKER_H_
 #define CHROME_BROWSER_SYNC_GLUE_UI_MODEL_WORKER_H_
 
+#include "base/callback.h"
 #include "base/condition_variable.h"
 #include "base/lock.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/util/closure.h"
 
 class MessageLoop;
 
@@ -39,7 +39,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   // A simple task to signal a waitable event after Run()ning a Closure.
   class CallDoWorkAndSignalTask : public Task {
    public:
-    CallDoWorkAndSignalTask(Closure* work,
+    CallDoWorkAndSignalTask(Callback0::Type* work,
                             base::WaitableEvent* work_done,
                             UIModelWorker* scheduler)
         : work_(work), work_done_(work_done), scheduler_(scheduler) {
@@ -52,7 +52,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
    private:
     // Task data - a closure and a waitable event to signal after the work has
     // been done.
-    Closure* work_;
+    Callback0::Type* work_;
     base::WaitableEvent* work_done_;
 
     // The UIModelWorker responsible for scheduling us.
@@ -68,7 +68,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   void Stop();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  virtual void DoWorkAndWaitUntilDone(Closure* work);
+  virtual void DoWorkAndWaitUntilDone(Callback0::Type* work);
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_UI; }
   virtual bool CurrentThreadIsWorkThread();
 

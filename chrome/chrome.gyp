@@ -923,7 +923,6 @@
         'browser/sync/syncable/syncable_id.cc',
         'browser/sync/syncable/syncable_id.h',
         'browser/sync/util/channel.h',
-        'browser/sync/util/closure.h',
         'browser/sync/util/crypto_helpers.cc',
         'browser/sync/util/crypto_helpers.h',
         'browser/sync/util/cryptographer.cc',

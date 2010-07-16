@@ -11,7 +11,6 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/sync/util/closure.h"
 
 using base::WaitableEvent;
 
@@ -19,7 +18,7 @@ namespace browser_sync {
 
 class WorkerTask : public HistoryDBTask {
  public:
-  WorkerTask(Closure* work, WaitableEvent* done)
+  WorkerTask(Callback0::Type* work, WaitableEvent* done)
     : work_(work), done_(done) {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
@@ -34,7 +33,7 @@ class WorkerTask : public HistoryDBTask {
   virtual void DoneRunOnMainThread() {}
 
  protected:
-  Closure* work_;
+  Callback0::Type* work_;
   WaitableEvent* done_;
 };
 
@@ -43,7 +42,7 @@ HistoryModelWorker::HistoryModelWorker(HistoryService* history_service)
   : history_service_(history_service) {
 }
 
-void HistoryModelWorker::DoWorkAndWaitUntilDone(Closure* work) {
+void HistoryModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   WaitableEvent done(false, false);
   scoped_refptr<WorkerTask> task = new WorkerTask(work, &done);
   history_service_->ScheduleDBTask(task.get(), this);

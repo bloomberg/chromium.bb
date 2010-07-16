@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_event.h"
-#include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
@@ -164,7 +164,7 @@ class Syncer {
 
   // A callback hook used in unittests to simulate changes between conflict set
   // building and conflict resolution.
-  Closure* pre_conflict_resolution_closure_;
+  Callback0::Type* pre_conflict_resolution_closure_;
 
   friend class SyncerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerTest, NameClashWithResolver);

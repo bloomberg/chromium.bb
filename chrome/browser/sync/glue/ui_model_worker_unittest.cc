@@ -45,7 +45,7 @@ class Syncer {
   ~Syncer() {}
 
   void SyncShare(UIModelWorkerVisitor* visitor) {
-    scoped_ptr<Closure> c(NewCallback(visitor,
+    scoped_ptr<Callback0::Type> c(NewCallback(visitor,
         &UIModelWorkerVisitor::DoWork));
     worker_->DoWorkAndWaitUntilDone(c.get());
   }

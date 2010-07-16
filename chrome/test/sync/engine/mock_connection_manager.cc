@@ -62,7 +62,7 @@ void MockConnectionManager::SetCommitTimeRename(string prepend) {
   commit_time_rename_prepended_string_ = prepend;
 }
 
-void MockConnectionManager::SetMidCommitCallback(Closure* callback) {
+void MockConnectionManager::SetMidCommitCallback(Callback0::Type* callback) {
   mid_commit_callback_.reset(callback);
 }
 

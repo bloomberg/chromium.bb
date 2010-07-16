@@ -8,9 +8,9 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/cancelable_request.h"
-#include "chrome/browser/sync/util/closure.h"
 
 class HistoryService;
 
@@ -28,7 +28,7 @@ class HistoryModelWorker : public browser_sync::ModelSafeWorker,
   explicit HistoryModelWorker(HistoryService* history_service);
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
-  void DoWorkAndWaitUntilDone(Closure* work);
+  void DoWorkAndWaitUntilDone(Callback0::Type* work);
   virtual ModelSafeGroup GetModelSafeGroup() { return GROUP_HISTORY; }
   virtual bool CurrentThreadIsWorkThread();
 

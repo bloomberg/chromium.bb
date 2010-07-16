@@ -36,7 +36,8 @@ class DatabaseModelWorkerTest : public testing::Test {
   // Schedule DoWork to be executed on the DB thread and have the test fail if
   // DoWork hasn't executed within 10 seconds.
   void ScheduleWork() {
-    scoped_ptr<Closure> c(NewCallback(this, &DatabaseModelWorkerTest::DoWork));
+    scoped_ptr<Callback0::Type> c(NewCallback(this,
+        &DatabaseModelWorkerTest::DoWork));
     timer()->Start(TimeDelta::FromSeconds(10),
                    this, &DatabaseModelWorkerTest::Timeout);
     worker()->DoWorkAndWaitUntilDone(c.get());

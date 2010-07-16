@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 namespace browser_sync {
@@ -47,7 +47,7 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
   // Any time the Syncer performs model modifications (e.g employing a
   // WriteTransaction), it should be done by this method to ensure it is done
   // from a model-safe thread.
-  virtual void DoWorkAndWaitUntilDone(Closure* work) {
+  virtual void DoWorkAndWaitUntilDone(Callback0::Type* work) {
     work->Run();  // For GROUP_PASSIVE, we do the work on the current thread.
   }
 

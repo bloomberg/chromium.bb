@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/browser/sync/util/closure.h"
 
 namespace browser_sync {
 
@@ -24,7 +23,7 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
 
     sessions::StatusController* status = work_session_->status_controller();
     sessions::ScopedModelSafeGroupRestriction r(status, group);
-    scoped_ptr<Closure> c(NewCallback(this,
+    scoped_ptr<Callback0::Type> c(NewCallback(this,
         &ModelChangingSyncerCommand::StartChangingModel));
     worker->DoWorkAndWaitUntilDone(c.get());
   }

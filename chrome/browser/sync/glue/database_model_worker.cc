@@ -10,7 +10,7 @@ using base::WaitableEvent;
 
 namespace browser_sync {
 
-void DatabaseModelWorker::DoWorkAndWaitUntilDone(Closure* work) {
+void DatabaseModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   if (ChromeThread::CurrentlyOn(ChromeThread::DB)) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from the DB thread.";
     work->Run();
@@ -26,7 +26,7 @@ void DatabaseModelWorker::DoWorkAndWaitUntilDone(Closure* work) {
   done.Wait();
 }
 
-void DatabaseModelWorker::CallDoWorkAndSignalTask(Closure* work,
+void DatabaseModelWorker::CallDoWorkAndSignalTask(Callback0::Type* work,
                                                   WaitableEvent* done) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   work->Run();
