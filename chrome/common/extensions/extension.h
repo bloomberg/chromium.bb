@@ -96,7 +96,6 @@ class Extension {
   // - ExtensionInstallUI::GetV2Warnings()
   static const char* kBackgroundPermission;
   static const char* kBookmarkPermission;
-  static const char* kCookiePermission;
   static const char* kExperimentalPermission;
   static const char* kGeolocationPermission;
   static const char* kHistoryPermission;

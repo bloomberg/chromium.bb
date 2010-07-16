@@ -1,5 +1,5 @@
 <script>
-chrome.cookies.onChanged.addListener(function (info) {
+chrome.experimental.cookies.onChanged.addListener(function (info) {
     if (!info.removed &&
         info.cookie.name == 'test' &&
         info.cookie.value == '42' &&
@@ -16,8 +16,8 @@ chrome.cookies.onChanged.addListener(function (info) {
       chrome.test.notifyFail("Got an invalid cookie: " +  JSON.stringify(info));
     }
 });
-chrome.cookies.set({url: 'http://a.com/path',
-                    name: 'test',
-                    value: '42',
-                    expirationDate: 12345678900});
+chrome.experimental.cookies.set({url: 'http://a.com/path',
+                                 name: 'test',
+                                 value: '42',
+                                 expirationDate: 12345678900});
 </script>

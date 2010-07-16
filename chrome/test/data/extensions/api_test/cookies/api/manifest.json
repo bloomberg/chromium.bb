@@ -4,8 +4,8 @@
   "description": "end-to-end browser test for chrome.experimental.cookies API",
   "background_page": "background.html",
   "permissions": [
-    "cookies",
     "tabs",
+    "experimental",
     "http://*.chrome_extensions.cookies.com/",
     "http://chromium.cookies.com/",
     "https://*.cookies.com/",

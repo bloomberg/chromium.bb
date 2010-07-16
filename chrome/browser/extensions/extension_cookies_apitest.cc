@@ -7,13 +7,15 @@
 #include "chrome/common/chrome_switches.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Cookies) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
   ASSERT_TRUE(RunExtensionTest("cookies/api")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CookiesEvents) {
-  ASSERT_TRUE(RunExtensionTest("cookies/events")) << message_;
-}
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CookiesNoPermission) {
-  ASSERT_TRUE(RunExtensionTest("cookies/no_permission")) << message_;
+  ASSERT_TRUE(RunExtensionTest("cookies/events")) << message_;
 }

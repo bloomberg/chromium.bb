@@ -63,14 +63,14 @@ function expectNullCookie(cookie) {
 }
 
 function removeTestCookies() {
-  chrome.cookies.remove(
+  chrome.experimental.cookies.remove(
       {url: TEST_URL, name: TEST_BASIC_COOKIE.name});
-  chrome.cookies.remove(
+  chrome.experimental.cookies.remove(
       {url: TEST_URL, name: TEST_DOMAIN_COOKIE.name});
-  chrome.cookies.remove(
+  chrome.experimental.cookies.remove(
       {url: TEST_URL4, name: TEST_SECURE_COOKIE.name});
-  chrome.cookies.remove({url: TEST_URL, name: 'abcd'});
-  chrome.cookies.remove({url: TEST_ODD_URL, name: 'abcd'});
+  chrome.experimental.cookies.remove({url: TEST_URL, name: 'abcd'});
+  chrome.experimental.cookies.remove({url: TEST_ODD_URL, name: 'abcd'});
 }
 
 var pass = chrome.test.callbackPass;
@@ -83,34 +83,34 @@ chrome.test.runTests([
     chrome.test.assertEq('3', readCookie('c'));
     chrome.test.assertEq(null, readCookie('nonexistent'));
     // Invalid schemes don't work with the cookie API.
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: document.location.href, name: 'a'},
         fail('No host permissions for cookies at url: "' +
              document.location.href + '".'));
   },
   function getBasicCookie() {
     removeTestCookies();
-    chrome.cookies.set(TEST_BASIC_COOKIE);
+    chrome.experimental.cookies.set(TEST_BASIC_COOKIE);
     // Domain doesn't match.
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: TEST_URL2, name: TEST_BASIC_COOKIE.name},
         pass(expectNullCookie));
     // URL invalid.
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: 'invalid url', name: TEST_BASIC_COOKIE.name},
         fail('Invalid url: "invalid url".'));
     // URL lacking permissions.
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: TEST_UNPERMITTED_URL, name: TEST_BASIC_COOKIE.name},
         fail('No host permissions for cookies at url: "' +
              TEST_UNPERMITTED_URL + '".'));
     // Store ID invalid.
-    chrome.cookies.get({
+    chrome.experimental.cookies.get({
       url: TEST_BASIC_COOKIE.url,
       name: TEST_BASIC_COOKIE.name,
       storeId: 'invalid'
     }, fail('Invalid cookie store id: "invalid".'));
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: TEST_BASIC_COOKIE.url, name: TEST_BASIC_COOKIE.name},
         pass(function(cookie) {
           expectValidCookie(cookie);
@@ -130,8 +130,8 @@ chrome.test.runTests([
   },
   function getDomainCookie() {
     removeTestCookies();
-    chrome.cookies.set(TEST_DOMAIN_COOKIE);
-    chrome.cookies.get(
+    chrome.experimental.cookies.set(TEST_DOMAIN_COOKIE);
+    chrome.experimental.cookies.get(
         {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
         pass(function(cookie) {
           expectValidCookie(cookie);
@@ -148,16 +148,16 @@ chrome.test.runTests([
   },
   function getSecureCookie() {
     removeTestCookies();
-    chrome.cookies.set(TEST_SECURE_COOKIE);
+    chrome.experimental.cookies.set(TEST_SECURE_COOKIE);
     // Original URL doesn't work because scheme isn't secure.
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: TEST_SECURE_COOKIE.url, name: TEST_SECURE_COOKIE.name},
         pass(expectNullCookie));
     // Path doesn't match.
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: TEST_URL3, name: TEST_SECURE_COOKIE.name},
         pass(expectNullCookie));
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: TEST_URL4, name: TEST_SECURE_COOKIE.name},
         pass(function(cookie) {
           expectValidCookie(cookie);
@@ -174,33 +174,33 @@ chrome.test.runTests([
   function setOddCookies() {
     removeTestCookies();
     // URL lacking permissions.
-    chrome.cookies.set(
+    chrome.experimental.cookies.set(
         {url: TEST_UNPERMITTED_URL, name: 'abcd', domain: TEST_DOMAIN});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+    chrome.experimental.cookies.get({url: TEST_URL, name: 'abcd'},
         pass(expectNullCookie));
     // Attribute values containing invalid characters are disallowed.
-    chrome.cookies.set({url: TEST_URL, name: 'abcd=efg'});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+    chrome.experimental.cookies.set({url: TEST_URL, name: 'abcd=efg'});
+    chrome.experimental.cookies.get({url: TEST_URL, name: 'abcd'},
         pass(expectNullCookie));
-    chrome.cookies.set(
+    chrome.experimental.cookies.set(
         {url: TEST_URL, name: 'abcd', value: 'HI;LO'});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+    chrome.experimental.cookies.get({url: TEST_URL, name: 'abcd'},
         pass(expectNullCookie));
-    chrome.cookies.set(
+    chrome.experimental.cookies.set(
         {url: TEST_URL, name: 'abcd', domain: 'cookies.com\r'});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+    chrome.experimental.cookies.get({url: TEST_URL, name: 'abcd'},
         pass(expectNullCookie));
-    chrome.cookies.set(
+    chrome.experimental.cookies.set(
         {url: TEST_URL, name: 'abcd', domain: 'somedomain.com'});
-    chrome.cookies.get({url: TEST_URL, name: 'abcd'},
+    chrome.experimental.cookies.get({url: TEST_URL, name: 'abcd'},
         pass(expectNullCookie));
-    chrome.cookies.set({
+    chrome.experimental.cookies.set({
       url: TEST_ODD_URL,
       name: 'abcd',
       domain: TEST_ODD_DOMAIN,
       path: TEST_ODD_PATH
     });
-    chrome.cookies.get({url: TEST_ODD_URL, name: 'abcd'},
+    chrome.experimental.cookies.get({url: TEST_ODD_URL, name: 'abcd'},
         pass(function(cookie) {
           expectValidCookie(cookie);
           chrome.test.assertEq(TEST_ODD_DOMAIN, unescape(cookie.domain));
@@ -209,65 +209,65 @@ chrome.test.runTests([
   },
   function removeCookie() {
     removeTestCookies();
-    chrome.cookies.set(TEST_BASIC_COOKIE);
-    chrome.cookies.get(
+    chrome.experimental.cookies.set(TEST_BASIC_COOKIE);
+    chrome.experimental.cookies.get(
         {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
         pass(expectValidCookie));
     // Removal with any domain-matching URL will do.
-    chrome.cookies.remove(
+    chrome.experimental.cookies.remove(
         {url: TEST_URL4, name: TEST_BASIC_COOKIE.name});
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
         pass(expectNullCookie));
     // Set with an expired date should also remove the cookie.
-    chrome.cookies.set(TEST_BASIC_COOKIE);
-    chrome.cookies.get(
+    chrome.experimental.cookies.set(TEST_BASIC_COOKIE);
+    chrome.experimental.cookies.get(
         {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
         pass(expectValidCookie));
-    chrome.cookies.set(TEST_BASIC_EXPIRED_COOKIE);
-    chrome.cookies.get(
+    chrome.experimental.cookies.set(TEST_BASIC_EXPIRED_COOKIE);
+    chrome.experimental.cookies.get(
         {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
         pass(expectNullCookie));
     // Removal with a disallowed URL shouldn't do anything.
-    chrome.cookies.set(TEST_DOMAIN_COOKIE);
-    chrome.cookies.get(
+    chrome.experimental.cookies.set(TEST_DOMAIN_COOKIE);
+    chrome.experimental.cookies.get(
         {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
         pass(expectValidCookie));
-    chrome.cookies.remove(
+    chrome.experimental.cookies.remove(
         {url: TEST_UNPERMITTED_URL, name: TEST_DOMAIN_COOKIE.name});
-    chrome.cookies.get(
+    chrome.experimental.cookies.get(
         {url: TEST_URL2, name: TEST_DOMAIN_COOKIE.name},
         pass(expectValidCookie));
   },
   function getAllCookies() {
     removeTestCookies();
-    chrome.cookies.getAll({}, pass(function(cookies) {
+    chrome.experimental.cookies.getAll({}, pass(function(cookies) {
       chrome.test.assertEq(0, cookies.length);
     }));
-    chrome.cookies.set(TEST_BASIC_COOKIE);
-    chrome.cookies.set(TEST_SECURE_COOKIE);
-    chrome.cookies.getAll(
+    chrome.experimental.cookies.set(TEST_BASIC_COOKIE);
+    chrome.experimental.cookies.set(TEST_SECURE_COOKIE);
+    chrome.experimental.cookies.getAll(
         {domain: TEST_DOMAIN}, pass(function(cookies) {
       chrome.test.assertEq(2, cookies.length);
       chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
       chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookies[1].name);
     }));
-    chrome.cookies.getAll({
+    chrome.experimental.cookies.getAll({
       name: TEST_BASIC_COOKIE.name
     }, pass(function(cookies) {
       chrome.test.assertEq(1, cookies.length);
       chrome.test.assertEq(TEST_BASIC_COOKIE.name, cookies[0].name);
     }));
-    chrome.cookies.getAll({
+    chrome.experimental.cookies.getAll({
       secure: true
     }, pass(function(cookies) {
       chrome.test.assertEq(1, cookies.length);
       chrome.test.assertEq(TEST_SECURE_COOKIE.name, cookies[0].name);
     }));
-    chrome.cookies.getAll({
+    chrome.experimental.cookies.getAll({
       url: 'invalid url'
     }, fail('Invalid url: "invalid url".'));
-    chrome.cookies.getAll({
+    chrome.experimental.cookies.getAll({
       url: TEST_URL,
     }, pass(function(cookies) {
       chrome.test.assertEq(1, cookies.length);
@@ -276,16 +276,16 @@ chrome.test.runTests([
   },
   function getAllCookieStores() {
     removeTestCookies();
-    chrome.cookies.getAllCookieStores(
+    chrome.experimental.cookies.getAllCookieStores(
         pass(function(cookieStores) {
           chrome.test.assertEq(1, cookieStores.length);
-          chrome.cookies.set(TEST_BASIC_COOKIE);
-          chrome.cookies.get(
+          chrome.experimental.cookies.set(TEST_BASIC_COOKIE);
+          chrome.experimental.cookies.get(
               {url: TEST_URL, name: TEST_BASIC_COOKIE.name},
               pass(function(cookie) {
                 chrome.test.assertEq(cookieStores[0].id, cookie.storeId);
               }));
-          chrome.cookies.getAll(
+          chrome.experimental.cookies.getAll(
               {storeId: cookieStores[0].id},
               pass(function(cookies) {
                 chrome.test.assertEq(1, cookies.length);
