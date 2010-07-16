@@ -1163,7 +1163,7 @@
           'actions': [
             {
               # Generate the InfoPlist.strings file
-              'action_name': 'Generating InfoPlist.strings files',
+              'action_name': 'Generate InfoPlist.strings files',
               'variables': {
                 'tool_path': '<(PRODUCT_DIR)/infoplist_strings_tool',
                 # Unique dir to write to so the [lang].lproj/InfoPlist.strings
