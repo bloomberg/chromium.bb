@@ -2,8 +2,11 @@
   <head>
     <script>
 var childFrame;
+var pages;
+var currentPage;
+var result = {};
 
-function generate() {
+function init() {
   if (!window.layoutTestController) {
     alert("window.layoutTestController not defined.");
     return;
@@ -12,28 +15,41 @@ function generate() {
   layoutTestController.dumpAsText();
   layoutTestController.waitUntilDone();
 
-  var page = window.location.search.substring(1);
-  if (!page) {
-    alert("please specify which page to generate via " +
-          "?<page> ... ie. generator.html?tabs");
+  pages = window.location.search.substring(1).split(",");
+  if (!pages.length) {
+    alert("please specify which pages to generate via " +
+          "?<page> ... ie. generator.html?tabs,bookmarks,cookies,...");
   }
 
   childFrame = document.createElement('iframe');
-  childFrame.src = "../" + page + ".html?regenerate";
   childFrame.style.display = "none";
   document.body.appendChild(childFrame);
+ 
+  next();
 }
 
+function next() {
+  currentPage = pages.shift();
+  childFrame.src = "../" + currentPage + ".html?regenerate";
+}
+
+var count = 0;
 function done() {
-  var preNode = document.createElement('pre');
-  var textNode = document.createTextNode(
-      childFrame.contentWindow.serializePage());
-  preNode.appendChild(textNode);
-  document.getElementsByTagName("body")[0].appendChild(preNode);
-  layoutTestController.notifyDone();
+  result[currentPage] = childFrame.contentWindow.serializePage();
+
+  if (pages.length) {
+    next();
+  } else {
+    var preNode = document.createElement("pre");
+    var textNode = document.createTextNode(
+        "#BEGIN" + JSON.stringify(result) + "#END");
+    preNode.appendChild(textNode);
+    document.getElementsByTagName("body")[0].appendChild(preNode);
+    layoutTestController.notifyDone();
+  }
 }
     </script>
   </head>
-  <body onload="generate();">
+  <body onload="init();">
   </body>
 </html>

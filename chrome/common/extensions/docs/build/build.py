@@ -28,8 +28,8 @@ _api_template_html = _template_dir + "/api_template.html"
 _page_shell_html = _template_dir + "/page_shell.html"
 _generator_html = _build_dir + "/generator.html"
 
-_expected_output_preamble = "<!DOCTYPE html>"
-_expected_output_postamble = "</body></html>"
+_expected_output_preamble = "#BEGIN"
+_expected_output_postamble = "#END"
 
 # HACK! This is required because we can only depend on python 2.4 and
 # the calling environment may not be setup to set the PYTHONPATH
@@ -37,62 +37,72 @@ sys.path.append(os.path.normpath(_base_dir +
                                    "/../../../../third_party"))
 import simplejson as json
 
-def RenderPage(name, test_shell):
+def RenderPages(names, test_shell):
   """
-  Calls test_shell --layout-tests .../generator.html?<name> and writes the
-  result to .../docs/<name>.html
+  Calls test_shell --layout-tests .../generator.html?<names> and writes the
+  results to .../docs/<name>.html
   """
-  if not name:
-    raise Exception("RenderPage called with empty name")
+  if not names:
+    raise Exception("RenderPage called with empty names param")
 
-  generator_url = "file:" + urllib.pathname2url(_generator_html) + "?" + name
-  input_file = _base_dir + "/" + name + ".html"
+  generator_url = "file:" + urllib.pathname2url(_generator_html)
+  generator_url += "?" + ",".join(names)
 
-  # Copy page_shell to destination output and move aside original, if it exists.
-  original = None
-  if (os.path.isfile(input_file)):
-    original = open(input_file, 'rb').read()
-    os.remove(input_file)
+  # Start with a fresh copy of page shell for each file.
+  # Save the current contents so that we can look for changes later.
+  originals = {}
+  for name in names:
+    input_file = _base_dir + "/" + name + ".html"
 
-  shutil.copy(_page_shell_html, input_file)
+    if (os.path.isfile(input_file)):
+      originals[name] = open(input_file, 'rb').read()
+      os.remove(input_file)
+    else:
+      originals[name] = ""
+
+    shutil.copy(_page_shell_html, input_file)
 
   # Run test_shell and capture result
-  p = Popen([test_shell, "--layout-tests", generator_url],
+  p = Popen(
+      [test_shell, "--layout-tests", "--time-out-ms=30000", generator_url],
       stdout=PIPE)
 
-  # The remaining output will be the content of the generated page.
-  result = p.stdout.read()
+  # The remaining output will be the content of the generated pages.
+  output = p.stdout.read()
 
-  content_start = result.find(_expected_output_preamble)
-  content_end = result.find(_expected_output_postamble)
-  if (content_start < 0):
-    if (result.startswith("#TEST_TIMED_OUT")):
-      raise Exception("test_shell returned TEST_TIMED_OUT.\n" +
-                        "Their was probably a problem with generating the " +
-                        "page\n" +
-                        "Try copying template/page_shell.html to:\n" +
-                        input_file +
-                        "\nAnd open it in chrome using the file: scheme.\n" +
-                        "Look from javascript errors via the inspector.")
-    raise Exception("test_shell returned unexpected output: " + result)
-  postamble_length = len(_expected_output_postamble)
-  result = result[content_start:content_end + postamble_length] + "\n"
+  # Parse out just the JSON part.
+  begin = output.find(_expected_output_preamble)
+  end = output.rfind(_expected_output_postamble)
 
-  # Remove the trailing #EOF that test shell appends to the output.
-  result = result.replace('#EOF', '')
+  if (begin < 0 or end < 0):
+    raise Exception ("test_shell returned invalid output:\n\n" + output)
 
-  # Remove page_shell
-  os.remove(input_file)
+  begin += len(_expected_output_preamble)
 
-  # Remove CRs that are appearing from captured test_shell output.
-  result = result.replace('\r', '')
+  try:
+    output_parsed = json.loads(output[begin:end])
+  except ValueError, msg:
+   raise Exception("Could not parse test_shell output as JSON. Error: " + msg +
+                   "\n\nOutput was:\n" + output)
 
-  # Write output
-  open(input_file, 'wb').write(result)
-  if (original and result == original):
-    return None
-  else:
-    return input_file
+  changed_files = []
+  for name in names:
+    result = output_parsed[name].encode("utf8") + '\n'
+
+    # Remove CRs that are appearing from captured test_shell output.
+    result = result.replace('\r', '')
+
+    # Remove page_shell
+    input_file = _base_dir + "/" + name + ".html"
+    os.remove(input_file)
+
+    # Write output
+    open(input_file, 'wb').write(result)
+    if (originals[name] and result != originals[name]):
+      changed_files.append(input_file)
+
+  return changed_files
+
 
 def FindTestShell():
   # This is hacky. It is used to guess the location of the test_shell
@@ -103,23 +113,23 @@ def FindTestShell():
 
   if (sys.platform in ('cygwin', 'win32')):
     home_dir = os.path.normpath(os.getenv("HOMEDRIVE") + os.getenv("HOMEPATH"))
-    search_locations.append(chrome_dir + "/Debug/test_shell.exe")
     search_locations.append(chrome_dir + "/Release/test_shell.exe")
+    search_locations.append(chrome_dir + "/Debug/test_shell.exe")
     search_locations.append(home_dir + "/bin/test_shell/" +
                             "test_shell.exe")
 
   if (sys.platform in ('linux', 'linux2')):
-    search_locations.append(src_dir + "/sconsbuild/Debug/test_shell")
-    search_locations.append(src_dir + "/out/Debug/test_shell")
     search_locations.append(src_dir + "/sconsbuild/Release/test_shell")
     search_locations.append(src_dir + "/out/Release/test_shell")
+    search_locations.append(src_dir + "/sconsbuild/Debug/test_shell")
+    search_locations.append(src_dir + "/out/Debug/test_shell")
     search_locations.append(os.getenv("HOME") + "/bin/test_shell/test_shell")
 
   if (sys.platform == 'darwin'):
     search_locations.append(src_dir +
-        "/xcodebuild/Debug/TestShell.app/Contents/MacOS/TestShell")
-    search_locations.append(src_dir +
         "/xcodebuild/Release/TestShell.app/Contents/MacOS/TestShell")
+    search_locations.append(src_dir +
+        "/xcodebuild/Debug/TestShell.app/Contents/MacOS/TestShell")
     search_locations.append(os.getenv("HOME") + "/bin/test_shell/" +
                             "TestShell.app/Contents/MacOS/TestShell")
 
@@ -127,10 +137,10 @@ def FindTestShell():
     if os.path.isfile(loc):
       return loc
 
-  raise Exception ("Could not find test_shell executable\n" +
-                   "**test_shell may need to be built**\n" +
-                   "Searched: \n" + "\n".join(search_locations) + "\n" +
-                   "To specify a path to test_shell use --test-shell-path")
+  raise Exception("Could not find test_shell executable\n" +
+                  "**test_shell may need to be built**\n" +
+                  "Searched: \n" + "\n".join(search_locations) + "\n" +
+                  "To specify a path to test_shell use --test-shell-path")
 
 def GetAPIModuleNames():
   try:
@@ -178,11 +188,7 @@ def main():
   # All pages to generate
   page_names = static_names | module_names
 
-  modified_files = []
-  for page in page_names:
-    modified_file = RenderPage(page, test_shell)
-    if (modified_file):
-      modified_files.append(modified_file)
+  modified_files = RenderPages(page_names, test_shell)
 
   if (len(modified_files) == 0):
     print "Output files match existing files. No changes made."
