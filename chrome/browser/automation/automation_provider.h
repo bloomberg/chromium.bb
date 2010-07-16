@@ -476,11 +476,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // data structure used in the browser.
   // Args:
   //   profiles/cards: the ListValue of profiles/credit cards to translate.
-  //   json_return: a pointer to the return string in case of error.
+  //   error_message: a pointer to the return string in case of error.
   static std::vector<AutoFillProfile> GetAutoFillProfilesFromList(
-      const ListValue& profiles, std::string* json_return);
+      const ListValue& profiles, std::string* error_message);
   static std::vector<CreditCard> GetCreditCardsFromList(
-      const ListValue& cards, std::string* json_return);
+      const ListValue& cards, std::string* error_message);
 
   // The opposite of the above: translates from the internal data structure
   // for profiles and credit cards to a ListValue of DictionaryValues. The
@@ -496,10 +496,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       GetAutoFillFieldToStringMap();
   static std::map<AutoFillFieldType, std::wstring>
       GetCreditCardFieldToStringMap();
-
-  // Util for creating a JSON error return string (dict with key
-  // 'error' and error string value).  No need to quote input.
-  static std::string JSONErrorString(const std::string& err);
 
   // Generic pattern for pyautolib
   // Uses the JSON interface for input/output.
