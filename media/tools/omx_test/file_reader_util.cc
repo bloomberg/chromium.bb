@@ -19,27 +19,27 @@ namespace media {
 
 //////////////////////////////////////////////////////////////////////////////
 // BasicFileReader
-BasicFileReader::BasicFileReader(const std::string& filename)
-    : filename_(filename),
+BasicFileReader::BasicFileReader(const FilePath& path)
+    : path_(path),
       file_(NULL) {
 }
 
 bool BasicFileReader::Initialize() {
-  file_.Set(file_util::OpenFile(filename_, "rb"));
+  file_.Set(file_util::OpenFile(path_, "rb"));
   if (!file_.get()) {
-    LOG(ERROR) << "unable to open " << filename_;
+    LOG(ERROR) << "unable to open " << path_.value();
   }
   return file_.get() != NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // YuvFileReader
-YuvFileReader::YuvFileReader(const std::string& filename,
+YuvFileReader::YuvFileReader(const FilePath& path,
                              int width,
                              int height,
                              int loop_count,
                              bool enable_csc)
-    : BasicFileReader(filename),
+    : BasicFileReader(path),
       width_(width),
       height_(height),
       loop_count_(loop_count),
@@ -96,9 +96,9 @@ void YuvFileReader::Read(uint8** output, int* size) {
 
 //////////////////////////////////////////////////////////////////////////////
 // BlockFileReader
-BlockFileReader::BlockFileReader(const std::string& filename,
+BlockFileReader::BlockFileReader(const FilePath& path,
                                  int block_size)
-    : BasicFileReader(filename),
+    : BasicFileReader(path),
       block_size_(block_size) {
 }
 
@@ -110,8 +110,8 @@ void BlockFileReader::Read(uint8** output, int* size) {
 
 //////////////////////////////////////////////////////////////////////////////
 // FFmpegFileReader
-FFmpegFileReader::FFmpegFileReader(const std::string& filename)
-    : filename_(filename),
+FFmpegFileReader::FFmpegFileReader(const FilePath& path)
+    : path_(path),
       format_context_(NULL),
       codec_context_(NULL),
       target_stream_(-1),
@@ -124,17 +124,25 @@ FFmpegFileReader::~FFmpegFileReader() {
 }
 
 bool FFmpegFileReader::Initialize() {
-  int result = av_open_input_file(&format_context_, filename_.c_str(),
+  // av_open_input_file wants a char*, which can't work with wide paths.
+  // So we assume ASCII on Windows.  On other platforms we can pass the
+  // path bytes through verbatim.
+#if defined(OS_WIN)
+  std::string string_path = WideToASCII(path_.value());
+#else
+  const std::string& string_path = path_.value();
+#endif
+  int result = av_open_input_file(&format_context_, string_path.c_str(),
                                   NULL, 0, NULL);
   if (result < 0) {
     switch (result) {
       case AVERROR_NOFMT:
         LOG(ERROR) << "Error: File format not supported "
-                  << filename_ << std::endl;
+                   << path_.value() << std::endl;
         break;
       default:
         LOG(ERROR) << "Error: Could not open input for "
-                  << filename_ << std::endl;
+                   << path_.value() << std::endl;
         break;
     }
     return false;
@@ -215,8 +223,8 @@ void FFmpegFileReader::Read(uint8** output, int* size) {
 // H264FileReader
 const int kH264ReadSize = 1024 * 1024;
 
-H264FileReader::H264FileReader(const std::string& filename)
-    : BasicFileReader(filename),
+H264FileReader::H264FileReader(const FilePath& path)
+    : BasicFileReader(path),
       read_buf_(new uint8[kH264ReadSize]),
       current_(0),
       used_(0) {

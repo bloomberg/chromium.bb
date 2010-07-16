@@ -38,10 +38,10 @@ void FileSink::BufferReady(int size, uint8* buffer) {
 
 bool FileSink::Initialize() {
   // Opens the output file for writing.
-  if (!output_filename_.empty()) {
-    output_file_.Set(file_util::OpenFile(output_filename_, "wb"));
+  if (!output_path_.empty()) {
+    output_file_.Set(file_util::OpenFile(output_path_, "wb"));
     if (!output_file_.get()) {
-      LOG(ERROR) << "can't open dump file %s" << output_filename_;
+      LOG(ERROR) << "can't open dump file %s" << output_path_.value();
       return false;
     }
   }

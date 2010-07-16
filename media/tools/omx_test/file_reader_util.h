@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 
@@ -33,7 +34,7 @@ class FileReader {
 
 class BasicFileReader : public FileReader {
  public:
-  explicit BasicFileReader(const std::string& filename);
+  explicit BasicFileReader(const FilePath& path);
   virtual bool Initialize();
   virtual void Read(uint8** output, int* size) = 0;
 
@@ -41,7 +42,7 @@ class BasicFileReader : public FileReader {
   FILE* file() const { return file_.get(); }
 
  private:
-  std::string filename_;
+  FilePath path_;
   ScopedStdioHandle file_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicFileReader);
@@ -55,7 +56,7 @@ class YuvFileReader : public BasicFileReader {
   // NV21.
   // TODO(jiesun): Make color space more generic not a hard coded color
   // space conversion.
-  YuvFileReader(const std::string& filename,
+  YuvFileReader(const FilePath& path,
                 int width,
                 int height,
                 int loop_count,
@@ -74,7 +75,7 @@ class YuvFileReader : public BasicFileReader {
 
 class BlockFileReader : public BasicFileReader {
  public:
-  BlockFileReader(const std::string& filename,
+  BlockFileReader(const FilePath& path,
                   int block_size);
   virtual void Read(uint8** output, int* size);
 
@@ -86,13 +87,13 @@ class BlockFileReader : public BasicFileReader {
 
 class FFmpegFileReader : public FileReader {
  public:
-  explicit FFmpegFileReader(const std::string& filename);
+  explicit FFmpegFileReader(const FilePath& path);
   virtual ~FFmpegFileReader();
   virtual bool Initialize();
   virtual void Read(uint8** output, int* size);
 
  private:
-  std::string filename_;
+  FilePath path_;
   AVFormatContext* format_context_;
   AVCodecContext* codec_context_;
   int target_stream_;
@@ -103,7 +104,7 @@ class FFmpegFileReader : public FileReader {
 
 class H264FileReader : public BasicFileReader {
  public:
-  explicit H264FileReader(const std::string& filename);
+  explicit H264FileReader(const FilePath& path);
   virtual void Read(uint8** output, int* size);
 
  private:

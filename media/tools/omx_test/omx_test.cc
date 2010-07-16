@@ -317,9 +317,10 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   // Read a bunch of parameters.
-  std::string input_filename = GetStringSwitch("input-file");
-  std::string output_filename = GetStringSwitch("output-file");
+  FilePath input_path = cmd_line.GetSwitchValuePath("input-file");
+  FilePath output_path = cmd_line.GetSwitchValuePath("output-file");
   bool encoder = HasSwitch("encoder");
   bool copy = HasSwitch("copy");
   bool enable_csc = HasSwitch("enable-csc");
@@ -360,21 +361,21 @@ int main(int argc, char** argv) {
   FileReader* file_reader;
   if (encoder) {
     file_reader = new YuvFileReader(
-        input_filename.c_str(), av_stream->codec->width,
+        input_path, av_stream->codec->width,
         av_stream->codec->height, loop_count, enable_csc);
   } else if (use_ffmpeg) {
     // Use ffmepg for reading.
-    file_reader = new FFmpegFileReader(input_filename.c_str());
-  } else if (EndsWith(input_filename, ".264", false)) {
-    file_reader = new H264FileReader(input_filename.c_str());
+    file_reader = new FFmpegFileReader(input_path);
+  } else if (input_path.Extension() == FILE_PATH_LITERAL(".264")) {
+    file_reader = new H264FileReader(input_path);
   } else {
     // Creates a reader that reads in blocks of 32KB.
     const int kReadSize = 32768;
-    file_reader = new BlockFileReader(input_filename.c_str(), kReadSize);
+    file_reader = new BlockFileReader(input_path, kReadSize);
   }
 
   // Create a file sink.
-  FileSink* file_sink = new FileSink(output_filename, copy, enable_csc);
+  FileSink* file_sink = new FileSink(output_path, copy, enable_csc);
 
   // Create a test app object and initialize it.
   scoped_refptr<TestApp> test = new TestApp(av_stream, file_sink, file_reader);

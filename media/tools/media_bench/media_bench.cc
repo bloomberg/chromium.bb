@@ -89,6 +89,9 @@ int main(int argc, const char** argv) {
   CommandLine::Init(argc, argv);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
+  // TODO(evanm): GetLooseValues() should return a
+  // CommandLine::StringType, which can be converted to FilePaths
+  // directly.
   std::vector<std::wstring> filenames(cmd_line->GetLooseValues());
   if (filenames.empty()) {
     std::cerr << "Usage: " << argv[0] << " [OPTIONS] FILE [DUMPFILE]\n"
@@ -126,10 +129,11 @@ int main(int argc, const char** argv) {
   }
 
   // Retrieve command line options.
-  std::string in_path(WideToUTF8(filenames[0]));
-  std::string out_path;
+  std::string in_path(WideToASCII(filenames[0]));
+  FilePath out_path;
   if (filenames.size() > 1) {
-    out_path = WideToUTF8(filenames[1]);
+    // See TODO above the declaration of filenames.
+    out_path = FilePath::FromWStringHack(filenames[1]);
   }
   CodecType target_codec = CODEC_TYPE_UNKNOWN;
 
@@ -246,19 +250,19 @@ int main(int argc, const char** argv) {
   FILE *output = NULL;
   if (!out_path.empty()) {
     // TODO(fbarchard): Add pipe:1 for piping to stderr.
-    if (!strncmp(out_path.c_str(), "pipe:", 5) ||
-        !strcmp(out_path.c_str(), "-")) {
+    if (out_path.value().substr(0, 5) == FILE_PATH_LITERAL("pipe:") ||
+        out_path.value() == FILE_PATH_LITERAL("-")) {
       output = stdout;
       log_out = &std::cerr;
 #if defined(OS_WIN)
       _setmode(_fileno(stdout), _O_BINARY);
 #endif
     } else {
-      output = file_util::OpenFile(out_path.c_str(), "wb");
+      output = file_util::OpenFile(out_path, "wb");
     }
     if (!output) {
       std::cerr << "Error: Could not open output "
-                << out_path << std::endl;
+                << out_path.value() << std::endl;
       return 1;
     }
   }

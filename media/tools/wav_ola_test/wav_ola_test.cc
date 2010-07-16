@@ -79,8 +79,8 @@ int main(int argc, const char** argv) {
   }
 
   // Retrieve command line options.
-  std::string in_path(WideToUTF8(filenames[1]));
-  std::string out_path(WideToUTF8(filenames[2]));
+  FilePath in_path(FilePath::FromWStringHack(filenames[1]));
+  FilePath out_path(FilePath::FromWStringHack(filenames[2]));
   double playback_rate = 0.0;
 
   // Determine speed of rerecord.
@@ -88,14 +88,14 @@ int main(int argc, const char** argv) {
     playback_rate = 0.0;
 
   // Open input file.
-  ScopedFILE input(file_util::OpenFile(in_path.c_str(), "rb"));
+  ScopedFILE input(file_util::OpenFile(in_path, "rb"));
   if (!(input.get())) {
     LOG(ERROR) << "could not open input";
     return 1;
   }
 
   // Open output file.
-  ScopedFILE output(file_util::OpenFile(out_path.c_str(), "wb"));
+  ScopedFILE output(file_util::OpenFile(out_path, "wb"));
   if (!(output.get())) {
     LOG(ERROR) << "could not open output";
     return 1;
@@ -125,7 +125,7 @@ int main(int argc, const char** argv) {
   ola.FlushBuffers();
 
   // Print out input format.
-  std::cout << in_path << "\n"
+  std::cout << in_path.value() << "\n"
             << "Channels: " << wav.channels << "\n"
             << "Sample Rate: " << wav.sample_rate << "\n"
             << "Bit Rate: " << wav.bit_rate << "\n"

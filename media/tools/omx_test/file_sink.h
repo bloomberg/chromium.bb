@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 
@@ -18,10 +19,10 @@ namespace media {
 // a file.
 class FileSink {
  public:
-  FileSink(std::string output_filename,
+  FileSink(const FilePath& output_path,
            bool simulate_copy,
            bool enable_csc)
-      : output_filename_(output_filename),
+      : output_path_(output_path),
         simulate_copy_(simulate_copy),
         enable_csc_(enable_csc),
         width_(0),
@@ -42,7 +43,7 @@ class FileSink {
   void Write(uint8* buffer, int size);
 
  private:
-  std::string output_filename_;
+  FilePath output_path_;
   bool simulate_copy_;
   bool enable_csc_;
   ScopedStdioHandle output_file_;

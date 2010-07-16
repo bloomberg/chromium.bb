@@ -155,13 +155,20 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
           break;
         }
 
+        // TODO(evanm): use the net:: functions to convert file:// URLs to
+        // on-disk file paths.  But it probably doesn't actually matter in
+        // this test.
+
 #if defined(OS_WIN)
         filename = filename.substr(8);  // remove "file:///"
+        // Assume an ASCII path on Windows.
+        FilePath path = FilePath(ASCIIToWide(filename));
 #else
         filename = filename.substr(7);  // remove "file://"
+        FilePath path = FilePath(filename);
 #endif
 
-        test_file_ = file_util::OpenFile(filename, "r");
+        test_file_ = file_util::OpenFile(path, "r");
         if (!test_file_) {
           SetError("Could not open source file");
         }

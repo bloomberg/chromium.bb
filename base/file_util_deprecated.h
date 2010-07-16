@@ -15,16 +15,16 @@
 
 #include "build/build_config.h"
 
+// We've successfully deprecated all of these functions on non-Windows
+// platforms.
+
+#if defined(OS_WIN)
 
 namespace file_util {
 
 // Use the FilePath versions instead.
 FILE* OpenFile(const std::string& filename, const char* mode);
 FILE* OpenFile(const std::wstring& filename, const char* mode);
-
-// We've successfully deprecated most of these functions on non-Windows
-// platforms.
-#if defined(OS_WIN)
 
 // Use FilePath::DirName instead.
 void UpOneDirectory(std::wstring* dir);
@@ -64,8 +64,8 @@ bool ReadFileToString(const std::wstring& path, std::string* contents);
 int ReadFile(const std::wstring& filename, char* data, int size);
 int WriteFile(const std::wstring& filename, const char* data, int size);
 
-#endif  // OS_WIN
-
 }
+
+#endif  // OS_WIN
 
 #endif  // BASE_FILE_UTIL_DEPRECATED_H_
