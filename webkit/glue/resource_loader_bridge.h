@@ -184,6 +184,9 @@ class ResourceLoaderBridge {
     // is no associated connection, contains 0.
     uint32 connection_id;
 
+    // Determines whether physical connection reused.
+    bool connection_reused;
+
     // Detailed timing information used by the WebTiming, HAR and Developer
     // Tools.
     LoadTimingInfo load_timing;

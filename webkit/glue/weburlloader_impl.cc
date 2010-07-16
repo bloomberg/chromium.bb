@@ -173,13 +173,15 @@ void PopulateURLResponse(
   response->setSecurityInfo(info.security_info);
   response->setAppCacheID(info.appcache_id);
   response->setAppCacheManifestURL(info.appcache_manifest_url);
-  response->setWasCached(info.request_time > info.response_time);
+  response->setWasCached(!info.load_timing.base_time.is_null() &&
+      info.response_time < info.load_timing.base_time);
   response->setWasFetchedViaSPDY(info.was_fetched_via_spdy);
   response->setWasNpnNegotiated(info.was_npn_negotiated);
   response->setWasAlternateProtocolAvailable(
       info.was_alternate_protocol_available);
   response->setWasFetchedViaProxy(info.was_fetched_via_proxy);
   response->setConnectionID(info.connection_id);
+  response->setConnectionReused(info.connection_reused);
 
   WebURLLoadTiming timing;
   timing.initialize();

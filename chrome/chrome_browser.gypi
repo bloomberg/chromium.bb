@@ -1848,6 +1848,8 @@
         'browser/net/connection_tester.h',
         'browser/net/gaia/token_service.cc',
         'browser/net/gaia/token_service.h',
+        'browser/net/load_timing_observer.cc',
+        'browser/net/load_timing_observer.h',
         'browser/net/metadata_url_request.cc',
         'browser/net/metadata_url_request.h',
         'browser/net/passive_log_collector.cc',

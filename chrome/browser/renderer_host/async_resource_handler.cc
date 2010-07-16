@@ -4,13 +4,14 @@
 
 #include "chrome/browser/renderer_host/async_resource_handler.h"
 
+#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/browser/net/passive_log_collector.h"
+#include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/render_messages.h"
@@ -34,22 +35,6 @@ const int kInitialReadBufSize = 32768;
 
 // The maximum size of the shared memory buffer. (512 kilobytes).
 const int kMaxReadBufSize = 524288;
-
-// We know that this conversion is not solid and suffers from world clock
-// changes, but it should be good enough for the load timing info.
-static Time TimeTicksToTime(const TimeTicks& time_ticks) {
-  static int64 tick_to_time_offset;
-  static bool tick_to_time_offset_available = false;
-  if (!tick_to_time_offset_available) {
-    int64 cur_time = (Time::Now() - Time()).InMicroseconds();
-    int64 cur_time_ticks = (TimeTicks::Now() - TimeTicks()).InMicroseconds();
-    // If we add this number to a time tick value, it gives the timestamp.
-    tick_to_time_offset = cur_time - cur_time_ticks;
-    tick_to_time_offset_available = true;
-  }
-  return Time::FromInternalValue(time_ticks.ToInternalValue() +
-                                 tick_to_time_offset);
-}
 
 }  // namespace
 
@@ -108,135 +93,22 @@ AsyncResourceHandler::~AsyncResourceHandler() {
 
 void AsyncResourceHandler::PopulateTimingInfo(URLRequest* request,
                                               ResourceResponse* response) {
-  uint32 source_id = request->net_log().source().id;
+  if (!(request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING))
+    return;
+
   ChromeNetLog* chrome_net_log = static_cast<ChromeNetLog*>(
       request->net_log().net_log());
-
-  PassiveLogCollector* collector = chrome_net_log->passive_collector();
-  PassiveLogCollector::SourceTracker* url_tracker =
-      static_cast<PassiveLogCollector::SourceTracker*>(collector->
-          GetTrackerForSourceType(net::NetLog::SOURCE_URL_REQUEST));
-
-  PassiveLogCollector::SourceInfo* url_request =
-      url_tracker->GetSourceInfo(source_id);
-
-  if (!url_request)
+  if (chrome_net_log == NULL)
     return;
 
-  ResourceResponseHead& response_head = response->response_head;
-  webkit_glue::ResourceLoaderBridge::LoadTimingInfo& timing =
-      response_head.load_timing;
-
-  uint32 connect_job_id = net::NetLog::Source::kInvalidId;
-
-  base::TimeTicks base_time;
-
-  for (PassiveLogCollector::EntryList::const_iterator it =
-           url_request->entries.begin();
-       it != url_request->entries.end(); ++it) {
-    const PassiveLogCollector::Entry& entry = *it;
-
-    bool is_begin = entry.phase == net::NetLog::PHASE_BEGIN;
-    bool is_end = entry.phase == net::NetLog::PHASE_END;
-
-    switch (entry.type) {
-      case net::NetLog::TYPE_URL_REQUEST_START_JOB:
-        if (is_begin) {
-          // Reset state so that we captured last redirect only.
-          timing.base_time = TimeTicksToTime(entry.time);
-          base_time = entry.time;
-          connect_job_id = net::NetLog::Source::kInvalidId;
-        }
-        break;
-      case net::NetLog::TYPE_PROXY_SERVICE:
-        if (is_begin) {
-          timing.proxy_start = static_cast<int32>(
-              (entry.time - base_time).InMillisecondsRoundedUp());
-        } else if (is_end) {
-          timing.proxy_end = static_cast<int32>(
-              (entry.time - base_time).InMillisecondsRoundedUp());
-        }
-        break;
-      case net::NetLog::TYPE_SOCKET_POOL:
-        if (is_begin) {
-          timing.connect_start = static_cast<int32>(
-              (entry.time - base_time).InMillisecondsRoundedUp());
-        } else if (is_end &&
-                       connect_job_id != net::NetLog::Source::kInvalidId) {
-          timing.connect_end = static_cast<int32>(
-              (entry.time - base_time).InMillisecondsRoundedUp());
-        }
-        break;
-      case net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB:
-        connect_job_id = static_cast<net::NetLogSourceParameter*>(
-            entry.params.get())->value().id;
-        break;
-      case net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET:
-        {
-          uint32 log_id = static_cast<net::NetLogSourceParameter*>(
-              entry.params.get())->value().id;
-          response->response_head.connection_id =
-              log_id != net::NetLog::Source::kInvalidId ? log_id : 0;
-        }
-        break;
-      case net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST:
-      case net::NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST:
-        if (is_begin) {
-          timing.send_start = static_cast<int32>(
-              (entry.time - base_time).InMillisecondsRoundedUp());
-        } else if (is_end) {
-          timing.send_end = static_cast<int32>(
-              (entry.time - base_time).InMillisecondsRoundedUp());
-        }
-        break;
-      case net::NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS:
-      case net::NetLog::TYPE_SPDY_TRANSACTION_READ_HEADERS:
-        if (is_begin) {
-          timing.receive_headers_start =  static_cast<int32>(
-              (entry.time - base_time).InMillisecondsRoundedUp());
-        } else if (is_end) {
-          timing.receive_headers_end =  static_cast<int32>(
-              (entry.time - base_time).InMillisecondsRoundedUp());
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  // For DNS time, get the ID of the "connect job" from the
-  // BOUND_TO_CONNECT_JOB entry, in its source info look at the
-  // HOST_RESOLVER_IMPL times.
-  if (connect_job_id == net::NetLog::Source::kInvalidId) {
-    // Clean up connection time to match contract.
-    timing.connect_start = -1;
-    timing.connect_end = -1;
-    return;
-  }
-
-  PassiveLogCollector::SourceTracker* connect_job_tracker =
-      static_cast<PassiveLogCollector::SourceTracker*>(
-          collector->GetTrackerForSourceType(net::NetLog::SOURCE_CONNECT_JOB));
-  PassiveLogCollector::SourceInfo* connect_job =
-      connect_job_tracker->GetSourceInfo(connect_job_id);
-  if (!connect_job)
-    return;
-
-  for (PassiveLogCollector::EntryList::const_iterator it =
-           connect_job->entries.begin();
-       it != connect_job->entries.end(); ++it) {
-    const PassiveLogCollector::Entry& entry = *it;
-    if (entry.phase == net::NetLog::PHASE_BEGIN &&
-        entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL) {
-      timing.dns_start = static_cast<int32>(
-          (entry.time - base_time).InMillisecondsRoundedUp());
-    } else if (entry.phase == net::NetLog::PHASE_END &&
-          entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL) {
-      timing.dns_end = static_cast<int32>(
-          (entry.time - base_time).InMillisecondsRoundedUp());
-      // Connect time already includes dns time, subtract it here.
-      break;
-    }
+  uint32 source_id = request->net_log().source().id;
+  LoadTimingObserver* observer = chrome_net_log->load_timing_observer();
+  LoadTimingObserver::URLRequestRecord* record =
+      observer->GetURLRequestRecord(source_id);
+  if (record) {
+    response->response_head.connection_id = record->socket_log_id;
+    response->response_head.connection_reused = record->socket_reused;
+    response->response_head.load_timing = record->timing;
   }
 }
 
@@ -255,9 +127,7 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
   *defer = true;
   URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(process_id_, request_id));
-  // TODO(pfeldman): enable once migrated to LoadTimingObserver.
-  if (false && request && (request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING))
-    PopulateTimingInfo(request, response);
+  PopulateTimingInfo(request, response);
   return receiver_->Send(new ViewMsg_Resource_ReceivedRedirect(
       routing_id_, request_id, new_url, response->response_head));
 }
@@ -272,9 +142,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(process_id_, request_id));
 
-  // TODO(pfeldman): enable once migrated to LoadTimingObserver.
-  if (false && request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING)
-    PopulateTimingInfo(request, response);
+  PopulateTimingInfo(request, response);
 
   ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
   if (info->resource_type() == ResourceType::MAIN_FRAME) {

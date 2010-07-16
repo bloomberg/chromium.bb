@@ -45,6 +45,7 @@ ResourceLoaderBridge::ResponseInfo::ResponseInfo() {
   was_fetched_via_spdy = false;
   was_npn_negotiated = false;
   connection_id = 0;
+  connection_reused = false;
   was_alternate_protocol_available = false;
   was_fetched_via_proxy = false;
 }

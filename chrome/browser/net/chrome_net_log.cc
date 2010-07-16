@@ -9,18 +9,22 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/net/passive_log_collector.h"
 
 ChromeNetLog::ChromeNetLog()
     : next_id_(1),
-      passive_collector_(new PassiveLogCollector) {
+      passive_collector_(new PassiveLogCollector),
+      load_timing_observer_(new LoadTimingObserver) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   AddObserver(passive_collector_.get());
+  AddObserver(load_timing_observer_.get());
 }
 
 ChromeNetLog::~ChromeNetLog() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   RemoveObserver(passive_collector_.get());
+  RemoveObserver(load_timing_observer_.get());
 }
 
 void ChromeNetLog::AddEntry(EventType type,
@@ -55,4 +59,3 @@ void ChromeNetLog::RemoveObserver(Observer* observer) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   observers_.RemoveObserver(observer);
 }
-

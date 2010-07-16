@@ -241,14 +241,6 @@ void PassiveLogCollector::SourceTracker::AppendAllEntries(
   }
 }
 
-PassiveLogCollector::SourceInfo*
-PassiveLogCollector::SourceTracker::GetSourceInfo(uint32 source_id) {
-  SourceIDToInfoMap::iterator it = sources_.find(source_id);
-  if (it != sources_.end())
-    return &(it->second);
-  return NULL;
-}
-
 void PassiveLogCollector::SourceTracker::AddToDeletionQueue(
     uint32 source_id) {
   DCHECK(sources_.find(source_id) != sources_.end());

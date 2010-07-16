@@ -1489,6 +1489,7 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     WriteParam(m, p.appcache_id);
     WriteParam(m, p.appcache_manifest_url);
     WriteParam(m, p.connection_id);
+    WriteParam(m, p.connection_reused);
     WriteParam(m, p.load_timing);
     WriteParam(m, p.was_fetched_via_spdy);
     WriteParam(m, p.was_npn_negotiated);
@@ -1507,6 +1508,7 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
       ReadParam(m, iter, &r->appcache_id) &&
       ReadParam(m, iter, &r->appcache_manifest_url) &&
       ReadParam(m, iter, &r->connection_id) &&
+      ReadParam(m, iter, &r->connection_reused) &&
       ReadParam(m, iter, &r->load_timing) &&
       ReadParam(m, iter, &r->was_fetched_via_spdy) &&
       ReadParam(m, iter, &r->was_npn_negotiated) &&
@@ -1534,6 +1536,8 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     LogParam(p.appcache_manifest_url, l);
     l->append(L", ");
     LogParam(p.connection_id, l);
+    l->append(L", ");
+    LogParam(p.connection_reused, l);
     l->append(L", ");
     LogParam(p.load_timing, l);
     l->append(L", ");
