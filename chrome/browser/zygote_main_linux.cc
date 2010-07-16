@@ -21,7 +21,6 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
-#include "base/file_util.h"
 #include "base/global_descriptors_posix.h"
 #include "base/hash_tables.h"
 #include "base/linux_util.h"
@@ -35,7 +34,6 @@
 
 #include "chrome/browser/zygote_host_linux.h"
 #include "chrome/common/chrome_descriptors.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/process_watcher.h"
@@ -48,8 +46,6 @@
 #include "sandbox/linux/seccomp/sandbox.h"
 
 #include "unicode/timezone.h"
-
-#include "webkit/glue/plugins/plugin_lib.h"
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX)
 // The seccomp sandbox is enabled on all ia32 and x86-64 processor as long as
@@ -550,16 +546,6 @@ static void PreSandboxInit() {
   FilePath module_path;
   if (PathService::Get(base::DIR_MODULE, &module_path))
     media::InitializeMediaLibrary(module_path);
-
-  // Load the PDF plugin before the sandbox is turned on.
-  FilePath pdf;
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
-      file_util::PathExists(pdf)) {
-    static scoped_refptr<NPAPI::PluginLib> pdf_lib =
-        NPAPI::PluginLib::CreatePluginLib(pdf);
-    bool rv = pdf_lib && pdf_lib->EnsureAlwaysLoaded();
-    DCHECK(rv) << "Couldn't load PDF plugin";
-  }
 }
 
 #if !defined(CHROMIUM_SELINUX)

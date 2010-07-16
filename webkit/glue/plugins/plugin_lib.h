@@ -78,9 +78,6 @@ class PluginLib : public base::RefCounted<PluginLib> {
   // some plugins crash if unloaded).
   void PreventLibraryUnload();
 
-  // Loads the library now and ensures it's never unloaded.
-  bool EnsureAlwaysLoaded();
-
   // protected for testability.
  protected:
   friend class base::RefCounted<PluginLib>;
@@ -111,7 +108,6 @@ class PluginLib : public base::RefCounted<PluginLib> {
   NPSavedData *saved_data_;  // Persisted plugin info for NPAPI.
   int instance_count_;  // Count of plugins in use.
   bool skip_unload_;  // True if library_ should not be unloaded.
-  bool always_loaded_;  // True if should always keep this loaded.
 
   // Function pointers to entry points into the plugin.
   PluginEntryPoints entry_points_;

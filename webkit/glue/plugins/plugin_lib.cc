@@ -71,8 +71,7 @@ PluginLib::PluginLib(const WebPluginInfo& info,
       initialized_(false),
       saved_data_(0),
       instance_count_(0),
-      skip_unload_(false),
-      always_loaded_(false) {
+      skip_unload_(false) {
   StatsCounter(kPluginLibrariesLoadedCounter).Increment();
   memset(static_cast<void*>(&plugin_funcs_), 0, sizeof(plugin_funcs_));
   g_loaded_libs->push_back(this);
@@ -137,11 +136,6 @@ void PluginLib::NP_Shutdown(void) {
 
 void PluginLib::PreventLibraryUnload() {
   skip_unload_ = true;
-}
-
-bool PluginLib::EnsureAlwaysLoaded() {
-  always_loaded_ = true;
-  return Load();
 }
 
 PluginInstance* PluginLib::CreateInstance(const std::string& mime_type) {
@@ -264,9 +258,6 @@ class FreePluginLibraryTask : public Task {
 };
 
 void PluginLib::Unload() {
-  if (always_loaded_)
-    return;
-
   if (!internal_ && library_) {
     // In case of single process mode, a plugin can delete itself
     // by executing a script. So delay the unloading of the library
