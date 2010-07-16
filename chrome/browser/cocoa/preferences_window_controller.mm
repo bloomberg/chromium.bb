@@ -70,9 +70,8 @@ static const double kBannerGradientColorBottom[3] =
     {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
 static const double kBannerStrokeColor = 135.0 / 255.0;
 
-std::string GetNewTabUIURLString() {
-  return URLFixerUpper::FixupURL(chrome::kChromeUINewTabURL,
-      std::string()).possibly_invalid_spec();
+bool IsNewTabUIURLString(const GURL& url) {
+  return url == GURL(chrome::kChromeUINewTabURL);
 }
 
 // Helper that sizes two buttons to fit in a row keeping their spacing, returns
@@ -399,7 +398,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
         page_(page) { }
 
   BOOL IsVisible() {
-    return DetermineVisibility() ? YES : NO;
+    return DetermineVisibility();
   }
 
  protected:
@@ -816,9 +815,13 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     paths = [paths setByAddingObject:@"homepageURL"];
   } else if ([key isEqualToString:@"enableRestoreButtons"]) {
     paths = [paths setByAddingObject:@"restoreOnStartupIndex"];
-  } else if ([key isEqualToString:@"isHomepageManaged"]) {
+  } else if ([key isEqualToString:@"isHomepageChoiceEnabled"]) {
     paths = [paths setByAddingObject:@"newTabPageIsHomePageIndex"];
     paths = [paths setByAddingObject:@"homepageURL"];
+  } else if ([key isEqualToString:@"newTabPageIsHomePageIndex"]) {
+    paths = [paths setByAddingObject:@"homepageURL"];
+  } else if ([key isEqualToString:@"hompageURL"]) {
+    paths = [paths setByAddingObject:@"newTabPageIsHomePageIndex"];
   } else if ([key isEqualToString:@"isDefaultBrowser"]) {
     paths = [paths setByAddingObject:@"defaultBrowser"];
   } else if ([key isEqualToString:@"defaultBrowserTextColor"]) {
@@ -849,14 +852,15 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 // the homepage to an empty url would automatically reset the prefs back to
 // using the NTP, so we'd be never be able to change it.
 - (void)setHomepage:(const GURL&)homepage {
-  if (!homepage_.IsManaged()) {
-    if (!homepage.is_valid() || homepage.spec() == GetNewTabUIURLString()) {
-      newTabPageIsHomePage_.SetValue(true);
-      if (!homepage.has_host())
-        homepage_.SetValue(std::string());
-    } else {
-      homepage_.SetValue(homepage.spec());
-    }
+  if (IsNewTabUIURLString(homepage)) {
+    newTabPageIsHomePage_.SetValueIfNotManaged(true);
+    homepage_.SetValueIfNotManaged(std::string());
+  } else if (!homepage.is_valid()) {
+    newTabPageIsHomePage_.SetValueIfNotManaged(true);
+    if (!homepage.has_host())
+      homepage_.SetValueIfNotManaged(std::string());
+  } else {
+    homepage_.SetValueIfNotManaged(homepage.spec());
   }
 }
 
@@ -997,11 +1001,52 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 
 enum { kHomepageNewTabPage, kHomepageURL };
 
+// Here's a table describing the desired characteristics of the homepage choice
+// radio value, it's enabled state and the URL field enabled state. They depend
+// on the values of the managed bits for homepage (m_hp) and
+// homepageIsNewTabPage (m_ntp) preferences, as well as the value of the
+// homepageIsNewTabPage preference (ntp) and whether the homepage preference
+// is equal to the new tab page URL (hpisntp).
+//
+// m_hp m_ntp ntp hpisntp | choice value | choice enabled | URL field enabled
+// --------------------------------------------------------------------------
+// 0    0     0   0       | homepage     | 1              | 1
+// 0    0     0   1       | new tab page | 1              | 0
+// 0    0     1   0       | new tab page | 1              | 0
+// 0    0     1   1       | new tab page | 1              | 0
+// 0    1     0   0       | homepage     | 0              | 1
+// 0    1     0   1       | homepage     | 0              | 1
+// 0    1     1   0       | new tab page | 0              | 0
+// 0    1     1   1       | new tab page | 0              | 0
+// 1    0     0   0       | homepage     | 1              | 0
+// 1    0     0   1       | new tab page | 0              | 0
+// 1    0     1   0       | new tab page | 1              | 0
+// 1    0     1   1       | new tab page | 0              | 0
+// 1    1     0   0       | homepage     | 0              | 0
+// 1    1     0   1       | new tab page | 0              | 0
+// 1    1     1   0       | new tab page | 0              | 0
+// 1    1     1   1       | new tab page | 0              | 0
+//
+// thus, we have:
+//
+//    choice value is new tab page === ntp || (hpisntp && (m_hp || !m_ntp))
+//    choice enabled === !m_ntp && !(m_hp && hpisntp)
+//    URL field enabled === !ntp && !mhp && !(hpisntp && !m_ntp)
+//
+// which also make sense if you think about them.
+
+// Checks whether the homepage URL refers to the new tab page.
+- (BOOL)isHomepageNewTabUIURL {
+  return IsNewTabUIURLString(GURL(homepage_.GetValue().c_str()));
+}
+
 // Returns the index of the selected cell in the "home page" marix based on
 // the "new tab is home page" pref. Sadly, the ordering is reversed from the
 // pref value.
 - (NSInteger)newTabPageIsHomePageIndex {
-  return newTabPageIsHomePage_.GetValue() ?
+  return newTabPageIsHomePage_.GetValue() ||
+      ([self isHomepageNewTabUIURL] &&
+          (homepage_.IsManaged() || !newTabPageIsHomePage_.IsManaged())) ?
       kHomepageNewTabPage : kHomepageURL;
 }
 
@@ -1013,27 +1058,27 @@ enum { kHomepageNewTabPage, kHomepageURL };
     [self recordUserAction:UserMetricsAction("Options_Homepage_UseNewTab")];
   else
     [self recordUserAction:UserMetricsAction("Options_Homepage_UseURL")];
-  if (!newTabPageIsHomePage_.IsManaged())
-    newTabPageIsHomePage_.SetValue(useNewTabPage);
+  newTabPageIsHomePage_.SetValueIfNotManaged(useNewTabPage);
 }
 
-// Check whether the homepage settings are enabled, i.e. whether the
-// corresponding properties are not controlled by policy.
-- (BOOL)isHomepageManaged {
-  return newTabPageIsHomePage_.IsManaged() || homepage_.IsManaged();
+// Check whether the new tab and URL homepage radios should be enabled, i.e. if
+// the corresponding preference is not managed through configuration policy.
+- (BOOL)isHomepageChoiceEnabled {
+  return !newTabPageIsHomePage_.IsManaged() &&
+      !(homepage_.IsManaged() && [self isHomepageNewTabUIURL]);
 }
 
 // Returns whether or not the homepage URL text field should be enabled
 // based on if the new tab page is the home page.
 - (BOOL)isHomepageURLEnabled {
-  return newTabPageIsHomePage_.GetValue() || [self isHomepageManaged] ?
-         NO : YES;
+  return !newTabPageIsHomePage_.GetValue() && !homepage_.IsManaged() &&
+      !([self isHomepageNewTabUIURL] && !newTabPageIsHomePage_.IsManaged());
 }
 
 // Returns the homepage URL.
 - (NSString*)homepageURL {
   NSString* value = base::SysUTF8ToNSString(homepage_.GetValue());
-  return value;
+  return [self isHomepageNewTabUIURL] ? nil : value;
 }
 
 // Sets the homepage URL to |urlString| with some fixing up.

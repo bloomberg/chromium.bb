@@ -3570,19 +3570,15 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: isHomepageManaged</string>
+						<string key="label">enabled: isHomepageChoiceEnabled</string>
 						<reference key="source" ref="743261621"/>
 						<reference key="destination" ref="1001"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="743261621"/>
 							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: isHomepageManaged</string>
+							<string key="NSLabel">enabled: isHomepageChoiceEnabled</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">isHomepageManaged</string>
-							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValueTransformerName</string>
-								<string key="NS.object.0">NSNegateBoolean</string>
-							</object>
+							<string key="NSKeyPath">isHomepageChoiceEnabled</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
@@ -3814,15 +3810,15 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.isPasswordManagerEnabled</string>
+						<string key="label">enabled: isPasswordManagerEnabled</string>
 						<reference key="source" ref="667220499"/>
-						<reference key="destination" ref="495015235"/>
+						<reference key="destination" ref="1001"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="667220499"/>
-							<reference key="NSDestination" ref="495015235"/>
-							<string key="NSLabel">enabled: selection.isPasswordManagerEnabled</string>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: isPasswordManagerEnabled</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.isPasswordManagerEnabled</string>
+							<string key="NSKeyPath">isPasswordManagerEnabled</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
