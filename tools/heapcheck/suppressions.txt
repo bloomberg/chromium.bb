@@ -912,3 +912,21 @@
    fun:DownloadManager::OpenFilesBasedOnExtension
    fun:DownloadManagerTest_StartDownload_Test::TestBody
 }
+{
+   bug_49310_a
+   Heapcheck:Leak
+   ...
+   fun:TemplateURLPrepopulateData::MakePrepopulatedTemplateURL
+   fun:TemplateURLPrepopulateData::GetPrepopulatedTemplatefromPrefs
+   fun:TemplateURLPrepopulateData::GetPrepopulatedEngines
+   fun:TemplateURLPrepopulateDataTest_ProvidersFromPrefs_Test::TestBody
+}
+{
+   bug_49310_b
+   Heapcheck:Leak
+   ...
+   fun:TemplateURLRef::ParseHostAndSearchTermKey
+   fun:TemplateURLRef::ParseIfNecessary
+   fun:TemplateURLRef::GetHost
+   fun:TemplateURLPrepopulateDataTest_ProvidersFromPrefs_Test::TestBody
+}
