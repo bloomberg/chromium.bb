@@ -10,6 +10,10 @@
 #include "third_party/ppapi/c/ppb_url_response_info.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
+namespace WebKit {
+class WebURLResponse;
+}
+
 namespace pepper {
 
 class URLResponseInfo : public Resource {
@@ -26,6 +30,16 @@ class URLResponseInfo : public Resource {
 
   // PPB_URLResponseInfo implementation.
   PP_Var GetProperty(PP_URLResponseProperty property);
+
+  bool Initialize(const WebKit::WebURLResponse& response);
+
+  FileRef* body() { return body_; }
+
+ private:
+  std::string url_;
+  std::string headers_;
+  int32_t status_code_;
+  scoped_refptr<FileRef> body_;
 };
 
 }  // namespace pepper
