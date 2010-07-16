@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/history/download_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -1,42 +1,6 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Objects that handle file operations for downloads, on the download thread.
-//
-// The DownloadFileManager owns a set of DownloadFile objects, each of which
-// represent one in progress download and performs the disk IO for that
-// download. The DownloadFileManager itself is a singleton object owned by the
-// ResourceDispatcherHost.
-//
-// The DownloadFileManager uses the file_thread for performing file write
-// operations, in order to avoid disk activity on either the IO (network) thread
-// and the UI thread. It coordinates the notifications from the network and UI.
-//
-// A typical download operation involves multiple threads:
-//
-// Updating an in progress download
-// io_thread
-//      |----> data ---->|
-//                     file_thread (writes to disk)
-//                              |----> stats ---->|
-//                                              ui_thread (feedback for user and
-//                                                         updates to history)
-//
-// Cancel operations perform the inverse order when triggered by a user action:
-// ui_thread (user click)
-//    |----> cancel command ---->|
-//                          file_thread (close file)
-//                                 |----> cancel command ---->|
-//                                                    io_thread (stops net IO
-//                                                               for download)
-//
-// The DownloadFileManager tracks download requests, mapping from a download
-// ID (unique integer created in the IO thread) to the DownloadManager for the
-// tab (profile) where the download was initiated. In the event of a tab closure
-// during a download, the DownloadFileManager will continue to route data to the
-// appropriate DownloadManager. In progress downloads are cancelled for a
-// DownloadManager that exits (such as when closing a profile).
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
@@ -49,48 +13,11 @@
 #include "base/file_path.h"
 #include "base/hash_tables.h"
 #include "base/linked_ptr.h"
-#include "base/lock.h"
-#include "base/ref_counted.h"
-#include "base/timer.h"
+#include "chrome/browser/download/download_types.h"
 #include "chrome/browser/power_save_blocker.h"
-#include "gfx/native_widget_types.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/file_stream.h"
 
-namespace net {
-class IOBuffer;
-}
 struct DownloadCreateInfo;
-class DownloadManager;
-class ResourceDispatcherHost;
-class URLRequestContextGetter;
-
-// DownloadBuffer --------------------------------------------------------------
-
-// This container is created and populated on the io_thread, and passed to the
-// file_thread for writing. In order to avoid flooding the file_thread with too
-// many small write messages, each write is appended to the DownloadBuffer while
-// waiting for the task to run on the file_thread. Access to the write buffers
-// is synchronized via the lock. Each entry in 'contents' represents one data
-// buffer and its size in bytes.
-
-struct DownloadBuffer {
-  Lock lock;
-  typedef std::pair<net::IOBuffer*, int> Contents;
-  std::vector<Contents> contents;
-};
-
-// DownloadSaveInfo ------------------------------------------------------------
-
-// Holds the information about how to save a download file.
-struct DownloadSaveInfo {
-  FilePath file_path;
-  linked_ptr<net::FileStream> file_stream;
-
-  DownloadSaveInfo() { }
-};
-
-// DownloadFile ----------------------------------------------------------------
 
 // These objects live exclusively on the download thread and handle the writing
 // operations for one download. These objects live only for the duration that
@@ -173,130 +100,6 @@ class DownloadFile {
   DownloadSaveInfo save_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFile);
-};
-
-
-// DownloadFileManager ---------------------------------------------------------
-
-// Manages all in progress downloads.
-class DownloadFileManager
-    : public base::RefCountedThreadSafe<DownloadFileManager> {
- public:
-  explicit DownloadFileManager(ResourceDispatcherHost* rdh);
-
-  // Called on shutdown on the UI thread.
-  void Shutdown();
-
-  // Called on the IO thread
-  int GetNextId();
-
-  // Handlers for notifications sent from the IO thread and run on the
-  // download thread.
-  void StartDownload(DownloadCreateInfo* info);
-  void UpdateDownload(int id, DownloadBuffer* buffer);
-  void CancelDownload(int id);
-  void DownloadFinished(int id, DownloadBuffer* buffer);
-
-  // Download the URL. Called on the UI thread and forwarded to the
-  // ResourceDispatcherHost on the IO thread.
-  void DownloadUrl(const GURL& url,
-                   const GURL& referrer,
-                   const std::string& referrer_charset,
-                   const DownloadSaveInfo& save_info,
-                   int render_process_host_id,
-                   int render_view_id,
-                   URLRequestContextGetter* request_context_getter);
-
-  // Called on the UI thread to remove a download item or manager.
-  void RemoveDownloadManager(DownloadManager* manager);
-  void RemoveDownload(int id, DownloadManager* manager);
-
-#if !defined(OS_MACOSX)
-  // The open and show methods run on the file thread, which does not work on
-  // Mac OS X (which uses the UI thread for opens).
-
-  // Handler for shell operations sent from the UI to the download thread.
-  void OnShowDownloadInShell(const FilePath& full_path);
-
-  // Handler to open or execute a downloaded file.
-  void OnOpenDownloadInShell(const FilePath& full_path,
-                             const GURL& url,
-                             gfx::NativeView parent_window);
-#endif
-
-  // The download manager has provided a final name for a download. Sent from
-  // the UI thread and run on the download thread.
-  void OnFinalDownloadName(int id, const FilePath& full_path,
-                           DownloadManager* download_manager);
-
- private:
-  friend class base::RefCountedThreadSafe<DownloadFileManager>;
-
-  ~DownloadFileManager();
-
-  // Timer helpers for updating the UI about the current progress of a download.
-  void StartUpdateTimer();
-  void StopUpdateTimer();
-  void UpdateInProgressDownloads();
-
-  // Clean up helper that runs on the download thread.
-  void OnShutdown();
-
-  // Run on the IO thread to initiate the download of a URL.
-  void OnDownloadUrl(const GURL& url,
-                     const GURL& referrer,
-                     const std::string& referrer_charset,
-                     const DownloadSaveInfo& save_info,
-                     int render_process_host_id,
-                     int render_view_id,
-                     URLRequestContextGetter* request_context_getter);
-
-  // Handlers for notifications sent from the download thread and run on
-  // the UI thread.
-  void OnStartDownload(DownloadCreateInfo* info);
-  void OnDownloadFinished(int id, int64 bytes_so_far);
-
-  // Called only on UI thread to get the DownloadManager for a tab's profile.
-  static DownloadManager* DownloadManagerFromRenderIds(int render_process_id,
-                                                       int review_view_id);
-  DownloadManager* LookupManager(int download_id);
-
-  // Called only on the download thread.
-  DownloadFile* LookupDownload(int id);
-
-  // Called on the UI thread to remove a download from the UI progress table.
-  void RemoveDownloadFromUIProgress(int id);
-
-  // Unique ID for each DownloadFile.
-  int next_id_;
-
-  // A map of all in progress downloads.
-  typedef base::hash_map<int, DownloadFile*> DownloadFileMap;
-  DownloadFileMap downloads_;
-
-  // Throttle updates to the UI thread.
-  base::RepeatingTimer<DownloadFileManager> update_timer_;
-
-  ResourceDispatcherHost* resource_dispatcher_host_;
-
-  // Tracking which DownloadManager to send data to, called only on UI thread.
-  // DownloadManagerMap maps download IDs to their DownloadManager.
-  typedef base::hash_map<int, DownloadManager*> DownloadManagerMap;
-  DownloadManagerMap managers_;
-
-  // RequestMap maps a DownloadManager to all in-progress download IDs.
-  // Called only on the UI thread.
-  typedef base::hash_set<int> DownloadRequests;
-  typedef std::map<DownloadManager*, DownloadRequests> RequestMap;
-  RequestMap requests_;
-
-  // Used for progress updates on the UI thread, mapping download->id() to bytes
-  // received so far. Written to by the file thread and read by the UI thread.
-  typedef base::hash_map<int, int64> ProgressMap;
-  ProgressMap ui_progress_;
-  Lock progress_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadFileManager);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_

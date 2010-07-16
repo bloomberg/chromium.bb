@@ -11,6 +11,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -553,8 +554,8 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
 
 // When asked for pending downloads, the DownloadManager places
 // results in a DownloadManager::Observer.
-class AutomationProviderDownloadManagerObserver :
-    public DownloadManager::Observer {
+class AutomationProviderDownloadManagerObserver
+    : public DownloadManager::Observer {
  public:
   AutomationProviderDownloadManagerObserver() : DownloadManager::Observer()  {}
   virtual ~AutomationProviderDownloadManagerObserver() {}
@@ -616,8 +617,8 @@ class AutomationProviderHistoryObserver {
 };
 
 // Allows the automation provider to wait for import queries to finish.
-class AutomationProviderImportSettingsObserver :
-    public ImporterHost::Observer {
+class AutomationProviderImportSettingsObserver
+    : public ImporterHost::Observer {
  public:
   AutomationProviderImportSettingsObserver(
       AutomationProvider* provider,
@@ -652,8 +653,8 @@ class AutomationProviderGetPasswordsObserver :
 };
 
 // Allows the automation provider to wait for clearing browser data to finish.
-class AutomationProviderBrowsingDataObserver :
-    public BrowsingDataRemover::Observer {
+class AutomationProviderBrowsingDataObserver
+    : public BrowsingDataRemover::Observer {
  public:
   AutomationProviderBrowsingDataObserver(
       AutomationProvider* provider,

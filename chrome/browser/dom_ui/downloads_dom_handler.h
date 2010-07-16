@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 
 class Value;

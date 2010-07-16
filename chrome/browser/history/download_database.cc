@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/history/download_types.h"
 
 // Download schema:

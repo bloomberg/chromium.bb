@@ -12,6 +12,7 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"

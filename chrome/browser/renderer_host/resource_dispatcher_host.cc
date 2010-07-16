@@ -17,7 +17,7 @@
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/cross_site_request_manager.h"
-#include "chrome/browser/download/download_file.h"
+#include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/save_file_manager.h"

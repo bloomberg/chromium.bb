@@ -12,6 +12,7 @@
 #import "chrome/browser/cocoa/download_item_cell.h"
 #import "chrome/browser/cocoa/image_utils.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"

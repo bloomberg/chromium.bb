@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_file.h"
-#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "net/base/file_stream.h"

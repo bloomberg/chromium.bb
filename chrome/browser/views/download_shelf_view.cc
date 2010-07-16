@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"

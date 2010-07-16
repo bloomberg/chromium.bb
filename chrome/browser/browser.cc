@@ -37,6 +37,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/dock_info.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"

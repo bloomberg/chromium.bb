@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/download_item_controller.h"
 #include "chrome/browser/cocoa/download_util_mac.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "skia/ext/skia_utils_mac.h"
 

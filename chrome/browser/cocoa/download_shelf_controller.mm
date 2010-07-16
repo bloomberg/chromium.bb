@@ -17,6 +17,7 @@
 #include "chrome/browser/cocoa/download_shelf_mac.h"
 #import "chrome/browser/cocoa/download_shelf_view.h"
 #import "chrome/browser/cocoa/hyperlink_button_cell.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
@@ -90,7 +91,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
                     selector:@selector(viewFrameDidChange:)
                         name:NSViewFrameDidChangeNotification
                       object:[self view]];
-  
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   NSImage* favicon = rb.GetNSImageNamed(IDR_DOWNLOADS_FAVICON);
   DCHECK(favicon);

@@ -13,7 +13,7 @@
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

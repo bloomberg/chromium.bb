@@ -6,7 +6,7 @@
 
 #include "app/gtk_dnd_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"

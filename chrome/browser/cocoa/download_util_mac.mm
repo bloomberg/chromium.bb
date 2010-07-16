@@ -8,6 +8,7 @@
 
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/dock_icon.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "gfx/native_widget_types.h"
 #include "skia/ext/skia_utils_mac.h"

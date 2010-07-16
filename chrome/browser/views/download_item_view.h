@@ -24,6 +24,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/icon_manager.h"
 #include "gfx/font.h"

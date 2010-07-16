@@ -22,7 +22,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/debugger_wrapper.h"
 #include "chrome/browser/debugger/devtools_manager.h"
-#include "chrome/browser/download/download_file.h"
+#include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/google_url_tracker.h"
