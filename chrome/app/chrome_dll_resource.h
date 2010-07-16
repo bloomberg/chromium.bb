@@ -101,10 +101,9 @@
 #define IDC_EXIT                        34031
 #define IDC_MOVE_TAB_NEXT               34032
 #define IDC_MOVE_TAB_PREVIOUS           34033
-#define IDC_COMPACT_NAVBAR              34034
-#define IDC_TOGGLE_VERTICAL_TABS        34035
-#define IDC_EXPERIMENTAL                34036
-#define IDC_SEARCH                      34037
+#define IDC_TOGGLE_VERTICAL_TABS        34034
+#define IDC_EXPERIMENTAL                34035
+#define IDC_SEARCH                      34036
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000

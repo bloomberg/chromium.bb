@@ -11,9 +11,7 @@
 enum ChromeOSViewIds {
   // Start with the offset that is big enough to avoid possible
   // collison.
-  VIEW_ID_COMPACT_NAV_BAR = VIEW_ID_PREDEFINED_COUNT + 10000,
-  VIEW_ID_STATUS_AREA,
-  VIEW_ID_SPACER,
+  VIEW_ID_STATUS_AREA = VIEW_ID_PREDEFINED_COUNT + 10000,
   VIEW_ID_OTR_AVATAR,
 };
 

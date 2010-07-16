@@ -162,7 +162,6 @@ void BackgroundView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
-  status_area_->Update();
   AddChildView(status_area_);
 }
 

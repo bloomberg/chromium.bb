@@ -57,13 +57,6 @@ void StatusAreaView::Init() {
   AddChildView(clock_view_);
 }
 
-void StatusAreaView::Update() {
-  for (int i = 0; i < GetChildViewCount(); ++i) {
-    views::View* cur = GetChildViewAt(i);
-    cur->SetVisible(host_->IsButtonVisible(cur));
-  }
-}
-
 gfx::Size StatusAreaView::GetPreferredSize() {
   int result_w = kSeparation;
   int result_h = 0;

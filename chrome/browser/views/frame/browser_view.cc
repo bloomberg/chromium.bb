@@ -33,7 +33,6 @@
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/download_shelf_view.h"
 #include "chrome/browser/views/extensions/extension_shelf.h"
-#include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_view_layout.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
 #include "chrome/browser/views/status_bubble_views.h"
@@ -448,9 +447,6 @@ BrowserView::~BrowserView() {
   // downloads can be destroyed along with |browser_| and the observer
   // notifications will call back into deleted objects).
   download_shelf_.reset();
-
-  // Destory extender before destroying browser.
-  browser_extender_.reset();
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
@@ -1256,11 +1252,6 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
                                                         GetFocusManager());
 }
 
-#if defined(OS_CHROMEOS)
-void BrowserView::ToggleCompactNavigationBar() {
-}
-#endif
-
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always
 // enabled in the page menu regardless of whether the command will do
 // anything. When someone selects the menu item, we just act as if they hit
@@ -1591,9 +1582,6 @@ views::ClientView* BrowserView::CreateClientView(views::Window* window) {
 // BrowserView, views::ClientView overrides:
 
 bool BrowserView::CanClose() const {
-  if (!browser_extender_->can_close())
-    return false;
-
   // You cannot close a frame for which there is an active originating drag
   // session.
   if (tabstrip_->IsDragSessionActive())
@@ -1861,8 +1849,6 @@ void BrowserView::Init() {
     browser_->tabstrip_model()->AddObserver(aeropeek_manager_.get());
   }
 #endif
-
-  browser_extender_.reset(new BrowserExtender());
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;

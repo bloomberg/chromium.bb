@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_power_library.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
-#include "chrome/browser/chromeos/status/browser_status_area_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "grit/theme_resources.h"
 
@@ -31,7 +31,7 @@ class PowerMenuButtonTest : public CrosInProcessBrowserTest {
 
   PowerMenuButton* GetPowerMenuButton() {
     BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    PowerMenuButton* power = static_cast<BrowserStatusAreaView*>(view->
+    PowerMenuButton* power = static_cast<StatusAreaView*>(view->
         GetViewByID(VIEW_ID_STATUS_AREA))->power_view();
     return power;
   }

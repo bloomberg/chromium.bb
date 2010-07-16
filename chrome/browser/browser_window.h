@@ -304,11 +304,6 @@ class BrowserWindow {
   // Shows the create web app shortcut dialog box.
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents) = 0;
 
-#if defined(OS_CHROMEOS)
-  // Toggles compact navigation bar.
-  virtual void ToggleCompactNavigationBar() = 0;
-#endif
-
   // Clipboard commands applied to the whole browser window.
   virtual void Cut() = 0;
   virtual void Copy() = 0;

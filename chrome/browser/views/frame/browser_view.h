@@ -44,7 +44,6 @@ class AccessibleViewHelper;
 class BookmarkBarView;
 class Browser;
 class BrowserBubble;
-class BrowserExtender;
 class BrowserViewLayout;
 class DownloadShelfView;
 class EncodingMenuModel;
@@ -250,8 +249,6 @@ class BrowserView : public BrowserBubbleHost,
   // Called when the activation of the frame changes.
   virtual void ActivationChanged(bool activated);
 
-  BrowserExtender* browser_extender() const { return browser_extender_.get(); }
-
   // Overriden from ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
                              int index);
@@ -331,9 +328,6 @@ class BrowserView : public BrowserBubbleHost,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
-#if defined(OS_CHROMEOS)
-  virtual void ToggleCompactNavigationBar();
-#endif  // defined(OS_CHROMEOS)
   virtual void Cut();
   virtual void Copy();
   virtual void Paste();
@@ -602,8 +596,6 @@ class BrowserView : public BrowserBubbleHost,
 
   // A bottom bar for showing extensions.
   ExtensionShelf* extension_shelf_;
-
-  scoped_ptr<BrowserExtender> browser_extender_;
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 

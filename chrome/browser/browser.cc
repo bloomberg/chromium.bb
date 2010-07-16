@@ -1424,12 +1424,6 @@ void Browser::ToggleFullscreenMode() {
 }
 
 #if defined(OS_CHROMEOS)
-void Browser::ToggleCompactNavigationBar() {
-  UserMetrics::RecordAction(UserMetricsAction("ToggleCompactNavigationBar"),
-                            profile_);
-  window_->ToggleCompactNavigationBar();
-}
-
 void Browser::Search() {
   // If the NTP is showing, close it.
   if (StartsWithASCII(GetSelectedTabContents()->GetURL().spec(),
@@ -2014,7 +2008,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_EXIT:                  Exit();                           break;
     case IDC_TOGGLE_VERTICAL_TABS:  ToggleUseVerticalTabs();          break;
 #if defined(OS_CHROMEOS)
-    case IDC_COMPACT_NAVBAR:        ToggleCompactNavigationBar();     break;
     case IDC_SEARCH:                Search();                         break;
 #endif
 
@@ -3192,7 +3185,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
 
 #if defined(OS_CHROMEOS)
-  command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
   command_updater_.UpdateCommandEnabled(IDC_SEARCH, true);
   command_updater_.UpdateCommandEnabled(IDC_SYSTEM_OPTIONS, true);
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);

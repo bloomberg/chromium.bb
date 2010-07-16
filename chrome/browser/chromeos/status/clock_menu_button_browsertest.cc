@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
-#include "chrome/browser/chromeos/status/browser_status_area_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"
@@ -27,7 +27,7 @@ class ClockMenuButtonTest : public InProcessBrowserTest {
   ClockMenuButtonTest() : InProcessBrowserTest() {}
   ClockMenuButton* GetClockMenuButton() {
     BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    return static_cast<BrowserStatusAreaView*>(view->
+    return static_cast<StatusAreaView*>(view->
         GetViewByID(VIEW_ID_STATUS_AREA))->clock_view();
   }
 };
