@@ -137,8 +137,13 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       const SyncSessionSnapshot* snap =
           service_->backend()->GetLastSessionSnapshot();
       DCHECK(snap) << "Should have been at least one sync session by now";
-      if (snap->has_more_to_sync)
+      // TODO(rsimha): In an ideal world, snap->has_more_to_sync == false should
+      // be a sufficient condition for sync to have completed. However, the
+      // additional check of snap->unsynced_count is required due to
+      // http://crbug.com/48989.
+      if (snap->has_more_to_sync || snap->unsynced_count != 0) {
         break;
+      }
 
       EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
       last_timestamp_ = snap->max_local_timestamp;
@@ -185,11 +190,36 @@ bool ProfileSyncServiceTestHarness::AwaitMutualSyncCycleCompletion(
       "Sync cycle completion on passive client.");
 }
 
+bool ProfileSyncServiceTestHarness::AwaitGroupSyncCycleCompletion(
+    std::vector<ProfileSyncServiceTestHarness*>& partners) {
+  bool success = AwaitSyncCycleCompletion(
+      "Sync cycle completion on active client.");
+  if (!success)
+    return false;
+  bool return_value = true;
+  for (std::vector<ProfileSyncServiceTestHarness*>::iterator it =
+      partners.begin(); it != partners.end(); ++it) {
+    if (this != *it) {
+      return_value = return_value &&
+          (*it)->WaitUntilTimestampIsAtLeast(last_timestamp_,
+          "Sync cycle completion on partner client.");
+    }
+  }
+  return return_value;
+}
+
 bool ProfileSyncServiceTestHarness::WaitUntilTimestampIsAtLeast(
     int64 timestamp, const std::string& reason) {
-  wait_state_ = WAITING_FOR_UPDATES;
   min_timestamp_needed_ = timestamp;
-  return AwaitStatusChangeWithTimeout(60, reason);
+  const SyncSessionSnapshot* snap =
+      service_->backend()->GetLastSessionSnapshot();
+  DCHECK(snap) << "Should have been at least one sync session by now";
+  if (snap->max_local_timestamp < min_timestamp_needed_) {
+    wait_state_ = WAITING_FOR_UPDATES;
+    return AwaitStatusChangeWithTimeout(60, reason);
+  } else {
+    return true;
+  }
 }
 
 bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(

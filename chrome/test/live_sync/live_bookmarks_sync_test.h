@@ -62,7 +62,6 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
     return verifier_helper_.get();
   }
 
-
   // Helper to get a handle on a bookmark in |m| when the url is known to be
   // unique.
   static const BookmarkNode* GetByUniqueURL(BookmarkModel* m, const GURL& url) {
@@ -100,6 +99,26 @@ class TwoClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientLiveBookmarksSyncTest);
+};
+
+class MultipleClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
+ public:
+  MultipleClientLiveBookmarksSyncTest()
+      : LiveBookmarksSyncTest(MULTIPLE_CLIENT) {}
+  ~MultipleClientLiveBookmarksSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultipleClientLiveBookmarksSyncTest);
+};
+
+class ManyClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
+ public:
+  ManyClientLiveBookmarksSyncTest()
+      : LiveBookmarksSyncTest(MANY_CLIENT) {}
+  ~ManyClientLiveBookmarksSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ManyClientLiveBookmarksSyncTest);
 };
 
 #endif  // CHROME_TEST_LIVE_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_

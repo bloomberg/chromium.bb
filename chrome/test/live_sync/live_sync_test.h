@@ -16,6 +16,7 @@
 #include "net/socket/ssl_test_util.h"
 
 #include <string>
+#include <vector>
 
 class CommandLine;
 class Profile;
@@ -101,6 +102,12 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Returns a pointer to a particular sync client. Callee owns the object
   // and manages its lifetime.
   ProfileSyncServiceTestHarness* GetClient(int index);
+
+  // Returns a reference to the collection of sync clients. Callee owns the
+  // object and manages its lifetime.
+  std::vector<ProfileSyncServiceTestHarness*>& clients() {
+    return clients_.get();
+  }
 
   // Returns a pointer to the sync profile that is used to verify changes to
   // individual sync profiles. Callee owns the object and manages its lifetime.

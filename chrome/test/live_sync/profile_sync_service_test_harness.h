@@ -6,6 +6,7 @@
 #define CHROME_TEST_LIVE_SYNC_PROFILE_SYNC_SERVICE_TEST_HARNESS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/time.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -44,6 +45,12 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // of |this|.  This method relies upon the synchronization of callbacks
   // from the message queue. Returns true if two sync cycles have completed.
   bool AwaitMutualSyncCycleCompletion(ProfileSyncServiceTestHarness* partner);
+
+  // Blocks the caller until |this| completes its ongoing sync cycle and every
+  // other client in |partners| has a timestamp that is greater than or equal to
+  // the timestamp of |this|.
+  bool AwaitGroupSyncCycleCompletion(
+      std::vector<ProfileSyncServiceTestHarness*>& partners);
 
   ProfileSyncService* service() { return service_; }
 

@@ -49,4 +49,23 @@ class TwoClientLivePreferencesSyncTest : public LivePreferencesSyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientLivePreferencesSyncTest);
 };
 
+class MultipleClientLivePreferencesSyncTest : public LivePreferencesSyncTest {
+ public:
+  MultipleClientLivePreferencesSyncTest()
+      : LivePreferencesSyncTest(MULTIPLE_CLIENT) {}
+  virtual ~MultipleClientLivePreferencesSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultipleClientLivePreferencesSyncTest);
+};
+
+class ManyClientLivePreferencesSyncTest : public LivePreferencesSyncTest {
+ public:
+  ManyClientLivePreferencesSyncTest() : LivePreferencesSyncTest(MANY_CLIENT) {}
+  virtual ~ManyClientLivePreferencesSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ManyClientLivePreferencesSyncTest);
+};
+
 #endif  // CHROME_TEST_LIVE_SYNC_LIVE_PREFERENCES_SYNC_TEST_H_
