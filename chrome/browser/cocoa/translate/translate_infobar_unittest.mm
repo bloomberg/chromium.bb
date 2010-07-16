@@ -152,7 +152,7 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   NSMenu* optionsMenu = [infobar_controller optionsMenu];
   NSArray* optionsMenuItems = [optionsMenu itemArray];
 
-  EXPECT_EQ([optionsMenuItems count], 5U);
+  EXPECT_EQ(7U, [optionsMenuItems count]);
 
   // First item is the options menu button's title, so there's no need to test
   // that the target on that is setup correctly.
@@ -163,7 +163,9 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   NSMenuItem* alwaysTranslateLanguateItem = [optionsMenuItems objectAtIndex:1];
   NSMenuItem* neverTranslateLanguateItem = [optionsMenuItems objectAtIndex:2];
   NSMenuItem* neverTranslateSiteItem = [optionsMenuItems objectAtIndex:3];
-  NSMenuItem* aboutTranslateItem = [optionsMenuItems objectAtIndex:4];
+  // Separator at 4.
+  NSMenuItem* reportBadLanguageItem = [optionsMenuItems objectAtIndex:5];
+  NSMenuItem* aboutTranslateItem = [optionsMenuItems objectAtIndex:6];
 
   {
     EXPECT_CALL(*infobar_delegate, ToggleAlwaysTranslate())
@@ -184,8 +186,11 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   }
 
   {
-    // Can't mock this effectively, so just check that the tag is set correctly.
-    EXPECT_EQ([aboutTranslateItem tag], IDC_TRANSLATE_OPTIONS_ABOUT);
+    // Can't mock these effectively, so just check that the tag is set
+    // correctly.
+    EXPECT_EQ(IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION,
+              [reportBadLanguageItem tag]);
+    EXPECT_EQ(IDC_TRANSLATE_OPTIONS_ABOUT, [aboutTranslateItem tag]);
   }
 }
 

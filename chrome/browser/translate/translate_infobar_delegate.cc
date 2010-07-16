@@ -57,6 +57,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       background_animation_(kNone),
       tab_contents_(tab_contents),
       original_language_index_(-1),
+      initial_original_language_index_(-1),
       target_language_index_(-1),
       error_(error),
       infobar_view_(NULL),
@@ -84,8 +85,10 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
   for (std::vector<LanguageNamePair>::const_iterator iter = languages_.begin();
        iter != languages_.end(); ++iter) {
     std::string language_code = iter->first;
-    if (language_code == original_language)
+    if (language_code == original_language) {
       original_language_index_ = iter - languages_.begin();
+      initial_original_language_index_ = original_language_index_;
+    }
     if (language_code == target_language)
       target_language_index_ = iter - languages_.begin();
   }
@@ -151,6 +154,11 @@ void TranslateInfoBarDelegate::Translate() {
 void TranslateInfoBarDelegate::RevertTranslation() {
   Singleton<TranslateManager>::get()->RevertTranslation(tab_contents_);
   tab_contents_->RemoveInfoBar(this);
+}
+
+void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
+  Singleton<TranslateManager>::get()->
+      ReportLanguageDetectionError(tab_contents_);
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {

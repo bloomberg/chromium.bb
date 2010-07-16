@@ -45,6 +45,11 @@ class TranslateManager : public NotificationObserver,
   // language.
   void RevertTranslation(TabContents* tab_contents);
 
+  // Reports to the Google translate server that a page language was incorrectly
+  // detected.  This call is initiated by the user selecting the "report" menu
+  // under options in the translate infobar.
+  void ReportLanguageDetectionError(TabContents* tab_contents);
+
   // Clears the translate script, so it will be fetched next time we translate.
   // Currently used by unit-tests.
   void ClearTranslateScript() { translate_script_.clear(); }

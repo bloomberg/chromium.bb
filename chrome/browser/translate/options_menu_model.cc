@@ -33,6 +33,10 @@ OptionsMenuModel::OptionsMenuModel(
   AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE,
       l10n_util::GetStringUTF16(
           IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
+  AddSeparator();
+  AddItem(IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION,
+          l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_REPORT_ERROR,
+                                     original_language));
   AddItemWithStringId(IDC_TRANSLATE_OPTIONS_ABOUT,
       IDS_TRANSLATE_INFOBAR_OPTIONS_ABOUT);
 }
@@ -94,6 +98,10 @@ void OptionsMenuModel::ExecuteCommand(int command_id) {
     case IDC_TRANSLATE_OPTIONS_ALWAYS:
       UMA_HISTOGRAM_COUNTS("Translate.AlwaysTranslateLang", 1);
       translate_infobar_delegate_->ToggleAlwaysTranslate();
+      break;
+
+    case IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION:
+      translate_infobar_delegate_->ReportLanguageDetectionError();
       break;
 
     case IDC_TRANSLATE_OPTIONS_ABOUT: {

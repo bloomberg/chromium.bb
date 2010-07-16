@@ -89,6 +89,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   virtual void Translate();
   virtual void RevertTranslation();
+  virtual void ReportLanguageDetectionError();
 
   // Called when the user declines to translate a page, by either closing the
   // infobar or pressing the "Don't translate" button.
@@ -179,6 +180,13 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // The index for language the page is originally in.
   int original_language_index_;
+
+  // The index for language the page is originally in that was originally
+  // reported (original_language_index_ changes if the user selects a new
+  // original language, but this one does not).  This is necessary to report
+  // language detection errors with the right original language even if the user
+  // changed the original language.
+  int initial_original_language_index_;
 
   // The index for language the page should be translated to.
   int target_language_index_;

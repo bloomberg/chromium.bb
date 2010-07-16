@@ -6,7 +6,10 @@
 
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
+#include "base/histogram.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -27,6 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/translate_errors.h"
 #include "grit/browser_resources.h"
+#include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -116,6 +120,8 @@ const char* const kTranslateScriptURL =
     "cb=cr.googleTranslate.onTranslateElementLoad";
 const char* const kTranslateScriptHeader =
     "Google-Translate-Element-Mode: library";
+const char* const kReportLanguageDetectionErrorURL =
+    "http://translate.google.com/translate_error";
 
 }  // namespace
 
@@ -420,6 +426,28 @@ void TranslateManager::RevertTranslation(TabContents* tab_contents) {
   tab_contents->render_view_host()->RevertTranslation(entry->page_id());
   tab_contents->language_state().set_current_language(
       tab_contents->language_state().original_language());
+}
+
+void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
+  UMA_HISTOGRAM_COUNTS("Translate.ReportLanguageDetectionError", 1);
+  GURL page_url = tab_contents->controller().GetActiveEntry()->url();
+  std::string report_error_url(kReportLanguageDetectionErrorURL);
+  report_error_url += "?client=cr&action=langidc&u=";
+  report_error_url += EscapeUrlEncodedData(page_url.spec());
+  report_error_url += "&sl=";
+  report_error_url += tab_contents->language_state().original_language();
+  report_error_url += "&hl=";
+  report_error_url +=
+      GetLanguageCode(g_browser_process->GetApplicationLocale());
+  // Open that URL in a new tab so that the user can tell us more.
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser) {
+    NOTREACHED();
+    return;
+  }
+  browser->AddTabWithURL(GURL(report_error_url), GURL(),
+                         PageTransition::AUTO_BOOKMARK, -1,
+                         TabStripModel::ADD_SELECTED, NULL, std::string());
 }
 
 void TranslateManager::DoTranslatePage(TabContents* tab,

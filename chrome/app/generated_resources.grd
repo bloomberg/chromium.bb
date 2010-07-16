@@ -7087,6 +7087,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS" desc="Text for the menu item to always translate from one language to another">
         Always translate <ph name="original_language">$1<ex>French</ex></ph> to <ph name="target_language">$2<ex>German</ex></ph>
       </message>
+      <message name="IDS_TRANSLATE_INFOBAR_OPTIONS_REPORT_ERROR" desc="Text for the menu item for reporting the page's language was not correctly detected">
+        Not in <ph name="original_language">$1<ex>French</ex></ph>? Report this error
+      </message>
       <message name="IDS_TRANSLATE_INFOBAR_OPTIONS_ABOUT" desc="Text for the menu item for information about Google Translate">
         About Google Translate
       </message>
