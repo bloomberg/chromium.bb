@@ -2755,10 +2755,6 @@ void TabContents::OnCrossSiteResponse(int new_render_process_host_id,
                                       new_request_id);
 }
 
-bool TabContents::CanBlur() const {
-  return delegate() ? delegate()->CanBlur() : true;
-}
-
 gfx::Rect TabContents::GetRootWindowResizerRect() const {
   if (delegate())
     return delegate()->GetRootWindowResizerRect();

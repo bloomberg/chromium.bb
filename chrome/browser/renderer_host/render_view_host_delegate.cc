@@ -88,10 +88,6 @@ WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
   return WebPreferences();
 }
 
-bool RenderViewHostDelegate::CanBlur() const {
-  return true;
-}
-
 gfx::Rect RenderViewHostDelegate::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
