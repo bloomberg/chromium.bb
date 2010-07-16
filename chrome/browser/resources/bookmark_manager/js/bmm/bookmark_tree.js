@@ -9,6 +9,77 @@ cr.define('bmm', function() {
 
   var treeLookup = {};
 
+  // Manager for persisting the expanded state.
+  var expandedManager = {
+    /**
+     * A map of the collapsed IDs.
+     * @type {Object}
+     */
+    map: 'bookmarkTreeState' in localStorage ?
+        JSON.parse(localStorage['bookmarkTreeState']) : {},
+
+    /**
+     * Set the collapsed state for an ID.
+     * @param {string} The bookmark ID of the tree item that was expanded or
+     *     collapsed.
+     * @param {boolean} expanded Whether the tree item was expanded.
+     */
+    set: function(id, expanded) {
+      if (expanded)
+        delete this.map[id];
+      else
+        this.map[id] = 1;
+
+      this.save();
+    },
+
+    /**
+     * @param {string} id The bookmark ID.
+     * @return {boolean} Whether the tree item should be expanded.
+     */
+    get: function(id) {
+      return !(id in this.map);
+    },
+
+    /**
+     * Callback for the expand and collapse events from the tree.
+     * @param {!Event} e The collapse or expand event.
+     */
+    handleEvent: function(e) {
+      this.set(e.target.bookmarkId, e.type == 'expand');
+    },
+
+    /**
+     * Cleans up old bookmark IDs.
+     */
+    cleanUp: function() {
+      for (var id in this.map) {
+        // If the id is no longer in the treeLookup the bookmark no longer
+        // exists.
+        if (!(id in treeLookup))
+          delete this.map[id];
+      }
+      this.save();
+    },
+
+    timer: null,
+
+    /**
+     * Saves the expanded state to the localStorage.
+     */
+    save: function() {
+      clearTimeout(this.timer);
+      var map = this.map;
+      // Save in a timeout so that we can coalesce multiple changes.
+      this.timer = setTimeout(function() {
+        localStorage['bookmarkTreeState'] = JSON.stringify(map);
+      }, 100);
+    }
+  };
+
+  // Clean up once per session but wait until things settle down a bit.
+  setTimeout(cr.bind(expandedManager.cleanUp, expandedManager), 1e4);
+
   /**
    * Creates a new tree item for a bookmark node.
    * @param {!Object} bookmarkNode The bookmark node.
@@ -91,6 +162,12 @@ cr.define('bmm', function() {
 
   BookmarkTree.prototype = {
     __proto__: Tree.prototype,
+
+    decorate: function() {
+      Tree.prototype.decorate.call(this);
+      this.addEventListener('expand', expandedManager);
+      this.addEventListener('collapse', expandedManager);
+    },
 
     handleBookmarkChanged: function(id, changeInfo) {
       var treeItem = treeLookup[id];
@@ -179,7 +256,7 @@ cr.define('bmm', function() {
             var item = new BookmarkTreeItem(bookmarkNode);
             parentTreeItem.add(item);
             var anyChildren = buildTreeItems(item, bookmarkNode.children);
-            item.expanded = anyChildren;
+            item.expanded = anyChildren && expandedManager.get(bookmarkNode.id);
           }
         }
         return hasDirectories;

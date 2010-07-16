@@ -442,6 +442,7 @@ cr.define('cr.ui', function() {
       if (b) {
         this.setAttribute('selected', '');
         rowItem.setAttribute('selected', '');
+        this.reveal();
         this.labelElement.scrollIntoViewIfNeeded(false);
         if (tree)
           tree.selectedItem = this;
