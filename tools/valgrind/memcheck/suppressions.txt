@@ -705,9 +705,8 @@
    valgrind_bug_243992b
    Memcheck:Cond
    fun:_ZN11webkit_glue22BufferedResourceLoader20DisableDeferIfNeededEv
-   fun:_ZN11webkit_glue22BufferedResourceLoader13SetAllowDeferEb
-   fun:_ZN11webkit_glue18BufferedDataSource12WatchDogTaskEv
    ...
+   fun:_ZN11webkit_glue18BufferedDataSource12WatchDogTaskEv
 }
 {
    # Minor commandline options leak in v8
