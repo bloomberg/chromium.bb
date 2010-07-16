@@ -8788,10 +8788,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
     </if>
     
-    <message name="IDS_PDF_NEED_PASSWORD" desc="A message asking the user for a password to open a PDF file.">
-      This document is password protected.  Please enter a password.
-    </message>
-
     <if expr="os == 'darwin'">
       <message name="IDS_SELECT_FOLDER_BUTTON_TITLE" desc="The name of the Select button in the folder selection dialog.">
         Select

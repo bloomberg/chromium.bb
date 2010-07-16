@@ -355,6 +355,10 @@ below:
       <message name="IDS_DEFAULT_PLUGIN_INSTALLATION_FAILED_MSG" desc="Message displayed by the default plugin when installation is failed.">
         Plug-in installation failed
       </message>
+
+      <message name="IDS_PDF_NEED_PASSWORD" desc="A message asking the user for a password to open a PDF file.">
+        This document is password protected.  Please enter a password.
+      </message>
     </messages>
   </release>
 </grit>

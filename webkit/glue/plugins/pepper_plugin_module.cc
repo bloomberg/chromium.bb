@@ -43,6 +43,7 @@
 #include "webkit/glue/plugins/pepper_font.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
+#include "webkit/glue/plugins/pepper_private.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 #include "webkit/glue/plugins/pepper_scrollbar.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
@@ -50,6 +51,7 @@
 #include "webkit/glue/plugins/pepper_url_response_info.h"
 #include "webkit/glue/plugins/pepper_var.h"
 #include "webkit/glue/plugins/pepper_widget.h"
+#include "webkit/glue/plugins/ppb_private.h"
 
 namespace pepper {
 
@@ -188,6 +190,8 @@ const void* GetInterface(const char* name) {
     return Font::GetInterface();
   if (strcmp(name, PPB_FIND_INTERFACE) == 0)
     return PluginInstance::GetFindInterface();
+  if (strcmp(name, PPB_PRIVATE_INTERFACE) == 0)
+    return Private::GetInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
