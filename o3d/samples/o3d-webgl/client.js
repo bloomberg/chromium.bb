@@ -97,6 +97,7 @@ o3d.Renderer.clients_ = [];
 o3d.Renderer.renderClients = function() {
   for (var i = 0; i < o3d.Renderer.clients_.length; ++i) {
     var client = o3d.Renderer.clients_[i];
+    client.counter_manager_.tick();
     if (client.renderMode == o3d.Client.RENDERMODE_CONTINUOUS) {
       client.render();
     }
@@ -220,6 +221,7 @@ o3d.Client = function() {
   this.clientId = o3d.Client.nextId++;
   this.packs_ = [tempPack];
   this.clientInfo = tempPack.createObject('ClientInfo');
+  this.counter_manager_ = new o3d.CounterManager;
 
   if (o3d.Renderer.clients_.length == 0)
     o3d.Renderer.installRenderInterval();
@@ -290,6 +292,12 @@ o3d.Client.prototype.root = null;
  * @type {!Array.<!o3d.Pack>}
  */
 o3d.Client.prototype.packs_ = [];
+
+/**
+ * Keeps track of all counters associated with this client.
+ * @type {o3d.CounterManager}
+ */
+o3d.Client.prototype.counter_manager_ = null;
 
 
 /**
@@ -439,6 +447,7 @@ o3d.Client.prototype.renderMode = o3d.Client.RENDERMODE_CONTINUOUS;
 o3d.Client.prototype.render = function() {
   // Synthesize a render event.
   var render_event = new o3d.RenderEvent;
+  this.counter_manager_.advanceRenderFrameCounters();
 
   this.clearStateStack_();
 

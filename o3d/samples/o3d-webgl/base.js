@@ -269,5 +269,9 @@ o3d.include('shape');
 o3d.include('effect');
 o3d.include('material');
 o3d.include('archive_request');
+o3d.include('param_operation');
+o3d.include('function');
+o3d.include('counter');
+o3d.include('curve');
 
 
