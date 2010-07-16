@@ -87,9 +87,6 @@ class ChromeMiniInstaller {
   // Will clean up the machine if Chrome install is messed up.
   void CleanChromeInstall();
 
-  // Closes First Run UI dialog.
-  void CloseFirstRunUIDialog(bool over_install);
-
   // Closes Chrome uninstall confirm dialog window.
   bool CloseUninstallWindow();
 

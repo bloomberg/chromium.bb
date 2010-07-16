@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -351,18 +351,6 @@ bool ChromeMiniInstaller::CloseChromeBrowser() {
   return true;
 }
 
-// Closes the First Run UI dialog.
-void ChromeMiniInstaller::CloseFirstRunUIDialog(bool over_install) {
-  MiniInstallerTestUtil::VerifyProcessLaunch(installer_util::kChromeExe, true);
-  if (!over_install) {
-    ASSERT_TRUE(MiniInstallerTestUtil::CloseWindow(
-        mini_installer_constants::kChromeFirstRunUI, WM_CLOSE));
-  } else {
-    ASSERT_TRUE(MiniInstallerTestUtil::CloseWindow(
-        mini_installer_constants::kBrowserTabName, WM_CLOSE));
-  }
-}
-
 // Checks for Chrome registry keys.
 bool ChromeMiniInstaller::CheckRegistryKey(const std::wstring& key_path) {
   RegKey key;
@@ -572,8 +560,10 @@ bool ChromeMiniInstaller::GetChromeLaunchPath(std::wstring* launch_path) {
 void ChromeMiniInstaller::LaunchAndCloseChrome(bool over_install) {
   VerifyChromeLaunch(true);
   if ((install_type_ == mini_installer_constants::kSystemInstall) &&
-      (!over_install))
-    CloseFirstRunUIDialog(over_install);
+      (!over_install)) {
+    MiniInstallerTestUtil::VerifyProcessLaunch(
+        installer_util::kChromeExe, true);
+  }
   MiniInstallerTestUtil::CloseProcesses(installer_util::kChromeExe);
 }
 
@@ -590,8 +580,10 @@ void ChromeMiniInstaller::VerifyInstall(bool over_install) {
     VerifyChromeFrameInstall();
   } else {
     if ((install_type_ == mini_installer_constants::kUserInstall) &&
-        (!over_install))
-      CloseFirstRunUIDialog(over_install);
+        (!over_install)) {
+      MiniInstallerTestUtil::VerifyProcessLaunch(
+          installer_util::kChromeExe, true);
+    }
     PlatformThread::Sleep(800);
     FindChromeShortcut();
     LaunchAndCloseChrome(over_install);
