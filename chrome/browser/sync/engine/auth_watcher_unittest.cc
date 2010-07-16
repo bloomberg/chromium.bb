@@ -6,6 +6,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/test/test_file_util.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/util/user_settings.h"
@@ -85,6 +86,11 @@ class AuthWatcherTest : public testing::Test {
                       consumer_ready(false, false),
                       event_produced(false, false) {}
   virtual void SetUp() {
+#if defined(OS_MACOSX)
+    // Need to mock the Keychain for unit tests on Mac to avoid possible
+    // blocking UI.  |SetAuthTokenForService| uses Encryptor.
+    Encryptor::UseMockKeychain(true);
+#endif
     metadb_.SetUp();
     connection_.reset(new MockConnectionManager(metadb_.manager(),
                                                 metadb_.name()));

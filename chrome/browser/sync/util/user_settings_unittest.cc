@@ -7,6 +7,7 @@
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/sqlite_utils.h"
@@ -231,6 +232,11 @@ TEST_F(UserSettingsTest, PersistEmptyToken) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   UserSettings settings;
   settings.Init(temp_dir.path().AppendASCII("UserSettings.sqlite3"));
+#if defined(OS_MACOSX)
+    // Need to mock the Keychain for unit tests on Mac to avoid possible
+    // blocking UI.  |SetAuthTokenForService| uses Encryptor.
+    Encryptor::UseMockKeychain(true);
+#endif
   settings.SetAuthTokenForService("username", "service", "");
   std::string username;
   std::string token;
@@ -245,6 +251,11 @@ TEST_F(UserSettingsTest, PersistNonEmptyToken) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   UserSettings settings;
   settings.Init(temp_dir.path().AppendASCII("UserSettings.sqlite3"));
+#if defined(OS_MACOSX)
+    // Need to mock the Keychain for unit tests on Mac to avoid possible
+    // blocking UI.  |SetAuthTokenForService| uses Encryptor.
+    Encryptor::UseMockKeychain(true);
+#endif
   settings.SetAuthTokenForService("username", "service", "012345beefbeef");
   std::string username;
   std::string token;
