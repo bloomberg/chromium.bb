@@ -10,10 +10,12 @@
 #include "base/base64.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/sha2.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/user_script.h"
@@ -39,8 +41,11 @@ Extension* ConvertUserScriptToExtension(const FilePath& user_script_path,
     return NULL;
   }
 
+  FilePath user_data_temp_dir;
+  CHECK(PathService::Get(chrome::DIR_USER_DATA_TEMP, &user_data_temp_dir));
+
   ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDir()) {
+  if (!temp_dir.CreateUniqueTempDirUnderPath(user_data_temp_dir, false)) {
     *error = "Could not create temporary directory.";
     return NULL;
   }
