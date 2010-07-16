@@ -10,12 +10,14 @@
 #include <map>
 #include <set>
 
+#include "app/l10n_util_mac.h"
 #import "base/cocoa_protocols_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/scoped_cftyperef.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
+#include "grit/generated_resources.h"
 
 static const int kFileTypePopupTag = 1234;
 
@@ -209,6 +211,9 @@ void SelectFileDialogImpl::SelectFile(
     if (type == SELECT_FOLDER) {
       [open_dialog setCanChooseFiles:NO];
       [open_dialog setCanChooseDirectories:YES];
+      [open_dialog setCanCreateDirectories:YES];
+      NSString *prompt = l10n_util::GetNSString(IDS_SELECT_FOLDER_BUTTON_TITLE);
+      [open_dialog setPrompt:prompt];
     } else {
       [open_dialog setCanChooseFiles:YES];
       [open_dialog setCanChooseDirectories:NO];
