@@ -128,10 +128,18 @@ void PlatformDevice::LoadClippingRegionToCGContext(
     rect.setEmpty();
     CGContextClipToRect(context, gfx::SkRectToCGRect(rect));
   } else if (region.isRect()) {
+    // CoreGraphics applies the current transform to clip rects, which is
+    // unwanted. Inverse-transform the rect before sending it to CG. This only
+    // works for translations and scaling, but not for rotations (but the
+    // viewport is never rotated anyway).
+    SkMatrix t;
+    bool did_invert = transformation.invert(&t);
+    if (!did_invert)
+      t.reset();
     // Do the transformation.
     SkRect rect;
     rect.set(region.getBounds());
-    transformation.mapRect(&rect);
+    t.mapRect(&rect);
     SkIRect irect;
     rect.round(&irect);
     CGContextClipToRect(context, gfx::SkIRectToCGRect(irect));

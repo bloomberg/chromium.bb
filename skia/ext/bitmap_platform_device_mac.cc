@@ -160,9 +160,6 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
     return;  // Nothing to do.
   config_dirty_ = false;
 
-  // Transform.
-  SkMatrix t(transform_);
-
   // We must restore and then save the state of the graphics context since the
   // calls to Load the clipping region to the context are strictly cummulative,
   // i.e., you can't replace a clip rect, other than with a save/restore.
@@ -171,10 +168,8 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
   // calls in LoadClippingRegionToCGContext() with an image mask instead.
   CGContextRestoreGState(bitmap_context_);
   CGContextSaveGState(bitmap_context_);
-  LoadTransformToCGContext(bitmap_context_, t);
-  t.setTranslateX(-t.getTranslateX());
-  t.setTranslateY(-t.getTranslateY());
-  LoadClippingRegionToCGContext(bitmap_context_, clip_region_, t);
+  LoadTransformToCGContext(bitmap_context_, transform_);
+  LoadClippingRegionToCGContext(bitmap_context_, clip_region_, transform_);
 }
 
 
