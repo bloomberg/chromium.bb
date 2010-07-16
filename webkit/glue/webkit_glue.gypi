@@ -395,6 +395,14 @@
           'sources!': [
             'plugins/plugin_stubs.cc',
           ],
+          'conditions': [
+            ['inside_chromium_build==1 and component=="shared_library"', {
+              'dependencies': [
+                '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+               ],
+            }],
+          ],
         }],
         ['inside_chromium_build==0', {
           'dependencies': [
