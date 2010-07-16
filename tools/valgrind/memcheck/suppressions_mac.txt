@@ -1286,4 +1286,13 @@
    fun:_ZN26TemplateURLPrepopulateData32GetPrepopulatedTemplatefromPrefsEP11PrefServicePSt6vectorIP11TemplateURLSaIS4_EE
    fun:_ZN26TemplateURLPrepopulateData22GetPrepopulatedEnginesEP11PrefServicePSt6vectorIP11TemplateURLSaIS4_EEPm
    fun:_ZN54TemplateURLPrepopulateDataTest_ProvidersFromPrefs_Test8TestBodyEv
- }
+}
+{
+   bug_49250
+   Memcheck:Cond
+   fun:gleUpdateFogData
+   fun:gleUpdateState
+   fun:_ZN8remoting11CapturerMac12CaptureRectsERKSt6vectorIN3gfx4RectESaIS3_EEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_8Capturer11CaptureDataEEEE
+   fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS0_11CaptureDataEEEE
+   fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
+}
