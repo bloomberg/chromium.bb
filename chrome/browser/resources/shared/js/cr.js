@@ -327,10 +327,23 @@ const cr = (function() {
     }
   }
 
+  /**
+   * Adds a {@code getInstance} static method that always return the same
+   * instance object.
+   * @param {!Function} ctor The constructor for the class to add the static
+   *     method to.
+   */
+  function addSingletonGetter(ctor) {
+    ctor.getInstance = function() {
+      return ctor.instance_ || (ctor.instance_ = new ctor());
+    };
+  }
+
   return {
+    addSingletonGetter: addSingletonGetter,
+    isChromeOS: isChromeOS,
     isMac: isMac,
     isWindows: isWindows,
-    isChromeOS: isChromeOS,
     define: define,
     defineProperty: defineProperty,
     PropertyKind: PropertyKind,

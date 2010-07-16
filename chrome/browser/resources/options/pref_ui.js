@@ -31,22 +31,14 @@ PrefCheckbox.prototype = {
           Preferences.setBooleanPref(self.pref,
                                      self.checked);
         });
-  },
-
-  /**
-   * Getter for preference name attribute.
-   */
-  get pref() {
-    return this.getAttribute('pref');
-  },
-
-  /**
-   * Setter for preference name attribute.
-   */
-  set pref(name) {
-    this.setAttribute('pref', name);
   }
 };
+
+/**
+ * The preference name.
+ * @type {string}
+ */
+cr.defineProperty(PrefCheckbox, 'pref', cr.PropertyKind.ATTR);
 
 ///////////////////////////////////////////////////////////////////////////////
 // PrefRange class:
@@ -76,23 +68,14 @@ PrefRange.prototype = {
         function(e) {
           Preferences.setIntegerPref(self.pref, self.value);
         });
-  },
-
-  /**
-   * Getter for preference name attribute.
-   */
-  get pref() {
-    return this.getAttribute('pref');
-  },
-
-  /**
-   * Setter for preference name attribute.
-   */
-  set pref(name) {
-    this.setAttribute('pref', name);
   }
 };
 
+/**
+ * The preference name.
+ * @type {string}
+ */
+cr.defineProperty(PrefRange, 'pref', cr.PropertyKind.ATTR);
 
 ///////////////////////////////////////////////////////////////////////////////
 // PrefSelect class:
@@ -138,22 +121,14 @@ PrefSelect.prototype = {
    * TODO(zelidrag): move this to that i18n template classes.
    */
   initializeValues: function(options) {
-    var self = this;
     options.forEach(function (values) {
-      self.appendChild(new Option(values[1], values[0]));
-    });
-  },
-  /**
-   * Getter for preference name attribute.
-   */
-  get pref() {
-    return this.getAttribute('pref');
-  },
-
-  /**
-  * Setter for preference name attribute.
-  */
-  set pref(name) {
-    this.setAttribute('pref', name);
+      this.appendChild(new Option(values[1], values[0]));
+    }, this);
   }
 };
+
+/**
+ * The preference name.
+ * @type {string}
+ */
+cr.defineProperty(PrefSelect, 'pref', cr.PropertyKind.ATTR);

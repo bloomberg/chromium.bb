@@ -6,16 +6,11 @@
 // PersonalOptions class
 // Encapsulated handling of personal options page.
 //
-function PersonalOptions(model) {
+function PersonalOptions() {
   OptionsPage.call(this, 'personal', templateData.personalPage, 'personalPage');
 }
 
-PersonalOptions.getInstance = function() {
-  if (!PersonalOptions.instance_) {
-    PersonalOptions.instance_ = new PersonalOptions(null);
-  }
-  return PersonalOptions.instance_;
-}
+cr.addSingletonGetter(PersonalOptions);
 
 PersonalOptions.prototype = {
   // Inherit PersonalOptions from OptionsPage.
@@ -27,6 +22,5 @@ PersonalOptions.prototype = {
     OptionsPage.prototype.initializePage.call(this);
 
     // TODO(csilv): add any needed initialization here or delete this method.
-  },
+  }
 };
-

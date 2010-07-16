@@ -9,16 +9,11 @@
  * Encapsulated handling of ChromeOS system options page.
  * @constructor
  */
-function SystemOptions(model) {
+function SystemOptions() {
   OptionsPage.call(this, 'system', templateData.systemPage, 'systemPage');
 }
 
-SystemOptions.getInstance = function() {
-  if (SystemOptions.instance_)
-    return SystemOptions.instance_;
-  SystemOptions.instance_ = new SystemOptions(null);
-  return SystemOptions.instance_;
-}
+cr.addSingletonGetter(SystemOptions);
 
 // Inherit SystemOptions from OptionsPage.
 SystemOptions.prototype = {
@@ -38,5 +33,5 @@ SystemOptions.prototype = {
     $('language-button').onclick = function(event) {
       OptionsPage.showPageByName('language');
     };
-  },
+  }
 };

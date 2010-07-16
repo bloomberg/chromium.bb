@@ -9,17 +9,13 @@
  * Encapsulated handling of content settings page.
  * @constructor
  */
-function ContentSettings(model) {
+function ContentSettings() {
   this.activeNavTab = null;
   OptionsPage.call(this, 'content', templateData.contentSettingsPage,
                    'contentSettingsPage');
 }
 
-ContentSettings.getInstance = function() {
-  if (!ContentSettings.instance_)
-    ContentSettings.instance_ = new ContentSettings(null);
-  return ContentSettings.instance_;
-}
+cr.addSingletonGetter(ContentSettings);
 
 ContentSettings.prototype = {
   __proto__: OptionsPage.prototype,
@@ -72,7 +68,7 @@ ContentSettings.prototype = {
     tab.classList.add('active-tab');
     $(tab.getAttribute('tab-contents')).classList.add('active-tab-contents');
     this.activeNavTab = tab;
-  },
+  }
 };
 
 /**
@@ -93,4 +89,4 @@ ContentSettings.setInitialContentFilterSettingsValue = function(dict) {
  */
 ContentSettings.setBlockThirdPartyCookies = function(block) {
   $('block-third-party-cookies').checked = block;
-}
+};

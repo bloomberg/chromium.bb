@@ -6,16 +6,11 @@
 // BrowserOptions class
 // Encapsulated handling of browser options page.
 //
-function BrowserOptions(model) {
+function BrowserOptions() {
   OptionsPage.call(this, 'browser', templateData.browserPage, 'browserPage');
 }
 
-BrowserOptions.getInstance = function() {
-  if (!BrowserOptions.instance_) {
-    BrowserOptions.instance_ = new BrowserOptions(null);
-  }
-  return BrowserOptions.instance_;
-}
+cr.addSingletonGetter(BrowserOptions);
 
 BrowserOptions.prototype = {
   // Inherit BrowserOptions from OptionsPage.
@@ -58,12 +53,11 @@ BrowserOptions.prototype = {
     }
 
     $('defaultBrowserUseAsDefaultButton').disabled = isDefault;
-  },
+  }
 };
 
 BrowserOptions.updateDefaultBrowserStateCallback = function(statusString,
                                                             isDefault) {
   BrowserOptions.getInstance().updateDefaultBrowserState_(statusString,
                                                           isDefault);
-}
-
+};

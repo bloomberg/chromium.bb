@@ -6,16 +6,11 @@
 // AdvancedOptions class
 // Encapsulated handling of advanced options page.
 //
-function AdvancedOptions(model) {
+function AdvancedOptions() {
   OptionsPage.call(this, 'advanced', templateData.advancedPage, 'advancedPage');
 }
 
-AdvancedOptions.getInstance = function() {
-  if (!AdvancedOptions.instance_) {
-    AdvancedOptions.instance_ = new AdvancedOptions(null);
-  }
-  return AdvancedOptions.instance_;
-}
+cr.addSingletonGetter(AdvancedOptions);
 
 AdvancedOptions.prototype = {
   // Inherit AdvancedOptions from OptionsPage.

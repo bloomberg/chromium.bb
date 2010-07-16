@@ -12,17 +12,7 @@
 function Preferences() {
 }
 
-/**
- * Gets Preferences object instance.
- * @return Preferences singleton instance.
- * @type Preferences
- */
-Preferences.getInstance = function() {
-  if (Preferences.instance_)
-    return Preferences.instance_;
-  Preferences.instance_ = new Preferences();
-  return Preferences.instance_;
-};
+cr.addSingletonGetter(Preferences);
 
 /**
  * Extracts preference value.
@@ -143,5 +133,3 @@ Preferences.prefsChangedCallback = function(notification) {
   event.value = notification[1];
   Preferences.getInstance().dispatchEvent(event);
 };
-
-

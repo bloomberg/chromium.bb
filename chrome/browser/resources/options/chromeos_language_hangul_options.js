@@ -9,17 +9,12 @@
  * Encapsulated handling of ChromeOS language Hangul options page.
  * @constructor
  */
-function LanguageHangulOptions(model) {
+function LanguageHangulOptions() {
   OptionsPage.call(this, 'languageHangul', templateData.languageHangulPage,
                    'languageHangulPage');
 }
 
-LanguageHangulOptions.getInstance = function() {
-  if (LanguageHangulOptions.instance_)
-    return LanguageHangulOptions.instance_;
-  LanguageHangulOptions.instance_ = new LanguageHangulOptions(null);
-  return LanguageHangulOptions.instance_;
-}
+cr.addSingletonGetter(LanguageHangulOptions);
 
 // Inherit LanguageHangulOptions from OptionsPage.
 LanguageHangulOptions.prototype = {
@@ -33,5 +28,5 @@ LanguageHangulOptions.prototype = {
     OptionsPage.prototype.initializePage.call(this);
     var keyboardLayout = $('keyboard-layout-select');
     keyboardLayout.initializeValues(templateData.keyboardLayoutList)
-  },
+  }
 };

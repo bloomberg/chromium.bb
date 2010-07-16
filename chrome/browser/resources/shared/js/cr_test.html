@@ -223,6 +223,27 @@ function testDefinePropertyBoolAttrEvent() {
   assertEquals(1, count);
 }
 
+function testAddSingletonGetter() {
+  function Foo() {};
+  cr.addSingletonGetter(Foo);
+
+  assertNotNull('Should add get instance function', Foo.getInstance);
+
+  var x = Foo.getInstance();
+  assertNotNull('Should successfully create an object', x);
+
+  var y = Foo.getInstance();
+  assertEquals('Should return the same object', x, y);
+
+  delete Foo.instance_;
+
+  var z = Foo.getInstance();
+  assertNotNull('Should work after clearing for testing', z);
+
+  assertNotEquals('Should return a different object after clearing for testing',
+      x, z);
+}
+
 
 </script>
 
