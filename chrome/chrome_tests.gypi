@@ -17,6 +17,9 @@
   },
   'targets': [
     {
+      'includes': ['test/interactive_ui/interactive_ui_tests.gypi']
+    },
+    {
       # This target contains mocks and test utilities that don't belong in
       # production libraries but are used by more than one test executable.
       'target_name': 'test_support_common',
@@ -203,7 +206,7 @@
           ],
         }],
       ],
-     },
+    },
     {
       'target_name': 'automated_ui_tests',
       'type': 'executable',
@@ -2326,10 +2329,6 @@
               ],
             }],
           ],
-        },
-        # TODO(port): enable on mac.
-        {
-          'includes': ['test/interactive_ui/interactive_ui_tests.gypi']
         },
       ],
     },],  # OS!="mac"
