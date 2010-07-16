@@ -871,3 +871,23 @@
    fun:Value::CreateStringValue
    fun:ExtensionPrefStoreTest_*_Test::TestBody
 }
+{
+   bug_49300_a
+   Heapcheck:Leak
+   fun:disk_cache::StorageBlock::AllocateData
+   fun:disk_cache::StorageBlock::Data
+}
+{
+   bug_49300_b
+   Heapcheck:Leak
+   fun:disk_cache::BackendImpl::CreateEntryImpl
+   fun:disk_cache::BackendImpl::SyncCreateEntry
+   fun:disk_cache::BackendIO::ExecuteBackendOperation
+}
+{
+   bug_49300_c
+   Heapcheck:Leak
+   ...
+   fun:disk_cache::BackendImpl::NewEntry
+   fun:disk_cache::BackendImpl::MatchEntry
+}
