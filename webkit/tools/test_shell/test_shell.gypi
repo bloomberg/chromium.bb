@@ -37,6 +37,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:inspector_resources',
         '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/webkit/support/webkit_support.gyp:appcache',
         '<(DEPTH)/webkit/support/webkit_support.gyp:database',
@@ -44,7 +45,6 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:npapi_layout_test_plugin',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
-        '<(DEPTH)/webkit/webkit.gyp:inspector_resources',
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
       'sources': [

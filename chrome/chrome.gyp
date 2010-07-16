@@ -32,7 +32,7 @@
       'worker',
       'service',
       '../printing/printing.gyp:printing',
-      '../webkit/webkit.gyp:inspector_resources',
+      '../third_party/WebKit/WebKit/chromium/WebKit.gyp:inspector_resources',
     ],
     'nacl_win64_dependencies': [
       'common_nacl_win64',
