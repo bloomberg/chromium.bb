@@ -420,7 +420,8 @@ TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
+// Flaky, see http://crbug.com/49381
+TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "worker-simple.html",
     "shared-worker-simple.html",
