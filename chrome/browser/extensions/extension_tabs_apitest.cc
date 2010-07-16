@@ -17,6 +17,14 @@
 #define MAYBE_Tabs Tabs
 #endif
 
+// TabOnRemoved is flaky on chromeos and linux views debug build.
+// http://crbug.com/49258
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS) && !defined(NDEBUG)
+#define MAYBE_TabOnRemoved FLAKY_TabOnRemoved
+#else
+#define MAYBE_TabOnRemoved TabOnRemoved
+#endif
+
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(StartHTTPServer());
@@ -40,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabConnect) {
   ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabOnRemoved) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOnRemoved) {
   ASSERT_TRUE(StartHTTPServer());
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
