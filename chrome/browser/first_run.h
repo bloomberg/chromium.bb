@@ -27,7 +27,7 @@ class ProcessSingleton;
 // desktop shortcut.
 //
 // The way we detect first-run is by looking at a 'sentinel' file.
-// If it does not exists we understand that we need to do the first time
+// If it does not exist we understand that we need to do the first time
 // install work for this user. After that the sentinel file is created.
 class FirstRun {
  public:
@@ -64,6 +64,16 @@ class FirstRun {
   // This function might or might not show a visible UI depending on the
   // cmdline parameters.
   static int ImportNow(Profile* profile, const CommandLine& cmdline);
+
+  // Automatically import history and home page (and search engine, if
+  // nonorganic).
+  static void AutoImport(Profile* profile,
+      bool homepage_defined,
+      int import_items,
+      int dont_import_items,
+      bool search_engine_experiment,
+      bool randomize_search_engine_experiment,
+      ProcessSingleton* process_singleton);
 
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from a standard

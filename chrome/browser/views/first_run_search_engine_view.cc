@@ -14,7 +14,6 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "gfx/font.h"
 #include "grit/browser_resources.h"
@@ -155,13 +154,11 @@ void SearchEngineChoice::SetChoiceViewBounds(int x, int y, int width,
 }
 
 FirstRunSearchEngineView::FirstRunSearchEngineView(
-    SearchEngineSelectionObserver* observer, Profile* profile, bool randomize)
+    Profile* profile, bool randomize)
     : background_image_(NULL),
       profile_(profile),
-      observer_(observer),
       text_direction_is_rtl_(base::i18n::IsRTL()),
       randomize_(randomize) {
-  DCHECK(observer);
   // Don't show ourselves until all the search engines have loaded from
   // the profile -- otherwise we have nothing to show.
   SetVisible(false);
@@ -185,9 +182,14 @@ FirstRunSearchEngineView::~FirstRunSearchEngineView() {
 void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,
                                              const views::Event& event) {
   SearchEngineChoice* choice = static_cast<SearchEngineChoice*>(sender);
-  profile_->GetTemplateURLModel()->SetSearchEngineDialogSlot(
-      choice->slot());
-  observer_->SearchEngineChosen(choice->GetSearchEngine());
+  TemplateURLModel* template_url_model = profile_->GetTemplateURLModel();
+  DCHECK(template_url_model);
+  template_url_model->SetSearchEngineDialogSlot(choice->slot());
+  const TemplateURL* default_search = choice->GetSearchEngine();
+  if (default_search)
+    template_url_model->SetDefaultSearchProvider(default_search);
+
+  MessageLoop::current()->Quit();
 }
 
 void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
@@ -204,10 +206,8 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
 
   // If we have fewer than three search engines, signal that the search engine
   // experiment is over, leaving imported default search engine setting intact.
-  if (template_urls.size() < 3) {
-    observer_->SearchEngineChosen(NULL);
+  if (template_urls.size() < 3)
     return;
-  }
 
   std::vector<const TemplateURL*>::iterator search_engine_iter;
 

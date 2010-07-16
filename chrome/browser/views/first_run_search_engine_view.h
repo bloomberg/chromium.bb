@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "chrome/browser/views/keyword_editor_view.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "gfx/size.h"
 #include "views/controls/button/native_button.h"
 #include "views/view.h"
@@ -73,14 +73,6 @@ class SearchEngineChoice : public views::NativeButton {
   DISALLOW_COPY_AND_ASSIGN(SearchEngineChoice);
 };
 
-// This class receives a callback when the search engine dialog closes.
-class SearchEngineSelectionObserver {
- public:
-  virtual ~SearchEngineSelectionObserver() {}
-  // Called when the user has chosen a search engine.
-  virtual void SearchEngineChosen(const TemplateURL* default_search) = 0;
-};
-
 // This class displays a large search engine choice dialog view during
 // initial first run import.
 class FirstRunSearchEngineView
@@ -89,13 +81,9 @@ class FirstRunSearchEngineView
       public views::WindowDelegate,
       public TemplateURLModelObserver {
  public:
-  // |observer| is the FirstRunView that waits for us to pass back a search
-  // engine choice.
-  // |profile| allows us to get the set of imported search engines, and
-  // display the KeywordEditorView on demand.
+  // |profile| allows us to get the set of imported search engines.
   // |randomize| is true if logos are to be displayed in random order.
-  FirstRunSearchEngineView(SearchEngineSelectionObserver* observer,
-                           Profile* profile, bool randomize);
+  FirstRunSearchEngineView(Profile* profile, bool randomize);
 
   virtual ~FirstRunSearchEngineView();
 
@@ -134,9 +122,6 @@ class FirstRunSearchEngineView
 
   // The profile associated with this import process.
   Profile* profile_;
-
-  // Gets called back when one of the choice buttons is pressed.
-  SearchEngineSelectionObserver* observer_;
 
   bool text_direction_is_rtl_;
 

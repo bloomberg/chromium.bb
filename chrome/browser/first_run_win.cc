@@ -26,6 +26,7 @@
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "base/win_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
@@ -38,12 +39,13 @@
 #include "chrome/browser/hang_monitor/hung_window_detector.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/views/first_run_view.h"
+#include "chrome/browser/views/first_run_search_engine_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -72,6 +74,8 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
+#include "views/window/window_delegate.h"
+#include "views/window/window_win.h"
 
 namespace {
 
@@ -344,8 +348,30 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     FirstRun::SetMinimalFirstRunBubblePref();
   }
 
+  // History is imported automatically, unless turned off in master_prefs.
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportHistoryPref, &value)
+      && !value) {
+    out_prefs->dont_import_items |= importer::HISTORY;
+  }
+
+  // Home page is imported automatically only in organic builds, and can be
+  // turned off in master_prefs.
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportHomePagePref, &value)
+      && !value) {
+    out_prefs->dont_import_items |= importer::HOME_PAGE;
+  }
+
+  // Bookmarks are never imported unless specifically turned on.
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportBookmarksPref, &value)
+      && value) {
+    out_prefs->do_import_items |= importer::FAVORITES;
+  }
+
   // Note we are skipping all other master preferences if skip-first-run-ui
-  // is *not* specified.
+  // is *not* specified. (That is, we continue only if skipping first run ui.)
   if (!installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroSkipFirstRunPref, &value) ||
       !value)
@@ -365,19 +391,6 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       installer_util::master_preferences::kDistroShowWelcomePage, &value) &&
       value)
     FirstRun::SetShowWelcomePagePref();
-
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHistoryPref, &value) &&
-      value)
-    import_items += importer::HISTORY;
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportBookmarksPref, &value) &&
-      value)
-    import_items += importer::FAVORITES;
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHomePagePref, &value) &&
-      value)
-    import_items += importer::HOME_PAGE;
 
   std::wstring import_bookmarks_path;
   installer_util::GetDistroStringPreference(prefs.get(),
@@ -490,49 +503,6 @@ bool Upgrade::IsUpdatePendingRestart() {
   return file_util::PathExists(new_chrome_exe);
 }
 
-bool OpenFirstRunDialog(Profile* profile,
-                        bool homepage_defined,
-                        int import_items,
-                        int dont_import_items,
-                        bool search_engine_experiment,
-                        bool randomize_search_engine_experiment,
-                        ProcessSingleton* process_singleton) {
-  DCHECK(profile);
-  DCHECK(process_singleton);
-
-  // We need the FirstRunView to outlive its parent, as we retrieve the accept
-  // state from it after the dialog has been closed.
-  scoped_ptr<FirstRunView> first_run_view(
-      new FirstRunView(profile,
-                       homepage_defined,
-                       import_items,
-                       dont_import_items,
-                       search_engine_experiment,
-                       randomize_search_engine_experiment));
-  first_run_view->set_parent_owned(false);
-  views::Window* first_run_ui = views::Window::CreateChromeWindow(
-      NULL, gfx::Rect(), first_run_view.get());
-  DCHECK(first_run_ui);
-
-  // We need to avoid dispatching new tabs when we are doing the import
-  // because that will lead to data corruption or a crash. Lock() does that.
-  // If a CopyData message does come in while the First Run UI is visible,
-  // then we will attempt to set first_run_ui as the foreground window.
-  process_singleton->Lock(first_run_ui->GetNativeWindow());
-
-  first_run_ui->Show();
-
-  // We must now run a message loop (will be terminated when the First Run UI
-  // is closed) so that the window can receive messages and we block the
-  // browser window from showing up. We pass the accelerator handler here so
-  // that keyboard accelerators (Enter, Esc, etc) work in the dialog box.
-  views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->Run(&accelerator_handler);
-  process_singleton->Unlock();
-
-  return first_run_view->accepted();
-}
-
 namespace {
 
 // This class is used by FirstRun::ImportSettings to determine when the import
@@ -642,6 +612,75 @@ bool DecodeImportParams(const std::wstring& encoded,
 }
 
 }  // namespace
+
+void FirstRun::AutoImport(Profile* profile,
+    bool homepage_defined,
+    int import_items,
+    int dont_import_items,
+    bool search_engine_experiment,
+    bool randomize_search_engine_experiment,
+    ProcessSingleton* process_singleton) {
+  FirstRun::CreateChromeDesktopShortcut();
+  // Windows 7 has deprecated the quick launch bar.
+  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
+    CreateChromeQuickLaunchShortcut();
+
+  scoped_refptr<ImporterHost> importer_host;
+  importer_host = new ImporterHost();
+  int items = 0;
+  // History and home page are always imported unless turned off in
+  // master_preferences.
+  if (!(dont_import_items & importer::HISTORY))
+    items = items | importer::HISTORY;
+  if (!((dont_import_items & importer::HOME_PAGE) || homepage_defined))
+    items = items | importer::HOME_PAGE;
+
+  // Search engine and bookmarks are never imported unless turned on
+  // in master_preferences.
+  if (import_items & importer::SEARCH_ENGINES)
+    items = items | importer::SEARCH_ENGINES;
+  if (import_items & importer::FAVORITES)
+    items = items | importer::FAVORITES;
+  // We need to avoid dispatching new tabs when we are importing because
+  // that will lead to data corruption or a crash. Because there is no UI for
+  // the import process, we pass NULL as the window to bring to the foreground
+  // when a CopyData message comes in; this causes the message to be silently
+  // discarded, which is the correct behavior during the import process.
+  process_singleton->Lock(NULL);
+
+  // Index 0 is the default browser.
+  FirstRun::ImportSettings(profile,
+      importer_host->GetSourceProfileInfoAt(0).browser_type, items, NULL);
+  UserMetrics::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
+
+  // Launch the search engine dialog only if build is organic.
+  std::wstring brand;
+  GoogleUpdateSettings::GetBrand(&brand);
+  if (GoogleUpdateSettings::IsOrganic(brand)) {
+    // The home page string may be set in the preferences, but the user should
+    // initially use Chrome with the NTP as home page in organic builds.
+    profile->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+
+    // Search engine dialog is shown in organic builds unless overridden by
+    // master_preferences.
+    if (!(import_items & importer::SEARCH_ENGINES)) {
+      views::Window* search_engine_dialog = views::Window::CreateChromeWindow(
+          NULL,
+          gfx::Rect(),
+          new FirstRunSearchEngineView(profile,
+          randomize_search_engine_experiment));
+      DCHECK(search_engine_dialog);
+
+      search_engine_dialog->Show();
+      views::AcceleratorHandler accelerator_handler;
+      MessageLoopForUI::current()->Run(&accelerator_handler);
+      search_engine_dialog->Close();
+    }
+  }
+
+  process_singleton->Unlock();
+  FirstRun::CreateSentinel();
+}
 
 bool FirstRun::ImportSettings(Profile* profile, int browser_type,
                               int items_to_import,

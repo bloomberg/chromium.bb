@@ -137,17 +137,11 @@ int KeywordEditorView::GetDialogButtons() const {
 }
 
 bool KeywordEditorView::Accept() {
-  if (observer_)
-      observer_->SearchEngineChosen(
-          profile_->GetTemplateURLModel()->GetDefaultSearchProvider());
   open_window = NULL;
   return true;
 }
 
 bool KeywordEditorView::Cancel() {
-  if (observer_)
-      observer_->SearchEngineChosen(
-          profile_->GetTemplateURLModel()->GetDefaultSearchProvider());
   open_window = NULL;
   return true;
 }

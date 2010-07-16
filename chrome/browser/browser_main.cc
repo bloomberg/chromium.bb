@@ -1066,6 +1066,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // touches reads preferences.
   if (is_first_run) {
     if (!first_run_ui_bypass) {
+#if defined(OS_WIN)
+      FirstRun::AutoImport(profile,
+                           master_prefs.homepage_defined,
+                           master_prefs.do_import_items,
+                           master_prefs.dont_import_items,
+                           master_prefs.run_search_engine_experiment,
+                           master_prefs.randomize_search_engine_experiment,
+                           &process_singleton);
+#else
       if (!OpenFirstRunDialog(profile,
                               master_prefs.homepage_defined,
                               master_prefs.do_import_items,
@@ -1073,9 +1082,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
                               master_prefs.run_search_engine_experiment,
                               master_prefs.randomize_search_engine_experiment,
                               &process_singleton)) {
-        // The user cancelled the first run dialog box, we should exit Chrome.
         return ResultCodes::NORMAL_EXIT;
       }
+#endif
 #if defined(OS_POSIX)
       // On Windows, the download is tagged with enable/disable stats so there
       // is no need for this code.
@@ -1085,7 +1094,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       if (GoogleUpdateSettings::GetCollectStatsConsent())
         local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
 #endif  // OS_POSIX
-    }
+    }  // if (!first_run_ui_bypass)
 
     Browser::SetNewHomePagePrefs(user_prefs);
   }
