@@ -101,3 +101,6 @@ BUG_PODIVILOV MAC : svg/custom/clip-path-child-changes.svg = TEXT
 // TODO(ager): started crashing after the v8 roll of r52309.
 // http://crbug.com/49099
 BUG_AGER LINUX DEBUG : fast/js/excessive-comma-usage.html = CRASH
+
+// TODO(johhnyg): Fix this
+BUG_JOHNNYG : fast/forms/input-file-directory-upload.html = CRASH TIMEOUT
