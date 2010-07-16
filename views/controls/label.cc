@@ -365,10 +365,8 @@ gfx::Rect Label::GetTextBounds() const {
     case ALIGN_LEFT:
       break;
     case ALIGN_CENTER:
-      // We put any extra margin pixel on the left rather than the right.  We
-      // used to do this because measurement on Windows used
-      // GetTextExtentPoint32(), which could report a value one too large on the
-      // right; we now use DrawText(), and who knows if it can also do this.
+      // We put any extra margin pixel on the left rather than the right since
+      // GetTextExtentPoint32() can report a value one too large on the right.
       text_origin.Offset((available_rect.width() + 1 - text_size.width()) / 2,
                          0);
       break;
