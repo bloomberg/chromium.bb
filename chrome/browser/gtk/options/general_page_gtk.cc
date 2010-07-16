@@ -168,7 +168,7 @@ void GeneralPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
     // Homepage is 'chrome://newtab' and managed, disable the radios.
     bool disable_homepage_choice_buttons =
         new_tab_page_is_home_page_managed ||
-        homepage_managed && homepage_url_is_new_tab;
+        (homepage_managed && homepage_url_is_new_tab);
     if (!homepage_url_is_new_tab) {
       gtk_entry_set_text(GTK_ENTRY(homepage_use_url_entry_),
                          homepage_.GetValue().c_str());
