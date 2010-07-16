@@ -747,7 +747,7 @@
 {
    bug_46678_e
    Heapcheck:Leak
-   fun:Callback3::Type* NewCallback
+   fun:Callback*::Type* NewCallback
    fun:remoting::SessionManager::DoEncode
    fun:void DispatchToMethod
    fun:RunnableMethod::Run
