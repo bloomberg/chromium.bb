@@ -420,12 +420,6 @@ TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-// http://crbug.com/40995
-// https://bugs.webkit.org/show_bug.cgi?id=37518
-#if defined(OS_WIN)
-#define WorkerWebSocketLayoutTests FAILS_WorkerWebSocketLayoutTests
-#endif
-
 TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "worker-simple.html",
