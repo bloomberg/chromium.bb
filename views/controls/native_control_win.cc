@@ -73,16 +73,20 @@ void NativeControlWin::ViewHierarchyChanged(bool is_add, View* parent,
 }
 
 void NativeControlWin::VisibilityChanged(View* starting_from, bool is_visible) {
-  if (!is_visible) {
+  // We might get called due to visibility changes at any point in the
+  // hierarchy, lets check whether we are really visible or not.
+  bool visible = IsVisibleInRootView();
+  if (!visible && native_view()) {
     // We destroy the child control HWND when we become invisible because of the
     // performance cost of maintaining many HWNDs.
     HWND hwnd = native_view();
     Detach();
     DestroyWindow(hwnd);
-  } else if (!native_view()) {
+  } else if (visible && !native_view()) {
     if (GetWidget())
       CreateNativeControl();
-  } else {
+  }
+  if (visible) {
     // The view becomes visible after native control is created.
     // Layout now.
     Layout();
