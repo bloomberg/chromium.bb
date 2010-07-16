@@ -31,6 +31,7 @@
 #include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_extension_tracker.h"
+#include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/extension_port_container.h"
@@ -1714,9 +1715,7 @@ void AutomationProvider::SetWindowDimensions(Browser* browser,
   if (args->GetInteger(L"height", &height))
     rect.set_height(height);
   browser->window()->SetBounds(rect);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, std::string("{}"), true);
-  Send(reply_message);
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetBrowserInfo" }
@@ -1725,9 +1724,6 @@ void AutomationProvider::SetWindowDimensions(Browser* browser,
 void AutomationProvider::GetBrowserInfo(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
-  std::string json_return;
-  bool reply_return = true;
-
   DictionaryValue* properties = new DictionaryValue;
   properties->SetString(L"ChromeVersion", chrome::kChromeVersion);
   properties->SetString(L"BrowserProcessExecutableName",
@@ -1838,11 +1834,7 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
     }
   }
   return_value->Set(L"extension_processes", extension_processes);
-
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 // Sample json input: { "command": "GetHistoryInfo",
@@ -1879,46 +1871,40 @@ void AutomationProvider::GetHistoryInfo(Browser* browser,
 void AutomationProvider::AddHistoryItem(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
-  bool reply_return = true;
-  std::string json_return = "{}";
-
   DictionaryValue* item = NULL;
   args->GetDictionary(L"item", &item);
   string16 url_text;
   string16 title;
   base::Time time = base::Time::Now();
+  AutomationJSONReply reply(this, reply_message);
 
-  if (item->GetString("url", &url_text)) {
-    GURL gurl(url_text);
-    item->GetString("title", &title);  // Don't care if it fails.
-    int it;
-    double dt;
-    if (item->GetInteger(L"time", &it))
-      time = base::Time::FromTimeT(it);
-    else if (item->GetReal(L"time", &dt))
-      time = base::Time::FromDoubleT(dt);
-
-    // Ideas for "dummy" values (e.g. id_scope) came from
-    // chrome/browser/autocomplete/history_contents_provider_unittest.cc
-    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    const void* id_scope = reinterpret_cast<void*>(1);
-    hs->AddPage(gurl, time,
-                id_scope,
-                0,
-                GURL(),
-                PageTransition::LINK,
-                history::RedirectList(),
-                false);
-    if (title.length())
-      hs->SetPageTitle(gurl, title);
-  } else {
-    json_return = JSONErrorString("bad args (no URL in dict?)");
-    reply_return = false;
+  if (!item->GetString("url", &url_text)) {
+    reply.SendError("bad args (no URL in dict?)");
+    return;
   }
+  GURL gurl(url_text);
+  item->GetString("title", &title);  // Don't care if it fails.
+  int it;
+  double dt;
+  if (item->GetInteger(L"time", &it))
+    time = base::Time::FromTimeT(it);
+  else if (item->GetReal(L"time", &dt))
+    time = base::Time::FromDoubleT(dt);
 
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  // Ideas for "dummy" values (e.g. id_scope) came from
+  // chrome/browser/autocomplete/history_contents_provider_unittest.cc
+  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  const void* id_scope = reinterpret_cast<void*>(1);
+  hs->AddPage(gurl, time,
+              id_scope,
+              0,
+              GURL(),
+              PageTransition::LINK,
+              history::RedirectList(),
+              false);
+  if (title.length())
+    hs->SetPageTitle(gurl, title);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetDownloadsInfo" }
@@ -1926,22 +1912,20 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
 void AutomationProvider::GetDownloadsInfo(Browser* browser,
                                           DictionaryValue* args,
                                           IPC::Message* reply_message) {
-  std::string json_return;
-  bool reply_return = true;
   AutomationProviderDownloadManagerObserver observer;
   std::vector<DownloadItem*> downloads;
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  AutomationJSONReply reply(this, reply_message);
 
   if (!profile_->HasCreatedDownloadManager()) {
-    json_return = JSONErrorString("no download manager");
-    reply_return = false;
-  } else {
-    // Use DownloadManager's GetDownloads() method and not GetCurrentDownloads()
-    // since that would be transient; a download might enter and empty out
-    // the current download queue too soon to be noticed.
-    profile_->GetDownloadManager()->GetDownloads(&observer, L"");
-    downloads = observer.Downloads();
+    reply.SendError("no download manager");
+    return;
   }
+  // Use DownloadManager's GetDownloads() method and not GetCurrentDownloads()
+  // since that would be transient; a download might enter and empty out
+  // the current download queue too soon to be noticed.
+  profile_->GetDownloadManager()->GetDownloads(&observer, L"");
+  downloads = observer.Downloads();
 
   std::map<DownloadItem::DownloadState, std::string> state_to_string;
   state_to_string[DownloadItem::IN_PROGRESS] = std::string("IN_PROGRESS");
@@ -1979,11 +1963,8 @@ void AutomationProvider::GetDownloadsInfo(Browser* browser,
     list_of_downloads->Append(dl_item_value);
   }
   return_value->Set(L"downloads", list_of_downloads);
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
 
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  reply.SendSuccess(return_value.get());
   // All value objects allocated above are owned by |return_value|
   // and get freed by it.
 }
@@ -1992,27 +1973,19 @@ void AutomationProvider::WaitForDownloadsToComplete(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  std::string json_return;
-  bool reply_return = true;
   AutomationProviderDownloadManagerObserver observer;
   std::vector<DownloadItem*> downloads;
+  AutomationJSONReply reply(this, reply_message);
 
   // Look for a quick return.
   if (!profile_->HasCreatedDownloadManager()) {
-    json_return = JSONErrorString("no download manager");
-    reply_return = false;
-  } else {
-    profile_->GetDownloadManager()->GetCurrentDownloads(&observer,
-                                                        FilePath());
-    downloads = observer.Downloads();
-    if (downloads.size() == 0) {
-      json_return = "{}";
-    }
+    reply.SendSuccess(NULL);  // No download manager.
+    return;
   }
-  if (!json_return.empty()) {
-    AutomationMsg_SendJSONRequest::WriteReplyParams(
-        reply_message, json_return, reply_return);
-    Send(reply_message);
+  profile_->GetDownloadManager()->GetCurrentDownloads(&observer, FilePath());
+  downloads = observer.Downloads();
+  if (downloads.size() == 0) {
+    reply.SendSuccess(NULL);
     return;
   }
 
@@ -2033,9 +2006,6 @@ void AutomationProvider::WaitForDownloadsToComplete(
 void AutomationProvider::GetPrefsInfo(Browser* browser,
                                       DictionaryValue* args,
                                       IPC::Message* reply_message) {
-  std::string json_return;
-  bool reply_return = true;
-
   const PrefService::PreferenceSet& prefs =
       profile_->GetPrefs()->preference_set();
   DictionaryValue* items = new DictionaryValue;
@@ -2045,42 +2015,35 @@ void AutomationProvider::GetPrefsInfo(Browser* browser,
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->Set(L"prefs", items);  // return_value owns items.
-
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 // Sample json input: { "command": "SetPrefs", "path": path, "value": value }
 void AutomationProvider::SetPrefs(Browser* browser,
                                   DictionaryValue* args,
                                   IPC::Message* reply_message) {
-  bool reply_return = true;
-  std::string json_return = "{}";
   std::wstring path;
   Value* val;
+  AutomationJSONReply reply(this, reply_message);
   if (args->GetString(L"path", &path) && args->Get(L"value", &val)) {
     PrefService* pref_service = profile_->GetPrefs();
     const PrefService::Preference* pref =
         pref_service->FindPreference(path.c_str());
     if (!pref) {  // Not a registered pref.
-      json_return = JSONErrorString("pref not registered.");
-      reply_return = false;
+      reply.SendError("pref not registered.");
+      return;
     } else if (pref->IsManaged()) {  // Do not attempt to change a managed pref.
-      json_return = JSONErrorString("pref is managed. cannot be changed.");
-      reply_return = false;
+      reply.SendError("pref is managed. cannot be changed.");
+      return;
     } else {  // Set the pref.
       pref_service->Set(path.c_str(), *val);
     }
   } else {
-    json_return = JSONErrorString("no pref path or value given.");
-    reply_return = false;
+    reply.SendError("no pref path or value given.");
+    return;
   }
 
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetOmniboxInfo" }
@@ -2088,8 +2051,6 @@ void AutomationProvider::SetPrefs(Browser* browser,
 void AutomationProvider::GetOmniboxInfo(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
-  std::string json_return;
-  bool reply_return = true;
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   LocationBar* loc_bar = browser->window()->GetLocationBar();
@@ -2120,10 +2081,7 @@ void AutomationProvider::GetOmniboxInfo(Browser* browser,
   properties->SetString(L"text", edit_view->GetText());
   return_value->Set(L"properties", properties);
 
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 // Sample json input: { "command": "SetOmniboxText",
@@ -2131,24 +2089,18 @@ void AutomationProvider::GetOmniboxInfo(Browser* browser,
 void AutomationProvider::SetOmniboxText(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
-  std::string json_return = "{}";
-  bool reply_return = true;
   std::wstring text;
-
+  AutomationJSONReply reply(this, reply_message);
   if (!args->GetString(L"text", &text)) {
-    json_return = JSONErrorString("text missing");
-    reply_return = false;
-  } else {
-    browser->FocusLocationBar();
-    LocationBar* loc_bar = browser->window()->GetLocationBar();
-    AutocompleteEditView* edit_view = loc_bar->location_entry();
-    edit_view->model()->OnSetFocus(false);
-    edit_view->SetUserText(text);
+    reply.SendError("text missing");
+    return;
   }
-
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  browser->FocusLocationBar();
+  LocationBar* loc_bar = browser->window()->GetLocationBar();
+  AutocompleteEditView* edit_view = loc_bar->location_entry();
+  edit_view->model()->OnSetFocus(false);
+  edit_view->SetUserText(text);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "OmniboxMovePopupSelection",
@@ -2159,22 +2111,16 @@ void AutomationProvider::OmniboxMovePopupSelection(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  std::string json_return = "{}";
-  bool reply_return = true;
   int count;
-
+  AutomationJSONReply reply(this, reply_message);
   if (!args->GetInteger(L"count", &count)) {
-    json_return = JSONErrorString("count missing");
-    reply_return = false;
-  } else {
-    LocationBar* loc_bar = browser->window()->GetLocationBar();
-    AutocompleteEditModel* model = loc_bar->location_entry()->model();
-    model->OnUpOrDownKeyPressed(count);
+    reply.SendError("count missing");
+    return;
   }
-
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  LocationBar* loc_bar = browser->window()->GetLocationBar();
+  AutocompleteEditModel* model = loc_bar->location_entry()->model();
+  model->OnUpOrDownKeyPressed(count);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "OmniboxAcceptInput" }
@@ -2212,9 +2158,6 @@ void AutomationProvider::GetInitialLoadTimes(
 void AutomationProvider::GetPluginsInfo(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
-  std::string json_return;
-  bool reply_return = true;
-
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
   ListValue* items = new ListValue;
@@ -2254,10 +2197,7 @@ void AutomationProvider::GetPluginsInfo(Browser* browser,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->Set(L"plugins", items);  // return_value owns items.
 
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 // Sample json input:
@@ -2266,21 +2206,17 @@ void AutomationProvider::GetPluginsInfo(Browser* browser,
 void AutomationProvider::EnablePlugin(Browser* browser,
                                       DictionaryValue* args,
                                       IPC::Message* reply_message) {
-  std::string json_return = "{}";
-  bool reply_return = true;
   FilePath::StringType path;
+  AutomationJSONReply reply(this, reply_message);
   if (!args->GetString(L"path", &path)) {
-    json_return = JSONErrorString("path not specified.");
-    reply_return = false;
+    reply.SendError("path not specified.");
+    return;
   } else if (!NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(path))) {
-    json_return = StringPrintf("{\"error\": \"Could not enable plugin"
-                               " for path %s.\"}", path.c_str());
-    reply_return = false;
+    reply.SendError(StringPrintf("Could not enable plugin for path %s.",
+                                 path.c_str()));
+    return;
   }
-
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input:
@@ -2289,21 +2225,17 @@ void AutomationProvider::EnablePlugin(Browser* browser,
 void AutomationProvider::DisablePlugin(Browser* browser,
                                        DictionaryValue* args,
                                        IPC::Message* reply_message) {
-  std::string json_return = "{}";
-  bool reply_return = true;
   FilePath::StringType path;
+  AutomationJSONReply reply(this, reply_message);
   if (!args->GetString(L"path", &path)) {
-    json_return = JSONErrorString("path not specified.");
-    reply_return = false;
+    reply.SendError("path not specified.");
+    return;
   } else if (!NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(path))) {
-    json_return = StringPrintf("{\"error\": \"Could not enable plugin"
-                               " for path %s.\"}", path.c_str());
-    reply_return = false;
+    reply.SendError(StringPrintf("Could not disable plugin for path %s.",
+                                 path.c_str()));
+    return;
   }
-
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input:
@@ -2315,41 +2247,34 @@ void AutomationProvider::DisablePlugin(Browser* browser,
 void AutomationProvider::SaveTabContents(Browser* browser,
                                          DictionaryValue* args,
                                          IPC::Message* reply_message) {
-  std::string json_return;
   int tab_index = 0;
   FilePath::StringType filename;
   FilePath::StringType parent_directory;
   TabContents* tab_contents = NULL;
+  AutomationJSONReply reply(this, reply_message);
 
   if (!args->GetInteger(L"tab_index", &tab_index) ||
       !args->GetString(L"filename", &filename)) {
-    json_return = JSONErrorString("tab_index or filename param missing");
+    reply.SendError("tab_index or filename param missing");
+    return;
   } else {
     tab_contents = browser->GetTabContentsAt(tab_index);
     if (!tab_contents) {
-      json_return = JSONErrorString("no tab at tab_index");
-    }
-  }
-  if (tab_contents) {
-    // We're doing a SAVE_AS_ONLY_HTML so the the directory path isn't
-    // used.  Nevertheless, SavePackage requires it be valid.  Sigh.
-    parent_directory = FilePath(filename).DirName().value();
-    if (!tab_contents->SavePage(FilePath(filename), FilePath(parent_directory),
-                                SavePackage::SAVE_AS_ONLY_HTML)) {
-      json_return = JSONErrorString("Could not initiate SavePage");
-    } else {
-      // The observer will delete itself when done.
-      new SavePackageNotificationObserver(tab_contents->save_package(),
-                                          this, reply_message);
+      reply.SendError("no tab at tab_index");
       return;
     }
   }
-
-  // If we get here, error.
-  DCHECK(!json_return.empty());
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, false);
-  Send(reply_message);
+  // We're doing a SAVE_AS_ONLY_HTML so the the directory path isn't
+  // used.  Nevertheless, SavePackage requires it be valid.  Sigh.
+  parent_directory = FilePath(filename).DirName().value();
+  if (!tab_contents->SavePage(FilePath(filename), FilePath(parent_directory),
+                              SavePackage::SAVE_AS_ONLY_HTML)) {
+    reply.SendError("Could not initiate SavePage");
+    return;
+  }
+  // The observer will delete itself when done.
+  new SavePackageNotificationObserver(tab_contents->save_package(),
+                                      this, reply_message);
 }
 
 // Refer to ImportSettings() in chrome/test/pyautolib/pyauto.py for sample
@@ -2358,8 +2283,6 @@ void AutomationProvider::SaveTabContents(Browser* browser,
 void AutomationProvider::ImportSettings(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
-  std::string json_return = "{}";
-
   // Map from the json string passed over to the import item masks.
   std::map<std::string, ImportItem> string_to_import_item;
   string_to_import_item["HISTORY"] = importer::HISTORY;
@@ -2378,11 +2301,8 @@ void AutomationProvider::ImportSettings(Browser* browser,
   if (!args->GetString(L"import_from", &browser_name) ||
       !args->GetBoolean(L"first_run", &first_run) ||
       !args->GetList(L"import_items", &import_items_list)) {
-    std::string json_return =
-        JSONErrorString("Incorrect type for one or more of the arguments.");
-    AutomationMsg_SendJSONRequest::WriteReplyParams(
-        reply_message, json_return, false);
-    Send(reply_message);
+    AutomationJSONReply(this, reply_message).SendError(
+        "Incorrect type for one or more of the arguments.");
     return;
   }
 
@@ -2392,11 +2312,8 @@ void AutomationProvider::ImportSettings(Browser* browser,
     import_items_list->GetString(i, &item);
     // If the provided string is not part of the map, error out.
     if (!ContainsKey(string_to_import_item, item)) {
-      json_return =
-          JSONErrorString("Invalid item string found in import_items.");
-      AutomationMsg_SendJSONRequest::WriteReplyParams(
-          reply_message, json_return, false);
-      Send(reply_message);
+      AutomationJSONReply(this, reply_message).SendError(
+          "Invalid item string found in import_items.");
       return;
     }
     import_items |= string_to_import_item[item];
@@ -2416,11 +2333,8 @@ void AutomationProvider::ImportSettings(Browser* browser,
   }
   // If we made it to the end of the loop, then the input was bad.
   if (i == num_browsers) {
-    json_return =
-        JSONErrorString("Invalid browser name string found.");
-    AutomationMsg_SendJSONRequest::WriteReplyParams(
-        reply_message, json_return, false);
-    Send(reply_message);
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid browser name string found.");
     return;
   }
 
@@ -2438,8 +2352,6 @@ void AutomationProvider::ImportSettings(Browser* browser,
 void AutomationProvider::ClearBrowsingData(Browser* browser,
                                            DictionaryValue* args,
                                            IPC::Message* reply_message) {
-  std::string json_return = "{}";
-
   std::map<std::string, BrowsingDataRemover::TimePeriod> string_to_time_period;
   string_to_time_period["LAST_HOUR"] = BrowsingDataRemover::LAST_HOUR;
   string_to_time_period["LAST_DAY"] = BrowsingDataRemover::LAST_DAY;
@@ -2459,12 +2371,8 @@ void AutomationProvider::ClearBrowsingData(Browser* browser,
   ListValue* to_remove;
   if (!args->GetString(L"time_period", &time_period) ||
       !args->GetList(L"to_remove", &to_remove)) {
-    // TODO(nirnimesh): Here and below refactor returns with pending CL.
-    std::string json_return =
-         JSONErrorString("time_period must be a string and to_remove a list.");
-    AutomationMsg_SendJSONRequest::WriteReplyParams(
-         reply_message, json_return, false);
-    Send(reply_message);
+    AutomationJSONReply(this, reply_message).SendError(
+        "time_period must be a string and to_remove a list.");
     return;
   }
 
@@ -2475,22 +2383,16 @@ void AutomationProvider::ClearBrowsingData(Browser* browser,
     to_remove->GetString(i, &removal);
     // If the provided string is not part of the map, then error out.
     if (!ContainsKey(string_to_mask_value, removal)) {
-      std::string json_return =
-          JSONErrorString("Invalid browsing data string found in to_remove.");
-      AutomationMsg_SendJSONRequest::WriteReplyParams(
-          reply_message, json_return, false);
-      Send(reply_message);
+      AutomationJSONReply(this, reply_message).SendError(
+          "Invalid browsing data string found in to_remove.");
       return;
     }
     remove_mask |= string_to_mask_value[removal];
   }
 
   if (!ContainsKey(string_to_time_period, time_period)) {
-    std::string json_return =
-        JSONErrorString("Invalid string for time_period.");
-    AutomationMsg_SendJSONRequest::WriteReplyParams(
-        reply_message, json_return, false);
-    Send(reply_message);
+    AutomationJSONReply(this, reply_message).SendError(
+        "Invalid string for time_period.");
     return;
   }
 
@@ -2517,12 +2419,7 @@ void AutomationProvider::GetThemeInfo(Browser* browser,
     return_value->Set(L"colors", theme->GetThemeColors()->DeepCopy());
     return_value->Set(L"tints", theme->GetThemeTints()->DeepCopy());
   }
-
-  std::string json_return;
-  base::JSONWriter::Write(return_value.get(), false, &json_return);
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, true);
-  Send(reply_message);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 // Sample json input:
@@ -2532,13 +2429,11 @@ void AutomationProvider::GetThemeInfo(Browser* browser,
 void AutomationProvider::GetAutoFillProfile(Browser* browser,
                                             DictionaryValue* args,
                                             IPC::Message* reply_message) {
-  std::string json_return;
-  bool reply_return = true;
-
   // Get the AutoFillProfiles currently in the database.
   int tab_index = 0;
   args->GetInteger(L"tab_index", &tab_index);
   TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  AutomationJSONReply reply(this, reply_message);
 
   if (tab_contents) {
     PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
@@ -2554,20 +2449,15 @@ void AutomationProvider::GetAutoFillProfile(Browser* browser,
 
       return_value->Set(L"profiles", profiles);
       return_value->Set(L"credit_cards", cards);
-
-      base::JSONWriter::Write(return_value.get(), false, &json_return);
+      reply.SendSuccess(return_value.get());
     } else {
-      json_return = JSONErrorString("No PersonalDataManager.");
-      reply_return = false;
+      reply.SendError("No PersonalDataManager.");
+      return;
     }
   } else {
-    json_return = JSONErrorString("No tab at that index.");
-    reply_return = false;
+    reply.SendError("No tab at that index.");
+    return;
   }
-
-  AutomationMsg_SendJSONRequest::WriteReplyParams(reply_message, json_return,
-                                                  reply_return);
-  Send(reply_message);
 }
 
 // Refer to FillAutoFillProfile() in chrome/test/pyautolib/pyauto.py for sample
@@ -2576,23 +2466,26 @@ void AutomationProvider::GetAutoFillProfile(Browser* browser,
 void AutomationProvider::FillAutoFillProfile(Browser* browser,
                                              DictionaryValue* args,
                                              IPC::Message* reply_message) {
-  std::string json_return = "{}";
-  bool reply_return = true;
-
+  AutomationJSONReply reply(this, reply_message);
   ListValue* profiles = NULL;
   ListValue* cards = NULL;
   args->GetList(L"profiles", &profiles);
   args->GetList(L"credit_cards", &cards);
+  std::string error_mesg;
 
   std::vector<AutoFillProfile> autofill_profiles;
   std::vector<CreditCard> credit_cards;
   // Create an AutoFillProfile for each of the dictionary profiles.
   if (profiles) {
-    autofill_profiles = GetAutoFillProfilesFromList(*profiles, &json_return);
+    autofill_profiles = GetAutoFillProfilesFromList(*profiles, &error_mesg);
   }
   // Create a CreditCard for each of the dictionary values.
   if (cards) {
-    credit_cards = GetCreditCardsFromList(*cards, &json_return);
+    credit_cards = GetCreditCardsFromList(*cards, &error_mesg);
+  }
+  if (!error_mesg.empty()) {
+    reply.SendError(error_mesg);
+    return;
   }
 
   // Save the AutoFillProfiles.
@@ -2607,16 +2500,14 @@ void AutomationProvider::FillAutoFillProfile(Browser* browser,
       pdm->OnAutoFillDialogApply(profiles? &autofill_profiles : NULL,
                                  cards? &credit_cards : NULL);
     } else {
-      json_return = JSONErrorString("No PersonalDataManager.");
-      reply_return = false;
+      reply.SendError("No PersonalDataManager.");
+      return;
     }
   } else {
-    json_return = JSONErrorString("No tab at that index.");
-    reply_return = false;
+    reply.SendError("No tab at that index.");
+    return;
   }
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_return, reply_return);
-  Send(reply_message);
+  reply.SendSuccess(NULL);
 }
 
 /* static */
@@ -2678,7 +2569,7 @@ ListValue* AutomationProvider::GetListFromCreditCards(
 
 /* static */
 std::vector<AutoFillProfile> AutomationProvider::GetAutoFillProfilesFromList(
-    const ListValue& profiles, std::string* json_return) {
+    const ListValue& profiles, std::string* error_message) {
   std::vector<AutoFillProfile> autofill_profiles;
   DictionaryValue* profile_info = NULL;
   string16 profile_label;
@@ -2701,7 +2592,7 @@ std::vector<AutoFillProfile> AutomationProvider::GetAutoFillProfilesFromList(
         if (profile_info->GetStringAsUTF16(type_it->second, &current_value)) {
           profile.SetInfo(AutoFillType(type_it->first), current_value);
         } else {
-          *json_return = JSONErrorString("All values must be strings");
+          *error_message= "All values must be strings";
           break;
         }
       }
@@ -2713,7 +2604,7 @@ std::vector<AutoFillProfile> AutomationProvider::GetAutoFillProfilesFromList(
 
 /* static */
 std::vector<CreditCard> AutomationProvider::GetCreditCardsFromList(
-    const ListValue& cards, std::string* json_return) {
+    const ListValue& cards, std::string* error_message) {
   std::vector<CreditCard> credit_cards;
   DictionaryValue* card_info = NULL;
   string16 card_label;
@@ -2735,7 +2626,7 @@ std::vector<CreditCard> AutomationProvider::GetCreditCardsFromList(
         if (card_info->GetStringAsUTF16(type_it->second, &current_value)) {
           card.SetInfo(AutoFillType(type_it->first), current_value);
         } else {
-          *json_return = JSONErrorString("All values must be strings");
+          *error_message= "All values must be strings";
           break;
         }
       }
@@ -2779,51 +2670,41 @@ std::map<AutoFillFieldType, std::wstring>
   return credit_card_type_to_string;
 }
 
-/* static */
-std::string AutomationProvider::JSONErrorString(const std::string& err) {
-  std::string prefix = "{\"error\": \"";
-  std::string no_quote_err;
-  std::string suffix = "\"}";
-
-  base::JsonDoubleQuote(err, false, &no_quote_err);
-  return prefix + no_quote_err + suffix;
-}
-
 void AutomationProvider::SendJSONRequest(int handle,
                                          std::string json_request,
                                          IPC::Message* reply_message) {
   Browser* browser = NULL;
-  std::string error_string;
   scoped_ptr<Value> values;
+  AutomationJSONReply reply(this, reply_message);
 
   // Basic error checking.
   if (browser_tracker_->ContainsHandle(handle)) {
     browser = browser_tracker_->GetResource(handle);
   }
   if (!browser) {
-    error_string = "no browser object";
-  } else {
-    base::JSONReader reader;
-    std::string error;
-    values.reset(reader.ReadAndReturnError(json_request, true, NULL, &error));
-    if (!error.empty()) {
-      error_string = error;
-    }
+    reply.SendError("no browser object");
+    return;
+  }
+  base::JSONReader reader;
+  std::string error;
+  values.reset(reader.ReadAndReturnError(json_request, true, NULL, &error));
+  if (!error.empty()) {
+    reply.SendError(error);
+    return;
   }
 
   // Make sure input is a dict with a string command.
   std::string command;
   DictionaryValue* dict_value = NULL;
-  if (error_string.empty()) {
-    if (values->GetType() != Value::TYPE_DICTIONARY) {
-      error_string = "not a dict or no command key in dict";
-    } else {
-      // Ownership remains with "values" variable.
-      dict_value = static_cast<DictionaryValue*>(values.get());
-      if (!dict_value->GetStringASCII(std::string("command"), &command)) {
-        error_string = "no command key in dict or not a string command";
-      }
-    }
+  if (values->GetType() != Value::TYPE_DICTIONARY) {
+    reply.SendError("not a dict");
+    return;
+  }
+  // Ownership remains with "values" variable.
+  dict_value = static_cast<DictionaryValue*>(values.get());
+  if (!dict_value->GetStringASCII(std::string("command"), &command)) {
+    reply.SendError("no command key in dict or not a string command");
+    return;
   }
 
   // Map json commands to their handlers.
@@ -2833,6 +2714,7 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetPluginsInfo"] = &AutomationProvider::GetPluginsInfo;
 
   handler_map["GetBrowserInfo"] = &AutomationProvider::GetBrowserInfo;
+
   handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
   handler_map["AddHistoryItem"] = &AutomationProvider::AddHistoryItem;
 
@@ -2865,35 +2747,16 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetAutoFillProfile"] = &AutomationProvider::GetAutoFillProfile;
   handler_map["FillAutoFillProfile"] = &AutomationProvider::FillAutoFillProfile;
 
-  if (error_string.empty()) {
-    if (handler_map.find(std::string(command)) != handler_map.end()) {
-      (this->*handler_map[command])(browser, dict_value, reply_message);
-      return;
-    } else {
-      error_string = "Unknown command. Options: ";
-      for (std::map<std::string, JsonHandler>::const_iterator it =
-           handler_map.begin(); it != handler_map.end(); ++it) {
-        error_string += it->first + ", ";
-      }
-    }
-  }
-
-  // If we hit an error, return info.
-  // Return a dict of {"error", "descriptive_string_for_error"}.
-  // Else return an empty dict.
-  std::string json_string;
-  bool success = true;
-  if (!error_string.empty()) {
-    scoped_ptr<DictionaryValue> dict(new DictionaryValue);
-    dict->SetString(L"error", error_string);
-    base::JSONWriter::Write(dict.get(), false, &json_string);
-    success = false;
+  if (handler_map.find(std::string(command)) != handler_map.end()) {
+    (this->*handler_map[command])(browser, dict_value, reply_message);
   } else {
-    json_string = "{}";
+    std::string error_string = "Unknown command. Options: ";
+    for (std::map<std::string, JsonHandler>::const_iterator it =
+         handler_map.begin(); it != handler_map.end(); ++it) {
+      error_string += it->first + ", ";
+    }
+    reply.SendError(error_string);
   }
-  AutomationMsg_SendJSONRequest::WriteReplyParams(
-      reply_message, json_string, success);
-  Send(reply_message);
 }
 
 void AutomationProvider::HandleInspectElementRequest(
