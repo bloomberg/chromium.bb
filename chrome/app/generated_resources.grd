@@ -6890,7 +6890,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Login again
       </message>
       <message name="IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL" desc="The label on a link that brings users to the Google Privacy Dashboard to control sync">
-        Control sync from Google Privacy Dashboard
+        Control sync from Google Dashboard
       </message>
       <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
         Customize...
