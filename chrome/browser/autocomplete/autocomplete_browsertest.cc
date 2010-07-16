@@ -18,10 +18,10 @@
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Basic test is flaky on Mac
+// Basic test is crashy on Mac
 // http://crbug.com/49324
 #if defined(OS_MAC)
-#define MAYBE_Basic FLAKY_Basic
+#define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic
 #endif
