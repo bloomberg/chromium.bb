@@ -126,10 +126,21 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
   size_t boundary_pos;
   while ((boundary_pos = FindBoundary()) != std::string::npos) {
     if (boundary_pos > 0 && client_) {
-      // Send the last data chunk.
-      client_->didReceiveData(loader_,
-                              data_.data(),
-                              static_cast<int>(boundary_pos));
+      // Strip out trailing \n\r characters in the buffer preceding the
+      // boundary on the same lines as Firefox.
+      size_t data_length = boundary_pos;
+      if (data_[boundary_pos - 1] == '\n') {
+        data_length--;
+        if (data_[boundary_pos - 2] == '\r') {
+          data_length--;
+        }
+      }
+      if (data_length > 0) {
+        // Send the last data chunk.
+        client_->didReceiveData(loader_,
+                                data_.data(),
+                                static_cast<int>(data_length));
+      }
     }
     size_t boundary_end_pos = boundary_pos + boundary_.length();
     if (boundary_end_pos < data_.length() && '-' == data_[boundary_end_pos]) {
