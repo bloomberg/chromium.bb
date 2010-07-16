@@ -36,9 +36,13 @@
   }
 }
 
-- (AutocompleteTextFieldCell*)autocompleteTextFieldCell {
-  DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
-  return static_cast<AutocompleteTextFieldCell*>([self cell]);
+- (AutocompleteTextFieldCell*)cell {
+  NSCell* cell = [super cell];
+  if (!cell)
+    return nil;
+  
+  DCHECK([cell isKindOfClass:[AutocompleteTextFieldCell class]]);
+  return static_cast<AutocompleteTextFieldCell*>(cell);
 }
 
 // Reroute events for the decoration area to the field editor.  This
@@ -91,7 +95,7 @@
       [self convertPoint:[theEvent locationInWindow] fromView:nil];
   const NSRect bounds([self bounds]);
 
-  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
+  AutocompleteTextFieldCell* cell = [self cell];
   const NSRect textFrame([cell textFrameForFrame:bounds]);
 
   // A version of the textFrame which extends across the field's
@@ -207,7 +211,7 @@
   NSRect fieldBounds = [self bounds];
   [self addCursorRect:fieldBounds cursor:[NSCursor IBeamCursor]];
 
-  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
+  AutocompleteTextFieldCell* cell = [self cell];
   for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:fieldBounds])
     [self addCursorRect:[icon rect] cursor:[NSCursor arrowCursor]];
 
@@ -232,7 +236,7 @@
   [self removeAllToolTips];
   [currentToolTips_ removeAllObjects];
 
-  AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
+  AutocompleteTextFieldCell* cell = [self cell];
   for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:[self bounds]]) {
     NSRect iconRect = [icon rect];
     NSString* tooltip = [icon view]->GetToolTip();
@@ -401,8 +405,8 @@
 }
 
 - (NSMenu*)actionMenuForEvent:(NSEvent*)event {
-  return [[self autocompleteTextFieldCell]
-           actionMenuForEvent:event inRect:[self bounds] ofView:self];
+  AutocompleteTextFieldCell* cell = [self cell];
+  return [cell actionMenuForEvent:event inRect:[self bounds] ofView:self];
 }
 
 @end

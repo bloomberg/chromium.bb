@@ -85,7 +85,7 @@ LocationBarViewMac::LocationBarViewMac(
     content_setting_view->SetVisible(false);
   }
 
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  AutocompleteTextFieldCell* cell = [field_ cell];
   [cell setPageActionViewList:&page_action_views_];
   [cell setContentSettingViewsList:&content_setting_views_];
 
@@ -96,7 +96,7 @@ LocationBarViewMac::LocationBarViewMac(
 
 LocationBarViewMac::~LocationBarViewMac() {
   // Disconnect from cell in case it outlives us.
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  AutocompleteTextFieldCell* cell = [field_ cell];
   [cell setPageActionViewList:NULL];
   [cell clearDecorations];
 }
@@ -310,7 +310,7 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
   if (index == page_action_views_.Count())
     return NSZeroPoint;
 
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  AutocompleteTextFieldCell* cell = [field_ cell];
   NSRect frame = [cell pageActionFrameForIndex:index inFrame:[field_ bounds]];
   if (!NSIsEmptyRect(frame)) {
     frame = [field_ convertRect:frame toView:nil];
@@ -373,7 +373,7 @@ void LocationBarViewMac::SetStarred(bool starred) {
 }
 
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  AutocompleteTextFieldCell* cell = [field_ cell];
   const NSRect frame = [cell frameForDecoration:star_decoration_.get()
                                         inFrame:[field_ bounds]];
   const NSPoint point = star_decoration_->GetBubblePointInFrame(frame);
@@ -831,7 +831,7 @@ void LocationBarViewMac::PageActionViewList::OnMousePressed(NSRect iconFrame,
 // TODO(shess): This function should over time grow to closely match
 // the views Layout() function.
 void LocationBarViewMac::Layout() {
-  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  AutocompleteTextFieldCell* cell = [field_ cell];
 
   // Reset the left-hand decorations.
   // TODO(shess): Shortly, this code will live somewhere else, like in

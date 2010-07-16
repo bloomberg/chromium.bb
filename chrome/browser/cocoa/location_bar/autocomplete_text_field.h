@@ -110,7 +110,7 @@ class AutocompleteTextFieldObserver {
 @property (nonatomic) AutocompleteTextFieldObserver* observer;
 
 // Convenience method to return the cell, casted appropriately.
-- (AutocompleteTextFieldCell*)autocompleteTextFieldCell;
+- (AutocompleteTextFieldCell*)cell;
 
 // Superclass aborts editing before changing the string, which causes
 // problems for undo.  This version modifies the field editor's
