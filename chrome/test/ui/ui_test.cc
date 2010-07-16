@@ -53,11 +53,11 @@ using base::TimeTicks;
 
 // Delay to let browser complete a requested action.
 static const int kWaitForActionMsec = 2000;
-static const int kWaitForActionMaxMsec = 60000;
+static const int kWaitForActionMaxMsec = 15000;
 // Command execution timeout passed to AutomationProxy.
-static const int kCommandExecutionTimeout = 30000;
+static const int kCommandExecutionTimeout = 15000;
 // Delay to let the browser shut down before trying more brutal methods.
-static const int kWaitForTerminateMsec = 30000;
+static const int kWaitForTerminateMsec = 15000;
 // Passed as value of kTestType.
 static const char kUITestType[] = "ui";
 
@@ -81,7 +81,7 @@ bool UITestBase::dump_histograms_on_exit_ = false;
 bool UITestBase::enable_dcheck_ = false;
 bool UITestBase::silent_dump_on_dcheck_ = false;
 bool UITestBase::disable_breakpad_ = false;
-int UITestBase::timeout_ms_ = 20 * 60 * 1000;
+int UITestBase::timeout_ms_ =  5 * 60 * 1000;
 std::wstring UITestBase::js_flags_ = L"";
 std::wstring UITestBase::log_level_ = L"";
 
