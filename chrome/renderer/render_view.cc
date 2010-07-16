@@ -2139,6 +2139,12 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
 
 void RenderView::removeAutofillSuggestions(const WebString& name,
                                            const WebString& value) {
+  // The index of clear & options will have shifted down.
+  if (suggestions_clear_index_ != -1)
+    suggestions_clear_index_--;
+  if (suggestions_options_index_ != -1)
+    suggestions_options_index_--;
+
   Send(new ViewHostMsg_RemoveAutocompleteEntry(routing_id_, name, value));
 }
 
