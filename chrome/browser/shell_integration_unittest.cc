@@ -48,8 +48,9 @@ class MockEnvVarGetter : public base::EnvVarGetter {
     return false;
   }
 
-  virtual void SetEnv(const char* variable_name, const std::string& new_value) {
+  virtual bool SetEnv(const char* variable_name, const std::string& new_value) {
     NOTIMPLEMENTED();
+    return false;
   }
 
  private:

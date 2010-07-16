@@ -23,7 +23,8 @@ class EnvVarGetter {
   // Syntactic sugar for GetEnv(variable_name, NULL);
   virtual bool HasEnv(const char* variable_name);
 
-  virtual void SetEnv(const char* variable_name,
+  // Returns true on success, otherwise returns false.
+  virtual bool SetEnv(const char* variable_name,
                       const std::string& new_value) = 0;
 
   // Create an instance of EnvVarGetter

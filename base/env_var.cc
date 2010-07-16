@@ -40,8 +40,8 @@ class EnvVarGetterImpl : public base::EnvVarGetter {
     return GetEnvImpl(alternate_case_var.c_str(), result);
   }
 
-  virtual void SetEnv(const char* variable_name, const std::string& new_value) {
-    SetEnvImpl(variable_name, new_value);
+  virtual bool SetEnv(const char* variable_name, const std::string& new_value) {
+    return SetEnvImpl(variable_name, new_value);
   }
 
  private:
@@ -71,12 +71,14 @@ class EnvVarGetterImpl : public base::EnvVarGetter {
 #endif
   }
 
-  void SetEnvImpl(const char* variable_name, const std::string& new_value) {
+  bool SetEnvImpl(const char* variable_name, const std::string& new_value) {
 #if defined(OS_POSIX)
-    setenv(variable_name, new_value.c_str(), 1);
+    // On success, zero is returned.
+    return setenv(variable_name, new_value.c_str(), 1) == 0;
 #elif defined(OS_WIN)
-    ::SetEnvironmentVariable(ASCIIToWide(variable_name).c_str(),
-                             ASCIIToWide(new_value).c_str());
+    // On success, a nonzero is returned.
+    return ::SetEnvironmentVariable(ASCIIToWide(variable_name).c_str(),
+                                    ASCIIToWide(new_value).c_str()) != 0;
 #endif
   }
 };

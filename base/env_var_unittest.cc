@@ -27,7 +27,7 @@ TEST_F(EnvVarTest, SetEnvVar) {
   const char kFooUpper[] = "FOO";
   const char kFooLower[] = "foo";
   scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
-  env->SetEnv(kFooUpper, kFooLower);
+  EXPECT_TRUE(env->SetEnv(kFooUpper, kFooLower));
 
   // Now verify that the environment has the new variable.
   EXPECT_TRUE(env->HasEnv(kFooUpper));

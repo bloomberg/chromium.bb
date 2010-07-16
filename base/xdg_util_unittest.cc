@@ -19,7 +19,7 @@ namespace {
 class MockEnvVarGetter : public base::EnvVarGetter {
  public:
   MOCK_METHOD2(GetEnv, bool(const char*, std::string* result));
-  MOCK_METHOD2(SetEnv, void(const char*, const std::string& new_value));
+  MOCK_METHOD2(SetEnv, bool(const char*, const std::string& new_value));
 };
 
 const char* kGnome = "gnome";
