@@ -268,7 +268,8 @@ void WifiConfigView::Init() {
       if (!certificate_path_.empty())
         label = UTF8ToWide(certificate_path_);
       else
-        label = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON;
+        label = l10n_util::GetString(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON);
       certificate_browse_button_ = new views::NativeButton(this, label);
       layout->AddView(certificate_browse_button_);
     }
