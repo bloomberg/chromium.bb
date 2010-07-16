@@ -368,6 +368,18 @@ HRESULT NativeTheme::PaintScrollbarThumb(HDC hdc,
   return S_OK;
 }
 
+HRESULT NativeTheme::PaintSpinButton(HDC hdc,
+                                     int part_id,
+                                     int state_id,
+                                     int classic_state,
+                                     RECT* rect) const {
+  HANDLE handle = GetThemeHandle(SPIN);
+  if (handle && draw_theme_)
+    return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
+  DrawFrameControl(hdc, rect, DFC_SCROLL, classic_state);
+  return S_OK;
+}
+
 HRESULT NativeTheme::PaintStatusGripper(HDC hdc,
                                         int part_id,
                                         int state_id,
@@ -846,6 +858,9 @@ HANDLE NativeTheme::GetThemeHandle(ThemeName theme_name) const
     break;
   case PROGRESS:
     handle = open_theme_(NULL, L"Progress");
+    break;
+  case SPIN:
+    handle = open_theme_(NULL, L"Spin");
     break;
   default:
     NOTREACHED();

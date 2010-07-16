@@ -27,6 +27,9 @@ class WebThemeEngineImpl : public WebKit::WebThemeEngine {
   virtual void paintScrollbarTrack(
       WebKit::WebCanvas*, int part, int state, int classic_state,
       const WebKit::WebRect&, const WebKit::WebRect& align_rect);
+  virtual void paintSpinButton(
+      WebKit::WebCanvas*, int part, int state, int classic_state,
+      const WebKit::WebRect&);
   virtual void paintTextField(
       WebKit::WebCanvas*, int part, int state, int classic_state,
       const WebKit::WebRect&, WebKit::WebColor, bool fill_content_area,

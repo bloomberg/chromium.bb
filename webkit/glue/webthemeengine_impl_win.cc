@@ -86,6 +86,18 @@ void WebThemeEngineImpl::paintScrollbarTrack(
   canvas->endPlatformPaint();
 }
 
+void WebThemeEngineImpl::paintSpinButton(
+    WebCanvas* canvas, int part, int state, int classic_state,
+    const WebRect& rect) {
+  HDC hdc = canvas->beginPlatformPaint();
+
+  RECT native_rect = WebRectToRECT(rect);
+  gfx::NativeTheme::instance()->PaintSpinButton(
+      hdc, part, state, classic_state, &native_rect);
+
+  canvas->endPlatformPaint();
+}
+
 void WebThemeEngineImpl::paintTextField(
     WebCanvas* canvas, int part, int state, int classic_state,
     const WebRect& rect, WebColor color, bool fill_content_area,

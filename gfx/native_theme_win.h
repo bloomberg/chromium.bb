@@ -44,6 +44,7 @@ class NativeTheme {
     TRACKBAR,
     WINDOW,
     PROGRESS,
+    SPIN,
     LAST
   };
 
@@ -189,6 +190,12 @@ class NativeTheme {
                               int state_id,
                               int classic_state,
                               RECT* rect) const;
+
+  HRESULT PaintSpinButton(HDC hdc,
+                          int part_id,
+                          int state_id,
+                          int classic_state,
+                          RECT* rect) const;
 
   HRESULT PaintStatusGripper(HDC hdc,
                              int part_id,
