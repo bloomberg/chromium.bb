@@ -162,7 +162,7 @@ def GetStaticFileNames():
   static_files = os.listdir(_static_dir)
   return set(os.path.splitext(file_name)[0]
              for file_name in static_files
-             if file_name.endswith(".html"))
+             if file_name.endswith(".html") and not file_name.startswith("."))
 
 def main():
   # Prevent windows from using cygwin python.

@@ -87,12 +87,12 @@ class CookiesFunction : public AsyncExtensionFunction {
                          std::string* store_id);
 };
 
-// Implements the experimental.cookies.get() extension function.
+// Implements the cookies.get() extension function.
 class GetCookieFunction : public CookiesFunction {
  public:
   GetCookieFunction();
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.get")
+  DECLARE_EXTENSION_FUNCTION_NAME("cookies.get")
 
  private:
   void GetCookieOnIOThread();
@@ -105,12 +105,12 @@ class GetCookieFunction : public CookiesFunction {
   net::CookieMonster::CookieList cookie_list_;
 };
 
-// Implements the experimental.cookies.getAll() extension function.
+// Implements the cookies.getAll() extension function.
 class GetAllCookiesFunction : public CookiesFunction {
  public:
   GetAllCookiesFunction();
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.getAll")
+  DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAll")
 
  private:
   void GetAllCookiesOnIOThread();
@@ -123,12 +123,12 @@ class GetAllCookiesFunction : public CookiesFunction {
   net::CookieMonster::CookieList cookie_list_;
 };
 
-// Implements the experimental.cookies.set() extension function.
+// Implements the cookies.set() extension function.
 class SetCookieFunction : public CookiesFunction {
  public:
   SetCookieFunction();
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.set")
+  DECLARE_EXTENSION_FUNCTION_NAME("cookies.set")
 
  private:
   void SetCookieOnIOThread();
@@ -146,7 +146,7 @@ class SetCookieFunction : public CookiesFunction {
   scoped_refptr<URLRequestContextGetter> store_context_;
 };
 
-// Implements the experimental.cookies.remove() extension function.
+// Implements the cookies.remove() extension function.
 class RemoveCookieFunction : public CookiesFunction {
  public:
   virtual bool RunImpl();
@@ -154,10 +154,10 @@ class RemoveCookieFunction : public CookiesFunction {
   virtual void Run() {
     SendResponse(RunImpl());
   }
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.remove")
+  DECLARE_EXTENSION_FUNCTION_NAME("cookies.remove")
 };
 
-// Implements the experimental.cookies.getAllCookieStores() extension function.
+// Implements the cookies.getAllCookieStores() extension function.
 class GetAllCookieStoresFunction : public CookiesFunction {
  public:
   virtual bool RunImpl();
@@ -165,7 +165,7 @@ class GetAllCookieStoresFunction : public CookiesFunction {
   virtual void Run() {
     SendResponse(RunImpl());
   }
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.cookies.getAllCookieStores")
+  DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAllCookieStores")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_H_

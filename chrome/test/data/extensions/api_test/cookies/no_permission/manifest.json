@@ -1,10 +1,9 @@
 {
-  "name": "chrome.cookies",
+  "name": "chrome.cookies.nopermission",
   "version": "0.1",
-  "description": "end-to-end browser test for chrome.experimental.cookies API",
+  "description": "Tests that the cookies permission is required in order to use the cookies API.",
   "background_page": "background.html",
   "permissions": [
-    "cookies",
     "tabs",
     "http://*.chrome_extensions.cookies.com/",
     "http://chromium.cookies.com/",

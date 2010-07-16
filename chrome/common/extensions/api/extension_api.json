@@ -2756,7 +2756,7 @@
     "events": []
   },
   {
-    "namespace": "experimental.cookies",
+    "namespace": "cookies",
     "types": [
       {
         "id": "Cookie",

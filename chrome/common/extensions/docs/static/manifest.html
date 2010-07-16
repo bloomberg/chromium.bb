@@ -236,12 +236,15 @@ The following table lists the permissions an extension can use.
 </tr>
 <tr>
   <td> <em>match pattern</em> </td>
-  <td> Required if the extension makes
-       <a href="xhr.html">cross-origin XMLHttpRequests</a>
-       or
-       <a href="content_scripts.html#pi">programmatically injects
-       JavaScript or CSS</a>
-       into web pages.
+  <td> Specifies a <em>host permission</em>.
+       Required if the extension wants to interact
+       with the code running on pages.
+       Many extension capabilities, such as
+       <a href="xhr.html">cross-origin XMLHttpRequests</a>,
+       <a href="content_scripts.html#pi">programmatically injected
+       content scripts</a>, and <a href="cookies.html">the cookies API</a>
+       require host permissions. For details on the syntax, see
+       <a href="match_patterns.html">Match Patterns</a>.
   </td>
 </tr>
 <tr>
@@ -259,6 +262,11 @@ The following table lists the permissions an extension can use.
        and use HTML code like this:
        <pre>&lt;img src="chrome://favicon/http://www.google.com/"></pre>
        </td>
+</tr>
+<tr>
+  <td> "cookies" </td>
+  <td> Required if the extension uses the
+       <a href="cookies.html">chrome.cookies</a> module. </td>
 </tr>
 <tr>
   <td> "experimental" </td>
