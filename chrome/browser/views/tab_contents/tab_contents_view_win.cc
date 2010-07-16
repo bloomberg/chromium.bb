@@ -169,10 +169,19 @@ void TabContentsViewWin::OnTabCrashed() {
 void TabContentsViewWin::SizeContents(const gfx::Size& size) {
   // TODO(brettw) this is a hack and should be removed. See tab_contents_view.h.
 
-  // Set new window size. It will fire OnWindowPosChanged and we will do
-  // the rest in WasSized.
-  UINT swp_flags = SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE;
-  SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
+  gfx::Rect bounds;
+  GetContainerBounds(&bounds);
+  if (bounds.size() != size) {
+    // Our size really needs to change, invoke SetWindowPos so that we do a
+    // layout and all that good stuff. OnWindowPosChanged will invoke WasSized.
+    UINT swp_flags = SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE;
+    SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
+  } else {
+    // Our size isn't changing, which means SetWindowPos won't invoke
+    // OnWindowPosChanged. We need to invoke WasSized though as the renderer may
+    // need to be sized.
+    WasSized(bounds.size());
+  }
 }
 
 void TabContentsViewWin::Focus() {
