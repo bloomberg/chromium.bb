@@ -26,7 +26,8 @@ class ThemesTest(pyauto.PyUITest):
   def testSetTheme(self):
     """Verify theme install."""
     self.assertFalse(self.GetThemeInfo())  # Verify there's no theme at startup
-    crx_file = os.path.join(self.DataDir(), 'extensions', 'theme.crx')
+    crx_file = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
     self.assertTrue(self.SetTheme(pyauto.FilePath(crx_file)))
     theme = self.GetThemeInfo()
     self.assertEqual('camo theme', theme['name'])
@@ -34,7 +35,8 @@ class ThemesTest(pyauto.PyUITest):
 
   def testThemeReset(self):
     """Verify theme reset."""
-    crx_file = os.path.join(self.DataDir(), 'extensions', 'theme.crx')
+    crx_file = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
     self.assertTrue(self.SetTheme(pyauto.FilePath(crx_file)))
     self.assertTrue(self.ResetToDefaultTheme())
     self.assertFalse(self.GetThemeInfo())
