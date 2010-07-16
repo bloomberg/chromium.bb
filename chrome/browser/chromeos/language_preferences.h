@@ -301,7 +301,7 @@ const LanguageMultipleChoicePreference<const char*>
     IDS_MOZC(SESSION_KEYMAP),
   },
   { prefs::kLanguageMozcPunctuationMethod,
-    "KUTEN_TOTEN",
+    "KUTEN_TOUTEN",
     "punctuation_method",
     {{ "KUTEN_TOUTEN",
        IDS_MOZC(PUNCTUATION_METHOD_KUTEN_TOUTEN) },
