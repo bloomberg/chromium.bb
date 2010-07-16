@@ -672,8 +672,8 @@ void OmxVideoDecodeEngine::FillThisBuffer(
 }
 
 // Reconfigure port
-void OmxVideoDecodeEngine::OnPortSettingsChangedRun(OMX_INDEXTYPE index,
-                                                    int port) {
+void OmxVideoDecodeEngine::OnPortSettingsChangedRun(int port,
+                                                    OMX_INDEXTYPE index) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(client_state_, kClientRunning);
   DCHECK_EQ(port, output_port_);
@@ -684,8 +684,11 @@ void OmxVideoDecodeEngine::OnPortSettingsChangedRun(OMX_INDEXTYPE index,
     return;
   }
 
-  if (index != OMX_IndexParamPortDefinition)
-    return;
+  // TODO(wjia): remove this checking when all vendors observe same spec.
+  if (index > OMX_IndexComponentStartUnused) {
+    if (index != OMX_IndexParamPortDefinition)
+      return;
+  }
 
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
   ResetParamHeader(*this, &port_format);
@@ -1297,8 +1300,13 @@ void OmxVideoDecodeEngine::EventHandlerCompleteTask(OMX_EVENTTYPE event,
       StopOnError();
       break;
     case OMX_EventPortSettingsChanged:
-        OnPortSettingsChangedRun(static_cast<OMX_INDEXTYPE>(data1),
-                                 static_cast<int>(data2));
+      // TODO(wjia): remove this hack when all vendors observe same spec.
+      if (data1 < OMX_IndexComponentStartUnused)
+        OnPortSettingsChangedRun(static_cast<int>(data1),
+                                 static_cast<OMX_INDEXTYPE>(data2));
+      else
+        OnPortSettingsChangedRun(static_cast<int>(data2),
+                                 static_cast<OMX_INDEXTYPE>(data1));
       break;
     default:
       LOG(ERROR) << "Warning - Unknown event received\n";

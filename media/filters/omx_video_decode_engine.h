@@ -105,7 +105,7 @@ class OmxVideoDecodeEngine :
   bool CreateComponent();
   void DoneSetStateIdle(OMX_STATETYPE state);
   void DoneSetStateExecuting(OMX_STATETYPE state);
-  void OnPortSettingsChangedRun(OMX_INDEXTYPE index, int port);
+  void OnPortSettingsChangedRun(int port, OMX_INDEXTYPE index);
   void OnPortDisableEventRun(int port);
   void SetupOutputPort();
   void OnPortEnableEventRun(int port);
