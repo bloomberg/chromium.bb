@@ -76,7 +76,7 @@ bool URLPattern::Parse(const std::string& pattern) {
 
   // File URLs are special because they have no host. There are other schemes
   // with the same structure, but we don't support them (yet).
-  if (scheme_ == "file") {
+  if (scheme_ == chrome::kFileScheme) {
     path_start_pos = host_start_pos;
   } else {
     size_t host_end_pos = pattern.find(kPathSeparator, host_start_pos);
@@ -206,14 +206,16 @@ std::string URLPattern::GetAsString() const {
 
   std::string spec = scheme_ + chrome::kStandardSchemeSeparator;
 
-  if (match_subdomains_) {
-    spec += "*";
-    if (!host_.empty())
-      spec += ".";
-  }
+  if (scheme_ != chrome::kFileScheme) {
+    if (match_subdomains_) {
+      spec += "*";
+      if (!host_.empty())
+        spec += ".";
+    }
 
-  if (!host_.empty())
-    spec += host_;
+    if (!host_.empty())
+      spec += host_;
+  }
 
   if (!path_.empty())
     spec += path_;
@@ -241,4 +243,24 @@ bool URLPattern::OverlapsWith(const URLPattern& other) const {
     return false;
 
   return true;
+}
+
+std::vector<URLPattern> URLPattern::ConvertToExplicitSchemes() const {
+  std::vector<URLPattern> result;
+
+  if (scheme_ != "*" && !match_all_urls_) {
+    result.push_back(*this);
+    return result;
+  }
+
+  for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
+    if (MatchesScheme(kValidSchemes[i])) {
+      URLPattern temp = *this;
+      temp.SetScheme(kValidSchemes[i]);
+      temp.set_match_all_urls(false);
+      result.push_back(temp);
+    }
+  }
+
+  return result;
 }

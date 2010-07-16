@@ -14,15 +14,20 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 #include "grit/renderer_resources.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;
+using WebKit::WebVector;
+using WebKit::WebView;
 
 // These two strings are injected before and after the Greasemonkey API and
 // user script to wrap it in an anonymous scope.
@@ -128,6 +133,42 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
     }
   }
 
+  // Push user styles down into WebCore
+  WebView::removeAllUserContent();
+  for (size_t i = 0; i < scripts_.size(); ++i) {
+    UserScript* script = scripts_[i];
+    if (script->css_scripts().empty())
+      continue;
+
+    WebVector<WebString> patterns;
+    std::vector<WebString> temp_patterns;
+    for (size_t k = 0; k < script->url_patterns().size(); ++k) {
+      std::vector<URLPattern> explicit_patterns =
+          script->url_patterns()[k].ConvertToExplicitSchemes();
+      for (size_t m = 0; m < explicit_patterns.size(); ++m) {
+        // Only include file schemes if the user has opted into that.
+        if (!explicit_patterns[m].MatchesScheme(chrome::kFileScheme) ||
+            script->allow_file_access()) {
+          temp_patterns.push_back(WebString::fromUTF8(
+              explicit_patterns[m].GetAsString()));
+        }
+      }
+    }
+    patterns.assign(temp_patterns);
+
+    for (size_t j = 0; j < script->css_scripts().size(); ++j) {
+      const UserScript::File& file = scripts_[i]->css_scripts()[j];
+      std::string content = file.GetContent().as_string();
+
+       WebView::addUserStyleSheet(
+          WebString::fromUTF8(content),
+          patterns,
+           script->match_all_frames() ?
+              WebView::UserContentInjectInAllFrames :
+              WebView::UserContentInjectInTopFrameOnly);
+    }
+  }
+
   return true;
 }
 
@@ -174,17 +215,11 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     if (frame_url.SchemeIsFile() && !script->allow_file_access())
       continue;  // This script isn't allowed to run on file URLs.
 
-    // CSS files are always injected on document start before js scripts.
-    if (location == UserScript::DOCUMENT_START) {
+    // We rely on WebCore for CSS injection, but it's still useful to know how
+    // many css files there are.
+    if (location == UserScript::DOCUMENT_START)
       num_css += script->css_scripts().size();
-      for (size_t j = 0; j < script->css_scripts().size(); ++j) {
-        PerfTimer insert_timer;
-        UserScript::File& file = script->css_scripts()[j];
-        frame->insertStyleText(
-            WebString::fromUTF8(file.GetContent().as_string()), WebString());
-        UMA_HISTOGRAM_TIMES("Extensions.InjectCssTime", insert_timer.Elapsed());
-      }
-    }
+
     if (script->run_location() == location) {
       num_scripts += script->js_scripts().size();
       for (size_t j = 0; j < script->js_scripts().size(); ++j) {

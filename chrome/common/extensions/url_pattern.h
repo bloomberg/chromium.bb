@@ -5,6 +5,7 @@
 #define CHROME_COMMON_EXTENSIONS_URL_PATTERN_H_
 
 #include <string>
+#include <vector>
 
 #include "googleurl/src/gurl.h"
 
@@ -118,6 +119,10 @@ class URLPattern {
     path_escaped_ = "";
   }
 
+  // Returns true if this pattern matches all urls.
+  bool match_all_urls() const { return match_all_urls_; }
+  void set_match_all_urls(bool val) { match_all_urls_ = val; }
+
   // Initializes this instance by parsing the provided string. On failure, the
   // instance will have some intermediate values and is in an invalid state.
   bool Parse(const std::string& pattern_str);
@@ -154,6 +159,12 @@ class URLPattern {
   // instance. This method is symmetrical: Calling other.OverlapsWith(this)
   // would result in the same answer.
   bool OverlapsWith(const URLPattern& other) const;
+
+  // Conver this URLPattern into an equivalent set of URLPatterns that don't use
+  // a wildcard in the scheme component. If this URLPattern doesn't use a
+  // wildcard scheme, then the returned set will contain one element that is
+  // equivalent to this instance.
+  std::vector<URLPattern> ConvertToExplicitSchemes() const;
 
  private:
   // A bitmask containing the schemes which are considered valid for this
