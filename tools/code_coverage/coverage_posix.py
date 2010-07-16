@@ -79,6 +79,10 @@ Linux:
   using the MacOS 10.6 SDK.  Use of --no_exclusions prevents the use
   of this exclusion list.
 
+--dont-clear-coverage-data: Normally we clear coverage data from
+  previous runs.  If this arg is used we do NOT clear the coverage
+  data.
+
 Strings after all options are considered tests to run.  Test names
 have all text before a ':' stripped to help with gyp compatibility.
 For example, ../base/base.gyp:base_unittests is interpreted as a test
@@ -165,6 +169,12 @@ class RunProgramThread(threading.Thread):
     self._retcode = None
 
   def run(self):
+    if sys.platform in ('win32', 'cygwin'):
+      return self._run_windows()
+    else:
+      self._run_posix()
+
+  def _run_windows(self):
     # We need to save stdout to a temporary file because of a bug on the
     # windows implementation of python which can deadlock while waiting
     # for the IO to complete while writing to the PIPE and the pipe waiting
@@ -209,6 +219,26 @@ class RunProgramThread(threading.Thread):
     finally:
       stdout_file.close()
 
+    # If we get here the process is done.
+    gChildPIDs.remove(self._process.pid)
+    self._queue.put(RunProgramThread.DONE)
+
+  def _run_posix(self):
+    """No deadlock problem so use the simple answer.  The windows solution
+    appears to add extra buffering which we don't want on other platforms."""
+    self._process = subprocess.Popen(self._cmd,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
+    gChildPIDs.append(self._process.pid)
+    try:
+      while True:
+        line = self._process.stdout.readline()
+        if not line:  # EOF
+          break
+        print line,
+        self._queue.put(RunProgramThread.PROGRESS, True)
+    except IOError:
+      pass
     # If we get here the process is done.
     gChildPIDs.remove(self._process.pid)
     self._queue.put(RunProgramThread.DONE)
@@ -521,6 +551,10 @@ class Coverage(object):
 
   def ClearData(self):
     """Clear old gcda files and old coverage info files."""
+    if self.options.dont_clear_coverage_data:
+      print 'Clearing of coverage data NOT performed.'
+      return
+    print 'Clearing coverage data from previous runs.'
     if os.path.exists(self.coverage_info_file):
       os.remove(self.coverage_info_file)
     if self.IsPosix():
@@ -838,6 +872,11 @@ def CoverageOptionParser():
                     dest='no_exclusions',
                     default=None,
                     help=('Disable the exclusion list.'))
+  parser.add_option('--dont-clear-coverage-data',
+                    dest='dont_clear_coverage_data',
+                    default=False,
+                    action='store_true',
+                    help=('Turn off clearing of cov data from a prev run'))
   return parser
 
 
