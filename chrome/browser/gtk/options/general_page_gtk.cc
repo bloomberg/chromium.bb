@@ -56,6 +56,10 @@ enum {
   SEARCH_ENGINES_COL_COUNT,
 };
 
+bool IsNewTabUIURLString(const GURL& url) {
+  return url == GURL(chrome::kChromeUINewTabURL);
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -153,22 +157,25 @@ void GeneralPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name ||
       *pref_name == prefs::kHomePageIsNewTabPage ||
       *pref_name == prefs::kHomePage) {
-    bool managed =
-        new_tab_page_is_home_page_.IsManaged() || homepage_.IsManaged();
-    bool homepage_valid = homepage_.GetValue() != chrome::kChromeUINewTabURL;
-    bool use_new_tab_page_for_homepage =
-        new_tab_page_is_home_page_.GetValue() || !homepage_valid;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(homepage_use_newtab_radio_),
-                                 use_new_tab_page_for_homepage);
-    gtk_widget_set_sensitive(homepage_use_newtab_radio_, !managed);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(homepage_use_url_radio_),
-                                 !use_new_tab_page_for_homepage);
-    gtk_widget_set_sensitive(homepage_use_url_radio_, !managed);
-    if (homepage_valid)
+    bool new_tab_page_is_home_page_managed =
+        new_tab_page_is_home_page_.IsManaged();
+    bool homepage_managed = homepage_.IsManaged();
+    bool homepage_url_is_new_tab =
+        IsNewTabUIURLString(GURL(homepage_.GetValue()));
+    bool homepage_is_new_tab = homepage_url_is_new_tab ||
+        new_tab_page_is_home_page_.GetValue();
+    // If HomepageIsNewTab is managed or
+    // Homepage is 'chrome://newtab' and managed, disable the radios.
+    bool disable_homepage_choice_buttons =
+        new_tab_page_is_home_page_managed ||
+        homepage_managed && homepage_url_is_new_tab;
+    if (!homepage_url_is_new_tab) {
       gtk_entry_set_text(GTK_ENTRY(homepage_use_url_entry_),
                          homepage_.GetValue().c_str());
-    gtk_widget_set_sensitive(homepage_use_url_entry_,
-                             !managed && !use_new_tab_page_for_homepage);
+    }
+    UpdateHomepageIsNewTabRadio(
+        homepage_is_new_tab, !disable_homepage_choice_buttons);
+    EnableHomepageURLField(!homepage_is_new_tab);
   }
 
   if (!pref_name || *pref_name == prefs::kShowHomeButton) {
@@ -444,22 +451,22 @@ void GeneralPageGtk::OnNewTabIsHomePageToggled(GtkWidget* toggle_button) {
     return;
   }
   if (toggle_button == homepage_use_newtab_radio_) {
-    SetHomepage(GURL());
     UserMetricsRecordAction(UserMetricsAction("Options_Homepage_UseNewTab"),
                             profile()->GetPrefs());
-    gtk_widget_set_sensitive(homepage_use_url_entry_, FALSE);
+    UpdateHomepagePrefs();
+    EnableHomepageURLField(false);
   } else if (toggle_button == homepage_use_url_radio_) {
-    SetHomepageFromEntry();
     UserMetricsRecordAction(UserMetricsAction("Options_Homepage_UseURL"),
                             profile()->GetPrefs());
-    gtk_widget_set_sensitive(homepage_use_url_entry_, TRUE);
+    UpdateHomepagePrefs();
+    EnableHomepageURLField(true);
   }
 }
 
 void GeneralPageGtk::OnHomepageUseUrlEntryChanged(GtkWidget* editable) {
   if (initializing_)
     return;
-  SetHomepageFromEntry();
+  UpdateHomepagePrefs();
 }
 
 void GeneralPageGtk::OnShowHomeButtonToggled(GtkWidget* toggle_button) {
@@ -631,20 +638,39 @@ void GeneralPageGtk::EnableDefaultSearchEngineComboBox(bool enable) {
   gtk_widget_set_sensitive(default_search_engine_combobox_, enable);
 }
 
-void GeneralPageGtk::SetHomepage(const GURL& homepage) {
-  if (!homepage.is_valid() || homepage.spec() == chrome::kChromeUINewTabURL) {
-    new_tab_page_is_home_page_.SetValue(true);
+void GeneralPageGtk::UpdateHomepagePrefs() {
+  const GURL& homepage = URLFixerUpper::FixupURL(
+      gtk_entry_get_text(GTK_ENTRY(homepage_use_url_entry_)), std::string());
+  bool new_tab_page_is_home_page =
+    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(homepage_use_newtab_radio_));
+  if (IsNewTabUIURLString(homepage)) {
+    new_tab_page_is_home_page = true;
+    homepage_.SetValueIfNotManaged(std::string());
+  } else if (!homepage.is_valid()) {
+    new_tab_page_is_home_page = true;
     if (!homepage.has_host())
-      homepage_.SetValue(std::string());
+      homepage_.SetValueIfNotManaged(std::string());
   } else {
-    new_tab_page_is_home_page_.SetValue(false);
-    homepage_.SetValue(homepage.spec());
+    homepage_.SetValueIfNotManaged(homepage.spec());
   }
+  new_tab_page_is_home_page_.SetValueIfNotManaged(new_tab_page_is_home_page);
 }
 
-void GeneralPageGtk::SetHomepageFromEntry() {
-  SetHomepage(URLFixerUpper::FixupURL(
-      gtk_entry_get_text(GTK_ENTRY(homepage_use_url_entry_)), std::string()));
+void GeneralPageGtk::UpdateHomepageIsNewTabRadio(bool homepage_is_new_tab,
+                                                 bool enabled) {
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(homepage_use_newtab_radio_),
+                               homepage_is_new_tab);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(homepage_use_url_radio_),
+                               !homepage_is_new_tab);
+  gtk_widget_set_sensitive(homepage_use_newtab_radio_, enabled);
+  gtk_widget_set_sensitive(homepage_use_url_radio_, enabled);
+}
+
+void GeneralPageGtk::EnableHomepageURLField(bool enabled) {
+  if (homepage_.IsManaged()) {
+    enabled = false;
+  }
+  gtk_widget_set_sensitive(homepage_use_url_entry_, enabled);
 }
 
 void GeneralPageGtk::EnableCustomHomepagesControls(bool enable) {

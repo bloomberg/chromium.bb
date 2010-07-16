@@ -67,13 +67,17 @@ class GeneralPageGtk : public OptionsPageBase,
   // Set the default search engine combo box state.
   void EnableDefaultSearchEngineComboBox(bool enable);
 
-  // Sets the home page preferences for kNewTabPageIsHomePage and kHomePage.
-  // If an invalid URL is passed in we revert to using NewTab page as the Home
-  // page.
-  void SetHomepage(const GURL& homepage);
+  // Copies the home page preferences from the gui controls to
+  // kNewTabPageIsHomePage and kHomePage. If an empty or null-host
+  // URL is specified, then we revert to using NewTab page as the Homepage.
+  void UpdateHomepagePrefs();
 
-  // Sets the home page pref using the value in the entry box
-  void SetHomepageFromEntry();
+  // Enables or disables the field for entering a custom homepage URL.
+  void EnableHomepageURLField(bool enabled);
+
+  // Sets the state and enables/disables the radio buttons that control
+  // if the home page is the new tab page.
+  void UpdateHomepageIsNewTabRadio(bool homepage_is_new_tab, bool enabled);
 
   CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnStartupRadioToggled);
   CHROMEGTK_CALLBACK_0(GeneralPageGtk, void, OnStartupAddCustomPageClicked);
