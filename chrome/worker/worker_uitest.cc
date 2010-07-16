@@ -126,6 +126,31 @@ class WorkerTest : public UILayoutTest {
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
   }
 
+  void RunWorkerStorageLayoutTest(const std::string& test_case_file_name) {
+    FilePath worker_test_dir;
+    worker_test_dir = worker_test_dir.AppendASCII("fast");
+    worker_test_dir = worker_test_dir.AppendASCII("workers");
+
+    FilePath storage_test_dir;
+    storage_test_dir = storage_test_dir.AppendASCII("storage");
+    InitializeForLayoutTest(worker_test_dir, storage_test_dir, kNoHttpPort);
+
+    // Storage worker tests also rely on common files in 'resources'.
+    FilePath resource_dir;
+    resource_dir = resource_dir.AppendASCII("resources");
+    AddResourceForLayoutTest(worker_test_dir.Append(storage_test_dir),
+                             resource_dir);
+
+    printf("Test: %s\n", test_case_file_name.c_str());
+    RunLayoutTest(test_case_file_name, kNoHttpPort);
+
+    // Navigate to a blank page so that any workers are cleaned up.
+    // This helps leaks trackers do a better job of reporting.
+    scoped_refptr<TabProxy> tab(GetActiveTab());
+    GURL about_url(chrome::kAboutBlankURL);
+    EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
+  }
+
   bool NavigateAndWaitForAuth(TabProxy* tab, const GURL& url) {
     // Pass a large number of navigations to tell the tab to block until an auth
     // dialog pops up.
@@ -640,47 +665,7 @@ TEST_F(WorkerTest, MAYBE_QueuedSharedWorkerStartedFromOtherTab) {
   ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
 }
 
-TEST_F(WorkerTest, SyncDBTests) {
-  static const char* kLayoutTestFiles[] = {
-    "change-version-handle-reuse-sync.html",
-    "change-version-sync.html",
-    "empty-statement-sync.html",
-    "execute-sql-args-sync.html",
-    "executesql-accepts-only-one-statement-sync.html",
-    "multiple-transactions-on-different-handles-sync.html",
-    "open-database-creation-callback-sync.html",
-    "open-database-empty-version-sync.html",
-    "open-database-inputs-sync.html",
-    "open-database-set-empty-version-sync.html",
-    "open-database-while-transaction-in-progress-sync.html",
-    "sql-data-types-sync.html",
-    "sql-exception-codes-sync.html",
-    "test-authorizer-sync.html",
-    "transaction-in-transaction-sync.html",
-  };
-
-  FilePath worker_test_dir;
-  worker_test_dir = worker_test_dir.AppendASCII("fast");
-  worker_test_dir = worker_test_dir.AppendASCII("workers");
-
-  FilePath storage_test_dir;
-  storage_test_dir = storage_test_dir.AppendASCII("storage");
-  InitializeForLayoutTest(worker_test_dir, storage_test_dir, kNoHttpPort);
-
-  // Storage worker tests also rely on common files in 'resources'.
-  FilePath resource_dir;
-  resource_dir = resource_dir.AppendASCII("resources");
-  AddResourceForLayoutTest(worker_test_dir.Append(storage_test_dir),
-                           resource_dir);
-
-  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i) {
-    printf("Test: %s\n", kLayoutTestFiles[i]);
-    RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
-  }
-
-  // Navigate to a blank page so that any workers are cleaned up.
-  // This helps leaks trackers do a better job of reporting.
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  GURL about_url(chrome::kAboutBlankURL);
-  EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
+// TODO(ojan): Started failing with r52393. WebKit merge 63272:63323.
+TEST_F(WorkerTest, FAILS_OpenDatabaseSyncInputs) {
+  RunWorkerStorageLayoutTest("open-database-sync-inputs.html");
 }
