@@ -14,7 +14,7 @@
 
 class GPUInfo {
  public:
-  GPUInfo() {}
+  GPUInfo();
   ~GPUInfo() {}
 
   // Return the DWORD (uint32) representing the graphics card vendor id.

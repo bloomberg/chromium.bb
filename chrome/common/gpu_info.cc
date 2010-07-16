@@ -4,6 +4,11 @@
 
 #include "chrome/common/gpu_info.h"
 
+GPUInfo::GPUInfo()
+    : vendor_id_(0), device_id_(0), driver_version_(L""),
+      pixel_shader_version_(0), vertex_shader_version_(0) {
+}
+
 uint32 GPUInfo::vendor_id() const {
   return vendor_id_;
 }
