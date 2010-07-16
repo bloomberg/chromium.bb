@@ -54,7 +54,7 @@
    fun:_ZN16HALDefaultDevice10InitializeEv
    fun:_ZN9HALSystem16CheckOutInstanceEv
    fun:AudioObjectGetPropertyData
-   fun:_ZN15AudioManagerMac15HasAudioOutputDevicesEv
+   fun:_ZN15AudioManagerMac*HasAudioOutputDevicesEv
 }
 {
    # Filed with Apple as rdar://6915060; see http://crbug.com/11270
