@@ -516,7 +516,7 @@ class SyncDataModel(object):
       tombstone = sync_pb2.SyncEntity()
       tombstone.id_string = entry.id_string
       tombstone.deleted = True
-      tombstone.name = ''  # 'name' is a required field; we're stuck with it.
+      tombstone.name = ''
       entry = tombstone
     else:
       # Comments in sync.proto detail how the representation of positional
@@ -635,11 +635,14 @@ class TestServer(object):
         # of the operation.
         reply.id_string = server_entry.id_string
         if not server_entry.deleted:
-          reply.parent_id_string = server_entry.parent_id_string
+          # Note: the production server doesn't actually send the
+          # parent_id_string on commit responses, so we don't either.
           reply.position_in_parent = server_entry.position_in_parent
           reply.version = server_entry.version
           reply.name = server_entry.name
           reply.non_unique_name = server_entry.non_unique_name
+        else:
+          reply.version = entry.version + 1
 
   def HandleGetUpdates(self, update_request, update_response):
     """Respond to a GetUpdates request by querying the user's account.
