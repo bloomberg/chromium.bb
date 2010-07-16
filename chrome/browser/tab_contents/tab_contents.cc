@@ -903,11 +903,13 @@ void TabContents::AddNewContents(TabContents* new_contents,
     if (disposition == NEW_POPUP) {
       // If the popup is bigger than a given factor of the screen, then
       // turn it into a foreground tab (on chrome os only)
+      // Also check for width or height == 0, which would otherwise indicate
+      // a tab sized popup window.
       GdkScreen* screen = gdk_screen_get_default();
       int max_width = gdk_screen_get_width(screen) * kMaxWidthFactor;
       int max_height = gdk_screen_get_height(screen) * kMaxHeightFactor;
-      if (initial_pos.width() > max_width ||
-          initial_pos.height() > max_height) {
+      if (initial_pos.width() > max_width || initial_pos.width() == 0 ||
+          initial_pos.height() > max_height || initial_pos.height() == 0) {
         disposition = NEW_FOREGROUND_TAB;
       }
     }
