@@ -161,6 +161,8 @@ BaseTab::BaseTab(TabController* controller)
   close_button->SetImage(views::CustomButton::BS_PUSHED, close_button_p);
   close_button->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_CLOSE_TAB));
   close_button->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
+  // Disable animation so that the red danger sign shows up immediately
+  // to help avoid mis-clicks.
   close_button->SetAnimationDuration(0);
   AddChildView(close_button);
 
