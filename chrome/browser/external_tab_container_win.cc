@@ -334,7 +334,12 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
                             WindowOpenDisposition disposition,
                             const gfx::Rect& initial_pos,
                             bool user_gesture) {
-  DCHECK(automation_ != NULL);
+  if (!automation_) {
+    DCHECK(pending_);
+    LOG(ERROR) << "Invalid automation provider. Dropping new contents notify";
+    delete new_contents;
+    return;
+  }
 
   scoped_refptr<ExternalTabContainer> new_container =
       new ExternalTabContainer(NULL, NULL);
