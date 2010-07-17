@@ -685,7 +685,7 @@ bool WriteSymbolFile(const std::string &obj_file,
 
   unsigned char identifier[16];
   google_breakpad::FileID file_id(obj_file.c_str());
-  if (!file_id.ElfFileIdentifier(identifier)) {
+  if (!file_id.ElfFileIdentifierFromMappedFile(elf_header, identifier)) {
     fprintf(stderr, "%s: unable to generate file identifier\n",
             obj_file.c_str());
     return false;
