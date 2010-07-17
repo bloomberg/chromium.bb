@@ -510,7 +510,10 @@ const char kHomePage[]                      = "homepage";
 // connection, and the endpoint host in a SOCKS proxy connection).
 const char kHostRules[]                     = "host-rules";
 
-// These mappins only apply to the host resolver.
+// The maximum number of concurrent host resolve requests (i.e. DNS) to allow.
+const char kHostResolverParallelism[]       = "host-resolver-parallelism";
+
+// These mappings only apply to the host resolver.
 const char kHostResolverRules[]             = "host-resolver-rules";
 
 // Perform importing from another browser. The value associated with this

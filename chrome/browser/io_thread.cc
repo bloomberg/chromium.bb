@@ -27,7 +27,25 @@ namespace {
 
 net::HostResolver* CreateGlobalHostResolver() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  net::HostResolver* global_host_resolver = net::CreateSystemHostResolver();
+
+  size_t parallelism = net::HostResolver::kDefaultParallelism;
+
+  // Use the concurrency override from the command-line, if any.
+  if (command_line.HasSwitch(switches::kHostResolverParallelism)) {
+    std::string s =
+        command_line.GetSwitchValueASCII(switches::kHostResolverParallelism);
+
+    // Parse the switch (it should be a positive integer formatted as decimal).
+    int n;
+    if (StringToInt(s, &n) && n > 0) {
+      parallelism = static_cast<size_t>(n);
+    } else {
+      LOG(ERROR) << "Invalid switch for host resolver parallelism: " << s;
+    }
+  }
+
+  net::HostResolver* global_host_resolver =
+      net::CreateSystemHostResolver(parallelism);
 
   // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {

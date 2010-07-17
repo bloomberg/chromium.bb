@@ -61,7 +61,8 @@ class ScopedInternet {
 class URLRequestTestContext : public URLRequestContext {
  public:
   URLRequestTestContext() {
-    host_resolver_ = net::CreateSystemHostResolver();
+    host_resolver_ =
+        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism);
     proxy_service_ = net::ProxyService::CreateNull();
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();

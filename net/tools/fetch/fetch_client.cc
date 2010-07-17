@@ -133,7 +133,7 @@ int main(int argc, char**argv) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   scoped_refptr<net::HostResolver> host_resolver(
-      net::CreateSystemHostResolver());
+      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism));
 
   scoped_refptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateNull());

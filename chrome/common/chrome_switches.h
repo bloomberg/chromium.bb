@@ -152,6 +152,7 @@ extern const char kHelpShort[];
 extern const char kHideIcons[];
 extern const char kHomePage[];
 extern const char kHostRules[];
+extern const char kHostResolverParallelism[];
 extern const char kHostResolverRules[];
 extern const char kImport[];
 extern const char kImportFromFile[];

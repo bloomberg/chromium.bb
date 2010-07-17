@@ -131,13 +131,15 @@ class TestCookiePolicy : public net::CookiePolicy {
 class TestURLRequestContext : public URLRequestContext {
  public:
   TestURLRequestContext() {
-    host_resolver_ = net::CreateSystemHostResolver();
+    host_resolver_ =
+        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism);
     proxy_service_ = net::ProxyService::CreateNull();
     Init();
   }
 
   explicit TestURLRequestContext(const std::string& proxy) {
-    host_resolver_ = net::CreateSystemHostResolver();
+    host_resolver_ =
+        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism);
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules().ParseFromString(proxy);
     proxy_service_ = net::ProxyService::CreateFixed(proxy_config);
