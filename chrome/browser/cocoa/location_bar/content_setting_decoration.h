@@ -28,6 +28,7 @@ class ContentSettingDecoration : public ImageDecoration {
   void UpdateFromTabContents(const TabContents* tab_contents);
 
   // Overridden from |LocationBarDecoration|
+  virtual bool AcceptsMousePress() { return true; }
   virtual bool OnMousePressed(NSRect frame);
   virtual NSString* GetToolTip();
 

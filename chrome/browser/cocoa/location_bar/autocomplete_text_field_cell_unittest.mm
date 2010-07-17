@@ -178,6 +178,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
 
   // The cursor frame should stay the same throughout.
   const NSRect cursorFrame([cell textCursorFrameForFrame:bounds]);
+  EXPECT_TRUE(NSEqualRects(cursorFrame, bounds));
 
   // At default settings, everything goes to the text area.
   textFrame = [cell textFrameForFrame:bounds];
@@ -185,7 +186,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
   EXPECT_EQ(NSMinX(bounds), NSMinX(textFrame));
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
-  EXPECT_TRUE(NSEqualRects(cursorFrame, textFrame));
+  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Small search hint leaves text frame to left.
   [cell setSearchHintString:@"Search hint" availableWidth:kWidth];

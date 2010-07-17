@@ -204,19 +204,6 @@
   [undoManager_ removeAllActions];
 }
 
-// Show the I-beam cursor unless the mouse is over an image within the field
-// (Page Actions or the security icon) in which case show the arrow cursor.
-// TODO(rohitrao): Should default to the arrow cursor.  http://crbug.com/41612
-- (void)resetCursorRects {
-  NSRect fieldBounds = [self bounds];
-  [self addCursorRect:fieldBounds cursor:[NSCursor IBeamCursor]];
-
-  // TODO(shess): This needs to traverse the LocationBarDecorations
-  // and put up a cursor for them, too.  Except for the keyword-search
-  // stuff?  Sigh.
-  // http://crbug.com/48867
-}
-
 // TODO(shess): -resetFieldEditorFrameIfNeeded is the place where
 // changes to the cell layout should be flushed.  LocationBarViewMac
 // and ToolbarController are calling this routine directly, and I

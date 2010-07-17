@@ -50,6 +50,7 @@ class PageActionDecoration : public ImageDecoration,
   NSPoint GetBubblePointInFrame(NSRect frame);
 
   // Overridden from |LocationBarDecoration|
+  virtual bool AcceptsMousePress() { return true; }
   virtual bool OnMousePressed(NSRect frame);
   virtual NSString* GetToolTip();
   virtual NSMenu* GetMenu();

@@ -29,6 +29,7 @@ class EVBubbleDecoration : public BubbleDecoration {
   virtual NSPasteboard* GetDragPasteboard();
   virtual NSImage* GetDragImage();
   virtual bool OnMousePressed(NSRect frame);
+  virtual bool AcceptsMousePress() { return true; }
 
  private:
   LocationIconDecoration* location_icon_;  // weak, owned by location bar.

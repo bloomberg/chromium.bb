@@ -46,6 +46,13 @@ class LocationBarDecoration {
   // Returns the tooltip for this decoration, return |nil| for no tooltip.
   virtual NSString* GetToolTip() { return nil; }
 
+  // Decorations which do not accept mouse events are treated like the
+  // field's background for purposes of selecting text.  When such
+  // decorations are adjacent to the text area, they will show the
+  // I-beam cursor.  Decorations which do accept mouse events will get
+  // an arrow cursor when the mouse is over them.
+  virtual bool AcceptsMousePress() { return false; }
+
   // Determine if the item can act as a drag source.
   virtual bool IsDraggable() { return false; }
 

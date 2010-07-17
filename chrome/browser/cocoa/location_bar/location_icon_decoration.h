@@ -26,6 +26,7 @@ class LocationIconDecoration : public ImageDecoration {
 
   // Show the page info panel on click.
   virtual bool OnMousePressed(NSRect frame);
+  virtual bool AcceptsMousePress() { return true; }
 
  private:
   // The location bar view that owns us.

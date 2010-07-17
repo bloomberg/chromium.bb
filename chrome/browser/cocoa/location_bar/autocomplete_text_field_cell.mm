@@ -167,7 +167,9 @@ void CalculatePositionsHelper(
 // |decorations| will contain the resulting visible decorations, and
 // |decoration_frames| will contain their frames in the same
 // coordinates as |frame|.  Decorations will be ordered left to right.
-void CalculatePositionsInFrame(
+// As a convenience returns the index of the first right-hand
+// decoration.
+size_t CalculatePositionsInFrame(
     NSRect frame,
     const std::vector<LocationBarDecoration*>& left_decorations,
     const std::vector<LocationBarDecoration*>& right_decorations,
@@ -199,6 +201,7 @@ void CalculatePositionsInFrame(
                decoration_frames->end());
 
   *remaining_frame = frame;
+  return left_count;
 }
 
 }  // namespace
@@ -386,6 +389,46 @@ void CalculatePositionsInFrame(
   return textFrame;
 }
 
+- (NSRect)textCursorFrameForFrame:(NSRect)cellFrame {
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  NSRect textFrame;
+  size_t left_count =
+      CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
+                                &decorations, &decorationFrames, &textFrame);
+
+  // Determine the left-most extent for the i-beam cursor.
+  CGFloat minX = NSMinX(textFrame);
+  for (size_t index = left_count; index--; ) {
+    if (decorations[index]->AcceptsMousePress())
+      break;
+
+    // If at leftmost decoration, expand to edge of cell.
+    if (!index) {
+      minX = NSMinX(cellFrame);
+    } else {
+      minX = NSMinX(decorationFrames[index]) - kDecorationHorizontalPad;
+    }
+  }
+
+  // Determine the right-most extent for the i-beam cursor.
+  CGFloat maxX = NSMaxX(textFrame);
+  for (size_t index = left_count; index < decorations.size(); ++index) {
+    if (decorations[index]->AcceptsMousePress())
+      break;
+
+    // If at rightmost decoration, expand to edge of cell.
+    if (index == decorations.size() - 1) {
+      maxX = NSMaxX(cellFrame);
+    } else {
+      maxX = NSMaxX(decorationFrames[index]) + kDecorationHorizontalPad;
+    }
+  }
+
+  // I-beam cursor covers left-most to right-most.
+  return NSMakeRect(minX, NSMinY(textFrame), maxX - minX, NSHeight(textFrame));
+}
+
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   DCHECK(hintString_);
 
@@ -466,7 +509,7 @@ void CalculatePositionsInFrame(
            ofView:(AutocompleteTextField*)controlView {
   LocationBarDecoration* decoration =
       [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
-  if (!decoration)
+  if (!decoration || !decoration->AcceptsMousePress())
     return NO;
 
   NSRect decorationRect =

@@ -32,6 +32,7 @@ class MockDecoration : public LocationBarDecoration {
   void SetVisible(bool visible) { visible_ = visible; }
 
   virtual void DrawInFrame(NSRect frame, NSView* control_view) { ; }
+  virtual bool AcceptsMousePress() { return true; }
   MOCK_METHOD1(OnMousePressed, bool(NSRect frame));
   MOCK_METHOD0(GetMenu, NSMenu*());
 

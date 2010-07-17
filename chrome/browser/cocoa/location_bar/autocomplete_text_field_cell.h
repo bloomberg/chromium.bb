@@ -82,6 +82,11 @@ class LocationBarDecoration;
            inRect:(NSRect)cellFrame
            ofView:(AutocompleteTextField*)controlView;
 
+// Overridden from StyledTextFieldCell to include decorations adjacent
+// to the text area which don't handle mouse clicks themselves.
+// Keyword-search bubble, for instance.
+- (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
+
 @end
 
 // Internal methods here exposed for unit testing.
