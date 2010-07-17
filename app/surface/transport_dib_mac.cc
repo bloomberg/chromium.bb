@@ -34,6 +34,11 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
     return NULL;
   }
 
+  if (!dib->shared_memory_.Map(size)) {
+    delete dib;
+    return NULL;
+  }
+
   dib->size_ = size;
   return dib;
 }
