@@ -282,7 +282,7 @@ class GritNode(base.Node):
           raise e
 
         try:
-          node.attrs['first_id'] = id_list.pop(0)
+          node.attrs['first_id'] = str(id_list.pop(0))
         except IndexError, e:
           raise Exception('Please update %s and add a first id for %s (%s).'
               % (first_id_filename, filename, node.name))
