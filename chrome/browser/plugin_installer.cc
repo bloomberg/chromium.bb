@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "webkit/glue/plugins/default_plugin_shared.h"
 
@@ -64,4 +65,16 @@ std::wstring PluginInstaller::GetButtonLabel(InfoBarButton button) const {
 bool PluginInstaller::Accept() {
   tab_contents_->render_view_host()->InstallMissingPlugin();
   return true;
+}
+
+std::wstring PluginInstaller::GetLinkText() {
+  return l10n_util::GetString(IDS_PLUGININSTALLER_PROBLEMSINSTALLING);
+}
+
+bool PluginInstaller::LinkClicked(WindowOpenDisposition disposition) {
+  // Ignore the click dispostion and always open in a new top level tab.
+  tab_contents_->OpenURL(
+      GURL(l10n_util::GetStringUTF8(IDS_LEARN_MORE_PLUGININSTALLER_URL)),
+      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  return false;  // Do not dismiss the info bar.
 }
