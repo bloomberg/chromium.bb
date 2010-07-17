@@ -21,7 +21,3 @@ BUG_TONYG MAC WIN : fast/dom/webtiming.html = TEXT
 BUG_TONYG MAC WIN : http/tests/misc/webtiming-one-redirect.php = TEXT
 BUG_TONYG MAC WIN : http/tests/misc/webtiming-two-redirects.php = TEXT
 BUG_TONYG MAC WIN : fast/dom/Window/window-properties-performance.html = TEXT
-
-// TODO(ojan): Started failing during 63514:63575 roll.
-BUG_OJAN WIN : inspector/console-trace.html = TEXT
-BUG_OJAN LINUX MAC : svg/filters/filter-empty-g.svg = CRASH
