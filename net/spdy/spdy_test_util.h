@@ -6,6 +6,7 @@
 #define NET_SPDY_SPDY_TEST_UTIL_H_
 
 #include "base/basictypes.h"
+#include "net/base/request_priority.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_framer.h"
 
@@ -137,21 +138,17 @@ int ConstructSpdyHeader(const char* const extra_headers[],
 // Returns a SpdyFrame.
 spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                                   int extra_header_count,
-                                  bool compressed);
-
-// Constructs a standard SPDY GET SYN packet, with no compression.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
-spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
-                                  int extra_header_count);
+                                  bool compressed,
+                                  int stream_id,
+                                  RequestPriority request_priority);
 
 // Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
 spdy::SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
-                                          int extra_header_count);
+                                          int extra_header_count,
+                                          int stream_id);
 
 // Constructs a standard SPDY POST SYN packet.
 // |extra_headers| are the extra header-value pairs, which typically
@@ -168,7 +165,8 @@ spdy::SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
                                            int extra_header_count);
 
 // Constructs a single SPDY data frame with the contents "hello!"
-spdy::SpdyFrame* ConstructSpdyBodyFrame();
+spdy::SpdyFrame* ConstructSpdyBodyFrame(int stream_id,
+                                        bool fin);
 
 // Create an async MockWrite from the given SpdyFrame.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req);
@@ -189,4 +187,4 @@ int CombineFrames(const spdy::SpdyFrame** frames, int num_frames,
 
 }  // namespace net
 
-#endif // NET_SPDY_SPDY_TEST_UTIL_H_
+#endif  // NET_SPDY_SPDY_TEST_UTIL_H_

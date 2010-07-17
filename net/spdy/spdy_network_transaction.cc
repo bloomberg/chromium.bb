@@ -112,6 +112,7 @@ LoadState SpdyNetworkTransaction::GetLoadState() const {
       if (spdy_.get())
         return spdy_->GetLoadState();
       return LOAD_STATE_CONNECTING;
+    case STATE_GET_STREAM_COMPLETE:
     case STATE_SEND_REQUEST_COMPLETE:
       return LOAD_STATE_SENDING_REQUEST;
     case STATE_READ_HEADERS_COMPLETE:
@@ -168,6 +169,12 @@ int SpdyNetworkTransaction::DoLoop(int result) {
         net_log_.EndEvent(NetLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION, NULL);
         rv = DoInitConnectionComplete(rv);
         break;
+      case STATE_GET_STREAM:
+        DCHECK_EQ(OK, rv);
+        rv = DoGetStream();
+        break;
+      case STATE_GET_STREAM_COMPLETE:
+        rv = DoGetStreamComplete(rv);
       case STATE_SEND_REQUEST:
         DCHECK_EQ(OK, rv);
         net_log_.BeginEvent(NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST, NULL);
@@ -243,57 +250,54 @@ int SpdyNetworkTransaction::DoInitConnectionComplete(int result) {
   if (result < 0)
     return result;
 
+  next_state_ = STATE_GET_STREAM;
+  return OK;
+}
+
+int SpdyNetworkTransaction::DoGetStream() {
+  next_state_ = STATE_GET_STREAM_COMPLETE;
+
+  // It is possible that the spdy session was shut down while it was
+  // asynchronously waiting to connect.
+  if (spdy_->IsClosed())
+    return ERR_CONNECTION_CLOSED;
+
+  CHECK(!stream_.get());
+
+  stream_.reset(new SpdyHttpStream());
+  return stream_->InitializeStream(spdy_, *request_,
+                                   net_log_, &io_callback_);
+}
+
+int SpdyNetworkTransaction::DoGetStreamComplete(int result) {
+  if (result < 0) {
+    return result;
+  }
+
   next_state_ = STATE_SEND_REQUEST;
   return OK;
 }
 
 int SpdyNetworkTransaction::DoSendRequest() {
   next_state_ = STATE_SEND_REQUEST_COMPLETE;
-  CHECK(!stream_.get());
 
-  // It is possible that the spdy session was shut down while it was
-  // asynchronously waiting to connect.
-  if(spdy_->IsClosed())
-    return ERR_CONNECTION_CLOSED;
-
-  UploadDataStream* upload_data = NULL;
+  UploadDataStream* upload_data_stream = NULL;
   if (request_->upload_data) {
     int error_code;
-    upload_data = UploadDataStream::Create(request_->upload_data, &error_code);
-    if (!upload_data)
+    upload_data_stream = UploadDataStream::Create(request_->upload_data,
+                                                  &error_code);
+    if (!upload_data_stream)
       return error_code;
   }
-  scoped_refptr<SpdyStream> spdy_stream;
-  if (request_->method == "GET") {
-    int error = spdy_->GetPushStream(request_->url, &spdy_stream, net_log_);
-    if (error != OK)
-      return error;
-  }
-  if (spdy_stream.get()) {
-    DCHECK(spdy_stream->pushed());
-    CHECK(spdy_stream->GetDelegate() == NULL);
-    stream_.reset(new SpdyHttpStream(spdy_stream));
-    stream_->InitializeRequest(*request_, base::Time::Now(), NULL);
-    // "vary" field?
-  } else {
-    int error = spdy_->CreateStream(request_->url,
-                                    request_->priority,
-                                    &spdy_stream,
-                                    net_log_);
-    if (error != OK)
-      return error;
-    DCHECK(!spdy_stream->pushed());
-    CHECK(spdy_stream->GetDelegate() == NULL);
-    stream_.reset(new SpdyHttpStream(spdy_stream));
-    stream_->InitializeRequest(*request_, base::Time::Now(), upload_data);
-  }
+  stream_->InitializeRequest(base::Time::Now(), upload_data_stream);
   spdy_ = NULL;
+
   return stream_->SendRequest(&response_, &io_callback_);
 }
 
 int SpdyNetworkTransaction::DoSendRequestComplete(int result) {
   if (result < 0) {
-    stream_.reset() ;
+    stream_.reset();
     return result;
   }
 

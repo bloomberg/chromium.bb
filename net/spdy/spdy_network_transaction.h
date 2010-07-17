@@ -56,6 +56,8 @@ class SpdyNetworkTransaction : public HttpTransaction {
   enum State {
     STATE_INIT_CONNECTION,
     STATE_INIT_CONNECTION_COMPLETE,
+    STATE_GET_STREAM,
+    STATE_GET_STREAM_COMPLETE,
     STATE_SEND_REQUEST,
     STATE_SEND_REQUEST_COMPLETE,
     STATE_READ_HEADERS,
@@ -77,6 +79,8 @@ class SpdyNetworkTransaction : public HttpTransaction {
   // next state method as the result arg.
   int DoInitConnection();
   int DoInitConnectionComplete(int result);
+  int DoGetStream();
+  int DoGetStreamComplete(int result);
   int DoSendRequest();
   int DoSendRequestComplete(int result);
   int DoReadHeaders();
