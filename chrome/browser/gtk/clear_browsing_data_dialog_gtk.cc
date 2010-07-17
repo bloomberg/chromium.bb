@@ -44,9 +44,11 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
       dialog_name.c_str(),
       parent,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      GTK_STOCK_CLOSE,
-      GTK_RESPONSE_REJECT,
       NULL);
+
+  GtkWidget* close_button = gtk_dialog_add_button(GTK_DIALOG(dialog_),
+      GTK_STOCK_CLOSE, GTK_RESPONSE_REJECT);
+  gtk_widget_grab_focus(close_button);
 
   accessible_widget_helper_.reset(new AccessibleWidgetHelper(dialog_, profile));
   accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
