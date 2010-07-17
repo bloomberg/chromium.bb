@@ -238,11 +238,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Args:
       function: the function whose truth value is to be evaluated
       timeout: the max timeout (in secs) for which to wait. The default
-               action is to wait for 60secs, and can be changed by
-               changing kWaitForActionMaxMsec in ui_test.cc.
+               action is to wait for kWaitForActionMaxMsec, as set in
+               ui_test.cc
                Use None to wait indefinitely.
       retry_sleep: the sleep interval (in secs) before retrying |function|.
-                   Deaults to 0.25 secs.
+                   Defaults to 0.25 secs.
       args: the args to pass to |function|
 
     Returns:

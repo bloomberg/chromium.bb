@@ -55,7 +55,7 @@ using base::TimeTicks;
 static const int kWaitForActionMsec = 2000;
 static const int kWaitForActionMaxMsec = 15000;
 // Command execution timeout passed to AutomationProxy.
-static const int kCommandExecutionTimeout = 15000;
+static const int kCommandExecutionTimeout = 25000;
 // Delay to let the browser shut down before trying more brutal methods.
 static const int kWaitForTerminateMsec = 15000;
 // Passed as value of kTestType.
