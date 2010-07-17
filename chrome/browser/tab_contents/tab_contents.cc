@@ -2713,6 +2713,60 @@ void TabContents::PageHasOSDD(RenderViewHost* render_view_host,
       autodetected);
 }
 
+// Indicates if the two inputs have the same security origin.
+// |requested_origin| should only be a security origin (no path, etc.).
+// It is ok if |template_url| is NULL.
+static bool IsSameOrigin(const GURL& requested_origin,
+                         const TemplateURL* template_url) {
+  DCHECK(requested_origin == requested_origin.GetOrigin());
+  return template_url && requested_origin ==
+      TemplateURLModel::GenerateSearchURL(template_url).GetOrigin();
+}
+
+ViewHostMsg_GetSearchProviderInstallState_Params
+    TabContents::GetSearchProviderInstallState(const GURL& requested_host) {
+  // Get the last committed entry since that is the page executing the
+  // javascript as opposed to a page being navigated to. We don't want
+  // to trust the page to tell us the url to avoid using potentially
+  // compromised information.
+  NavigationEntry* entry = controller_.GetLastCommittedEntry();
+  GURL page_origin = entry ? entry->virtual_url().GetOrigin() : GURL();
+  GURL requested_origin = requested_host.GetOrigin();
+  // Do the security check before any others to avoid information leaks.
+  if (page_origin != requested_origin)
+    return ViewHostMsg_GetSearchProviderInstallState_Params::Denied();
+
+  // In incognito mode, no search information is exposed. (This check must be
+  // done after the security check or else a web site can detect that the
+  // user is in incognito mode just by doing a cross origin request.)
+  if (profile()->IsOffTheRecord())
+    return ViewHostMsg_GetSearchProviderInstallState_Params::NotInstalled();
+
+  TemplateURLModel* url_model = profile()->GetTemplateURLModel();
+  if (!url_model)
+    return ViewHostMsg_GetSearchProviderInstallState_Params::NotInstalled();
+  if (!url_model->loaded())
+    url_model->Load();
+
+  // First check to see if the url is the default search provider.
+  if (IsSameOrigin(requested_origin, url_model->GetDefaultSearchProvider())) {
+    return ViewHostMsg_GetSearchProviderInstallState_Params::
+        InstalledAsDefault();
+  }
+
+  // Is the url any search provider?
+  std::vector<const TemplateURL*> urls = url_model->GetTemplateURLs();
+  for (std::vector<const TemplateURL*>::iterator i = urls.begin();
+       i != urls.end(); ++i) {
+    const TemplateURL* template_url = (*i);
+    if (IsSameOrigin(requested_origin, template_url)) {
+      return ViewHostMsg_GetSearchProviderInstallState_Params::
+          InstallButNotDefault();
+    }
+  }
+  return ViewHostMsg_GetSearchProviderInstallState_Params::NotInstalled();
+}
+
 GURL TabContents::GetAlternateErrorPageURL() const {
   GURL url;
   // Disable alternate error pages when in OffTheRecord/Incognito mode.

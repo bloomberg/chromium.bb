@@ -41,6 +41,7 @@ class TabContents;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
+struct ViewHostMsg_GetSearchProviderInstallState_Params;
 struct ViewHostMsg_RunFileChooser_Params;
 struct WebDropData;
 class WebKeyboardEvent;
@@ -652,6 +653,11 @@ class RenderViewHostDelegate {
   virtual void PageHasOSDD(RenderViewHost* render_view_host,
                            int32 page_id, const GURL& doc_url,
                            bool autodetected) {}
+
+  // Returns the install state of the search provider url (not installed,
+  // installed, default).
+  virtual ViewHostMsg_GetSearchProviderInstallState_Params
+      GetSearchProviderInstallState(const GURL& url);
 
   // |url| is assigned to a server that can provide alternate error pages.  If
   // the returned URL is empty, the default error page built into WebKit will

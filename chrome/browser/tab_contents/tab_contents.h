@@ -950,6 +950,8 @@ class TabContents : public PageNavigator,
       const std::vector<webkit_glue::PasswordForm>& visible_forms);
   virtual void PageHasOSDD(RenderViewHost* render_view_host,
                            int32 page_id, const GURL& url, bool autodetected);
+  virtual ViewHostMsg_GetSearchProviderInstallState_Params
+      GetSearchProviderInstallState(const GURL& url);
   virtual GURL GetAlternateErrorPageURL() const;
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
   virtual WebPreferences GetWebkitPrefs();

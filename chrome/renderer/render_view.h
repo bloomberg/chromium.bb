@@ -214,6 +214,10 @@ class RenderView : public RenderWidget,
   // keyword for a provider described in the given OpenSearch document.
   void AddSearchProvider(const std::string& url);
 
+  // Returns the install state for the given search provider url.
+  ViewHostMsg_GetSearchProviderInstallState_Params
+      GetSearchProviderInstallState(const std::string& url);
+
   // Evaluates a string of JavaScript in a particular frame.
   void EvaluateScript(const std::wstring& frame_xpath,
                       const std::wstring& jscript);

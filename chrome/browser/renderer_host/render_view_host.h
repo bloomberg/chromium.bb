@@ -573,6 +573,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTakeFocus(bool reverse);
   void OnMsgPageHasOSDD(int32 page_id, const GURL& doc_url, bool autodetected);
+  void OnMsgGetSearchProviderInstallState(const GURL& url,
+                                          IPC::Message* reply_msg);
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void DidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
   void OnAddMessageToConsole(const std::wstring& message,

@@ -1549,12 +1549,19 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       GURL /* url of OS description document */,
                       bool /* autodetected */)
 
-  // requires for updating text input state.
+  // Find out if the given url's security origin is installed as a search
+  // provider.
+  IPC_SYNC_MESSAGE_ROUTED1_1(
+      ViewHostMsg_GetSearchProviderInstallState,
+      GURL,
+      ViewHostMsg_GetSearchProviderInstallState_Params /* install */)
+
+  // Required for updating text input state.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeUpdateTextInputState,
                       WebKit::WebTextInputType, /* text_input_type */
                       gfx::Rect /* caret_rect */)
 
-  // requires for cancelling an ongoing input method composition.
+  // Required for cancelling an ongoing input method composition.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)
 
   // Tells the browser that the renderer is done calculating the number of
@@ -1581,7 +1588,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_ScriptedPrint,
                              ViewHostMsg_ScriptedPrint_Params,
                              ViewMsg_PrintPages_Params
-                                 /* settings choosen by the user*/)
+                                 /* settings chosen by the user*/)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   // WebKit and JavaScript error messages to log to the console
