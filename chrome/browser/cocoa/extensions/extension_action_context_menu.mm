@@ -13,7 +13,7 @@
 #include "chrome/browser/cocoa/extensions/browser_actions_controller.h"
 #include "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/cocoa/info_bubble_view.h"
-#import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"

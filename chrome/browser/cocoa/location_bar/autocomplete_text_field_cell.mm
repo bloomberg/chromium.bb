@@ -213,61 +213,6 @@ void CalculatePositionsInFrame(
 
 @end
 
-@implementation AutocompleteTextFieldIcon
-
-@synthesize rect = rect_;
-@synthesize view = view_;
-
-// Private helper.
-- (id)initWithView:(LocationBarViewMac::LocationBarImageView*)view
-           isLabel:(BOOL)isLabel {
-  self = [super init];
-  if (self) {
-    isLabel_ = isLabel;
-    view_ = view;
-    rect_ = NSZeroRect;
-  }
-  return self;
-}
-
-- (id)initImageWithView:(LocationBarViewMac::LocationBarImageView*)view {
-  return [self initWithView:view isLabel:NO];
-}
-
-- (id)initLabelWithView:(LocationBarViewMac::LocationBarImageView*)view {
-  return [self initWithView:view isLabel:YES];
-}
-
-- (void)positionInFrame:(NSRect)frame {
-  if (isLabel_) {
-    NSAttributedString* label = view_->GetLabel();
-    DCHECK(label);
-    const CGFloat labelWidth = ceil([label size].width);
-    rect_ = NSMakeRect(NSMaxX(frame) - labelWidth,
-                       NSMinY(frame) + kIconLabelYOffset,
-                       labelWidth, NSHeight(frame) - kIconLabelYOffset);
-  } else {
-    const NSSize imageSize = view_->GetImageSize();
-    const CGFloat yOffset = floor((NSHeight(frame) - imageSize.height) / 2);
-    rect_ = NSMakeRect(NSMaxX(frame) - imageSize.width,
-                       NSMinY(frame) + yOffset,
-                       imageSize.width, imageSize.height);
-  }
-}
-
-- (void)drawInView:(NSView*)controlView {
-  // Make sure someone called |-positionInFrame:|.
-  DCHECK(!NSIsEmptyRect(rect_));
-  if (isLabel_) {
-    NSAttributedString* label = view_->GetLabel();
-    [label drawInRect:rect_];
-  } else {
-    DrawImageInRect(view_->GetImage(), controlView, rect_);
-  }
-}
-
-@end
-
 @implementation AutocompleteTextFieldCell
 
 // @synthesize doesn't seem to compile for this transition.
@@ -364,11 +309,6 @@ void CalculatePositionsInFrame(
   hintString_.reset();
 }
 
-- (void)setContentSettingViewsList:
-    (LocationBarViewMac::ContentSettingViews*)views {
-  content_setting_views_ = views;
-}
-
 - (void)clearDecorations {
   leftDecorations_.clear();
   rightDecorations_.clear();
@@ -432,16 +372,6 @@ void CalculatePositionsInFrame(
   // NOTE: This function must closely match the logic in
   // |-drawInteriorWithFrame:inView:|.
 
-  // Leave room for items on the right (SSL label, page actions, etc).
-  // Icons are laid out in |cellFrame| rather than |textFrame| for
-  // consistency with drawing code.
-  NSArray* icons = [self layedOutIcons:cellFrame];
-  if ([icons count]) {
-    // Max x for resulting text frame.
-    const CGFloat maxX = NSMinX([[icons objectAtIndex:0] rect]);
-    textFrame.size.width = maxX - NSMinX(textFrame);
-  }
-
   // Keyword string or hint string if they fit.
   if (hintString_) {
     const CGFloat hintWidth(WidthForHint(hintString_));
@@ -483,16 +413,6 @@ void CalculatePositionsInFrame(
   // NOTE: This function must closely match the logic in
   // |-textFrameForFrame:|.
 
-  NSArray* icons = [self layedOutIcons:cellFrame];
-  for (AutocompleteTextFieldIcon* icon in icons) {
-    [icon drawInView:controlView];
-  }
-  if ([icons count]) {
-    // Max x for resulting text frame.
-    const CGFloat maxX = NSMinX([[icons objectAtIndex:0] rect]);
-    workingFrame.size.width = maxX - NSMinX(workingFrame);
-  }
-
   // Keyword string or hint string if they fit.
   if (hintString_) {
     const CGFloat hintWidth(WidthForHint(hintString_));
@@ -509,57 +429,6 @@ void CalculatePositionsInFrame(
   [super drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
-- (NSArray*)layedOutIcons:(NSRect)cellFrame {
-  // Trim the decoration area from |cellFrame|.  This is duplicate
-  // work WRT the caller in some cases, but locating this here is
-  // simpler, and this code will go away soon.
-  std::vector<LocationBarDecoration*> decorations;
-  std::vector<NSRect> decorationFrames;
-  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &cellFrame);
-
-  // The set of views to display right-justified in the cell, from
-  // left to right.
-  NSMutableArray* result = [NSMutableArray array];
-
-  // Collect the image views for bulk processing.
-  // TODO(shess): Refactor with LocationBarViewMac to make the
-  // different types of items more consistent.
-  std::vector<LocationBarViewMac::LocationBarImageView*> views;
-
-  if (content_setting_views_) {
-    views.insert(views.end(),
-                 content_setting_views_->begin(),
-                 content_setting_views_->end());
-  }
-
-  // Load the visible views into |result|.
-  for (std::vector<LocationBarViewMac::LocationBarImageView*>::const_iterator
-           iter = views.begin(); iter != views.end(); ++iter) {
-    if ((*iter)->IsVisible()) {
-      scoped_nsobject<AutocompleteTextFieldIcon> icon(
-          [[AutocompleteTextFieldIcon alloc] initImageWithView:*iter]);
-      [result addObject:icon];
-    }
-  }
-
-  // Padding from right-hand decoration.  There should always be at
-  // least one (the star).
-  cellFrame.size.width -= kDecorationHorizontalPad;
-
-  // Position each view within the frame from right to left.
-  for (AutocompleteTextFieldIcon* icon in [result reverseObjectEnumerator]) {
-    [icon positionInFrame:cellFrame];
-
-    // Trim the icon's space from the frame.
-    cellFrame.size.width =
-        NSMinX([icon rect]) - NSMinX(cellFrame) - kDecorationHorizontalPad;
-  }
-  return result;
-}
-
-// Returns the decoration under |theEvent|, or NULL if none.
-// Like |-iconForEvent:inRect:ofView:|, but for decorations.
 - (LocationBarDecoration*)decorationForEvent:(NSEvent*)theEvent
                                       inRect:(NSRect)cellFrame
                                       ofView:(AutocompleteTextField*)controlView
@@ -582,21 +451,6 @@ void CalculatePositionsInFrame(
   return NULL;
 }
 
-- (AutocompleteTextFieldIcon*)iconForEvent:(NSEvent*)theEvent
-                                    inRect:(NSRect)cellFrame
-                                    ofView:(AutocompleteTextField*)controlView {
-  const BOOL flipped = [controlView isFlipped];
-  const NSPoint location =
-      [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
-
-  for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
-    if (NSMouseInRect(location, [icon rect], flipped))
-      return icon;
-  }
-
-  return nil;
-}
-
 - (NSMenu*)decorationMenuForEvent:(NSEvent*)theEvent
                            inRect:(NSRect)cellFrame
                            ofView:(AutocompleteTextField*)controlView {
@@ -604,11 +458,6 @@ void CalculatePositionsInFrame(
       [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
   if (decoration)
     return decoration->GetMenu();
-
-  AutocompleteTextFieldIcon*
-      icon = [self iconForEvent:theEvent inRect:cellFrame ofView:controlView];
-  if (icon)
-    return [icon view]->GetMenu();
   return nil;
 }
 
@@ -617,23 +466,15 @@ void CalculatePositionsInFrame(
            ofView:(AutocompleteTextField*)controlView {
   LocationBarDecoration* decoration =
       [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
-  AutocompleteTextFieldIcon* icon =
-      [self iconForEvent:theEvent inRect:cellFrame ofView:controlView];
-  if (!decoration && !icon)
+  if (!decoration)
     return NO;
 
-  NSRect decorationRect = NSZeroRect;
-  if (icon) {
-    decorationRect = [icon rect];
-  } else if (decoration) {
-    decorationRect = [self frameForDecoration:decoration inFrame:cellFrame];
-  }
+  NSRect decorationRect =
+      [self frameForDecoration:decoration inFrame:cellFrame];
 
-  // If the icon is draggable, then initiate a drag if the user drags
-  // or holds the mouse down for awhile.
-  if ((icon && [icon view]->IsDraggable()) ||
-      (decoration && decoration->IsDraggable())) {
-    DCHECK(icon || decoration);
+  // If the decoration is draggable, then initiate a drag if the user
+  // drags or holds the mouse down for awhile.
+  if (decoration->IsDraggable()) {
     NSDate* timeout =
         [NSDate dateWithTimeIntervalSinceNow:kLocationIconDragTimeout];
     NSEvent* event = [NSApp nextEventMatchingMask:(NSLeftMouseDraggedMask |
@@ -642,23 +483,20 @@ void CalculatePositionsInFrame(
                                            inMode:NSEventTrackingRunLoopMode
                                           dequeue:YES];
     if (!event || [event type] == NSLeftMouseDragged) {
-      NSPasteboard* pboard = nil;
-      if (icon) pboard = [icon view]->GetDragPasteboard();
-      if (decoration) pboard = decoration->GetDragPasteboard();
+      NSPasteboard* pboard = decoration->GetDragPasteboard();
       DCHECK(pboard);
 
       // TODO(shess): My understanding is that the -isFlipped
       // adjustment should not be necessary.  But without it, the
-      // image is nowhere near the cursor.  Perhaps the icon's rect is
-      // incorrectly calculated?
+      // image is nowhere near the cursor.  Perhaps the decorations's
+      // rect is incorrectly calculated?
       // http://crbug.com/40711
       NSPoint dragPoint = decorationRect.origin;
       if ([controlView isFlipped])
         dragPoint.y += NSHeight(decorationRect);
 
-      NSImage* image = nil;
-      if (icon) image = [icon view]->GetImage();
-      if (decoration) image = decoration->GetDragImage();
+      NSImage* image = decoration->GetDragImage();
+      DCHECK(image);
       [controlView dragImage:image
                           at:dragPoint
                       offset:NSZeroSize
@@ -673,12 +511,8 @@ void CalculatePositionsInFrame(
     DCHECK_EQ([event type], NSLeftMouseUp);
   }
 
-  if (icon) {
-    [icon view]->OnMousePressed(decorationRect);
-  } else if (decoration) {
-    if (!decoration->OnMousePressed(decorationRect))
-      return NO;
-  }
+  if (!decoration->OnMousePressed(decorationRect))
+    return NO;
 
   return YES;
 }

@@ -211,13 +211,10 @@
   NSRect fieldBounds = [self bounds];
   [self addCursorRect:fieldBounds cursor:[NSCursor IBeamCursor]];
 
-  AutocompleteTextFieldCell* cell = [self cell];
-  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:fieldBounds])
-    [self addCursorRect:[icon rect] cursor:[NSCursor arrowCursor]];
-
   // TODO(shess): This needs to traverse the LocationBarDecorations
   // and put up a cursor for them, too.  Except for the keyword-search
   // stuff?  Sigh.
+  // http://crbug.com/48867
 }
 
 // TODO(shess): -resetFieldEditorFrameIfNeeded is the place where
@@ -236,6 +233,10 @@
   [self removeAllToolTips];
   [currentToolTips_ removeAllObjects];
 
+#if 0
+  // TODO(shess): Bring back tooltips.  All the wiring is in there,
+  // just need to hook it up.
+  // http://crbug.com/49321
   AutocompleteTextFieldCell* cell = [self cell];
   for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:[self bounds]]) {
     NSRect iconRect = [icon rect];
@@ -248,6 +249,7 @@
     [currentToolTips_ addObject:tooltip];
     [self addToolTipRect:iconRect owner:tooltip userData:nil];
   }
+#endif
 }
 
 // NOTE(shess): http://crbug.com/19116 describes a weird bug which

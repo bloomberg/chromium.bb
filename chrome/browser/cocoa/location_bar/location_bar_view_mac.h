@@ -25,6 +25,7 @@
 
 @class AutocompleteTextField;
 class CommandUpdater;
+class ContentSettingDecoration;
 class ContentSettingImageModel;
 class EVBubbleDecoration;
 @class ExtensionPopupController;
@@ -135,95 +136,6 @@ class LocationBarViewMac : public AutocompleteEditController,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Used to display a clickable icon in the location bar.
-  class LocationBarImageView {
-   public:
-    explicit LocationBarImageView() : image_(nil),
-                                      label_(nil),
-                                      visible_(false) {}
-    virtual ~LocationBarImageView() {}
-
-    // Sets the image.
-    void SetImage(NSImage* image);
-
-    // Get the |resource_id| image resource and set the image.
-    void SetIcon(int resource_id);
-
-    // Sets the label text, font, and color. |text| may be nil; |color| and
-    // |font| are ignored if |text| is nil.
-    void SetLabel(NSString* text, NSFont* baseFont, NSColor* color);
-
-    // Sets the visibility. SetImage() should be called with a valid image
-    // before the visibility is set to |true|.
-    void SetVisible(bool visible);
-
-    NSImage* GetImage() const { return image_; }
-    NSAttributedString* GetLabel() const { return label_; }
-    bool IsVisible() const { return visible_; }
-
-    // Default size when no image is present.
-    virtual NSSize GetDefaultImageSize() const;
-
-    // Returns the size of the image, else the default size.
-    NSSize GetImageSize() const;
-
-    // Returns the tooltip for this image view or |nil| if there is none.
-    virtual NSString* GetToolTip() { return nil; }
-
-    // Used to determinate if the item can act as a drag source.
-    virtual bool IsDraggable() { return false; }
-
-    // The drag pasteboard to use if a drag is initiated.
-    virtual NSPasteboard* GetDragPasteboard() { return nil; }
-
-    // Called on mouse down.
-    virtual void OnMousePressed(NSRect bounds) {}
-
-    // Called to get the icon's context menu. Return |nil| for no menu.
-    virtual NSMenu* GetMenu() { return nil; }
-
-   private:
-    scoped_nsobject<NSImage> image_;
-
-    // The label shown next to the icon, or nil if none.
-    scoped_nsobject<NSAttributedString> label_;
-
-    bool visible_;
-
-    DISALLOW_COPY_AND_ASSIGN(LocationBarImageView);
-  };
-
-  // ContentSettingImageView is used to display the content settings images
-  // on the current page.
-  class ContentSettingImageView : public LocationBarImageView {
-   public:
-    ContentSettingImageView(ContentSettingsType settings_type,
-                            LocationBarViewMac* owner,
-                            Profile* profile);
-    virtual ~ContentSettingImageView();
-
-    // Shows a content settings bubble.
-    void OnMousePressed(NSRect bounds);
-
-    // Updates the image and visibility state based on the supplied TabContents.
-    void UpdateFromTabContents(const TabContents* tab_contents);
-
-    // Returns the tooltip for this Page Action image or |nil| if there is none.
-    virtual NSString* GetToolTip();
-
-   private:
-    void SetToolTip(NSString* tooltip);
-
-    scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
-
-    LocationBarViewMac* owner_;
-    Profile* profile_;
-    scoped_nsobject<NSString> tooltip_;
-
-    DISALLOW_COPY_AND_ASSIGN(ContentSettingImageView);
-  };
-  typedef ScopedVector<ContentSettingImageView> ContentSettingViews;
-
  private:
   // Posts |notification| to the default notification center.
   void PostNotification(NSString* notification);
@@ -240,7 +152,7 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // Updates visibility of the content settings icons based on the current
   // tab contents state.
-  void RefreshContentSettingsViews();
+  void RefreshContentSettingsDecorations();
 
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
@@ -274,8 +186,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Any installed Page Actions.
   ScopedVector<PageActionDecoration> page_action_decorations_;
 
-  // The content blocked views.
-  ContentSettingViews content_setting_views_;
+  // The content blocked decorations.
+  ScopedVector<ContentSettingDecoration> content_setting_decorations_;
 
   Profile* profile_;
 

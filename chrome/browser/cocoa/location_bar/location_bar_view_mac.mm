@@ -23,6 +23,7 @@
 #import "chrome/browser/cocoa/first_run_bubble_controller.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/location_bar/content_setting_decoration.h"
 #import "chrome/browser/cocoa/location_bar/ev_bubble_decoration.h"
 #import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/cocoa/location_bar/page_action_decoration.h"
@@ -77,16 +78,12 @@ LocationBarViewMac::LocationBarViewMac(
       toolbar_model_(toolbar_model),
       transition_(PageTransition::TYPED),
       first_run_bubble_(this) {
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingImageView* content_setting_view =
-        new ContentSettingImageView(static_cast<ContentSettingsType>(i), this,
-                                    profile_);
-    content_setting_views_.push_back(content_setting_view);
-    content_setting_view->SetVisible(false);
+  for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    DCHECK_EQ(i, content_setting_decorations_.size());
+    ContentSettingsType type = static_cast<ContentSettingsType>(i);
+    content_setting_decorations_.push_back(
+        new ContentSettingDecoration(type, this, profile_));
   }
-
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  [cell setContentSettingViewsList:&content_setting_views_];
 
   registrar_.Add(this,
       NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
@@ -144,7 +141,7 @@ void LocationBarViewMac::FocusSearch() {
 }
 
 void LocationBarViewMac::UpdateContentSettingsIcons() {
-  RefreshContentSettingsViews();
+  RefreshContentSettingsDecorations();
   [field_ updateCursorAndToolTipRects];
   [field_ setNeedsDisplay:YES];
 }
@@ -181,7 +178,7 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
   RefreshPageActionDecorations();
-  RefreshContentSettingsViews();
+  RefreshContentSettingsDecorations();
   // AutocompleteEditView restores state if the tab is non-NULL.
   edit_view_->Update(should_restore_state ? contents : NULL);
   OnChanged();
@@ -427,130 +424,13 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
                                         object:[NSValue valueWithPointer:this]];
 }
 
-void LocationBarViewMac::RefreshContentSettingsViews() {
-  const TabContents* tab_contents = browser_->GetSelectedTabContents();
-  for (ContentSettingViews::iterator it(content_setting_views_.begin());
-      it != content_setting_views_.end();
-      ++it) {
-    (*it)->UpdateFromTabContents(
-        toolbar_model_->input_in_progress() ? NULL : tab_contents);
+void LocationBarViewMac::RefreshContentSettingsDecorations() {
+  const bool input_in_progress = toolbar_model_->input_in_progress();
+  const TabContents* tab_contents =
+      input_in_progress ? NULL : browser_->GetSelectedTabContents();
+  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
+    content_setting_decorations_[i]->UpdateFromTabContents(tab_contents);
   }
-}
-
-// LocationBarImageView---------------------------------------------------------
-
-void LocationBarViewMac::LocationBarImageView::SetImage(NSImage* image) {
-  image_.reset([image retain]);
-}
-
-void LocationBarViewMac::LocationBarImageView::SetIcon(int resource_id) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SetImage(rb.GetNSImageNamed(resource_id));
-}
-
-void LocationBarViewMac::LocationBarImageView::SetLabel(NSString* text,
-                                                        NSFont* baseFont,
-                                                        NSColor* color) {
-  // Create an attributed string for the label, if a label was given.
-  label_.reset();
-  if (text) {
-    DCHECK(color);
-    DCHECK(baseFont);
-    NSFont* font = [NSFont fontWithDescriptor:[baseFont fontDescriptor]
-                                         size:[baseFont pointSize] - 2.0];
-    NSDictionary* attributes =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-         color, NSForegroundColorAttributeName,
-         font, NSFontAttributeName,
-         NULL];
-    NSAttributedString* attrStr =
-        [[NSAttributedString alloc] initWithString:text attributes:attributes];
-    label_.reset(attrStr);
-  }
-}
-
-void LocationBarViewMac::LocationBarImageView::SetVisible(bool visible) {
-  visible_ = visible;
-}
-
-NSSize LocationBarViewMac::LocationBarImageView::GetDefaultImageSize() const {
-  return NSZeroSize;
-}
-
-NSSize LocationBarViewMac::LocationBarImageView::GetImageSize() const {
-  NSImage* image = GetImage();
-  if (image)
-    return [image size];
-  return GetDefaultImageSize();
-}
-
-// ContentSettingsImageView-----------------------------------------------------
-LocationBarViewMac::ContentSettingImageView::ContentSettingImageView(
-    ContentSettingsType settings_type,
-    LocationBarViewMac* owner,
-    Profile* profile)
-    : content_setting_image_model_(
-          ContentSettingImageModel::CreateContentSettingImageModel(
-              settings_type)),
-      owner_(owner),
-      profile_(profile) {
-}
-
-LocationBarViewMac::ContentSettingImageView::~ContentSettingImageView() {}
-
-void LocationBarViewMac::ContentSettingImageView::OnMousePressed(NSRect bounds)
-{
-  // Get host. This should be shared shared on linux/win/osx medium-term.
-  TabContents* tabContents =
-      BrowserList::GetLastActive()->GetSelectedTabContents();
-  if (!tabContents)
-    return;
-  GURL url = tabContents->GetURL();
-  std::wstring displayHost;
-  net::AppendFormattedHost(
-      url,
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
-      &displayHost, NULL, NULL);
-
-  // Transform mouse coordinates to screen space.
-  AutocompleteTextField* textField = owner_->GetAutocompleteTextField();
-  NSWindow* window = [textField window];
-  bounds = [textField convertRect:bounds toView:nil];
-  NSPoint anchor = NSMakePoint(NSMidX(bounds) + 1, NSMinY(bounds));
-  anchor = [window convertBaseToScreen:anchor];
-
-  // Open bubble.
-  ContentSettingBubbleModel* model =
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          tabContents, profile_,
-          content_setting_image_model_->get_content_settings_type());
-  [ContentBlockedBubbleController showForModel:model
-                                   parentWindow:window
-                                     anchoredAt:anchor];
-}
-
-NSString* LocationBarViewMac::ContentSettingImageView::GetToolTip() {
-  return tooltip_.get();
-}
-
-void LocationBarViewMac::ContentSettingImageView::UpdateFromTabContents(
-    const TabContents* tab_contents) {
-  content_setting_image_model_->UpdateFromTabContents(tab_contents);
-  if (content_setting_image_model_->is_visible()) {
-    // TODO(thakis): We should use pdfs for these icons on OSX.
-    // http://crbug.com/35847
-    SetIcon(content_setting_image_model_->get_icon());
-    SetToolTip(base::SysUTF8ToNSString(
-        content_setting_image_model_->get_tooltip()));
-    SetVisible(true);
-  } else {
-    SetVisible(false);
-  }
-}
-
-void LocationBarViewMac::ContentSettingImageView::SetToolTip(NSString* tooltip)
-{
-  tooltip_.reset([tooltip retain]);
 }
 
 void LocationBarViewMac::DeletePageActionDecorations() {
@@ -616,9 +496,12 @@ void LocationBarViewMac::Layout() {
   [cell addLeftDecoration:ev_bubble_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
 
-  // Display order is right to left.
+  // Note that display order is right to left.
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     [cell addRightDecoration:page_action_decorations_[i]];
+  }
+  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
+    [cell addRightDecoration:content_setting_decorations_[i]];
   }
 
   // By default only the location icon is visible.
