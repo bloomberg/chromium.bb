@@ -46,25 +46,25 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
 class CreateContextMenuFunction : public ExtensionContextMenuFunction {
   ~CreateContextMenuFunction() {}
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.contextMenus.create")
+  DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.create")
 };
 
 class UpdateContextMenuFunction : public ExtensionContextMenuFunction {
   ~UpdateContextMenuFunction() {}
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.contextMenus.update")
+  DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.update")
 };
 
 class RemoveContextMenuFunction : public ExtensionContextMenuFunction {
   ~RemoveContextMenuFunction() {}
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.contextMenus.remove")
+  DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.remove")
 };
 
 class RemoveAllContextMenusFunction : public ExtensionContextMenuFunction {
   ~RemoveAllContextMenusFunction() {}
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.contextMenus.removeAll")
+  DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.removeAll")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTEXT_MENU_API_H__

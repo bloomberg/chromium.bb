@@ -1,6 +1,6 @@
 {
   "name" : "Context Menus Test Extension",
   "version" : "0.1",
-  "permissions": [ "experimental", "tabs" ],
+  "permissions": [ "contextMenus", "tabs" ],
   "background_page": "background.html"
 }

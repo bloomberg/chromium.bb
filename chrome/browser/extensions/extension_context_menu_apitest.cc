@@ -7,10 +7,6 @@
 #include "chrome/common/chrome_switches.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenus) {
-  // TODO(asargent): Remove when context menu API is no longer experimental
-  // (http://crbug.com/39508).
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
-  ASSERT_TRUE(RunExtensionTest("context_menus")) << message_;
+  ASSERT_TRUE(RunExtensionTest("context_menus/basics")) << message_;
+  ASSERT_TRUE(RunExtensionTest("context_menus/no_perms")) << message_;
 }

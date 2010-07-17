@@ -2502,7 +2502,7 @@
     "events": []
   },
   {
-    "namespace": "experimental.contextMenus",
+    "namespace": "contextMenus",
     "types": [],
     "functions": [
       {

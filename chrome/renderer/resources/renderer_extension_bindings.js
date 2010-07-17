@@ -243,12 +243,12 @@ var chrome = chrome || {};
       // Entire namespaces.
       "bookmarks",
       "browserAction",
+      "contextMenus",
       "cookies",
       "devtools",
       "experimental.accessibility",
       "experimental.bookmarkManager",
       "experimental.clipboard",
-      "experimental.contextMenus",
       "experimental.extension",
       "experimental.infobars",
       "experimental.metrics",

@@ -601,7 +601,7 @@ var chrome = chrome || {};
           details, this.name, this.definition.parameters, "page action");
     };
 
-    apiFunctions["experimental.contextMenus.create"].handleRequest =
+    apiFunctions["contextMenus.create"].handleRequest =
         function() {
       var args = arguments;
       var id = chromeHidden.contextMenus.nextId++;
@@ -611,7 +611,7 @@ var chrome = chrome || {};
       return id;
     };
 
-    apiFunctions["experimental.contextMenus.create"].customCallback =
+    apiFunctions["contextMenus.create"].customCallback =
         function(name, request, response) {
       if (chrome.extension.lastError) {
         return;
@@ -627,7 +627,7 @@ var chrome = chrome || {};
       }
     };
 
-    apiFunctions["experimental.contextMenus.remove"].customCallback =
+    apiFunctions["contextMenus.remove"].customCallback =
         function(name, request, response) {
       if (chrome.extension.lastError) {
         return;
@@ -636,7 +636,7 @@ var chrome = chrome || {};
       delete chromeHidden.contextMenus.handlers[id];
     };
 
-    apiFunctions["experimental.contextMenus.update"].customCallback =
+    apiFunctions["contextMenus.update"].customCallback =
         function(name, request, response) {
       if (chrome.extension.lastError) {
         return;
@@ -647,7 +647,7 @@ var chrome = chrome || {};
       }
     };
 
-    apiFunctions["experimental.contextMenus.removeAll"].customCallback =
+    apiFunctions["contextMenus.removeAll"].customCallback =
         function(name, request, response) {
       if (chrome.extension.lastError) {
         return;

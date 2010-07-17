@@ -113,6 +113,7 @@ const int Extension::kPageActionIconMaxSize = 19;
 const int Extension::kBrowserActionIconMaxSize = 19;
 
 const char* Extension::kBackgroundPermission = "background";
+const char* Extension::kContextMenusPermission = "contextMenus";
 const char* Extension::kBookmarkPermission = "bookmarks";
 const char* Extension::kCookiePermission = "cookies";
 const char* Extension::kExperimentalPermission = "experimental";
@@ -126,6 +127,7 @@ const char* Extension::kUnlimitedStoragePermission = "unlimited_storage";
 const char* Extension::kPermissionNames[] = {
   Extension::kBackgroundPermission,
   Extension::kBookmarkPermission,
+  Extension::kContextMenusPermission,
   Extension::kCookiePermission,
   Extension::kExperimentalPermission,
   Extension::kGeolocationPermission,

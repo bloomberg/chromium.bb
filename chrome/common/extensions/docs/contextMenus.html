@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.experimental.contextMenus - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>chrome.contextMenus - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
       </div>
@@ -146,6 +146,7 @@
               <li>Browser UI
                 <ul>
                   <li><a href="browserAction.html">Browser Actions</a></li>
+                  <li class="leftNavSelected">Context Menus</li>
                   <li><a href="notifications.html">Desktop Notifications</a></li>
                   <li><a href="options.html">Options Pages</a></li>
                   <li><a href="override.html">Override Pages</a></li>
@@ -209,22 +210,22 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.contextMenus</h1>
+        <h1 class="page_title">chrome.contextMenus</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li style="display: none; ">
-              <a>h2Name</a>
+            <li>
+              <a href="#manifest">Manifest</a>
               <ol>
-                <li>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.contextMenus</a>
+                <a href="#apiReference">API reference: chrome.contextMenus</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -272,10 +273,46 @@
 
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><!-- BEGIN AUTHORED CONTENT -->
-<p id="classSummary">
-For information on how to use experimental APIs,
-see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+<p>
+The context menus module allows you
+to add items to Google Chrome's context menu.
 </p>
+
+<p>
+You can choose what types of objects
+your context menu additions apply to,
+such as images, hyperlinks, and pages.
+</p>
+
+<p>
+You can create as many context menu items
+as you need, but if more than one
+from your extension is visible at once,
+Google Chrome automatically collapses them
+into a single parent menu.
+</p>
+
+<h2 id="manifest">Manifest</h2>
+<p>You must declare the "contextMenus" permission
+in your extension's manifest to use the API.
+Also, you should specify a 16x16-pixel icon
+for display next to your menu item.
+For example:
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  "permissions": [
+    <b>"contextMenus"</b>
+  ],
+  "icons": {
+    <b>"16": "icon-bitty.png",</b>
+    "48": "icon-small.png",
+    "128": "icon-large.png"
+  },
+  ...
+}</pre>
 
 <!-- END AUTHORED CONTENT -->
 </div>
@@ -283,7 +320,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.contextMenus</h2>
+        <h2>API reference: chrome.contextMenus</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -315,7 +352,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="summary"><span>integer</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.contextMenus.create</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.contextMenus.create</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>createProperties</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -852,7 +889,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.contextMenus.remove</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                  <span>chrome.contextMenus.remove</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
                       <var><span>menuItemId</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -1018,7 +1055,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.contextMenus.removeAll</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.contextMenus.removeAll</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -1131,7 +1168,7 @@ see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.contextMenus.update</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                  <span>chrome.contextMenus.update</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
                       <var><span>id</span></var></span><span class="null"><span>, </span><span>object</span>
                       <var><span>updateProperties</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>

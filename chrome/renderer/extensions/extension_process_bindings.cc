@@ -82,7 +82,6 @@ const char* kNonPermissionExtensionPackages[] = {
   "pageActions",
   "browserAction",
   "browserActions",
-  "contextMenus",  // TODO(asargent) remove when the permission is added
   "i18n",
   "devtools",
   "test"

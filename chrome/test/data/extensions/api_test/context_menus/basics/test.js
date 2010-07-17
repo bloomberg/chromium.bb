@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-if (!chrome.contextMenus) {
-  chrome.contextMenus = chrome.experimental.contextMenus;
-}
-
 var assertNoLastError = chrome.test.assertNoLastError;
 
 var tests = [
@@ -88,4 +84,3 @@ for (var i in contexts) {
 }
 
 chrome.test.runTests(tests);
-
