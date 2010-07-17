@@ -9,8 +9,8 @@
 
 #define PPB_PRIVATE_INTERFACE "PPB_Private;1"
 
-typedef enum _ppb_ResourceString {
-  PPB_RESOURCE_STRING_PDF_GET_PASSWORD = 0,
+typedef enum _pp_ResourceString {
+  PP_RESOURCESTRING_PDFGETPASSWORD = 0,
 } PP_ResourceString;
 
 typedef struct _ppb_Private {

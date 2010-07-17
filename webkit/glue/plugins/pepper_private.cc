@@ -18,7 +18,7 @@ namespace {
 
 PP_Var GetLocalizedString(PP_ResourceString string_id) {
   std::string rv;
-  if (string_id == PPB_RESOURCE_STRING_PDF_GET_PASSWORD)
+  if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD)
     rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_NEED_PASSWORD));
 
   return StringToPPVar(rv);
