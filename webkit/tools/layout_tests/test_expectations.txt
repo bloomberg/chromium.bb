@@ -21,3 +21,6 @@ BUG_TONYG MAC WIN : fast/dom/webtiming.html = TEXT
 BUG_TONYG MAC WIN : http/tests/misc/webtiming-one-redirect.php = TEXT
 BUG_TONYG MAC WIN : http/tests/misc/webtiming-two-redirects.php = TEXT
 BUG_TONYG MAC WIN : fast/dom/Window/window-properties-performance.html = TEXT
+
+// TODO(johnnyg): remove after upstream expectations are rolled
+BUG_JOHNNYG WIN : fast/forms/input-file-directory-upload.html = TEXT
