@@ -59,8 +59,8 @@ bool WebFileSystemImpl::getFileModificationTime(const WebString& path,
 }
 
 WebString WebFileSystemImpl::directoryName(const WebString& path) {
-  NOTREACHED();
-  return WebString();
+  FilePath file_path(WebStringToFilePathString(path));
+  return FilePathToWebString(file_path.DirName());
 }
 
 WebString WebFileSystemImpl::pathByAppendingComponent(
