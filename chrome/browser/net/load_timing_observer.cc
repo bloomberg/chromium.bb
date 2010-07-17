@@ -71,8 +71,6 @@ void LoadTimingObserver::OnAddEntry(net::NetLog::EventType type,
     OnAddURLRequestEntry(type, time, source, phase, params);
   else if (source.type == net::NetLog::SOURCE_CONNECT_JOB)
     OnAddConnectJobEntry(type, time, source, phase, params);
-  else if (source.type == net::NetLog::SOURCE_SOCKET)
-    OnAddSocketEntry(type, time, source, phase, params);
 }
 
 void LoadTimingObserver::OnAddURLRequestEntry(
@@ -150,14 +148,6 @@ void LoadTimingObserver::OnAddURLRequestEntry(
     case net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET:
       record->socket_log_id = static_cast<net::NetLogSourceParameter*>(
           params)->value().id;
-      if (!record->socket_reused) {
-        SocketToRecordMap::iterator it =
-            socket_to_record_.find(record->socket_log_id);
-        if (it != socket_to_record_.end() && !it->second.ssl_start.is_null()) {
-            timing.ssl_start = TimeTicksToOffset(it->second.ssl_start, record);
-            timing.ssl_end = TimeTicksToOffset(it->second.ssl_end, record);
-        }
-      }
       break;
     case net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST:
     case net::NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST:
@@ -212,44 +202,5 @@ void LoadTimingObserver::OnAddConnectJobEntry(
       else if (is_end)
         it->second.dns_end = time;
     }
-  }
-}
-
-void LoadTimingObserver::OnAddSocketEntry(
-    net::NetLog::EventType type,
-    const base::TimeTicks& time,
-    const net::NetLog::Source& source,
-    net::NetLog::EventPhase phase,
-    net::NetLog::EventParameters* params) {
-  bool is_begin = phase == net::NetLog::PHASE_BEGIN;
-  bool is_end = phase == net::NetLog::PHASE_END;
-
-  // Manage record lifetime based on the SOCKET_ALIVE entry.
-  if (type == net::NetLog::TYPE_SOCKET_ALIVE) {
-    if (is_begin) {
-      // Prevents us from passively growing the memory memory unbounded in case
-      // something went wrong. Should not happen.
-      if (socket_to_record_.size() > kMaxNumEntries) {
-        LOG(WARNING) << "The load timing observer socket count has grown "
-                        "larger than expected, resetting";
-        socket_to_record_.clear();
-      }
-
-      socket_to_record_.insert(
-          std::make_pair(source.id, SocketRecord()));
-    } else if (is_end) {
-      socket_to_record_.erase(source.id);
-    }
-    return;
-  }
-  SocketToRecordMap::iterator it = socket_to_record_.find(source.id);
-  if (it == socket_to_record_.end())
-    return;
-
-  if (type == net::NetLog::TYPE_SSL_CONNECT) {
-    if (is_begin)
-      it->second.ssl_start = time;
-    else if (is_end)
-      it->second.ssl_end = time;
   }
 }
