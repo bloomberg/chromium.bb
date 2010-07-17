@@ -67,9 +67,9 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
   for (size_t i = 0; i < arraysize(ids); ++i) {
     profile.GetPrefs()->SetInteger(prefs::kCountryIDAtInstall, ids[i]);
     ScopedVector<TemplateURL> urls;
-    size_t url_count;
+    size_t default_index;
     TemplateURLPrepopulateData::GetPrepopulatedEngines(
-        profile.GetPrefs(), &(urls.get()), &url_count);
+        profile.GetPrefs(), &(urls.get()), &default_index);
     std::set<int> unique_ids;
     for (size_t turl_i = 0; turl_i < urls.size(); ++turl_i) {
       ASSERT_TRUE(unique_ids.find(urls[turl_i]->prepopulate_id()) ==
@@ -109,10 +109,10 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   int version = TemplateURLPrepopulateData::GetDataVersion(prefs.get());
   EXPECT_EQ(1, version);
 
-  std::vector<TemplateURL*> t_urls;
+  ScopedVector<TemplateURL> t_urls;
   size_t default_index;
   TemplateURLPrepopulateData::GetPrepopulatedEngines(
-      prefs.get(), &t_urls, &default_index);
+      prefs.get(), &(t_urls.get()), &default_index);
 
   ASSERT_EQ(1u, t_urls.size());
   EXPECT_EQ(L"foo", t_urls[0]->short_name());
