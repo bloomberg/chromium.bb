@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/autofill/autofill_cc_infobar.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/pref_service.h"
@@ -103,4 +104,10 @@ bool AutoFillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
                     PageTransition::TYPED);
   return false;
 }
+
+#if defined(OS_WIN)
+InfoBar* AutoFillCCInfoBarDelegate::CreateInfoBar() {
+  return CreateAutofillCcInfoBar(this);
+}
+#endif  // defined(OS_WIN)
 

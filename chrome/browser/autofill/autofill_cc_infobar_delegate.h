@@ -35,6 +35,15 @@ class AutoFillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual std::wstring GetLinkText();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
+#if defined(OS_WIN)
+  // Overridden from InfoBarDelegate:
+  virtual InfoBar* CreateInfoBar();
+#endif  // defined(OS_WIN)
+
+  virtual Type GetInfoBarType() {
+    return PAGE_ACTION_TYPE;
+  }
+
  private:
   // The browser.
   Browser* browser_;
