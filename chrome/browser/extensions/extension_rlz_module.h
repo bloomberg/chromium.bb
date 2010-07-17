@@ -23,6 +23,13 @@ class RlzGetAccessPointRlzFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.getAccessPointRlz")
 };
 
+class RlzSendFinancialPingFunction : public SyncExtensionFunction {
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.sendFinancialPing")
+ // Making this function protected so that it can be overridden in tests.
+ protected:
+  virtual bool RunImpl();
+};
+
 class RlzClearProductStateFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.clearProductState")

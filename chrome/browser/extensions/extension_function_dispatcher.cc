@@ -204,6 +204,7 @@ void FactoryRegistry::ResetFunctions() {
 #if defined(OS_WIN)
   RegisterFunction<RlzRecordProductEventFunction>();
   RegisterFunction<RlzGetAccessPointRlzFunction>();
+  RegisterFunction<RlzSendFinancialPingFunction>();
   RegisterFunction<RlzClearProductStateFunction>();
 #endif
 

@@ -106,5 +106,40 @@ chrome.test.runTests([
       chrome.test.succeed();
     });
   },
+
+  function sendFinancialPing() {
+    // Bad product.
+    try {
+      chrome.experimental.rlz.sendFinancialPing('', ['D3'], 'sig', 'TEST',
+                                                'id', 'en', false);
+      // Should not reach this line since the above call throws.
+      chrome.test.fail();
+    } catch(ex) {
+    }
+
+    // Bad access point list.
+    try {
+      chrome.experimental.rlz.sendFinancialPing('D', null, 'sig', 'TEST',
+                                                'id', 'en', false);
+      // Should not reach this line since the above call throws.
+      chrome.test.fail();
+    } catch(ex) {
+    }
+
+    // Bad access point list.
+    try {
+      chrome.experimental.rlz.sendFinancialPing('D', [], 'sig', 'TEST',
+                                                'id', 'en', false);
+      // Should not reach this line since the above call throws.
+      chrome.test.fail();
+    } catch(ex) {
+    }
+
+    // Valid call.
+    chrome.experimental.rlz.sendFinancialPing('D', ['D3'], 'sig', 'TEST',
+                                              'id', 'en', false);
+
+    chrome.test.succeed();
+  }
 ]);
 

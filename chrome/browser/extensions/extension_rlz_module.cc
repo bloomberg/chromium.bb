@@ -102,6 +102,54 @@ bool RlzGetAccessPointRlzFunction::RunImpl() {
   return true;
 }
 
+bool RlzSendFinancialPingFunction::RunImpl() {
+  std::string product_name;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &product_name));
+  rlz_lib::Product product;
+  EXTENSION_FUNCTION_VALIDATE(GetProductFromName(product_name, &product));
+
+  ListValue* access_points_list;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetList(1, &access_points_list));
+  if (access_points_list->GetSize() < 1) {
+    EXTENSION_FUNCTION_ERROR("Access point array should not be empty.");
+  }
+
+  // Allocate an access point array to pass to ClearProductState().  The array
+  // must be termindated with the value rlz_lib::NO_ACCESS_POINT, hence + 1
+  // when allocating the array.
+  scoped_array<rlz_lib::AccessPoint> access_points(
+      new rlz_lib::AccessPoint[access_points_list->GetSize() + 1]);
+
+  size_t i;
+  for (i = 0; i < access_points_list->GetSize(); ++i) {
+    std::string ap_name;
+    EXTENSION_FUNCTION_VALIDATE(access_points_list->GetString(i, &ap_name));
+    EXTENSION_FUNCTION_VALIDATE(rlz_lib::GetAccessPointFromName(
+        ap_name.c_str(), &access_points[i]));
+  }
+  access_points[i] = rlz_lib::NO_ACCESS_POINT;
+
+  std::string signature;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &signature));
+
+  std::string brand;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &brand));
+
+  std::string id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(4, &id));
+
+  std::string lang;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(5, &lang));
+
+  bool exclude_machine_id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(6, &exclude_machine_id));
+
+  return rlz_lib::SendFinancialPing(product, access_points.get(),
+                                    signature.c_str(), brand.c_str(),
+                                    id.c_str(), lang.c_str(),
+                                    exclude_machine_id);
+}
+
 bool RlzClearProductStateFunction::RunImpl() {
   std::string product_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &product_name));

@@ -2942,6 +2942,20 @@
         ]
       },
       {
+        "name": "sendFinancialPing",
+        "type": "function",
+        "description": "Sends Google promotional information about this extension.",
+        "parameters": [
+          {"name": "product", "type": "string", "minLength": 1, "maxLength": 1},
+          {"name": "accessPoints", "type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 2}, "minItems": 1},
+          {"name": "signature", "type": "string"},
+          {"name": "brand", "type": "string"},
+          {"name": "id", "type": "string"},
+          {"name": "lang", "type": "string"},
+          {"name": "exclude_machine_id", "type": "boolean"}
+        ]
+      },
+      {
         "name": "clearProductState",
         "type": "function",
         "description": "Clears all product-specific RLZ state from the machine, as well as clearing all events for the specified access points.",

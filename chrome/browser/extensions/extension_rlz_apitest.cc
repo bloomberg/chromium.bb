@@ -6,10 +6,36 @@
 
 #include "base/registry.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_rlz_module.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "rlz/win/lib/rlz_lib.h"
+
+class MockRlzSendFinancialPingFunction : public RlzSendFinancialPingFunction {
+  virtual bool RunImpl();
+
+  static int expected_count_;
+
+ public:
+  static int expected_count() {
+    return expected_count_;
+  }
+};
+
+int MockRlzSendFinancialPingFunction::expected_count_ = 0;
+
+bool MockRlzSendFinancialPingFunction::RunImpl() {
+  EXPECT_TRUE(RlzSendFinancialPingFunction::RunImpl());
+  ++expected_count_;
+  return true;
+}
+
+ExtensionFunction* MockRlzSendFinancialPingFunctionFactory() {
+  return new MockRlzSendFinancialPingFunction();
+}
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -28,11 +54,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   RegKey key(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\N");
   ASSERT_FALSE(key.Valid());
 
+  // Mock out experimental.rlz.sendFinancialPing().
+  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
+      "experimental.rlz.sendFinancialPing",
+      MockRlzSendFinancialPingFunctionFactory));
+
   // Set the access point that the test code is expecting.
   ASSERT_TRUE(rlz_lib::SetAccessPointRlz(rlz_lib::GD_DESKBAND, "rlz_apitest"));
 
   // Now run all the tests.
   ASSERT_TRUE(RunExtensionTest("rlz")) << message_;
+
+  ASSERT_EQ(1, MockRlzSendFinancialPingFunction::expected_count());
+  ExtensionFunctionDispatcher::ResetFunctions();
 
   // Now make sure we recorded what was expected.  If the code in test.js
   // changes, need to make appropriate changes here.
