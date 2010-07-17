@@ -54,3 +54,10 @@ PREFIX : std::basic_string<char,std::char_traits<char>,std::allocator<char> >::a
 
 # 49254
 PREFIX : std::_tree<std::_tmap_traits<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,net::internal::clientsocketpoolbasehelper::group,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,net::internal::clientsocketpoolbasehelper::group> >,0> >::_eqrange___std::_tree<std::_tmap_traits<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,net::internal::clientsocketpoolbasehelper::group,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,net::internal::clientsocketpoolbasehelper::group> >,0> >::erase___net::internal::clientsocketpoolbasehelper::onavailablesocketslot
+
+# 49271
+PREFIX : messageloop::posttask_helper___messageloop::posttask___disk_cache::inflightio::oniocomplete___disk_cache::backendio::executebackendoperation___messageloop::runtask___messageloop::dowork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
+
+# 49384
+PREFIX : anonymous namespace'::cachecreator::docallback___`anonymous namespace'::cachecreator::oniocomplete___disk_cache::inflightbackendio::onoperationcomplete___disk_cache::inflightio::invokecallback___disk_cache::backgroundio::oniosignalled___messageloop::runtask___messageloop::dowork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
+
