@@ -46,7 +46,6 @@
 #include "chrome/browser/chromeos/dom_ui/labs_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_hangul_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/sync_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
 
