@@ -451,6 +451,7 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
                                             std::vector<string16>* labels,
                                             std::vector<int>* unique_ids) {
   const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
+  std::vector<AutoFillProfile*> matched_profiles;
   for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
     AutoFillProfile* profile = *iter;
@@ -460,23 +461,33 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
 
     if (!profile_field_value.empty() &&
         StartsWith(profile_field_value, field.value(), false)) {
-      if (!form->HasBillingFields()) {
-        values->push_back(profile_field_value);
-        labels->push_back(profile->Label());
+      matched_profiles.push_back(profile);
+      values->push_back(profile_field_value);
+      unique_ids->push_back(profile->unique_id());
+    }
+  }
+  AutoFillProfile::CreateInferredLabels(&matched_profiles, labels, 0,
+                                        type.field_type());
+  if (form->HasBillingFields()) {
+    size_t i = 0;
+    std::vector<string16> expanded_values;
+    std::vector<string16> expanded_labels;
+    for (std::vector<AutoFillProfile*>::const_iterator iter =
+         matched_profiles.begin(); iter != matched_profiles.end();
+         ++iter, ++i) {
+      AutoFillProfile* profile = *iter;
+      for (std::vector<CreditCard*>::const_iterator cc =
+           personal_data_->credit_cards().begin();
+           cc != personal_data_->credit_cards().end(); ++cc) {
+        expanded_values.push_back((*values)[i]);
+        string16 label = (*labels)[i] + kLabelSeparator +
+            (*cc)->LastFourDigits();
+        expanded_labels.push_back(label);
         unique_ids->push_back(profile->unique_id());
-      } else {
-        for (std::vector<CreditCard*>::const_iterator cc =
-                 personal_data_->credit_cards().begin();
-             cc != personal_data_->credit_cards().end(); ++cc) {
-          values->push_back(profile_field_value);
-
-          string16 label = profile->Label() + kLabelSeparator +
-                           (*cc)->LastFourDigits();
-          labels->push_back(label);
-          unique_ids->push_back(profile->unique_id());
-        }
       }
     }
+    expanded_labels.swap(*labels);
+    expanded_values.swap(*values);
   }
 }
 

@@ -311,8 +311,10 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
   EXPECT_EQ(ASCIIToUTF16("Charles"), values[1]);
   ASSERT_EQ(2U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work"), labels[1]);
+  // Inferred labels now include full first relevant field, which in this case
+  // the address #1.
+  EXPECT_EQ(ASCIIToUTF16("3734 Elvis Presley Blvd."), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("123 Apple St."), labels[1]);
 }
 
 TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
@@ -346,7 +348,7 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
   ASSERT_EQ(1U, values.size());
   EXPECT_EQ(ASCIIToUTF16("Elvis"), values[0]);
   ASSERT_EQ(1U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("3734 Elvis Presley Blvd."), labels[0]);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
@@ -590,8 +592,8 @@ TEST_F(AutoFillManagerTest, GetCombinedAutoFillAndAutocompleteSuggestions) {
   EXPECT_EQ(ASCIIToUTF16("Jay"), values[2]);
   EXPECT_EQ(ASCIIToUTF16("Jason"), values[3]);
   ASSERT_EQ(4U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("3734 Elvis Presley Blvd."), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("123 Apple St."), labels[1]);
   EXPECT_EQ(string16(), labels[2]);
   EXPECT_EQ(string16(), labels[3]);
 }

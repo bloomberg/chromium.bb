@@ -5,6 +5,9 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 
 #include <algorithm>
+#include <list>
+#include <map>
+#include <set>
 #include <vector>
 
 #include "app/l10n_util.h"
@@ -170,8 +173,9 @@ string16 AutoFillProfile::PreviewSummary() const {
   bool have_last_name = last_name.length() > 0;
   bool have_address = address.length() > 0;
 
-  // Name separator defaults to "".  Space if we have first and last name.
+  // Name separator defaults to "". Space if we have first and last name.
   string16 name_separator;
+
   if (have_first_name && have_last_name) {
     name_separator = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_ADDRESS_NAME_SEPARATOR);
@@ -199,6 +203,176 @@ string16 AutoFillProfile::PreviewSummary() const {
       address);
 
   return summary_format;
+}
+
+bool AutoFillProfile::AdjustInferredLabels(
+    std::vector<AutoFillProfile*>* profiles) {
+  std::vector<string16> created_labels;
+  const size_t kMinimalFieldsShown = 2;
+  CreateInferredLabels(profiles, &created_labels, kMinimalFieldsShown,
+                       UNKNOWN_TYPE);
+  DCHECK(profiles->size() == created_labels.size());
+  bool updated_labels = false;
+  for (size_t i = 0; i < profiles->size(); ++i) {
+    if (profiles->at(i)->Label() != created_labels[i]) {
+      updated_labels = true;
+      profiles->at(i)->set_label(created_labels[i]);
+    }
+  }
+  return updated_labels;
+}
+
+void AutoFillProfile::CreateInferredLabels(
+    const std::vector<AutoFillProfile*>* profiles,
+    std::vector<string16>* created_labels,
+    size_t minimal_fields_shown,
+    AutoFillFieldType exclude_field) {
+  // These fields are use to distinguish between two profiles in the order of
+  // importance, e. g. if both EMAIL_ADDRESS and COMPANY_NAME are different,
+  // EMAIL_ADDRESS will be used to distinguish them.
+  const AutoFillFieldType distinguishing_fields[] = {
+    // First non empty data are always present in the label, even if it matches.
+    NAME_FULL,
+    ADDRESS_HOME_LINE1,
+    ADDRESS_HOME_CITY,
+    ADDRESS_HOME_STATE,
+    ADDRESS_HOME_ZIP,
+    ADDRESS_HOME_COUNTRY,
+    EMAIL_ADDRESS,
+    PHONE_HOME_WHOLE_NUMBER,
+    PHONE_FAX_WHOLE_NUMBER,
+    COMPANY_NAME,
+  };
+  if (exclude_field == NAME_FIRST || exclude_field == NAME_LAST)
+    exclude_field = NAME_FULL;
+  DCHECK(profiles);
+  DCHECK(created_labels);
+  created_labels->resize(profiles->size());
+  std::map<string16, std::list<size_t> > labels;
+  for (size_t it = 0; it < profiles->size(); ++it) {
+    labels[
+        profiles->at(it)->GetFieldText(AutoFillType(NAME_FULL))].push_back(it);
+  }
+  std::map<string16, std::list<size_t> >::iterator label_iterator;
+  for (label_iterator = labels.begin(); label_iterator != labels.end();
+       ++label_iterator) {
+    if (label_iterator->second.size() > 1) {
+      // We have more than one item with the same preview, add differentiating
+      // data.
+      std::list<size_t>::iterator similar_profiles;
+      std::map<string16, int> tested_fields[arraysize(distinguishing_fields)];
+      for (similar_profiles = label_iterator->second.begin();
+           similar_profiles != label_iterator->second.end();
+           ++similar_profiles) {
+        for (size_t i = 0; i < arraysize(distinguishing_fields); ++i) {
+          string16 key = profiles->at(*similar_profiles)->GetFieldText(
+              AutoFillType(distinguishing_fields[i]));
+          std::map<string16, int>::iterator tested_field =
+              tested_fields[i].find(key);
+          if (tested_field == tested_fields[i].end())
+            (tested_fields[i])[key] = 1;
+          else
+            ++(tested_field->second);
+        }
+      }
+      std::vector<AutoFillFieldType> fields;
+      std::vector<AutoFillFieldType> first_non_empty_fields;
+      size_t added_fields = 0;
+      bool matched_necessary = false;
+      // Leave it as a candidate if it is not the same for everybody.
+      for (size_t i = 0; i < arraysize(distinguishing_fields); ++i) {
+        if (tested_fields[i].size() == label_iterator->second.size()) {
+          // This field is different for everybody.
+          if (!matched_necessary) {
+            matched_necessary = true;
+            fields.clear();
+            added_fields = 1;
+            if (first_non_empty_fields.size()) {
+              added_fields += first_non_empty_fields.size();
+              fields.resize(added_fields - 1);
+              std::copy(first_non_empty_fields.begin(),
+                        first_non_empty_fields.end(),
+                        fields.begin());
+            }
+          } else {
+            ++added_fields;
+          }
+          fields.push_back(distinguishing_fields[i]);
+          if (added_fields >= minimal_fields_shown)
+            break;
+        } else if (tested_fields[i].size() != 1) {
+          // this field is different for some.
+          if (added_fields < minimal_fields_shown) {
+            first_non_empty_fields.push_back(distinguishing_fields[i]);
+            ++added_fields;
+            if (added_fields == minimal_fields_shown && matched_necessary)
+              break;
+          }
+          fields.push_back(distinguishing_fields[i]);
+        } else if (added_fields < minimal_fields_shown &&
+                   exclude_field != distinguishing_fields[i] &&
+                   !label_iterator->first.empty()) {
+          fields.push_back(distinguishing_fields[i]);
+          first_non_empty_fields.push_back(distinguishing_fields[i]);
+          ++added_fields;
+          if (added_fields == minimal_fields_shown && matched_necessary)
+           break;
+        }
+      }
+      // Update labels if needed.
+      for (similar_profiles = label_iterator->second.begin();
+           similar_profiles != label_iterator->second.end();
+           ++similar_profiles) {
+        size_t field_it = 0;
+        for (size_t field_id = 0;
+             field_id < arraysize(distinguishing_fields) &&
+             field_it < fields.size(); ++field_id) {
+          if (fields[field_it] == distinguishing_fields[field_id]) {
+            if ((tested_fields[field_id])[
+                profiles->at(*similar_profiles)->GetFieldText(
+                AutoFillType(distinguishing_fields[field_id]))] == 1) {
+              // this field is unique among the subset.
+              break;
+            }
+            ++field_it;
+          }
+        }
+
+        string16 new_label;
+        if (field_it < fields.size() && fields.size() > minimal_fields_shown) {
+          std::vector<AutoFillFieldType> unique_fields;
+          unique_fields.resize(fields.size());
+          std::copy(fields.begin(), fields.end(), unique_fields.begin());
+          unique_fields.resize(std::max(field_it + 1, minimal_fields_shown));
+          new_label =
+              profiles->at(*similar_profiles)->ConstructInferredLabel(
+                  &unique_fields);
+        } else {
+          new_label =
+              profiles->at(*similar_profiles)->ConstructInferredLabel(&fields);
+        }
+        (*created_labels)[*similar_profiles] = new_label;
+      }
+    } else {
+      std::vector<AutoFillFieldType> non_empty_fields;
+      size_t include_fields = minimal_fields_shown ? minimal_fields_shown : 1;
+      non_empty_fields.reserve(include_fields);
+      for (size_t i = 0; i < arraysize(distinguishing_fields); ++i) {
+        if (exclude_field == distinguishing_fields[i])
+          continue;
+        if (!profiles->at(label_iterator->second.front())->GetFieldText(
+            AutoFillType(distinguishing_fields[i])).empty()) {
+          non_empty_fields.push_back(distinguishing_fields[i]);
+          if (non_empty_fields.size() >= include_fields)
+            break;
+        }
+      }
+
+      (*created_labels)[label_iterator->second.front()] =
+          profiles->at(label_iterator->second.front())->ConstructInferredLabel(
+              &non_empty_fields);
+    }
+  }
 }
 
 void AutoFillProfile::operator=(const AutoFillProfile& source) {
@@ -255,6 +429,31 @@ bool AutoFillProfile::operator!=(const AutoFillProfile& profile) const {
 Address* AutoFillProfile::GetHomeAddress() {
   return static_cast<Address*>(personal_info_[AutoFillType::ADDRESS_HOME]);
 }
+
+string16 AutoFillProfile::ConstructInferredLabel(
+    const std::vector<AutoFillFieldType>* included_fields) const {
+  DCHECK(included_fields);
+  string16 label;
+  string16 separator = l10n_util::GetStringUTF16(
+                       IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR);
+  for (std::vector<AutoFillFieldType>::const_iterator it =
+       included_fields->begin(); it != included_fields->end(); ++it) {
+    string16 field = GetFieldText(AutoFillType(*it));
+    if (!field.empty()) {
+      if (!label.empty()) {
+        label.append(separator);
+      }
+      // Fax number has special format, to indicate that this is a fax number.
+      if (*it == PHONE_FAX_WHOLE_NUMBER) {
+        field = l10n_util::GetStringFUTF16(
+            IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FAX_FORMAT, field);
+      }
+      label.append(field);
+    }
+  }
+  return label;
+}
+
 
 // So we can compare AutoFillProfiles with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {

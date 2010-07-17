@@ -5761,6 +5761,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_DIALOG_ADDRESS_NAME_SEPARATOR" desc="The separator character used between first and last names in the address summary.">
         ''' '''
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FAX_FORMAT" desc="This is a format of a fax number to differentiate it with regular phone. $1=number">
+        fax:#<ph name="FAX">$1<ex>1(123)123-4567</ex></ph>
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FORMAT" desc="The format string of the summary of an address. $1=name, $2=separator, $3=addressLine1">
         <ph name="NAME">$1<ex>Marion Morrison</ex></ph><ph name="SEPARATOR">$2<ex>, </ex></ph><ph name="ADDRESS">$3<ex>123 Zoo St.</ex></ph>
       </message>

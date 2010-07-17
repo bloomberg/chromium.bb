@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -82,6 +85,186 @@ TEST(AutoFillProfileTest, PreviewSummaryString) {
       "Hollywood", "CA", "91601", "US", "12345678910", "01987654321");
   string16 summary7 = profile7.PreviewSummary();
   EXPECT_EQ(string16(ASCIIToUTF16("Marion Morrison, 123 Zoo St.")), summary7);
+}
+
+TEST(AutoFillProfileTest, AdjustInferredLabels) {
+  std::vector<AutoFillProfile*> profiles;
+  profiles.push_back(new AutoFillProfile(string16(), 0));
+  autofill_unittest::SetProfileInfo(
+      profiles[0],
+      "",
+      "John",
+      "",
+      "Doe",
+      "johndoe@hades.com",
+      "Underworld",
+      "666 Erebus St.",
+      "",
+      "Elysium", "CA",
+      "91111",
+      "US",
+      "11111111111",
+      "22222222222");
+  profiles.push_back(new AutoFillProfile(string16(), 0));
+  autofill_unittest::SetProfileInfo(
+      profiles[1],
+      "",
+      "Jane",
+      "",
+      "Doe",
+      "janedoe@tertium.com",
+      "Pluto Inc.",
+      "123 Letha Shore.",
+      "",
+      "Dis", "CA",
+      "91222",
+      "US",
+      "12345678910",
+      "01987654321");
+  // As labels are empty they are adjusted the first time.
+  EXPECT_TRUE(AutoFillProfile::AdjustInferredLabels(&profiles));
+  // No need to adjust them anymore.
+  EXPECT_FALSE(AutoFillProfile::AdjustInferredLabels(&profiles));
+  EXPECT_EQ(string16(ASCIIToUTF16("John Doe, 666 Erebus St.")),
+            profiles[0]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16("Jane Doe, 123 Letha Shore.")),
+            profiles[1]->Label());
+
+  profiles.push_back(new AutoFillProfile(string16(), 0));
+  autofill_unittest::SetProfileInfo(
+      profiles[2],
+      "",
+      "John",
+      "",
+      "Doe",
+      "johndoe@tertium.com",
+      "Underworld",
+      "666 Erebus St.",
+      "",
+      "Elysium", "CA",
+      "91111",
+      "US",
+      "11111111111",
+      "22222222222");
+  EXPECT_TRUE(AutoFillProfile::AdjustInferredLabels(&profiles));
+
+  // Profile 0 and 2 inferred label now includes an e-mail.
+  EXPECT_EQ(string16(
+            ASCIIToUTF16("John Doe, 666 Erebus St., johndoe@hades.com")),
+            profiles[0]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16("Jane Doe, 123 Letha Shore.")),
+            profiles[1]->Label());
+  EXPECT_EQ(string16(
+            ASCIIToUTF16("John Doe, 666 Erebus St., johndoe@tertium.com")),
+            profiles[2]->Label());
+
+  delete profiles[2];
+  profiles.pop_back();
+
+  profiles.push_back(new AutoFillProfile(string16(), 0));
+  autofill_unittest::SetProfileInfo(
+      profiles[2],
+      "",
+      "John",
+      "",
+      "Doe",
+      "johndoe@hades.com",
+      "Underworld",
+      "666 Erebus St.",
+      "",
+      "Elysium", "CA",
+      "91111",
+      "US",
+      "11111111111",
+      "33333333333");  // Fax is different
+
+  EXPECT_TRUE(AutoFillProfile::AdjustInferredLabels(&profiles));
+
+  // Profile 0 and 2 inferred label now includes a fax number.
+  EXPECT_EQ(string16(ASCIIToUTF16(
+            "John Doe, 666 Erebus St., fax:#22222222222")),
+            profiles[0]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16("Jane Doe, 123 Letha Shore.")),
+            profiles[1]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16(
+            "John Doe, 666 Erebus St., fax:#33333333333")),
+            profiles[2]->Label());
+
+  profiles.push_back(new AutoFillProfile(string16(), 0));
+  autofill_unittest::SetProfileInfo(
+      profiles[3],
+      "",
+      "John",
+      "",
+      "Doe",
+      "johndoe@hades.com",
+      "Underworld",
+      "666 Erebus St.",
+      "",
+      "Elysium", "CA",
+      "91111",
+      "US",
+      "44444444444",  // Phone is different for some.
+      "33333333333");  // Fax is different for some.
+
+  EXPECT_TRUE(AutoFillProfile::AdjustInferredLabels(&profiles));
+
+  EXPECT_EQ(string16(ASCIIToUTF16("John Doe, 666 Erebus St., 11111111111,"
+                                  " fax:#22222222222")),
+            profiles[0]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16("Jane Doe, 123 Letha Shore.")),
+            profiles[1]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16("John Doe, 666 Erebus St., 11111111111,"
+                                  " fax:#33333333333")),
+            profiles[2]->Label());
+  // This one differs from other ones by unique phone, so no need for extra
+  // information.
+  EXPECT_EQ(string16(ASCIIToUTF16("John Doe, 666 Erebus St., 44444444444")),
+            profiles[3]->Label());
+
+  profiles.push_back(new AutoFillProfile(string16(), 0));
+  autofill_unittest::SetProfileInfo(
+      profiles[4],
+      "",
+      "John",
+      "",
+      "Doe",
+      "johndoe@styx.com",  // E-Mail is different for some.
+      "Underworld",
+      "666 Erebus St.",
+      "",
+      "Elysium", "CA",
+      "91111",
+      "US",
+      "44444444444",  // Phone is different for some.
+      "33333333333");  // Fax is different for some.
+
+  EXPECT_TRUE(AutoFillProfile::AdjustInferredLabels(&profiles));
+
+  EXPECT_EQ(string16(ASCIIToUTF16(
+      "John Doe, 666 Erebus St., johndoe@hades.com,"
+      " 11111111111, fax:#22222222222")),
+      profiles[0]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16("Jane Doe, 123 Letha Shore.")),
+            profiles[1]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16(
+      "John Doe, 666 Erebus St., johndoe@hades.com,"
+      " 11111111111, fax:#33333333333")),
+      profiles[2]->Label());
+  EXPECT_EQ(string16(ASCIIToUTF16(
+      "John Doe, 666 Erebus St., johndoe@hades.com,"
+      " 44444444444, fax:#33333333333")),
+      profiles[3]->Label());
+  // This one differs from other ones by unique e-mail, so no need for extra
+  // information.
+  EXPECT_EQ(string16(ASCIIToUTF16(
+      "John Doe, 666 Erebus St., johndoe@styx.com")),
+      profiles[4]->Label());
+
+  EXPECT_FALSE(AutoFillProfile::AdjustInferredLabels(&profiles));
+
+  // Clean up.
+  STLDeleteContainerPointers(profiles.begin(), profiles.end());
 }
 
 TEST(AutoFillProfileTest, IsSubsetOf) {

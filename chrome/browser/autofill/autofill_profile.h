@@ -56,6 +56,30 @@ class AutoFillProfile : public FormGroup {
   // The form of the string is governed by generated resources.
   string16 PreviewSummary() const;
 
+  // Adjusts the labels according to profile data.
+  // Labels contain minimal different combination of:
+  // 1. Full name.
+  // 2. Address.
+  // 3. E-mail.
+  // 4. Phone.
+  // 5. Fax.
+  // 6. Company name.
+  // Profile labels are changed accordingly to these rules.
+  // Returns true if any of the profiles were updated.
+  // This function is useful if you want to adjust unique labels for all
+  // profiles. For non permanent situations (selection of profile, when user
+  // started typing in the field, for example) use CreateInferredLabels().
+  static bool AdjustInferredLabels(std::vector<AutoFillProfile*>* profiles);
+
+  // Created inferred labels for |profiles|, according to the rules above and
+  // stores them in |created_labels|. |minimal_fields_shown| minimal number of
+  // fields that need to be shown for the label. |exclude_field| is excluded
+  // from the label.
+  static void CreateInferredLabels(
+      const std::vector<AutoFillProfile*>* profiles,
+      std::vector<string16>* created_labels,
+      size_t minimal_fields_shown,
+      AutoFillFieldType exclude_field);
   // For use in STL containers.
   void operator=(const AutoFillProfile&);
 
@@ -66,6 +90,13 @@ class AutoFillProfile : public FormGroup {
 
  private:
   Address* GetHomeAddress();
+
+  // Builds inferred label, includes first non-empty field at the beginning,
+  // even if it matches for all.
+  // |included_fields| - array of the fields, that needs to be included in this
+  // label.
+  string16 ConstructInferredLabel(
+      const std::vector<AutoFillFieldType>* included_fields) const;
 
   // The label presented to the user when selecting a profile.
   string16 label_;
