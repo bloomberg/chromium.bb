@@ -30,7 +30,8 @@ class NewTabUITest : public UITest {
   }
 };
 
-TEST_F(NewTabUITest, NTPHasThumbnails) {
+// Failing about 90% on XP. http://crbug.com/49389
+TEST_F(NewTabUITest, FLAKY_NTPHasThumbnails) {
   // Switch to the "new tab" tab, which should be any new tab after the
   // first (the first is about:blank).
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
@@ -98,7 +99,8 @@ TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
   ASSERT_FALSE(migrated);
 }
 
-TEST_F(NewTabUITest, HomePageLink) {
+// Failing about 90% on XP. http://crbug.com/49389
+TEST_F(NewTabUITest, FLAKY_HomePageLink) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
