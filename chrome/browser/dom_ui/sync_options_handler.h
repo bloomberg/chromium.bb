@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DOM_UI_SYNC_OPTIONS_HANDLER_H_
-#define CHROME_BROWSER_CHROMEOS_DOM_UI_SYNC_OPTIONS_HANDLER_H_
+#ifndef CHROME_BROWSER_DOM_UI_SYNC_OPTIONS_HANDLER_H_
+#define CHROME_BROWSER_DOM_UI_SYNC_OPTIONS_HANDLER_H_
 
 #include "chrome/browser/dom_ui/options_ui.h"
 
-// ChromeOS system options page UI handler.
+// Chrome sync options page UI handler.
 class SyncOptionsHandler : public OptionsPageUIHandler {
  public:
   SyncOptionsHandler();
@@ -20,4 +20,4 @@ class SyncOptionsHandler : public OptionsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(SyncOptionsHandler);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_SYNC_OPTIONS_HANDLER_H_
+#endif  // CHROME_BROWSER_DOM_UI_SYNC_OPTIONS_HANDLER_H_

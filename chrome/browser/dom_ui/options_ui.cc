@@ -21,6 +21,7 @@
 #include "chrome/browser/dom_ui/content_settings_handler.h"
 #include "chrome/browser/dom_ui/core_options_handler.h"
 #include "chrome/browser/dom_ui/personal_options_handler.h"
+#include "chrome/browser/dom_ui/sync_options_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -117,10 +118,11 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   // TODO(zelidrag): Add all other page handlers here as we implement them.
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new SyncOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new SyncOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LabsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageHangulOptionsHandler());
@@ -128,7 +130,6 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::AccountsOptionsHandler());
 #endif
-  AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
 
   // |localized_strings| ownership is taken over by this constructor.
   OptionsUIHTMLSource* html_source =

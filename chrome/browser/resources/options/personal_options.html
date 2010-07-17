@@ -1,3 +1,146 @@
 <div class="page hidden" id="personalPage">
   <h1 i18n-content="personalPage"></h1>
+
+  <section>
+    <h3 i18n-content="sync_section"></h3>
+    <table class="option-control-table">
+      <tr id="text-when-not-synced">
+        <td>
+          <div class="section-text" id="sync_not_setup_info"
+              i18n-content="sync_not_setup_info"/>
+        </td>
+      </tr>
+      <tr id="button-when-not-synced">
+        <td>
+          <button id="start-sync" i18n-content="start_sync"></button>
+        </td>
+      </tr>
+      </div>
+      <div>
+      <tr id="text-when-synced">
+        <td>
+          <div class="section-text" id="synced_to_user_with_time"
+              i18n-content="synced_to_user_with_time"/>
+        </td>
+      </tr>
+      <tr id="button-when-synced">
+        <td>
+          <button id="stop-sync" i18n-content="stop_sync"></button>
+          <button id="sync-customize" i18n-content="sync_customize"></button>
+        </td>
+      </tr>
+      </div>
+    </table>
+  </section>
+  <section>
+    <h3 i18n-content="passwords"></h3>
+    <table class="option-control-table">
+      <tr>
+        <td class="option-name">
+          <label>
+            <input id="passwords_asktosave"
+                name="passwords_radio"
+                pref="profile.password_manager_enabled"
+                type="radio" value="true">
+            <span i18n-content="passwords_asktosave"></span>
+          </label>
+      </tr>
+      <tr>
+        <td class="option-name">
+          <label>
+            <input id="passwords_neversave"
+                name="passwords_radio"
+                pref="profile.password_manager_enabled"
+                type="radio" value="false">
+            <span i18n-content="passwords_neversave"></span>
+          </label>
+      </tr>
+      <tr>
+          <button id="showpasswords" i18n-content="showpasswords"></button>
+      </tr>
+    </table>
+  </section>
+  <section>
+    <h3 i18n-content="autofill"></h3>
+    <table class="option-control-table">
+      <tr>
+        <td class="option-name">
+          <label>
+            <input id="autofill_enable"
+                name="autofill_radio"
+                pref="autofill.enabled"
+                type="radio" value="true">
+            <span i18n-content="autofill_enable"></span>
+          </label>
+      </tr>
+      <tr>
+        <td class="option-name">
+          <label>
+            <input id="autofill_disable"
+                name="autofill_radio"
+                pref="autofill.enabled"
+                type="radio" value="false">
+            <span i18n-content="autofill_disable"></span>
+          </label>
+      </tr>
+      <tr>
+        <button id="autofill_options" i18n-content="autofill_options">
+        </button>
+      </tr>
+    </table>
+  </section>
+  <section>
+    <h3 i18n-content="browsing_data"></h3>
+    <table class="option-control-table">
+      <tr>
+          <button id="import_data" i18n-content="import_data"></button>
+      </tr>
+    </table>
+  </section>
+
+  <if expr="os == 'linux2' or os.find('bsd') != -1">
+  <if expr="not pp_ifdef('chromeos')">
+    <section>
+      <h3 i18n-content="appearance"></h3>
+      <table class="option-control-table">
+        <tr>
+          <button id="themes_GTK_button" i18n-content="themes_GTK_button">
+          </button>
+          <button id="themes_set_classic" i18n-content="themes_set_classic">
+          </button>
+          <a id="linux_themes_gallery" i18n-content="themes_gallery"></a>
+        </tr>
+        <tr>
+          <td class="option-name">
+            <label>
+              <input name="decorations_radio"
+                  pref="browser.custom_chrome_frame"
+                  type="radio" value="false">
+              <span i18n-content="showWindow_decorations_radio"></span>
+            </label>
+        </tr>
+        <tr>
+          <td class="option-name">
+            <label>
+              <input name="decorations_radio"
+                  pref="browser.custom_chrome_frame"
+                  type="radio" value="true">
+              <span i18n-content="hideWindow_decorations_radio"></span>
+            </label>
+        </tr>
+      </table>
+    </section>
+  </if></if>
+  <if expr="pp_ifdef('chromeos') or os == 'win32' or os == 'darwin'">
+    <section>
+      <h3 i18n-content="themes"></h3>
+      <table class="option-control-table">
+        <tr>
+          <button id="themes_reset" i18n-content="themes_reset"></button>
+          <a id="nonlinux_themes_gallery" i18n-content="themes_gallery"></a>
+        </tr>
+      </table>
+    </section>
+  </if>
+
 </div>

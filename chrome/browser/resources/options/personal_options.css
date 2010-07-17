@@ -1,0 +1,6 @@
+#text-when-synced, #button-when-synced {
+  display: none;
+}
+#text-when-not-synced, #button-when-not-synced {
+  display: none;
+}

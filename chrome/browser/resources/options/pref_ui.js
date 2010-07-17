@@ -41,6 +41,58 @@ PrefCheckbox.prototype = {
 cr.defineProperty(PrefCheckbox, 'pref', cr.PropertyKind.ATTR);
 
 ///////////////////////////////////////////////////////////////////////////////
+// PrefRadio class:
+
+// Define a constructor that uses an input element as its underlying element.
+var PrefRadio = cr.ui.define('input');
+
+PrefRadio.prototype = {
+  // Set up the prototype chain
+  __proto__: HTMLInputElement.prototype,
+
+  /**
+   * Initialization function for the cr.ui framework.
+   */
+  decorate: function() {
+    this.type = 'radio';
+    var self = this;
+
+    // Listen to pref changes.
+    Preferences.getInstance().addEventListener(this.pref,
+        function(event) {
+          self.checked = String(event.value) == self.value;
+        });
+
+    // Listen to user events.
+    this.addEventListener('change',
+        function(e) {
+          if(self.value == 'true' || self.value == 'false') {
+            Preferences.setBooleanPref(self.pref,
+                self.value == 'true');
+          }else {
+            Preferences.setIntegerPref(self.pref,
+                parseInt(self.value, 10));
+          }
+        });
+  },
+
+  /**
+   * Getter for preference name attribute.
+   */
+  get pref() {
+    return this.getAttribute('pref');
+  },
+
+  /**
+   * Setter for preference name attribute.
+   */
+  set pref(name) {
+    this.setAttribute('pref', name);
+  }
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PrefRange class:
 
 // Define a constructor that uses an input element as its underlying element.
