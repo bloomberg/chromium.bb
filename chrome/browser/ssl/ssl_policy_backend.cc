@@ -123,7 +123,7 @@ void SSLPolicyBackend::AllowCertForHost(net::X509Certificate* cert,
   ssl_host_state_->AllowCertForHost(cert, host);
 }
 
-net::X509Certificate::Policy::Judgment SSLPolicyBackend::QueryPolicy(
+net::CertPolicy::Judgment SSLPolicyBackend::QueryPolicy(
     net::X509Certificate* cert, const std::string& host) {
   return ssl_host_state_->QueryPolicy(cert, host);
 }

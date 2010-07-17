@@ -42,7 +42,7 @@ class SSLPolicyBackend {
   void AllowCertForHost(net::X509Certificate* cert, const std::string& host);
 
   // Queries whether |cert| is allowed or denied for |host|.
-  net::X509Certificate::Policy::Judgment QueryPolicy(
+  net::CertPolicy::Judgment QueryPolicy(
       net::X509Certificate* cert, const std::string& host);
 
   // Shows the pending messages (in info-bars) if any.

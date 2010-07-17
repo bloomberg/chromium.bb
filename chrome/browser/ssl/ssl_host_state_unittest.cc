@@ -119,36 +119,36 @@ TEST_F(SSLHostStateTest, QueryPolicy) {
   SSLHostState state;
 
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::X509Certificate::Policy::UNKNOWN);
+            net::CertPolicy::UNKNOWN);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::X509Certificate::Policy::UNKNOWN);
+            net::CertPolicy::UNKNOWN);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::X509Certificate::Policy::UNKNOWN);
+            net::CertPolicy::UNKNOWN);
 
   state.AllowCertForHost(google_cert.get(), "www.google.com");
 
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::X509Certificate::Policy::ALLOWED);
+            net::CertPolicy::ALLOWED);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::X509Certificate::Policy::UNKNOWN);
+            net::CertPolicy::UNKNOWN);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::X509Certificate::Policy::UNKNOWN);
+            net::CertPolicy::UNKNOWN);
 
   state.AllowCertForHost(google_cert.get(), "example.com");
 
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::X509Certificate::Policy::ALLOWED);
+            net::CertPolicy::ALLOWED);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::X509Certificate::Policy::UNKNOWN);
+            net::CertPolicy::UNKNOWN);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::X509Certificate::Policy::ALLOWED);
+            net::CertPolicy::ALLOWED);
 
   state.DenyCertForHost(google_cert.get(), "example.com");
 
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "www.google.com"),
-            net::X509Certificate::Policy::ALLOWED);
+            net::CertPolicy::ALLOWED);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "google.com"),
-            net::X509Certificate::Policy::UNKNOWN);
+            net::CertPolicy::UNKNOWN);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
-            net::X509Certificate::Policy::DENIED);
+            net::CertPolicy::DENIED);
 }

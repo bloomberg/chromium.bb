@@ -22,7 +22,7 @@
 namespace {
   // Returns a name that can be used to represent the issuer.  It tries in this
   // order CN, O and OU and returns the first non-empty one found.
-  std::string GetIssuerName(const net::X509Certificate::Principal& issuer) {
+  std::string GetIssuerName(const net::CertPrincipal& issuer) {
     if (!issuer.common_name.empty())
       return issuer.common_name;
     if (!issuer.organization_names.empty())

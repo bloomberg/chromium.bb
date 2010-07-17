@@ -42,11 +42,11 @@ SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
 
 void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   // First we check if we know the policy for this error.
-  net::X509Certificate::Policy::Judgment judgment =
+  net::CertPolicy::Judgment judgment =
       backend_->QueryPolicy(handler->ssl_info().cert,
                             handler->request_url().host());
 
-  if (judgment == net::X509Certificate::Policy::ALLOWED) {
+  if (judgment == net::CertPolicy::ALLOWED) {
     handler->ContinueRequest();
     return;
   }

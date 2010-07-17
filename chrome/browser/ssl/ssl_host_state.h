@@ -40,7 +40,7 @@ class SSLHostState : public NonThreadSafe {
   void AllowCertForHost(net::X509Certificate* cert, const std::string& host);
 
   // Queries whether |cert| is allowed or denied for |host|.
-  net::X509Certificate::Policy::Judgment QueryPolicy(
+  net::CertPolicy::Judgment QueryPolicy(
       net::X509Certificate* cert, const std::string& host);
 
  private:
@@ -54,7 +54,7 @@ class SSLHostState : public NonThreadSafe {
   std::set<BrokenHostEntry> ran_insecure_content_hosts_;
 
   // Certificate policies for each host.
-  std::map<std::string, net::X509Certificate::Policy> cert_policy_for_host_;
+  std::map<std::string, net::CertPolicy> cert_policy_for_host_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLHostState);
 };
