@@ -21,8 +21,7 @@ using ::testing::_;
 class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
                                  public NotificationObserver {
  public:
-  NetworkStateNotifierTest()
-      : notification_received_(false) {
+  NetworkStateNotifierTest() {
   }
 
  protected:
@@ -48,19 +47,15 @@ class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
     chromeos::NetworkStateDetails* state_details =
         Details<chromeos::NetworkStateDetails>(details).ptr();
     state_ = state_details->state();
-    notification_received_ = true;
   }
 
   void WaitForNotification() {
-    notification_received_ = false;
-    while (!notification_received_) {
-      ui_test_utils::RunAllPendingInMessageLoop();
-    }
+    ui_test_utils::WaitForNotification(
+        NotificationType::NETWORK_STATE_CHANGED);
   }
 
  protected:
   NetworkStateDetails::State state_;
-  bool notification_received_;
 };
 
 IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnected) {
