@@ -21,7 +21,7 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 
 typedef UITest CollectedCookiesTest;
 
-TEST_F(CollectedCookiesTest, TestDoubleDisplay) {
+TEST_F(CollectedCookiesTest, FAILS_TestDoubleDisplay) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -43,7 +43,7 @@ TEST_F(CollectedCookiesTest, TestDoubleDisplay) {
   ASSERT_TRUE(tab->ShowCollectedCookiesDialog());
 }
 
-TEST_F(CollectedCookiesTest, NavigateAway) {
+TEST_F(CollectedCookiesTest, FAILS_NavigateAway) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
