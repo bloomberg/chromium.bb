@@ -67,6 +67,8 @@ class DeviceContext2D : public Resource {
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
+  ImageData* image_data() { return image_data_.get(); }
+
  private:
   // Tracks a call to flush that requires a callback.
   class FlushCallbackData {

@@ -314,6 +314,26 @@ bool PluginInstance::BindGraphicsDeviceContext(PP_Resource device_id) {
   if (device_2d) {
     if (!device_2d->BindToInstance(this))
       return false;  // Can't bind to more than one instance.
+
+    // See http://crbug.com/49403: this can be further optimized by keeping the
+    // old device around and painting from it.
+    if (device_context_2d_.get()) {
+      // Start the new image with the content of the old image until the plugin
+      // repaints.
+      const SkBitmap* old_backing_bitmap =
+          device_context_2d_->image_data()->GetMappedBitmap();
+      SkRect old_size = SkRect::MakeWH(
+          SkScalar(static_cast<float>(old_backing_bitmap->width())),
+          SkScalar(static_cast<float>(old_backing_bitmap->height())));
+
+      SkCanvas canvas(*device_2d->image_data()->GetMappedBitmap());
+      canvas.drawBitmap(*old_backing_bitmap, 0, 0);
+
+      // Fill in any extra space with white.
+      canvas.clipRect(old_size, SkRegion::kDifference_Op);
+      canvas.drawARGB(255, 255, 255, 255);
+    }
+
     device_context_2d_ = device_2d;
     // BindToInstance will have invalidated the plugin if necessary.
   }
