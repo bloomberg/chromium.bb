@@ -880,6 +880,7 @@
 {
    bug_49300_b
    Heapcheck:Leak
+   ...
    fun:disk_cache::BackendImpl::CreateEntryImpl
    fun:disk_cache::BackendImpl::SyncCreateEntry
    fun:disk_cache::BackendIO::ExecuteBackendOperation
