@@ -91,6 +91,48 @@ ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::CreateNewSink(
   return ScopedComPtr<IInternetProtocolSink>(new_sink);
 }
 
+HRESULT ProtocolSinkWrap::ObtainServiceProvider() {
+  HRESULT hr = S_OK;
+  if (!delegate_service_provider_) {
+    hr = delegate_service_provider_.QueryFrom(delegate_);
+  }
+  return hr;
+}
+
+HRESULT ProtocolSinkWrap::ObtainHttpNegotiate() {
+  if (UserAgentAddOn::has_delegate())
+    return S_OK;
+
+  HRESULT hr = ObtainServiceProvider();
+  if (hr == S_OK) {
+    ScopedComPtr<IHttpNegotiate> http_negotiate;
+    hr = delegate_service_provider_->QueryService(
+        IID_IHttpNegotiate,
+        IID_IHttpNegotiate,
+        reinterpret_cast<void**>(http_negotiate.Receive()));
+    UserAgentAddOn::set_delegate(http_negotiate);
+  }
+  return hr;
+}
+
+STDMETHODIMP ProtocolSinkWrap::QueryService(REFGUID guidService, REFIID riid,
+                                            void** ppvObject) {
+  // We really insist to append "chromeframe" user-agent header, even in the
+  // very unlikely case when delegate does not support IServiceProvider and/or
+  // IHttpNegotiate.
+  if (guidService == IID_IHttpNegotiate && riid == IID_IHttpNegotiate) {
+    ObtainHttpNegotiate();
+    AddRef();
+    *ppvObject = reinterpret_cast<void**>(static_cast<IHttpNegotiate*>(this));
+    return S_OK;
+  }
+
+  HRESULT hr = ObtainServiceProvider();
+  if (hr == S_OK)
+    hr = delegate_service_provider_->QueryService(guidService, riid, ppvObject);
+  return hr;
+}
+
 // IInternetProtocolSink methods
 STDMETHODIMP ProtocolSinkWrap::Switch(PROTOCOLDATA* protocol_data) {
   HRESULT hr = E_FAIL;
@@ -318,18 +360,27 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
     // TODO(stoyan): BINDSTATUS_RAWMIMETYPE
     case BINDSTATUS_MIMETYPEAVAILABLE:
     case BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE:
-      SaveSuggestedMimeType(status_text);
-
-      ScopedComPtr<IWinInetHttpInfo> info;
-      info.QueryFrom(delegate);
-      renderer_type_ = DetermineRendererTypeFromMetaData(suggested_mime_type_,
-                                                         url_, info);
+      // When Transaction is attached i.e. when existing BTS it terminated
+      // and "converted" to BTO, events will be re-fired for the new sink,
+      // but we may skip the renderer_type_ determination since it's already
+      // done.
+      if (renderer_type_ == UNDETERMINED) {
+        SaveSuggestedMimeType(status_text);
+        // This may seem awkward. CBinding's implementation of IWinInetHttpInfo
+        // will forward to CTransaction that will forward to the real protocol.
+        // We may ask CTransaction (our protocol_ member) for IWinInetHttpInfo.
+        ScopedComPtr<IWinInetHttpInfo> info;
+        info.QueryFrom(delegate);
+        renderer_type_ = DetermineRendererTypeFromMetaData(suggested_mime_type_,
+                                                           url_, info);
+      }
 
       if (renderer_type_ == CHROME) {
         // Suggested mime type is "text/html" and we either have OptInUrl
         // or X-UA-Compatible HTTP headers.
         DLOG(INFO) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
                    << kChromeMimeType;
+        SaveReferrer(delegate);
         delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
       } else if (renderer_type_ == OTHER) {
         // Suggested mime type is not "text/html" - we are not interested in
@@ -369,6 +420,7 @@ HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
   if (renderer_type_ == CHROME) {
     DLOG(INFO) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
         << kChromeMimeType;
+    SaveReferrer(delegate);
     delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
   }
 
@@ -443,6 +495,23 @@ void ProtData::FireSugestedMimeType(IInternetProtocolSink* delegate) {
         << suggested_mime_type_;
     delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE,
                              suggested_mime_type_);
+  }
+}
+
+void ProtData::SaveReferrer(IInternetProtocolSink* delegate) {
+  DCHECK_EQ(CHROME, renderer_type_);
+  ScopedComPtr<IWinInetHttpInfo> info;
+  info.QueryFrom(delegate);
+  DCHECK(info);
+  if (info) {
+    char buffer[4096] = {0};
+    DWORD len = sizeof(buffer);
+    DWORD flags = 0;
+    HRESULT hr = info->QueryInfo(
+        HTTP_QUERY_REFERER | HTTP_QUERY_FLAG_REQUEST_HEADERS,
+        buffer, &len, &flags, 0);
+    if (hr == S_OK && len > 0)
+      referrer_.assign(buffer);
   }
 }
 

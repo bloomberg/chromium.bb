@@ -265,7 +265,16 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     return E_INVALIDARG;
   }
 
-  const std::string& referrer = mgr ? mgr->referrer() : EmptyString();
+  std::string referrer = mgr ? mgr->referrer() : EmptyString();
+  // With CTransaction patch we have more robust way to grab the referrer for
+  // each top-level-switch-to-CF request by peeking at our sniffing data
+  // object that lives inside the bind context.
+  if (g_patch_helper.state() == PatchHelper::PATCH_PROTOCOL && info) {
+    scoped_refptr<ProtData> prot_data = info->get_prot_data();
+    if (prot_data)
+      referrer = prot_data->referrer();
+  }
+
   if (!LaunchUrl(url, referrer, is_new_navigation)) {
     NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
     return E_INVALIDARG;

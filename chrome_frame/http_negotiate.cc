@@ -93,8 +93,56 @@ class SimpleBindStatusCallback : public CComObjectRootEx<CComSingleThreadModel>,
     return E_NOTIMPL;
   }
 };
-
 }  // end namespace
+
+std::string AppendCFUserAgentString(LPCWSTR headers,
+                                    LPCWSTR additional_headers) {
+  static const char kLowerCaseUserAgent[] = "user-agent";
+  using net::HttpUtil;
+
+  std::string ascii_headers;
+  if (additional_headers) {
+    ascii_headers = WideToASCII(additional_headers);
+  }
+
+  // Extract "User-Agent" from |additiona_headers| or |headers|.
+  HttpUtil::HeadersIterator headers_iterator(ascii_headers.begin(),
+                                             ascii_headers.end(), "\r\n");
+  std::string user_agent_value;
+  if (headers_iterator.AdvanceTo(kLowerCaseUserAgent)) {
+    user_agent_value = headers_iterator.values();
+  } else if (headers != NULL) {
+    // See if there's a user-agent header specified in the original headers.
+    std::string original_headers(WideToASCII(headers));
+    HttpUtil::HeadersIterator original_it(original_headers.begin(),
+      original_headers.end(), "\r\n");
+    if (original_it.AdvanceTo(kLowerCaseUserAgent))
+      user_agent_value = original_it.values();
+  }
+
+  // Use the default "User-Agent" if none was provided.
+  if (user_agent_value.empty())
+    user_agent_value = http_utils::GetDefaultUserAgent();
+
+  // Now add chromeframe to it.
+  user_agent_value = http_utils::AddChromeFrameToUserAgentValue(
+      user_agent_value);
+
+  // Build new headers, skip the existing user agent value from
+  // existing headers.
+  std::string new_headers;
+  headers_iterator.Reset();
+  while (headers_iterator.GetNext()) {
+    std::string name(headers_iterator.name());
+    if (!LowerCaseEqualsASCII(name, kLowerCaseUserAgent)) {
+      new_headers += name + ": " + headers_iterator.values() + "\r\n";
+    }
+  }
+
+  new_headers += "User-Agent: " + user_agent_value;
+  new_headers += "\r\n";
+  return new_headers;
+}
 
 HRESULT GetBrowserServiceFromProtocolSink(IInternetProtocolSink* sink,
                                           IBrowserService** browser_service) {
@@ -173,21 +221,17 @@ HRESULT HttpNegotiatePatch::PatchHttpNegotiate(IUnknown* to_patch) {
         << StringPrintf("IHttpNegotiate not supported 0x%08X", hr);
   }
 
-  // CTransaction patch supports sniffing HTTP headers, so no need of
-  // sniffing inside HttpNegotiatePatch::ReportProgress.
-  if (GetPatchMethod() != PATCH_METHOD_INET_PROTOCOL) {
-    ScopedComPtr<IBindStatusCallback> bscb;
-    hr = bscb.QueryFrom(to_patch);
+  ScopedComPtr<IBindStatusCallback> bscb;
+  hr = bscb.QueryFrom(to_patch);
 
-    if (bscb) {
-      hr = vtable_patch::PatchInterfaceMethods(bscb,
-                                               IBindStatusCallback_PatchInfo);
-      DLOG_IF(ERROR, FAILED(hr))
-          << StringPrintf("BindStatusCallback patch failed 0x%08X", hr);
-    } else {
-      DLOG(WARNING) << StringPrintf("IBindStatusCallback not supported 0x%08X",
-                                    hr);
-    }
+  if (bscb) {
+    hr = vtable_patch::PatchInterfaceMethods(bscb,
+                                             IBindStatusCallback_PatchInfo);
+    DLOG_IF(ERROR, FAILED(hr))
+        << StringPrintf("BindStatusCallback patch failed 0x%08X", hr);
+  } else {
+    DLOG(WARNING) << StringPrintf("IBindStatusCallback not supported 0x%08X",
+                                  hr);
   }
   return hr;
 }
@@ -233,59 +277,11 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
     DLOG(INFO) << "No NavigationManager";
   }
 
-  static const char kLowerCaseUserAgent[] = "user-agent";
-
-  using net::HttpUtil;
-
-  std::string ascii_headers;
-  if (*additional_headers) {
-    ascii_headers = WideToASCII(*additional_headers);
-    DLOG(INFO) << __FUNCTION__ << " additional headers: " << ascii_headers;
-  }
-
-  HttpUtil::HeadersIterator headers_iterator(ascii_headers.begin(),
-                                             ascii_headers.end(), "\r\n");
-  std::string user_agent_value;
-  if (headers_iterator.AdvanceTo(kLowerCaseUserAgent)) {
-    user_agent_value = headers_iterator.values();
-  } else if (headers != NULL) {
-    // See if there's a user-agent header specified in the original headers.
-    std::string original_headers(WideToASCII(headers));
-    HttpUtil::HeadersIterator original_it(original_headers.begin(),
-                                          original_headers.end(), "\r\n");
-    if (original_it.AdvanceTo(kLowerCaseUserAgent))
-      user_agent_value = original_it.values();
-  }
-
-  // Use the default one if none was provided.
-  if (user_agent_value.empty())
-    user_agent_value = http_utils::GetDefaultUserAgent();
-
-  // Now add chromeframe to it.
-  user_agent_value = http_utils::AddChromeFrameToUserAgentValue(
-      user_agent_value);
-
-  // Build new headers, skip the existing user agent value from
-  // existing headers.
-  std::string new_headers;
-  headers_iterator.Reset();
-  while (headers_iterator.GetNext()) {
-    std::string name(headers_iterator.name());
-    if (!LowerCaseEqualsASCII(name, kLowerCaseUserAgent)) {
-      new_headers += name + ": " + headers_iterator.values() + "\r\n";
-    }
-  }
-
-  new_headers += "User-Agent: " + user_agent_value;
-  new_headers += "\r\n\r\n";
-
-  if (*additional_headers)
-    ::CoTaskMemFree(*additional_headers);
-  *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemAlloc(
-      (new_headers.length() + 1) * sizeof(wchar_t)));
-  lstrcpyW(*additional_headers, ASCIIToWide(new_headers).c_str());
-
-  return hr;
+  std::string updated = AppendCFUserAgentString(headers, *additional_headers);
+  *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemRealloc(
+      *additional_headers, (updated.length() + 1) * sizeof(wchar_t)));
+  lstrcpyW(*additional_headers, ASCIIToWide(updated).c_str());
+  return S_OK;
 }
 
 // static
@@ -407,4 +403,35 @@ HRESULT HttpNegotiatePatch::ReportProgress(
     ExceptionBarrierReportOnlyModule barrier;
     return original(me, status_code, status_text);
   }
+}
+
+STDMETHODIMP UserAgentAddOn::BeginningTransaction(LPCWSTR url, LPCWSTR headers,
+                                                  DWORD reserved,
+                                                  LPWSTR* additional_headers) {
+  HRESULT hr = S_OK;
+  if (delegate_) {
+    hr = delegate_->BeginningTransaction(url, headers, reserved,
+                                         additional_headers);
+  }
+
+  if (hr == S_OK) {
+    // Add "chromeframe" user-agent string.
+    std::string updated_headers = AppendCFUserAgentString(headers,
+                                                          *additional_headers);
+    *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemRealloc(
+        *additional_headers, (updated_headers.length() + 1) * sizeof(wchar_t)));
+    lstrcpyW(*additional_headers, ASCIIToWide(updated_headers).c_str());
+  }
+  return hr;
+}
+
+STDMETHODIMP UserAgentAddOn::OnResponse(DWORD response_code,
+    LPCWSTR response_headers, LPCWSTR request_headers,
+    LPWSTR* additional_headers) {
+  HRESULT hr = S_OK;
+  if (delegate_) {
+    hr = delegate_->OnResponse(response_code, response_headers, request_headers,
+                               additional_headers);
+  }
+  return hr;
 }

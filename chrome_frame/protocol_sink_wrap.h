@@ -19,6 +19,7 @@
 #include "base/scoped_bstr_win.h"
 #include "googleurl/src/gurl.h"
 #include "chrome_frame/chrome_frame_delegate.h"
+#include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/ie8_types.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
@@ -60,10 +61,13 @@ class ProtData;
 // but delegate simply the QI.
 class ProtocolSinkWrap
     : public CComObjectRootEx<CComMultiThreadModel>,
+      public IServiceProvider,
+      public UserAgentAddOn,  // implements IHttpNegotiate
       public IInternetProtocolSink {
  public:
 
 BEGIN_COM_MAP(ProtocolSinkWrap)
+  COM_INTERFACE_ENTRY(IServiceProvider)
   COM_INTERFACE_ENTRY(IInternetProtocolSink)
   COM_INTERFACE_BLIND_DELEGATE()
 END_COM_MAP()
@@ -87,8 +91,16 @@ END_COM_MAP()
   STDMETHOD(ReportData)(DWORD flags, ULONG progress, ULONG max_progress);
   STDMETHOD(ReportResult)(HRESULT result, DWORD error, LPCWSTR result_text);
 
+  // IServiceProvider - return our HttpNegotiate or forward to delegate
+  STDMETHOD(QueryService)(REFGUID guidService, REFIID riid, void** ppvObject);
+
+  // Helpers.
+  HRESULT ObtainHttpNegotiate();
+  HRESULT ObtainServiceProvider();
+
   // Remember original sink
   ScopedComPtr<IInternetProtocolSink> delegate_;
+  ScopedComPtr<IServiceProvider> delegate_service_provider_;
   scoped_refptr<ProtData> prot_data_;
   DISALLOW_COPY_AND_ASSIGN(ProtocolSinkWrap);
 };
@@ -113,6 +125,11 @@ class ProtData : public base::RefCounted<ProtData> {
     return renderer_type_;
   }
 
+  // Valid only if renderer_type_ is CHROME.
+  const std::string& referrer() const {
+    return referrer_;
+  }
+
  private:
   typedef std::map<IInternetProtocol*, ProtData*> ProtocolDataMap;
   static ProtocolDataMap datamap_;
@@ -120,6 +137,10 @@ class ProtData : public base::RefCounted<ProtData> {
 
   // Url we are retrieving. Used for IsOptInUrl() only.
   std::wstring url_;
+  // HTTP "Referrer" header if we detect are going to switch.
+  // We have to save and pass it to Chrome, so scripts can read it via DOM.
+  std::string referrer_;
+
   // Our gate to IInternetProtocol::Read()
   IInternetProtocol* protocol_;
   InternetProtocol_Read_Fn read_fun_;
@@ -145,6 +166,7 @@ class ProtData : public base::RefCounted<ProtData> {
   HRESULT FillBuffer();
   void SaveSuggestedMimeType(LPCWSTR status_text);
   void FireSugestedMimeType(IInternetProtocolSink* delegate);
+  void SaveReferrer(IInternetProtocolSink* delegate);
 };
 
 struct TransactionHooks {

@@ -6,9 +6,11 @@
 #define CHROME_FRAME_HTTP_NEGOTIATE_H_
 
 #include <shdeprecated.h>
+#include <string>
 #include <urlmon.h>
 
 #include "base/basictypes.h"
+#include "base/scoped_comptr_win.h"
 
 // Typedefs for IHttpNegotiate methods.
 typedef HRESULT (STDMETHODCALLTYPE* IHttpNegotiate_BeginningTransaction_Fn)(
@@ -75,5 +77,39 @@ HRESULT GetBrowserServiceFromProtocolSink(IInternetProtocolSink* sink,
 // a newer Windows SDK.
 // TODO(robertshield): Remove this once we update our SDK version.
 extern const int LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE;
+
+// Scans |additional_headers| and |headers| for User-Agent header or grabs
+// the default User-Agent if none is found. Append "chromeframe" at the end
+// of the string. Returns the original content of |additional_headers| but
+// with the new User-Agent header. Somewhat unusual interface is dictated
+// because we use it in IHttpNegotiate::BeginningTransaction.
+// The function is a public since we want to use it from
+// UrlmonUrlRequest::BeginningTransaction for the unusual but yet possible case
+// when |headers| contains an User-Agent string.
+// TODO(stoyan): Add unit test.
+std::string AppendCFUserAgentString(LPCWSTR headers,
+                                    LPCWSTR additional_headers);
+// Simple class that wraps IHttpNegotiate interface and adds "chromeframe"
+// to User-agent Http header.
+class UserAgentAddOn : public IHttpNegotiate {
+ public:
+  UserAgentAddOn() {}
+  ~UserAgentAddOn() {}
+  void set_delegate(IHttpNegotiate* delegate) {
+    delegate_ = delegate;
+  }
+
+  bool has_delegate() const {
+    return delegate_ != NULL;
+  }
+
+ protected:
+  // IHttpNegotiate
+  STDMETHOD(BeginningTransaction)(LPCWSTR url, LPCWSTR headers, DWORD reserved,
+                                  LPWSTR* additional_headers);
+  STDMETHOD(OnResponse)(DWORD response_code, LPCWSTR response_headers,
+                        LPCWSTR request_headers, LPWSTR* additional_headers);
+  ScopedComPtr<IHttpNegotiate>  delegate_;
+};
 
 #endif  // CHROME_FRAME_HTTP_NEGOTIATE_H_

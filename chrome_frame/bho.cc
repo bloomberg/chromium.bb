@@ -342,17 +342,17 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
     if (!IsUnpinnedMode())
       PinModule();
 
-    HttpNegotiatePatch::Initialize();
-
     ProtocolPatchMethod patch_method = GetPatchMethod();
     if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
       g_trans_hooks.InstallHooks();
       state_ = PATCH_PROTOCOL;
     } else if (patch_method == PATCH_METHOD_IBROWSER) {
+      HttpNegotiatePatch::Initialize();
       state_ =  PATCH_IBROWSER;
     } else {
       DCHECK(patch_method == PATCH_METHOD_MONIKER);
       state_ = PATCH_MONIKER;
+      HttpNegotiatePatch::Initialize();
       MonikerPatch::Initialize();
     }
 
@@ -378,9 +378,10 @@ void PatchHelper::UnpatchIfNeeded() {
   } else if (state_ == PATCH_IBROWSER) {
     vtable_patch::UnpatchInterfaceMethods(IBrowserService_PatchInfo);
     MonikerPatch::Uninitialize();
+    HttpNegotiatePatch::Uninitialize();
+  } else {
+    HttpNegotiatePatch::Uninitialize();
   }
-
-  HttpNegotiatePatch::Uninitialize();
 
   state_ = UNKNOWN;
 }

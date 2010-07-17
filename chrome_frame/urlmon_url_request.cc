@@ -556,6 +556,9 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     new_headers += StringPrintf("Referer: %s\r\n", referrer().c_str());
   }
 
+  // In the rare case if "User-Agent" string is already in |current_headers|.
+  new_headers += AppendCFUserAgentString(current_headers, NULL);
+
   if (!new_headers.empty()) {
     *additional_headers = reinterpret_cast<wchar_t*>(
         CoTaskMemAlloc((new_headers.size() + 1) * sizeof(wchar_t)));
