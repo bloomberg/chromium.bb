@@ -55,7 +55,7 @@ gboolean OnMouseButtonPressed(GtkWidget* widget, GdkEventButton* event,
     }
 
     gint button_mask = GPOINTER_TO_INT(userdata);
-    if (button_mask && (1 << event->button))
+    if (button_mask & (1 << event->button))
       gtk_button_pressed(GTK_BUTTON(widget));
   }
 
