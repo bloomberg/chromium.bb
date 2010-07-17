@@ -863,7 +863,8 @@ void BrowserWindowGtk::RotatePaneFocus(bool forwards) {
 }
 
 bool BrowserWindowGtk::IsBookmarkBarVisible() const {
-  return IsBookmarkBarSupported() && bookmark_bar_.get() &&
+  return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
+      bookmark_bar_.get() &&
       browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
@@ -1113,10 +1114,6 @@ void BrowserWindowGtk::Paste() {
   DoCutCopyPaste(this, &RenderViewHost::Paste, "paste-clipboard");
 }
 
-void BrowserWindowGtk::SetToolbarCollapsedMode(bool val) {
-  toolbar_->set_collapsed(val);
-}
-
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }
@@ -1218,17 +1215,12 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
 
 void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
                                             bool animate) {
-  if (!IsBookmarkBarSupported()) {
-    // Because the bookmark bar is never shown in app tab windows, we must
-    // explicitly hide to handle the case of switching tabs.
-    if (bookmark_bar_.get())
-      bookmark_bar_->Hide(false);  // animate
+  if (!IsBookmarkBarSupported())
     return;
-  }
 
   bool show_bar = false;
 
-  if (contents) {
+  if (IsBookmarkBarSupported() && contents) {
     bookmark_bar_->SetProfile(contents->profile());
     bookmark_bar_->SetPageNavigator(contents);
     show_bar = true;
@@ -2040,16 +2032,11 @@ bool BrowserWindowGtk::IsTabStripSupported() const {
 }
 
 bool BrowserWindowGtk::IsToolbarSupported() const {
-  return !toolbar_->collapsed() &&
-         (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
-             browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
+         browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
 bool BrowserWindowGtk::IsBookmarkBarSupported() const {
-  // We never show the bookmark bar on app tab pages.
-  if (bookmark_bar_.get() && bookmark_bar_->OnAppsPage())
-    return false;
-
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
 }
 

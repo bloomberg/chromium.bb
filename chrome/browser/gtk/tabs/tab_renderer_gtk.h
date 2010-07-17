@@ -384,11 +384,8 @@ class TabRendererGtk : public AnimationDelegate,
   TabData data_;
 
   static TabImage tab_active_;
-  static TabImage tab_active_nano_;
   static TabImage tab_inactive_;
-  static TabImage tab_inactive_nano_;
   static TabImage tab_alpha_;
-  static TabImage tab_alpha_nano_;
 
   static gfx::Font* title_font_;
   static int title_font_height_;

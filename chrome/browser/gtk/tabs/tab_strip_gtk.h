@@ -121,9 +121,7 @@ class TabStripGtk : public TabStripModelObserver,
   // TabGtk::TabDelegate implementation:
   virtual bool IsTabSelected(const TabGtk* tab) const;
   virtual bool IsTabPinned(const TabGtk* tab) const;
-  virtual bool IsAppTab(const TabGtk* tab) const;
   virtual bool IsTabDetached(const TabGtk* tab) const;
-  virtual bool IsToolbarVisible(const TabGtk* tab) const;
   virtual void SelectTab(TabGtk* tab);
   virtual void CloseTab(TabGtk* tab);
   virtual bool IsCommandEnabledForTab(

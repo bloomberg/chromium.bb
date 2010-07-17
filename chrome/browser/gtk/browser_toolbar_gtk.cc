@@ -95,8 +95,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       profile_(NULL),
       menu_bar_helper_(this),
       upgrade_reminder_animation_(this),
-      upgrade_reminder_canceled_(false),
-      collapsed_(false) {
+      upgrade_reminder_canceled_(false) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
@@ -291,14 +290,6 @@ void BrowserToolbarGtk::Hide() {
 
 LocationBar* BrowserToolbarGtk::GetLocationBar() const {
   return location_bar_.get();
-}
-
-void BrowserToolbarGtk::set_collapsed(bool val) {
-  collapsed_ = val;
-  if (collapsed_)
-    Hide();
-  else
-    Show();
 }
 
 void BrowserToolbarGtk::UpdateForBookmarkBarVisibility(
