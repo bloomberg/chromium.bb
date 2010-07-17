@@ -41,14 +41,8 @@ list > * > * {
 
 list > * > .label {
   -webkit-transition: all .15s;
-  cursor: pointer;
   color: black;
   display: inline-block; /* We need to use inline-block here due to RTL. */
-}
-
-list > :hover > .label {
-  text-decoration: underline;
-  color: blue;
 }
 
 list > * > .url {

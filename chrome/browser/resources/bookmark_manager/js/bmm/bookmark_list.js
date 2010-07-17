@@ -196,29 +196,19 @@ cr.define('bmm', function() {
      * @param {!Event} e The click event object.
      */
     handleClick_: function(e) {
-      var self = this;
-
-      function dispatch(url) {
-        var event = new cr.Event('urlClicked', true, false);
-        event.url = url;
-        event.originalEvent = e;
-        self.dispatchEvent(event);
-      }
-
-      var el = e.target;
-
-      // Handle clicks on the links to URLs.
-      if (el.href) {
-        dispatch(el.href);
-
       // Handle middle click to open bookmark in a new tab.
-      } else if (e.button == 1) {
+      if (e.button == 1) {
+        var el = e.target;
         while (el.parentNode != this) {
           el = el.parentNode;
         }
         var node = el.bookmarkNode;
-        if (!bmm.isFolder(node))
-          dispatch(node.url);
+        if (!bmm.isFolder(node)) {
+          var event = new cr.Event('urlClicked', true, false);
+          event.url = url;
+          event.originalEvent = e;
+          this.dispatchEvent(event);
+        }
       }
     },
 
@@ -392,11 +382,10 @@ cr.define('bmm', function() {
 
       if (bmm.isFolder(bookmarkNode)) {
         this.className = 'folder';
-        labelEl.href = '#' + bookmarkNode.id;
       } else {
         labelEl.style.backgroundImage = url('chrome://favicon/' +
                                             bookmarkNode.url);
-        labelEl.href = urlEl.textContent = bookmarkNode.url;
+        urlEl.textContent = bookmarkNode.url;
       }
 
       this.appendChild(labelEl);
