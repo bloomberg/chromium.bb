@@ -931,3 +931,22 @@
    fun:TemplateURLRef::GetHost
    fun:TemplateURLPrepopulateDataTest_ProvidersFromPrefs_Test::TestBody
 }
+{
+   bug_49412
+   Heapcheck:Leak
+   ...
+   fun:ClientSocketPoolHistograms
+   fun:HttpNetworkSession
+   fun:net::HttpNetworkLayer::GetSession
+   fun:net::HttpNetworkLayer::CreateTransaction
+   fun:net::HttpCache::Transaction::DoSendRequest
+   fun:net::HttpCache::Transaction::DoLoop
+   fun:net::HttpCache::Transaction::Start
+   fun:URLRequestHttpJob::StartTransaction
+   fun:URLRequestHttpJob::OnCanGetCookiesCompleted
+   fun:URLRequestHttpJob::AddCookieHeaderAndStart
+   fun:URLRequestHttpJob::Start
+   fun:URLRequest::StartJob
+   fun:URLRequest::Start
+   fun:HTTPTestServer::StartGETRequest
+}
