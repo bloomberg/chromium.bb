@@ -47,6 +47,8 @@
   ],
 
   'mac': [
+    # Keychain popups make password tests difficult. crbug.com/49378
+    '-passwords',
   ],
 
   'linux': [
