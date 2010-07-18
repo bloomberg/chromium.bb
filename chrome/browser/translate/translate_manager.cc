@@ -62,8 +62,11 @@ LocaleToCLDLanguage kLocaleToCLDLanguages[] = {
 // te Telugu
 const char* kSupportedLanguages[] = {
     "af",     // Afrikaans
+    "az",     // Azerbaijani
     "sq",     // Albanian
     "ar",     // Arabic
+    "hy",     // Armenian
+    "eu",     // Basque
     "be",     // Belarusian
     "bg",     // Bulgarian
     "ca",     // Catalan
@@ -81,6 +84,7 @@ const char* kSupportedLanguages[] = {
     "gl",     // Galician
     "de",     // German
     "el",     // Greek
+    "ht",     // Haitian Creole
     "he",     // Hebrew
     "hi",     // Hindi
     "hu",     // Hungarian
@@ -89,6 +93,7 @@ const char* kSupportedLanguages[] = {
     "it",     // Italian
     "ga",     // Irish
     "ja",     // Japanese
+    "ka",     // Georgian
     "ko",     // Korean
     "lv",     // Latvian
     "lt",     // Lithuanian
@@ -110,6 +115,7 @@ const char* kSupportedLanguages[] = {
     "th",     // Thai
     "tr",     // Turkish
     "uk",     // Ukrainian
+    "ur",     // Urdu
     "vi",     // Vietnamese
     "cy",     // Welsh
     "yi",     // Yiddish

@@ -429,7 +429,7 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
 TEST_F(TranslateManagerTest, TestAllLanguages) {
   // The index in kExpectation are the Language enum (see languages.pb.h).
   // true if we expect a translate infobar for that language.
-  // Note the supported languages are in translation_service.cc, see
+  // Note the supported languages are in translation_manager.cc, see
   // kSupportedLanguages.
   bool kExpectations[] = {
     // 0-9
@@ -443,15 +443,15 @@ TEST_F(TranslateManagerTest, TestAllLanguages) {
     // 40-49
     true, false, true, false, false, true, false, true, false, false,
     // 50-59
-    false, false, false, true, true, true, false, false, false, false,
+    true, false, false, true, true, true, false, true, false, false,
     // 60-69
     false, false, true, true, false, true, true, false, true, true,
     // 70-79
-    false, false, false, false, false, false, false, true, false, false,
+    false, false, false, false, true, true, false, true, false, false,
     // 80-89
     false, false, false, false, false, false, false, false, false, false,
     // 90-99
-    false, true, false, false, false, false, false, false, false, false,
+    false, true, false, false, false, false, false, true, false, false,
     // 100-109
     false, true, false, false, false, false, false, false, false, false,
     // 110-119
@@ -459,7 +459,7 @@ TEST_F(TranslateManagerTest, TestAllLanguages) {
     // 120-129
     false, false, false, false, false, false, false, false, false, false,
     // 130-139
-    false, false, false, false, false, false, false, false, false, false,
+    false, false, false, false, false, false, false, false, false, true,
     // 140-149
     false, false, false, false, false, false, false, false, false, false,
     // 150-159
