@@ -631,7 +631,7 @@
 
       <!-- The height of the AutoFill edit Address dialog in lines. -->
       <message name="IDS_AUTOFILL_DIALOG_EDIT_ADDRESS_HEIGHT_LINES" use_name_for_id="true">
-        27
+        25
       </message>
 
       <!-- The width of the AutoFill edit Credit Card dialog in characters. -->
@@ -641,7 +641,7 @@
 
       <!-- The height of the AutoFill edit Credit Card dialog in lines. -->
       <message name="IDS_AUTOFILL_DIALOG_EDIT_CCARD_HEIGHT_LINES" use_name_for_id="true">
-        16
+        13
       </message>
 
       <!-- The URL for About Google Translate. -->

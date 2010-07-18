@@ -22,6 +22,7 @@
 #include "views/window/dialog_delegate.h"
 
 namespace views {
+class Checkbox;
 class GridLayout;
 class ImageButton;
 class Label;
@@ -60,6 +61,7 @@ class AutoFillProfilesView : public views::View,
   static int Show(gfx::NativeWindow parent,
                   AutoFillDialogObserver* observer,
                   PersonalDataManager* personal_data_manager,
+                  Profile* profile,
                   PrefService* preferences,
                   AutoFillProfile* imported_profile,
                   CreditCard* imported_credit_card);
@@ -78,6 +80,9 @@ class AutoFillProfilesView : public views::View,
 
   // Updates state of the buttons.
   void UpdateButtonState();
+
+  // Updates inferred labels.
+  void UpdateProfileLabels();
 
   // Following two functions are called from opened child dialog to
   // disable/enable buttons.
@@ -128,7 +133,7 @@ class AutoFillProfilesView : public views::View,
   virtual void OnDoubleClick();
 
   // PersonalDataManager::Observer methods:
-  void OnPersonalDataLoaded();
+  virtual void OnPersonalDataLoaded();
 
   // Helper structure to keep info on one address or credit card.
   // Keeps info on one item in EditableSetViewContents.
@@ -168,6 +173,7 @@ class AutoFillProfilesView : public views::View,
 
   AutoFillProfilesView(AutoFillDialogObserver* observer,
                        PersonalDataManager* personal_data_manager,
+                       Profile* profile,
                        PrefService* preferences,
                        AutoFillProfile* imported_profile,
                        CreditCard* imported_credit_card);
@@ -273,7 +279,6 @@ class AutoFillProfilesView : public views::View,
                              int new_index);
    private:
     enum TextFields {
-      TEXT_LABEL,
       TEXT_FULL_NAME,
       TEXT_COMPANY,
       TEXT_EMAIL,
@@ -291,13 +296,11 @@ class AutoFillProfilesView : public views::View,
       MAX_TEXT_FIELD
     };
 
-    void InitTitle(views::GridLayout* layout);
     void InitAddressFields(views::GridLayout* layout);
     void InitCreditCardFields(views::GridLayout* layout);
     void InitLayoutGrid(views::GridLayout* layout);
     views::Label* CreateLeftAlignedLabel(int label_id);
 
-    bool LabelValid() const;
     void UpdateButtons();
 
     void UpdateContentsPhoneViews(TextFields field,
@@ -307,7 +310,6 @@ class AutoFillProfilesView : public views::View,
     views::Textfield* text_fields_[MAX_TEXT_FIELD];
     std::vector<EditableSetInfo>::iterator editable_fields_set_;
     EditableSetInfo temporary_info_;
-    views::ImageButton* label_warning_button_;
     AutoFillProfilesView* observer_;
     AddressComboBoxModel* billing_model_;
     views::Combobox* combo_box_billing_;
@@ -361,8 +363,8 @@ class AutoFillProfilesView : public views::View,
     // Call this function if one of the labels has changed
     void LabelChanged();
 
-    // Gets index of the string in the model or -1 if not found.
-    int GetIndex(const string16 &s);
+    // Gets index of the item in the model or -1 if not found.
+    int GetIndex(int unique_id);
 
     // ComboboxModel methods, public as they used from EditableSetViewContents
     virtual int GetItemCount();
@@ -437,12 +439,14 @@ class AutoFillProfilesView : public views::View,
 
   AutoFillDialogObserver* observer_;
   PersonalDataManager* personal_data_manager_;
+  Profile* profile_;
   PrefService* preferences_;
   std::vector<EditableSetInfo> profiles_set_;
   std::vector<EditableSetInfo> credit_card_set_;
 
   AddressComboBoxModel billing_model_;
 
+  views::Checkbox* enable_auto_fill_button_;
   views::Button* add_address_button_;
   views::Button* add_credit_card_button_;
   views::Button* edit_button_;

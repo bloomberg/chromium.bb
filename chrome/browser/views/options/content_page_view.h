@@ -84,8 +84,6 @@ class ContentPageView : public OptionsPageView,
   // Controls for the Form Autofill group
   views::NativeButton* change_autofill_settings_button_;
   OptionsGroupView* form_autofill_group_;
-  views::RadioButton* form_autofill_enable_radio_;
-  views::RadioButton* form_autofill_disable_radio_;
 
   // Controls for the Themes group
   OptionsGroupView* themes_group_;
@@ -105,7 +103,6 @@ class ContentPageView : public OptionsPageView,
   views::Link* privacy_dashboard_link_;
 
   BooleanPrefMember ask_to_save_passwords_;
-  BooleanPrefMember ask_to_save_form_autofill_;
   StringPrefMember is_using_default_theme_;
 
   // Cached pointer to ProfileSyncService, if it exists. Kept up to date

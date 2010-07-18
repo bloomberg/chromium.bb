@@ -16,6 +16,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/list_background.h"
@@ -62,12 +63,15 @@ AutoFillProfilesView* AutoFillProfilesView::instance_ = NULL;
 AutoFillProfilesView::AutoFillProfilesView(
     AutoFillDialogObserver* observer,
     PersonalDataManager* personal_data_manager,
+    Profile* profile,
     PrefService* preferences,
     AutoFillProfile* imported_profile,
     CreditCard* imported_credit_card)
     : observer_(observer),
       personal_data_manager_(personal_data_manager),
+      profile_(profile),
       preferences_(preferences),
+      enable_auto_fill_button_(NULL),
       add_address_button_(NULL),
       add_credit_card_button_(NULL),
       edit_button_(NULL),
@@ -100,12 +104,13 @@ AutoFillProfilesView::~AutoFillProfilesView() {
 int AutoFillProfilesView::Show(gfx::NativeWindow parent,
                                AutoFillDialogObserver* observer,
                                PersonalDataManager* personal_data_manager,
+                               Profile* profile,
                                PrefService* preferences,
                                AutoFillProfile* imported_profile,
                                CreditCard* imported_credit_card) {
   if (!instance_) {
     instance_ = new AutoFillProfilesView(observer, personal_data_manager,
-        preferences, imported_profile, imported_credit_card);
+        profile, preferences, imported_profile, imported_credit_card);
 
     // |instance_| will get deleted once Close() is called.
     views::Window::CreateChromeWindow(parent, gfx::Rect(), instance_);
@@ -186,14 +191,28 @@ void AutoFillProfilesView::UpdateButtonState() {
   DCHECK(add_credit_card_button_);
   DCHECK(edit_button_);
   DCHECK(remove_button_);
+  bool autofill_enabled = preferences_->GetBoolean(prefs::kAutoFillEnabled);
+  scroll_view_->SetEnabled(autofill_enabled);
   add_address_button_->SetEnabled(personal_data_manager_->IsDataLoaded() &&
-                                  !child_dialog_opened_);
+                                  !child_dialog_opened_ && autofill_enabled);
   add_credit_card_button_->SetEnabled(personal_data_manager_->IsDataLoaded() &&
-                                      !child_dialog_opened_);
+                                      !child_dialog_opened_ &&
+                                      autofill_enabled);
 
   int selected_row_count = scroll_view_->SelectedRowCount();
-  edit_button_->SetEnabled(selected_row_count == 1 && !child_dialog_opened_);
-  remove_button_->SetEnabled(selected_row_count > 0 && !child_dialog_opened_);
+  edit_button_->SetEnabled(selected_row_count == 1 && !child_dialog_opened_ &&
+                           autofill_enabled);
+  remove_button_->SetEnabled(selected_row_count > 0 && !child_dialog_opened_ &&
+                             autofill_enabled);
+}
+
+void AutoFillProfilesView::UpdateProfileLabels() {
+  std::vector<AutoFillProfile*> profiles;
+  profiles.resize(profiles_set_.size());
+  for (size_t i = 0; i < profiles_set_.size(); ++i) {
+    profiles[i] = &(profiles_set_[i].address);
+  }
+  AutoFillProfile::AdjustInferredLabels(&profiles);
 }
 
 void AutoFillProfilesView::ChildWindowOpened() {
@@ -333,6 +352,14 @@ void AutoFillProfilesView::ButtonPressed(views::Button* sender,
     EditClicked();
   } else if (sender == remove_button_) {
     DeleteClicked();
+  } else if (sender == enable_auto_fill_button_) {
+    bool enabled = enable_auto_fill_button_->checked();
+    UserMetricsAction action(enabled ? "Options_FormAutofill_Enable" :
+                                       "Options_FormAutofill_Disable");
+    UserMetrics::RecordAction(action, profile_);
+    preferences_->SetBoolean(prefs::kAutoFillEnabled, enabled);
+    preferences_->ScheduleSavePersistentPrefs();
+    UpdateButtonState();
   }
 }
 
@@ -379,16 +406,19 @@ void  AutoFillProfilesView::OnPersonalDataLoaded() {
 void AutoFillProfilesView::Init() {
   GetData();
 
+  enable_auto_fill_button_ = new views::Checkbox(
+      l10n_util::GetString(IDS_OPTIONS_AUTOFILL_ENABLE));
+  enable_auto_fill_button_->set_listener(this);
+  enable_auto_fill_button_->SetChecked(
+      preferences_->GetBoolean(prefs::kAutoFillEnabled));
+
   billing_model_.set_address_labels(&profiles_set_);
 
   table_model_.reset(new ContentListTableModel(&profiles_set_,
                                                &credit_card_set_));
   std::vector<TableColumn> columns;
-  columns.resize(2);
-  columns[0] = TableColumn(IDS_AUTOFILL_LIST_HEADER_LABEL,
-                           TableColumn::LEFT, -1, .33f);
-  columns.back().sortable = false;
-  columns[1] = TableColumn(IDS_AUTOFILL_LIST_HEADER_SUMMARY,
+  columns.resize(1);
+  columns[0] = TableColumn(IDS_AUTOFILL_LIST_HEADER_SUMMARY,
                            TableColumn::LEFT, -1, .67f);
   columns.back().sortable = false;
 
@@ -416,6 +446,11 @@ void AutoFillProfilesView::Init() {
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
                         views::GridLayout::USE_PREF, 0, 0);
+
+  layout->StartRow(0, table_with_buttons_column_view_set_id);
+  layout->AddView(enable_auto_fill_button_, 3, 1, views::GridLayout::FILL,
+                  views::GridLayout::FILL);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, table_with_buttons_column_view_set_id);
   layout->AddView(scroll_view_, 1, 8, views::GridLayout::FILL,
@@ -463,6 +498,7 @@ void AutoFillProfilesView::GetData() {
       profiles_set_.push_back(EditableSetInfo(*address_it));
     }
   }
+  UpdateProfileLabels();
 
   if (!imported_data_present) {
     credit_card_set_.reserve(personal_data_manager_->credit_cards().size());
@@ -573,7 +609,6 @@ void AutoFillProfilesView::PhoneSubView::ViewHierarchyChanged(
 // AutoFillProfilesView::EditableSetViewContents, static data:
 AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
     AutoFillProfilesView::EditableSetViewContents::address_fields_[] = {
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_LABEL, NO_SERVER_DATA },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_FULL_NAME,
     NAME_FULL },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_COMPANY, COMPANY_NAME },
@@ -598,7 +633,6 @@ AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
 
 AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
     AutoFillProfilesView::EditableSetViewContents::credit_card_fields_[] = {
-  { AutoFillProfilesView::EditableSetViewContents::TEXT_LABEL, NO_SERVER_DATA },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_CC_NAME,
     CREDIT_CARD_NAME },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_CC_NUMBER,
@@ -614,7 +648,6 @@ AutoFillProfilesView::EditableSetViewContents::EditableSetViewContents(
     std::vector<EditableSetInfo>::iterator field_set)
     : editable_fields_set_(field_set),
       temporary_info_(*editable_fields_set_),
-      label_warning_button_(NULL),
       observer_(observer),
       billing_model_(billing_model),
       combo_box_billing_(NULL),
@@ -651,7 +684,6 @@ void AutoFillProfilesView::EditableSetViewContents::ViewHierarchyChanged(
                       kSubViewVerticalInsets, kSubViewHorizotalInsets);
     SetLayoutManager(layout);
     InitLayoutGrid(layout);
-    InitTitle(layout);
     if (temporary_info_.is_address)
       InitAddressFields(layout);
     else
@@ -692,7 +724,7 @@ bool AutoFillProfilesView::EditableSetViewContents::IsDialogButtonEnabled(
          it != phone_sub_views_.end() && phones_are_valid; ++it)
       phones_are_valid = (phones_are_valid && (*it)->IsValid());
 
-    return phones_are_valid && LabelValid();
+    return phones_are_valid;
   }
   case MessageBoxFlags::DIALOGBUTTON_CANCEL:
     return true;
@@ -750,6 +782,8 @@ bool AutoFillProfilesView::EditableSetViewContents::Accept() {
     observer_->table_model_->AddItem(index);
   else
     observer_->table_model_->UpdateItem(index);
+  if (temporary_info_.is_address)
+    observer_->UpdateProfileLabels();
   return true;
 }
 
@@ -771,16 +805,10 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
     for (int field = 0; field < arraysize(address_fields_); ++field) {
       DCHECK(text_fields_[address_fields_[field].text_field]);
       if (text_fields_[address_fields_[field].text_field] == sender) {
-        if (address_fields_[field].text_field == TEXT_LABEL) {
-          temporary_info_.address.set_label(new_contents);
-          // One of the address labels changed - update combo boxes
-          billing_model_->LabelChanged();
-        } else {
-          UpdateContentsPhoneViews(address_fields_[field].text_field,
-                                   sender, new_contents);
-          temporary_info_.address.SetInfo(
-              AutoFillType(address_fields_[field].type), new_contents);
-        }
+        UpdateContentsPhoneViews(address_fields_[field].text_field,
+                                 sender, new_contents);
+        temporary_info_.address.SetInfo(
+            AutoFillType(address_fields_[field].type), new_contents);
         UpdateButtons();
         return;
       }
@@ -789,14 +817,10 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
     for (int field = 0; field < arraysize(credit_card_fields_); ++field) {
       DCHECK(text_fields_[credit_card_fields_[field].text_field]);
       if (text_fields_[credit_card_fields_[field].text_field] == sender) {
-        if (credit_card_fields_[field].text_field == TEXT_LABEL) {
-          temporary_info_.credit_card.set_label(new_contents);
-        } else {
-          UpdateContentsPhoneViews(address_fields_[field].text_field,
-                                   sender, new_contents);
-          temporary_info_.credit_card.SetInfo(
-              AutoFillType(credit_card_fields_[field].type), new_contents);
-        }
+        UpdateContentsPhoneViews(address_fields_[field].text_field,
+                                 sender, new_contents);
+        temporary_info_.credit_card.SetInfo(
+            AutoFillType(credit_card_fields_[field].type), new_contents);
         UpdateButtons();
         return;
       }
@@ -825,8 +849,10 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
     if (new_index == -1) {
       NOTREACHED();
     } else {
+      DCHECK(new_index < static_cast<int>(observer_->profiles_set_.size()));
       temporary_info_.credit_card.set_billing_address(
-          billing_model_->GetItemAt(new_index));
+          IntToString16(
+          observer_->profiles_set_[new_index].address.unique_id()));
     }
   } else if (combo_box == combo_box_month_) {
     if (new_index == -1) {
@@ -851,45 +877,11 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::EditableSetViewContents, private:
-void AutoFillProfilesView::EditableSetViewContents::InitTitle(
-    views::GridLayout* layout) {
-  std::wstring title;
-  if (temporary_info_.is_address) {
-    title = temporary_info_.address.Label();
-    if (title.empty())
-      title = l10n_util::GetString(IDS_AUTOFILL_NEW_ADDRESS);
-  } else {
-    title = temporary_info_.credit_card.Label();
-    if (title.empty())
-      title = l10n_util::GetString(IDS_AUTOFILL_NEW_CREDITCARD);
-  }
-  label_warning_button_ = new views::ImageButton(this);
-  label_warning_button_->SetEnabled(false);
-  label_warning_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                           views::ImageButton::ALIGN_MIDDLE);
-  text_fields_[TEXT_LABEL] =
-      new views::Textfield(views::Textfield::STYLE_DEFAULT);
-  text_fields_[TEXT_LABEL]->SetText(temporary_info_.is_address ?
-      temporary_info_.address.Label() : temporary_info_.credit_card.Label());
-  text_fields_[TEXT_LABEL]->SetController(this);
-
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, triple_column_leading_view_set_id_);
-  layout->AddView(new views::Label(
-    l10n_util::GetString(IDS_AUTOFILL_DIALOG_LABEL)));
-
-  layout->StartRow(0, triple_column_fill_view_set_id_);
-  layout->AddView(text_fields_[TEXT_LABEL]);
-  layout->AddView(label_warning_button_);
-}
-
 void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
     views::GridLayout* layout) {
   DCHECK(temporary_info_.is_address);
 
   for (int field = 0; field < arraysize(address_fields_); ++field) {
-    if (address_fields_[field].text_field == TEXT_LABEL)
-      continue;
     DCHECK(!text_fields_[address_fields_[field].text_field]);
     text_fields_[address_fields_[field].text_field] =
         new views::Textfield(views::Textfield::STYLE_DEFAULT);
@@ -1004,8 +996,6 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   combo_box_model_year_->set_cb_strings(&model_strings);
 
   for (int field = 0; field < arraysize(credit_card_fields_); ++field) {
-    if (credit_card_fields_[field].text_field == TEXT_LABEL)
-      continue;
     DCHECK(!text_fields_[credit_card_fields_[field].text_field]);
     text_fields_[credit_card_fields_[field].text_field] =
         new views::Textfield(views::Textfield::STYLE_DEFAULT);
@@ -1032,9 +1022,9 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   // Address combo boxes.
   combo_box_billing_ = new views::Combobox(billing_model_);
   combo_box_billing_->set_listener(this);
-  combo_box_billing_->SetSelectedItem(
-      billing_model_->GetIndex(
-      temporary_info_.credit_card.billing_address()));
+  int billing_id = -1;
+  if (StringToInt(temporary_info_.credit_card.billing_address(), &billing_id))
+    combo_box_billing_->SetSelectedItem(billing_model_->GetIndex(billing_id));
   billing_model_->UsedWithComboBox(combo_box_billing_);
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
@@ -1167,22 +1157,7 @@ AutoFillProfilesView::EditableSetViewContents::CreateLeftAlignedLabel(
   return label;
 }
 
-bool AutoFillProfilesView::EditableSetViewContents::LabelValid() const {
-  if (temporary_info_.is_address)
-    return !temporary_info_.address.Label().empty();
-  else
-    return !temporary_info_.credit_card.Label().empty();
-}
-
 void AutoFillProfilesView::EditableSetViewContents::UpdateButtons() {
-  SkBitmap* image = observer_->GetWarningBimap(LabelValid());
-  if (LabelValid()) {
-    label_warning_button_->SetTooltipText(std::wstring());
-  } else {
-    label_warning_button_->SetTooltipText(l10n_util::GetString(
-        IDS_AUTOFILL_BAD_LABEL_TOOLTIP));
-  }
-  label_warning_button_->SetImage(views::CustomButton::BS_NORMAL, image);
   GetDialogClientView()->UpdateDialogButtons();
 }
 
@@ -1226,12 +1201,12 @@ void AutoFillProfilesView::AddressComboBoxModel::LabelChanged() {
     (*it)->ModelChanged();
 }
 
-int AutoFillProfilesView::AddressComboBoxModel::GetIndex(const string16 &s) {
+int AutoFillProfilesView::AddressComboBoxModel::GetIndex(int unique_id) {
   int shift = is_billing_ ? 0 : 1;
   DCHECK(address_labels_);
   for (size_t i = 0; i < address_labels_->size(); ++i) {
     DCHECK(address_labels_->at(i).is_address);
-    if (address_labels_->at(i).address.Label() == s)
+    if (address_labels_->at(i).address.unique_id() == unique_id)
       return i + shift;
   }
   return -1;
@@ -1252,7 +1227,8 @@ std::wstring AutoFillProfilesView::AddressComboBoxModel::GetItemAt(int index) {
   if (!is_billing_ && !index)
     return l10n_util::GetString(IDS_AUTOFILL_DIALOG_SAME_AS_BILLING);
   DCHECK(address_labels_->at(index - shift).is_address);
-  std::wstring label = address_labels_->at(index - shift).address.Label();
+  std::wstring label =
+      address_labels_->at(index - shift).address.Label();
   if (label.empty())
     label = l10n_util::GetString(IDS_AUTOFILL_NEW_ADDRESS);
   return label;
@@ -1322,18 +1298,10 @@ std::wstring AutoFillProfilesView::ContentListTableModel::GetText(
     int row, int column_id) {
   DCHECK(row < static_cast<int>(profiles_->size() + credit_cards_->size()));
   if (row < static_cast<int>(profiles_->size())) {
-    if (column_id == IDS_AUTOFILL_LIST_HEADER_LABEL) {
-      return profiles_->at(row).address.Label();
-    } else {
-      return profiles_->at(row).address.PreviewSummary();
-    }
+    return profiles_->at(row).address.PreviewSummary();
   } else {
     row -= profiles_->size();
-    if (column_id == IDS_AUTOFILL_LIST_HEADER_LABEL) {
-      return credit_cards_->at(row).credit_card.Label();
-    } else {
-      return credit_cards_->at(row).credit_card.PreviewSummary();
-    }
+    return credit_cards_->at(row).credit_card.PreviewSummary();
   }
 }
 
@@ -1374,6 +1342,6 @@ void ShowAutoFillDialog(gfx::NativeView parent,
   PersonalDataManager* personal_data_manager =
       profile->GetPersonalDataManager();
   DCHECK(personal_data_manager);
-  AutoFillProfilesView::Show(parent, observer, personal_data_manager,
+  AutoFillProfilesView::Show(parent, observer, personal_data_manager, profile,
                              profile->GetPrefs(), NULL, NULL);
 }

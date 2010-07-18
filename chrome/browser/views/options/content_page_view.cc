@@ -62,8 +62,6 @@ ContentPageView::ContentPageView(Profile* profile)
       passwords_asktosave_radio_(NULL),
       passwords_neversave_radio_(NULL),
       change_autofill_settings_button_(NULL),
-      form_autofill_enable_radio_(NULL),
-      form_autofill_disable_radio_(NULL),
       themes_group_(NULL),
       themes_reset_button_(NULL),
       themes_gallery_link_(NULL),
@@ -106,17 +104,6 @@ void ContentPageView::ButtonPressed(
           profile()->GetPrefs());
     }
     ask_to_save_passwords_.SetValue(enabled);
-  } else if (sender == form_autofill_enable_radio_ ||
-             sender == form_autofill_disable_radio_) {
-    bool enabled = form_autofill_enable_radio_->checked();
-    if (enabled) {
-      UserMetricsRecordAction(UserMetricsAction("Options_FormAutofill_Enable"),
-                              profile()->GetPrefs());
-    } else {
-      UserMetricsRecordAction(UserMetricsAction("Options_FormAutofill_Disable"),
-                              profile()->GetPrefs());
-    }
-    ask_to_save_form_autofill_.SetValue(enabled);
   } else if (sender == show_passwords_button_) {
     UserMetricsRecordAction(
         UserMetricsAction("Options_ShowPasswordsExceptions"), NULL);
@@ -232,8 +219,6 @@ void ContentPageView::InitControlLayout() {
   // Init member prefs so we can update the controls if prefs change.
   ask_to_save_passwords_.Init(prefs::kPasswordManagerEnabled,
                               profile()->GetPrefs(), this);
-  ask_to_save_form_autofill_.Init(prefs::kAutoFillEnabled,
-                                  profile()->GetPrefs(), this);
   is_using_default_theme_.Init(prefs::kCurrentThemeID,
                                profile()->GetPrefs(), this);
 
@@ -250,13 +235,6 @@ void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
       passwords_asktosave_radio_->SetChecked(true);
     } else {
       passwords_neversave_radio_->SetChecked(true);
-    }
-  }
-  if (!pref_name || *pref_name == prefs::kAutoFillEnabled) {
-    if (ask_to_save_form_autofill_.GetValue()) {
-      form_autofill_enable_radio_->SetChecked(true);
-    } else {
-      form_autofill_disable_radio_->SetChecked(true);
     }
   }
   if (!pref_name || *pref_name == prefs::kCurrentThemeID) {
@@ -332,17 +310,6 @@ void ContentPageView::InitPasswordSavingGroup() {
 }
 
 void ContentPageView::InitFormAutofillGroup() {
-  form_autofill_enable_radio_ = new views::RadioButton(
-      l10n_util::GetString(IDS_OPTIONS_AUTOFILL_ENABLE),
-      kFormAutofillRadioGroup);
-  form_autofill_enable_radio_->set_listener(this);
-  form_autofill_enable_radio_->SetMultiLine(true);
-  form_autofill_disable_radio_ = new views::RadioButton(
-      l10n_util::GetString(IDS_OPTIONS_AUTOFILL_DISABLE),
-      kFormAutofillRadioGroup);
-  form_autofill_disable_radio_->set_listener(this);
-  form_autofill_disable_radio_->SetMultiLine(true);
-
   change_autofill_settings_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_AUTOFILL_OPTIONS));
   if (!profile()->GetPersonalDataManager())
@@ -365,14 +332,6 @@ void ContentPageView::InitFormAutofillGroup() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, fill_column_view_set_id);
-  layout->AddView(form_autofill_enable_radio_, 1, 1,
-                  GridLayout::FILL, GridLayout::LEADING);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, fill_column_view_set_id);
-  layout->AddView(form_autofill_disable_radio_, 1, 1,
-                  GridLayout::FILL, GridLayout::LEADING);
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, leading_column_view_set_id);
   layout->AddView(change_autofill_settings_button_);
 
