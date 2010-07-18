@@ -822,8 +822,14 @@ bool MenuController::Dispatch(GdkEvent* event) {
     case GDK_KEY_PRESS: {
       base::KeyboardCode win_keycode =
           base::WindowsKeyCodeForGdkKeyCode(event->key.keyval);
+
       if (!OnKeyDown(win_keycode))
         return false;
+
+      // OnKeyDown may have set exit_type_.
+      if (exit_type_ != EXIT_NONE)
+        return false;
+
       guint32 keycode = gdk_keyval_to_unicode(event->key.keyval);
       if (keycode)
         return !SelectByChar(keycode);
