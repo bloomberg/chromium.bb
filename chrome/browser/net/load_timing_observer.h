@@ -30,6 +30,11 @@ class LoadTimingObserver : public ChromeNetLog::Observer {
     base::TimeTicks dns_end;
   };
 
+  struct SocketRecord {
+    base::TimeTicks ssl_start;
+    base::TimeTicks ssl_end;
+  };
+
   LoadTimingObserver();
   ~LoadTimingObserver();
 
@@ -54,13 +59,21 @@ class LoadTimingObserver : public ChromeNetLog::Observer {
                             net::NetLog::EventPhase phase,
                             net::NetLog::EventParameters* params);
 
+  void OnAddSocketEntry(net::NetLog::EventType type,
+                        const base::TimeTicks& time,
+                        const net::NetLog::Source& source,
+                        net::NetLog::EventPhase phase,
+                        net::NetLog::EventParameters* params);
+
   URLRequestRecord* CreateURLRequestRecord(uint32 source_id);
   void DeleteURLRequestRecord(uint32 source_id);
 
   typedef base::hash_map<uint32, URLRequestRecord> URLRequestToRecordMap;
   typedef base::hash_map<uint32, ConnectJobRecord> ConnectJobToRecordMap;
+  typedef base::hash_map<uint32, SocketRecord> SocketToRecordMap;
   URLRequestToRecordMap url_request_to_record_;
   ConnectJobToRecordMap connect_job_to_record_;
+  SocketToRecordMap socket_to_record_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadTimingObserver);
 };
