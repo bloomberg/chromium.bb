@@ -5212,6 +5212,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK" desc="Linking 2 sentences in 1 paragraph.">
         <ph name="SENTENCE1">$1<ex>Your connection is encrypted.</ex></ph> <ph name="SENTENCE2">$2<ex>However, this page includes resources from other pages whose identity cannot be verified.</ex></ph>
       </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS" desc="This message gives details of the cryptographic primitives used to protect the HTTPS connection.">
+        The connection is encrypted using <ph name="CIPHER">$1<ex>AES_128</ex></ph>, with <ph name="MAC">$2<ex>SHA1</ex></ph> for message authentication and <ph name="KX">$3<ex>RSA</ex></ph> as the key exchange mechanism.
+      </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_NO_COMPRESSION" desc="This message is displayed when no SSL compression is in use.">
+        The connection is not compressed.
+      </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_COMPRESSION_DETAILS" desc="This message contains the compression algorithm in use on an SSL connection">
+        The connection is compressed with <ph name="COMPRESSION">$1<ex>DEFLATE</ex></ph>.
+      </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE" desc="This message is displayed when the first secure connection to a site failed and Chrome retried with an older protocol.">
+        The connection had to be retried using SSL 3.0. This typically means that the server is using very old software and may have other security issues.
+      </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE" desc="This message is displayed when the server hasn't been updated to fix a recent security issues. TLS here is an acronym and need not be translated. 'renegotiation' is a technical term describing a process of agreeing on a new set of security parameters and secrets. 'extension' here should be taken to mean 'amendment' rather than elongation.">
+        The server does not support the TLS renegotiation extension.
+      </message>
 
       <!-- SSL Blocking Page -->
       <message name="IDS_SSL_BLOCKING_PAGE_TITLE" desc="The title of the SSL blocking page.">

@@ -17,6 +17,8 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
+#include "net/base/ssl_connection_status_flags.h"
+#include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/x509_certificate.h"
 
 namespace {
@@ -145,6 +147,50 @@ PageInfoModel::PageInfoModel(Profile* profile,
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
     }
   }
+
+  uint16 cipher_suite =
+      net::SSLConnectionStatusToCipherSuite(ssl.connection_status());
+  if (ssl.security_bits() > 0 && cipher_suite) {
+    bool did_fallback = ssl.connection_status() &
+                        net::SSL_CONNECTION_SSL3_FALLBACK;
+    bool no_renegotiation = ssl.connection_status() &
+                            net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION;
+    const char *key_exchange, *cipher, *mac;
+    net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, cipher_suite);
+
+    description += ASCIIToUTF16("\n\n");
+    description += l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS,
+        ASCIIToUTF16(cipher), ASCIIToUTF16(mac), ASCIIToUTF16(key_exchange));
+
+    description += ASCIIToUTF16("\n\n");
+    uint8 compression_id =
+        net::SSLConnectionStatusToCompression(ssl.connection_status());
+    if (compression_id) {
+      const char *compression;
+      net::SSLCompressionToString(&compression, compression_id);
+      description += l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_COMPRESSION_DETAILS,
+          ASCIIToUTF16(compression));
+    } else {
+      description += l10n_util::GetStringUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_NO_COMPRESSION);
+    }
+
+    if (did_fallback) {
+      // For now, only SSLv3 fallback will trigger a warning icon.
+      state = false;
+      description += ASCIIToUTF16("\n\n");
+      description += l10n_util::GetStringUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE);
+    }
+    if (no_renegotiation) {
+      description += ASCIIToUTF16("\n\n");
+      description += l10n_util::GetStringUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE);
+    }
+  }
+
   sections_.push_back(SectionInfo(
       state,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
