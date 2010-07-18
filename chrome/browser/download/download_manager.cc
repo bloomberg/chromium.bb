@@ -404,7 +404,8 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
   DCHECK(info);
 
   // Check whether this download is for an extension install or not.
-  if (!info->save_as) {  // Allow extensions to be explicitly saved.
+  // Allow extensions to be explicitly saved.
+  if (!info->prompt_user_for_save_location) {
     if (UserScript::HasUserScriptFileExtension(info->url) ||
         info->mime_type == Extension::kMimeType)
       info->is_extension_install = true;
@@ -426,13 +427,13 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
       //    opened, don't bother asking where to keep it.
       if (!info->is_extension_install &&
           !ShouldOpenFileBasedOnExtension(generated_name))
-        info->save_as = true;
+        info->prompt_user_for_save_location = true;
     }
 
     // Determine the proper path for a download, by either one of the following:
     // 1) using the default download directory.
     // 2) prompting the user.
-    if (info->save_as && !last_download_path_.empty())
+    if (info->prompt_user_for_save_location && !last_download_path_.empty())
       info->suggested_path = last_download_path_;
     else
       info->suggested_path = download_path();
@@ -441,7 +442,8 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     info->suggested_path = info->save_info.file_path;
   }
 
-  if (!info->save_as && info->save_info.file_path.empty()) {
+  if (!info->prompt_user_for_save_location &&
+      info->save_info.file_path.empty()) {
     // Downloads can be marked as dangerous for two reasons:
     // a) They have a dangerous-looking filename
     // b) They are an extension that is not from the gallery
@@ -470,7 +472,7 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
   FilePath dir = info->suggested_path.DirName();
   FilePath filename = info->suggested_path.BaseName();
   if (!file_util::PathIsWritable(dir)) {
-    info->save_as = true;
+    info->prompt_user_for_save_location = true;
     PathService::Get(chrome::DIR_USER_DOCUMENTS, &info->suggested_path);
     info->suggested_path = info->suggested_path.Append(filename);
   }
@@ -507,11 +509,12 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
       info->path_uniquifier = 0;
     } else if (info->path_uniquifier == -1) {
       // We failed to find a unique path.  We have to prompt the user.
-      info->save_as = true;
+      info->prompt_user_for_save_location = true;
     }
   }
 
-  if (!info->save_as && info->save_info.file_path.empty()) {
+  if (!info->prompt_user_for_save_location &&
+      info->save_info.file_path.empty()) {
     // Create an empty file at the suggested path so that we don't allocate the
     // same "non-existant" path to multiple downloads.
     // See: http://code.google.com/p/chromium/issues/detail?id=3662
@@ -530,7 +533,7 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(info);
 
-  if (info->save_as) {
+  if (info->prompt_user_for_save_location) {
     // We must ask the user for the place to put the download.
     if (!select_file_dialog_.get())
       select_file_dialog_ = SelectFileDialog::Create(this);
@@ -577,7 +580,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->child_id,
                                 info->request_id,
                                 info->is_dangerous,
-                                info->save_as,
+                                info->prompt_user_for_save_location,
                                 profile_->IsOffTheRecord(),
                                 info->is_extension_install,
                                 !info->save_info.file_path.empty());
@@ -1410,7 +1413,7 @@ void DownloadManager::SaveAutoOpens() {
 void DownloadManager::FileSelected(const FilePath& path,
                                    int index, void* params) {
   DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
-  if (info->save_as)
+  if (info->prompt_user_for_save_location)
     last_download_path_ = path.DirName();
   ContinueStartDownload(info, path);
 }

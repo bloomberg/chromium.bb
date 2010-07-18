@@ -685,12 +685,13 @@ TEST_F(DownloadManagerTest, StartDownload) {
                       kStartDownloadCases[i].prompt_for_download);
 
     DownloadCreateInfo info;
-    info.save_as = kStartDownloadCases[i].save_as;
+    info.prompt_user_for_save_location = kStartDownloadCases[i].save_as;
     info.url = GURL(kStartDownloadCases[i].url);
     info.mime_type = kStartDownloadCases[i].mime_type;
 
     download_manager_->StartDownload(&info);
 
-    EXPECT_EQ(kStartDownloadCases[i].expected_save_as, info.save_as);
+    EXPECT_EQ(kStartDownloadCases[i].expected_save_as,
+        info.prompt_user_for_save_location);
   }
 }

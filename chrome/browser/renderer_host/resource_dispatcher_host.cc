@@ -599,6 +599,7 @@ void ResourceDispatcherHost::BeginDownload(
     const GURL& url,
     const GURL& referrer,
     const DownloadSaveInfo& save_info,
+    bool prompt_for_save_location,
     int child_id,
     int route_id,
     URLRequestContext* request_context) {
@@ -628,7 +629,7 @@ void ResourceDispatcherHost::BeginDownload(
                                   url,
                                   download_file_manager_.get(),
                                   request,
-                                  true,
+                                  prompt_for_save_location,
                                   save_info);
 
   if (safe_browsing_->enabled()) {
