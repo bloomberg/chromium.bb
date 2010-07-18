@@ -94,7 +94,10 @@ void NotifyReadError(PrefService* pref, int message_id) {
 // static
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
   PrefStore* managed_prefs = NULL;
-  ExtensionPrefStore* extension_prefs = new ExtensionPrefStore(NULL);
+  // TODO(pamg): Reinstate extension pref store after Mstone6 branch, when its
+  // memory leaks are fixed and any extension API is using it.
+  // ExtensionPrefStore* extension_prefs = new ExtensionPrefStore(NULL);
+  ExtensionPrefStore* extension_prefs = NULL;
   CommandLinePrefStore* command_line_prefs = new CommandLinePrefStore(
       CommandLine::ForCurrentProcess());
   PrefStore* local_prefs = new JsonPrefStore(
@@ -142,7 +145,8 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
       recommended_prefs);
 
   PrefService* pref_service = new PrefService(value_store);
-  extension_prefs->SetPrefService(pref_service);
+  // TODO(pamg): Uncomment when ExtensionPrefStore is reinstated.
+  // extension_prefs->SetPrefService(pref_service);
 
   return pref_service;
 }
