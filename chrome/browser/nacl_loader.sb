@@ -12,14 +12,3 @@
 ; Allow a Native Client application to use semaphores, specifically
 ; sem_init(), et.al.
 (allow ipc-posix-sem)
-
-; Needed for the Native Client plugin and loader.
-; TODO(msneck): Refactor Native Client to use something other than Unix
-; sockets.
-; See http://code.google.com/p/nativeclient/issues/detail?id=344
-;BEFORE_10.6 (allow network-inbound (from unix-socket))
-;BEFORE_10.6 (allow network-outbound (to unix-socket))
-;10.6_ONLY (allow network-inbound (regex #"^(/private)?/tmp/nacl-"))
-;10.6_ONLY (allow network-outbound (regex #"^(/private)?/tmp/nacl-"))
-;10.6_ONLY (allow network-bind (local ip4))
-;10.6_ONLY (allow file-write* (regex #"^(/private)?/tmp/nacl-"))

@@ -19,17 +19,3 @@
 
 ; USER_HOMEDIR is substitued at runtime - http://crbug.com/11269
 ;10.6_ONLY (allow file-read-data (subpath "USER_HOMEDIR/Library/Fonts"))  ; 10.6
-
-; Needed for the Native Client plugin and loader. These lines are enabled
-; if and only if --internal-nacl (or --enable-nacl) are used (and they
-; are off by default).
-; TODO(msneck): Refactor Native Client to use something other than Unix
-; sockets. Then change or remove the code in chrome/common/sandbox_mac.mm
-; which deals with the ";NACL" prefix.
-; See http://code.google.com/p/nativeclient/issues/detail?id=344
-;NACL;BEFORE_10.6 (allow network-inbound (from unix-socket))
-;NACL;BEFORE_10.6 (allow network-outbound (to unix-socket))
-;NACL;10.6_ONLY (allow network-inbound (regex #"^(/private)?/tmp/nacl-"))
-;NACL;10.6_ONLY (allow network-outbound (regex #"^(/private)?/tmp/nacl-"))
-;NACL;10.6_ONLY (allow network-bind (local ip4))
-;NACL;10.6_ONLY (allow file-write* (regex #"^(/private)?/tmp/nacl-"))
