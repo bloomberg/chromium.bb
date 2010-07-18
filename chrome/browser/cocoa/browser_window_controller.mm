@@ -1665,6 +1665,11 @@ willAnimateFromState:(bookmarks::VisualState)oldState
         kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, /*synchronous=*/true);
   }
 
+  // Close the bookmark bubble, if it's open.  We use |-ok:| instead of
+  // |-cancel:| or |-close| because that matches the behavior when the bubble
+  // loses key status.
+  [bookmarkBubbleController_ ok:self];
+
   // Save the current first responder so we can restore after views are moved.
   NSWindow* window = [self window];
   scoped_nsobject<FocusTracker> focusTracker(
