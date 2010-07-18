@@ -824,6 +824,10 @@ const char kShowCompositedLayerBorders[]    = "show-composited-layer-borders";
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";
 
+// Whether to show the link to the Google Privacy Dashboard on the Sync options
+// panel.
+const char kShowPrivacyDashboardLink[]      = "show-privacy-dashboard-link";
+
 // Change the DCHECKS to dump memory and continue instead of displaying error
 // dialog. This is valid only in Release mode when --enable-dcheck is
 // specified.
