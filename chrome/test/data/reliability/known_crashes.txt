@@ -63,3 +63,10 @@ PREFIX : anonymous namespace'::cachecreator::docallback___`anonymous namespace':
 
 # 49409
 PREFIX : std::basic_string<char,std::char_traits<char>,std::allocator<char> >::assign___fieldtriallist::statestostring___browserrenderprocesshost::appendrenderercommandline___browserrenderprocesshost::init___renderviewhost::createrenderview___tabcontents::createrenderviewforrendermanager___renderviewhostmanager::initrenderview___renderviewhostmanager::creatependingrenderview___renderviewhostmanager::updaterendererstatefornavigate___renderviewhostmanager::navigate___tabcontents::navigatetopendingentry___navigationcontroller::navigatetopendingentry___navigationcontroller::loadentry___navigationcontroller::loadurl___browser::openurlatindex___browser::openurlfromtab___browser::openurl___automationprovider::navigatetourlblockuntilnavigationscomplete___automationprovider::navigatetourl___ipc
+
+# 49463
+PREFIX : ntdll!RtlRaiseStatus+0x26
+ntdll!RtlInitializeSListHead+0x94e6
+ntdll!RtlLeaveCriticalSection+0x1d
+chrome_2610000!ResourceMessageFilter::OnLoadFont+0x179 [c:\b\slave\chromium-rel-xp\build\src\chrome\browser\renderer_host\resource_message_filter.cc @ 716]
+chrome_2610000!IPC::MessageWithReply<Tuple1<tagLOGFONTW>,Tuple0>::Dispatch<ResourceMessageFilter,void (__thiscall ResourceMessageFilter::*)(tagLOGFONTW)>+0x7a [c:\b\slave\chromium-rel-xp\build\src\ipc\ipc_message_utils.h @ 1183]
