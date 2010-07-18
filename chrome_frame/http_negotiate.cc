@@ -140,7 +140,7 @@ std::string AppendCFUserAgentString(LPCWSTR headers,
   }
 
   new_headers += "User-Agent: " + user_agent_value;
-  new_headers += "\r\n";
+  new_headers += "\r\n\r\n";
   return new_headers;
 }
 
