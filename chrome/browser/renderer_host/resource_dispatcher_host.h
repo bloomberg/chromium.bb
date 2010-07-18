@@ -109,6 +109,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void BeginDownload(const GURL& url,
                      const GURL& referrer,
                      const DownloadSaveInfo& save_info,
+                     bool prompt_for_save_location,
                      int process_unique_id,
                      int route_id,
                      URLRequestContext* request_context);

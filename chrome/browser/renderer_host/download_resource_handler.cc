@@ -85,7 +85,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
     content_type_header = "";
   info->original_mime_type = content_type_header;
 
-  info->save_as = save_as_ && save_info_.file_path.empty();
+  info->prompt_user_for_save_location =
+      save_as_ && save_info_.file_path.empty();
   info->is_dangerous = false;
   info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_;
