@@ -1515,44 +1515,48 @@ void RenderView::OnAutoFillSuggestionsReturned(
     const std::vector<string16>& values,
     const std::vector<string16>& labels,
     const std::vector<int>& unique_ids) {
-  if (webview() && query_id == autofill_query_id_) {
-    std::vector<string16> v(values);
-    std::vector<string16> l(labels);
-    std::vector<int> ids(unique_ids);
-    int separator_index = -1;
+  if (!webview() || query_id != autofill_query_id_)
+    return;
 
-    // The form has been auto-filled, so give the user the chance to clear the
-    // form.  Append the 'Clear form' menu item.
-    if (form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
-      v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
-      l.push_back(string16());
-      ids.push_back(0);
-      suggestions_clear_index_ = v.size() - 1;
-      separator_index = values.size();
-    }
+  // Any popup currently showing is now obsolete.
+  webview()->hidePopups();
 
-    size_t labeled_item_count = 0;
-    for (size_t i = 0; i < l.size(); ++i) {
-      if (!l[i].empty())
-        labeled_item_count++;
-    }
+  std::vector<string16> v(values);
+  std::vector<string16> l(labels);
+  std::vector<int> ids(unique_ids);
+  int separator_index = -1;
 
-    // Only include "AutoFill Options" special menu item if we have labeled
-    // items.
-    if (labeled_item_count > 0) {
-      // Append the 'AutoFill Options...' menu item.
-      v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
-      l.push_back(string16());
-      ids.push_back(0);
-      suggestions_options_index_ = v.size() - 1;
-      separator_index = values.size();
-    }
-
-    // Send to WebKit for display.
-    if (!v.empty())
-      webview()->applyAutoFillSuggestions(
-          autofill_query_node_, v, l, ids, separator_index);
+  // The form has been auto-filled, so give the user the chance to clear the
+  // form.  Append the 'Clear form' menu item.
+  if (form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
+    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
+    l.push_back(string16());
+    ids.push_back(0);
+    suggestions_clear_index_ = v.size() - 1;
+    separator_index = values.size();
   }
+
+  size_t labeled_item_count = 0;
+  for (size_t i = 0; i < l.size(); ++i) {
+    if (!l[i].empty())
+      labeled_item_count++;
+  }
+
+  // Only include "AutoFill Options" special menu item if we have labeled
+  // items.
+  if (labeled_item_count > 0) {
+    // Append the 'AutoFill Options...' menu item.
+    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
+    l.push_back(string16());
+    ids.push_back(0);
+    suggestions_options_index_ = v.size() - 1;
+    separator_index = values.size();
+  }
+
+  // Send to WebKit for display.
+  if (!v.empty())
+    webview()->applyAutoFillSuggestions(
+        autofill_query_node_, v, l, ids, separator_index);
 }
 
 void RenderView::OnAutoFillFormDataFilled(int query_id,
