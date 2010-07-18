@@ -15,15 +15,16 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/sqlite_utils.h"
 
 using webkit_glue::PasswordForm;
 
 static const int kCurrentVersionNumber = 1;
 static const int kCompatibleVersionNumber = 1;
 
+namespace {
+
 // Convenience enum for interacting with SQL queries that use all the columns.
-typedef enum {
+enum LoginTableColumns {
   COLUMN_ORIGIN_URL = 0,
   COLUMN_ACTION_URL,
   COLUMN_USERNAME_ELEMENT,
@@ -37,7 +38,9 @@ typedef enum {
   COLUMN_DATE_CREATED,
   COLUMN_BLACKLISTED_BY_USER,
   COLUMN_SCHEME
-} LoginTableColumns;
+};
+
+}  // namespace
 
 LoginDatabase::LoginDatabase() {
 }
