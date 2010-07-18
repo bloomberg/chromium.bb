@@ -55,10 +55,7 @@ static const double kHoverOpacity = 0.33;
 
 Tab::TabImage Tab::tab_alpha = {0};
 Tab::TabImage Tab::tab_active = {0};
-Tab::TabImage Tab::tab_active_nano = {0};
 Tab::TabImage Tab::tab_inactive = {0};
-Tab::TabImage Tab::tab_inactive_nano = {0};
-Tab::TabImage Tab::tab_alpha_nano = {0};
 
 // Durations for the various parts of the mini tab title animation.
 static const int kMiniTitleChangeAnimationDuration1MS = 1000;
@@ -453,11 +450,9 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(tab_id);
 
-  // App tabs are drawn slightly differently (as nano tabs).
-  TabImage* tab_image = data().app ? &tab_active_nano : &tab_active;
-  TabImage* tab_inactive_image = data().app ? &tab_inactive_nano :
-                                             &tab_inactive;
-  TabImage* alpha = data().app ? &tab_alpha_nano : &tab_alpha;
+  TabImage* tab_image = &tab_active;
+  TabImage* tab_inactive_image = &tab_inactive;
+  TabImage* alpha = &tab_alpha;
 
   // If the theme is providing a custom background image, then its top edge
   // should be at the top of the tab. Otherwise, we assume that the background
@@ -518,9 +513,8 @@ void Tab::PaintActiveTabBackground(gfx::Canvas* canvas) {
 
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
-  // App tabs are drawn slightly differently (as nano tabs).
-  TabImage* tab_image = data().app ? &tab_active_nano : &tab_active;
-  TabImage* alpha = data().app ? &tab_alpha_nano : &tab_alpha;
+  TabImage* tab_image = &tab_active;
+  TabImage* alpha = &tab_alpha;
 
   // Draw left edge.
   SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
@@ -597,37 +591,15 @@ void Tab::LoadTabImages() {
   tab_alpha.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_LEFT);
   tab_alpha.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_RIGHT);
 
-  tab_alpha_nano.image_l = rb.GetBitmapNamed(IDR_TAB_ALPHA_NANO_LEFT);
-  tab_alpha_nano.image_r = rb.GetBitmapNamed(IDR_TAB_ALPHA_NANO_RIGHT);
-
   tab_active.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_LEFT);
   tab_active.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_CENTER);
   tab_active.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_RIGHT);
   tab_active.l_width = tab_active.image_l->width();
   tab_active.r_width = tab_active.image_r->width();
 
-  // The regular tab is much taller *visually* than the nano tabs.
-  // The images are the same height, this is really just the difference
-  // in whitespace above the tab image (regular vs nano).
-  const int kNanoTabDiffHeight = 13;
-
-  tab_active_nano.image_l = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_LEFT);
-  tab_active_nano.image_c = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_CENTER);
-  tab_active_nano.image_r = rb.GetBitmapNamed(IDR_TAB_ACTIVE_NANO_RIGHT);
-  tab_active_nano.l_width = tab_active_nano.image_l->width();
-  tab_active_nano.r_width = tab_active_nano.image_r->width();
-  tab_active_nano.y_offset = kNanoTabDiffHeight;
-
   tab_inactive.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_LEFT);
   tab_inactive.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_CENTER);
   tab_inactive.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_RIGHT);
   tab_inactive.l_width = tab_inactive.image_l->width();
   tab_inactive.r_width = tab_inactive.image_r->width();
-
-  tab_inactive_nano.image_l = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_LEFT);
-  tab_inactive_nano.image_c = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_CENTER);
-  tab_inactive_nano.image_r = rb.GetBitmapNamed(IDR_TAB_INACTIVE_NANO_RIGHT);
-  tab_inactive_nano.l_width = tab_inactive_nano.image_l->width();
-  tab_inactive_nano.r_width = tab_inactive_nano.image_r->width();
-  tab_inactive_nano.y_offset = kNanoTabDiffHeight;
 }

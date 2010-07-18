@@ -194,7 +194,7 @@ class BaseTab : public AnimationDelegate,
   // The current index of the loading animation.
   int loading_animation_frame_;
 
-  // Whether to disable throbber animations. Only true if this is a nano tab
+  // Whether to disable throbber animations. Only true if this is an app tab
   // renderer and a command line flag has been passed in to disable the
   // animations.
   bool throbber_disabled_;

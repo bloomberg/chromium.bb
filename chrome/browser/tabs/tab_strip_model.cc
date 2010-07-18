@@ -549,7 +549,7 @@ bool TabStripModel::IsTabBlocked(int index) const {
 
 int TabStripModel::IndexOfFirstNonMiniTab() const {
   for (size_t i = 0; i < contents_data_.size(); ++i) {
-    if (!contents_data_[i]->contents->is_app() && !contents_data_[i]->pinned)
+    if (!IsMiniTab(static_cast<int>(i)))
       return static_cast<int>(i);
   }
   // No mini-tabs.

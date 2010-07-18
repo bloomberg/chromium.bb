@@ -118,11 +118,8 @@ class Tab : public BaseTab {
     int y_offset;
   };
   static TabImage tab_active;
-  static TabImage tab_active_nano;
   static TabImage tab_inactive;
-  static TabImage tab_inactive_nano;
   static TabImage tab_alpha;
-  static TabImage tab_alpha_nano;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.
