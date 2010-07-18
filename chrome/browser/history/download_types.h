@@ -39,7 +39,7 @@ struct DownloadCreateInfo {
         render_view_id(-1),
         request_id(-1),
         db_handle(0),
-        prompt_user_for_save_location(false),
+        save_as(false),
         is_dangerous(false),
         is_extension_install(false) {
   }
@@ -54,7 +54,7 @@ struct DownloadCreateInfo {
         render_view_id(-1),
         request_id(-1),
         db_handle(0),
-        prompt_user_for_save_location(false),
+        save_as(false),
         is_dangerous(false),
         is_extension_install(false) {
   }
@@ -82,12 +82,7 @@ struct DownloadCreateInfo {
   // may be different from |mime_type|, which may be set based on heuristics
   // which may look at the file extension and first few bytes of the file.
   std::string original_mime_type;
-
-  // True if we should display the 'save as...' UI and prompt the user
-  // for the download location.
-  // False if the UI should be supressed and the download performed to the
-  // default location.
-  bool prompt_user_for_save_location;
+  bool save_as;
   // Whether this download is potentially dangerous (ex: exe, dll, ...).
   bool is_dangerous;
   // The original name for a dangerous download.

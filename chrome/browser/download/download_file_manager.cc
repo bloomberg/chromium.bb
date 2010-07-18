@@ -84,12 +84,9 @@ void DownloadFileManager::OnDownloadUrl(
   URLRequestContext* context = request_context_getter->GetURLRequestContext();
   context->set_referrer_charset(referrer_charset);
 
-  // Show "Save As" UI.
-  bool prompt_for_save_location = true;
   resource_dispatcher_host_->BeginDownload(url,
                                            referrer,
                                            save_info,
-                                           prompt_for_save_location,
                                            render_process_host_id,
                                            render_view_id,
                                            context);
