@@ -151,10 +151,10 @@ PageInfoModel::PageInfoModel(Profile* profile,
   uint16 cipher_suite =
       net::SSLConnectionStatusToCipherSuite(ssl.connection_status());
   if (ssl.security_bits() > 0 && cipher_suite) {
-    bool did_fallback = ssl.connection_status() &
-                        net::SSL_CONNECTION_SSL3_FALLBACK;
-    bool no_renegotiation = ssl.connection_status() &
-                            net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION;
+    bool did_fallback = (ssl.connection_status() &
+                         net::SSL_CONNECTION_SSL3_FALLBACK) != 0;
+    bool no_renegotiation = (ssl.connection_status() &
+                             net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
     const char *key_exchange, *cipher, *mac;
     net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, cipher_suite);
 
