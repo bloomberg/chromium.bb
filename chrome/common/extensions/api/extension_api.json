@@ -2549,6 +2549,18 @@
                 "type": "integer",
                 "optional": true,
                 "description": "The id of a parent menu item - this makes the item a child of a previously added item."
+              },
+              "documentUrlPatterns": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true,
+                "description": "Lets you restrict the item to only apply to documents whose URL matches one of the given patterns. (This applies to frames as well). For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
+              },
+              "targetUrlPatterns": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true,
+                "description": "Similar to documentUrlPatterns, but this lets you filter based on the src attribute of img/audio/video tags and the href of anchor tags."
               }
             }
           },
@@ -2602,6 +2614,16 @@
                 "type": "integer",
                 "optional": true,
                 "description": "Note: you cannot change an item to be a child of one of it's own descendants."
+              },
+              "documentUrlPatterns": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
+              },
+              "targetUrlPatterns": {
+                "type": "array",
+                "items": {"type": "string"},
+                "optional": true
               }
             }
           },

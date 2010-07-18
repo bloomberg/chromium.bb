@@ -279,7 +279,7 @@ var chrome = chrome || {};
         var id = arguments[0].menuItemId;
         var onclick = chromeHidden.contextMenus.handlers[id];
         if (onclick) {
-          onclick.apply(onclick, arguments);
+          onclick.apply(null, arguments);
         }
       });
     };

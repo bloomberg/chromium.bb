@@ -1,0 +1,6 @@
+{
+  "name": "Tests for the url patterns to restrict context menu items.",
+  "version": "0.1",
+  "permissions": ["contextMenus", "tabs"],
+  "background_page": "background.html"
+}

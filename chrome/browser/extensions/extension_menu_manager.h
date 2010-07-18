@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
+#include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -30,6 +31,10 @@ class ExtensionMenuItem {
  public:
   // A list of ExtensionMenuItem's.
   typedef std::vector<ExtensionMenuItem*> List;
+
+  // An Id is a pair of |extension id|, |int| where the |int| is unique per
+  // extension.
+  typedef std::pair<std::string, int> Id;
 
   // For context menus, these are the contexts where an item can appear.
   enum Context {
@@ -82,10 +87,6 @@ class ExtensionMenuItem {
     uint32 value_;  // A bitmask of Context values.
   };
 
-  // An Id is a pair of |extension id|, |int| where the |int| is unique per
-  // extension.
-  typedef std::pair<std::string, int> Id;
-
   ExtensionMenuItem(const Id& id, std::string title, bool checked, Type type,
                     const ContextList& contexts);
   virtual ~ExtensionMenuItem();
@@ -100,11 +101,23 @@ class ExtensionMenuItem {
   ContextList contexts() const { return contexts_; }
   Type type() const { return type_; }
   bool checked() const { return checked_; }
+  const ExtensionExtent& document_url_patterns() const {
+    return document_url_patterns_;
+  }
+  const ExtensionExtent& target_url_patterns() const {
+    return target_url_patterns_;
+  }
 
   // Simple mutator methods.
   void set_title(std::string new_title) { title_ = new_title; }
   void set_contexts(ContextList contexts) { contexts_ = contexts; }
   void set_type(Type type) { type_ = type; }
+  void set_document_url_patterns(const ExtensionExtent& patterns) {
+    document_url_patterns_ = patterns;
+  }
+  void set_target_url_patterns(const ExtensionExtent& patterns) {
+    target_url_patterns_ = patterns;
+  }
 
   // Returns the title with any instances of %s replaced by |selection|.
   string16 TitleWithReplacement(const string16& selection) const;
@@ -149,6 +162,14 @@ class ExtensionMenuItem {
   // this is a top-level item with no parent, this will be NULL.
   scoped_ptr<Id> parent_id_;
 
+  // Patterns for restricting what documents this item will appear for. This
+  // applies to the frame where the click took place.
+  ExtensionExtent document_url_patterns_;
+
+  // Patterns for restricting where items appear based on the src/href
+  // attribute of IMAGE/AUDIO/VIDEO/LINK tags.
+  ExtensionExtent target_url_patterns_;
+
   // Any children this item may have.
   List children_;
 
@@ -158,6 +179,10 @@ class ExtensionMenuItem {
 // This class keeps track of menu items added by extensions.
 class ExtensionMenuManager : public NotificationObserver {
  public:
+  // A bitmask of values from URLPattern::SchemeMasks indicating the schemes
+  // of pages where we'll show extension menu items.
+  static const int kAllowedSchemes;
+
   ExtensionMenuManager();
   virtual ~ExtensionMenuManager();
 
@@ -213,6 +238,10 @@ class ExtensionMenuManager : public NotificationObserver {
   // Implements the NotificationObserver interface.
   virtual void Observe(NotificationType type, const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Returns true if |url| has an allowed scheme for extension context menu
+  // items. This checks against kAllowedSchemes.
+  static bool HasAllowedScheme(const GURL& url);
 
  private:
   // This is a helper function which takes care of de-selecting any other radio

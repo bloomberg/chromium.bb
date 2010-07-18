@@ -13,14 +13,17 @@
 
 const wchar_t kCheckedKey[] = L"checked";
 const wchar_t kContextsKey[] = L"contexts";
+const wchar_t kDocumentUrlPatternsKey[] = L"documentUrlPatterns";
 const wchar_t kGeneratedIdKey[] = L"generatedId";
 const wchar_t kParentIdKey[] = L"parentId";
+const wchar_t kTargetUrlPatternsKey[] = L"targetUrlPatterns";
 const wchar_t kTitleKey[] = L"title";
 const wchar_t kTypeKey[] = L"type";
 
 const char kCannotFindItemError[] = "Cannot find menu item with id *";
 const char kCheckedError[] =
     "Only items with type \"radio\" or \"checkbox\" can be checked";
+const char kInvalidURLPatternError[] = "Invalid url pattern '*'";
 const char kInvalidValueError[] = "Invalid value for *";
 const char kInvalidTypeStringError[] = "Invalid type string '*'";
 const char kParentsMustBeNormalError[] =
@@ -119,6 +122,58 @@ bool ExtensionContextMenuFunction::ParseChecked(
   return true;
 }
 
+bool ExtensionContextMenuFunction::ParseURLPatterns(
+    const DictionaryValue& properties,
+    const wchar_t* key,
+    ExtensionExtent* result) {
+  if (!properties.HasKey(key))
+    return true;
+  ListValue* list = NULL;
+  if (!properties.GetList(key, &list))
+    return false;
+  for (ListValue::iterator i = list->begin(); i != list->end(); ++i) {
+    std::string tmp;
+    if (!(*i)->GetAsString(&tmp))
+      return false;
+
+    URLPattern pattern(ExtensionMenuManager::kAllowedSchemes);
+    if (!pattern.Parse(tmp)) {
+      error_ = ExtensionErrorUtils::FormatErrorMessage(kInvalidURLPatternError,
+                                                       tmp);
+      return false;
+    }
+    result->AddPattern(pattern);
+  }
+  return true;
+}
+
+bool ExtensionContextMenuFunction::SetURLPatterns(
+    const DictionaryValue& properties,
+    ExtensionMenuItem* item) {
+  // Process the documentUrlPattern value.
+  ExtensionExtent document_url_patterns;
+  if (!ParseURLPatterns(properties, kDocumentUrlPatternsKey,
+                        &document_url_patterns))
+    return false;
+
+  if (!document_url_patterns.is_empty()) {
+    item->set_document_url_patterns(document_url_patterns);
+  }
+
+  // Process the targetUrlPattern value.
+  ExtensionExtent target_url_patterns;
+  if (!ParseURLPatterns(properties, kTargetUrlPatternsKey,
+                        &target_url_patterns))
+    return false;
+
+  if (!target_url_patterns.is_empty()) {
+    item->set_target_url_patterns(target_url_patterns);
+  }
+
+  return true;
+}
+
+
 bool ExtensionContextMenuFunction::GetParent(
     const DictionaryValue& properties,
     const ExtensionMenuManager& manager,
@@ -179,6 +234,9 @@ bool CreateContextMenuFunction::RunImpl() {
   scoped_ptr<ExtensionMenuItem> item(
       new ExtensionMenuItem(id, title, checked, type, contexts));
 
+  if (!SetURLPatterns(*properties, item.get()))
+    return false;
+
   bool success = true;
   if (properties->HasKey(kParentIdKey)) {
     ExtensionMenuItem::Id parent_id(extension_id(), 0);
@@ -233,15 +291,15 @@ bool UpdateContextMenuFunction::RunImpl() {
     item->set_type(type);
 
   // Title.
-  std::string title;
-  if (properties->HasKey(kTitleKey) &&
-      !properties->GetString(kTitleKey, &title))
-    return false;
-  if (title.empty() && type != ExtensionMenuItem::SEPARATOR) {
-    error_ = kTitleNeededError;
-    return false;
+  if (properties->HasKey(kTitleKey)) {
+    std::string title;
+    EXTENSION_FUNCTION_VALIDATE(properties->GetString(kTitleKey, &title));
+    if (title.empty() && type != ExtensionMenuItem::SEPARATOR) {
+      error_ = kTitleNeededError;
+      return false;
+    }
+    item->set_title(title);
   }
-  item->set_title(title);
 
   // Checked state.
   bool checked;
@@ -264,6 +322,9 @@ bool UpdateContextMenuFunction::RunImpl() {
   if (!GetParent(*properties, *menu_manager, &parent))
     return false;
   if (parent && !menu_manager->ChangeParent(item->id(), &parent->id()))
+    return false;
+
+  if (!SetURLPatterns(*properties, item))
     return false;
 
   return true;

@@ -53,6 +53,9 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
       int command_id,
       menus::Accelerator* accelerator) = 0;
 
+  // Attempts to get an ExtensionMenuItem given the id of a context menu item.
+  ExtensionMenuItem* GetExtensionMenuItem(int id) const;
+
   ContextMenuParams params_;
   TabContents* source_tab_contents_;
   Profile* profile_;
@@ -61,6 +64,11 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
 
   // True if we are showing for an external tab contents. The default is false.
   bool external_;
+
+
+  // Maps the id from a context menu item to the ExtensionMenuItem's internal
+  // id.
+  std::map<int, ExtensionMenuItem::Id> extension_item_map_;
 
  private:
   static bool IsDevToolsURL(const GURL& url);
@@ -119,16 +127,9 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
   // suitable or putting in the title of a menu item.
   string16 PrintableSelectionText();
 
-  // Attempts to get an ExtensionMenuItem given the id of a context menu item.
-  ExtensionMenuItem* GetExtensionMenuItem(int id) const;
-
   // The destination URL to use if the user tries to search for or navigate to
   // a text selection.
   GURL selection_navigation_url_;
-
-  // Maps the id from a context menu item to the ExtensionMenuItem's internal
-  // id.
-  std::map<int, ExtensionMenuItem::Id> extension_item_map_;
 
   menus::SimpleMenuModel spellcheck_submenu_model_;
   menus::SimpleMenuModel bidi_submenu_model_;

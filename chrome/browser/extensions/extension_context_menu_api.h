@@ -7,6 +7,9 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
+#include "chrome/common/extensions/extension_extent.h"
+
+class ExtensionMenuItem;
 
 class ExtensionContextMenuFunction : public SyncExtensionFunction {
  public:
@@ -31,6 +34,17 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
                     const DictionaryValue& properties,
                     bool default_value,
                     bool* checked);
+
+  // Helper to read in a set of url patterns from a property with the given key
+  // name.
+  bool ParseURLPatterns(const DictionaryValue& properties,
+                        const wchar_t* key,
+                        ExtensionExtent* result);
+
+  // Reads in any document and targetUrl patterns from |properties| and sets
+  // them on |item|.
+  bool SetURLPatterns(const DictionaryValue& properties,
+                      ExtensionMenuItem* item);
 
   // If the parentId key was specified in properties, this will try looking up
   // an ExtensionMenuItem with that id and set it into |result|. Returns false

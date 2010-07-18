@@ -96,6 +96,9 @@ void ExtensionMenuItem::AddChild(ExtensionMenuItem* item) {
   children_.push_back(item);
 }
 
+const int ExtensionMenuManager::kAllowedSchemes =
+    URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
+
 ExtensionMenuManager::ExtensionMenuManager() {
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
@@ -445,4 +448,10 @@ void ExtensionMenuManager::Observe(NotificationType type,
 const SkBitmap& ExtensionMenuManager::GetIconForExtension(
     const std::string& extension_id) {
   return icon_manager_.GetIcon(extension_id);
+}
+
+// static
+bool ExtensionMenuManager::HasAllowedScheme(const GURL& url) {
+  URLPattern pattern(kAllowedSchemes);
+  return pattern.SetScheme(url.scheme());
 }

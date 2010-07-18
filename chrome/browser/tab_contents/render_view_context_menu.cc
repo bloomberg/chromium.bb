@@ -89,7 +89,7 @@ void RenderViewContextMenu::Init() {
   PlatformInit();
 }
 
-static bool ExtensionContextMatch(ContextMenuParams params,
+static bool ExtensionContextMatch(const ContextMenuParams& params,
                                   ExtensionMenuItem::ContextList contexts) {
   bool has_link = !params.link_url.is_empty();
   bool has_selection = !params.selection_text.empty();
@@ -125,16 +125,42 @@ static bool ExtensionContextMatch(ContextMenuParams params,
   return false;
 }
 
+static bool ExtensionPatternMatch(const ExtensionExtent& patterns,
+                                  const GURL& url) {
+  // No patterns means no restriction, so that implicitly matches.
+  if (patterns.is_empty())
+    return true;
+  return patterns.ContainsURL(url);
+}
+
+static const GURL& GetDocumentURL(const ContextMenuParams& params) {
+  return params.frame_url.is_empty() ? params.page_url : params.frame_url;
+}
+
 // Given a list of items, returns the ones that match given the contents
 // of |params|.
 static ExtensionMenuItem::List GetRelevantExtensionItems(
     const ExtensionMenuItem::List& items,
-    ContextMenuParams params) {
+    const ContextMenuParams& params) {
   ExtensionMenuItem::List result;
   for (ExtensionMenuItem::List::const_iterator i = items.begin();
        i != items.end(); ++i) {
-    if (ExtensionContextMatch(params, (*i)->contexts()))
-      result.push_back(*i);
+    const ExtensionMenuItem* item = *i;
+
+    if (!ExtensionContextMatch(params, item->contexts()))
+      continue;
+
+    const GURL& document_url = GetDocumentURL(params);
+    if (!ExtensionPatternMatch(item->document_url_patterns(), document_url))
+      continue;
+
+    const GURL& target_url =
+        params.src_url.is_empty() ? params.link_url : params.src_url;
+    if (!target_url.is_empty() &&
+        !ExtensionPatternMatch(item->target_url_patterns(), target_url))
+      continue;
+
+    result.push_back(*i);
   }
   return result;
 }
@@ -268,6 +294,9 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   if (!service)
     return;  // In unit-tests, we may not have an ExtensionService.
   ExtensionMenuManager* menu_manager = service->menu_manager();
+  const GURL& document_url = GetDocumentURL(params_);
+  if (!menu_manager->HasAllowedScheme(document_url))
+    return;
 
   // Get a list of extension id's that have context menu items, and sort it by
   // the extension's name.
