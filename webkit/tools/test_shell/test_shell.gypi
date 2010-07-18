@@ -42,7 +42,6 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:appcache',
         '<(DEPTH)/webkit/support/webkit_support.gyp:database',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:npapi_layout_test_plugin',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
       ],
@@ -137,15 +136,6 @@
           # for:  test_shell_gtk.cc
           'cflags': ['-Wno-multichar'],
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-          # See below TODO in the Windows branch.
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/plugins',
-              'files': ['<(PRODUCT_DIR)/libnpapi_layout_test_plugin.so'],
-            },
-          ],
-        }],
         ['OS=="win"', {
           'msvs_disabled_warnings': [ 4800 ],
           'link_settings': {
@@ -159,20 +149,6 @@
           ],
           'dependencies': [
             '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
-          ],
-          # TODO(bradnelson):
-          # This should really be done in the 'npapi_layout_test_plugin'
-          # target, but the current VS generator handles 'copies'
-          # settings as AdditionalDependencies, which means that
-          # when it's over there, it tries to do the copy *before*
-          # the file is built, instead of after.  We work around this
-          # by attaching the copy here, since it depends on that
-          # target.
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/plugins',
-              'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
-            },
           ],
         }, {  # else: OS!=win
           'sources/': [
@@ -238,6 +214,7 @@
         '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/tools/imagediff/image_diff.gyp:image_diff',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:copy_npapi_layout_test_plugin',
       ],
       'defines': [
         # Technically not a unit test but require functions available only to
@@ -331,12 +308,6 @@
             },
           ],
           'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/PlugIns/',
-              'files': [
-                '<(PRODUCT_DIR)/TestNetscapePlugIn.plugin/',
-              ],
-            },
             # TODO(ajwong): This, and the parallel chromium stanza below
             # really should find a way to share file paths with
             # ffmpeg.gyp so they don't diverge. (BUG=23602)
