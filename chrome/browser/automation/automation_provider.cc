@@ -2572,7 +2572,7 @@ void AutomationProvider::FillAutoFillProfile(Browser* browser,
   TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
 
   if (tab_contents) {
-    PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
+    PersonalDataManager* pdm = tab_contents->profile()
         ->GetPersonalDataManager();
     if (pdm) {
       pdm->OnAutoFillDialogApply(profiles? &autofill_profiles : NULL,
