@@ -413,6 +413,26 @@ void SetMacProcessName(const std::string& process_type) {
 }
 #endif  // defined(OS_MACOSX)
 
+void InitializeStatsTable(base::ProcessId browser_pid,
+                          const CommandLine & parsed_command_line) {
+  // Initialize the Stats Counters table.  With this initialized,
+  // the StatsViewer can be utilized to read counters outside of
+  // Chrome.  These lines can be commented out to effectively turn
+  // counters 'off'.  The table is created and exists for the life
+  // of the process.  It is not cleaned up.
+  if (parsed_command_line.HasSwitch(switches::kEnableStatsTable) ||
+      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
+    // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
+    // leaking shared memory regions on posix platforms.
+    std::string statsfile =
+        StringPrintf("%s-%u", chrome::kStatsFilename,
+                     static_cast<unsigned int>(browser_pid));
+    StatsTable *stats_table = new StatsTable(statsfile,
+        chrome::kStatsMaxThreads, chrome::kStatsMaxCounters);
+    StatsTable::set_current(stats_table);
+  }
+}
+
 }  // namespace
 
 #if defined(OS_WIN)
@@ -556,8 +576,11 @@ int ChromeMain(int argc, char** argv) {
     browser_pid =
         static_cast<base::ProcessId>(StringToInt(WideToASCII(channel_name)));
     DCHECK_NE(browser_pid, 0u);
-#else
+#elif defined(OS_MACOSX)
     browser_pid = base::GetCurrentProcId();
+#elif defined(OS_POSIX)
+    // On linux, we're in the zygote here; so we need the parent process' id.
+    browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
 #endif
 
 #if defined(OS_POSIX)
@@ -618,22 +641,7 @@ int ChromeMain(int argc, char** argv) {
     InitCrashProcessInfo();
 #endif  // OS_MACOSX
 
-  // Initialize the Stats Counters table.  With this initialized,
-  // the StatsViewer can be utilized to read counters outside of
-  // Chrome.  These lines can be commented out to effectively turn
-  // counters 'off'.  The table is created and exists for the life
-  // of the process.  It is not cleaned up.
-  // TODO(port): we probably need to shut this down correctly to avoid
-  // leaking shared memory regions on posix platforms.
-  if (parsed_command_line.HasSwitch(switches::kEnableStatsTable) ||
-      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
-    std::string statsfile =
-        StringPrintf("%s-%u", chrome::kStatsFilename,
-                     static_cast<unsigned int>(browser_pid));
-    StatsTable *stats_table = new StatsTable(statsfile,
-        chrome::kStatsMaxThreads, chrome::kStatsMaxCounters);
-    StatsTable::set_current(stats_table);
-  }
+  InitializeStatsTable(browser_pid, parsed_command_line);
 
   StatsScope<StatsCounterTimer>
       startup_timer(chrome::Counters::chrome_main());
@@ -803,6 +811,12 @@ int ChromeMain(int argc, char** argv) {
       // line so update it here with the new version.
       const CommandLine& parsed_command_line =
         *CommandLine::ForCurrentProcess();
+
+      // The StatsTable must be initialized in each process; we already
+      // initialized for the browser process, now we need to initialize
+      // within the new processes as well.
+      InitializeStatsTable(browser_pid, parsed_command_line);
+
       MainFunctionParams main_params(parsed_command_line, sandbox_wrapper,
                                      &autorelease_pool);
       std::string process_type =
