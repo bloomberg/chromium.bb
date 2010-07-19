@@ -383,11 +383,6 @@ void WizardController::SetCustomization(
   customization_.reset(customization);
 }
 
-const chromeos::StartupCustomizationDocument*
-    WizardController::GetCustomization() {
-  return customization_.get();
-}
-
 // static
 void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(kOobeComplete, false);
