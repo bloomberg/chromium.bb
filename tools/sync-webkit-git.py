@@ -105,7 +105,7 @@ def UpdateCurrentCheckoutIfAppropriate():
     print "has some other branch ('%s') checked out." % branch
     print "Run 'git checkout gclient' under third_party/WebKit if you want"
     print "to switch it to the version requested by DEPS."
-    return
+    return 1
 
   if subprocess.call(['git', 'diff-index', '--exit-code', '--shortstat',
                       'HEAD']):
@@ -122,16 +122,17 @@ def main():
 
     print "See http://code.google.com/p/chromium/wiki/UsingWebKitGit for"
     print "setup instructions."
-    return
+    return 1
 
   webkit_rev = GetWebKitRev()
   print 'Desired revision: r%s.' % webkit_rev
   os.chdir('third_party/WebKit')
   changed = UpdateGClientBranch(webkit_rev)
   if changed:
-    UpdateCurrentCheckoutIfAppropriate()
+    return UpdateCurrentCheckoutIfAppropriate()
   else:
     print "Already on correct revision."
+  return 0
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
