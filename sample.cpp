@@ -56,6 +56,11 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    int major, minor, build, revision;
+
+    GetVersion(major, minor, build, revision);
+    printf("\t\t libmkv verison: %d.%d.%d.%d\n", major, minor, build, revision);
+
     long long pos = 0;
 
     EBMLHeader ebmlHeader;

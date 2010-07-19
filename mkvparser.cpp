@@ -15,6 +15,15 @@ mkvparser::IMkvReader::~IMkvReader()
 {
 }
 
+void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision)
+{
+    major = 1;
+    minor = 0;
+    build = 0;
+    revision = 1;
+    return;
+}
+
 long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
 {
     assert(pReader);
@@ -1202,12 +1211,13 @@ long Segment::Load()
         if (id == 0x0F43B675) // Cluster ID
         {
             assert(fileposition_of_clusters);
-            if (m_clusterCount > size_of_cluster_pos)
+            if (m_clusterCount >= size_of_cluster_pos)
             {
                 size_of_cluster_pos *= 2;
                 long long* const temp = new long long[size_of_cluster_pos];
-                memset(temp, 0, size_of_cluster_pos);
-                memcpy(temp, fileposition_of_clusters, size_of_cluster_pos);
+                memset(temp, 0, sizeof(long long) * size_of_cluster_pos);
+                memcpy(temp, fileposition_of_clusters, sizeof(long long) \
+                       * m_clusterCount);
                 delete [] fileposition_of_clusters;
                 fileposition_of_clusters = temp;
             }

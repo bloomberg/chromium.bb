@@ -41,6 +41,7 @@ bool Match(IMkvReader*, long long&, unsigned long,unsigned char*&, size_t&);
 bool Match(IMkvReader*, long long&, unsigned long, double&);
 bool Match(IMkvReader*, long long&, unsigned long, short&);
 
+void GetVersion(int& major, int& minor, int& build, int& revision);
 
 struct EBMLHeader
 {
