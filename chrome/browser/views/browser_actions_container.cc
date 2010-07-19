@@ -361,11 +361,10 @@ void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
 // BrowserActionsContainer
 
 BrowserActionsContainer::BrowserActionsContainer(
-    Browser* browser, View* owner_view, bool should_save_size)
+    Browser* browser, View* owner_view)
     : profile_(browser->profile()),
       browser_(browser),
       owner_view_(owner_view),
-      should_save_size_(should_save_size),
       popup_(NULL),
       popup_button_(NULL),
       model_(NULL),
@@ -1141,7 +1140,7 @@ void BrowserActionsContainer::AnimationEnded(const Animation* animation) {
   // Don't save the icon count in incognito because there may be fewer icons
   // in that mode. The result is that the container in a normal window is always
   // at least as wide as in an incognito window.
-  if (!profile_->IsOffTheRecord() && should_save_size_)
+  if (!profile_->IsOffTheRecord())
     model_->SetVisibleIconCount(VisibleBrowserActions());
 }
 

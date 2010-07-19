@@ -156,7 +156,7 @@ void ToolbarView::Init(Profile* profile) {
   reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
   reload_->SetID(VIEW_ID_RELOAD_BUTTON);
 
-  browser_actions_ = new BrowserActionsContainer(browser_, this, true);
+  browser_actions_ = new BrowserActionsContainer(browser_, this);
 
   if (!WrenchMenuModel::IsEnabled()) {
     page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
