@@ -117,7 +117,7 @@ NATIVE_CLIENT := $(subst /native_client,/native_client *,$(CURDIR))
 NATIVE_CLIENT := $(filter-out *%,$(NATIVE_CLIENT))
 GOOGLE_CLIENT := $(NATIVE_CLIENT)/..
 NACL_BIN_PATH ?= \
-     $(NATIVE_CLIENT)/src/third_party/nacl_sdk/$(PLATFORM)/sdk/nacl-sdk/bin
+     $(NATIVE_CLIENT)/toolchain/$(PLATFORM)_x86/sdk/nacl-sdk/bin
 SEL_LDR ?= $(NATIVE_CLIENT)/scons-out/opt-$(PLATFORM)-x86-32/staging/sel_ldr
 NACL_INCLUDE ?=
 INCLUDE := -I$(GOOGLE_CLIENT) $(NACL_INCLUDE)
