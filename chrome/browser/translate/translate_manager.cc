@@ -479,6 +479,14 @@ void TranslateManager::PageTranslated(TabContents* tab,
     infobar = TranslateInfoBarDelegate::CreateErrorDelegate(
         details->error_type, tab,
         details->source_language, details->target_language);
+  } else if (!IsSupportedLanguage(details->source_language)) {
+    // TODO(jcivelli): http://crbug.com/9390 We should change the "after
+    //                 translate" infobar to support unknown as the original
+    //                 language.
+    UMA_HISTOGRAM_COUNTS("Translate.ServerReportedUnsupportedLanguage", 1);
+    infobar = TranslateInfoBarDelegate::CreateErrorDelegate(
+        TranslateErrors::UNSUPPORTED_LANGUAGE, tab,
+        details->source_language, details->target_language);
   } else {
     infobar = TranslateInfoBarDelegate::CreateDelegate(
         TranslateInfoBarDelegate::kAfterTranslate, tab,

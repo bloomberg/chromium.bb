@@ -275,6 +275,10 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
         case TranslateErrors::UNKNOWN_LANGUAGE:
           return l10n_util::GetStringUTF16(
               IDS_TRANSLATE_INFOBAR_UNKNOWN_PAGE_LANGUAGE);
+        case TranslateErrors::UNSUPPORTED_LANGUAGE:
+          return l10n_util::GetStringFUTF16(
+              IDS_TRANSLATE_INFOBAR_UNSUPPORTED_PAGE_LANGUAGE,
+              GetLanguageDisplayableNameAt(target_language_index_));
         case TranslateErrors::IDENTICAL_LANGUAGES:
           return l10n_util::GetStringFUTF16(
               IDS_TRANSLATE_INFOBAR_ERROR_SAME_LANGUAGE,
@@ -299,6 +303,8 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
         // No retry button, we would fail again with the same error.
         return string16();
       }
+      if (error_ == TranslateErrors::UNSUPPORTED_LANGUAGE)
+        return l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_REVERT);
       return l10n_util::GetStringUTF16(IDS_TRANSLATE_INFOBAR_RETRY);
     default:
       NOTREACHED();
@@ -308,6 +314,11 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
 
 void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
   DCHECK(type_ == kTranslationError);
+  if (error_ == TranslateErrors::UNSUPPORTED_LANGUAGE) {
+    RevertTranslation();
+    return;
+  }
+  // This is the "Try again..." case.
   Singleton<TranslateManager>::get()->TranslatePage(
       tab_contents_, GetOriginalLanguageCode(), GetTargetLanguageCode());
 }

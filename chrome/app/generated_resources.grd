@@ -7158,6 +7158,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TRANSLATE_INFOBAR_ERROR_SAME_LANGUAGE" desc="Error message to show for translate infobar when the original and target languages are identical">
         The translation failed because the page is already in <ph name="language">$1<ex>English</ex></ph>.
       </message>
+      <message name="IDS_TRANSLATE_INFOBAR_UNSUPPORTED_PAGE_LANGUAGE" desc="Error message shown when the translate server translated the page and returned the page was in a language the browser does not know.">
+        This page has been translated from an unknown language to <ph name="language_language">$1<ex>English</ex></ph>
+      </message>
 
       <!-- Desktop notifications -->
       <message name="IDS_NOTIFICATION_BALLOON_DISMISS_LABEL" desc="Text on the button which dismisses the balloon.">

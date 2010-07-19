@@ -31,11 +31,6 @@ using testing::Pointee;
 using testing::Property;
 using WebKit::WebContextMenuData;
 
-class TestTranslateManager : public TranslateManager {
- public:
-  TestTranslateManager() {}
-};
-
 class TranslateManagerTest : public RenderViewHostTestHarness,
                              public NotificationObserver {
  public:
@@ -193,7 +188,6 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
 
  private:
   NotificationRegistrar notification_registrar_;
-  scoped_ptr<TestTranslateManager> translate_manager_;
   TestURLFetcherFactory url_fetcher_factory_;
 
   // The list of infobars that have been removed.
@@ -711,11 +705,47 @@ TEST_F(TranslateManagerTest, TranslateInPageNavigation) {
 
 // Tests that no translate infobar is shown when navigating to a page in an
 // unsupported language.
-TEST_F(TranslateManagerTest, UnsupportedPageLanguage) {
+TEST_F(TranslateManagerTest, CLDReportsUnsupportedPageLanguage) {
   // Simulate navigating to a page and getting an unsupported language.
   SimulateNavigation(GURL("http://www.google.com"), 0, "Google", "qbz", true);
 
   // No info-bar should be shown.
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+}
+
+// Tests that we deal correctly with unsupported languages returned by the
+// server.
+// The translation server might return a language we don't support.
+TEST_F(TranslateManagerTest, ServerReportsUnsupportedLanguage) {
+  // Simulate navigating to a page and translating it.
+  SimulateNavigation(GURL("http://mail.google.fr"), 0, "Le Google", "fr",
+                     true);
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  process()->sink().ClearMessages();
+  infobar->Translate();
+  SimulateURLFetch(true);
+  // Simulate the render notifying the translation has been done, but it
+  // reports a language we don't support.
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "qbz", "en",
+      TranslateErrors::NONE));
+
+  // An error infobar should be showing to report that we don't support this
+  // language.
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::kTranslationError, infobar->type());
+
+  // This infobar should have a button (so the string should not be empty).
+  ASSERT_FALSE(infobar->GetMessageInfoBarButtonText().empty());
+
+  // Pressing the button on that infobar should revert to the original language.
+  process()->sink().ClearMessages();
+  infobar->MessageInfoBarButtonPressed();
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(ViewMsg_RevertTranslation::ID);
+  EXPECT_TRUE(message != NULL);
+  // And it should have removed the infobar.
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 }
 
@@ -1088,3 +1118,4 @@ TEST_F(TranslateManagerTest, NonTranslatablePage) {
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 }
+
