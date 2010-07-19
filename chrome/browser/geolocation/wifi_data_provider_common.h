@@ -24,13 +24,15 @@ class PollingPolicyInterface {
   // interval and whether the last scan produced new results.
   virtual void UpdatePollingInterval(bool scan_results_differ) = 0;
   virtual int PollingInterval() = 0;
+  virtual int NoWifiInterval() = 0;
 };
 
 // Generic polling policy, constants are compile-time parameterized to allow
 // tuning on a per-platform basis.
 template<int DEFAULT_INTERVAL,
          int NO_CHANGE_INTERVAL,
-         int TWO_NO_CHANGE_INTERVAL>
+         int TWO_NO_CHANGE_INTERVAL,
+         int NO_WIFI_INTERVAL>
 class GenericPollingPolicy : public PollingPolicyInterface {
  public:
   GenericPollingPolicy() : polling_interval_(DEFAULT_INTERVAL) {}
@@ -47,6 +49,7 @@ class GenericPollingPolicy : public PollingPolicyInterface {
     }
   }
   virtual int PollingInterval() { return polling_interval_; }
+  virtual int NoWifiInterval() { return NO_WIFI_INTERVAL; }
 
  private:
   int polling_interval_;

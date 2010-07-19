@@ -47,6 +47,7 @@ const int kStringLength = 512;
 const int kDefaultPollingInterval = 10000;  // 10s
 const int kNoChangePollingInterval = 120000;  // 2 mins
 const int kTwoNoChangePollingInterval = 600000;  // 10 mins
+const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
 
 // WlanOpenHandle
 typedef DWORD (WINAPI* WlanOpenHandleFunction)(DWORD dwClientVersion,
@@ -175,7 +176,8 @@ WifiDataProviderCommon::WlanApiInterface* Win32WifiDataProvider::NewWlanApi() {
 PollingPolicyInterface* Win32WifiDataProvider::NewPollingPolicy() {
   return new GenericPollingPolicy<kDefaultPollingInterval,
                                   kNoChangePollingInterval,
-                                  kTwoNoChangePollingInterval>;
+                                  kTwoNoChangePollingInterval,
+                                  kNoWifiPollingIntervalMilliseconds>;
 }
 
 // Local classes and functions

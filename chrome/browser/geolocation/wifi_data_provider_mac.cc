@@ -20,6 +20,7 @@ namespace {
 const int kDefaultPollingInterval = 120000;  // 2 mins
 const int kNoChangePollingInterval = 300000;  // 5 mins
 const int kTwoNoChangePollingInterval = 600000;  // 10 mins
+const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
 
 // Provides the wifi API binding for use when running on OSX 10.5 machines using
 // the Apple80211 framework.
@@ -178,5 +179,6 @@ MacWifiDataProvider::WlanApiInterface* MacWifiDataProvider::NewWlanApi() {
 PollingPolicyInterface* MacWifiDataProvider::NewPollingPolicy() {
   return new GenericPollingPolicy<kDefaultPollingInterval,
                                   kNoChangePollingInterval,
-                                  kTwoNoChangePollingInterval>;
+                                  kTwoNoChangePollingInterval,
+                                  kNoWifiPollingIntervalMilliseconds>;
 }

@@ -14,6 +14,7 @@ namespace {
 const int kDefaultPollingIntervalMilliseconds = 10 * 1000;  // 10s
 const int kNoChangePollingIntervalMilliseconds = 2 * 60 * 1000;  // 2 mins
 const int kTwoNoChangePollingIntervalMilliseconds = 10 * 60 * 1000;  // 10 mins
+const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
 }
 
 namespace chromeos {
@@ -93,5 +94,6 @@ WifiDataProviderCommon::WlanApiInterface*
 PollingPolicyInterface* WifiDataProviderChromeOs::NewPollingPolicy() {
   return new GenericPollingPolicy<kDefaultPollingIntervalMilliseconds,
                                   kNoChangePollingIntervalMilliseconds,
-                                  kTwoNoChangePollingIntervalMilliseconds>;
+                                  kTwoNoChangePollingIntervalMilliseconds,
+                                  kNoWifiPollingIntervalMilliseconds>;
 }
