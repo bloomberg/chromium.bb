@@ -8,7 +8,9 @@
 #define CHROME_BROWSER_VIEWS_COLLECTED_COOKIES_WIN_H_
 
 #include "chrome/browser/tab_contents/constrained_window.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/notification_registrar.h"
+#include "views/controls/tree/tree_view.h"
 #include "views/window/dialog_delegate.h"
 
 class ConstrainedWindow;
@@ -16,7 +18,7 @@ class CookiesTreeModel;
 class TabContents;
 namespace views {
 class Label;
-class TreeView;
+class NativeButton;
 }
 
 // CollectedCookiesWin is a dialog that displays the allowed and blocked
@@ -25,31 +27,40 @@ class TreeView;
 
 class CollectedCookiesWin : public ConstrainedDialogDelegate,
                                    NotificationObserver,
+                                   views::ButtonListener,
+                                   views::TreeViewController,
                                    views::View {
  public:
   // Use BrowserWindow::ShowCollectedCookiesDialog to show.
   CollectedCookiesWin(gfx::NativeWindow parent_window,
                       TabContents* tab_contents);
 
-  // views::DialogDelegate implementation.
+  // ConstrainedDialogDelegate implementation.
   virtual std::wstring GetWindowTitle() const;
   virtual int GetDialogButtons() const;
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
   virtual void DeleteDelegate();
-
   virtual bool Cancel();
-
-  // views::WindowDelegate implementation.
   virtual views::View* GetContentsView();
 
+  // views::ButtonListener implementation.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // views::TreeViewController implementation.
+  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
+
   // views::View implementation.
-  gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize();
 
  private:
   virtual ~CollectedCookiesWin();
 
   void Init();
+
+  void EnableControls();
+
+  void AddContentException(views::TreeView* tree_view, ContentSetting setting);
 
   // Notification Observer implementation.
   void Observe(NotificationType type,
@@ -69,6 +80,10 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
 
   views::TreeView* allowed_cookies_tree_;
   views::TreeView* blocked_cookies_tree_;
+
+  views::NativeButton* block_allowed_button_;
+  views::NativeButton* allow_blocked_button_;
+  views::NativeButton* for_session_blocked_button_;
 
   scoped_ptr<CookiesTreeModel> allowed_cookies_tree_model_;
   scoped_ptr<CookiesTreeModel> blocked_cookies_tree_model_;

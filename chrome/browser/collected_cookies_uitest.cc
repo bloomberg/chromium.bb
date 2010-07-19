@@ -21,7 +21,8 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 
 typedef UITest CollectedCookiesTest;
 
-TEST_F(CollectedCookiesTest, FAILS_TestDoubleDisplay) {
+// Test is flaky. http://crbug.com/49539
+TEST_F(CollectedCookiesTest, FLAKY_DoubleDisplay) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -43,7 +44,8 @@ TEST_F(CollectedCookiesTest, FAILS_TestDoubleDisplay) {
   ASSERT_TRUE(tab->ShowCollectedCookiesDialog());
 }
 
-TEST_F(CollectedCookiesTest, FAILS_NavigateAway) {
+// Test is flaky. http://crbug.com/49539
+TEST_F(CollectedCookiesTest, FLAKY_NavigateAway) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());

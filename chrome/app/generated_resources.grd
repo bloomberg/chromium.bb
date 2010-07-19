@@ -6063,6 +6063,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL" desc="The label used to describe the cookies that were blocked">
         The following cookies were blocked:
       </message>
+      <message name="IDS_COLLECTED_COOKIES_ALLOW_BUTTON" desc="A button that lets the use create a content settings exception to allow certain domains.">
+        Allow
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON" desc="A button that lets the use create a content settings exception to allow certain domains for a session only. Please consider that this text will be displayed as a button when translating.">
+        Allow for session only
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_BLOCK_BUTTON" desc="A button that lets the use create a content settings exception to block certain domains.">
+        Block
+      </message>
 
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WINDOW_TITLE" desc="The title of the Cookies Window">

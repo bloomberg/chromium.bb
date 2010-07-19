@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -83,6 +84,21 @@ void CollectedCookiesGtk::Init() {
   gtk_tree_view_append_column(GTK_TREE_VIEW(allowed_tree_), title_column);
   g_signal_connect(allowed_tree_, "row-expanded",
                    G_CALLBACK(OnTreeViewRowExpandedThunk), this);
+  allowed_selection_ =
+      gtk_tree_view_get_selection(GTK_TREE_VIEW(allowed_tree_));
+  gtk_tree_selection_set_mode(allowed_selection_, GTK_SELECTION_MULTIPLE);
+  g_signal_connect(allowed_selection_, "changed",
+                   G_CALLBACK(OnTreeViewSelectionChangeThunk), this);
+
+  GtkWidget* button_box = gtk_hbutton_box_new();
+  gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_START);
+  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(dialog_), button_box, FALSE, FALSE, 0);
+  block_allowed_cookie_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_BLOCK_BUTTON).c_str());
+  g_signal_connect(block_allowed_cookie_button_, "clicked",
+                   G_CALLBACK(OnBlockAllowedButtonClickedThunk), this);
+  gtk_container_add(GTK_CONTAINER(button_box), block_allowed_cookie_button_);
 
   // Blocked Cookie list.
   cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
@@ -128,9 +144,31 @@ void CollectedCookiesGtk::Init() {
   gtk_tree_view_append_column(GTK_TREE_VIEW(blocked_tree_), title_column);
   g_signal_connect(blocked_tree_, "row-expanded",
                    G_CALLBACK(OnTreeViewRowExpandedThunk), this);
+  blocked_selection_ =
+      gtk_tree_view_get_selection(GTK_TREE_VIEW(blocked_tree_));
+  gtk_tree_selection_set_mode(blocked_selection_, GTK_SELECTION_MULTIPLE);
+  g_signal_connect(blocked_selection_, "changed",
+                   G_CALLBACK(OnTreeViewSelectionChangeThunk), this);
+
+  button_box = gtk_hbutton_box_new();
+  gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_START);
+  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(dialog_), button_box, FALSE, FALSE, 0);
+  allow_blocked_cookie_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_ALLOW_BUTTON).c_str());
+  g_signal_connect(allow_blocked_cookie_button_, "clicked",
+                   G_CALLBACK(OnAllowBlockedButtonClickedThunk), this);
+  gtk_container_add(GTK_CONTAINER(button_box), allow_blocked_cookie_button_);
+  for_session_blocked_cookie_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON).
+          c_str());
+  g_signal_connect(for_session_blocked_cookie_button_, "clicked",
+                   G_CALLBACK(OnForSessionBlockedButtonClickedThunk), this);
+  gtk_container_add(GTK_CONTAINER(button_box),
+                    for_session_blocked_cookie_button_);
 
   // Close button.
-  GtkWidget* button_box = gtk_hbutton_box_new();
+  button_box = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
   gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
   gtk_box_pack_end(GTK_BOX(dialog_), button_box, FALSE, TRUE, 0);
@@ -143,6 +181,7 @@ void CollectedCookiesGtk::Init() {
   // Show the dialog.
   allowed_cookies_tree_adapter_->Init();
   blocked_cookies_tree_adapter_->Init();
+  EnableControls();
   window_ = tab_contents_->CreateConstrainedDialog(this);
 }
 
@@ -158,6 +197,50 @@ void CollectedCookiesGtk::DeleteDelegate() {
   delete this;
 }
 
+bool CollectedCookiesGtk::SelectionContainsOriginNode(
+    GtkTreeSelection* selection, gtk_tree::TreeAdapter* adapter) {
+  // Check whether at least one "origin" node is selected.
+  GtkTreeModel* model;
+  GList* paths =
+      gtk_tree_selection_get_selected_rows(selection, &model);
+  bool contains_origin_node = false;
+  for (GList* item = paths; item; item = item->next) {
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter(
+        model, &iter, reinterpret_cast<GtkTreePath*>(item->data));
+    CookieTreeNode* node =
+        static_cast<CookieTreeNode*>(adapter->GetNode(&iter));
+    if (node->GetDetailedInfo().node_type !=
+        CookieTreeNode::DetailedInfo::TYPE_ORIGIN)
+      continue;
+    CookieTreeOriginNode* origin_node = static_cast<CookieTreeOriginNode*>(
+        node);
+    if (!origin_node->CanCreateContentException())
+      continue;
+    contains_origin_node = true;
+  }
+  g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
+  g_list_free(paths);
+  return contains_origin_node;
+}
+
+void CollectedCookiesGtk::EnableControls() {
+  // Update button states.
+  bool enable_for_allowed_cookies =
+      SelectionContainsOriginNode(allowed_selection_,
+                                  allowed_cookies_tree_adapter_.get());
+  gtk_widget_set_sensitive(block_allowed_cookie_button_,
+                           enable_for_allowed_cookies);
+
+  bool enable_for_blocked_cookies =
+      SelectionContainsOriginNode(blocked_selection_,
+                                  blocked_cookies_tree_adapter_.get());
+  gtk_widget_set_sensitive(allow_blocked_cookie_button_,
+                           enable_for_blocked_cookies);
+  gtk_widget_set_sensitive(for_session_blocked_cookie_button_,
+                           enable_for_blocked_cookies);
+}
+
 void CollectedCookiesGtk::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
@@ -171,6 +254,42 @@ void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
   window_->CloseConstrainedWindow();
 }
 
+void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
+                                        gtk_tree::TreeAdapter* adapter,
+                                        ContentSetting setting) {
+  GtkTreeModel* model;
+  GList* paths =
+      gtk_tree_selection_get_selected_rows(selection, &model);
+  for (GList* item = paths; item; item = item->next) {
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter(
+        model, &iter, reinterpret_cast<GtkTreePath*>(item->data));
+    CookieTreeOriginNode* node = static_cast<CookieTreeOriginNode*>(
+        adapter->GetNode(&iter));
+    if (!node->CanCreateContentException()) {
+      node->CreateContentException(
+          tab_contents_->profile()->GetHostContentSettingsMap(), setting);
+    }
+  }
+  g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
+  g_list_free(paths);
+}
+
+void CollectedCookiesGtk::OnBlockAllowedButtonClicked(GtkWidget* button) {
+  AddExceptions(allowed_selection_, allowed_cookies_tree_adapter_.get(),
+                CONTENT_SETTING_BLOCK);
+}
+
+void CollectedCookiesGtk::OnAllowBlockedButtonClicked(GtkWidget* button) {
+  AddExceptions(blocked_selection_, blocked_cookies_tree_adapter_.get(),
+                CONTENT_SETTING_ALLOW);
+}
+
+void CollectedCookiesGtk::OnForSessionBlockedButtonClicked(GtkWidget* button) {
+  AddExceptions(blocked_selection_, blocked_cookies_tree_adapter_.get(),
+                CONTENT_SETTING_SESSION_ONLY);
+}
+
 void CollectedCookiesGtk::OnTreeViewRowExpanded(GtkWidget* tree_view,
                                         GtkTreeIter* iter,
                                         GtkTreePath* path) {
@@ -180,4 +299,8 @@ void CollectedCookiesGtk::OnTreeViewRowExpanded(GtkWidget* tree_view,
   gtk_tree_view_expand_row(GTK_TREE_VIEW(tree_view), path, TRUE);
   g_signal_handlers_unblock_by_func(
       tree_view, reinterpret_cast<gpointer>(OnTreeViewRowExpandedThunk), this);
+}
+
+void CollectedCookiesGtk::OnTreeViewSelectionChange(GtkWidget* selection) {
+  EnableControls();
 }

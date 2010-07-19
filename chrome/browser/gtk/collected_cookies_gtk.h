@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/gtk/gtk_tree.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/notification_registrar.h"
 
 class CookiesTreeModel;
@@ -34,7 +35,20 @@ class CollectedCookiesGtk : public ConstrainedDialogDelegate,
  private:
   virtual ~CollectedCookiesGtk();
 
+  // Initialize all widgets of this dialog.
   void Init();
+
+  // True if the selection contains at least one origin node.
+  bool SelectionContainsOriginNode(GtkTreeSelection* selection,
+                                   gtk_tree::TreeAdapter* adapter);
+
+  // Enable the allow/block buttons if at least one origin node is selected.
+  void EnableControls();
+
+  // Add exceptions for all origin nodes within the selection.
+  void AddExceptions(GtkTreeSelection* selection,
+                     gtk_tree::TreeAdapter* adapter,
+                     ContentSetting setting);
 
   // Notification Observer implementation.
   void Observe(NotificationType type,
@@ -44,7 +58,12 @@ class CollectedCookiesGtk : public ConstrainedDialogDelegate,
   // Callbacks.
   CHROMEGTK_CALLBACK_2(CollectedCookiesGtk, void, OnTreeViewRowExpanded,
                        GtkTreeIter*, GtkTreePath*);
+  CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnTreeViewSelectionChange);
   CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnClose);
+  CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnBlockAllowedButtonClicked);
+  CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnAllowBlockedButtonClicked);
+  CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void,
+                       OnForSessionBlockedButtonClicked);
 
   NotificationRegistrar registrar_;
 
@@ -56,12 +75,17 @@ class CollectedCookiesGtk : public ConstrainedDialogDelegate,
   GtkWidget* allowed_description_label_;
   GtkWidget* blocked_description_label_;
 
+  GtkWidget* block_allowed_cookie_button_;
+
+  GtkWidget* allow_blocked_cookie_button_;
+  GtkWidget* for_session_blocked_cookie_button_;
+
   // The table listing the cookies.
   GtkWidget* allowed_tree_;
   GtkWidget* blocked_tree_;
 
-  GtkWidget* allowed_cookie_display_;
-  GtkWidget* blocked_cookie_display_;
+  GtkTreeSelection* allowed_selection_;
+  GtkTreeSelection* blocked_selection_;
 
   // The tab contents.
   TabContents* tab_contents_;
