@@ -134,6 +134,12 @@
     'remoting': {
       'filepath': 'remoting/.*',
     },
+    'domui_options' : {
+      'filepath': 'chrome/browser/resources/options/.*|'\
+        'chrome/browser/resources/options.html|'\
+        'chrome/browser/dom_ui/options_ui.cc|'\
+        'chrome/browser/dom_ui/core_options_handler.cc',
+    },
   },
 
   'WATCHLISTS': {
@@ -185,5 +191,6 @@
     'remoting': ['ajwong@chromium.org', 'sergeyu@chromium.org',
               	'hclam@chromium.org', 'dmaclach@chromium.org',
 	 	'garykac@chromium.org'],
+    'domui_options': ['dhg@chromium.org'],
   },
 }
