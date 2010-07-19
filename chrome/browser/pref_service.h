@@ -108,6 +108,10 @@ class PrefService : public NonThreadSafe {
   // values while the importer process is running. Returns true on success.
   bool ReloadPersistentPrefs();
 
+  // Returns true if the preference for the given preference name is available
+  // and is managed.
+  bool IsManagedPreference(const wchar_t* pref_name) const;
+
   // Writes the data to disk. The return value only reflects whether
   // serialization was successful; we don't know whether the data actually made
   // it on disk (since it's on a different thread).  This should only be used if

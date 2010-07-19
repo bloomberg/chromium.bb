@@ -1045,6 +1045,13 @@ int main(int argc, char** argv) {
   base::EnableTerminationOnHeapCorruption();
   app::RegisterPathProvider();
   CommandLine::Init(argc, argv);
+  // TODO(markusheintz): The command line switch --Lang is now processed
+  // by the CommandLinePrefStore and mapped to the preference
+  // prefs::kApplicationLocale. This preferences can be read through the
+  // PrefService. l10n_util::GetApplicationLocale() which is called by the
+  // ResourceBundle code now ignores the --Lang flag.
+  // In order to support the --Lang flag here the preference
+  // prefs::kApplicationLocale must be read and passed instead of L"en-US".
   ResourceBundle::InitSharedInstance(L"en-US");
 
   // Write logs to a file for debugging, if --logtofile=FILE_NAME is given.

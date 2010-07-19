@@ -88,19 +88,26 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
   // Save new locale.
   DCHECK(g_browser_process);
   PrefService* prefs = g_browser_process->local_state();
-  prefs->SetString(prefs::kApplicationLocale, locale);
-  prefs->SavePersistentPrefs();
+  // TODO(markusheintz): If the preference is managed and can not be changed by
+  // the user, changing the language should be disabled in the UI.
+  // TODO(markusheintz): Change the if condition to prefs->IsUserModifiable()
+  // once Mattias landed his pending patch.
+  if (!prefs->IsManagedPreference(prefs::kApplicationLocale)) {
+    prefs->SetString(prefs::kApplicationLocale, locale);
+    prefs->SavePersistentPrefs();
 
-  // Switch the locale.
-  ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
+    // Switch the locale.
+    ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
 
-  // Enable the keyboard layouts that are necessary for the new locale.
-  chromeos::input_method::EnableInputMethods(
-      locale, chromeos::input_method::kKeyboardLayoutsOnly,
-      kHardwareKeyboardLayout);
+    // Enable the keyboard layouts that are necessary for the new locale.
+    chromeos::input_method::EnableInputMethods(
+        locale, chromeos::input_method::kKeyboardLayoutsOnly,
+        kHardwareKeyboardLayout);
 
-  // The following line does not seem to affect locale anyhow. Maybe in future..
-  g_browser_process->SetApplicationLocale(locale);
+    // The following line does not seem to affect locale anyhow. Maybe in
+    // future..
+    g_browser_process->SetApplicationLocale(locale);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

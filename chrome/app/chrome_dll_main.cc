@@ -718,7 +718,14 @@ int ChromeMain(int argc, char** argv) {
     // browser process as a command line flag.
     DCHECK(parsed_command_line.HasSwitch(switches::kLang) ||
            process_type == switches::kZygoteProcess);
-    ResourceBundle::InitSharedInstance(std::wstring());
+
+    // TODO(markusheintz): The command line flag --lang is actually processed
+    // by the CommandLinePrefStore, and made available through the PrefService
+    // via the preference prefs::kApplicationLocale. The browser process uses
+    // the --lang flag to passe the value of the PrefService in here. Maybe this
+    // value could be passed in a different way.
+    ResourceBundle::InitSharedInstance(
+        parsed_command_line.GetSwitchValue(switches::kLang));
 
 #if defined(OS_MACOSX)
     // Update the process name (need resources to get the strings, so

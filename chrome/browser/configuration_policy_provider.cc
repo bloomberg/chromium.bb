@@ -44,6 +44,8 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
       Value::TYPE_BOOLEAN, "PasswordManagerEnabled" },
   { ConfigurationPolicyStore::kPolicyDisabledPlugins,
       Value::TYPE_STRING, "DisabledPluginsList" },
+  { ConfigurationPolicyStore::kPolicyApplicationLocale,
+      Value::TYPE_STRING, "ApplicationLocaleValue" },
   { ConfigurationPolicyStore::kPolicySyncDisabled,
       Value::TYPE_BOOLEAN, "SyncDisabled" },
 };

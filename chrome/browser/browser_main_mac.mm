@@ -46,7 +46,10 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
 
     // Before we load the nib, we need to start up the resource bundle so we
     // have the strings avaiable for localization.
-    ResourceBundle::InitSharedInstance(std::wstring());
+    std::wstring pref_locale;
+    // TODO(markusheintz): Read preference pref::kApplicationLocale in order to
+    // enforce the application locale.
+    ResourceBundle::InitSharedInstance(pref_locale);
 
     FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);

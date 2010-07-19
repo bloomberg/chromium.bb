@@ -33,6 +33,18 @@ CLASS MACHINE
            END PART
        END POLICY
 
+       POLICY !!ApplicationLocale
+           #if version >= 4
+             SUPPORTED !!SUPPORTED_WINXPSP2
+           #endif
+           EXPLAIN !!ApplicationLocale_Explain
+           VALUENAME "ApplicationLocale"
+
+           PART !!ApplicationLocaleValue          EDITTEXT
+              VALUENAME "ApplicationLocaleValue"
+           END PART
+       END POLICY
+
        POLICY !!AlternateErrorPagesEnabled
            #if version >= 4
              SUPPORTED !!SUPPORTED_WINXPSP2
@@ -153,6 +165,12 @@ CLASS MACHINE
 SUPPORTED_WINXPSP2="At least Microsoft Windows XP SP2"
 google="Google"
 googlechrome="Google Chrome"
+ApplicationLocale="Configures the Application Locale"
+ApplicationLocale_Explain="Configures the locale to be used by Chrome. If the ApplicationLocale policy is configured, \
+Chrome will use the configured locale. If the configured locale is not supported \
+Chrome will fall back to en-US. If the policy is not configured, Chrome will either use the preference locale (if configured), \
+the system locale or the fallback locale en-US."
+ApplicationLocaleValue="Application locale"
 HomePage="Configure default home page"
 HomePage_Explain="Configures the default home page and prevents users from changing homepage settings.\n\n\
 The homepage can either be set to a URL you specify or set to the New Tab Page.\n\n\

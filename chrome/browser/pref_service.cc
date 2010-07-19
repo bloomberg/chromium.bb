@@ -407,6 +407,14 @@ const PrefService::Preference* PrefService::FindPreference(
   return it == prefs_.end() ? NULL : *it;
 }
 
+bool PrefService::IsManagedPreference(const wchar_t* pref_name) const {
+  const Preference* pref = FindPreference(pref_name);
+  if (pref && pref->IsManaged()) {
+    return true;
+  }
+  return false;
+}
+
 void PrefService::FireObserversIfChanged(const wchar_t* path,
                                          const Value* old_value) {
   if (PrefIsChanged(path, old_value))

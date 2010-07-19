@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitions revision="1.0" schemaVersion="1.0">
   <policyNamespaces>
-    <target prefix="fullarmor" namespace="FullArmor.3cca6b27-3c82-4689-8f0b-4ab08f8341da" />
+    <target prefix="fullarmor" namespace="FullArmor.1a993c1c-0aa8-4a4b-973b-5422fac5d26a" />
     <using prefix="windows" namespace="Microsoft.Policies.Windows" />
   </policyNamespaces>
-  <supersededAdm fileName="C:\Development\src\chrome\app\policy\windows\adm\en-US\chrome.adm" />
+  <supersededAdm fileName="D:\src\chromium\src\chrome\app\policy\windows\adm\en-US\chrome.adm" />
   <resources minRequiredRevision="1.0" />
   <supportedOn>
     <definitions>
@@ -36,6 +36,13 @@
           </item>
         </enum>
         <text id="HomepageLocation" valueName="HomepageLocation" />
+      </elements>
+    </policy>
+    <policy name="ApplicationLocale" class="Machine" displayName="$(string.ApplicationLocale)" explainText="$(string.ApplicationLocale_Explain)" presentation="$(presentation.ApplicationLocale)" key="Software\Policies\Google\Chrome" valueName="ApplicationLocale">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <elements>
+        <text id="ApplicationLocaleValue" valueName="ApplicationLocaleValue" />
       </elements>
     </policy>
     <policy name="AlternateErrorPagesEnabled" class="Machine" displayName="$(string.AlternateErrorPagesEnabled)" explainText="$(string.AlternateErrorPagesEnabled_Explain)" presentation="$(presentation.AlternateErrorPagesEnabled)" key="Software\Policies\Google\Chrome" valueName="AlternateErrorPagesEnabled">

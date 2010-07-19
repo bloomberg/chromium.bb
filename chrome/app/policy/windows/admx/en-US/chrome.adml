@@ -7,6 +7,9 @@
       <string id="SUPPORTED_WINXPSP2">At least Microsoft Windows XP SP2</string>
       <string id="google">Google</string>
       <string id="googlechrome">Google Chrome</string>
+      <string id="ApplicationLocale">Configures the Application Locale</string>
+      <string id="ApplicationLocale_Explain">Configures the locale to be used by Chrome. If the ApplicationLocale policy is configured, Chrome will use the configured locale. If the configured locale is not supported Chrome will fall back to en-US. If the policy is not configured, Chrome will either use the preference locale (if configured), the system locale or the fallback locale en-US.</string>
+      <string id="ApplicationLocaleValue">Application locale</string>
       <string id="HomePage">Configure default home page</string>
       <string id="HomePage_Explain">Configures the default home page and prevents users from changing homepage settings.
 
@@ -80,8 +83,7 @@ If you enable this setting, users can have Google Chrome memorize passwords and 
 
 If you disable this setting, users will not be able to save passwords or use already saved passwords.
 
-If you enable or disable this setting, users cannot change or override this setting in Google Chrome.
-      </string>
+If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
       <string id="DisabledPlugins">Specify a list of plugins that are disabled</string>
       <string id="DisabledPlugins_Explain">Specifies a list of plugins that are disabled and prevents users from changing this setting.
 
@@ -99,6 +101,11 @@ If you enable this setting, users cannot change or override this setting in Goog
         <dropdownList refId="HomepageMode">Homepage type:</dropdownList>
         <textBox refId="HomepageLocation">
           <label>Homepage URL:</label>
+        </textBox>
+      </presentation>
+      <presentation id="ApplicationLocale">
+        <textBox refId="ApplicationLocaleValue">
+          <label>Application locale</label>
         </textBox>
       </presentation>
       <presentation id="AlternateErrorPagesEnabled" />
