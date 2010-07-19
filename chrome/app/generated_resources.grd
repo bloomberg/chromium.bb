@@ -3282,7 +3282,7 @@ each locale. -->
         Native Client module: <ph name="NEXE_NAME">$1<ex>Unknown Native Client module</ex></ph>
       </message>
       <message name="IDS_TASK_MANAGER_NACL_BROKER_PREFIX" desc="Task Manager row for Native Client broker, which acts as the sanbox manager for NaCl processes">
-        Native Client sandbox manager
+        <ph name="Native_Client">Native Client</ph> security manager
       </message>
       <message name="IDS_TASK_MANAGER_NOTIFICATION_PREFIX" desc="The prefix for a Desktop Notification in the Task Manager">
         Notification: <ph name="NOTIFICATION_NAME">$1<ex>http://www.domain.com</ex></ph>
