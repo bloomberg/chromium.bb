@@ -24,7 +24,13 @@ class MouseLeaveTest : public UITest {
   DISALLOW_COPY_AND_ASSIGN(MouseLeaveTest);
 };
 
-TEST_F(MouseLeaveTest, TestOnMouseOut) {
+#if defined(OS_MACOSX)
+// Missing automation provider support: http://crbug.com/45892
+#define MAYBE_TestOnMouseOut FAILS_TestOnMouseOut
+#else
+#define MAYBE_TestOnMouseOut TestOnMouseOut
+#endif
+TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   GURL test_url = ui_test_utils::GetTestUrl(
       FilePath(FilePath::kCurrentDirectory),
       FilePath(FILE_PATH_LITERAL("mouseleave.html")));
