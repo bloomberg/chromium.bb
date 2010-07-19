@@ -555,8 +555,7 @@ void pthread_exit (void* retval) {
   if (0 == thread_id) {
     /* This is the main thread - wait for other threads to complete */
     __pthread_shutdown();
-    /* TODO(gregoryd): should we call exit() or __nacl_exit_thread? */
-    NACL_SYSCALL(thread_exit)(NULL);
+    NACL_SYSCALL(exit)(0);
   }
 
   pthread_mutex_lock(&__nc_thread_management_lock);

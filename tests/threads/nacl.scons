@@ -52,3 +52,15 @@ node = env.CommandSelLdrTestNacl(
     size='small',
     )
 env.AddNodeToTestSuite(node, TEST_SUITES + ['tsan_bot_tests'], 'run_race_test')
+
+env.ComponentProgram('main_thread_pthread_exit_test.nexe',
+                     'main_thread_pthread_exit_test.c',
+                     EXTRA_LIBS=['pthread'],
+                     )
+node = env.CommandSelLdrTestNacl(
+    'main_thread_pthread_exit_test.out',
+    command=[env.File('main_thread_pthread_exit_test.nexe')],
+    size='small',
+    )
+env.AddNodeToTestSuite(node, TEST_SUITES, 'run_main_thread_pthread_exit_test')
+
