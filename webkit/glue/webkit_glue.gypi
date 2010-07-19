@@ -241,6 +241,8 @@
         'plugins/ppb_private.h',
         'plugins/quickdraw_drawing_manager_mac.h',
         'plugins/quickdraw_drawing_manager_mac.cc',
+        'plugins/webview_plugin.cc',
+        'plugins/webview_plugin.h',
         'plugins/webplugin.cc',
         'plugins/webplugin.h',
         'plugins/webplugin_2d_device_delegate.h',

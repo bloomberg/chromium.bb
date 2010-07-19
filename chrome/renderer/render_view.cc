@@ -40,6 +40,7 @@
 #include "chrome/common/window_container_type.h"
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/audio_message_filter.h"
+#include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
 #include "chrome/renderer/extension_groups.h"
@@ -94,6 +95,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
@@ -102,6 +104,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSearchableFormData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -127,6 +130,7 @@
 #include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/plugins/webplugin_impl.h"
+#include "webkit/glue/plugins/webview_plugin.h"
 #include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
@@ -187,6 +191,7 @@ using WebKit::WebNode;
 using WebKit::WebPageSerializer;
 using WebKit::WebPageSerializerClient;
 using WebKit::WebPlugin;
+using WebKit::WebPluginContainer;
 using WebKit::WebPluginParams;
 using WebKit::WebPluginDocument;
 using WebKit::WebPoint;
@@ -2290,28 +2295,13 @@ void RenderView::runModal() {
 
 // WebKit::WebFrameClient -----------------------------------------------------
 
-WebPlugin* RenderView::createPlugin(
-    WebFrame* frame, const WebPluginParams& params) {
-  FilePath path;
-  std::string actual_mime_type;
-  render_thread_->Send(new ViewHostMsg_GetPluginPath(
-      params.url, frame->top()->url(), params.mimeType.utf8(), &path,
-      &actual_mime_type));
-  if (path.value().empty())
-    return NULL;
+WebPlugin* RenderView::createPlugin(WebFrame* frame,
+                                    const WebPluginParams& params) {
+  if (AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS))
+    return CreatePluginInternal(frame, params);
 
-  if (actual_mime_type.empty())
-    actual_mime_type = params.mimeType.utf8();
-
-  scoped_refptr<pepper::PluginModule> pepper_module =
-      PepperPluginRegistry::GetInstance()->GetModule(path);
-  if (pepper_module) {
-    return new pepper::WebPluginImpl(pepper_module, params,
-                                     pepper_delegate_.AsWeakPtr());
-  }
-
-  return new webkit_glue::WebPluginImpl(frame, params, path, actual_mime_type,
-                                        AsWeakPtr());
+  didNotAllowPlugins(frame);
+  return CreatePluginPlaceholder(frame, params);
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -2427,12 +2417,6 @@ void RenderView::willClose(WebFrame* frame) {
   navigation_state->user_script_idle_scheduler()->Cancel();
 
   form_manager_.ResetFrame(frame);
-}
-
-bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
-  if (!enabled_per_settings)
-    return false;
-  return AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
@@ -3741,6 +3725,39 @@ void RenderView::DidBlockContentType(ContentSettingsType settings_type) {
 void RenderView::ClearBlockedContentSettings() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i)
     content_blocked_[i] = false;
+}
+
+WebPlugin* RenderView::CreatePluginInternal(WebFrame* frame,
+                                            const WebPluginParams& params) {
+  FilePath path;
+  std::string actual_mime_type;
+  render_thread_->Send(new ViewHostMsg_GetPluginPath(
+      params.url, frame->top()->url(), params.mimeType.utf8(), &path,
+      &actual_mime_type));
+  if (path.value().empty())
+    return NULL;
+
+  if (actual_mime_type.empty())
+    actual_mime_type = params.mimeType.utf8();
+
+  scoped_refptr<pepper::PluginModule> pepper_module =
+      PepperPluginRegistry::GetInstance()->GetModule(path);
+  if (pepper_module) {
+    return new pepper::WebPluginImpl(pepper_module, params,
+                                     pepper_delegate_.AsWeakPtr());
+  }
+
+  return new webkit_glue::WebPluginImpl(frame, params, path, actual_mime_type,
+                                        AsWeakPtr());
+}
+
+WebPlugin* RenderView::CreatePluginPlaceholder(WebFrame* frame,
+                                               const WebPluginParams& params) {
+  // |blocked_plugin| will delete itself when the WebViewPlugin is destroyed.
+  BlockedPlugin* blocked_plugin = new BlockedPlugin(this, frame, params);
+  WebViewPlugin* plugin = blocked_plugin->plugin();
+  webkit_preferences_.Apply(plugin->web_view());
+  return plugin;
 }
 
 void RenderView::OnZoom(PageZoom::Function function) {

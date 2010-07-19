@@ -3664,7 +3664,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Chrome Web Store
       </message>
 
-      <!-- chrome://plugins page -->
+      <!-- Plugins -->
       <message name="IDS_PLUGINS_TITLE" desc="Title for the chrome://plugins page.">
         Plug-ins
       </message>
@@ -3724,6 +3724,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGINS_PRIORITY" desc="The label for the priority of this plugin in the list">
         Priority:
+      </message>
+
+      <!-- Click-to-load -->
+      <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in.">
+        Load plug-in
       </message>
 
       <!-- Session Crashed Info Bar-->

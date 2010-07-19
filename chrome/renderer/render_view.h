@@ -53,6 +53,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializerClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
@@ -276,6 +277,11 @@ class RenderView : public RenderWidget,
   // the plugin.
   void OnPepperPluginDestroy(WebPluginDelegatePepper* pepper_plugin);
 
+  // Create a new plugin without checking the content settings.
+  WebKit::WebPlugin* CreatePluginInternal(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params);
+
   // Asks the browser for the CPBrowsingContext associated with this renderer.
   // This is an opaque identifier associated with the renderer for sending
   // messages for the given "Chrome Plugin." The Chrome Plugin API is used
@@ -430,7 +436,6 @@ class RenderView : public RenderWidget,
       WebKit::WebApplicationCacheHostClient* client);
   virtual WebKit::WebCookieJar* cookieJar();
   virtual void willClose(WebKit::WebFrame* frame);
-  virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual void loadURLExternally(WebKit::WebFrame* frame,
                                  const WebKit::WebURLRequest& request,
@@ -855,6 +860,11 @@ class RenderView : public RenderWidget,
   // Creates DevToolsClient and sets up JavaScript bindings for developer tools
   // UI that is going to be hosted by this RenderView.
   void CreateDevToolsClient();
+
+  // Create a new placeholder for a blocked plugin.
+  WebKit::WebPlugin* CreatePluginPlaceholder(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params);
 
   // Sends an IPC notification that the specified content type was blocked.
   void DidBlockContentType(ContentSettingsType settings_type);
