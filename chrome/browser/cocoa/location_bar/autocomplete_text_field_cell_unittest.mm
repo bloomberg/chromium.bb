@@ -7,6 +7,7 @@
 #include "app/resource_bundle.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/location_bar/ev_bubble_decoration.h"
 #import "chrome/browser/cocoa/location_bar/keyword_hint_decoration.h"
