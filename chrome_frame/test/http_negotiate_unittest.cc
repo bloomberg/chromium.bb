@@ -273,3 +273,34 @@ TEST_F(HttpNegotiateTest, ReportProgress) {
   }
 }
 
+using testing::AllOf;
+using testing::ContainsRegex;
+using testing::HasSubstr;
+
+TEST(AppendUserAgent, Append) {
+  EXPECT_THAT(AppendCFUserAgentString(NULL, NULL),
+      testing::ContainsRegex("User-Agent:.+chromeframe.+\r\n"));
+
+  // Check Http headers are reasonably parsed.
+  EXPECT_THAT(AppendCFUserAgentString(L"Bad User-Agent: Age Tuners;\r\n", NULL),
+      AllOf(ContainsRegex("User-Agent:.+chromeframe.+\r\n"),
+            testing::Not(testing::HasSubstr("Age Tuners"))));
+
+  // Honor headers User-Agent, if additional headers does not specify one.
+  EXPECT_THAT(AppendCFUserAgentString(L"User-Agent: A Tense Rug;\r\n", NULL),
+      ContainsRegex("User-Agent: A Tense Rug; chromeframe.+\r\n"));
+
+  // Honor additional headers User-Agent.
+  EXPECT_THAT(AppendCFUserAgentString(L"User-Agent: Near Guest;\r\n",
+                                      L"User-Agent: Rat see Gun;\r\n"),
+      ContainsRegex("User-Agent: Rat see Gun; chromeframe.+\r\n"));
+
+  // Check additional headers are preserved.
+  EXPECT_THAT(AppendCFUserAgentString(NULL,
+            L"Authorization: A Zoo That I Ruin\r\n"
+            L"User-Agent: Get a Nurse;\r\n"
+            L"Accept-Language: Cleanup a Cat Egg\r\n"),
+      AllOf(ContainsRegex("User-Agent: Get a Nurse; chromeframe.+\r\n"),
+            HasSubstr("Authorization: A Zoo That I Ruin\r\n"),
+            HasSubstr("Accept-Language: Cleanup a Cat Egg\r\n")));
+}
