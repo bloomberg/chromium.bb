@@ -26,14 +26,10 @@ AdvancedOptions.prototype = {
       OptionsPage.showPageByName('content');
     };
     $('privacyClearDataButton').onclick = function(event) {
-      // TODO(csilv): spawn clear data overlay dialog.
+      OptionsPage.showOverlay('clearBrowserDataOverlay');
     };
     $('proxiesConfigureButton').onclick = function(event) {
-      if (cr.isMac) {
-        chrome.send('showNetworkProxySettings');
-      } else {
-        // TODO(csilv): spawn network proxy settings sub-dialog.
-      }
+      chrome.send('showNetworkProxySettings');
     };
     $('downloadLocationBrowseButton').onclick = function(event) {
       chrome.send('selectDownloadLocation');
@@ -42,7 +38,7 @@ AdvancedOptions.prototype = {
       chrome.send('autoOpenFileTypesAction');
     };
     $('fontSettingsConfigureFontsOnlyButton').onclick = function(event) {
-      // TODO(csilv): spawn font settings sub-dialog.
+      OptionsPage.showOverlay('fontSettingsOverlay');
     };
     $('certificatesManageButton').onclick = function(event) {
       chrome.send('showManageSSLCertificates');

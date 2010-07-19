@@ -32,6 +32,8 @@
 <script src="options/personal_options.js"></script>
 <script src="options/content_settings_ui.js"></script>
 <script src="options/content_settings.js"></script>
+<script src="options/clear_browser_data_overlay.js"></script>
+<script src="options/font_settings_overlay.js"></script>
 <script>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,6 +43,7 @@
  */
 function load() {
   localStrings = new LocalStrings();
+  
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.register(AccountsOptions.getInstance());
@@ -52,6 +55,8 @@ function load() {
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
+  OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
+  OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
 
   if (cr.isChromeOS) {
     var labsOptions = new OptionsPage('labs',
@@ -70,12 +75,10 @@ function load() {
                                      'syncPage');
   OptionsPage.registerSubPage(syncSettings);
 
-  var dummyPage = new OptionsPage('dummy', 'Overlay Test Page', 'dummyPage');
-  OptionsPage.registerOverlay(dummyPage);
-
   Preferences.getInstance().initialize();
   OptionsPage.initialize();
-  
+
+  // TODO(csilv): Save/restore last selected page.
   if (cr.isChromeOS) {
     OptionsPage.showPageByName(SystemOptions.getInstance().name);
   } else {
@@ -91,7 +94,6 @@ window.onpopstate = function(e) {
 
 </script>
 <link rel="stylesheet" href="chrome://resources/css/list.css">
-
 <link rel="stylesheet" href="dom_ui.css">
 <link rel="stylesheet" href="options/options_page.css">
 <link rel="stylesheet" href="options/browser_options_page.css">
@@ -106,10 +108,8 @@ window.onpopstate = function(e) {
 <div id="overlay" class="overlay hidden">
   <div id="overlayview">
     <button id="close-overlay" onclick="OptionsPage.clearOverlays();"></button>
-    <div class="page hidden" id="dummyPage">
-        <!-- TODO(dhg): remove this one once we get another page here -->
-        Dummy Overlay Page
-    </div>
+    <include src="options/clear_browser_data_overlay.html">
+    <include src="options/font_settings_overlay.html">
     <if expr="pp_ifdef('chromeos')">
        <include src="options/chromeos_accounts_add_user_overlay.html">
     </if>

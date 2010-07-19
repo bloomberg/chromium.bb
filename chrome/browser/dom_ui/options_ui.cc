@@ -18,8 +18,10 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/advanced_options_handler.h"
 #include "chrome/browser/dom_ui/browser_options_handler.h"
+#include "chrome/browser/dom_ui/clear_browser_data_handler.h"
 #include "chrome/browser/dom_ui/content_settings_handler.h"
 #include "chrome/browser/dom_ui/core_options_handler.h"
+#include "chrome/browser/dom_ui/font_settings_handler.h"
 #include "chrome/browser/dom_ui/personal_options_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
@@ -129,6 +131,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
                           new chromeos::AccountsOptionsHandler());
 #endif
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
+  AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
+  AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
 
   // |localized_strings| ownership is taken over by this constructor.
   OptionsUIHTMLSource* html_source =
