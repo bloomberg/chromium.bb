@@ -9,6 +9,8 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
+#include "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 @interface MenuController (Private)
 - (NSMenu*)menuFromModel:(menus::MenuModel*)model;
@@ -86,6 +88,16 @@
       [[NSMenuItem alloc] initWithTitle:label
                                  action:@selector(itemSelected:)
                           keyEquivalent:@""]);
+
+  // If the menu item has an icon, set it.
+  SkBitmap skiaIcon;
+  if (model->GetIconAt(modelIndex, &skiaIcon) && !skiaIcon.isNull()) {
+    NSImage* icon = gfx::SkBitmapToNSImage(skiaIcon);
+    if (icon) {
+      [item setImage:icon];
+    }
+  }
+
   menus::MenuModel::ItemType type = model->GetTypeAt(modelIndex);
   if (type == menus::MenuModel::TYPE_SUBMENU) {
     // Recursively build a submenu from the sub-model at this index.

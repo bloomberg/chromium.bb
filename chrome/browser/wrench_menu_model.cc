@@ -255,7 +255,10 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
 
-  if (browser_defaults::kShowAboutMenuItem) {
+  // On Mac, there is no About item unless it is replaced with the update
+  // available notification.
+  if (browser_defaults::kShowAboutMenuItem ||
+      Singleton<UpgradeDetector>::get()->notify_upgrade()) {
     AddItem(IDC_ABOUT,
             l10n_util::GetStringFUTF16(
                 IDS_ABOUT,

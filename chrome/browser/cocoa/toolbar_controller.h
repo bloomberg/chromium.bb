@@ -28,7 +28,7 @@ class LocationBarViewMac;
 @class MenuButton;
 namespace ToolbarControllerInternal {
 class MenuDelegate;
-class PrefObserverBridge;
+class NotificationBridge;
 }  // namespace ToolbarControllerInternal
 class Profile;
 @class ReloadButton;
@@ -77,7 +77,7 @@ class WrenchMenuModel;
   scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
 
   // Used for monitoring the optional toolbar button prefs.
-  scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
+  scoped_ptr<ToolbarControllerInternal::NotificationBridge> notificationBridge_;
   BooleanPrefMember showHomeButton_;
   BooleanPrefMember showPageOptionButtons_;
   BOOL hasToolbar_;  // If NO, we may have only the location bar.

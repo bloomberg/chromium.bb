@@ -17,6 +17,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
@@ -39,14 +40,17 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/rect.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 namespace {
 
@@ -85,6 +89,7 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 - (void)browserActionsContainerDragFinished:(NSNotification*)notification;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
+- (void)badgeWrenchMenu;
 @end
 
 namespace ToolbarControllerInternal {
@@ -144,21 +149,31 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   Browser* browser_;
 };
 
-// A C++ class registered for changes in preferences. Bridges the
-// notification back to the ToolbarController.
-class PrefObserverBridge : public NotificationObserver {
+// A class registered for C++ notifications. This is used to detect changes in
+// preferences and upgrade available notifications. Bridges the notification
+// back to the ToolbarController.
+class NotificationBridge : public NotificationObserver {
  public:
-  explicit PrefObserverBridge(ToolbarController* controller)
-      : controller_(controller) { }
+  explicit NotificationBridge(ToolbarController* controller)
+      : controller_(controller) {
+    registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
+                   NotificationService::AllSources());
+  }
+
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     if (type == NotificationType::PREF_CHANGED)
       [controller_ prefChanged:Details<std::wstring>(details).ptr()];
+    else if (type == NotificationType::UPGRADE_RECOMMENDED)
+      [controller_ badgeWrenchMenu];
   }
+
  private:
   ToolbarController* controller_;  // weak, owns us
+
+  NotificationRegistrar registrar_;
 };
 
 }  // namespace ToolbarControllerInternal
@@ -235,7 +250,13 @@ class PrefObserverBridge : public NotificationObserver {
   [reloadButton_
       setImage:nsimage_cache::ImageNamed(kReloadButtonReloadImageName)];
   [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
-  [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
+
+  if (Singleton<UpgradeDetector>::get()->notify_upgrade()) {
+    [self badgeWrenchMenu];
+  } else {
+    NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
+    [wrenchButton_ setImage:wrenchImage];
+  }
 
   [backButton_ setShowsBorderOnlyWhileMouseInside:YES];
   [forwardButton_ setShowsBorderOnlyWhileMouseInside:YES];
@@ -250,11 +271,13 @@ class PrefObserverBridge : public NotificationObserver {
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
   // Register pref observers for the optional home and page/options buttons
   // and then add them to the toolbar based on those prefs.
-  prefObserver_.reset(new ToolbarControllerInternal::PrefObserverBridge(self));
+  notificationBridge_.reset(
+      new ToolbarControllerInternal::NotificationBridge(self));
   PrefService* prefs = profile_->GetPrefs();
-  showHomeButton_.Init(prefs::kShowHomeButton, prefs, prefObserver_.get());
+  showHomeButton_.Init(prefs::kShowHomeButton, prefs,
+                       notificationBridge_.get());
   showPageOptionButtons_.Init(prefs::kShowPageOptionsButtons, prefs,
-                              prefObserver_.get());
+                              notificationBridge_.get());
   [self showOptionalHomeButton];
   [self installWrenchMenu];
 
@@ -522,6 +545,23 @@ class PrefObserverBridge : public NotificationObserver {
 
 - (WrenchMenuController*)wrenchMenuController {
   return wrenchMenuController_;
+}
+
+- (void)badgeWrenchMenu {
+  // The wrench menu gets an upgrade dot. Currently, it's ugly.
+  // http://crbug.com/49370
+  NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
+  ThemeProvider* theme_provider = profile_->GetThemeProvider();
+  NSImage* badge = theme_provider->GetNSImageNamed(IDR_UPGRADE_DOT_ACTIVE,
+                                                   true);
+  [wrenchImage lockFocus];
+  [badge drawAtPoint:NSMakePoint(1, 1)
+            fromRect:NSZeroRect
+           operation:NSCompositeSourceOver
+            fraction:1.0];
+  [wrenchImage unlockFocus];
+  [wrenchButton_ setImage:wrenchImage];
+  [wrenchButton_ setNeedsDisplay:YES];
 }
 
 - (void)prefChanged:(std::wstring*)prefName {

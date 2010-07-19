@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -164,16 +165,24 @@ void Shutdown() {
 #endif
 
   if (restart_last_session) {
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
     // Make sure to relaunch the browser with the same command line and add
     // Restore Last Session flag if session restore is not set.
     CommandLine command_line(*CommandLine::ForCurrentProcess());
     if (!command_line.HasSwitch(switches::kRestoreLastSession))
       command_line.AppendSwitch(switches::kRestoreLastSession);
+#if defined(OS_WIN) || defined(OS_LINUX)
     Upgrade::RelaunchChromeBrowser(command_line);
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
+
+#if defined(OS_MACOSX)
+    command_line.AppendSwitch(switches::kActivateOnLaunch);
+    base::LaunchApp(command_line, false, false, NULL);
+#endif  // defined(OS_MACOSX)
+
 #else
     NOTIMPLEMENTED();
-#endif
+#endif  // !defined(OS_CHROMEOS)
   }
 
   if (shutdown_type_ > NOT_VALID && shutdown_num_processes_ > 0) {

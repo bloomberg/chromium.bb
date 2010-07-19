@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util_mac.h"
 #import "chrome/browser/cocoa/restart_browser.h"
+
+#include "app/l10n_util_mac.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/app_strings.h"
@@ -34,7 +39,16 @@
 - (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
-  // Nothing to do, just clean up
+  if (returnCode == NSAlertFirstButtonReturn) {
+    // Nothing to do. User will restart later.
+  } else if (returnCode == NSAlertSecondButtonReturn) {
+    // Set the flag to restore state after the restart.
+    PrefService* pref_service = g_browser_process->local_state();
+    pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
+    BrowserList::CloseAllBrowsersAndExit();
+  } else {
+    NOTREACHED();
+  }
   [self autorelease];
 }
 
@@ -45,10 +59,13 @@ namespace restart_browser {
 void RequestRestart(NSWindow* parent) {
   NSString* title =
       l10n_util::GetNSStringFWithFixup(IDS_PLEASE_RESTART_BROWSER,
-                                       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   NSString* text =
-      l10n_util::GetNSStringWithFixup(IDS_OPTIONS_RESTART_REQUIRED);
-  NSString* okBtn = l10n_util::GetNSStringWithFixup(IDS_APP_OK);
+      l10n_util::GetNSStringFWithFixup(IDS_UPDATE_RECOMMENDED,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  NSString* notNowButtin = l10n_util::GetNSStringWithFixup(IDS_NOT_NOW);
+  NSString* restartButton =
+      l10n_util::GetNSStringWithFixup(IDS_RESTART_AND_UPDATE);
 
   RestartHelper* helper = [[RestartHelper alloc] init];
 
@@ -56,7 +73,8 @@ void RequestRestart(NSWindow* parent) {
   [alert setAlertStyle:NSInformationalAlertStyle];
   [alert setMessageText:title];
   [alert setInformativeText:text];
-  [alert addButtonWithTitle:okBtn];
+  [alert addButtonWithTitle:notNowButtin];
+  [alert addButtonWithTitle:restartButton];
 
   [alert beginSheetModalForWindow:parent
                     modalDelegate:helper
