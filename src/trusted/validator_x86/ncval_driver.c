@@ -38,10 +38,7 @@ NaClOpKind nacl_base_register =
 /* Generates NaClErrorMapping for error level suffix. */
 #define NaClError(s) { #s , LOG_## s}
 
-/* Recognizes flags in argv, processes them, and then removes them.
- * Returns the updated value for argc.
- */
-static int NaClGrokFlags(int argc, const char* argv[]) {
+int NaClRunValidatorGrokFlags(int argc, const char* argv[]) {
   int i;
   int new_argc;
   char* error_level = NULL;
@@ -104,7 +101,7 @@ Bool NaClRunValidator(int argc, const char* argv[],
   clock_t clock_v;
   Bool return_value;
 
-  argc = NaClGrokFlags(argc, argv);
+  argc = NaClRunValidatorGrokFlags(argc, argv);
   NaClLogModuleInit();
 
   if (NACL_FLAGS_warnings) {

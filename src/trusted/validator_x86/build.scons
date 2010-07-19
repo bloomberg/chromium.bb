@@ -303,7 +303,13 @@ env.AddNodeToTestSuite(ncdis_internal_test,
 # Segment register validator.
 ncval = env.ComponentProgram('ncval',
                              ['ncval.c'],
-                             EXTRA_LIBS=['ncvalidate', 'nchelper'])
+                             EXTRA_LIBS=['ncvalidate_sfi',
+                                         'ncvalidate',
+                                         'ncopcode_utils',
+                                         'nchelper',
+                                         'platform',
+                                         'gio',
+                                         'utils'])
 
 env.Requires(ncval, crt)
 
@@ -320,34 +326,6 @@ if env['TARGET_SUBARCH'] == '32':
         [ncval[0], '-t', env.File(TESTDATA_DIR + vtest)],
         )
     env.AddNodeToTestSuite(node, ['large_tests'])
-
-# ======================================================================
-# SFI validator.
-ncval_sfi = env.ComponentProgram(
-    'ncval_sfi',
-    ['ncval_iter.c'],
-    EXTRA_LIBS=['ncvalidate_sfi',
-                'ncvalidate',
-                'ncopcode_utils',
-                'nchelper',
-                'platform',
-                'gio',
-                'utils'])
-
-env.Requires(ncval, crt)
-
-# ======================================================================
-# Tester for SFI validator.
-ncval_iter_test = env.ComponentProgram(
-    'ncval_sfi_test',
-    ['ncval_iter_test.c'],
-    EXTRA_LIBS=['ncvalidate_sfi',
-                'ncvalidate',
-                'ncopcode_utils',
-                'nchelper',
-                'platform',
-                'gio',
-                'utils'])
 
 # Directory where test files are located.
 TESTDATA_DIR = 'testdata/' + env['TARGET_SUBARCH'] + '/'
@@ -384,7 +362,7 @@ def __AddNcDisTests(use_iter):
 __AddNcDisTests(True)
 __AddNcDisTests(False)
 
-# Run tests using ncval_sfi, on test files. Assume that write sandbox tests
+# Run tests using ncval -use_iter, on test files. Assume that write sandbox tests
 # use extension 'val' while read/write sandbox tests use extention 'rval'.
 def __AddNcvalSfiTests(test_readwrite):
   if env['TARGET_SUBARCH'] == '64':
@@ -397,7 +375,7 @@ def __AddNcvalSfiTests(test_readwrite):
       TEST_PREFIX = 'ncval_test_' + vtest + "_" + ext
 
       VAL_TEST_NAME = TEST_PREFIX + "_" + ext
-      VAL_TEST_CL = [ncval_iter_test[0]]
+      VAL_TEST_CL = [ncval, '-use_iter', '-hex_text=-']
       if test_readwrite:
         VAL_TEST_CL.append('-readwrite_sfi')
       else:

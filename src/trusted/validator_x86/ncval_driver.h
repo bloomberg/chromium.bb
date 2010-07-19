@@ -84,4 +84,11 @@ Bool NaClRunValidatorBytes(int argc,
                            NaClMemorySize num_bytes,
                            NaClPcAddress base);
 
+/* Recognizes flags in argv, processes them, and then removes them.
+ * Returns the updated value for argc.
+ * Note: This function
+ * is called by NaClRunValidator and NaClRunValidatorBytes.
+ */
+int NaClRunValidatorGrokFlags(int argc, const char* argv[]);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_DRIVER_H__ */
