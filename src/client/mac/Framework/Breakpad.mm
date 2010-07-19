@@ -265,7 +265,7 @@ bool Breakpad::ExceptionHandlerDirectCallback(void *context,
 //=============================================================================
 #pragma mark -
 
-#include <mach-o/dyld.h>
+#include <dlfcn.h>
 
 //=============================================================================
 // Returns the pathname to the Resources directory for this version of
@@ -286,23 +286,16 @@ NSString * GetResourcePath() {
   //
 
   // Get the pathname to the code which contains this function
-  void *address = nil;
-  NSModule module = nil;
-  _dyld_lookup_and_bind_fully("_GetResourcePath",
-                              &address,
-                              &module);
-
-  if (module && address) {
-    const char* moduleName = NSNameOfModule(module);
-    if (moduleName) {
-      // The "Resources" directory should be in the same directory as the
-      // executable code, since that's how the Breakpad framework is built.
-      resourcePath = [NSString stringWithUTF8String:moduleName];
-      resourcePath = [resourcePath stringByDeletingLastPathComponent];
-      resourcePath = [resourcePath stringByAppendingPathComponent:@"Resources/"];
-     } else {
-      DEBUGLOG(stderr, "Missing moduleName\n");
-    }
+  Dl_info info;
+  if (dladdr((const void*)GetResourcePath, &info) != 0) {
+    NSFileManager *filemgr = [NSFileManager defaultManager];
+    NSString *filePath 
+      = [filemgr stringWithFileSystemRepresentation:info.dli_fname
+                                           length:strlen(info.dli_fname)];
+    NSString *bundlePath = [filePath stringByDeletingLastPathComponent];
+    // The "Resources" directory should be in the same directory as the
+    // executable code, since that's how the Breakpad framework is built.
+    resourcePath = [bundlePath stringByAppendingPathComponent:@"Resources/"];
   } else {
     DEBUGLOG(stderr, "Could not find GetResourcePath\n");
     // fallback plan
@@ -573,7 +566,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   char timeStartedString[32];
-  sprintf(timeStartedString, "%d", tv.tv_sec);
+  sprintf(timeStartedString, "%zd", tv.tv_sec);
   dictionary.SetKeyValue(BREAKPAD_PROCESS_START_TIME,
                          timeStartedString);
 
@@ -591,7 +584,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
     // For each key-value pair, call BreakpadAddUploadParameter()
     NSEnumerator *keyEnumerator = [serverParameters keyEnumerator];
     NSString *aParameter;
-    while (aParameter = [keyEnumerator nextObject]) {
+    while ((aParameter = [keyEnumerator nextObject])) {
       BreakpadAddUploadParameter(this, aParameter,
 				 [serverParameters objectForKey:aParameter]);
     }

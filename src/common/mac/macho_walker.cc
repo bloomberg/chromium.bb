@@ -52,7 +52,11 @@ namespace MacFileUtilities {
 MachoWalker::MachoWalker(const char *path, LoadCommandCallback callback,
                          void *context)
     : callback_(callback),
-      callback_context_(context) {
+      callback_context_(context),
+      file_(0),
+      current_header_(NULL),
+      current_header_size_(0),
+      current_header_offset_(0) {
   file_ = open(path, O_RDONLY);
 }
 

@@ -61,8 +61,8 @@ static void SoonToCrash() {
   Crasher();
 }
 
-bool MDCallback(const char *dump_dir, const char *file_name,
-                void *context, bool success) {
+static bool MDCallback(const char *dump_dir, const char *file_name,
+                       void *context, bool success) {
   string path(dump_dir);
   string dest(dump_dir);
   path.append(file_name);

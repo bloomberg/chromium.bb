@@ -107,7 +107,7 @@ bool MinidumpFileWriter::CopyStringToMDString(const wchar_t *str,
       // zero, but the second one may be zero, depending on the conversion from
       // UTF-32.
       int out_count = out[1] ? 2 : 1;
-      int out_size = sizeof(u_int16_t) * out_count;
+      size_t out_size = sizeof(u_int16_t) * out_count;
       result = mdstring->CopyIndexAfterObject(out_idx, out, out_size);
       out_idx += out_count;
     }
@@ -134,7 +134,7 @@ bool MinidumpFileWriter::CopyStringToMDString(const char *str,
     
     // Append the one or two UTF-16 characters
     int out_count = out[1] ? 2 : 1;
-    int out_size = sizeof(u_int16_t) * out_count;
+    size_t out_size = sizeof(u_int16_t) * out_count;
     result = mdstring->CopyIndexAfterObject(out_idx, out, out_size);
     out_idx += out_count;
   }
@@ -161,7 +161,8 @@ bool MinidumpFileWriter::WriteStringCore(const CharType *str,
     return false;
 
   // Set length excluding the NULL and copy the string
-  mdstring.get()->length = mdstring_length * sizeof(u_int16_t);
+  mdstring.get()->length = 
+      static_cast<u_int32_t>(mdstring_length * sizeof(u_int16_t));
   bool result = CopyStringToMDString(str, mdstring_length, &mdstring);
 
   // NULL terminate
@@ -235,15 +236,15 @@ bool MinidumpFileWriter::Copy(MDRVA position, const void *src, ssize_t size) {
   assert(file_ != -1);
 
   // Ensure that the data will fit in the allocated space
-  if (size + position > size_)
+  if (static_cast<size_t>(size + position) > size_)
     return false;
 
   // Seek and write the data
 #if __linux__
-  if (sys_lseek(file_, position, SEEK_SET) == static_cast<off_t>(position)) {
+  if (sys_lseek(file_, position, SEEK_SET) == position) {
     if (sys_write(file_, src, size) == size) {
 #else
-  if (lseek(file_, position, SEEK_SET) == static_cast<off_t>(position)) {
+  if (lseek(file_, position, SEEK_SET) == position) {
     if (write(file_, src, size) == size) {
 #endif
       return true;
@@ -260,11 +261,11 @@ bool UntypedMDRVA::Allocate(size_t size) {
   return position_ != MinidumpFileWriter::kInvalidMDRVA;
 }
 
-bool UntypedMDRVA::Copy(MDRVA position, const void *src, size_t size) {
+bool UntypedMDRVA::Copy(MDRVA pos, const void *src, size_t size) {
   assert(src);
   assert(size);
-  assert(position + size <= position_ + size_);
-  return writer_->Copy(position, src, size);
+  assert(pos + size <= position_ + size_);
+  return writer_->Copy(pos, src, size);
 }
 
 }  // namespace google_breakpad

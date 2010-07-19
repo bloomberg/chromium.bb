@@ -49,7 +49,7 @@ Module::Module(const string &name, const string &os,
 Module::~Module() {
   for (FileByNameMap::iterator it = files_.begin(); it != files_.end(); it++)
     delete it->second;
-  for (set<Function *>::iterator it = functions_.begin();
+  for (FunctionSet::iterator it = functions_.begin();
        it != functions_.end(); it++)
     delete *it;
   for (vector<StackFrameEntry *>::iterator it = stack_frame_entries_.begin();
@@ -62,7 +62,7 @@ void Module::SetLoadAddress(Address address) {
 }
 
 void Module::AddFunction(Function *function) {
-  std::pair<set<Function *>::iterator,bool> ret = functions_.insert(function);
+  std::pair<FunctionSet::iterator,bool> ret = functions_.insert(function);
   if (!ret.second) {
     // Free the duplicate we failed to insert because we own it.
     delete function;
@@ -135,7 +135,7 @@ void Module::AssignSourceIds() {
 
   // Next, mark all files actually cited by our functions' line number
   // info, by setting each one's source id to zero.
-  for (set<Function *>::const_iterator func_it = functions_.begin();
+  for (FunctionSet::const_iterator func_it = functions_.begin();
        func_it != functions_.end(); func_it++) {
     Function *func = *func_it;
     for (vector<Line>::iterator line_it = func->lines.begin();
@@ -192,7 +192,7 @@ bool Module::Write(FILE *stream) {
   }
 
   // Write out functions and their lines.
-  for (set<Function *>::const_iterator func_it = functions_.begin();
+  for (FunctionSet::const_iterator func_it = functions_.begin();
        func_it != functions_.end(); func_it++) {
     Function *func = *func_it;
     if (0 > fprintf(stream, "FUNC %llx %llx %llx %s\n",

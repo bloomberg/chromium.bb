@@ -49,7 +49,7 @@ using testing::ContainerEq;
 
 // Return a FILE * referring to a temporary file that will be deleted
 // automatically when the stream is closed or the program exits.
-FILE *checked_tmpfile() {
+static FILE *checked_tmpfile() {
   FILE *f = tmpfile();
   if (!f) {
     fprintf(stderr, "error creating temporary file: %s\n", strerror(errno));
@@ -60,7 +60,7 @@ FILE *checked_tmpfile() {
 
 // Read from STREAM until end of file, and return the contents as a
 // string.
-string checked_read(FILE *stream) {
+static string checked_read(FILE *stream) {
   string contents;
   int c;
   while ((c = getc(stream)) != EOF)
@@ -74,7 +74,7 @@ string checked_read(FILE *stream) {
 }
 
 // Apply 'fflush' to STREAM, and check for errors.
-void checked_fflush(FILE *stream) {
+static void checked_fflush(FILE *stream) {
   if (fflush(stream) == EOF) {
     fprintf(stderr, "error flushing temporary file stream: %s\n",
             strerror(errno));
@@ -83,7 +83,7 @@ void checked_fflush(FILE *stream) {
 }
 
 // Apply 'fclose' to STREAM, and check for errors.
-void checked_fclose(FILE *stream) {
+static void checked_fclose(FILE *stream) {
   if (fclose(stream) == EOF) {
     fprintf(stderr, "error closing temporary file stream: %s\n",
             strerror(errno));
@@ -91,7 +91,7 @@ void checked_fclose(FILE *stream) {
   }
 }
 
-Module::Function *generate_duplicate_function(const string &name) {
+static Module::Function *generate_duplicate_function(const string &name) {
   const Module::Address DUP_ADDRESS = 0xd35402aac7a7ad5cLL;
   const Module::Address DUP_SIZE = 0x200b26e605f99071LL;
   const Module::Address DUP_PARAMETER_SIZE = 0xf14ac4fed48c4a99LL;

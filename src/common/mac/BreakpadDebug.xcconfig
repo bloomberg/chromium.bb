@@ -1,4 +1,5 @@
-// Copyright 2008 Google Inc. All Rights Reserved.
+// Copyright (c) 2010, Google Inc.
+// All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -26,36 +27,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "Breakpad.xcconfig"
 
-#ifndef COMMON_DWARF_LINE_STATE_MACHINE_H__
-#define COMMON_DWARF_LINE_STATE_MACHINE_H__
-
-namespace dwarf2reader {
-
-// This is the format of a DWARF2/3 line state machine that we process
-// opcodes using.  There is no need for anything outside the lineinfo
-// processor to know how this works.
-struct LineStateMachine {
-  void Reset(bool default_is_stmt) {
-    file_num = 1;
-    address = 0;
-    line_num = 1;
-    column_num = 0;
-    is_stmt = default_is_stmt;
-    basic_block = false;
-    end_sequence = false;
-  }
-
-  uint32 file_num;
-  uint64 address;
-  uint32 line_num;
-  uint32 column_num;
-  bool is_stmt;  // stmt means statement.
-  bool basic_block;
-  bool end_sequence;
-};
-
-}  // namespace dwarf2reader
-
-
-#endif  // COMMON_DWARF_LINE_STATE_MACHINE_H__
+GCC_OPTIMIZATION_LEVEL = 0

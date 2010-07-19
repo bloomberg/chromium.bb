@@ -57,7 +57,8 @@ namespace google_breakpad {
 
 // constructor when generating from within the crashed process
 MinidumpGenerator::MinidumpGenerator()
-    : exception_type_(0),
+    : writer_(),
+      exception_type_(0),
       exception_code_(0),
       exception_subcode_(0),
       exception_thread_(0),
@@ -71,12 +72,14 @@ MinidumpGenerator::MinidumpGenerator()
 // crashed process
 MinidumpGenerator::MinidumpGenerator(mach_port_t crashing_task,
                                      mach_port_t handler_thread)
-    : exception_type_(0),
+    : writer_(),
+      exception_type_(0),
       exception_code_(0),
       exception_subcode_(0),
       exception_thread_(0),
       crashing_task_(crashing_task),
-      handler_thread_(handler_thread) {
+      handler_thread_(handler_thread),
+      dynamic_images_(NULL) {
   if (crashing_task != mach_task_self()) {
     dynamic_images_ = new DynamicImages(crashing_task_);
   } else {
@@ -488,7 +491,7 @@ bool MinidumpGenerator::WriteContext(breakpad_thread_state_data_t state,
   // not used in the flags register.  Since the minidump format
   // specifies 32 bits for the flags register, we can truncate safely
   // with no loss.
-  context_ptr->eflags = machine_state->__rflags;
+  context_ptr->eflags = static_cast<u_int32_t>(machine_state->__rflags);
   AddReg(cs);
   AddReg(fs);
   AddReg(gs);
@@ -727,7 +730,7 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
       return false;
 
     module->base_of_image = image->GetVMAddr() + image->GetVMAddrSlide();
-    module->size_of_image = image->GetVMSize();
+    module->size_of_image = static_cast<u_int32_t>(image->GetVMSize());
     module->module_name_rva = string_location.rva;
 
     // We'll skip the executable module, because they don't have
@@ -794,7 +797,7 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
             return false;
 
           module->base_of_image = seg->vmaddr + slide;
-          module->size_of_image = seg->vmsize;
+          module->size_of_image = static_cast<u_int32_t>(seg->vmsize);
           module->module_name_rva = string_location.rva;
 
           if (!WriteCVRecord(module, cpu_type, name))
@@ -943,8 +946,10 @@ bool MinidumpGenerator::WriteMiscInfoStream(MDRawDirectory *misc_info_stream) {
   struct rusage usage;
   if (getrusage(RUSAGE_SELF, &usage) != -1) {
     // Omit the fractional time since the MDRawMiscInfo only wants seconds
-    info_ptr->process_user_time = usage.ru_utime.tv_sec;
-    info_ptr->process_kernel_time = usage.ru_stime.tv_sec;
+    info_ptr->process_user_time =
+        static_cast<u_int32_t>(usage.ru_utime.tv_sec);
+    info_ptr->process_kernel_time =
+        static_cast<u_int32_t>(usage.ru_stime.tv_sec);
   }
   int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, info_ptr->process_id };
   size_t size;
@@ -956,20 +961,22 @@ bool MinidumpGenerator::WriteMiscInfoStream(MDRawDirectory *misc_info_stream) {
                          true) == KERN_SUCCESS) {
       struct kinfo_proc *proc = (struct kinfo_proc *)addr;
       if (!sysctl(mib, sizeof(mib) / sizeof(mib[0]), proc, &size, NULL, 0))
-        info_ptr->process_create_time = proc->kp_proc.p_starttime.tv_sec;
+        info_ptr->process_create_time =
+            static_cast<u_int32_t>(proc->kp_proc.p_starttime.tv_sec);
       mach_vm_deallocate(mach_task_self(), addr, size);
     }
   }
 
   // Speed
   uint64_t speed;
+  const uint64_t kOneMillion = 1000 * 1000;
   size = sizeof(speed);
   sysctlbyname("hw.cpufrequency_max", &speed, &size, NULL, 0);
-  info_ptr->processor_max_mhz = speed / (1000 * 1000);
-  info_ptr->processor_mhz_limit = speed / (1000 * 1000);
+  info_ptr->processor_max_mhz = static_cast<u_int32_t>(speed / kOneMillion);
+  info_ptr->processor_mhz_limit = static_cast<u_int32_t>(speed / kOneMillion);
   size = sizeof(speed);
   sysctlbyname("hw.cpufrequency", &speed, &size, NULL, 0);
-  info_ptr->processor_current_mhz = speed / (1000 * 1000);
+  info_ptr->processor_current_mhz = static_cast<u_int32_t>(speed / kOneMillion);
 
   return true;
 }

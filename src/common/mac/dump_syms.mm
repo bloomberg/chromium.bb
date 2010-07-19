@@ -54,6 +54,10 @@
 #include "common/stabs_reader.h"
 #include "common/stabs_to_module.h"
 
+#ifndef CPU_TYPE_ARM
+#define CPU_TYPE_ARM (static_cast<cpu_type_t>(12))
+#endif //  CPU_TYPE_ARM
+
 using dwarf2reader::ByteReader;
 using google_breakpad::DwarfCUToModule;
 using google_breakpad::DwarfLineToModule;
@@ -176,7 +180,7 @@ bool DumpSymbols::SetArchitecture(cpu_type_t cpu_type,
   // Find the best match for the architecture the user requested.
   const struct fat_arch *best_match
     = NXFindBestFatArch(cpu_type, cpu_subtype, &object_files_[0],
-                        object_files_.size());
+                        static_cast<uint32_t>(object_files_.size()));
   if (!best_match) return false;
 
   // Record the selected object file.
@@ -184,6 +188,15 @@ bool DumpSymbols::SetArchitecture(cpu_type_t cpu_type,
   return true;
 }
 
+bool DumpSymbols::SetArchitecture(const std::string &arch_name) {
+  bool arch_set = false;
+  const NXArchInfo *arch_info = NXGetArchInfoFromName(arch_name.c_str());
+  if (arch_info) {
+    arch_set = SetArchitecture(arch_info->cputype, arch_info->cpusubtype);
+  }
+  return arch_set;
+}
+  
 string DumpSymbols::Identifier() {
   FileID file_id([object_filename_ fileSystemRepresentation]);
   unsigned char identifier_bytes[16];

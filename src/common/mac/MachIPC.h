@@ -224,7 +224,7 @@ class MachMessage {
   void SetDescriptor(int n, const MachMsgPortDescriptor &desc);
 
   // Returns total message size setting msgh_size in the header to this value
-  int CalculateSize();
+  mach_msg_size_t CalculateSize();
 
   mach_msg_header_t  head;
   mach_msg_body_t    body;

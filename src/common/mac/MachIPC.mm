@@ -53,10 +53,10 @@ MachSendMessage::MachSendMessage(int32_t message_id) : MachMessage() {
 bool MachMessage::SetData(void *data,
                           int32_t data_length) {
   // first check to make sure we have enough space
-  int size = CalculateSize();
-  int new_size = size + data_length;
+  size_t size = CalculateSize();
+  size_t new_size = size + data_length;
   
-  if ((unsigned)new_size > sizeof(MachMessage)) {
+  if (new_size > sizeof(MachMessage)) {
     return false;  // not enough space
   }
 
@@ -72,8 +72,8 @@ bool MachMessage::SetData(void *data,
 // calculates and returns the total size of the message
 // Currently, the entire message MUST fit inside of the MachMessage
 //    messsage size <= sizeof(MachMessage)
-int MachMessage::CalculateSize() {
-  int size = sizeof(mach_msg_header_t) + sizeof(mach_msg_body_t);
+mach_msg_size_t MachMessage::CalculateSize() {
+  size_t size = sizeof(mach_msg_header_t) + sizeof(mach_msg_body_t);
   
   // add space for MessageDataPacket
   int32_t alignedDataLength = (GetDataLength() + 3) & ~0x3;
@@ -82,14 +82,14 @@ int MachMessage::CalculateSize() {
   // add space for descriptors
   size += GetDescriptorCount() * sizeof(MachMsgPortDescriptor);
   
-  head.msgh_size = size;
+  head.msgh_size = static_cast<mach_msg_size_t>(size);
   
-  return size;
+  return head.msgh_size;
 }
 
 //==============================================================================
 MachMessage::MessageDataPacket *MachMessage::GetDataPacket() {
-  int desc_size = sizeof(MachMsgPortDescriptor)*GetDescriptorCount();
+  size_t desc_size = sizeof(MachMsgPortDescriptor)*GetDescriptorCount();
   MessageDataPacket *packet =
     reinterpret_cast<MessageDataPacket*>(padding + desc_size);
 
@@ -109,9 +109,9 @@ void MachMessage::SetDescriptor(int n,
 bool MachMessage::AddDescriptor(const MachMsgPortDescriptor &desc) {
   // first check to make sure we have enough space
   int size = CalculateSize();
-  int new_size = size + sizeof(MachMsgPortDescriptor);
+  size_t new_size = size + sizeof(MachMsgPortDescriptor);
   
-  if ((unsigned)new_size > sizeof(MachMessage)) {
+  if (new_size > sizeof(MachMessage)) {
     return false;  // not enough space
   }
 
@@ -180,8 +180,8 @@ ReceivePort::ReceivePort(const char *receive_port_name) {
   if (init_result_ != KERN_SUCCESS)
     return;
 
-  mach_port_t bootstrap_port = 0;
-  init_result_ = task_get_bootstrap_port(current_task, &bootstrap_port);
+  mach_port_t task_bootstrap_port = 0;
+  init_result_ = task_get_bootstrap_port(current_task, &task_bootstrap_port);
 
   if (init_result_ != KERN_SUCCESS)
     return;
@@ -256,13 +256,14 @@ kern_return_t ReceivePort::WaitForMessage(MachReceiveMessage *out_message,
 //==============================================================================
 // get a port with send rights corresponding to a named registered service
 MachPortSender::MachPortSender(const char *receive_port_name) {
-  mach_port_t bootstrap_port = 0;
-  init_result_ = task_get_bootstrap_port(mach_task_self(), &bootstrap_port);
+  mach_port_t task_bootstrap_port = 0;
+  init_result_ = task_get_bootstrap_port(mach_task_self(), 
+                                         &task_bootstrap_port);
   
   if (init_result_ != KERN_SUCCESS)
     return;
 
-  init_result_ = bootstrap_look_up(bootstrap_port,
+  init_result_ = bootstrap_look_up(task_bootstrap_port,
                     const_cast<char*>(receive_port_name),
                     &send_port_);
 }

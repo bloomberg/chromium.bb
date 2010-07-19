@@ -274,7 +274,8 @@ class Module {
   // to it; destroying the module frees the Files and Functions these
   // point to.
   FileByNameMap files_;                         // This module's source files.
-  set<Function *, FunctionCompare> functions_;  // This module's functions.
+  typedef set<Function *, FunctionCompare> FunctionSet;
+  FunctionSet functions_;  // This module's functions.
 
   // The module owns all the call frame info entries that have been
   // added to it.

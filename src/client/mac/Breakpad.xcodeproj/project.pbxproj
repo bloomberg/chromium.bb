@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 42;
+	objectVersion = 45;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -22,6 +22,12 @@
 				F95BB8B3101F94D300AA053B /* PBXTargetDependency */,
 				F95BB8B5101F94D300AA053B /* PBXTargetDependency */,
 				F95BB8B7101F94D300AA053B /* PBXTargetDependency */,
+				8B31023911F0CF0600FCF3E4 /* PBXTargetDependency */,
+				8B31051711F1010E00FCF3E4 /* PBXTargetDependency */,
+				8B31051911F1010E00FCF3E4 /* PBXTargetDependency */,
+				8B31051B11F1010E00FCF3E4 /* PBXTargetDependency */,
+				8B31051D11F1010E00FCF3E4 /* PBXTargetDependency */,
+				8B31051F11F1010E00FCF3E4 /* PBXTargetDependency */,
 			);
 			name = All;
 			productName = All;
@@ -32,6 +38,15 @@
 		3329D4ED0FA16D820007BBC5 /* Breakpad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3329D4EC0FA16D820007BBC5 /* Breakpad.xib */; };
 		33880C800F9E097100817F82 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33880C7E0F9E097100817F82 /* InfoPlist.strings */; };
 		4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */; };
+		8B3101C611F0CD9F00FCF3E4 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D6A5FE840307C02AAC07 /* AppKit.framework */; };
+		8B3101C711F0CD9F00FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		8B3101CA11F0CDB000FCF3E4 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D6A5FE840307C02AAC07 /* AppKit.framework */; };
+		8B3101CB11F0CDB000FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		8B3101EA11F0CDE300FCF3E4 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B3101E911F0CDE300FCF3E4 /* SenTestingKit.framework */; };
+		8B31029411F0D54300FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		8B3102E611F0D74C00FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		8B3102EB11F0D78000FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		8B31FC8211EFD2B800FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		D2A5DD301188633800081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
 		D2A5DD401188640400081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
@@ -114,6 +129,146 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		8B31023811F0CF0600FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = B88FAFC9116BDCAD00407530;
+			remoteInfo = all_unittests;
+		};
+		8B31051611F1010E00FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F93803BD0F80820F004D428B;
+			remoteInfo = generator_test;
+		};
+		8B31051811F1010E00FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F93DE2D00F82A67300608B94;
+			remoteInfo = minidump_file_writer_unittest;
+		};
+		8B31051A11F1010E00FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F93DE32B0F82C55600608B94;
+			remoteInfo = handler_test;
+		};
+		8B31051C11F1010E00FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = B89E0E731166575200DD08C9;
+			remoteInfo = macho_dump;
+		};
+		8B31051E11F1010E00FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB894101F94C000AA053B /* symupload.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 9BD835FA0B0544950055103E;
+			remoteInfo = minidump_upload;
+		};
+		8B31F7A011EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B89E0E741166575200DD08C9;
+			remoteInfo = macho_dump;
+		};
+		8B31F7A211EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB024116BDFFF00407530;
+			remoteInfo = gtestmockall;
+		};
+		8B31F7A411EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB14B116CF4A700407530;
+			remoteInfo = byte_cursor_unittest;
+		};
+		8B31F7A611EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B89E0E9511665A6400DD08C9;
+			remoteInfo = macho_reader_unittest;
+		};
+		8B31F7A811EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB007116BDE8300407530;
+			remoteInfo = stabs_reader_unittest;
+		};
+		8B31F7AA11EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB135116CF30F00407530;
+			remoteInfo = bytereader_unittest;
+		};
+		8B31F7AC11EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FAF2F116A591E00407530;
+			remoteInfo = dwarf2reader_cfi_unittest;
+		};
+		8B31F7AE11EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB0DF116CEEA800407530;
+			remoteInfo = dwarf2diehandler_unittest;
+		};
+		8B31F7B011EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB10A116CF07900407530;
+			remoteInfo = dwarf_cu_to_module_unittest;
+		};
+		8B31F7B211EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB0F2116CEF1900407530;
+			remoteInfo = dwarf_line_to_module_unittest;
+		};
+		8B31F7B411EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB11F116CF27F00407530;
+			remoteInfo = dwarf_cfi_to_module_unittest;
+		};
+		8B31F7B611EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B84A91F4116CF784006C210E;
+			remoteInfo = stabs_to_module_unittest;
+		};
+		8B31F7B811EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B88FB0B9116CEABF00407530;
+			remoteInfo = module_unittest;
+		};
+		8B31F7BA11EF9A8700FCF3E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D21F97D211CBA0F200239E38;
+			remoteInfo = test_assembler_unittest;
+		};
 		F91AF6370FD60A74009D8BE2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -230,7 +385,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = F95BB889101F94AC00AA053B /* dump_syms.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 8DD76F960486AA7600D96B5E;
+			remoteGlobalIDString = B8C5B5101166531A00D34F4E;
 			remoteInfo = dump_syms;
 		};
 		F95BB8B4101F94D300AA053B /* PBXContainerItemProxy */ = {
@@ -285,6 +440,12 @@
 		3329D4EC0FA16D820007BBC5 /* Breakpad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Breakpad.xib; path = sender/Breakpad.xib; sourceTree = "<group>"; };
 		33880C7F0F9E097100817F82 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = sender/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = crash_report_sender.icns; path = sender/crash_report_sender.icns; sourceTree = "<group>"; };
+		8B31007011F0CD3C00FCF3E4 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMDefines.h; path = ../../common/mac/GTMDefines.h; sourceTree = SOURCE_ROOT; };
+		8B3101E911F0CDE300FCF3E4 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		8B31022211F0CE1000FCF3E4 /* GTMGarbageCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMGarbageCollection.h; path = ../../common/mac/GTMGarbageCollection.h; sourceTree = SOURCE_ROOT; };
+		8B31027711F0D3AF00FCF3E4 /* BreakpadDebug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadDebug.xcconfig; path = ../../common/mac/BreakpadDebug.xcconfig; sourceTree = SOURCE_ROOT; };
+		8B31027811F0D3AF00FCF3E4 /* BreakpadRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadRelease.xcconfig; path = ../../common/mac/BreakpadRelease.xcconfig; sourceTree = SOURCE_ROOT; };
+		8B31FFF611F0C90500FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
 		8DC2EF5B0486A6940098B216 /* Breakpad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Breakpad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F91AF5CF0FD60393009D8BE2 /* BreakpadFramework_Test.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = BreakpadFramework_Test.mm; path = tests/BreakpadFramework_Test.mm; sourceTree = "<group>"; };
 		F9286B380F7EB25800A4DCC8 /* Inspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Inspector.h; path = crash_generation/Inspector.h; sourceTree = "<group>"; };
@@ -393,6 +554,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B31FC8211EFD2B800FCF3E4 /* Foundation.framework in Frameworks */,
 				F92C56570ECD113E009BE4BA /* Carbon.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -402,6 +564,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9C44EE50EF0A006003AEBAA /* SystemConfiguration.framework in Frameworks */,
+				8B3101C611F0CD9F00FCF3E4 /* AppKit.framework in Frameworks */,
+				8B3101C711F0CD9F00FCF3E4 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -409,6 +573,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B31029411F0D54300FCF3E4 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -423,6 +588,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B3102E611F0D74C00FCF3E4 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -431,6 +597,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9C44E000EF077CD003AEBAA /* Breakpad.framework in Frameworks */,
+				8B3101CA11F0CDB000FCF3E4 /* AppKit.framework in Frameworks */,
+				8B3101CB11F0CDB000FCF3E4 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,6 +607,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F91AF6210FD60784009D8BE2 /* Breakpad.framework in Frameworks */,
+				8B3101EA11F0CDE300FCF3E4 /* SenTestingKit.framework in Frameworks */,
+				8B3102EB11F0D78000FCF3E4 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -464,6 +634,9 @@
 		0867D691FE84028FC02AAC07 /* Breakpad */ = {
 			isa = PBXGroup;
 			children = (
+				8B31FFF611F0C90500FCF3E4 /* Breakpad.xcconfig */,
+				8B31027711F0D3AF00FCF3E4 /* BreakpadDebug.xcconfig */,
+				8B31027811F0D3AF00FCF3E4 /* BreakpadRelease.xcconfig */,
 				F95BB8A3101F94C300AA053B /* Tools */,
 				32DBCF5E0370ADEE00C91783 /* Breakpad_Prefix.pch */,
 				F92C538D0ECCE6F2009BE4BA /* client */,
@@ -478,6 +651,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8B3101E911F0CDE300FCF3E4 /* SenTestingKit.framework */,
 				F9C44EE40EF0A006003AEBAA /* SystemConfiguration.framework */,
 				F92C554A0ECCF530009BE4BA /* Carbon.framework */,
 				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
@@ -523,6 +697,8 @@
 		F92C53840ECCE68D009BE4BA /* mac */ = {
 			isa = PBXGroup;
 			children = (
+				8B31022211F0CE1000FCF3E4 /* GTMGarbageCollection.h */,
+				8B31007011F0CD3C00FCF3E4 /* GTMDefines.h */,
 				F9C77E0F0F7DDF650045F7DB /* testing */,
 				F9C44EE70EF0A3C1003AEBAA /* GTMLogger.h */,
 				F9C44EE80EF0A3C1003AEBAA /* GTMLogger.m */,
@@ -620,6 +796,20 @@
 			isa = PBXGroup;
 			children = (
 				F95BB892101F94AC00AA053B /* dump_syms */,
+				8B31F7A111EF9A8700FCF3E4 /* macho_dump */,
+				8B31F7A311EF9A8700FCF3E4 /* libgtestmockall.a */,
+				8B31F7A511EF9A8700FCF3E4 /* byte_cursor_unittest */,
+				8B31F7A711EF9A8700FCF3E4 /* macho_reader_unittest */,
+				8B31F7A911EF9A8700FCF3E4 /* stabs_reader_unittest */,
+				8B31F7AB11EF9A8700FCF3E4 /* bytereader_unittest */,
+				8B31F7AD11EF9A8700FCF3E4 /* dwarf2reader_cfi_unittest */,
+				8B31F7AF11EF9A8700FCF3E4 /* dwarf2diehandler_unittest */,
+				8B31F7B111EF9A8700FCF3E4 /* dwarf_cu_to_module_unittest */,
+				8B31F7B311EF9A8700FCF3E4 /* dwarf_line_to_module_unittest */,
+				8B31F7B511EF9A8700FCF3E4 /* dwarf_cfi_to_module_unittest */,
+				8B31F7B711EF9A8700FCF3E4 /* stabs_to_module_unittest */,
+				8B31F7B911EF9A8700FCF3E4 /* module_unittest */,
+				8B31F7BB11EF9A8700FCF3E4 /* test_assembler_unittest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -870,7 +1060,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "Breakpad" */;
-			compatibilityVersion = "Xcode 2.4";
+			compatibilityVersion = "Xcode 3.1";
 			hasScannedForEncodings = 1;
 			mainGroup = 0867D691FE84028FC02AAC07 /* Breakpad */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -906,6 +1096,104 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		8B31F7A111EF9A8700FCF3E4 /* macho_dump */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = macho_dump;
+			remoteRef = 8B31F7A011EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7A311EF9A8700FCF3E4 /* libgtestmockall.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libgtestmockall.a;
+			remoteRef = 8B31F7A211EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7A511EF9A8700FCF3E4 /* byte_cursor_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = byte_cursor_unittest;
+			remoteRef = 8B31F7A411EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7A711EF9A8700FCF3E4 /* macho_reader_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = macho_reader_unittest;
+			remoteRef = 8B31F7A611EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7A911EF9A8700FCF3E4 /* stabs_reader_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = stabs_reader_unittest;
+			remoteRef = 8B31F7A811EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7AB11EF9A8700FCF3E4 /* bytereader_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = bytereader_unittest;
+			remoteRef = 8B31F7AA11EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7AD11EF9A8700FCF3E4 /* dwarf2reader_cfi_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = dwarf2reader_cfi_unittest;
+			remoteRef = 8B31F7AC11EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7AF11EF9A8700FCF3E4 /* dwarf2diehandler_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = dwarf2diehandler_unittest;
+			remoteRef = 8B31F7AE11EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7B111EF9A8700FCF3E4 /* dwarf_cu_to_module_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = dwarf_cu_to_module_unittest;
+			remoteRef = 8B31F7B011EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7B311EF9A8700FCF3E4 /* dwarf_line_to_module_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = dwarf_line_to_module_unittest;
+			remoteRef = 8B31F7B211EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7B511EF9A8700FCF3E4 /* dwarf_cfi_to_module_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = dwarf_cfi_to_module_unittest;
+			remoteRef = 8B31F7B411EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7B711EF9A8700FCF3E4 /* stabs_to_module_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = stabs_to_module_unittest;
+			remoteRef = 8B31F7B611EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7B911EF9A8700FCF3E4 /* module_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = module_unittest;
+			remoteRef = 8B31F7B811EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B31F7BB11EF9A8700FCF3E4 /* test_assembler_unittest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = test_assembler_unittest;
+			remoteRef = 8B31F7BA11EF9A8700FCF3E4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		F95BB885101F949F00AA053B /* crash_report */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -1149,6 +1437,36 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		8B31023911F0CF0600FCF3E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = all_unittests;
+			targetProxy = 8B31023811F0CF0600FCF3E4 /* PBXContainerItemProxy */;
+		};
+		8B31051711F1010E00FCF3E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F93803BD0F80820F004D428B /* generator_test */;
+			targetProxy = 8B31051611F1010E00FCF3E4 /* PBXContainerItemProxy */;
+		};
+		8B31051911F1010E00FCF3E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F93DE2D00F82A67300608B94 /* minidump_file_writer_unittest */;
+			targetProxy = 8B31051811F1010E00FCF3E4 /* PBXContainerItemProxy */;
+		};
+		8B31051B11F1010E00FCF3E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F93DE32B0F82C55600608B94 /* handler_test */;
+			targetProxy = 8B31051A11F1010E00FCF3E4 /* PBXContainerItemProxy */;
+		};
+		8B31051D11F1010E00FCF3E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = macho_dump;
+			targetProxy = 8B31051C11F1010E00FCF3E4 /* PBXContainerItemProxy */;
+		};
+		8B31051F11F1010E00FCF3E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = minidump_upload;
+			targetProxy = 8B31051E11F1010E00FCF3E4 /* PBXContainerItemProxy */;
+		};
 		F91AF6380FD60A74009D8BE2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* Breakpad */;
@@ -1275,15 +1593,10 @@
 		1DEB91AE08733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework/Breakpad_Prefix.pch;
 				HEADER_SEARCH_PATHS = "../..//**";
@@ -1297,8 +1610,6 @@
 		1DEB91AF08733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
@@ -1314,48 +1625,28 @@
 		};
 		1DEB91B208733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8B31027711F0D3AF00FCF3E4 /* BreakpadDebug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ONLY_ACTIVE_ARCH_PRE_XCODE_3_1)";
-				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH_ACTUAL)";
-				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 			};
 			name = Debug;
 		};
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8B31027811F0D3AF00FCF3E4 /* BreakpadRelease.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
-				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "../..//**";
-				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 			};
 			name = Release;
 		};
 		F92C53560ECCE34A009BE4BA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = "../..//**";
-				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
-					"-lcrypto",
 					"$(inherited)",
+					"-lcrypto",
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = Inspector;
 			};
 			name = Debug;
@@ -1363,45 +1654,28 @@
 		F92C53570ECCE34A009BE4BA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEAD_CODE_STRIPPING = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				HEADER_SEARCH_PATHS = "../..//**";
-				INSTALL_PATH = /usr/local/bin;
-				LD_GENERATE_MAP_FILE = YES;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lcrypto",
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = Inspector;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		F92C563D0ECD10B3009BE4BA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
-				INSTALL_PATH = /usr/local/lib;
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-headerpad_max_install_names",
 					"-lcrypto",
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = breakpadUtilities;
 			};
 			name = Debug;
@@ -1409,47 +1683,24 @@
 		F92C563E0ECD10B3009BE4BA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
-				INSTALL_PATH = /usr/local/lib;
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-headerpad_max_install_names",
 					"-lcrypto",
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = breakpadUtilities;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		F92C56A30ECE04A8009BE4BA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
 				INFOPLIST_FILE = "sender/crash_report_sender-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
 				PRODUCT_NAME = crash_report_sender;
 			};
 			name = Debug;
@@ -1457,42 +1708,16 @@
 		F92C56A40ECE04A8009BE4BA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
 				INFOPLIST_FILE = "sender/crash_report_sender-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
 				PRODUCT_NAME = crash_report_sender;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		F93803C00F808210004D428B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = /usr/local/bin;
-				OTHER_LDFLAGS = (
-					"-lcrypto",
-					"-framework",
-					Foundation,
-				);
-				PREBINDING = NO;
+				OTHER_LDFLAGS = "-lcrypto";
 				PRODUCT_NAME = generator_test;
 				USER_HEADER_SEARCH_PATHS = ../../;
 			};
@@ -1501,41 +1726,15 @@
 		F93803C10F808210004D428B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = /usr/local/bin;
-				OTHER_LDFLAGS = (
-					"-lcrypto",
-					"-framework",
-					Foundation,
-				);
-				PREBINDING = NO;
+				OTHER_LDFLAGS = "-lcrypto";
 				PRODUCT_NAME = generator_test;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		F93DE2D30F82A67400608B94 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_CHAR_IS_UNSIGNED_CHAR = YES;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = /usr/local/bin;
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
 				PRODUCT_NAME = minidump_file_writer_unittest;
 				USER_HEADER_SEARCH_PATHS = ../../;
 			};
@@ -1544,40 +1743,14 @@
 		F93DE2D40F82A67400608B94 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = /usr/local/bin;
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
 				PRODUCT_NAME = minidump_file_writer_unittest;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		F93DE32E0F82C55700608B94 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = /usr/local/bin;
-				OTHER_LDFLAGS = (
-					"-lcrypto",
-					"-framework",
-					Foundation,
-				);
-				PREBINDING = NO;
+				OTHER_LDFLAGS = "-lcrypto";
 				PRODUCT_NAME = handler_test;
 				USER_HEADER_SEARCH_PATHS = ../../;
 			};
@@ -1586,49 +1759,26 @@
 		F93DE32F0F82C55700608B94 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				INSTALL_PATH = /usr/local/bin;
-				OTHER_LDFLAGS = (
-					"-lcrypto",
-					"-framework",
-					Foundation,
-				);
-				PREBINDING = NO;
+				OTHER_LDFLAGS = "-lcrypto";
 				PRODUCT_NAME = handler_test;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		F93DE3B90F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8B31027711F0D3AF00FCF3E4 /* BreakpadDebug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ONLY_ACTIVE_ARCH_PRE_XCODE_3_1)";
-				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH)";
-				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 			};
 			name = "Debug With Code Coverage";
 		};
 		F93DE3BA0F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework/Breakpad_Prefix.pch;
 				HEADER_SEARCH_PATHS = "../..//**";
@@ -1642,19 +1792,11 @@
 		F93DE3BB0F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = "../..//**";
-				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
-					"-lcrypto",
 					"$(inherited)",
+					"-lcrypto",
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = Inspector;
 			};
 			name = "Debug With Code Coverage";
@@ -1662,24 +1804,16 @@
 		F93DE3BC0F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
-				INSTALL_PATH = /usr/local/lib;
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-headerpad_max_install_names",
 					"-lcrypto",
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = breakpadUtilities;
 			};
 			name = "Debug With Code Coverage";
@@ -1687,23 +1821,8 @@
 		F93DE3BD0F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
 				INFOPLIST_FILE = "sender/crash_report_sender-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
 				PRODUCT_NAME = crash_report_sender;
 			};
 			name = "Debug With Code Coverage";
@@ -1711,24 +1830,8 @@
 		F93DE3BE0F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/build/$(CONFIGURATION)";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = testapp/Info.plist;
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
 				PRODUCT_NAME = BreakpadTest;
 			};
 			name = "Debug With Code Coverage";
@@ -1736,9 +1839,6 @@
 		F93DE3BF0F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = All;
 			};
 			name = "Debug With Code Coverage";
@@ -1746,28 +1846,14 @@
 		F93DE3C00F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
-				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
-				INFOPLIST_FILE = "UnitTests-Info.plist";
-				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
-				LIBRARY_SEARCH_PATHS = ./gcov;
-				OTHER_LDFLAGS = (
-					"-lgcov",
-					"-framework",
-					Cocoa,
-					"-framework",
-					SenTestingKit,
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(DEVELOPER_FRAMEWORKS_DIR)\"",
 				);
-				PREBINDING = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				INFOPLIST_FILE = "UnitTests-Info.plist";
+				LIBRARY_SEARCH_PATHS = ./gcov;
 				PRODUCT_NAME = UnitTests;
-				USER_HEADER_SEARCH_PATHS = "../../ ../../common/mac/**";
 				WRAPPER_EXTENSION = octest;
 			};
 			name = "Debug With Code Coverage";
@@ -1775,15 +1861,6 @@
 		F93DE3C10F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
-				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = ./gcov;
 				OTHER_LDFLAGS = (
 					"-lgcov",
@@ -1791,7 +1868,6 @@
 					"-framework",
 					Foundation,
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = generator_test;
 				USER_HEADER_SEARCH_PATHS = ../../;
 			};
@@ -1800,25 +1876,10 @@
 		F93DE3C20F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_CHAR_IS_UNSIGNED_CHAR = YES;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
 				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = ./gcov;
-				OTHER_LDFLAGS = (
-					"-lgcov",
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
+				OTHER_LDFLAGS = "-lgcov";
 				PRODUCT_NAME = minidump_file_writer_unittest;
 				USER_HEADER_SEARCH_PATHS = ../../;
 			};
@@ -1827,23 +1888,13 @@
 		F93DE3C30F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
 				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = ./gcov;
 				OTHER_LDFLAGS = (
 					"-lcrypto",
 					"-lgcov",
-					"-framework",
-					Foundation,
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = handler_test;
 				USER_HEADER_SEARCH_PATHS = ../../;
 			};
@@ -1852,9 +1903,6 @@
 		F94585850F782326009A47BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = All;
 			};
 			name = Debug;
@@ -1862,35 +1910,15 @@
 		F94585860F782326009A47BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				PRODUCT_NAME = All;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		F9C44DA80EF060A8003AEBAA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/build/$(CONFIGURATION)";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
 				INFOPLIST_FILE = testapp/Info.plist;
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
 				PRODUCT_NAME = BreakpadTest;
 			};
 			name = Debug;
@@ -1898,46 +1926,22 @@
 		F9C44DA90EF060A8003AEBAA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/build/$(CONFIGURATION)";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				INFOPLIST_FILE = testapp/Info.plist;
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-					"-framework",
-					AppKit,
-				);
-				PREBINDING = NO;
 				PRODUCT_NAME = BreakpadTest;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
 		F9C77DDC0F7DD5D00045F7DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
-				INFOPLIST_FILE = "UnitTests-Info.plist";
-				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Cocoa,
-					"-framework",
-					SenTestingKit,
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(DEVELOPER_FRAMEWORKS_DIR)\"",
 				);
-				PREBINDING = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				INFOPLIST_FILE = "UnitTests-Info.plist";
 				PRODUCT_NAME = UnitTests;
-				USER_HEADER_SEARCH_PATHS = "../../ ../../common/mac/**";
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -1945,25 +1949,14 @@
 		F9C77DDD0F7DD5D00045F7DB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_MODEL_TUNING = G5;
-				INFOPLIST_FILE = "UnitTests-Info.plist";
-				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Cocoa,
-					"-framework",
-					SenTestingKit,
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(DEVELOPER_FRAMEWORKS_DIR)\"",
 				);
-				PREBINDING = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				INFOPLIST_FILE = "UnitTests-Info.plist";
 				PRODUCT_NAME = UnitTests;
 				WRAPPER_EXTENSION = octest;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
