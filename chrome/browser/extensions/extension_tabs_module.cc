@@ -889,6 +889,8 @@ bool CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
                                            &temp_canvas)) {
     return false;
   }
+  LOG(INFO) << "captureVisibleTab() Got image from backing store.";
+
   SendResultFromBitmap(
       temp_canvas.getTopPlatformDevice().accessBitmap(false));
   return true;
@@ -909,6 +911,7 @@ void CaptureVisibleTabFunction::Observe(NotificationType type,
     error_ = keys::kInternalVisibleTabCaptureError;
     SendResponse(false);
   } else {
+    LOG(INFO) << "captureVisibleTab() Got image from renderer.";
     SendResultFromBitmap(*screen_capture);
   }
 
@@ -930,17 +933,15 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
           gfx::JPEGCodec::FORMAT_BGRA,
           screen_capture.width(),
           screen_capture.height(),
-          static_cast<int>(screen_capture.rowBytes()), image_quality_,
+          static_cast<int>(screen_capture.rowBytes()),
+          image_quality_,
           &image_data->data);
       mime_type = keys::kMimeTypeJpeg;
       break;
     case FORMAT_PNG:
-      encoded = gfx::PNGCodec::Encode(
-          reinterpret_cast<unsigned char*>(screen_capture.getAddr32(0, 0)),
-          gfx::PNGCodec::FORMAT_BGRA,
-          screen_capture.width(),
-          screen_capture.height(),
-          static_cast<int>(screen_capture.rowBytes()), false,
+      encoded = gfx::PNGCodec::EncodeBGRASkBitmap(
+          screen_capture,
+          true,  // Discard transparency.
           &image_data->data);
       mime_type = keys::kMimeTypePng;
       break;
