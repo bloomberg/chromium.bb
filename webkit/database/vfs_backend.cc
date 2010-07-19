@@ -4,15 +4,10 @@
 
 #include "webkit/database/vfs_backend.h"
 
-#if defined(USE_SYSTEM_SQLITE)
-#include <sqlite3.h>
-#else
-#include "third_party/sqlite/preprocessed/sqlite3.h"
-#endif
-
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "third_party/sqlite/preprocessed/sqlite3.h"
 
 namespace webkit_database {
 

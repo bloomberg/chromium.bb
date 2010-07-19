@@ -4,12 +4,6 @@
 
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 
-#if defined(USE_SYSTEM_SQLITE)
-#include <sqlite3.h>
-#else
-#include "third_party/sqlite/preprocessed/sqlite3.h"
-#endif
-
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"

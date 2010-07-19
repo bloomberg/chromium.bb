@@ -8,16 +8,11 @@
 #include <string>
 #include <vector>
 
-#if defined(USE_SYSTEM_SQLITE)
-#include <sqlite3.h>
-#else
-#include "third_party/sqlite/preprocessed/sqlite3.h"
-#endif
-
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/sqlite/preprocessed/sqlite3.h"
 
 // forward declarations of classes defined here
 class FilePath;
@@ -400,11 +395,5 @@ inline bool DoesSqliteColumnExist(sqlite3* db,
 bool DoesSqliteTableHaveRow(sqlite3* db, const char* table_name);
 
 }  // namespace sqlite_utils
-
-#if defined(USE_SYSTEM_SQLITE)
-// This function is a local change to sqlite3 which doesn't exist when one is
-// using the system sqlite library. Thus, we stub it out here.
-int sqlite3Preload(sqlite3* db);
-#endif
 
 #endif  // CHROME_COMMON_SQLITE_UTILS_H_

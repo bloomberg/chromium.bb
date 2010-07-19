@@ -8,12 +8,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-#if defined(USE_SYSTEM_SQLITE)
-#include <sqlite3.h>
-#else
-#include "third_party/sqlite/preprocessed/sqlite3.h"
-#endif
-
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
@@ -24,6 +18,7 @@
 #include "chrome/browser/renderer_host/database_permission_request.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/sqlite/preprocessed/sqlite3.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"

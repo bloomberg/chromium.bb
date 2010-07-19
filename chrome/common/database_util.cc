@@ -4,15 +4,10 @@
 
 #include "chrome/common/database_util.h"
 
-#if defined(USE_SYSTEM_SQLITE)
-#include <sqlite3.h>
-#else
-#include "third_party/sqlite/preprocessed/sqlite3.h"
-#endif
-
 #include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "third_party/sqlite/preprocessed/sqlite3.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebKitClient;

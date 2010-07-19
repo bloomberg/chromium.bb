@@ -506,11 +506,3 @@ std::wstring SQLStatement::column_wstring(int index) {
   column_wstring(index, &wstr);
   return wstr;
 }
-
-#if defined(USE_SYSTEM_SQLITE)
-// This function is a local change to sqlite3 which doesn't exist when one is
-// using the system sqlite library. Thus, we stub it out here.
-int sqlite3Preload(sqlite3* db) {
-  return 0;
-}
-#endif
