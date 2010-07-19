@@ -198,6 +198,8 @@
       <include name="IDR_NEWTAB_BUTTON_H" file="newtab_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_CHROME_STORE_PAGE_FAVICON" file="ntp_store_favicon.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_CHROME_STORE_PAGE_THUMBNAIL" file="ntp_store_thumb.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON" file="ntp_welcome_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL" file="ntp_welcome_thumb.png" type="BINDATA" />
       <include name="IDR_NEWTAB_MENU_MASK" file="ntp_menu_mask.png" type="BINDATA" />
