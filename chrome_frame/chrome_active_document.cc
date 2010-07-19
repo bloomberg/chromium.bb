@@ -1289,6 +1289,7 @@ bool ChromeActiveDocument::ShouldFireDocumentComplete() {
       { "askbar.dll", 4, 1 },  // biggest troublemaker: 4.1.0.5.
       { "gbieh.dll", 3, 8 },  // biggest troublemaker: 3.8.14.12
       { "gbiehcef.dll", 3, 8 },  // biggest troublemaker: 3.8.11.23
+      { "gbiehUni.dll", 3, 8 },  // Another Banco DLL.
     };
 
     for (size_t i = 0; results == CHECK_NOT_DONE &&
