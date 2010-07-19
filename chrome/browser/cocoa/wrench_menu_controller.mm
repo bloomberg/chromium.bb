@@ -7,6 +7,8 @@
 #include "app/menus/menu_model.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/wrench_menu_model.h"
 
@@ -71,6 +73,11 @@
   NSString* title = base::SysUTF16ToNSString(
       [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[zoomItem_ viewWithTag:IDC_ZOOM_PERCENT_DISPLAY] setTitle:title];
+
+  NSImage* icon = [self wrenchMenuModel]->browser()->window()->IsFullscreen() ?
+      [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :
+          [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
+  [zoomFullScreen_ setImage:icon];
 }
 
 // Used to dispatch commands from the Wrench menu. The custom items within the

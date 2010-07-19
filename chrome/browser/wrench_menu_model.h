@@ -78,6 +78,9 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Getters.
+  Browser* browser() const { return browser_; }
+
  private:
   // Testing constructor used for mocking.
   friend class ::MockWrenchMenuModel;
