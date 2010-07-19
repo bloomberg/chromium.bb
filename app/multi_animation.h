@@ -16,11 +16,28 @@
 // invoked.
 class MultiAnimation : public Animation {
  public:
+  // Defines part of the animation. Each part consists of the following:
+  //
+  // time_ms: the time of the part.
+  // start_time_ms: the amount of time to offset this part by when calculating
+  // the percented completed.
+  // end_time_ms: the end time used to calculate the percentange completed.
+  //
+  // In most cases |start_time_ms| = 0 and |end_time_ms| = |time_ms|. But you
+  // can adjust the start/end for different effects. For example, to run a part
+  // for 200ms with a % between .25 and .75 use the following three values: 200,
+  // 100, 400.
   struct Part {
-    Part() : time_ms(0), type(Tween::ZERO) {}
-    Part(int time_ms, Tween::Type type) : time_ms(time_ms), type(type) {}
+    Part() : time_ms(0), start_time_ms(0), end_time_ms(0), type(Tween::ZERO) {}
+    Part(int time_ms, Tween::Type type)
+        : time_ms(time_ms),
+          start_time_ms(0),
+          end_time_ms(time_ms),
+          type(type) {}
 
     int time_ms;
+    int start_time_ms;
+    int end_time_ms;
     Tween::Type type;
   };
 

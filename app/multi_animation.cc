@@ -9,8 +9,10 @@ static const int kDefaultInterval = 20;
 
 static int TotalTime(const MultiAnimation::Parts& parts) {
   int time_ms = 0;
-  for (size_t i = 0; i < parts.size(); ++i)
+  for (size_t i = 0; i < parts.size(); ++i) {
+    DCHECK(parts[i].end_time_ms - parts[i].start_time_ms >= parts[i].time_ms);
     time_ms += parts[i].time_ms;
+  }
   return time_ms;
 }
 
@@ -30,8 +32,9 @@ void MultiAnimation::Step(base::TimeTicks time_now) {
   int delta = static_cast<int>((time_now - start_time()).InMilliseconds() %
                                cycle_time_ms_);
   const Part& part = GetPart(&delta, &current_part_index_);
-  double percent = static_cast<double>(delta) /
-        static_cast<double>(part.time_ms);
+  double percent = static_cast<double>(delta + part.start_time_ms) /
+        static_cast<double>(part.end_time_ms);
+  DCHECK(percent <= 1);
   current_value_ = Tween::CalculateValue(part.type, percent);
 
   if ((current_value_ != last_value || current_part_index_ != last_index) &&

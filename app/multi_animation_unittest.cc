@@ -34,3 +34,25 @@ TEST_F(MultiAnimationTest, Basic) {
   EXPECT_EQ(Tween::CalculateValue(Tween::EASE_OUT, .2),
             animation.GetCurrentValue());
 }
+
+TEST_F(MultiAnimationTest, DifferingStartAndEnd) {
+  // Create a MultiAnimation with two parts.
+  MultiAnimation::Parts parts;
+  parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
+  parts[0].start_time_ms = 100;
+  parts[0].end_time_ms = 400;
+
+  MultiAnimation animation(parts);
+  AnimationContainer::Element* as_element =
+      static_cast<AnimationContainer::Element*>(&animation);
+  as_element->SetStartTime(base::TimeTicks());
+
+  // Step to 0. Because the start_time is 100, this should be 100ms into the
+  // animation
+  as_element->Step(base::TimeTicks());
+  EXPECT_EQ(.25, animation.GetCurrentValue());
+
+  // Step to 100, which is effectively 200ms into the animation.
+  as_element->Step(base::TimeTicks() + base::TimeDelta::FromMilliseconds(100));
+  EXPECT_EQ(.5, animation.GetCurrentValue());
+}
