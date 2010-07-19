@@ -23,6 +23,24 @@
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 
+namespace {
+
+// Update profile labels passed as |input|.  When profile data changes as a
+// result of adding new profiles, edititing existing profiles, or deleting a
+// profile, then the list of profiles need to have their derived labels
+// recomputed.
+void UpdateProfileLabels(std::vector<AutoFillProfile>* input) {
+  DCHECK(input);
+  std::vector<AutoFillProfile*> profiles;
+  profiles.resize(input->size());
+  for (size_t i = 0; i < input->size(); ++i) {
+    profiles[i] = &(*input)[i];
+  }
+  AutoFillProfile::AdjustInferredLabels(&profiles);
+}
+
+}  // namespace
+
 // Delegate protocol that needs to be in place for the AutoFillTableView's
 // handling of delete and backspace keys.
 @protocol DeleteKeyDelegate
@@ -302,6 +320,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     profiles_.push_back(newAddress);
 
     // Refresh the view based on new data.
+    UpdateProfileLabels(&profiles_);
     [tableView_ reloadData];
 
     // Update the selection to the newly added item.
@@ -355,6 +374,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
       [tableView_ selectRowIndexes:[NSIndexSet indexSet]
               byExtendingSelection:NO];
     }
+    UpdateProfileLabels(&profiles_);
     [tableView_ reloadData];
   } else if ([self isCreditCardRow:selectedRow]) {
     creditCards_.erase(
@@ -434,6 +454,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   if (returnCode) {
     AutoFillProfile* profile = static_cast<AutoFillProfile*>(contextInfo);
     [addressSheetController copyModelToProfile:profile];
+    UpdateProfileLabels(&profiles_);
     [tableView_ reloadData];
   }
   [sheet orderOut:self];
@@ -493,7 +514,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   if ([self isProfileRow:row]) {
     if ([[tableColumn identifier] isEqualToString:@"Summary"]) {
       return SysUTF16ToNSString(
-          profiles_[[self profileIndexFromRow:row]].PreviewSummary());
+          profiles_[[self profileIndexFromRow:row]].Label());
     }
 
     return @"";
@@ -673,6 +694,8 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
          iter != creditCards.end(); ++iter)
       creditCards_.push_back(**iter);
   }
+
+  UpdateProfileLabels(&profiles_);
 }
 
 - (BOOL)isProfileRow:(NSInteger)row {

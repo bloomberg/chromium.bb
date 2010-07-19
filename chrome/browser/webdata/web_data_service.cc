@@ -870,8 +870,10 @@ void WebDataService::AddAutoFillProfileImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     const AutoFillProfile& profile = request->GetArgument();
-    if (!db_->AddAutoFillProfile(profile))
+    if (!db_->AddAutoFillProfile(profile)) {
       NOTREACHED();
+      return;
+    }
     ScheduleCommit();
 
     AutofillProfileChange change(AutofillProfileChange::ADD,

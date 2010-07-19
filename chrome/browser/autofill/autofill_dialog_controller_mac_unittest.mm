@@ -284,6 +284,9 @@ TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   ASSERT_TRUE(observer_.profiles_.size() == 1);
 
   profiles()[0]->set_unique_id(observer_.profiles_[0].unique_id());
+  // Do not compare labels.  Label is a derived field.
+  observer_.profiles_[0].set_label(string16());
+  profiles()[0]->set_label(string16());
   ASSERT_EQ(observer_.profiles_[0], *profiles()[0]);
 }
 
@@ -340,6 +343,10 @@ TEST_F(AutoFillDialogControllerTest, TwoProfiles) {
   // Contents should match.  With the exception of the |unique_id|.
   for (size_t i = 0, count = profiles().size(); i < count; i++) {
     profiles()[i]->set_unique_id(observer_.profiles_[i].unique_id());
+
+    // Do not compare labels.  Label is a derived field.
+    observer_.profiles_[i].set_label(string16());
+    profiles()[i]->set_label(string16());
     ASSERT_EQ(observer_.profiles_[i], *profiles()[i]);
   }
 }
@@ -470,6 +477,10 @@ TEST_F(AutoFillDialogControllerTest, TwoProfilesDeleteOne) {
 
   // First address should match.
   profiles()[0]->set_unique_id(observer_.profiles_[0].unique_id());
+
+  // Do not compare labels.  Label is a derived field.
+  observer_.profiles_[0].set_label(string16());
+  profile.set_label(string16());
   ASSERT_EQ(observer_.profiles_[0], profile);
 }
 
@@ -558,8 +569,12 @@ TEST_F(AutoFillDialogControllerTest, WaitForDataToLoad) {
   // Contents should match.
   size_t i = 0;
   size_t count = profiles().size();
-  for (i = 0; i < count; i++)
+  for (i = 0; i < count; i++) {
+    // Do not compare labels.  Label is a derived field.
+    observer_.profiles_[i].set_label(string16());
+    profiles()[i]->set_label(string16());
     ASSERT_EQ(observer_.profiles_[i], *profiles()[i]);
+  }
   count = credit_cards().size();
   for (i = 0; i < count; i++) {
     ASSERT_EQ(observer_.credit_cards_[i], *credit_cards()[i]);
@@ -589,6 +604,10 @@ TEST_F(AutoFillDialogControllerTest, ImportedParameters) {
   // Sizes should match.
   ASSERT_EQ(1UL, observer_.profiles_.size());
   ASSERT_EQ(1UL, observer_.credit_cards_.size());
+
+  // Do not compare labels.  Label is a derived field.
+  observer_.profiles_[0].set_label(string16());
+  profile.set_label(string16());
 
   // Contents should match.
   ASSERT_EQ(observer_.profiles_[0], profile);
