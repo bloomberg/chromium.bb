@@ -22,7 +22,7 @@ void LiveSyncTest::SetUp() {
   // At this point, the browser hasn't been launched, and no services are
   // available.  But we can verify our command line parameters and fail
   // early.
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kPasswordFileForTest)) {
     // Read GAIA credentials from a local password file if specified via the
     // "--password-file-for-test" command line switch. Note: The password file
@@ -53,6 +53,13 @@ void LiveSyncTest::SetUp() {
         << "without specifying --" << switches::kSyncUserForTest;
     ASSERT_FALSE(password_.empty()) << "Can't run live server test "
         << "without specifying --" << switches::kSyncPasswordForTest;
+  }
+
+  // TODO(rsimha): Until we implement a fake Tango server against which tests
+  // can run, we need to set the --sync-notification-method to "transitional".
+  if (!cl->HasSwitch(switches::kSyncNotificationMethod)) {
+    cl->AppendSwitchWithValue(switches::kSyncNotificationMethod,
+        "transitional");
   }
 
   // Unless a sync server was explicitly provided, run a test one locally.
