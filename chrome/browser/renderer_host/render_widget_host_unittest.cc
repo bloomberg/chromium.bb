@@ -204,20 +204,20 @@ class MockPaintingObserver : public RenderWidgetHostPaintingObserver {
                                      BackingStore* backing_store) {}
   void WidgetDidUpdateBackingStore(RenderWidgetHost* widget) {}
   void WidgetDidReceivePaintAtSizeAck(RenderWidgetHost* host,
-                                      const TransportDIB::Handle& dib_handle,
+                                      int tag,
                                       const gfx::Size& size) {
     host_ = reinterpret_cast<MockRenderWidgetHost*>(host);
-    dib_handle_ = dib_handle;
+    tag_ = tag;
     size_ = size;
   }
 
   MockRenderWidgetHost* host() const { return host_; }
-  TransportDIB::Handle dib_handle() const { return dib_handle_; }
+  int tag() const { return tag_; }
   gfx::Size size() const { return size_; }
 
  private:
   MockRenderWidgetHost* host_;
-  TransportDIB::Handle dib_handle_;
+  int tag_;
   gfx::Size size_;
 };
 
@@ -536,19 +536,18 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
 }
 
 TEST_F(RenderWidgetHostTest, PaintAtSize) {
-  host_->PaintAtSize(TransportDIB::GetFakeHandleForTest(), gfx::Size(40, 60),
-                     gfx::Size(20, 30));
+  const int kPaintAtSizeTag = 42;
+  host_->PaintAtSize(TransportDIB::GetFakeHandleForTest(), kPaintAtSizeTag,
+                     gfx::Size(40, 60), gfx::Size(20, 30));
   EXPECT_TRUE(
       process_->sink().GetUniqueMessageMatching(ViewMsg_PaintAtSize::ID));
 
   MockPaintingObserver observer;
   host_->set_painting_observer(&observer);
 
-  // Need to generate a fake handle value on all platforms.
-  TransportDIB::Handle handle = TransportDIB::GetFakeHandleForTest();
-  host_->OnMsgPaintAtSizeAck(handle, gfx::Size(20, 30));
-  EXPECT_TRUE(host_ == observer.host());
-  EXPECT_TRUE(handle == observer.dib_handle());
+  host_->OnMsgPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));
+  EXPECT_EQ(host_.get(), observer.host());
+  EXPECT_EQ(kPaintAtSizeTag, observer.tag());
   EXPECT_EQ(20, observer.size().width());
   EXPECT_EQ(30, observer.size().height());
   host_->set_painting_observer(NULL);

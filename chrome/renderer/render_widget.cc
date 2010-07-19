@@ -742,6 +742,7 @@ void RenderWidget::OnImeConfirmComposition() {
 // This message causes the renderer to render an image of the
 // desired_size, regardless of whether the tab is hidden or not.
 void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
+                                    int tag,
                                     const gfx::Size& page_size,
                                     const gfx::Size& desired_size) {
   if (!webwidget_ || dib_handle == TransportDIB::DefaultHandleValue())
@@ -750,9 +751,7 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
   if (page_size.IsEmpty() || desired_size.IsEmpty()) {
     // If one of these is empty, then we just return the dib we were
     // given, to avoid leaking it.
-    Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_,
-                                         dib_handle,
-                                         desired_size));
+    Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_, tag, desired_size));
     return;
   }
 
@@ -807,7 +806,7 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
   // Return the widget to its previous size.
   webwidget_->resize(old_size);
 
-  Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_, dib_handle, bounds.size()));
+  Send(new ViewHostMsg_PaintAtSize_ACK(routing_id_, tag, bounds.size()));
 }
 
 void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {

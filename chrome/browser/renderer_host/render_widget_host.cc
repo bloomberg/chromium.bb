@@ -298,12 +298,13 @@ void RenderWidgetHost::SetIsLoading(bool is_loading) {
 }
 
 void RenderWidgetHost::PaintAtSize(TransportDIB::Handle dib_handle,
+                                   int tag,
                                    const gfx::Size& page_size,
                                    const gfx::Size& desired_size) {
   // Ask the renderer to create a bitmap regardless of whether it's
   // hidden, being resized, redrawn, etc.  It resizes the web widget
   // to the page_size and then scales it to the desired_size.
-  Send(new ViewMsg_PaintAtSize(routing_id_, dib_handle,
+  Send(new ViewMsg_PaintAtSize(routing_id_, dib_handle, tag,
                                page_size, desired_size));
 }
 
@@ -707,10 +708,9 @@ void RenderWidgetHost::OnMsgRequestMove(const gfx::Rect& pos) {
   }
 }
 
-void RenderWidgetHost::OnMsgPaintAtSizeAck(
-    const TransportDIB::Handle& dib_handle, const gfx::Size& size) {
+void RenderWidgetHost::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
   if (painting_observer_) {
-    painting_observer_->WidgetDidReceivePaintAtSizeAck(this, dib_handle, size);
+    painting_observer_->WidgetDidReceivePaintAtSizeAck(this, tag, size);
   }
 }
 

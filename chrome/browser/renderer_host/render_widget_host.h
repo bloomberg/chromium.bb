@@ -222,6 +222,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // logic that is normally invoked, and doesn't put the results into
   // the backing store.
   void PaintAtSize(TransportDIB::Handle dib_handle,
+                   int tag,
                    const gfx::Size& page_size,
                    const gfx::Size& desired_size);
 
@@ -473,8 +474,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgRenderViewGone();
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
-  void OnMsgPaintAtSizeAck(const TransportDIB::Handle& dib_handle,
-                           const gfx::Size& size);
+  void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnMsgCreateVideo(const gfx::Size& size);
   void OnMsgUpdateVideo(TransportDIB::Id bitmap, const gfx::Rect& bitmap_rect);

@@ -191,14 +191,15 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   // We are going to render the thumbnail asynchronously now, so keep
   // this callback for later lookup when the rendering is done.
   static int sequence_num = 0;
+  sequence_num++;
   TransportDIB* thumbnail_dib = TransportDIB::Create(
-      desired_size.width() * desired_size.height() * 4, sequence_num++);
+      desired_size.width() * desired_size.height() * 4, sequence_num);
+
   linked_ptr<AsyncRequestInfo> request_info(new AsyncRequestInfo);
   request_info->callback.reset(callback);
   request_info->thumbnail_dib.reset(thumbnail_dib);
   request_info->renderer = renderer;
-  ThumbnailCallbackMap::value_type new_value(thumbnail_dib->handle(),
-                                             request_info);
+  ThumbnailCallbackMap::value_type new_value(sequence_num, request_info);
   std::pair<ThumbnailCallbackMap::iterator, bool> result =
       callback_map_.insert(new_value);
   if (!result.second) {
@@ -206,7 +207,8 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
     return;
   }
 
-  renderer->PaintAtSize(thumbnail_dib->handle(), page_size, desired_size);
+  renderer->PaintAtSize(
+      thumbnail_dib->handle(), sequence_num, page_size, desired_size);
 }
 
 SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
@@ -290,10 +292,10 @@ void ThumbnailGenerator::WidgetDidUpdateBackingStore(RenderWidgetHost* widget) {
 
 void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(
     RenderWidgetHost* widget,
-    const TransportDIB::Handle& dib_handle,
+    int sequence_num,
     const gfx::Size& size) {
   // Lookup the callback, run it, and erase it.
-  ThumbnailCallbackMap::iterator item = callback_map_.find(dib_handle);
+  ThumbnailCallbackMap::iterator item = callback_map_.find(sequence_num);
   if (item != callback_map_.end()) {
     TransportDIB* dib = item->second->thumbnail_dib.get();
     DCHECK(dib);

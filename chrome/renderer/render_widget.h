@@ -166,6 +166,7 @@ class RenderWidget : public IPC::Channel::Listener,
       int selection_end);
   void OnImeConfirmComposition();
   void OnMsgPaintAtSize(const TransportDIB::Handle& dib_id,
+                        int tag,
                         const gfx::Size& page_size,
                         const gfx::Size& desired_size);
   void OnMsgRepaint(const gfx::Size& size_to_paint);

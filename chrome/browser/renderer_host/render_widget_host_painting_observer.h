@@ -31,7 +31,7 @@ class RenderWidgetHostPaintingObserver {
   // received.
   virtual void WidgetDidReceivePaintAtSizeAck(
       RenderWidgetHost* widget,
-      const TransportDIB::Handle& dib_handle,
+      int tag,
       const gfx::Size& size) = 0;
 };
 

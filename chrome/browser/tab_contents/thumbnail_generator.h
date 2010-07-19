@@ -80,7 +80,7 @@ class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
 
   virtual void WidgetDidReceivePaintAtSizeAck(
       RenderWidgetHost* widget,
-      const TransportDIB::Handle& dib_handle,
+      int tag,
       const gfx::Size& size);
 
   // NotificationObserver interface.
@@ -118,9 +118,9 @@ class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
   // See the setter above.
   bool no_timeout_;
 
-  // Map of callback objects by TransportDIB::Handle.
+  // Map of callback objects by sequence number.
   struct AsyncRequestInfo;
-  typedef std::map<TransportDIB::Handle,
+  typedef std::map<int,
                    linked_ptr<AsyncRequestInfo> > ThumbnailCallbackMap;
   ThumbnailCallbackMap callback_map_;
 

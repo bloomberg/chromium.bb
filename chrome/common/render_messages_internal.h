@@ -153,8 +153,11 @@ IPC_BEGIN_MESSAGES(View)
   // it.  In response to this message, the host generates a
   // ViewHostMsg_PaintAtSize_ACK message.  Note that the DIB *must* be
   // the right size to receive an RGBA image at the |desired_size|.
-  IPC_MESSAGE_ROUTED3(ViewMsg_PaintAtSize,
+  // |tag| is sent along with ViewHostMsg_PaintAtSize_ACK unmodified to
+  // identify the PaintAtSize message the ACK belongs to.
+  IPC_MESSAGE_ROUTED4(ViewMsg_PaintAtSize,
                       TransportDIB::Handle /* dib_handle */,
+                      int /* tag */,
                       gfx::Size /* page_size */,
                       gfx::Size /* desired_size */)
 
@@ -1123,9 +1126,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               show the POST interstitial */ )
 
   // Tells the render view that a ViewHostMsg_PaintAtSize message was
-  // processed, and the DIB is ready for use.
+  // processed, and the DIB is ready for use. |tag| has the same value that
+  // the tag sent along with ViewMsg_PaintAtSize.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_PaintAtSize_ACK,
-                      TransportDIB::Handle /* dib_handle */,
+                      int /* tag */,
                       gfx::Size /* size */)
 
   // Sent to update part of the view.  In response to this message, the host
