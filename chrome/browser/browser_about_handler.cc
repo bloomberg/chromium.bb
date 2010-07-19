@@ -114,7 +114,6 @@ const char kSandboxPath[] = "sandbox";
 #if defined(OS_CHROMEOS)
 const char kNetworkPath[] = "network";
 const char kOSCreditsPath[] = "os-credits";
-const char kRegisterProductPath[] = "register";
 const char kSysPath[] = "system";
 #endif
 
@@ -141,7 +140,6 @@ const char *kAllAboutPaths[] = {
 #if defined(OS_CHROMEOS)
   kNetworkPath,
   kOSCreditsPath,
-  kRegisterProductPath,
   kSysPath,
 #endif
   };
@@ -601,19 +599,6 @@ std::string AboutSandbox() {
 }
 #endif
 
-#if defined(OS_CHROMEOS)
-std::string AboutRegisterProduct() {
-  static const base::StringPiece register_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_HOST_REGISTRATION_PAGE_HTML));
-
-  // TODO(nkostylev): Embed registration form URL from startup manifest.
-  // http://crosbug.com/4645.
-
-  return register_html.as_string();
-}
-#endif
-
 std::string AboutVersion(DictionaryValue* localized_strings) {
   localized_strings->SetString(L"title",
       l10n_util::GetString(IDS_ABOUT_VERSION_TITLE));
@@ -909,8 +894,6 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 #if defined(OS_CHROMEOS)
   } else if (path == kSysPath) {
     response = AboutSys();
-  } else if (path == kRegisterProductPath) {
-    response = AboutRegisterProduct();
 #endif
   }
 

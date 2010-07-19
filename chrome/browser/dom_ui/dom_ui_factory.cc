@@ -17,7 +17,6 @@
 #include "chrome/browser/dom_ui/options_ui.h"
 #include "chrome/browser/dom_ui/remoting_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
-#include "chrome/browser/dom_ui/register_page_ui.h"
 #include "chrome/browser/dom_ui/slideshow_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -33,6 +32,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
+#include "chrome/browser/dom_ui/register_page_ui.h"
 #endif
 
 const DOMUITypeID DOMUIFactory::kNoDOMUI = NULL;

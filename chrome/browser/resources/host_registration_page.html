@@ -3,6 +3,32 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Register your computer with Google</title>
+<script>
+
+document.addEventListener('DOMContentLoaded', load);
+
+function load() {
+  chrome.send('getRegistrationUrl', []);
+}
+
+function $(o) {
+  return document.getElementById(o);
+}
+
+function setRegistrationUrl(url) {
+  // TODO(nkostylev): Load URL in iframe.  
+}
+
+// Called when document has been loaded in an iframe.
+function onFormLoaded() {
+  chrome.send('getUserInfo', []);
+}
+
+function setUserInfo(data) {
+  // TODO(nkostylev): Pass system/user data to registration iframe.  
+}
+
+</script>
 </head>
 <body>  
   <!-- TODO(nkostylev): Redirect to cros://register/[success|skipped]. -->
