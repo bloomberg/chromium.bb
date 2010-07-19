@@ -224,6 +224,17 @@ void NaClDef0FInsts() {
   DEF_BINST(Ev_, Gv_)(NACLi_386, 0xa3, Prefix0F, InstBt, Compare);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(AddressSizeDefaultIs32));
 
+  /* ISE reviewers suggested omitting shld. */
+  DEF_BINST(Ev_, Gv_)(NACLi_386, 0xa4, Prefix0F, InstShld, Binary);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w) |
+                NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+
+  DEF_BINST(Ev_, Gv_)(NACLi_386, 0xa5, Prefix0F, InstShld, Binary);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
+                NACL_IFLAG(OperandSize_o));
+  NaClDefOp(RegCL, NACL_OPFLAG(OpUse));
+
   NaClDefInvalidIcode(Prefix0F, 0xa6);
   NaClDefInvalidIcode(Prefix0F, 0xa7);
 

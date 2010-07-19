@@ -3418,3 +3418,48 @@ NaClExpVector[6] = {
   { OperandReference[1] , 2, 0 },
   { ExprConstant[0] , 0x3020107, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
+0000000000000000: 0f a4 c6 01                                  shld %esi, %eax, 0x1
+  { Prefix0F, {  0x0f, 0xa4 }, Shld,  NACLi_386,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o),
+    { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) },
+    { G_Operand, NACL_OPFLAG(OpUse) },
+    { I_Operand, NACL_OPFLAG(OpUse) },
+  };
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %esi, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x1, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: 0f a5 c6                                     shld %esi, %eax, %cl
+  { Prefix0F, {  0x0f, 0xa5 }, Shld,  NACLi_386,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o),
+    { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) },
+    { G_Operand, NACL_OPFLAG(OpUse) },
+    { RegCL, NACL_OPFLAG(OpUse) },
+  };
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %esi, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
+};
+0000000000000000: 48 0f a5 c6                                  shld %rsi, %rax, %cl
+  { Prefix0F, {  0x0f, 0xa5 }, Shld,  NACLi_386,
+    NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o),
+    { E_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) },
+    { G_Operand, NACL_OPFLAG(OpUse) },
+    { RegCL, NACL_OPFLAG(OpUse) },
+  };
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %rsi, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
+};
