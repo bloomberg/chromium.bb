@@ -77,6 +77,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
                 UTF16ToUTF8(*db),
                 origin_identifier,
                 UTF16ToUTF8(ori->GetDatabaseDescription(*db)),
+                web_security_origin.toString().utf8(),
                 file_info.size,
                 file_info.last_modified));
         }
@@ -137,6 +138,7 @@ void CannedBrowsingDataDatabaseHelper::AddDatabase(
         name,
         origin_identifier,
         description,
+        web_security_origin.toString().utf8(),
         0,
         base::Time()));
 }

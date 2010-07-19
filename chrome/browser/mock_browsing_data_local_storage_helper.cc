@@ -35,12 +35,12 @@ void MockBrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
 void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {
   response_.push_back(
       BrowsingDataLocalStorageHelper::LocalStorageInfo(
-          "http", "host1", 1, "db1", "origin1",
+          "http", "host1", 1, "db1", "http://host1:1/",
           FilePath(FILE_PATH_LITERAL("file1")), 1, base::Time()));
   files_[FILE_PATH_LITERAL("file1")] = true;
   response_.push_back(
       BrowsingDataLocalStorageHelper::LocalStorageInfo(
-          "http", "host2", 2, "db2", "origin2",
+          "http", "host2", 2, "db2", "http://host2:2/",
           FilePath(FILE_PATH_LITERAL("file2")), 2, base::Time()));
   files_[FILE_PATH_LITERAL("file2")] = true;
 }

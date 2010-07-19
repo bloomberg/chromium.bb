@@ -174,28 +174,25 @@ void CookieTreeLocalStorageNode::DeleteStoredObjects() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeRootNode, public:
-CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
-    const std::wstring& origin) {
-  // Strip the leading dot if it exists.
-  std::wstring rewritten_origin = origin;
-  if (origin.length() >= 1 && origin[0] == '.')
-    rewritten_origin = origin.substr(1);
 
-  CookieTreeOriginNode rewritten_origin_node(rewritten_origin);
+CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
+    const GURL& url) {
+  CookieTreeOriginNode origin_node(url);
 
   // First see if there is an existing match.
   std::vector<CookieTreeNode*>::iterator origin_node_iterator =
       lower_bound(children().begin(),
                   children().end(),
-                  &rewritten_origin_node,
+                  &origin_node,
                   OriginNodeComparator());
 
-  if (origin_node_iterator != children().end() && rewritten_origin ==
+  if (origin_node_iterator != children().end() &&
+      CookieTreeOriginNode::TitleForUrl(url) ==
       (*origin_node_iterator)->GetTitle())
     return static_cast<CookieTreeOriginNode*>(*origin_node_iterator);
   // Node doesn't exist, create a new one and insert it into the (ordered)
   // children.
-  CookieTreeOriginNode* retval = new CookieTreeOriginNode(rewritten_origin);
+  CookieTreeOriginNode* retval = new CookieTreeOriginNode(url);
   DCHECK(model_);
   model_->Add(this, (origin_node_iterator - children().begin()), retval);
   return retval;
@@ -203,6 +200,21 @@ CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeOriginNode, public:
+
+// static
+std::wstring CookieTreeOriginNode::TitleForUrl(
+    const GURL& url) {
+  return UTF8ToWide(url.SchemeIsFile() ? kFileOriginNodeName : url.host());
+}
+
+CookieTreeOriginNode::CookieTreeOriginNode(const GURL& url)
+    : CookieTreeNode(TitleForUrl(url)),
+      cookies_child_(NULL),
+      databases_child_(NULL),
+      local_storages_child_(NULL),
+      appcaches_child_(NULL),
+      url_(url) {}
+
 
 CookieTreeCookiesNode* CookieTreeOriginNode::GetOrCreateCookiesNode() {
   if (cookies_child_)
@@ -238,11 +250,16 @@ CookieTreeAppCachesNode* CookieTreeOriginNode::GetOrCreateAppCachesNode() {
 }
 
 void CookieTreeOriginNode::CreateContentException(
-    HostContentSettingsMap* content_settings, ContentSetting setting) {
-    std::wstring title(GetTitle());
-    content_settings->AddExceptionForURL(GURL(WideToUTF16(title)),
+    HostContentSettingsMap* content_settings, ContentSetting setting) const {
+  if (CanCreateContentException()) {
+    content_settings->AddExceptionForURL(url_,
                                          CONTENT_SETTINGS_TYPE_COOKIES,
                                          setting);
+  }
+}
+
+bool CookieTreeOriginNode::CanCreateContentException() const {
+  return !url_.SchemeIsFile();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -384,11 +401,17 @@ void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
   for (CookieList::iterator it = all_cookies_.begin();
        it != all_cookies_.end(); ++it) {
-    std::wstring origin_node_name = UTF8ToWide(it->first);
+    std::string origin_host = it->first;
+    if (origin_host.length() > 1 && origin_host[0] == '.')
+      origin_host = it->first.substr(1);
+    // We treat secure cookies just the same as normal ones.
+    GURL origin(std::string(chrome::kHttpScheme) +
+                chrome::kStandardSchemeSeparator + origin_host + "/");
     if (!filter.size() ||
-        (origin_node_name.find(filter) != std::wstring::npos)) {
+        (CookieTreeOriginNode::TitleForUrl(origin).find(filter) !=
+         std::string::npos)) {
       CookieTreeOriginNode* origin_node =
-          root->GetOrCreateOriginNode(origin_node_name);
+          root->GetOrCreateOriginNode(origin);
       CookieTreeCookiesNode* cookies_node =
           origin_node->GetOrCreateCookiesNode();
       CookieTreeCookieNode* new_cookie = new CookieTreeCookieNode(&*it);
@@ -469,7 +492,7 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
     if (filter.empty() ||
         (origin_node_name.find(filter) != std::wstring::npos)) {
       CookieTreeOriginNode* origin_node =
-          root->GetOrCreateOriginNode(origin_node_name);
+          root->GetOrCreateOriginNode(origin->first);
       CookieTreeAppCachesNode* appcaches_node =
           origin_node->GetOrCreateAppCachesNode();
 
@@ -499,17 +522,13 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
   for (DatabaseInfoList::iterator database_info = database_info_list_.begin();
        database_info != database_info_list_.end();
        ++database_info) {
-    // Determine which 'origin' node to place each 'info' in.
-    std::wstring origin_node_name;
-    if (database_info->IsFileSchemeData())
-      origin_node_name = UTF8ToWide(kFileOriginNodeName);
-    else
-      origin_node_name = UTF8ToWide(database_info->host);
+    GURL origin(database_info->origin);
 
     if (!filter.size() ||
-        (origin_node_name.find(filter) != std::wstring::npos)) {
+        (CookieTreeOriginNode::TitleForUrl(origin).find(filter) !=
+         std::wstring::npos)) {
       CookieTreeOriginNode* origin_node =
-          root->GetOrCreateOriginNode(origin_node_name);
+          root->GetOrCreateOriginNode(origin);
       CookieTreeDatabasesNode* databases_node =
           origin_node->GetOrCreateDatabasesNode();
       databases_node->AddDatabaseNode(
@@ -536,17 +555,13 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
        local_storage_info_list_.begin();
        local_storage_info != local_storage_info_list_.end();
        ++local_storage_info) {
-    // Determine which 'origin' node to place each 'info' in.
-    std::wstring origin_node_name;
-    if (local_storage_info->IsFileSchemeData())
-      origin_node_name = UTF8ToWide(kFileOriginNodeName);
-    else
-      origin_node_name = UTF8ToWide(local_storage_info->host);
+    GURL origin(local_storage_info->origin);
 
     if (!filter.size() ||
-        (origin_node_name.find(filter) != std::wstring::npos)) {
+        (CookieTreeOriginNode::TitleForUrl(origin).find(filter) !=
+         std::wstring::npos)) {
       CookieTreeOriginNode* origin_node =
-          root->GetOrCreateOriginNode(origin_node_name);
+          root->GetOrCreateOriginNode(origin);
       CookieTreeLocalStoragesNode* local_storages_node =
           origin_node->GetOrCreateLocalStoragesNode();
       local_storages_node->AddLocalStorageNode(

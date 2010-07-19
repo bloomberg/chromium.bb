@@ -112,7 +112,7 @@ class CookieTreeRootNode : public CookieTreeNode {
   explicit CookieTreeRootNode(CookiesTreeModel* model) : model_(model) {}
   virtual ~CookieTreeRootNode() {}
 
-  CookieTreeOriginNode* GetOrCreateOriginNode(const std::wstring& origin);
+  CookieTreeOriginNode* GetOrCreateOriginNode(const GURL& url);
 
   // CookieTreeNode methods:
   virtual CookiesTreeModel* GetModel() const { return model_; }
@@ -130,12 +130,10 @@ class CookieTreeRootNode : public CookieTreeNode {
 // CookieTreeOriginNode -------------------------------------------------------
 class CookieTreeOriginNode : public CookieTreeNode {
  public:
-  explicit CookieTreeOriginNode(const std::wstring& origin)
-      : CookieTreeNode(origin),
-        cookies_child_(NULL),
-        databases_child_(NULL),
-        local_storages_child_(NULL),
-        appcaches_child_(NULL) {}
+  // Returns the origin node's title to use for a given URL.
+  static std::wstring TitleForUrl(const GURL& url);
+
+  explicit CookieTreeOriginNode(const GURL& url);
   virtual ~CookieTreeOriginNode() {}
 
   // CookieTreeNode methods:
@@ -149,8 +147,14 @@ class CookieTreeOriginNode : public CookieTreeNode {
   CookieTreeDatabasesNode* GetOrCreateDatabasesNode();
   CookieTreeLocalStoragesNode* GetOrCreateLocalStoragesNode();
   CookieTreeAppCachesNode* GetOrCreateAppCachesNode();
+
+  // Creates an content exception for this origin of type
+  // CONTENT_SETTINGS_TYPE_COOKIES.
   void CreateContentException(HostContentSettingsMap* content_settings,
-                              ContentSetting setting);
+                              ContentSetting setting) const;
+
+  // True if a content exception can be created for this origin.
+  bool CanCreateContentException() const;
 
  private:
   // Pointers to the cookies, databases, local storage and appcache nodes.
@@ -162,6 +166,9 @@ class CookieTreeOriginNode : public CookieTreeNode {
   CookieTreeDatabasesNode* databases_child_;
   CookieTreeLocalStoragesNode* local_storages_child_;
   CookieTreeAppCachesNode* appcaches_child_;
+
+  // The URL for which this node was initially created.
+  GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieTreeOriginNode);
 };

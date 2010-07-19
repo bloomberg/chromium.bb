@@ -706,11 +706,11 @@ TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
-  // Local Storage --> origin1.
+  // Local Storage --> http://host1:1/.
   node = [[node children] lastObject];
-  EXPECT_TRUE([@"origin1" isEqualToString:[node title]]);
+  EXPECT_TRUE([@"http://host1:1/" isEqualToString:[node title]]);
   EXPECT_EQ(kCocoaCookieDetailsTypeTreeLocalStorage, [node nodeType]);
-  EXPECT_TRUE([@"origin1" isEqualToString:[[node details] domain]]);
+  EXPECT_TRUE([@"http://host1:1/" isEqualToString:[[node details] domain]]);
   EXPECT_TRUE([[node details] lastModified]);
   EXPECT_TRUE([[node details] fileSize]);
 
@@ -728,11 +728,11 @@ TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
-  // Local Storage --> origin2.
+  // Local Storage --> http://host2:2/.
   node = [[node children] lastObject];
-  EXPECT_TRUE([@"origin2" isEqualToString:[node title]]);
+  EXPECT_TRUE([@"http://host2:2/" isEqualToString:[node title]]);
   EXPECT_EQ(kCocoaCookieDetailsTypeTreeLocalStorage, [node nodeType]);
-  EXPECT_TRUE([@"origin2" isEqualToString:[[node details] domain]]);
+  EXPECT_TRUE([@"http://host2:2/" isEqualToString:[[node details] domain]]);
   EXPECT_TRUE([[node details] lastModified]);
   EXPECT_TRUE([[node details] fileSize]);
 }

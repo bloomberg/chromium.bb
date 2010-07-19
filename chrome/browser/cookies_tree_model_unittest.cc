@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
@@ -18,9 +19,33 @@
 
 namespace {
 
+class StubSettingsObserver : public NotificationObserver {
+ public:
+  StubSettingsObserver() : counter(0) {
+    registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+                   NotificationService::AllSources());
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    ++counter;
+    Details<HostContentSettingsMap::ContentSettingsDetails>
+        settings_details(details);
+    last_pattern = settings_details.ptr()->pattern();
+  }
+
+  HostContentSettingsMap::Pattern last_pattern;
+  int counter;
+
+ private:
+  NotificationRegistrar registrar_;
+};
+
 class CookiesTreeModelTest : public testing::Test {
  public:
-  CookiesTreeModelTest() : io_thread_(ChromeThread::IO, &message_loop_) {
+  CookiesTreeModelTest() : ui_thread_(ChromeThread::UI, &message_loop_),
+                           io_thread_(ChromeThread::IO, &message_loop_) {
   }
 
   virtual ~CookiesTreeModelTest() {
@@ -55,10 +80,12 @@ class CookiesTreeModelTest : public testing::Test {
       // 22 because there's the root, then foo1 -> cookies -> a,
       // foo2 -> cookies -> b, foo3 -> cookies -> c,
       // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
-      // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+      // host1 -> localstorage -> http://host1:1/,
+      // host2 -> localstorage -> http://host2:2/.
       EXPECT_EQ(22, cookies_model->GetRoot()->GetTotalNodeCount());
       EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model));
-      EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(cookies_model));
+      EXPECT_EQ("http://host1:1/,http://host2:2/",
+                GetDisplayedLocalStorages(cookies_model));
     }
     return cookies_model;
   }
@@ -165,6 +192,7 @@ class CookiesTreeModelTest : public testing::Test {
   }
  protected:
   MessageLoop message_loop_;
+  ChromeThread ui_thread_;
   ChromeThread io_thread_;
 
   scoped_ptr<TestingProfile> profile_;
@@ -188,7 +216,7 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
               GetDisplayedCookies(cookies_model.get()));
     EXPECT_EQ("db1,db2",
               GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin1,origin2",
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
               GetDisplayedLocalStorages(cookies_model.get()));
   }
 
@@ -220,7 +248,7 @@ TEST_F(CookiesTreeModelTest, Remove) {
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin1,origin2",
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
               GetDisplayedLocalStorages(cookies_model.get()));
     EXPECT_EQ(19, cookies_model->GetRoot()->GetTotalNodeCount());
   }
@@ -231,7 +259,7 @@ TEST_F(CookiesTreeModelTest, Remove) {
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin1,origin2",
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
               GetDisplayedLocalStorages(cookies_model.get()));
     EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
   }
@@ -242,7 +270,8 @@ TEST_F(CookiesTreeModelTest, Remove) {
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("http://host2:2/",
+              GetDisplayedLocalStorages(cookies_model.get()));
     EXPECT_EQ(13, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
@@ -261,10 +290,11 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
     // node beneath it has been deleted. So, we have
     // root -> foo1 -> cookies -> a, foo2, foo3 -> cookies -> c
     // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
-    // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+    // host1 -> localstorage -> http://host1:1/,
+    // host2 -> localstorage -> http://host2:2/.
     EXPECT_EQ(20, cookies_model->GetRoot()->GetTotalNodeCount());
     EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin1,origin2",
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
               GetDisplayedLocalStorages(cookies_model.get()));
   }
 
@@ -274,7 +304,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin1,origin2",
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
               GetDisplayedLocalStorages(cookies_model.get()));
     EXPECT_EQ(18, cookies_model->GetRoot()->GetTotalNodeCount());
   }
@@ -285,7 +315,8 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("http://host2:2/",
+              GetDisplayedLocalStorages(cookies_model.get()));
     EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
@@ -301,13 +332,14 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
     EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin1,origin2",
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
               GetDisplayedLocalStorages(cookies_model.get()));
     // 20 because in this case, the origin remains, although the COOKIES
     // node beneath it has been deleted. So, we have
     // root -> foo1 -> cookies -> a, foo2, foo3 -> cookies -> c
     // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
-    // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+    // host1 -> localstorage -> http://host1:1/,
+    // host2 -> localstorage -> http://host2:2/.
     EXPECT_EQ(20, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 
@@ -317,7 +349,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
     EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin1,origin2",
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
               GetDisplayedLocalStorages(cookies_model.get()));
     EXPECT_EQ(18, cookies_model->GetRoot()->GetTotalNodeCount());
   }
@@ -328,7 +360,8 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
     EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("http://host2:2/",
+              GetDisplayedLocalStorages(cookies_model.get()));
     EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
@@ -353,12 +386,14 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
     // 23 because there's the root, then foo1 -> cookies -> a,
     // foo2 -> cookies -> b, foo3 -> cookies -> c,d
     // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
-    // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+    // host1 -> localstorage -> http://host1:1/,
+    // host2 -> localstorage -> http://host2:2/.
     EXPECT_EQ(23, cookies_model.GetRoot()->GetTotalNodeCount());
     EXPECT_STREQ("A,B,C,D", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D", GetDisplayedCookies(&cookies_model).c_str());
     EXPECT_EQ("db1,db2", GetDisplayedDatabases(&cookies_model));
-    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
+              GetDisplayedLocalStorages(&cookies_model));
   }
   DeleteStoredObjects(cookies_model.GetRoot()->GetChild(2));
   {
@@ -366,7 +401,8 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
     EXPECT_STREQ("A,B", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B", GetDisplayedCookies(&cookies_model).c_str());
     EXPECT_EQ("db1,db2", GetDisplayedDatabases(&cookies_model));
-    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
+              GetDisplayedLocalStorages(&cookies_model));
     EXPECT_EQ(19, cookies_model.GetRoot()->GetTotalNodeCount());
   }
 }
@@ -392,12 +428,14 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
     // 24 because there's the root, then foo1 -> cookies -> a,
     // foo2 -> cookies -> b, foo3 -> cookies -> c,d,e
     // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
-    // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
+    // host1 -> localstorage -> http://host1:1/,
+    // host2 -> localstorage -> http://host2:2/.
     EXPECT_EQ(24, cookies_model.GetRoot()->GetTotalNodeCount());
     EXPECT_STREQ("A,B,C,D,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D,E", GetDisplayedCookies(&cookies_model).c_str());
     EXPECT_EQ("db1,db2", GetDisplayedDatabases(&cookies_model));
-    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
+              GetDisplayedLocalStorages(&cookies_model));
   }
   DeleteStoredObjects(cookies_model.GetRoot()->GetChild(2)->GetChild(0)->
       GetChild(1));
@@ -407,7 +445,8 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
     EXPECT_STREQ("A,B,C,E", GetDisplayedCookies(&cookies_model).c_str());
     EXPECT_EQ(23, cookies_model.GetRoot()->GetTotalNodeCount());
     EXPECT_EQ("db1,db2", GetDisplayedDatabases(&cookies_model));
-    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
+    EXPECT_EQ("http://host1:1/,http://host2:2/",
+              GetDisplayedLocalStorages(&cookies_model));
   }
 }
 
@@ -470,6 +509,37 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
     EXPECT_STREQ("D,A,C,F,B,G,H", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("F,C,B,A,G,D,H", GetDisplayedCookies(&cookies_model).c_str());
   }
+}
+
+TEST_F(CookiesTreeModelTest, ContentSettings) {
+  GURL host("http://example.com/");
+  HostContentSettingsMap::Pattern pattern("[*.]example.com");
+  net::CookieMonster* monster = profile_->GetCookieMonster();
+  monster->SetCookie(host, "A=1");
+
+  CookiesTreeModel cookies_model(monster,
+      new MockBrowsingDataDatabaseHelper(profile_.get()),
+      new MockBrowsingDataLocalStorageHelper(profile_.get()),
+      new MockBrowsingDataAppCacheHelper(profile_.get()));
+
+  TestingProfile profile;
+  HostContentSettingsMap* content_settings =
+      profile.GetHostContentSettingsMap();
+  StubSettingsObserver observer;
+
+  CookieTreeRootNode* root =
+      static_cast<CookieTreeRootNode*>(cookies_model.GetRoot());
+  CookieTreeOriginNode* origin = root->GetOrCreateOriginNode(host);
+
+  EXPECT_EQ(1, origin->GetChildCount());
+  EXPECT_TRUE(origin->CanCreateContentException());
+  origin->CreateContentException(
+      content_settings, CONTENT_SETTING_SESSION_ONLY);
+
+  EXPECT_EQ(2, observer.counter);
+  EXPECT_EQ(pattern, observer.last_pattern);
+  EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
+      content_settings->GetContentSetting(host, CONTENT_SETTINGS_TYPE_COOKIES));
 }
 
 }  // namespace

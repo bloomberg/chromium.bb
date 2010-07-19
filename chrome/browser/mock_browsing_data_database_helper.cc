@@ -36,10 +36,12 @@ void MockBrowsingDataDatabaseHelper::DeleteDatabase(
 
 void MockBrowsingDataDatabaseHelper::AddDatabaseSamples() {
   response_.push_back(BrowsingDataDatabaseHelper::DatabaseInfo(
-      "gdbhost1", "db1", "http_gdbhost1_1", "description 1", 1, base::Time()));
+      "gdbhost1", "db1", "http_gdbhost1_1", "description 1",
+      "http://gdbhost1:1/", 1, base::Time()));
   databases_["http_gdbhost1_1:db1"] = true;
   response_.push_back(BrowsingDataDatabaseHelper::DatabaseInfo(
-      "gdbhost2", "db2", "http_gdbhost2_2", "description 2", 2, base::Time()));
+      "gdbhost2", "db2", "http_gdbhost2_2", "description 2",
+      "http://gdbhost2:2/", 2, base::Time()));
   databases_["http_gdbhost2_2:db2"] = true;
 }
 

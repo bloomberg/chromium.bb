@@ -33,12 +33,14 @@ class BrowsingDataDatabaseHelper
                  const std::string& database_name,
                  const std::string& origin_identifier,
                  const std::string& description,
+                 const std::string& origin,
                  int64 size,
                  base::Time last_modified)
         : host(host),
           database_name(database_name),
           origin_identifier(origin_identifier),
           description(description),
+          origin(origin),
           size(size),
           last_modified(last_modified) {
     }
@@ -53,6 +55,7 @@ class BrowsingDataDatabaseHelper
     std::string database_name;
     std::string origin_identifier;
     std::string description;
+    std::string origin;
     int64 size;
     base::Time last_modified;
   };
