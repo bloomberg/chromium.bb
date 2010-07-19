@@ -74,6 +74,7 @@ void InitShaders() {
     "   texCoord = g_TexCoord0;\n"
     "}\n";
   static const char* fShaderStr =
+    "precision mediump float;"
     "uniform sampler2D tex;\n"
     "varying vec2 texCoord;\n"
     "void main()\n"

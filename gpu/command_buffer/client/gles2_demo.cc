@@ -12,7 +12,9 @@
 #include <shellapi.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "app/gfx/gl/gl_context.h"
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -192,14 +194,22 @@ int WINAPI WinMain(HINSTANCE instance,
                    LPSTR command_line,
                    int command_show) {
   g_instance = instance;
+  int argc = 1;
+  const char* const argv[] = {
+    "gles2_demo.exe"
+  };
+
 #else
 int main(int argc, char** argv) {
 #endif
+  CommandLine::Init(argc, argv);
 
   const int32 kCommandBufferSize = 1024 * 1024;
 
   base::AtExitManager at_exit_manager;
   MessageLoopForUI message_loop;
+
+  gfx::GLContext::InitializeOneOff();
 
   GLES2Demo* demo = new GLES2Demo();
 

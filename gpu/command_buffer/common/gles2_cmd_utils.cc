@@ -6,6 +6,7 @@
 // includes where appropriate.
 
 #include <GLES2/gl2.h>
+#include <GLES2/gles2_command_buffer.h>
 
 #include "../common/gles2_cmd_utils.h"
 #include "../common/gles2_cmd_format.h"
@@ -314,6 +315,7 @@ int ElementsPerGroup(int format, int type) {
     case GL_LUMINANCE_ALPHA:
        return 2;
     case GL_RGBA:
+    case GL_BGRA_EXT:
        return 4;
     case GL_ALPHA:
     case GL_LUMINANCE:
