@@ -306,13 +306,8 @@
       <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" type="BINDATA" />
-      <include name="IDR_TAB_ACTIVE_NANO_CENTER" file="tab_active_nano_center.png" type="BINDATA" />
-      <include name="IDR_TAB_ACTIVE_NANO_LEFT" file="tab_active_nano_left.png" type="BINDATA" />
-      <include name="IDR_TAB_ACTIVE_NANO_RIGHT" file="tab_active_nano_right.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" type="BINDATA" />
-      <include name="IDR_TAB_ALPHA_NANO_LEFT" file="tab_alpha_nano_left.png" type="BINDATA" />
-      <include name="IDR_TAB_ALPHA_NANO_RIGHT" file="tab_alpha_nano_right.png" type="BINDATA" />
       <include name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" type="BINDATA" />
       <include name="IDR_TAB_CLOSE" file="tab_close.png" type="BINDATA" />
       <include name="IDR_TAB_CLOSE_H" file="tab_close_h.png" type="BINDATA" />
@@ -322,9 +317,6 @@
       <include name="IDR_TAB_DROP_UP" file="tab_drop_up.png" type="BINDATA" />
       <include name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center.png" type="BINDATA" />
       <include name="IDR_TAB_INACTIVE_LEFT" file="tab_inactive_left.png" type="BINDATA" />
-      <include name="IDR_TAB_INACTIVE_NANO_CENTER" file="tab_inactive_nano_center.png" type="BINDATA" />
-      <include name="IDR_TAB_INACTIVE_NANO_LEFT" file="tab_inactive_nano_left.png" type="BINDATA" />
-      <include name="IDR_TAB_INACTIVE_NANO_RIGHT" file="tab_inactive_nano_right.png" type="BINDATA" />
       <include name="IDR_TAB_INACTIVE_RIGHT" file="tab_inactive_right.png" type="BINDATA" />
       <include name="IDR_THEME_BUTTON_BACKGROUND" file="notused.png" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
