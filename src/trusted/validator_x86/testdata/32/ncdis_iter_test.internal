@@ -90,7 +90,7 @@ NaClExpVector[10] = {
 };
 00000000: d5 0a                                        aad
   { NoPrefix, {  0xd5 }, Aad,  NACLi_ILLEGAL,
-    NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(Opcode32Only),
+    NACL_IFLAG(OpcodeHasImmed_b),
     { RegAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
     { RegAL, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
     { RegAH, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
@@ -312,7 +312,7 @@ NaClExpVector[4] = {
 };
 00000000: 67 e3 00                                     jcxz 0x3
   { NoPrefix, {  0xe3 }, Jcxz,  NACLi_JMP8,
-    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(Opcode32Only) | NACL_IFLAG(OperandSize_b) | NACL_IFLAG(AddressSize_w),
+    NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_b) | NACL_IFLAG(AddressSize_w),
     { RegREIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit) },
     { J_Operand, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative) },
   };

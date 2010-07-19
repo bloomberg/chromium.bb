@@ -1357,6 +1357,44 @@ static void NaClVerifyInstCounts() {
   }
 }
 
+/* Removes X86-32 specific flags from the given instruction. */
+static void NaClInstRemove32Stuff(NaClInst* inst) {
+  inst->flags &= ~(NACL_IFLAG(Opcode32Only));
+}
+
+/* Removes X86-64 specific flags from the given instruction. */
+static void NaClInstRemove64Stuff(NaClInst* inst) {
+  inst->flags &=
+      ~(NACL_IFLAG(OpcodeUsesRexW) | NACL_IFLAG(OpcodeHasRexR) |
+        NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
+        NACL_IFLAG(AddressSize_o) | NACL_IFLAG(OperandSizeDefaultIs64) |
+        NACL_IFLAG(OperandSizeForce64) | NACL_IFLAG(AddressSizeDefaultIs32));
+}
+
+/* Simplifies the instructions if possible. Mostly removes flags that
+ * don't correspond to the run mode.
+ */
+static void NaClSimplifyIfApplicable() {
+  int i;
+  for (i = 0; i < NCDTABLESIZE; ++i) {
+    NaClInstPrefix prefix;
+    for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
+      NaClInst* next = NaClInstTable[i][prefix];
+      while (NULL != next) {
+        if (X86_64 != FLAGS_run_mode) {
+          NaClInstRemove64Stuff(next);
+        }
+        if (X86_32 != FLAGS_run_mode) {
+          NaClInstRemove32Stuff(next);
+        }
+        /* Remove size only flags, since already compiled into tables. */
+        next->flags &= ~(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(Opcode32Only));
+        next = next->next_rule;
+      }
+    }
+  }
+}
+
 /* Generate header information, based on the executable name in argv0,
  * and the file to be generated (defined by fname).
  */
@@ -1603,7 +1641,7 @@ int main(const int argc, const char* argv[]) {
   }
 
   NaClBuildInstTables();
-
+  NaClSimplifyIfApplicable();
   NaClVerifyInstCounts();
 
   f = NaClMustOpen(argv[1], "w");
