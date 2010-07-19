@@ -194,7 +194,7 @@ void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
     const MostVisitedURL& url, int new_rank) {
   int prev_rank = GetURLRank(url);
   if (prev_rank == -1) {
-    NOTREACHED() << "Updating rank of an unknown URL.";
+    NOTREACHED() << "Updating rank of an unknown URL: " << url.url.spec();
     return;
   }
 
@@ -263,7 +263,7 @@ bool TopSitesDatabaseImpl::GetPageThumbnail(const GURL& url,
 }
 
 int TopSitesDatabaseImpl::GetRowCount() {
-  int result = -1;
+  int result = 0;
   sql::Statement select_statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT COUNT (url) FROM thumbnails"));
@@ -299,6 +299,9 @@ int TopSitesDatabaseImpl::GetURLRank(const MostVisitedURL& url) {
 // Remove the record for this URL. Returns true iff removed successfully.
 bool TopSitesDatabaseImpl::RemoveURL(const MostVisitedURL& url) {
   int old_rank = GetURLRank(url);
+  if (old_rank < 0)
+    return false;
+
   sql::Transaction transaction(&db_);
   transaction.Begin();
   // Decrement all following ranks.

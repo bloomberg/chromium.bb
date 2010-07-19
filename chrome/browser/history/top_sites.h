@@ -111,6 +111,7 @@ class TopSites : public NotificationObserver,
   friend class TopSitesTest_Migration_Test;
   friend class TopSitesTest_QueueingRequestsForTopSites_Test;
   friend class TopSitesTest_CancelingRequestsForTopSites_Test;
+  friend class TopSitesTest_AddTemporaryThumbnail_Test;
 
   ~TopSites();
 
@@ -209,6 +210,11 @@ class TopSites : public NotificationObserver,
   // Called after TopSites completes migration.
   void OnMigrationDone();
 
+  // Add a thumbnail for an unknown url. See temp_thumbnails_map_.
+  void AddTemporaryThumbnail(const GURL& url,
+                             const RefCountedBytes* thumbnail,
+                             const ThumbnailScore& score);
+
   Profile* profile_;
   // A mockup to use for testing. If NULL, use the real HistoryService
   // from the profile_. See SetMockHistoryService.
@@ -256,6 +262,12 @@ class TopSites : public NotificationObserver,
 
   // Are we waiting for the top sites from HistoryService?
   bool waiting_for_results_;
+
+  // Stores thumbnails for unknown pages. When SetPageThumbnail is
+  // called, if we don't know about that URL yet and we don't have
+  // enough Top Sites (new profile), we store it until the next
+  // UpdateMostVisitedURLs call.
+  std::map<GURL, Images> temp_thumbnails_map_;
 
   // TODO(brettw): use the blacklist.
   // std::set<GURL> blacklist_;

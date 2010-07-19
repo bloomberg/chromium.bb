@@ -88,6 +88,18 @@ void TopSites::ReadDatabase() {
 bool TopSites::SetPageThumbnail(const GURL& url,
                                 const SkBitmap& thumbnail,
                                 const ThumbnailScore& score) {
+  bool add_temp_thumbnail = false;
+  if (canonical_urls_.find(url) == canonical_urls_.end()) {
+    if (top_sites_.size() < kTopSitesNumber) {
+      add_temp_thumbnail = true;
+    } else {
+      return false;  // This URL is not known to us.
+    }
+  }
+
+  if (!HistoryService::CanAddURL(url))
+    return false;  // It's not a real webpage.
+
   scoped_refptr<RefCountedBytes> thumbnail_data = new RefCountedBytes;
   SkAutoLockPixels thumbnail_lock(thumbnail);
   bool encoded = gfx::JPEGCodec::Encode(
@@ -98,6 +110,11 @@ bool TopSites::SetPageThumbnail(const GURL& url,
       &thumbnail_data->data);
   if (!encoded)
     return false;
+
+  if (add_temp_thumbnail) {
+    AddTemporaryThumbnail(url, thumbnail_data, score);
+    return true;
+  }
 
   return SetPageThumbnail(url, thumbnail_data, score);
 }
@@ -207,7 +224,7 @@ void TopSites::UpdateMostVisited(MostVisitedURLList most_visited) {
     // Process the diff: delete from images and disk, add to disk.
     // Delete all the thumbnails associated with URLs that were deleted.
     for (size_t i = 0; i < deleted.size(); i++) {
-      MostVisitedURL deleted_url = top_sites_[deleted[i]];
+      const MostVisitedURL& deleted_url = top_sites_[deleted[i]];
       std::map<GURL, Images>::iterator found =
           top_images_.find(deleted_url.url);
       if (found != top_images_.end())
@@ -261,6 +278,14 @@ void TopSites::OnMigrationDone() {
   hs->OnTopSitesReady();
 }
 
+void TopSites::AddTemporaryThumbnail(const GURL& url,
+                                     const RefCountedBytes* thumbnail,
+                                     const ThumbnailScore& score) {
+  Images& img = temp_thumbnails_map_[url];
+  img.thumbnail = const_cast<RefCountedBytes*>(thumbnail);
+  img.thumbnail_score = score;
+}
+
 void TopSites::StartQueryForThumbnail(size_t index) {
   DCHECK(migration_in_progress_);
   migration_pending_urls_.insert(top_sites_[index].url);
@@ -295,11 +320,29 @@ void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
   top_sites_.swap(*most_visited);
   waiting_for_results_ = false;
 
-
   // Save the redirect information for quickly mapping to the canonical URLs.
   canonical_urls_.clear();
-  for (size_t i = 0; i < top_sites_.size(); i++)
-    StoreRedirectChain(top_sites_[i].redirects, i);
+  for (size_t i = 0; i < top_sites_.size(); i++) {
+    const MostVisitedURL& mv = top_sites_[i];
+    StoreRedirectChain(mv.redirects, i);
+
+    std::map<GURL, Images>::iterator it = temp_thumbnails_map_.begin();
+    GURL canonical_url = GetCanonicalURL(mv.url);
+    for (; it != temp_thumbnails_map_.end(); it++) {
+      // Must map all temp URLs to canonical ones.
+      // temp_thumbnails_map_ contains non-canonical URLs, because
+      // when we add a temp thumbnail, redirect chain is not known.
+      // This is slow, but temp_thumbnails_map_ should have very few URLs.
+      if (canonical_url == GetCanonicalURL(it->first)) {
+        SetPageThumbnail(mv.url, it->second.thumbnail,
+                         it->second.thumbnail_score);
+        temp_thumbnails_map_.erase(it);
+        break;
+      }
+    }
+  }
+  if (top_sites_.size() >= kTopSitesNumber)
+    temp_thumbnails_map_.clear();
 }
 
 void TopSites::StoreRedirectChain(const RedirectList& redirects,
@@ -317,8 +360,6 @@ void TopSites::StoreRedirectChain(const RedirectList& redirects,
 }
 
 GURL TopSites::GetCanonicalURL(const GURL& url) const {
-  lock_.AssertAcquired();
-
   std::map<GURL, size_t>::const_iterator found = canonical_urls_.find(url);
   if (found == canonical_urls_.end())
     return GURL();  // Don't know anything about this URL.

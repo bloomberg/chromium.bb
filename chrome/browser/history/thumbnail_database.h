@@ -182,6 +182,10 @@ class ThumbnailDatabase {
   // This can be NULL if there are no indexers registered to receive indexing
   // data from us.
   const HistoryPublisher* history_publisher_;
+
+  // True if migration to TopSites has been done and the thumbnails
+  // table should not be used.
+  bool use_top_sites_;
 };
 
 }  // namespace history

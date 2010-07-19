@@ -554,6 +554,10 @@ class HistoryService : public CancelableRequestProvider,
   // to delete the thumbnails DB.
   void OnTopSitesReady();
 
+  // Returns true if this looks like the type of URL we want to add to the
+  // history. We filter out some URLs such as JavaScript.
+  static bool CanAddURL(const GURL& url);
+
  protected:
   ~HistoryService();
 
@@ -614,10 +618,6 @@ class HistoryService : public CancelableRequestProvider,
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
   void OnDBLoaded();
-
-  // Returns true if this looks like the type of URL we want to add to the
-  // history. We filter out some URLs such as JavaScript.
-  bool CanAddURL(const GURL& url) const;
 
   // FavIcon -------------------------------------------------------------------
 

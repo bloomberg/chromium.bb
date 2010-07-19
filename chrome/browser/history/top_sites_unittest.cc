@@ -352,7 +352,7 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
   GURL url1a("http://google.com/");
   GURL url1b("http://www.google.com/");
   GURL url2("http://images.google.com/");
-  GURL nonexistant_url("http://news.google.com/");
+  GURL invalid_url("chrome://favicon/http://google.com/");
 
   std::vector<MostVisitedURL> list;
   AppendMostVisitedURL(&list, url2);
@@ -377,8 +377,8 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
   ThumbnailScore medium_score(0.5, true, true, now);
   ThumbnailScore high_score(0.0, true, true, now);
 
-  // Setting the thumbnail for nonexistant pages should fail.
-  EXPECT_FALSE(top_sites().SetPageThumbnail(nonexistant_url,
+  // Setting the thumbnail for invalid pages should fail.
+  EXPECT_FALSE(top_sites().SetPageThumbnail(invalid_url,
                                             thumbnail, medium_score));
 
   // Setting the thumbnail for url2 should succeed, lower scores shouldn't
@@ -900,6 +900,49 @@ TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
   ASSERT_EQ(2u, urls().size());
   EXPECT_EQ("http://1.com/", urls()[0].url.spec());
   EXPECT_EQ("http://2.com/", urls()[1].url.spec());
+}
+
+TEST_F(TopSitesTest, AddTemporaryThumbnail) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  GURL unknown_url("http://news.google.com/");
+  GURL invalid_url("chrome://thumb/http://google.com/");
+  GURL url1a("http://google.com/");
+  GURL url1b("http://www.google.com/");
+
+  // Create a dummy thumbnail.
+  SkBitmap thumbnail;
+  thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
+  thumbnail.allocPixels();
+  thumbnail.eraseRGB(0x00, 0x00, 0x00);
+
+  ThumbnailScore medium_score(0.5, true, true, base::Time::Now());
+
+  // Don't store thumbnails for Javascript URLs.
+  EXPECT_FALSE(top_sites().SetPageThumbnail(invalid_url,
+                                            thumbnail, medium_score));
+  // Store thumbnails for unknown (but valid) URLs temporarily - calls
+  // AddTemporaryThumbnail.
+  EXPECT_TRUE(top_sites().SetPageThumbnail(unknown_url,
+                                           thumbnail, medium_score));
+
+  std::vector<MostVisitedURL> list;
+
+  MostVisitedURL mv;
+  mv.url = unknown_url;
+  mv.redirects.push_back(mv.url);
+  mv.redirects.push_back(url1a);
+  mv.redirects.push_back(url1b);
+  list.push_back(mv);
+
+  // Update URLs - use temporary thumbnails.
+  top_sites().UpdateMostVisited(list);
+
+  RefCountedBytes* out = NULL;
+  ASSERT_TRUE(top_sites().GetPageThumbnail(unknown_url, &out));
+  scoped_ptr<SkBitmap> out_bitmap(gfx::JPEGCodec::Decode(out->front(),
+                                                         out->size()));
+  EXPECT_EQ(0, memcmp(thumbnail.getPixels(), out_bitmap->getPixels(),
+                      thumbnail.getSize()));
 }
 
 }  // namespace history

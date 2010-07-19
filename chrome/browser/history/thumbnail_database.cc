@@ -29,7 +29,8 @@ namespace history {
 static const int kCurrentVersionNumber = 3;
 static const int kCompatibleVersionNumber = 3;
 
-ThumbnailDatabase::ThumbnailDatabase() : history_publisher_(NULL) {
+ThumbnailDatabase::ThumbnailDatabase() : history_publisher_(NULL),
+                                         use_top_sites_(false) {
 }
 
 ThumbnailDatabase::~ThumbnailDatabase() {
@@ -129,8 +130,10 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
 
 bool ThumbnailDatabase::InitThumbnailTable() {
   if (!db_.DoesTableExist("thumbnails")) {
-    if (CommandLine::ForCurrentProcess()-> HasSwitch(switches::kTopSites))
+    if (CommandLine::ForCurrentProcess()-> HasSwitch(switches::kTopSites)) {
+      use_top_sites_ = true;
       return true;
+    }
     if (!db_.Execute("CREATE TABLE thumbnails ("
         "url_id INTEGER PRIMARY KEY,"
         "boring_score DOUBLE DEFAULT 1.0,"
@@ -144,6 +147,13 @@ bool ThumbnailDatabase::InitThumbnailTable() {
 }
 
 bool ThumbnailDatabase::UpgradeToVersion3() {
+  if (use_top_sites_) {
+    meta_table_.SetVersionNumber(3);
+    meta_table_.SetCompatibleVersionNumber(
+        std::min(3, kCompatibleVersionNumber));
+    return true;  // Not needed after migration to TopSites.
+  }
+
   // sqlite doesn't like the "ALTER TABLE xxx ADD (column_one, two,
   // three)" syntax, so list out the commands we need to execute:
   const char* alterations[] = {
@@ -167,6 +177,9 @@ bool ThumbnailDatabase::UpgradeToVersion3() {
 }
 
 bool ThumbnailDatabase::RecreateThumbnailTable() {
+  if (use_top_sites_)
+    return true;  // Not needed after migration to TopSites.
+
   if (!db_.Execute("DROP TABLE thumbnails"))
     return false;
   return InitThumbnailTable();
@@ -218,6 +231,9 @@ void ThumbnailDatabase::SetPageThumbnail(
     const SkBitmap& thumbnail,
     const ThumbnailScore& score,
     base::Time time) {
+  if (use_top_sites_)
+    return;  // Not possible after migration to TopSites.
+
   if (!thumbnail.isNull()) {
     bool add_thumbnail = true;
     ThumbnailScore current_score;
@@ -270,6 +286,9 @@ void ThumbnailDatabase::SetPageThumbnail(
 
 bool ThumbnailDatabase::GetPageThumbnail(URLID id,
                                          std::vector<unsigned char>* data) {
+  if (use_top_sites_)
+    return false;  // Not possible after migration to TopSites.
+
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT data FROM thumbnails WHERE url_id=?"));
   if (!statement)
@@ -284,6 +303,9 @@ bool ThumbnailDatabase::GetPageThumbnail(URLID id,
 }
 
 bool ThumbnailDatabase::DeleteThumbnail(URLID id) {
+  if (use_top_sites_)
+    return true;  // Not possible after migration to TopSites.
+
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM thumbnails WHERE url_id = ?"));
   if (!statement)
@@ -295,6 +317,9 @@ bool ThumbnailDatabase::DeleteThumbnail(URLID id) {
 
 bool ThumbnailDatabase::ThumbnailScoreForId(URLID id,
                                             ThumbnailScore* score) {
+  if (use_top_sites_)
+    return false;  // Not possible after migration to TopSites.
+
   // Fetch the current thumbnail's information to make sure we
   // aren't replacing a good thumbnail with one that's worse.
   sql::Statement select_statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -448,7 +473,7 @@ bool ThumbnailDatabase::CommitTemporaryFavIconTable() {
 }
 
 bool ThumbnailDatabase::NeedsMigrationToTopSites() {
-  return db_.DoesTableExist("thumbnails");
+  return !use_top_sites_;
 }
 
 bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
@@ -519,6 +544,7 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
 
   // Reopen the transaction.
   BeginTransaction();
+  use_top_sites_ = true;
   return true;
 }
 

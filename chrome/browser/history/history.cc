@@ -649,7 +649,8 @@ void HistoryService::ScheduleTask(SchedulePriority priority,
   thread_->message_loop()->PostTask(FROM_HERE, task);
 }
 
-bool HistoryService::CanAddURL(const GURL& url) const {
+// static
+bool HistoryService::CanAddURL(const GURL& url) {
   if (!url.is_valid())
     return false;
 
