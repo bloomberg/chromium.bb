@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_COCOA_TAB_VIEW_H_
 
 #import <Cocoa/Cocoa.h>
+#include <ApplicationServices/ApplicationServices.h>
+
+#include <map>
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
@@ -81,6 +84,12 @@ enum AlertState {
   TabWindowController* draggedController_;  // weak. Controller being dragged.
   NSWindow* dragWindow_;  // weak. The window being dragged
   NSWindow* dragOverlay_;  // weak. The overlay being dragged
+  // Cache workspace IDs per-drag because computing them on 10.5 with
+  // CGWindowListCreateDescriptionFromArray is expensive.
+  // resetDragControllers clears this cache.
+  //
+  // TODO(davidben): When 10.5 becomes unsupported, remove this.
+  std::map<CGWindowID, int> workspaceIDCache_;
 
   TabWindowController* targetController_;  // weak. Controller being targeted
   NSCellStateValue state_;

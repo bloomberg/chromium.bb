@@ -5,7 +5,9 @@
 #import "chrome/browser/cocoa/tab_view.h"
 
 #include "base/logging.h"
+#import "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
+#include "base/scoped_cftyperef.h"
 #include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
@@ -46,6 +48,8 @@ const CGFloat kRapidCloseDist = 2.5;
 - (void)resetLastGlowUpdateTime;
 - (NSTimeInterval)timeElapsedSinceLastGlowUpdate;
 - (void)adjustGlowValue;
+// TODO(davidben): When we stop supporting 10.5, this can be removed.
+- (int)getWorkspaceID:(NSWindow*)window useCache:(BOOL)useCache;
 
 @end  // TabView(Private)
 
@@ -161,6 +165,20 @@ const CGFloat kRapidCloseDist = 2.5;
   for (NSWindow* window in [NSApp orderedWindows]) {
     if (window == dragWindow) continue;
     if (![window isVisible]) continue;
+    // Skip windows on the wrong space.
+    if ([window respondsToSelector:@selector(isOnActiveSpace)]) {
+      if (![window performSelector:@selector(isOnActiveSpace)])
+        continue;
+    } else {
+      // TODO(davidben): When we stop supporting 10.5, this can be
+      // removed.
+      //
+      // We don't cache the workspace of |dragWindow| because it may
+      // move around spaces.
+      if ([self getWorkspaceID:dragWindow useCache:NO] !=
+          [self getWorkspaceID:window useCache:YES])
+        continue;
+    }
     NSWindowController* controller = [window windowController];
     if ([controller isKindOfClass:[TabWindowController class]]) {
       TabWindowController* realController =
@@ -180,6 +198,7 @@ const CGFloat kRapidCloseDist = 2.5;
   sourceController_ = nil;
   sourceWindow_ = nil;
   targetController_ = nil;
+  workspaceIDCache_.clear();
 }
 
 // Sets whether the window background should be visible or invisible when
@@ -961,6 +980,54 @@ const CGFloat kRapidCloseDist = 2.5;
 
   [self resetLastGlowUpdateTime];
   [self setNeedsDisplay:YES];
+}
+
+// Returns the workspace id of |window|. If |useCache|, then lookup
+// and remember the value in |workspaceIDCache_| until the end of the
+// current drag.
+- (int)getWorkspaceID:(NSWindow*)window useCache:(BOOL)useCache {
+  CGWindowID windowID = [window windowNumber];
+  if (useCache) {
+    std::map<CGWindowID, int>::iterator iter =
+        workspaceIDCache_.find(windowID);
+    if (iter != workspaceIDCache_.end())
+      return iter->second;
+  }
+
+  int workspace = -1;
+  // It's possible to query in bulk, but probably not necessary.
+  scoped_cftyperef<CFArrayRef> windowIDs(CFArrayCreate(
+      NULL, reinterpret_cast<const void **>(&windowID), 1, NULL));
+  scoped_cftyperef<CFArrayRef> descriptions(
+      CGWindowListCreateDescriptionFromArray(windowIDs));
+  DCHECK(CFArrayGetCount(descriptions.get()) <= 1);
+  if (CFArrayGetCount(descriptions.get()) > 0) {
+    CFDictionaryRef dict = static_cast<CFDictionaryRef>(
+        CFArrayGetValueAtIndex(descriptions.get(), 0));
+    DCHECK(CFGetTypeID(dict) == CFDictionaryGetTypeID());
+
+    // Sanity check the ID.
+    CFNumberRef otherIDRef = (CFNumberRef)mac_util::GetValueFromDictionary(
+        dict, kCGWindowNumber, CFNumberGetTypeID());
+    CGWindowID otherID;
+    if (otherIDRef &&
+        CFNumberGetValue(otherIDRef, kCGWindowIDCFNumberType, &otherID) &&
+        otherID == windowID) {
+      // And then get the workspace.
+      CFNumberRef workspaceRef = (CFNumberRef)mac_util::GetValueFromDictionary(
+          dict, kCGWindowWorkspace, CFNumberGetTypeID());
+      if (!workspaceRef ||
+          !CFNumberGetValue(workspaceRef, kCFNumberIntType, &workspace)) {
+        workspace = -1;
+      }
+    } else {
+      NOTREACHED();
+    }
+  }
+  if (useCache) {
+    workspaceIDCache_[windowID] = workspace;
+  }
+  return workspace;
 }
 
 @end  // @implementation TabView(Private)
