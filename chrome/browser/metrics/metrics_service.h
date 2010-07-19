@@ -80,6 +80,30 @@ class MetricsService : public NotificationObserver,
                        public URLFetcher::Delegate,
                        public MetricsServiceBase {
  public:
+  // Used to produce a historgram that keeps track of the status of recalling
+  // persisted per logs.
+  enum LogRecallStatus {
+    RECALL_SUCCESS,         // We were able to correctly recall a persisted log.
+    LIST_EMPTY,             // Attempting to recall from an empty list.
+    LIST_SIZE_MISSING,      // Failed to recover list size using GetAsInteger().
+    LIST_SIZE_TOO_SMALL,    // Too few elements in the list (less than 3).
+    LIST_SIZE_CORRUPTION,   // List size is not as expected.
+    LOG_STRING_CORRUPTION,  // Failed to recover log string using GetAsString().
+    CHECKSUM_CORRUPTION,    // Failed to verify checksum.
+    CHECKSUM_STRING_CORRUPTION,  // Failed to recover checksum string using
+                                 // GetAsString().
+    DECODE_FAIL,            // Failed to decode log.
+    END_RECALL_STATUS       // Number of bins to use to create the histogram.
+  };
+
+  // TODO(ziadh): This is here temporarily for a side experiment. Remove later
+  // on.
+  enum LogStoreStatus {
+    ENCODE_FAIL,      // Failed to encode log.
+    COMPRESS_FAIL,    // Failed to compress log.
+    END_STORE_STATUS  // Number of bins to use to create the histogram.
+  };
+
   MetricsService();
   virtual ~MetricsService();
 
@@ -263,7 +287,16 @@ class MetricsService : public NotificationObserver,
   void PrepareInitialLog();
   // Pull copies of unsent logs from prefs into instance variables.
   void RecallUnsentLogs();
-  // Convert pending_log_ to XML in pending_log_text_ for transmission.
+  // Decode and verify written pref log data.
+  static MetricsService::LogRecallStatus RecallUnsentLogsHelper(
+      const ListValue& list,
+      std::vector<std::string>* local_list);
+  // Encode and write list size and checksum for perf log data.
+  static void StoreUnsentLogsHelper(const std::vector<std::string>& local_list,
+                                    const size_t kMaxLocalListSize,
+                                    ListValue* list);
+  // Convert |pending_log_| to XML in |compressed_log_|, and compress it for
+  // transmission.
   void PreparePendingLogText();
 
   // Convert pending_log_ to XML, compress it, and prepare to pass to server.
@@ -489,6 +522,13 @@ class MetricsService : public NotificationObserver,
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 #endif
 
+  FRIEND_TEST(MetricsServiceTest, EmptyLogList);
+  FRIEND_TEST(MetricsServiceTest, SingleElementLogList);
+  FRIEND_TEST(MetricsServiceTest, OverLimitLogList);
+  FRIEND_TEST(MetricsServiceTest, SmallRecoveredListSize);
+  FRIEND_TEST(MetricsServiceTest, RemoveSizeFromLogList);
+  FRIEND_TEST(MetricsServiceTest, CorruptSizeOfLogList);
+  FRIEND_TEST(MetricsServiceTest, CorruptChecksumOfLogList);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdGeneratesAllZeroes);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdGeneratesCorrectly);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdCorrectlyFormatted);

@@ -589,9 +589,9 @@ scoped_refptr<Histogram> LinearHistogram::FactoryGet(
   return histogram;
 }
 
-scoped_refptr<Histogram> LinearHistogram::FactoryGet(const std::string& name,
-    base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
-    Flags flags) {
+scoped_refptr<Histogram> LinearHistogram::FactoryTimeGet(
+    const std::string& name, base::TimeDelta minimum, base::TimeDelta maximum,
+    size_t bucket_count, Flags flags) {
   return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
                     bucket_count, flags);
 }

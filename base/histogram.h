@@ -497,7 +497,7 @@ class LinearHistogram : public Histogram {
      default underflow bucket. */
   static scoped_refptr<Histogram> FactoryGet(const std::string& name,
       Sample minimum, Sample maximum, size_t bucket_count, Flags flags);
-  static scoped_refptr<Histogram> FactoryGet(const std::string& name,
+  static scoped_refptr<Histogram> FactoryTimeGet(const std::string& name,
       base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
       Flags flags);
 

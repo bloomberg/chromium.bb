@@ -437,21 +437,20 @@ bool MetricsService::UploadData() {
     return false;
   }
 
-  pending_log_text_ = PrepareLogSubmissionString();
-  DCHECK(!pending_log_text_.empty());
+  std::string pending_log_text = PrepareLogSubmissionString();
+  DCHECK(!pending_log_text.empty());
 
   // Allow security conscious users to see all metrics logs that we send.
-  LOG(INFO) << "METRICS LOG: " << pending_log_text_;
+  LOG(INFO) << "METRICS LOG: " << pending_log_text;
 
   bool ret = true;
 
-  std::string compressed_log;
-  if (!Bzip2Compress(pending_log_text_, &compressed_log)) {
+  if (!Bzip2Compress(pending_log_text, &compressed_log_)) {
     NOTREACHED() << "Failed to compress log for transmission.";
     ret = false;
   } else {
     HRESULT hr = ChromeFrameMetricsDataUploader::UploadDataHelper(
-        compressed_log);
+        compressed_log_);
     DCHECK(SUCCEEDED(hr));
   }
   DiscardPendingLog();

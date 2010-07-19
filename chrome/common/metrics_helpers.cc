@@ -410,7 +410,7 @@ void MetricsLogBase::RecordHistogramDelta(
 // MetricsServiceBase
 MetricsServiceBase::MetricsServiceBase()
     : pending_log_(NULL),
-      pending_log_text_(),
+      compressed_log_(),
       current_log_(NULL),
       logged_samples_() {
 }
@@ -512,6 +512,5 @@ void MetricsServiceBase::DiscardPendingLog() {
     delete pending_log_;
     pending_log_ = NULL;
   }
-  pending_log_text_.clear();
+  compressed_log_.clear();
 }
-

@@ -19,9 +19,8 @@
 // transmission.  Transmission includes submitting a compressed log as data in a
 // URL-post, and retransmitting (or retaining at process termination) if the
 // attempted transmission failed.  Retention across process terminations is done
-// using the the PrefServices facilities.  The format for the retained
-// logs (ones that never got transmitted) is always the uncompressed textual
-// representation.
+// using the the PrefServices facilities. The retained logs (the ones that never
+// got transmitted) are compressed and base64-encoded before being persisted.
 //
 // Logs fall into one of two categories: "initial logs," and "ongoing logs."
 // There is at most one initial log sent for each complete run of the chromium
@@ -164,12 +163,8 @@
 #include <objbase.h>
 #endif
 
-#if defined(USE_SYSTEM_LIBBZ2)
-#include <bzlib.h>
-#else
-#include "third_party/bzip2/bzlib.h"
-#endif
-
+#include "base/base64.h"
+#include "base/md5.h"
 #include "base/thread.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
@@ -204,6 +199,21 @@
 static const char kHardwareClassTool[] = "/usr/bin/hardware_class";
 static const char kUnknownHardwareClass[] = "unknown";
 #endif
+
+namespace {
+MetricsService::LogRecallStatus MakeRecallStatusHistogram(
+    MetricsService::LogRecallStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogRecall", status,
+                            MetricsService::END_RECALL_STATUS);
+  return status;
+}
+
+// TODO(ziadh): Remove this when done with experiment.
+void MakeStoreStatusHistogram(MetricsService::LogStoreStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogStore", status,
+                            MetricsService::END_STORE_STATUS);
+}
+}  // namespace
 
 using base::Time;
 using base::TimeDelta;
@@ -269,6 +279,10 @@ static const size_t kMaxInitialLogsPersisted = 20;
 // was not yet been transmitted, and that is normal (to have exactly one
 // ongoing_log_ at startup).
 static const size_t kMaxOngoingLogsPersisted = 8;
+
+// We append (2) more elements to persisted lists: the size of the list and a
+// checksum of the elements.
+static const size_t kChecksumEntryCount = 2;
 
 
 // Handles asynchronous fetching of memory details.
@@ -883,7 +897,7 @@ void MetricsService::PushPendingLogsToUnsentLists() {
     PreparePendingLogText();
     if (state_ == INITIAL_LOG_READY) {
       // We may race here, and send second copy of initial log later.
-      unsent_initial_logs_.push_back(pending_log_text_);
+      unsent_initial_logs_.push_back(compressed_log_);
       state_ = SEND_OLD_INITIAL_LOGS;
     } else {
       // TODO(jar): Verify correctness in other states, including sending unsent
@@ -905,14 +919,13 @@ void MetricsService::PushPendingLogTextToUnsentOngoingLogs() {
   // log.  It wasn't supposed to be uploaded anyway.
   if (!server_permits_upload_)
     return;
-
-  if (pending_log_text_.length() >
+  if (compressed_log_.length() >
       static_cast<size_t>(kUploadLogAvoidRetransmitSize)) {
     UMA_HISTOGRAM_COUNTS("UMA.Large Accumulated Log Not Persisted",
-                         static_cast<int>(pending_log_text_.length()));
+                         static_cast<int>(compressed_log_.length()));
     return;
   }
-  unsent_ongoing_logs_.push_back(pending_log_text_);
+  unsent_ongoing_logs_.push_back(compressed_log_);
 }
 
 //------------------------------------------------------------------------------
@@ -1078,7 +1091,7 @@ void MetricsService::MakePendingLog() {
 
     case SEND_OLD_INITIAL_LOGS:
       if (!unsent_initial_logs_.empty()) {
-        pending_log_text_ = unsent_initial_logs_.back();
+        compressed_log_ = unsent_initial_logs_.back();
         break;
       }
       state_ = SENDING_OLD_LOGS;
@@ -1086,7 +1099,7 @@ void MetricsService::MakePendingLog() {
 
     case SENDING_OLD_LOGS:
       if (!unsent_ongoing_logs_.empty()) {
-        pending_log_text_ = unsent_ongoing_logs_.back();
+        compressed_log_ = unsent_ongoing_logs_.back();
         break;
       }
       state_ = SENDING_CURRENT_LOGS;
@@ -1145,30 +1158,114 @@ void MetricsService::PrepareInitialLog() {
   pending_log_ = log;
 }
 
-void MetricsService::RecallUnsentLogs() {
-  DCHECK(unsent_initial_logs_.empty());
-  DCHECK(unsent_ongoing_logs_.empty());
+// static
+MetricsService::LogRecallStatus MetricsService::RecallUnsentLogsHelper(
+    const ListValue& list,
+    std::vector<std::string>* local_list) {
+  DCHECK(local_list->empty());
+  if (list.GetSize() == 0)
+    return MakeRecallStatusHistogram(LIST_EMPTY);
+  if (list.GetSize() < 3)
+    return MakeRecallStatusHistogram(LIST_SIZE_TOO_SMALL);
 
+  // The size is stored at the beginning of the list.
+  int size;
+  bool valid = (*list.begin())->GetAsInteger(&size);
+  if (!valid)
+    return MakeRecallStatusHistogram(LIST_SIZE_MISSING);
+
+  // Account for checksum and size included in the list.
+  if (static_cast<unsigned int>(size) !=
+      list.GetSize() - kChecksumEntryCount)
+    return MakeRecallStatusHistogram(LIST_SIZE_CORRUPTION);
+
+  MD5Context ctx;
+  MD5Init(&ctx);
+  std::string encoded_log;
+  std::string decoded_log;
+  for (ListValue::const_iterator it = list.begin() + 1;
+       it != list.end() - 1; ++it) {  // Last element is the checksum.
+    valid = (*it)->GetAsString(&encoded_log);
+    if (!valid) {
+      local_list->clear();
+      return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION);
+    }
+
+    MD5Update(&ctx, encoded_log.data(), encoded_log.length());
+
+    if (!base::Base64Decode(encoded_log, &decoded_log)) {
+      local_list->clear();
+      return MakeRecallStatusHistogram(DECODE_FAIL);
+    }
+    local_list->push_back(decoded_log);
+  }
+
+  // Verify checksum.
+  MD5Digest digest;
+  MD5Final(&digest, &ctx);
+  std::string recovered_md5;
+  // We store the hash at the end of the list.
+  valid = (*(list.end() - 1))->GetAsString(&recovered_md5);
+  if (!valid) {
+    local_list->clear();
+    return MakeRecallStatusHistogram(CHECKSUM_STRING_CORRUPTION);
+  }
+  if (recovered_md5 != MD5DigestToBase16(digest)) {
+    local_list->clear();
+    return MakeRecallStatusHistogram(CHECKSUM_CORRUPTION);
+  }
+  return MakeRecallStatusHistogram(RECALL_SUCCESS);
+}
+void MetricsService::RecallUnsentLogs() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
   ListValue* unsent_initial_logs = local_state->GetMutableList(
       prefs::kMetricsInitialLogs);
-  for (ListValue::const_iterator it = unsent_initial_logs->begin();
-      it != unsent_initial_logs->end(); ++it) {
-    std::string log;
-    (*it)->GetAsString(&log);
-    unsent_initial_logs_.push_back(log);
-  }
+  RecallUnsentLogsHelper(*unsent_initial_logs, &unsent_initial_logs_);
 
   ListValue* unsent_ongoing_logs = local_state->GetMutableList(
       prefs::kMetricsOngoingLogs);
-  for (ListValue::const_iterator it = unsent_ongoing_logs->begin();
-      it != unsent_ongoing_logs->end(); ++it) {
-    std::string log;
-    (*it)->GetAsString(&log);
-    unsent_ongoing_logs_.push_back(log);
+  RecallUnsentLogsHelper(*unsent_ongoing_logs, &unsent_ongoing_logs_);
+}
+
+// static
+void MetricsService::StoreUnsentLogsHelper(
+    const std::vector<std::string>& local_list,
+    const size_t kMaxLocalListSize,
+    ListValue* list) {
+  list->Clear();
+  size_t start = 0;
+  if (local_list.size() > kMaxLocalListSize)
+    start = local_list.size() - kMaxLocalListSize;
+  DCHECK(start <= local_list.size());
+  if (local_list.size() == start)
+    return;
+
+  // Store size at the beginning of the list.
+  list->Append(Value::CreateIntegerValue(local_list.size() - start));
+
+  MD5Context ctx;
+  MD5Init(&ctx);
+  std::string encoded_log;
+  for (std::vector<std::string>::const_iterator it = local_list.begin() + start;
+       it != local_list.end(); ++it) {
+    // We encode the compressed log as Value::CreateStringValue() expects to
+    // take a valid UTF8 string.
+    if (!base::Base64Encode(*it, &encoded_log)) {
+      MakeStoreStatusHistogram(ENCODE_FAIL);
+      list->Clear();
+      return;
+    }
+    MD5Update(&ctx, encoded_log.data(), encoded_log.length());
+    list->Append(Value::CreateStringValue(encoded_log));
   }
+
+  // Append hash to the end of the list.
+  MD5Digest digest;
+  MD5Final(&digest, &ctx);
+  list->Append(Value::CreateStringValue(MD5DigestToBase16(digest)));
+  DCHECK(list->GetSize() >= 3);  // Minimum of 3 elements (size, data, hash).
 }
 
 void MetricsService::StoreUnsentLogs() {
@@ -1180,59 +1277,51 @@ void MetricsService::StoreUnsentLogs() {
 
   ListValue* unsent_initial_logs = local_state->GetMutableList(
       prefs::kMetricsInitialLogs);
-  unsent_initial_logs->Clear();
-  size_t start = 0;
-  if (unsent_initial_logs_.size() > kMaxInitialLogsPersisted)
-    start = unsent_initial_logs_.size() - kMaxInitialLogsPersisted;
-  for (size_t i = start; i < unsent_initial_logs_.size(); ++i)
-      unsent_initial_logs->Append(
-          Value::CreateStringValue(unsent_initial_logs_[i]));
+  StoreUnsentLogsHelper(unsent_initial_logs_, kMaxInitialLogsPersisted,
+                        unsent_initial_logs);
 
   ListValue* unsent_ongoing_logs = local_state->GetMutableList(
       prefs::kMetricsOngoingLogs);
-  unsent_ongoing_logs->Clear();
-  start = 0;
-  if (unsent_ongoing_logs_.size() > kMaxOngoingLogsPersisted)
-    start = unsent_ongoing_logs_.size() - kMaxOngoingLogsPersisted;
-
-  for (size_t i = start; i < unsent_ongoing_logs_.size(); ++i)
-      unsent_ongoing_logs->Append(
-        Value::CreateStringValue(unsent_ongoing_logs_[i]));
+  StoreUnsentLogsHelper(unsent_ongoing_logs_, kMaxOngoingLogsPersisted,
+                        unsent_ongoing_logs);
 }
 
 void MetricsService::PreparePendingLogText() {
   DCHECK(pending_log());
-  if (!pending_log_text_.empty())
+  if (!compressed_log_.empty())
     return;
   int text_size = pending_log_->GetEncodedLogSize();
 
-  // Leave room for the NUL terminator.
-  pending_log_->GetEncodedLog(WriteInto(&pending_log_text_, text_size + 1),
+  std::string pending_log_text;
+  // Leave room for the NULL terminator.
+  pending_log_->GetEncodedLog(WriteInto(&pending_log_text, text_size + 1),
                               text_size);
+
+  if (Bzip2Compress(pending_log_text, &compressed_log_)) {
+    // Allow security conscious users to see all metrics logs that we send.
+    LOG(INFO) << "COMPRESSED FOLLOWING METRICS LOG: " << pending_log_text;
+  } else {
+    LOG(DFATAL) << "Failed to compress log for transmission.";
+    // We can't discard the logs as other caller functions expect that
+    // |compressed_log_| not be empty. We can detect this failure at the server
+    // after we transmit.
+    compressed_log_ = "Unable to compress!";
+    MakeStoreStatusHistogram(COMPRESS_FAIL);
+    return;
+  }
 }
 
 void MetricsService::PrepareFetchWithPendingLog() {
   DCHECK(pending_log());
   DCHECK(!current_fetch_.get());
   PreparePendingLogText();
-  DCHECK(!pending_log_text_.empty());
-
-  // Allow security conscious users to see all metrics logs that we send.
-  LOG(INFO) << "METRICS LOG: " << pending_log_text_;
-
-  std::string compressed_log;
-  if (!Bzip2Compress(pending_log_text_, &compressed_log)) {
-    LOG(DFATAL) << "Failed to compress log for transmission.";
-    DiscardPendingLog();
-    StartLogTransmissionTimer();  // Maybe we'll do better on next log :-/.
-    return;
-  }
+  DCHECK(!compressed_log_.empty());
 
   current_fetch_.reset(new URLFetcher(GURL(WideToUTF16(server_url_)),
                                       URLFetcher::POST,
                                       this));
   current_fetch_->set_request_context(Profile::GetDefaultRequestContext());
-  current_fetch_->set_upload_data(kMetricsType, compressed_log);
+  current_fetch_->set_upload_data(kMetricsType, compressed_log_);
 }
 
 static const char* StatusToString(const URLRequestStatus& status) {
@@ -1277,10 +1366,10 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
   bool discard_log = false;
 
   if (response_code != 200 &&
-      pending_log_text_.length() >
-      static_cast<size_t>(kUploadLogAvoidRetransmitSize)) {
+      (compressed_log_.length() >
+          static_cast<size_t>(kUploadLogAvoidRetransmitSize))) {
     UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
-                         static_cast<int>(pending_log_text_.length()));
+                         static_cast<int>(compressed_log_.length()));
     discard_log = true;
   } else if (response_code == 400) {
     // Bad syntax.  Retransmission won't work.
@@ -1361,7 +1450,7 @@ void MetricsService::HandleBadResponseCode() {
 
     LOG(INFO) << "METRICS: transmission retry being scheduled in " <<
         interlog_duration_.InSeconds() << " seconds for " <<
-        pending_log_text_;
+        compressed_log_;
   }
 }
 
@@ -1378,7 +1467,6 @@ void MetricsService::GetSettingsFromResponseData(const std::string& data) {
     return;
   }
   xmlDocPtr doc = xmlReadMemory(data.c_str(), data_size, "", NULL, 0);
-  DCHECK(doc);
   // If the document is malformed, we just use the settings that were there.
   if (!doc) {
     LOG(INFO) << "METRICS: reading xml from server response data failed";

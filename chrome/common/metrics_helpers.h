@@ -184,14 +184,15 @@ class MetricsServiceBase {
 
   // Check to see if there is a log that needs to be, or is being, transmitted.
   bool pending_log() const {
-    return pending_log_ || !pending_log_text_.empty();
+    return pending_log_ || !compressed_log_.empty();
   }
 
-  // Compress the report log in input using bzip2, store the result in output.
+  // Compress the report log in |input| using bzip2, store the result in
+  // |output|.
   bool Bzip2Compress(const std::string& input, std::string* output);
 
-  // Discard pending_log_, and clear pending_log_text_. Called after processing
-  // of this log is complete.
+  // Discard |pending_log_|, and clear |compressed_log_|. Called after
+  // processing of this log is complete.
   void DiscardPendingLog();
 
   // Record complete list of histograms into the current log.
@@ -204,10 +205,10 @@ class MetricsServiceBase {
   // A log that we are currently transmiting, or about to try to transmit.
   MetricsLogBase* pending_log_;
 
-  // An alternate form of pending_log_.  We persistently save this text version
+  // An alternate form of |pending_log_|.  We persistently save this version
   // into prefs if we can't transmit it.  As a result, sometimes all we have is
-  // the text version (recalled from a previous session).
-  std::string pending_log_text_;
+  // the compressed text version.
+  std::string compressed_log_;
 
   // The log that we are still appending to.
   MetricsLogBase* current_log_;
@@ -221,4 +222,3 @@ class MetricsServiceBase {
 };
 
 #endif  // CHROME_COMMON_METRICS_HELPERS_H_
-
