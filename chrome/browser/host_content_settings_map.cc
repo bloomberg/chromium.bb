@@ -406,6 +406,18 @@ void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
   NotifyObservers(ContentSettingsDetails(pattern));
 }
 
+void HostContentSettingsMap::AddExceptionForURL(
+    const GURL& url,
+    ContentSettingsType content_type,
+    ContentSetting setting) {
+  // Make sure there is no entry that would override the pattern we are about
+  // to insert for exactly this URL.
+  SetContentSetting(Pattern::FromURLNoWildcard(url),
+                    content_type,
+                    CONTENT_SETTING_DEFAULT);
+  SetContentSetting(Pattern::FromURL(url), content_type, setting);
+}
+
 void HostContentSettingsMap::ClearSettingsForOneType(
     ContentSettingsType content_type) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.

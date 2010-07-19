@@ -237,6 +237,13 @@ CookieTreeAppCachesNode* CookieTreeOriginNode::GetOrCreateAppCachesNode() {
   return appcaches_child_;
 }
 
+void CookieTreeOriginNode::CreateContentException() {
+//  profile_->GetHostContentSettingsMap()->AddExceptionForURL(
+//        ,
+//        CONTENT_,
+//        radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeCookiesNode, public:
 

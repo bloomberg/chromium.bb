@@ -142,6 +142,13 @@ class HostContentSettingsMap
                          ContentSettingsType content_type,
                          ContentSetting setting);
 
+  // Convenience method to add a content setting for a given URL, making sure
+  // that there is no setting overriding it.
+  // This should only be called on the UI thread.
+  void AddExceptionForURL(const GURL& url,
+                          ContentSettingsType content_type,
+                          ContentSetting setting);
+
   // Clears all host-specific settings for one content type.
   //
   // This should only be called on the UI thread.
