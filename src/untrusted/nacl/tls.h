@@ -120,8 +120,6 @@ void __newlib_thread_init();
 
 void __newlib_thread_exit();
 
-/************************************************************************/
-/* Functions defined in libplatform.a (src/untrusted/stubs/tls.c):      */
 
 /* Returns the allocation size of the combined area, including TLS
  * (data + bss), TDB, and padding required to guarantee alignment.
@@ -135,6 +133,18 @@ void *__nacl_tls_tdb_start(void* combined_area);
 /* Initializes the TLS of a combined area by copying the TLS data area
  * from the template (ELF image .tdata) and zeroing the TLS BSS area. */
 void __nacl_tls_data_bss_initialize_from_template(void* combined_area);
+
+/************************************************************************/
+/* Functions defined in libplatform.a (src/untrusted/stubs/tls.c):      */
+
+/* Platform specific alignment for tls segment */
+int __nacl_tls_aligment();
+
+/* Offset in bytes of the tdb from beginning of tls segment, given tls size */
+size_t __nacl_tdb_offset_in_tls(size_t tls_data_and_bss_size);
+
+/* Size in bytes of the tdb when considered as part of the tls segment */
+size_t __nacl_tdb_effective_payload_size(size_t tdb_size);
 
 /* Size in bytes of the return address required at the top of the main
  * ELF thread's stack. */
