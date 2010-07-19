@@ -375,7 +375,7 @@ def __AddNcvalSfiTests(test_readwrite):
       TEST_PREFIX = 'ncval_test_' + vtest + "_" + ext
 
       VAL_TEST_NAME = TEST_PREFIX + "_" + ext
-      VAL_TEST_CL = [ncval, '-use_iter', '-hex_text=-']
+      VAL_TEST_CL = [ncval[0], '-use_iter', '-hex_text=-']
       if test_readwrite:
         VAL_TEST_CL.append('-readwrite_sfi')
       else:
