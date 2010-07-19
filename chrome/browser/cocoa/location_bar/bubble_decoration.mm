@@ -43,6 +43,13 @@ CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
   return kBubblePadding + image_width + label_width;
 }
 
+NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
+  NSRect imageRect = NSInsetRect(frame, 0.0, kKeywordYInset);
+  if (image_)
+    imageRect.size = [image_ size];
+  return imageRect;
+}
+
 CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
   const CGFloat all_width = GetWidthForImageAndLabel(image_, label_);
   if (all_width <= width)

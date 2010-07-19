@@ -28,6 +28,9 @@ class EVBubbleDecoration : public BubbleDecoration {
   virtual bool IsDraggable();
   virtual NSPasteboard* GetDragPasteboard();
   virtual NSImage* GetDragImage();
+  virtual NSRect GetDragImageFrame(NSRect frame) {
+    return GetImageRectInFrame(frame);
+  }
   virtual bool OnMousePressed(NSRect frame);
   virtual bool AcceptsMousePress() { return true; }
 

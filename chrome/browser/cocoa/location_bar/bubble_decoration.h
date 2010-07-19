@@ -36,6 +36,10 @@ class BubbleDecoration : public LocationBarDecoration {
   // assuming |font_| (for sizing text).  Arguments can be nil.
   CGFloat GetWidthForImageAndLabel(NSImage* image, NSString* label);
 
+  // Helper to return where the image is drawn, for subclasses to drag
+  // from.  |frame| is the decoration's frame in the containing cell.
+  NSRect GetImageRectInFrame(NSRect frame);
+
  private:
   friend class SelectedKeywordDecorationTest;
   FRIEND_TEST_ALL_PREFIXES(SelectedKeywordDecorationTest,

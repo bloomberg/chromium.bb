@@ -59,6 +59,12 @@ class LocationBarDecoration {
   // The image to drag.
   virtual NSImage* GetDragImage() { return nil; }
 
+  // Return the place within the decoration's frame where the
+  // |GetDragImage()| comes from.  This is used to make sure the image
+  // appears correctly under the mouse while dragging.  |frame|
+  // matches the frame passed to |DrawInFrame()|.
+  virtual NSRect GetDragImageFrame(NSRect frame) { return NSZeroRect; }
+
   // The pasteboard to drag.
   virtual NSPasteboard* GetDragPasteboard() { return nil; }
 

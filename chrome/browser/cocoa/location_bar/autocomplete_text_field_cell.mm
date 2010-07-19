@@ -331,24 +331,37 @@ size_t CalculatePositionsInFrame(
       NSPasteboard* pboard = decoration->GetDragPasteboard();
       DCHECK(pboard);
 
-      // TODO(shess): My understanding is that the -isFlipped
-      // adjustment should not be necessary.  But without it, the
-      // image is nowhere near the cursor.  Perhaps the decorations's
-      // rect is incorrectly calculated?
-      // http://crbug.com/40711
-      NSPoint dragPoint = decorationRect.origin;
-      if ([controlView isFlipped])
-        dragPoint.y += NSHeight(decorationRect);
-
       NSImage* image = decoration->GetDragImage();
       DCHECK(image);
-      [controlView dragImage:image
-                          at:dragPoint
-                      offset:NSZeroSize
-                       event:event ? event : theEvent
-                  pasteboard:pboard
-                      source:self
-                   slideBack:YES];
+
+      NSRect dragImageRect = decoration->GetDragImageFrame(decorationRect);
+
+      // If the original click is not within |dragImageRect|, then
+      // center the image under the mouse.  Otherwise, will drag from
+      // where the click was on the image.
+      const NSPoint mousePoint =
+          [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
+      if (!NSMouseInRect(mousePoint, dragImageRect, [controlView isFlipped])) {
+        dragImageRect.origin =
+            NSMakePoint(mousePoint.x - NSWidth(dragImageRect) / 2.0,
+                        mousePoint.y - NSHeight(dragImageRect) / 2.0);
+      }
+
+      // -[NSView dragImage:at:*] wants the images lower-left point,
+      // regardless of -isFlipped.  Converting the rect to window base
+      // coordinates doesn't require any special-casing.  Note that
+      // -[NSView dragFile:fromRect:*] takes a rect rather than a
+      // point, likely for this exact reason.
+      const NSPoint dragPoint =
+          [controlView convertRect:dragImageRect toView:nil].origin;
+      [[controlView window] dragImage:image
+                                   at:dragPoint
+                               offset:NSZeroSize
+                                event:theEvent
+                           pasteboard:pboard
+                               source:self
+                            slideBack:YES];
+
       return YES;
     }
 

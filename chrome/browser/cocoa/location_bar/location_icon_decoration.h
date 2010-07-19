@@ -23,6 +23,9 @@ class LocationIconDecoration : public ImageDecoration {
   virtual bool IsDraggable();
   virtual NSPasteboard* GetDragPasteboard();
   virtual NSImage* GetDragImage() { return GetImage(); }
+  virtual NSRect GetDragImageFrame(NSRect frame) {
+    return GetDrawRectInFrame(frame);
+  }
 
   // Show the page info panel on click.
   virtual bool OnMousePressed(NSRect frame);
