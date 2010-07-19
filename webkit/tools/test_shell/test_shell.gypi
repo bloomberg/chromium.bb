@@ -438,6 +438,7 @@
           ],
           'sources': [
             '../../../skia/ext/skia_utils_mac_unittest.mm',
+            '../../../skia/ext/bitmap_platform_device_mac_unittest.cc',
           ],
         }],
         ['OS=="win"', {
