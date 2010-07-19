@@ -8,8 +8,6 @@
 
 #import "chrome/browser/cocoa/styled_text_field_cell.h"
 
-#include "base/scoped_nsobject.h"
-
 @class AutocompleteTextField;
 class LocationBarDecoration;
 
@@ -24,24 +22,7 @@ class LocationBarDecoration;
   // from outside in.  Decorations are owned by |LocationBarViewMac|.
   std::vector<LocationBarDecoration*> leftDecorations_;
   std::vector<LocationBarDecoration*> rightDecorations_;
-
-  // Set if there is a string to display as a hint on the right-hand
-  // side of the field.  Exclusive WRT |keywordString_|;
-  scoped_nsobject<NSAttributedString> hintString_;
 }
-
-// Chooses |anImage| only if all pieces won't fit w/in |width|.
-// Inputs must be non-nil.
-- (void)setKeywordHintPrefix:(NSString*)prefixString
-                       image:(NSImage*)anImage
-                      suffix:(NSString*)suffixString
-              availableWidth:(CGFloat)width;
-
-// Suppresses hint entirely if |aString| won't fit w/in |width|.
-// String must be non-nil.
-- (void)setSearchHintString:(NSString*)aString
-             availableWidth:(CGFloat)width;
-- (void)clearHint;
 
 // Clear |leftDecorations_| and |rightDecorations_|.
 - (void)clearDecorations;
@@ -86,13 +67,5 @@ class LocationBarDecoration;
 // to the text area which don't handle mouse clicks themselves.
 // Keyword-search bubble, for instance.
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
-
-@end
-
-// Internal methods here exposed for unit testing.
-@interface AutocompleteTextFieldCell (UnitTesting)
-
-@property(nonatomic, readonly) NSAttributedString* hintString;
-@property(nonatomic, readonly) NSAttributedString* hintIconLabel;
 
 @end

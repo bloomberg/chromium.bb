@@ -25,6 +25,7 @@
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/location_bar/content_setting_decoration.h"
 #import "chrome/browser/cocoa/location_bar/ev_bubble_decoration.h"
+#import "chrome/browser/cocoa/location_bar/keyword_hint_decoration.h"
 #import "chrome/browser/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/cocoa/location_bar/page_action_decoration.h"
 #import "chrome/browser/cocoa/location_bar/selected_keyword_decoration.h"
@@ -73,6 +74,7 @@ LocationBarViewMac::LocationBarViewMac(
           new EVBubbleDecoration(location_icon_decoration_.get(),
                                  [field_ font])),
       star_decoration_(new StarDecoration(command_updater)),
+      keyword_hint_decoration_(new KeywordHintDecoration([field_ font])),
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
@@ -377,17 +379,6 @@ NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
   return [field_ convertPoint:point toView:nil];
 }
 
-NSImage* LocationBarViewMac::GetTabButtonImage() {
-  if (!tab_button_image_) {
-    SkBitmap* skiaBitmap = ResourceBundle::GetSharedInstance().
-        GetBitmapNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB);
-    if (skiaBitmap) {
-      tab_button_image_.reset([gfx::SkBitmapToNSImage(*skiaBitmap) retain]);
-    }
-  }
-  return tab_button_image_;
-}
-
 NSImage* LocationBarViewMac::GetKeywordImage(const std::wstring& keyword) {
   const TemplateURL* template_url =
       profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
@@ -504,10 +495,13 @@ void LocationBarViewMac::Layout() {
     [cell addRightDecoration:content_setting_decorations_[i]];
   }
 
+  [cell addRightDecoration:keyword_hint_decoration_.get()];
+
   // By default only the location icon is visible.
   location_icon_decoration_->SetVisible(true);
   selected_keyword_decoration_->SetVisible(false);
   ev_bubble_decoration_->SetVisible(false);
+  keyword_hint_decoration_->SetVisible(false);
 
   // Get the keyword to use for keyword-search and hinting.
   const std::wstring keyword(edit_view_->model()->keyword());
@@ -526,9 +520,6 @@ void LocationBarViewMac::Layout() {
     selected_keyword_decoration_->SetVisible(true);
     selected_keyword_decoration_->SetKeyword(short_name, is_extension_keyword);
     selected_keyword_decoration_->SetImage(GetKeywordImage(keyword));
-
-    // TODO(shess): This goes away once the hints are decorations.
-    [cell clearHint];
   } else if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     // Switch from location icon to show the EV bubble instead.
     location_icon_decoration_->SetVisible(false);
@@ -536,38 +527,9 @@ void LocationBarViewMac::Layout() {
 
     std::wstring label(toolbar_model_->GetEVCertName());
     ev_bubble_decoration_->SetLabel(base::SysWideToNSString(label));
-
-    // TODO(shess): This goes away once the hints are decorations.
-    [cell clearHint];
   } else if (!keyword.empty() && is_keyword_hint) {
-    // Keyword is a hint, like "Press [Tab] to search Engine".  [Tab]
-    // is a parameter to be replaced by an image.  "Engine" is a
-    // parameter to be replaced by text based on the keyword.
-    std::vector<size_t> content_param_offsets;
-    int message_id = is_extension_keyword ?
-        IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
-    const std::wstring keyword_hint(
-        l10n_util::GetStringF(message_id,
-                              std::wstring(), short_name,
-                              &content_param_offsets));
-
-    // Should always be 2 offsets, see the comment in
-    // location_bar_view.cc after IDS_OMNIBOX_KEYWORD_HINT fetch.
-    DCHECK_EQ(content_param_offsets.size(), 2U);
-
-    // Where to put the [TAB] image.
-    const size_t split(content_param_offsets.front());
-
-    NSString* prefix = base::SysWideToNSString(keyword_hint.substr(0, split));
-    NSString* suffix = base::SysWideToNSString(keyword_hint.substr(split));
-
-    NSImage* image = GetTabButtonImage();
-    const CGFloat availableWidth([field_ availableDecorationWidth]);
-    [cell setKeywordHintPrefix:prefix image:image suffix:suffix
-                availableWidth:availableWidth];
-  } else {
-    // Nothing interesting to show, plain old text field.
-    [cell clearHint];
+    keyword_hint_decoration_->SetKeyword(short_name, is_extension_keyword);
+    keyword_hint_decoration_->SetVisible(true);
   }
 
   // These need to change anytime the layout changes.

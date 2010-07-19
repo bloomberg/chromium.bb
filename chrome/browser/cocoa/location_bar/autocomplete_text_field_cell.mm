@@ -6,20 +6,8 @@
 
 #include "base/logging.h"
 #import "chrome/browser/cocoa/image_utils.h"
+#import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/location_bar/location_bar_decoration.h"
-
-@interface AutocompleteTextAttachmentCell : NSTextAttachmentCell {
-}
-
-// TODO(shess):
-// Override -cellBaselineOffset to allow the image to be shifted up or
-// down relative to the containing text's baseline.
-
-// Draw the image using |DrawImageInRect()| helper function for
-// flipped consistency with other image drawing.
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)aView;
-
-@end
 
 namespace {
 
@@ -27,23 +15,6 @@ const CGFloat kBaselineAdjust = 2.0;
 
 // Matches the clipping radius of |GradientButtonCell|.
 const CGFloat kCornerRadius = 4.0;
-
-// How far to shift bounding box of hint down from top of field.
-// Assumes -setFlipped:YES.
-const NSInteger kHintYOffset = 4;
-
-// TODO(shess): The keyword hint image wants to sit on the baseline.
-// This moves it down so that there is approximately as much image
-// above the lowercase ascender as below the baseline.  A better
-// technique would be nice to have, though.
-const NSInteger kKeywordHintImageBaseline = -6;
-
-// How far to shift bounding box of hint icon label down from top of field.
-const NSInteger kIconLabelYOffset = 7;
-
-// How far the editor insets itself, for purposes of determining if
-// decorations need to be trimmed.
-const CGFloat kEditorHorizontalInset = 3.0;
 
 // How far to inset the left-hand decorations from the field's bounds.
 const CGFloat kLeftDecorationXOffset = 3.0;
@@ -59,45 +30,6 @@ const CGFloat kDecorationHorizontalPad = 3.0;
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
 const NSTimeInterval kLocationIconDragTimeout = 0.25;
-
-// Conveniences to centralize width+offset calculations.
-CGFloat WidthForHint(NSAttributedString* hintString) {
-  return kRightDecorationXOffset + ceil([hintString size].width);
-}
-
-// Convenience to draw |image| in the |rect| portion of |view|.
-void DrawImageInRect(NSImage* image, NSView* view, const NSRect& rect) {
-  // If there is an image, make sure we calculated the target size
-  // correctly.
-  DCHECK(!image || NSEqualSizes([image size], rect.size));
-  [image drawInRect:rect
-           fromRect:NSZeroRect  // Entire image
-          operation:NSCompositeSourceOver
-           fraction:1.0
-       neverFlipped:YES];
-}
-
-// Helper function to generate an attributed string containing
-// |anImage|.  If |baselineAdjustment| is 0, the image sits on the
-// text baseline, positive values shift it up, negative values shift
-// it down.
-NSAttributedString* AttributedStringForImage(NSImage* anImage,
-                                             CGFloat baselineAdjustment) {
-  scoped_nsobject<AutocompleteTextAttachmentCell> attachmentCell(
-      [[AutocompleteTextAttachmentCell alloc] initImageCell:anImage]);
-  scoped_nsobject<NSTextAttachment> attachment(
-      [[NSTextAttachment alloc] init]);
-  [attachment setAttachmentCell:attachmentCell];
-
-  scoped_nsobject<NSMutableAttributedString> as(
-      [[NSAttributedString attributedStringWithAttachment:attachment]
-        mutableCopy]);
-  [as addAttribute:NSBaselineOffsetAttributeName
-      value:[NSNumber numberWithFloat:baselineAdjustment]
-      range:NSMakeRange(0, [as length])];
-
-  return [[as copy] autorelease];
-}
 
 // Calculate the positions for a set of decorations.  |frame| is the
 // overall frame to do layout in, |remaining_frame| will get the
@@ -206,22 +138,7 @@ size_t CalculatePositionsInFrame(
 
 }  // namespace
 
-@implementation AutocompleteTextAttachmentCell
-
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)aView {
-  // Draw image with |DrawImageInRect()| to get consistent
-  // flipped treatment.
-  DrawImageInRect([self image], aView, cellFrame);
-}
-
-@end
-
 @implementation AutocompleteTextFieldCell
-
-// @synthesize doesn't seem to compile for this transition.
-- (NSAttributedString*)hintString {
-  return hintString_.get();
-}
 
 - (CGFloat)baselineAdjust {
   return kBaselineAdjust;
@@ -229,87 +146,6 @@ size_t CalculatePositionsInFrame(
 
 - (CGFloat)cornerRadius {
   return kCornerRadius;
-}
-
-// Convenience for the attributes used in the right-justified info
-// cells.
-- (NSDictionary*)hintAttributes {
-  scoped_nsobject<NSMutableParagraphStyle> style(
-      [[NSMutableParagraphStyle alloc] init]);
-  [style setAlignment:NSRightTextAlignment];
-
-  return [NSDictionary dictionaryWithObjectsAndKeys:
-              [self font], NSFontAttributeName,
-              [NSColor lightGrayColor], NSForegroundColorAttributeName,
-              style.get(), NSParagraphStyleAttributeName,
-              nil];
-}
-
-- (void)setKeywordHintPrefix:(NSString*)prefixString
-                       image:(NSImage*)anImage
-                      suffix:(NSString*)suffixString
-              availableWidth:(CGFloat)width {
-  DCHECK(prefixString != nil);
-  DCHECK(anImage != nil);
-  DCHECK(suffixString != nil);
-
-  // Adjust for space between editor and decorations.
-  width -= 2 * kEditorHorizontalInset;
-
-  // If |hintString_| is now too wide, clear it so that we don't pass
-  // the equality tests.
-  if (hintString_ && WidthForHint(hintString_) > width) {
-    [self clearHint];
-  }
-
-  // TODO(shess): Also check the length?
-  if (![[hintString_ string] hasPrefix:prefixString] ||
-      ![[hintString_ string] hasSuffix:suffixString]) {
-
-    // Build an attributed string with the concatenation of the prefix
-    // and suffix.
-    NSString* s = [prefixString stringByAppendingString:suffixString];
-    scoped_nsobject<NSMutableAttributedString> as(
-        [[NSMutableAttributedString alloc]
-          initWithString:s attributes:[self hintAttributes]]);
-
-    // Build an attachment containing the hint image.
-    NSAttributedString* is =
-        AttributedStringForImage(anImage, kKeywordHintImageBaseline);
-
-    // Stuff the image attachment between the prefix and suffix.
-    [as insertAttributedString:is atIndex:[prefixString length]];
-
-    // If too wide, just show the image.
-    hintString_.reset(WidthForHint(as) > width ? [is copy] : [as copy]);
-  }
-}
-
-- (void)setSearchHintString:(NSString*)aString
-             availableWidth:(CGFloat)width {
-  DCHECK(aString != nil);
-
-  // Adjust for space between editor and decorations.
-  width -= 2 * kEditorHorizontalInset;
-
-  // If |hintString_| is now too wide, clear it so that we don't pass
-  // the equality tests.
-  if (hintString_ && WidthForHint(hintString_) > width) {
-    [self clearHint];
-  }
-
-  if (![[hintString_ string] isEqualToString:aString]) {
-    scoped_nsobject<NSAttributedString> as(
-        [[NSAttributedString alloc] initWithString:aString
-                                        attributes:[self hintAttributes]]);
-
-    // If too wide, don't keep the hint.
-    hintString_.reset(WidthForHint(as) > width ? nil : [as copy]);
-  }
-}
-
-- (void)clearHint {
-  hintString_.reset();
 }
 
 - (void)clearDecorations {
@@ -363,7 +199,7 @@ size_t CalculatePositionsInFrame(
   return NSZeroRect;
 }
 
-// Overriden to account for the hint strings and hint icons.
+// Overriden to account for the decorations.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
   // Get the frame adjusted for decorations.
   std::vector<LocationBarDecoration*> decorations;
@@ -374,17 +210,6 @@ size_t CalculatePositionsInFrame(
 
   // NOTE: This function must closely match the logic in
   // |-drawInteriorWithFrame:inView:|.
-
-  // Keyword string or hint string if they fit.
-  if (hintString_) {
-    const CGFloat hintWidth(WidthForHint(hintString_));
-
-    // TODO(shess): This could be better.  Show the hint until the
-    // non-hint text bumps against it?
-    if (hintWidth < NSWidth(textFrame)) {
-      textFrame.size.width -= hintWidth;
-    }
-  }
 
   return textFrame;
 }
@@ -429,17 +254,6 @@ size_t CalculatePositionsInFrame(
   return NSMakeRect(minX, NSMinY(textFrame), maxX - minX, NSHeight(textFrame));
 }
 
-- (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  DCHECK(hintString_);
-
-  NSRect textFrame = [self textFrameForFrame:cellFrame];
-  NSRect infoFrame(NSMakeRect(NSMaxX(textFrame),
-                              cellFrame.origin.y + kHintYOffset,
-                              ceil([hintString_ size].width),
-                              cellFrame.size.height - kHintYOffset));
-  [hintString_.get() drawInRect:infoFrame];
-}
-
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
@@ -447,7 +261,7 @@ size_t CalculatePositionsInFrame(
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &workingFrame);
 
-  // Draw the decorations first.
+  // Draw the decorations.
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (decorations[i])
       decorations[i]->DrawInFrame(decorationFrames[i], controlView);
@@ -455,18 +269,6 @@ size_t CalculatePositionsInFrame(
 
   // NOTE: This function must closely match the logic in
   // |-textFrameForFrame:|.
-
-  // Keyword string or hint string if they fit.
-  if (hintString_) {
-    const CGFloat hintWidth(WidthForHint(hintString_));
-
-    // TODO(shess): This could be better.  Show the hint until the
-    // non-hint text bumps against it?
-    if (hintWidth < NSWidth(workingFrame)) {
-      [self drawHintWithFrame:cellFrame inView:controlView];
-      workingFrame.size.width -= hintWidth;
-    }
-  }
 
   // Superclass draws text portion WRT original |cellFrame|.
   [super drawInteriorWithFrame:cellFrame inView:controlView];

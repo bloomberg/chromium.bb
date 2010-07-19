@@ -882,6 +882,8 @@
         'browser/cocoa/location_bar/ev_bubble_decoration.mm',
         'browser/cocoa/location_bar/image_decoration.h',
         'browser/cocoa/location_bar/image_decoration.mm',
+        'browser/cocoa/location_bar/keyword_hint_decoration.h',
+        'browser/cocoa/location_bar/keyword_hint_decoration.mm',
         'browser/cocoa/location_bar/location_bar_decoration.h',
         'browser/cocoa/location_bar/location_bar_decoration.mm',
         'browser/cocoa/location_bar/location_bar_view_mac.h',

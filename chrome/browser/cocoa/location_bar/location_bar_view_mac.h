@@ -29,6 +29,7 @@ class ContentSettingDecoration;
 class ContentSettingImageModel;
 class EVBubbleDecoration;
 @class ExtensionPopupController;
+class KeywordHintDecoration;
 class LocationIconDecoration;
 class PageActionDecoration;
 class Profile;
@@ -126,8 +127,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
 
-  NSImage* GetTabButtonImage();
   NSImage* GetKeywordImage(const std::wstring& keyword);
+
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 
 
@@ -189,14 +190,14 @@ class LocationBarViewMac : public AutocompleteEditController,
   // The content blocked decorations.
   ScopedVector<ContentSettingDecoration> content_setting_decorations_;
 
+  // Keyword hint decoration displayed on the right-hand side.
+  scoped_ptr<KeywordHintDecoration> keyword_hint_decoration_;
+
   Profile* profile_;
 
   Browser* browser_;
 
   ToolbarModel* toolbar_model_;  // Weak, owned by Browser.
-
-  // Image used in drawing keyword hint.
-  scoped_nsobject<NSImage> tab_button_image_;
 
   // The transition type to use for the navigation.
   PageTransition::Type transition_;

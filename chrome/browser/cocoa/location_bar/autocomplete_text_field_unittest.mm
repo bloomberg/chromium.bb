@@ -28,15 +28,11 @@ namespace {
 class MockDecoration : public LocationBarDecoration {
  public:
   virtual CGFloat GetWidthForSpace(CGFloat width) { return 20.0; }
-  virtual bool IsVisible() const { return visible_; }
-  void SetVisible(bool visible) { visible_ = visible; }
 
   virtual void DrawInFrame(NSRect frame, NSView* control_view) { ; }
-  virtual bool AcceptsMousePress() { return true; }
+  MOCK_METHOD0(AcceptsMousePress, bool());
   MOCK_METHOD1(OnMousePressed, bool(NSRect frame));
   MOCK_METHOD0(GetMenu, NSMenu*());
-
-  bool visible_;
 };
 
 // Mock up an incrementing event number.
@@ -211,21 +207,6 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   [field_ display];
   [test_window() clearPretendKeyWindowAndFirstResponder];
-
-  // Test display of various cell configurations.
-  AutocompleteTextFieldCell* cell = [field_ cell];
-
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-  [field_ display];
-
-  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  [cell setKeywordHintPrefix:@"prefix" image:image suffix:@"suffix"
-              availableWidth:kWidth];
-  [field_ display];
-
-  [cell clearHint];
-
-  [field_ display];
 }
 
 TEST_F(AutocompleteTextFieldObserverTest, FlagsChanged) {
@@ -271,65 +252,29 @@ TEST_F(AutocompleteTextFieldObserverTest, FrameChanged) {
 // delivered by the standard focusing machinery, or by
 // -resetFieldEditorFrameIfNeeded.
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
-  AutocompleteTextFieldCell* cell = [field_ cell];
-
   // Capture the editor frame resulting from the standard focus
   // machinery.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
-  const NSRect baseEditorFrame(EditorFrame());
+  const NSRect baseEditorFrame = EditorFrame();
 
-  // Setting a hint should result in a strictly smaller editor frame.
-  EXPECT_FALSE([cell hintString]);
-  [cell setSearchHintString:@"search hint" availableWidth:kWidth];
-  EXPECT_TRUE([cell hintString]);
+  // A decoration should result in a strictly smaller editor frame.
+  mock_left_decoration_.SetVisible(true);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
   EXPECT_TRUE(NSContainsRect(baseEditorFrame, EditorFrame()));
 
-  // Clearing hint string and using -resetFieldEditorFrameIfNeeded
+  // Removing the decoration and using -resetFieldEditorFrameIfNeeded
   // should result in the same frame as the standard focus machinery.
-  [cell clearHint];
-  EXPECT_FALSE([cell hintString]);
+  mock_left_decoration_.SetVisible(false);
   [field_ resetFieldEditorFrameIfNeeded];
   EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
 }
 
 // Test that the field editor gets the same bounds when focus is
 // delivered by the standard focusing machinery, or by
-// -resetFieldEditorFrameIfNeeded.
-TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
-  AutocompleteTextFieldCell* cell = [field_ cell];
-
-  NSString* const kHintString = @"Type to search";
-
-  // Capture the editor frame resulting from the standard focus
-  // machinery.
-  [cell setSearchHintString:kHintString availableWidth:kWidth];
-  EXPECT_TRUE([cell hintString]);
-  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
-  const NSRect baseEditorFrame(EditorFrame());
-
-  // Clearing the hint should result in a strictly larger editor
-  // frame.
-  [cell clearHint];
-  EXPECT_FALSE([cell hintString]);
-  [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
-  EXPECT_TRUE(NSContainsRect(EditorFrame(), baseEditorFrame));
-
-  // Setting the same hint string and using
-  // -resetFieldEditorFrameIfNeeded should result in the same frame as
-  // the standard focus machinery.
-  [cell setSearchHintString:kHintString availableWidth:kWidth];
-  EXPECT_TRUE([cell hintString]);
-  [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
-}
-
-// Test that the field editor gets the same bounds when focus is
-// delivered by the standard focusing machinery, or by
-// -resetFieldEditorFrameIfNeeded.
-TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
+// -resetFieldEditorFrameIfNeeded, this time with a decoration
+// pre-loaded.
+TEST_F(AutocompleteTextFieldTest, ResetFieldEditorWithDecoration) {
   AutocompleteTextFieldCell* cell = [field_ cell];
 
   // Make sure decoration isn't already visible, then make it visible.
@@ -343,7 +288,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
   // machinery.
 
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
-  const NSRect baseEditorFrame(EditorFrame());
+  const NSRect baseEditorFrame = EditorFrame();
 
   // When the decoration is not visible the frame should be strictly larger.
   mock_left_decoration_.SetVisible(false);
@@ -369,6 +314,7 @@ TEST_F(AutocompleteTextFieldObserverTest, ResetFieldEditorContinuesEditing) {
   EXPECT_CALL(field_observer_, OnSetFocus(false));
   // Becoming first responder doesn't begin editing.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
+  const NSRect baseEditorFrame = EditorFrame();
   NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
   EXPECT_TRUE(nil != editor);
 
@@ -378,41 +324,54 @@ TEST_F(AutocompleteTextFieldObserverTest, ResetFieldEditorContinuesEditing) {
   [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
   [editor didChangeText];
 
-  // No messages to |field_observer_| when resetting the frame.
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
+  // No messages to |field_observer_| when the frame actually changes.
+  mock_left_decoration_.SetVisible(true);
   [field_ resetFieldEditorFrameIfNeeded];
+  EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
 }
 
-// Clicking in the search hint should put the caret in the rightmost
-// position.
-TEST_F(AutocompleteTextFieldTest, ClickSearchHintPutsCaretRightmost) {
+// Clicking in a right-hand decoration which does not handle the mouse
+// puts the caret rightmost.
+TEST_F(AutocompleteTextFieldTest, ClickRightDecorationPutsCaretRightmost) {
+  // Decoration does not handle the mouse event, so the cell should
+  // process it.  Called at least once.
+  EXPECT_CALL(mock_right_decoration_, AcceptsMousePress())
+      .WillOnce(Return(false))
+      .WillRepeatedly(Return(false));
+
   // Set the decoration before becoming responder.
   EXPECT_FALSE([field_ currentEditor]);
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
+  mock_right_decoration_.SetVisible(true);
 
-  // Can't rely on the window machinery to make us first responder,
-  // here.
+  // Make first responder should select all.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   EXPECT_TRUE([field_ currentEditor]);
+  const NSRange allRange = NSMakeRange(0, [[field_ stringValue] length]);
+  EXPECT_TRUE(NSEqualRanges(allRange, [[field_ currentEditor] selectedRange]));
 
-  const NSPoint point(NSMakePoint(300.0 - 20.0, 5.0));
-  NSEvent* downEvent(Event(field_, point, NSLeftMouseDown));
-  NSEvent* upEvent(Event(field_, point, NSLeftMouseUp));
+  // Generate a click on the decoration.
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect bounds = [field_ bounds];
+  const NSRect iconFrame =
+      [cell frameForDecoration:&mock_right_decoration_ inFrame:bounds];
+  const NSPoint point = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
+  NSEvent* downEvent = Event(field_, point, NSLeftMouseDown);
+  NSEvent* upEvent = Event(field_, point, NSLeftMouseUp);
   [NSApp postEvent:upEvent atStart:YES];
   [field_ mouseDown:downEvent];
-  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
-  EXPECT_EQ(selectedRange.location, [[field_ stringValue] length]);
-  EXPECT_EQ(selectedRange.length, 0U);
+
+  // Selection should be a right-hand-side caret.
+  EXPECT_TRUE(NSEqualRanges(NSMakeRange([[field_ stringValue] length], 0),
+                            [[field_ currentEditor] selectedRange]));
 }
 
 // Clicking in a left-side decoration which doesn't handle the event
 // puts the selection in the leftmost position.
 TEST_F(AutocompleteTextFieldTest, ClickLeftDecorationPutsCaretLeftmost) {
   // Decoration does not handle the mouse event, so the cell should
-  // process it.
-  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_))
+  // process it.  Called at least once.
+  EXPECT_CALL(mock_left_decoration_, AcceptsMousePress())
+      .WillOnce(Return(false))
       .WillRepeatedly(Return(false));
 
   // Set the decoration before becoming responder.
@@ -427,11 +386,12 @@ TEST_F(AutocompleteTextFieldTest, ClickLeftDecorationPutsCaretLeftmost) {
 
   // Generate a click on the decoration.
   AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect bounds = [field_ bounds];
   const NSRect iconFrame =
-      [cell frameForDecoration:&mock_left_decoration_ inFrame:[field_ bounds]];
+      [cell frameForDecoration:&mock_left_decoration_ inFrame:bounds];
   const NSPoint point = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
-  NSEvent* downEvent(Event(field_, point, NSLeftMouseDown));
-  NSEvent* upEvent(Event(field_, point, NSLeftMouseUp));
+  NSEvent* downEvent = Event(field_, point, NSLeftMouseDown);
+  NSEvent* upEvent = Event(field_, point, NSLeftMouseUp);
   [NSApp postEvent:upEvent atStart:YES];
   [field_ mouseDown:downEvent];
 
@@ -558,6 +518,8 @@ TEST_F(AutocompleteTextFieldTest, LeftDecorationMouseDown) {
   EXPECT_FALSE([field_ currentEditor]);
 
   mock_left_decoration_.SetVisible(true);
+  EXPECT_CALL(mock_left_decoration_, AcceptsMousePress())
+      .WillRepeatedly(Return(true));
 
   AutocompleteTextFieldCell* cell = [field_ cell];
   const NSRect iconFrame =
@@ -603,10 +565,13 @@ TEST_F(AutocompleteTextFieldTest, RightDecorationMouseDown) {
   EXPECT_FALSE([field_ currentEditor]);
 
   mock_right_decoration_.SetVisible(true);
+  EXPECT_CALL(mock_right_decoration_, AcceptsMousePress())
+      .WillRepeatedly(Return(true));
 
   AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect bounds = [field_ bounds];
   const NSRect iconFrame =
-      [cell frameForDecoration:&mock_right_decoration_ inFrame:[field_ bounds]];
+      [cell frameForDecoration:&mock_right_decoration_ inFrame:bounds];
   const NSPoint location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   NSEvent* downEvent = Event(field_, location, NSLeftMouseDown, 1);
   NSEvent* upEvent = Event(field_, location, NSLeftMouseUp, 1);
