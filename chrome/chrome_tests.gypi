@@ -516,7 +516,13 @@
             '../views/views.gyp:views',
             # run time dependency
             '../webkit/webkit.gyp:npapi_test_plugin',
-            '<(allocator_target)',
+          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
           ],
           'link_settings': {
             'libraries': [
