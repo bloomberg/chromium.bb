@@ -69,7 +69,7 @@ class HistogramSynchronizer : public
   // Calls the callback task, if there is a callback_task.
   void CallCallbackTaskAndResetData();
 
-  // Gets a new sequence number to be sent to renderers from broswer process.
+  // Gets a new sequence number to be sent to renderers from browser process.
   // This will also reset the current pending renderers for the given type.
   int GetNextAvaibleSequenceNumber(RendererHistogramRequester requster);
 

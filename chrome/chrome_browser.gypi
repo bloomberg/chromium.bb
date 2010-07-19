@@ -392,7 +392,7 @@
         'browser/chromeos/cros/system_library.cc',
         'browser/chromeos/cros/system_library.h',
         'browser/chromeos/cros/update_library.cc',
-        'broswer/chromeos/cors/update_library.h',
+        'browser/chromeos/cros/update_library.h',
         'browser/chromeos/customization_document.cc',
         'browser/chromeos/customization_document.h',
         'browser/chromeos/dom_ui/accounts_options_handler.cc',
