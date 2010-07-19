@@ -204,6 +204,11 @@
   [undoManager_ removeAllActions];
 }
 
+- (void)addToolTip:(NSString*)tooltip forRect:(NSRect)aRect {
+  [currentToolTips_ addObject:tooltip];
+  [self addToolTipRect:aRect owner:tooltip userData:nil];
+}
+
 // TODO(shess): -resetFieldEditorFrameIfNeeded is the place where
 // changes to the cell layout should be flushed.  LocationBarViewMac
 // and ToolbarController are calling this routine directly, and I
@@ -218,25 +223,10 @@
   // subviews. Unless more tooltips are added to this view, this should suffice
   // in place of managing a set of NSToolTipTag objects.
   [self removeAllToolTips];
+
+  // Reload the decoration tooltips.
   [currentToolTips_ removeAllObjects];
-
-#if 0
-  // TODO(shess): Bring back tooltips.  All the wiring is in there,
-  // just need to hook it up.
-  // http://crbug.com/49321
-  AutocompleteTextFieldCell* cell = [self cell];
-  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:[self bounds]]) {
-    NSRect iconRect = [icon rect];
-    NSString* tooltip = [icon view]->GetToolTip();
-    if (!tooltip)
-      continue;
-
-    // -[NSView addToolTipRect:owner:userData] does _not_ retain its |owner:|.
-    // Put the string in a collection so it can't be dealloced while in use.
-    [currentToolTips_ addObject:tooltip];
-    [self addToolTipRect:iconRect owner:tooltip userData:nil];
-  }
-#endif
+  [[self cell] updateToolTipsInRect:[self bounds] ofView:self];
 }
 
 // NOTE(shess): http://crbug.com/19116 describes a weird bug which

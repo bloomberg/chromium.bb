@@ -128,6 +128,10 @@ class AutocompleteTextFieldObserver {
 // Return the appropriate menu for any decoration under |event|.
 - (NSMenu*)decorationMenuForEvent:(NSEvent*)event;
 
+// Retains |tooltip| (in |currentToolTips_|) and adds this tooltip
+// via -[NSView addToolTipRect:owner:userData:].
+- (void)addToolTip:(NSString*)tooltip forRect:(NSRect)aRect;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_AUTOCOMPLETE_TEXT_FIELD_H_

@@ -68,4 +68,9 @@ class LocationBarDecoration;
 // Keyword-search bubble, for instance.
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
 
+// Setup decoration tooltips on |controlView| by calling
+// |-addToolTip:forRect:|.
+- (void)updateToolTipsInRect:(NSRect)cellFrame
+                      ofView:(AutocompleteTextField*)controlView;
+
 @end

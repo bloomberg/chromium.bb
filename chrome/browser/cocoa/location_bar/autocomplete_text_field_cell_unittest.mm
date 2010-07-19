@@ -18,7 +18,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
+using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -36,6 +38,7 @@ class MockDecoration : public LocationBarDecoration {
   virtual CGFloat GetWidthForSpace(CGFloat width) { return 20.0; }
 
   MOCK_METHOD2(DrawInFrame, void(NSRect frame, NSView* control_view));
+  MOCK_METHOD0(GetToolTip, NSString*());
 };
 
 class AutocompleteTextFieldCellTest : public CocoaTest {
@@ -258,6 +261,39 @@ TEST_F(AutocompleteTextFieldCellTest, RightDecorationFrame) {
   // Decoration should be right of |textFrame|.
   const NSRect textFrame = [cell textFrameForFrame:bounds];
   EXPECT_LT(NSMinX(textFrame), NSMinX(decoration1Rect));
+}
+
+// Verify -[AutocompleteTextFieldCell updateToolTipsInRect:ofView:].
+TEST_F(AutocompleteTextFieldCellTest, UpdateToolTips) {
+  NSString* tooltip = @"tooltip";
+
+  // Left decoration returns a tooltip, make sure it is called at
+  // least once.
+  mock_left_decoration_.SetVisible(true);
+  EXPECT_CALL(mock_left_decoration_, GetToolTip())
+      .WillOnce(Return(tooltip))
+      .WillRepeatedly(Return(tooltip));
+
+  // Right decoration returns no tooltip, make sure it is called at
+  // least once.
+  mock_right_decoration0_.SetVisible(true);
+  EXPECT_CALL(mock_right_decoration0_, GetToolTip())
+      .WillOnce(Return((NSString*)nil))
+      .WillRepeatedly(Return((NSString*)nil));
+
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  const NSRect bounds = [view_ bounds];
+  const NSRect leftDecorationRect =
+      [cell frameForDecoration:&mock_left_decoration_ inFrame:bounds];
+
+  // |controlView| gets the tooltip for the left decoration.
+  id controlView = [OCMockObject mockForClass:[AutocompleteTextField class]];
+  [[controlView expect] addToolTip:tooltip forRect:leftDecorationRect];
+
+  [cell updateToolTipsInRect:bounds ofView:controlView];
+
+  [controlView verify];
 }
 
 }  // namespace

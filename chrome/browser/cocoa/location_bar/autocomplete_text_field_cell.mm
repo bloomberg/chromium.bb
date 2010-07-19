@@ -366,4 +366,19 @@ size_t CalculatePositionsInFrame(
   return NSDragOperationCopy;
 }
 
+- (void)updateToolTipsInRect:(NSRect)cellFrame
+                      ofView:(AutocompleteTextField*)controlView {
+  std::vector<LocationBarDecoration*> decorations;
+  std::vector<NSRect> decorationFrames;
+  NSRect textFrame;
+  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
+                            &decorations, &decorationFrames, &textFrame);
+
+  for (size_t i = 0; i < decorations.size(); ++i) {
+    NSString* tooltip = decorations[i]->GetToolTip();
+    if ([tooltip length] > 0)
+      [controlView addToolTip:tooltip forRect:decorationFrames[i]];
+  }
+}
+
 @end
