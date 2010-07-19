@@ -16,7 +16,10 @@ void BrowserList::AllBrowsersClosed() {
     // We filter by visible widgets because there are toplevel windows that if
     // we try to destroy, we crash.  For example, trying to destroy the tooltip
     // window or the toplevel associated with drop down windows crashes.
-    if (GTK_WIDGET_VISIBLE(GTK_WIDGET(window)))
+    // We further filter to only close dialogs, as blindly closing all windows
+    // causes problems with things like status icons.
+    if (GTK_WIDGET_VISIBLE(GTK_WIDGET(window)) &&
+        (GTK_IS_DIALOG(GTK_WIDGET(window))))
       gtk_widget_destroy(GTK_WIDGET(window));
   }
   g_list_foreach(window_list, (GFunc)g_object_unref, NULL);
