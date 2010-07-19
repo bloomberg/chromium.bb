@@ -237,11 +237,12 @@ CookieTreeAppCachesNode* CookieTreeOriginNode::GetOrCreateAppCachesNode() {
   return appcaches_child_;
 }
 
-void CookieTreeOriginNode::CreateContentException() {
-//  profile_->GetHostContentSettingsMap()->AddExceptionForURL(
-//        ,
-//        CONTENT_,
-//        radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+void CookieTreeOriginNode::CreateContentException(
+    HostContentSettingsMap* content_settings, ContentSetting setting) {
+    std::wstring title(GetTitle());
+    content_settings->AddExceptionForURL(GURL(WideToUTF16(title)),
+                                         CONTENT_SETTINGS_TYPE_COOKIES,
+                                         setting);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

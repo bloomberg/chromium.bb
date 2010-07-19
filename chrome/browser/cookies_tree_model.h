@@ -149,14 +149,15 @@ class CookieTreeOriginNode : public CookieTreeNode {
   CookieTreeDatabasesNode* GetOrCreateDatabasesNode();
   CookieTreeLocalStoragesNode* GetOrCreateLocalStoragesNode();
   CookieTreeAppCachesNode* GetOrCreateAppCachesNode();
+  void CreateContentException(HostContentSettingsMap* content_settings,
+                              ContentSetting setting);
 
  private:
-  // A pointer to the COOKIES node. Eventually we will also have database,
-  // appcache, local storage, ..., and when we build up the tree we need to
-  // quickly get a reference to the COOKIES node to add children. Checking each
-  // child and interrogating them to see if they are a COOKIES, APPCACHES,
-  // DATABASES etc node seems less preferable than storing an extra pointer per
-  // origin.
+  // Pointers to the cookies, databases, local storage and appcache nodes.
+  // When we build up the tree we need to quickly get a reference to the COOKIES
+  // node to add children. Checking each child and interrogating them to see if
+  // they are a COOKIES, APPCACHES, DATABASES etc node seems less preferable
+  // than storing an extra pointer per origin.
   CookieTreeCookiesNode* cookies_child_;
   CookieTreeDatabasesNode* databases_child_;
   CookieTreeLocalStoragesNode* local_storages_child_;
