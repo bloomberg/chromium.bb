@@ -48,13 +48,13 @@ class WrenchMenuControllerTest : public CocoaTest {
   scoped_nsobject<ToolbarController> toolbar_controller_;
 };
 
-TEST_F(WrenchMenuControllerTest, Initialized) {
+// Test crashes sometimes. http://crbug.com/49206
+TEST_F(WrenchMenuControllerTest, DISABLED_Initialized) {
   EXPECT_TRUE([controller() menu]);
   EXPECT_GE([[controller() menu] numberOfItems], 5);
 }
 
-// Test crashes sometimes.
-// http://code.google.com/p/chromium/issues/detail?id=49206
+// Test crashes sometimes. http://crbug.com/49206
 TEST_F(WrenchMenuControllerTest, DISABLED_DispatchSimple) {
   scoped_nsobject<NSButton> button([[NSButton alloc] init]);
   [button setTag:IDC_ZOOM_PLUS];
@@ -66,8 +66,7 @@ TEST_F(WrenchMenuControllerTest, DISABLED_DispatchSimple) {
   [controller() dispatchWrenchMenuCommand:button.get()];
 }
 
-// Test crashes sometimes.
-// http://code.google.com/p/chromium/issues/detail?id=49206
+// Test crashes sometimes. http://crbug.com/49206
 TEST_F(WrenchMenuControllerTest, DISABLED_DispatchSegmentedControl) {
   // Set fake model to test dispatching.
   EXPECT_CALL(fake_model_, ExecuteCommand(IDC_CUT));
