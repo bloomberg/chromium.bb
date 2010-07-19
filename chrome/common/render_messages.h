@@ -2023,6 +2023,7 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.experimental_webgl_enabled);
     WriteParam(m, p.show_composited_layer_borders);
     WriteParam(m, p.accelerated_compositing_enabled);
+    WriteParam(m, p.memory_info_enabled);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -2066,7 +2067,8 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->allow_file_access_from_file_urls) &&
         ReadParam(m, iter, &p->experimental_webgl_enabled) &&
         ReadParam(m, iter, &p->show_composited_layer_borders) &&
-        ReadParam(m, iter, &p->accelerated_compositing_enabled);
+        ReadParam(m, iter, &p->accelerated_compositing_enabled) &&
+        ReadParam(m, iter, &p->memory_info_enabled);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<WebPreferences>");

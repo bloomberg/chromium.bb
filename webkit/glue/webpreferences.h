@@ -65,6 +65,7 @@ struct WebPreferences {
   bool show_composited_layer_borders;
   bool accelerated_compositing_enabled;
   bool enable_html5_parser;
+  bool memory_info_enabled;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
@@ -109,7 +110,8 @@ struct WebPreferences {
         experimental_webgl_enabled(false),
         show_composited_layer_borders(false),
         accelerated_compositing_enabled(false),
-        enable_html5_parser(true) {
+        enable_html5_parser(true),
+        memory_info_enabled(false) {
   }
 
   void Apply(WebKit::WebView* web_view) const;

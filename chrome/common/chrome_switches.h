@@ -110,6 +110,7 @@ extern const char kEnableIndexedDatabase[];
 extern const char kEnableInMemoryURLIndex[];
 extern const char kEnableIPv6[];
 extern const char kEnableLogging[];
+extern const char kEnableMemoryInfo[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableNaCl[];
 extern const char kEnableNativeWebWorkers[];

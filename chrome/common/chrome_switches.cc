@@ -339,6 +339,9 @@ const char kEnableGPURendering[]            = "enable-gpu-rendering";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
+// Allows reporting memory info (JS heap size) to page.
+const char kEnableMemoryInfo[]              = "enable-memory-info";
+
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still
 // assumed to be sRGB.

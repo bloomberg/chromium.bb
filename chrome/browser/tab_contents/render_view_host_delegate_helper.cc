@@ -268,6 +268,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kShowCompositedLayerBorders);
     web_prefs.accelerated_compositing_enabled =
         command_line.HasSwitch(switches::kEnableAcceleratedCompositing);
+    web_prefs.memory_info_enabled =
+        command_line.HasSwitch(switches::kEnableMemoryInfo);
     // The user stylesheet watcher may not exist in a testing profile.
     if (profile->GetUserStyleSheetWatcher()) {
       web_prefs.user_style_sheet_enabled = true;
