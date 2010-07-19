@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/string_util.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "googleurl/src/gurl.h"
 
@@ -16,6 +17,11 @@ const int kMaxNumCrashURLChunks = 8;
 const int kMaxNumURLChunkValueLength = 255;
 const char *kUrlChunkFormatStr = "url-chunk-%d";
 const char *kGuidParamName = "guid";
+const char *kGPUVendorIdParamName = "vendid";
+const char *kGPUDeviceIdParamName = "devid";
+const char *kGPUDriverVersionParamName = "driver";
+const char *kGPUPixelShaderVersionParamName = "psver";
+const char *kGPUVertexShaderVersionParamName = "vsver";
 
 static SetCrashKeyValueFuncPtr g_set_key_func;
 static ClearCrashKeyValueFuncPtr g_clear_key_func;
@@ -94,6 +100,37 @@ void SetClientId(const std::string& client_id) {
 
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
   // TODO(port)
+}
+
+void SetGpuKeyValue(const char* param_name, const std::string& value_str,
+                    SetCrashKeyValueFuncPtr set_key_func) {
+  NSString *key = [NSString stringWithUTF8String:param_name];
+  NSString *value = [NSString stringWithUTF8String:value_str.c_str()];
+  set_key_func(key, value);
+}
+
+void SetGpuInfoImpl(const GPUInfo& gpu_info,
+                    SetCrashKeyValueFuncPtr set_key_func) {
+  SetGpuKeyValue(kGPUVendorIdParamName,
+                 UintToString(gpu_info.vendor_id()),
+                 set_key_func);
+  SetGpuKeyValue(kGPUDeviceIdParamName,
+                 UintToString(gpu_info.device_id()),
+                 set_key_func);
+  SetGpuKeyValue(kGPUDriverVersionParamName,
+                 WideToASCII(gpu_info.driver_version()),
+                 set_key_func);
+  SetGpuKeyValue(kGPUPixelShaderVersionParamName,
+                 UintToString(gpu_info.pixel_shader_version()),
+                 set_key_func);
+  SetGpuKeyValue(kGPUVertexShaderVersionParamName,
+                 UintToString(gpu_info.vertex_shader_version()),
+                 set_key_func);
+}
+
+void SetGpuInfo(const GPUInfo& gpu_info) {
+  if (g_set_key_func)
+    SetGpuInfoImpl(gpu_info, g_set_key_func);
 }
 
 }  // namespace child_process_logging

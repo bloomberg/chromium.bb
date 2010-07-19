@@ -62,6 +62,7 @@ static std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
 static size_t g_url_chunks_offset;
 static size_t g_extension_ids_offset;
 static size_t g_client_id_offset;
+static size_t g_gpu_info_offset;
 
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
@@ -118,6 +119,18 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
         StringPrintf(L"extension-%i", i + 1).c_str(), L""));
   }
 
+  // Add empty values for the gpu_info. We'll put the actual values
+  // when we collect them at this location.
+  g_gpu_info_offset = g_custom_entries->size();
+  g_custom_entries->push_back(google_breakpad::CustomInfoEntry(L"venid", L""));
+  g_custom_entries->push_back(google_breakpad::CustomInfoEntry(L"devid", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"driver", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"psver", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"vsver", L""));
+
   // Read the id from registry. If reporting has never been enabled
   // the result will be empty string. Its OK since when user enables reporting
   // we will insert the new value at this location.
@@ -127,7 +140,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"guid", guid.c_str()));
 
-  if (type == L"renderer" || type == L"plugin") {
+  if (type == L"renderer" || type == L"plugin" || type == L"gpu-process") {
     // Create entries for the URL. Currently we only allow each chunk to be 64
     // characters, which isn't enough for a URL. As a hack we create 8 entries
     // and split the URL across the g_custom_entries.
@@ -284,6 +297,27 @@ extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
   wcscpy_s((*g_custom_entries)[g_extension_ids_offset + index].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            id);
+}
+
+extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
+    const wchar_t* vendor_id, const wchar_t* device_id,
+    const wchar_t* driver_version, const wchar_t* pixel_shader_version,
+    const wchar_t* vertex_shader_version) {
+  wcscpy_s((*g_custom_entries)[g_client_id_offset].value,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           vendor_id);
+  wcscpy_s((*g_custom_entries)[g_client_id_offset+1].value,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           device_id);
+  wcscpy_s((*g_custom_entries)[g_client_id_offset+2].value,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           driver_version);
+  wcscpy_s((*g_custom_entries)[g_client_id_offset+3].value,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           pixel_shader_version);
+  wcscpy_s((*g_custom_entries)[g_client_id_offset+4].value,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           vertex_shader_version);
 }
 
 }  // namespace

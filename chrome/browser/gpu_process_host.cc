@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
@@ -182,6 +183,7 @@ void GpuProcessHost::OnChannelEstablished(
   ReplyToRenderer(channel_handle, request.filter);
   sent_requests_.pop();
   gpu_info_ = gpu_info;
+  child_process_logging::SetGpuInfo(gpu_info);
 }
 
 void GpuProcessHost::OnSynchronizeReply() {

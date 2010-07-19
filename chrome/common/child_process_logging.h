@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_WIN)
@@ -34,6 +35,9 @@ void SetClientId(const std::string& client_id);
 // - extension: the id of each extension running in this process (there can be
 //   multiple because of process collapsing).
 void SetActiveExtensions(const std::set<std::string>& extension_ids);
+
+// Sets the data on the gpu to send along with crash reports.
+void SetGpuInfo(const GPUInfo& gpu_info);
 
 // Simple wrapper class that sets the active URL in it's constructor and clears
 // the active URL in the destructor.
