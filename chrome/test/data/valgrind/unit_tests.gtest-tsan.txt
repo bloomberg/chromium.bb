@@ -1,6 +1,3 @@
-# This test contains nasty races, see http://crbug.com/37839
-EventSys.Multithreaded
-
 # This test has a possible data race detected by the TSAN bot
 # see http://crbug.com/46840
 ProfileManagerTest.CreateAndUseTwoProfiles
