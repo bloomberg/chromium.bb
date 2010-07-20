@@ -474,8 +474,11 @@ void ExtensionMessageService::DispatchEventToRenderers(
     const std::string& event_name, const std::string& event_args,
     bool has_incognito_data, const GURL& event_url) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
+  ListenerMap::iterator it = listeners_.find(event_name);
+  if (it == listeners_.end())
+    return;
 
-  std::set<int>& pids = listeners_[event_name];
+  std::set<int>& pids = it->second;
 
   // Send the event only to renderers that are listening for it.
   for (std::set<int>::iterator pid = pids.begin(); pid != pids.end(); ++pid) {
