@@ -24,6 +24,7 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
+#include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/rect.h"

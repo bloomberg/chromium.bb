@@ -5,6 +5,8 @@
 #include "chrome/common/common_param_traits.h"
 
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/content_settings.h"
+#include "chrome/common/thumbnail_score.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "printing/native_metafile.h"
@@ -14,6 +16,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif
 #include "webkit/glue/dom_operations.h"
+#include "webkit/glue/password_form.h"
 
 namespace IPC {
 
@@ -182,6 +185,25 @@ void ParamTraits<gfx::Size>::Log(const gfx::Size& p, std::wstring* l) {
   l->append(StringPrintf(L"(%d, %d)", p.width(), p.height()));
 }
 
+void ParamTraits<ContentSetting>::Write(Message* m, const param_type& p) {
+  WriteParam(m, static_cast<int>(p));
+}
+
+bool ParamTraits<ContentSetting>::Read(const Message* m, void** iter,
+                                       param_type* r) {
+  int value;
+  if (!ReadParam(m, iter, &value))
+    return false;
+  if (value < 0 || value >= static_cast<int>(CONTENT_SETTING_NUM_SETTINGS))
+    return false;
+  *r = static_cast<param_type>(value);
+  return true;
+}
+
+void ParamTraits<ContentSetting>::Log(const param_type& p, std::wstring* l) {
+  LogParam(static_cast<int>(p), l);
+}
+
 void ParamTraits<ContentSettings>::Write(
     Message* m, const ContentSettings& settings) {
   for (size_t i = 0; i < arraysize(settings.settings); ++i)
@@ -241,6 +263,86 @@ bool ParamTraits<webkit_glue::WebApplicationInfo>::Read(
 void ParamTraits<webkit_glue::WebApplicationInfo>::Log(
     const webkit_glue::WebApplicationInfo& p, std::wstring* l) {
   l->append(L"<WebApplicationInfo>");
+}
+
+void ParamTraits<URLRequestStatus>::Write(Message* m, const param_type& p) {
+  WriteParam(m, static_cast<int>(p.status()));
+  WriteParam(m, p.os_error());
+}
+
+bool ParamTraits<URLRequestStatus>::Read(const Message* m, void** iter,
+                                         param_type* r) {
+  int status, os_error;
+  if (!ReadParam(m, iter, &status) ||
+      !ReadParam(m, iter, &os_error))
+    return false;
+  r->set_status(static_cast<URLRequestStatus::Status>(status));
+  r->set_os_error(os_error);
+  return true;
+}
+
+void ParamTraits<URLRequestStatus>::Log(const param_type& p, std::wstring* l) {
+  std::wstring status;
+  switch (p.status()) {
+    case URLRequestStatus::SUCCESS:
+      status = L"SUCCESS";
+      break;
+    case URLRequestStatus::IO_PENDING:
+      status = L"IO_PENDING ";
+      break;
+    case URLRequestStatus::HANDLED_EXTERNALLY:
+      status = L"HANDLED_EXTERNALLY";
+      break;
+    case URLRequestStatus::CANCELED:
+      status = L"CANCELED";
+      break;
+    case URLRequestStatus::FAILED:
+      status = L"FAILED";
+      break;
+    default:
+      status = L"UNKNOWN";
+      break;
+  }
+  if (p.status() == URLRequestStatus::FAILED)
+    l->append(L"(");
+
+  LogParam(status, l);
+
+  if (p.status() == URLRequestStatus::FAILED) {
+    l->append(L", ");
+    LogParam(p.os_error(), l);
+    l->append(L")");
+  }
+}
+
+void ParamTraits<ThumbnailScore>::Write(Message* m, const param_type& p) {
+  IPC::ParamTraits<double>::Write(m, p.boring_score);
+  IPC::ParamTraits<bool>::Write(m, p.good_clipping);
+  IPC::ParamTraits<bool>::Write(m, p.at_top);
+  IPC::ParamTraits<base::Time>::Write(m, p.time_at_snapshot);
+}
+
+bool ParamTraits<ThumbnailScore>::Read(const Message* m, void** iter,
+                                       param_type* r) {
+  double boring_score;
+  bool good_clipping, at_top;
+  base::Time time_at_snapshot;
+  if (!IPC::ParamTraits<double>::Read(m, iter, &boring_score) ||
+      !IPC::ParamTraits<bool>::Read(m, iter, &good_clipping) ||
+      !IPC::ParamTraits<bool>::Read(m, iter, &at_top) ||
+      !IPC::ParamTraits<base::Time>::Read(m, iter, &time_at_snapshot))
+    return false;
+
+  r->boring_score = boring_score;
+  r->good_clipping = good_clipping;
+  r->at_top = at_top;
+  r->time_at_snapshot = time_at_snapshot;
+  return true;
+}
+
+void ParamTraits<ThumbnailScore>::Log(const param_type& p, std::wstring* l) {
+  l->append(StringPrintf(L"(%f, %d, %d)",
+                         p.boring_score, p.good_clipping, p.at_top));
 }
 
 void ParamTraits<Geoposition::ErrorCode>::Write(

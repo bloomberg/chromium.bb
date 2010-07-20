@@ -21,6 +21,7 @@
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/url_request/url_request_status.h"
 
 // NOTE: All IPC messages have either a routing_id of 0 (for asynchronous
 //       messages), or one that's been assigned by the proxy (for calls

@@ -17,7 +17,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/geoposition.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/common/thumbnail_score.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/upload_data.h"
@@ -32,6 +31,8 @@ class GURL;
 class SkBitmap;
 class DictionaryValue;
 class ListValue;
+struct ThumbnailScore;
+class URLRequestStatus;
 
 namespace gfx {
 class Point;
@@ -44,6 +45,7 @@ struct PageRange;
 }  // namespace printing
 
 namespace webkit_glue {
+struct PasswordForm;
 struct WebApplicationInfo;
 }  // namespace webkit_glue
 
@@ -98,21 +100,9 @@ struct ParamTraits<gfx::Size> {
 template <>
 struct ParamTraits<ContentSetting> {
   typedef ContentSetting param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    if (value < 0 || value >= static_cast<int>(CONTENT_SETTING_NUM_SETTINGS))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    LogParam(static_cast<int>(p), l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
 };
 
 template <>
@@ -263,52 +253,9 @@ struct ParamTraits<TransportDIB::Id> {
 template <>
 struct ParamTraits<URLRequestStatus> {
   typedef URLRequestStatus param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p.status()));
-    WriteParam(m, p.os_error());
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int status, os_error;
-    if (!ReadParam(m, iter, &status) ||
-        !ReadParam(m, iter, &os_error))
-      return false;
-    r->set_status(static_cast<URLRequestStatus::Status>(status));
-    r->set_os_error(os_error);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring status;
-    switch (p.status()) {
-     case URLRequestStatus::SUCCESS:
-      status = L"SUCCESS";
-      break;
-     case URLRequestStatus::IO_PENDING:
-      status = L"IO_PENDING ";
-      break;
-     case URLRequestStatus::HANDLED_EXTERNALLY:
-      status = L"HANDLED_EXTERNALLY";
-      break;
-     case URLRequestStatus::CANCELED:
-      status = L"CANCELED";
-      break;
-     case URLRequestStatus::FAILED:
-      status = L"FAILED";
-      break;
-     default:
-      status = L"UNKNOWN";
-      break;
-    }
-    if (p.status() == URLRequestStatus::FAILED)
-      l->append(L"(");
-
-    LogParam(status, l);
-
-    if (p.status() == URLRequestStatus::FAILED) {
-      l->append(L", ");
-      LogParam(p.os_error(), l);
-      l->append(L")");
-    }
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
 };
 
 
@@ -396,32 +343,9 @@ struct ParamTraits<scoped_refptr<net::UploadData> > {
 template<>
 struct ParamTraits<ThumbnailScore> {
   typedef ThumbnailScore param_type;
-  static void Write(Message* m, const param_type& p) {
-    IPC::ParamTraits<double>::Write(m, p.boring_score);
-    IPC::ParamTraits<bool>::Write(m, p.good_clipping);
-    IPC::ParamTraits<bool>::Write(m, p.at_top);
-    IPC::ParamTraits<base::Time>::Write(m, p.time_at_snapshot);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    double boring_score;
-    bool good_clipping, at_top;
-    base::Time time_at_snapshot;
-    if (!IPC::ParamTraits<double>::Read(m, iter, &boring_score) ||
-        !IPC::ParamTraits<bool>::Read(m, iter, &good_clipping) ||
-        !IPC::ParamTraits<bool>::Read(m, iter, &at_top) ||
-        !IPC::ParamTraits<base::Time>::Read(m, iter, &time_at_snapshot))
-      return false;
-
-    r->boring_score = boring_score;
-    r->good_clipping = good_clipping;
-    r->at_top = at_top;
-    r->time_at_snapshot = time_at_snapshot;
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"(%f, %d, %d)",
-                           p.boring_score, p.good_clipping, p.at_top));
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
 };
 
 template <>
