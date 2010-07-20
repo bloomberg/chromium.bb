@@ -47,3 +47,6 @@ DownloadTest.*
 DefaultPluginUITest.DefaultPluginLoadTest
 # See http://crbug.com/38575
 WorkerTest.*
+
+# Mac: See http://crbug.com/30661, Linux/CrOS: http://crbug.com/49576.
+NPAPITester.NPObjectReleasedOnDestruction

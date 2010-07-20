@@ -47,7 +47,6 @@ NPAPITester.SelfDeletePluginGetUrl
 NPAPITester.PluginThreadAsyncCall
 NPAPITester.GetJavaScriptURL
 NPAPITester.SelfDeletePluginInvoke
-NPAPITester.NPObjectReleasedOnDestruction
 NPAPITester.Arguments
 NPAPITester.GetJavaScriptURL2
 NPAPITester.PrivateDisabled
