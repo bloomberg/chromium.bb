@@ -170,6 +170,7 @@ extern const wchar_t kShowUpdatePromotionInfoBar[];
 #endif
 extern const wchar_t kUseCustomChromeFrame[];
 extern const wchar_t kShowOmniboxSearchHint[];
+extern const wchar_t kNTPPromoViewsRemaining[];
 extern const wchar_t kDesktopNotificationDefaultContentSetting[];
 extern const wchar_t kDesktopNotificationAllowedOrigins[];
 extern const wchar_t kDesktopNotificationDeniedOrigins[];

@@ -43,7 +43,9 @@ static void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
 // Subclass the TestingProfile so that it can return certain services we need.
 class TabContentsTestingProfile : public TestingProfile {
  public:
-  TabContentsTestingProfile() : TestingProfile() { }
+  TabContentsTestingProfile() : TestingProfile() {
+    CreateBookmarkModel(false);
+  }
 
   virtual PrefService* GetPrefs() {
     if (!prefs_.get()) {

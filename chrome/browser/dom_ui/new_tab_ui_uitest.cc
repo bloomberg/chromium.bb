@@ -161,6 +161,42 @@ TEST_F(NewTabUITest, HomePageLink) {
 
   bool is_home_page;
   ASSERT_TRUE(browser->GetBooleanPreference(prefs::kHomePageIsNewTabPage,
-              &is_home_page));
+                                            &is_home_page));
   ASSERT_TRUE(is_home_page);
+}
+
+TEST_F(NewTabUITest, PromoLink) {
+#if defined(OS_WIN)
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
+  // Bring up a new tab page.
+  ASSERT_TRUE(browser->RunCommand(IDC_NEW_TAB));
+  int load_time;
+  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
+
+  scoped_refptr<TabProxy> tab = browser->GetActiveTab();
+  ASSERT_TRUE(tab.get());
+
+  // Test "import bookmarks" promo.
+  bool result;
+  ASSERT_TRUE(tab->ExecuteAndExtractBool(L"",
+    L"window.domAutomationController.send("
+    L"(function() {"
+    L"  tipCache = [{\"set_promo_tip\":"
+    L"\"<button class='link'>Import</button> bookmarks\"}];"
+    L"  renderTip();"
+    L"  var e = document.createEvent('Event');"
+    L"  e.initEvent('click', true, true);"
+    L"  var el = document.querySelector('#tip-line button');"
+    L"  el.dispatchEvent(e);"
+    L"  return true;"
+    L"})()"
+    L")",
+    &result));
+
+  ASSERT_TRUE(result);
+#endif
+  // TODO(mirandac): Ensure that we showed the import bookmarks dialog.
+  // Remove check for OS_WIN after implemented in Mac and Linux.
 }
