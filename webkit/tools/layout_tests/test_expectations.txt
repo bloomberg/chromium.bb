@@ -7,8 +7,3 @@
 
 // TODO(johnnyg): remove after upstream expectations are rolled
 BUG_JOHNNYG WIN : fast/forms/input-file-directory-upload.html = TEXT
-
-
-// TODO(ricow): remove chromium specific expectations for this in 
-// webkit repo.
-BUG_RICOW : fast/dom/undetectable-document-all.html = TEXT
