@@ -87,8 +87,6 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   void ResyncEncryptedData(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 
-  void Cancel();
-
   // Perform basic canonicalization of |email_address|, taking into account
   // that gmail does not consider '.' or caps inside a username to matter.
   // For example, c.masone@gmail.com == cMaSone@gmail.com, per
