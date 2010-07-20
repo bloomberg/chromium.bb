@@ -4137,6 +4137,181 @@ TEST_F(SyncerTest, ClientTagConflictWithDeletedLocalEntry) {
   }
 }
 
+TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  EXPECT_TRUE(dir.good());
+
+  // This test is written assuming that ID comparison
+  // will work out in a particular way.
+  EXPECT_TRUE(ids_.FromNumber(1) < ids_.FromNumber(2));
+  EXPECT_TRUE(ids_.FromNumber(3) < ids_.FromNumber(4));
+
+  mock_server_->AddUpdateBookmark(1, 0, "One", 10, 100);
+  mock_server_->SetLastUpdateClientTag("tag1");
+  mock_server_->AddUpdateBookmark(4, 0, "Four", 11, 110);
+  mock_server_->SetLastUpdateClientTag("tag2");
+
+  mock_server_->set_conflict_all_commits(true);
+
+  syncer_->SyncShare(this);
+  int64 tag1_metahandle = syncable::kInvalidMetaHandle;
+  int64 tag2_metahandle = syncable::kInvalidMetaHandle;
+  // This should cause client tag overwrite.
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+
+    Entry tag1(&trans, GET_BY_CLIENT_TAG, "tag1");
+    ASSERT_TRUE(tag1.good());
+    ASSERT_TRUE(tag1.Get(ID).ServerKnows());
+    ASSERT_TRUE(ids_.FromNumber(1) == tag1.Get(ID));
+    EXPECT_FALSE(tag1.Get(IS_DEL));
+    EXPECT_FALSE(tag1.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(tag1.Get(IS_UNSYNCED));
+    EXPECT_EQ("One", tag1.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(10, tag1.Get(BASE_VERSION));
+    EXPECT_EQ("tag1", tag1.Get(UNIQUE_CLIENT_TAG));
+    tag1_metahandle = tag1.Get(META_HANDLE);
+
+    Entry tag2(&trans, GET_BY_CLIENT_TAG, "tag2");
+    ASSERT_TRUE(tag2.good());
+    ASSERT_TRUE(tag2.Get(ID).ServerKnows());
+    ASSERT_TRUE(ids_.FromNumber(4) == tag2.Get(ID));
+    EXPECT_FALSE(tag2.Get(IS_DEL));
+    EXPECT_FALSE(tag2.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(tag2.Get(IS_UNSYNCED));
+    EXPECT_EQ("Four", tag2.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(11, tag2.Get(BASE_VERSION));
+    EXPECT_EQ("tag2", tag2.Get(UNIQUE_CLIENT_TAG));
+    tag2_metahandle = tag2.Get(META_HANDLE);
+
+    syncable::Directory::ChildHandles children;
+    dir->GetChildHandles(&trans, trans.root_id(), &children);
+    ASSERT_EQ(2U, children.size());
+  }
+
+  mock_server_->AddUpdateBookmark(2, 0, "Two", 12, 120);
+  mock_server_->SetLastUpdateClientTag("tag1");
+  mock_server_->AddUpdateBookmark(3, 0, "Three", 13, 130);
+  mock_server_->SetLastUpdateClientTag("tag2");
+  syncer_->SyncShare(this);
+
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+
+    Entry tag1(&trans, GET_BY_CLIENT_TAG, "tag1");
+    ASSERT_TRUE(tag1.good());
+    ASSERT_TRUE(tag1.Get(ID).ServerKnows());
+    ASSERT_TRUE(ids_.FromNumber(1) == tag1.Get(ID))
+        << "ID 1 should be kept, since it was less than ID 2.";
+    EXPECT_FALSE(tag1.Get(IS_DEL));
+    EXPECT_FALSE(tag1.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(tag1.Get(IS_UNSYNCED));
+    EXPECT_EQ(10, tag1.Get(BASE_VERSION));
+    EXPECT_EQ("tag1", tag1.Get(UNIQUE_CLIENT_TAG));
+    EXPECT_EQ("One", tag1.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(tag1_metahandle, tag1.Get(META_HANDLE));
+
+    Entry tag2(&trans, GET_BY_CLIENT_TAG, "tag2");
+    ASSERT_TRUE(tag2.good());
+    ASSERT_TRUE(tag2.Get(ID).ServerKnows());
+    ASSERT_TRUE(ids_.FromNumber(3) == tag2.Get(ID))
+        << "ID 3 should be kept, since it was less than ID 4.";
+    EXPECT_FALSE(tag2.Get(IS_DEL));
+    EXPECT_FALSE(tag2.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(tag2.Get(IS_UNSYNCED));
+    EXPECT_EQ("Three", tag2.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(13, tag2.Get(BASE_VERSION));
+    EXPECT_EQ("tag2", tag2.Get(UNIQUE_CLIENT_TAG));
+    EXPECT_EQ(tag2_metahandle, tag2.Get(META_HANDLE));
+
+    syncable::Directory::ChildHandles children;
+    dir->GetChildHandles(&trans, trans.root_id(), &children);
+    ASSERT_EQ(2U, children.size());
+  }
+}
+
+TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  EXPECT_TRUE(dir.good());
+
+  // This test is written assuming that ID comparison
+  // will work out in a particular way.
+  EXPECT_TRUE(ids_.FromNumber(1) < ids_.FromNumber(4));
+  EXPECT_TRUE(ids_.FromNumber(201) < ids_.FromNumber(205));
+
+  mock_server_->AddUpdateBookmark(1, 0, "One A", 1, 10);
+  mock_server_->SetLastUpdateClientTag("tag a");  // Least ID: winner.
+  mock_server_->AddUpdateBookmark(2, 0, "Two A", 11, 110);
+  mock_server_->SetLastUpdateClientTag("tag a");
+  mock_server_->AddUpdateBookmark(3, 0, "Three A", 12, 120);
+  mock_server_->SetLastUpdateClientTag("tag a");
+  mock_server_->AddUpdateBookmark(4, 0, "Four A", 13, 130);
+  mock_server_->SetLastUpdateClientTag("tag a");
+
+  mock_server_->AddUpdateBookmark(105, 0, "One B", 14, 140);
+  mock_server_->SetLastUpdateClientTag("tag b");
+  mock_server_->AddUpdateBookmark(102, 0, "Two B", 15, 150);
+  mock_server_->SetLastUpdateClientTag("tag b");
+  mock_server_->AddUpdateBookmark(101, 0, "Three B", 16, 160);
+  mock_server_->SetLastUpdateClientTag("tag b");  // Least ID: winner.
+  mock_server_->AddUpdateBookmark(104, 0, "Four B", 17, 170);
+  mock_server_->SetLastUpdateClientTag("tag b");
+
+  mock_server_->AddUpdateBookmark(205, 0, "One C", 18, 180);
+  mock_server_->SetLastUpdateClientTag("tag c");
+  mock_server_->AddUpdateBookmark(202, 0, "Two C", 19, 190);
+  mock_server_->SetLastUpdateClientTag("tag c");
+  mock_server_->AddUpdateBookmark(204, 0, "Three C", 20, 200);
+  mock_server_->SetLastUpdateClientTag("tag c");
+  mock_server_->AddUpdateBookmark(201, 0, "Four C", 21, 210);
+  mock_server_->SetLastUpdateClientTag("tag c");  // Least ID: winner.
+
+  mock_server_->set_conflict_all_commits(true);
+
+  syncer_->SyncShare(this);
+  // This should cause client tag overwrite.
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+
+    Entry tag_a(&trans, GET_BY_CLIENT_TAG, "tag a");
+    ASSERT_TRUE(tag_a.good());
+    ASSERT_TRUE(tag_a.Get(ID).ServerKnows());
+    ASSERT_TRUE(ids_.FromNumber(1) == tag_a.Get(ID));
+    EXPECT_FALSE(tag_a.Get(IS_DEL));
+    EXPECT_FALSE(tag_a.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(tag_a.Get(IS_UNSYNCED));
+    EXPECT_EQ("One A", tag_a.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(1, tag_a.Get(BASE_VERSION));
+    EXPECT_EQ("tag a", tag_a.Get(UNIQUE_CLIENT_TAG));
+
+    Entry tag_b(&trans, GET_BY_CLIENT_TAG, "tag b");
+    ASSERT_TRUE(tag_b.good());
+    ASSERT_TRUE(tag_b.Get(ID).ServerKnows());
+    ASSERT_TRUE(ids_.FromNumber(101) == tag_b.Get(ID));
+    EXPECT_FALSE(tag_b.Get(IS_DEL));
+    EXPECT_FALSE(tag_b.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(tag_b.Get(IS_UNSYNCED));
+    EXPECT_EQ("Three B", tag_b.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(16, tag_b.Get(BASE_VERSION));
+    EXPECT_EQ("tag b", tag_b.Get(UNIQUE_CLIENT_TAG));
+
+    Entry tag_c(&trans, GET_BY_CLIENT_TAG, "tag c");
+    ASSERT_TRUE(tag_c.good());
+    ASSERT_TRUE(tag_c.Get(ID).ServerKnows());
+    ASSERT_TRUE(ids_.FromNumber(201) == tag_c.Get(ID));
+    EXPECT_FALSE(tag_c.Get(IS_DEL));
+    EXPECT_FALSE(tag_c.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(tag_c.Get(IS_UNSYNCED));
+    EXPECT_EQ("Four C", tag_c.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(21, tag_c.Get(BASE_VERSION));
+    EXPECT_EQ("tag c", tag_c.Get(UNIQUE_CLIENT_TAG));
+
+    syncable::Directory::ChildHandles children;
+    dir->GetChildHandles(&trans, trans.root_id(), &children);
+    ASSERT_EQ(3U, children.size());
+  }
+}
+
 TEST_F(SyncerTest, UniqueServerTagUpdates) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());

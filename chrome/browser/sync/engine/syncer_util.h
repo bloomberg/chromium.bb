@@ -40,16 +40,18 @@ class SyncerUtil {
                                              syncable::MutableEntry* entry,
                                              const syncable::Id& new_id);
 
-  // If the server sent down a client tagged entry, we have to affix it to
-  // the correct local entry.
-  static void AttemptReuniteClientTag(
-      syncable::WriteTransaction* trans,
+  // If the server sent down a client-tagged entry, or an entry whose
+  // commit response was lost, it is necessary to update a local entry
+  // with an ID that doesn't match the ID of the update.  Here, we
+  // find the ID of such an entry, if it exists.  This function may
+  // determine that |server_entry| should be dropped; if so, it returns
+  // the null ID -- callers must handle this case.  When update application
+  // should proceed normally with a new local entry, this function will
+  // return server_entry.id(); the caller must create an entry with that
+  // ID.  This function does not alter the database.
+  static syncable::Id FindLocalIdToUpdate(
+      syncable::BaseTransaction* trans,
       const SyncEntity& server_entry);
-
-  static void AttemptReuniteLostCommitResponses(
-      syncable::WriteTransaction* trans,
-      const SyncEntity& server_entry,
-      const std::string& client_id);
 
   static UpdateAttemptResponse AttemptToUpdateEntry(
       syncable::WriteTransaction* const trans,
@@ -78,17 +80,17 @@ class SyncerUtil {
   static void UpdateLocalDataFromServerData(syncable::WriteTransaction* trans,
                                             syncable::MutableEntry* entry);
 
-  static VerifyCommitResult ValidateCommitEntry(syncable::MutableEntry* entry);
+  static VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry);
 
-  static VerifyResult VerifyNewEntry(const SyncEntity& entry,
-                                     syncable::MutableEntry* same_id,
+  static VerifyResult VerifyNewEntry(const SyncEntity& update,
+                                     syncable::Entry* target,
                                      const bool deleted);
 
   // Assumes we have an existing entry; check here for updates that break
   // consistency rules.
   static VerifyResult VerifyUpdateConsistency(syncable::WriteTransaction* trans,
-                                              const SyncEntity& entry,
-                                              syncable::MutableEntry* same_id,
+                                              const SyncEntity& update,
+                                              syncable::MutableEntry* target,
                                               const bool deleted,
                                               const bool is_directory,
                                               syncable::ModelType model_type);
@@ -96,8 +98,8 @@ class SyncerUtil {
   // Assumes we have an existing entry; verify an update that seems to be
   // expressing an 'undelete'
   static VerifyResult VerifyUndelete(syncable::WriteTransaction* trans,
-                                     const SyncEntity& entry,
-                                     syncable::MutableEntry* same_id);
+                                     const SyncEntity& update,
+                                     syncable::MutableEntry* target);
 
   // Compute a local predecessor position for |update_item|.  The position
   // is determined by the SERVER_POSITION_IN_PARENT value of |update_item|,

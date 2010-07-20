@@ -38,7 +38,7 @@ class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
  private:
   ServerUpdateProcessingResult ProcessUpdate(
       const syncable::ScopedDirLookup& dir,
-      const sync_pb::SyncEntity& pb_entry);
+      const sync_pb::SyncEntity& proto_update);
   DISALLOW_COPY_AND_ASSIGN(ProcessUpdatesCommand);
 };
 
