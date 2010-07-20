@@ -26,8 +26,8 @@
 namespace browser_sync {
 
 const char kCurrentThemeClientTag[] = "current_theme";
-const char kCurrentThemeNodeTitle[] = "Current Theme";
-const char kThemesTag[] = "google_chrome_themes";
+
+namespace {
 
 bool IsSystemThemeDistinctFromDefaultTheme() {
 #if defined(TOOLKIT_USES_GTK)
@@ -44,6 +44,8 @@ bool UseSystemTheme(Profile* profile) {
   return false;
 #endif
 }
+
+}  // namespace
 
 bool AreThemeSpecificsEqual(const sync_pb::ThemeSpecifics& a,
                             const sync_pb::ThemeSpecifics& b) {
@@ -149,6 +151,19 @@ void SetCurrentThemeFromThemeSpecifics(
     profile->SetNativeTheme();
   } else {
     profile->ClearTheme();
+  }
+}
+
+bool UpdateThemeSpecificsOrSetCurrentThemeIfNecessary(
+    Profile* profile, sync_pb::ThemeSpecifics* theme_specifics) {
+  if (!theme_specifics->use_custom_theme() &&
+      (profile->GetTheme() || (UseSystemTheme(profile) &&
+                               IsSystemThemeDistinctFromDefaultTheme()))) {
+    GetThemeSpecificsFromCurrentTheme(profile, theme_specifics);
+    return true;
+  } else {
+    SetCurrentThemeFromThemeSpecificsIfNecessary(*theme_specifics, profile);
+    return false;
   }
 }
 

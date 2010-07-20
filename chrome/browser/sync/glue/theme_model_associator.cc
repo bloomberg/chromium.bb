@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_theme_provider.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/theme_util.h"
@@ -18,6 +17,9 @@
 namespace browser_sync {
 
 namespace {
+
+static const char kThemesTag[] = "google_chrome_themes";
+static const char kCurrentThemeNodeTitle[] = "Current Theme";
 
 static const char kNoThemesFolderError[] =
     "Server did not create the top-level themes node. We "
@@ -43,7 +45,7 @@ bool ThemeModelAssociator::AssociateModels() {
   }
 
   Profile* profile = sync_service_->profile();
-  sync_api::ReadNode node(&trans);
+  sync_api::WriteNode node(&trans);
   // TODO(akalin): When we have timestamps, we may want to do
   // something more intelligent than preferring the sync data over our
   // local data.
@@ -52,12 +54,12 @@ bool ThemeModelAssociator::AssociateModels() {
     // TODO(akalin): If the sync data does not have
     // use_system_theme_by_default and we do, update that flag on the
     // sync data.
-    SetCurrentThemeFromThemeSpecificsIfNecessary(
-        node.GetThemeSpecifics(), profile);
-  } else if (profile->GetTheme() || (UseSystemTheme(profile) &&
-                                     IsSystemThemeDistinctFromDefaultTheme())) {
-    // Set the sync data from the current theme, iff the current theme isn't the
-    // default.
+    sync_pb::ThemeSpecifics theme_specifics = node.GetThemeSpecifics();
+    if (UpdateThemeSpecificsOrSetCurrentThemeIfNecessary(profile,
+                                                         &theme_specifics))
+      node.SetThemeSpecifics(theme_specifics);
+  } else {
+    // Set the sync data from the current theme.
     sync_api::WriteNode node(&trans);
     if (!node.InitUniqueByCreation(syncable::THEMES, root,
                                    kCurrentThemeClientTag)) {

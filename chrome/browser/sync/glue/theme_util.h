@@ -15,15 +15,6 @@ class ThemeSpecifics;
 namespace browser_sync {
 
 extern const char kCurrentThemeClientTag[];
-extern const char kCurrentThemeNodeTitle[];
-extern const char kThemesTag[];
-
-// Returns whether the the system them (eg. GTK) is different from the default
-// theme.
-bool IsSystemThemeDistinctFromDefaultTheme();
-
-// Returns whether |profile| is configured to use the system theme.
-bool UseSystemTheme(Profile* profile);
 
 // Returns true iff two ThemeSpecifics indicate the same theme.
 bool AreThemeSpecificsEqual(const sync_pb::ThemeSpecifics& a,
@@ -58,6 +49,13 @@ void GetThemeSpecificsFromCurrentThemeHelper(
 // current theme is equivalent to that described by theme_specifics.
 void SetCurrentThemeFromThemeSpecificsIfNecessary(
     const sync_pb::ThemeSpecifics& theme_specifics, Profile* profile);
+
+// Like SetCurrentThemeFromThemeSpecifics() except that in the case where
+// |theme_specifics| uses the default theme and |profile| does not, the local
+// data "wins" against the server's and |theme_specifics| is updated with the
+// custom theme. Returns true iff |theme_specifics| is updated.
+bool UpdateThemeSpecificsOrSetCurrentThemeIfNecessary(
+    Profile* profile, sync_pb::ThemeSpecifics* theme_specifics);
 
 }  // namespace browser_sync
 
