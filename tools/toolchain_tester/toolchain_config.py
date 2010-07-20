@@ -183,7 +183,7 @@ TOOLCHAIN_CONFIGS['llvm_nacl_sfi_arm_O0'] = ToolchainConfig(
 ######################################################################
 # PNACL + SEL_LDR [ARM]
 ######################################################################
-PNACL_LLVM_GCC = DRIVER_PATH + '/llvm-fake-bcgcc'
+PNACL_LLVM_GCC = DRIVER_PATH + '/llvm-fake-sfigcc'
 
 PNACL_BCLD_ARM = DRIVER_PATH + '/llvm-fake-bcld-arm'
 
@@ -206,7 +206,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     'pnacl llvm [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD_ARM, EMU_SCRIPT, SEL_LDR_ARM],
-    CC = PNACL_LLVM_GCC,
+    CC = PNACL_LLVM_GCC + ' -emit-llvm',
     LD = PNACL_BCLD_ARM,
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
@@ -218,7 +218,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_opt'] = ToolchainConfig(
     'pnacl llvm with optimizations [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD_ARM, EMU_SCRIPT, SEL_LDR_ARM],
-    CC = PNACL_LLVM_GCC,
+    CC = PNACL_LLVM_GCC + ' -emit-llvm',
     LD = PNACL_BCLD_ARM,
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
@@ -248,7 +248,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     'pnacl llvm [x8632]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD_ARM, SEL_LDR_X32],
-    CC = PNACL_LLVM_GCC,
+    CC = PNACL_LLVM_GCC + ' -emit-llvm',
     LD = PNACL_BCLD_X8632,
     SEL_LDR = SEL_LDR_X32,
     LIB_DIR = PNACL_LIB_DIR,
@@ -264,7 +264,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     'pnacl llvm [x8664]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD_ARM, SEL_LDR_X64],
-    CC = PNACL_LLVM_GCC,
+    CC = PNACL_LLVM_GCC + ' -emit-llvm',
     LD = PNACL_BCLD_X8664,
     SEL_LDR = SEL_LDR_X64,
     LIB_DIR = PNACL_LIB_DIR,

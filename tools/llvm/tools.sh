@@ -29,8 +29,8 @@ case ${TARGET_CODE:=sfi-arm} in
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfild"
     ;;
   bc-arm)  # => Bitcode libraries => arm
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
+    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc -emit-llvm"
+    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++ -emit-llvm"
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
@@ -38,8 +38,8 @@ case ${TARGET_CODE:=sfi-arm} in
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-arm"
     ;;
   bc-x86-32)  # => Bitcode libraries => x86-32
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
+    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc -emit-llvm"
+    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++ -emit-llvm"
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
@@ -48,8 +48,8 @@ case ${TARGET_CODE:=sfi-arm} in
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-x86-32"
     ;;
   bc-x86-64)  # => Bitcode libraries => x86-64
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcgcc"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-bcg++"
+    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc -emit-llvm"
+    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++ -emit-llvm"
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
