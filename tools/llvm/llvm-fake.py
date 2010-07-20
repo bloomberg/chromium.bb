@@ -433,6 +433,10 @@ def Incarnation_gcclike(argv, tool):
     Run(argv)
     return
 
+  if '-emit-llvm' in argv:
+    CompileToBC(argv, tool)
+    return
+
   assert arch
 
   assembler = global_assemblers[arch]
@@ -455,11 +459,11 @@ def Incarnation_sfigplusplus_generic(argv):
 
 
 def Incarnation_bcgcc(argv):
-  CompileToBC(argv, LLVM_GCC)
+  Incarnation_sfigcc_generic(argv + ['-emit-llvm'])
 
 
 def Incarnation_bcgplusplus(argv):
-  CompileToBC(argv, LLVM_GXX)
+  Incarnation_sfigplusplus_generic(argv + ['-emit-llvm'])
 
 
 def Incarnation_cppasarm(argv):
