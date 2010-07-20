@@ -388,13 +388,6 @@
           # "hermetic" for packaging. This is only for branding="Chrome" since
           # we only create packages for official builds.
           'copies': [
-            # Copy tools for generating packages from the build archive.
-            {
-              'destination': '<(PRODUCT_DIR)/installer/',
-              'files': [
-                'installer/linux/internal/build_from_archive.sh',
-              ]
-            },
             {
               'destination': '<(PRODUCT_DIR)/installer/debian/',
               'files': [
