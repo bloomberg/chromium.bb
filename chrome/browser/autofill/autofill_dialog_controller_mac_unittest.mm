@@ -389,7 +389,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewProfile) {
   // Should hit our observer.
   ASSERT_TRUE(observer_.hit_);
 
-  // Sizes should match be different.  New size should be 2.
+  // Sizes should be different.  New size should be 2.
   ASSERT_NE(observer_.profiles_.size(), profiles().size());
   ASSERT_EQ(observer_.profiles_.size(), 2UL);
 
@@ -413,7 +413,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
   // Should hit our observer.
   ASSERT_TRUE(observer_.hit_);
 
-  // Sizes should match be different.  New size should be 2.
+  // Sizes should be different.  New size should be 2.
   ASSERT_NE(observer_.credit_cards_.size(), credit_cards().size());
   ASSERT_EQ(observer_.credit_cards_.size(), 2UL);
 
@@ -434,7 +434,7 @@ TEST_F(AutoFillDialogControllerTest, DeleteProfile) {
   // Should hit our observer.
   ASSERT_TRUE(observer_.hit_);
 
-  // Sizes should match be different.  New size should be 0.
+  // Sizes should be different.  New size should be 0.
   ASSERT_NE(observer_.profiles_.size(), profiles().size());
   ASSERT_EQ(observer_.profiles_.size(), 0UL);
 }
@@ -451,7 +451,7 @@ TEST_F(AutoFillDialogControllerTest, DeleteCreditCard) {
   // Should hit our observer.
   ASSERT_TRUE(observer_.hit_);
 
-  // Sizes should match be different.  New size should be 0.
+  // Sizes should be different.  New size should be 0.
   ASSERT_NE(observer_.credit_cards_.size(), credit_cards().size());
   ASSERT_EQ(observer_.credit_cards_.size(), 0UL);
 }
@@ -471,7 +471,7 @@ TEST_F(AutoFillDialogControllerTest, TwoProfilesDeleteOne) {
   // Should hit our observer.
   ASSERT_TRUE(observer_.hit_);
 
-  // Sizes should match be different.  New size should be 0.
+  // Sizes should be different.  New size should be 1.
   ASSERT_NE(observer_.profiles_.size(), profiles().size());
   ASSERT_EQ(observer_.profiles_.size(), 1UL);
 
@@ -499,13 +499,61 @@ TEST_F(AutoFillDialogControllerTest, TwoCreditCardsDeleteOne) {
   // Should hit our observer.
   ASSERT_TRUE(observer_.hit_);
 
-  // Sizes should match be different.  New size should be 0.
+  // Sizes should be different.  New size should be 1.
   ASSERT_NE(observer_.credit_cards_.size(), credit_cards().size());
   ASSERT_EQ(observer_.credit_cards_.size(), 1UL);
 
   // First credit card should match.
   credit_cards()[0]->set_unique_id(observer_.credit_cards_[0].unique_id());
   ASSERT_EQ(observer_.credit_cards_[0], credit_card);
+}
+
+TEST_F(AutoFillDialogControllerTest, DeleteMultiple) {
+  AutoFillProfile profile(ASCIIToUTF16("One"), 1);
+  profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
+  profiles().push_back(&profile);
+  AutoFillProfile profile2(ASCIIToUTF16("Two"), 2);
+  profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bob"));
+  profiles().push_back(&profile2);
+
+  CreditCard credit_card(ASCIIToUTF16("Visa"), 1);
+  credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
+  credit_cards().push_back(&credit_card);
+  CreditCard credit_card2(ASCIIToUTF16("Mastercard"), 2);
+  credit_card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bob"));
+  credit_cards().push_back(&credit_card2);
+
+  LoadDialog();
+  [controller_ selectAddressAtIndex:1];
+  [controller_ addSelectedCreditCardAtIndex:0];
+  ASSERT_FALSE([controller_ editButtonEnabled]);
+  [controller_ deleteSelection:nil];
+  [controller_ selectAddressAtIndex:0];
+  ASSERT_TRUE([controller_ editButtonEnabled]);
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Sizes should be different.  New size should be 1.
+  ASSERT_NE(observer_.profiles_.size(), profiles().size());
+  ASSERT_EQ(observer_.profiles_.size(), 1UL);
+
+  // Sizes should be different.  New size should be 1.
+  ASSERT_NE(observer_.credit_cards_.size(), credit_cards().size());
+  ASSERT_EQ(observer_.credit_cards_.size(), 1UL);
+
+  // First address should match.
+  profiles()[0]->set_unique_id(observer_.profiles_[0].unique_id());
+
+  // Do not compare labels.  Label is a derived field.
+  observer_.profiles_[0].set_label(string16());
+  profile.set_label(string16());
+  ASSERT_EQ(observer_.profiles_[0], profile);
+
+  // Second credit card should match.
+  credit_cards()[0]->set_unique_id(observer_.credit_cards_[0].unique_id());
+  ASSERT_EQ(observer_.credit_cards_[0], credit_card2);
 }
 
 // Auxilliary profiles are enabled by default.

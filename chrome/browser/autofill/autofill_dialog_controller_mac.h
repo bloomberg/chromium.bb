@@ -34,6 +34,9 @@ class Profile;
   // cards with section headers for both.
   IBOutlet AutoFillTableView* tableView_;
 
+  // Outlet to "Edit..." button.  Here for unit testing purposes.
+  IBOutlet NSButton* editButton_;
+
   // This observer is passed in by the caller of the dialog.  When the dialog
   // is dismissed |observer_| is called with new values for the addresses and
   // credit cards.
@@ -68,6 +71,10 @@ class Profile;
   // "Remove" buttons.
   BOOL itemIsSelected_;
 
+  // State for |multipleSelected| property used in bindings for "Edit..."
+  // button.
+  BOOL multipleSelected_;
+
   // Utility object to save and restore dialog position.
   scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
 
@@ -96,6 +103,10 @@ class Profile;
 // Property representing selection state in |tableView_|.  Enabled state of
 // edit and delete buttons are bound to this property.
 @property (nonatomic) BOOL itemIsSelected;
+
+// Property representing multiple selection state in |tableView_|.  Enabled
+// state of edit button is bound to this property.
+@property (nonatomic) BOOL multipleSelected;
 
 // Main interface for displaying an application modal AutoFill dialog on screen.
 // This class method creates a new |AutoFillDialogController| and runs it as a
@@ -168,6 +179,9 @@ class Profile;
 - (AutoFillCreditCardSheetController*)creditCardSheetController;
 - (void)selectAddressAtIndex:(size_t)i;
 - (void)selectCreditCardAtIndex:(size_t)i;
+- (void)addSelectedAddressAtIndex:(size_t)i;
+- (void)addSelectedCreditCardAtIndex:(size_t)i;
+- (BOOL)editButtonEnabled;
 @end
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_DIALOG_CONTROLLER_MAC_

@@ -191,6 +191,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 @synthesize autoFillEnabled = autoFillEnabled_;
 @synthesize auxiliaryEnabled = auxiliaryEnabled_;
 @synthesize itemIsSelected = itemIsSelected_;
+@synthesize multipleSelected = multipleSelected_;
 
 + (void)showAutoFillDialogWithObserver:(AutoFillDialogObserver*)observer
                profile:(Profile*)profile
@@ -356,43 +357,45 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   creditCardSheetController.reset(nil);
 }
 
-// Deletes selected item, either address or credit card depending on the item
-// selected.
+// Deletes selected items; either addresses, credit cards, or a mixture of the
+// two depending on the items selected.
 - (IBAction)deleteSelection:(id)sender {
+  NSIndexSet* selectedRows = [tableView_ selectedRowIndexes];
   NSInteger selectedRow = [tableView_ selectedRow];
-  if ([self isProfileRow:selectedRow]) {
-    profiles_.erase(profiles_.begin() + [self profileIndexFromRow:selectedRow]);
+  NSInteger rowCount = [tableView_ numberOfRows];
 
-    // Select the previous row if possible, else current row, else deselect all.
-    if ([self tableView:tableView_ shouldSelectRow:selectedRow-1]) {
-      [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow-1]
-              byExtendingSelection:NO];
-    } else if ([self tableView:tableView_ shouldSelectRow:selectedRow]) {
-      [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow]
-              byExtendingSelection:NO];
-    } else {
-      [tableView_ selectRowIndexes:[NSIndexSet indexSet]
-              byExtendingSelection:NO];
-    }
-    UpdateProfileLabels(&profiles_);
-    [tableView_ reloadData];
-  } else if ([self isCreditCardRow:selectedRow]) {
-    creditCards_.erase(
-        creditCards_.begin() + [self creditCardIndexFromRow:selectedRow]);
+  // Loop through from last to first deleting selected items as we go.
+  for (NSInteger i = rowCount-1; i>=0; --i) {
+    if (![selectedRows containsIndex:i])
+      continue;
 
-    // Select the previous row if possible, else current row, else deselect all.
-    if ([self tableView:tableView_ shouldSelectRow:selectedRow-1]) {
-      [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow-1]
-              byExtendingSelection:NO];
-    } else if ([self tableView:tableView_ shouldSelectRow:selectedRow]) {
-      [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow]
-              byExtendingSelection:NO];
-    } else {
-      [tableView_ selectRowIndexes:[NSIndexSet indexSet]
-              byExtendingSelection:NO];
+    // We keep track of the "top most" selection in the list so we know where
+    // to to set new selection below.
+    if (i < selectedRow)
+      selectedRow = i;
+
+    if ([self isProfileRow:i]) {
+      profiles_.erase(
+          profiles_.begin() + [self profileIndexFromRow:i]);
+    } else if ([self isCreditCardRow:i]) {
+      creditCards_.erase(
+          creditCards_.begin() + [self creditCardIndexFromRow:i]);
     }
-    [tableView_ reloadData];
   }
+
+  // Select the previous row if possible, else current row, else deselect all.
+  if ([self tableView:tableView_ shouldSelectRow:selectedRow-1]) {
+    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow-1]
+            byExtendingSelection:NO];
+  } else if ([self tableView:tableView_ shouldSelectRow:selectedRow]) {
+    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow]
+            byExtendingSelection:NO];
+  } else {
+    [tableView_ selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+  }
+
+  UpdateProfileLabels(&profiles_);
+  [tableView_ reloadData];
 }
 
 // Edits the selected item, either address or credit card depending on the item
@@ -542,14 +545,18 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   return @"";
 }
 
-// We implement this delegate method to update our |itemIsSelected| property.
+// We implement this delegate method to update our |itemIsSelected| and
+// |multipleSelected| properties.
 // The "Edit..." and "Remove" buttons' enabled state depends on having a
-// valid selection in the table.
+// valid selection in the table.  The "Edit..." button depends on having
+// exactly one item selected.
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification {
   if ([tableView_ selectedRow] >= 0)
     [self setItemIsSelected:YES];
   else
     [self setItemIsSelected:NO];
+
+  [self setMultipleSelected:([[tableView_ selectedRowIndexes] count] > 1UL)];
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
@@ -652,6 +659,22 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:
                                    [self rowFromCreditCardIndex:i]]
           byExtendingSelection:NO];
+}
+
+- (void)addSelectedAddressAtIndex:(size_t)i {
+  [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:
+                                   [self rowFromProfileIndex:i]]
+          byExtendingSelection:YES];
+}
+
+- (void)addSelectedCreditCardAtIndex:(size_t)i {
+  [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:
+                                   [self rowFromCreditCardIndex:i]]
+          byExtendingSelection:YES];
+}
+
+- (BOOL)editButtonEnabled {
+  return [editButton_ isEnabled];
 }
 
 @end
