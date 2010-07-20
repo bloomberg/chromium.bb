@@ -75,21 +75,15 @@ base::MessageLoopProxy* GetMainThreadMessageLoop() {
 // PPB_Core --------------------------------------------------------------------
 
 void AddRefResource(PP_Resource resource) {
-  Resource* res = ResourceTracker::Get()->GetResource(resource);
-  if (!res) {
-    DLOG(WARNING) << "AddRef()ing a nonexistent resource";
-    return;
+  if (!ResourceTracker::Get()->AddRefResource(resource)) {
+    DLOG(WARNING) << "AddRefResource()ing a nonexistent resource";
   }
-  res->AddRef();
 }
 
 void ReleaseResource(PP_Resource resource) {
-  Resource* res = ResourceTracker::Get()->GetResource(resource);
-  if (!res) {
-    DLOG(WARNING) << "Release()ing a nonexistent resource";
-    return;
+  if (!ResourceTracker::Get()->UnrefResource(resource)) {
+    DLOG(WARNING) << "ReleaseResource()ing a nonexistent resource";
   }
-  res->Release();
 }
 
 void* MemAlloc(size_t num_bytes) {

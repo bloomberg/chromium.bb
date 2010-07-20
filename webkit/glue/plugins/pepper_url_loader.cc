@@ -42,25 +42,24 @@ PP_Resource Create(PP_Instance instance_id) {
     return 0;
 
   URLLoader* loader = new URLLoader(instance);
-  loader->AddRef();  // AddRef for the caller.
 
-  return loader->GetResource();
+  return loader->GetReference();
 }
 
 bool IsURLLoader(PP_Resource resource) {
-  return !!Resource::GetAs<URLLoader>(resource).get();
+  return !!Resource::GetAs<URLLoader>(resource);
 }
 
 int32_t Open(PP_Resource loader_id,
              PP_Resource request_id,
              PP_CompletionCallback callback) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
-  if (!loader.get())
+  if (!loader)
     return PP_ERROR_BADRESOURCE;
 
   scoped_refptr<URLRequestInfo> request(
       Resource::GetAs<URLRequestInfo>(request_id));
-  if (!request.get())
+  if (!request)
     return PP_ERROR_BADRESOURCE;
 
   return loader->Open(request, callback);
@@ -69,7 +68,7 @@ int32_t Open(PP_Resource loader_id,
 int32_t FollowRedirect(PP_Resource loader_id,
                        PP_CompletionCallback callback) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
-  if (!loader.get())
+  if (!loader)
     return PP_ERROR_BADRESOURCE;
 
   return loader->FollowRedirect(callback);
@@ -79,7 +78,7 @@ bool GetUploadProgress(PP_Resource loader_id,
                        int64_t* bytes_sent,
                        int64_t* total_bytes_to_be_sent) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
-  if (!loader.get())
+  if (!loader)
     return false;
 
   *bytes_sent = loader->bytes_sent();
@@ -91,7 +90,7 @@ bool GetDownloadProgress(PP_Resource loader_id,
                          int64_t* bytes_received,
                          int64_t* total_bytes_to_be_received) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
-  if (!loader.get())
+  if (!loader)
     return false;
 
   *bytes_received = loader->bytes_received();
@@ -101,15 +100,14 @@ bool GetDownloadProgress(PP_Resource loader_id,
 
 PP_Resource GetResponseInfo(PP_Resource loader_id) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
-  if (!loader.get())
+  if (!loader)
     return 0;
 
   URLResponseInfo* response_info = loader->response_info();
   if (!response_info)
     return 0;
-  response_info->AddRef();  // AddRef for the caller.
 
-  return response_info->GetResource();
+  return response_info->GetReference();
 }
 
 int32_t ReadResponseBody(PP_Resource loader_id,
@@ -117,7 +115,7 @@ int32_t ReadResponseBody(PP_Resource loader_id,
                          int32_t bytes_to_read,
                          PP_CompletionCallback callback) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
-  if (!loader.get())
+  if (!loader)
     return PP_ERROR_BADRESOURCE;
 
   return loader->ReadResponseBody(buffer, bytes_to_read, callback);
@@ -125,7 +123,7 @@ int32_t ReadResponseBody(PP_Resource loader_id,
 
 void Close(PP_Resource loader_id) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
-  if (!loader.get())
+  if (!loader)
     return;
 
   loader->Close();

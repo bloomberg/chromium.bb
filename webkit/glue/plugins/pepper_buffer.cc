@@ -27,18 +27,17 @@ PP_Resource Create(PP_Module module_id, int32_t size) {
   scoped_refptr<Buffer> buffer(new Buffer(module));
   if (!buffer->Init(size))
     return NULL;
-  buffer->AddRef();  // AddRef for the caller.
 
-  return buffer->GetResource();
+  return buffer->GetReference();
 }
 
 bool IsBuffer(PP_Resource resource) {
-  return !!Resource::GetAs<Buffer>(resource).get();
+  return !!Resource::GetAs<Buffer>(resource);
 }
 
 bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
   scoped_refptr<Buffer> buffer(Resource::GetAs<Buffer>(resource));
-  if (!buffer.get())
+  if (!buffer)
     return false;
   buffer->Describe(size_in_bytes);
   return true;
@@ -46,7 +45,7 @@ bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
 
 void* Map(PP_Resource resource) {
   scoped_refptr<Buffer> buffer(Resource::GetAs<Buffer>(resource));
-  if (!buffer.get())
+  if (!buffer)
     return NULL;
   return buffer->Map();
 }

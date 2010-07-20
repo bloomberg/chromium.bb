@@ -73,14 +73,11 @@ PP_Resource Create(PP_Module module_id,
   scoped_refptr<DeviceContext2D> context(new DeviceContext2D(module));
   if (!context->Init(size->width, size->height, is_always_opaque))
     return NULL;
-  context->AddRef();  // AddRef for the caller.
-  return context->GetResource();
+  return context->GetReference();
 }
 
 bool IsDeviceContext2D(PP_Resource resource) {
-  scoped_refptr<DeviceContext2D> context(
-      Resource::GetAs<DeviceContext2D>(resource));
-  return !!context.get();
+  return !!Resource::GetAs<DeviceContext2D>(resource);
 }
 
 bool Describe(PP_Resource device_context,
@@ -88,7 +85,7 @@ bool Describe(PP_Resource device_context,
               bool* is_always_opaque) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
-  if (!context.get())
+  if (!context)
     return false;
   return context->Describe(size, is_always_opaque);
 }
@@ -99,7 +96,7 @@ bool PaintImageData(PP_Resource device_context,
                     const PP_Rect* src_rect) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
-  if (!context.get())
+  if (!context)
     return false;
   return context->PaintImageData(image, top_left, src_rect);
 }
@@ -109,7 +106,7 @@ bool Scroll(PP_Resource device_context,
             const PP_Point* amount) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
-  if (!context.get())
+  if (!context)
     return false;
   return context->Scroll(clip_rect, amount);
 }
@@ -117,7 +114,7 @@ bool Scroll(PP_Resource device_context,
 bool ReplaceContents(PP_Resource device_context, PP_Resource image) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
-  if (!context.get())
+  if (!context)
     return false;
   return context->ReplaceContents(image);
 }
@@ -126,7 +123,7 @@ int32_t Flush(PP_Resource device_context,
               PP_CompletionCallback callback) {
   scoped_refptr<DeviceContext2D> context(
       Resource::GetAs<DeviceContext2D>(device_context));
-  if (!context.get())
+  if (!context)
     return PP_ERROR_BADRESOURCE;
   return context->Flush(callback);
 }
@@ -214,7 +211,7 @@ bool DeviceContext2D::PaintImageData(PP_Resource image,
     return false;
 
   scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
-  if (!image_resource.get())
+  if (!image_resource)
     return false;
 
   QueuedOperation operation(QueuedOperation::PAINT);
@@ -269,7 +266,7 @@ bool DeviceContext2D::Scroll(const PP_Rect* clip_rect,
 
 bool DeviceContext2D::ReplaceContents(PP_Resource image) {
   scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
-  if (!image_resource.get())
+  if (!image_resource)
     return false;
   if (image_resource->format() != PP_IMAGEDATAFORMAT_BGRA_PREMUL)
     return false;
@@ -301,7 +298,7 @@ int32_t DeviceContext2D::Flush(const PP_CompletionCallback& callback) {
     gfx::Rect op_rect;
     switch (operation.type) {
       case QueuedOperation::PAINT:
-        ExecutePaintImageData(operation.paint_image.get(),
+        ExecutePaintImageData(operation.paint_image,
                               operation.paint_x, operation.paint_y,
                               operation.paint_src_rect,
                               &op_rect);
@@ -312,7 +309,7 @@ int32_t DeviceContext2D::Flush(const PP_CompletionCallback& callback) {
                       &op_rect);
         break;
       case QueuedOperation::REPLACE:
-        ExecuteReplaceContents(operation.replace_image.get(), &op_rect);
+        ExecuteReplaceContents(operation.replace_image, &op_rect);
         break;
     }
     changed_rect = changed_rect.Union(op_rect);
@@ -343,7 +340,7 @@ bool DeviceContext2D::ReadImageData(PP_Resource image,
                                     const PP_Point* top_left) {
   // Get and validate the image object to paint into.
   scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
-  if (!image_resource.get())
+  if (!image_resource)
     return false;
   if (image_resource->format() != PP_IMAGEDATAFORMAT_BGRA_PREMUL)
     return false;  // Must be in the right format.
@@ -360,7 +357,7 @@ bool DeviceContext2D::ReadImageData(PP_Resource image,
       image_data_->height())
     return false;
 
-  ImageDataAutoMapper auto_mapper(image_resource.get());
+  ImageDataAutoMapper auto_mapper(image_resource);
   if (!auto_mapper.is_valid())
     return false;
   skia::PlatformCanvas* dest_canvas = image_resource->mapped_canvas();

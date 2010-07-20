@@ -34,9 +34,8 @@ PP_Resource MatchFontWithFallback(PP_Module module_id,
     return NULL;
 
   scoped_refptr<Font> font(new Font(module, fd));
-  font->AddRef();  // AddRef for the caller.
 
-  return font->GetResource();
+  return font->GetReference();
 #else
   // For trusted pepper plugins, this is only needed in Linux since font loading
   // on Windows and Mac works through the renderer sandbox.
@@ -45,7 +44,7 @@ PP_Resource MatchFontWithFallback(PP_Module module_id,
 }
 
 bool IsFont(PP_Resource resource) {
-  return !!Resource::GetAs<Font>(resource).get();
+  return !!Resource::GetAs<Font>(resource);
 }
 
 bool GetFontTable(PP_Resource font_id,

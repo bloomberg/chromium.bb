@@ -9,7 +9,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"
-#include "base/lock.h"
+#include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "third_party/ppapi/c/pp_resource.h"
@@ -25,7 +25,9 @@ class Resource;
 class ResourceTracker {
  public:
   // Returns the pointer to the singleton object.
-  static ResourceTracker* Get();
+  static ResourceTracker* Get() {
+    return Singleton<ResourceTracker>::get();
+  }
 
   // The returned pointer will be NULL if there is no resource. Note that this
   // return value is a scoped_refptr so that we ensure the resource is valid
@@ -34,23 +36,36 @@ class ResourceTracker {
   // the object will get deleted out from under us.
   scoped_refptr<Resource> GetResource(PP_Resource res) const;
 
-  // Adds the given resource to the tracker and assigns it a resource ID. The
-  // assigned resource ID will be returned.
-  void AddResource(Resource* resource);
-
-  void DeleteResource(Resource* resource);
+  // Increment resource's plugin refcount. See ResourceAndRefCount comments
+  // below.
+  bool AddRefResource(PP_Resource res);
+  bool UnrefResource(PP_Resource res);
 
  private:
   friend struct DefaultSingletonTraits<ResourceTracker>;
+  friend class Resource;
 
-  ResourceTracker();
-  ~ResourceTracker();
+  // Prohibit creation other then by the Singleton class.
+  ResourceTracker() : last_id_(0) {}
+  ~ResourceTracker() {}
 
-  // Hold this lock when accessing this object's members.
-  mutable Lock lock_;
+  // Adds the given resource to the tracker and assigns it a resource ID and
+  // refcount of 1. The assigned resource ID will be returned. Used only by the
+  // Resource class.
+  PP_Resource AddResource(Resource* resource);
 
-  typedef std::set<Resource*> ResourceSet;
-  ResourceSet live_resources_;
+  // Last assigned resource ID.
+  PP_Resource last_id_;
+
+  // For each PP_Resource, keep the Resource* (as refptr) and plugin use count.
+  // This use count is different then Resource's RefCount, and is manipulated
+  // using this RefResource/UnrefResource. When it drops to zero, we just remove
+  // the resource from this resource tracker, but the resource object will be
+  // alive so long as some scoped_refptr still holds it's reference. This
+  // prevents plugins from forcing destruction of Resource objects.
+  typedef std::pair<scoped_refptr<Resource>, size_t> ResourceAndRefCount;
+  typedef base::hash_map<PP_Resource, ResourceAndRefCount> ResourceMap;
+  ResourceMap live_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceTracker);
 };

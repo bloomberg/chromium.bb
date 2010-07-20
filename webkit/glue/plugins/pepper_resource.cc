@@ -4,21 +4,16 @@
 
 #include "webkit/glue/plugins/pepper_resource.h"
 
-#include "third_party/ppapi/c/pp_resource.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 
 namespace pepper {
 
-Resource::Resource(PluginModule* module) : module_(module) {
-  ResourceTracker::Get()->AddResource(this);
+PP_Resource Resource::GetReference() {
+  ResourceTracker *tracker = ResourceTracker::Get();
+  if (resource_id_)
+    tracker->AddRefResource(resource_id_);
+  else
+    resource_id_ = tracker->AddResource(this);
+  return resource_id_;
 }
-
-Resource::~Resource() {
-  ResourceTracker::Get()->DeleteResource(this);
-}
-
-PP_Resource Resource::GetResource() const {
-  return reinterpret_cast<intptr_t>(this);
-}
-
 }  // namespace pepper

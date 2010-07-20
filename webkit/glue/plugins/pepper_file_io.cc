@@ -23,12 +23,11 @@ PP_Resource Create(PP_Module module_id) {
     return 0;
 
   FileIO* file_io = new FileIO(module);
-  file_io->AddRef();  // AddRef for the caller.
-  return file_io->GetResource();
+  return file_io->GetReference();
 }
 
 bool IsFileIO(PP_Resource resource) {
-  return !!Resource::GetAs<FileIO>(resource).get();
+  return !!Resource::GetAs<FileIO>(resource);
 }
 
 int32_t Open(PP_Resource file_io_id,
@@ -36,11 +35,11 @@ int32_t Open(PP_Resource file_io_id,
              int32_t open_flags,
              PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
-  if (!file_ref.get())
+  if (!file_ref)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->Open(file_ref, open_flags, callback);
@@ -50,7 +49,7 @@ int32_t Query(PP_Resource file_io_id,
               PP_FileInfo* info,
               PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->Query(info, callback);
@@ -61,7 +60,7 @@ int32_t Touch(PP_Resource file_io_id,
               PP_Time last_modified_time,
               PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->Touch(last_access_time, last_modified_time, callback);
@@ -73,7 +72,7 @@ int32_t Read(PP_Resource file_io_id,
              int32_t bytes_to_read,
              PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->Read(offset, buffer, bytes_to_read, callback);
@@ -85,7 +84,7 @@ int32_t Write(PP_Resource file_io_id,
               int32_t bytes_to_write,
               PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->Write(offset, buffer, bytes_to_write, callback);
@@ -95,7 +94,7 @@ int32_t SetLength(PP_Resource file_io_id,
                   int64_t length,
                   PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->SetLength(length, callback);
@@ -104,7 +103,7 @@ int32_t SetLength(PP_Resource file_io_id,
 int32_t Flush(PP_Resource file_io_id,
               PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->Flush(callback);
@@ -112,7 +111,7 @@ int32_t Flush(PP_Resource file_io_id,
 
 void Close(PP_Resource file_io_id) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return;
 
   file_io->Close();
@@ -133,7 +132,7 @@ const PPB_FileIO ppb_fileio = {
 
 int32_t GetOSFileDescriptor(PP_Resource file_io_id) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->GetOSFileDescriptor();
@@ -144,7 +143,7 @@ int32_t WillWrite(PP_Resource file_io_id,
                   int32_t bytes_to_write,
                   PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->WillWrite(offset, bytes_to_write, callback);
@@ -154,7 +153,7 @@ int32_t WillSetLength(PP_Resource file_io_id,
                       int64_t length,
                       PP_CompletionCallback callback) {
   scoped_refptr<FileIO> file_io(Resource::GetAs<FileIO>(file_io_id));
-  if (!file_io.get())
+  if (!file_io)
     return PP_ERROR_BADRESOURCE;
 
   return file_io->WillSetLength(length, callback);

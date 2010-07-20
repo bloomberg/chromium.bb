@@ -22,18 +22,17 @@ PP_Resource Create(PP_Instance instance_id,
     return 0;
 
   FileChooser* chooser = new FileChooser(instance, options);
-  chooser->AddRef();  // AddRef for the caller.
-  return chooser->GetResource();
+  return chooser->GetReference();
 }
 
 bool IsFileChooser(PP_Resource resource) {
-  return !!Resource::GetAs<FileChooser>(resource).get();
+  return !!Resource::GetAs<FileChooser>(resource);
 }
 
 int32_t Show(PP_Resource chooser_id, PP_CompletionCallback callback) {
   scoped_refptr<FileChooser> chooser(
-      Resource::GetAs<FileChooser>(chooser_id).get());
-  if (!chooser.get())
+      Resource::GetAs<FileChooser>(chooser_id));
+  if (!chooser)
     return PP_ERROR_BADRESOURCE;
 
   return chooser->Show(callback);
@@ -41,16 +40,15 @@ int32_t Show(PP_Resource chooser_id, PP_CompletionCallback callback) {
 
 PP_Resource GetNextChosenFile(PP_Resource chooser_id) {
   scoped_refptr<FileChooser> chooser(
-      Resource::GetAs<FileChooser>(chooser_id).get());
-  if (!chooser.get())
+      Resource::GetAs<FileChooser>(chooser_id));
+  if (!chooser)
     return 0;
 
   scoped_refptr<FileRef> file_ref(chooser->GetNextChosenFile());
-  if (!file_ref.get())
+  if (!file_ref)
     return 0;
-  file_ref->AddRef();  // AddRef for the caller.
 
-  return file_ref->GetResource();
+  return file_ref->GetReference();
 }
 
 const PPB_FileChooser ppb_filechooser = {

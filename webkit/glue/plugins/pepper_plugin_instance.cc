@@ -376,8 +376,8 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
 }
 
 bool PluginInstance::HandleDocumentLoad(URLLoader* loader) {
-  return instance_interface_->HandleDocumentLoad(GetPPInstance(),
-                                                 loader->GetResource());
+  Resource::ScopedResourceId resource(loader);
+  return instance_interface_->HandleDocumentLoad(GetPPInstance(), resource.id);
 }
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,

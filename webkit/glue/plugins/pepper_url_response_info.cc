@@ -38,14 +38,14 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
 };
 
 bool IsURLResponseInfo(PP_Resource resource) {
-  return !!Resource::GetAs<URLResponseInfo>(resource).get();
+  return !!Resource::GetAs<URLResponseInfo>(resource);
 }
 
 PP_Var GetProperty(PP_Resource response_id,
                    PP_URLResponseProperty property) {
   scoped_refptr<URLResponseInfo> response(
       Resource::GetAs<URLResponseInfo>(response_id));
-  if (!response.get())
+  if (!response)
     return PP_MakeVoid();
 
   return response->GetProperty(property);
@@ -62,7 +62,7 @@ PP_Resource GetBody(PP_Resource response_id) {
     return 0;
   body->AddRef();  // AddRef for the caller.
 
-  return body->GetResource();
+  return body->GetReference();
 }
 
 const PPB_URLResponseInfo ppb_urlresponseinfo = {

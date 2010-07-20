@@ -53,13 +53,12 @@ PP_Resource Create(PP_Module module_id) {
     return 0;
 
   URLRequestInfo* request = new URLRequestInfo(module);
-  request->AddRef();  // AddRef for the caller.
 
-  return request->GetResource();
+  return request->GetReference();
 }
 
 bool IsURLRequestInfo(PP_Resource resource) {
-  return !!Resource::GetAs<URLRequestInfo>(resource).get();
+  return !!Resource::GetAs<URLRequestInfo>(resource);
 }
 
 bool SetProperty(PP_Resource request_id,
@@ -67,7 +66,7 @@ bool SetProperty(PP_Resource request_id,
                  PP_Var var) {
   scoped_refptr<URLRequestInfo> request(
       Resource::GetAs<URLRequestInfo>(request_id));
-  if (!request.get())
+  if (!request)
     return false;
 
   if (var.type == PP_VARTYPE_BOOL)
@@ -82,7 +81,7 @@ bool SetProperty(PP_Resource request_id,
 bool AppendDataToBody(PP_Resource request_id, PP_Var var) {
   scoped_refptr<URLRequestInfo> request(
       Resource::GetAs<URLRequestInfo>(request_id));
-  if (!request.get())
+  if (!request)
     return false;
 
   String* data = GetString(var);
@@ -99,11 +98,11 @@ bool AppendFileToBody(PP_Resource request_id,
                       PP_Time expected_last_modified_time) {
   scoped_refptr<URLRequestInfo> request(
       Resource::GetAs<URLRequestInfo>(request_id));
-  if (!request.get())
+  if (!request)
     return false;
 
   scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
-  if (!file_ref.get())
+  if (!file_ref)
     return false;
 
   return request->AppendFileToBody(file_ref,

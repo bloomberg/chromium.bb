@@ -18,31 +18,31 @@ namespace pepper {
 namespace {
 
 bool IsWidget(PP_Resource resource) {
-  return !!Resource::GetAs<Widget>(resource).get();
+  return !!Resource::GetAs<Widget>(resource);
 }
 
 bool Paint(PP_Resource resource, const PP_Rect* rect, PP_Resource image_id) {
   scoped_refptr<Widget> widget(Resource::GetAs<Widget>(resource));
-  if (!widget.get())
+  if (!widget)
     return false;
 
   scoped_refptr<ImageData> image(Resource::GetAs<ImageData>(image_id));
-  return widget.get() && widget->Paint(rect, image);
+  return widget && widget->Paint(rect, image);
 }
 
 bool HandleEvent(PP_Resource resource, const PP_Event* event) {
   scoped_refptr<Widget> widget(Resource::GetAs<Widget>(resource));
-  return widget.get() && widget->HandleEvent(event);
+  return widget && widget->HandleEvent(event);
 }
 
 bool GetLocation(PP_Resource resource, PP_Rect* location) {
   scoped_refptr<Widget> widget(Resource::GetAs<Widget>(resource));
-  return widget.get() && widget->GetLocation(location);
+  return widget && widget->GetLocation(location);
 }
 
 void SetLocation(PP_Resource resource, const PP_Rect* location) {
   scoped_refptr<Widget> widget(Resource::GetAs<Widget>(resource));
-  if (widget.get())
+  if (widget)
     widget->SetLocation(location);
 }
 
@@ -84,7 +84,8 @@ void Widget::Invalidate(const PP_Rect* dirty) {
       module()->GetPluginInterface(PPP_WIDGET_INTERFACE));
   if (!widget)
     return;
-  widget->Invalidate(instance_->GetPPInstance(), GetResource(), dirty);
+  ScopedResourceId resource(this);
+  widget->Invalidate(instance_->GetPPInstance(), resource.id, dirty);
 }
 
 }  // namespace pepper

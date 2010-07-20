@@ -36,13 +36,12 @@ PP_Resource Create(PP_Module module_id,
   scoped_refptr<ImageData> data(new ImageData(module));
   if (!data->Init(format, size->width, size->height, init_to_zero))
     return NULL;
-  data->AddRef();  // AddRef for the caller.
 
-  return data->GetResource();
+  return data->GetReference();
 }
 
 bool IsImageData(PP_Resource resource) {
-  return !!Resource::GetAs<ImageData>(resource).get();
+  return !!Resource::GetAs<ImageData>(resource);
 }
 
 bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
@@ -50,7 +49,7 @@ bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
   memset(desc, 0, sizeof(PP_ImageDataDesc));
 
   scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
-  if (!image_data.get())
+  if (!image_data)
     return false;
   image_data->Describe(desc);
   return true;
@@ -58,16 +57,15 @@ bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
 
 void* Map(PP_Resource resource) {
   scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
-  if (!image_data.get())
+  if (!image_data)
     return NULL;
   return image_data->Map();
 }
 
 void Unmap(PP_Resource resource) {
   scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
-  if (!image_data)
-    return;
-  return image_data->Unmap();
+  if (image_data)
+    image_data->Unmap();
 }
 
 const PPB_ImageData ppb_imagedata = {

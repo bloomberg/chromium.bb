@@ -31,13 +31,11 @@ PP_Resource Create(PP_Instance instance_id, bool vertical) {
     return NULL;
 
   scoped_refptr<Scrollbar> scrollbar(new Scrollbar(instance, vertical));
-  scrollbar->AddRef();  // AddRef for the caller.
-
-  return scrollbar->GetResource();
+  return scrollbar->GetReference();
 }
 
 bool IsScrollbar(PP_Resource resource) {
-  return !!Resource::GetAs<Scrollbar>(resource).get();
+  return !!Resource::GetAs<Scrollbar>(resource);
 }
 
 uint32_t GetThickness() {
@@ -46,20 +44,20 @@ uint32_t GetThickness() {
 
 uint32_t GetValue(PP_Resource resource) {
   scoped_refptr<Scrollbar> scrollbar(Resource::GetAs<Scrollbar>(resource));
-  if (!scrollbar.get())
+  if (!scrollbar)
     return 0;
   return scrollbar->GetValue();
 }
 
 void SetValue(PP_Resource resource, uint32_t value) {
   scoped_refptr<Scrollbar> scrollbar(Resource::GetAs<Scrollbar>(resource));
-  if (scrollbar.get())
+  if (scrollbar)
     scrollbar->SetValue(value);
 }
 
 void SetDocumentSize(PP_Resource resource, uint32_t size) {
   scoped_refptr<Scrollbar> scrollbar(Resource::GetAs<Scrollbar>(resource));
-  if (scrollbar.get())
+  if (scrollbar)
     scrollbar->SetDocumentSize(size);
 }
 
@@ -67,7 +65,7 @@ void SetTickMarks(PP_Resource resource,
                   const PP_Rect* tick_marks,
                   uint32_t count) {
   scoped_refptr<Scrollbar> scrollbar(Resource::GetAs<Scrollbar>(resource));
-  if (scrollbar.get())
+  if (scrollbar)
     scrollbar->SetTickMarks(tick_marks, count);
 }
 
@@ -75,7 +73,7 @@ void ScrollBy(PP_Resource resource,
               PP_ScrollBy unit,
               int32_t multiplier) {
   scoped_refptr<Scrollbar> scrollbar(Resource::GetAs<Scrollbar>(resource));
-  if (scrollbar.get())
+  if (scrollbar)
     scrollbar->ScrollBy(unit, multiplier);
 }
 
@@ -184,8 +182,9 @@ void Scrollbar::valueChanged(WebKit::WebScrollbar* scrollbar) {
       module()->GetPluginInterface(PPP_SCROLLBAR_INTERFACE));
   if (!ppp_scrollbar)
     return;
+  ScopedResourceId resource(this);
   ppp_scrollbar->ValueChanged(
-      instance()->GetPPInstance(), GetResource(), scrollbar_->value());
+      instance()->GetPPInstance(), resource.id, scrollbar_->value());
 }
 
 void Scrollbar::invalidateScrollbarRect(WebKit::WebScrollbar* scrollbar,

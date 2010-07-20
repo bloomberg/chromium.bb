@@ -4,57 +4,58 @@
 
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 
+#include <limits>
 #include <set>
 
 #include "base/logging.h"
 #include "third_party/ppapi/c/pp_resource.h"
-#include "webkit/glue/plugins/pepper_buffer.h"
-#include "webkit/glue/plugins/pepper_device_context_2d.h"
-#include "webkit/glue/plugins/pepper_directory_reader.h"
-#include "webkit/glue/plugins/pepper_file_chooser.h"
-#include "webkit/glue/plugins/pepper_file_io.h"
-#include "webkit/glue/plugins/pepper_file_ref.h"
-#include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_resource.h"
-#include "webkit/glue/plugins/pepper_url_loader.h"
-#include "webkit/glue/plugins/pepper_url_request_info.h"
-#include "webkit/glue/plugins/pepper_url_response_info.h"
 
 namespace pepper {
 
-ResourceTracker::ResourceTracker() {
-}
-
-ResourceTracker::~ResourceTracker() {
-}
-
-// static
-ResourceTracker* ResourceTracker::Get() {
-  return Singleton<ResourceTracker>::get();
-}
-
 scoped_refptr<Resource> ResourceTracker::GetResource(PP_Resource res) const {
-  AutoLock lock(lock_);
-  Resource* resource = reinterpret_cast<Resource*>(res);
-  if (live_resources_.find(resource) == live_resources_.end())
+  ResourceMap::const_iterator result = live_resources_.find(res);
+  if (result == live_resources_.end()) {
     return scoped_refptr<Resource>();
-  return scoped_refptr<Resource>(resource);
-}
-
-void ResourceTracker::AddResource(Resource* resource) {
-  AutoLock lock(lock_);
-  DCHECK(live_resources_.find(resource) == live_resources_.end());
-  live_resources_.insert(resource);
-}
-
-void ResourceTracker::DeleteResource(Resource* resource) {
-  AutoLock lock(lock_);
-  ResourceSet::iterator found = live_resources_.find(resource);
-  if (found == live_resources_.end()) {
-    NOTREACHED();
-    return;
   }
-  live_resources_.erase(found);
+  return result->second.first;
+}
+
+PP_Resource ResourceTracker::AddResource(Resource* resource) {
+  // If the plugin manages to create 4B resources...
+  if (last_id_ == std::numeric_limits<PP_Resource>::max()) {
+    return 0;
+  }
+  // Add the resource with plugin use-count 1.
+  ++last_id_;
+  live_resources_.insert(std::make_pair(last_id_, std::make_pair(resource, 1)));
+  return last_id_;
+}
+
+bool ResourceTracker::AddRefResource(PP_Resource res) {
+  ResourceMap::iterator i = live_resources_.find(res);
+  if (i != live_resources_.end()) {
+    // We don't protect against overflow, since a plugin as malicious as to ref
+    // once per every byte in the address space could have just as well unrefed
+    // one time too many.
+    ++i->second.second;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool ResourceTracker::UnrefResource(PP_Resource res) {
+  ResourceMap::iterator i = live_resources_.find(res);
+  if (i != live_resources_.end()) {
+    if (!--i->second.second) {
+      i->second.first->StoppedTracking();
+      live_resources_.erase(i);
+    }
+    return true;
+  } else {
+    return false;
+  }
 }
 
 }  // namespace pepper
