@@ -583,7 +583,7 @@
    fun:CGContextDrawImage
    fun:_ZN3gfx17CGImageToSkBitmapEP7CGImage
    fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhm
-   fun:_ZL11DecodeImageRK8FilePath
+   fun:_Z*
    fun:_ZN17ExtensionUnpacker15AddDecodedImageERK8FilePath
    fun:_ZN17ExtensionUnpacker3RunEv
 }
