@@ -18,7 +18,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
+#include "native_client/src/trusted/plugin/browser_interface.h"
 
 namespace nacl {
 

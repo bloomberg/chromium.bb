@@ -12,7 +12,7 @@
 #include <string>
 
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
+#include "native_client/src/trusted/plugin/browser_interface.h"
 #include "ppapi/cpp/instance.h"
 
 namespace pp {

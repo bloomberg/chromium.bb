@@ -9,7 +9,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/cpp/instance.h"
 
 struct NaClSrpcChannel;

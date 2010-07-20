@@ -23,6 +23,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 
+#include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/npapi/async_receive.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/closure.h"
@@ -30,11 +31,10 @@
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
-#include "native_client/src/trusted/plugin/srpc/stream_shm_buffer.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/plugin.h"
+#include "native_client/src/trusted/plugin/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/stream_shm_buffer.h"
+#include "native_client/src/trusted/plugin/utility.h"
 
 namespace {
 

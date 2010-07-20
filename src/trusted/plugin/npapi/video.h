@@ -33,7 +33,7 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"

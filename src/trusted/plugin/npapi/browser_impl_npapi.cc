@@ -22,7 +22,7 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/utility.h"
 
 using nacl::assert_cast;
 

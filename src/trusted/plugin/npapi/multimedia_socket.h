@@ -11,7 +11,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/scriptable_handle.h"
 
 namespace plugin {
 

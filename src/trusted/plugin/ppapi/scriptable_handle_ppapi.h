@@ -9,7 +9,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_SCRIPTABLE_HANDLE_PPAPI_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_SCRIPTABLE_HANDLE_PPAPI_H_
 
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "ppapi/cpp/scriptable_object.h"
 
 namespace plugin {

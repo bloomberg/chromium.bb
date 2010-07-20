@@ -16,13 +16,13 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 
+#include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/video.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/service_runtime.h"
-#include "native_client/src/trusted/plugin/srpc/shared_memory.h"
-#include "native_client/src/trusted/plugin/srpc/srpc_client.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/service_runtime.h"
+#include "native_client/src/trusted/plugin/shared_memory.h"
+#include "native_client/src/trusted/plugin/srpc_client.h"
+#include "native_client/src/trusted/plugin/utility.h"
 
 namespace {
 

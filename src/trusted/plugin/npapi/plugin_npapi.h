@@ -10,7 +10,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/npapi/npinstance.h"
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 
 namespace nacl {
 

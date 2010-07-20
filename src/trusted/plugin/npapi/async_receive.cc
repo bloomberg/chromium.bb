@@ -7,9 +7,9 @@
 #include "native_client/src/trusted/plugin/npapi/async_receive.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
-#include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
-#include "native_client/src/trusted/plugin/srpc/string_encoding.h"
+#include "native_client/src/trusted/plugin/string_encoding.h"
 
 namespace {
 

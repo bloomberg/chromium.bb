@@ -9,7 +9,7 @@
 #include <string.h>
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/trusted/plugin/npapi/ret_array.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/utility.h"
 
 using nacl::assert_cast;
 

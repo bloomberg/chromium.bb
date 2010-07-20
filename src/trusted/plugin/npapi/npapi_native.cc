@@ -8,11 +8,11 @@
 #include <string.h>
 
 #include "native_client/src/include/checked_cast.h"
+#include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/npapi_native.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
-#include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/utility.h"
 
 using nacl::assert_cast;
 

@@ -160,7 +160,7 @@
             '<@(common_sources)',
             '<@(npapi_sources)',
             'nacl_entry_points.cc',
-            'srpc/video_chrome.cc',
+            'npapi/video_chrome.cc',
           ],
         },
       ],
@@ -177,7 +177,7 @@
             '<@(common_sources)',
             '<@(npapi_sources)',
             'nacl_entry_points.cc',
-            'srpc/video_chrome.cc',
+            'npapi/video_chrome.cc',
           ],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',

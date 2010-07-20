@@ -88,7 +88,7 @@ if env.Bit('windows'):
     env.Tool('atlmfc_vc80')
 
 # Both the NPAPI and PPAPI plugins depend upon the code that is in the
-# srpc subdirectory and on a large set of libraries.
+# top (plugin) directory and on a large set of libraries.
 common_inputs = [
     # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
     #       which exports a library which is then linked in.
@@ -96,22 +96,22 @@ common_inputs = [
     # generic URL-origin / same-domain handling
     'origin.cc',
     # Portable plugin code
-    'srpc/browser_interface.cc',
-    'srpc/connected_socket.cc',
-    'srpc/desc_based_handle.cc',
-    'srpc/method_map.cc',
-    'srpc/nexe_arch.cc',
-    'srpc/plugin.cc',
-    'srpc/portable_handle.cc',
-    'srpc/scriptable_handle.cc',
-    'srpc/service_runtime.cc',
-    'srpc/shared_memory.cc',
-    'srpc/socket_address.cc',
-    'srpc/srpc_client.cc',
-    'srpc/srt_socket.cc',
-    'srpc/stream_shm_buffer.cc',
-    'srpc/string_encoding.cc',
-    'srpc/utility.cc',
+    'browser_interface.cc',
+    'connected_socket.cc',
+    'desc_based_handle.cc',
+    'method_map.cc',
+    'nexe_arch.cc',
+    'plugin.cc',
+    'portable_handle.cc',
+    'scriptable_handle.cc',
+    'service_runtime.cc',
+    'shared_memory.cc',
+    'socket_address.cc',
+    'srpc_client.cc',
+    'srt_socket.cc',
+    'stream_shm_buffer.cc',
+    'string_encoding.cc',
+    'utility.cc',
 ]
 
 common_objs = env.ComponentObject(common_inputs)
@@ -248,9 +248,9 @@ if env['TARGET_ARCHITECTURE'] != 'arm':
   test_env.FilterOut(LINKFLAGS=['-bundle'])
   string_encoding_test = test_env.ComponentProgram(
       'string_encoding_test',
-      ['srpc/string_encoding_test.cc',
-       env.ComponentObject('srpc/string_encoding_for_test',
-                           'srpc/string_encoding.cc')],
+      ['string_encoding_test.cc',
+       env.ComponentObject('string_encoding_for_test',
+                           'string_encoding.cc')],
       EXTRA_LIBS=['platform', 'gio'] + os_libs)
   node = env.CommandTest('string_encoding_test.out',
                          command=[string_encoding_test])

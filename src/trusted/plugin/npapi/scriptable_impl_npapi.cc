@@ -17,13 +17,13 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/npapi_native.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/ret_array.h"
-#include "native_client/src/trusted/plugin/srpc/socket_address.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/plugin/socket_address.h"
+#include "native_client/src/trusted/plugin/utility.h"
 
 
 namespace {

@@ -15,7 +15,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
+#include "native_client/src/trusted/plugin/plugin.h"
 
 namespace plugin {
 

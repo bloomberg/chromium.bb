@@ -13,7 +13,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/ret_array.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/utility.h"
 
 #ifndef SIZE_T_MAX
 # define SIZE_T_MAX (~((size_t) 0))

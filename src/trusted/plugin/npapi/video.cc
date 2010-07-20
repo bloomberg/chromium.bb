@@ -23,12 +23,12 @@
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/checked_cast.h"
+#include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
-#include "native_client/src/trusted/plugin/srpc/portable_handle.h"
-#include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
-#include "native_client/src/trusted/plugin/srpc/shared_memory.h"
+#include "native_client/src/trusted/plugin/plugin.h"
+#include "native_client/src/trusted/plugin/portable_handle.h"
+#include "native_client/src/trusted/plugin/scriptable_handle.h"
+#include "native_client/src/trusted/plugin/shared_memory.h"
 
 using nacl::can_cast;
 using nacl::saturate_cast;

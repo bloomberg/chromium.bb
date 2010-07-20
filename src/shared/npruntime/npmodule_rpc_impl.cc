@@ -26,7 +26,7 @@
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/closure.h"
-#include "native_client/src/trusted/plugin/srpc/utility.h"
+#include "native_client/src/trusted/plugin/utility.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
 using nacl::NPIdentifierToWireFormat;
