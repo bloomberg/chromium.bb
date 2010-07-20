@@ -49,4 +49,5 @@ DefaultPluginUITest.DefaultPluginLoadTest
 WorkerTest.*
 
 # Mac: See http://crbug.com/30661, Linux/CrOS: http://crbug.com/49576.
-NPAPITester.NPObjectReleasedOnDestruction
+LayoutPluginTester.NPObjectReleasedOnDestruction
+LayoutPluginTester.NPObjectSetException

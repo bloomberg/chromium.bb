@@ -50,11 +50,9 @@ NPAPITester.SelfDeletePluginInvoke
 NPAPITester.Arguments
 NPAPITester.GetJavaScriptURL2
 NPAPITester.PrivateDisabled
-NPAPITester.NPObjectSetException
 NPAPIVisiblePluginTester.PluginReferrerTest
 NPAPIVisiblePluginTester.GetURLRequestFailWrite
 NPAPIIncognitoTester.PrivateEnabled
-NPAPITester.ManyPlugins
 NPAPITester.ManyPlugins
 NPAPITester.NPObjectProxy
 NPAPITester.ScheduleTimer
