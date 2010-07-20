@@ -14,6 +14,9 @@
 #import "chrome/browser/cocoa/notifications/balloon_view_host_mac.h"
 #include "chrome/browser/notifications/balloon.h"
 
+@class MenuController;
+class NotificationOptionsMenuModel;
+
 // The Balloon controller creates the view elements to display a
 // notification balloon, resize it if the HTML contents of that
 // balloon change, and move it when the collection of balloons is
@@ -38,7 +41,8 @@
 
   // The options menu that appears when "options" is pressed.
   IBOutlet NSButton* optionsButton_;
-  scoped_nsobject<NSMenu> optionsMenu_;
+  scoped_ptr<NotificationOptionsMenuModel> menuModel_;
+  scoped_nsobject<MenuController> menuController_;
 
   // The host for the renderer of the HTML contents.
   scoped_ptr<BalloonViewHost> htmlContents_;

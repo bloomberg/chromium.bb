@@ -9,9 +9,11 @@
 #import "base/cocoa_protocols_mac.h"
 #import "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
+#import "chrome/browser/cocoa/menu_controller.h"
 #include "chrome/browser/cocoa/notifications/balloon_view_host_mac.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification_options_menu_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "grit/generated_resources.h"
@@ -34,6 +36,9 @@ const int kRightMargin = 1;
   if ((self = [super initWithWindowNibName:@"Notification"])) {
     balloon_ = balloon;
     [self initializeHost];
+    menuModel_.reset(new NotificationOptionsMenuModel(balloon));
+    menuController_.reset([[MenuController alloc] initWithModel:menuModel_.get()
+                                         useWithPopUpButtonCell:NO]);
   }
   return self;
 }
@@ -46,14 +51,6 @@ const int kRightMargin = 1;
   NSImage* image = rb.GetNSImageNamed(IDR_BALLOON_WRENCH);
   DCHECK(image);
   [optionsButton_ setImage:image];
-
-  optionsMenu_.reset([[NSMenu alloc] init]);
-  NSString* revokeText = l10n_util::GetNSStringF(
-      IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
-      WideToUTF16(balloon_->notification().display_source()));
-  [optionsMenu_ addItemWithTitle:revokeText
-                          action:@selector(permissionRevoked:)
-                   keyEquivalent:@""];
 
   NSString* sourceLabelText = l10n_util::GetNSStringF(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
@@ -68,7 +65,7 @@ const int kRightMargin = 1;
 }
 
 - (IBAction)optionsButtonPressed:(id)sender {
-  [NSMenu popUpContextMenu:optionsMenu_
+  [NSMenu popUpContextMenu:[menuController_ menu]
                  withEvent:[NSApp currentEvent]
                    forView:optionsButton_];
 }
