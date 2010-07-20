@@ -45,6 +45,9 @@ namespace {
 // it's not necessary.
 const size_t kRequiredAutoFillFields = 3;
 
+// The maximum length allowed for form data.
+const size_t kMaxDataLength = 1024;
+
 // This is a helper function for the FindChildText() function.
 // Returns the aggregated values of the descendants or siblings of |node| that
 // are non-empty text nodes.  This is a faster alternative to |innerText()| for
@@ -253,6 +256,14 @@ void FormManager::WebFormControlElementToFormField(
     WebSelectElement select_element = e.to<WebSelectElement>();
     value = select_element.value();
   }
+
+  // TODO(jhawkins): This is a temporary stop-gap measure designed to prevent
+  // a malicious site from DOS'ing the browser with extremely large profile
+  // data.  The correct solution is to parse this data asynchronously.
+  // See http://crbug.com/49332.
+  if (value.size() > kMaxDataLength)
+    value = value.substr(kMaxDataLength);
+
   field->set_value(value);
 }
 
