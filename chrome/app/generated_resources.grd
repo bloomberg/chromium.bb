@@ -6980,10 +6980,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sync the following items automatically:
       </message>
       <message name="IDS_SYNC_CHOOSE_DATATYPES_HEADER" desc="Title of the 'Choose Datatypes' dialog.">
-        Sync information from your computer
+        Configure sync
       </message>
       <message name="IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS" desc="Text explaining the 'Choose Datatypes' dialog.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will now sync your data.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> syncs your data with your Google account securely. If need be, you can choose what data to sync.
       </message>
       <message name="IDS_SYNC_EVERYTHING" desc="A radio button for users who want to sync all data types.">
         Keep everything synced
