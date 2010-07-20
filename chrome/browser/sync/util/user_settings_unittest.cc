@@ -31,6 +31,14 @@ class UserSettingsTest : public testing::Test {
  public:
   UserSettingsTest() : sync_data_("Some sync data") { }
 
+  virtual void SetUp() {
+#if defined(OS_MACOSX)
+    // Need to mock the Keychain for unit tests on Mac to avoid possible
+    // blocking UI.  |SetAuthTokenForService| uses Encryptor.
+    Encryptor::UseMockKeychain(true);
+#endif
+  }
+
   // Creates and populates the V10 database files within
   // |destination_directory|.
   void SetUpVersion10Databases(const FilePath& destination_directory) {
@@ -232,11 +240,6 @@ TEST_F(UserSettingsTest, PersistEmptyToken) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   UserSettings settings;
   settings.Init(temp_dir.path().AppendASCII("UserSettings.sqlite3"));
-#if defined(OS_MACOSX)
-    // Need to mock the Keychain for unit tests on Mac to avoid possible
-    // blocking UI.  |SetAuthTokenForService| uses Encryptor.
-    Encryptor::UseMockKeychain(true);
-#endif
   settings.SetAuthTokenForService("username", "service", "");
   std::string username;
   std::string token;
@@ -251,11 +254,6 @@ TEST_F(UserSettingsTest, PersistNonEmptyToken) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   UserSettings settings;
   settings.Init(temp_dir.path().AppendASCII("UserSettings.sqlite3"));
-#if defined(OS_MACOSX)
-    // Need to mock the Keychain for unit tests on Mac to avoid possible
-    // blocking UI.  |SetAuthTokenForService| uses Encryptor.
-    Encryptor::UseMockKeychain(true);
-#endif
   settings.SetAuthTokenForService("username", "service", "012345beefbeef");
   std::string username;
   std::string token;
