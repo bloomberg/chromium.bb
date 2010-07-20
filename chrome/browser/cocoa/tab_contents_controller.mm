@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -92,14 +93,19 @@ static const int kMinWebHeight = 50;
       splitOffset = kDefaultContentsSplitOffset;
     }
 
+    // |devtoolsView| is a TabContentsViewCocoa object, whose ViewID was
+    // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
+    // VIEW_ID_DEV_TOOLS_DOCKED here.
+    NSView* devtoolsView = devToolsContents->GetNativeView();
+    view_id_util::SetID(devtoolsView, VIEW_ID_DEV_TOOLS_DOCKED);
     if ([subviews count] == 1) {
-      [contentsContainer_ addSubview:devToolsContents->GetNativeView()];
+      [contentsContainer_ addSubview:devtoolsView];
     } else {
       DCHECK_EQ([subviews count], 2u);
       [contentsContainer_ replaceSubview:[subviews objectAtIndex:1]
                                     with:devToolsContents->GetNativeView()];
       // If devtools are already visible, keep the current size.
-      splitOffset = NSHeight([devToolsContents->GetNativeView() frame]);
+      splitOffset = NSHeight([devtoolsView frame]);
     }
 
     // Make sure |splitOffset| isn't too large or too small.
@@ -111,9 +117,9 @@ static const int kMinWebHeight = 50;
 
     // It seems as if |-setPosition:ofDividerAtIndex:| should do what's needed,
     // but I can't figure out how to use it. Manually resize web and devtools.
-    NSRect devtoolsFrame = [devToolsContents->GetNativeView() frame];
+    NSRect devtoolsFrame = [devtoolsView frame];
     devtoolsFrame.size.height = splitOffset;
-    [devToolsContents->GetNativeView() setFrame:devtoolsFrame];
+    [devtoolsView setFrame:devtoolsFrame];
 
     NSRect webFrame = [[subviews objectAtIndex:0] frame];
     webFrame.size.height = NSHeight([contentsContainer_ frame]) -

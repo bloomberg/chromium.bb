@@ -17,6 +17,7 @@
 #include "chrome/browser/cocoa/sad_tab_controller.h"
 #import "chrome/browser/cocoa/web_drag_source.h"
 #import "chrome/browser/cocoa/web_drop_target.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
@@ -330,11 +331,17 @@ void TabContentsViewMac::Observe(NotificationType type,
     dropTarget_.reset(
         [[WebDropTarget alloc] initWithTabContents:[self tabContents]]);
     [self registerDragTypes];
+    // TabContentsViewCocoa's ViewID may be changed to VIEW_ID_DEV_TOOLS_DOCKED
+    // by TabContentsController, so we can't just override -viewID method to
+    // return it.
+    view_id_util::SetID(self, VIEW_ID_TAB_CONTAINER);
   }
   return self;
 }
 
 - (void)dealloc {
+  view_id_util::UnsetID(self);
+
   // Cancel any deferred tab closes, just in case.
   [self cancelDeferredClose];
 

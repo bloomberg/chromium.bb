@@ -12,6 +12,7 @@
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"
 
 namespace {
@@ -1028,6 +1029,10 @@ const CGFloat kRapidCloseDist = 2.5;
     workspaceIDCache_[windowID] = workspace;
   }
   return workspace;
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_TAB;
 }
 
 @end  // @implementation TabView(Private)

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"
 
 @implementation DownloadShelfView
@@ -61,6 +62,10 @@
 // window around.
 - (BOOL)mouseDownCanMoveWindow {
   return NO;
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_DOWNLOAD_SHELF;
 }
 
 @end

@@ -999,6 +999,8 @@
         'browser/cocoa/url_drop_target.mm',
         'browser/cocoa/vertical_gradient_view.h',
         'browser/cocoa/vertical_gradient_view.mm',
+        'browser/cocoa/view_id_util.h',
+        'browser/cocoa/view_id_util.mm',
         'browser/cocoa/view_resizer.h',
         'browser/cocoa/web_contents_drag_source.h',
         'browser/cocoa/web_contents_drag_source.mm',

@@ -581,6 +581,10 @@ private:
   return [[tabArray_ objectAtIndex:index] view];
 }
 
+- (NSUInteger)viewsCount {
+  return [tabArray_ count];
+}
+
 // Called when the user clicks a tab. Tell the model the selection has changed,
 // which feeds back into us via a notification.
 - (void)selectTab:(id)sender {

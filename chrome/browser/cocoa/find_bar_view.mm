@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/find_bar_view.h"
 
 #import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 
 namespace {
 CGFloat kCurveSize = 8;
@@ -111,4 +112,9 @@ CGFloat kCurveSize = 8;
 
 - (void)otherMouseDragged:(NSEvent *)theEvent {
 }
+
+- (ViewID)viewID {
+  return VIEW_ID_FIND_IN_PAGE;
+}
+
 @end

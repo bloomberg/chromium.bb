@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,7 @@
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
@@ -1086,6 +1087,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   BookmarkButton* button = [[BookmarkButton alloc] initWithFrame:frame];
   [button setDraggable:NO];
   otherBookmarksButton_.reset(button);
+  view_id_util::SetID(button, VIEW_ID_OTHER_BOOKMARKS);
 
   // Make sure this button, like all other BookmarkButtons, lives
   // until the end of the current event loop.

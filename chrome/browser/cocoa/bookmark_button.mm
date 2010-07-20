@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 
 // The opacity of the bookmark button drag image.
 static const CGFloat kDragImageOpacity = 0.7;
@@ -23,6 +24,20 @@ static const CGFloat kDragImageOpacity = 0.7;
 @implementation BookmarkButton
 
 @synthesize delegate = delegate_;
+
+- (id)initWithFrame:(NSRect)frameRect {
+  // BookmarkButton's ViewID may be changed to VIEW_ID_OTHER_BOOKMARKS in
+  // BookmarkBarController, so we can't just override -viewID method to return
+  // it.
+  if ((self = [super initWithFrame:frameRect]))
+    view_id_util::SetID(self, VIEW_ID_BOOKMARK_BAR_ELEMENT);
+  return self;
+}
+
+- (void)dealloc {
+  view_id_util::UnsetID(self);
+  [super dealloc];
+}
 
 - (const BookmarkNode*)bookmarkNode {
   return [[self cell] bookmarkNode];

@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/toolbar_view.h"
 
 #import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 
 @implementation ToolbarView
 
@@ -37,6 +38,10 @@
     return NSAccessibilityToolbarRole;
 
   return [super accessibilityAttributeValue:attribute];
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_TOOLBAR;
 }
 
 @end

@@ -157,6 +157,11 @@ class ToolbarModel;
 // Return the view at a given index.
 - (NSView*)viewAtIndex:(NSUInteger)index;
 
+// Return the number of tab views in the tab strip. It's same as number of tabs
+// in the model, except when a tab is closing, which will be counted in views
+// count, but no longer in the model.
+- (NSUInteger)viewsCount;
+
 // Set the placeholder for a dragged tab, allowing the |frame| and |strechiness|
 // to be specified. This causes this tab to be rendered in an arbitrary position
 - (void)insertPlaceholderForTab:(TabView*)tab

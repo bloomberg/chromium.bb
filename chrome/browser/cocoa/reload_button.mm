@@ -6,6 +6,7 @@
 
 #include "base/nsimage_cache_mac.h"
 #include "chrome/app/chrome_dll_resource.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 
 namespace {
 
@@ -103,6 +104,10 @@ NSString* const kStopImageName = @"stop_Template.pdf";
 
 - (BOOL)isMouseInside {
   return trackingArea_ && isMouseInside_;
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_RELOAD_BUTTON;
 }
 
 @end  // ReloadButton

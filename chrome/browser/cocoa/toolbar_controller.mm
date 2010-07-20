@@ -33,6 +33,7 @@
 #import "chrome/browser/cocoa/menu_controller.h"
 #import "chrome/browser/cocoa/reload_button.h"
 #import "chrome/browser/cocoa/toolbar_view.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 #import "chrome/browser/cocoa/wrench_menu_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
@@ -225,6 +226,14 @@ class NotificationBridge : public NotificationObserver {
 
 
 - (void)dealloc {
+  // Unset ViewIDs of toolbar elements.
+  // ViewIDs of |toolbarView|, |reloadButton_|, |locationBar_| and
+  // |browserActionsContainerView_| are handled by themselves.
+  view_id_util::UnsetID(backButton_);
+  view_id_util::UnsetID(forwardButton_);
+  view_id_util::UnsetID(homeButton_);
+  view_id_util::UnsetID(wrenchButton_);
+
   // Make sure any code in the base class which assumes [self view] is
   // the "parent" view continues to work.
   hasToolbar_ = YES;
@@ -323,6 +332,14 @@ class NotificationBridge : public NotificationObserver {
          selector:@selector(toolbarFrameChanged)
              name:NSViewFrameDidChangeNotification
            object:toolbarView];
+
+  // Set ViewIDs for toolbar elements which don't have their dedicated class.
+  // ViewIDs of |toolbarView|, |reloadButton_|, |locationBar_| and
+  // |browserActionsContainerView_| are handled by themselves.
+  view_id_util::SetID(backButton_, VIEW_ID_BACK_BUTTON);
+  view_id_util::SetID(forwardButton_, VIEW_ID_FORWARD_BUTTON);
+  view_id_util::SetID(homeButton_, VIEW_ID_HOME_BUTTON);
+  view_id_util::SetID(wrenchButton_, VIEW_ID_APP_MENU);
 }
 
 - (void)addAccessibilityDescriptions {

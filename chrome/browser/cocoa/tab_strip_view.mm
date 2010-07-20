@@ -7,6 +7,7 @@
 #include "base/mac_util.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 #include "base/logging.h"
 
 @implementation TabStripView
@@ -189,6 +190,10 @@
     return NSAccessibilityGroupRole;
 
   return [super accessibilityAttributeValue:attribute];
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_TAB_STRIP;
 }
 
 @end

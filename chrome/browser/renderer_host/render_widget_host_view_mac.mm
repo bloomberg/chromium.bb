@@ -15,6 +15,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/cocoa/rwhvm_editcommand_helper.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/backing_store_mac.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -2095,6 +2096,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition();
 
   [self cancelComposition];
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_TAB_CONTAINER_FOCUS_VIEW;
 }
 
 @end

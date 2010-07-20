@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/view_id_util.h"
 
 NSString* const kBrowserActionGrippyDragStartedNotification =
     @"BrowserActionGrippyDragStartedNotification";
@@ -157,6 +158,10 @@ const CGFloat kUpperPadding = 9.0;
                     object:self];
 
   lastXPos_ += dX;
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_BROWSER_ACTION_TOOLBAR;
 }
 
 #pragma mark -
