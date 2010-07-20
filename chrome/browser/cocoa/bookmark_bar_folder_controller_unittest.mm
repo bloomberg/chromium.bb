@@ -262,6 +262,11 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   EXPECT_LE(abs(pt.x - buttonOriginInScreen.x), 2);
   EXPECT_LE(abs(pt.y - buttonOriginInScreen.y), 2);
 
+  // Make sure we see the window shift left if it spills off the screen
+  pt = [bbfc windowTopLeftForWidth:0];
+  NSPoint shifted = [bbfc windowTopLeftForWidth:9999999];
+  EXPECT_LT(shifted.x, pt.x);
+
   // If parent is a BookmarkBarFolderController, grow right.
   scoped_nsobject<BookmarkBarFolderControllerLow> bbfc2;
   bbfc2.reset([[BookmarkBarFolderControllerLow alloc]

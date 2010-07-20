@@ -340,6 +340,15 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
                                     convertPoint:NSZeroPoint toView:nil]];
     newWindowTopLeft = NSMakePoint(buttonBottomLeftInScreen.x,
                                    bookmarkBarBottomLeftInScreen.y);
+    // Make sure the window is on-screen; if not, push left.  It is
+    // intentional that top level folders "push left" slightly
+    // different than subfolders.
+    NSRect screenFrame = [[[parentButton_ window] screen] frame];
+    CGFloat spillOff = (newWindowTopLeft.x + windowWidth) - NSMaxX(screenFrame);
+    if (spillOff > 0.0) {
+      newWindowTopLeft.x = std::max(newWindowTopLeft.x - spillOff,
+                                    NSMinX(screenFrame));
+    }
   } else {
     // Parent is a folder; grow right/left.
     newWindowTopLeft.x = [self childFolderWindowLeftForWidth:windowWidth];
