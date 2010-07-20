@@ -10,6 +10,8 @@
 #include "app/resource_bundle.h"
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/cocoa/content_settings_dialog_controller.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -17,6 +19,8 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/apple/ImageAndTextCell.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+static const CGFloat kMinCollectedCookiesViewHeight = 116;
 
 #pragma mark Bridge between the constrained window delegate and the sheet
 
@@ -99,6 +103,11 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 @implementation CollectedCookiesWindowController
 
+@synthesize allowedCookiesButtonsEnabled =
+    allowedCookiesButtonsEnabled_;
+@synthesize blockedCookiesButtonsEnabled =
+    blockedCookiesButtonsEnabled_;
+
 @synthesize allowedTreeController = allowedTreeController_;
 @synthesize blockedTreeController = blockedTreeController_;
 
@@ -123,6 +132,57 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 - (IBAction)closeSheet:(id)sender {
   [NSApp endSheet:[self window]];
+}
+
+- (void)addException:(ContentSetting)setting
+   forTreeController:(NSTreeController*)controller {
+  NSArray* nodes = [controller selectedNodes];
+  for (NSTreeNode* treeNode in nodes) {
+    CocoaCookieTreeNode* node = [treeNode representedObject];
+    CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
+    if (cookie->GetDetailedInfo().node_type !=
+        CookieTreeNode::DetailedInfo::TYPE_ORIGIN) {
+      continue;
+    }
+    CookieTreeOriginNode* origin_node =
+        static_cast<CookieTreeOriginNode*>(cookie);
+    origin_node->CreateContentException(
+        tabContents_->profile()->GetHostContentSettingsMap(),
+        setting);
+  }
+  [[ContentSettingsDialogController
+      showContentSettingsForType:CONTENT_SETTINGS_TYPE_COOKIES
+                         profile:tabContents_->profile()]
+      showCookieExceptions:self];
+}
+
+- (IBAction)allowOrigin:(id)sender {
+  [self    addException:CONTENT_SETTING_ALLOW
+      forTreeController:blockedTreeController_];
+}
+
+- (IBAction)allowForSessionFromOrigin:(id)sender {
+  [self    addException:CONTENT_SETTING_SESSION_ONLY
+      forTreeController:blockedTreeController_];
+}
+
+- (IBAction)blockOrigin:(id)sender {
+  [self    addException:CONTENT_SETTING_BLOCK
+      forTreeController:allowedTreeController_];
+}
+
+- (CGFloat)    splitView:(NSSplitView *)sender
+  constrainMinCoordinate:(CGFloat)proposedMin
+             ofSubviewAt:(NSInteger)offset {
+  return proposedMin + kMinCollectedCookiesViewHeight;
+}
+- (CGFloat)    splitView:(NSSplitView *)sender
+  constrainMaxCoordinate:(CGFloat)proposedMax
+             ofSubviewAt:(NSInteger)offset {
+  return proposedMax - kMinCollectedCookiesViewHeight;
+}
+- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview {
+  return YES;
 }
 
 - (CocoaCookieTreeNode*)cocoaAllowedTreeModel {
@@ -164,6 +224,45 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
     icon = [icons_ lastObject];
   DCHECK([cell isKindOfClass:[ImageAndTextCell class]]);
   [static_cast<ImageAndTextCell*>(cell) setImage:icon];
+}
+
+- (void)outlineViewSelectionDidChange:(NSNotification*)notif {
+  BOOL isAllowedOutlineView;
+  if ([notif object] == allowedOutlineView_) {
+    isAllowedOutlineView = YES;
+  } else if ([notif object] == blockedOutlineView_) {
+    isAllowedOutlineView = NO;
+  } else {
+    NOTREACHED();
+    return;
+  }
+  NSTreeController* controller =
+      isAllowedOutlineView ? allowedTreeController_ : blockedTreeController_;
+
+  NSArray* nodes = [controller selectedNodes];
+  for (NSTreeNode* treeNode in nodes) {
+    CocoaCookieTreeNode* node = [treeNode representedObject];
+    CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
+    if (cookie->GetDetailedInfo().node_type !=
+        CookieTreeNode::DetailedInfo::TYPE_ORIGIN) {
+      continue;
+    }
+   CookieTreeOriginNode* origin_node =
+       static_cast<CookieTreeOriginNode*>(cookie);
+   if (origin_node->CanCreateContentException()) {
+      if (isAllowedOutlineView) {
+        [self setAllowedCookiesButtonsEnabled:YES];
+      } else {
+        [self setBlockedCookiesButtonsEnabled:YES];
+      }
+      return;
+    }
+  }
+  if (isAllowedOutlineView) {
+    [self setAllowedCookiesButtonsEnabled:NO];
+  } else {
+    [self setBlockedCookiesButtonsEnabled:NO];
+  }
 }
 
 // Initializes the |allowedTreeModel_| and |blockedTreeModel_|, and builds

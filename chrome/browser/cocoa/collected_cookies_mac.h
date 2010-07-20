@@ -67,6 +67,9 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
   scoped_nsobject<CocoaCookieTreeNode> cocoaAllowedTreeModel_;
   scoped_nsobject<CocoaCookieTreeNode> cocoaBlockedTreeModel_;
 
+  BOOL allowedCookiesButtonsEnabled_;
+  BOOL blockedCookiesButtonsEnabled_;
+
   IBOutlet NSTreeController* allowedTreeController_;
   IBOutlet NSTreeController* blockedTreeController_;
   IBOutlet NSOutlineView* allowedOutlineView_;
@@ -77,11 +80,24 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
 @property (readonly, nonatomic) NSTreeController* allowedTreeController;
 @property (readonly, nonatomic) NSTreeController* blockedTreeController;
 
+@property (assign, nonatomic) BOOL allowedCookiesButtonsEnabled;
+@property (assign, nonatomic) BOOL blockedCookiesButtonsEnabled;
+
 // Designated initializer. TabContents cannot be NULL.
 - (id)initWithTabContents:(TabContents*)tabContents;
 
 // Closes the sheet and ends the modal loop. This will also cleanup the memory.
 - (IBAction)closeSheet:(id)sender;
+
+- (IBAction)allowOrigin:(id)sender;
+- (IBAction)allowForSessionFromOrigin:(id)sender;
+- (IBAction)blockOrigin:(id)sender;
+
+// NSSplitView delegate methods:
+- (CGFloat)    splitView:(NSSplitView *)sender
+  constrainMinCoordinate:(CGFloat)proposedMin
+             ofSubviewAt:(NSInteger)offset;
+- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview;
 
 // Returns the cocoaAllowedTreeModel_ and cocoaBlockedTreeModel_.
 - (CocoaCookieTreeNode*)cocoaAllowedTreeModel;
