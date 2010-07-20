@@ -22,12 +22,6 @@ class StatusAreaHost;
 // of the window title bar. It is used on ChromeOS only.
 class StatusAreaView : public AccessibleToolbarView {
  public:
-  enum OpenTabsMode {
-    OPEN_TABS_ON_LEFT = 1,
-    OPEN_TABS_CLOBBER,
-    OPEN_TABS_ON_RIGHT
-  };
-
   explicit StatusAreaView(StatusAreaHost* host);
   virtual ~StatusAreaView() {}
 
@@ -37,9 +31,6 @@ class StatusAreaView : public AccessibleToolbarView {
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual void ChildPreferredSizeChanged(View* child);
-
-  static OpenTabsMode GetOpenTabsMode();
-  static void SetOpenTabsMode(OpenTabsMode mode);
 
   ClockMenuButton* clock_view() { return clock_view_; }
   FeedbackMenuButton* feedback_view() { return feedback_view_; }
@@ -55,8 +46,6 @@ class StatusAreaView : public AccessibleToolbarView {
   LanguageMenuButton* language_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* power_view_;
-
-  static OpenTabsMode open_tabs_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };

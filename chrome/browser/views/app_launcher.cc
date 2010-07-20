@@ -385,36 +385,10 @@ void AppLauncher::InfoBubbleClosing(InfoBubble* info_bubble,
 
 void AppLauncher::AddTabWithURL(const GURL& url,
                                 PageTransition::Type transition) {
-#if defined(OS_CHROMEOS)
-  switch (chromeos::StatusAreaView::GetOpenTabsMode()) {
-    case chromeos::StatusAreaView::OPEN_TABS_ON_LEFT: {
-      // Add the new tab at the first non-pinned location.
-      int index = browser_->tabstrip_model()->IndexOfFirstNonMiniTab();
-      browser_->AddTabWithURL(
-          url, GURL(), transition, index,
-          TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX, NULL,
-          std::string());
-      break;
-    }
-    case chromeos::StatusAreaView::OPEN_TABS_CLOBBER: {
-      browser_->GetSelectedTabContents()->controller().LoadURL(
-          url, GURL(), transition);
-      break;
-    }
-    case chromeos::StatusAreaView::OPEN_TABS_ON_RIGHT: {
-      browser_->AddTabWithURL(
-          url, GURL(), transition, -1,
-          TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX, NULL,
-          std::string());
-      break;
-    }
-  }
-#else
   browser_->AddTabWithURL(
       url, GURL(), transition, -1,
       TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX, NULL,
       std::string());
-#endif
 }
 
 void AppLauncher::Resize(const gfx::Size& contents_size) {

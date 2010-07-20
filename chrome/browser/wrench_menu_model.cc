@@ -255,6 +255,11 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
 
+#if defined(OS_CHROMEOS)
+  AddItemWithStringId(IDC_TOGGLE_VERTICAL_TABS,
+                      IDS_TAB_CXMENU_USE_VERTICAL_TABS);
+#endif
+
   // On Mac, there is no About item unless it is replaced with the update
   // available notification.
   if (browser_defaults::kShowAboutMenuItem ||

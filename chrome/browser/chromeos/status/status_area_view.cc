@@ -22,10 +22,6 @@ const int kSeparation = 6;
 // BrowserWindowGtk tiles its image with this offset
 const int kCustomFrameBackgroundVerticalOffset = 15;
 
-// Default to opening new tabs on the left.
-StatusAreaView::OpenTabsMode StatusAreaView::open_tabs_mode_ =
-    StatusAreaView::OPEN_TABS_ON_LEFT;
-
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
       clock_view_(NULL),
@@ -98,16 +94,6 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
   // BrowserView know to relayout, which will reset the bounds of this view.
   Layout();
   PreferredSizeChanged();
-}
-
-// static
-StatusAreaView::OpenTabsMode StatusAreaView::GetOpenTabsMode() {
-  return open_tabs_mode_;
-}
-
-// static
-void StatusAreaView::SetOpenTabsMode(OpenTabsMode mode) {
-  open_tabs_mode_ = mode;
 }
 
 }  // namespace chromeos

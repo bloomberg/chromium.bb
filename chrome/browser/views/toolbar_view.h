@@ -59,9 +59,6 @@ class ToolbarView : public AccessibleToolbarView,
   // (such as user editing) as well.
   void Update(TabContents* tab, bool should_restore_state);
 
-  // Sets the app menu model.
-  void SetAppMenuModel(menus::SimpleMenuModel* model);
-
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the location bar. Focus will be restored
   // to the ViewStorage with id |view_storage_id| if the user escapes.

@@ -50,9 +50,6 @@ const int kOTRBottomSpacing = 2;
 // it on the left, and between it and the tabstrip on the right).
 const int kOTRSideSpacing = 2;
 
-// The padding of the app launcher to the left side of the border.
-const int kAppLauncherLeftPadding = 5;
-
 // Amount to offset the toolbar by when vertical tabs are enabled.
 const int kVerticalTabStripToolbarOffset = 2;
 

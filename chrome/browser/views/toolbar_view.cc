@@ -192,12 +192,11 @@ void ToolbarView::Init(Profile* profile) {
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
 
   SetProfile(profile);
-  if (!app_menu_model_.get()) {
-    if (WrenchMenuModel::IsEnabled()) {
-      SetAppMenuModel(new WrenchMenuModel(this, browser_));
-    } else {
-      SetAppMenuModel(new AppMenuModel(this, browser_));
-    }
+  if (WrenchMenuModel::IsEnabled()) {
+    app_menu_model_.reset(new WrenchMenuModel(this, browser_));
+  } else {
+    app_menu_model_.reset(new AppMenuModel(this, browser_));
+    app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
   }
 }
 
@@ -214,12 +213,6 @@ void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
 
   if (browser_actions_)
     browser_actions_->RefreshBrowserActionViews();
-}
-
-void ToolbarView::SetAppMenuModel(menus::SimpleMenuModel* model) {
-  app_menu_model_.reset(model);
-  if (!WrenchMenuModel::IsEnabled())
-    app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
 }
 
 void ToolbarView::SetToolbarFocusAndFocusLocationBar(int view_storage_id) {
