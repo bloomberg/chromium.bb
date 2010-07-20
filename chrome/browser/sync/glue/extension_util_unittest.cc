@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/extension_util.h"
 
 #include "base/file_path.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
@@ -26,9 +27,10 @@ const char kValidVersion[] = "0.0.0.0";
 const char kVersion1[] = "1.0.0.1";
 const char kVersion2[] = "1.0.1.0";
 const char kVersion3[] = "1.1.0.0";
-const char kValidUpdateUrl[] = "http://www.google.com/";
-const char kValidUpdateUrl1[] = "http://www.1.com/";
-const char kValidUpdateUrl2[] = "http://www.2.com/";
+const char kValidUpdateUrl1[] =
+    "http://clients2.google.com/service/update2/crx";
+const char kValidUpdateUrl2[] =
+    "https://clients2.google.com/service/update2/crx";
 const char kName[] = "MyExtension";
 const char kName2[] = "MyExtension2";
 
@@ -36,9 +38,11 @@ class ExtensionUtilTest : public testing::Test {
 };
 
 void MakePossiblySyncableExtension(bool is_theme,
+                                   const GURL& update_url,
                                    const GURL& launch_url,
                                    bool converted_from_user_script,
                                    Extension::Location location,
+                                   int num_plugins,
                                    Extension* extension) {
   DictionaryValue source;
   source.SetString(extension_manifest_keys::kName,
@@ -47,6 +51,10 @@ void MakePossiblySyncableExtension(bool is_theme,
   if (is_theme) {
     source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
   }
+  if (!update_url.is_empty()) {
+    source.SetString(extension_manifest_keys::kUpdateURL,
+                     update_url.spec());
+  }
   if (!launch_url.is_empty()) {
     source.SetString(extension_manifest_keys::kLaunchWebURL,
                      launch_url.spec());
@@ -54,6 +62,13 @@ void MakePossiblySyncableExtension(bool is_theme,
   if (!is_theme) {
     source.SetBoolean(extension_manifest_keys::kConvertedFromUserScript,
                       converted_from_user_script);
+    ListValue* plugins = new ListValue();
+    for (int i = 0; i < num_plugins; ++i) {
+      DictionaryValue* plugin = new DictionaryValue();
+      plugin->SetString(extension_manifest_keys::kPluginsPath, "");
+      plugins->Set(i, plugin);
+    }
+    source.Set(extension_manifest_keys::kPlugins, plugins);
   }
   std::string error;
   EXPECT_TRUE(extension->InitFromValue(source, false, &error));
@@ -65,22 +80,29 @@ TEST_F(ExtensionUtilTest, IsSyncableExtension) {
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), false,
-                                  Extension::INTERNAL, &extension);
+    MakePossiblySyncableExtension(false, GURL(), GURL(), false,
+                                  Extension::INTERNAL, 0, &extension);
     EXPECT_TRUE(IsExtensionSyncable(extension));
   }
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), true,
-                                  Extension::INTERNAL, &extension);
+    MakePossiblySyncableExtension(false, GURL(kValidUpdateUrl1), GURL(),
+                                  true, Extension::INTERNAL, 0, &extension);
     EXPECT_TRUE(IsExtensionSyncable(extension));
   }
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(true, GURL(), false,
-                                  Extension::INTERNAL, &extension);
+    MakePossiblySyncableExtension(false, GURL(), GURL(), true,
+                                  Extension::INTERNAL, 0, &extension);
+    EXPECT_TRUE(IsExtensionSyncable(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakePossiblySyncableExtension(true, GURL(), GURL(), false,
+                                  Extension::INTERNAL, 0, &extension);
     EXPECT_FALSE(IsExtensionSyncable(extension));
   }
   // TODO(akalin): Test with a non-empty launch_url once apps are
@@ -88,8 +110,30 @@ TEST_F(ExtensionUtilTest, IsSyncableExtension) {
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), false,
-                                  Extension::EXTERNAL_PREF, &extension);
+    MakePossiblySyncableExtension(false, GURL(), GURL(), false,
+                                  Extension::EXTERNAL_PREF, 0, &extension);
+    EXPECT_FALSE(IsExtensionSyncable(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakePossiblySyncableExtension(
+        false, GURL("http://third-party.update_url.com"), GURL(), true,
+        Extension::INTERNAL, 0, &extension);
+    EXPECT_FALSE(IsExtensionSyncable(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakePossiblySyncableExtension(false, GURL(), GURL(), true,
+                                  Extension::INTERNAL, 1, &extension);
+    EXPECT_FALSE(IsExtensionSyncable(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakePossiblySyncableExtension(false, GURL(), GURL(), true,
+                                  Extension::INTERNAL, 2, &extension);
     EXPECT_FALSE(IsExtensionSyncable(extension));
   }
 }
@@ -145,7 +189,7 @@ TEST_F(ExtensionUtilTest, IsExtensionSpecificsValid) {
   specifics.set_version(kValidVersion);
   EXPECT_TRUE(IsExtensionSpecificsValid(specifics));
   EXPECT_FALSE(IsExtensionSpecificsUnset(specifics));
-  specifics.set_update_url(kValidUpdateUrl);
+  specifics.set_update_url(kValidUpdateUrl1);
   EXPECT_TRUE(IsExtensionSpecificsValid(specifics));
   EXPECT_FALSE(IsExtensionSpecificsUnset(specifics));
 
@@ -335,13 +379,13 @@ void MakeSyncableExtension(const std::string& version_string,
 TEST_F(ExtensionUtilTest, GetExtensionSpecificsHelper) {
   FilePath file_path(kExtensionFilePath);
   Extension extension(file_path);
-  MakeSyncableExtension(kValidVersion, kValidUpdateUrl, kName,
+  MakeSyncableExtension(kValidVersion, kValidUpdateUrl1, kName,
                         &extension);
   sync_pb::ExtensionSpecifics specifics;
   GetExtensionSpecificsHelper(extension, true, false, &specifics);
   EXPECT_EQ(extension.id(), specifics.id());
   EXPECT_EQ(extension.VersionString(), kValidVersion);
-  EXPECT_EQ(extension.update_url().spec(), kValidUpdateUrl);
+  EXPECT_EQ(extension.update_url().spec(), kValidUpdateUrl1);
   EXPECT_TRUE(specifics.enabled());
   EXPECT_FALSE(specifics.incognito_enabled());
   EXPECT_EQ(kName, specifics.name());
@@ -350,11 +394,11 @@ TEST_F(ExtensionUtilTest, GetExtensionSpecificsHelper) {
 TEST_F(ExtensionUtilTest, IsExtensionOutdated) {
   FilePath file_path(kExtensionFilePath);
   Extension extension(file_path);
-  MakeSyncableExtension(kVersion2, kValidUpdateUrl, kName,
+  MakeSyncableExtension(kVersion2, kValidUpdateUrl1, kName,
                         &extension);
   sync_pb::ExtensionSpecifics specifics;
   specifics.set_id(kValidId);
-  specifics.set_update_url(kValidUpdateUrl);
+  specifics.set_update_url(kValidUpdateUrl1);
 
   specifics.set_version(kVersion1);
   EXPECT_FALSE(IsExtensionOutdated(extension, specifics));

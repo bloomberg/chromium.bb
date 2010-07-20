@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "googleurl/src/gurl.h"
 
 namespace browser_sync {
@@ -30,6 +31,26 @@ bool IsExtensionSyncable(const Extension& extension) {
   // TODO(akalin): Figure out if we need to allow some other types.
   if (extension.location() != Extension::INTERNAL) {
     // We have a non-standard location.
+    return false;
+  }
+
+  // Disallow extensions with non-gallery auto-update URLs for now.
+  //
+  // TODO(akalin): Relax this restriction once we've put in UI to
+  // approve synced extensions.
+  if (!extension.update_url().is_empty() &&
+      (extension.update_url() !=
+       GURL(extension_urls::kGalleryUpdateHttpUrl)) &&
+      (extension.update_url() !=
+       GURL(extension_urls::kGalleryUpdateHttpsUrl))) {
+    return false;
+  }
+
+  // Disallow extensions with native code plugins.
+  //
+  // TODO(akalin): Relax this restriction once we've put in UI to
+  // approve synced extensions.
+  if (!extension.plugins().empty()) {
     return false;
   }
 

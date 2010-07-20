@@ -235,7 +235,9 @@ void ManifestFetchesBuilder::AddExtensionData(
   } else if (update_url.is_empty()) {
     url_stats_.no_url_count++;
     // Fill in default update URL.
-    update_url = GURL(extension_urls::kGalleryUpdateURL);
+    //
+    // TODO(akalin): Figure out if we should use the HTTPS version.
+    update_url = GURL(extension_urls::kGalleryUpdateHttpUrl);
   } else {
     url_stats_.other_url_count++;
   }
