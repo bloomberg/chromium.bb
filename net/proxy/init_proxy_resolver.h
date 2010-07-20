@@ -57,7 +57,15 @@ class InitProxyResolver {
     STATE_SET_PAC_SCRIPT,
     STATE_SET_PAC_SCRIPT_COMPLETE,
   };
-  typedef std::vector<GURL> UrlList;
+
+  struct PacURL {
+    PacURL(bool auto_detect, const GURL& url)
+        : auto_detect(auto_detect), url(url) {}
+    bool auto_detect;
+    GURL url;
+  };
+
+  typedef std::vector<PacURL> UrlList;
 
   // Returns ordered list of PAC urls to try for |config|.
   UrlList BuildPacUrlsFallbackList(const ProxyConfig& config) const;
@@ -83,7 +91,7 @@ class InitProxyResolver {
   State GetStartState() const;
 
   // Returns the current PAC URL we are fetching/testing.
-  const GURL& current_pac_url() const;
+  const PacURL& current_pac_url() const;
 
   void DidCompleteInit();
   void Cancel();

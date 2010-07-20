@@ -63,13 +63,10 @@ int InitProxyResolver::Init(const ProxyConfig& config,
 InitProxyResolver::UrlList InitProxyResolver::BuildPacUrlsFallbackList(
     const ProxyConfig& config) const {
   UrlList pac_urls;
-  if (config.auto_detect()) {
-     GURL pac_url = resolver_->expects_pac_bytes() ?
-        GURL("http://wpad/wpad.dat") : GURL();
-     pac_urls.push_back(pac_url);
-  }
+  if (config.auto_detect())
+    pac_urls.push_back(PacURL(true, GURL()));
   if (config.has_pac_url())
-    pac_urls.push_back(config.pac_url());
+    pac_urls.push_back(PacURL(false, config.pac_url()));
   return pac_urls;
 }
 
@@ -123,18 +120,24 @@ int InitProxyResolver::DoFetchPacScript() {
 
   next_state_ = STATE_FETCH_PAC_SCRIPT_COMPLETE;
 
-  const GURL& pac_url = current_pac_url();
+  const PacURL& pac_url = current_pac_url();
+
+  const GURL effective_pac_url =
+      pac_url.auto_detect ? GURL("http://wpad/wpad.dat") : pac_url.url;
 
   net_log_.BeginEvent(
       NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-      new NetLogStringParameter("url", pac_url.spec()));
+      new NetLogStringParameter("url",
+                                effective_pac_url.possibly_invalid_spec()));
 
   if (!proxy_script_fetcher_) {
     net_log_.AddEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_HAS_NO_FETCHER, NULL);
     return ERR_UNEXPECTED;
   }
 
-  return proxy_script_fetcher_->Fetch(pac_url, &pac_script_, &io_callback_);
+  return proxy_script_fetcher_->Fetch(effective_pac_url,
+                                      &pac_script_,
+                                      &io_callback_);
 }
 
 int InitProxyResolver::DoFetchPacScriptComplete(int result) {
@@ -156,13 +159,21 @@ int InitProxyResolver::DoFetchPacScriptComplete(int result) {
 int InitProxyResolver::DoSetPacScript() {
   net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT, NULL);
 
-  const GURL& pac_url = current_pac_url();
+  const PacURL& pac_url = current_pac_url();
 
   next_state_ = STATE_SET_PAC_SCRIPT_COMPLETE;
 
-  return resolver_->expects_pac_bytes() ?
-      resolver_->SetPacScriptByData(pac_script_, &io_callback_) :
-      resolver_->SetPacScriptByUrl(pac_url, &io_callback_);
+  scoped_refptr<ProxyResolverScriptData> script_data;
+
+  if (resolver_->expects_pac_bytes()) {
+    script_data = ProxyResolverScriptData::FromUTF16(pac_script_);
+  } else {
+    script_data = pac_url.auto_detect ?
+        ProxyResolverScriptData::ForAutoDetect() :
+        ProxyResolverScriptData::FromURL(pac_url.url);
+  }
+
+  return resolver_->SetPacScript(script_data, &io_callback_);
 }
 
 int InitProxyResolver::DoSetPacScriptComplete(int result) {
@@ -201,7 +212,7 @@ InitProxyResolver::State InitProxyResolver::GetStartState() const {
       STATE_FETCH_PAC_SCRIPT : STATE_SET_PAC_SCRIPT;
 }
 
-const GURL& InitProxyResolver::current_pac_url() const {
+const InitProxyResolver::PacURL& InitProxyResolver::current_pac_url() const {
   DCHECK_LT(current_pac_url_index_, pac_urls_.size());
   return pac_urls_[current_pac_url_index_];
 }
