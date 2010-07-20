@@ -113,11 +113,65 @@ CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
           TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)),
       delegate_(delegate),
       last_statistic_record_time_(Time::Now()) {
+  InitializeHistograms();
   SetDefaultCookieableSchemes();
 }
 
 CookieMonster::~CookieMonster() {
   DeleteAll(false);
+}
+
+// Initialize all histogram counter variables used in this class.
+//
+// Normal histogram usage involves using the macros defined in
+// histogram.h, which automatically takes care of declaring these
+// variables (as statics), initializing them, and accumulating into
+// them, all from a single entry point.  Unfortunately, that solution
+// doesn't work for the CookieMonster, as it's vulnerable to races between
+// separate threads executing the same functions and hence initializing the
+// same static variables.  There isn't a race danger in the histogram
+// accumulation calls; they are written to be resilient to simultaneous
+// calls from multiple threads.
+//
+// The solution taken here is to have per-CookieMonster instance
+// variables that are constructed during CookieMonster construction.
+// Note that these variables refer to the same underlying histogram,
+// so we still race (but safely) with other CookieMonster instances
+// for accumulation.
+//
+// To do this we've expanded out the individual histogram macros calls,
+// with declarations of the variables in the class decl, initialization here
+// (done from the class constructor) and direct calls to the accumulation
+// methods where needed.  The specific histogram macro calls on which the
+// initialization is based are included in comments below.
+void CookieMonster::InitializeHistograms() {
+  // From UMA_HISTOGRAM_CUSTOM_COUNTS
+  histogram_expiration_duration_minutes_ = Histogram::FactoryGet(
+      "net.CookieExpirationDurationMinutes",
+      1, kMinutesInTenYears, 50,
+      Histogram::kUmaTargetedHistogramFlag);
+  histogram_between_access_interval_minutes_ = Histogram::FactoryGet(
+      "net.CookieBetweenAccessIntervalMinutes",
+      1, kMinutesInTenYears, 50,
+      Histogram::kUmaTargetedHistogramFlag);
+  histogram_evicted_last_access_minutes_ = Histogram::FactoryGet(
+      "net.CookieEvictedLastAccessMinutes",
+      1, kMinutesInTenYears, 50,
+      Histogram::kUmaTargetedHistogramFlag);
+  histogram_count_  = Histogram::FactoryGet(
+      "net.CookieCount", 1, 4000, 50,
+      Histogram::kUmaTargetedHistogramFlag);
+
+  // From UMA_HISTOGRAM_COUNTS_10000 & UMA_HISTOGRAM_CUSTOM_COUNTS
+  histogram_number_duplicate_db_cookies_ = Histogram::FactoryGet(
+      "Net.NumDuplicateCookiesInDb", 1, 10000, 50,
+      Histogram::kUmaTargetedHistogramFlag);
+
+  // From UMA_HISTOGRAM_ENUMERATION
+  histogram_cookie_deletion_cause_ = LinearHistogram::FactoryGet(
+      "net.CookieDeletionCause", 1,
+      DELETE_COOKIE_LAST_ENTRY, DELETE_COOKIE_LAST_ENTRY + 1,
+      Histogram::kUmaTargetedHistogramFlag);
 }
 
 void CookieMonster::InitStore() {
@@ -162,8 +216,8 @@ void CookieMonster::EnsureCookiesMapIsValid() {
   }
 
   // Record how many duplicates were found in the database.
-  UMA_HISTOGRAM_COUNTS_10000("Net.NumDuplicateCookiesInDb",
-                             num_duplicates_trimmed);
+  // See InitializeHistograms() for details.
+  histogram_cookie_deletion_cause_->Add(num_duplicates_trimmed);
 
   // TODO(eroman): Should also verify that there are no cookies with the same
   // creation time, since that is assumed to be unique by the rest of the code.
@@ -696,10 +750,9 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
   // Realize that we might be setting an expired cookie, and the only point
   // was to delete the cookie which we've already done.
   if (!(*cc)->IsExpired(creation_time)) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "net.CookieExpirationDurationMinutes",
-        ((*cc)->ExpiryDate() - creation_time).InMinutes(),
-        1, kMinutesInTenYears, 50);
+    // See InitializeHistograms() for details.
+    histogram_expiration_duration_minutes_->Add(
+        ((*cc)->ExpiryDate() - creation_time).InMinutes());
     InternalInsertCookie(cookie_domain, cc->release(), true);
   }
 
@@ -736,10 +789,9 @@ void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc) {
   if ((current - cc->LastAccessDate()) < last_access_threshold_)
     return;
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "net.CookieBetweenAccessIntervalMinutes",
-      (current - cc->LastAccessDate()).InMinutes(),
-      1, kMinutesInTenYears, 50);
+  // See InitializeHistograms() for details.
+  histogram_between_access_interval_minutes_->Add(
+      (current - cc->LastAccessDate()).InMinutes());
 
   cc->SetLastAccessDate(current);
   if (cc->IsPersistent() && store_)
@@ -751,8 +803,8 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                                          DeletionCause deletion_cause) {
   lock_.AssertAcquired();
 
-  UMA_HISTOGRAM_ENUMERATION("net.CookieDeletionCause", deletion_cause,
-                            DELETE_COOKIE_LAST_ENTRY);
+  // See InitializeHistograms() for details.
+  histogram_cookie_deletion_cause_->Add(deletion_cause);
 
   CanonicalCookie* cc = it->second;
   COOKIE_DLOG(INFO) << "InternalDeleteCookie() cc: " << cc->DebugString();
@@ -849,10 +901,9 @@ int CookieMonster::GarbageCollectRange(const Time& current,
     std::partial_sort(cookie_its.begin(), cookie_its.begin() + num_purge,
                       cookie_its.end(), LRUCookieSorter);
     for (size_t i = 0; i < num_purge; ++i) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "net.CookieEvictedLastAccessMinutes",
-          (current - cookie_its[i]->second->LastAccessDate()).InMinutes(),
-          1, kMinutesInTenYears, 50);
+      // See InitializeHistograms() for details.
+      histogram_evicted_last_access_minutes_->Add(
+          (current - cookie_its[i]->second->LastAccessDate()).InMinutes());
       InternalDeleteCookie(cookie_its[i], true, DELETE_COOKIE_EVICTED);
     }
 
@@ -1234,8 +1285,8 @@ void CookieMonster::RecordPeriodicStats(const base::Time& current_time) {
 
   if (current_time - last_statistic_record_time_ >
       kRecordStatisticsIntervalTime) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("net.CookieCount", cookies_.size(),
-                                1, 4000, 50);
+    // See InitializeHistograms() for details.
+    histogram_count_->Add(cookies_.size());
     last_statistic_record_time_ = current_time;
   }
 }

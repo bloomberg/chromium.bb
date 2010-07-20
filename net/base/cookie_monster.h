@@ -72,6 +72,7 @@ class CookieMonster : public CookieStore {
             last_access_threshold_milliseconds)),
         delegate_(delegate),
         last_statistic_record_time_(base::Time::Now()) {
+    InitializeHistograms();
     SetDefaultCookieableSchemes();
   }
 #endif
@@ -286,6 +287,19 @@ class CookieMonster : public CookieStore {
   // This function should be called repeatedly, and will record
   // statistics if a sufficient time period has passed.
   void RecordPeriodicStats(const base::Time& current_time);
+
+  // Histogram variables; see CookieMonster::InitializeHistograms() in
+  // cookie_monster.cc for details.
+  scoped_refptr<Histogram> histogram_expiration_duration_minutes_;
+  scoped_refptr<Histogram> histogram_between_access_interval_minutes_;
+  scoped_refptr<Histogram> histogram_evicted_last_access_minutes_;
+  scoped_refptr<Histogram> histogram_count_;
+  scoped_refptr<Histogram> histogram_number_duplicate_db_cookies_;
+  scoped_refptr<Histogram> histogram_cookie_deletion_cause_;
+
+  // Initialize the above variables; should only be called from
+  // the constructor.
+  void InitializeHistograms();
 
   CookieMap cookies_;
 
