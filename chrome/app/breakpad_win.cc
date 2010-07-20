@@ -254,6 +254,9 @@ extern "C" void __declspec(dllexport) __cdecl SetActiveURL(
     const wchar_t* url_cstring) {
   DCHECK(url_cstring);
 
+  if (!g_custom_entries)
+    return;
+
   std::wstring url(url_cstring);
   size_t chunk_index = 0;
   size_t url_size = url.size();
@@ -284,6 +287,9 @@ extern "C" void __declspec(dllexport) __cdecl SetClientId(
   if (client_id == NULL)
     return;
 
+  if (!g_custom_entries)
+    return;
+
   wcscpy_s((*g_custom_entries)[g_client_id_offset].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            client_id);
@@ -294,6 +300,9 @@ extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
   DCHECK(id);
   DCHECK(index < kMaxReportedActiveExtensions);
 
+  if (!g_custom_entries)
+    return;
+
   wcscpy_s((*g_custom_entries)[g_extension_ids_offset + index].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            id);
@@ -303,6 +312,9 @@ extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
     const wchar_t* vendor_id, const wchar_t* device_id,
     const wchar_t* driver_version, const wchar_t* pixel_shader_version,
     const wchar_t* vertex_shader_version) {
+  if (!g_custom_entries)
+    return;
+
   wcscpy_s((*g_custom_entries)[g_gpu_info_offset].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            vendor_id);
