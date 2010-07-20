@@ -13,6 +13,8 @@
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "chrome/browser/tab_contents/navigation_controller.h"
+#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -155,8 +157,20 @@ bool TopSites::SetPageThumbnailNoDB(const GURL& url,
   AutoLock lock(lock_);
 
   std::map<GURL, size_t>::iterator found = canonical_urls_.find(url);
-  if (found == canonical_urls_.end())
-    return false;  // This URL is not known to us.
+  if (found == canonical_urls_.end()) {
+    if (top_sites_.size() >= kTopSitesNumber)
+      return false;  // This URL is not known to us.
+
+    // We don't have enough Top Sites - add this one too.
+    MostVisitedURL mv;
+    mv.url = url;
+    mv.redirects.push_back(url);
+    top_sites_.push_back(mv);
+    size_t index = top_sites_.size() - 1;
+    StoreRedirectChain(top_sites_[index].redirects, index);
+    found = canonical_urls_.find(url);
+  }
+
   MostVisitedURL& most_visited = top_sites_[found->second];
   Images& image = top_images_[most_visited.url];
 
@@ -347,8 +361,6 @@ void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
 
 void TopSites::StoreRedirectChain(const RedirectList& redirects,
                                   size_t destination) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-
   if (redirects.empty()) {
     NOTREACHED();
     return;
@@ -510,12 +522,38 @@ void TopSites::Observe(NotificationType type,
   if (type == NotificationType::HISTORY_URLS_DELETED) {
     Details<history::URLsDeletedDetails> deleted_details(details);
     if (deleted_details->all_history) {
+      top_sites_.clear();
       ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
                              NewRunnableMethod(this, &TopSites::ResetDatabase));
+    } else {
+      std::set<GURL>::iterator it;
+      for (it = deleted_details->urls.begin();
+           it != deleted_details->urls.end(); ++it) {
+        for (size_t i = 0; i < top_sites_.size(); i++) {
+          if (top_sites_[i].url == *it) {
+            top_sites_.erase(top_sites_.begin() + i);
+            break;
+          }
+        }
+      }
     }
     StartQueryForMostVisited();
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
     if (top_sites_.size() < kTopSitesNumber) {
+      const NavigationController::LoadCommittedDetails& load_details =
+          *Details<NavigationController::LoadCommittedDetails>(details).ptr();
+      GURL url = load_details.entry->url();
+      if (canonical_urls_.find(url) == canonical_urls_.end() &&
+           HistoryService::CanAddURL(url)) {
+        // Add this page to the known pages in case the thumbnail comes
+        // in before we get the results.
+        MostVisitedURL mv;
+        mv.url = url;
+        mv.redirects.push_back(url);
+        top_sites_.push_back(mv);
+        size_t index = top_sites_.size() - 1;
+        StoreRedirectChain(top_sites_[index].redirects, index);
+      }
       StartQueryForMostVisited();
     }
   }
