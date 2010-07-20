@@ -25,7 +25,7 @@ case ${TARGET_CODE:=sfi-arm} in
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-arm"
+    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch arm"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfild"
     ;;
   regular)  # => Libraries without sandboxing.
@@ -43,7 +43,7 @@ case ${TARGET_CODE:=sfi-arm} in
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-arm"
+    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch arm"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-arm"
     ;;
   bc-x86-32)  # => Bitcode libraries => x86-32
@@ -52,7 +52,8 @@ case ${TARGET_CODE:=sfi-arm} in
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-x86-32"
+    # TODO(espindola): CCAS is probably never used.
+    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch x86-32"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-x86-32"
     ;;
   bc-x86-64)  # => Bitcode libraries => x86-64
@@ -61,7 +62,8 @@ case ${TARGET_CODE:=sfi-arm} in
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-cppas-x86-64"
+    # TODO(espindola): CCAS is probably never used.
+    CCAS_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch x86-64"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-x86-64"
     ;;
   *)
