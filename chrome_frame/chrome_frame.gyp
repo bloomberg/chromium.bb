@@ -648,6 +648,7 @@
         'ole_document_impl.h',
         'protocol_sink_wrap.cc',
         'protocol_sink_wrap.h',
+        'register_bho.rgs',
         'stream_impl.cc',
         'stream_impl.h',
         'sync_msg_reply_dispatcher.cc',

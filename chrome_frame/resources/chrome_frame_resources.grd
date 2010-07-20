@@ -25,6 +25,7 @@ for localizable strings
       </structure>
     </structures>
     <includes>
+      <include name="IDR_REGISTER_BHO" file="../register_bho.rgs" type="REGISTRY" />
       <include name="IDR_BHO" file="../bho.rgs" type="REGISTRY" />
       <include name="IDR_CHROMEACTIVEDOCUMENT" file="../chrome_active_document.rgs" type="REGISTRY" />
       <include name="IDR_CHROMEFRAME_ACTIVEX" file="../chrome_frame_activex.rgs" type="REGISTRY" />

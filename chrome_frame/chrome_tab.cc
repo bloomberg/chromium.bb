@@ -83,10 +83,9 @@ OBJECT_ENTRY_AUTO(__uuidof(ChromeProtocol), ChromeProtocol)
 // See comments in DllGetClassObject.
 LPFNGETCLASSOBJECT g_dll_get_class_object_redir_ptr = NULL;
 
-class ChromeTabModule
-    : public AtlPerUserModule<CAtlDllModuleT<ChromeTabModule> > {
+class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
  public:
-  typedef AtlPerUserModule<CAtlDllModuleT<ChromeTabModule> > ParentClass;
+  typedef CAtlDllModuleT<ChromeTabModule> ParentClass;
 
   DECLARE_LIBID(LIBID_ChromeTabLib)
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CHROMETAB,
@@ -242,61 +241,6 @@ HRESULT RefreshElevationPolicy() {
   return hr;
 }
 
-HRESULT RegisterChromeTabBHO() {
-  RegKey ie_bho_key;
-  if (!ie_bho_key.Create(HKEY_LOCAL_MACHINE, kBhoRegistryPath,
-                       KEY_CREATE_SUB_KEY)) {
-    DLOG(WARNING) << "Failed to open registry key "
-                  << kBhoRegistryPath
-                  << " for write";
-    return E_FAIL;
-  }
-
-  wchar_t bho_class_id_as_string[MAX_PATH] = {0};
-  StringFromGUID2(CLSID_ChromeFrameBHO, bho_class_id_as_string,
-                  arraysize(bho_class_id_as_string));
-
-  if (!ie_bho_key.CreateKey(bho_class_id_as_string, KEY_READ | KEY_WRITE)) {
-    DLOG(WARNING) << "Failed to create bho registry key under "
-                  << kBhoRegistryPath
-                  << " for write";
-    return E_FAIL;
-  }
-
-  ie_bho_key.WriteValue(kBhoNoLoadExplorerValue, 1);
-  DLOG(INFO) << "Registered ChromeTab BHO";
-
-  // We now add the chromeframe user agent at runtime.
-  RefreshElevationPolicy();
-  return S_OK;
-}
-
-HRESULT UnregisterChromeTabBHO() {
-  RegKey ie_bho_key;
-  if (!ie_bho_key.Open(HKEY_LOCAL_MACHINE, kBhoRegistryPath,
-                       KEY_READ | KEY_WRITE)) {
-    DLOG(WARNING) << "Failed to open registry key "
-                  << kBhoRegistryPath
-                  << " for write.";
-    return E_FAIL;
-  }
-
-  wchar_t bho_class_id_as_string[MAX_PATH] = {0};
-  StringFromGUID2(CLSID_ChromeFrameBHO, bho_class_id_as_string,
-                  arraysize(bho_class_id_as_string));
-
-  if (!ie_bho_key.DeleteKey(bho_class_id_as_string)) {
-    DLOG(WARNING) << "Failed to delete bho registry key "
-                  << bho_class_id_as_string
-                  << " under "
-                  << kBhoRegistryPath;
-    return E_FAIL;
-  }
-
-  DLOG(INFO) << "Unregistered ChromeTab BHO";
-  return S_OK;
-}
-
 // Experimental boot prefetch optimization for Chrome Frame
 //
 // If chrome is warmed up during a single reboot, it gets paged
@@ -364,14 +308,14 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
 
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer() {
-  // registers object, typelib and all interfaces in typelib
+  // registers objects, typelib and all interfaces in typelib
   HRESULT hr = _AtlModule.DllRegisterServer(TRUE);
 
   if (SUCCEEDED(hr)) {
     // Best effort attempt to register the BHO. At this point we silently
     // ignore any errors during registration. There are some traces emitted
     // to the debug log.
-    RegisterChromeTabBHO();
+    _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, TRUE);
     if (!RegisterSecuredMimeHandler(true))
       hr = E_FAIL;
     SetupRunOnce();
@@ -392,7 +336,7 @@ STDAPI DllUnregisterServer() {
     // Best effort attempt to unregister the BHO. At this point we silently
     // ignore any errors during unregistration. There are some traces emitted
     // to the debug log.
-    UnregisterChromeTabBHO();
+    _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, FALSE);
     if (!RegisterSecuredMimeHandler(false))
       hr = E_FAIL;
   }
