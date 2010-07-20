@@ -1732,6 +1732,46 @@ void AutomationProvider::SetWindowDimensions(Browser* browser,
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
+namespace {
+
+// Task to get info about BrowserChildProcessHost. Must run on IO thread to
+// honor the semantics of BrowserChildProcessHost.
+// Used by AutomationProvider::GetBrowserInfo().
+class GetChildProcessHostInfoTask : public Task {
+ public:
+  GetChildProcessHostInfoTask(base::WaitableEvent* event,
+                              ListValue* child_processes)
+    : event_(event),
+      child_processes_(child_processes) {}
+
+  virtual void Run() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
+      // Only add processes which are already started,
+      // since we need their handle.
+      if ((*iter)->handle() == base::kNullProcessHandle) {
+        continue;
+      }
+      ChildProcessInfo* info = *iter;
+      DictionaryValue* item = new DictionaryValue;
+      item->SetString(L"name", info->name());
+      item->SetString(L"type",
+                      ChildProcessInfo::GetTypeNameInEnglish(info->type()));
+      item->SetInteger(L"pid", base::GetProcId(info->handle()));
+      child_processes_->Append(item);
+    }
+    event_->Signal();
+  }
+
+ private:
+  base::WaitableEvent* const event_;  // weak
+  ListValue* child_processes_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetChildProcessHostInfoTask);
+};
+
+}  // namespace
+
 // Sample json input: { "command": "GetBrowserInfo" }
 // Refer to GetBrowserInfo() in chrome/test/pyautolib/pyauto.py for
 // sample json output.
@@ -1811,18 +1851,12 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
   // Add all child processes in a list of dictionaries, one dictionary item
   // per child process.
   ListValue* child_processes = new ListValue;
-  for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
-    // Only add processes which are already started, since we need their handle.
-    if ((*iter)->handle() != base::kNullProcessHandle) {
-      ChildProcessInfo* info = *iter;
-      DictionaryValue* item = new DictionaryValue;
-      item->SetString(L"name", info->name());
-      item->SetString(L"type",
-                      ChildProcessInfo::GetTypeNameInEnglish(info->type()));
-      item->SetInteger(L"pid", base::GetProcId(info->handle()));
-      child_processes->Append(item);
-    }
-  }
+  base::WaitableEvent event(true   /* manual reset */,
+                            false  /* not initially signaled */);
+  CHECK(ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      new GetChildProcessHostInfoTask(&event, child_processes)));
+  event.Wait();
   return_value->Set(L"child_processes", child_processes);
 
   // Add all extension processes in a list of dictionaries, one dictionary
@@ -2265,16 +2299,17 @@ void AutomationProvider::SaveTabContents(Browser* browser,
   FilePath::StringType filename;
   FilePath::StringType parent_directory;
   TabContents* tab_contents = NULL;
-  AutomationJSONReply reply(this, reply_message);
 
   if (!args->GetInteger(L"tab_index", &tab_index) ||
       !args->GetString(L"filename", &filename)) {
-    reply.SendError("tab_index or filename param missing");
+    AutomationJSONReply(this, reply_message).SendError(
+        "tab_index or filename param missing");
     return;
   } else {
     tab_contents = browser->GetTabContentsAt(tab_index);
     if (!tab_contents) {
-      reply.SendError("no tab at tab_index");
+      AutomationJSONReply(this, reply_message).SendError(
+          "no tab at tab_index");
       return;
     }
   }
@@ -2283,7 +2318,8 @@ void AutomationProvider::SaveTabContents(Browser* browser,
   parent_directory = FilePath(filename).DirName().value();
   if (!tab_contents->SavePage(FilePath(filename), FilePath(parent_directory),
                               SavePackage::SAVE_AS_ONLY_HTML)) {
-    reply.SendError("Could not initiate SavePage");
+    AutomationJSONReply(this, reply_message).SendError(
+        "Could not initiate SavePage");
     return;
   }
   // The observer will delete itself when done.
