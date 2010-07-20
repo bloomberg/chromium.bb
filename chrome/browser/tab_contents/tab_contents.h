@@ -42,7 +42,6 @@
 #include "gfx/rect.h"
 #include "net/base/load_states.h"
 #include "webkit/glue/dom_operations.h"
-#include "webkit/glue/password_form.h"
 
 namespace gfx {
 class Rect;
@@ -63,6 +62,10 @@ class PrintViewManager;
 
 namespace IPC {
 class Message;
+}
+
+namespace webkit_glue {
+struct PasswordForm;
 }
 
 class AutocompleteHistoryManager;

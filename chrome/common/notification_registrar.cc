@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,18 @@
 
 #include "base/logging.h"
 #include "chrome/common/notification_service.h"
+#include "base/platform_thread.h"
+
+namespace {
+
+void CheckCalledOnValidThread(PlatformThreadId thread_id) {
+  PlatformThreadId current_thread_id = PlatformThread::CurrentId();
+  CHECK(current_thread_id == thread_id) << "called on invalid thread: "
+                                        << thread_id << " vs. "
+                                        << current_thread_id;
+}
+
+}  // namespace
 
 struct NotificationRegistrar::Record {
   bool operator==(const Record& other) const;
@@ -93,13 +105,4 @@ void NotificationRegistrar::RemoveAll() {
 
 bool NotificationRegistrar::IsEmpty() const {
   return registered_.empty();
-}
-
-// static
-void NotificationRegistrar::CheckCalledOnValidThread(
-    PlatformThreadId thread_id) {
-  PlatformThreadId current_thread_id = PlatformThread::CurrentId();
-  CHECK(current_thread_id == thread_id) << "called on invalid thread: "
-                                        << thread_id << " vs. "
-                                        << current_thread_id;
 }
