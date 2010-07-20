@@ -549,7 +549,8 @@ wlsc_surface_transform(struct wlsc_surface *surface,
 
 static void
 wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
-				     struct wlsc_surface *surface)
+				     struct wlsc_surface *surface,
+				     uint32_t time)
 {
 	if (device->keyboard_focus == surface)
 		return;
@@ -558,20 +559,22 @@ wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
 	    (!surface || device->keyboard_focus->base.client != surface->base.client))
 		wl_surface_post_event(&device->keyboard_focus->base,
 				      &device->base,
-				      WL_INPUT_KEYBOARD_FOCUS, NULL, &device->keys);
+				      WL_INPUT_KEYBOARD_FOCUS,
+				      time, NULL, &device->keys);
 
 	if (surface)
 		wl_surface_post_event(&surface->base,
 				      &device->base,
 				      WL_INPUT_KEYBOARD_FOCUS,
-				      &surface->base, &device->keys);
+				      time, &surface->base, &device->keys);
 
 	device->keyboard_focus = surface;
 }
 
 static void
 wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
-				    struct wlsc_surface *surface)
+				    struct wlsc_surface *surface,
+				    uint32_t time)
 {
 	if (device->pointer_focus == surface)
 		return;
@@ -580,11 +583,13 @@ wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
 	    (!surface || device->pointer_focus->base.client != surface->base.client))
 		wl_surface_post_event(&device->pointer_focus->base,
 				      &device->base,
-				      WL_INPUT_POINTER_FOCUS, NULL);
+				      WL_INPUT_POINTER_FOCUS,
+				      time, NULL);
 	if (surface)
 		wl_surface_post_event(&surface->base,
 				      &device->base,
-				      WL_INPUT_POINTER_FOCUS, &surface->base);
+				      WL_INPUT_POINTER_FOCUS,
+				      time, &surface->base);
 
 	device->pointer_focus = surface;
 }
@@ -612,7 +617,7 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 }
 
 void
-notify_motion(struct wlsc_input_device *device, int x, int y)
+notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 {
 	struct wlsc_surface *es;
 	struct wlsc_compositor *ec = device->ec;
@@ -635,11 +640,11 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 	device->y = y;
 	es = pick_surface(device, &sx, &sy);
 
-	wlsc_input_device_set_pointer_focus(device, es);
-		
+	wlsc_input_device_set_pointer_focus(device, es, time);
+
 	if (es)
 		wl_surface_post_event(&es->base, &device->base,
-				      WL_INPUT_MOTION, x, y, sx, sy);
+				      WL_INPUT_MOTION, time, x, y, sx, sy);
 
 	wlsc_matrix_init(&device->sprite->matrix);
 	wlsc_matrix_scale(&device->sprite->matrix, 64, 64, 1);
@@ -651,28 +656,26 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 
 void
 notify_button(struct wlsc_input_device *device,
-	      int32_t button, int32_t state)
+	      uint32_t time, int32_t button, int32_t state)
 {
 	struct wlsc_surface *surface;
 	struct wlsc_compositor *compositor = device->ec;
-	int32_t sx, sy;
 
-	surface = pick_surface(device, &sx, &sy);
+	surface = device->pointer_focus;
 	if (surface) {
 		if (state) {
 			wlsc_surface_raise(surface);
 			device->grab++;
 			device->grab_surface = surface;
 			wlsc_input_device_set_keyboard_focus(device,
-							     surface);
+							     surface, time);
 		} else {
 			device->grab--;
 		}
 
 		/* FIXME: Swallow click on raise? */
 		wl_surface_post_event(&surface->base, &device->base,
-				      WL_INPUT_BUTTON, button, state,
-				      device->x, device->y, sx, sy);
+				      WL_INPUT_BUTTON, time, button, state);
 
 		wlsc_compositor_schedule_repaint(compositor);
 	}
@@ -680,7 +683,7 @@ notify_button(struct wlsc_input_device *device,
 
 void
 notify_key(struct wlsc_input_device *device,
-	   uint32_t key, uint32_t state)
+	   uint32_t time, uint32_t key, uint32_t state)
 {
 	struct wlsc_compositor *compositor = device->ec;
 	uint32_t *k, *end;
@@ -726,8 +729,18 @@ notify_key(struct wlsc_input_device *device,
 
 	if (device->keyboard_focus != NULL)
 		wl_surface_post_event(&device->keyboard_focus->base,
-				      &device->base, 
-				      WL_INPUT_KEY, key, state);
+				      &device->base,
+				      WL_INPUT_KEY, time, key, state);
+}
+
+static uint32_t
+get_time(void)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 static void
@@ -738,16 +751,17 @@ handle_surface_destroy(struct wlsc_listener *listener,
 		container_of(listener, struct wlsc_input_device, listener);
 	struct wlsc_surface *focus;
 	int32_t sx, sy;
+	uint32_t time = get_time();
 
 	if (device->grab_surface == surface) {
 		device->grab_surface = NULL;
 		device->grab = 0;
 	}
 	if (device->keyboard_focus == surface)
-		wlsc_input_device_set_keyboard_focus(device, NULL);
+		wlsc_input_device_set_keyboard_focus(device, NULL, time);
 	if (device->pointer_focus == surface) {
 		focus = pick_surface(device, &sx, &sy);
-		wlsc_input_device_set_pointer_focus(device, focus);
+		wlsc_input_device_set_pointer_focus(device, focus, time);
 		fprintf(stderr, "lost pointer focus surface, reverting to %p\n", focus);
 	}
 }

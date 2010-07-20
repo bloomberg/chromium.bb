@@ -124,11 +124,14 @@ struct wlsc_surface {
 };
 
 void
-notify_motion(struct wlsc_input_device *device, int x, int y);
+notify_motion(struct wlsc_input_device *device,
+	      uint32_t time, int x, int y);
 void
-notify_button(struct wlsc_input_device *device, int32_t button, int32_t state);
+notify_button(struct wlsc_input_device *device,
+	      uint32_t time, int32_t button, int32_t state);
 void
-notify_key(struct wlsc_input_device *device, uint32_t key, uint32_t state);
+notify_key(struct wlsc_input_device *device,
+	   uint32_t time, uint32_t key, uint32_t state);
 
 void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);

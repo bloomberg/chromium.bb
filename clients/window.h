@@ -33,6 +33,7 @@ struct rectangle {
 };
 
 struct display;
+struct input;
 
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries);
@@ -67,7 +68,7 @@ typedef void (*window_acknowledge_handler_t)(struct window *window, uint32_t key
 typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t unicode,
 				     uint32_t state, uint32_t modifiers, void *data);
 typedef void (*window_keyboard_focus_handler_t)(struct window *window,
-						struct wl_input_device *device, void *data);
+						struct input *device, void *data);
 
 struct window *
 window_create(struct display *display, const char *title,

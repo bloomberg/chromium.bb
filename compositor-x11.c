@@ -511,27 +511,30 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		case XCB_KEY_PRESS:
 			key_press = (xcb_key_press_event_t *) event;
 			notify_key(c->base.input_device,
-				   key_press->detail - 8, 1);
+				   key_press->time, key_press->detail - 8, 1);
 			break;
 		case XCB_KEY_RELEASE:
 			key_press = (xcb_key_press_event_t *) event;
 			notify_key(c->base.input_device,
-				   key_press->detail - 8, 0);
+				   key_press->time, key_press->detail - 8, 0);
 			break;
 		case XCB_BUTTON_PRESS:
 			button_press = (xcb_button_press_event_t *) event;
 			notify_button(c->base.input_device,
+				      button_press->time,
 				      button_press->detail + BTN_LEFT - 1, 1);
 			break;
 		case XCB_BUTTON_RELEASE:
 			button_press = (xcb_button_press_event_t *) event;
 			notify_button(c->base.input_device,
+				      button_press->time,
 				      button_press->detail + BTN_LEFT - 1, 0);
 			break;
 
 		case XCB_MOTION_NOTIFY:
 			motion_notify = (xcb_motion_notify_event_t *) event;
 			notify_motion(c->base.input_device,
+				      motion_notify->time,
 				      motion_notify->event_x,
 				      motion_notify->event_y);
 			break;

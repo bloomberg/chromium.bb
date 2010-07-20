@@ -120,19 +120,23 @@ struct wl_input_device;
 struct wl_input_device_listener {
 	void (*motion)(void *data,
 		       struct wl_input_device *input_device,
+		       uint32_t time,
 		       int32_t x, int32_t y, int32_t sx, int32_t sy);
 	void (*button)(void *data,
 		       struct wl_input_device *input_device,
-		       uint32_t button, uint32_t state,
-		       int32_t x, int32_t y, int32_t sx, int32_t sy);
+		       uint32_t time,
+		       uint32_t button, uint32_t state);
 	void (*key)(void *data,
 		    struct wl_input_device *input_device,
+		    uint32_t time,
 		    uint32_t button, uint32_t state);
 	void (*pointer_focus)(void *data,
 			      struct wl_input_device *input_device,
+			      uint32_t time,
 			      struct wl_surface *surface);
 	void (*keyboard_focus)(void *data,
 			       struct wl_input_device *input_device,
+			       uint32_t time,
 			       struct wl_surface *surface,
 			       struct wl_array *keys);
 };

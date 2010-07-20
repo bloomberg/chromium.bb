@@ -87,6 +87,7 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 	struct input_event ev[8], *e, *end;
 	int len, value, dx, dy, absolute_event;
 	int x, y;
+	uint32_t time;
 
 	c = (struct drm_compositor *) device->master->base.ec;
 	if (!c->vt_active)
@@ -109,6 +110,7 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 	for (e = ev; e < end; e++) {
 		/* Get the signed value, earlier kernels had this as unsigned */
 		value = e->value;
+		time = e->time.tv_sec * 1000 + e->time.tv_usec / 1000;
 
 		switch (e->type) {
 		case EV_REL:
@@ -173,21 +175,21 @@ static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 			case BTN_BACK:
 			case BTN_TASK:
 				notify_button(&device->master->base,
-					      e->code, value);
+					      time, e->code, value);
 				break;
 
 			default:
 				notify_key(&device->master->base,
-					   e->code, value);
+					   time, e->code, value);
 				break;
 			}
 		}
 	}
 
 	if (dx != 0 || dy != 0)
-		notify_motion(&device->master->base, x + dx, y + dy);
+		notify_motion(&device->master->base, time, x + dx, y + dy);
 	if (absolute_event && device->tool)
-		notify_motion(&device->master->base, x, y);
+		notify_motion(&device->master->base, time, x, y);
 }
 
 static struct evdev_input_device *

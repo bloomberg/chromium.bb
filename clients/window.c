@@ -53,7 +53,6 @@ struct display {
 	struct wl_display *display;
 	struct wl_compositor *compositor;
 	struct wl_output *output;
-	struct wl_input_device *input_device;
 	struct rectangle screen_allocation;
 	EGLDisplay dpy;
 	EGLContext ctx;
@@ -62,6 +61,7 @@ struct display {
 	GMainLoop *loop;
 	GSource *source;
 	struct wl_list window_list;
+	struct wl_list input_list;
 	char *device_name;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 	struct xkb_desc *xkb;
@@ -79,10 +79,9 @@ struct window {
 	int state;
 	int fullscreen;
 	int decoration;
-	struct wl_input_device *grab_device;
-	struct wl_input_device *keyboard_device;
+	struct input *grab_device;
+	struct input *keyboard_device;
 	uint32_t name;
-	uint32_t modifiers;
 
 	EGLImageKHR *image;
 	cairo_surface_t *cairo_surface, *pending_surface;
@@ -95,6 +94,16 @@ struct window {
 	window_frame_handler_t frame_handler;
 
 	void *user_data;
+	struct wl_list link;
+};
+
+struct input {
+	struct display *display;
+	struct wl_input_device *input_device;
+	struct window *pointer_focus;
+	struct window *keyboard_focus;
+	uint32_t modifiers;
+	int32_t x, y, sx, sy;
 	struct wl_list link;
 };
 
@@ -302,15 +311,22 @@ enum window_state {
 
 static void
 window_handle_motion(void *data, struct wl_input_device *input_device,
+		     uint32_t time,
 		     int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
-	struct window *window = data;
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
+
+	input->x = x;
+	input->y = y;
+	input->sx = sx;
+	input->sy = sy;
 
 	switch (window->state) {
 	case WINDOW_MOVING:
 		if (window->fullscreen)
 			break;
-		if (window->grab_device != input_device)
+		if (window->grab_device != input)
 			break;
 		window->allocation.x = window->drag_x + x;
 		window->allocation.y = window->drag_y + y;
@@ -332,7 +348,7 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 	case WINDOW_RESIZING_BOTTOM_RIGHT:
 		if (window->fullscreen)
 			break;
-		if (window->grab_device != input_device)
+		if (window->grab_device != input)
 			break;
 		if (window->state & WINDOW_RESIZING_LEFT) {
 			window->allocation.x = x - window->drag_x + window->saved_allocation.x;
@@ -357,26 +373,26 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 }
 
 static void window_handle_button(void *data, struct wl_input_device *input_device,
-				 uint32_t button, uint32_t state,
-				 int32_t x, int32_t y, int32_t sx, int32_t sy)
+				 uint32_t time, uint32_t button, uint32_t state)
 {
-	struct window *window = data;
+	struct input *input = data;
+	struct window *window = input->pointer_focus;
 	int grip_size = 8, vlocation, hlocation;
 
-	if (window->margin <= sx && sx < window->margin + grip_size)
+	if (window->margin <= input->sx && input->sx < window->margin + grip_size)
 		hlocation = WINDOW_RESIZING_LEFT;
-	else if (sx < window->allocation.width - window->margin - grip_size)
+	else if (input->sx < window->allocation.width - window->margin - grip_size)
 		hlocation = WINDOW_MOVING;
-	else if (sx < window->allocation.width - window->margin)
+	else if (input->sx < window->allocation.width - window->margin)
 		hlocation = WINDOW_RESIZING_RIGHT;
 	else
 		hlocation = WINDOW_STABLE;
 
-	if (window->margin <= sy && sy < window->margin + grip_size)
+	if (window->margin <= input->sy && input->sy < window->margin + grip_size)
 		vlocation = WINDOW_RESIZING_TOP;
-	else if (sy < window->allocation.height - window->margin - grip_size)
+	else if (input->sy < window->allocation.height - window->margin - grip_size)
 		vlocation = WINDOW_MOVING;
-	else if (sy < window->allocation.height - window->margin)
+	else if (input->sy < window->allocation.height - window->margin)
 		vlocation = WINDOW_RESIZING_BOTTOM;
 	else
 		vlocation = WINDOW_STABLE;
@@ -384,10 +400,10 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 	if (button == BTN_LEFT && state == 1) {
 		switch (hlocation | vlocation) {
 		case WINDOW_MOVING:
-			window->drag_x = window->allocation.x - x;
-			window->drag_y = window->allocation.y - y;
+			window->drag_x = window->allocation.x - input->x;
+			window->drag_y = window->allocation.y - input->y;
 			window->state = WINDOW_MOVING;
-			window->grab_device = input_device;
+			window->grab_device = input;
 			break;
 		case WINDOW_RESIZING_TOP:
 		case WINDOW_RESIZING_BOTTOM:
@@ -397,87 +413,102 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 		case WINDOW_RESIZING_TOP_RIGHT:
 		case WINDOW_RESIZING_BOTTOM_LEFT:
 		case WINDOW_RESIZING_BOTTOM_RIGHT:
-			window->drag_x = x;
-			window->drag_y = y;
+			window->drag_x = input->x;
+			window->drag_y = input->y;
 			window->saved_allocation = window->allocation;
 			window->state = hlocation | vlocation;
-			window->grab_device = input_device;
+			window->grab_device = input;
 			break;
 		default:
 			window->state = WINDOW_STABLE;
 			break;
 		}
 	} else if (button == BTN_LEFT &&
-		   state == 0 && window->grab_device == input_device) {
+		   state == 0 && window->grab_device == input) {
 		window->state = WINDOW_STABLE;
 	}
 }
 
 static void
 window_handle_key(void *data, struct wl_input_device *input_device,
-		  uint32_t key, uint32_t state)
+		  uint32_t time, uint32_t key, uint32_t state)
 {
-	struct window *window = data;
+	struct input *input = data;
+	struct window *window = input->keyboard_focus;
 	struct display *d = window->display;
 	uint32_t code, sym, level;
 
 	code = key + d->xkb->min_key_code;
-	if (window->keyboard_device != input_device)
+	if (window->keyboard_device != input)
 		return;
 
 	level = 0;
-	if (window->modifiers & WINDOW_MODIFIER_SHIFT &&
+	if (input->modifiers & WINDOW_MODIFIER_SHIFT &&
 	    XkbKeyGroupWidth(d->xkb, code, 0) > 1)
 		level = 1;
 
 	sym = XkbKeySymEntry(d->xkb, code, level, 0);
 
 	if (state)
-		window->modifiers |= d->xkb->map->modmap[code];
+		input->modifiers |= d->xkb->map->modmap[code];
 	else
-		window->modifiers &= ~d->xkb->map->modmap[code];
+		input->modifiers &= ~d->xkb->map->modmap[code];
 
 	if (window->key_handler)
 		(*window->key_handler)(window, key, sym, state,
-				       window->modifiers, window->user_data);
+				       input->modifiers, window->user_data);
 }
 
 static void
 window_handle_pointer_focus(void *data,
 			    struct wl_input_device *input_device,
-			    struct wl_surface *surface)
+			    uint32_t time, struct wl_surface *surface)
 {
+	struct input *input = data;
+
+	if (surface)
+		input->pointer_focus = wl_surface_get_user_data(surface);
+	else
+		input->pointer_focus = NULL;
 }
 
 static void
 window_handle_keyboard_focus(void *data,
 			     struct wl_input_device *input_device,
+			     uint32_t time,
 			     struct wl_surface *surface,
 			     struct wl_array *keys)
 {
-	struct window *window = data;
-	struct display *d = window->display;
+	struct input *input = data;
+	struct window *window = input->keyboard_focus;
+	struct display *d = input->display;
 	uint32_t *k, *end;
 
-	if (window->keyboard_device == input_device && surface != window->surface)
+	window = input->keyboard_focus;
+	if (window) {
 		window->keyboard_device = NULL;
-	else if (window->keyboard_device == NULL && surface == window->surface)
-		window->keyboard_device = input_device;
-	else
-		return;
-
-	if (window->keyboard_device) {
-		end = keys->data + keys->size;
-		for (k = keys->data; k < end; k++)
-			window->modifiers |= d->xkb->map->modmap[*k];
-	} else {
-		window->modifiers = 0;
+		if (window->keyboard_focus_handler)
+			(*window->keyboard_focus_handler)(window, NULL,
+							  window->user_data);
 	}
 
-	if (window->keyboard_focus_handler)
-		(*window->keyboard_focus_handler)(window,
-						  window->keyboard_device,
-						  window->user_data);
+	if (surface)
+		input->keyboard_focus = wl_surface_get_user_data(surface);
+	else
+		input->keyboard_focus = NULL;
+
+	end = keys->data + keys->size;
+	for (k = keys->data; k < end; k++)
+		input->modifiers |= d->xkb->map->modmap[*k];
+
+	window = input->keyboard_focus;
+	if (window) {
+		window->keyboard_device = input;
+		if (window->keyboard_focus_handler)
+			(*window->keyboard_focus_handler)(window,
+							  window->keyboard_device,
+							  window->user_data);
+	}
 }
 
 static const struct wl_input_device_listener input_device_listener = {
@@ -668,10 +699,8 @@ window_create(struct display *display, const char *title,
 	window->state = WINDOW_STABLE;
 	window->decoration = 1;
 
+	wl_surface_set_user_data(window->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
-
-	wl_input_device_add_listener(display->input_device,
-				     &input_device_listener, window);
 
 	return window;
 }
@@ -747,6 +776,26 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void
+display_add_input(struct display *d, struct wl_object *object)
+{
+	struct input *input;
+
+	input = malloc(sizeof *input);
+	if (input == NULL)
+		return;
+
+	memset(input, 0, sizeof *input);
+	input->display = d;
+	input->input_device = (struct wl_input_device *) object;
+	input->pointer_focus = NULL;
+	input->keyboard_focus = NULL;
+	wl_list_insert(d->input_list.prev, &input->link);
+
+	wl_input_device_add_listener(input->input_device,
+				     &input_device_listener, input);
+}
+
+static void
 display_handle_global(struct wl_display *display,
 		     struct wl_object *object, void *data)
 {
@@ -759,7 +808,7 @@ display_handle_global(struct wl_display *display,
 		d->output = (struct wl_output *) object;
 		wl_output_add_listener(d->output, &output_listener, d);
 	} else if (wl_object_implements(object, "input_device", 1)) {
-		d->input_device =(struct wl_input_device *) object;
+		display_add_input(d, object);
 	}
 }
 
@@ -854,6 +903,8 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		fprintf(stderr, "failed to create display: %m\n");
 		return NULL;
 	}
+
+	wl_list_init(&d->input_list);
 
 	/* Set up listener so we'll catch all events. */
 	wl_display_add_global_listener(d->display,
