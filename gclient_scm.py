@@ -257,13 +257,7 @@ class GitWrapper(SCMWrapper):
     # Update the remotes first so we have all the refs.
     for _ in range(10):
       try:
-        if rev_type == "branch":
-          remote_output, remote_err = scm.GIT.Capture(
-            ['fetch'] + verbose + ['origin', revision],
-            self.checkout_path,
-            print_error=False)
-        else:
-          remote_output, remote_err = scm.GIT.Capture(
+        remote_output, remote_err = scm.GIT.Capture(
             ['remote'] + verbose + ['update'],
             self.checkout_path,
             print_error=False)
