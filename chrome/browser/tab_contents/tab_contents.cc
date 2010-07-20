@@ -52,6 +52,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer.h"
+#include "chrome/browser/popup_blocked_animation.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profile.h"
@@ -946,6 +947,8 @@ void TabContents::PopupNotificationVisibilityChanged(bool visible) {
   content_settings_delegate_->SetPopupsBlocked(visible);
   if (!dont_notify_render_view_)
     render_view_host()->AllowScriptToClose(!visible);
+  if (visible)
+    PopupBlockedAnimation::Show(this);
 }
 
 gfx::NativeView TabContents::GetContentNativeView() const {

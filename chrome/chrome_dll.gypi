@@ -269,6 +269,7 @@
                 'app/theme/omnibox_star.pdf',
                 'app/theme/omnibox_star_lit.pdf',
                 'app/theme/otr_icon.pdf',
+                'app/theme/popup_window_animation.pdf',
                 'app/theme/reload_Template.pdf',
                 'app/theme/stop_Template.pdf',
                 'browser/cocoa/install.sh',

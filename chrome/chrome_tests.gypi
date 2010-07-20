@@ -754,6 +754,7 @@
         'browser/cocoa/about_ipc_controller_unittest.mm',
         'browser/cocoa/about_window_controller_unittest.mm',
         'browser/cocoa/accelerators_cocoa_unittest.mm',
+        'browser/cocoa/animatable_image_unittest.mm',
         'browser/cocoa/animatable_view_unittest.mm',
         'browser/cocoa/background_gradient_view_unittest.mm',
         'browser/cocoa/background_tile_view_unittest.mm',
