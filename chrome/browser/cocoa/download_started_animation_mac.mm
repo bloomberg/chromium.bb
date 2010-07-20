@@ -84,8 +84,7 @@ class DownloadAnimationTabObserver : public NotificationObserver {
   if ((self = [super init])) {
     // Load the image of the download arrow.
     ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
-    SkBitmap* imageBitmap = bundle.GetBitmapNamed(IDR_DOWNLOAD_ANIMATION_BEGIN);
-    scoped_cftyperef<CGImageRef> image(SkCreateCGImageRef(*imageBitmap));
+    NSImage* image = bundle.GetNSImageNamed(IDR_DOWNLOAD_ANIMATION_BEGIN);
 
     // Figure out the positioning in the current tab. Try to position the layer
     // against the left edge, and three times the download image's height from
@@ -93,8 +92,8 @@ class DownloadAnimationTabObserver : public NotificationObserver {
     // enough, don't show the animation and let the shelf speak for itself.
     gfx::Rect bounds;
     tabContents->GetContainerBounds(&bounds);
-    imageWidth_ = CGImageGetWidth(image);
-    CGFloat imageHeight = CGImageGetHeight(image);
+    imageWidth_ = [image size].width;
+    CGFloat imageHeight = [image size].height;
 
     // Sanity check the size in case there's no room to display the animation.
     if (bounds.height() < imageHeight) {
@@ -117,7 +116,7 @@ class DownloadAnimationTabObserver : public NotificationObserver {
     // Create the animation object to assist in animating and fading.
     CGFloat animationHeight = MIN(bounds.height(), 4 * imageHeight);
     NSRect frame = NSMakeRect(origin.x, origin.y, imageWidth_, animationHeight);
-    animation_ = [[AnimatableImage alloc] initWithImage:(id)image.get()
+    animation_ = [[AnimatableImage alloc] initWithImage:image
                                          animationFrame:frame];
     [parentWindow addChildWindow:animation_ ordered:NSWindowAbove];
 

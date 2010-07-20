@@ -148,7 +148,7 @@
   [image_ drawInRect:NSMakeRect(0,0, size.width, size.height)
             fromRect:NSZeroRect
            operation:NSCompositeCopy
-             fraction:1.0];
+            fraction:1.0];
   [NSGraphicsContext restoreGraphicsState];
 
   scoped_cftyperef<CGImageRef> cgImage(CGBitmapContextCreateImage(context));
