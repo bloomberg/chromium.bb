@@ -71,6 +71,12 @@ PNACL_X8632_ROOT = BASE + '/../linux_arm-untrusted/libs-x8632'
 
 PNACL_X8664_ROOT = BASE + '/../linux_arm-untrusted/libs-x8664'
 
+global_pnacl_roots = {
+  'arm' : PNACL_ARM_ROOT,
+  'x86-32' : PNACL_X8632_ROOT,
+  'x86-64' : PNACL_X8664_ROOT
+}
+
 PNACL_BITCODE_ROOT = BASE + '/../linux_arm-untrusted/libs-bitcode'
 
 ######################################################################
@@ -116,24 +122,6 @@ global_config_flags = {
     #  BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include',
   ],
 
-  'LLC_SFI_SANDBOXING': [
-    # The following options might come in hand and are left
-    # here as comments:
-    # TODO(robertm): describe their purpose
-    #     '-soft-float ',
-    #     '-aeabi-calls '
-    #     '-sfi-zero-mask',
-    '-sfi-cp-fudge',
-    # NOTE: we need a fairly high fudge factor because of
-    # some vfp instructions which only have a 9bit offset
-    '-sfi-cp-fudge-percent=75',
-    '-sfi-store',
-    '-sfi-stack',
-    '-sfi-branch',
-    '-sfi-data',
-    '-no-inline-jumptables'
-  ],
-
   'OPT': [
     '-O3',
     '-std-compile-opts'
@@ -166,7 +154,22 @@ global_config_flags = {
       '-mattr=-neon',
       '-mattr=+vfp3',
       '-mtriple=armv7a-*-*eabi*',
-      '-arm-reserve-r9'
+      '-arm-reserve-r9',
+      # The following options might come in hand and are left
+      # here as comments:
+      # TODO(robertm): describe their purpose
+      #     '-soft-float ',
+      #     '-aeabi-calls '
+      #     '-sfi-zero-mask',
+      '-sfi-cp-fudge',
+      # NOTE: we need a fairly high fudge factor because of
+      # some vfp instructions which only have a 9bit offset
+      '-sfi-cp-fudge-percent=75',
+      '-sfi-store',
+      '-sfi-stack',
+      '-sfi-branch',
+      '-sfi-data',
+      '-no-inline-jumptables'
       ],
     'x86-32': [
       '-march=x86',
@@ -266,7 +269,7 @@ def Run(args):
     LogFatal('failed command: ' + StringifyCommand(args), ret)
 
 
-def SfiCompile(argv, llc_flags, assembler, as_flags):
+def SfiCompile(argv, arch, assembler, as_flags):
   "Run llc and the assembler to convert a bitcode file to ELF."
   obj_pos = FindObjectFilePos(argv)
 
@@ -276,8 +279,7 @@ def SfiCompile(argv, llc_flags, assembler, as_flags):
       global_config_flags['OPT'] +
       [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
-  llc = [LLC] + global_config_flags['LLC_SFI_SANDBOXING']
-  llc += llc_flags
+  llc = [LLC] + global_config_flags['LLC'][arch]
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
@@ -433,7 +435,6 @@ def Incarnation_gcclike(argv, tool):
 
   assert arch
 
-  llc_flags = global_config_flags['LLC'][arch]
   assembler = global_assemblers[arch]
   as_flags = global_config_flags['AS'][arch]
 
@@ -442,7 +443,7 @@ def Incarnation_gcclike(argv, tool):
     return
 
   CompileToBC(argv, tool, True)
-  SfiCompile(argv, llc_flags, assembler, as_flags)
+  SfiCompile(argv, arch, assembler, as_flags)
 
 
 def Incarnation_sfigcc_generic(argv):
@@ -673,38 +674,28 @@ def BitcodeToNative(argv, llc, llc_flags, ascom, as_flags, ld, ld_flags, root):
   return output
 
 
-def Incarnation_bcldarm(argv):
+def Incarnation_bcld_generic(argv):
+  arch, argv = ExtractArch(argv)
   output = BitcodeToNative(argv,
                            LLC,
-                           global_config_flags['LLC']['arm'] +
-                           global_config_flags['LLC_SFI_SANDBOXING'],
-                           AS_ARM,
-                           global_config_flags['AS']['arm'],
+                           global_config_flags['LLC'][arch],
+                           global_assemblers[arch],
+                           global_config_flags['AS'][arch],
                            ELF_LD,
-                           global_config_flags['LD']['arm'],
-                           PNACL_ARM_ROOT)
+                           global_config_flags['LD'][arch],
+                           global_pnacl_roots[arch])
+
+
+def Incarnation_bcldarm(argv):
+  return Incarnation_bcld_generic(argv + ['-arch', 'arm'])
 
 
 def Incarnation_bcldx8632(argv):
-  output = BitcodeToNative(argv,
-                           LLC,
-                           global_config_flags['LLC']['x86-32'],
-                           AS_X86,
-                           global_config_flags['AS']['x86-32'],
-                           ELF_LD,
-                           global_config_flags['LD']['x86-32'],
-                           PNACL_X8632_ROOT)
+  return Incarnation_bcld_generic(argv + ['-arch', 'x86-32'])
 
 
 def Incarnation_bcldx8664(argv):
-  output = BitcodeToNative(argv,
-                           LLC,
-                           global_config_flags['LLC']['x86-64'],
-                           AS_X86,
-                           global_config_flags['AS']['x86-64'],
-                           ELF_LD,
-                           global_config_flags['LD']['x86-64'],
-                           PNACL_X8664_ROOT)
+  return Incarnation_bcld_generic(argv + ['-arch', 'x86-64'])
 
 
 def Incarnation_sfild(argv):
@@ -728,6 +719,7 @@ INCARNATIONS = {
 
    'llvm-fake-sfild': Incarnation_sfild,
 
+   'llvm-fake-bcld' : Incarnation_bcld_generic,
    'llvm-fake-bcld-arm': Incarnation_bcldarm,
    'llvm-fake-bcld-x86-32': Incarnation_bcldx8632,
    'llvm-fake-bcld-x86-64': Incarnation_bcldx8664,
