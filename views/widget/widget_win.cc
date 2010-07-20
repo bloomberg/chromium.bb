@@ -1282,7 +1282,7 @@ Widget* Widget::CreatePopupWidget(TransparencyParam transparent,
                                   DeleteParam delete_on_destroy,
                                   MirroringParam mirror_in_rtl) {
   WidgetWin* popup = new WidgetWin;
-  DWORD ex_style = WS_EX_TOOLWINDOW;
+  DWORD ex_style = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
   if (mirror_in_rtl == MirrorOriginInRTL)
     ex_style |= l10n_util::GetExtendedTooltipStyles();
   if (transparent == Transparent)
