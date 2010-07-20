@@ -3335,6 +3335,9 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     if (use_pepper_host) {
       WebPluginDelegatePepper* pepper_plugin =
            WebPluginDelegatePepper::Create(file_path, mime_type, AsWeakPtr());
+      if (!pepper_plugin)
+        return NULL;
+
       current_oldstyle_pepper_plugins_.insert(pepper_plugin);
       return pepper_plugin;
     } else {
