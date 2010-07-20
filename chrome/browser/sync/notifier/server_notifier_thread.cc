@@ -14,7 +14,8 @@
 namespace sync_notifier {
 
 ServerNotifierThread::ServerNotifierThread(bool use_chrome_async_socket)
-    : notifier::MediatorThreadImpl(use_chrome_async_socket) {}
+    : notifier::MediatorThreadImpl(use_chrome_async_socket),
+      state_(notifier::STATE_CLOSED) {}
 
 ServerNotifierThread::~ServerNotifierThread() {}
 
@@ -72,8 +73,27 @@ void ServerNotifierThread::OnInvalidateAll() {
           &ServerNotifierThread::SignalIncomingNotification));
 }
 
+void ServerNotifierThread::OnClientStateChangeMessage(
+    notifier::LoginConnectionState state) {
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  state_ = state;
+  if (state_ != notifier::STATE_OPENED) {
+    // Assume anything but an opened state invalidates xmpp_client().
+    StopInvalidationListener();
+  }
+  MediatorThreadImpl::OnClientStateChangeMessage(state);
+}
+
 void ServerNotifierThread::StartInvalidationListener() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  if (state_ != notifier::STATE_OPENED) {
+    return;
+  }
+  buzz::XmppClient* client = xmpp_client();
+  if (client == NULL) {
+    LOG(DFATAL) << "xmpp_client() unexpectedly NULL";
+    return;
+  }
 
   StopInvalidationListener();
   chrome_invalidation_client_.reset(new ChromeInvalidationClient());
@@ -83,11 +103,15 @@ void ServerNotifierThread::StartInvalidationListener() {
   // make it so that we won't receive any notifications that were
   // generated from our own changes.
   const std::string kClientId = "server_notifier_thread";
-  chrome_invalidation_client_->Start(kClientId, this, xmpp_client());
+  chrome_invalidation_client_->Start(kClientId, this, client);
 }
 
 void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  if (state_ != notifier::STATE_OPENED) {
+    return;
+  }
+
   chrome_invalidation_client_->RegisterTypes();
   parent_message_loop_->PostTask(
       FROM_HERE,

@@ -39,7 +39,7 @@ class ServerNotifierThread
   virtual void SubscribeForUpdates(
       const std::vector<std::string>& subscribed_services_list);
 
-  // Overridden to also stop listening to server notifications.
+  // Overridden to stop listening to server notifications.
   virtual void Logout();
 
   // Must not be called.
@@ -50,6 +50,11 @@ class ServerNotifierThread
   virtual void OnInvalidate(syncable::ModelType model_type);
 
   virtual void OnInvalidateAll();
+
+ protected:
+  // Overridden to know what state we're in.
+  virtual void OnClientStateChangeMessage(
+      notifier::LoginConnectionState state);
 
  private:
   // Posted to the worker thread by ListenForUpdates().
@@ -68,6 +73,7 @@ class ServerNotifierThread
   // thread by Stop().
   void StopInvalidationListener();
 
+  notifier::LoginConnectionState state_;
   scoped_ptr<ChromeInvalidationClient> chrome_invalidation_client_;
 };
 

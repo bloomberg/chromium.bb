@@ -81,8 +81,12 @@ class MediatorThreadImpl
   MessageLoop* worker_message_loop();
 
   // Should only be called after OnConnectionStateChange() is called
-  // on the delegate with true.
+  // on the delegate with true and before it is called with false.
   buzz::XmppClient* xmpp_client();
+
+  // This is virtual so that subclasses can also know when the
+  // connection state changes.
+  virtual void OnClientStateChangeMessage(LoginConnectionState state);
 
   Delegate* delegate_;
   MessageLoop* parent_message_loop_;
@@ -107,7 +111,6 @@ class MediatorThreadImpl
       const IncomingNotificationData& notification_data);
   void OnOutgoingNotification(bool success);
   void OnLoginFailureMessage(const notifier::LoginFailure& failure);
-  void OnClientStateChangeMessage(LoginConnectionState state);
   void OnSubscriptionStateChange(bool success);
 
   // Equivalents of the above functions called from the parent thread.
