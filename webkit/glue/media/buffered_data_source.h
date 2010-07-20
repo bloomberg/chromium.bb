@@ -126,10 +126,6 @@ class BufferedResourceLoader :
  protected:
   friend class base::RefCountedThreadSafe<BufferedResourceLoader>;
 
-  // An empty constructor so mock classes can be constructed.
-  BufferedResourceLoader() {
-  }
-
   virtual ~BufferedResourceLoader();
 
  private:

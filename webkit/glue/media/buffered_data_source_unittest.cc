@@ -511,7 +511,7 @@ TEST_F(BufferedResourceLoaderTest, AllowDefer_DeferredReadPastWindow) {
 
 class MockBufferedResourceLoader : public BufferedResourceLoader {
  public:
-  MockBufferedResourceLoader() : BufferedResourceLoader() {
+  MockBufferedResourceLoader() : BufferedResourceLoader(NULL, GURL(), 0, 0) {
   }
 
   MOCK_METHOD2(Start, void(net::CompletionCallback* read_callback,
