@@ -29,6 +29,7 @@
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
+#import "chrome/browser/cocoa/fullscreen_controller.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/themed_window.h"
@@ -305,6 +306,18 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
            name:NSViewFrameDidChangeNotification
          object:[self view]];
 
+  // Watch for things going to or from fullscreen.
+  [[NSNotificationCenter defaultCenter]
+    addObserver:self
+       selector:@selector(willEnterOrLeaveFullscreen:)
+           name:kWillEnterFullscreenNotification
+         object:nil];
+  [[NSNotificationCenter defaultCenter]
+    addObserver:self
+       selector:@selector(willEnterOrLeaveFullscreen:)
+           name:kWillLeaveFullscreenNotification
+         object:nil];
+
   // Don't pass ourself along (as 'self') until our init is completely
   // done.  Thus, this call is (almost) last.
   bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
@@ -333,6 +346,23 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
                     selector:@selector(parentWindowDidResignKey:)
                         name:NSWindowDidResignKeyNotification
                       object:[[self view] window]];
+}
+
+// When going fullscreen we can run into trouble.  Our view is removed
+// from the non-fullscreen window before the non-fullscreen window
+// loses key, so our parentDidResignKey: callback never gets called.
+// In addition, a bookmark folder controller needs to be autoreleased
+// (in case it's in the event chain when closed), but the release
+// implicitly needs to happen while it's connected to the original
+// (non-fullscreen) window to "unlock bar visibility".  Such a
+// contract isn't honored when going fullscreen with the menu option
+// (not with the keyboard shortcut).  We fake it as best we can here.
+// We have a similar problem leaving fullscreen.
+- (void)willEnterOrLeaveFullscreen:(NSNotification*)notification {
+  if (folderController_) {
+    [self childFolderWillClose:folderController_];
+    [self closeFolderAndStopTrackingMenus];
+  }
 }
 
 // NSNotificationCenter callback.

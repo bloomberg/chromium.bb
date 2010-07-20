@@ -9,6 +9,10 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
+const NSString* kWillEnterFullscreenNotification =
+    @"WillEnterFullscreenNotification";
+const NSString* kWillLeaveFullscreenNotification =
+    @"WillLeaveFullscreenNotification";
 
 namespace {
 // The activation zone for the main menu is 4 pixels high; if we make it any
@@ -164,6 +168,12 @@ const CGFloat kFloatingBarVerticalOffset = 22;
     browserController_ = controller;
     currentFullscreenMode_ = mac_util::kFullScreenModeNormal;
   }
+
+  // Let the world know what we're up to.
+  [[NSNotificationCenter defaultCenter]
+    postNotificationName:kWillEnterFullscreenNotification
+                  object:nil];
+
   return self;
 }
 
@@ -200,6 +210,9 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)exitFullscreen {
+  [[NSNotificationCenter defaultCenter]
+    postNotificationName:kWillLeaveFullscreenNotification
+                  object:nil];
   DCHECK(isFullscreen_);
   [self cleanup];
   isFullscreen_ = NO;
