@@ -50,6 +50,9 @@
           'dependencies': [
             'breakpad_utilities',
           ],
+          'include_dirs': [
+            'src/common/mac',
+          ],
           'sources': [
             'src/client/mac/crash_generation/Inspector.mm',
             'src/client/mac/crash_generation/InspectorMain.mm',
@@ -64,6 +67,9 @@
           'target_name': 'crash_report_sender',
           'type': 'executable',
           'mac_bundle': 1,
+          'include_dirs': [
+            'src/common/mac',
+          ],
           'sources': [
             'src/common/mac/HTTPMultipartUpload.m',
             'src/client/mac/sender/crash_report_sender.m',
@@ -95,15 +101,28 @@
           'include_dirs': [
             'src/common/mac',
           ],
-          'dependencies': [
-            'breakpad_utilities',
-          ],
           'sources': [
-            'src/common/dwarf/bytereader.cc',
+            'src/common/dwarf/dwarf2diehandler.cc',
             'src/common/dwarf/dwarf2reader.cc',
-            'src/common/dwarf/functioninfo.cc',
+            'src/common/dwarf/bytereader.cc',
+            'src/common/dwarf_cfi_to_module.cc',
+            'src/common/dwarf_cu_to_module.cc',
+            'src/common/dwarf_line_to_module.cc',
+            'src/common/language.cc',
+            'src/common/module.cc',
             'src/common/mac/dump_syms.mm',
+            'src/common/mac/file_id.cc',
+            'src/common/mac/macho_id.cc',
+            'src/common/mac/macho_reader.cc',
+            'src/common/mac/macho_utilities.cc',
+            'src/common/mac/macho_walker.cc',
+            'src/common/stabs_reader.cc',
+            'src/common/stabs_to_module.cc',
             'src/tools/mac/dump_syms/dump_syms_tool.mm',
+          ],
+          'defines': [
+            # For src/common/stabs_reader.h.
+            'HAVE_MACH_O_NLIST_H',
           ],
           'xcode_settings': {
             # The DWARF utilities require -funsigned-char.
@@ -114,6 +133,7 @@
           'link_settings': {
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+              '$(SDKROOT)/usr/lib/libcrypto.dylib',
             ],
           },
           'configurations': {
