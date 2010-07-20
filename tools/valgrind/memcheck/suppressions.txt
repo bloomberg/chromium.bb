@@ -3361,6 +3361,14 @@
    fun:_ZN3net14SpdyHttpStream11SendRequestEPNS_16HttpResponseInfoEP14CallbackRunnerI6Tuple1IiEE
 }
 {
+   bug_46886_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net15SpdySessionPool3GetERKNS_12HostPortPairEPNS_18HttpNetworkSessionERKNS_11BoundNetLogE
+   fun:_ZN3net12_GLOBAL__N_118SpdyHttpStreamTest17CreateSpdySessionEv
+   fun:_ZN3net12_GLOBAL__N_135SpdyHttpStreamTest_SendRequest_Test8TestBodyEv
+}
+{
    bug_19775_a
    Memcheck:Leak
    ...
