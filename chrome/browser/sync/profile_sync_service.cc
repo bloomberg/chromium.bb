@@ -650,7 +650,10 @@ void ProfileSyncService::ChangePreferredDataTypes(
         preferred_types.count(model_type) != 0);
   }
 
-  ConfigureDataTypeManager();
+  // If we haven't initialized yet, don't configure the DTM as it could cause
+  // association to start before a Directory has even been created.
+  if (backend_initialized_)
+    ConfigureDataTypeManager();
 }
 
 void ProfileSyncService::GetPreferredDataTypes(
