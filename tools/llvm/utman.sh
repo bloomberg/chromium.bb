@@ -1362,7 +1362,7 @@ misc-tools() {
 
    # TODO(robertm): revisit some of these options
    RunWithLog arm_sel_ldr \
-          ./scons MODE=nacl,opt-linux \
+          ./scons MODE=opt-linux \
           platform=arm \
           sdl=none \
           naclsdk_validate=0 \
@@ -1945,15 +1945,15 @@ extrasdk-arm-make() {
   mkdir -p "${objdir}"
   ts-touch-open "${objdir}"
 
-  RunWithLog "extra_sdk_arm" \
-  ./scons MODE=nacl_extra_sdk \
-          platform=arm \
-          sdl=none \
-          naclsdk_validate=0 \
-          extra_sdk_clean \
-          extra_sdk_update_header \
-          install_libpthread \
-          extra_sdk_update
+  TARGET_CODE=sfi-arm RunWithLog "extra_sdk_arm" \
+      ./scons MODE=nacl_extra_sdk \
+      platform=arm \
+      sdl=none \
+      naclsdk_validate=0 \
+      extra_sdk_clean \
+      extra_sdk_update_header \
+      install_libpthread \
+      extra_sdk_update
 
   # Keep a backup of the files extrasdk generated
   # in case we want to re-install them again.
@@ -1979,13 +1979,12 @@ extrasdk-arm-make() {
 extrasdk-bitcode-make() {
   StepBanner "EXTRASDK-BITCODE" "Make"
 
-  BITCODE-ON
   local objdir="${TC_BUILD_EXTRASDK_BITCODE}"
   mkdir -p "${objdir}"
   ts-touch-open "${objdir}"
 
-  RunWithLog "extra_sdk_bitcode" \
-  ./scons MODE=nacl_extra_sdk \
+  TARGET_CODE=bc-arm RunWithLog "extra_sdk_bitcode" \
+      ./scons MODE=nacl_extra_sdk \
       platform=arm \
       sdl=none \
       naclsdk_validate=0 \
@@ -1994,7 +1993,6 @@ extrasdk-bitcode-make() {
       extra_sdk_update_header \
       install_libpthread \
       extra_sdk_update
-  BITCODE-OFF
 
 
   # NOTE: as collateral damage we also generate these as (arm) native code
@@ -2368,13 +2366,12 @@ show-tests() {
 #@ test-arm-old <test>   - run a single arm test via the old toolchain
 test-arm-old() {
   ./scons platform=arm ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-  export TARGET_CODE=sfi-arm
   rm -rf scons-out/nacl-arm
   local fixedargs=""
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
     fixedargs="smoke_tests"
   fi
-  ./scons ${SCONS_ARGS[@]} \
+  TARGET_CODE=sfi-arm ./scons ${SCONS_ARGS[@]} \
           force_sel_ldr=scons-out/opt-linux-arm/staging/sel_ldr \
           ${fixedargs} "$@"
 }
@@ -2383,14 +2380,13 @@ test-arm-old() {
 #@ test-arm <test>       - run a single arm test via pnacl toolchain
 test-arm() {
   ./scons platform=arm ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-  export TARGET_CODE=bc-arm
   rm -rf scons-out/nacl-arm
 
   local fixedargs=""
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
     fixedargs="smoke_tests"
   fi
-  ./scons ${SCONS_ARGS[@]} \
+  TARGET_CODE=bc-arm ./scons ${SCONS_ARGS[@]} \
           force_sel_ldr=scons-out/opt-linux-arm/staging/sel_ldr \
           ${fixedargs} "$@"
 }
@@ -2399,14 +2395,13 @@ test-arm() {
 #@ test-x86-32 <test>    - run a single x86-32 test via pnacl toolchain
 test-x86-32() {
   ./scons platform=x86-32 ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-  export TARGET_CODE=bc-x86-32
   rm -rf scons-out/nacl-arm
 
   local fixedargs=""
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
     fixedargs="smoke_tests"
   fi
-  ./scons ${SCONS_ARGS[@]} \
+  TARGET_CODE=bc-x86-32 ./scons ${SCONS_ARGS[@]} \
           force_emulator= \
           force_sel_ldr=scons-out/opt-linux-x86-32/staging/sel_ldr \
           ${fixedargs} "$@"
@@ -2416,14 +2411,13 @@ test-x86-32() {
 #@ test-x86-64 <test>    - run a single x86-64 test via pnacl toolchain
 test-x86-64() {
   ./scons platform=x86-64 ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-  export TARGET_CODE=bc-x86-64
   rm -rf scons-out/nacl-arm
 
   local fixedargs=""
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
     fixedargs="smoke_tests"
   fi
-  ./scons ${SCONS_ARGS[@]} \
+  TARGET_CODE=bc-x86-64 ./scons ${SCONS_ARGS[@]} \
           force_emulator= \
           force_sel_ldr=scons-out/opt-linux-x86-64/staging/sel_ldr \
           ${fixedargs} "$@"
