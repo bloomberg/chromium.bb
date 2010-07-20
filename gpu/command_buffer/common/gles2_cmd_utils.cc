@@ -328,6 +328,9 @@ int ElementsPerGroup(int format, int type) {
 // Return the number of bytes per element, based on the element type.
 int BytesPerElement(int type) {
   switch (type) {
+    case GL_FLOAT:
+      return 4;
+    case GL_HALF_FLOAT_OES:
     case GL_UNSIGNED_SHORT:
     case GL_SHORT:
     case GL_UNSIGNED_SHORT_5_6_5:

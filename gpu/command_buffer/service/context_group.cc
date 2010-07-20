@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/GLES2/gles2_command_buffer.h"
 
 namespace gpu {
 namespace gles2 {
@@ -79,12 +80,53 @@ bool ContextGroup::Initialize() {
     npot_ok = true;
   }
 
+  // Check if we should allow GL_OES_texture_float, GL_OES_texture_half_float,
+  // GL_OES_texture_float_linear, GL_OES_texture_half_float_linear
+  bool enable_texture_float = false;
+  bool enable_texture_float_linear = false;
+  bool enable_texture_half_float = false;
+  bool enable_texture_half_float_linear = false;
+  if (strstr(extensions, "GL_ARB_texture_float")) {
+    enable_texture_float = true;
+    enable_texture_float_linear = true;
+    enable_texture_half_float = true;
+    enable_texture_half_float_linear = true;
+  } else {
+    if (strstr(extensions, "GL_OES_texture_float")) {
+      enable_texture_float = true;
+      if (strstr(extensions, "GL_OES_texture_float_linear")) {
+        enable_texture_float_linear = true;
+      }
+    }
+    if (strstr(extensions, "GL_OES_texture_half_float")) {
+      enable_texture_half_float = true;
+      if (strstr(extensions, "GL_OES_texture_half_float_linear")) {
+        enable_texture_half_float_linear = true;
+      }
+    }
+  }
+
+  if (enable_texture_float) {
+    validators_.pixel_type.AddValue(GL_FLOAT);
+    AddExtensionString("GL_OES_texture_float");
+    if (enable_texture_float_linear) {
+      AddExtensionString("GL_OES_texture_float_linear");
+    }
+  }
+
+  if (enable_texture_half_float) {
+    validators_.pixel_type.AddValue(GL_HALF_FLOAT_OES);
+    AddExtensionString("GL_OES_texture_half_float");
+    if (enable_texture_half_float_linear) {
+      AddExtensionString("GL_OES_texture_half_float_linear");
+    }
+  }
+
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth24
   //     GL_OES_depth32
   //     GL_OES_packed_depth_stencil
   //     GL_OES_element_index_uint
-  //     GL_EXT_texture_format_BGRA8888
 
   buffer_manager_.reset(new BufferManager());
   framebuffer_manager_.reset(new FramebufferManager());
@@ -106,6 +148,8 @@ bool ContextGroup::Initialize() {
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &max_cube_map_texture_size);
   texture_manager_.reset(new TextureManager(npot_ok,
+                                            enable_texture_float_linear,
+                                            enable_texture_half_float_linear,
                                             max_texture_size,
                                             max_cube_map_texture_size));
 
@@ -168,7 +212,7 @@ void ContextGroup::Destroy(bool have_context) {
 }
 
 void ContextGroup::AddExtensionString(const std::string& str) {
-  extensions_ += (extensions_.empty() ? " " : "") + str;
+  extensions_ += (extensions_.empty() ? "" : " ") + str;
 }
 
 IdAllocator* ContextGroup::GetIdAllocator(unsigned namespace_id) {

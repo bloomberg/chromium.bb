@@ -6,6 +6,7 @@
 #include "app/gfx/gl/gl_mock.h"
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/GLES2/gles2_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::gfx::MockGLInterface;
@@ -221,6 +222,66 @@ TEST_F(ContextGroupTest, InitializeEXT_texture_format_BGRA8888Apple) {
       GL_BGRA_EXT));
   EXPECT_TRUE(group_.validators()->texture_internal_format.IsValid(
       GL_BGRA_EXT));
+}
+
+TEST_F(ContextGroupTest, InitializeOES_texture_floatGLES2) {
+  SetupInitExpectations("GL_OES_texture_float");
+  group_.Initialize();
+  EXPECT_FALSE(group_.texture_manager()->enable_float_linear());
+  EXPECT_FALSE(group_.texture_manager()->enable_half_float_linear());
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_OES_texture_float"));
+  EXPECT_THAT(group_.extensions(), Not(HasSubstr("GL_OES_texture_half_float")));
+  EXPECT_THAT(group_.extensions(),
+              Not(HasSubstr("GL_OES_texture_float_linear")));
+  EXPECT_THAT(group_.extensions(),
+              Not(HasSubstr("GL_OES_texture_half_float_linear")));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_FLOAT));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
+}
+
+TEST_F(ContextGroupTest, InitializeOES_texture_float_linearGLES2) {
+  SetupInitExpectations("GL_OES_texture_float GL_OES_texture_float_linear");
+  group_.Initialize();
+  EXPECT_TRUE(group_.texture_manager()->enable_float_linear());
+  EXPECT_FALSE(group_.texture_manager()->enable_half_float_linear());
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_OES_texture_float"));
+  EXPECT_THAT(group_.extensions(), Not(HasSubstr("GL_OES_texture_half_float")));
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_OES_texture_float_linear"));
+  EXPECT_THAT(group_.extensions(),
+              Not(HasSubstr("GL_OES_texture_half_float_linear")));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_FLOAT));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
+}
+
+TEST_F(ContextGroupTest, InitializeOES_texture_half_floatGLES2) {
+  SetupInitExpectations("GL_OES_texture_half_float");
+  group_.Initialize();
+  EXPECT_FALSE(group_.texture_manager()->enable_float_linear());
+  EXPECT_FALSE(group_.texture_manager()->enable_half_float_linear());
+  EXPECT_THAT(group_.extensions(), Not(HasSubstr("GL_OES_texture_float")));
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_OES_texture_half_float"));
+  EXPECT_THAT(group_.extensions(),
+              Not(HasSubstr("GL_OES_texture_float_linear")));
+  EXPECT_THAT(group_.extensions(),
+              Not(HasSubstr("GL_OES_texture_half_float_linear")));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_FLOAT));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
+}
+
+TEST_F(ContextGroupTest, InitializeOES_texture_half_float_linearGLES2) {
+  SetupInitExpectations(
+      "GL_OES_texture_half_float GL_OES_texture_half_float_linear");
+  group_.Initialize();
+  EXPECT_FALSE(group_.texture_manager()->enable_float_linear());
+  EXPECT_TRUE(group_.texture_manager()->enable_half_float_linear());
+  EXPECT_THAT(group_.extensions(), Not(HasSubstr("GL_OES_texture_float")));
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_OES_texture_half_float"));
+  EXPECT_THAT(group_.extensions(),
+              Not(HasSubstr("GL_OES_texture_float_linear")));
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_OES_texture_half_float_linear"));
+  EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_FLOAT));
+  EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
 }
 
 }  // namespace gles2

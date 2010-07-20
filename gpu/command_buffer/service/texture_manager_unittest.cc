@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "base/scoped_ptr.h"
 #include "app/gfx/gl/gl_mock.h"
+#include "gpu/GLES2/gles2_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Pointee;
@@ -20,7 +21,7 @@ class TextureManagerTest : public testing::Test {
   static const GLint kMaxCubeMapLevels = 4;
 
   TextureManagerTest()
-      : manager_(false, kMaxTextureSize, kMaxCubeMapTextureSize) {
+      : manager_(false, false, false, kMaxTextureSize, kMaxCubeMapTextureSize) {
   }
 
   ~TextureManagerTest() {
@@ -156,7 +157,7 @@ class TextureInfoTest : public testing::Test {
   static const GLuint kService1Id = 11;
 
   TextureInfoTest()
-      : manager_(false, kMaxTextureSize, kMaxCubeMapTextureSize) {
+      : manager_(false, false, false, kMaxTextureSize, kMaxCubeMapTextureSize) {
   }
   ~TextureInfoTest() {
     manager_.Destroy(false);
@@ -265,7 +266,8 @@ TEST_F(TextureInfoTest, NPOT2D) {
 }
 
 TEST_F(TextureInfoTest, NPOT2DNPOTOK) {
-  TextureManager manager(true, kMaxTextureSize, kMaxCubeMapTextureSize);
+  TextureManager manager(
+      true, false, false, kMaxTextureSize, kMaxCubeMapTextureSize);
   manager.CreateTextureInfo(kClient1Id, kService1Id);
   TextureManager::TextureInfo* info = manager_.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info_ != NULL);
@@ -388,6 +390,70 @@ TEST_F(TextureInfoTest, GetLevelSize) {
   EXPECT_EQ(5, height);
   manager_.RemoveTextureInfo(kClient1Id);
   EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
+}
+
+TEST_F(TextureInfoTest, FloatNotLinear) {
+  TextureManager manager(
+      false, false, false, kMaxTextureSize, kMaxCubeMapTextureSize);
+  manager.CreateTextureInfo(kClient1Id, kService1Id);
+  TextureManager::TextureInfo* info = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info_ != NULL);
+  manager.SetInfoTarget(info, GL_TEXTURE_2D);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info->target());
+  manager.SetLevelInfo(info,
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_FLOAT);
+  EXPECT_FALSE(info->texture_complete());
+  manager.SetParameter(info, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  EXPECT_FALSE(info->texture_complete());
+  manager.SetParameter(info, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+  EXPECT_TRUE(info->texture_complete());
+  manager.Destroy(false);
+}
+
+TEST_F(TextureInfoTest, FloatLinear) {
+  TextureManager manager(
+      false, true, false, kMaxTextureSize, kMaxCubeMapTextureSize);
+  manager.CreateTextureInfo(kClient1Id, kService1Id);
+  TextureManager::TextureInfo* info = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info_ != NULL);
+  manager.SetInfoTarget(info, GL_TEXTURE_2D);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info->target());
+  manager.SetLevelInfo(info,
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_FLOAT);
+  EXPECT_TRUE(info->texture_complete());
+  manager.Destroy(false);
+}
+
+TEST_F(TextureInfoTest, HalfFloatNotLinear) {
+  TextureManager manager(
+      false, false, false, kMaxTextureSize, kMaxCubeMapTextureSize);
+  manager.CreateTextureInfo(kClient1Id, kService1Id);
+  TextureManager::TextureInfo* info = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info_ != NULL);
+  manager.SetInfoTarget(info, GL_TEXTURE_2D);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info->target());
+  manager.SetLevelInfo(info,
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES);
+  EXPECT_FALSE(info->texture_complete());
+  manager.SetParameter(info, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  EXPECT_FALSE(info->texture_complete());
+  manager.SetParameter(info, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+  EXPECT_TRUE(info->texture_complete());
+  manager.Destroy(false);
+}
+
+TEST_F(TextureInfoTest, HalfFloatLinear) {
+  TextureManager manager(
+      false, false, true, kMaxTextureSize, kMaxCubeMapTextureSize);
+  manager.CreateTextureInfo(kClient1Id, kService1Id);
+  TextureManager::TextureInfo* info = manager_.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info_ != NULL);
+  manager.SetInfoTarget(info, GL_TEXTURE_2D);
+  EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), info->target());
+  manager.SetLevelInfo(info,
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES);
+  EXPECT_TRUE(info->texture_complete());
+  manager.Destroy(false);
 }
 
 }  // namespace gles2

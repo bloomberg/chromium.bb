@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/GLES2/gles2_command_buffer.h"
 
 namespace gpu {
 namespace gles2 {
@@ -114,7 +115,8 @@ bool TextureManager::TextureInfo::MarkMipmapsGenerated(
       width = std::max(1, width >> 1);
       height = std::max(1, height >> 1);
       depth = std::max(1, depth >> 1);
-      SetLevelInfo(target_ == GL_TEXTURE_2D ? GL_TEXTURE_2D :
+      SetLevelInfo(manager,
+                   target_ == GL_TEXTURE_2D ? GL_TEXTURE_2D :
                                               FaceIndexToGLTarget(ii),
                    level,
                    info1.internal_format,
@@ -152,6 +154,7 @@ bool TextureManager::TextureInfo::CanGenerateMipmaps(
 }
 
 void TextureManager::TextureInfo::SetLevelInfo(
+    const TextureManager* manager,
     GLenum target,
     GLint level,
     GLint internal_format,
@@ -180,7 +183,7 @@ void TextureManager::TextureInfo::SetLevelInfo(
   info.format = format;
   info.type = type;
   max_level_set_ = std::max(max_level_set_, level);
-  Update();
+  Update(manager);
 }
 
 bool TextureManager::TextureInfo::GetLevelSize(
@@ -196,7 +199,8 @@ bool TextureManager::TextureInfo::GetLevelSize(
   return false;
 }
 
-void TextureManager::TextureInfo::SetParameter(GLenum pname, GLint param) {
+void TextureManager::TextureInfo::SetParameter(
+    const TextureManager* manager, GLenum pname, GLint param) {
   switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
       min_filter_ = param;
@@ -214,9 +218,10 @@ void TextureManager::TextureInfo::SetParameter(GLenum pname, GLint param) {
       NOTREACHED();
       break;
   }
+  Update(manager);
 }
 
-void TextureManager::TextureInfo::Update() {
+void TextureManager::TextureInfo::Update(const TextureManager* manager) {
   // Update npot status.
   npot_ = false;
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
@@ -238,6 +243,16 @@ void TextureManager::TextureInfo::Update() {
       max_level_set_ >= 0;
   cube_complete_ = (level_infos_.size() == 6) &&
                    (first_face.width == first_face.height);
+  if (first_face.type == GL_FLOAT && !manager->enable_float_linear() &&
+      (min_filter_ != GL_NEAREST_MIPMAP_NEAREST ||
+       mag_filter_ != GL_NEAREST)) {
+    texture_complete_ = false;
+  } else if (first_face.type == GL_HALF_FLOAT_OES &&
+             !manager->enable_half_float_linear() &&
+             (min_filter_ != GL_NEAREST_MIPMAP_NEAREST ||
+              mag_filter_ != GL_NEAREST)) {
+    texture_complete_ = false;
+  }
   for (size_t ii = 0;
        ii < level_infos_.size() && (cube_complete_ || texture_complete_);
        ++ii) {
@@ -277,9 +292,13 @@ void TextureManager::TextureInfo::Update() {
 
 TextureManager::TextureManager(
     bool npot_ok,
+    bool enable_float_linear,
+    bool enable_half_float_linear,
     GLint max_texture_size,
     GLint max_cube_map_texture_size)
     : npot_ok_(npot_ok),
+      enable_float_linear_(enable_float_linear),
+      enable_half_float_linear_(enable_half_float_linear),
       max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
       max_levels_(ComputeMipMapCount(max_texture_size,
@@ -292,12 +311,12 @@ TextureManager::TextureManager(
   default_texture_2d_ = TextureInfo::Ref(new TextureInfo(0));
   SetInfoTarget(default_texture_2d_, GL_TEXTURE_2D);
   default_texture_2d_->SetLevelInfo(
-    GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    this, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   default_texture_cube_map_ = TextureInfo::Ref(new TextureInfo(0));
   SetInfoTarget(default_texture_cube_map_, GL_TEXTURE_CUBE_MAP);
   for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
     default_texture_cube_map_->SetLevelInfo(
-      GLES2Util::IndexToGLFaceTarget(ii),
+      this, GLES2Util::IndexToGLFaceTarget(ii),
       0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   }
 }
@@ -339,7 +358,7 @@ void TextureManager::SetLevelInfo(
     --num_unrenderable_textures_;
   }
   info->SetLevelInfo(
-      target, level, internal_format, width, height, depth,
+      this, target, level, internal_format, width, height, depth,
       border, format, type);
   if (!info->CanRender(this)) {
     ++num_unrenderable_textures_;
@@ -353,7 +372,7 @@ void TextureManager::SetParameter(
   if (!info->CanRender(this)) {
     --num_unrenderable_textures_;
   }
-  info->SetParameter(pname, param);
+  info->SetParameter(this, pname, param);
   if (!info->CanRender(this)) {
     ++num_unrenderable_textures_;
   }

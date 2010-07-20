@@ -117,6 +117,7 @@ class TextureManager {
 
     // Set the info for a particular level.
     void SetLevelInfo(
+        const TextureManager* manager,
         GLenum target,
         GLint level,
         GLint internal_format,
@@ -129,7 +130,7 @@ class TextureManager {
 
     // Sets a texture parameter.
     // TODO(gman): Expand to SetParameteri,f,iv,fv
-    void SetParameter(GLenum pname, GLint param);
+    void SetParameter(const TextureManager* manager, GLenum pname, GLint param);
 
     // Makes each of the mip levels as though they were generated.
     bool MarkMipmapsGenerated(const TextureManager* manager);
@@ -158,7 +159,7 @@ class TextureManager {
     }
 
     // Update info about this texture.
-    void Update();
+    void Update(const TextureManager* manager);
 
     // Info about each face and level of texture.
     std::vector<std::vector<LevelInfo> > level_infos_;
@@ -194,6 +195,8 @@ class TextureManager {
   };
 
   TextureManager(bool npot_ok,
+                 bool enable_float_linear,
+                 bool enable_half_float_linear,
                  GLsizei max_texture_size,
                  GLsizei max_cube_map_texture_size);
   ~TextureManager();
@@ -204,6 +207,16 @@ class TextureManager {
   // Whether or not npot textures can render.
   bool npot_ok() const {
     return npot_ok_;
+  }
+
+  // Whether float textures can have linear filtering.
+  bool enable_float_linear() const {
+    return enable_float_linear_;
+  }
+
+  // Whether half float textures can have linear filtering.
+  bool enable_half_float_linear() const {
+    return enable_half_float_linear_;
   }
 
   // Returns the maximum number of levels.
@@ -280,6 +293,8 @@ class TextureManager {
   TextureInfoMap texture_infos_;
 
   bool npot_ok_;
+  bool enable_float_linear_;
+  bool enable_half_float_linear_;
   GLsizei max_texture_size_;
   GLsizei max_cube_map_texture_size_;
   GLint max_levels_;

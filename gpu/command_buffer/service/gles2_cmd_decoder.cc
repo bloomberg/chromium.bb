@@ -4304,6 +4304,10 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     SetGLError(GL_INVALID_ENUM, "glTexImage2D: type GL_INVALID_ENUM");
     return error::kNoError;
   }
+  if (format != internal_format) {
+    SetGLError(GL_INVALID_OPERATION, "glTexImage2D: format != internalFormat");
+    return error::kNoError;
+  }
   if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
       border != 0) {
     SetGLError(GL_INVALID_VALUE, "glTexImage2D: dimensions out of range");
@@ -4326,6 +4330,18 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
   #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
   if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
     internal_format = GL_RGBA;
+  } else if (type == GL_FLOAT) {
+    if (format == GL_RGBA) {
+      internal_format = GL_RGBA32F_ARB;
+    } else if (format == GL_RGB) {
+      internal_format = GL_RGB32F_ARB;
+    }
+  } else if (type == GL_HALF_FLOAT_OES) {
+    if (format == GL_RGBA) {
+      internal_format = GL_RGBA16F_ARB;
+    } else if (format == GL_RGB) {
+      internal_format = GL_RGB16F_ARB;
+    }
   }
   #endif
   glTexImage2D(

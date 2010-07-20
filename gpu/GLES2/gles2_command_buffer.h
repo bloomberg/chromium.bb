@@ -25,6 +25,9 @@
 #ifndef GL_BGRA_EXT
 #define GL_BGRA_EXT 0x80E1
 #endif
+#ifndef GL_HALF_FLOAT_OES
+#define GL_HALF_FLOAT_OES 0x8D61
+#endif
 
 #endif  // GPU_GLES2_GLES2_COMMAND_BUFFER_H_
 
