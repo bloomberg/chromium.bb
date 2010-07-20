@@ -48,6 +48,25 @@ Central roster: hosting all Google Talk chats in ChromeOS.
       '"></scr' + 'ipt>');
 </script>
 <script>
+  var reloadTime = 60000;
+  var reloadTimer;
+  function reloadPage() {
+    if (reloadTimer) {
+      clearTimeout(reloadTimer);
+      reloadTimer = null;
+    }
+    window.location.reload(true);
+  }
+  function reloadPageCountdown() {
+    document.getElementById('reloadStatus').textContent =
+        'Retrying in ' + reloadTime / 1000 + ' seconds';
+    if (reloadTime <= 0) {
+      reloadPage();
+    } else {
+      reloadTimer = setTimeout(reloadPageCountdown, 1000);
+    }
+    reloadTime -= 1000;
+  }
   var chatClient = null;
   if (window.GTalkNotifier) {
     chatClient = new GTalkNotifier(
@@ -68,8 +87,17 @@ Central roster: hosting all Google Talk chats in ChromeOS.
         }
     );
   } else {
+    reloadTimer = setTimeout(reloadPageCountdown, 0);
     document.write(
-        '<div class="talk_roster"><b>GTalkNotifier undefined</b></div>');
+        '<style>' +
+          'body {' +
+            'text-align: center;' +
+          '}' +
+        '</style>' +
+        '<p>Could not connect to Google Talk</p>' +
+        '<p id="reloadStatus"></p>' +
+        '<input type="button" value="Retry Now" onclick="reloadPage()"/>'
+    );
   }
 </script>
 </body>
