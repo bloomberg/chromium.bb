@@ -55,20 +55,14 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
   }
 
   // Pointer to the login handler, or NULL if there is none for this request.
-  // This is a NON-OWNING pointer, and the caller is responsible for the
-  // pointer after calling set.
-  LoginHandler* login_handler() const { return login_handler_; }
-  void set_login_handler(LoginHandler* lh) { login_handler_ = lh; }
+  LoginHandler* login_handler() const { return login_handler_.get(); }
+  void set_login_handler(LoginHandler* lh);
 
   // Pointer to the SSL auth, or NULL if there is none for this request.
-  // This is a NON-OWNING pointer, and the caller is resounsible for the
-  // pointer after calling set.
   SSLClientAuthHandler* ssl_client_auth_handler() const {
-    return ssl_client_auth_handler_;
+    return ssl_client_auth_handler_.get();
   }
-  void set_ssl_client_auth_handler(SSLClientAuthHandler* s) {
-    ssl_client_auth_handler_ = s;
-  }
+  void set_ssl_client_auth_handler(SSLClientAuthHandler* s);
 
   // Identifies the type of process (renderer, plugin, etc.) making the request.
   ChildProcessInfo::ProcessType process_type() const {
@@ -198,8 +192,8 @@ class ResourceDispatcherHostRequestInfo : public URLRequest::UserData {
 
   scoped_refptr<ResourceHandler> resource_handler_;
   CrossSiteResourceHandler* cross_site_handler_;  // Non-owning, may be NULL.
-  LoginHandler* login_handler_;  // Non-owning, may be NULL.
-  SSLClientAuthHandler* ssl_client_auth_handler_;  // Non-owning, may be NULL.
+  scoped_refptr<LoginHandler> login_handler_;
+  scoped_refptr<SSLClientAuthHandler> ssl_client_auth_handler_;
   ChildProcessInfo::ProcessType process_type_;
   int child_id_;
   int route_id_;

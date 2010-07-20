@@ -81,7 +81,7 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
   DCHECK(request_) << "LoginHandler constructed with NULL request";
   DCHECK(auth_info_) << "LoginHandler constructed with NULL auth info";
 
-  AddRef();  // matched by ReleaseSoon::ReleaseSoon().
+  AddRef();  // matched by LoginHandler::ReleaseSoon().
 
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,

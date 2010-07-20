@@ -4,7 +4,9 @@
 
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 
+#include "chrome/browser/login_prompt.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
+#include "chrome/browser/ssl/ssl_client_auth_handler.h"
 
 ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     ResourceHandler* handler,
@@ -22,8 +24,6 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     int host_render_view_id)
     : resource_handler_(handler),
       cross_site_handler_(NULL),
-      login_handler_(NULL),
-      ssl_client_auth_handler_(NULL),
       process_type_(process_type),
       child_id_(child_id),
       route_id_(route_id),
@@ -51,4 +51,13 @@ ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
 
 ResourceDispatcherHostRequestInfo::~ResourceDispatcherHostRequestInfo() {
   resource_handler_->OnRequestClosed();
+}
+
+void ResourceDispatcherHostRequestInfo::set_login_handler(LoginHandler* lh) {
+  login_handler_ = lh;
+}
+
+void ResourceDispatcherHostRequestInfo::set_ssl_client_auth_handler(
+    SSLClientAuthHandler* s) {
+  ssl_client_auth_handler_ = s;
 }
