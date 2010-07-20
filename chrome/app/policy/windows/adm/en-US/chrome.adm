@@ -165,16 +165,15 @@ CLASS MACHINE
 SUPPORTED_WINXPSP2="At least Microsoft Windows XP SP2"
 google="Google"
 googlechrome="Google Chrome"
-ApplicationLocale="Configures the Application Locale"
-ApplicationLocale_Explain="Configures the locale to be used by Chrome. If the ApplicationLocale policy is configured, \
-Chrome will use the configured locale. If the configured locale is not supported \
-Chrome will fall back to en-US. If the policy is not configured, Chrome will either use the preference locale (if configured), \
-the system locale or the fallback locale en-US."
-ApplicationLocaleValue="Application locale"
+ApplicationLocale="Configures the application locale"
+ApplicationLocale_Explain="Configures the application locale in Google Chrome and prevents users from changing the locale.\n\n\
+If you enable this setting, Google Chrome uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.\n\n\
+If this setting is disabled or not configured, Google Chrome uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'."
+ApplicationLocaleValue="Application locale:"
 HomePage="Configure default home page"
-HomePage_Explain="Configures the default home page and prevents users from changing homepage settings.\n\n\
+HomePage_Explain="Configures the default home page in Google Chrome and prevents users from changing homepage preferences.\n\n\
 The homepage can either be set to a URL you specify or set to the New Tab Page.\n\n\
-If you specify the New Tab Page is specified as the homepage, the homepage URL location is ignored.\n\n\
+If you specify the New Tab Page as the homepage, the homepage URL location is ignored.\n\n\
 If you enable this setting, users cannot change their homepage settings in Google Chrome."
 HomepageMode="Homepage type:"
 HomepageIsLocationURL="Always use homepage URL as homepage"
@@ -183,10 +182,10 @@ HomepageLocation="Homepage URL:"
 Proxy="Configure proxy server"
 Proxy_Explain="Allows you to specify the proxy server used by Google Chrome and prevents users from changing proxy settings.\n\n\
 If you choose to never use a proxy server and always connect directly, \
-all other options will be ignored.\n\nIf you choose to auto detect the proxy server, all other \
-options will be ignored.\n\nFor detailed examples, visit: \
+all other options are ignored.\n\nIf you choose to auto detect the proxy server, all other \
+options are ignored.\n\nFor detailed examples, visit: \
 http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett\n\n\
-If you enable this setting, Google Chrome will ignore all proxy-related options specified from the command line."
+If you enable this setting, Google Chrome ignores all proxy-related options specified from the command line."
 ProxyServer="Address or URL of proxy server:"
 ProxyServerMode="Choose how to specify proxy server settings:"
 ProxyServerDisabled="Never use a proxy"
@@ -198,37 +197,37 @@ ProxyPacUrl="URL to a proxy .pac file:"
 AlternateErrorPagesEnabled="Enable alternate error pages"
 AlternateErrorPagesEnabled_Explain="Enables the use of alternate error pages that are built \
 into Google Chrome (such as 'page not found') and prevents users from changing this setting.\n\n\
-If you enable this setting, alternate error pages will be used.\n\n\
-If you disable this setting, alternate error pages will never be used.\n\n\
+If you enable this setting, alternate error pages are used.\n\n\
+If you disable this setting, alternate error pages are never used.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
 SearchSuggestEnabled="Enable search suggestions"
-SearchSuggestEnabled_Explain="Enables search suggestions in the Omnibox and prevents users from changing this setting.\n\n\
-If you enable this setting, search suggestions will be used.\n\n\
-If you disable this setting, search suggestions will never be used.\n\n\
+SearchSuggestEnabled_Explain="Enables search suggestions in Google Chrome's Omnibox and prevents users from changing this setting.\n\n\
+If you enable this setting, search suggestions are used.\n\n\
+If you disable this setting, search suggestions are never used.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
-DnsPrefetchingEnabled="Enable search suggestions"
-DnsPrefetchingEnabled_Explain="Enables DNS prefecthing and prevents users from changing this setting.\n\n\
+DnsPrefetchingEnabled="Enable DNS prefetching"
+DnsPrefetchingEnabled_Explain="Enables DNS prefecthing in Google Chrome and prevents users from changing this setting.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
 SafeBrowsingEnabled="Enable Safe Browsing"
-SafeBrowsingEnabled_Explain="Enables and disables whether Google Chrome's Safe Browsing feature and prevents users from changing this setting.\n\n\
-If you enable this setting, Safe Browsing will always be active.\n\n\
-If you disable this setting, Safe Browsing will never be active.\n\n\
+SafeBrowsingEnabled_Explain="Enables Google Chrome's Safe Browsing feature and prevents users from changing this setting.\n\n\
+If you enable this setting, Safe Browsing is always active.\n\n\
+If you disable this setting, Safe Browsing is never active.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
 MetricsReportingEnabled="Enable reporting of usage and crash-related data"
-MetricsReportingEnabled_Explain="Enables the anonymous reporting of usage \
-and crash-related data to Google and prevents users from changing this setting.\n\n\
-If you enable this setting, anonymous reporting of usage and crash-related data will be sent to Google.\n\n\
-If you disable this setting, anonymous reporting of usage and crash-related data will never be sent to Google.\n\n\
+MetricsReportingEnabled_Explain="Enables anonymous reporting of usage \
+and crash-related data about Google Chrome to Google and prevents users from changing this setting.\n\n\
+If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.\n\n\
+If you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
 PasswordManagerEnabled="Enable the password manager"
-PasswordManagerEnabled_Explain="Enables saving passwords and using saved passwords.\n\n\
-If you enable this setting, users can have Google Chrome memorize passwords and provide them when the form is next filled.\n\n\
-If you disable this setting, users will not be able to save passwords or use already saved passwords.\n\n\
+PasswordManagerEnabled_Explain="Enables saving passwords and using saved passwords in Google Chrome.\n\n\
+If you enable this setting, users can have Google Chrome memorize passwords and provide them automatically the next time you log into a site.\n\n\
+If you disable this setting, users are not able to save passwords or use already saved passwords.\n\n\
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome."
 DisabledPlugins="Specify a list of plugins that are disabled"
-DisabledPlugins_Explain="Specifies a list of plugins that are disabled and prevents users from changing this setting.\n\n\
-value is a comma-separated list of the names of plugins to be disabled."
+DisabledPlugins_Explain="Specifies a list of plugins that are disabled in Google Chrome and prevents users from changing this setting. The value is a comma-separated list of the names of plugins to be disabled.\n\n\
+If you enable this setting, the specified list of plugins is never used in Google Chrome. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them."
 DisabledPluginsList="Comma-separated list of disabled plugins:"
 Sync="Disallow synchronization of data with Google"
-Sync_Explain="Disallows data synchronization using Google-hosted sync services and prevents users from changing this setting.\n\n\
+Sync_Explain="Disallows data synchronization in Google Chrome using Google-hosted synchronization services and prevents users from changing this setting.\n\n\
 If you enable this setting, users cannot change or override this setting in Google Chrome."

@@ -7,15 +7,19 @@
       <string id="SUPPORTED_WINXPSP2">At least Microsoft Windows XP SP2</string>
       <string id="google">Google</string>
       <string id="googlechrome">Google Chrome</string>
-      <string id="ApplicationLocale">Configures the Application Locale</string>
-      <string id="ApplicationLocale_Explain">Configures the locale to be used by Chrome. If the ApplicationLocale policy is configured, Chrome will use the configured locale. If the configured locale is not supported Chrome will fall back to en-US. If the policy is not configured, Chrome will either use the preference locale (if configured), the system locale or the fallback locale en-US.</string>
-      <string id="ApplicationLocaleValue">Application locale</string>
+      <string id="ApplicationLocale">Configures the application locale</string>
+      <string id="ApplicationLocale_Explain">Configures the application locale in Google Chrome and prevents users from changing the locale.
+
+If you enable this setting, Google Chrome uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
+
+If this setting is disabled or not configured, Google Chrome uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'.</string>
+      <string id="ApplicationLocaleValue">Application locale:</string>
       <string id="HomePage">Configure default home page</string>
-      <string id="HomePage_Explain">Configures the default home page and prevents users from changing homepage settings.
+      <string id="HomePage_Explain">Configures the default home page in Google Chrome and prevents users from changing homepage preferences.
 
 The homepage can either be set to a URL you specify or set to the New Tab Page.
 
-If you specify the New Tab Page is specified as the homepage, the homepage URL location is ignored.
+If you specify the New Tab Page as the homepage, the homepage URL location is ignored.
 
 If you enable this setting, users cannot change their homepage settings in Google Chrome.</string>
       <string id="HomepageMode">Homepage type:</string>
@@ -25,13 +29,13 @@ If you enable this setting, users cannot change their homepage settings in Googl
       <string id="Proxy">Configure proxy server</string>
       <string id="Proxy_Explain">Allows you to specify the proxy server used by Google Chrome and prevents users from changing proxy settings.
 
-If you choose to never use a proxy server and always connect directly, all other options will be ignored.
+If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
-If you choose to auto detect the proxy server, all other options will be ignored.
+If you choose to auto detect the proxy server, all other options are ignored.
 
 For detailed examples, visit: http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett
 
-If you enable this setting, Google Chrome will ignore all proxy-related options specified from the command line.</string>
+If you enable this setting, Google Chrome ignores all proxy-related options specified from the command line.</string>
       <string id="ProxyServer">Address or URL of proxy server:</string>
       <string id="ProxyServerMode">Choose how to specify proxy server settings:</string>
       <string id="ProxyServerDisabled">Never use a proxy</string>
@@ -43,54 +47,54 @@ If you enable this setting, Google Chrome will ignore all proxy-related options 
       <string id="AlternateErrorPagesEnabled">Enable alternate error pages</string>
       <string id="AlternateErrorPagesEnabled_Explain">Enables the use of alternate error pages that are built into Google Chrome (such as 'page not found') and prevents users from changing this setting.
 
-If you enable this setting, alternate error pages will be used.
+If you enable this setting, alternate error pages are used.
 
-If you disable this setting, alternate error pages will never be used.
+If you disable this setting, alternate error pages are never used.
 
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
       <string id="SearchSuggestEnabled">Enable search suggestions</string>
-      <string id="SearchSuggestEnabled_Explain">Enables search suggestions in the Omnibox and prevents users from changing this setting.
+      <string id="SearchSuggestEnabled_Explain">Enables search suggestions in Google Chrome's Omnibox and prevents users from changing this setting.
 
-If you enable this setting, search suggestions will be used.
+If you enable this setting, search suggestions are used.
 
-If you disable this setting, search suggestions will never be used.
+If you disable this setting, search suggestions are never used.
 
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
-      <string id="DnsPrefetchingEnabled">Enable search suggestions</string>
-      <string id="DnsPrefetchingEnabled_Explain">Enables DNS prefecthing and prevents users from changing this setting.
+      <string id="DnsPrefetchingEnabled">Enable DNS prefetching</string>
+      <string id="DnsPrefetchingEnabled_Explain">Enables DNS prefecthing in Google Chrome and prevents users from changing this setting.
 
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
       <string id="SafeBrowsingEnabled">Enable Safe Browsing</string>
-      <string id="SafeBrowsingEnabled_Explain">Enables and disables whether Google Chrome's Safe Browsing feature and prevents users from changing this setting.
+      <string id="SafeBrowsingEnabled_Explain">Enables Google Chrome's Safe Browsing feature and prevents users from changing this setting.
 
-If you enable this setting, Safe Browsing will always be active.
+If you enable this setting, Safe Browsing is always active.
 
-If you disable this setting, Safe Browsing will never be active.
+If you disable this setting, Safe Browsing is never active.
 
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
       <string id="MetricsReportingEnabled">Enable reporting of usage and crash-related data</string>
-      <string id="MetricsReportingEnabled_Explain">Enables the anonymous reporting of usage and crash-related data to Google and prevents users from changing this setting.
+      <string id="MetricsReportingEnabled_Explain">Enables anonymous reporting of usage and crash-related data about Google Chrome to Google and prevents users from changing this setting.
 
-If you enable this setting, anonymous reporting of usage and crash-related data will be sent to Google.
+If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.
 
-If you disable this setting, anonymous reporting of usage and crash-related data will never be sent to Google.
+If you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.
 
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
       <string id="PasswordManagerEnabled">Enable the password manager</string>
-      <string id="PasswordManagerEnabled_Explain">Enables saving passwords and using saved passwords.
+      <string id="PasswordManagerEnabled_Explain">Enables saving passwords and using saved passwords in Google Chrome.
 
-If you enable this setting, users can have Google Chrome memorize passwords and provide them when the form is next filled.
+If you enable this setting, users can have Google Chrome memorize passwords and provide them automatically the next time you log into a site.
 
-If you disable this setting, users will not be able to save passwords or use already saved passwords.
+If you disable this setting, users are not able to save passwords or use already saved passwords.
 
 If you enable or disable this setting, users cannot change or override this setting in Google Chrome.</string>
       <string id="DisabledPlugins">Specify a list of plugins that are disabled</string>
-      <string id="DisabledPlugins_Explain">Specifies a list of plugins that are disabled and prevents users from changing this setting.
+      <string id="DisabledPlugins_Explain">Specifies a list of plugins that are disabled in Google Chrome and prevents users from changing this setting. The value is a comma-separated list of the names of plugins to be disabled.
 
-value is a comma-separated list of the names of plugins to be disabled.</string>
+If you enable this setting, the specified list of plugins is never used in Google Chrome. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them.</string>
       <string id="DisabledPluginsList">Comma-separated list of disabled plugins:</string>
       <string id="Sync">Disallow synchronization of data with Google</string>
-      <string id="Sync_Explain">Disallows data synchronization using Google-hosted sync services and prevents users from changing this setting.
+      <string id="Sync_Explain">Disallows data synchronization in Google Chrome using Google-hosted synchronization services and prevents users from changing this setting.
 
 If you enable this setting, users cannot change or override this setting in Google Chrome.</string>
       <string id="ADMXMigrator_UnresolvedString">ADMX Migrator encountered a string that is not present in the source ADM string table.</string>
@@ -105,7 +109,7 @@ If you enable this setting, users cannot change or override this setting in Goog
       </presentation>
       <presentation id="ApplicationLocale">
         <textBox refId="ApplicationLocaleValue">
-          <label>Application locale</label>
+          <label>Application locale:</label>
         </textBox>
       </presentation>
       <presentation id="AlternateErrorPagesEnabled" />
