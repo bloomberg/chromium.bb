@@ -63,6 +63,9 @@ class PulseAudioMixer {
   void DoInit(InitDoneCallback* callback);
   void DoGetVolume(GetVolumeCallback* callback, void* user);
 
+  static void ConnectToPulseCallbackThunk(pa_context* c, void* userdata);
+  void OnConnectToPulseCallback(pa_context* c, bool* connect_done);
+
   // This goes through sequence of connecting to the default PulseAudio server.
   // We will block until we either have a valid connection or something failed.
   // If a connection is lost for some reason, delete and recreate the object.
@@ -97,8 +100,6 @@ class PulseAudioMixer {
                                    const pa_sink_info* sink_info,
                                    int eol,
                                    void* userdata);
-
-  static void ContextStateCallback(pa_context* c, void* userdata);
 
   // The PulseAudio index of the main device being used.
   mutable int device_id_;
