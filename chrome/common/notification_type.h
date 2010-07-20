@@ -218,6 +218,11 @@ class NotificationType {
     // This message is sent when the application is terminating (Mac OS X only
     // at present). No source or details are passed.
     APP_TERMINATING,
+
+    // This notification is sent when the app has no key window, such as when
+    // all windows are closed but the app is still active. No source or details
+    // are provided.
+    NO_KEY_WINDOW,
 #endif
 
     // This is sent when the user has chosen to exit the app, but before any

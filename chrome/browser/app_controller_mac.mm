@@ -141,6 +141,7 @@ void RecordLastRunAppBundlePath() {
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
+- (void)checkForAnyKeyWindows;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
 - (BOOL)shouldQuitWithInProgressDownloads;
 - (void)showPreferencesWindow:(id)sender
@@ -398,6 +399,27 @@ void RecordLastRunAppBundlePath() {
 // update the UI based on the new main window.
 - (void)windowLayeringDidChange:(NSNotification*)notify {
   [self delayedFixCloseMenuItemKeyEquivalents];
+
+  if ([notify name] == NSWindowDidResignKeyNotification) {
+    // If a window is closed, this notification is fired but |[NSApp keyWindow]|
+    // returns nil regardless of whether any suitable candidates for the key
+    // window remain. It seems that the new key window for the app is not set
+    // until after this notification is fired, so a check is performed after the
+    // run loop is allowed to spin.
+    [self performSelector:@selector(checkForAnyKeyWindows)
+               withObject:nil
+               afterDelay:0.0];
+  }
+}
+
+- (void)checkForAnyKeyWindows {
+  if ([NSApp keyWindow])
+    return;
+
+  NotificationService::current()->Notify(
+      NotificationType::NO_KEY_WINDOW,
+      NotificationService::AllSources(),
+      NotificationService::NoDetails());
 }
 
 // Called when the number of tabs changes in one of the browser windows. The

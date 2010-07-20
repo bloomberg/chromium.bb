@@ -104,6 +104,11 @@ void ExtensionBrowserEventRouter::Init(Profile* profile) {
   views::FocusManager::GetWidgetFocusManager()->AddFocusChangeListener(this);
 #elif defined(TOOLKIT_GTK)
   ActiveWindowWatcherX::AddObserver(this);
+#elif defined(OS_MACOSX)
+  // Needed for when no suitable window can be passed to an extension as the
+  // currently focused window.
+  registrar_.Add(this, NotificationType::NO_KEY_WINDOW,
+                 NotificationService::AllSources());
 #endif
 
   // Init() can happen after the browser is running, so catch up with any
@@ -397,6 +402,10 @@ void ExtensionBrowserEventRouter::Observe(NotificationType type,
   } else if (type == NotificationType::BROWSER_WINDOW_READY) {
     const Browser* browser = Source<const Browser>(source).ptr();
     OnBrowserWindowReady(browser);
+#if defined(OS_MACOSX)
+  } else if (type == NotificationType::NO_KEY_WINDOW) {
+    OnBrowserSetLastActive(NULL);
+#endif
   } else {
     NOTREACHED();
   }
