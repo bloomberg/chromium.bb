@@ -1678,10 +1678,24 @@ void RenderViewHost::AutocompleteSuggestionsReturned(
 
   // Combine AutoFill and Autocomplete values into values and labels.
   for (size_t i = 0; i < suggestions.size(); ++i) {
-    autofill_values_.push_back(suggestions[i]);
-    autofill_labels_.push_back(string16());
-    autofill_unique_ids_.push_back(0);  // 0 means no profile.
+    bool unique = true;
+    for (size_t j = 0; j < autofill_values_.size(); ++j) {
+      // If the AutoFill label is empty, we need to make sure we don't add a
+      // duplicate value.
+      if (autofill_labels_[j].empty() &&
+          autofill_values_[j] == suggestions[i]) {
+        unique = false;
+        break;
+      }
+    }
+
+    if (unique) {
+      autofill_values_.push_back(suggestions[i]);
+      autofill_labels_.push_back(string16());
+      autofill_unique_ids_.push_back(0);  // 0 means no profile.
+    }
   }
+
   Send(new ViewMsg_AutoFillSuggestionsReturned(routing_id(),
                                                query_id,
                                                autofill_values_,

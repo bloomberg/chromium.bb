@@ -1526,6 +1526,10 @@ void RenderView::OnAutoFillSuggestionsReturned(
   // Any popup currently showing is now obsolete.
   webview()->hidePopups();
 
+  // No suggestions: nothing to do.
+  if (values.empty())
+    return;
+
   std::vector<string16> v(values);
   std::vector<string16> l(labels);
   std::vector<int> ids(unique_ids);
@@ -1541,15 +1545,15 @@ void RenderView::OnAutoFillSuggestionsReturned(
     separator_index = values.size();
   }
 
-  size_t labeled_item_count = 0;
-  for (size_t i = 0; i < l.size(); ++i) {
-    if (!l[i].empty())
-      labeled_item_count++;
+  size_t autofill_item_count = 0;
+  for (size_t i = 0; i < ids.size(); ++i) {
+    if (ids[i] != 0)
+      autofill_item_count++;
   }
 
-  // Only include "AutoFill Options" special menu item if we have labeled
-  // items.
-  if (labeled_item_count > 0) {
+  // Only include "AutoFill Options" special menu item if we have AutoFill
+  // items, identified by |unique_ids| having at least one valid value.
+  if (autofill_item_count > 0) {
     // Append the 'AutoFill Options...' menu item.
     v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
     l.push_back(string16());
@@ -1559,9 +1563,10 @@ void RenderView::OnAutoFillSuggestionsReturned(
   }
 
   // Send to WebKit for display.
-  if (!v.empty())
+  if (!v.empty()) {
     webview()->applyAutoFillSuggestions(
         autofill_query_node_, v, l, ids, separator_index);
+  }
 }
 
 void RenderView::OnAutoFillFormDataFilled(int query_id,

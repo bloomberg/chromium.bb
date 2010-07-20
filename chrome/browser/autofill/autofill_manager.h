@@ -99,17 +99,21 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // value of |field| and returns the labels of the matching profiles. |labels|
   // is filled with the Profile label and possibly the last four digits of a
   // corresponding credit card: 'Home; 1258' - Home is the Profile label and
-  // 1258 is the last four digits of the credit card.
+  // 1258 is the last four digits of the credit card. If |include_cc_labels| is
+  // true, check for billing fields and append CC digits to the labels;
+  // otherwise, regular profiles are returned for billing address fields.
   void GetProfileSuggestions(FormStructure* form,
                              const webkit_glue::FormField& field,
                              AutoFillType type,
+                             bool include_cc_labels,
                              std::vector<string16>* values,
                              std::vector<string16>* labels,
                              std::vector<int>* unique_ids);
 
   // Same as GetProfileSuggestions, but the list of stored profiles is limited
   // to the linked billing addresses from the list of credit cards.
-  void GetBillingProfileSuggestions(const webkit_glue::FormField& field,
+  void GetBillingProfileSuggestions(FormStructure* form,
+                                    const webkit_glue::FormField& field,
                                     AutoFillType type,
                                     std::vector<string16>* values,
                                     std::vector<string16>* labels,

@@ -65,6 +65,10 @@ void RemoveDuplicateElements(
   elements->assign(copy.begin(), copy.end());
 }
 
+bool FormIsHTTPS(FormStructure* form) {
+  return form->ConvertToFormData().origin.SchemeIs(chrome::kHttpsScheme);
+}
+
 }  // namespace
 
 // TODO(jhawkins): Maybe this should be in a grd file?
@@ -186,12 +190,18 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   std::vector<int> unique_ids;
   AutoFillType type(autofill_field->type());
 
+  // If this form is non-HTTPS, treat billing address fields as regular address
+  // fields.
+  bool handle_billing = FormIsHTTPS(form);
+
   if (type.group() == AutoFillType::CREDIT_CARD)
     GetCreditCardSuggestions(form, field, type, &values, &labels, &unique_ids);
   else if (type.group() == AutoFillType::ADDRESS_BILLING)
-    GetBillingProfileSuggestions(field, type, &values, &labels, &unique_ids);
+    GetBillingProfileSuggestions(
+        form, field, type, &values, &labels, &unique_ids);
   else
-    GetProfileSuggestions(form, field, type, &values, &labels, &unique_ids);
+    GetProfileSuggestions(
+        form, field, type, handle_billing, &values, &labels, &unique_ids);
 
   DCHECK_EQ(values.size(), labels.size());
   DCHECK_EQ(values.size(), unique_ids.size());
@@ -447,6 +457,7 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents,
 void AutoFillManager::GetProfileSuggestions(FormStructure* form,
                                             const FormField& field,
                                             AutoFillType type,
+                                            bool include_cc_labels,
                                             std::vector<string16>* values,
                                             std::vector<string16>* labels,
                                             std::vector<int>* unique_ids) {
@@ -466,32 +477,36 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
       unique_ids->push_back(profile->unique_id());
     }
   }
+
   AutoFillProfile::CreateInferredLabels(&matched_profiles, labels, 0,
                                         type.field_type());
-  if (form->HasBillingFields()) {
-    size_t i = 0;
-    std::vector<string16> expanded_values;
-    std::vector<string16> expanded_labels;
-    for (std::vector<AutoFillProfile*>::const_iterator iter =
-         matched_profiles.begin(); iter != matched_profiles.end();
-         ++iter, ++i) {
-      AutoFillProfile* profile = *iter;
-      for (std::vector<CreditCard*>::const_iterator cc =
-           personal_data_->credit_cards().begin();
-           cc != personal_data_->credit_cards().end(); ++cc) {
-        expanded_values.push_back((*values)[i]);
-        string16 label = (*labels)[i] + kLabelSeparator +
-            (*cc)->LastFourDigits();
-        expanded_labels.push_back(label);
-        unique_ids->push_back(profile->unique_id());
-      }
+
+  if (!include_cc_labels || !form->HasBillingFields() || !FormIsHTTPS(form))
+    return;
+
+  size_t i = 0;
+  std::vector<string16> expanded_values;
+  std::vector<string16> expanded_labels;
+  for (std::vector<AutoFillProfile*>::const_iterator iter =
+       matched_profiles.begin(); iter != matched_profiles.end();
+       ++iter, ++i) {
+    AutoFillProfile* profile = *iter;
+    for (std::vector<CreditCard*>::const_iterator cc =
+         personal_data_->credit_cards().begin();
+         cc != personal_data_->credit_cards().end(); ++cc) {
+      expanded_values.push_back((*values)[i]);
+      string16 label = (*labels)[i] + kLabelSeparator +
+          (*cc)->LastFourDigits();
+      expanded_labels.push_back(label);
+      unique_ids->push_back(profile->unique_id());
     }
-    expanded_labels.swap(*labels);
-    expanded_values.swap(*values);
   }
+  expanded_labels.swap(*labels);
+  expanded_values.swap(*values);
 }
 
 void AutoFillManager::GetBillingProfileSuggestions(
+    FormStructure* form,
     const FormField& field,
     AutoFillType type,
     std::vector<string16>* values,
@@ -501,6 +516,14 @@ void AutoFillManager::GetBillingProfileSuggestions(
   std::vector<AutoFillProfile*> matching_profiles;
   std::vector<string16> cc_values;
   std::vector<string16> cc_labels;
+
+  // If the form is non-HTTPS, no CC suggestions are provided; however, give the
+  // user the option of filling the billing address fields with regular address
+  // data.
+  if (!FormIsHTTPS(form)) {
+    GetProfileSuggestions(form, field, type, false, values, labels, unique_ids);
+    return;
+  }
 
   for (std::vector<CreditCard*>::const_iterator cc =
            personal_data_->credit_cards().begin();
@@ -549,7 +572,7 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
                                                std::vector<string16>* labels,
                                                std::vector<int>* unique_ids) {
   // Don't return CC suggestions for non-HTTPS pages.
-  if (!form->ConvertToFormData().origin.SchemeIs(chrome::kHttpsScheme))
+  if (!FormIsHTTPS(form))
     return;
 
   for (std::vector<CreditCard*>::const_iterator iter =
