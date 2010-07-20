@@ -3,14 +3,14 @@
   <section>
     <h3 i18n-content="startupGroupName"></h3>
     <div>
-      <label><input type="radio" name="startup" disabled
-          value="ShowDefaultAndNewTab"><span
+      <label><input type="radio" name="startup"
+          pref="session.restore_on_startup" value="0"><span
           i18n-content="startupShowDefaultAndNewTab"></span></label><br>
-      <label><input type="radio" name="startup" disabled
-          value="ShowLastSession"><span
+      <label><input type="radio" name="startup"
+          pref="session.restore_on_startup" value="1"><span
           i18n-content="startupShowLastSession"></span></label><br>
-      <label><input type="radio" name="startup" disabled
-          value="ShowPages"><span
+      <label><input type="radio" name="startup"
+          pref="session.restore_on_startup" value="4"><span
           i18n-content="startupShowPages"></span></label>
       <div class="suboption">
         <select id="startupPages" size="3">
@@ -27,14 +27,14 @@
   <section>
     <h3 i18n-content="homepageGroupName"></h3>
     <div>
-      <label><input type="radio" name="homepage" disabled
-          value="UseNewTab"><span
+      <label><input type="radio" name="homepage" pref="homepage_is_newtabpage"
+          value="true"><span
           i18n-content="homepageUseNewTab"></span></label><br>
-      <label><input type="radio" name="homepage" disabled
-          value="UseURL"><span
+      <label><input type="radio" name="homepage" pref="homepage_is_newtabpage"
+          value="false"><span
           i18n-content="homepageUseURL"></span></label><br>
       <div class="suboption">
-        <input id="homepageURL" type="url" disabled>
+        <input id="homepageURL" type="url" pref="homepage">
       </div>
       <div class="option">
         <label><input id="homepageShowButton"

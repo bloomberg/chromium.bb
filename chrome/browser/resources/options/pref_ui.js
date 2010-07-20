@@ -184,3 +184,45 @@ PrefSelect.prototype = {
  * @type {string}
  */
 cr.defineProperty(PrefSelect, 'pref', cr.PropertyKind.ATTR);
+
+///////////////////////////////////////////////////////////////////////////////
+// PrefTextField class:
+
+// Define a constructor that uses an input element as its underlying element.
+var PrefTextField = cr.ui.define('input');
+
+PrefTextField.prototype = {
+  // Set up the prototype chain
+  __proto__: HTMLInputElement.prototype,
+
+  /**
+   * Initialization function for the cr.ui framework.
+   */
+  decorate: function() {
+    var self = this;
+
+    // Listen to pref changes.
+    Preferences.getInstance().addEventListener(this.pref,
+        function(event) {
+          self.value = event.value;
+        });
+
+    // Listen to user events.
+    this.addEventListener('change',
+        function(e) {
+          Preferences.setStringPref(self.pref, self.value);
+        });
+
+    window.addEventListener('unload',
+        function() {
+          if (document.activeElement == self)
+            self.blur();
+        });
+  }
+};
+
+/**
+ * The preference name.
+ * @type {string}
+ */
+cr.defineProperty(PrefTextField, 'pref', cr.PropertyKind.ATTR);
