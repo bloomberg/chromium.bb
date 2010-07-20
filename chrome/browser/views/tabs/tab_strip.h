@@ -45,6 +45,16 @@ class TabStrip : public BaseTabStrip,
   explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
 
+  // Set whether the new tab button is enabled.
+  void set_new_tab_button_enabled(bool enabled) {
+    new_tab_button_enabled_ = enabled;
+  }
+
+  // Returns whether the new tab button is enabled.
+  bool new_tab_button_enabled() {
+    return new_tab_button_enabled_;
+  }
+
   // Creates the new tab button.
   void InitTabStripButtons();
 
@@ -301,6 +311,9 @@ class TabStrip : public BaseTabStrip,
 
   // Used for stage 1 of new tab animation.
   base::OneShotTimer<TabStrip> new_tab_timer_;
+
+  // Whether the new tab button is being displayed.
+  bool new_tab_button_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

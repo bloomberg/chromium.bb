@@ -114,6 +114,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual AutocompleteEditView* location_entry() {
     return location_entry_.get();
   }
+  virtual void PushForceHidden() {}
+  virtual void PopForceHidden() {}
   virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
 
   // Implement the LocationBarTesting interface.

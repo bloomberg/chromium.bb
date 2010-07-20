@@ -311,6 +311,41 @@ class ExtensionPrefsIdleInstallInfo : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsIdleInstallInfo, IdleInstallInfo) {}
 
+class ExtensionPrefsAppToolbars : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    // We test three different configurations -- the default value, and being
+    // overrridden set to on or off.
+    extension_id_default_ =
+        prefs_.AddExtensionAndReturnId("app_toolbars_default");
+
+    extension_id_overridden_on_ =
+        prefs_.AddExtensionAndReturnId("app_toolbars_overridden_on");
+    prefs()->SetAppTabToolbarVisibility(extension_id_overridden_on_, true);
+
+    extension_id_overridden_off_ =
+        prefs_.AddExtensionAndReturnId("app_toolbars_overridden_off");
+    prefs()->SetAppTabToolbarVisibility(extension_id_overridden_off_, false);
+  }
+
+  virtual void Verify() {
+    // Toolbars default to hidden.
+    EXPECT_FALSE(prefs()->AreAppTabToolbarsVisible(extension_id_default_));
+
+    EXPECT_TRUE(prefs()->AreAppTabToolbarsVisible(
+        extension_id_overridden_on_));
+    EXPECT_FALSE(prefs()->AreAppTabToolbarsVisible(
+        extension_id_overridden_off_));
+  }
+
+ private:
+  // The ids of our three test extensions.
+  std::string extension_id_default_;
+  std::string extension_id_overridden_on_;
+  std::string extension_id_overridden_off_;
+};
+TEST_F(ExtensionPrefsAppToolbars, ExtensionPrefsAppToolbars) {}
+
 class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {

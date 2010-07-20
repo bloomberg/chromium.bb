@@ -30,6 +30,8 @@ enum ViewID {
   // ID for any tab. Currently only used on views.
   VIEW_ID_TAB,
 
+  VIEW_ID_EXTENSION_APP_ICON,
+  VIEW_ID_EXTENSION_APP_TITLE,
   VIEW_ID_TAB_STRIP,
 
   // Toolbar & toolbar elements.

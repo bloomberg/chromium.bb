@@ -35,6 +35,8 @@ class BrowserTabStripController : public TabStripController,
   void ExecuteCommandForTab(TabStripModel::ContextMenuCommand command_id,
                             BaseTab* tab);
   bool IsTabPinned(BaseTab* tab);
+  bool IsAppTab(BaseTab* tab);
+  bool IsToolbarVisible(BaseTab* tab);
 
   // TabStripController implementation:
   virtual int GetCount() const;

@@ -579,6 +579,7 @@ class Extension {
 
   FRIEND_TEST(ExtensionTest, LoadPageActionHelper);
   FRIEND_TEST(TabStripModelTest, Apps);
+  FRIEND_TEST(TabStripModelTest, ToolbarVisibility);
 
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };

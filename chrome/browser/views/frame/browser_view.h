@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/frame/browser_bubble_host.h"
 #include "chrome/browser/views/frame/browser_frame.h"
@@ -24,6 +25,8 @@
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/unhandled_keyboard_event_handler.h"
 #include "gfx/native_widget_types.h"
+#include "views/controls/image_view.h"
+#include "views/controls/label.h"
 #include "views/window/client_view.h"
 #include "views/window/window_delegate.h"
 
@@ -80,7 +83,8 @@ class BrowserView : public BrowserBubbleHost,
                     public menus::SimpleMenuModel::Delegate,
                     public views::WindowDelegate,
                     public views::ClientView,
-                    public InfoBarContainer::Delegate {
+                    public InfoBarContainer::Delegate,
+                    public ImageLoadingTracker::Observer {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -143,6 +147,14 @@ class BrowserView : public BrowserBubbleHost,
   // Returns the bounds of the TabStrip. Used by themed views to determine the
   // offset of IDR_THEME_TOOLBAR.
   gfx::Rect GetTabStripBounds() const;
+
+  // Accessor for the big icon used with TYPE_EXTENSION_APP, or NULL if this
+  // browser isn't TYPE_EXTENSION_APP.
+  views::ImageView* extension_app_icon() const { return extension_app_icon_; }
+
+  // Accessor for the big title used with TYPE_EXTENSION_APP, or NULL if this
+  // browser isn't TYPE_EXTENSION_APP.
+  views::Label* extension_app_title() const { return extension_app_title_; }
 
   // Accessor for the TabStrip.
   BaseTabStrip* tabstrip() const { return tabstrip_; }
@@ -237,6 +249,10 @@ class BrowserView : public BrowserBubbleHost,
   // Called when the activation of the frame changes.
   virtual void ActivationChanged(bool activated);
 
+  // Overriden from ImageLoadingTracker::Observer.
+  virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
+                             int index);
+
   // Overridden from BrowserWindow:
   virtual void Show();
   virtual void SetBounds(const gfx::Rect& bounds);
@@ -315,6 +331,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual void Copy();
   virtual void Paste();
   virtual void ToggleTabStripMode();
+  virtual void SetToolbarCollapsedMode(bool val);
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;
@@ -493,6 +510,14 @@ class BrowserView : public BrowserBubbleHost,
   // or is bookmark_bar_view_ if the bookmark bar is showing.
   views::View* active_bookmark_bar_;
 
+  // The big icon in the top-left if this browser is TYPE_EXTENSION_APP, or
+  // NULL otherwise.
+  views::ImageView* extension_app_icon_;
+
+  // The big title text in the top-left if this browser is TYPE_EXTENSION_APP,
+  // or NULL otherwise.
+  views::Label* extension_app_title_;
+
   // The TabStrip.
   BaseTabStrip* tabstrip_;
 
@@ -574,6 +599,9 @@ class BrowserView : public BrowserBubbleHost,
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
+
+  // Loads extension_app_icon_ asynchronously on the file thread.
+  ImageLoadingTracker extension_app_icon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

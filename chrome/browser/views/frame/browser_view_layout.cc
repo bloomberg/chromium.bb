@@ -32,6 +32,8 @@ const int kToolbarTabStripVerticalOverlap = 3;
 // An offset distance between certain toolbars and the toolbar that preceded
 // them in layout.
 const int kSeparationLineHeight = 1;
+// Spacing between extension app icon and title.
+const int kExtensionAppIconTitleSpacing = 4;
 
 }  // namespace
 
@@ -39,7 +41,9 @@ const int kSeparationLineHeight = 1;
 // BrowserViewLayout, public:
 
 BrowserViewLayout::BrowserViewLayout()
-    : tabstrip_(NULL),
+    : extension_app_icon_(NULL),
+      extension_app_title_(NULL),
+      tabstrip_(NULL),
       toolbar_(NULL),
       contents_split_(NULL),
       contents_container_(NULL),
@@ -202,6 +206,8 @@ void BrowserViewLayout::Installed(views::View* host) {
   extension_shelf_ = NULL;
   active_bookmark_bar_ = NULL;
   tabstrip_ = NULL;
+  extension_app_icon_ = NULL;
+  extension_app_title_ = NULL;
   browser_view_ = static_cast<BrowserView*>(host);
 }
 
@@ -231,6 +237,12 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
     case VIEW_ID_TAB_STRIP:
       tabstrip_ = static_cast<BaseTabStrip*>(view);
       break;
+    case VIEW_ID_EXTENSION_APP_ICON:
+      extension_app_icon_ = static_cast<views::ImageView*>(view);
+      break;
+    case VIEW_ID_EXTENSION_APP_TITLE:
+      extension_app_title_ = static_cast<views::Label*>(view);
+      break;
   }
 }
 
@@ -244,6 +256,7 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 
 void BrowserViewLayout::Layout(views::View* host) {
   vertical_layout_rect_ = browser_view_->GetLocalBounds(true);
+  LayoutExtensionAppIconAndTitle();
   int top = LayoutTabStrip();
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);
@@ -271,6 +284,26 @@ gfx::Size BrowserViewLayout::GetPreferredSize(views::View* host) {
 
 //////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, private:
+
+void BrowserViewLayout::LayoutExtensionAppIconAndTitle() {
+  if (browser_view_->browser()->type() != Browser::TYPE_EXTENSION_APP)
+    return;
+
+  extension_app_icon_->SetVisible(true);
+  extension_app_icon_->SetBounds(0, 0, Extension::EXTENSION_ICON_SMALL,
+                                 Extension::EXTENSION_ICON_SMALL);
+
+  extension_app_title_->SetVisible(true);
+
+  // Position the title vertically centered with the icon and slightly to its
+  // right.
+  extension_app_title_->SetX(
+      extension_app_icon_->x() + extension_app_icon_->width() +
+      kExtensionAppIconTitleSpacing);
+  extension_app_title_->SetY(
+      extension_app_icon_->y() +
+      ((extension_app_icon_->height() - extension_app_title_->height()) / 2));
+}
 
 int BrowserViewLayout::LayoutTabStrip() {
   if (!browser_view_->IsTabStripVisible()) {
@@ -310,8 +343,15 @@ int BrowserViewLayout::LayoutToolbar(int top) {
     y -= ((visible && browser_view_->IsTabStripVisible()) ?
           kToolbarTabStripVerticalOverlap : 0);
   }
-  int height = visible ? toolbar_->GetPreferredSize().height() : 0;
-  toolbar_->SetVisible(visible);
+
+  int height = 0;
+  if (visible) {
+    height = toolbar_->GetPreferredSize().height();
+    toolbar_->SetVisible(true);
+  } else {
+    toolbar_->SetVisible(false);
+  }
+
   toolbar_->SetBounds(vertical_layout_rect_.x(), y, browser_view_width, height);
   return y + height;
 }

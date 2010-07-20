@@ -460,7 +460,11 @@ void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {
 }
 
 gfx::Size BookmarkBarView::GetPreferredSize() {
-  return LayoutItems(true);
+  // Extension apps don't show the bookmark bar.
+  if (!OnAppsPage())
+    return LayoutItems(true);
+  else
+    return gfx::Size();
 }
 
 gfx::Size BookmarkBarView::GetMinimumSize() {
@@ -750,6 +754,11 @@ bool BookmarkBarView::IsAlwaysShown() const {
 bool BookmarkBarView::OnNewTabPage() const {
   return (browser_ && browser_->GetSelectedTabContents() &&
           browser_->GetSelectedTabContents()->ShouldShowBookmarkBar());
+}
+
+bool BookmarkBarView::OnAppsPage() const {
+  return (browser_ && browser_->GetSelectedTabContents() &&
+          browser_->GetSelectedTabContents()->is_app());
 }
 
 int BookmarkBarView::GetToolbarOverlap(bool return_max) {

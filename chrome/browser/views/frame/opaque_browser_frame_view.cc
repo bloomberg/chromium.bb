@@ -95,6 +95,8 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 // How far to indent the tabstrip from the left side of the screen when there
 // is no OTR icon.
 const int kTabStripIndent = 1;
+// Spacing between extension app icon/title and tab strip.
+const int kExtensionAppTabStripLeftSpacing = 10;
 // Padding between the caption and start of vertical tabs.
 const int kVerticalTabPadding = 6;
 // Inset from the top of the toolbar/tabstrip to the shadow. Used only for
@@ -216,6 +218,16 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
       kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
+
+  if (browser_view_->browser()->type() == Browser::TYPE_EXTENSION_APP) {
+    int tabstrip_offset = browser_view_->extension_app_title()->x() +
+        browser_view_->extension_app_title()->width() +
+        kExtensionAppTabStripLeftSpacing;
+
+    tabstrip_x += tabstrip_offset;
+    tabstrip_width -= tabstrip_offset;
+  }
+
   return gfx::Rect(tabstrip_x, tabstrip_y,
                    std::max(0, tabstrip_width),
                    tabstrip->GetPreferredHeight());

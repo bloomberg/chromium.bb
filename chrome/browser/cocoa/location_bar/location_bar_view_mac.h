@@ -72,6 +72,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   virtual AutocompleteEditView* location_entry() {
     return edit_view_.get();
   }
+  virtual void PushForceHidden() {}
+  virtual void PopForceHidden() {}
   virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
 
   // Overridden from LocationBarTesting:

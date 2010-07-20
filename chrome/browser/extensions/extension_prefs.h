@@ -142,6 +142,12 @@ class ExtensionPrefs {
   // Returns the extension id's that have idle install information.
   std::set<std::string> GetIdleInstallInfoIds();
 
+  // Returns whether app toolbars are visible for the specified extension.
+  bool AreAppTabToolbarsVisible(const std::string& extension_id);
+
+  // Set whether app toolbars are visible for the specified extension.
+  void SetAppTabToolbarVisibility(const std::string& extension_id, bool value);
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The underlying PrefService.

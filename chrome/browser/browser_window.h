@@ -309,6 +309,9 @@ class BrowserWindow {
   // Switches between available tabstrip display modes.
   virtual void ToggleTabStripMode() = 0;
 
+  // Set whether the toolbar displays in collapsed mode.
+  virtual void SetToolbarCollapsedMode(bool val) = 0;
+
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 

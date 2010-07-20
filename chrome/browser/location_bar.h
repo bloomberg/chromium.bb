@@ -69,6 +69,13 @@ class LocationBar {
   virtual const AutocompleteEditView* location_entry() const = 0;
   virtual AutocompleteEditView* location_entry() = 0;
 
+  // Hides the edit field of the location bar if it hasn't already been
+  // force-hidden. The force hidden count is tracked, so calling multiple
+  // times is allowed, you just have to be sure to call PopForceHidden
+  // the same number of times. Currently, this is only needed for Windows.
+  virtual void PushForceHidden() = 0;
+  virtual void PopForceHidden() = 0;
+
   // Returns a pointer to the testing interface.
   virtual LocationBarTesting* GetLocationBarForTesting() = 0;
 
