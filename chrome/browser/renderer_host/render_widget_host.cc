@@ -785,10 +785,16 @@ void RenderWidgetHost::OnMsgUpdateRect(
   // Now paint the view. Watch out: it might be destroyed already.
   if (view_) {
     view_->MovePluginWindows(params.plugin_window_moves);
-    view_being_painted_ = true;
-    view_->DidUpdateBackingStore(params.scroll_rect, params.dx, params.dy,
-                                 params.copy_rects);
-    view_being_painted_ = false;
+    // The view_ pointer could be destroyed in the context of MovePluginWindows
+    // which attempts to move the plugin windows and in the process could
+    // dispatch other window messages which could cause the view to be
+    // destroyed.
+    if (view_) {
+      view_being_painted_ = true;
+      view_->DidUpdateBackingStore(params.scroll_rect, params.dx, params.dy,
+                                   params.copy_rects);
+      view_being_painted_ = false;
+    }
   }
 
   if (paint_observer_.get())
