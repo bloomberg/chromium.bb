@@ -125,6 +125,7 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kLanguagePinyinMinusEqualPage,
   prefs::kLanguagePinyinShiftSelectCandidate,
   prefs::kLanguagePinyinTradCandidate,
+  prefs::kLanguagePreferredLanguages,
   prefs::kLanguagePreloadEngines,
   // TODO(yusukes): Add prefs for ibus-mozc (Japanese input method).
   //   prefs::kLanguageMozcPreeditMethod,

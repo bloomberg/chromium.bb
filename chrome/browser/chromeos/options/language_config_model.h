@@ -48,7 +48,7 @@ class AddLanguageComboboxModel : public LanguageComboboxModel {
 // The model of LanguageConfigView.
 class LanguageConfigModel : public NotificationObserver {
  public:
-  LanguageConfigModel(PrefService* pref_service);
+  explicit LanguageConfigModel(PrefService* pref_service);
 
   // Counts the number of active input methods for the given language code.
   size_t CountNumActiveInputMethods(const std::string& language_code);
@@ -77,9 +77,17 @@ class LanguageConfigModel : public NotificationObserver {
   // Returns true if an IME of |input_method_id| is activated.
   bool InputMethodIsActivated(const std::string& input_method_id);
 
-  // Gets the list of active IME IDs like "pinyin" and "m17n:ar:kbd".
+  // Gets the list of active IME IDs like "pinyin" and "m17n:ar:kbd" from
+  // the underlying preference object. The original contents of
+  // |out_input_method_ids| are lost.
   void GetActiveInputMethodIds(
       std::vector<std::string>* out_input_method_ids);
+
+  // Gets the list of preferred language codes like "en-US" and "fr" from
+  // the underlying preference object. The original contents of
+  // |out_language_codes| are lost.
+  void GetPreferredLanguageCodes(
+      std::vector<std::string>* out_language_codes);
 
   // Gets the list of input method ids associated with the given language
   // code.  The original contents of |input_method_ids| will be lost.
@@ -87,8 +95,8 @@ class LanguageConfigModel : public NotificationObserver {
       const std::string& language_code,
       std::vector<std::string>* input_method_ids) const;
 
-  // Callback for |preload_engines_| pref updates. Initializes the preferred
-  // language codes based on the updated pref value.
+  // Callback for |preferred_language_codes_| pref updates. Initializes
+  // the preferred language codes based on the updated pref value.
   void NotifyPrefChanged();
 
   // NotificationObserver overrides.
@@ -124,7 +132,8 @@ class LanguageConfigModel : public NotificationObserver {
   PrefService* pref_service_;
   // The codes of the preferred languages.
   std::vector<std::string> preferred_language_codes_;
-  StringPrefMember preload_engines_;
+  StringPrefMember preferred_languages_pref_;
+  StringPrefMember preload_engines_pref_;
   // List of supported language codes like "en" and "ja".
   std::vector<std::string> supported_language_codes_;
   // List of supported IME IDs like "pinyin" and "m17n:ar:kbd".

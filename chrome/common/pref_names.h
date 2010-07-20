@@ -78,6 +78,7 @@ extern const wchar_t kLanguageCurrentInputMethod[];
 extern const wchar_t kLanguagePreviousInputMethod[];
 extern const wchar_t kLanguageHotkeyNextEngineInMenu[];
 extern const wchar_t kLanguageHotkeyPreviousEngine[];
+extern const wchar_t kLanguagePreferredLanguages[];
 extern const wchar_t kLanguagePreloadEngines[];
 extern const wchar_t kLanguageChewingAutoShiftCur[];
 extern const wchar_t kLanguageChewingAddPhraseDirection[];

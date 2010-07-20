@@ -83,6 +83,7 @@ class Preferences : public NotificationObserver {
   // Input method preferences.
   StringPrefMember language_hotkey_next_engine_in_menu_;
   StringPrefMember language_hotkey_previous_engine_;
+  StringPrefMember language_preferred_languages_;
   StringPrefMember language_preload_engines_;
   BooleanPrefMember language_chewing_boolean_prefs_[kNumChewingBooleanPrefs];
   StringPrefMember language_chewing_multiple_choice_prefs_[

@@ -36,6 +36,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                             kHotkeyNextEngineInMenu);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
                             kHotkeyPreviousEngine);
+  prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages, "");
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             kFallbackInputMethodId);  // EN layout
   for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
@@ -94,6 +95,8 @@ void Preferences::Init(PrefService* prefs) {
       prefs::kLanguageHotkeyNextEngineInMenu, prefs, this);
   language_hotkey_previous_engine_.Init(
       prefs::kLanguageHotkeyPreviousEngine, prefs, this);
+  language_preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
+                                     prefs, this);
   language_preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
   for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
     language_chewing_boolean_prefs_[i].Init(
@@ -136,6 +139,10 @@ void Preferences::Init(PrefService* prefs) {
   }
 
   std::string locale(g_browser_process->GetApplicationLocale());
+  // Add input methods based on the application locale when the user first
+  // logs in. For instance, if the user chooses Japanese as the UI
+  // language at the first login, we'll add input methods associated with
+  // Japanese, such as mozc.
   if (locale != kFallbackInputMethodLocale &&
       !prefs->HasPrefPath(prefs::kLanguagePreloadEngines)) {
     std::string preload_engines(language_preload_engines_.GetValue());
@@ -148,6 +155,10 @@ void Preferences::Init(PrefService* prefs) {
       preload_engines += JoinString(input_method_ids, ',');
     }
     language_preload_engines_.SetValue(preload_engines);
+  }
+  // Add the UI language to the preferred languages the user first logs in.
+  if (!prefs->HasPrefPath(prefs::kLanguagePreferredLanguages)) {
+    language_preferred_languages_.SetValue(locale);
   }
 
   // Initialize touchpad settings to what's saved in user preferences.
@@ -197,6 +208,10 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
         kHotKeySectionName,
         kPreviousEngineConfigName,
         language_hotkey_previous_engine_.GetValue());
+  }
+  if (!pref_name || *pref_name == prefs::kLanguagePreferredLanguages) {
+    // Unlike kLanguagePreloadEngines and some other input method
+    // preferencs, we don't need to send this to ibus-daemon.
   }
   if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines) {
     SetLanguageConfigStringListAsCSV(kGeneralSectionName,

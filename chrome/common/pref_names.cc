@@ -218,8 +218,13 @@ const wchar_t kLanguageHotkeyNextEngineInMenu[] =
 const wchar_t kLanguageHotkeyPreviousEngine[] =
     L"settings.language.hotkey_previous_engine";
 
+// A string pref (comma-separated list) set to the preferred language IDs
+// (ex. "en-US,fr,ko").
+const wchar_t kLanguagePreferredLanguages[] =
+    L"settings.language.preferred_languages";
+
 // A string pref (comma-separated list) set to the preloaded (active) input
-// method IDs.
+// method IDs (ex. "pinyin,mozc").
 const wchar_t kLanguagePreloadEngines[] = L"settings.language.preload_engines";
 
 // Boolean prefs for ibus-chewing Chinese input method.
