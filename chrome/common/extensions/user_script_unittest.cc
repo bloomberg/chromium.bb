@@ -8,6 +8,13 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+static const int kAllSchemes =
+    URLPattern::SCHEME_HTTP |
+    URLPattern::SCHEME_HTTPS |
+    URLPattern::SCHEME_FILE |
+    URLPattern::SCHEME_FTP |
+    URLPattern::SCHEME_CHROMEUI;
+
 TEST(UserScriptTest, Match1) {
   UserScript script;
   script.add_glob("*mail.google.com*");
@@ -63,7 +70,7 @@ TEST(UserScriptTest, Match5) {
 }
 
 TEST(UserScriptTest, Match6) {
-  URLPattern pattern(URLPattern::SCHEMES_ALL);
+  URLPattern pattern(kAllSchemes);
   ASSERT_TRUE(pattern.Parse("http://*/foo*"));
 
   UserScript script;
@@ -77,8 +84,8 @@ TEST(UserScriptTest, Match6) {
 TEST(UserScriptTest, UrlPatternGlobInteraction) {
   // If there are both, match intersection(union(globs), union(urlpatterns)).
   UserScript script;
-  
-  URLPattern pattern(URLPattern::SCHEMES_ALL);
+
+  URLPattern pattern(kAllSchemes);
   ASSERT_TRUE(pattern.Parse("http://www.google.com/*"));
   script.add_url_pattern(pattern);
 
@@ -105,8 +112,8 @@ TEST(UserScriptTest, UrlPatternGlobInteraction) {
 }
 
 TEST(UserScriptTest, Pickle) {
-  URLPattern pattern1(URLPattern::SCHEMES_ALL);
-  URLPattern pattern2(URLPattern::SCHEMES_ALL);
+  URLPattern pattern1(kAllSchemes);
+  URLPattern pattern2(kAllSchemes);
   ASSERT_TRUE(pattern1.Parse("http://*/foo*"));
   ASSERT_TRUE(pattern2.Parse("http://bar/baz*"));
 

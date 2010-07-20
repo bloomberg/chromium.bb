@@ -975,6 +975,11 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
   extension_prefs_->OnExtensionInstalled(
       extension, initial_state, initial_enable_incognito);
 
+  // Unpacked extensions start off with file access since they are a developer
+  // feature.
+  if (extension->location() == Extension::LOAD)
+    extension_prefs_->SetAllowFileAccess(extension->id(), true);
+
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
   // to apply it.
   if (extension->is_theme()) {

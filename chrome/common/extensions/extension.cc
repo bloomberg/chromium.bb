@@ -1403,7 +1403,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       }
 
       // Otherwise, it's a host pattern permission.
-      URLPattern pattern(URLPattern::SCHEMES_ALL);
+      URLPattern pattern(URLPattern::SCHEME_HTTP |
+                         URLPattern::SCHEME_HTTPS |
+                         URLPattern::SCHEME_CHROMEUI);
       if (!pattern.Parse(permission_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermission, IntToString(i));

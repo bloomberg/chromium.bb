@@ -317,7 +317,10 @@ TEST(ExtensionTest, InitFromValueValid) {
   ListValue* permissions = new ListValue;
   permissions->Set(0, Value::CreateStringValue("file:///C:/foo.txt"));
   input_value.Set(keys::kPermissions, permissions);
-  EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_FALSE(extension.InitFromValue(input_value, false, &error));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPermission));
+  input_value.Remove(keys::kPermissions, NULL);
+  error.clear();
 
   // Test with an options page.
   input_value.SetString(keys::kOptionsPage, "options.html");

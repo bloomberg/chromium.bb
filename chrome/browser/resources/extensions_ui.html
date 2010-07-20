@@ -503,6 +503,20 @@ function returnExtensionsData(extensionsData){
   for (var i = 0; i < slidables.length; i++)
     slidables[i].style.height = slidables[i].offsetHeight + 'px';
 
+  // Hide all the incognito warnings that are attached to the wrong extension
+  // ID, which can happen when an extension is added or removed.
+  var warnings = document.getElementsByClassName('incognitoWarning');
+  for (var i = 0; i < warnings.length; i++) {
+    var extension = warnings[i];
+    while (extension.className != "extension")
+      extension = extension.parentNode;
+
+    if (extension.extensionId != warnings[i].attachedExtensionId) {
+      warnings[i].style.display = "none";
+      warnings[i].style.opacity = "0";
+    }
+  }
+
   // Reset visibility of page based on the current dev mode.
   document.getElementById('collapse').style.display =
      devModeExpanded ? 'inline' : 'none';
@@ -571,6 +585,7 @@ function handleToggleExtensionIncognito(node) {
     warning.style.display = "none";
     warning.style.opacity = "0";
   } else {
+    warning.attachedExtensionId = node.extensionId;
     warning.style.display = "block";
 
     // Must set the opacity later. Otherwise, the fact that the display is
@@ -805,7 +820,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
         </div>
 
         <div jsdisplay="extensions.length > 0">
-        <div class="extension" jsselect="extensions">
+        <div class="extension" jsselect="extensions" jsvalues=".extensionId:id">
           <table width="100%" cellpadding="2" cellspacing="0">
           <tr jsvalues=".className:enabled ? 'extension_enabled' : 'extension_disabled'">
           <td width="62" height="50" align="center" valign="top">

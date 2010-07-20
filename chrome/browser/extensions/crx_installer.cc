@@ -168,7 +168,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // Require that apps are served from the domain they claim in their extent,
   // or some ancestor domain.
   if (extension_->is_app() && limit_web_extent_to_download_host_) {
-    URLPattern pattern(URLPattern::SCHEMES_ALL);
+    URLPattern pattern(UserScript::kValidUserScriptSchemes);
     pattern.set_host(original_url_.host());
     pattern.set_match_subdomains(true);
 

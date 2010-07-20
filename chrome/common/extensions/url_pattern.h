@@ -80,9 +80,6 @@ class URLPattern {
     SCHEME_FILE = 1<<2,
     SCHEME_FTP = 1<<3,
     SCHEME_CHROMEUI = 1<<4,
-
-    SCHEMES_ALL =
-        SCHEME_HTTP | SCHEME_HTTPS | SCHEME_FILE | SCHEME_FTP | SCHEME_CHROMEUI,
   };
 
   // Note: don't use this directly. This exists so URLPattern can be used
