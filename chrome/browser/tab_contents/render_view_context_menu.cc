@@ -11,9 +11,11 @@
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -311,12 +313,19 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   // TODO(asargent) - See if this works properly for i18n names (bug 32363).
   std::sort(sorted_ids.begin(), sorted_ids.end());
 
+  if (sorted_ids.empty())
+    return;
+
   int index = 0;
+  base::TimeTicks begin = base::TimeTicks::Now();
   std::vector<std::pair<std::string, std::string> >::const_iterator i;
   for (i = sorted_ids.begin();
        i != sorted_ids.end(); ++i) {
     AppendExtensionItems(i->second, &index);
   }
+  UMA_HISTOGRAM_TIMES("Extensions.ContextMenus_BuildTime",
+                      base::TimeTicks::Now() - begin);
+  UMA_HISTOGRAM_COUNTS("Extensions.ContextMenus_ItemCount", index);
 }
 
 void RenderViewContextMenu::InitMenu() {
