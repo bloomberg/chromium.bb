@@ -12,7 +12,6 @@ function getAppsCallback(data) {
     appsSection.appendChild(apps.createElement(app));
   });
 
-
   // TODO(aa): Figure out what to do with the debug mode when we turn apps on
   // for everyone.
   if (appsSection.hasChildNodes()) {
@@ -20,6 +19,8 @@ function getAppsCallback(data) {
     if (data.showDebugLink) {
       debugSection.classList.remove('disabled');
     }
+
+    appsSection.appendChild(apps.createWebStoreElement());
   } else {
     appsSection.classList.add('disabled');
     debugSection.classList.add('disabled');
@@ -58,7 +59,7 @@ var apps = {
     return false;
   },
 
-  createElement: function(app) {
+  createElement_: function(app) {
     var div = document.createElement('div');
     div.className = 'app';
 
@@ -69,6 +70,14 @@ var apps = {
     a.id = app['id'];
     a.xtitle = a.textContent = app['name'];
     a.href = app['launch_url'];
+
+    return div;
+  },
+
+  createElement: function(app) {
+    var div = this.createElement_(app);
+    var front = div.firstChild;
+    var a = front.firstChild;
 
     a.onclick = apps.handleClick_;
     a.style.backgroundImage = url(app['icon']);
@@ -112,5 +121,13 @@ var apps = {
     };
 
     return div;
+  },
+
+  createWebStoreElement: function() {
+    return this.createElement_({
+      'id': 'web-store-entry',
+      'name': localStrings.getString('web_store_title'),
+      'launch_url': localStrings.getString('web_store_url')
+    });
   }
 };

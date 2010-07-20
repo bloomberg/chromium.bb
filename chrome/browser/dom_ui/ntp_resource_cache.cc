@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -49,19 +48,19 @@
 namespace {
 
 // The URL for the the Learn More page shown on incognito new tab.
-const char* const kLearnMoreIncognitoUrl =
+const char kLearnMoreIncognitoUrl[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=95464";
 
 // The URL for bookmark sync service help.
-const char* const kSyncServiceHelpUrl =
+const char kSyncServiceHelpUrl[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=165139";
 
 // The URL to be loaded to display Help.
-const char* const kHelpContentUrl =
+const char kHelpContentUrl[] =
     "http://www.google.com/support/chrome/";
 
-std::wstring GetUrlWithLang(const char* const url) {
-  return ASCIIToWide(google_util::AppendGoogleLocaleParam(GURL(url)).spec());
+std::wstring GetUrlWithLang(const GURL& url) {
+  return ASCIIToWide(google_util::AppendGoogleLocaleParam(url).spec());
 }
 
 std::string SkColorToRGBAString(SkColor color) {
@@ -195,7 +194,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       l10n_util::GetString(IDS_NEW_TAB_TITLE));
   localized_strings.SetString(L"content",
       l10n_util::GetStringF(IDS_NEW_TAB_OTR_MESSAGE,
-                            GetUrlWithLang(kLearnMoreIncognitoUrl)));
+                            GetUrlWithLang(GURL(kLearnMoreIncognitoUrl))));
   localized_strings.SetString(L"extensionsmessage",
       l10n_util::GetStringF(IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
                             l10n_util::GetString(IDS_PRODUCT_NAME),
@@ -273,13 +272,18 @@ void NTPResourceCache::CreateNewTabHTML() {
                               l10n_util::GetString(IDS_NEW_TAB_DOWNLOADS));
   localized_strings.SetString(L"help",
                               l10n_util::GetString(IDS_NEW_TAB_HELP));
-  localized_strings.SetString(L"helpurl", GetUrlWithLang(kHelpContentUrl));
+  localized_strings.SetString(L"helpurl",
+      GetUrlWithLang(GURL(kHelpContentUrl)));
   localized_strings.SetString(L"appsettings",
       l10n_util::GetString(IDS_NEW_TAB_APP_SETTINGS));
   localized_strings.SetString(L"appuninstall",
       l10n_util::GetString(IDS_NEW_TAB_APP_UNINSTALL));
   localized_strings.SetString(L"appoptions",
       l10n_util::GetString(IDS_NEW_TAB_APP_OPTIONS));
+  localized_strings.SetString(L"web_store_title",
+      l10n_util::GetString(IDS_EXTENSION_WEB_STORE_TITLE));
+  localized_strings.SetString(L"web_store_url",
+      GetUrlWithLang(GURL(Extension::ChromeStoreURL())));
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
@@ -301,7 +305,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString(L"has_3d", has_3d ? "true" : "false");
 
   // Pass the shown_sections pref early so that we can prevent flicker.
-  ShownSectionsHandler::SetFirstAppLauncherRunPref(profile_->GetPrefs());
   const int shown_sections = profile_->GetPrefs()->GetInteger(
       prefs::kNTPShownSections);
   localized_strings.SetInteger(L"shown_sections", shown_sections);

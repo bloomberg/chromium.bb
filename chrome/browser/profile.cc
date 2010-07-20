@@ -169,11 +169,7 @@ void PostExtensionUnloadedToContextGetter(ChromeURLRequestContextGetter* getter,
 // Returns true if the default apps should be loaded (so that the app panel is
 // not empty).
 bool IncludeDefaultApps() {
-#if defined(OS_WIN)
-  std::string user_domain;
-  return base::EnvVarGetter::Create()->GetEnv("USERDOMAIN", &user_domain) &&
-      user_domain == "GOOGLE";
-#elif defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   return true;
 #endif
   return false;

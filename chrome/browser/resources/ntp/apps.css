@@ -121,6 +121,10 @@
   -webkit-transition: opacity .5s;
 }
 
+#web-store-entry {
+  background-image: url("web_store_icon.png");
+}
+
 /* Make items on the wrong side non focusable by hiding them. */
 .app:not(.config) > .back button,
 .app.config > .front button,

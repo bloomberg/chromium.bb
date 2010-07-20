@@ -70,7 +70,6 @@ void ShownSectionsHandler::Observe(NotificationType type,
 }
 
 void ShownSectionsHandler::HandleGetShownSections(const Value* value) {
-  SetFirstAppLauncherRunPref(pref_service_);
   int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
   FundamentalValue sections_value(sections);
   dom_ui_->CallJavascriptFunction(L"onShownSections", sections_value);
@@ -103,28 +102,9 @@ void ShownSectionsHandler::HandleSetShownSections(const Value* value) {
 }
 
 // static
-void ShownSectionsHandler::SetFirstAppLauncherRunPref(
-    PrefService* pref_service) {
-  // If we have turned on Apps we want to hide most visited and recent to give
-  // more focus to the Apps section. We do not do this in MigrateUserPrefs
-  // because the pref version should not depend on command line switches.
-  if (Extension::AppsAreEnabled() &&
-      !pref_service->GetBoolean(prefs::kNTPAppLauncherFirstRun)) {
-    int sections = pref_service->GetInteger(prefs::kNTPShownSections);
-    sections &= ~THUMB;
-    sections &= ~RECENT;
-    pref_service->SetInteger(prefs::kNTPShownSections, sections);
-    pref_service->SetBoolean(prefs::kNTPAppLauncherFirstRun, true);
-  }
-}
-
-// static
 void ShownSectionsHandler::RegisterUserPrefs(PrefService* pref_service) {
   pref_service->RegisterIntegerPref(prefs::kNTPShownSections,
                                     THUMB | RECENT | TIPS | SYNC);
-  if (Extension::AppsAreEnabled()) {
-    pref_service->RegisterBooleanPref(prefs::kNTPAppLauncherFirstRun, false);
-  }
 }
 
 // static

@@ -1145,6 +1145,18 @@ void ExtensionsService::Observe(NotificationType type,
   }
 }
 
+bool ExtensionsService::HasApps() {
+  if (!extensions_enabled_)
+    return false;
+
+  for (ExtensionList::const_iterator it = extensions_.begin();
+       it != extensions_.end(); ++it) {
+    if ((*it)->is_app())
+      return true;
+  }
+
+  return false;
+}
 
 // ExtensionsServicesBackend
 

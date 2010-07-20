@@ -106,6 +106,11 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   static const std::vector<MostVisitedPage>& GetPrePopulatedPages();
 
+  static MostVisitedPage GetChromeStorePage();
+
+  // Whether we have any apps installed.
+  bool HasApps() const;
+
   NotificationRegistrar registrar_;
 
   // Our consumer for the history service.

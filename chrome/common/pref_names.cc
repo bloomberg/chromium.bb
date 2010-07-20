@@ -849,9 +849,6 @@ const wchar_t kNTPTipsServer[] = L"ntp.tips_server";
 // 16 - show sync status
 const wchar_t kNTPShownSections[] = L"ntp.shown_sections";
 
-// Whether the user has first run the app launcher.
-const wchar_t kNTPAppLauncherFirstRun[] = L"ntp.app_launcher_first_run";
-
 // This pref is used for migrating the prefs for the NTP
 const wchar_t kNTPPrefVersion[] = L"ntp.pref_version";
 
