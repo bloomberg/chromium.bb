@@ -708,25 +708,17 @@ def CMDstatus():
 
 
 @need_change_and_args
-@attrs(usage='[--no_try] [--no_presubmit] [--clobber]\n'
-    '                          [--no_watchlists]')
+@attrs(usage='[--no_presubmit] [--clobber] [--no_watchlists]')
 def CMDupload(change_info, args):
   """Uploads the changelist to the server for review.
 
-  (You can create the file '.gcl_upload_no_try' in your home dir to
-  skip the automatic tries.)
+  This does not submit a try job; use gcl try to submit a try job.
   """
   if not change_info.GetFiles():
     print "Nothing to upload, changelist is empty."
     return 0
   if not OptionallyDoPresubmitChecks(change_info, False, args):
     return 1
-  # Might want to support GetInfoDir()/GetRepositoryRoot() like
-  # CheckHomeForFile() so the skip of tries can be per tree basis instead
-  # of user global.
-  no_try = (FilterFlag(args, "--no_try") or
-            FilterFlag(args, "--no-try") or
-            not (CheckHomeForFile(".gcl_upload_no_try") is None))
   no_watchlists = (FilterFlag(args, "--no_watchlists") or
                    FilterFlag(args, "--no-watchlists"))
 
@@ -736,14 +728,6 @@ def CMDupload(change_info, args):
 
   # Supports --clobber for the try server.
   clobber = FilterFlag(args, "--clobber")
-
-  # Disable try when the server is overridden.
-  server_1 = re.compile(r"^-s\b.*")
-  server_2 = re.compile(r"^--server\b.*")
-  for arg in args:
-    if server_1.match(arg) or server_2.match(arg):
-      no_try = True
-      break
 
   upload_arg = ["upload.py", "-y"]
   upload_arg.append("--server=" + GetCodeReviewSetting("CODE_REVIEW_SERVER"))
@@ -820,14 +804,6 @@ def CMDupload(change_info, args):
   # consistent.
   os.chdir(previous_cwd)
 
-  # Once uploaded to Rietveld, send it to the try server.
-  if not no_try:
-    try_on_upload = GetCodeReviewSetting('TRY_ON_UPLOAD')
-    if try_on_upload and try_on_upload.lower() == 'true':
-      trychange_args = []
-      if clobber:
-        trychange_args.append('--clobber')
-      return TryChange(change_info, trychange_args, swallow_exception=True)
   return 0
 
 

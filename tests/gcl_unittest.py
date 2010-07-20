@@ -196,7 +196,6 @@ class CMDuploadUnittest(GclTestsBase):
     change_info.files = [('A', 'aa'), ('M', 'bb')]
     change_info.patch = None
     files = [item[1] for item in change_info.files]
-    gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.os.getcwd().AndReturn('somewhere')
@@ -211,8 +210,6 @@ class CMDuploadUnittest(GclTestsBase):
                          change_info.patch).AndReturn(("1",
                                                                     "2"))
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
-    gcl.GetCodeReviewSetting('TRY_ON_UPLOAD').AndReturn('True')
-    gcl.TryChange(change_info, [], swallow_exception=True)
     gcl.os.chdir('somewhere')
     change_info.Save()
     gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
@@ -228,7 +225,6 @@ class CMDuploadUnittest(GclTestsBase):
                                 self.fake_root_dir)
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
-    gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
@@ -252,42 +248,12 @@ class CMDuploadUnittest(GclTestsBase):
 
     gcl.CMDupload(['naame', '--server=a', '--no_watchlists'])
 
-  def testNoTry(self):
-    change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
-                                 [('A', 'aa'), ('M', 'bb')],
-                                 self.fake_root_dir)
-    change_info.Save = self.mox.CreateMockAnything()
-    change_info.Save()
-    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
-    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
-    gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
-    gcl.os.write(42, change_info.description)
-    gcl.os.close(42)
-    gcl.GetCodeReviewSetting('CC_LIST')
-    gcl.GetCodeReviewSetting('PRIVATE')
-    gcl.os.getcwd().AndReturn('somewhere')
-    gcl.os.chdir(change_info.GetLocalRoot())
-    gcl.GenerateDiff(change_info.GetFileNames())
-    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
-        "--description_file=descfile",
-        "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
-    gcl.os.remove('descfile')
-    gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
-    gcl.os.chdir('somewhere')
-    gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
-    gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
-        ).AndReturn(change_info)
-    self.mox.ReplayAll()
-
-    gcl.CMDupload(['naame', '--no-try', '--no_watchlists'])
-
   def testNormal(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  [('A', 'aa'), ('M', 'bb')],
                                  self.fake_root_dir)
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
-    gcl.CheckHomeForFile('.gcl_upload_no_try').AndReturn(None)
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
@@ -303,8 +269,6 @@ class CMDuploadUnittest(GclTestsBase):
         "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
-    gcl.GetCodeReviewSetting('TRY_ON_UPLOAD').AndReturn('True')
-    gcl.TryChange(change_info, [], swallow_exception=True)
     gcl.os.chdir('somewhere')
     gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
     gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
