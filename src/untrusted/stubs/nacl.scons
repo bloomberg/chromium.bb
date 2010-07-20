@@ -1,34 +1,23 @@
-# Copyright 2008, Google Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+# -*- python -*-
+# Copyright 2008 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
 
 Import('env')
+
+# TODO(robertm): not sure why this is necessary - the driver should add it, c.f.
+#                http://code.google.com/p/nativeclient/issues/detail?id=707
+env.Append(CPPDEFINES=[('__native_client__','1')])
+
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  assert env.get('CC_NATIVE')
+  # NOTE: we make sure everything in this directory gets compiled
+  #       all the way down into native code.
+  #       This is tricky when run in a pnacl where tls.c would
+  #       normally only compiled into a bitcode file.
+  #       As a solution we have a second compiler in the env
+  #       that always compiles to native.
+  env.Replace(CC='${CC_NATIVE}')
 
 # This directory contains untrusted C and ASM source for low-level
 # CPU-specific libraries implicitly supplied by the compiler driver.
@@ -56,8 +45,3 @@ crt_platform = env.StaticLibrary('crt_platform',
                                  [env.StaticObject('tls.o', ['tls.c'])])
 
 env.AddObjectToSdk(objects + [crt_platform], is_platform=True)
-
-
-# NOTE: This object file is NOT truely platform specific
-o = env.ComponentObject('nacl_startup', ['nacl_startup.c'])
-env.AddObjectToSdk(o, is_platform=False)

@@ -253,22 +253,26 @@ def _SetEnvForArmSdk(env, sdk_path):
 
 
 def _SetEnvForSdkManually(env):
-  env.Replace(# Replace header and lib paths.
-              NACL_SDK_INCLUDE=os.getenv('NACL_SDK_INCLUDE',
-                                         'MISSING_SDK_INCLUDE'),
-              NACL_SDK_LIB=os.getenv('NACL_SDK_LIB', 'MISSING_SDK_LIB'),
-              NACL_SDK_LIB_PLATFORM=os.getenv('NACL_SDK_LIB_PLATFORM',
-                                              'MISSING_SDK_LIB_PLATFORM'),
-              # Replace the normal unix tools with the NaCl ones.
-              CC=os.getenv('NACL_SDK_CC', 'MISSING_SDK_CC'),
-              CXX=os.getenv('NACL_SDK_CXX', 'MISSING_SDK_CXX'),
-              AR=os.getenv('NACL_SDK_AR', 'MISSING_SDK_AR'),
-              CCAS=os.getenv('NACL_SDK_CCAS', 'MISSING_SDK_CCAS'),
-              # NOTE: use g++ for linking so we can handle c AND c++
-              LINK=os.getenv('NACL_SDK_LINK', 'MISSING_SDK_LINK'),
-              RANLIB=os.getenv('NACL_SDK_RANLIB', 'MISSING_SDK_RANLIB'),
-              )
+  def GetEnvOrDummy(v):
+    return os.getenv('NACL_SDK_' + v, 'MISSING_SDK_' + v)
 
+  env.Replace(# Replace header and lib paths.
+              NACL_SDK_INCLUDE=GetEnvOrDummy('INCLUDE'),
+              NACL_SDK_LIB=GetEnvOrDummy('LIB'),
+              NACL_SDK_LIB_PLATFORM=GetEnvOrDummy('LIB_PLATFORM'),
+              # Replace the normal unix tools with the NaCl ones.
+              CC=GetEnvOrDummy('CC'),
+              CXX=GetEnvOrDummy('CXX'),
+              AR=GetEnvOrDummy('AR'),
+              # NOTE: only in bitcode compilation scenarios where
+              #       CC compiles to bitcode and
+              #       CC_NATIVE compiles to native code
+              #       (CC_NATIVE had to handle both .c and .S files)
+              CC_NATIVE=GetEnvOrDummy('CC_NATIVE'),
+              # NOTE: use g++ for linking so we can handle c AND c++
+              LINK=GetEnvOrDummy('LINK'),
+              RANLIB=GetEnvOrDummy('RANLIB'),
+              )
 
 def ValidateSdk(env):
   checkables = ['${NACL_SDK_INCLUDE}/stdio.h']

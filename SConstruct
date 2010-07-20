@@ -1568,7 +1568,7 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     BUILD_TYPE = 'nacl_extra_sdk',
     BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
-    CPPPATH = ['$SOURCE_ROOT'],
+    CPPPATH = ['${SOURCE_ROOT}'],
     CPPDEFINES = [
       ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
       ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
@@ -1603,14 +1603,12 @@ if ARGUMENTS.get('disable_nosys_linker_warnings'):
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
   nacl_extra_sdk_env.FilterOut(CCFLAGS=['-g'])
 
+# TODO(robertm): remove this ASAP, we currently have llvm issue with c++
+#                llvm-gcc is based on gcc 4.2 and has warning bug related
+#                class constructors
 if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
-  assert nacl_extra_sdk_env['ASPPCOM'] == nacl_env['ASPPCOM']
-  asppcom = nacl_extra_sdk_env['ASPPCOM']
-  assert asppcom.startswith('$CC ')
-  # strip off '$CC'
-  asppcom = asppcom[3:]
-  nacl_extra_sdk_env.Replace(ASPPCOM = '$CCAS' + asppcom)
-  nacl_env.Replace(ASPPCOM = '$CCAS' + asppcom)
+  nacl_extra_sdk_env.FilterOut(CCFLAGS = ['-Werror'])
+  nacl_extra_sdk_env.Append(CFLAGS = werror_flags)
 
 if nacl_extra_sdk_env.Bit('host_windows'):
   # NOTE: This is needed because Windows builds are case-insensitive.
@@ -1621,6 +1619,7 @@ if nacl_env.Bit('host_windows'):
   # NOTE: This is needed because Windows builds are case-insensitive.
   # Without this we use nacl-as, which doesn't handle include directives, etc.
   nacl_env.Replace(ASCOM = '${CCCOM}')
+
 
 # TODO(khim): document this
 if not ARGUMENTS.get('nocpp'):
@@ -1646,6 +1645,7 @@ nacl_extra_sdk_env.Append(
       'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       'src/untrusted/pthread/nacl.scons',
+      'src/untrusted/startup/nacl.scons',
       'src/untrusted/stubs/nacl.scons',
       'src/untrusted/nosys/nacl.scons',
       'src/untrusted/valgrind/nacl.scons',
@@ -1653,10 +1653,6 @@ nacl_extra_sdk_env.Append(
    ],
 )
 
-# TODO(robertm): remove this ASAP, we currently have llvm issue with c++
-if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
-  nacl_extra_sdk_env.FilterOut(CCFLAGS = ['-Werror'])
-  nacl_extra_sdk_env.Append(CFLAGS = werror_flags)
 
 environment_list.append(nacl_extra_sdk_env)
 
