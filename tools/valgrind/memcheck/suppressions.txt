@@ -239,13 +239,6 @@
    fun:event_base_loop
 }
 {
-   FIXME IPCing uninitialized data
-   Memcheck:Param
-   socketcall.sendmsg(msg.msg_iov[i])
-   fun:sendmsg
-   fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
-}
-{
    # "The section of the SQLite library identified works exactly as it should."
    # http://www.sqlite.org/cvstrac/tktview?tn=536,39
    # http://www.sqlite.org/cvstrac/tktview?tn=694,39
@@ -273,7 +266,6 @@
    ...
    fun:pager_write
 }
-
 {
    # array of weak references freed but not processed?
    bug_16576
@@ -466,7 +458,6 @@
    obj:/*lib*/libz.so.1.2.*
    fun:*flate
 }
-
 {
    zlib-1.2.x trickyness (2a): See http://www.zlib.net/zlib_faq.html#faq36
    Memcheck:Value8
@@ -495,7 +486,6 @@
    obj:/*lib*/libz.so.1.2.*
    fun:*flate
 }
-
 {
   # zlib is smarter than we are:
   #   http://www.zlib.net/zlib_faq.html#faq36
@@ -839,6 +829,21 @@
    fun:_ZN19TestWebViewDelegate24UpdateSelectionClipboardEb
 }
 {
+   bug_10553
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7history14HistoryBackend8InitImplEv
+   fun:_ZN7history14HistoryBackend4InitEb
+   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvbEbEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
    # See http://crbug.com/11139
    bug_11139
    Memcheck:Leak
@@ -904,7 +909,6 @@
    ...
    fun:_ZN3net16HostResolverImpl3Job5StartEv
 }
-
 {
    # ditto, but for IPv6 support (?)
    bug_16089e
@@ -1139,7 +1143,6 @@
    fun:_ZN4base13WaitableEvent4WaitEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
 }
-
 {
    # slight variant of the above
    bug_19371a
@@ -1198,6 +1201,95 @@
    fun:_ZN17ExtensionsService4InitEv
    fun:_ZN11ProfileImpl14InitExtensionsEv
    fun:_Z11BrowserMainRK18MainFunctionParams
+}
+{
+   bug_19775_a
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   ...
+   fun:sqlite3CreateIndex
+   fun:yy_reduce
+   fun:sqlite3Parser
+   fun:sqlite3RunParser
+   fun:sqlite3Prepare
+   fun:sqlite3LockAndPrepare
+   fun:sqlite3_prepare
+   fun:sqlite3_exec
+   fun:sqlite3InitCallback
+   fun:sqlite3_exec
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN7history11URLDatabase18CreateMainURLIndexEv
+}
+{
+   bug_19775_b
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3_malloc
+   fun:pcache1Create
+   fun:sqlite3PcacheFetch
+   fun:sqlite3PagerAcquire2
+   fun:sqlite3PagerAcquire
+   fun:btreeGetPage
+   fun:lockBtree
+   fun:sqlite3BtreeBeginTrans
+   fun:sqlite3InitOne
+   fun:sqlite3Init
+   fun:sqlite3ReadSchema
+   fun:sqlite3Pragma
+   fun:yy_reduce
+   fun:sqlite3Parser
+   fun:sqlite3RunParser
+   fun:sqlite3Prepare
+   fun:sqlite3LockAndPrepare
+}
+{
+   bug_19775_c
+   Memcheck:Leak
+   ...
+   fun:openDatabase
+   fun:sqlite3_open
+   fun:_ZN3sql10Connection12OpenInternalERKSs
+   fun:_ZN3sql10Connection12OpenInMemoryEv
+   fun:_ZN7history16InMemoryDatabase6InitDBEv
+   fun:_ZN7history16InMemoryDatabase12InitFromDiskERK8FilePath
+}
+{
+   bug_19775_e
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3DbMallocRaw
+   fun:sqlite3DbMallocZero
+   fun:sqlite3StartTable
+   fun:yy_reduce
+   fun:sqlite3Parser
+   fun:sqlite3RunParser
+   fun:sqlite3Prepare
+   fun:sqlite3LockAndPrepare
+   fun:sqlite3_prepare
+   fun:sqlite3_exec
+   fun:sqlite3InitCallback
+   fun:sqlite3_exec
+   fun:sqlite3InitOne
+   fun:sqlite3Init
+   fun:sqlite3ReadSchema
+   fun:sqlite3CreateIndex
+   fun:yy_reduce
 }
 {
    bug_20113
@@ -1283,6 +1375,14 @@
    fun:_ZN4base9BaseTimerI27SafeBrowsingProtocolManagerLb0EE5StartENS_9TimeDeltaEPS1_MS1_FvvE
    fun:_ZN27SafeBrowsingProtocolManager18ScheduleNextUpdateEb
    fun:_ZN27SafeBrowsingProtocolManager10InitializeEv
+}
+{
+   # IPCing uninitialized data
+   bug_20997
+   Memcheck:Param
+   socketcall.sendmsg(msg.msg_iov[i])
+   fun:sendmsg*
+   fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
 }
 {
    bug_21010a
@@ -1401,6 +1501,17 @@
    fun:_ZN4skia19ConvolutionFilter1D9AddFilterEiPKsi
    ...
    fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
+}
+{
+   bug_23416
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
+   fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
+   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
+   fun:_ZN11webkit_glue15ResourceFetcherC2ERK4GURLPN6WebKit8WebFrameEP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue26ResourceFetcherWithTimeoutC1ERK4GURLPN6WebKit8WebFrameEiP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue27AltErrorPageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameERKNS4_11WebURLErrorEP14CallbackRunnerI6Tuple3IS6_S9_RKSsEE
 }
 {
    bug_23918
@@ -1632,27 +1743,6 @@
    fun:_ZN2v88internal8Debugger4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEPb
 }
 {
-   bug_27991
-   Memcheck:Addr4
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base24MessagePumpCFRunLoopBase7RunWorkEv
-   fun:_ZN4base24MessagePumpCFRunLoopBase13RunWorkSourceEPv
-   fun:CFRunLoopRunSpecific
-   fun:CFRunLoopRunInMode
-   fun:RunCurrentEventLoopInMode
-   fun:ReceiveNextEventCommon
-   fun:BlockUntilNextEventMatchingListInMode
-   fun:_DPSNextEvent
-   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
-   fun:-[NSApplication run]
-   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
-   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
    bug_27993
    Memcheck:Leak
    fun:_Znw*
@@ -1752,50 +1842,6 @@
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
    fun:_ZN2v86Script3RunEv
-}
-{
-   bug_28073
-   Memcheck:Addr4
-   fun:_ZN10CLVContextC2EPKvm
-   fun:_Z26getAllCarbonLazyValues2000v
-   fun:CLVVisitValuesForKey
-   fun:aeInstallLazyEventHandlers
-   fun:AEGetEventHandler
-   fun:AEGetSpecialHandler
-   fun:_Z35_findSysPreHIToolboxDispatchHandlermmPl
-   fun:_Z20aeDispatchAppleEventPK6AEDescPS_mPh
-   fun:_Z25dispatchEventAndSendReplyPK6AEDescPS_
-   fun:aeProcessAppleEvent
-   fun:AEProcessAppleEvent
-   fun:_DPSNextEvent
-   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
-   fun:-[NSApplication run]
-   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
-   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
-   bug_28071
-   Memcheck:Addr4
-   fun:_ZN10CLVContextC2EPKvm
-   fun:_Z26getAllCarbonLazyValues2000v
-   fun:CLVVisitValuesForKey
-   fun:aeInstallLazyEventHandlers
-   fun:AEGetEventHandler
-   fun:AEGetSpecialHandler
-   fun:_Z35_findSysPreHIToolboxDispatchHandlermmPl
-   fun:_Z20aeDispatchAppleEventPK6AEDescPS_mPh
-   fun:_Z25dispatchEventAndSendReplyPK6AEDescPS_
-   fun:aeProcessAppleEvent
-   fun:AEProcessAppleEvent
-   fun:_DPSNextEvent
-   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
-   fun:-[NSApplication run]
-   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
-   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
    bug_28200
@@ -2745,17 +2791,6 @@
    fun:_ZN3WTF6RefPtrIN7WebCore14DocumentLoaderEED1Ev
 }
 {
-   bug_23416
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
-   fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
-   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
-   fun:_ZN11webkit_glue15ResourceFetcherC2ERK4GURLPN6WebKit8WebFrameEP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
-   fun:_ZN11webkit_glue26ResourceFetcherWithTimeoutC1ERK4GURLPN6WebKit8WebFrameEiP14CallbackRunnerI6Tuple2IRKNS4_14WebURLResponseERKSsEE
-   fun:_ZN11webkit_glue27AltErrorPageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameERKNS4_11WebURLErrorEP14CallbackRunnerI6Tuple3IS6_S9_RKSsEE
-}
-{
    bug_42941
    Memcheck:Addr4
    fun:_ZN22TestShellDevToolsAgent11GetWebAgentEv
@@ -2939,7 +2974,6 @@
    ...
    fun:*FileDescriptorWatcherOutlivesMessageLoop_Test8TestBodyEv
 }
-
 {
    bug_45133
    Memcheck:Leak
@@ -2960,7 +2994,6 @@
    fun:_ZN11BrowserInit13LaunchBrowserERK11CommandLineP7ProfileRKSbIwSt11char_traitsIwESaIwEEbPi
    fun:_ZN11BrowserInit18ProcessCmdLineImplERK11CommandLineRKSbIwSt11char_traitsIwESaIwEEbP7ProfilePiPS_
 }
-
 {
    bug_45210
    Memcheck:Leak
@@ -2977,7 +3010,6 @@
    fun:_ZN14RunnableMethodI12RenderWidgetMS0_FvvE6Tuple0E3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
-
 {
    bug_45254_InitExtensions_Leak
    Memcheck:Leak
@@ -2992,7 +3024,6 @@
    fun:ChromeMain
    fun:main
 }
-
 {
    Bug_45263_ForMisterStatistics
    Heapcheck:Leak
@@ -3026,7 +3057,6 @@
    fun:ThreadFunc
    fun:start_thread
 }
-
 {
    Bug_45301_UnknownOwner
    Memcheck:Leak
@@ -3045,7 +3075,6 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
-
 {
    bug_45345
    Memcheck:Leak
@@ -3064,7 +3093,6 @@
    fun:_ZN7WebCore9FrameView22performPostLayoutTasksEv
    fun:_ZN7WebCore9FrameView6layoutEb
 }
-
 {
    bug_46144
    Memcheck:Leak
@@ -3074,7 +3102,6 @@
    fun:_ZN3WTF13FastAllocBasenwEj
    fun:_ZN3WTF20ThreadIdentifierData10initializeEj
 }
-
 {
    bug_46163
    Memcheck:Leak
@@ -3083,7 +3110,6 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
-
 {
    bug_46162
    Memcheck:Leak
@@ -3103,7 +3129,6 @@
    fun:_ZN12WebKitThread20InternalWebKitThread4InitEv
    fun:_ZN4base6Thread10ThreadMainEv
 }
-
 {
    bug_46161
    Memcheck:Leak
@@ -3115,7 +3140,6 @@
    fun:_Z16DispatchToMethodIN3net16HostResolverImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvvE6Tuple0E3RunEv
 }
-
 {
    bug_46250
    Memcheck:Leak
@@ -3130,7 +3154,6 @@
    fun:_Z16DispatchToMethodIN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserverEMS1_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN57_GLOBAL__N_chrome_browser_jankometer.cc_*IOJankObserverEMS1_FvvE6Tuple0E3RunEv
 }
-
 {
    bug_46331
    Memcheck:Leak
@@ -3146,7 +3169,6 @@
    fun:_Z16DispatchToMethodI19SafeBrowsingServiceMS0_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodI19SafeBrowsingServiceMS0_FvvE6Tuple0E3RunEv
 }
-
 {
    bug_46332
    Memcheck:Leak
@@ -3159,7 +3181,6 @@
    fun:_ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_PKS3_
    fun:_ZNK21URLRequestMockHTTPJob20GetResponseInfoConstEPN3net16HttpResponseInfoE
 }
-
 {
    bug_46343_a
    Memcheck:Leak
@@ -3174,7 +3195,6 @@
    fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
-
 {
    bug_46343_b
    Memcheck:Leak
@@ -3190,7 +3210,6 @@
    fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
-
 {
    bug_46343_c
    Memcheck:Leak
@@ -3204,7 +3223,6 @@
    fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
-
 {
    bug_46345
    Memcheck:Leak
@@ -3224,7 +3242,6 @@
    fun:_Z25WillHandleBrowserAboutURLP4GURLP7Profile
    fun:_ZN54BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test8TestBodyEv
 }
-
 {
    bug_46558
    Memcheck:Cond
@@ -3237,7 +3254,6 @@
    fun:_ZN15ChromeTestSuiteD1Ev
    fun:main
 }
-
 {
    bug_46560
    Memcheck:Leak
@@ -3262,7 +3278,6 @@
    fun:_ZN15BrowserFrameGtk4InitEv
    fun:_ZN8chromeos20BrowserFrameChromeos4InitEv
 }
-
 {
    bug_46569
    Memcheck:Leak
@@ -3272,7 +3287,6 @@
    fun:_ZN12CallbackImplIN3net10FileStream12AsyncContextEMS2_FviE6Tuple1IiEE13RunWithParamsERKS6_
    fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
 }
-
 {
    bug_46570_a
    Memcheck:Leak
@@ -3299,7 +3313,6 @@
    fun:_Z16DispatchToMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEEiS3_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
 }
-
 {
    bug_46570_b
    Memcheck:Leak
@@ -3324,19 +3337,22 @@
    fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
 }
 {
-   bug_10553
+   bug_46678_v_a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN7history14HistoryBackend8InitImplEv
-   fun:_ZN7history14HistoryBackend4InitEb
-   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvbEbEvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_Z11NewCallbackIN8remoting14SessionManagerEPKNS0_24UpdateStreamPacketHeaderERK13scoped_refptrIN5media10DataBufferEEiEPN9Callback3IT0_T1_T2_E4TypeEPT_MSI_FvSC_SD_SE_E
+   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_8Capturer11CaptureDataEE
+   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEES5_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEE6Tuple1IS5_EE3RunEv
+}
+{
+   bug_46678_v_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackIN8remoting14SessionManagerEPNS0_11HostMessageEiEPN9Callback2IT0_T1_E4TypeEPT_MSA_FvS5_S6_E
+   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_8Capturer11CaptureDataEE
+   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEES5_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEE6Tuple1IS5_EE3RunEv
 }
 {
   bug_46886_a
@@ -3370,95 +3386,6 @@
   fun:*SpdyHttpStreamTest_SendRequest_Test8TestBodyEv
 }
 {
-   bug_19775_a
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   ...
-   fun:sqlite3CreateIndex
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare
-   fun:sqlite3_exec
-   fun:sqlite3InitCallback
-   fun:sqlite3_exec
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
-   fun:sqlite3_exec
-   fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN7history11URLDatabase18CreateMainURLIndexEv
-}
-{
-   bug_19775_b
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   fun:sqlite3_malloc
-   fun:pcache1Create
-   fun:sqlite3PcacheFetch
-   fun:sqlite3PagerAcquire2
-   fun:sqlite3PagerAcquire
-   fun:btreeGetPage
-   fun:lockBtree
-   fun:sqlite3BtreeBeginTrans
-   fun:sqlite3InitOne
-   fun:sqlite3Init
-   fun:sqlite3ReadSchema
-   fun:sqlite3Pragma
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-}
-{
-   bug_19775_c
-   Memcheck:Leak
-   ...
-   fun:openDatabase
-   fun:sqlite3_open
-   fun:_ZN3sql10Connection12OpenInternalERKSs
-   fun:_ZN3sql10Connection12OpenInMemoryEv
-   fun:_ZN7history16InMemoryDatabase6InitDBEv
-   fun:_ZN7history16InMemoryDatabase12InitFromDiskERK8FilePath
-}
-{
-   bug_19775_e
-   Memcheck:Leak
-   ...
-   fun:malloc
-   fun:sqlite3MemMalloc
-   fun:mallocWithAlarm
-   fun:sqlite3Malloc
-   fun:sqlite3DbMallocRaw
-   fun:sqlite3DbMallocZero
-   fun:sqlite3StartTable
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare
-   fun:sqlite3_exec
-   fun:sqlite3InitCallback
-   fun:sqlite3_exec
-   fun:sqlite3InitOne
-   fun:sqlite3Init
-   fun:sqlite3ReadSchema
-   fun:sqlite3CreateIndex
-   fun:yy_reduce
-}
-{
    bug_47331_part_1
    Memcheck:Leak
    fun:malloc
@@ -3470,7 +3397,6 @@
    fun:sqlite3DbMallocZero
    fun:sqlite3StartTable
 }
-
 {
    bug_47331_part_2
    Memcheck:Leak
@@ -3523,24 +3449,6 @@
    fun:_ZN14ProfileManager13CreateProfileERK8FilePath
 }
 {
-   bug_46678_v_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackIN8remoting14SessionManagerEPKNS0_24UpdateStreamPacketHeaderERK13scoped_refptrIN5media10DataBufferEEiEPN9Callback3IT0_T1_T2_E4TypeEPT_MSI_FvSC_SD_SE_E
-   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_8Capturer11CaptureDataEE
-   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEES5_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEE6Tuple1IS5_EE3RunEv
-}
-{
-   bug_46678_v_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackIN8remoting14SessionManagerEPNS0_11HostMessageEiEPN9Callback2IT0_T1_E4TypeEPT_MSA_FvS5_S6_E
-   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_8Capturer11CaptureDataEE
-   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEES5_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEE6Tuple1IS5_EE3RunEv
-}
-{
    bug_48553
    Memcheck:Leak
    fun:malloc
@@ -3559,7 +3467,6 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
-
 {
    bug_48557_1
    Memcheck:Leak
@@ -3570,7 +3477,6 @@
    fun:_ZN21AudioRendererHostTest16CreateLowLatencyEv
    fun:_ZN54AudioRendererHostTest_CreateLowLatencyAndShutdown_Test8TestBodyEv
 }
-
 {
    bug_48557_2
    Memcheck:Leak
@@ -3581,7 +3487,6 @@
    fun:_ZN21AudioRendererHostTest16CreateLowLatencyEv
    fun:_ZN51AudioRendererHostTest_CreateLowLatencyAndClose_Test8TestBodyEv
 }
-
 {
    bug_48865
    Memcheck:Leak
