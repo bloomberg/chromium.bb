@@ -19,6 +19,7 @@
 #include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -292,6 +293,14 @@ void MetricsLog::RecordEnvironment(
                    base::SysInfo::OperatingSystemName());
     WriteAttribute("version",
                    base::SysInfo::OperatingSystemVersion());
+  }
+
+  {
+    OPEN_ELEMENT_FOR_SCOPE("gpu");
+    WriteIntAttribute("vendorid",
+                      GpuProcessHost::Get()->gpu_info().vendor_id());
+    WriteIntAttribute("deviceid",
+                      GpuProcessHost::Get()->gpu_info().device_id());
   }
 
   {
