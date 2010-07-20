@@ -51,6 +51,8 @@
           },
           'sources': [
             'client/x11_client.cc',
+            'client/x11_input_handler.cc',
+            'client/x11_input_handler.h',
             'client/x11_view.cc',
             'client/x11_view.h',
           ],
@@ -79,6 +81,8 @@
         'client/plugin/chromoting_plugin.h',
         'client/plugin/pepper_entrypoints.cc',
         'client/plugin/pepper_entrypoints.h',
+        'client/plugin/pepper_input_handler.cc',
+        'client/plugin/pepper_input_handler.h',
         'client/plugin/pepper_view.cc',
         'client/plugin/pepper_view.h',
         'client/plugin/pepper_util.cc',
@@ -222,12 +226,16 @@
         'client/chromoting_client.cc',
         'client/chromoting_client.h',
         'client/chromoting_view.h',
+        'client/client_config.h',
+        'client/client_context.cc',
+        'client/client_context.h',
         'client/client_util.cc',
         'client/client_util.h',
         'client/decoder.h',
         'client/decoder_verbatim.cc',
         'client/decoder_verbatim.h',
         'client/host_connection.h',
+        'client/input_handler.h',
         'client/jingle_host_connection.cc',
         'client/jingle_host_connection.h',
       ],
@@ -263,20 +271,7 @@
       'sources': [
         'host/keygen_main.cc',
       ],
-    },  # end of target 'chromoting_simple_host'
-
-    {
-      'target_name': 'chromoting_simple_client',
-      'type': 'executable',
-      'dependencies': [
-        'chromoting_base',
-        'chromoting_client',
-        'chromoting_jingle_glue',
-      ],
-      'sources': [
-        'client/simple_client.cc',
-      ],
-    },  # end of target 'chromoting_simple_client'
+    },  # end of target 'chromoting_host_keygen'
 
     {
       'target_name': 'chromoting_jingle_glue',

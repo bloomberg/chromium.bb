@@ -18,6 +18,12 @@ class ChromotingView {
  public:
   virtual ~ChromotingView() {}
 
+  // Initialize the common structures for the view.
+  virtual bool Initialize() = 0;
+
+  // Free up resources allocated by this view.
+  virtual void TearDown() = 0;
+
   // Tells the ChromotingView to paint the current image on the screen.
   // TODO(hclam): Add rects as parameter if needed.
   virtual void Paint() = 0;
@@ -34,12 +40,11 @@ class ChromotingView {
   // extends past the end of the backing store, it is filled with black.
   virtual void SetViewport(int x, int y, int width, int height) = 0;
 
-  // Resize the underlying image that is displayed.  This should match the size
-  // of the output from the decoder.
+  // Resize the underlying image that contains the host screen buffer.
+  // This should match the size of the output from the decoder.
   //
-  // TODO(ajwong): We need a better name.  Look at how Java represents this
-  // stuff?
-  virtual void SetBackingStoreSize(int width, int height) = 0;
+  // TODO(garykac): This handles only 1 screen. We need multi-screen support.
+  virtual void SetHostScreenSize(int width, int height) = 0;
 
   // Handle the BeginUpdateStream message.
   virtual void HandleBeginUpdateStream(HostMessage* msg) = 0;

@@ -17,17 +17,4 @@ class ChromotingPluginTest : public testing::Test {
   }
 };
 
-TEST_F(ChromotingPluginTest, ParseUrl) {
-  const char url[] = "chromotocol://hostid?user=auser&auth=someauth&jid=ajid";
-  std::string user_id;
-  std::string auth_token;
-  std::string host_jid;
-  ASSERT_TRUE(
-      ChromotingPlugin::ParseUrl(url, &user_id, &auth_token, &host_jid));
-
-  EXPECT_EQ("auser", user_id);
-  EXPECT_EQ("someauth", auth_token);
-  EXPECT_EQ("ajid", host_jid);
-}
-
 }  // namespace remoting

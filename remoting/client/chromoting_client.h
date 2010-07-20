@@ -15,13 +15,24 @@ class MessageLoop;
 namespace remoting {
 
 class ChromotingView;
+class ClientConfig;
+class ClientContext;
+class InputHandler;
 
 class ChromotingClient : public HostConnection::HostEventCallback {
  public:
-  ChromotingClient(MessageLoop* message_loop,
+  // Objects passed in are not owned by this class.
+  ChromotingClient(ClientConfig* config,
+                   ClientContext* context,
                    HostConnection* connection,
-                   ChromotingView* view);
+                   ChromotingView* view,
+                   InputHandler* input_handler,
+                   CancelableTask* client_done);
   virtual ~ChromotingClient();
+
+  void Start();
+  void Stop();
+  void ClientDone();
 
   // Signals that the associated view may need updating.
   virtual void Repaint();
@@ -53,24 +64,23 @@ class ChromotingClient : public HostConnection::HostEventCallback {
   // Convenience method for modifying the state on this object's message loop.
   void SetState(State s);
 
-  // TODO(ajwong): Do all of these methods need to run on the client's thread?
-  void DoSetState(State s);
-  void DoRepaint();
-  void DoSetViewport(int x, int y, int width, int height);
-
   // Handles for chromotocol messages.
-  void DoInitClient(HostMessage* msg);
-  void DoBeginUpdate(HostMessage* msg);
-  void DoHandleUpdate(HostMessage* msg);
-  void DoEndUpdate(HostMessage* msg);
+  void InitClient(HostMessage* msg);
+  void BeginUpdate(HostMessage* msg);
+  void HandleUpdate(HostMessage* msg);
+  void EndUpdate(HostMessage* msg);
 
-  MessageLoop* message_loop_;
+  // The following are not owned by this class.
+  ClientConfig* config_;
+  ClientContext* context_;
+  HostConnection* connection_;
+  ChromotingView* view_;
+  InputHandler* input_handler_;
+
+  // If non-NULL, this is called when the client is done.
+  CancelableTask* client_done_;
 
   State state_;
-
-  // Connection to views and hosts.  Not owned.
-  HostConnection* host_connection_;
-  ChromotingView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

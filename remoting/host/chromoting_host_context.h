@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CHROMOTING_HOST_CONTEXT_H_
-#define REMOTING_CHROMOTING_HOST_CONTEXT_H_
+#ifndef REMOTING_HOST_CHROMOTING_HOST_CONTEXT_H_
+#define REMOTING_HOST_CHROMOTING_HOST_CONTEXT_H_
 
 #include <string>
 
@@ -31,16 +31,16 @@ class ChromotingHostContext {
  private:
   FRIEND_TEST(ChromotingHostContextTest, StartAndStop);
 
-  // A thread that host network operations.
+  // A thread that hosts all network operations.
   JingleThread jingle_thread_;
 
-  // A thread that host ChromotingHost.
+  // A thread that hosts ChromotingHost and performs rate control.
   base::Thread main_thread_;
 
-  // A thread that host all capture operations.
+  // A thread that hosts all capture operations.
   base::Thread capture_thread_;
 
-  // A thread that host all encode operations.
+  // A thread that hosts all encode operations.
   base::Thread encode_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHostContext);

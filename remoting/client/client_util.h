@@ -9,12 +9,16 @@
 
 namespace remoting {
 
+class ClientConfig;
+
 // Get the login info from the cmdline args (or request from the console if
-// not present) and write values into |host_jid|, |username| and |auth_token|.
+// not present) and write values into |config|.
 // Return true if successful.
-bool GetLoginInfo(int argc, char** argv,
-                  std::string* host_jid, std::string* username,
-                  std::string* auth_token);
+bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config);
+
+// Get the login info from the URL params and write values into |config|.
+// Return true if successful.
+bool GetLoginInfoFromUrlParams(const std::string& url, ClientConfig* config);
 
 }  // namespace remoting
 

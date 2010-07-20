@@ -19,19 +19,24 @@ namespace remoting {
 // A ChromotingView implemented using X11 and XRender.
 class X11View : public ChromotingView {
  public:
+  X11View();  // Delete this.
   X11View(Display* display, XID window, int width, int height);
 
   virtual ~X11View();
 
   // ChromotingView implementations.
+  virtual bool Initialize();
+  virtual void TearDown();
   virtual void Paint();
   virtual void SetSolidFill(uint32 color);
   virtual void UnsetSolidFill();
   virtual void SetViewport(int x, int y, int width, int height);
-  virtual void SetBackingStoreSize(int width, int height);
+  virtual void SetHostScreenSize(int width, int height);
   virtual void HandleBeginUpdateStream(HostMessage* msg);
   virtual void HandleUpdateStreamPacket(HostMessage* msg);
   virtual void HandleEndUpdateStream(HostMessage* msg) ;
+
+  Display* display() { return display_; }
 
  private:
   void InitPaintTarget();

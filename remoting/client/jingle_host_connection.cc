@@ -4,28 +4,26 @@
 
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
+#include "remoting/client/client_config.h"
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
 namespace remoting {
 
-JingleHostConnection::JingleHostConnection(JingleThread* network_thread)
-    : network_thread_(network_thread),
+JingleHostConnection::JingleHostConnection(ClientContext* context)
+    : context_(context),
       event_callback_(NULL) {
 }
 
 JingleHostConnection::~JingleHostConnection() {
 }
 
-void JingleHostConnection::Connect(const std::string& username,
-                                   const std::string& password,
-                                   const std::string& host_jid,
+void JingleHostConnection::Connect(ClientConfig* config,
                                    HostEventCallback* event_callback) {
   message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &JingleHostConnection::DoConnect,
-                        username, password, host_jid,
-                        event_callback));
+                        config, event_callback));
 }
 
 void JingleHostConnection::Disconnect() {
@@ -105,20 +103,19 @@ void JingleHostConnection::OnNewConnection(
 }
 
 MessageLoop* JingleHostConnection::message_loop() {
-  return network_thread_->message_loop();
+  return context_->jingle_thread()->message_loop();
 }
 
-void JingleHostConnection::DoConnect(const std::string& username,
-                                     const std::string& auth_token,
-                                     const std::string& host_jid,
+void JingleHostConnection::DoConnect(ClientConfig* config,
                                      HostEventCallback* event_callback) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   event_callback_ = event_callback;
 
-  jingle_client_ = new JingleClient(network_thread_);
-  jingle_client_->Init(username, auth_token, kChromotingTokenServiceName, this);
-  jingle_channel_ = jingle_client_->Connect(host_jid, this);
+  jingle_client_ = new JingleClient(context_->jingle_thread());
+  jingle_client_->Init(config->username(), config->auth_token(),
+                       kChromotingTokenServiceName, this);
+  jingle_channel_ = jingle_client_->Connect(config->host_jid(), this);
 }
 
 void JingleHostConnection::DoDisconnect() {

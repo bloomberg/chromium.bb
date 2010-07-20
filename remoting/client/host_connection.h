@@ -11,6 +11,8 @@
 
 namespace remoting {
 
+class ClientConfig;
+
 class HostConnection {
  public:
   class HostEventCallback {
@@ -37,9 +39,7 @@ class HostConnection {
   virtual ~HostConnection() {}
 
   // TODO(ajwong): We need to generalize this API.
-  virtual void Connect(const std::string& username,
-                       const std::string& auth_token,
-                       const std::string& host_jid,
+  virtual void Connect(ClientConfig* config,
                        HostEventCallback* event_callback) = 0;
   virtual void Disconnect() = 0;
 

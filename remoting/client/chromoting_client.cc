@@ -6,7 +6,10 @@
 
 #include "base/message_loop.h"
 #include "remoting/client/chromoting_view.h"
+#include "remoting/client/client_config.h"
+#include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
+#include "remoting/client/input_handler.h"
 
 static const uint32 kCreatedColor = 0xffccccff;
 static const uint32 kDisconnectedColor = 0xff00ccff;
@@ -14,53 +17,106 @@ static const uint32 kFailedColor = 0xffcc00ff;
 
 namespace remoting {
 
-ChromotingClient::ChromotingClient(MessageLoop* message_loop,
+ChromotingClient::ChromotingClient(ClientConfig* config,
+                                   ClientContext* context,
                                    HostConnection* connection,
-                                   ChromotingView* view)
-    : message_loop_(message_loop),
-      state_(CREATED),
-      host_connection_(connection),
-      view_(view) {
+                                   ChromotingView* view,
+                                   InputHandler* input_handler,
+                                   CancelableTask* client_done)
+    : config_(config),
+      context_(context),
+      connection_(connection),
+      view_(view),
+      input_handler_(input_handler),
+      client_done_(client_done),
+      state_(CREATED) {
 }
 
 ChromotingClient::~ChromotingClient() {
 }
 
+void ChromotingClient::Start() {
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingClient::Start));
+    return;
+  }
+
+  connection_->Connect(config_, this);
+
+  if (!view_->Initialize()) {
+    ClientDone();
+  }
+}
+
+void ChromotingClient::Stop() {
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingClient::Stop));
+    return;
+  }
+
+  connection_->Disconnect();
+
+  view_->TearDown();
+
+  // Quit the current message loop.
+  message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
+
+void ChromotingClient::ClientDone() {
+  if (client_done_ != NULL) {
+    message_loop()->PostTask(FROM_HERE, client_done_);
+  }
+}
+
 void ChromotingClient::Repaint() {
-  message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ChromotingClient::DoRepaint));
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingClient::Repaint));
+    return;
+  }
+
+  view_->Paint();
 }
 
 void ChromotingClient::SetViewport(int x, int y, int width, int height) {
-  message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ChromotingClient::DoSetViewport,
-                        x, y, width, height));
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingClient::SetViewport,
+                          x, y, width, height));
+    return;
+  }
+
+  view_->SetViewport(x, y, width, height);
 }
 
 void ChromotingClient::HandleMessages(HostConnection* conn,
                                       HostMessageList* messages) {
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingClient::HandleMessages,
+                          conn, messages));
+    return;
+  }
+
   for (size_t i = 0; i < messages->size(); ++i) {
     HostMessage* msg = (*messages)[i];
     // TODO(ajwong): Consider creating a macro similar to the IPC message
     // mappings.  Also reconsider the lifetime of the message object.
     if (msg->has_init_client()) {
-      message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(this, &ChromotingClient::DoInitClient, msg));
+      InitClient(msg);
     } else if (msg->has_begin_update_stream()) {
-      message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(this, &ChromotingClient::DoBeginUpdate, msg));
+      BeginUpdate(msg);
     } else if (msg->has_update_stream_packet()) {
-      message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(this, &ChromotingClient::DoHandleUpdate, msg));
+      HandleUpdate(msg);
     } else if (msg->has_end_update_stream()) {
-      message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(this, &ChromotingClient::DoEndUpdate, msg));
+      EndUpdate(msg);
     } else {
       NOTREACHED() << "Unknown message received";
     }
@@ -85,19 +141,18 @@ void ChromotingClient::OnConnectionFailed(HostConnection* conn) {
 }
 
 MessageLoop* ChromotingClient::message_loop() {
-  return message_loop_;
+  return context_->jingle_thread()->message_loop();
 }
 
 void ChromotingClient::SetState(State s) {
   // TODO(ajwong): We actually may want state to be a shared variable. Think
   // through later.
-  message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ChromotingClient::DoSetState, s));
-}
-
-void ChromotingClient::DoSetState(State s) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingClient::SetState, s));
+    return;
+  }
 
   state_ = s;
   switch (state_) {
@@ -118,49 +173,40 @@ void ChromotingClient::DoSetState(State s) {
       break;
   }
 
-  DoRepaint();
+  Repaint();
 }
 
-void ChromotingClient::DoRepaint() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  view_->Paint();
-}
-
-void ChromotingClient::DoSetViewport(int x, int y, int width, int height) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  view_->SetViewport(x, y, width, height);
-}
-
-void ChromotingClient::DoInitClient(HostMessage* msg) {
+void ChromotingClient::InitClient(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(msg->has_init_client());
   scoped_ptr<HostMessage> deleter(msg);
 
-  // Saves the dimension and resize the window.
+  // Resize the window.
   int width = msg->init_client().width();
   int height = msg->init_client().height();
   LOG(INFO) << "Init client received geometry: " << width << "x" << height;
 
-  view_->SetBackingStoreSize(width, height);
+  view_->SetHostScreenSize(width, height);
+
+  // Schedule the input handler to process the event queue.
+  input_handler_->Initialize();
 }
 
-void ChromotingClient::DoBeginUpdate(HostMessage* msg) {
+void ChromotingClient::BeginUpdate(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(msg->has_begin_update_stream());
 
   view_->HandleBeginUpdateStream(msg);
 }
 
-void ChromotingClient::DoHandleUpdate(HostMessage* msg) {
+void ChromotingClient::HandleUpdate(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(msg->has_update_stream_packet());
 
   view_->HandleUpdateStreamPacket(msg);
 }
 
-void ChromotingClient::DoEndUpdate(HostMessage* msg) {
+void ChromotingClient::EndUpdate(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(msg->has_end_update_stream());
 

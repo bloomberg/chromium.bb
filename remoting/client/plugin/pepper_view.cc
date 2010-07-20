@@ -30,6 +30,13 @@ PepperView::PepperView(ChromotingPlugin* plugin)
 PepperView::~PepperView() {
 }
 
+bool PepperView::Initialize() {
+  return true;
+}
+
+void PepperView::TearDown() {
+}
+
 void PepperView::Paint() {
   if (!plugin_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewRunnableMethod(this, &PepperView::Paint));
@@ -118,10 +125,10 @@ void PepperView::SetViewport(int x, int y, int width, int height) {
   }
 }
 
-void PepperView::SetBackingStoreSize(int width, int height) {
+void PepperView::SetHostScreenSize(int width, int height) {
   if (!plugin_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewRunnableMethod(this,
-                                            &PepperView::SetBackingStoreSize,
+                                            &PepperView::SetHostScreenSize,
                                             width, height));
     return;
   }

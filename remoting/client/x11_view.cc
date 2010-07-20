@@ -14,6 +14,14 @@
 
 namespace remoting {
 
+X11View::X11View()
+    : display_(NULL),
+      window_(0),
+      width_(0),
+      height_(0),
+      picture_(0) {
+}
+
 X11View::X11View(Display* display, XID window, int width, int height)
     : display_(display),
       window_(window),
@@ -26,9 +34,49 @@ X11View::X11View(Display* display, XID window, int width, int height)
 }
 
 X11View::~X11View() {
+  DCHECK(!display_);
+  DCHECK(!window_);
+}
+
+bool X11View::Initialize() {
+  display_ = XOpenDisplay(NULL);
+  if (!display_) {
+    return false;
+  }
+
+  // Get properties of the screen.
+  int screen = DefaultScreen(display_);
+  int root_window = RootWindow(display_, screen);
+
+  // Creates the window.
+  window_ = XCreateSimpleWindow(display_, root_window, 1, 1, 640, 480, 0,
+                                BlackPixel(display_, screen),
+                                BlackPixel(display_, screen));
+  DCHECK(window_);
+  XStoreName(display_, window_, "X11 Remoting");
+
+  // Specifies what kind of messages we want to receive.
+  XSelectInput(display_, window_, ExposureMask | ButtonPressMask);
+  XMapWindow(display_, window_);
+  return true;
+}
+
+void X11View::TearDown() {
+  if (display_ && window_) {
+    // Shutdown the window system.
+    XDestroyWindow(display_, window_);
+    XCloseDisplay(display_);
+  }
+  display_ = NULL;
+  window_ = 0;
 }
 
 void X11View::Paint() {
+  // Don't bother attempting to paint if the display hasn't been set up.
+  if (!display_ || !window_ || !height_ || !width_) {
+    return;
+  }
+
   // TODO(hclam): Paint only the updated regions.
   all_update_rects_.clear();
 
@@ -80,23 +128,24 @@ void X11View::Paint() {
 }
 
 void X11View::SetSolidFill(uint32 color) {
-  // TODO(ajwong): Implement.
-  NOTIMPLEMENTED();
+  // TODO(garykac): Implement.
+  // NOTIMPLEMENTED();
 }
 
 void X11View::UnsetSolidFill() {
-  // TODO(ajwong): Implement.
-  NOTIMPLEMENTED();
+  // TODO(garykac): Implement.
+  // NOTIMPLEMENTED();
 }
 
 void X11View::SetViewport(int x, int y, int width, int height) {
-  // TODO(ajwong): Implement.
-  NOTIMPLEMENTED();
+  // TODO(garykac): Implement.
+  // NOTIMPLEMENTED();
 }
 
-void X11View::SetBackingStoreSize(int width, int height) {
-  // TODO(ajwong): Implement.
-  NOTIMPLEMENTED();
+void X11View::SetHostScreenSize(int width, int height) {
+  width_ = width;
+  height_ = height;
+  XResizeWindow(display_, window_, width_, height_);
 }
 
 void X11View::InitPaintTarget() {

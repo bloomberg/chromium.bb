@@ -37,11 +37,13 @@ class PepperView : public ChromotingView {
   virtual ~PepperView();
 
   // ChromotingView implementation.
+  virtual bool Initialize();
+  virtual void TearDown();
   virtual void Paint();
   virtual void SetSolidFill(uint32 color);
   virtual void UnsetSolidFill();
   virtual void SetViewport(int x, int y, int width, int height);
-  virtual void SetBackingStoreSize(int width, int height);
+  virtual void SetHostScreenSize(int width, int height);
   virtual void HandleBeginUpdateStream(HostMessage* msg);
   virtual void HandleUpdateStreamPacket(HostMessage* msg);
   virtual void HandleEndUpdateStream(HostMessage* msg);

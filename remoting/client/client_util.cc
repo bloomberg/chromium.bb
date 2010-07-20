@@ -4,20 +4,26 @@
 
 #include "remoting/client/client_util.h"
 
-#include <iostream>
+#include <string>
+#include <vector>
 
 #include "base/logging.h"
+#include "base/string_util.h"
+#include "remoting/client/client_config.h"
+
+using std::string;
+using std::vector;
 
 namespace remoting {
 
 // Get host JID from command line arguments, or stdin if not specified.
-bool GetLoginInfo(int argc, char** argv,
-                  std::string* host_jid,
-                  std::string* username,
-                  std::string* auth_token) {
+bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
   bool found_host_jid = false;
   bool found_jid = false;
   bool found_auth_token = false;
+  string host_jid;
+  string username;
+  string auth_token;
 
   for (int i = 1; i < argc; i++) {
     std::string arg = argv[i];
@@ -27,14 +33,14 @@ bool GetLoginInfo(int argc, char** argv,
                      << std::endl;
       } else {
         found_host_jid = true;
-        *host_jid = argv[i];
+        host_jid = argv[i];
       }
     } else if (arg == "--jid") {
       if (++i >= argc) {
         LOG(WARNING) << "Expected JID to follow --jid option" << std::endl;
       } else {
         found_jid = true;
-        *username = argv[i];
+        username = argv[i];
       }
     } else if (arg == "--token") {
       if (++i >= argc) {
@@ -42,7 +48,7 @@ bool GetLoginInfo(int argc, char** argv,
                      << std::endl;
       } else {
         found_auth_token = true;
-        *auth_token = argv[i];
+        auth_token = argv[i];
       }
     } else {
       LOG(WARNING) << "Unrecognized option: " << arg << std::endl;
@@ -50,44 +56,63 @@ bool GetLoginInfo(int argc, char** argv,
   }
 
   if (!found_host_jid) {
-    std::cout << "Host JID: ";
-    std::cin >> *host_jid;
-    std::cin.ignore();  // Consume the leftover '\n'
+    return false;
   }
 
   // Validate the chromoting host JID.
-  if (host_jid->find("/chromoting") == std::string::npos) {
-    std::cerr << "Error: Expected Host JID in format: <jid>/chromoting<id>"
-              << std::endl;
+  if (host_jid.find("/chromoting") == std::string::npos) {
     return false;
   }
 
   if (!found_jid) {
-    // Get username (JID).
-    // Extract default JID from host_jid.
-    std::string default_username;
-    size_t jid_end = host_jid->find('/');
-    if (jid_end != std::string::npos) {
-      default_username = host_jid->substr(0, jid_end);
-    }
-    std::cout << "JID [" << default_username << "]: ";
-    getline(std::cin, *username);
-    if (username->length() == 0) {
-      username->swap(default_username);
-    }
-    if (username->length() == 0) {
-      std::cerr << "Error: Expected valid JID username" << std::endl;
-      return false;
-    }
+    return false;
   }
 
   if (!found_auth_token) {
-    // Get authentication token.
-    std::cout << "Auth token: ";
-    getline(std::cin, *auth_token);
-    std::cout << std::endl;
+    return false;
   }
 
+  config->set_host_jid(host_jid);
+  config->set_username(username);
+  config->set_auth_token(auth_token);
+  return true;
+}
+
+// Get host JID from command line arguments, or stdin if not specified.
+bool GetLoginInfoFromUrlParams(const std::string& url, ClientConfig* config) {
+  // TODO(ajwong): We should use GURL or something.  Don't parse this by hand!
+
+  // The Url should be of the form:
+  //
+  //   chrome://remoting?user=<userid>&auth=<authtoken>&jid=<hostjid>
+  //
+  vector<string> parts;
+  SplitString(url, '&', &parts);
+  if (parts.size() != 3) {
+    return false;
+  }
+
+  size_t pos = parts[0].rfind('=');
+  if (pos == string::npos && (pos + 1) != string::npos) {
+    return false;
+  }
+  std::string username = parts[0].substr(pos + 1);
+
+  pos = parts[1].rfind('=');
+  if (pos == string::npos && (pos + 1) != string::npos) {
+    return false;
+  }
+  std::string auth_token = parts[1].substr(pos + 1);
+
+  pos = parts[2].rfind('=');
+  if (pos == string::npos && (pos + 1) != string::npos) {
+    return false;
+  }
+  std::string host_jid = parts[2].substr(pos + 1);
+
+  config->set_host_jid(host_jid);
+  config->set_username(username);
+  config->set_auth_token(auth_token);
   return true;
 }
 

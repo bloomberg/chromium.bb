@@ -22,6 +22,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "remoting/base/protocol_decoder.h"
+#include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 #include "remoting/jingle_glue/jingle_client.h"
@@ -30,18 +31,17 @@ class MessageLoop;
 
 namespace remoting {
 
+class ClientConfig;
 class JingleThread;
 
 class JingleHostConnection : public HostConnection,
                              public JingleChannel::Callback,
                              public JingleClient::Callback {
  public:
-  explicit JingleHostConnection(JingleThread* network_thread);
+  explicit JingleHostConnection(ClientContext* context);
   virtual ~JingleHostConnection();
 
-  virtual void Connect(const std::string& username,
-                       const std::string& auth_token,
-                       const std::string& host_jid,
+  virtual void Connect(ClientConfig* config,
                        HostEventCallback* event_callback);
   virtual void Disconnect();
 
@@ -61,13 +61,11 @@ class JingleHostConnection : public HostConnection,
  private:
   MessageLoop* message_loop();
 
-  void DoConnect(const std::string& username,
-                 const std::string& auth_token,
-                 const std::string& host_jid,
+  void DoConnect(ClientConfig* config,
                  HostEventCallback* event_callback);
   void DoDisconnect();
 
-  JingleThread* network_thread_;
+  ClientContext* context_;
 
   scoped_refptr<JingleClient> jingle_client_;
   scoped_refptr<JingleChannel> jingle_channel_;

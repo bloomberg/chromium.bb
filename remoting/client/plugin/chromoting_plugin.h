@@ -34,7 +34,9 @@ class Module;
 namespace remoting {
 
 class ChromotingClient;
+class ClientContext;
 class HostConnection;
+class InputHandler;
 class JingleThread;
 class PepperView;
 
@@ -56,11 +58,6 @@ class ChromotingPlugin : public pp::Instance {
   FRIEND_TEST(ChromotingPluginTest, ParseUrl);
   FRIEND_TEST(ChromotingPluginTest, TestCaseSetup);
 
-  static bool ParseUrl(const std::string& url,
-                       std::string* user_id,
-                       std::string* auth_token,
-                       std::string* host_jid);
-
   // Since we're an internal plugin, we can just grab the message loop during
   // init to figure out which thread we're on.  This should only be used to
   // sanity check which thread we're executing on. Do not post task here!
@@ -69,11 +66,14 @@ class ChromotingPlugin : public pp::Instance {
   // TODO(ajwong): Think if there is a better way to safeguard this.
   MessageLoop* pepper_main_loop_dont_post_to_me_;
 
-  scoped_ptr<base::Thread> main_thread_;
-  scoped_ptr<JingleThread> network_thread_;
+  scoped_ptr<ClientContext> context_;
 
   scoped_ptr<HostConnection> host_connection_;
+
   scoped_ptr<PepperView> view_;
+
+  scoped_ptr<InputHandler> input_handler_;
+
   scoped_ptr<ChromotingClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingPlugin);
