@@ -8427,6 +8427,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the add language combobox">
         Add language
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON"
+               desc="The label for the add button for adding a language">
+        Add
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON"
                desc="The label for the remove button for removing a language">
         Remove

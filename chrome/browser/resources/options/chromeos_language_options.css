@@ -1,0 +1,63 @@
+.language-options {
+  display: -webkit-box;
+  margin: 15px;
+}
+
+.language-options button {
+  min-width: 70px;
+}
+
+.language-options h3 {
+  -webkit-margin-start: 12px;
+  font-size: 75%;
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+.language-options label {
+  display: block;
+}
+
+.language-options-contents  {
+  -webkit-padding-start: 12px;
+  padding-bottom: 10px;
+}
+
+.language-options-left, .language-options-right {
+  border: 1px solid #cccccc;
+  vertical-align: top;
+  padding: 0px;
+  height: 400px;
+}
+
+.language-options-left {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  background-color: #ebeff9;
+  min-width: 200px;
+}
+
+.language-options-lower-left {
+  -webkit-box-flex: 0;
+  -webkit-padding-start: 12px;
+  padding-bottom: 10px;
+}
+
+.language-options-right {
+  /* To share the center line with the left pane. */
+  -webkit-margin-start: -1px;
+  min-width: 300px;
+}
+
+#language-options-list {
+  -webkit-box-flex: 1;
+  padding: 0px;
+  width: 100%;
+  display: block;
+}
+
+#language-options-list li {
+  -webkit-padding-start: 12px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}

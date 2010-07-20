@@ -21,9 +21,8 @@ void LanguageOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
   localized_strings->SetString(L"languagePage",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE));
-  localized_strings->SetString(L"add_language",
-      l10n_util::GetString(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX));
+  localized_strings->SetString(L"add_button",
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON));
   localized_strings->SetString(L"configure",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE));
   localized_strings->SetString(L"input_method",
