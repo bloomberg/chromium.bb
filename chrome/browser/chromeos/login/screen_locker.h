@@ -40,8 +40,8 @@ class ScreenLocker : public LoginStatusConsumer,
  public:
   explicit ScreenLocker(const UserManager::User& user);
 
-  // Initialize and show the screen locker with given |bounds|.
-  void Init(const gfx::Rect& bounds);
+  // Initialize and show the screen locker.
+  void Init();
 
   // LoginStatusConsumer implements:
   virtual void OnLoginFailure(const std::string& error);
@@ -103,8 +103,11 @@ class ScreenLocker : public LoginStatusConsumer,
   // Called when the screen lock is ready.
   void ScreenLockReady();
 
-  // Event handler for map-event.
-  CHROMEGTK_CALLBACK_1(ScreenLocker, void, OnMap, GdkEvent*);
+  // Called when the window manager is ready to handle locked state.
+  void OnWindowManagerReady();
+
+  // Event handler for client-event.
+  CHROMEGTK_CALLBACK_1(ScreenLocker, void, OnClientEvent, GdkEventClient*);
 
   // The screen locker window.
   views::WidgetGtk* lock_window_;
@@ -134,8 +137,8 @@ class ScreenLocker : public LoginStatusConsumer,
   // An info bubble to display login failure message.
   MessageBubble* error_info_;
 
-  // True if the screen locker's window is mapped.
-  bool mapped_;
+  // True if the screen locker's window has been drawn.
+  bool drawn_;
 
   // True if both mouse input and keyboard input are grabbed.
   bool input_grabbed_;

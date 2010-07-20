@@ -48,6 +48,11 @@ void ScreenLockerTester::EnterPassword(const char* password) {
   gdk_event_free(event);
 }
 
+void ScreenLockerTester::EmulateWindowManagerReady() {
+  DCHECK(ScreenLocker::screen_locker_);
+  ScreenLocker::screen_locker_->OnWindowManagerReady();
+}
+
 views::Textfield* ScreenLockerTester::GetPasswordField() {
   DCHECK(ScreenLocker::screen_locker_);
   return ScreenLocker::screen_locker_->screen_lock_view_->password_field_;

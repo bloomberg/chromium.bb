@@ -32,6 +32,9 @@ class ScreenLockerTester {
   // Emulates entring a password.
   void EnterPassword(const char* password);
 
+  // Emulates the ready message from window manager.
+  void EmulateWindowManagerReady();
+
   // Returns the widget for screen locker window.
   views::Widget* GetWidget();
 

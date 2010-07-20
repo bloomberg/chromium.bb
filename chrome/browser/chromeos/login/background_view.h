@@ -26,7 +26,7 @@ class StatusAreaView;
 // StatusAreaView.
 class BackgroundView : public views::View, public StatusAreaHost {
  public:
-  explicit BackgroundView(bool for_screen_locker);
+  BackgroundView();
 
   // Creates a window containing an instance of WizardContentsView as the root
   // view. The caller is responsible for showing (and closing) the returned
@@ -89,9 +89,6 @@ private:
   // manager.
   // TODO(sky): nuke this when the wm knows when chrome has painted.
   bool did_paint_;
-
-  // true if the background view is for the screen locker.
-  const bool for_screen_locker_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };

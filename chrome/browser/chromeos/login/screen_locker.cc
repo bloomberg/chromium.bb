@@ -191,7 +191,6 @@ class LockWindow : public views::WidgetGtk {
 };
 
 // A child widget that grabs both keyboard and pointer input.
-// TODO(oshima): catch grab-broke event and quit if it ever happenes.
 class GrabWidget : public views::WidgetGtk {
  public:
   explicit GrabWidget(chromeos::ScreenLocker* screen_locker)
@@ -287,6 +286,36 @@ void GrabWidget::TryGrabAllInputs() {
     screen_locker_->OnGrabInputs();
   }
 }
+
+// BackgroundView for ScreenLocker, which layouts a lock widget in
+// addition to other background components.
+class ScreenLockerBackgroundView : public chromeos::BackgroundView {
+ public:
+  ScreenLockerBackgroundView(views::WidgetGtk* lock_widget)
+      : lock_widget_(lock_widget) {
+  }
+
+  virtual bool IsScreenLockerMode() const {
+    return true;
+  }
+
+  virtual void Layout() {
+    chromeos::BackgroundView::Layout();
+    gfx::Rect screen = bounds();
+    gfx::Rect size;
+    lock_widget_->GetBounds(&size, false);
+    lock_widget_->SetBounds(
+        gfx::Rect((screen.width() - size.width()) / 2,
+                  (screen.height() - size.height()) / 2,
+                  size.width(),
+                  size.height()));
+  }
+
+ private:
+  views::WidgetGtk* lock_widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenLockerBackgroundView);
+};
 
 }  // namespace
 
@@ -389,7 +418,7 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
       screen_lock_view_(NULL),
       user_(user),
       error_info_(NULL),
-      mapped_(false),
+      drawn_(false),
       input_grabbed_(false),
       // TODO(oshima): support auto login mode (this is not implemented yet)
       // http://crosbug.com/1881
@@ -398,28 +427,21 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
   screen_locker_ = this;
 }
 
-void ScreenLocker::Init(const gfx::Rect& bounds) {
-  // TODO(oshima): Figure out which UI to keep and remove in the background.
-  views::View* screen = new BackgroundView(true /* for_screen_locker */);
+void ScreenLocker::Init() {
+  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+
+  gfx::Point left_top(1, 1);
+  gfx::Rect init_bounds(views::Screen::GetMonitorAreaNearestPoint(left_top));
+
   LockWindow* lock_window = new LockWindow();
   lock_window_ = lock_window;
-  lock_window_->Init(NULL, bounds);
-  g_signal_connect(lock_window_->GetNativeView(),
-                   "map-event",
-                   G_CALLBACK(&OnMapThunk),
-                   this);
-  DCHECK(GTK_WIDGET_REALIZED(lock_window_->GetNativeView()));
-  WmIpc::instance()->SetWindowType(
-      lock_window_->GetNativeView(),
-      WM_IPC_WINDOW_CHROME_SCREEN_LOCKER,
-      NULL);
-  lock_window_->SetContentsView(screen);
-  lock_window_->Show();
-  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  lock_window_->Init(NULL, init_bounds);
+
+  g_signal_connect(lock_window_->GetNativeView(), "client-event",
+                   G_CALLBACK(OnClientEventThunk), this);
 
   // GTK does not like zero width/height.
   gfx::Size size(1, 1);
-
   if (!unlock_on_input_) {
     screen_lock_view_ = new ScreenLockView(this);
     screen_lock_view_->Init();
@@ -431,15 +453,21 @@ void ScreenLocker::Init(const gfx::Rect& bounds) {
 
   lock_widget_ = new GrabWidget(this);
   lock_widget_->MakeTransparent();
-  lock_widget_->InitWithWidget(lock_window_,
-                               gfx::Rect((bounds.width() - size.width()) / 2,
-                                         (bounds.height() - size.height()) / 2,
-                                         size.width(),
-                                         size.height()));
+  lock_widget_->InitWithWidget(lock_window_, gfx::Rect(size));
   if (screen_lock_view_)
     lock_widget_->SetContentsView(screen_lock_view_);
   lock_widget_->GetRootView()->SetVisible(false);
   lock_widget_->Show();
+
+  views::View* screen = new ScreenLockerBackgroundView(lock_widget_);
+
+  DCHECK(GTK_WIDGET_REALIZED(lock_window_->GetNativeView()));
+  WmIpc::instance()->SetWindowType(
+      lock_window_->GetNativeView(),
+      WM_IPC_WINDOW_CHROME_SCREEN_LOCKER,
+      NULL);
+  lock_window_->SetContentsView(screen);
+  lock_window_->Show();
 
   // Don't let X draw default background, which was causing flash on
   // resume.
@@ -545,7 +573,7 @@ void ScreenLocker::Signout() {
 void ScreenLocker::OnGrabInputs() {
   DLOG(INFO) << "OnGrabInputs";
   input_grabbed_ = true;
-  if (mapped_)
+  if (drawn_)
     ScreenLockReady();
 }
 
@@ -557,10 +585,9 @@ void ScreenLocker::Show() {
   // enable this again if it's possible.
   // DCHECK(!screen_locker_);
   if (!screen_locker_) {
-    gfx::Rect bounds(views::Screen::GetMonitorWorkAreaNearestWindow(NULL));
     ScreenLocker* locker =
         new ScreenLocker(UserManager::Get()->logged_in_user());
-    locker->Init(bounds);
+    locker->Init();
   } else {
     LOG(INFO) << "Show(): screen locker already exists. ignoring";
   }
@@ -637,9 +664,17 @@ void ScreenLocker::ScreenLockReady() {
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
 }
 
-void ScreenLocker::OnMap(GtkWidget* widget, GdkEvent* event) {
-  DLOG(INFO) << "OnMap";
-  mapped_ = true;
+void ScreenLocker::OnClientEvent(GtkWidget* widge, GdkEventClient* event) {
+  WmIpc::Message msg;
+  WmIpc::instance()->DecodeMessage(*event, &msg);
+  if (msg.type() == WM_IPC_MESSAGE_CHROME_NOTIFY_SCREEN_REDRAWN_FOR_LOCK) {
+    OnWindowManagerReady();
+  }
+}
+
+void ScreenLocker::OnWindowManagerReady() {
+  DLOG(INFO) << "OnClientEvent: drawn for lock";
+  drawn_ = true;
   if (input_grabbed_)
     ScreenLockReady();
 }

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,9 +34,10 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   void TestNoPassword(void (unlock)(views::Widget*)) {
     UserManager::Get()->OffTheRecordUserLoggedIn();
     ScreenLocker::Show();
-    ui_test_utils::RunAllPendingInMessageLoop();
-
     scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+    tester->EmulateWindowManagerReady();
+    ui_test_utils::WaitForNotification(
+        NotificationType::SCREEN_LOCK_STATE_CHANGED);
     EXPECT_TRUE(tester->IsOpen());
     tester->InjectMockAuthenticator("", "");
 
@@ -87,8 +89,11 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
       .RetiresOnSaturation();
   UserManager::Get()->UserLoggedIn("user");
   ScreenLocker::Show();
-  ui_test_utils::RunAllPendingInMessageLoop();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+  tester->EmulateWindowManagerReady();
+  ui_test_utils::WaitForNotification(
+      NotificationType::SCREEN_LOCK_STATE_CHANGED);
+
   tester->InjectMockAuthenticator("user", "pass");
   EXPECT_TRUE(tester->IsOpen());
   tester->EnterPassword("fail");
