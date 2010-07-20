@@ -466,18 +466,6 @@ def Incarnation_bcgplusplus(argv):
   Incarnation_sfigplusplus_generic(argv + ['-emit-llvm'])
 
 
-def Incarnation_cppasarm(argv):
-  Incarnation_sfigcc_generic(argv + ['-arch', 'arm'])
-
-
-def Incarnation_cppasx8632(argv):
-  Incarnation_sfigcc_generic(argv + ['-arch', 'x86-32'])
-
-
-def Incarnation_cppasx8664(argv):
-  Incarnation_sfigcc_generic(argv + ['-arch', 'x86-64'])
-
-
 def Incarnation_nop(argv):
   LogInfo('\nIGNORING: ' + StringifyCommand(argv))
 
@@ -727,11 +715,6 @@ INCARNATIONS = {
    'llvm-fake-bcld-arm': Incarnation_bcldarm,
    'llvm-fake-bcld-x86-32': Incarnation_bcldx8632,
    'llvm-fake-bcld-x86-64': Incarnation_bcldx8664,
-
-   'llvm-fake-cppas': Incarnation_sfigcc_generic,
-   'llvm-fake-cppas-arm': Incarnation_cppasarm,
-   'llvm-fake-cppas-x86-32': Incarnation_cppasx8632,
-   'llvm-fake-cppas-x86-64': Incarnation_cppasx8664,
 
    'llvm-fake-illegal': Incarnation_illegal,
    'llvm-fake-nop': Incarnation_nop,

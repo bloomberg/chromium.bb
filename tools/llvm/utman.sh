@@ -2089,7 +2089,6 @@ llvm-fake-install() {
   cp tools/llvm/llvm-fake.py ${DRIVER_INSTALL_DIR}
   for s in bcgcc bcg++ \
            sfigcc sfig++ \
-           cppas cppas-arm cppas-x86-32 cppas-x86-64 \
            sfild bcld bcld-arm bcld-x86-32 bcld-x86-64 \
            illegal nop ; do
     local t="llvm-fake-$s"
