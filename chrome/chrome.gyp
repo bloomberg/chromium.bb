@@ -68,6 +68,7 @@
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', '<(DEPTH)/build/apply_locales.py'],
+    'directxsdk_exists': '<!(python <(DEPTH)/build/dir_exists.py ../third_party/directxsdk)',
     'conditions': [
       ['OS=="win"', {
         'nacl_defines': [
@@ -714,6 +715,33 @@
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
+          ],
+          'dependencies': [
+            '../third_party/angle/src/build_angle.gyp:libEGL',
+            '../third_party/angle/src/build_angle.gyp:libGLESv2',
+          ],
+        }],
+        ['OS=="win" and directxsdk_exists=="True"', {
+          'actions': [
+            {
+              'action_name': 'extract_d3dx9',
+              'variables': {
+                'input': 'Aug2009_d3dx9_42_x86.cab',
+                'output': 'd3dx9_42.dll',
+              },
+              'inputs': [
+                '../third_party/directxsdk/files/Redist/<(input)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/<(output)',
+              ],
+              'action': [
+                'expand',
+                '..\\third_party\\directxsdk\\files\\Redist\\<(input)',
+                '-F:<(output)',
+                '<(PRODUCT_DIR)',
+              ],
+            },
           ],
         }],
         ['OS=="linux" and target_arch!="arm"', {
