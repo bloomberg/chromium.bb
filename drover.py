@@ -83,7 +83,7 @@ def runGcl(subcommand):
 
 def gclUpload(revision, author):
   command = ("upload " + str(revision) +
-             " --send_mail --no_try --no_presubmit --reviewers=" + author)
+             " --send_mail --no_presubmit --reviewers=" + author)
   return runGcl(command)
 
 def getSVNInfo(url, revision):
@@ -525,7 +525,7 @@ def drover(options, args):
   print author
   print revision
   print ("gcl upload " + str(revision) +
-         " --send_mail --no_try --no_presubmit --reviewers=" + author)
+         " --send_mail --no_presubmit --reviewers=" + author)
 
   if options.revertbot or prompt("Would you like to upload?"):
     if PROMPT_FOR_AUTHOR:
