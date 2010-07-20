@@ -274,11 +274,8 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
   }
 
   // Set the flag that enables or disables the Negotiate auth handler.
-#if defined(OS_WIN)
   static const bool kNegotiateAuthEnabledDefault = true;
-#else
-  static const bool kNegotiateAuthEnabledDefault = false;
-#endif
+
   bool negotiate_auth_enabled = kNegotiateAuthEnabledDefault;
   if (command_line.HasSwitch(switches::kExperimentalEnableNegotiateAuth)) {
     std::string enable_negotiate_auth = command_line.GetSwitchValueASCII(
