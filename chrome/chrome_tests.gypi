@@ -1409,7 +1409,6 @@
             'browser/browser_accessibility_win_unittest.cc',
             'browser/chrome_plugin_unittest.cc',
             'browser/extensions/extension_process_manager_unittest.cc',
-            'browser/importer/importer_unittest.cc',
             'browser/login_prompt_unittest.cc',
             'browser/rlz/rlz_unittest.cc',
             'browser/search_engines/template_url_scraper_unittest.cc',

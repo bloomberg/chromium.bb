@@ -106,7 +106,7 @@ string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
   return UTF8ToUTF16(plain);
 }
 
-// There are three versions of password filess. They store saved user
+// There are three versions of password files. They store saved user
 // names and passwords.
 // References:
 // http://kb.mozillazine.org/Signons.txt

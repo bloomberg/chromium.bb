@@ -4,42 +4,59 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
 #include <windows.h>
 #include <unknwn.h>
 #include <intshcut.h>
 #include <pstore.h>
 #include <urlhist.h>
 #include <shlguid.h>
+#endif
+
 #include <vector>
 
-#include "app/win_util.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
 #include "base/stl_util-inl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "webkit/glue/password_form.h"
+
+#if defined(OS_WIN)
+#include "base/scoped_comptr_win.h"
+#include "app/win_util.h"
+#include "chrome/browser/importer/ie_importer.h"
+#include "chrome/browser/password_manager/ie7_password.h"
+#endif
 
 using importer::FAVORITES;
 using importer::FIREFOX2;
 using importer::FIREFOX3;
 using importer::HISTORY;
 using importer::ImportItem;
+#if defined(OS_WIN)
 using importer::MS_IE;
+#endif
 using importer::PASSWORDS;
 using importer::SEARCH_ENGINES;
 using webkit_glue::PasswordForm;
 
+// TODO(estade): some of these are disabled on mac. http://crbug.com/48007
+#if defined(OS_MACOSX)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
 
 class ImporterTest : public testing::Test {
  public:
@@ -53,11 +70,8 @@ class ImporterTest : public testing::Test {
     test_path_ = test_path_.AppendASCII("ImporterTest");
     file_util::Delete(test_path_, true);
     file_util::CreateDirectory(test_path_);
-    profile_path_ = test_path_;
-    profile_path_ = profile_path_.AppendASCII("profile");
-    file_util::CreateDirectory(profile_path_);
-    app_path_ = test_path_;
-    app_path_ = app_path_.AppendASCII("app");
+    profile_path_ = test_path_.AppendASCII("profile");
+    app_path_ = test_path_.AppendASCII("app");
     file_util::CreateDirectory(app_path_);
   }
 
@@ -73,7 +87,7 @@ class ImporterTest : public testing::Test {
                              bool import_search_plugins) {
     FilePath data_path;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-    data_path = data_path.AppendASCII(profile_dir).AppendASCII("*");
+    data_path = data_path.AppendASCII(profile_dir);
     ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, true));
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("firefox3_nss");
@@ -139,6 +153,29 @@ typedef struct {
   bool blacklisted;
 } PasswordList;
 
+// Returns true if the |entry| is in the |list|.
+bool FindBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
+                       const BookmarkList* list, int list_size) {
+  for (int i = 0; i < list_size; ++i) {
+    if (list[i].in_toolbar == entry.in_toolbar &&
+        list[i].path_size == entry.path.size() &&
+        list[i].url == entry.url.spec() &&
+        list[i].title == entry.title) {
+      bool equal = true;
+      for (size_t k = 0; k < list[i].path_size; ++k)
+        if (list[i].path[k] != entry.path[k]) {
+          equal = false;
+          break;
+        }
+
+      if (equal)
+        return true;
+    }
+  }
+  return false;
+}
+
+#if defined(OS_WIN)
 static const BookmarkList kIEBookmarks[] = {
   {true, 0, {},
    L"TheLink",
@@ -173,27 +210,6 @@ bool IsWindowsVista() {
   info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
   GetVersionEx(&info);
   return (info.dwMajorVersion >=6);
-}
-
-// Returns true if the |entry| is in the |list|.
-bool FindBookmarkEntry(const ProfileWriter::BookmarkEntry& entry,
-                       const BookmarkList* list, int list_size) {
-  for (int i = 0; i < list_size; ++i)
-    if (list[i].in_toolbar == entry.in_toolbar &&
-        list[i].path_size == entry.path.size() &&
-        list[i].url == entry.url.spec() &&
-        list[i].title == entry.title) {
-      bool equal = true;
-      for (size_t k = 0; k < list[i].path_size; ++k)
-        if (list[i].path[k] != entry.path[k]) {
-          equal = false;
-          break;
-        }
-
-      if (equal)
-        return true;
-    }
-  return false;
 }
 
 class TestObserver : public ProfileWriter,
@@ -271,9 +287,9 @@ class TestObserver : public ProfileWriter,
  private:
   ~TestObserver() {}
 
-  int bookmark_count_;
-  int history_count_;
-  int password_count_;
+  size_t bookmark_count_;
+  size_t history_count_;
+  size_t password_count_;
 };
 
 bool CreateUrlFile(std::wstring file, std::wstring url) {
@@ -471,6 +487,7 @@ TEST_F(ImporterTest, IE7Importer) {
   EXPECT_EQ(L"abcdefghi", username);
   EXPECT_EQ(L"abcdefg", password);
 }
+#endif  // defined(OS_WIN)
 
 static const BookmarkList kFirefox2Bookmarks[] = {
   {true, 1, {L"Folder"},
@@ -560,7 +577,7 @@ class FirefoxObserver : public ProfileWriter,
   virtual void ImportEnded() {
     MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kFirefox2Bookmarks), bookmark_count_);
-    EXPECT_EQ(1, history_count_);
+    EXPECT_EQ(1U, history_count_);
     EXPECT_EQ(arraysize(kFirefox2Passwords), password_count_);
     EXPECT_EQ(arraysize(kFirefox2Keywords), keyword_count_);
     EXPECT_EQ(kFirefox2Keywords[kDefaultFirefox2KeywordIndex].keyword,
@@ -583,18 +600,18 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
     EXPECT_EQ(p.action, form.action.spec());
-    EXPECT_EQ(p.username_element, form.username_element);
-    EXPECT_EQ(p.username, form.username_value);
-    EXPECT_EQ(p.password_element, form.password_element);
-    EXPECT_EQ(p.password, form.password_value);
+    EXPECT_EQ(WideToUTF16(p.username_element), form.username_element);
+    EXPECT_EQ(WideToUTF16(p.username), form.username_value);
+    EXPECT_EQ(WideToUTF16(p.password_element), form.password_element);
+    EXPECT_EQ(WideToUTF16(p.password), form.password_value);
     EXPECT_EQ(p.blacklisted, form.blacklisted_by_user);
     ++password_count_;
   }
 
   virtual void AddHistoryPage(const std::vector<history::URLRow>& page) {
-    EXPECT_EQ(1, page.size());
+    ASSERT_EQ(1U, page.size());
     EXPECT_EQ("http://en-us.www.mozilla.com/", page[0].url().spec());
-    EXPECT_EQ(L"Firefox Updated", page[0].title());
+    EXPECT_EQ(ASCIIToUTF16("Firefox Updated"), page[0].title());
     ++history_count_;
   }
 
@@ -616,9 +633,7 @@ class FirefoxObserver : public ProfileWriter,
       // that template URL.
       bool found = false;
       std::wstring keyword = template_urls[i]->keyword();
-      for (int j = 0; j < arraysize(kFirefox2Keywords); ++j) {
-        const wchar_t* comp_keyword = kFirefox2Keywords[j].keyword;
-        bool equal = (keyword == comp_keyword);
+      for (size_t j = 0; j < arraysize(kFirefox2Keywords); ++j) {
         if (template_urls[i]->keyword() == kFirefox2Keywords[j].keyword) {
           EXPECT_EQ(kFirefox2Keywords[j].url, template_urls[i]->url()->url());
           found = true;
@@ -645,18 +660,18 @@ class FirefoxObserver : public ProfileWriter,
  private:
   ~FirefoxObserver() {}
 
-  int bookmark_count_;
-  int history_count_;
-  int password_count_;
-  int keyword_count_;
+  size_t bookmark_count_;
+  size_t history_count_;
+  size_t password_count_;
+  size_t keyword_count_;
   std::wstring default_keyword_;
   std::string default_keyword_url_;
 };
 
-TEST_F(ImporterTest, Firefox2Importer) {
+TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
   FilePath data_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
-  data_path = data_path.AppendASCII("firefox2_profile").AppendASCII("*");
+  data_path = data_path.AppendASCII("firefox2_profile");
   ASSERT_TRUE(file_util::CopyDirectory(data_path, profile_path_, true));
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
   data_path = data_path.AppendASCII("firefox2_nss");
@@ -756,7 +771,7 @@ class Firefox3Observer : public ProfileWriter,
   virtual void ImportEnded() {
     MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kFirefox3Bookmarks), bookmark_count_);
-    EXPECT_EQ(1, history_count_);
+    EXPECT_EQ(1U, history_count_);
     EXPECT_EQ(arraysize(kFirefox3Passwords), password_count_);
     if (import_search_engines_) {
       EXPECT_EQ(arraysize(kFirefox3Keywords), keyword_count_);
@@ -781,23 +796,23 @@ class Firefox3Observer : public ProfileWriter,
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
     EXPECT_EQ(p.action, form.action.spec());
-    EXPECT_EQ(p.username_element, form.username_element);
-    EXPECT_EQ(p.username, form.username_value);
-    EXPECT_EQ(p.password_element, form.password_element);
-    EXPECT_EQ(p.password, form.password_value);
+    EXPECT_EQ(WideToUTF16(p.username_element), form.username_element);
+    EXPECT_EQ(WideToUTF16(p.username), form.username_value);
+    EXPECT_EQ(WideToUTF16(p.password_element), form.password_element);
+    EXPECT_EQ(WideToUTF16(p.password), form.password_value);
     EXPECT_EQ(p.blacklisted, form.blacklisted_by_user);
     ++password_count_;
   }
 
   virtual void AddHistoryPage(const std::vector<history::URLRow>& page) {
-    ASSERT_EQ(3, page.size());
+    ASSERT_EQ(3U, page.size());
     EXPECT_EQ("http://www.google.com/", page[0].url().spec());
-    EXPECT_EQ(L"Google", page[0].title());
+    EXPECT_EQ(ASCIIToUTF16("Google"), page[0].title());
     EXPECT_EQ("http://www.google.com/", page[1].url().spec());
-    EXPECT_EQ(L"Google", page[1].title());
+    EXPECT_EQ(ASCIIToUTF16("Google"), page[1].title());
     EXPECT_EQ("http://www.cs.unc.edu/~jbs/resources/perl/perl-cgi/programs/form1-POST.html",
               page[2].url().spec());
-    EXPECT_EQ(L"example form (POST)", page[2].title());
+    EXPECT_EQ(ASCIIToUTF16("example form (POST)"), page[2].title());
     ++history_count_;
   }
 
@@ -819,9 +834,7 @@ class Firefox3Observer : public ProfileWriter,
       // that template URL.
       bool found = false;
       std::wstring keyword = template_urls[i]->keyword();
-      for (int j = 0; j < arraysize(kFirefox3Keywords); ++j) {
-        const wchar_t* comp_keyword = kFirefox3Keywords[j].keyword;
-        bool equal = (keyword == comp_keyword);
+      for (size_t j = 0; j < arraysize(kFirefox3Keywords); ++j) {
         if (template_urls[i]->keyword() == kFirefox3Keywords[j].keyword) {
           EXPECT_EQ(kFirefox3Keywords[j].url, template_urls[i]->url()->url());
           found = true;
@@ -848,22 +861,22 @@ class Firefox3Observer : public ProfileWriter,
  private:
   ~Firefox3Observer() {}
 
-  int bookmark_count_;
-  int history_count_;
-  int password_count_;
-  int keyword_count_;
+  size_t bookmark_count_;
+  size_t history_count_;
+  size_t password_count_;
+  size_t keyword_count_;
   bool import_search_engines_;
   std::wstring default_keyword_;
   std::string default_keyword_url_;
 };
 
-TEST_F(ImporterTest, Firefox30Importer) {
+TEST_F(ImporterTest, MAYBE(Firefox30Importer)) {
   scoped_refptr<Firefox3Observer> observer = new Firefox3Observer();
   Firefox3xImporterTest("firefox3_profile", observer.get(), observer.get(),
                         true);
 }
 
-TEST_F(ImporterTest, Firefox35Importer) {
+TEST_F(ImporterTest, MAYBE(Firefox35Importer)) {
   bool import_search_engines = false;
   scoped_refptr<Firefox3Observer> observer =
       new Firefox3Observer(import_search_engines);

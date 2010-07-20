@@ -35,7 +35,7 @@ bool NSSDecryptor::Init(const std::wstring& /* dll_path */,
 }
 
 // This method is based on some NSS code in
-//   security/nss/lib/pk11wrap/pk11sdr.c
+//   security/nss/lib/pk11wrap/pk11sdr.c, CVS revision 1.22
 // This code is copied because the implementation assumes the use of the
 // internal key slot for decryption, but we need to use another slot.
 // The license block is:
@@ -182,7 +182,7 @@ SECStatus NSSDecryptor::PK11SDR_DecryptWithSlot(
   CK_MECHANISM_TYPE type;
   SDRResult sdrResult;
   SECItem *params = 0;
-  SECItem possibleResult = { static_cast<SECItemType>(0), NULL, 0 };
+  SECItem possibleResult = { siBuffer, NULL, 0 };
   PLArenaPool *arena = 0;
 
   arena = PORT_NewArena(SEC_ASN1_DEFAULT_ARENA_SIZE);
@@ -205,6 +205,58 @@ SECStatus NSSDecryptor::PK11SDR_DecryptWithSlot(
   } else {
     rv = pk11Decrypt(slot, arena, type, key, params,
                      &sdrResult.data, result);
+  }
+
+  /*
+   * if the pad value was too small (1 or 2), then it's statistically
+   * 'likely' that (1 in 256) that we may not have the correct key.
+   * Check the other keys for a better match. If we find none, use
+   * this result.
+   */
+  if (rv == SECWouldBlock)
+    possibleResult = *result;
+
+  /*
+   * handle the case where your key indicies may have been broken
+   */
+  if (rv != SECSuccess) {
+    PK11SymKey *keyList = PK11_ListFixedKeysInSlot(slot, NULL, cx);
+    PK11SymKey *testKey = NULL;
+    PK11SymKey *nextKey = NULL;
+
+    for (testKey = keyList; testKey;
+         testKey = PK11_GetNextSymKey(testKey)) {
+      rv = pk11Decrypt(slot, arena, type, testKey, params,
+                       &sdrResult.data, result);
+      if (rv == SECSuccess)
+        break;
+
+      /* found a close match. If it's our first remember it */
+      if (rv == SECWouldBlock) {
+        if (possibleResult.data) {
+          /* this is unlikely but possible. If we hit this condition,
+           * we have no way of knowing which possibility to prefer.
+           * in this case we just match the key the application
+           * thought was the right one */
+          SECITEM_ZfreeItem(result, PR_FALSE);
+        } else {
+          possibleResult = *result;
+        }
+      }
+    }
+
+    /* free the list */
+    for (testKey = keyList; testKey; testKey = nextKey) {
+         nextKey = PK11_GetNextSymKey(testKey);
+      PK11_FreeSymKey(testKey);
+    }
+  }
+
+  /* we didn't find a better key, use the one with a small pad value */
+  if ((rv != SECSuccess) && (possibleResult.data)) {
+    *result = possibleResult;
+    possibleResult.data = NULL;
+    rv = SECSuccess;
   }
 
  loser:
