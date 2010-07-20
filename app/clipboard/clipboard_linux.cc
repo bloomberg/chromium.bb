@@ -22,7 +22,7 @@ namespace {
 const char kMimeBmp[] = "image/bmp";
 const char kMimeHtml[] = "text/html";
 const char kMimeText[] = "text/plain";
-const char kMimeURI[] = "text/uri-list";
+const char kMimeMozillaUrl[] = "text/x-moz-url";
 const char kMimeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 
 std::string GdkAtomToString(const GdkAtom& atom) {
@@ -54,11 +54,6 @@ void GetData(GtkClipboard* clipboard,
   if (target_string == kMimeBmp) {
     gtk_selection_data_set_pixbuf(selection_data,
         reinterpret_cast<GdkPixbuf*>(iter->second.first));
-  } else if (target_string == kMimeURI) {
-    gchar* uri_list[2];
-    uri_list[0] = reinterpret_cast<gchar*>(iter->second.first);
-    uri_list[1] = NULL;
-    gtk_selection_data_set_uris(selection_data, uri_list);
   } else {
     gtk_selection_data_set(selection_data, selection_data->target, 8,
                            reinterpret_cast<guchar*>(iter->second.first),
@@ -207,11 +202,15 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
 
 void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
                               const char* url_data, size_t url_len) {
-  // Write as a URI.
-  char* data = new char[url_len + 1];
-  memcpy(data, url_data, url_len);
-  data[url_len] = '\0';
-  InsertMapping(kMimeURI, data, url_len + 1);
+  // Write as a mozilla url (UTF16: URL, newline, title).
+  string16 url = UTF8ToUTF16(std::string(url_data, url_len) + "\n");
+  string16 title = UTF8ToUTF16(std::string(title_data, title_len));
+  int data_len = 2 * (title.length() + url.length());
+
+  char* data = new char[data_len];
+  memcpy(data, url.data(), 2 * url.length());
+  memcpy(data + 2 * url.length(), title.data(), 2 * title.length());
+  InsertMapping(kMimeMozillaUrl, data, data_len);
 }
 
 void Clipboard::WriteData(const char* format_name, size_t format_len,
@@ -219,7 +218,7 @@ void Clipboard::WriteData(const char* format_name, size_t format_len,
   std::string format(format_name, format_len);
   // We assume that certain mapping types are only written by trusted code.
   // Therefore we must upkeep their integrity.
-  if (format == kMimeBmp || format == kMimeURI)
+  if (format == kMimeBmp)
     return;
   char* data = new char[data_len];
   memcpy(data, data_data, data_len);

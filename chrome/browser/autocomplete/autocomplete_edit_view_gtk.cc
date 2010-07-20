@@ -18,6 +18,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
@@ -1213,12 +1214,10 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard(bool copy) {
                             &url, &write_url);
 
   if (write_url) {
-    ScopedClipboardWriter scw(g_browser_process->clipboard());
     string16 text16(WideToUTF16(text));
-
-    scw.WriteText(text16);
-    scw.WriteBookmark(text16, url.spec());
-    scw.WriteHyperlink(EscapeForHTML(text16), url.spec());
+    BookmarkDragData data;
+    data.ReadFromTuple(url, text16);
+    data.WriteToClipboard(NULL);
 
     // Stop propagating the signal.
     static guint copy_signal_id =

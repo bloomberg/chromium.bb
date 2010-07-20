@@ -135,8 +135,11 @@ void BookmarkDragData::WriteToClipboard(Profile* profile) const {
     scw.WriteHyperlink(EscapeForHTML(title), url);
 
     // Also write the URL to the clipboard as text so that it can be pasted
-    // into text fields
-    scw.WriteURL(UTF8ToUTF16(url));
+    // into text fields. We use WriteText instead of WriteURL because we don't
+    // want to clobber the X clipboard when the user copies out of the omnibox
+    // on Linux (on Windows and Mac, there is no difference between these
+    // functions).
+    scw.WriteText(UTF8ToUTF16(url));
   }
 
   Pickle pickle;
