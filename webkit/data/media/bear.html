@@ -5,7 +5,7 @@
   layoutTestController.waitUntilDone();
 
   var v = document.getElementById('v');
-  v.addEventListener('load', function() {
+  v.addEventListener('canplaythrough', function() {
     window.setTimeout("layoutTestController.notifyDone();", 1000);
   }, false);
   v.src = 'bear_silent.ogv';

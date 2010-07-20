@@ -23,7 +23,7 @@
       v = document.createElement("video");
       c.appendChild(v);
       v.src = file;
-      v.addEventListener("load", function () { loop(); }, false);
+      v.addEventListener("canplaythrough", function () { loop(); }, false);
       v.load();
     }
 
