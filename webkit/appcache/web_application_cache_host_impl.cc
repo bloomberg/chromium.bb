@@ -24,18 +24,30 @@ using WebKit::WebURLResponse;
 
 namespace appcache {
 
+namespace {
+
 typedef IDMap<WebApplicationCacheHostImpl> HostsMap;
 
 // Note: the order of the elements in this array must match those
 // of the EventID enum in appcache_interfaces.h.
-static const char* kEventNames[] = {
+const char* kEventNames[] = {
   "Checking", "Error", "NoUpdate", "Downloading", "Progress",
   "UpdateReady", "Cached", "Obsolete"
 };
 
-static HostsMap* all_hosts() {
+GURL ClearUrlRef(const GURL& url) {
+  if (!url.has_ref())
+    return url;
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements);
+}
+
+HostsMap* all_hosts() {
   return Singleton<HostsMap>::get();
 }
+
+}  // anon namespace
 
 WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
   return all_hosts()->Lookup(id);
@@ -133,6 +145,9 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(
     WebURLRequest& request) {
   request.setAppCacheHostID(host_id_);
+
+  original_main_resource_url_ = ClearUrlRef(request.url());
+
   std::string method = request.httpMethod().utf8();
   is_get_method_ = (method == kHttpGETMethod);
   DCHECK(method == StringToUpperASCII(method));
@@ -161,12 +176,7 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
   has_status_ = false;
   has_cached_status_ = false;
 
-  GURL manifest_gurl(manifest_url);
-  if (manifest_gurl.has_ref()) {
-    GURL::Replacements replacements;
-    replacements.ClearRef();
-    manifest_gurl = manifest_gurl.ReplaceComponents(replacements);
-  }
+  GURL manifest_gurl(ClearUrlRef(manifest_url));
 
   // 6.9.6 The application cache selection algorithm
   // Check for new 'master' entries.
@@ -206,12 +216,11 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
 void WebApplicationCacheHostImpl::didReceiveResponseForMainResource(
     const WebURLResponse& response) {
   document_response_ = response;
-  document_url_ = document_response_.url();
-  if (document_url_.has_ref()) {
-    GURL::Replacements replacements;
-    replacements.ClearRef();
-    document_url_ = document_url_.ReplaceComponents(replacements);
-  }
+  document_url_ = ClearUrlRef(document_response_.url());
+  if (document_url_ != original_main_resource_url_)
+    is_get_method_ = true;  // A redirect was involved.
+  original_main_resource_url_ = GURL();
+
   is_scheme_supported_ =  IsSchemeSupported(document_url_);
   if ((document_response_.appCacheID() != kNoCacheId) ||
       !is_scheme_supported_ || !is_get_method_)

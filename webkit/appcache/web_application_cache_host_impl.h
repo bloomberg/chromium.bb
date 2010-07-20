@@ -72,6 +72,7 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
   bool is_scheme_supported_;
   bool is_get_method_;
   IsNewMasterEntry is_new_master_entry_;
+  GURL original_main_resource_url_;  // Used to detect redirection.
 };
 
 }  // namespace
