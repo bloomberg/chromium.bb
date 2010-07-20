@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/gfx/gl/gl_context.h"
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "gpu/demos/framework/window.h"
 
@@ -15,7 +17,7 @@ static const int kWindowWidth = 512;
 static const int kWindowHeight = 512;
 }  // namespace.
 
-int main(int argc, char *argv[]) {
+int main(int argc, char** argv) {
 #if defined(OS_LINUX)
   gtk_init(&argc, &argv);
 #endif  // OS_LINUX
@@ -23,6 +25,10 @@ int main(int argc, char *argv[]) {
   // AtExitManager is used by singleton classes to delete themselves when
   // the program terminates.
   base::AtExitManager at_exit_manager_;
+
+  CommandLine::Init(argc, argv);
+
+  gfx::GLContext::InitializeOneOff();
 
   gpu::demos::Window window;
   CHECK(window.Init(kWindowWidth, kWindowHeight));
