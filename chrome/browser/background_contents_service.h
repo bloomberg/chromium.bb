@@ -108,6 +108,10 @@ class BackgroundContentsService : private NotificationObserver {
   typedef std::map<string16, BackgroundContentsInfo> BackgroundContentsMap;
   BackgroundContentsMap contents_map_;
 
+  // If true, should always keep the browser process alive regardless of whether
+  // there are any BackgroundContents (used for manual/automated testing).
+  bool always_keep_alive_;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsService);
 };
 

@@ -43,10 +43,8 @@ using base::TimeDelta;
 
 namespace browser_shutdown {
 
-#if defined(OS_MACOSX)
 // Whether the browser is trying to quit (e.g., Quit chosen from menu).
 bool g_trying_to_quit = false;
-#endif  // OS_MACOSX
 
 Time shutdown_started_;
 ShutdownType shutdown_type_ = NOT_VALID;
@@ -262,7 +260,6 @@ void ReadLastShutdownInfo() {
           &ReadLastShutdownFile, type, num_procs, num_procs_slow));
 }
 
-#if defined(OS_MACOSX)
 void SetTryingToQuit(bool quitting) {
   g_trying_to_quit = quitting;
 }
@@ -270,6 +267,5 @@ void SetTryingToQuit(bool quitting) {
 bool IsTryingToQuit() {
   return g_trying_to_quit;
 }
-#endif
 
 }  // namespace browser_shutdown

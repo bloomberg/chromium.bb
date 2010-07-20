@@ -51,13 +51,8 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
                  NotificationService::AllSources());
-#if defined(OS_WIN) || defined(OS_LINUX)
-  registrar_.Add(this, NotificationType::BROWSER_CLOSED,
-                 NotificationService::AllSources());
-#elif defined(OS_MACOSX)
   registrar_.Add(this, NotificationType::APP_TERMINATING,
                  NotificationService::AllSources());
-#endif
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
@@ -285,22 +280,14 @@ void ExtensionProcessManager::Observe(NotificationType type,
       UnregisterExtensionProcess(host->id());
       break;
     }
-#if defined(OS_WIN) || defined(OS_LINUX)
-    case NotificationType::BROWSER_CLOSED: {
+
+    case NotificationType::APP_TERMINATING: {
       // Close background hosts when the last browser is closed so that they
       // have time to shutdown various objects on different threads. Our
       // destructor is called too late in the shutdown sequence.
-      bool app_closing = *Details<bool>(details).ptr();
-      if (app_closing)
-        CloseBackgroundHosts();
-      break;
-    }
-#elif defined(OS_MACOSX)
-    case NotificationType::APP_TERMINATING: {
       CloseBackgroundHosts();
       break;
     }
-#endif
 
     default:
       NOTREACHED();

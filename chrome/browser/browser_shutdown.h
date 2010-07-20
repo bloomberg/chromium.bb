@@ -44,21 +44,26 @@ void Shutdown();
 // Called at startup to create a histogram from our previous shutdown time.
 void ReadLastShutdownInfo();
 
-#if defined(OS_MACOSX)
-// On Mac, closing the last window does not automatically quit the application.
-// To actually quit, set a flag which makes final window closure trigger a quit.
-// If the quit is aborted, then the flag should be reset (but see notes below on
-// the proper way to do this, i.e., usually not using |SetTryingToQuit()|).
+// There are various situations where the browser process should continue to
+// run after the last browser window has closed - the Mac always continues
+// running until the user explicitly quits, and on Windows/Linux the application
+// should not shutdown when the last browser window closes if there are any
+// BackgroundContents running.
+// When the user explicitly chooses to shutdown the app (via the "Exit" or
+// "Quit" menu items) BrowserList will call SetTryingToQuit() to tell itself to
+// initiate a shutdown when the last window closes.
+// If the quit is aborted, then the flag should be reset.
 
-// This is a low-level mutator; in general, don't call it, except from
-// appropriate places in the app controller. To quit, use usual means, e.g.,
-// using |chrome_browser_application_mac::Terminate()|. To stop quitting, use
-// |chrome_browser_application_mac::CancelTerminate()|.
+// This is a low-level mutator; in general, don't call SetTryingToQuit(true),
+// except from appropriate places in BrowserList. To quit, use usual means,
+// e.g., using |chrome_browser_application_mac::Terminate()| on the Mac, or
+// |BrowserList::CloseAllWindowsAndExit()| on other platforms. To stop quitting,
+// use |chrome_browser_application_mac::CancelTerminate()| on the Mac; other
+// platforms can call SetTryingToQuit(false) directly.
 void SetTryingToQuit(bool quitting);
 
 // General accessor.
 bool IsTryingToQuit();
-#endif  // OS_MACOSX
 
 }  // namespace browser_shutdown
 

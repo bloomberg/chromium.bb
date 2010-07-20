@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 // static
-void BrowserList::AllBrowsersClosed() {
+void BrowserList::AllBrowsersClosedAndAppExiting() {
   // Close non-browser windows.
   GList* window_list = gtk_window_list_toplevels();
   g_list_foreach(window_list, (GFunc)g_object_ref, NULL);

@@ -133,10 +133,6 @@ class TestingBrowserProcess : public BrowserProcess {
     return --module_ref_count_;
   }
 
-  unsigned int module_ref_count() {
-    return module_ref_count_;
-  }
-
   virtual bool IsShuttingDown() {
     return false;
   }

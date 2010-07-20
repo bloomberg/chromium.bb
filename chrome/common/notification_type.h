@@ -198,10 +198,11 @@ class NotificationType {
 
     // This message is sent after a window has been closed.  The source is a
     // Source<Browser> containing the affected Browser.  Details is a boolean
-    // that if true indicates that the application will be closed as a result of
-    // this browser window closure (i.e. this was the last opened browser
-    // window on win/linux).  Note that the boolean pointed to by details is
-    // only valid for the duration of this call.
+    // that if true indicates that the last browser window has closed - this
+    // does not indicate that the application is exiting (observers should
+    // listen for APP_TERMINATING if they want to detect when the application
+    // will shut down). Note that the boolean pointed to by details is only
+    // valid for the duration of this call.
     BROWSER_CLOSED,
 
     // This message is sent when the last window considered to be an
@@ -214,11 +215,16 @@ class NotificationType {
     // This message is sent when the application is made active (Mac OS X only
     // at present). No source or details are passed.
     APP_ACTIVATED,
+#endif
 
-    // This message is sent when the application is terminating (Mac OS X only
-    // at present). No source or details are passed.
+    // This message is sent when the application is terminating (the last
+    // browser window has shutdown as part of an explicit user-initiated exit,
+    // or the user closed the last browser window on Windows/Linux and there are
+    // no BackgroundContents keeping the browser running). No source or details
+    // are passed.
     APP_TERMINATING,
 
+#if defined(OS_MACOSX)
     // This notification is sent when the app has no key window, such as when
     // all windows are closed but the app is still active. No source or details
     // are provided.

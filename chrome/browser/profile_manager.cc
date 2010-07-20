@@ -39,6 +39,8 @@
 // static
 void ProfileManager::ShutdownSessionServices() {
   ProfileManager* pm = g_browser_process->profile_manager();
+  if (!pm) // Is NULL when running unit tests.
+    return;
   for (ProfileManager::const_iterator i = pm->begin(); i != pm->end(); ++i)
     (*i)->ShutdownSessionService();
 }

@@ -329,4 +329,30 @@ TEST_F(AppModeTest, EnableAppModeTest) {
   EXPECT_EQ(Browser::TYPE_APP, type);
 }
 
+// Tests to ensure that the browser continues running in the background after
+// the last window closes.
+class RunInBackgroundTest : public UITest {
+ public:
+  RunInBackgroundTest() {
+    launch_arguments_.AppendSwitch(switches::kKeepAliveForTest);
+  }
+};
+
+TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
+  // Close the browser window, then open a new one - the browser should keep
+  // running.
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  EXPECT_EQ(1, window_count);
+  ASSERT_TRUE(browser->RunCommand(IDC_CLOSE_WINDOW));
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  EXPECT_EQ(0, window_count);
+  ASSERT_TRUE(IsBrowserRunning());
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, true));
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  EXPECT_EQ(1, window_count);
+}
+
 }  // namespace

@@ -232,21 +232,18 @@ void RecordLastRunAppBundlePath() {
       ![self shouldQuitWithInProgressDownloads])
     return NO;
 
-  // Set the state to "trying to quit", so that closing all browser windows will
-  // lead to termination.
-  browser_shutdown::SetTryingToQuit(true);
-
   // TODO(viettrungluu): Remove Apple Event handlers here? (It's safe to leave
   // them in, but I'm not sure about UX; we'd also want to disable other things
   // though.) http://crbug.com/40861
 
-  if (!BrowserList::size())
-    return YES;
+  size_t num_browsers = BrowserList::size();
 
-  // Try to close all the windows.
-  BrowserList::CloseAllBrowsers(true);
+  // Initiate a shutdown (via BrowserList::CloseAllBrowsers()) if we aren't
+  // already shutting down.
+  if (!browser_shutdown::IsTryingToQuit())
+    BrowserList::CloseAllBrowsers(true);
 
-  return NO;
+  return num_browsers == 0 ? YES : NO;
 }
 
 - (void)stopTryingToTerminateApplication:(NSApplication*)app {
@@ -271,9 +268,9 @@ void RecordLastRunAppBundlePath() {
   // There better be no browser windows left at this point.
   CHECK_EQ(BrowserList::size(), 0u);
 
-  // Release the reference to the browser process. Once all the browsers get
-  // dealloc'd, it will stop the RunLoop and fall back into main().
-  g_browser_process->ReleaseModule();
+  // Tell BrowserList not to keep the browser process alive. Once all the
+  // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
+  BrowserList::EndKeepAlive();
 
   // Close these off if they have open windows.
   [prefsController_ close];
@@ -455,11 +452,9 @@ void RecordLastRunAppBundlePath() {
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
 - (void)applicationDidFinishLaunching:(NSNotification*)notify {
-  // Hold an extra ref to the BrowserProcess singleton so it doesn't go away
-  // when all the browser windows get closed. We'll release it on quit which
-  // will be the signal to exit.
-  DCHECK(g_browser_process);
-  g_browser_process->AddRefModule();
+  // Notify BrowserList to keep the application running so it doesn't go away
+  // when all the browser windows get closed.
+  BrowserList::StartKeepAlive();
 
   bookmarkMenuBridge_.reset(new BookmarkMenuBridge([self defaultProfile]));
   historyMenuBridge_.reset(new HistoryMenuBridge([self defaultProfile]));

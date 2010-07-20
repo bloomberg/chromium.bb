@@ -170,6 +170,7 @@ extern const char kIssue35198CrxDirBrowser[];
 extern const char kIssue35198ExtraLogging[];
 extern const char kIssue35198Permission[];
 extern const char kJavaScriptFlags[];
+extern const char kKeepAliveForTest[];
 extern const char kLoadExtension[];
 extern const char kLoadPlugin[];
 extern const char kExtraPluginDir[];

@@ -83,6 +83,7 @@
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -3341,7 +3342,8 @@ void TestingAutomationProvider::OnBrowserRemoving(const Browser* browser) {
   // For backwards compatibility with the testing automation interface, we
   // want the automation provider (and hence the process) to go away when the
   // last browser goes away.
-  if (BrowserList::size() == 1) {
+  if (BrowserList::size() == 1 && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kKeepAliveForTest)) {
     // If you change this, update Observer for NotificationType::SESSION_END
     // below.
     MessageLoop::current()->PostTask(FROM_HERE,

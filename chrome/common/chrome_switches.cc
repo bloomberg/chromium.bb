@@ -564,6 +564,9 @@ const char kIssue35198Permission[]          = "issue35198-permission";
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 
+// Used for testing - keeps browser alive after last browser window closes.
+const char kKeepAliveForTest[]              = "keep-alive-for-test";
+
 // Load an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 

@@ -7,6 +7,6 @@
 #include "views/window/window.h"
 
 // static
-void BrowserList::AllBrowsersClosed() {
+void BrowserList::AllBrowsersClosedAndAppExiting() {
   views::Window::CloseAllSecondaryWindows();
 }

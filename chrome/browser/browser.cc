@@ -808,13 +808,12 @@ void Browser::OnWindowClosing() {
 
   bool exiting = false;
 
-#if defined(OS_MACOSX)
-  // On Mac, closing the last window isn't usually a sign that the app is
-  // shutting down.
-  bool should_quit_if_last_browser = browser_shutdown::IsTryingToQuit();
-#else
-  bool should_quit_if_last_browser = true;
-#endif
+  // Application should shutdown on last window close if the user is explicitly
+  // trying to quit, or if there is nothing keeping the browser alive (such as
+  // AppController on the Mac, or BackgroundContentsService for background
+  // pages).
+  bool should_quit_if_last_browser =
+      browser_shutdown::IsTryingToQuit() || !BrowserList::WillKeepAlive();
 
   if (should_quit_if_last_browser && BrowserList::size() == 1) {
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);

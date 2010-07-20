@@ -172,10 +172,10 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   // however, many UI tests rely on this behavior so leave it be for now and
   // simply ignore the behavior on the Mac outside of unit tests.
   // TODO(andybons): Fix the UI tests to Do The Right Thing.
-  bool close_app_non_mac = (browsers_.size() == 1);
+  bool closing_last_browser = (browsers_.size() == 1);
   NotificationService::current()->Notify(
       NotificationType::BROWSER_CLOSED,
-      Source<Browser>(browser), Details<bool>(&close_app_non_mac));
+      Source<Browser>(browser), Details<bool>(&closing_last_browser));
 
   // Send out notifications before anything changes. Do some basic checking to
   // try to catch evil observers that change the list from under us.
@@ -189,13 +189,24 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   // If the last Browser object was destroyed, make sure we try to close any
   // remaining dependent windows too.
   if (browsers_.empty()) {
-    AllBrowsersClosed();
-
     delete activity_observer;
     activity_observer = NULL;
   }
 
   g_browser_process->ReleaseModule();
+
+  // If we're exiting, send out the APP_TERMINATING notification to allow other
+  // modules to shut themselves down.
+  if (browsers_.empty() &&
+      (browser_shutdown::IsTryingToQuit() ||
+       g_browser_process->IsShuttingDown())) {
+    // Last browser has just closed, and this is a user-initiated quit or there
+    // is no module keeping the app alive, so send out our notification.
+    NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
+                                           NotificationService::AllSources(),
+                                           NotificationService::NoDetails());
+    AllBrowsersClosedAndAppExiting();
+  }
 }
 
 // static
@@ -210,10 +221,22 @@ void BrowserList::RemoveObserver(BrowserList::Observer* observer) {
 
 // static
 void BrowserList::CloseAllBrowsers(bool use_post) {
+  // Tell everyone that we are shutting down.
+  browser_shutdown::SetTryingToQuit(true);
+
   // Before we close the browsers shutdown all session services. That way an
   // exit can restore all browsers open before exiting.
   ProfileManager::ShutdownSessionServices();
 
+  // If there are no browsers, send the APP_TERMINATING action here. Otherwise,
+  // it will be sent by RemoveBrowser() when the last browser has closed.
+  if (browsers_.empty()) {
+    NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
+                                           NotificationService::AllSources(),
+                                           NotificationService::NoDetails());
+    AllBrowsersClosedAndAppExiting();
+    return;
+  }
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end();) {
     if (use_post) {
@@ -309,10 +332,36 @@ bool BrowserList::HasBrowserWithProfile(Profile* profile) {
 }
 
 // static
-bool BrowserList::IsInPersistentMode() {
-  // TODO(atwilson): check the boolean state variable that you will set for
-  // persisent instances.
-  return false;
+int BrowserList::keep_alive_count_ = 0;
+
+// static
+void BrowserList::StartKeepAlive() {
+  // Increment the browser process refcount as long as we're keeping the
+  // application alive.
+  if (!WillKeepAlive())
+    g_browser_process->AddRefModule();
+  keep_alive_count_++;
+}
+
+// static
+void BrowserList::EndKeepAlive() {
+  DCHECK(keep_alive_count_ > 0);
+  keep_alive_count_--;
+  // Allow the app to shutdown again.
+  if (!WillKeepAlive()) {
+    g_browser_process->ReleaseModule();
+    // If there are no browsers open and we aren't already shutting down,
+    // initiate a shutdown. Also skips shutdown if this is a unit test
+    // (MessageLoop::current() == null).
+    if (browsers_.empty() && !browser_shutdown::IsTryingToQuit() &&
+        MessageLoop::current())
+      CloseAllBrowsers(true);
+  }
+}
+
+// static
+bool BrowserList::WillKeepAlive() {
+  return keep_alive_count_ > 0;
 }
 
 // static

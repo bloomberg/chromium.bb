@@ -34,8 +34,13 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
                                          session_storage_namespace_id);
   render_view_host_->AllowScriptToClose(true);
 
+  // Close ourselves when the application is shutting down.
+  registrar_.Add(this, NotificationType::APP_TERMINATING,
+                 NotificationService::AllSources());
+
   // Register for our parent profile to shutdown, so we can shut ourselves down
-  // as well.
+  // as well (should only be called for OTR profiles, as we should receive
+  // APP_TERMINATING before non-OTR profiles are destroyed).
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile));
 }
@@ -51,7 +56,8 @@ void BackgroundContents::Observe(NotificationType type,
   // TODO(rafaelw): Implement pagegroup ref-counting so that non-persistent
   // background pages are closed when the last referencing frame is closed.
   switch (type.value) {
-    case NotificationType::PROFILE_DESTROYED: {
+    case NotificationType::PROFILE_DESTROYED:
+    case NotificationType::APP_TERMINATING: {
       delete this;
       break;
     }

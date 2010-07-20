@@ -5,6 +5,7 @@
 #include "chrome/browser/js_modal_dialog.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
@@ -90,6 +91,11 @@ void JavaScriptAppModalDialog::InitNotifications() {
 }
 
 void JavaScriptAppModalDialog::OnCancel() {
+  // If we are shutting down and this is an onbeforeunload dialog, cancel the
+  // shutdown.
+  if (is_before_unload_dialog_)
+    browser_shutdown::SetTryingToQuit(false);
+
   // We need to do this before WM_DESTROY (WindowClosing()) as any parent frame
   // will receive its activation messages before this dialog receives
   // WM_DESTROY. The parent frame would then try to activate any modal dialogs

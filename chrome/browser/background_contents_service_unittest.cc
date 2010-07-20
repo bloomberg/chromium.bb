@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/common/chrome_switches.h"
@@ -112,20 +113,14 @@ TEST_F(BackgroundContentsServiceTest, Create) {
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  // TODO(atwilson): Enable the refcount part of the test once we fix the
-  // APP_TERMINATING notification to be sent at the proper time.
-  // (http://crbug.com/45275).
-  //
-  //  TestingBrowserProcess* process =
-  //      static_cast<TestingBrowserProcess*>(g_browser_process);
-  // unsigned int starting_ref_count = process->module_ref_count();
   MockBackgroundContents* contents = new MockBackgroundContents(&profile);
   EXPECT_FALSE(service.IsTracked(contents));
+  EXPECT_FALSE(BrowserList::WillKeepAlive());
   contents->SendOpenedNotification();
-  // EXPECT_EQ(starting_ref_count+1, process->module_ref_count());
+  EXPECT_TRUE(BrowserList::WillKeepAlive());
   EXPECT_TRUE(service.IsTracked(contents));
   delete contents;
-  // EXPECT_EQ(starting_ref_count, process->module_ref_count());
+  EXPECT_FALSE(BrowserList::WillKeepAlive());
   EXPECT_FALSE(service.IsTracked(contents));
 }
 

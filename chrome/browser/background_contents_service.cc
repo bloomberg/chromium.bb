@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -39,7 +39,8 @@ const wchar_t kFrameNameKey[] = L"name";
 
 BackgroundContentsService::BackgroundContentsService(
     Profile* profile, const CommandLine* command_line)
-    : prefs_(NULL) {
+    : prefs_(NULL),
+      always_keep_alive_(command_line->HasSwitch(switches::kKeepAliveForTest)) {
   // Don't load/store preferences if the proper switch is not enabled, or if
   // the parent profile is off the record.
   if (!profile->IsOffTheRecord() &&
@@ -83,6 +84,14 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   // BackgroundContents.
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile));
+
+  if (always_keep_alive_ && !profile->IsOffTheRecord()) {
+    // For testing, keep the browser process alive until there is an explicit
+    // shutdown.
+    registrar_.Add(this, NotificationType::APP_TERMINATING,
+                   NotificationService::AllSources());
+    BrowserList::StartKeepAlive();
+  }
 }
 
 void BackgroundContentsService::Observe(NotificationType type,
@@ -110,6 +119,11 @@ void BackgroundContentsService::Observe(NotificationType type,
     case NotificationType::EXTENSION_UNLOADED:
       ShutdownAssociatedBackgroundContents(
           ASCIIToUTF16(Details<Extension>(details)->id()));
+      break;
+    case NotificationType::APP_TERMINATING:
+      // Performing an explicit shutdown, so allow the browser process to exit.
+      DCHECK(always_keep_alive_);
+      BrowserList::EndKeepAlive();
       break;
     default:
       NOTREACHED();
@@ -172,8 +186,12 @@ void BackgroundContentsService::CreateBackgroundContents(
   BackgroundContents* contents = new BackgroundContents(
       SiteInstance::CreateSiteInstanceForURL(profile, url), MSG_ROUTING_NONE);
 
-  contents_map_[application_id].contents = contents;
-  contents_map_[application_id].frame_name = frame_name;
+  // TODO(atwilson): Change this to send a BACKGROUND_CONTENTS_CREATED
+  // notification when we have a listener outside of BackgroundContentsService.
+  BackgroundContentsOpenedDetails details = {contents,
+                                             frame_name,
+                                             application_id};
+  BackgroundContentsOpened(&details);
 
   RenderViewHost* render_view_host = contents->render_view_host();
   // TODO(atwilson): Create RenderViews asynchronously to avoid increasing
@@ -233,10 +251,8 @@ void BackgroundContentsService::BackgroundContentsOpened(
     BackgroundContentsOpenedDetails* details) {
   // If this is the first BackgroundContents loaded, kick ourselves into
   // persistent mode.
-  // TODO(atwilson): Enable this when we support running with no active windows
-  // on all platforms (http://crbug.com/45275).
-  //  if (contents_map_.empty())
-  //    g_browser_process->AddRefModule();
+  if (contents_map_.empty())
+    BrowserList::StartKeepAlive();
 
   // Add the passed object to our list. Should not already be tracked.
   DCHECK(!IsTracked(details->contents));
@@ -260,10 +276,8 @@ void BackgroundContentsService::BackgroundContentsShutdown(
   contents_map_.erase(appid);
   // If we have no more BackgroundContents active, then stop keeping the browser
   // process alive.
-  // TODO(atwilson): Enable this when we support running with no active windows
-  // on all platforms (http://crbug.com/45275).
-  //  if (contents_map_.empty())
-  //    g_browser_process->ReleaseModule();
+  if (contents_map_.empty())
+    BrowserList::EndKeepAlive();
 }
 
 BackgroundContents* BackgroundContentsService::GetAppBackgroundContents(

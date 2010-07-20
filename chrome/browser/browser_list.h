@@ -113,8 +113,19 @@ class BrowserList {
   // Returns true if there is at least one Browser with the specified profile.
   static bool HasBrowserWithProfile(Profile* profile);
 
-  // Returns true if browser is in persistent mode and false otherwise.
-  static bool IsInPersistentMode();
+  // Tells the BrowserList to keep the application alive after the last Browser
+  // closes. This is implemented as a count, so callers should pair their calls
+  // to StartKeepAlive() with matching calls to EndKeepAlive() when they no
+  // longer need to keep the application running.
+  static void StartKeepAlive();
+
+  // Stops keeping the application alive after the last Browser is closed.
+  // Should match a previous call to StartKeepAlive().
+  static void EndKeepAlive();
+
+  // Returns true if application will continue running after the last Browser
+  // closes.
+  static bool WillKeepAlive();
 
   static const_iterator begin() { return browsers_.begin(); }
   static const_iterator end() { return browsers_.end(); }
@@ -144,8 +155,8 @@ class BrowserList {
   // Returns true if at least one off the record session is active.
   static bool IsOffTheRecordSessionActive();
 
-  // Called when the last browser is closed.
-  static void AllBrowsersClosed();
+  // Called once there are no more browsers open and the application is exiting.
+  static void AllBrowsersClosedAndAppExiting();
 
  private:
   // Helper method to remove a browser instance from a list of browsers
@@ -154,6 +165,10 @@ class BrowserList {
   static BrowserVector browsers_;
   static BrowserVector last_active_browsers_;
   static ObserverList<Observer> observers_;
+
+  // Counter of calls to StartKeepAlive(). If non-zero, the application will
+  // continue running after the last browser has exited.
+  static int keep_alive_count_;
 };
 
 class TabContents;

@@ -8,8 +8,7 @@
 #import "chrome/browser/chrome_browser_application_mac.h"
 
 // static
-void BrowserList::AllBrowsersClosed() {
-  // Only terminate after all browsers are closed if trying quit.
-  if (browser_shutdown::IsTryingToQuit())
-    chrome_browser_application_mac::Terminate();
+void BrowserList::AllBrowsersClosedAndAppExiting() {
+  // Last browser is closed, so call back to controller to shutdown the app.
+  chrome_browser_application_mac::Terminate();
 }
