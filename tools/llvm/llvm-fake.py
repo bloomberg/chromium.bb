@@ -78,17 +78,18 @@ PNACL_BITCODE_ROOT = BASE + '/../linux_arm-untrusted/libs-bitcode'
 ######################################################################
 arm_flags = ['-mfpu=vfp3',
              '-march=armv7-a']
+cpp_flags = ['-D__native_client__=1']
 
 global_config_flags = {
+  'CPP_FLAGS' : cpp_flags,
   'LLVM_GCC_COMPILE': [
     '-nostdinc',
-    '-D__native_client__=1',
     '-DNACL_TARGET_ARCH=arm',
     # TODO: get rid of the next two lines
     '-DNACL_TARGET_SUBARCH=32',
     '-DNACL_LINUX=1',
     '-ffixed-r9',
-  ] + arm_flags,
+  ] + arm_flags + cpp_flags,
 
   'LLVM_GCC_COMPILE_HEADERS': [
     # NOTE: the two competing approaches here
@@ -229,11 +230,6 @@ global_assemblers = {
   'x86-64' : AS_X86
 }
 
-# NOTE(adonovan): this should _not_ be the Gold linker, e.g. 2.18.*.
-# Beware, one of the Chrome installation scripts may have changed
-# /usr/bin/ld (which is evil).
-
-CPP = '/usr/bin/cpp'
 ######################################################################
 # Code
 ######################################################################
@@ -285,7 +281,8 @@ def SfiCompile(argv, llc_flags, assembler, as_flags):
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
-  Assemble(assembler, as_flags, ['foo', '-c', filename + '.s', '-o', filename])
+  Assemble(assembler, as_flags,
+           [argv[0], '-c', filename + '.s', '-o', filename])
 
 def FindObjectFilePos(argv):
   """Return argv index if there is and object file is being generated
@@ -356,13 +353,15 @@ def IsDiagnosticMode(argv):
 
 
 def Assemble(asm, flags, argv):
-  # TODO(robertm): this needs to be a lot more robust
-  #                we also might want to pass some options thru to the
-  #                assembler
-  cpp_flags = [a for a in argv
-               if a.startswith('-D') or a.startswith('-I')]
-
-  cpp_flags += ['-D__native_client__=1']
+  # Some assumptions this functions has:
+  # * There is one assembly file in argv.
+  # * There is one output object (-o foo.o) in argv.
+  # * Argv is a call to a gcc like tool.
+  # This function works by patching the command line to run only the
+  # preprocessor and then runs the assebler manually.
+  # TODO(robertm): We also might want to pass some options through to the
+  #                assembler.
+  argv = argv + ['-E'] + global_config_flags['CPP_FLAGS']
 
   s_file = FindAssemblerFilePos(argv)
   if s_file is None:
@@ -370,15 +369,16 @@ def Assemble(asm, flags, argv):
   else:
     s_file = argv[s_file]
 
-  obj_file = FindObjectFilePos(argv)
-  if obj_file is None:
+  obj_file_i = FindObjectFilePos(argv)
+  if obj_file_i is None:
     LogFatal('cannot find object file ' + StringifyCommand(argv))
   else:
-    obj_file = argv[obj_file]
+    obj_file = argv[obj_file_i]
 
   cpp_file = obj_file + ".cpp"
+  argv[obj_file_i] = cpp_file
 
-  Run([CPP] + cpp_flags + [s_file, cpp_file])
+  Run(argv)
   Run([asm] + flags + ['-o', obj_file, cpp_file])
 
 
@@ -427,15 +427,19 @@ def Incarnation_gcclike(argv, tool):
   arch, argv = ExtractArch(argv)
 
   argv[0] = tool
-  if IsDiagnosticMode(argv) or FindAssemblerFilePos(argv):
+  if IsDiagnosticMode(argv):
     Run(argv)
-    return;
+    return
 
   assert arch
 
   llc_flags = global_config_flags['LLC'][arch]
   assembler = global_assemblers[arch]
   as_flags = global_config_flags['AS'][arch]
+
+  if FindAssemblerFilePos(argv):
+    Assemble(assembler, as_flags, argv)
+    return
 
   CompileToBC(argv, tool, True)
   SfiCompile(argv, llc_flags, assembler, as_flags)
@@ -457,21 +461,16 @@ def Incarnation_bcgplusplus(argv):
   CompileToBC(argv, LLVM_GXX)
 
 
-def Incarnation_cppas_generic(argv):
-  arch, argv = ExtractArch(argv)
-  Assemble(global_assemblers[arch], global_config_flags['AS'][arch], argv)
-
-
 def Incarnation_cppasarm(argv):
-  Incarnation_cppas_generic(argv + ['-arch', 'arm'])
+  Incarnation_sfigcc_generic(argv + ['-arch', 'arm'])
 
 
 def Incarnation_cppasx8632(argv):
-  Incarnation_cppas_generic(argv + ['-arch', 'x86-32'])
+  Incarnation_sfigcc_generic(argv + ['-arch', 'x86-32'])
 
 
 def Incarnation_cppasx8664(argv):
-  Incarnation_cppas_generic(argv + ['-arch', 'x86-64'])
+  Incarnation_sfigcc_generic(argv + ['-arch', 'x86-64'])
 
 
 def Incarnation_nop(argv):
@@ -733,7 +732,7 @@ INCARNATIONS = {
    'llvm-fake-bcld-x86-32': Incarnation_bcldx8632,
    'llvm-fake-bcld-x86-64': Incarnation_bcldx8664,
 
-   'llvm-fake-cppas': Incarnation_cppas_generic,
+   'llvm-fake-cppas': Incarnation_sfigcc_generic,
    'llvm-fake-cppas-arm': Incarnation_cppasarm,
    'llvm-fake-cppas-x86-32': Incarnation_cppasx8632,
    'llvm-fake-cppas-x86-64': Incarnation_cppasx8664,
