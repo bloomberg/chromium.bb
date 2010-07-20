@@ -5,5 +5,5 @@
 #include "chrome/browser/browser_list.h"
 
 // static
-void BrowserList::AllBrowsersClosed() {
+void BrowserList::AllBrowsersClosedAndAppExiting() {
 }
