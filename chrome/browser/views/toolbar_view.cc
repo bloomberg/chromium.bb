@@ -58,9 +58,6 @@ static const int kPopupTopSpacingNonGlass = 3;
 static const int kPopupBottomSpacingNonGlass = 2;
 static const int kPopupBottomSpacingGlass = 1;
 
-// The height of the toolbar when it is in collapsed mode.
-const int kCollapsedToolbarHeight = 7;
-
 static SkBitmap* kPopupBackgroundEdge = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -79,8 +76,7 @@ ToolbarView::ToolbarView(Browser* browser)
       browser_(browser),
       profiles_menu_contents_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      destroyed_flag_(NULL),
-      collapsed_(false) {
+      destroyed_flag_(NULL) {
   SetID(VIEW_ID_TOOLBAR);
 
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
@@ -221,22 +217,6 @@ void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
       return;
     }
   }
-}
-
-void ToolbarView::SetCollapsed(bool val) {
-  if (collapsed_ == val)
-    return;
-
-  collapsed_ = val;
-
-  // When switching to and from collapsed view, we need to force hide/show the
-  // location bar entry view, like we do when we switch to full screen mode in
-  // BrowserView::ProcessFullscreen. Otherwise the text view can appear floating
-  // on top of web content.
-  if (collapsed_)
-    location_bar_->PushForceHidden();
-  else
-    location_bar_->PopForceHidden();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -416,8 +396,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
       normal_background = *rb.GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
     }
 
-    return gfx::Size(min_width,
-        collapsed_ ? kCollapsedToolbarHeight : normal_background.height());
+    return gfx::Size(min_width, normal_background.height());
   }
 
   int vertical_spacing = PopupTopSpacing() +
@@ -439,10 +418,6 @@ void ToolbarView::Layout() {
         width() - (edge_width * 2), location_bar_->GetPreferredSize().height());
     return;
   }
-
-  // In collapsed mode, we don't show any of the child controls.
-  for (int i = 0; i < GetChildViewCount(); ++i)
-    GetChildViewAt(i)->SetVisible(!collapsed_);
 
   int child_y = std::min(kControlVertOffset, height());
   // We assume all child elements are the same height.

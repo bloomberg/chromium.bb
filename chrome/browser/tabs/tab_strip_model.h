@@ -236,9 +236,6 @@ class TabStripModelDelegate {
 
   // Toggles the use of the vertical tabstrip.
   virtual void ToggleUseVerticalTabs() = 0;
-
-  // Set the visiblity of the toolbar.
-  virtual void SetToolbarVisibility(bool value) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -551,9 +548,6 @@ class TabStripModel : public NotificationObserver {
   // See description above class for details on app tabs.
   bool IsAppTab(int index) const;
 
-  // Returns true if the toolbar is visible for the tab at |index|.
-  bool IsToolbarVisible(int index) const;
-
   // Returns true if the tab is a phantom tab. A phantom tab is one where the
   // renderer has not been loaded.
   // See description above class for details on phantom tabs.
@@ -626,7 +620,6 @@ class TabStripModel : public NotificationObserver {
     CommandCloseTabsToRight,
     CommandRestoreTab,
     CommandTogglePinned,
-    CommandToggleToolbar,
     CommandBookmarkAllTabs,
     CommandUseVerticalTabs,
     CommandLast

@@ -35,9 +35,6 @@ const wchar_t kPrefVersion[] = L"manifest.version";
 // Indicates if an extension is blacklisted:
 const wchar_t kPrefBlacklist[] = L"blacklist";
 
-// Indicates whether the toolbar should be shown on app tabs.
-const wchar_t kPrefAppTabToolbars[] = L"app_tab_toolbars";
-
 // Indicates whether to show an install warning when the user enables.
 const wchar_t kExtensionDidEscalatePermissions[] = L"install_warning_on_enable";
 
@@ -778,32 +775,6 @@ std::set<std::string> ExtensionPrefs::GetIdleInstallInfoIds() {
       result.insert(id);
   }
   return result;
-}
-
-bool ExtensionPrefs::AreAppTabToolbarsVisible(
-    const std::string& extension_id) {
-  // Default to hiding toolbars.
-  bool show_toolbars = false;
-  DictionaryValue* pref = GetExtensionPref(extension_id);
-  if (!pref)
-    return show_toolbars;
-
-  pref->GetBoolean(
-      ASCIIToWide(extension_id) + L"." + kPrefAppTabToolbars, &show_toolbars);
-  return show_toolbars;
-}
-
-void ExtensionPrefs::SetAppTabToolbarVisibility(
-    const std::string& extension_id, bool value) {
-  DictionaryValue* pref = GetOrCreateExtensionPref(extension_id);
-  std::wstring key = ASCIIToWide(extension_id) + L"." + kPrefAppTabToolbars;
-
-  if (value)
-    pref->SetBoolean(key, true);
-  else
-    pref->Remove(key, NULL);  // False is the default value.
-
-  prefs_->ScheduleSavePersistentPrefs();
 }
 
 

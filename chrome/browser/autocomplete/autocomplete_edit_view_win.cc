@@ -511,13 +511,6 @@ void AutocompleteEditViewWin::SaveStateToTab(TabContents* tab) {
 
 void AutocompleteEditViewWin::Update(
     const TabContents* tab_for_state_restoring) {
-  // If we're switching to a tab with a collapsed toolbar, bail
-  // now, since we won't be showing the Omnibox anyway, and
-  // executing the code below just results in a flicker before
-  // the toolbar hides.
-  if (tab_for_state_restoring && tab_for_state_restoring->is_app())
-    return;
-
   const bool visibly_changed_permanent_text =
       model_->UpdatePermanentText(toolbar_model_->GetText());
 

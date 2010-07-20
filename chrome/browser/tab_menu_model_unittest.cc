@@ -13,7 +13,7 @@ class TabMenuModelTest : public PlatformTest, public MenuModelTest {
 };
 
 TEST_F(TabMenuModelTest, Basics) {
-  TabMenuModel model(&delegate_, true, false, true);
+  TabMenuModel model(&delegate_, true);
 
   // Verify it has items. The number varies by platform, so we don't check
   // the exact number.

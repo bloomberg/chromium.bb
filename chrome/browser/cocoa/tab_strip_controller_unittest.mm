@@ -67,8 +67,6 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   virtual bool UseVerticalTabs() const { return false; }
 
   virtual void ToggleUseVerticalTabs() {}
-
-  virtual void SetToolbarVisibility(bool value) {}
 };
 
 class TabStripControllerTest : public CocoaTest {

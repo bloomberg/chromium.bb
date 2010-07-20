@@ -1151,9 +1151,6 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
       features |= FEATURE_TABSTRIP;
 
-    // TODO(aa): This is kinda a hack. The toolbar is not really there, it is
-    // collapsed. We probably want to add a FEATURE_MINI_TOOLBAR to represent
-    // the collapsed state.
     if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
       features |= FEATURE_TOOLBAR;
 
@@ -2367,10 +2364,6 @@ void Browser::ToggleUseVerticalTabs() {
   UseVerticalTabsChanged();
 }
 
-void Browser::SetToolbarVisibility(bool visible) {
-  window()->SetToolbarCollapsedMode(!visible);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, TabStripModelObserver implementation:
 
@@ -2454,8 +2447,6 @@ void Browser::TabSelectedAt(TabContents* old_contents,
           session_id(), tabstrip_model_.selected_index());
     }
   }
-
-  window()->SetToolbarCollapsedMode(!tabstrip_model_.IsToolbarVisible(index));
 }
 
 void Browser::TabMoved(TabContents* contents,

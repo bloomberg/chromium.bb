@@ -10,11 +10,9 @@
 #include "grit/generated_resources.h"
 
 TabMenuModel::TabMenuModel(menus::SimpleMenuModel::Delegate* delegate,
-                           bool is_pinned,
-                           bool allow_toolbar_toggle,
-                           bool is_toolbar_visible)
+                           bool is_pinned)
     : menus::SimpleMenuModel(delegate) {
-  Build(is_pinned, allow_toolbar_toggle, is_toolbar_visible);
+  Build(is_pinned);
 }
 
 // static
@@ -29,8 +27,7 @@ bool TabMenuModel::AreVerticalTabsEnabled() {
 #endif
 }
 
-void TabMenuModel::Build(bool is_pinned, bool allow_toolbar_toggle,
-                         bool is_toolbar_visible) {
+void TabMenuModel::Build(bool is_pinned) {
   AddItemWithStringId(TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB);
   AddSeparator();
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
@@ -39,12 +36,6 @@ void TabMenuModel::Build(bool is_pinned, bool allow_toolbar_toggle,
   AddItemWithStringId(
       TabStripModel::CommandTogglePinned,
       is_pinned ? IDS_TAB_CXMENU_UNPIN_TAB : IDS_TAB_CXMENU_PIN_TAB);
-  if (allow_toolbar_toggle) {
-    AddItemWithStringId(
-        TabStripModel::CommandToggleToolbar,
-        is_toolbar_visible ? IDS_TAB_CXMENU_HIDE_TOOLBAR :
-                             IDS_TAB_CXMENU_SHOW_TOOLBAR);
-  }
   AddSeparator();
   AddItemWithStringId(TabStripModel::CommandCloseTab,
                       IDS_TAB_CXMENU_CLOSETAB);

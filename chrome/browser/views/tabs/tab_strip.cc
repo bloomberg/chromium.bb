@@ -129,8 +129,7 @@ TabStrip::TabStrip(TabStripController* controller)
       current_selected_width_(Tab::GetStandardSize().width()),
       available_width_for_tabs_(-1),
       in_tab_close_(false),
-      animation_container_(new AnimationContainer()),
-      new_tab_button_enabled_(true) {
+      animation_container_(new AnimationContainer()) {
   Init();
 }
 
@@ -375,12 +374,9 @@ views::View* TabStrip::GetViewByID(int view_id) const {
 void TabStrip::Layout() {
   BaseTabStrip::Layout();
 
-  if (new_tab_button_enabled_) {
-    newtab_button_->SetBounds(newtab_button_bounds_);
-    newtab_button_->SetVisible(true);
-  } else {
-    newtab_button_->SetVisible(false);
-  }
+  newtab_button_->SetBounds(newtab_button_bounds_);
+
+  SchedulePaint();
 }
 
 gfx::Size TabStrip::GetPreferredSize() {
