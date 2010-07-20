@@ -28,8 +28,6 @@
 static ContentSettingsWindowView* instance_ = NULL;
 // Content setting dialog bounds padding.
 const int kDialogPadding = 7;
-// Width of the page selector lisbox.
-const int kListboxWidth = 100;
 
 namespace browser {
 
@@ -120,21 +118,23 @@ void ContentSettingsWindowView::ListboxSelectionChanged(
 // ContentSettingsWindowView, views::View overrides:
 
 void ContentSettingsWindowView::Layout() {
+  int list_box_width = views::Window::GetLocalizedContentsWidth(
+      IDS_CONTENT_SETTINGS_DIALOG_LISTBOX_WIDTH_CHARS);
   label_->SetBounds(kDialogPadding,
                     kDialogPadding,
-                    kListboxWidth,
+                    list_box_width,
                     label_->GetPreferredSize().height());
 
   listbox_->SetBounds(kDialogPadding,
                       2 * kDialogPadding + label_->height(),
-                      kListboxWidth,
+                      list_box_width,
                       height() - (3 * kDialogPadding) - label_->height());
 
   if (pages_[current_page_]->GetParent()) {
     pages_[current_page_]->SetBounds(
-        2 * kDialogPadding + kListboxWidth,
+        2 * kDialogPadding + list_box_width,
         2 * kDialogPadding + label_->height(),
-        width() - (3 * kDialogPadding) - kListboxWidth,
+        width() - (3 * kDialogPadding) - list_box_width,
         height() - (2 * kDialogPadding));
   }
 }

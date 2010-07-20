@@ -267,6 +267,12 @@
         24
       </message>
 
+      <!-- The width of the list box in the Content Settings dialog box, in characters (character width = -->
+      <!-- average character width for default dialog box font) -->
+      <message name="IDS_CONTENT_SETTINGS_DIALOG_LISTBOX_WIDTH_CHARS" use_name_for_id="true">
+        18
+      </message>
+
       <!-- The width and height of the URL picker dialog box in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_URLPICKER_DIALOG_WIDTH_CHARS" use_name_for_id="true">
