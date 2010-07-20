@@ -904,7 +904,8 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
 
 // TODO(skrul): See TODO comment on the "Pause" test above for an
 // explanation of the usage of FLAKY here.
-TEST_F(SyncerThreadWithSyncerTest, FLAKY_PauseWhenNotConnected) {
+// TODO(pinkerton): disabled due to hanging on test bots http://crbug.com/39070
+TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent event(false, false);
   ListenerMock listener;
