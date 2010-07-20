@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -41,11 +42,15 @@ void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
 static DescWrapper* GetSockAddr(DescWrapper* desc) {
   DescWrapper::MsgHeader   header;
   DescWrapper::MsgIoVec    iovec[1];
-  unsigned char            bytes[NACL_ABI_IMC_USER_BYTES_MAX];
   DescWrapper*             descs[NACL_ABI_IMC_USER_DESC_MAX];
+  scoped_array<unsigned char> bytes(
+      new unsigned char[NACL_ABI_IMC_USER_BYTES_MAX]);
+  if (bytes.get() == NULL) {
+    return NULL;
+  }
 
   // Set up to receive a message.
-  iovec[0].base = bytes;
+  iovec[0].base = bytes.get();
   iovec[0].length = NACL_ABI_IMC_USER_BYTES_MAX;
   header.iov = iovec;
   header.iov_length = NACL_ARRAY_SIZE(iovec);
