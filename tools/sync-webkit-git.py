@@ -23,7 +23,10 @@ MAGIC_GCLIENT_BRANCH = 'refs/heads/gclient'
 
 def RunGit(command):
   """Run a git subcommand, returning its output."""
-  proc = subprocess.Popen(['git'] + command, stdout=subprocess.PIPE)
+  # On Windows, use shell=True to get PATH interpretation.
+  shell = (os.name == 'nt')
+  proc = subprocess.Popen(['git'] + command, shell=shell,
+                          stdout=subprocess.PIPE)
   return proc.communicate()[0].strip()
 
 def GetWebKitRev():
@@ -48,8 +51,10 @@ def FindSVNRev(target_rev):
   # regexp matching the git-svn line from the log.
   git_svn_re = re.compile(r'^\s+git-svn-id: [^@]+@(\d+) ')
 
+  # On Windows, use shell=True to get PATH interpretation.
+  shell = (os.name == 'nt')
   log = subprocess.Popen(['git', 'log', '--no-color', '--first-parent',
-                          '--pretty=medium', 'origin'],
+                          '--pretty=medium', 'origin'], shell=shell,
                          stdout=subprocess.PIPE)
   # Track whether we saw a revision *later* than the one we're seeking.
   saw_later = False
