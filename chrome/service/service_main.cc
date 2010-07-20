@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/main_function_params.h"
+#include "chrome/common/sandbox_policy.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_process.h"
 
@@ -32,6 +33,13 @@ static void OnChromotingHostShutdown(
 int ServiceProcessMain(const MainFunctionParams& parameters) {
   MessageLoopForUI main_message_loop;
   PlatformThread::SetName("CrServiceMain");
+
+#if defined(OS_WIN)
+  sandbox::BrokerServices* broker_services =
+      parameters.sandbox_info_.BrokerServices();
+  if (broker_services)
+    sandbox::InitBrokerServices(broker_services);
+#endif   // defined(OS_WIN)
 
   ServiceProcess service_process;
   service_process.Initialize();

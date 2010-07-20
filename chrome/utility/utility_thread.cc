@@ -7,14 +7,24 @@
 #include <vector>
 
 #include "base/file_util.h"
+#if defined(OS_WIN)
+#include "base/iat_patch.h"
+#endif
+#include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/common/child_process.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
+#include "gfx/rect.h"
+#include "printing/native_metafile.h"
+#include "printing/page_range.h"
+#include "printing/units.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
+
 
 UtilityThread::UtilityThread() {
   ChildProcess::current()->AddRefProcess();
@@ -29,6 +39,8 @@ void UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(UtilityMsg_UnpackWebResource, OnUnpackWebResource)
     IPC_MESSAGE_HANDLER(UtilityMsg_ParseUpdateManifest, OnParseUpdateManifest)
     IPC_MESSAGE_HANDLER(UtilityMsg_DecodeImage, OnDecodeImage)
+    IPC_MESSAGE_HANDLER(UtilityMsg_RenderPDFPagesToMetafile,
+                        OnRenderPDFPagesToMetafile)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -83,4 +95,163 @@ void UtilityThread::OnDecodeImage(
   }
   ChildProcess::current()->ReleaseProcess();
 }
+
+
+void UtilityThread::OnRenderPDFPagesToMetafile(
+    base::PlatformFile pdf_file,
+    const gfx::Rect& render_area,
+    int render_dpi,
+    const std::vector<printing::PageRange>& page_ranges) {
+  bool succeeded = false;
+#if defined(OS_WIN)
+  printing::NativeMetafile metafile;
+  int highest_rendered_page_number = 0;
+  succeeded = RenderPDFToWinMetafile(pdf_file, render_area, render_dpi,
+                                     page_ranges, &metafile,
+                                     &highest_rendered_page_number);
+  if (succeeded) {
+    Send(new UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded(metafile,
+        highest_rendered_page_number));
+  }
+#endif  // defined(OS_WIN)
+  if (!succeeded) {
+    Send(new UtilityHostMsg_RenderPDFPagesToMetafile_Failed());
+  }
+  ChildProcess::current()->ReleaseProcess();
+}
+
+#if defined(OS_WIN)
+// Exported by pdf.dll
+typedef bool (*RenderPDFPageToDCProc)(
+    const unsigned char* pdf_buffer, int buffer_size, int page_number, HDC dc,
+    int dpi_x, int dpi_y, int bounds_origin_x, int bounds_origin_y,
+    int bounds_width, int bounds_height, bool fit_to_bounds,
+    bool stretch_to_bounds, bool keep_aspect_ratio, bool center_in_bounds);
+
+typedef bool (*GetPDFDocInfoProc)(const unsigned char* pdf_buffer,
+                                  int buffer_size, int* page_count,
+                                  double* max_page_width);
+
+// The 2 below IAT patch functions are almost identical to the code in
+// render_process_impl.cc. This is needed to work around specific Windows APIs
+// used by the Chrome PDF plugin that will fail in the sandbox.
+static iat_patch::IATPatchFunction g_iat_patch_createdca;
+HDC WINAPI UtilityProcess_CreateDCAPatch(LPCSTR driver_name,
+                                         LPCSTR device_name,
+                                         LPCSTR output,
+                                         const DEVMODEA* init_data) {
+  if (driver_name &&
+      (std::string("DISPLAY") == std::string(driver_name)))
+  // CreateDC fails behind the sandbox, but not CreateCompatibleDC.
+    return CreateCompatibleDC(NULL);
+
+  NOTREACHED();
+  return CreateDCA(driver_name, device_name, output, init_data);
+}
+
+static iat_patch::IATPatchFunction g_iat_patch_get_font_data;
+DWORD WINAPI UtilityProcess_GetFontDataPatch(
+    HDC hdc, DWORD table, DWORD offset, LPVOID buffer, DWORD length) {
+  int rv = GetFontData(hdc, table, offset, buffer, length);
+  if (rv == GDI_ERROR && hdc) {
+    HFONT font = static_cast<HFONT>(GetCurrentObject(hdc, OBJ_FONT));
+
+    LOGFONT logfont;
+    if (GetObject(font, sizeof(LOGFONT), &logfont)) {
+      std::vector<char> font_data;
+      if (UtilityThread::current()->Send(
+              new UtilityHostMsg_PreCacheFont(logfont)))
+        rv = GetFontData(hdc, table, offset, buffer, length);
+    }
+  }
+  return rv;
+}
+
+bool UtilityThread::RenderPDFToWinMetafile(
+    base::PlatformFile pdf_file,
+    const gfx::Rect& render_area,
+    int render_dpi,
+    const std::vector<printing::PageRange>& page_ranges,
+    printing::NativeMetafile* metafile,
+    int* highest_rendered_page_number) {
+  *highest_rendered_page_number = -1;
+  ScopedHandle file(pdf_file);
+  FilePath pdf_module_path;
+  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_module_path);
+  HMODULE pdf_module = GetModuleHandle(pdf_module_path.value().c_str());
+  if (!pdf_module)
+    return false;
+
+  RenderPDFPageToDCProc render_proc =
+      reinterpret_cast<RenderPDFPageToDCProc>(
+          GetProcAddress(pdf_module, "RenderPDFPageToDC"));
+  if (!render_proc)
+    return false;
+
+  GetPDFDocInfoProc get_info_proc = reinterpret_cast<GetPDFDocInfoProc>(
+          GetProcAddress(pdf_module, "GetPDFDocInfo"));
+  if (!get_info_proc)
+    return false;
+
+  // Patch the IAT for handling specific APIs known to fail in the sandbox.
+  if (!g_iat_patch_createdca.is_patched())
+    g_iat_patch_createdca.Patch(pdf_module_path.value().c_str(),
+                                "gdi32.dll", "CreateDCA",
+                                UtilityProcess_CreateDCAPatch);
+
+  if (!g_iat_patch_get_font_data.is_patched())
+    g_iat_patch_get_font_data.Patch(pdf_module_path.value().c_str(),
+                                    "gdi32.dll", "GetFontData",
+                                    UtilityProcess_GetFontDataPatch);
+
+  // TODO(sanjeevr): Add a method to the PDF DLL that takes in a file handle
+  // and a page range array. That way we don't need to read the entire PDF into
+  // memory.
+  DWORD length = ::GetFileSize(file, NULL);
+  if (length == INVALID_FILE_SIZE)
+    return false;
+
+  std::vector<uint8> buffer;
+  buffer.resize(length);
+  DWORD bytes_read = 0;
+  if (!ReadFile(pdf_file, &buffer.front(), length, &bytes_read, NULL) ||
+      (bytes_read != length))
+    return false;
+
+  int total_page_count = 0;
+  if (!get_info_proc(&buffer.front(), buffer.size(), &total_page_count, NULL))
+    return false;
+
+  metafile->CreateDc(NULL, NULL);
+  // Since we created the metafile using the screen DPI (but we actually want
+  // the PDF DLL to print using the passed in render_dpi, we apply the following
+  // transformation.
+  SetGraphicsMode(metafile->hdc(), GM_ADVANCED);
+  XFORM xform = {0};
+  int screen_dpi = GetDeviceCaps(GetDC(NULL), LOGPIXELSX);
+  xform.eM11 = xform.eM22 =
+      static_cast<float>(screen_dpi) / static_cast<float>(render_dpi);
+  ModifyWorldTransform(metafile->hdc(), &xform, MWT_LEFTMULTIPLY);
+
+  bool ret = false;
+  std::vector<printing::PageRange>::const_iterator iter;
+  for (iter = page_ranges.begin(); iter != page_ranges.end(); ++iter) {
+    for (int page_number = iter->from; page_number <= iter->to; ++page_number) {
+      if (page_number >= total_page_count)
+        break;
+      metafile->StartPage();
+      if (render_proc(&buffer.front(), buffer.size(), page_number,
+                      metafile->hdc(), render_dpi, render_dpi,
+                      render_area.x(), render_area.y(), render_area.width(),
+                      render_area.height(), true, false, true, true))
+        if (*highest_rendered_page_number < page_number)
+          *highest_rendered_page_number = page_number;
+        ret = true;
+      metafile->EndPage();
+    }
+  }
+  metafile->CloseDc();
+  return ret;
+}
+#endif  // defined(OS_WIN)
 

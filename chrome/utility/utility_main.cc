@@ -6,10 +6,13 @@
 #include "app/hi_res_timer_manager.h"
 #include "app/system_monitor.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/logging_chrome.h"
@@ -19,7 +22,7 @@
 #if defined(OS_WIN)
 #include "chrome/common/sandbox_init_wrapper.h"
 #include "sandbox/src/sandbox.h"
-#endif
+#endif  // defined(OS_WIN)
 
 // Mainline routine for running as the utility process.
 int UtilityMain(const MainFunctionParams& parameters) {
@@ -33,6 +36,15 @@ int UtilityMain(const MainFunctionParams& parameters) {
   ChildProcess utility_process;
   utility_process.set_main_thread(new UtilityThread());
 #if defined(OS_WIN)
+  // Load the pdf plugin before the sandbox is turned on. This is for Windows
+  // only because we need this DLL only on Windows.
+  FilePath pdf;
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf) &&
+      file_util::PathExists(pdf)) {
+    bool rv = !!LoadLibrary(pdf.value().c_str());
+    DCHECK(rv) << "Couldn't load PDF plugin";
+  }
+
   sandbox::TargetServices* target_services =
       parameters.sandbox_info_.TargetServices();
   if (!target_services)

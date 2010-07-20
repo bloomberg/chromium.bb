@@ -22,6 +22,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
+#include "printing/native_metafile.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -37,6 +38,10 @@ class Point;
 class Rect;
 class Size;
 }  // namespace gfx
+
+namespace printing {
+struct PageRange;
+}  // namespace printing
 
 namespace webkit_glue {
 struct WebApplicationInfo;
@@ -472,6 +477,26 @@ struct ParamTraits<webkit_glue::PasswordForm> {
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<PasswordForm>");
   }
+};
+
+template <>
+struct ParamTraits<printing::PageRange> {
+  typedef printing::PageRange param_type;
+  static void Write(Message* m, const param_type& p);
+
+  static bool Read(const Message* m, void** iter, param_type* r);
+
+  static void Log(const param_type& p, std::wstring* l);
+};
+
+template <>
+struct ParamTraits<printing::NativeMetafile> {
+  typedef printing::NativeMetafile param_type;
+  static void Write(Message* m, const param_type& p);
+
+  static bool Read(const Message* m, void** iter, param_type* r);
+
+  static void Log(const param_type& p, std::wstring* l);
 };
 
 }  // namespace IPC

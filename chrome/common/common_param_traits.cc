@@ -7,6 +7,9 @@
 #include "chrome/common/chrome_constants.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
+#include "printing/native_metafile.h"
+#include "printing/page_range.h"
+
 #ifndef EXCLUDE_SKIA_DEPENDENCIES
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif
@@ -300,6 +303,54 @@ void ParamTraits<Geoposition>::Log(const Geoposition& p, std::wstring* l) {
   l->append(L" ");
   l->append(UTF8ToWide(p.error_message));
   LogParam(p.error_code, l);
+}
+
+void ParamTraits<printing::PageRange>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.from);
+  WriteParam(m, p.to);
+}
+
+bool ParamTraits<printing::PageRange>::Read(
+    const Message* m, void** iter, param_type* p) {
+  return ReadParam(m, iter, &p->from) &&
+         ReadParam(m, iter, &p->to);
+}
+
+void ParamTraits<printing::PageRange>::Log(
+    const param_type& p, std::wstring* l) {
+  l->append(L"(");
+  LogParam(p.to, l);
+  l->append(L", ");
+  LogParam(p.from, l);
+  l->append(L")");
+}
+
+void ParamTraits<printing::NativeMetafile>::Write(
+    Message* m, const param_type& p) {
+  std::vector<uint8> buffer;
+  uint32 size = p.GetDataSize();
+  if (size) {
+    buffer.resize(size);
+    p.GetData(&buffer.front(), size);
+  }
+  WriteParam(m, buffer);
+}
+
+bool ParamTraits<printing::NativeMetafile>::Read(
+    const Message* m, void** iter, param_type* p) {
+  std::vector<uint8> buffer;
+#if defined(OS_WIN)
+  return ReadParam(m, iter, &buffer) &&
+         p->CreateFromData(&buffer.front(), static_cast<uint32>(buffer.size()));
+#else  // defined(OS_WIN)
+  return ReadParam(m, iter, &buffer) &&
+         p->Init(&buffer.front(), static_cast<uint32>(buffer.size()));
+#endif  // defined(OS_WIN)
+}
+
+void ParamTraits<printing::NativeMetafile>::Log(
+    const param_type& p, std::wstring* l) {
+  l->append(StringPrintf(L"<printing::NativeMetafile>"));
 }
 
 }  // namespace IPC

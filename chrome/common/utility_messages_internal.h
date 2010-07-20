@@ -13,6 +13,10 @@
 // from it via utility_messages.h.
 #include "ipc/ipc_message_macros.h"
 
+#include "base/platform_file.h"
+#include "gfx/rect.h"
+#include "printing/native_metafile.h"
+#include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 //------------------------------------------------------------------------------
@@ -37,6 +41,13 @@ IPC_BEGIN_MESSAGES(Utility)
   // Tell the utility process to decode the given image data.
   IPC_MESSAGE_CONTROL1(UtilityMsg_DecodeImage,
                        std::vector<unsigned char>)  // encoded image contents
+
+  // Tell the utility process to render the given PDF into a metafile.
+  IPC_MESSAGE_CONTROL4(UtilityMsg_RenderPDFPagesToMetafile,
+                       base::PlatformFile,       // PDF file
+                       gfx::Rect,                // Render Area
+                       int,                      // DPI
+                       std::vector<printing::PageRange>)
 IPC_END_MESSAGES(Utility)
 
 //------------------------------------------------------------------------------
@@ -84,4 +95,20 @@ IPC_BEGIN_MESSAGES(UtilityHost)
 
   // Reply when an error occured decoding the image.
   IPC_MESSAGE_CONTROL0(UtilityHostMsg_DecodeImage_Failed)
+
+  // Reply when the utility process has succeeded in rendering the PDF.
+  IPC_MESSAGE_CONTROL2(UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
+                       printing::NativeMetafile,  // Output metafile
+                       int)                      // Highest rendered page number
+
+  // Reply when an error occured rendering the PDF.
+  IPC_MESSAGE_CONTROL0(UtilityHostMsg_RenderPDFPagesToMetafile_Failed)
+
+#if defined(OS_WIN)
+  // Request that the given font be loaded by the host so it's cached by the
+  // OS. Please see ChildProcessHost::PreCacheFont for details.
+  IPC_SYNC_MESSAGE_CONTROL1_0(UtilityHostMsg_PreCacheFont,
+                              LOGFONT /* font data */)
+#endif  // defined(OS_WIN)
+
 IPC_END_MESSAGES(UtilityHost)

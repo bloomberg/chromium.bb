@@ -8,11 +8,22 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/common_param_traits.h"
+#include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
+#include "printing/native_metafile.h"
+#include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#ifndef NDEBUG
+namespace {
+void IgnoreAssertHandler(const std::string& str) {
+}
+}  // namespace
+
+#endif  // NDEBUG
 
 // Tests that serialize/deserialize correctly understand each other
 TEST(IPCMessageTest, Serialize) {
@@ -205,3 +216,64 @@ TEST(IPCMessageTest, Geoposition) {
                L"<Geoposition::ErrorCode>2",
                log_message.c_str());
 }
+
+// Tests printing::PageRange serialization
+TEST(IPCMessageTest, PageRange) {
+  printing::PageRange input;
+  input.from = 2;
+  input.to = 45;
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::ParamTraits<printing::PageRange>::Write(&msg, input);
+
+  printing::PageRange output;
+  void* iter = NULL;
+  EXPECT_TRUE(IPC::ParamTraits<printing::PageRange>::Read(
+      &msg, &iter, &output));
+  EXPECT_TRUE(input == output);
+}
+
+// Tests printing::NativeMetafile serialization.
+TEST(IPCMessageTest, Metafile) {
+  // TODO(sanjeevr): Make this test meaningful for non-Windows platforms. We
+  // need to initialize the metafile using alternate means on the other OSes.
+#if defined(OS_WIN)
+  printing::NativeMetafile metafile;
+  RECT test_rect = {0, 0, 100, 100};
+  // Create a metsfile using the screen DC as a reference.
+  metafile.CreateDc(NULL, NULL);
+  metafile.CloseDc();
+
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::ParamTraits<printing::NativeMetafile>::Write(&msg, metafile);
+
+  printing::NativeMetafile output;
+  void* iter = NULL;
+  EXPECT_TRUE(IPC::ParamTraits<printing::NativeMetafile>::Read(
+      &msg, &iter, &output));
+
+  EXPECT_EQ(metafile.GetDataSize(), output.GetDataSize());
+  EXPECT_EQ(metafile.GetBounds(), output.GetBounds());
+  EXPECT_EQ(::GetDeviceCaps(metafile.hdc(), LOGPIXELSX),
+      ::GetDeviceCaps(output.hdc(), LOGPIXELSX));
+
+  // Also test the corrupt case.
+  IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  // Write some bogus metafile data.
+  const size_t bogus_data_size = metafile.GetDataSize() * 2;
+  scoped_array<char> bogus_data(new char[bogus_data_size]);
+  memset(bogus_data.get(), 'B', bogus_data_size);
+  bad_msg.WriteData(bogus_data.get(), bogus_data_size);
+  // Make sure we don't read out the metafile!
+  printing::NativeMetafile bad_output;
+  iter = NULL;
+  // The Emf code on Windows DCHECKs if it cannot create the metafile.
+#ifndef NDEBUG
+  logging::SetLogAssertHandler(IgnoreAssertHandler);
+#endif  // NDEBUG
+  EXPECT_FALSE(IPC::ParamTraits<printing::NativeMetafile>::Read(
+      &bad_msg, &iter, &bad_output));
+#else  // defined(OS_WIN)
+  NOTIMPLEMENTED();
+#endif  // defined(OS_WIN)
+}
+
