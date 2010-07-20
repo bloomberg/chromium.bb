@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #ifndef CHROME_BROWSER_VIEWS_NOTIFICATIONS_BALLOON_VIEW_H_
 #define CHROME_BROWSER_VIEWS_NOTIFICATIONS_BALLOON_VIEW_H_
 
-#include "app/menus/simple_menu_model.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -37,6 +36,7 @@ class Menu2;
 
 class BalloonCollection;
 class NotificationDetails;
+class NotificationOptionsMenuModel;
 class NotificationSource;
 class SlideAnimation;
 
@@ -47,7 +47,6 @@ class BalloonViewImpl : public BalloonView,
                         public views::ViewMenuDelegate,
                         public views::WidgetDelegate,
                         public views::ButtonListener,
-                        public menus::SimpleMenuModel::Delegate,
                         public NotificationObserver,
                         public AnimationDelegate {
  public:
@@ -80,13 +79,6 @@ class BalloonViewImpl : public BalloonView,
 
   // views::ButtonListener interface.
   virtual void ButtonPressed(views::Button* sender, const views::Event&);
-
-  // menus::SimpleMenuModel::Delegate interface.
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,
@@ -167,7 +159,7 @@ class BalloonViewImpl : public BalloonView,
   gfx::Rect anim_frame_end_;
 
   // The options menu.
-  scoped_ptr<menus::SimpleMenuModel> options_menu_contents_;
+  scoped_ptr<NotificationOptionsMenuModel> options_menu_model_;
   scoped_ptr<views::Menu2> options_menu_menu_;
   views::MenuButton* options_menu_button_;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification_options_menu_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -98,7 +99,7 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       method_factory_(this),
       close_button_(NULL),
       animation_(NULL),
-      options_menu_contents_(NULL),
+      options_menu_model_(NULL),
       options_menu_menu_(NULL),
       options_menu_button_(NULL) {
   // This object is not to be deleted by the views hierarchy,
@@ -360,17 +361,11 @@ void BalloonViewImpl::RunOptionsMenu(const gfx::Point& pt) {
 }
 
 void BalloonViewImpl::CreateOptionsMenu() {
-  if (options_menu_contents_.get())
+  if (options_menu_model_.get())
     return;
 
-  const string16 label_text = WideToUTF16Hack(l10n_util::GetStringF(
-      IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
-      this->balloon_->notification().display_source()));
-
-  options_menu_contents_.reset(new menus::SimpleMenuModel(this));
-  options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
-
-  options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
+  options_menu_model_.reset(new NotificationOptionsMenuModel(balloon_));
+  options_menu_menu_.reset(new views::Menu2(options_menu_model_.get()));
 }
 
 void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,
@@ -482,35 +477,6 @@ void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
 
   View::Paint(canvas);
   PaintBorder(canvas);
-}
-
-// menus::SimpleMenuModel::Delegate methods
-bool BalloonViewImpl::IsCommandIdChecked(int /* command_id */) const {
-  // Nothing in the menu is checked.
-  return false;
-}
-
-bool BalloonViewImpl::IsCommandIdEnabled(int /* command_id */) const {
-  // All the menu options are always enabled.
-  return true;
-}
-
-bool BalloonViewImpl::GetAcceleratorForCommandId(
-    int /* command_id */, menus::Accelerator* /* accelerator */) {
-  // Currently no accelerators.
-  return false;
-}
-
-void BalloonViewImpl::ExecuteCommand(int command_id) {
-  DesktopNotificationService* service =
-      balloon_->profile()->GetDesktopNotificationService();
-  switch (command_id) {
-    case kRevokePermissionCommand:
-      service->DenyPermission(balloon_->notification().origin_url());
-      break;
-    default:
-      NOTIMPLEMENTED();
-  }
 }
 
 void BalloonViewImpl::Observe(NotificationType type,
