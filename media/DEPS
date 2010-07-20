@@ -1,5 +1,5 @@
 include_rules = [
+  "+gfx",
   "+third_party/ffmpeg",
   "+third_party/openmax",
-  "+third_party/gfx",
 ]
