@@ -23,6 +23,7 @@
 #include "chrome/browser/dom_ui/core_options_handler.h"
 #include "chrome/browser/dom_ui/font_settings_handler.h"
 #include "chrome/browser/dom_ui/personal_options_handler.h"
+#include "chrome/browser/dom_ui/sync_options_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -47,7 +48,6 @@
 #include "chrome/browser/chromeos/dom_ui/labs_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_hangul_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
-#include "chrome/browser/chromeos/dom_ui/sync_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
 
@@ -119,10 +119,11 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   // TODO(zelidrag): Add all other page handlers here as we implement them.
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new SyncOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new SyncOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LabsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageHangulOptionsHandler());
