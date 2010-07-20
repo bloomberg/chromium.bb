@@ -304,23 +304,33 @@ void test_end_of_code_region() {
 }
 
 
+void run_test(const char *test_name, void (*test_func)(void)) {
+  printf("Running %s...\n", test_name);
+  test_func();
+}
+
+#define RUN_TEST(test_func) (run_test(#test_func, test_func))
+
 int main() {
-  test_loading_code();
-  test_loading_code_non_page_aligned();
-  test_loading_large_chunk();
-  test_loading_zero_size();
-  test_fail_on_validation_error();
-  test_fail_on_non_bundle_aligned_dest_addresses();
-  test_fail_on_load_to_static_code_area();
-  test_fail_on_load_to_data_area();
-  test_fail_on_overwrite();
-  test_allowed_overwrite();
-  test_fail_on_mmap_to_dyncode_area();
-  test_branches_outside_chunk();
-  test_end_of_code_region();
+  /* Turn off stdout buffering to aid debugging in case of a crash. */
+  setvbuf(stdout, NULL, _IONBF, 0);
+
+  RUN_TEST(test_loading_code);
+  RUN_TEST(test_loading_code_non_page_aligned);
+  RUN_TEST(test_loading_large_chunk);
+  RUN_TEST(test_loading_zero_size);
+  RUN_TEST(test_fail_on_validation_error);
+  RUN_TEST(test_fail_on_non_bundle_aligned_dest_addresses);
+  RUN_TEST(test_fail_on_load_to_static_code_area);
+  RUN_TEST(test_fail_on_load_to_data_area);
+  RUN_TEST(test_fail_on_overwrite);
+  RUN_TEST(test_allowed_overwrite);
+  RUN_TEST(test_fail_on_mmap_to_dyncode_area);
+  RUN_TEST(test_branches_outside_chunk);
+  RUN_TEST(test_end_of_code_region);
 
   /* Test again to make sure we didn't run out of space. */
-  test_loading_code();
+  RUN_TEST(test_loading_code);
 
   return 0;
 }
