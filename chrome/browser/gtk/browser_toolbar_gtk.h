@@ -10,15 +10,13 @@
 
 #include "app/active_window_watcher_x.h"
 #include "app/gtk_signal.h"
+#include "app/gtk_signal_registrar.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/throb_animation.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/custom_button.h"
-#include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/menu_gtk.h"
-#include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/notification_observer.h"
@@ -44,7 +42,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public menus::SimpleMenuModel::Delegate,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
-                          public MenuBarHelper::Delegate,
                           public AnimationDelegate,
                           public ActiveWindowWatcherX::Observer {
  public:
@@ -87,7 +84,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // is in floating mode. Otherwise the bookmark bar will paint it for us.
   void UpdateForBookmarkBarVisibility(bool show_bottom_padding);
 
-  void ShowPageMenu();
   void ShowAppMenu();
 
   // Overridden from CommandUpdater::CommandObserver:
@@ -114,11 +110,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Message that we should react to a state change.
   void UpdateTabContents(TabContents* contents, bool should_restore_state);
-
-  // MenuBarHelper::Delegate implementation ------------------------------------
-  virtual void PopupForButton(GtkWidget* button);
-  virtual void PopupForButtonNextTo(GtkWidget* button,
-                                    GtkMenuDirectionType dir);
 
   // AnimationDelegate implementation ------------------------------------------
   virtual void AnimationEnded(const Animation* animation);
@@ -148,10 +139,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Connect/Disconnect signals for dragging a url onto the home button.
   void SetUpDragForHomeButton(bool enable);
-
-  // Helper for the PageAppMenu event handlers. Pops down the currently active
-  // meun and pops up the other menu.
-  void ChangeActiveMenu(GtkWidget* active_menu, guint timestamp);
 
   // Sets the top corners of the toolbar to rounded, or sets them to normal,
   // depending on the state of the browser window. Returns false if no action
@@ -232,11 +219,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   scoped_ptr<CustomDrawButton> home_;
   scoped_ptr<ReloadButtonGtk> reload_;
   scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
-  OwnedWidgetGtk page_menu_button_, app_menu_button_;
+  OwnedWidgetGtk app_menu_button_;
 
-  // Keep a pointer to the menu button images because we change them when
-  // the theme changes.
-  GtkWidget* page_menu_image_;
+  // Keep a pointer to the menu button image because we change it when the theme
+  // changes.
   OwnedWidgetGtk app_menu_image_;
 
   // The model that contains the security level, text, icon to display...
@@ -244,11 +230,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   GtkThemeProvider* theme_provider_;
 
-  scoped_ptr<MenuGtk> page_menu_;
   scoped_ptr<MenuGtk> app_menu_;
 
-  PageMenuModel page_menu_model_;
-  AppMenuModel app_menu_model_;
   WrenchMenuModel wrench_menu_model_;
 
   Browser* browser_;
@@ -267,8 +250,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // A GtkEntry that isn't part of the hierarchy. We keep this for native
   // rendering.
   OwnedWidgetGtk offscreen_entry_;
-
-  MenuBarHelper menu_bar_helper_;
 
   // Manages the home button drop signal handler.
   scoped_ptr<GtkSignalRegistrar> drop_handler_;

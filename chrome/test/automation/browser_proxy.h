@@ -48,9 +48,9 @@ class BrowserProxy : public AutomationResourceProxy {
   // success.
   bool BringToFront() WARN_UNUSED_RESULT;
 
-  // Checks to see if a navigation command is active or not. If the call was
-  // successful, puts the result in |enabled| and returns true.
-  bool IsPageMenuCommandEnabled(int id, bool* enabled) WARN_UNUSED_RESULT;
+  // Checks to see if a command is enabled or not. If the call was successful,
+  // puts the result in |enabled| and returns true.
+  bool IsMenuCommandEnabled(int id, bool* enabled) WARN_UNUSED_RESULT;
 
   // Append a new tab to the TabStrip.  The new tab is selected.
   // The new tab navigates to the given tab_url.

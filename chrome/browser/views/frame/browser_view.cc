@@ -43,6 +43,7 @@
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/views/update_recommended_message_box.h"
 #include "chrome/browser/window_sizer.h"
+#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/native_window_notification_source.h"
@@ -856,16 +857,16 @@ void BrowserView::FocusBookmarksToolbar() {
   }
 }
 
-void BrowserView::FocusPageAndAppMenus() {
-  // Chrome doesn't have a traditional menu bar, but it has menu buttons in
-  // the main toolbar that play the same role.  If the user presses a key
-  // that would typically focus the menu bar, tell the toolbar to focus
-  // the first menu button.  Pass it the storage id of the view where
-  // focus should be returned if the user presses escape.
+void BrowserView::FocusAppMenu() {
+  // Chrome doesn't have a traditional menu bar, but it has a menu button in the
+  // main toolbar that plays the same role.  If the user presses a key that
+  // would typically focus the menu bar, tell the toolbar to focus the menu
+  // button.  Pass it the storage id of the view where focus should be returned
+  // if the user presses escape.
   //
   // Not used on the Mac, which has a normal menu bar.
   SaveFocusedView();
-  toolbar_->SetToolbarFocusAndFocusPageMenu(last_focused_view_storage_id_);
+  toolbar_->SetToolbarFocusAndFocusAppMenu(last_focused_view_storage_id_);
 }
 
 void BrowserView::RotatePaneFocus(bool forwards) {
@@ -1168,13 +1169,6 @@ void BrowserView::ShowPageInfo(Profile* profile,
 #endif  // defined(OS_CHROMEOS)
 
   browser::ShowPageInfo(parent, profile, url, ssl, show_history);
-}
-
-void BrowserView::ShowPageMenu() {
-  // TODO(sky): get rid of this and bindings if we decide to keep the new merged
-  // menu.
-  if (toolbar_->page_menu())
-    toolbar_->page_menu()->Activate();
 }
 
 void BrowserView::ShowAppMenu() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_menu_model.h"
+#include "chrome/browser/wrench_menu_model.h"
 
 #include "base/logging.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -11,12 +11,12 @@
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PageMenuModelTest : public BrowserWithTestWindowTest,
-                          public MenuModelTest {
+class WrenchMenuModelTest : public BrowserWithTestWindowTest,
+                            public MenuModelTest {
 };
 
-TEST_F(PageMenuModelTest, Basics) {
-  PageMenuModel model(&delegate_, browser());
+TEST_F(WrenchMenuModelTest, Basics) {
+  WrenchMenuModel model(&delegate_, browser());
   int itemCount = model.GetItemCount();
 
   // Verify it has items. The number varies by platform, so we don't check
@@ -37,21 +37,21 @@ TEST_F(PageMenuModelTest, Basics) {
   delegate_.execute_count_ = 0;
   delegate_.enable_count_ = 0;
 
-  // Choose something from the zoom submenu and make sure it makes it back to
-  // the delegate as well. Use the first submenu as the zoom one.
-  int zoomModelIndex = -1;
+  // Choose something from the tools submenu and make sure it makes it back to
+  // the delegate as well. Use the first submenu as the tools one.
+  int toolsModelIndex = -1;
   for (int i = 0; i < itemCount; ++i) {
     if (model.GetTypeAt(i) == menus::MenuModel::TYPE_SUBMENU) {
-      zoomModelIndex = i;
+      toolsModelIndex = i;
       break;
     }
   }
-  EXPECT_GT(zoomModelIndex, -1);
-  menus::MenuModel* zoomModel = model.GetSubmenuModelAt(zoomModelIndex);
-  EXPECT_TRUE(zoomModel);
-  EXPECT_GT(zoomModel->GetItemCount(), 1);
-  zoomModel->ActivatedAt(1);
-  EXPECT_TRUE(zoomModel->IsEnabledAt(1));
+  EXPECT_GT(toolsModelIndex, -1);
+  menus::MenuModel* toolsModel = model.GetSubmenuModelAt(toolsModelIndex);
+  EXPECT_TRUE(toolsModel);
+  EXPECT_GT(toolsModel->GetItemCount(), 2);
+  toolsModel->ActivatedAt(2);
+  EXPECT_TRUE(toolsModel->IsEnabledAt(2));
   EXPECT_EQ(delegate_.execute_count_, 1);
   EXPECT_EQ(delegate_.enable_count_, 1);
 }

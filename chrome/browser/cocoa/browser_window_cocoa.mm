@@ -234,7 +234,7 @@ void BrowserWindowCocoa::FocusToolbar() {
   // Not needed on the Mac.
 }
 
-void BrowserWindowCocoa::FocusPageAndAppMenus() {
+void BrowserWindowCocoa::FocusAppMenu() {
   // Chrome uses the standard Mac OS X menu bar, so this isn't needed.
 }
 
@@ -399,10 +399,6 @@ void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
                                       const NavigationEntry::SSLStatus& ssl,
                                       bool show_history) {
   PageInfoWindowMac::ShowPageInfo(profile, url, ssl, show_history);
-}
-
-void BrowserWindowCocoa::ShowPageMenu() {
-  // No-op. Mac doesn't support showing the menus via alt keys.
 }
 
 void BrowserWindowCocoa::ShowAppMenu() {

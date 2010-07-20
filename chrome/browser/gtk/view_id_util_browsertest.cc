@@ -7,7 +7,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/view_id_util.h"
-#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 
@@ -36,10 +35,6 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
   for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {
     // Extension shelf is being removed, http://crbug.com/25106.
     if (i == VIEW_ID_DEV_EXTENSION_SHELF)
-      continue;
-
-    // The page menu is being removed as part of M6 TopChrome reworking.
-    if (i == VIEW_ID_PAGE_MENU && WrenchMenuModel::IsEnabled())
       continue;
 
     // The following ids are used only in views implementation.

@@ -17,7 +17,6 @@
 #include "chrome/common/notification_registrar.h"
 
 class Browser;
-class EncodingMenuModel;
 
 namespace menus {
 class ButtonMenuItemModel;
@@ -26,6 +25,40 @@ class ButtonMenuItemModel;
 namespace {
 class MockWrenchMenuModel;
 }  // namespace
+
+// A menu model that builds the contents of an encoding menu.
+class EncodingMenuModel : public menus::SimpleMenuModel,
+                          public menus::SimpleMenuModel::Delegate {
+ public:
+  explicit EncodingMenuModel(Browser* browser);
+  virtual ~EncodingMenuModel() {}
+
+  // Overridden from menus::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator);
+  virtual void ExecuteCommand(int command_id);
+
+ private:
+  void Build();
+
+  Browser* browser_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(EncodingMenuModel);
+};
+
+// A menu model that builds the contents of the zoom menu.
+class ZoomMenuModel : public menus::SimpleMenuModel {
+ public:
+  explicit ZoomMenuModel(menus::SimpleMenuModel::Delegate* delegate);
+  virtual ~ZoomMenuModel() {}
+
+ private:
+  void Build();
+
+  DISALLOW_COPY_AND_ASSIGN(ZoomMenuModel);
+};
 
 class ToolsMenuModel : public menus::SimpleMenuModel {
  public:
@@ -49,9 +82,6 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
                   Browser* browser);
   virtual ~WrenchMenuModel();
-
-  // Returns true if the WrenchMenuModel is enabled.
-  static bool IsEnabled();
 
   // Overridden from menus::SimpleMenuModel:
   virtual bool IsLabelDynamicAt(int index) const;

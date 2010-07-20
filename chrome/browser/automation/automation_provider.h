@@ -621,9 +621,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void BringBrowserToFront(int browser_handle, bool* success);
 
   // Checks to see if a command on the browser's CommandController is enabled.
-  void IsPageMenuCommandEnabled(int browser_handle,
-                                int message_num,
-                                bool* menu_item_enabled);
+  void IsMenuCommandEnabled(int browser_handle,
+                            int message_num,
+                            bool* menu_item_enabled);
 
   // Prints the current tab immediately.
   void PrintNow(int tab_handle, IPC::Message* reply_message);

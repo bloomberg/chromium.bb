@@ -10,25 +10,103 @@
 #include "app/l10n_util.h"
 #include "app/menus/button_menu_item_model.h"
 #include "app/resource_bundle.h"
-#include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/page_menu_model.h"
+#include "chrome/browser/encoding_menu_controller.h"
+#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+
+////////////////////////////////////////////////////////////////////////////////
+// EncodingMenuModel
+
+EncodingMenuModel::EncodingMenuModel(Browser* browser)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+      browser_(browser) {
+  Build();
+}
+
+void EncodingMenuModel::Build() {
+  EncodingMenuController::EncodingMenuItemList encoding_menu_items;
+  EncodingMenuController encoding_menu_controller;
+  encoding_menu_controller.GetEncodingMenuItems(browser_->profile(),
+                                                &encoding_menu_items);
+
+  int group_id = 0;
+  EncodingMenuController::EncodingMenuItemList::iterator it =
+      encoding_menu_items.begin();
+  for (; it != encoding_menu_items.end(); ++it) {
+    int id = it->first;
+    string16& label = it->second;
+    if (id == 0) {
+      AddSeparator();
+    } else {
+      if (id == IDC_ENCODING_AUTO_DETECT) {
+        AddCheckItem(id, label);
+      } else {
+        // Use the id of the first radio command as the id of the group.
+        if (group_id <= 0)
+          group_id = id;
+        AddRadioItem(id, label, group_id);
+      }
+    }
+  }
+}
+
+bool EncodingMenuModel::IsCommandIdChecked(int command_id) const {
+  TabContents* current_tab = browser_->GetSelectedTabContents();
+  if (!current_tab)
+    return false;
+  EncodingMenuController controller;
+  return controller.IsItemChecked(browser_->profile(),
+                                  current_tab->encoding(), command_id);
+}
+
+bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {
+  bool enabled = browser_->command_updater()->IsCommandEnabled(command_id);
+  // Special handling for the contents of the Encoding submenu. On Mac OS,
+  // instead of enabling/disabling the top-level menu item, the submenu's
+  // contents get disabled, per Apple's HIG.
+#if defined(OS_MACOSX)
+  enabled &= browser_->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU);
+#endif
+  return enabled;
+}
+
+bool EncodingMenuModel::GetAcceleratorForCommandId(
+    int command_id,
+    menus::Accelerator* accelerator) {
+  return false;
+}
+
+void EncodingMenuModel::ExecuteCommand(int command_id) {
+  browser_->ExecuteCommand(command_id);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ZoomMenuModel
+
+ZoomMenuModel::ZoomMenuModel(menus::SimpleMenuModel::Delegate* delegate)
+    : SimpleMenuModel(delegate) {
+  Build();
+}
+
+void ZoomMenuModel::Build() {
+  AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
+  AddItemWithStringId(IDC_ZOOM_NORMAL, IDS_ZOOM_NORMAL);
+  AddItemWithStringId(IDC_ZOOM_MINUS, IDS_ZOOM_MINUS);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolsMenuModel
@@ -94,31 +172,6 @@ WrenchMenuModel::WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
 WrenchMenuModel::~WrenchMenuModel() {
   if (tabstrip_model_)
     tabstrip_model_->RemoveObserver(this);
-}
-
-static bool CalculateEnabled() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kNewWrenchMenu)) {
-    // Honor the switch if present.
-    std::string value = cl->GetSwitchValueASCII(switches::kNewWrenchMenu);
-    return value.empty() || value == "true";
-  }
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
-  return true;
-#else
-  return false;
-#endif
-}
-
-// static
-bool WrenchMenuModel::IsEnabled() {
-  static bool checked = false;
-  static bool enabled = false;
-  if (!checked) {
-    checked = true;
-    enabled = CalculateEnabled();
-  }
-  return enabled;
 }
 
 bool WrenchMenuModel::IsLabelDynamicAt(int index) const {

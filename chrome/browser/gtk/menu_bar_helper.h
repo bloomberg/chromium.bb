@@ -1,10 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // This class replicates some menubar behaviors that are tricky to get right.
-// It is used to create a more native feel for the bookmark bar and the
-// page/app menus.
+// It is used to create a more native feel for the bookmark bar.
 
 #ifndef CHROME_BROWSER_GTK_MENU_BAR_HELPER_H_
 #define CHROME_BROWSER_GTK_MENU_BAR_HELPER_H_

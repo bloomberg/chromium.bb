@@ -28,10 +28,10 @@
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
-#include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/gtk_util.h"
@@ -132,6 +132,61 @@ GdkColor PickLuminosityContrastingColor(const GdkColor* base,
 }
 
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// PopupPageMenuModel
+
+// A menu model that builds the contents of the menu shown for popups (when the
+// user clicks on the favicon) and all of its submenus.
+class PopupPageMenuModel : public menus::SimpleMenuModel {
+ public:
+  explicit PopupPageMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+                              Browser* browser);
+  virtual ~PopupPageMenuModel() { }
+
+ private:
+  void Build();
+
+  // Models for submenus referenced by this model. SimpleMenuModel only uses
+  // weak references so these must be kept for the lifetime of the top-level
+  // model.
+  scoped_ptr<ZoomMenuModel> zoom_menu_model_;
+  scoped_ptr<EncodingMenuModel> encoding_menu_model_;
+  Browser* browser_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(PopupPageMenuModel);
+};
+
+PopupPageMenuModel::PopupPageMenuModel(
+    menus::SimpleMenuModel::Delegate* delegate,
+    Browser* browser)
+    : menus::SimpleMenuModel(delegate), browser_(browser) {
+  Build();
+}
+
+void PopupPageMenuModel::Build() {
+  AddItemWithStringId(IDC_BACK, IDS_CONTENT_CONTEXT_BACK);
+  AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
+  AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
+  AddSeparator();
+  AddItemWithStringId(IDC_SHOW_AS_TAB, IDS_SHOW_AS_TAB);
+  AddSeparator();
+  AddItemWithStringId(IDC_CUT, IDS_CUT);
+  AddItemWithStringId(IDC_COPY, IDS_COPY);
+  AddItemWithStringId(IDC_PASTE, IDS_PASTE);
+  AddSeparator();
+  AddItemWithStringId(IDC_FIND, IDS_FIND);
+  AddItemWithStringId(IDC_PRINT, IDS_PRINT);
+  zoom_menu_model_.reset(new ZoomMenuModel(delegate()));
+  AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU, zoom_menu_model_.get());
+
+  encoding_menu_model_.reset(new EncodingMenuModel(browser_));
+  AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
+                         encoding_menu_model_.get());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserTitlebar
 
 BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
                                  GtkWindow* window)

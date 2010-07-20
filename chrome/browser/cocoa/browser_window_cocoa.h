@@ -57,7 +57,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void UpdateToolbar(TabContents* contents,
                              bool should_restore_state);
   virtual void FocusToolbar();
-  virtual void FocusPageAndAppMenus();
+  virtual void FocusAppMenu();
   virtual void FocusBookmarksToolbar();
   virtual void FocusChromeOSStatus();
   virtual void RotatePaneFocus(bool forwards);
@@ -96,7 +96,6 @@ class BrowserWindowCocoa : public BrowserWindow,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
-  virtual void ShowPageMenu();
   virtual void ShowAppMenu();
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);

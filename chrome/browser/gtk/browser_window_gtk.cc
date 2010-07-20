@@ -846,7 +846,7 @@ void BrowserWindowGtk::FocusToolbar() {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::FocusPageAndAppMenus() {
+void BrowserWindowGtk::FocusAppMenu() {
   NOTIMPLEMENTED();
 }
 
@@ -1005,10 +1005,6 @@ void BrowserWindowGtk::ShowPageInfo(Profile* profile,
                                     const NavigationEntry::SSLStatus& ssl,
                                     bool show_history) {
   browser::ShowPageInfo(window_, profile, url, ssl, show_history);
-}
-
-void BrowserWindowGtk::ShowPageMenu() {
-  toolbar_->ShowPageMenu();
 }
 
 void BrowserWindowGtk::ShowAppMenu() {

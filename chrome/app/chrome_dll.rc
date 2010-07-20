@@ -104,7 +104,7 @@ BEGIN
     "J",            IDC_SHOW_DOWNLOADS,         VIRTKEY, CONTROL
     "H",            IDC_SHOW_HISTORY,           VIRTKEY, CONTROL
     "F",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
-    "E",            IDC_SHOW_PAGE_MENU,         VIRTKEY, ALT
+    "E",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
     VK_ESCAPE,      IDC_STOP,                   VIRTKEY
     VK_ESCAPE,      IDC_TASK_MANAGER,           VIRTKEY, SHIFT
     "U",            IDC_VIEW_SOURCE,            VIRTKEY, CONTROL

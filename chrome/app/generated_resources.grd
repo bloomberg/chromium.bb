@@ -181,9 +181,6 @@ each locale. -->
         Show Full History
       </message>
 
-      <message name="IDS_PAGEMENU_TOOLTIP" desc="The tooltip to show for the page menu">
-        Control the current page
-      </message>
       <message name="IDS_APPMENU_TOOLTIP" desc="The tooltip to show for the browser menu">
         Customize and control <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       </message>
@@ -3932,9 +3929,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_NEXT" desc="The accessible name for the next button.">
         Next
-      </message>
-      <message name="IDS_ACCNAME_PAGE" desc="The accessible name for the page menu.">
-        Page
       </message>
       <message name="IDS_ACCNAME_TABSTRIP" desc="The accessible name for the application's tabstrip.">
         Tabstrip

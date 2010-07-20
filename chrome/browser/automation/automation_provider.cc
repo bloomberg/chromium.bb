@@ -423,8 +423,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ActionOnSSLBlockingPage,
                                     ActionOnSSLBlockingPage)
     IPC_MESSAGE_HANDLER(AutomationMsg_BringBrowserToFront, BringBrowserToFront)
-    IPC_MESSAGE_HANDLER(AutomationMsg_IsPageMenuCommandEnabled,
-                        IsPageMenuCommandEnabled)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsMenuCommandEnabled,
+                        IsMenuCommandEnabled)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_PrintNow, PrintNow)
     IPC_MESSAGE_HANDLER(AutomationMsg_PrintAsync, PrintAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_SavePage, SavePage)
@@ -3202,9 +3202,9 @@ void AutomationProvider::BringBrowserToFront(int browser_handle,
   }
 }
 
-void AutomationProvider::IsPageMenuCommandEnabled(int browser_handle,
-                                                  int message_num,
-                                                  bool* menu_item_enabled) {
+void AutomationProvider::IsMenuCommandEnabled(int browser_handle,
+                                              int message_num,
+                                              bool* menu_item_enabled) {
   if (browser_tracker_->ContainsHandle(browser_handle)) {
     Browser* browser = browser_tracker_->GetResource(browser_handle);
     *menu_item_enabled =

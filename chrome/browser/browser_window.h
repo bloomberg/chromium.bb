@@ -143,10 +143,10 @@ class BrowserWindow {
   // Focuses the toolbar (for accessibility).
   virtual void FocusToolbar() = 0;
 
-  // Focuses the page and app menus like they were a menu bar.
+  // Focuses the app menu like it was a menu bar.
   //
   // Not used on the Mac, which has a "normal" menu bar.
-  virtual void FocusPageAndAppMenus() = 0;
+  virtual void FocusAppMenu() = 0;
 
   // Focuses the bookmarks toolbar (for accessibility).
   virtual void FocusBookmarksToolbar() = 0;
@@ -282,9 +282,6 @@ class BrowserWindow {
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history) = 0;
-
-  // Shows the page menu (for accessibility).
-  virtual void ShowPageMenu() = 0;
 
   // Shows the app menu (for accessibility).
   virtual void ShowAppMenu() = 0;

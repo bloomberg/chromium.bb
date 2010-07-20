@@ -60,7 +60,7 @@ NSString* const kForwardButtonImageName = @"forward_Template.pdf";
 NSString* const kReloadButtonReloadImageName = @"reload_Template.pdf";
 NSString* const kReloadButtonStopImageName = @"stop_Template.pdf";
 NSString* const kHomeButtonImageName = @"home_Template.pdf";
-NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
+NSString* const kWrenchButtonImageName = @"tools_Template.pdf";
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
 const CGFloat kBaseToolbarHeight = 35.0;

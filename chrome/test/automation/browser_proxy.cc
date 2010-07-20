@@ -54,12 +54,12 @@ bool BrowserProxy::BringToFront() {
   return succeeded;
 }
 
-bool BrowserProxy::IsPageMenuCommandEnabled(int id, bool* enabled) {
+bool BrowserProxy::IsMenuCommandEnabled(int id, bool* enabled) {
   if (!is_valid())
     return false;
 
-  return sender_->Send(new AutomationMsg_IsPageMenuCommandEnabled(
-                           0, handle_, id, enabled));
+  return sender_->Send(new AutomationMsg_IsMenuCommandEnabled(0, handle_, id,
+                                                              enabled));
 }
 
 bool BrowserProxy::AppendTab(const GURL& tab_url) {

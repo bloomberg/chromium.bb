@@ -668,7 +668,6 @@
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/app_controller_mac_unittest.mm',
-        'browser/app_menu_model_unittest.cc',
         'browser/autocomplete_history_manager_unittest.cc',
         'browser/autocomplete/autocomplete_edit_unittest.cc',
         'browser/autocomplete/autocomplete_edit_view_mac_unittest.mm',
@@ -1009,7 +1008,6 @@
         'browser/notifications/notification_exceptions_table_model_unittest.cc',
         'browser/notifications/notification_test_util.h',
         'browser/notifications/notifications_prefs_cache_unittest.cc',
-        'browser/page_menu_model_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/encryptor_unittest.cc',
         'browser/password_manager/encryptor_password_mac_unittest.cc',
@@ -1129,6 +1127,7 @@
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_unittest.cc',
         'browser/window_sizer_unittest.cc',
+        'browser/wrench_menu_model_unittest.cc',
         'common/bzip2_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
         'common/common_param_traits_unittest.cc',

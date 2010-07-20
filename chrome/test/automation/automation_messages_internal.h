@@ -635,15 +635,14 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_BringBrowserToFront, int, bool)
 
   // Message to request whether a certain item is enabled of disabled in the
-  // "Page" menu in the browser window
+  // menu in the browser window
   //
   // Request:
   //   - int: handle of the browser window.
   //   - int: IDC message identifier to query if enabled
   // Response:
-  //   - bool: True if the command is enabled on the Page menu
-  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_IsPageMenuCommandEnabled, int, int,
-                             bool)
+  //   - bool: True if the command is enabled on the menu
+  IPC_SYNC_MESSAGE_ROUTED2_1(AutomationMsg_IsMenuCommandEnabled, int, int, bool)
 
   // This message notifies the AutomationProvider to print the tab with given
   // handle. The first parameter is the handle to the tab resource.  The

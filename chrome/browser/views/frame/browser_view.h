@@ -279,7 +279,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual void UpdateReloadStopState(bool is_loading, bool force);
   virtual void UpdateToolbar(TabContents* contents, bool should_restore_state);
   virtual void FocusToolbar();
-  virtual void FocusPageAndAppMenus();
+  virtual void FocusAppMenu();
   virtual void FocusBookmarksToolbar();
   virtual void FocusChromeOSStatus() {}
   virtual void RotatePaneFocus(bool forwards);
@@ -323,7 +323,6 @@ class BrowserView : public BrowserBubbleHost,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
   virtual void ShowAppMenu();
-  virtual void ShowPageMenu();
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);

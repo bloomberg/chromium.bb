@@ -18,14 +18,14 @@ class ViewSourceTest : public UITest {
   ViewSourceTest() : test_html_("files/viewsource/test.html") {
   }
 
-  bool IsPageMenuCommandEnabled(int command) {
+  bool IsMenuCommandEnabled(int command) {
     scoped_refptr<BrowserProxy> window_proxy(automation()->GetBrowserWindow(0));
     EXPECT_TRUE(window_proxy.get());
     if (!window_proxy.get())
       return false;
 
     bool enabled;
-    EXPECT_TRUE(window_proxy->IsPageMenuCommandEnabled(command, &enabled));
+    EXPECT_TRUE(window_proxy->IsMenuCommandEnabled(command, &enabled));
     return enabled;
   }
 
@@ -80,8 +80,8 @@ TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
 }
 
 // Make sure that when looking at the actual page, we can select "View Source"
-// from the Page menu.
-TEST_F(ViewSourceTest, ViewSourceInPageMenuEnabledOnANormalPage) {
+// from the menu.
+TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -89,12 +89,12 @@ TEST_F(ViewSourceTest, ViewSourceInPageMenuEnabledOnANormalPage) {
   GURL url(server->TestServerPage(test_html_));
   NavigateToURL(url);
 
-  EXPECT_TRUE(IsPageMenuCommandEnabled(IDC_VIEW_SOURCE));
+  EXPECT_TRUE(IsMenuCommandEnabled(IDC_VIEW_SOURCE));
 }
 
 // Make sure that when looking at the page source, we can't select "View Source"
-// from the Page menu.
-TEST_F(ViewSourceTest, ViewSourceInPageMenuDisabledWhileViewingSource) {
+// from the menu.
+TEST_F(ViewSourceTest, ViewSourceInMenuDisabledWhileViewingSource) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -103,7 +103,7 @@ TEST_F(ViewSourceTest, ViewSourceInPageMenuDisabledWhileViewingSource) {
       server->TestServerPage(test_html_).spec());
   NavigateToURL(url_viewsource);
 
-  EXPECT_FALSE(IsPageMenuCommandEnabled(IDC_VIEW_SOURCE));
+  EXPECT_FALSE(IsMenuCommandEnabled(IDC_VIEW_SOURCE));
 }
 
 }  // namespace

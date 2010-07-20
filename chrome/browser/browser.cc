@@ -1075,7 +1075,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_PAGE_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, show_main_ui);
 }
 
@@ -1582,10 +1581,9 @@ void Browser::FocusToolbar() {
   window_->FocusToolbar();
 }
 
-void Browser::FocusPageAndAppMenus() {
-  UserMetrics::RecordAction(
-      UserMetricsAction("FocusPageAndAppMenus"), profile_);
-  window_->FocusPageAndAppMenus();
+void Browser::FocusAppMenu() {
+  UserMetrics::RecordAction(UserMetricsAction("FocusAppMenu"), profile_);
+  window_->FocusAppMenu();
 }
 
 void Browser::FocusLocationBar() {
@@ -1718,11 +1716,6 @@ void Browser::OpenBookmarkManager() {
 void Browser::ShowAppMenu() {
   UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"), profile_);
   window_->ShowAppMenu();
-}
-
-void Browser::ShowPageMenu() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowPageMenu"), profile_);
-  window_->ShowPageMenu();
 }
 
 void Browser::ShowBookmarkManagerTab() {
@@ -2077,7 +2070,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_FOCUS_TOOLBAR:         FocusToolbar();                   break;
     case IDC_FOCUS_LOCATION:        FocusLocationBar();               break;
     case IDC_FOCUS_SEARCH:          FocusSearch();                    break;
-    case IDC_FOCUS_MENU_BAR:        FocusPageAndAppMenus();           break;
+    case IDC_FOCUS_MENU_BAR:        FocusAppMenu();                   break;
     case IDC_FOCUS_BOOKMARKS:       FocusBookmarksToolbar();          break;
     case IDC_FOCUS_CHROMEOS_STATUS: FocusChromeOSStatus();            break;
     case IDC_FOCUS_NEXT_PANE:       FocusNextPane();                  break;
@@ -2103,7 +2096,6 @@ void Browser::ExecuteCommandWithDisposition(
 
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();            break;
     case IDC_SHOW_APP_MENU:         ShowAppMenu();                    break;
-    case IDC_SHOW_PAGE_MENU:        ShowPageMenu();                   break;
     case IDC_SHOW_HISTORY:          ShowHistoryTab();                 break;
     case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();               break;
     case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();              break;

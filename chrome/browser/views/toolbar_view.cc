@@ -74,7 +74,6 @@ ToolbarView::ToolbarView(Browser* browser)
       reload_(NULL),
       location_bar_(NULL),
       browser_actions_(NULL),
-      page_menu_(NULL),
       app_menu_(NULL),
       profile_(NULL),
       browser_(browser),
@@ -116,6 +115,7 @@ void ToolbarView::Init(Profile* profile) {
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   forward_menu_model_.reset(new BackForwardMenuModel(
       browser_, BackForwardMenuModel::FORWARD_MENU));
+  app_menu_model_.reset(new WrenchMenuModel(this, browser_));
 
   back_ = new views::ButtonDropDown(this, back_menu_model_.get());
   back_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
@@ -158,14 +158,8 @@ void ToolbarView::Init(Profile* profile) {
 
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
-  if (!WrenchMenuModel::IsEnabled()) {
-    page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
-    page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
-    page_menu_->SetTooltipText(l10n_util::GetString(IDS_PAGEMENU_TOOLTIP));
-    page_menu_->SetID(VIEW_ID_PAGE_MENU);
-  }
-
   app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  app_menu_->EnableCanvasFlippingForRTLUI(true);
   app_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_APP));
   app_menu_->SetTooltipText(l10n_util::GetStringF(IDS_APPMENU_TOOLTIP,
       l10n_util::GetString(IDS_PRODUCT_NAME)));
@@ -184,20 +178,12 @@ void ToolbarView::Init(Profile* profile) {
   AddChildView(reload_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
-  if (page_menu_)
-    AddChildView(page_menu_);
   AddChildView(app_menu_);
 
   location_bar_->Init();
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
 
   SetProfile(profile);
-  if (WrenchMenuModel::IsEnabled()) {
-    app_menu_model_.reset(new WrenchMenuModel(this, browser_));
-  } else {
-    app_menu_model_.reset(new AppMenuModel(this, browser_));
-    app_menu_menu_.reset(new views::Menu2(app_menu_model_.get()));
-  }
 }
 
 void ToolbarView::SetProfile(Profile* profile) {
@@ -219,11 +205,8 @@ void ToolbarView::SetToolbarFocusAndFocusLocationBar(int view_storage_id) {
   SetToolbarFocus(view_storage_id, location_bar_);
 }
 
-void ToolbarView::SetToolbarFocusAndFocusPageMenu(int view_storage_id) {
-  if (page_menu_)
-    SetToolbarFocus(view_storage_id, page_menu_);
-  else
-    SetToolbarFocus(view_storage_id, app_menu_);
+void ToolbarView::SetToolbarFocusAndFocusAppMenu(int view_storage_id) {
+  SetToolbarFocus(view_storage_id, app_menu_);
 }
 
 void ToolbarView::AddMenuListener(views::MenuListener* listener) {
@@ -278,17 +261,25 @@ bool ToolbarView::GetAcceleratorInfo(int id, menus::Accelerator* accel) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::MenuDelegate implementation:
 
-void ToolbarView::RunMenu(views::View* source, const gfx::Point& pt) {
-  switch (source->GetID()) {
-    case VIEW_ID_PAGE_MENU:
-      RunPageMenu(pt);
-      break;
-    case VIEW_ID_APP_MENU:
-      RunAppMenu(pt);
-      break;
-    default:
-      NOTREACHED() << "Invalid source menu.";
-  }
+void ToolbarView::RunMenu(views::View* source, const gfx::Point& /*pt*/) {
+  DCHECK_EQ(VIEW_ID_APP_MENU, source->GetID());
+
+  bool destroyed_flag = false;
+  destroyed_flag_ = &destroyed_flag;
+  wrench_menu_.reset(new WrenchMenu(browser_));
+  wrench_menu_->Init(app_menu_model_.get());
+
+  for (size_t i = 0; i < menu_listeners_.size(); ++i)
+    menu_listeners_[i]->OnMenuOpened();
+
+  wrench_menu_->RunMenu(app_menu_);
+
+  if (destroyed_flag)
+    return;
+  destroyed_flag_ = NULL;
+
+  // Stop pulsating the upgrade reminder on the app menu, if active.
+  upgrade_reminder_pulse_timer_.Stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -417,7 +408,6 @@ gfx::Size ToolbarView::GetPreferredSize() {
         reload_->GetPreferredSize().width() + kControlHorizOffset +
         browser_actions_->GetPreferredSize().width() +
         kMenuButtonOffset +
-        (page_menu_ ? page_menu_->GetPreferredSize().width() : 0) +
         app_menu_->GetPreferredSize().width() + kPaddingRight;
 
     static SkBitmap normal_background;
@@ -489,12 +479,10 @@ void ToolbarView::Layout() {
                      reload_->GetPreferredSize().width(), child_height);
 
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
-  int page_menu_width =
-      page_menu_ ? page_menu_->GetPreferredSize().width() : 0;
   int app_menu_width = app_menu_->GetPreferredSize().width();
   int location_x = reload_->x() + reload_->width() + kControlHorizOffset;
   int available_width = width() - kPaddingRight - app_menu_width -
-      page_menu_width - browser_actions_width - kMenuButtonOffset - location_x;
+      browser_actions_width - kMenuButtonOffset - location_x;
 
   location_bar_->SetBounds(location_x, child_y, std::max(available_width, 0),
                            child_height);
@@ -511,11 +499,6 @@ void ToolbarView::Layout() {
   //                required.
   browser_actions_->Layout();
   next_menu_x += browser_actions_width;
-
-  if (page_menu_) {
-    page_menu_->SetBounds(next_menu_x, child_y, page_menu_width, child_height);
-    next_menu_x += page_menu_width;
-  }
 
   app_menu_->SetBounds(next_menu_x, child_y, app_menu_width, child_height);
 }
@@ -616,11 +599,6 @@ void ToolbarView::LoadImages() {
   reload_->SetBackground(color, background,
       tp->GetBitmapNamed(IDR_BUTTON_MASK));
 
-  // We use different menu button images if the locale is right-to-left.
-  if (page_menu_) {
-    page_menu_->SetIcon(*tp->GetBitmapNamed(
-        base::i18n::IsRTL() ? IDR_MENU_PAGE_RTL : IDR_MENU_PAGE));
-  }
   app_menu_->SetIcon(GetAppMenuIcon());
 }
 
@@ -643,9 +621,7 @@ void ToolbarView::PulsateUpgradeNotifier() {
 SkBitmap ToolbarView::GetAppMenuIcon() {
   ThemeProvider* tp = GetThemeProvider();
 
-  // We use different menu button images if the locale is right-to-left.
-  SkBitmap icon = *tp->GetBitmapNamed(
-      base::i18n::IsRTL() ? IDR_MENU_CHROME_RTL : IDR_MENU_CHROME);
+  SkBitmap icon = *tp->GetBitmapNamed(IDR_TOOLS);
 
   if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
     return icon;
@@ -682,93 +658,10 @@ SkBitmap ToolbarView::GetAppMenuIcon() {
         value);
   }
 
-  int x_pos = base::i18n::IsRTL() ?
-      (icon.width() - badge.width()) : kUpgradeDotOffset;
-  canvas->DrawBitmapInt(badge, x_pos, icon.height() - badge.height());
+  canvas->DrawBitmapInt(badge, kUpgradeDotOffset,
+                        icon.height() - badge.height());
 
   return canvas->ExtractBitmap();
-}
-
-void ToolbarView::RunPageMenu(const gfx::Point& pt) {
-  bool destroyed_flag = false;
-  destroyed_flag_ = &destroyed_flag;
-
-  page_menu_model_.reset(new PageMenuModel(this, browser_));
-  page_menu_menu_.reset(new views::Menu2(page_menu_model_.get()));
-  for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
-    page_menu_menu_->AddMenuListener(menu_listeners_[i]);
-  }
-  page_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
-
-  if (destroyed_flag)
-    return;
-
-  destroyed_flag_ = NULL;
-
-  for (unsigned int i = 0; i < menu_listeners_.size(); i++) {
-    page_menu_menu_->RemoveMenuListener(menu_listeners_[i]);
-  }
-  SwitchToOtherMenuIfNeeded(page_menu_menu_.get(), app_menu_);
-}
-
-void ToolbarView::RunAppMenu(const gfx::Point& pt) {
-  if (WrenchMenuModel::IsEnabled()) {
-    bool destroyed_flag = false;
-    destroyed_flag_ = &destroyed_flag;
-    wrench_menu_.reset(new WrenchMenu(browser_));
-    wrench_menu_->Init(app_menu_model_.get());
-
-    for (size_t i = 0; i < menu_listeners_.size(); ++i)
-      menu_listeners_[i]->OnMenuOpened();
-
-    wrench_menu_->RunMenu(app_menu_);
-
-    if (destroyed_flag)
-      return;
-    destroyed_flag_ = NULL;
-
-    // Stop pulsating the upgrade reminder on the app menu, if active.
-    upgrade_reminder_pulse_timer_.Stop();
-    return;
-  }
-
-  bool destroyed_flag = false;
-  destroyed_flag_ = &destroyed_flag;
-
-  for (size_t i = 0; i < menu_listeners_.size(); i++)
-    app_menu_menu_->AddMenuListener(menu_listeners_[i]);
-  app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
-
-  if (destroyed_flag)
-    return;
-  destroyed_flag_ = NULL;
-
-  // Stop pulsating the upgrade reminder on the app menu, if active.
-  upgrade_reminder_pulse_timer_.Stop();
-
-  for (size_t i = 0; i < menu_listeners_.size(); i++)
-    app_menu_menu_->RemoveMenuListener(menu_listeners_[i]);
-  if (page_menu_)
-    SwitchToOtherMenuIfNeeded(app_menu_menu_.get(), page_menu_);
-}
-
-void ToolbarView::SwitchToOtherMenuIfNeeded(
-    views::Menu2* previous_menu,
-    views::MenuButton* next_menu_button) {
-  // If the user tried to move to the right or left, switch from the
-  // app menu to the page menu. Switching to the next menu is delayed
-  // until the next event loop so that the call stack that initiated
-  // activating the first menu can return. (If we didn't do this, the
-  // call stack would grow each time the user switches menus, and
-  // the actions taken after the user finally exits a menu would cause
-  // flicker.)
-  views::MenuWrapper::MenuAction action = previous_menu->GetMenuAction();
-  if (action == views::MenuWrapper::MENU_ACTION_NEXT ||
-      action == views::MenuWrapper::MENU_ACTION_PREVIOUS) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(&ToolbarView::ActivateMenuButton,
-                                          next_menu_button));
-  }
 }
 
 void ToolbarView::ActivateMenuButton(views::MenuButton* menu_button) {

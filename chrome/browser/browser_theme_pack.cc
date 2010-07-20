@@ -23,7 +23,7 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 12;
+const int kThemePackVersion = 13;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // int32_t. kHeaderID should always have the maximum value because we want the
@@ -131,14 +131,11 @@ PersistingImagesTable kPersistingImages[] = {
   { 32, IDR_LOCATIONBG_C, NULL },
   { 33, IDR_LOCATIONBG_L, NULL },
   { 34, IDR_LOCATIONBG_R, NULL },
-  { 35, IDR_MENU_PAGE, NULL },
-  { 36, IDR_MENU_PAGE_RTL, NULL },
-  { 37, IDR_MENU_CHROME, NULL },
-  { 38, IDR_MENU_CHROME_RTL, NULL },
-  { 39, IDR_MENU_DROPARROW, NULL },
-  { 40, IDR_THROBBER, NULL },
-  { 41, IDR_THROBBER_WAITING, NULL },
-  { 42, IDR_THROBBER_LIGHT, NULL },
+  { 35, IDR_TOOLS, NULL },
+  { 36, IDR_MENU_DROPARROW, NULL },
+  { 37, IDR_THROBBER, NULL },
+  { 38, IDR_THROBBER_WAITING, NULL },
+  { 39, IDR_THROBBER_LIGHT, NULL },
 };
 
 int GetPersistentIDByName(const std::string& key) {

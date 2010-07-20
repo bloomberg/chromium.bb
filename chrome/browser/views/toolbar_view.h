@@ -10,10 +10,8 @@
 #include "app/menus/simple_menu_model.h"
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/back_forward_menu_model.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
@@ -65,9 +63,9 @@ class ToolbarView : public AccessibleToolbarView,
   void SetToolbarFocusAndFocusLocationBar(int view_storage_id);
 
   // Set focus to the toolbar with complete keyboard access, with the
-  // focus initially set to the page menu. Focus will be restored
+  // focus initially set to the app menu. Focus will be restored
   // to the ViewStorage with id |view_storage_id| if the user escapes.
-  void SetToolbarFocusAndFocusPageMenu(int view_storage_id);
+  void SetToolbarFocusAndFocusAppMenu(int view_storage_id);
 
   // Add a listener to receive a callback when the menu opens.
   void AddMenuListener(views::MenuListener* listener);
@@ -80,7 +78,6 @@ class ToolbarView : public AccessibleToolbarView,
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
-  views::MenuButton* page_menu() const { return page_menu_; }
   views::MenuButton* app_menu() const { return app_menu_; }
   bool collapsed() const { return collapsed_; }
   void SetCollapsed(bool val);
@@ -138,10 +135,6 @@ class ToolbarView : public AccessibleToolbarView,
   // Loads the images for all the child views.
   void LoadImages();
 
-  // Runs various menus.
-  void RunPageMenu(const gfx::Point& pt);
-  void RunAppMenu(const gfx::Point& pt);
-
   // Check if the menu exited with a code indicating the user wants to
   // switch to the other menu, and then switch to that other menu.
   void SwitchToOtherMenuIfNeeded(views::Menu2* previous_menu,
@@ -183,7 +176,6 @@ class ToolbarView : public AccessibleToolbarView,
   ReloadButton* reload_;
   LocationBarView* location_bar_;
   BrowserActionsContainer* browser_actions_;
-  views::MenuButton* page_menu_;
   views::MenuButton* app_menu_;
   Profile* profile_;
   Browser* browser_;
@@ -197,15 +189,10 @@ class ToolbarView : public AccessibleToolbarView,
   // The display mode used when laying out the toolbar.
   DisplayMode display_mode_;
 
-  // The contents of the various menus.
-  scoped_ptr<menus::SimpleMenuModel> page_menu_model_;
+  // The contents of the app menu.
   scoped_ptr<menus::SimpleMenuModel> app_menu_model_;
 
-  // TODO(beng): build these into MenuButton.
-  scoped_ptr<views::Menu2> page_menu_menu_;
-  scoped_ptr<views::Menu2> app_menu_menu_;
-
-  // Wrench menu. Only used if WrenchMenuModel::IsEnabled.
+  // Wrench menu.
   scoped_ptr<WrenchMenu> wrench_menu_;
 
   // Vector of listeners to receive callbacks when the menu opens.

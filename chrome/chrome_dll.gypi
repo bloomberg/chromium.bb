@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -248,13 +248,9 @@
                 'app/theme/chevron.pdf',
                 'app/theme/forward_Template.pdf',
                 'app/theme/home_Template.pdf',
-                'app/theme/menu_chrome_rtl_Template.pdf',
-                'app/theme/menu_chrome_Template.pdf',
                 'app/theme/menu_hierarchy_arrow.pdf',
                 'app/theme/menu_overflow_down.pdf',
                 'app/theme/menu_overflow_up.pdf',
-                'app/theme/menu_page_rtl_Template.pdf',
-                'app/theme/menu_page_Template.pdf',
                 'app/theme/nav.pdf',
                 'app/theme/newtab.pdf',
                 'app/theme/newtab_h.pdf',
@@ -272,6 +268,7 @@
                 'app/theme/popup_window_animation.pdf',
                 'app/theme/reload_Template.pdf',
                 'app/theme/stop_Template.pdf',
+                'app/theme/tools_Template.pdf',
                 'browser/cocoa/install.sh',
               ],
               'mac_bundle_resources!': [
