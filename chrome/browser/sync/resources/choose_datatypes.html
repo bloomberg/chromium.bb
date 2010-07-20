@@ -154,7 +154,8 @@ input[type='submit'] {
   function advanceThrobber() {
     var throbber = document.getElementById('throb');
     throbber.style.backgroundPositionX =
-      ((parseInt(throbber.style.backgroundPositionX) - 16) % 576) + 'px';
+        ((parseInt(getComputedStyle(throbber).backgroundPositionX) - 16) %
+        576) + 'px';
   }
 
   function setStateThrobbing(isThrobbing) {
