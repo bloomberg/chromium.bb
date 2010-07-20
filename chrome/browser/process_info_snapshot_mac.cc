@@ -4,7 +4,6 @@
 
 #include "chrome/browser/process_info_snapshot.h"
 
-#include <iostream>
 #include <sstream>
 
 #include "base/logging.h"

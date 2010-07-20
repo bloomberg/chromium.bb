@@ -34,7 +34,6 @@
   ({ typeof(x) i__; while ((i__ = (x)) < 0 && sys.my_errno == EINTR); i__;})
 
 #ifdef __cplusplus
-#include <iostream>
 #include <map>
 #include <vector>
 #include "sandbox.h"

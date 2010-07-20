@@ -7,7 +7,6 @@
 #include <shlobj.h>
 
 #include <fstream>
-#include <iostream>
 
 #include "base/file_util.h"
 #include "base/path_service.h"

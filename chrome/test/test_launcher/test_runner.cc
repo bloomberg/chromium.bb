@@ -4,7 +4,6 @@
 
 #include "chrome/test/test_launcher/test_runner.h"
 
-#include <iostream>
 #include <vector>
 
 #include "base/command_line.h"

@@ -4,8 +4,6 @@
 
 #include "gfx/insets.h"
 
-#include <iostream>
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(InsetsTest, InsetsDefault) {

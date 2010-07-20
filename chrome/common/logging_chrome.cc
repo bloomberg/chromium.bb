@@ -26,7 +26,6 @@
 #include <windows.h>
 #endif
 
-#include <iostream>
 #include <fstream>
 
 #include "chrome/common/logging_chrome.h"

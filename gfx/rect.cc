@@ -12,7 +12,7 @@
 #include <gdk/gdk.h>
 #endif
 
-#include <iostream>
+#include <ostream>
 
 #include "base/logging.h"
 #include "gfx/insets.h"

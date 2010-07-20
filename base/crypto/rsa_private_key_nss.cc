@@ -8,7 +8,6 @@
 #include <keyhi.h>
 #include <pk11pub.h>
 
-#include <iostream>
 #include <list>
 
 #include "base/leak_annotations.h"

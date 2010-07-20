@@ -5,7 +5,6 @@
 #include <windows.h>
 
 #include <fstream>
-#include <iostream>
 
 #include "base/base_paths.h"
 #include "base/file_util.h"

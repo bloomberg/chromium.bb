@@ -35,7 +35,6 @@
 // --savedebuglog: save Chrome, V8, and test debug log for each page loaded.
 
 #include <fstream>
-#include <iostream>
 
 #include "base/command_line.h"
 #include "base/file_path.h"

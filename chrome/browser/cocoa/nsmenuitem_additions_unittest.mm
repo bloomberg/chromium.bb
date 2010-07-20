@@ -6,7 +6,7 @@
 
 #include <Carbon/Carbon.h>
 
-#include <iostream>
+#include <ostream>
 
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"

@@ -10,6 +10,7 @@
 #include <sys/socket.h>  // for getaddrinfo and getnameinfo
 #include <sys/types.h>   // "
 #include <unistd.h>      // for exit()
+#include <ostream>
 
 #include "net/tools/flip_server/create_listener.h"
 

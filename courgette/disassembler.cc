@@ -5,7 +5,6 @@
 #include "courgette/disassembler.h"
 
 #include <algorithm>
-#include <iostream>
 #include <string>
 #include <vector>
 

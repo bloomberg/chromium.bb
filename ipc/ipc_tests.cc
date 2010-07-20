@@ -12,7 +12,6 @@
 #endif
 
 #include <stdio.h>
-#include <iostream>
 #include <string>
 
 #include "ipc/ipc_tests.h"

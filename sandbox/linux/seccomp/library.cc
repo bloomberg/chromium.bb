@@ -8,7 +8,6 @@
 #include <errno.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <iostream>
 #include <linux/unistd.h>
 #include <set>
 #include <signal.h>

@@ -6,7 +6,7 @@
 #define NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_H_
 
 #include <algorithm>
-#include <iostream>
+#include <iosfwd>
 #include <iterator>
 #include <string>
 #include <utility>
@@ -470,10 +470,7 @@ class BalsaHeaders {
     // operator<< work for the classes it sees.  It would be better if there
     // was an additional traits-like system for the gUnit output... but oh
     // well.
-    friend std::ostream& operator<<(std::ostream& os, const iterator_base& it) {
-      os << "[" << it.headers_ << ", " << it.idx_ << "]";
-      return os;
-    }
+    std::ostream& operator<<(std::ostream& os, const iterator_base& it);
 
    protected:
     iterator_base(const BalsaHeaders* headers, HeaderLines::size_type index) :

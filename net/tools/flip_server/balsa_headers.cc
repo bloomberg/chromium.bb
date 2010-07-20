@@ -71,6 +71,12 @@ namespace net {
 
 const size_t BalsaBuffer::kDefaultBlocksize;
 
+std::ostream& BalsaHeaders::iterator_base::operator<<(std::ostream& os,
+                                                      const iterator_base& it) {
+   os << "[" << it.headers_ << ", " << it.idx_ << "]";
+   return os;
+ }
+
 void BalsaHeaders::Clear() {
   balsa_buffer_.Clear();
   transfer_encoding_is_chunked_ = false;

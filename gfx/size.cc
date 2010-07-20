@@ -10,7 +10,7 @@
 #include <CoreGraphics/CGGeometry.h>
 #endif
 
-#include <iostream>
+#include <ostream>
 
 #include "base/logging.h"
 
