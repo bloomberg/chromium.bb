@@ -39,9 +39,8 @@ TEST(EncryptorTest, EncryptDecrypt) {
 // http://gladman.plushost.co.uk/oldsite/AES/index.php
 // http://csrc.nist.gov/groups/STM/cavp/documents/aes/KAT_AES.zip
 
-// TODO(wtc): implement base::SymmetricKey::Import and enable this test for
-// other platforms.
-#if defined(OS_WIN)
+// TODO(wtc): implement base::SymmetricKey::Import and enable this test on Mac.
+#if defined(USE_NSS) || defined(OS_WIN)
 // NIST SP 800-38A test vector F.2.5 CBC-AES256.Encrypt.
 TEST(EncryptorTest, EncryptAES256CBC) {
   // From NIST SP 800-38a test cast F.2.5 CBC-AES256.Encrypt.
@@ -87,15 +86,16 @@ TEST(EncryptorTest, EncryptAES256CBC) {
     0xe0, 0xc2, 0xa7, 0x2b, 0x4d, 0x80, 0xe6, 0x44
   };
 
-  scoped_ptr<base::SymmetricKey> key(base::SymmetricKey::Import(
-      base::SymmetricKey::AES, raw_key, sizeof(raw_key)));
-  EXPECT_TRUE(NULL != key.get());
+  std::string key(reinterpret_cast<const char*>(raw_key), sizeof(raw_key));
+  scoped_ptr<base::SymmetricKey> sym_key(base::SymmetricKey::Import(
+      base::SymmetricKey::AES, key));
+  ASSERT_TRUE(NULL != sym_key.get());
 
   base::Encryptor encryptor;
   // The IV must be exactly as long a the cipher block size.
   std::string iv(reinterpret_cast<const char*>(raw_iv), sizeof(raw_iv));
   EXPECT_EQ(16U, iv.size());
-  EXPECT_TRUE(encryptor.Init(key.get(), base::Encryptor::CBC, iv));
+  EXPECT_TRUE(encryptor.Init(sym_key.get(), base::Encryptor::CBC, iv));
 
   std::string plaintext(reinterpret_cast<const char*>(raw_plaintext),
                         sizeof(raw_plaintext));
@@ -110,4 +110,4 @@ TEST(EncryptorTest, EncryptAES256CBC) {
 
   EXPECT_EQ(plaintext, decypted);
 }
-#endif  // OS_WIN
+#endif  // USE_NSS || OS_WIN
