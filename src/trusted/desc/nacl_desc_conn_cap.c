@@ -141,7 +141,7 @@ int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
                                &self->cap)) {
     NaClLog(LOG_ERROR, ("NaClDescConnCapConnectAddr:"
                         " initial connect message could not be sent.\n"));
-    retval = -NACL_ABI_EMFILE;
+    retval = -NACL_ABI_EIO;
     goto cleanup;
   }
 

@@ -184,6 +184,21 @@ void test_imc_accept_end_of_stream() {
   checked_close(bound_pair[0]);
 }
 
+void test_imc_connect_with_no_acceptor() {
+  int bound_pair[2];
+  int rc;
+  rc = imc_makeboundsock(bound_pair);
+  assert(rc == 0);
+
+  printf("Test imc_connect() when BoundSocket has been dropped...\n");
+  checked_close(bound_pair[0]);
+
+  rc = imc_connect(bound_pair[1]);
+  assert(rc == -1);
+  assert(errno == EIO);
+  checked_close(bound_pair[1]);
+}
+
 int main(int argc, char **argv) {
   /* TODO(mseaborn): It would be better to have a way to pass
      environment variables through sel_ldr into the NaCl process. */
@@ -200,6 +215,8 @@ int main(int argc, char **argv) {
   if (getenv("DISABLE_IMC_ACCEPT_EOF_TEST") == NULL) {
     test_imc_accept_end_of_stream();
   }
+
+  test_imc_connect_with_no_acceptor();
 
   return 0;
 }
