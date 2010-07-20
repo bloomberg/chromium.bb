@@ -425,6 +425,7 @@ TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "worker-simple.html",
     "shared-worker-simple.html",
+    "worker-handshake-challenge-randomness.html"
   };
 
   FilePath websocket_test_dir;

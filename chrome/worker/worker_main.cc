@@ -36,6 +36,10 @@ int WorkerMain(const MainFunctionParams& parameters) {
   if (!target_services)
     return false;
 
+  // Cause advapi32 to load before the sandbox is turned on.
+  unsigned int dummy_rand;
+  rand_s(&dummy_rand);
+
   target_services->LowerToken();
 #endif
 
