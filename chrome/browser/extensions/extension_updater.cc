@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 #include "base/time.h"
 #include "base/thread.h"
 #include "base/version.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -762,7 +762,7 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
       // First determine the browser version if we haven't already.
       if (!browser_version.get()) {
         scoped_ptr<FileVersionInfo> version_info(
-            chrome_app::GetChromeVersionInfo());
+            chrome::GetChromeVersionInfo());
         if (version_info.get()) {
           browser_version.reset(Version::GetVersionFromString(
               version_info->product_version()));

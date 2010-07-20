@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/diagnostics/recon_diagnostics.h"
+
+#include <string>
 
 #include "app/app_paths.h"
 #include "base/file_util.h"
@@ -12,10 +14,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/path_service.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/json_value_serializer.h"
 
 #if defined(OS_WIN)
@@ -115,7 +117,7 @@ class VersionTest : public DiagnosticTest {
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
     scoped_ptr<FileVersionInfo> version_info(
-        chrome_app::GetChromeVersionInfo());
+        chrome::GetChromeVersionInfo());
     if (!version_info.get()) {
       RecordFailure(ASCIIToUTF16("No Version"));
       return true;

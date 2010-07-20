@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/chrome_version_info.h"
+#include "chrome/common/chrome_version_info.h"
 
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "chrome/app/chrome_version_info_posix.h"
+#include "chrome/common/chrome_version_info_posix.h"
 
 // Posix files don't have per-file version information, so we get chrome
 // version information from chrome_version_info_posix.h, a generated header.
@@ -39,7 +39,7 @@ class ChromeVersionInfoPosix : public FileVersionInfo {
 };
 #endif
 
-namespace chrome_app {
+namespace chrome {
 
 FileVersionInfo* GetChromeVersionInfo() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -49,4 +49,4 @@ FileVersionInfo* GetChromeVersionInfo() {
 #endif
 }
 
-}  // namespace chrome_app
+}  // namespace chrome

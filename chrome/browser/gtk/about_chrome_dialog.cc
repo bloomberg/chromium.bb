@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,12 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
@@ -104,8 +107,7 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
 void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   static GdkPixbuf* background = rb.GetPixbufNamed(IDR_ABOUT_BACKGROUND);
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   std::wstring current_version = version_info->file_version();
 #if !defined(GOOGLE_CHROME_BUILD)
   current_version += L" (";

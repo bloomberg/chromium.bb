@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,13 @@
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 
@@ -122,7 +122,7 @@ void MemoryDetails::CollectProcessData(
       TCHAR name[MAX_PATH];
       if (index2 == CHROME_BROWSER || index2 == CHROME_NACL_PROCESS) {
         scoped_ptr<FileVersionInfo> version_info(
-            chrome_app::GetChromeVersionInfo());
+            chrome::GetChromeVersionInfo());
         if (version_info != NULL)
           info.version = version_info->file_version();
         // Check if this is one of the child processes whose data we collected

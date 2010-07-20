@@ -4,6 +4,9 @@
 
 #include "chrome/browser/views/bug_report_view.h"
 
+#include <string>
+#include <vector>
+
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "base/file_path.h"
@@ -12,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/waitable_event.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -191,7 +194,7 @@ bool GetLastScreenshot(std::string* image_str) {
 #endif
 }
 
-} // namespace
+}  // namespace
 
 namespace browser {
 
@@ -276,8 +279,7 @@ BugReportView::BugReportView(Profile* profile, TabContents* tab)
 #endif
 
   // Retrieve the application version info.
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   if (version_info.get()) {
     version_ = version_info->product_name() + L" - " +
         version_info->file_version() +
@@ -455,7 +457,7 @@ gfx::Size BugReportView::GetPreferredSize() {
 #else
       IDS_BUGREPORT_DIALOG_HEIGHT_LINES);
 #endif
- return size;
+  return size;
 }
 
 void BugReportView::UpdateReportingControls(bool is_phishing_report) {

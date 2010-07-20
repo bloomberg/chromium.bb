@@ -1,8 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/automation/automation_proxy.h"
+
+#include <gtest/gtest.h>
 
 #include <sstream>
 
@@ -13,14 +15,13 @@
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
-#include "chrome/app/chrome_version_info.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
-#include <gtest/gtest.h>
 #include "ipc/ipc_descriptors.h"
 #if defined(OS_WIN)
 // TODO(port): Enable when dialog_delegate is ported.
@@ -174,7 +175,7 @@ AutomationLaunchResult AutomationProxy::WaitForAppLaunch() {
       // Obtain our own version number and compare it to what the automation
       // provider sent.
       scoped_ptr<FileVersionInfo> file_version_info(
-          chrome_app::GetChromeVersionInfo());
+          chrome::GetChromeVersionInfo());
       DCHECK(file_version_info != NULL);
       std::string version_string(
           WideToASCII(file_version_info->file_version()));

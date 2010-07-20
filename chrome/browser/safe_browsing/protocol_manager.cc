@@ -14,11 +14,11 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/timer.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/escape.h"
@@ -74,7 +74,7 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
   // The first update must happen between 1-5 minutes of start up.
   next_update_sec_ = base::RandInt(60, kSbTimerStartIntervalSec);
 
-  scoped_ptr<FileVersionInfo> version_info(chrome_app::GetChromeVersionInfo());
+  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   if (!version_info.get())
     version_ = "0.1";
   else

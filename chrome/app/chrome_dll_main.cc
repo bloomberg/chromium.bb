@@ -48,7 +48,6 @@
 #include "base/stats_table.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/platform_util.h"
@@ -57,6 +56,7 @@
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/sandbox_init_wrapper.h"
@@ -509,7 +509,7 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   if (parsed_command_line.HasSwitch(switches::kProductVersion)) {
-    scoped_ptr<FileVersionInfo> version(chrome_app::GetChromeVersionInfo());
+    scoped_ptr<FileVersionInfo> version(chrome::GetChromeVersionInfo());
     printf("%s\n", WideToASCII(version->product_version()).c_str());
     return 0;
   }
@@ -517,7 +517,7 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_POSIX)
   if (parsed_command_line.HasSwitch(switches::kVersion)) {
-    scoped_ptr<FileVersionInfo> version(chrome_app::GetChromeVersionInfo());
+    scoped_ptr<FileVersionInfo> version(chrome::GetChromeVersionInfo());
     printf("%s %s %s\n",
            WideToUTF8(version->product_name()).c_str(),
            WideToASCII(version->product_version()).c_str(),

@@ -53,7 +53,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_version_info.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -462,7 +462,7 @@ bool MetricsService::UploadData() {
 // static
 std::string MetricsService::GetVersionString() {
   scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+      chrome::GetChromeVersionInfo());
   if (version_info.get()) {
     std::string version = WideToUTF8(version_info->product_version());
     // Add the -F extensions to ensure that UMA data uploaded by ChromeFrame
@@ -477,4 +477,3 @@ std::string MetricsService::GetVersionString() {
 
   return std::string();
 }
-

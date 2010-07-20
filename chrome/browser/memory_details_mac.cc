@@ -15,7 +15,6 @@
 #include "base/string_util.h"
 #include "base/process_util.h"
 #include "base/thread.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 
@@ -198,8 +198,7 @@ void MemoryDetails::CollectProcessDataChrome(
   else
     info.type = ChildProcessInfo::UNKNOWN_PROCESS;
 
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   if (version_info.get()) {
     info.product_name = version_info->product_name();
     info.version = version_info->product_version();

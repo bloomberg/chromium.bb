@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "app/l10n_util.h"
@@ -21,7 +22,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
@@ -33,6 +33,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -488,7 +489,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     DictionaryValue* dict = new DictionaryValue();
 
     scoped_ptr<FileVersionInfo> version_info(
-        chrome_app::GetChromeVersionInfo());
+        chrome::GetChromeVersionInfo());
 
     if (version_info == NULL) {
       DLOG(ERROR) << "Unable to create FileVersionInfo object";

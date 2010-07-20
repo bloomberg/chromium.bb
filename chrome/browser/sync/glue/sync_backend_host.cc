@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
+
+#include <algorithm>
+
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "webkit/glue/webkit_glue.h"
@@ -362,8 +365,7 @@ std::string MakeUserAgentForSyncapi() {
 #elif defined(OS_MACOSX)
   user_agent += "MAC ";
 #endif
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   if (version_info == NULL) {
     DLOG(ERROR) << "Unable to create FileVersionInfo object";
     return user_agent;

@@ -7,11 +7,11 @@
 #include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "grit/locale_settings.h"
@@ -179,8 +179,7 @@ void BugReportUtil::SendReport(Profile* profile,
 
   // Add the Chrome version
   std::string chrome_version;
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   if (version_info.get()) {
     chrome_version = WideToUTF8(version_info->product_name()) + " - " +
         WideToUTF8(version_info->file_version()) +

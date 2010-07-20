@@ -4,8 +4,10 @@
 
 #include "chrome/browser/metrics/metrics_log.h"
 
+#include <string>
+#include <vector>
+
 #include "base/base64.h"
-#include "base/time.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
@@ -14,13 +16,14 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
-#include "base/utf_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"
-#include "chrome/app/chrome_version_info.h"
+#include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
@@ -70,7 +73,7 @@ std::string MetricsLog::GetInstallDate() const {
 // static
 std::string MetricsLog::GetVersionString() {
   scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+      chrome::GetChromeVersionInfo());
   if (version_info.get()) {
     std::string version = WideToUTF8(version_info->product_version());
     if (!version_extension_.empty())

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/upgrade_detector.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/scoped_ptr.h"
@@ -11,10 +13,10 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -104,7 +106,7 @@ class DetectUpgradeTask : public Task {
 #endif
 
     // Get the version of the currently *running* instance of Chrome.
-    scoped_ptr<FileVersionInfo> version(chrome_app::GetChromeVersionInfo());
+    scoped_ptr<FileVersionInfo> version(chrome::GetChromeVersionInfo());
     if (version.get() == NULL) {
       NOTREACHED() << "Failed to get current file version";
       return;

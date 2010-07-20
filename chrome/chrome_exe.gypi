@@ -471,8 +471,8 @@
       'target_name': 'chrome_version_info',
       'type': '<(library)',
       'sources': [
-        'app/chrome_version_info.cc',
-        'app/chrome_version_info.h',
+        'common/chrome_version_info.cc',
+        'common/chrome_version_info.h',
       ],
       'include_dirs': [
         '<(DEPTH)',
@@ -490,7 +490,7 @@
                   '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
                 'version_py_path': 'tools/build/version.py',
                 'version_path': 'VERSION',
-                'template_input_path': 'app/chrome_version_info_posix.h.version',
+                'template_input_path': 'common/chrome_version_info_posix.h.version',
               },
               'conditions': [
                 [ 'branding == "Chrome"', {
@@ -512,7 +512,7 @@
                 '<(lastchange_path)',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/chrome/app/chrome_version_info_posix.h',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/common/chrome_version_info_posix.h',
               ],
               'action': [
                 'python',

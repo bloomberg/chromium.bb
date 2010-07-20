@@ -4,18 +4,22 @@
 
 #include "chrome/browser/views/about_chrome_view.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/views/accessible_view_helper.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/canvas.h"
 #include "grit/chromium_strings.h"
@@ -135,8 +139,7 @@ void AboutChromeView::Init() {
   text_direction_is_rtl_ = base::i18n::IsRTL();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   if (version_info.get() == NULL) {
     NOTREACHED() << L"Failed to initialize about window";
     return;

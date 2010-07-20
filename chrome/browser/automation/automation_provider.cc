@@ -26,7 +26,6 @@
 #include "base/values.h"
 #include "base/waitable_event.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/app/chrome_version_info.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/autofill/autofill_manager.h"
@@ -84,6 +83,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -195,8 +195,7 @@ void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
                            automation_resource_message_filter_,
                            g_browser_process->io_thread()->message_loop(),
                            true, g_browser_process->shutdown_event()));
-  scoped_ptr<FileVersionInfo> version_info(
-      chrome_app::GetChromeVersionInfo());
+  scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   std::string version_string;
   if (version_info != NULL) {
     version_string = WideToASCII(version_info->file_version());
