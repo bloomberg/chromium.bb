@@ -159,7 +159,8 @@ bool URLRequestInfo::SetStringProperty(PP_URLRequestProperty property,
 }
 
 bool URLRequestInfo::AppendDataToBody(const std::string& data) {
-  body_.push_back(BodyItem(data));
+  if (!data.empty())
+    body_.push_back(BodyItem(data));
   return true;
 }
 
