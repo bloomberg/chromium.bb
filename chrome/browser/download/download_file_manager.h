@@ -78,16 +78,6 @@ class DownloadFileManager
   void CancelDownload(int id);
   void DownloadFinished(int id, DownloadBuffer* buffer);
 
-  // Download the URL. Called on the UI thread and forwarded to the
-  // ResourceDispatcherHost on the IO thread.
-  void DownloadUrl(const GURL& url,
-                   const GURL& referrer,
-                   const std::string& referrer_charset,
-                   const DownloadSaveInfo& save_info,
-                   int render_process_host_id,
-                   int render_view_id,
-                   URLRequestContextGetter* request_context_getter);
-
   // Called on the UI thread to remove a download item or manager.
   void RemoveDownloadManager(DownloadManager* manager);
   void RemoveDownload(int id, DownloadManager* manager);
@@ -123,15 +113,6 @@ class DownloadFileManager
   // Clean up helper that runs on the download thread.
   void OnShutdown();
 
-  // Run on the IO thread to initiate the download of a URL.
-  void OnDownloadUrl(const GURL& url,
-                     const GURL& referrer,
-                     const std::string& referrer_charset,
-                     const DownloadSaveInfo& save_info,
-                     int render_process_host_id,
-                     int render_view_id,
-                     URLRequestContextGetter* request_context_getter);
-
   // Handlers for notifications sent from the download thread and run on
   // the UI thread.
   void OnStartDownload(DownloadCreateInfo* info);
@@ -140,10 +121,10 @@ class DownloadFileManager
   // Called only on UI thread to get the DownloadManager for a tab's profile.
   static DownloadManager* DownloadManagerFromRenderIds(int render_process_id,
                                                        int review_view_id);
-  DownloadManager* LookupManager(int download_id);
+  DownloadManager* GetDownloadManager(int download_id);
 
   // Called only on the download thread.
-  DownloadFile* LookupDownload(int id);
+  DownloadFile* GetDownloadFile(int id);
 
   // Called on the UI thread to remove a download from the UI progress table.
   void RemoveDownloadFromUIProgress(int id);

@@ -245,11 +245,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   static void GenerateSafeFileName(const std::string& mime_type,
                                    FilePath* file_name);
 
-  // Runs the network cancel.  Must be called on the IO thread.
-  static void OnCancelDownloadRequest(ResourceDispatcherHost* rdh,
-                                      int render_process_id,
-                                      int request_id);
-
   // Create a file name based on the response from the server.
   static void GenerateFileName(const GURL& url,
                                const std::string& content_disposition,

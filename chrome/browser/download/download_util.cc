@@ -22,9 +22,12 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/time_format.h"
@@ -513,6 +516,36 @@ int GetUniquePathNumber(const FilePath& path) {
   }
 
   return -1;
+}
+
+void DownloadUrl(
+    const GURL& url,
+    const GURL& referrer,
+    const std::string& referrer_charset,
+    const DownloadSaveInfo& save_info,
+    ResourceDispatcherHost* rdh,
+    int render_process_host_id,
+    int render_view_id,
+    URLRequestContextGetter* request_context_getter) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  URLRequestContext* context = request_context_getter->GetURLRequestContext();
+  context->set_referrer_charset(referrer_charset);
+
+  rdh->BeginDownload(url,
+                     referrer,
+                     save_info,
+                     true,  // Show "Save as" UI.
+                     render_process_host_id,
+                     render_view_id,
+                     context);
+}
+
+void CancelDownloadRequest(ResourceDispatcherHost* rdh,
+                           int render_process_id,
+                           int request_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  rdh->CancelRequest(render_process_id, request_id, false);
 }
 
 }  // namespace download_util

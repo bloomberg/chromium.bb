@@ -490,4 +490,36 @@ inline CancelableTask* NewRunnableFunction(Function function,
                                                                           e));
 }
 
+template <class Function, class A, class B, class C, class D, class E,
+          class F>
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c, const D& d,
+                                           const E& e, const F& f) {
+  return new RunnableFunction<Function, Tuple6<A, B, C, D, E, F> >(function,
+      MakeTuple(a, b, c, d, e, f));
+}
+
+template <class Function, class A, class B, class C, class D, class E,
+          class F, class G>
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c, const D& d,
+                                           const E& e, const F& f,
+                                           const G& g) {
+  return new RunnableFunction<Function, Tuple7<A, B, C, D, E, F, G> >(function,
+      MakeTuple(a, b, c, d, e, f, g));
+}
+
+template <class Function, class A, class B, class C, class D, class E,
+          class F, class G, class H>
+inline CancelableTask* NewRunnableFunction(Function function,
+                                           const A& a, const B& b,
+                                           const C& c, const D& d,
+                                           const E& e, const F& f,
+                                           const G& g, const H& h) {
+  return new RunnableFunction<Function, Tuple8<A, B, C, D, E, F, G, H> >(
+      function, MakeTuple(a, b, c, d, e, f, g, h));
+}
+
 #endif  // BASE_TASK_H_

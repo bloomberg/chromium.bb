@@ -841,14 +841,6 @@ void DownloadManager::DangerousDownloadRenamed(int64 download_handle,
   ContinueDownloadFinished(download);
 }
 
-// static
-void DownloadManager::OnCancelDownloadRequest(ResourceDispatcherHost* rdh,
-                                              int render_process_id,
-                                              int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  rdh->CancelRequest(render_process_id, request_id, false);
-}
-
 void DownloadManager::DownloadCancelled(int32 download_id) {
   DownloadMap::iterator it = in_progress_.find(download_id);
   if (it == in_progress_.end())
@@ -874,7 +866,7 @@ void DownloadManager::DownloadCancelledInternal(int download_id,
   // Cancel the network request.  RDH is guaranteed to outlive the IO thread.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(&DownloadManager::OnCancelDownloadRequest,
+      NewRunnableFunction(&download_util::CancelDownloadRequest,
                           g_browser_process->resource_dispatcher_host(),
                           render_process_id,
                           request_id));
@@ -1049,13 +1041,8 @@ void DownloadManager::DownloadUrl(const GURL& url,
                                   const GURL& referrer,
                                   const std::string& referrer_charset,
                                   TabContents* tab_contents) {
-  file_manager_->DownloadUrl(url,
-                             referrer,
-                             referrer_charset,
-                             DownloadSaveInfo(),
-                             tab_contents->GetRenderProcessHost()->id(),
-                             tab_contents->render_view_host()->routing_id(),
-                             request_context_getter_);
+  DownloadUrlToFile(url, referrer, referrer_charset, DownloadSaveInfo(),
+                    tab_contents);
 }
 
 void DownloadManager::DownloadUrlToFile(const GURL& url,
@@ -1064,13 +1051,16 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
                                         const DownloadSaveInfo& save_info,
                                         TabContents* tab_contents) {
   DCHECK(tab_contents);
-  file_manager_->DownloadUrl(url,
-                             referrer,
-                             referrer_charset,
-                             save_info,
-                             tab_contents->GetRenderProcessHost()->id(),
-                             tab_contents->render_view_host()->routing_id(),
-                             request_context_getter_);
+  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(&download_util::DownloadUrl,
+                          url,
+                          referrer,
+                          referrer_charset,
+                          save_info,
+                          g_browser_process->resource_dispatcher_host(),
+                          tab_contents->GetRenderProcessHost()->id(),
+                          tab_contents->render_view_host()->routing_id(),
+                          request_context_getter_));
 }
 
 void DownloadManager::GenerateExtension(

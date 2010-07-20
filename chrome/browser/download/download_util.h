@@ -25,7 +25,12 @@ class BaseDownloadItemModel;
 class DictionaryValue;
 class DownloadItem;
 class FilePath;
+class GURL;
+class ResourceDispatcherHost;
 class SkBitmap;
+class URLRequestContextGetter;
+
+struct DownloadSaveInfo;
 
 namespace download_util {
 
@@ -156,6 +161,23 @@ void AppendNumberToPath(FilePath* path, int number);
 // unique. If |path| does not exist, 0 is returned.  If it fails to find such
 // a number, -1 is returned.
 int GetUniquePathNumber(const FilePath& path);
+
+// Download the URL. Must be called on the IO thread.
+void DownloadUrl(const GURL& url,
+                 const GURL& referrer,
+                 const std::string& referrer_charset,
+                 const DownloadSaveInfo& save_info,
+                 ResourceDispatcherHost* rdh,
+                 int render_process_host_id,
+                 int render_view_id,
+                 URLRequestContextGetter* request_context_getter);
+
+// Tells the resource dispatcher host to cancel a download request.
+// Must be called on the IO thread.
+void CancelDownloadRequest(ResourceDispatcherHost* rdh,
+                           int render_process_id,
+                           int request_id);
+
 
 }  // namespace download_util
 
