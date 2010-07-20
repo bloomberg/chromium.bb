@@ -173,6 +173,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 }
 
 - (void)reconfigureMenu {
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
   for (BookmarkButton* button in buttons_.get())
     [button removeFromSuperview];
   [buttons_ removeAllObjects];

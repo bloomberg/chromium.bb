@@ -481,6 +481,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // Redirect to our logic shared with BookmarkBarFolderController.
 - (IBAction)openBookmarkFolderFromButton:(id)sender {
+  DCHECK(sender != offTheSideButton_);
   // Toggle presentation of bar folder menus.
   showFolderMenus_ = !showFolderMenus_;
   [folderTarget_ openBookmarkFolderFromButton:sender];
@@ -698,6 +699,13 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // Configure the off-the-side button (e.g. specify the node range,
 // check if we should enable or disable it, etc).
 - (void)configureOffTheSideButtonContentsAndVisibility {
+  // If deleting a button while off-the-side is open, buttons may be
+  // promoted from off-the-side to the bar.  Accomodate.
+  if (folderController_ &&
+      ([folderController_ parentButton] == offTheSideButton_)) {
+    [folderController_ reconfigureMenu];
+  }
+
   [[offTheSideButton_ cell] setStartingChildIndex:displayedButtonCount_];
   [[offTheSideButton_ cell]
    setBookmarkNode:bookmarkModel_->GetBookmarkBarNode()];

@@ -559,7 +559,7 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
   NSButton* offTheSideButton = [bar_ offTheSideButton];
   // Open "off the side" menu.
-  [bar_ openBookmarkFolderFromButton:offTheSideButton];
+  [bar_ openOffTheSideFolderFromButton:offTheSideButton];
   BookmarkBarFolderController* bbfc = [bar_ folderController];
   EXPECT_TRUE(bbfc);
   [bbfc setIgnoreAnimations:YES];
@@ -600,7 +600,7 @@ TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
 
   // Open "off the side" menu.
   NSButton* offTheSideButton = [bar_ offTheSideButton];
-  [bar_ openBookmarkFolderFromButton:offTheSideButton];
+  [bar_ openOffTheSideFolderFromButton:offTheSideButton];
   BookmarkBarFolderController* bbfc = [bar_ folderController];
   EXPECT_TRUE(bbfc);
   [bbfc setIgnoreAnimations:YES];
@@ -1859,7 +1859,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
   // Pop up the off-the-side menu.
   BookmarkButton* otsButton = (BookmarkButton*)[bar_ offTheSideButton];
   ASSERT_TRUE(otsButton);
-  [[otsButton target] performSelector:@selector(openBookmarkFolderFromButton:)
+  [[otsButton target] performSelector:@selector(openOffTheSideFolderFromButton:)
                            withObject:otsButton];
   BookmarkBarFolderController* otsController = [bar_ folderController];
   EXPECT_TRUE(otsController);
