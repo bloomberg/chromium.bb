@@ -187,7 +187,7 @@ PNACL_LLVM_GCC = DRIVER_PATH + '/llvm-fake-bcgcc'
 
 PNACL_BCLD_ARM = DRIVER_PATH + '/llvm-fake-bcld-arm'
 
-PNACL_LIB_DIR = 'toolchain/pnacl-untrusted/bitcode/'
+PNACL_LIB_DIR = 'toolchain/linux_arm-untrusted/libs-bitcode/'
 
 COMMANDS_llvm_pnacl_arm = [
     ('compile-bc',

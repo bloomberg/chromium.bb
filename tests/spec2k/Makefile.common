@@ -106,7 +106,7 @@ $(IT).opt.bc: $(IT).bc
 # BITCODE - BACKEND - ARM
 
 BC_ARM=$(LLVM_FAKE_ROOT)/llvm-fake-bcld-arm
-LIB_BC=$(TC_ROOT)/pnacl-untrusted/bitcode
+LIB_BC=$(TC_ROOT)/linux_arm-untrusted/libs-bitcode
 
 $(IT).pnacl.arm: $(IT).bc
 	$(BC_ARM) $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
