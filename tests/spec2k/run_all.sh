@@ -217,7 +217,7 @@ GetBenchmarkList() {
 #@   this is a deep clean and you have to rerun PoplateFromSpecHarness
 CleanBenchmarks() {
   local list=$(GetBenchmarkList "$@")
-
+  rm -rf bin/
   for i in ${list} ; do
     Banner "Cleanig: $i"
     cd $i
@@ -285,6 +285,7 @@ BuildAndRunBenchmarks() {
 #@   the given spec2k harness
 PoplateFromSpecHarness() {
   harness=$1
+  cp -r ${harness}/bin .
   echo ${LIST}
   for i in ${LIST} ; do
     Banner "Populating: $i"

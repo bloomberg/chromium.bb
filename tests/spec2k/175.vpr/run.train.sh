@@ -4,7 +4,7 @@ set -o nounset
 set -o errexit
 
 PREFIX=${PREFIX:-}
-VERIFY=${PREFIX:-yes}
+VERIFY=${VERIFY:-yes}
 EMU_HACK=${EMU_HACK:-yes}
 
 
@@ -38,9 +38,10 @@ LIST="place_log.out route_log.out costs.out route.out"
 if [[ "${VERIFY}" != "no" ]] ; then
    echo "VERIFY"
    for i in ${LIST} ; do
-     if ! diff $i data/train/output/$i ; then
-       echo ""
-       echo "Diff in $i  might be within the tolerance"
+     # NOTE: we are a little more conservative than spec with regard to reltol
+     if ! ../specdiff.sh -r 0.015 -l 10 $i data/train/output/$i ; then
+       echo "ERROR: output differs too much"
+       exit -1
      fi
    done
 fi
