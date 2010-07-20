@@ -303,19 +303,19 @@ extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
     const wchar_t* vendor_id, const wchar_t* device_id,
     const wchar_t* driver_version, const wchar_t* pixel_shader_version,
     const wchar_t* vertex_shader_version) {
-  wcscpy_s((*g_custom_entries)[g_client_id_offset].value,
+  wcscpy_s((*g_custom_entries)[g_gpu_info_offset].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            vendor_id);
-  wcscpy_s((*g_custom_entries)[g_client_id_offset+1].value,
+  wcscpy_s((*g_custom_entries)[g_gpu_info_offset+1].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            device_id);
-  wcscpy_s((*g_custom_entries)[g_client_id_offset+2].value,
+  wcscpy_s((*g_custom_entries)[g_gpu_info_offset+2].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            driver_version);
-  wcscpy_s((*g_custom_entries)[g_client_id_offset+3].value,
+  wcscpy_s((*g_custom_entries)[g_gpu_info_offset+3].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            pixel_shader_version);
-  wcscpy_s((*g_custom_entries)[g_client_id_offset+4].value,
+  wcscpy_s((*g_custom_entries)[g_gpu_info_offset+4].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            vertex_shader_version);
 }
