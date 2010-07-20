@@ -119,6 +119,47 @@ static Bool NaClIsAddOrSubBoundedConstFromEsp(NaClInstState* state) {
       ExprConstant == vector->node[3].kind;
 }
 
+/* Returns true iff the instruction of form "lea _, [%rsp+%rbase*1]" */
+static Bool NaClIsLeaAddressRspPlusRbase(NaClValidatorState* state,
+                                         NaClInstState* inst_state) {
+  NaClInst* inst = NaClInstStateInst(inst_state);
+  if (InstLea == inst->name &&
+      2 == NaClGetInstNumberOperands(inst)) {
+    NaClExpVector* vector = NaClInstStateExpVector(inst_state);
+    int op2_index =
+        NaClGetExpKidIndex(vector,
+                           NaClGetNthExpKind(vector, OperandReference, 2),
+                           0);
+    NaClExp* op2 = &(vector->node[op2_index]);
+    /* Only allow memory offset nodes with address size 64. */
+    if (ExprMemOffset == op2->kind &&
+        NACL_EMPTY_EFLAGS != (op2->flags & NACL_EFLAG(ExprSize64))) {
+      int base_reg_index = op2_index + 1;
+      NaClOpKind base_reg = NaClGetExpVectorRegister(vector, base_reg_index);
+      if (base_reg == RegRSP) {
+        int index_reg_index =
+            base_reg_index + NaClExpWidth(vector, base_reg_index);
+        NaClOpKind index_reg =
+            NaClGetExpVectorRegister(vector, index_reg_index);
+        if (index_reg == state->base_register) {
+          int scale_index =
+              index_reg_index + NaClExpWidth(vector, index_reg_index);
+          if (ExprConstant == vector->node[scale_index].kind &&
+              (uint64_t)1 == NaClGetExpConstant(vector, scale_index)) {
+            int disp_index = scale_index + NaClExpWidth(vector, scale_index);
+            if (ExprConstant == vector->node[disp_index].kind &&
+                (uint64_t)0 == NaClGetExpConstant(vector, disp_index)) {
+              return TRUE;
+            }
+          }
+        }
+      }
+    }
+  }
+  /* If reached, did not match. */
+  return FALSE;
+}
+
 void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                                struct NaClInstIter* iter,
                                NaClBaseRegisterLocals* locals) {
@@ -178,6 +219,22 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                *     a zero extend of RBP, and is the only property that is
                *     needed to maintain the invariant on ESP.
                *
+               * (7) mov %esp, ...
+               *     lea %rsp, [%rsp+%rbase*1]
+               *
+               *     Same as (6), except that we use instructions prior to the
+               *     pattern to do the add/subtract. Then let the result be
+               *     (zero-extended) moved into esp, and use the lea to fill
+               *     in the top 32 bits of %rsp.
+               *
+               *     Note: We require the scale to be 1, and rbase be in
+               *     the index position.
+               *
+               *     Note: The code here allows any operation that zero extends
+               *     ebp, not just a move. The rationale is that the MOV does
+               *     a zero extend of RBP, and is the only property that is
+               *     needed to maintain the invariant on ESP.
+               *
                * Note: Cases 2, 4, 5, and 6 are maintaining the invariant that
                * the top half of RSP is the same as RBASE, and the lower half
                * of RBASE is zero. Case (2) does this by seting the bottom 32
@@ -228,6 +285,25 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                           || (inst_name == InstAdd &&
                               NaClIsAddOrSubBoundedConstFromEsp(prev_inst))) {
                         DEBUG(printf("nc protect base for or/add/or\n"));
+                        NaClMarkInstructionJumpIllegal(state, inst_state);
+                        locals->esp_set_inst = NULL;
+                        NaClMaybeReportPreviousBad(state, locals);
+                        return;
+                      }
+                    }
+                  }
+                  break;
+                case InstLea: {
+                    /* case 7 */
+                    if (NaClOperandOneIsRegisterSet(inst_state, RegRSP) &&
+                        NaClInstIterHasLookbackState(iter, 1)) {
+                      NaClInstState* prev_inst =
+                          NaClInstIterGetLookbackState(iter, 1);
+                      if (NaClAssignsRegisterWithZeroExtends(prev_inst,
+                                                             RegESP) &&
+                          NaClIsLeaAddressRspPlusRbase(state, inst_state)) {
+                        DEBUG(printf("nc protect base for "
+                                     "'lea rsp. [rsp,rbase]'\n"));
                         NaClMarkInstructionJumpIllegal(state, inst_state);
                         locals->esp_set_inst = NULL;
                         NaClMaybeReportPreviousBad(state, locals);
