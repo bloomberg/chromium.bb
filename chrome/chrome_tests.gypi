@@ -2430,7 +2430,8 @@
       ]},  # 'targets'
     ],  # OS=="win"
     # Build on linux x86_64 only if linux_fpic==1
-    ['OS=="mac" or OS=="win" or (OS=="linux" and target_arch==python_arch '
+    ['OS=="mac" or (OS=="win" and component=="static_library") '
+     'or (OS=="linux" and target_arch==python_arch '
      'and (target_arch!="x64" or linux_fpic==1))', {
       'targets': [
         {
