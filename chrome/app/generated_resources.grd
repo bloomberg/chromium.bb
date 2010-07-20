@@ -6049,7 +6049,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Collected cookies window -->
       <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
-        Cookies were set
+        Cookies and site data were set
       </message>
       <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL" desc="The label used to describe the cookies that were allowed">
         The following cookies were set when you viewed this page:
