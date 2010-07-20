@@ -6066,6 +6066,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COLLECTED_COOKIES_BLOCK_BUTTON" desc="A button that lets the use create a content settings exception to block certain domains.">
         Block
       </message>
+      <message name="IDS_COLLECTED_COOKIES_ALLOW_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies was created.">
+        Cookies from <ph name="HOST">$1<ex>example.com</ex></ph> allowed.
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_BLOCK_RULE_CREATED" desc="A notification that is displayed when a content exception to block cookies was created.">
+        Cookies from <ph name="HOST">$1<ex>example.com</ex></ph> blocked.
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_SESSION_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies for session only was created.">
+        Cookies from <ph name="HOST">$1<ex>example.com</ex></ph> allowed for session only.
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies were created.">
+        Cookies from multiple sites allowed.
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_MULTIPLE_BLOCK_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to block cookies were created.">
+        Cookies from multiple sites blocked.
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_MULTIPLE_SESSION_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies for session only were created.">
+        Cookies from multiple sites allowed for session only.
+      </message>
 
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WINDOW_TITLE" desc="The title of the Cookies Window">
