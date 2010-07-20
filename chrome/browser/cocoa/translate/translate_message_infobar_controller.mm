@@ -14,9 +14,9 @@ using TranslateInfoBarUtilities::MoveControl;
   if ((self = [super initWithDelegate:delegate])) {
     TranslateInfoBarDelegate* delegate = [self delegate];
     if (delegate->IsError())
-      state_ = TranslateInfoBarDelegate::TRANSLATION_ERROR;
+      state_ = TranslateInfoBarDelegate::kTranslationError;
     else
-      state_ = TranslateInfoBarDelegate::TRANSLATING;
+      state_ = TranslateInfoBarDelegate::kTranslating;
   }
   return self;
 }
@@ -37,7 +37,7 @@ using TranslateInfoBarUtilities::MoveControl;
 - (NSArray*)visibleControls {
   NSMutableArray* visibleControls =
       [NSMutableArray arrayWithObjects:label1_.get(), nil];
-  if (state_ == TranslateInfoBarDelegate::TRANSLATION_ERROR)
+  if (state_ == TranslateInfoBarDelegate::kTranslationError)
     [visibleControls addObject:tryAgainButton_];
   return visibleControls;
 }

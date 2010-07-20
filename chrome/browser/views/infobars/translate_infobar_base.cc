@@ -30,14 +30,14 @@ TranslateInfoBarBase::TranslateInfoBarBase(
 
   TranslateInfoBarDelegate::BackgroundAnimationType animation =
       delegate->background_animation_type();
-  if (animation != TranslateInfoBarDelegate::NONE) {
+  if (animation != TranslateInfoBarDelegate::kNone) {
     background_color_animation_.reset(new SlideAnimation(this));
     background_color_animation_->SetTweenType(Tween::LINEAR);
     background_color_animation_->SetSlideDuration(500);
-    if (animation == TranslateInfoBarDelegate::NORMAL_TO_ERROR) {
+    if (animation == TranslateInfoBarDelegate::kNormalToError) {
       background_color_animation_->Show();
     } else {
-      DCHECK_EQ(TranslateInfoBarDelegate::ERROR_TO_NORMAL, animation);
+      DCHECK_EQ(TranslateInfoBarDelegate::kErrorToNormal, animation);
       // Hide() runs the animation in reverse.
       background_color_animation_->Reset(1.0);
       background_color_animation_->Hide();
@@ -158,14 +158,14 @@ void TranslateInfoBarBase::FadeBackground(gfx::Canvas* canvas,
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   TranslateInfoBarBase* infobar = NULL;
   switch (type_) {
-    case BEFORE_TRANSLATE:
+    case kBeforeTranslate:
       infobar = new BeforeTranslateInfoBar(this);
       break;
-    case AFTER_TRANSLATE:
+    case kAfterTranslate:
       infobar = new AfterTranslateInfoBar(this);
       break;
-    case TRANSLATING:
-    case TRANSLATION_ERROR:
+    case kTranslating:
+    case kTranslationError:
       infobar = new TranslateMessageInfoBar(this);
       break;
     default:
