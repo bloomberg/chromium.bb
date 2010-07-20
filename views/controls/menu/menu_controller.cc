@@ -813,10 +813,11 @@ bool MenuController::Dispatch(const MSG& msg) {
 
 #else
 bool MenuController::Dispatch(GdkEvent* event) {
-  gtk_main_do_event(event);
 
-  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
+  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
+    gtk_main_do_event(event);
     return false;
+  }
 
   switch (event->type) {
     case GDK_KEY_PRESS: {
@@ -836,10 +837,17 @@ bool MenuController::Dispatch(GdkEvent* event) {
       return true;
     }
 
+    case GDK_KEY_RELEASE:
+      return true;
+
     default:
       break;
   }
 
+  // We don not want Gtk to handle keyboard events, otherwise if they get
+  // handled by Gtk, unexpected behavior may occur. For example Tab key
+  // may cause unexpected focus traversing.
+  gtk_main_do_event(event);
   return exit_type_ == EXIT_NONE;
 }
 #endif

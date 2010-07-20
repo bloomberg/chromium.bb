@@ -22,6 +22,7 @@
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
+#include "views/widget/gtk_views_window.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
 #include "views/widget/widget_delegate.h"
@@ -1336,7 +1337,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       gdk_window_set_composited(widget_->window, true);
     }
   } else {
-    widget_ = gtk_window_new(
+    // Use our own window class to override GtkWindow's move_focus method.
+    widget_ = gtk_views_window_new(
         (type_ == TYPE_WINDOW || type_ == TYPE_DECORATED_WINDOW) ?
         GTK_WINDOW_TOPLEVEL : GTK_WINDOW_POPUP);
     gtk_widget_set_name(widget_, "views-gtkwidget-window");

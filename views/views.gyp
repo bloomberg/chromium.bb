@@ -278,6 +278,8 @@
         'widget/drop_target_win.h',
         'widget/gtk_views_fixed.cc',
         'widget/gtk_views_fixed.h',
+        'widget/gtk_views_window.cc',
+        'widget/gtk_views_window.h',
         'widget/root_view.cc',
         'widget/root_view.h',
         'widget/root_view_gtk.cc',
