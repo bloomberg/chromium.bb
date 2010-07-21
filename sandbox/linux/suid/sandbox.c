@@ -289,7 +289,7 @@ static bool MoveToNewNamespaces() {
         unsetenv("SBX_PID_NS");
       }
 
-      if (kCloneExtraFlags[i] & CLONE_NEWPID) {
+      if (kCloneExtraFlags[i] & CLONE_NEWNET) {
         setenv("SBX_NET_NS", "", 1 /* overwrite */);
       } else {
         unsetenv("SBX_NET_NS");
