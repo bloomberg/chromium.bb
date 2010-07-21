@@ -18,7 +18,7 @@ LLVM_BIN_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 LLVM_DRIVER_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 
 # Define TARGET_CODE=<value> in the calling environment to override.
-case ${TARGET_CODE:=sfi-arm} in
+case ${TARGET_CODE:=bc-arm} in
   sfi-arm)  # => Libraries with Native Client SFI sandboxing.
     CC_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch arm"
     CXX_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfig++ -arch arm"

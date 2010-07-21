@@ -374,6 +374,12 @@ TARGET_NAME = GetPlatform('targetplatform')
 pre_base_env.Replace(TARGET_ARCHITECTURE = DecodePlatform(TARGET_NAME)['arch'])
 pre_base_env.Replace(TARGET_SUBARCH = DecodePlatform(TARGET_NAME)['subarch'])
 
+# TODO(robertm): hack for not breaking things while switching to pnacl TC
+#                This should be fixed by integrating pnacl more tightly
+#                with scons.
+if 'arm' == DecodePlatform(TARGET_NAME)['arch']:
+  ARGUMENTS['bitcode'] = 1
+
 # Determine where the object files go
 if BUILD_NAME == TARGET_NAME:
   TARGET_ROOT = '${DESTINATION_ROOT}/${BUILD_TYPE}-%s' % TARGET_NAME

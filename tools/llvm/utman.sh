@@ -160,9 +160,7 @@ readonly CROSS_TARGET_RANLIB=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-ranlib
 readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
 
 # NOTE: this tools.sh defines: LD_FOR_TARGET, CC_FOR_TARGET, CXX_FOR_TARGET, ...
-setup-tools() {
-
-  source tools/llvm/tools.sh
+setup-tools-common() {
   LD_FOR_SFI_TARGET=${LD_FOR_TARGET}
   CC_FOR_SFI_TARGET=${CC_FOR_TARGET}
   CXX_FOR_SFI_TARGET=${CXX_FOR_TARGET}
@@ -232,6 +230,19 @@ setup-tools() {
 }
 
 
+# NOTE: we need to rethink the setup mechanism when we want to
+#       produce libgcc for other archs
+setup-tools-arm() {
+  export TARGET_CODE=sfi-arm
+  source tools/llvm/tools.sh
+  setup-tools-common
+}
+
+setup-tools-bitcode() {
+  export TARGET_CODE=bc-arm
+  source tools/llvm/tools.sh
+  setup-tools-common
+}
 
 
 # The gold plugin that we use is documented at
@@ -481,12 +492,13 @@ everything() {
   gcc-stage1
   driver
   gcc-stage2
+  # TOOD(robertm): get rid of this. Carefull, also installs headers
   libstdcpp-arm
   gcc-stage3
 
-  # NOTE: this builds native libs NOT needed for pnacl and currently
-  #       also does some header file shuffling which IS needed
+  # TOOD(robertm): get rid of this. Carefull, also installs headers
   newlib-arm
+  # TOOD(robertm): get rid of this. Carefull, also installs headers
   extrasdk-arm
   misc-tools
 
@@ -1182,9 +1194,9 @@ libstdcpp-arm-configure() {
 #+ libstdcpp-bitcode-configure - configure libstdcpp for bitcode
 libstdcpp-bitcode-configure() {
   StepBanner "LIBSTDCPP-BITCODE" "Configure"
-  BITCODE-ON
+  setup-tools-bitcode
   libstdcpp-configure-common "${TC_BUILD_LIBSTDCPP_BITCODE}"
-  BITCODE-OFF
+  setup-tools-arm
 }
 
 libstdcpp-configure-common() {
@@ -1238,9 +1250,9 @@ libstdcpp-arm-make() {
 #+ libstdcpp-bitcode-make - Make libstdcpp in bitcode
 libstdcpp-bitcode-make() {
   StepBanner "LIBSTDCPP-BITCODE" "Make"
-  BITCODE-ON
+  setup-tools-bitcode
   libstdcpp-make-common "${TC_BUILD_LIBSTDCPP_BITCODE}"
-  BITCODE-OFF
+  setup-tools-arm
 }
 
 libstdcpp-make-common() {
@@ -1760,9 +1772,9 @@ newlib-arm-configure() {
 #+ newlib-bitcode-configure - Configure bitcode Newlib
 newlib-bitcode-configure() {
   StepBanner "NEWLIB-BITCODE" "Configure"
-  BITCODE-ON
+  setup-tools-bitcode
   newlib-configure-common "${TC_BUILD_NEWLIB_BITCODE}"
-  BITCODE-OFF
+  setup-tools-arm
 }
 
 newlib-configure-common() {
@@ -1812,9 +1824,9 @@ newlib-arm-make() {
 newlib-bitcode-make() {
   StepBanner "NEWLIB-BITCODE" "Make"
 
-  BITCODE-ON
+  setup-tools-bitcode
   newlib-make-common "${TC_BUILD_NEWLIB_BITCODE}"
-  BITCODE-OFF
+  setup-tools-arm
 }
 
 newlib-make-common() {
@@ -1873,7 +1885,7 @@ newlib-arm-install() {
 
 #+ newlib-bitcode-install - Install Bitcode Newlib
 newlib-bitcode-install() {
-  StepBanner "NEWLIB-BITCODE" "Install (lib[cgm])"
+  StepBanner "NEWLIB-BITCODE" "Install (lib[cgm]) into"
 
   local objdir="${TC_BUILD_NEWLIB_BITCODE}"
   local destdir="${PNACL_BITCODE_ROOT}"
@@ -2360,20 +2372,6 @@ show-tests() {
   cat $(find tests -name nacl.scons) | grep -o 'run_[A-Za-z_-]*' | sort | uniq
 }
 
-#@ test-arm-old          - run arm tests via the old toolchain
-#@ test-arm-old <test>   - run a single arm test via the old toolchain
-test-arm-old() {
-  ./scons platform=arm ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-  rm -rf scons-out/nacl-arm
-  local fixedargs=""
-  if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
-    fixedargs="smoke_tests"
-  fi
-  TARGET_CODE=sfi-arm ./scons ${SCONS_ARGS[@]} \
-          force_sel_ldr=scons-out/opt-linux-arm/staging/sel_ldr \
-          ${fixedargs} "$@"
-}
-
 #@ test-arm              - run arm tests via pnacl toolchain
 #@ test-arm <test>       - run a single arm test via pnacl toolchain
 test-arm() {
@@ -2430,7 +2428,6 @@ test-all() {
     exit -1
   fi
 
-  test-arm-old "$@"
   test-arm "$@"
   test-x86-64 "$@"
   test-x86-32 "$@"
@@ -2725,16 +2722,6 @@ ts-newer-than() {
   return 1
 }
 
-BITCODE-ON() {
-  export TARGET_CODE=bc-arm
-  setup-tools
-}
-
-BITCODE-OFF() {
-  unset TARGET_CODE
-  setup-tools
-}
-
 ######################################################################
 ######################################################################
 #
@@ -2745,7 +2732,7 @@ BITCODE-OFF() {
 
 PathSanityCheck
 PackageCheck
-setup-tools
+setup-tools-arm
 
 [ $# = 0 ] && set -- help  # Avoid reference to undefined $1.
 if [ "$(type -t $1)" != "function" ]; then
