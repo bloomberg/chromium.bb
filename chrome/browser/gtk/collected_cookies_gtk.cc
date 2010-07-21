@@ -266,7 +266,7 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
         model, &iter, reinterpret_cast<GtkTreePath*>(item->data));
     CookieTreeOriginNode* node = static_cast<CookieTreeOriginNode*>(
         adapter->GetNode(&iter));
-    if (!node->CanCreateContentException()) {
+    if (node->CanCreateContentException()) {
       node->CreateContentException(
           tab_contents_->profile()->GetHostContentSettingsMap(), setting);
     }
