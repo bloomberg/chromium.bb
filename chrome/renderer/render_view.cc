@@ -1301,9 +1301,12 @@ void RenderView::UpdateURL(WebFrame* frame) {
       // browser will send us new, up-to-date content settings.
       host_content_settings_.erase(host_content_settings);
     } else if (frame->opener()) {
-      WebView* opener_view = frame->opener()->view();
-      RenderView* opener = FromWebView(opener_view);
-      SetContentSettings(opener->current_content_settings_);
+      // The opener's view is not guaranteed to be non-null (it could be
+      // detached from its page but not yet destructed).
+      if (WebView* opener_view = frame->opener()->view()) {
+        RenderView* opener = FromWebView(opener_view);
+        SetContentSettings(opener->current_content_settings_);
+      }
     }
 
     // Set zoom level.
