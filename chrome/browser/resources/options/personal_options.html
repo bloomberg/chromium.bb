@@ -98,7 +98,7 @@
     </table>
   </section>
 
-  <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1)">
+  <if expr="(os == 'linux2' or os.find('bsd') != -1) and not pp_ifdef('chromeos')">
     <section>
       <h3 i18n-content="appearance"></h3>
       <table class="option-control-table">
@@ -130,7 +130,7 @@
       </table>
     </section>
   </if>
-  <if expr="pp_ifdef('toolkit_views') or os == 'win32' or os == 'darwin'">
+  <if expr="pp_ifdef('chromeos') or os == 'win32' or os == 'darwin'">
     <section>
       <h3 i18n-content="themes"></h3>
       <table class="option-control-table">
