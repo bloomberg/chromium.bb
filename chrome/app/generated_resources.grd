@@ -2630,7 +2630,10 @@ each locale. -->
       <message name="IDS_CERT_INFO_FINGERPRINTS_GROUP" desc="The label of the group showing the certificate fingerprints in the general page of the certificate info dialog">
         Fingerprints
       </message>
-      <message name="IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL" desc="The label of the SHA1 Fingerprint field in the general page of the certificate info dialog">
+      <message name="IDS_CERT_INFO_SHA256_FINGERPRINT_LABEL" desc="The label of the SHA-256 Fingerprint field in the general page of the certificate info dialog">
+        SHA-256 Fingerprint
+      </message>
+      <message name="IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL" desc="The label of the SHA-1 Fingerprint field in the general page of the certificate info dialog">
         SHA-1 Fingerprint
       </message>
       <message name="IDS_CERT_INFO_MD5_FINGERPRINT_LABEL" desc="The label of the MD5 Fingerprint field in the general page of the certificate info dialog">
