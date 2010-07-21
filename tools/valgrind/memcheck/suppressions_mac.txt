@@ -100,37 +100,6 @@
    fun:_CFBundleDlfcnCheckLoaded
 }
 {
-   bug_18215
-   Memcheck:Cond
-   fun:_DPSNextEvent
-   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
-   fun:-[NSApplication run]
-}
-{
-   bug_18223
-   Memcheck:Cond
-   fun:_ZNK8Security12UnixPlusPlus17StaticForkMonitorclEv
-   fun:_ZN12ocspdGlobals10serverPortEv
-}
-{
-   # Invalid read
-   bug_20508a
-   Memcheck:Addr4
-   ...
-   fun:ripc_DrawGlyphs
-   fun:draw_glyphs
-   fun:CGContextShowGlyphsWithAdvances
-}
-{
-   # Invalid read
-   bug_20508b
-   Memcheck:Addr4
-   fun:_eATSFontGetGlyphIDsForGlyphNames
-   fun:ATSFontGetGlyphIDsForGlyphNames
-   fun:ats_font_get_glyphs_for_glyph_names
-   fun:get_glyphs_for_glyph_names
-}
-{
    # Nasty invalid write. Reported to Apple as rdar://7240303. Supposedly fixed
    # in Snow Leopard; should be verified and removed if so.
    bug_18189
@@ -144,6 +113,19 @@
    fun:CGContextFillRects
    fun:CGContextFillRect
    fun:NSRectFill
+}
+{
+   bug_18215
+   Memcheck:Cond
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:-[NSApplication run]
+}
+{
+   bug_18223
+   Memcheck:Cond
+   fun:_ZNK8Security12UnixPlusPlus17StaticForkMonitorclEv
+   fun:_ZN12ocspdGlobals10serverPortEv
 }
 {
    # Filed with Apple as rdar://7255382
@@ -165,6 +147,40 @@
    fun:__CFArrayInit
    fun:CFArrayCreateMutableCopy
    fun:_ZN8Security12KeychainCore5Trust8evaluateEv
+}
+{
+   # Invalid read
+   bug_20508a
+   Memcheck:Addr4
+   ...
+   fun:ripc_DrawGlyphs
+   fun:draw_glyphs
+   fun:CGContextShowGlyphsWithAdvances
+}
+{
+   # Invalid read
+   bug_20508b
+   Memcheck:Addr4
+   fun:_eATSFontGetGlyphIDsForGlyphNames
+   fun:ATSFontGetGlyphIDsForGlyphNames
+   fun:ats_font_get_glyphs_for_glyph_names
+   fun:get_glyphs_for_glyph_names
+}
+# See description of bug_20653a/b in suppressions.txt.
+{
+   bug_20653a_mac
+   Memcheck:Param
+   write(buf)
+   fun:write$UNIX2003
+   fun:pager_write_pagelist
+}
+{
+   bug_20653b_mac
+   Memcheck:Param
+   write(buf)
+   fun:write$UNIX2003
+   ...
+   fun:pager_write
 }
 {
    bug_32564
