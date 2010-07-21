@@ -93,6 +93,9 @@ class WizardController : public chromeos::ScreenObserver,
   // screen.
   WizardScreen* current_screen() const { return current_screen_; }
 
+  // True if WizardController is in OOBE mode.
+  bool is_oobe() { return is_out_of_box_; }
+
   // Overrides observer for testing.
   void set_observer(ScreenObserver* observer) { observer_ = observer; }
 
@@ -100,6 +103,9 @@ class WizardController : public chromeos::ScreenObserver,
   // of the document object.
   void SetCustomization(
       const chromeos::StartupCustomizationDocument* customization);
+
+  // Returns partner startup customization document owned by WizardController.
+  const chromeos::StartupCustomizationDocument* GetCustomization();
 
   // Registers OOBE preferences.
   static void RegisterPrefs(PrefService* local_state);
