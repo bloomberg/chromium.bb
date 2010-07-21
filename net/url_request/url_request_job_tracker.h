@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,9 +43,13 @@ class URLRequestJobTracker {
     virtual void OnJobRedirect(URLRequestJob* job, const GURL& location,
                                int status_code) = 0;
 
-    // Called when a new chunk of bytes has been read for the given job. The
-    // byte count is the number of bytes for that read event only.
-    virtual void OnBytesRead(URLRequestJob* job, int byte_count) = 0;
+    // Called when a new chunk of unfiltered bytes has been read for
+    // the given job. |byte_count| is the number of bytes for that
+    // read event only. |buf| is a pointer to the data buffer that
+    // contains those bytes. The data in |buf| is only valid for the
+    // duration of the OnBytesRead callback.
+    virtual void OnBytesRead(URLRequestJob* job, const char* buf,
+                             int byte_count) = 0;
 
     virtual ~JobObserver() {}
   };
@@ -74,7 +78,7 @@ class URLRequestJobTracker {
                      int status_code);
 
   // Bytes read notifications.
-  void OnBytesRead(URLRequestJob* job, int byte_count);
+  void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count);
 
   // allows iteration over all active jobs
   JobIterator begin() const {
