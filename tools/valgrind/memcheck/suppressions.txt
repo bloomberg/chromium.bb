@@ -3573,7 +3573,7 @@
    bug_49268_1
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN15DownloadManager4InitEP7Profile
+   ...
    fun:_ZN19DownloadManagerTestC2Ev
    fun:_ZN38DownloadManagerTest_StartDownload_TestC1Ev
 }

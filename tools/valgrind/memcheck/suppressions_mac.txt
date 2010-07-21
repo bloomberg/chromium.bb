@@ -1331,3 +1331,17 @@
    fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS0_11CaptureDataEEEE
    fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
 }
+{
+   bug_49268_2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19DownloadManagerTestC2Ev
+   fun:_ZN7testing8internal15TestFactoryImplI40DownloadManagerTest_GetSafeFilename_TestE10CreateTestEv
+}
+{
+   bug_49268_3
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19DownloadManagerTestC2Ev
+   fun:_ZN7testing8internal15TestFactoryImplI45DownloadManagerTest_TestDownloadFilename_TestE10CreateTestEv
+}
