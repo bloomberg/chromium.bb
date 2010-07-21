@@ -442,9 +442,6 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, char** argv) {
 #endif
-#if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
-#endif
 #if defined(OS_MACOSX)
   // TODO(mark): Some of these things ought to be handled in chrome_exe_main.mm.
   // Under the current architecture, nothing in chrome_exe_main can rely
@@ -465,6 +462,10 @@ int ChromeMain(int argc, char** argv) {
   // app quits. Each "main" needs to flush this pool right before it goes into
   // its main event loop to get rid of the cruft.
   base::ScopedNSAutoreleasePool autorelease_pool;
+
+#if defined(OS_CHROMEOS)
+  chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
+#endif
 
 #if defined(OS_POSIX)
   base::GlobalDescriptors* g_fds = Singleton<base::GlobalDescriptors>::get();
