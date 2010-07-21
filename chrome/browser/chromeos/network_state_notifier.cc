@@ -38,14 +38,14 @@ NetworkStateNotifier::NetworkStateNotifier()
 
 void NetworkStateNotifier::NetworkChanged(NetworkLibrary* cros) {
   DCHECK(CrosLibrary::Get()->EnsureLoaded());
-  // Update the state 1 seconds later using UI thread.
+  // Update the state 2 seconds later using UI thread.
   // See http://crosbug.com/4558
   ChromeThread::PostDelayedTask(
       ChromeThread::UI, FROM_HERE,
       task_factory_.NewRunnableMethod(
           &NetworkStateNotifier::UpdateNetworkState,
           RetrieveState()),
-      1000);
+      2000);
 }
 
 void NetworkStateNotifier::UpdateNetworkState(
