@@ -26,7 +26,7 @@ class CodesignTest(pyauto.PyUITest):
 
     # TODO: Add functionality for other operating systems (see crbug.com/47902)
     if self.IsMac():
-      self._macCodeSign(browser_info)
+      self._MacCodeSign(browser_info)
 
   def _MacCodeSign(self, browser_info):
     valid_text = 'valid on disk'
