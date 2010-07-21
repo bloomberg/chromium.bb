@@ -914,6 +914,28 @@
    fun:DownloadManagerTest_StartDownload_Test::TestBody
 }
 {
+   bug_49307_d
+   Heapcheck:Leak
+   ...
+   fun:DownloadManager::ContinueStartDownload
+   fun:DownloadManager::FileSelected
+   fun:DownloadManagerTest_DownloadRenameTest_Test::TestBody
+}
+{
+   bug_49307_e
+   Heapcheck:Leak
+   ...
+   fun:DownloadManagerTest
+   fun:DownloadManagerTest_DownloadRenameTest_Test
+}
+{
+   bug_49307_f
+   Heapcheck:Leak
+   ...
+   fun:DownloadManager::DownloadFinished
+   fun:DownloadManagerTest_DownloadRenameTest_Test::TestBody
+}
+{
    bug_49310_a
    Heapcheck:Leak
    ...
