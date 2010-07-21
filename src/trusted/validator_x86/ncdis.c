@@ -452,7 +452,7 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
     const char* filename = GrokArgv(new_argc, argv);
 
     Info("processing %s", filename);
-    ncf = nc_loadfile_depending(filename, !FLAGS_not_nc);
+    ncf = nc_loadfile_depending(filename, !FLAGS_not_nc, NULL);
     if (ncf == NULL) {
       Fatal("nc_loadfile(%s): %s\n", filename, strerror(errno));
     }

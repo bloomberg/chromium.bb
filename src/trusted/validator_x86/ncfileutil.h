@@ -26,6 +26,10 @@ static const Elf_Addr kNCFileUtilPageSize = (1 << 12);
 #define kMaxPhnum 32
 #endif
 
+/* Function signature for error printing. */
+typedef void (*nc_loadfile_error_fn)(const char* format,
+                                     ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
 typedef struct {
   const char* fname;     /* name of loaded file */
   NaClPcAddress vbase;   /* base address in virtual memory */
@@ -36,33 +40,30 @@ typedef struct {
   Elf_Half shnum;        /* number of Elf section headers */
   Elf_Shdr* sheaders;    /* copy of the Elf section headers */
   int ncalign;
+  nc_loadfile_error_fn error_fn;  /* The error printing routine to use. */
 } ncfile;
 
 /* Loads the given filename into memory, and if the nc_rules is non-zero,
- * require native client rules to be applied.
+ * require native client rules to be applied. If error_fn is NULL, a default
+ * error printing routine will be used.
  */
-ncfile *nc_loadfile_depending(const char* filename, int nc_rules);
+ncfile *nc_loadfile_depending(const char* filename, int nc_rules,
+                              nc_loadfile_error_fn error_fn);
 
-/* Loads the given filename into memory, applying native client rules. */
+/* Loads the given filename into memory, applying native client rules.
+ * Uses the default error printing function.
+*/
 ncfile *nc_loadfile(const char *filename);
+
+/* Loads the given filename into memory, applying native client rules.
+ * Uses the given error printing function to record errors.
+*/
+ncfile *nc_loadfile_with_error_fn(const char *filename,
+                                  nc_loadfile_error_fn error_fn);
 
 void nc_freefile(ncfile* ncf);
 
 void GetVBaseAndLimit(ncfile* ncf, NaClPcAddress* vbase, NaClPcAddress* vlimit);
-
-/* Function signature for error printing. */
-typedef void (*nc_loadfile_error_fn)(const char* format,
-                                     ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
-
-/* Register error print function to use. Returns the old print fcn.
- * Warning: this function is not threadsafe. Caller is responsible for
- * locking updates if multiple threads call this function.
- */
-nc_loadfile_error_fn NcLoadFileRegisterErrorFn(nc_loadfile_error_fn fn);
-
-/* Define the default print error function to use for this module. */
-void NcLoadFilePrintError(const char* format,
-                          ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 EXTERN_C_END
 

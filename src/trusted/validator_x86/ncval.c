@@ -240,12 +240,7 @@ static void ValidateSfiLoadPrintError(const char* format, ...) {
 
 /* Loads the elf file defined by fname. For use within ValidateSfiLoad. */
 static ncfile* ValidateSfiLoadFile(const char* fname) {
-  nc_loadfile_error_fn old_print_error;
-  ncfile* file;
-  old_print_error = NcLoadFileRegisterErrorFn(ValidateSfiLoadPrintError);
-  file = nc_loadfile(fname);
-  NcLoadFileRegisterErrorFn(old_print_error);
-  return file;
+  return nc_loadfile_with_error_fn(fname, ValidateSfiLoadPrintError);
 }
 
 /* Load the elf file and return the loaded elf file. */
