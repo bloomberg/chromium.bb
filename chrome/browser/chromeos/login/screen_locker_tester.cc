@@ -15,6 +15,7 @@
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/widget/widget_gtk.h"
+#include "views/widget/root_view.h"
 
 namespace chromeos {
 
@@ -24,8 +25,9 @@ test::ScreenLockerTester* ScreenLocker::GetTester() {
 
 namespace test {
 
-bool ScreenLockerTester::IsOpen() {
-  return chromeos::ScreenLocker::screen_locker_ != NULL;
+bool ScreenLockerTester::IsLocked() {
+  return ScreenLocker::screen_locker_ != NULL &&
+      ScreenLocker::screen_locker_->lock_widget_->GetRootView()->IsVisible();
 }
 
 void ScreenLockerTester::InjectMockAuthenticator(

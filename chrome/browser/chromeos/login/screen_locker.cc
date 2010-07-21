@@ -13,7 +13,9 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -580,6 +582,14 @@ void ScreenLocker::OnGrabInputs() {
 // static
 void ScreenLocker::Show() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+
+  // Exit fullscreen.
+  Browser* browser = BrowserList::GetLastActive();
+  DCHECK(browser);
+  if (browser->window()->IsFullscreen()) {
+    browser->ToggleFullscreenMode();
+  }
+
   // TODO(oshima): Currently, PowerManager may send a lock screen event
   // even if a screen is locked. Investigate & solve the issue and
   // enable this again if it's possible.

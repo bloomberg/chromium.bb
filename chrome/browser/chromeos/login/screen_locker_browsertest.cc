@@ -5,6 +5,8 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/automation/ui_controls.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
@@ -15,11 +17,74 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/window/window_gtk.h"
+
+namespace {
+
+// An object that wait for lock state and fullscreen state.
+class Waiter : public NotificationObserver {
+ public:
+  Waiter(Browser* browser)
+      : browser_(browser) {
+    registrar_.Add(this,
+                   NotificationType::SCREEN_LOCK_STATE_CHANGED,
+                   NotificationService::AllSources());
+    handler_id_ = g_signal_connect(
+        G_OBJECT(browser_->window()->GetNativeHandle()),
+        "window-state-event",
+        G_CALLBACK(OnWindowStateEventThunk),
+        this);
+  }
+
+  ~Waiter() {
+    g_signal_handler_disconnect(
+        G_OBJECT(browser_->window()->GetNativeHandle()),
+        handler_id_);
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::SCREEN_LOCK_STATE_CHANGED);
+    MessageLoop::current()->Quit();
+  }
+
+  // Wait until the two conditions are met.
+  void Wait(bool locker_state, bool fullscreen) {
+    scoped_ptr<chromeos::test::ScreenLockerTester>
+        tester(chromeos::ScreenLocker::GetTester());
+    while (tester->IsLocked() != locker_state ||
+           browser_->window()->IsFullscreen() != fullscreen) {
+      ui_test_utils::RunMessageLoop();
+    }
+    // Make sure all pending tasks are executed.
+    ui_test_utils::RunAllPendingInMessageLoop();
+  }
+
+  CHROMEGTK_CALLBACK_1(Waiter, gboolean, OnWindowStateEvent,
+                       GdkEventWindowState*);
+
+ private:
+  Browser* browser_;
+  gulong handler_id_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(Waiter);
+};
+
+gboolean Waiter::OnWindowStateEvent(GtkWidget* widget,
+                                    GdkEventWindowState* event) {
+  MessageLoop::current()->Quit();
+  return false;
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -38,18 +103,18 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     tester->EmulateWindowManagerReady();
     ui_test_utils::WaitForNotification(
         NotificationType::SCREEN_LOCK_STATE_CHANGED);
-    EXPECT_TRUE(tester->IsOpen());
+    EXPECT_TRUE(tester->IsLocked());
     tester->InjectMockAuthenticator("", "");
 
     unlock(tester->GetWidget());
 
     ui_test_utils::RunAllPendingInMessageLoop();
-    EXPECT_TRUE(tester->IsOpen());
+    EXPECT_TRUE(tester->IsLocked());
 
     // Emulate LockScreen request from PowerManager (via SessionManager).
     ScreenLocker::Hide();
     ui_test_utils::RunAllPendingInMessageLoop();
-    EXPECT_FALSE(tester->IsOpen());
+    EXPECT_FALSE(tester->IsLocked());
   }
 
  private:
@@ -95,20 +160,45 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
       NotificationType::SCREEN_LOCK_STATE_CHANGED);
 
   tester->InjectMockAuthenticator("user", "pass");
-  EXPECT_TRUE(tester->IsOpen());
+  EXPECT_TRUE(tester->IsLocked());
   tester->EnterPassword("fail");
   ui_test_utils::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(tester->IsOpen());
+  EXPECT_TRUE(tester->IsLocked());
   tester->EnterPassword("pass");
   ui_test_utils::RunAllPendingInMessageLoop();
   // Successful authentication simply send a unlock request to PowerManager.
-  EXPECT_TRUE(tester->IsOpen());
+  EXPECT_TRUE(tester->IsLocked());
 
   // Emulate LockScreen request from PowerManager (via SessionManager).
   // TODO(oshima): Find out better way to handle this in mock.
   ScreenLocker::Hide();
   ui_test_utils::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(tester->IsOpen());
+  EXPECT_FALSE(tester->IsLocked());
+}
+
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
+  scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+  {
+    Waiter waiter(browser());
+    browser()->ToggleFullscreenMode();
+    waiter.Wait(false /* not locked */, true /* full screen */);
+    EXPECT_TRUE(browser()->window()->IsFullscreen());
+    EXPECT_FALSE(tester->IsLocked());
+  }
+  {
+    Waiter waiter(browser());
+    UserManager::Get()->UserLoggedIn("user");
+    ScreenLocker::Show();
+    tester->EmulateWindowManagerReady();
+    waiter.Wait(true /* locked */, false /* full screen */);
+    EXPECT_FALSE(browser()->window()->IsFullscreen());
+    EXPECT_TRUE(tester->IsLocked());
+  }
+  tester->InjectMockAuthenticator("user", "pass");
+  tester->EnterPassword("pass");
+  ScreenLocker::Hide();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tester->IsLocked());
 }
 
 void MouseMove(views::Widget* widget) {

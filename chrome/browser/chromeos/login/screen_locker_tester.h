@@ -23,8 +23,8 @@ namespace test {
 // of ScreenLocker class. Used to implement unit tests.
 class ScreenLockerTester {
  public:
-  // Returns true if the screen lock is open.
-  bool IsOpen();
+  // Returns true if the screen is locked.
+  bool IsLocked();
 
   // Injects MockAuthenticate that uses given |user| and |password|.
   void InjectMockAuthenticator(const char* user, const char* password);
