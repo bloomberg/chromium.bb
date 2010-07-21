@@ -193,12 +193,46 @@
 {
    # Mac Sandbox test cases are registered in a global map.  This code is only
    # used in the unit test binary.
+   Mac_Sandbox_Intentional_Leak1
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*MacSandboxed*TestCaseEEC2EPKc
    fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*MacSandboxed*TestCaseEEC1EPKc
    fun:_Z41__static_initialization_and_destruction_0ii
    fun:_GLOBAL__I__ZNSt3tr112_GLOBAL__N_16ignoreE
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
+   fun:_ZN4dyld24initializeMainExecutableEv
+   fun:_ZN4dyld5_mainEPK11mach_headermiPPKcS5_S5_
+   fun:_ZN13dyldbootstrap5startEPK11mach_headeriPPKcl
+   fun:_dyld_start
+   obj:*
+}
+{
+   Mac_Sandbox_Intentional_Leak2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_119FontLoadingTestCaseEEC2EPKc
+   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_119FontLoadingTestCaseEEC1EPKc
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZNSt3tr112_GLOBAL__N_16ignoreE
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
+   fun:_ZN4dyld24initializeMainExecutableEv
+   fun:_ZN4dyld5_mainEPK11mach_headermiPPKcS5_S5_
+   fun:_ZN13dyldbootstrap5startEPK11mach_headeriPPKcl
+   fun:_dyld_start
+   obj:*
+}
+{
+   # With our tweaks to get Chromium to link on Mac 10.5, we sometimes get
+   # this suppression instead.
+   Mac_Sandbox_Intentional_Leak3
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z41__static_initialization_and_destruction_0ii
    fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
    fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
    fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
@@ -1219,23 +1253,6 @@
    fun:_Znw*
    ...
    fun:_ZN12_GLOBAL__N_113ExtensionImpl12StartRequestERKN2v89ArgumentsE
-}
-{
-   bug_44946
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_119FontLoadingTestCaseEEC2EPKc
-   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_119FontLoadingTestCaseEEC1EPKc
-   fun:_Z41__static_initialization_and_destruction_0ii
-   fun:_GLOBAL__I__ZNSt3tr112_GLOBAL__N_16ignoreE
-   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
-   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
-   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
-   fun:_ZN4dyld24initializeMainExecutableEv
-   fun:_ZN4dyld5_mainEPK11mach_headermiPPKcS5_S5_
-   fun:_ZN13dyldbootstrap5startEPK11mach_headeriPPKcl
-   fun:_dyld_start
-   obj:*
 }
 {
    bug_46186
