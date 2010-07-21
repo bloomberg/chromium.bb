@@ -821,7 +821,7 @@ LocationBar* BrowserView::GetLocationBar() const {
 
 void BrowserView::SetFocusToLocationBar(bool select_all) {
   LocationBarView* location_bar = toolbar_->location_bar();
-  if (location_bar->IsFocusable()) {
+  if (location_bar->IsFocusableInRootView()) {
     // Location bar got focus.
     location_bar->FocusLocation(select_all);
   } else {

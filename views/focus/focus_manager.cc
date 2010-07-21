@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -361,8 +361,8 @@ void FocusManager::RestoreFocusedView() {
 
   View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
   if (view) {
-    if (ContainsView(view) &&
-        (view->IsFocusable() || view->IsAccessibilityFocusable())) {
+    if (ContainsView(view) && (view->IsFocusableInRootView() ||
+                               view->IsAccessibilityFocusableInRootView())) {
       SetFocusedViewWithReason(view, kReasonFocusRestore);
     }
   } else {

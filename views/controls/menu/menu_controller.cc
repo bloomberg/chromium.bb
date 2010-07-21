@@ -91,7 +91,7 @@ static View* GetFirstFocusableView(View* view, int start, bool forward) {
         return deepest;
     }
   }
-  return view->IsFocusable() ? view : NULL;
+  return view->IsFocusableInRootView() ? view : NULL;
 }
 
 // Returns the first child of |start| that is focusable.

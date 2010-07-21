@@ -102,9 +102,9 @@ bool FocusSearch::IsViewFocusableCandidate(View* v, int skip_group_id) {
 
 bool FocusSearch::IsFocusable(View* v) {
   if (accessibility_mode_)
-    return v && v->IsAccessibilityFocusable();
-  else
-    return v && v->IsFocusable();
+    return v && v->IsAccessibilityFocusableInRootView();
+
+  return v && v->IsFocusableInRootView();
 }
 
 View* FocusSearch::FindSelectedViewForGroup(View* view) {

@@ -506,17 +506,18 @@ class View : public AcceleratorTarget {
   // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
   void SetNextFocusableView(View* view);
 
-  // Return whether this view can accept the focus.
-  virtual bool IsFocusable() const;
-
   // Sets whether this view can accept the focus.
   // Note that this is false by default so that a view used as a container does
   // not get the focus.
   virtual void SetFocusable(bool focusable);
 
-  // Return whether this view is focusable when the user requires
-  // full keyboard access, even though it may not be normally focusable.
-  virtual bool IsAccessibilityFocusable() const;
+  // Returns true if the view is focusable (IsFocusable) and visible in the root
+  // view. See also IsFocusable.
+  bool IsFocusableInRootView() const;
+
+  // Return whether this view is focusable when the user requires full keyboard
+  // access, even though it may not be normally focusable.
+  bool IsAccessibilityFocusableInRootView() const;
 
   // Set whether this view can be made focusable if the user requires
   // full keyboard access, even though it's not normally focusable.
@@ -966,13 +967,11 @@ class View : public AcceleratorTarget {
   ThemeProvider* GetThemeProvider() const;
 
  protected:
-  // The id of this View. Used to find this View.
-  int id_;
-
-  // The group of this view. Some view subclasses use this id to find other
-  // views of the same group. For example radio button uses this information
-  // to find other radio buttons.
-  int group_;
+  // Returns whether this view can accept focus.
+  // A view can accept focus if it's enabled, focusable and visible.
+  // This method is intended for views to use when calculating preferred size.
+  // The FocusManager and other places use IsFocusableInRootView.
+  virtual bool IsFocusable() const;
 
   // Called when the UI theme has changed, overriding allows individual Views to
   // do special cleanup and processing (such as dropping resource caches).
@@ -1095,6 +1094,14 @@ class View : public AcceleratorTarget {
   // used by the public static method ExceededDragThreshold().
   static int GetHorizontalDragThreshold();
   static int GetVerticalDragThreshold();
+
+  // The id of this View. Used to find this View.
+  int id_;
+
+  // The group of this view. Some view subclasses use this id to find other
+  // views of the same group. For example radio button uses this information
+  // to find other radio buttons.
+  int group_;
 
   // Whether this view is enabled.
   bool enabled_;

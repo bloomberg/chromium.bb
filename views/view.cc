@@ -283,15 +283,15 @@ void View::SetEnabled(bool state) {
   }
 }
 
-bool View::IsFocusable() const {
-  return focusable_ && IsEnabled() && IsVisibleInRootView();
-}
-
 void View::SetFocusable(bool focusable) {
   focusable_ = focusable;
 }
 
-bool View::IsAccessibilityFocusable() const {
+bool View::IsFocusableInRootView() const {
+  return IsFocusable() && IsVisibleInRootView();
+}
+
+bool View::IsAccessibilityFocusableInRootView() const {
   return (focusable_ || accessibility_focusable_) && IsEnabled() &&
       IsVisibleInRootView();
 }
@@ -359,10 +359,8 @@ void View::PaintBorder(gfx::Canvas* canvas) {
 }
 
 void View::PaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus() && (IsFocusable() ||
-                     IsAccessibilityFocusable())) {
+  if (HasFocus() && (IsFocusable() || IsAccessibilityFocusableInRootView()))
     canvas->DrawFocusRect(0, 0, width(), height());
-  }
 }
 
 void View::PaintChildren(gfx::Canvas* canvas) {
@@ -663,6 +661,10 @@ void View::PropagateAddNotifications(View* parent, View* child) {
   for (int i = 0, count = GetChildViewCount(); i < count; ++i)
     GetChildViewAt(i)->PropagateAddNotifications(parent, child);
   ViewHierarchyChangedImpl(true, true, parent, child);
+}
+
+bool View::IsFocusable() const {
+  return focusable_ && IsEnabled() && IsVisible();
 }
 
 void View::ThemeChanged() {
@@ -1319,7 +1321,7 @@ bool View::IsVisibleInRootView() const {
 
 void View::RequestFocus() {
   RootView* rv = GetRootView();
-  if (rv && IsFocusable())
+  if (rv && IsFocusableInRootView())
     rv->FocusView(this);
 }
 
