@@ -532,6 +532,9 @@ class Browser : public TabStripModelDelegate,
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
+  // Overridden from TabStripModelDelegate:
+  virtual bool UseVerticalTabs() const;
+
   /////////////////////////////////////////////////////////////////////////////
 
   // Sets the value of homepage related prefs to new values. Since we do not
@@ -647,7 +650,6 @@ class Browser : public TabStripModelDelegate,
   virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
   virtual bool CanCloseTab() const;
-  virtual bool UseVerticalTabs() const;
   virtual void ToggleUseVerticalTabs();
   virtual bool CanRestoreTab();
   virtual void RestoreTab();

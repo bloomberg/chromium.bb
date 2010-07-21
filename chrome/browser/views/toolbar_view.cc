@@ -344,6 +344,11 @@ void ToolbarView::Observe(NotificationType type,
 // ToolbarView, menus::SimpleMenuModel::Delegate implementation:
 
 bool ToolbarView::IsCommandIdChecked(int command_id) const {
+#if defined(OS_CHROMEOS)
+  if (command_id == IDC_TOGGLE_VERTICAL_TABS) {
+    return browser_->UseVerticalTabs();
+  }
+#endif
   return (command_id == IDC_SHOW_BOOKMARK_BAR) &&
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }

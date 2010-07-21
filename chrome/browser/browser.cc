@@ -2354,10 +2354,6 @@ bool Browser::CanCloseTab() const {
   return !watcher || watcher->CanCloseTab(this);
 }
 
-bool Browser::UseVerticalTabs() const {
-  return use_vertical_tabs_.GetValue();
-}
-
 void Browser::ToggleUseVerticalTabs() {
   use_vertical_tabs_.SetValue(!UseVerticalTabs());
   UseVerticalTabsChanged();
@@ -2685,6 +2681,10 @@ void Browser::UpdateTargetURL(TabContents* source, const GURL& url) {
 void Browser::UpdateDownloadShelfVisibility(bool visible) {
   if (GetStatusBubble())
     GetStatusBubble()->UpdateDownloadShelfVisibility(visible);
+}
+
+bool Browser::UseVerticalTabs() const {
+  return use_vertical_tabs_.GetValue();
 }
 
 void Browser::ContentsZoomChange(bool zoom_in) {
