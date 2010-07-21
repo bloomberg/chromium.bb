@@ -664,6 +664,11 @@ void BrowserWindowGtk::Close() {
   if (!window_)
     return;
 
+  // Sometimes the tabstrip will get stuck thinking it's in a drag session.
+  // Short of figuring out a repro case and actually solving the problem, this
+  // is the best way to avoid an immortal window. See http://crbug.com/23733
+  tabstrip_->CancelActiveDragSession();
+
   if (!CanClose())
     return;
 
