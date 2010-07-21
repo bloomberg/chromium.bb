@@ -6,7 +6,10 @@
 
 #include "base/json/json_reader.h"
 #include "base/keyboard_codes.h"
+#include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_extension_function.h"
+#include "chrome/browser/automation/automation_tab_tracker.h"
+#include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/automation/extension_port_container.h"
 #include "chrome/browser/automation/ui_controls.h"

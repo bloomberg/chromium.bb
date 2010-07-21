@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/md5.h"
+#include "base/values.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

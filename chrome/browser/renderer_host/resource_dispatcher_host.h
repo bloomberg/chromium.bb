@@ -71,9 +71,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
         const ViewHostMsg_Resource_Request& request_data) = 0;
 
    protected:
-    explicit Receiver(ChildProcessInfo::ProcessType type, int child_id)
-        : ChildProcessInfo(type, child_id) {}
-    virtual ~Receiver() {}
+    explicit Receiver(ChildProcessInfo::ProcessType type, int child_id);
+    virtual ~Receiver();
   };
 
   class Observer {
@@ -266,10 +265,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void DataReceivedACK(int process_unique_id, int request_id);
 
   // Needed for the sync IPC message dispatcher macros.
-  bool Send(IPC::Message* message) {
-    delete message;
-    return false;
-  }
+  bool Send(IPC::Message* message);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,

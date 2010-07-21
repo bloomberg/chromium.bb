@@ -7,6 +7,7 @@
 
 #include "chrome/browser/automation/automation_resource_tracker.h"
 #include "chrome/browser/browser.h"
+#include "chrome/common/notification_source.h"
 
 // Tracks Browser objects.
 class AutomationBrowserTracker : public AutomationResourceTracker<Browser*> {

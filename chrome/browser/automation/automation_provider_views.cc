@@ -4,6 +4,8 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
+#include "chrome/browser/automation/automation_browser_tracker.h"
+#include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/test/automation/automation_messages.h"

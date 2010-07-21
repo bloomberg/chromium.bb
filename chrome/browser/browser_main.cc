@@ -40,6 +40,7 @@
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
+#include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/metadata_url_request.h"

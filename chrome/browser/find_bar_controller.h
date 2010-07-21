@@ -8,7 +8,10 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_registrar.h"
-#include "gfx/rect.h"
+
+namespace gfx {
+class Rect;
+}
 
 class FindBar;
 class TabContents;

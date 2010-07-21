@@ -7,6 +7,8 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/automation/ui_controls.h"
+#include "chrome/browser/automation/automation_browser_tracker.h"
+#include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/view_id_util.h"

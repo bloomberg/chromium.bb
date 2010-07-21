@@ -190,6 +190,14 @@ std::vector<int> GetAllNetErrorCodes() {
 
 }  // namespace
 
+ResourceDispatcherHost::Receiver::Receiver(ChildProcessInfo::ProcessType type,
+                                           int child_id)
+    : ChildProcessInfo(type, child_id) {
+}
+
+ResourceDispatcherHost::Receiver::~Receiver() {
+}
+
 ResourceDispatcherHost::ResourceDispatcherHost()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           download_file_manager_(new DownloadFileManager(this))),
@@ -514,6 +522,11 @@ void ResourceDispatcherHost::DataReceivedACK(int child_id,
     // Resume the request.
     PauseRequest(child_id, request_id, false);
   }
+}
+
+bool ResourceDispatcherHost::Send(IPC::Message* message) {
+  delete message;
+  return false;
 }
 
 void ResourceDispatcherHost::OnUploadProgressACK(int request_id) {

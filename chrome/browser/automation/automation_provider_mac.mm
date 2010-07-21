@@ -9,6 +9,8 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/automation/automation_browser_tracker.h"
+#include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/cocoa/tab_window_controller.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "gfx/point.h"

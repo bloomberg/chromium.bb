@@ -11,6 +11,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "gfx/rect.h"
 
 // The minimum space between the FindInPage window and the search result.
 static const int kMinFindWndDistanceFromSelection = 5;

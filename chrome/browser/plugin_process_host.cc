@@ -47,6 +47,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
+#include "gfx/rect.h"
 #endif
 
 static const char kDefaultPluginFinderURL[] =

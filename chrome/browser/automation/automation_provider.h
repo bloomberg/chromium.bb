@@ -17,13 +17,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "chrome/browser/automation/automation_autocomplete_edit_tracker.h"
-#include "chrome/browser/automation/automation_browser_tracker.h"
-#include "chrome/browser/automation/automation_resource_message_filter.h"
-#include "chrome/browser/automation/automation_tab_tracker.h"
-#include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -42,11 +36,18 @@ class PopupMenuWaiter;
 namespace IPC {
 struct Reposition_Params;
 struct ExternalTabSettings;
+class ChannelProxy;
 }
 
 class AutoFillProfile;
+class AutomationAutocompleteEditTracker;
+class AutomationBrowserTracker;
 class AutomationExtensionTracker;
+class AutomationResourceMessageFilter;
+class AutomationTabTracker;
+class AutomationWindowTracker;
 class CreditCard;
+class DictionaryValue;
 class Extension;
 class ExtensionPortContainer;
 class ExtensionTestResultNotificationObserver;
@@ -930,8 +931,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // BrowserList::Observer implementation
   // Called immediately after a browser is added to the list
-  virtual void OnBrowserAdded(const Browser* browser) {
-  }
+  virtual void OnBrowserAdded(const Browser* browser);
   // Called immediately before a browser is removed from the list
   virtual void OnBrowserRemoving(const Browser* browser);
 

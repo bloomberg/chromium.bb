@@ -18,16 +18,13 @@
 #include "base/file_path.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
-#include "base/shared_memory.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/nacl_types.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
@@ -49,6 +46,10 @@ class URLRequestContextGetter;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
 struct WebPluginInfo;
+
+namespace base {
+class SharedMemory;
+}
 
 namespace file_util {
 struct FileInfo;

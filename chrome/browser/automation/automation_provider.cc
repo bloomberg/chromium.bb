@@ -29,10 +29,15 @@
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/automation/automation_autocomplete_edit_tracker.h"
+#include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_extension_tracker.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
+#include "chrome/browser/automation/automation_resource_message_filter.h"
+#include "chrome/browser/automation/automation_tab_tracker.h"
+#include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/automation/extension_port_container.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/blocked_popup_container.h"
@@ -3417,6 +3422,9 @@ TestingAutomationProvider::~TestingAutomationProvider() {
 void TestingAutomationProvider::OnChannelError() {
   BrowserList::CloseAllBrowsersAndExit();
   AutomationProvider::OnChannelError();
+}
+
+void TestingAutomationProvider::OnBrowserAdded(const Browser* browser) {
 }
 
 void TestingAutomationProvider::OnBrowserRemoving(const Browser* browser) {

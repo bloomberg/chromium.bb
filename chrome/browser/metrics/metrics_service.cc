@@ -164,24 +164,29 @@
 #endif
 
 #include "base/base64.h"
+#include "base/histogram.h"
 #include "base/md5.h"
 #include "base/thread.h"
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
+#include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/common/child_process_info.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 #include "libxml/xmlwriter.h"
 
 #if !defined(OS_WIN)
@@ -284,6 +289,39 @@ static const size_t kMaxOngoingLogsPersisted = 8;
 // checksum of the elements.
 static const size_t kChecksumEntryCount = 2;
 
+// This is used to quickly log stats from child process related notifications in
+// MetricsService::child_stats_buffer_.  The buffer's contents are transferred
+// out when Local State is periodically saved.  The information is then
+// reported to the UMA server on next launch.
+struct MetricsService::ChildProcessStats {
+ public:
+  explicit ChildProcessStats(ChildProcessInfo::ProcessType type)
+      : process_launches(0),
+        process_crashes(0),
+        instances(0),
+        process_type(type) {}
+
+  // This constructor is only used by the map to return some default value for
+  // an index for which no value has been assigned.
+  ChildProcessStats()
+      : process_launches(0),
+      process_crashes(0),
+      instances(0),
+      process_type(ChildProcessInfo::UNKNOWN_PROCESS) {}
+
+  // The number of times that the given child process has been launched
+  int process_launches;
+
+  // The number of times that the given child process has crashed
+  int process_crashes;
+
+  // The number of instances of this child process that have been created.
+  // An instance is a DOM object rendered by this child process during a page
+  // load.
+  int instances;
+
+  ChildProcessInfo::ProcessType process_type;
+};
 
 // Handles asynchronous fetching of memory details.
 // Will run the provided task after finished.

@@ -11,8 +11,10 @@
 #include "base/file_descriptor_posix.h"
 #endif
 #include "base/file_util.h"
+#include "base/file_path.h"
 #include "base/histogram.h"
 #include "base/process_util.h"
+#include "base/shared_memory.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/worker_pool.h"

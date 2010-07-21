@@ -21,6 +21,10 @@
 #include "ipc/ipc_channel_handle.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
+namespace gfx {
+class Rect;
+}
+
 class URLRequestContext;
 struct ViewHostMsg_Resource_Request;
 class GURL;

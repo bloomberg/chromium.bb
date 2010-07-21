@@ -8,23 +8,16 @@
 #ifndef CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
 #define CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
 
-#include <list>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/histogram.h"
 #include "base/scoped_ptr.h"
-#include "base/values.h"
-#include "chrome/browser/metrics/metrics_log.h"
-#include "chrome/common/child_process_info.h"
 #include "chrome/common/metrics_helpers.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_registrar.h"
-#include "webkit/glue/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -32,9 +25,13 @@
 
 class BookmarkModel;
 class BookmarkNode;
+class DictionaryValue;
+class ListValue;
 class HistogramSynchronizer;
+class MetricsLogBase;
 class PrefService;
 class TemplateURLModel;
+struct WebPluginInfo;
 
 // Forward declaration of the xmlNode to avoid having tons of gyp files
 // needing to depend on the libxml third party lib.
@@ -42,39 +39,6 @@ struct _xmlNode;
 typedef struct _xmlNode xmlNode;
 typedef xmlNode* xmlNodePtr;
 
-// This is used to quickly log stats from child process related notifications in
-// MetricsService::child_stats_buffer_.  The buffer's contents are transferred
-// out when Local State is periodically saved.  The information is then
-// reported to the UMA server on next launch.
-struct ChildProcessStats {
- public:
-  explicit ChildProcessStats(ChildProcessInfo::ProcessType type)
-      : process_launches(0),
-        process_crashes(0),
-        instances(0),
-        process_type(type) {}
-
-  // This constructor is only used by the map to return some default value for
-  // an index for which no value has been assigned.
-  ChildProcessStats()
-      : process_launches(0),
-      process_crashes(0),
-      instances(0),
-      process_type(ChildProcessInfo::UNKNOWN_PROCESS) {}
-
-  // The number of times that the given child process has been launched
-  int process_launches;
-
-  // The number of times that the given child process has crashed
-  int process_crashes;
-
-  // The number of instances of this child process that have been created.
-  // An instance is a DOM object rendered by this child process during a page
-  // load.
-  int instances;
-
-  ChildProcessInfo::ProcessType process_type;
-};
 
 class MetricsService : public NotificationObserver,
                        public URLFetcher::Delegate,
@@ -494,6 +458,7 @@ class MetricsService : public NotificationObserver,
 
   // Buffer of child process notifications for quick access.  See
   // ChildProcessStats documentation above for more details.
+  struct ChildProcessStats;
   std::map<std::wstring, ChildProcessStats> child_process_stats_buffer_;
 
   ScopedRunnableMethodFactory<MetricsService> log_sender_factory_;
