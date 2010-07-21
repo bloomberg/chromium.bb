@@ -34,30 +34,16 @@ SolidBorder::SolidBorder(int thickness, SkColor color)
 }
 
 void SolidBorder::Paint(const View& view, gfx::Canvas* canvas) const {
-  gfx::Rect clip_rect;
-  if (!canvas->GetClipRect(&clip_rect))
-    return;  // Empty clip rectangle, nothing to paint.
-
   // Top border.
-  gfx::Rect border_bounds(0, 0, view.width(), insets_.top());
-  if (clip_rect.Intersects(border_bounds))
-    canvas->FillRectInt(color_, 0, 0, view.width(), insets_.top());
+  canvas->FillRectInt(color_, 0, 0, view.width(), insets_.top());
   // Left border.
-  border_bounds.SetRect(0, 0, insets_.left(), view.height());
-  if (clip_rect.Intersects(border_bounds))
-    canvas->FillRectInt(color_, 0, 0, insets_.left(), view.height());
+  canvas->FillRectInt(color_, 0, 0, insets_.left(), view.height());
   // Bottom border.
-  border_bounds.SetRect(0, view.height() - insets_.bottom(),
-                        view.width(), insets_.bottom());
-  if (clip_rect.Intersects(border_bounds))
-    canvas->FillRectInt(color_, 0, view.height() - insets_.bottom(),
-                        view.width(), insets_.bottom());
+  canvas->FillRectInt(color_, 0, view.height() - insets_.bottom(),
+                      view.width(), insets_.bottom());
   // Right border.
-  border_bounds.SetRect(view.width() - insets_.right(), 0,
-                       insets_.right(), view.height());
-  if (clip_rect.Intersects(border_bounds))
-    canvas->FillRectInt(color_, view.width() - insets_.right(), 0,
-                        insets_.right(), view.height());
+  canvas->FillRectInt(color_, view.width() - insets_.right(), 0,
+                      insets_.right(), view.height());
 }
 
 void SolidBorder::GetInsets(gfx::Insets* insets) const {

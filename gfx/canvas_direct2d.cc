@@ -36,10 +36,17 @@ ID2D1Factory* CanvasDirect2D::d2d1_factory_ = NULL;
 // CanvasDirect2D, public:
 
 CanvasDirect2D::CanvasDirect2D(ID2D1RenderTarget* rt) : rt_(rt) {
+  // A RenderState entry is pushed onto the stack to track the clip count prior
+  // to any calls to Save*().
+  state_.push(RenderState());
   rt_->BeginDraw();
 }
 
 CanvasDirect2D::~CanvasDirect2D() {
+  // Unwind any clips that were pushed outside of any Save*()/Restore() pairs.
+  int clip_count = state_.top().clip_count;
+  for (int i = 0; i < clip_count; ++i)
+    rt_->PopAxisAlignedClip();
   rt_->EndDraw();
 }
 
@@ -54,10 +61,7 @@ ID2D1Factory* CanvasDirect2D::GetD2D1Factory() {
 // CanvasDirect2D, Canvas implementation:
 
 void CanvasDirect2D::Save() {
-  if (!drawing_state_block_)
-    GetD2D1Factory()->CreateDrawingStateBlock(drawing_state_block_.Receive());
-  rt_->SaveDrawingState(drawing_state_block_.get());
-  layers_.push(NULL);
+  SaveInternal(NULL);
 }
 
 void CanvasDirect2D::SaveLayerAlpha(uint8 alpha) {
@@ -81,35 +85,45 @@ void CanvasDirect2D::SaveLayerAlpha(uint8 alpha,
                                          D2D1_LAYER_OPTIONS_NONE),
                    layer);
   }
-  layers_.push(layer);
+  SaveInternal(layer);
 }
 
 void CanvasDirect2D::Restore() {
-  ID2D1Layer* layer = layers_.top();
+  ID2D1Layer* layer = state_.top().layer;
   if (layer) {
     rt_->PopLayer();
     layer->Release();
   }
-  layers_.pop();
+
+  int clip_count = state_.top().clip_count;
+  for (int i = 0; i < clip_count; ++i)
+    rt_->PopAxisAlignedClip();
+
+  state_.pop();
+  // The state_ stack should never be empty - we should always have at least one
+  // entry to hold a clip count when there is no active save/restore entry.
+  CHECK(!state_.empty()) << "Called Restore() once too often!";
+
   rt_->RestoreDrawingState(drawing_state_block_);
 }
 
-bool CanvasDirect2D::GetClipRect(gfx::Rect* clip_rect) {
-  return false;
-}
-
 bool CanvasDirect2D::ClipRectInt(int x, int y, int w, int h) {
-  return false;
-}
-
-bool CanvasDirect2D::IntersectsClipRectInt(int x, int y, int w, int h) {
-  return false;
+  rt_->PushAxisAlignedClip(RectToRectF(x, y, w, h),
+                           D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+  // Increment the clip count so the call to PushAxisAlignedClip() can be
+  // balanced with a call to PopAxisAlignedClip in the next Restore().
+  ++state_.top().clip_count;
+  return w > 0 && h > 0;
 }
 
 void CanvasDirect2D::TranslateInt(int x, int y) {
+  rt_->SetTransform(D2D1::Matrix3x2F::Translation(static_cast<float>(x),
+                                                  static_cast<float>(y)));
 }
 
 void CanvasDirect2D::ScaleInt(int x, int y) {
+  rt_->SetTransform(D2D1::Matrix3x2F::Scale(static_cast<float>(x),
+                                            static_cast<float>(y)));
 }
 
 void CanvasDirect2D::FillRectInt(int x, int y, int w, int h,
@@ -214,6 +228,16 @@ CanvasSkia* CanvasDirect2D::AsCanvasSkia() {
 
 const CanvasSkia* CanvasDirect2D::AsCanvasSkia() const {
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CanvasDirect2D, private:
+
+void CanvasDirect2D::SaveInternal(ID2D1Layer* layer) {
+  if (!drawing_state_block_)
+    GetD2D1Factory()->CreateDrawingStateBlock(drawing_state_block_.Receive());
+  rt_->SaveDrawingState(drawing_state_block_.get());
+  state_.push(RenderState(layer));
 }
 
 }  // namespace gfx

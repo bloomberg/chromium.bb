@@ -154,3 +154,30 @@ TEST(CanvasDirect2D, PlatformPainting) {
   canvas.EndPlatformPaint();
 }
 
+TEST(CanvasDirect2D, ClipRect) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  canvas.FillRectInt(SK_ColorGREEN, 0, 0, 500, 500);
+  canvas.ClipRectInt(20, 20, 120, 120);
+  canvas.FillRectInt(SK_ColorBLUE, 0, 0, 500, 500);
+}
+
+TEST(CanvasDirect2D, ClipRectWithTranslate) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  // Repeat the same rendering as in ClipRect...
+  canvas.Save();
+  canvas.FillRectInt(SK_ColorGREEN, 0, 0, 500, 500);
+  canvas.ClipRectInt(20, 20, 120, 120);
+  canvas.FillRectInt(SK_ColorBLUE, 0, 0, 500, 500);
+  canvas.Restore();
+
+  // ... then translate, clip and fill again relative to the new origin.
+  canvas.Save();
+  canvas.TranslateInt(150, 150);
+  canvas.ClipRectInt(10, 10, 110, 110);
+  canvas.FillRectInt(SK_ColorRED, 0, 0, 500, 500);
+  canvas.Restore();
+}

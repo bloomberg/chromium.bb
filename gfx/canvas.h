@@ -81,17 +81,10 @@ class Canvas {
   // call Restore() more times than Save*().
   virtual void Restore() = 0;
 
-  // Retrieves the clip rectangle and sets it in the specified rectangle if any.
-  // Returns true if the clip rect is non-empty.
-  virtual bool GetClipRect(gfx::Rect* clip_rect) = 0;
-
   // Wrapper function that takes integer arguments.
   // Returns true if the clip is non-empty.
   // See clipRect for specifics.
   virtual bool ClipRectInt(int x, int y, int w, int h) = 0;
-
-  // Test whether the provided rectangle intersects the current clip rect.
-  virtual bool IntersectsClipRectInt(int x, int y, int w, int h) = 0;
 
   // Wrapper function that takes integer arguments.
   // See translate() for specifics.

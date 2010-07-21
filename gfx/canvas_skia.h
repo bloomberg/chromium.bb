@@ -84,9 +84,7 @@ class CanvasSkia : public skia::PlatformCanvas,
   virtual void SaveLayerAlpha(uint8 alpha);
   virtual void SaveLayerAlpha(uint8 alpha, const gfx::Rect& layer_bounds);
   virtual void Restore();
-  virtual bool GetClipRect(gfx::Rect* clip_rect);
   virtual bool ClipRectInt(int x, int y, int w, int h);
-  virtual bool IntersectsClipRectInt(int x, int y, int w, int h);
   virtual void TranslateInt(int x, int y);
   virtual void ScaleInt(int x, int y);
   virtual void FillRectInt(int x, int y, int w, int h,
@@ -128,6 +126,9 @@ class CanvasSkia : public skia::PlatformCanvas,
   virtual const CanvasSkia* AsCanvasSkia() const;
 
  private:
+  // Test whether the provided rectangle intersects the current clip rect.
+  bool IntersectsClipRectInt(int x, int y, int w, int h);
+
 #if defined(OS_WIN)
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the

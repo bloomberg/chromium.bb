@@ -18,6 +18,16 @@
 
 namespace gfx {
 
+////////////////////////////////////////////////////////////////////////////////
+// CanvasSkia, public:
+
+// static
+int CanvasSkia::DefaultCanvasTextAlignment() {
+  if (!base::i18n::IsRTL())
+    return gfx::Canvas::TEXT_ALIGN_LEFT;
+  return gfx::Canvas::TEXT_ALIGN_RIGHT;
+}
+
 SkBitmap CanvasSkia::ExtractBitmap() const {
   const SkBitmap& device_bitmap = getDevice()->accessBitmap(false);
 
@@ -54,31 +64,11 @@ void CanvasSkia::Restore() {
   restore();
 }
 
-bool CanvasSkia::GetClipRect(gfx::Rect* r) {
-  SkRect clip;
-  if (!getClipBounds(&clip)) {
-    if (r)
-      r->SetRect(0, 0, 0, 0);
-    return false;
-  }
-  r->SetRect(SkScalarRound(clip.fLeft), SkScalarRound(clip.fTop),
-             SkScalarRound(clip.fRight - clip.fLeft),
-             SkScalarRound(clip.fBottom - clip.fTop));
-  return true;
-}
-
 bool CanvasSkia::ClipRectInt(int x, int y, int w, int h) {
   SkRect new_clip;
   new_clip.set(SkIntToScalar(x), SkIntToScalar(y),
                SkIntToScalar(x + w), SkIntToScalar(y + h));
   return clipRect(new_clip);
-}
-
-bool CanvasSkia::IntersectsClipRectInt(int x, int y, int w, int h) {
-  SkRect clip;
-  return getClipBounds(&clip) &&
-      clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
-                     SkIntToScalar(y + h));
 }
 
 void CanvasSkia::TranslateInt(int x, int y) {
@@ -314,11 +304,14 @@ const CanvasSkia* CanvasSkia::AsCanvasSkia() const {
   return this;
 }
 
-// static
-int CanvasSkia::DefaultCanvasTextAlignment() {
-  if (!base::i18n::IsRTL())
-    return gfx::Canvas::TEXT_ALIGN_LEFT;
-  return gfx::Canvas::TEXT_ALIGN_RIGHT;
+////////////////////////////////////////////////////////////////////////////////
+// CanvasSkia, private:
+
+bool CanvasSkia::IntersectsClipRectInt(int x, int y, int w, int h) {
+  SkRect clip;
+  return getClipBounds(&clip) &&
+      clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
+                     SkIntToScalar(y + h));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

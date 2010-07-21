@@ -28,9 +28,7 @@ class CanvasDirect2D : public Canvas {
   virtual void SaveLayerAlpha(uint8 alpha);
   virtual void SaveLayerAlpha(uint8 alpha, const gfx::Rect& layer_bounds);
   virtual void Restore();
-  virtual bool GetClipRect(gfx::Rect* clip_rect);
   virtual bool ClipRectInt(int x, int y, int w, int h);
-  virtual bool IntersectsClipRectInt(int x, int y, int w, int h);
   virtual void TranslateInt(int x, int y);
   virtual void ScaleInt(int x, int y);
   virtual void FillRectInt(int x, int y, int w, int h,
@@ -72,11 +70,28 @@ class CanvasDirect2D : public Canvas {
   virtual const CanvasSkia* AsCanvasSkia() const;
 
  private:
+  void SaveInternal(ID2D1Layer* layer);
+
   ID2D1RenderTarget* rt_;
   ScopedComPtr<ID2D1GdiInteropRenderTarget> interop_rt_;
   ScopedComPtr<ID2D1DrawingStateBlock> drawing_state_block_;
   static ID2D1Factory* d2d1_factory_;
-  std::stack<ID2D1Layer*> layers_;
+
+  // Every time Save* is called, a RenderState object is pushed onto the
+  // RenderState stack.
+  struct RenderState {
+    explicit RenderState(ID2D1Layer* layer) : layer(layer), clip_count(0) {}
+    RenderState() : layer(NULL), clip_count(0) {}
+
+    // A D2D layer associated with this state, or NULL if there is no layer.
+    // The layer is created and owned by the Canvas.
+    ID2D1Layer* layer;
+    // The number of clip operations performed. This is used to balance calls to
+    // PushAxisAlignedClip with calls to PopAxisAlignedClip when Restore() is
+    // called.
+    int clip_count;
+  };
+  std::stack<RenderState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasDirect2D);
 };
