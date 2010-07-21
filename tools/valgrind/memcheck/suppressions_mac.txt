@@ -1379,6 +1379,36 @@
    fun:_ZN7testing8internal15TestFactoryImplI45DownloadManagerTest_TestDownloadFilename_TestE10CreateTestEv
 }
 {
+   bug_49590a
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject allocWithZone:]
+   fun:+[NSObject alloc]
+   fun:_ZN12_GLOBAL__N_*BalloonControllerTest_*Test_Test8TestBodyEv
+}
+{
+   bug_49590b
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject allocWithZone:]
+   fun:+[NSObject alloc]
+   fun:-[MenuController addItemToMenu:atIndex:fromModel:modelIndex:]
+   fun:-[MenuController menuFromModel:]
+   fun:-[MenuController menu]
+   fun:-[MenuController initWithModel:useWithPopUpButtonCell:]
+   fun:-[BalloonController initWithBalloon:]
+   fun:_ZN12_GLOBAL__N_*BalloonControllerTest_ShowAndCloseTest_Test8TestBodyEv
+}
+{
+   bug_49590c
+   Memcheck:Cond
+   fun:_ZN12_GLOBAL__N_136BalloonControllerTest_SizesTest_Test8TestBodyEv
+}
+{
    bug_49750
    Memcheck:Leak
    fun:_Znw*
