@@ -2087,8 +2087,7 @@ llvm-fake-install() {
   #rm -rf  ${DRIVER_INSTALL_DIR}
   #mkdir -p ${DRIVER_INSTALL_DIR}
   cp tools/llvm/llvm-fake.py ${DRIVER_INSTALL_DIR}
-  for s in bcgcc bcg++ \
-           sfigcc sfig++ \
+  for s in sfigcc sfig++ \
            sfild bcld bcld-arm bcld-x86-32 bcld-x86-64 \
            illegal nop ; do
     local t="llvm-fake-$s"

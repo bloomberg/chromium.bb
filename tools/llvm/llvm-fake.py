@@ -458,14 +458,6 @@ def Incarnation_sfigplusplus_generic(argv):
   Incarnation_gcclike(argv, LLVM_GXX)
 
 
-def Incarnation_bcgcc(argv):
-  Incarnation_sfigcc_generic(argv + ['-emit-llvm'])
-
-
-def Incarnation_bcgplusplus(argv):
-  Incarnation_sfigplusplus_generic(argv + ['-emit-llvm'])
-
-
 def Incarnation_nop(argv):
   LogInfo('\nIGNORING: ' + StringifyCommand(argv))
 
@@ -705,9 +697,6 @@ def Incarnation_sfild(argv):
 INCARNATIONS = {
    'llvm-fake-sfigcc': Incarnation_sfigcc_generic,
    'llvm-fake-sfig++': Incarnation_sfigplusplus_generic,
-
-   'llvm-fake-bcgcc': Incarnation_bcgcc,
-   'llvm-fake-bcg++': Incarnation_bcgplusplus,
 
    'llvm-fake-sfild': Incarnation_sfild,
 
