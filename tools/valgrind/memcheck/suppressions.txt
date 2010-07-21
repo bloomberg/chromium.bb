@@ -3554,3 +3554,10 @@
    fun:_ZN3net15HttpAuthHandler17GenerateAuthTokenEPKSbIwSt11char_traitsIwESaIwEES6_PKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPSs
    fun:_ZN3net46HttpAuthHandlerNegotiateTest_DisableCname_Test8TestBodyEv
 }
+{
+   bug_49828
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:*LoadTimingObserverTest*TestBodyEv
+}

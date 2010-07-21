@@ -972,3 +972,9 @@
    fun:URLRequest::Start
    fun:HTTPTestServer::StartGETRequest
 }
+{
+   bug_49828
+   Heapcheck:Leak
+   ...
+   fun:LoadTimingObserverTest*
+}
