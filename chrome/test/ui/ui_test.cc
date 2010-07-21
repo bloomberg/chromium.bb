@@ -21,6 +21,7 @@
 #include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
@@ -125,7 +126,8 @@ UITestBase::UITestBase()
       action_timeout_ms_(kWaitForActionMsec),
       action_max_timeout_ms_(kWaitForActionMaxMsec),
       sleep_timeout_ms_(kWaitForActionMsec),
-      terminate_timeout_ms_(kWaitForTerminateMsec) {
+      terminate_timeout_ms_(kWaitForTerminateMsec),
+      temp_profile_dir_(new ScopedTempDir()) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -359,37 +361,25 @@ void UITestBase::StopHttpServer() {
 
 void UITestBase::LaunchBrowser(const CommandLine& arguments,
                                bool clear_profile) {
-#if defined(OS_POSIX)
-  const char* alternative_userdir = getenv("CHROME_UI_TESTS_USER_DATA_DIR");
-#else
-  const FilePath::StringType::value_type* const alternative_userdir = NULL;
-#endif
+  if (clear_profile || !temp_profile_dir_->IsValid()) {
+    temp_profile_dir_.reset(new ScopedTempDir());
+    ASSERT_TRUE(temp_profile_dir_->CreateUniqueTempDir());
 
-  if (alternative_userdir) {
-    user_data_dir_ = FilePath(alternative_userdir);
-  } else {
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_);
+    // Update the information about user data directory location on the ui_test
+    // side. Using PathService seems to be the most reliable, consistent way
+    // to do that.
+    ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, user_data_dir()));
   }
-
-  // Clear user data directory to make sure test environment is consistent
-  // We balk on really short (absolute) user_data_dir directory names, because
-  // we're worried that they'd accidentally be root or something.
-  ASSERT_LT(10, static_cast<int>(user_data_dir_.value().size())) <<
-                "The user data directory name passed into this test was too "
-                "short to delete safely.  Please check the user-data-dir "
-                "argument and try again.";
-  if (clear_profile)
-    ASSERT_TRUE(file_util::DieFileDie(user_data_dir_, true));
 
   if (!template_user_data_.empty()) {
     // Recursively copy the template directory to the user_data_dir.
     ASSERT_TRUE(file_util::CopyRecursiveDirNoCache(
         template_user_data_,
-        user_data_dir_));
+        user_data_dir()));
     // If we're using the complex theme data, we need to write the
     // user_data_dir_ to our preferences file.
     if (profile_type_ == UITestBase::COMPLEX_THEME) {
-      RewritePreferencesFile(user_data_dir_);
+      RewritePreferencesFile(user_data_dir());
     }
 
     // Update the history file to include recent dates.
@@ -1024,6 +1014,11 @@ void UITestBase::RewritePreferencesFile(const FilePath& user_data_dir) {
   file_util::EvictFileFromSystemCache(pref_path);
 }
 
+FilePath UITestBase::user_data_dir() const {
+  EXPECT_TRUE(temp_profile_dir_->IsValid());
+  return temp_profile_dir_->path();
+}
+
 // static
 FilePath UITestBase::ComputeTypicalUserDataSource(ProfileType profile_type) {
   FilePath source_history_file;
@@ -1126,6 +1121,10 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   command_line.AppendSwitchWithValue(switches::kTestType,
                                      ASCIIToWide(kUITestType));
 
+  // Tell the browser to use a temporary directory just for this test.
+  command_line.AppendSwitchWithValue(switches::kUserDataDir,
+                                     user_data_dir().ToWStringHack());
+
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)
     command_line.AppendSwitch(switches::kEnableFileCookies);
@@ -1162,9 +1161,6 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   // Don't try to fetch web resources during UI testing.
   command_line.AppendSwitch(switches::kDisableWebResources);
 
-  if (!user_data_dir_.empty())
-    command_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                       user_data_dir_.ToWStringHack());
   if (!js_flags_.empty())
     command_line.AppendSwitchWithValue(switches::kJavaScriptFlags,
                                        js_flags_);
@@ -1231,7 +1227,7 @@ void UITestBase::UpdateHistoryDates() {
   // actual thumbnails on the NTP.
   sql::Connection db;
   FilePath history =
-      user_data_dir_.AppendASCII("Default").AppendASCII("History");
+      user_data_dir().AppendASCII("Default").AppendASCII("History");
   // Not all test profiles have a history file.
   if (!file_util::PathExists(history))
     return;

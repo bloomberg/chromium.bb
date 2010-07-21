@@ -36,6 +36,7 @@ class BrowserProxy;
 class DictionaryValue;
 class FilePath;
 class GURL;
+class ScopedTempDir;
 class TabProxy;
 
 // Base class for UI Tests. This implements the core of the functions.
@@ -398,7 +399,7 @@ class UITestBase {
 
   // Return the user data directory being used by the browser instance in
   // UITest::SetUp().
-  FilePath user_data_dir() const { return user_data_dir_; }
+  FilePath user_data_dir() const;
 
   // Return the process id of the browser process (-1 on error).
   base::ProcessId browser_process_id() const { return process_id_; }
@@ -565,7 +566,6 @@ class UITestBase {
   FilePath template_user_data_;         // See set_template_user_data().
   base::ProcessHandle process_;         // Handle to the first Chrome process.
   base::ProcessId process_id_;          // PID of |process_| (for debugging).
-  FilePath user_data_dir_;              // User data directory used for the test
   static bool in_process_renderer_;     // true if we're in single process mode
   bool show_window_;                    // Determines if the window is shown or
                                         // hidden. Defaults to hidden.
@@ -618,6 +618,10 @@ class UITestBase {
   int terminate_timeout_ms_;
 
   std::wstring ui_test_name_;
+
+  // We use a temporary directory for profile to avoid issues with being
+  // unable to delete some files because they're in use, etc.
+  scoped_ptr<ScopedTempDir> temp_profile_dir_;
 };
 
 class UITest : public UITestBase, public PlatformTest {
