@@ -359,7 +359,15 @@ int main(int argc, const char* argv[]) {
   bool cmd_spread_1_adjusted = command_line.HasSwitch("gen1a");
   bool cmd_spread_1_unadjusted = command_line.HasSwitch("gen1u");
 
-  std::vector<std::wstring> values = command_line.GetLooseValues();
+  // TODO(evanm): this whole file should use FilePaths instead of wstrings.
+  std::vector<std::wstring> values;
+  for (size_t i = 0; i < command_line.args().size(); ++i) {
+#if defined(OS_WIN)
+    values.push_back(command_line.args()[i]);
+#else
+    values.push_back(ASCIIToWide(command_line.args()[i]));
+#endif
+  }
 
   // '-repeat=N' is for debugging.  Running many iterations can reveal leaks and
   // bugs in cleanup.

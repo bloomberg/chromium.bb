@@ -31,7 +31,7 @@ int Run(wchar_t* win_cmd_line, int cmd_show) {
   CommandLine::Init(0, NULL);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  std::vector<std::wstring> filenames(cmd_line->GetLooseValues());
+  const std::vector<std::wstring>& filenames = cmd_line->args();
 
   CMessageLoop the_loop;
   g_module.AddMessageLoop(&the_loop);

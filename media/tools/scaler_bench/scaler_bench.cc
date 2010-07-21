@@ -135,7 +135,7 @@ int main(int argc, const char** argv) {
   CommandLine::Init(argc, argv);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  if (!cmd_line->GetLooseValues().empty()) {
+  if (!cmd_line->args().empty()) {
     std::cerr << "Usage: " << argv[0] << " [OPTIONS]\n"
               << "  --frames=N                      "
               << "Number of frames\n"

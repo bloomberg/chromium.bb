@@ -839,27 +839,29 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
 std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
     Profile* profile) {
   std::vector<GURL> urls;
-  std::vector<std::wstring> params = command_line_.GetLooseValues();
+  FilePath cur_dir = FilePath::FromWStringHack(cur_dir_);
+  const std::vector<CommandLine::StringType>& params = command_line_.args();
 
   for (size_t i = 0; i < params.size(); ++i) {
-    std::wstring& value = params[i];
+    FilePath param = FilePath(params[i]);
     // Handle Vista way of searching - "? <search-term>"
-    if (value.find(L"? ") == 0) {
+    if (param.value().find(FILE_PATH_LITERAL("? ")) == 0) {
       const TemplateURL* default_provider =
           profile->GetTemplateURLModel()->GetDefaultSearchProvider();
       if (!default_provider || !default_provider->url()) {
         // No search provider available. Just treat this as regular URL.
-        urls.push_back(URLFixerUpper::FixupRelativeFile(cur_dir_, value));
+        urls.push_back(URLFixerUpper::FixupRelativeFile(cur_dir, param));
         continue;
       }
       const TemplateURLRef* search_url = default_provider->url();
       DCHECK(search_url->SupportsReplacement());
+      std::wstring search_term = param.ToWStringHack().substr(2);
       urls.push_back(GURL(search_url->ReplaceSearchTerms(
-          *default_provider, value.substr(2),
+          *default_provider, search_term,
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
     } else {
       // This will create a file URL or a regular URL.
-      GURL url(URLFixerUpper::FixupRelativeFile(cur_dir_, value));
+      GURL url(URLFixerUpper::FixupRelativeFile(cur_dir, param));
       // Exclude dangerous schemes.
       if (url.is_valid()) {
         ChildProcessSecurityPolicy *policy =
@@ -944,7 +946,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
           switches::kTestingChannelID);
       // TODO(sanjeevr) Check if we need to make this a singleton for
       // compatibility with the old testing code
-      // If there are any loose parameters, we expect each one to generate a
+      // If there are any extra parameters, we expect each one to generate a
       // new tab; if there are none then we get one homepage tab.
       int expected_tab_count = 1;
       if (command_line.HasSwitch(switches::kRestoreLastSession)) {
@@ -953,7 +955,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
         StringToInt(restore_session_value, &expected_tab_count);
       } else {
         expected_tab_count =
-            std::max(1, static_cast<int>(command_line.GetLooseValues().size()));
+            std::max(1, static_cast<int>(command_line.args().size()));
       }
       CreateAutomationProvider<TestingAutomationProvider>(
           testing_channel_id,
@@ -1018,11 +1020,10 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   if (command_line.HasSwitch(switches::kAutomationClientChannelID)) {
     std::string automation_channel_id = command_line.GetSwitchValueASCII(
         switches::kAutomationClientChannelID);
-    // If there are any loose parameters, we expect each one to generate a
+    // If there are any extra parameters, we expect each one to generate a
     // new tab; if there are none then we have no tabs
     size_t expected_tabs =
-        std::max(static_cast<int>(command_line.GetLooseValues().size()),
-                 0);
+        std::max(static_cast<int>(command_line.args().size()), 0);
     if (expected_tabs == 0)
       silent_launch = true;
 

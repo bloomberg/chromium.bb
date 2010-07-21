@@ -209,7 +209,7 @@ int main(int argc, char* argv[]) {
       TestShell::SetFileTestTimeout(timeout_ms);
   }
 
-  // Treat the first loose value as the initial URL to open.
+  // Treat the first argument as the initial URL to open.
   GURL starting_url;
 
   // Default to a homepage if we're interactive.
@@ -223,14 +223,14 @@ int main(int argc, char* argv[]) {
     starting_url = net::FilePathToFileURL(path);
   }
 
-  std::vector<std::wstring> loose_values = parsed_command_line.GetLooseValues();
-  if (loose_values.size() > 0) {
-    GURL url(WideToUTF16Hack(loose_values[0]));
+  const std::vector<CommandLine::StringType>& args = parsed_command_line.args();
+  if (args.size() > 0) {
+    GURL url(args[0]);
     if (url.is_valid()) {
       starting_url = url;
     } else {
       // Treat as a relative file path.
-      FilePath path = FilePath::FromWStringHack(loose_values[0]);
+      FilePath path = FilePath(args[0]);
       file_util::AbsolutePath(&path);
       starting_url = net::FilePathToFileURL(path);
     }
@@ -358,7 +358,7 @@ int main(int argc, char* argv[]) {
       } else {
         // TODO(ojan): Provide a way for run-singly tests to pass
         // in a hash and then set params.pixel_hash here.
-        params.test_url = WideToUTF8(loose_values[0]);
+        params.test_url = starting_url.spec();
         TestShell::RunFileTest(params);
       }
 

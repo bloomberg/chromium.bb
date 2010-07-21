@@ -78,16 +78,16 @@ int CrossMain(int argc, char**argv) {
       o3d::UTF8ToFilePath("convert.py"));
 
 
-  std::vector<std::wstring> values = command_line->GetLooseValues();
+  const std::vector<CommandLine::StringType>& values = command_line->args();
   if (values.size() == 1) {
     // If we're only given one argument, then construct the output
     // filename by substituting the extension on the filename (if any)
     // with .o3dtgz.
-    in_filename = o3d::WideToFilePath(values[0]);
+    in_filename = FilePath(values[0]);
     out_filename = in_filename.ReplaceExtension(FILE_PATH_LITERAL(".o3dtgz"));
   } else if (values.size()== 2) {
-    in_filename = o3d::WideToFilePath(values[0]);
-    out_filename = o3d::WideToFilePath(values[1]);
+    in_filename = FilePath(values[0]);
+    out_filename = FilePath(values[1]);
   } else {
     std::cerr << "Usage: " << argv[0]
               << " [ options ] <infile.dae> [ <outfile> ]\n";

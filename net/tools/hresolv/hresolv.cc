@@ -354,14 +354,18 @@ bool ParseCommandLine(CommandLine* command_line, CommandLineOptions* options) {
 }
 
 bool ReadHostsAndTimesFromLooseValues(
-    const std::vector<std::wstring>& loose_args,
+    const std::vector<CommandLine::StringType>& args,
     std::vector<HostAndTime>* hosts_and_times) {
-  std::vector<std::wstring>::const_iterator loose_args_end = loose_args.end();
-  for (std::vector<std::wstring>::const_iterator it = loose_args.begin();
-       it != loose_args_end;
+  for (std::vector<CommandLine::StringType>::const_iterator it =
+           args.begin();
+       it != args.end();
        ++it) {
     // TODO(cbentzel): Read time offset.
+#if defined(OS_WIN)
     HostAndTime host_and_time = {WideToASCII(*it), 0};
+#else
+    HostAndTime host_and_time = {*it, 0};
+#endif
     hosts_and_times->push_back(host_and_time);
   }
   return true;
@@ -431,7 +435,7 @@ int main(int argc, char** argv) {
   // file into memory.
   std::vector<HostAndTime> hosts_and_times;
   if (options.input_path.empty()) {
-    if (!ReadHostsAndTimesFromLooseValues(command_line->GetLooseValues(),
+    if (!ReadHostsAndTimesFromLooseValues(command_line->args(),
                                           &hosts_and_times)) {
       exit(1);
     }

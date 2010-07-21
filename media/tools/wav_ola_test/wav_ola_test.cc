@@ -71,7 +71,7 @@ int main(int argc, const char** argv) {
   CommandLine::Init(argc, argv);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  std::vector<std::wstring> filenames(cmd_line->GetLooseValues());
+  const std::vector<CommandLine::StringType>& filenames = cmd_line->args();
   if (filenames.empty()) {
     std::cerr << "Usage: " << argv[0] << " RATE INFILE OUTFILE\n"
               << std::endl;
@@ -79,12 +79,17 @@ int main(int argc, const char** argv) {
   }
 
   // Retrieve command line options.
-  FilePath in_path(FilePath::FromWStringHack(filenames[1]));
-  FilePath out_path(FilePath::FromWStringHack(filenames[2]));
+  FilePath in_path(filenames[1]);
+  FilePath out_path(filenames[2]);
   double playback_rate = 0.0;
 
   // Determine speed of rerecord.
-  if (!StringToDouble(WideToUTF8(filenames[0]), &playback_rate))
+#if defined(OS_WIN)
+  std::string filename_str = WideToASCII(filenames[0]);
+#else
+  const std::string& filename_str = filenames[0];
+#endif
+  if (!StringToDouble(filename_str, &playback_rate))
     playback_rate = 0.0;
 
   // Open input file.
