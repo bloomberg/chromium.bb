@@ -360,19 +360,16 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 // Deletes selected items; either addresses, credit cards, or a mixture of the
 // two depending on the items selected.
 - (IBAction)deleteSelection:(id)sender {
-  NSIndexSet* selectedRows = [tableView_ selectedRowIndexes];
+  NSIndexSet* selection = [tableView_ selectedRowIndexes];
   NSInteger selectedRow = [tableView_ selectedRow];
-  NSInteger rowCount = [tableView_ numberOfRows];
 
   // Loop through from last to first deleting selected items as we go.
-  for (NSInteger i = rowCount-1; i>=0; --i) {
-    if (![selectedRows containsIndex:i])
-      continue;
-
+  for (NSUInteger i = [selection lastIndex];
+       i != NSNotFound;
+       i = [selection indexLessThanIndex:i]) {
     // We keep track of the "top most" selection in the list so we know where
-    // to to set new selection below.
-    if (i < selectedRow)
-      selectedRow = i;
+    // to set new selection below.
+    selectedRow = i;
 
     if ([self isProfileRow:i]) {
       profiles_.erase(
@@ -391,7 +388,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow]
             byExtendingSelection:NO];
   } else {
-    [tableView_ selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+    [tableView_ deselectAll:self];
   }
 
   UpdateProfileLabels(&profiles_);
