@@ -456,10 +456,17 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     bool enable_increment, enable_decrement;
     int zoom_percent =
         static_cast<int>(GetZoom(&enable_increment, &enable_decrement));
-    zoom_label_->SetText(l10n_util::GetStringF(
-                             IDS_ZOOM_PERCENT, IntToWString(zoom_percent)));
+    enable_increment = enable_increment &&
+        menu_model_->IsEnabledAt(increment_button_->tag());
+    enable_decrement = enable_decrement &&
+        menu_model_->IsEnabledAt(decrement_button_->tag());
     increment_button_->SetEnabled(enable_increment);
     decrement_button_->SetEnabled(enable_decrement);
+    zoom_label_->SetText(l10n_util::GetStringF(
+                             IDS_ZOOM_PERCENT, IntToWString(zoom_percent)));
+    // If both increment and decrement are disabled, then we disable the zoom
+    // label too.
+    zoom_label_->SetEnabled(enable_increment || enable_decrement);
   }
 
   double GetZoom(bool* enable_increment, bool* enable_decrement) {
