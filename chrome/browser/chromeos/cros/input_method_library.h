@@ -135,9 +135,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   static void UpdatePropertyHandler(
       void* object, const ImePropertyList& prop_list);
 
-  // This method is called when an input method sends "FocusIn" or "FocusOut"
-  // signals.
-  static void FocusChangedHandler(void* object, bool is_focused);
+  // This method is called when bus connects or disconnects.
+  static void ConnectionChangeHandler(void* object, bool connected);
 
   // Ensures that the monitoring of input method changes is started. Starts
   // the monitoring if necessary. Returns true if the monitoring has been
@@ -185,6 +184,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   // config key). As we discard old requests for the same config key, the order
   // of requests doesn't matter, so it's safe to use a map.
   InputMethodConfigRequests pending_config_requests_;
+
+  // Values that have been set via SetImeConfig().  We keep a copy available to
+  // resend if the ime restarts and loses its state.
+  InputMethodConfigRequests current_config_values_;
 
   // A timer for retrying to send |pendning_config_commands_| to the input
   // method config daemon.

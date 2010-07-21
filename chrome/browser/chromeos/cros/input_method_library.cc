@@ -73,6 +73,7 @@ void InputMethodLibraryImpl::RemoveObserver(Observer* observer) {
 chromeos::InputMethodDescriptors*
 InputMethodLibraryImpl::GetActiveInputMethods() {
   chromeos::InputMethodDescriptors* result = NULL;
+  // The connection does not need to be alive, but it does need to be created.
   if (EnsureLoadedAndStarted()) {
     result = chromeos::GetActiveInputMethods(input_method_status_connection_);
   }
@@ -90,6 +91,7 @@ size_t InputMethodLibraryImpl::GetNumActiveInputMethods() {
 chromeos::InputMethodDescriptors*
 InputMethodLibraryImpl::GetSupportedInputMethods() {
   chromeos::InputMethodDescriptors* result = NULL;
+  // The connection does not need to be alive, but it does need to be created.
   if (EnsureLoadedAndStarted()) {
     result = chromeos::GetSupportedInputMethods(
         input_method_status_connection_);
@@ -109,7 +111,7 @@ void InputMethodLibraryImpl::ChangeInputMethod(
 }
 
 void InputMethodLibraryImpl::SetImePropertyActivated(const std::string& key,
-                                                  bool activated) {
+                                                     bool activated) {
   DCHECK(!key.empty());
   if (EnsureLoadedAndStarted()) {
     chromeos::SetImePropertyActivated(
@@ -144,6 +146,7 @@ bool InputMethodLibraryImpl::SetImeConfig(
   const ConfigKeyType key = std::make_pair(section, config_name);
   pending_config_requests_.erase(key);
   pending_config_requests_.insert(std::make_pair(key, value));
+  current_config_values_[key] = value;
   FlushImeConfig();
   return pending_config_requests_.empty();
 }
@@ -210,28 +213,28 @@ void InputMethodLibraryImpl::UpdatePropertyHandler(
 }
 
 // static
-void InputMethodLibraryImpl::FocusChangedHandler(void* object,
-                                                 bool is_focused) {
-  // TODO(yusukes): Remove this function. Modify MonitorInputMethodStatuslibcros
-  // API as well.
+void InputMethodLibraryImpl::ConnectionChangeHandler(void* object,
+                                                     bool connected) {
+  InputMethodLibraryImpl* input_method_library =
+      static_cast<InputMethodLibraryImpl*>(object);
+  if (connected) {
+    input_method_library->pending_config_requests_.insert(
+        input_method_library->current_config_values_.begin(),
+        input_method_library->current_config_values_.end());
+    input_method_library->FlushImeConfig();
+  }
 }
 
 bool InputMethodLibraryImpl::EnsureStarted() {
-  if (input_method_status_connection_) {
-    if (chromeos::InputMethodStatusConnectionIsAlive(
-            input_method_status_connection_)) {
-      return true;
-    }
-    DLOG(WARNING) << "IBus connection is closed. Trying to reconnect...";
-    chromeos::DisconnectInputMethodStatus(input_method_status_connection_);
+  if (!input_method_status_connection_) {
+    input_method_status_connection_ = chromeos::MonitorInputMethodStatus(
+        this,
+        &InputMethodChangedHandler,
+        &RegisterPropertiesHandler,
+        &UpdatePropertyHandler,
+        &ConnectionChangeHandler);
   }
-  input_method_status_connection_ = chromeos::MonitorInputMethodStatus(
-      this,
-      &InputMethodChangedHandler,
-      &RegisterPropertiesHandler,
-      &UpdatePropertyHandler,
-      &FocusChangedHandler);
-  return input_method_status_connection_ != NULL;
+  return true;
 }
 
 bool InputMethodLibraryImpl::EnsureLoadedAndStarted() {
