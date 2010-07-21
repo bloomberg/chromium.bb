@@ -2,45 +2,90 @@
 <head>
 <title></title>
 <style type="text/css">
-body,td,div,p,a,font,span {
-   font-family: arial,sans-serif;
- }
 body {
-   background-color:#ffffff;
-   margin:10px;
- }
-.gaia.le.button {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: smaller;
+   line-height: 1.8em;
+   background: #FFFFFF;
+   margin: 10px 15px;
 }
-.endaligned {
-  align: right;
-  text-align: right;
+html[os='mac'] body {
+  line-height: 1.8em;
+  margin: 15px 20px;
+  background: #FFFFFF;
 }
-html[dir='rtl'] .endaligned {
-  align: left;
-  text-align: left;
+html[os='mac'] form {
+  font-size: 110%;
 }
-table {
-  padding: 10px;
+html[os='linux'] form {
+  font-size: 120%;
 }
-.sync-choose_data_types_header {
-  font-size: large;
+.sync-header {
+  font-size: 1.2em;
   font-weight: bold;
-  padding: 0 0 5px;
 }
-.sync-choose_data_types_instructions {
-  padding: 0 0 20px;
+.sync-select-customization {
+  margin-top: 5px;
 }
-.sync-choice_radio {
-  padding: 5px;
+#chooseDataTypesRadio {
+  vertical-align: top;
 }
-.data_type_checkboxes_table {
-  font-size: small;
-  padding: 15px 0 15px 20px;
+#chooseDataTypes > div {
+  display: inline-block;
 }
-.data_type_checkboxes_table td {
-  padding: 5px;
+#chooseDataTypesBody {
+}
+#chooseDataTypesBody > div {
+  margin-top: 0px;
+  -webkit-column-count: 2;
+  -webkit-column-gap: 10px;
+  column-count: 2;
+  column-gap: 10px;
+  width: 250px;
+}
+.sync-item-show {
+  display: block;
+  white-space: nowrap;
+}
+.sync-item-hide {
+  display: none;
+}
+.sync-label-inactive {
+  color: #9B9B9B;
+}
+.sync-label-active {
+  color: #000000;
+}
+.sync-data-types {
+  margin-left: 5px;
+}
+.sync-errors {
+  margin-top: 5px;
+}
+.sync-error-show {
+  display: block;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  padding: 1px 10px;
+  background-color: #eeb939;
+  -webkit-border-radius: 4px;
+  font-weight: bold;
+}
+.sync-error-hide {
+  display: none;
+}
+.sync-footer {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+html[dir='rtl'] .sync-footer {
+  text-align: left;
+  left: 0px;
+  bottom: 0px;
+  margin-left: 20px;
 }
 #throb {
   background-image: url("../../../../app/resources/throbber.png");
@@ -50,22 +95,29 @@ table {
   margin: -3px 10px;
   display: inline-block;
 }
-input[type='button'] {
-  min-width: 87px;
-  min-height: 26px;
-}
+input[type='button'],
 input[type='submit'] {
   min-width: 87px;
   min-height: 26px;
 }
-.errormsg {
-  color: red;
+html[os='mac'] input[type='button'],
+html[os='mac'] input[type='submit'] {
+  font-size: 12pt;
 }
+
 </style>
+<script src="chrome://resources/js/cr.js"></script>
 <script>
 
   // Called once, when this html/js is loaded.
   function initializeChooseDataTypesDialog() {
+    // Allow platform specific rules
+    if (cr.isMac) {
+      document.documentElement.setAttribute('os', 'mac');
+    } else if (!cr.isWindows) {
+      document.documentElement.setAttribute('os', 'linux');
+    }
+
     setInterval(advanceThrobber, 30);
     var args = JSON.parse(chrome.dialogArguments);
     setChooseDataTypesCheckboxes(args);
@@ -99,46 +151,35 @@ input[type='submit'] {
 
     if (args.passwordsRegistered) {
       document.getElementById("passwordsCheckbox").checked = args.syncPasswords;
-      document.getElementById("passwordsCheckbox").style.display = "inline";
-      document.getElementById("passwordsCheckboxLabel").style.display =
-          "inline";
+      document.getElementById("passwordsItem").className = "sync-item-show";
     } else {
-      document.getElementById("passwordsCheckbox").style.display = "none";
-      document.getElementById("passwordsCheckboxLabel").style.display = "none";
+      document.getElementById("passwordsItem").className = "sync-item-hide";
     }
     if (args.autofillRegistered) {
       document.getElementById("autofillCheckbox").checked = args.syncAutofill;
-      document.getElementById("autofillCheckbox").style.display = "inline";
-      document.getElementById("autofillCheckboxLabel").style.display = "inline";
+      document.getElementById("autofillItem").className = "sync-item-show";
     } else {
-      document.getElementById("autofillCheckbox").style.display = "none";
-      document.getElementById("autofillCheckboxLabel").style.display = "none";
+      document.getElementById("autofillItem").className = "sync-item-hide";
     }
     if (args.extensionsRegistered) {
       document.getElementById("extensionsCheckbox").checked =
           args.syncExtensions;
-      document.getElementById("extensionsCheckbox").style.display = "inline";
-      document.getElementById("extensionsCheckboxLabel").style.display =
-          "inline";
+      document.getElementById("extensionsItem").className = "sync-item-show";
     } else {
-      document.getElementById("extensionsCheckbox").style.display = "none";
-      document.getElementById("extensionsCheckboxLabel").style.display = "none";
+      document.getElementById("extensionsItem").className = "sync-item-hide";
     }
     if (args.typedUrlsRegistered) {
       document.getElementById("typedUrlsCheckbox").checked = args.syncTypedUrls;
-      document.getElementById("typedUrlsCheckbox").style.display = "inline";
-      document.getElementById("typedUrlsCheckboxLabel").style.display =
-          "inline";
+      document.getElementById("omniboxItem").className = "sync-item-show";
     } else {
-      document.getElementById("typedUrlsCheckbox").style.display = "none";
-      document.getElementById("typedUrlsCheckboxLabel").style.display = "none";
+      document.getElementById("omniboxItem").className = "sync-item-hide";
     }
   }
 
   function setErrorState(args) {
     if (!args.was_aborted)
       return;
-    document.getElementById("aborted_text").style.display = "inline";
+    document.getElementById("aborted_text").className = "sync-error-show";
     document.getElementById("okButton").disabled = true;
     document.getElementById("keepEverythingSyncedRadio").disabled = true;
     document.getElementById("chooseDataTypesRadio").disabled = true;
@@ -146,8 +187,14 @@ input[type='submit'] {
 
   function setDataTypeCheckboxesEnabled(enabled) {
     var checkboxes = document.getElementsByName("dataTypeCheckbox");
+    var labels = document.getElementsByName("dataTypeLabel");
     for (var i = 0; i < checkboxes.length; i++) {
       checkboxes[i].disabled = !enabled;
+      if (checkboxes[i].disabled) {
+        labels[i].className = "sync-label-inactive";
+      } else {
+        labels[i].className = "sync-label-active";
+      }
     }
   }
 
@@ -187,11 +234,12 @@ input[type='submit'] {
   }
 
   function sendChooseDataTypesAndClose() {
-    // The user is trying again, so we don't need the aborted text.
-    document.getElementById("aborted_text").style.display = "none";
+    // Trying to submit, so hide previous errors.
+    document.getElementById("aborted_text").className = "sync-error-hide";
+    document.getElementById("error_text").className = "sync-error-hide";
 
     if (noDataTypesChecked()) {
-      document.getElementById("error_text").style.display = "inline";
+      document.getElementById("error_text").className = "sync-error-show";
       return;
     }
 
@@ -215,89 +263,89 @@ input[type='submit'] {
   }
 
 </script>
-<body  vlink=#666666
-       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
-       onload="initializeChooseDataTypesDialog();">
-<form id="chooseDataTypesForm" onsubmit="sendChooseDataTypesAndClose(); return false;">
-<table height="100%" width="100%" margin="0" cellpadding="0">
-  <tr valign="top">
-    <td colspan="3">
-      <div class="sync-choose_data_types_header"
-           i18n-content="choosedatatypesheader"></div>
-      <div class="sync-choose_data_types_instructions"
-           i18n-content="choosedatatypesinstructions"></div>
-      <div class="sync-choice_radio">
-        <input id="keepEverythingSyncedRadio" type="radio"
-               name="syncChooseDataTypes"
-               onclick="setDataTypeCheckboxesEnabled(false)"/>
-        <label for="keepEverythingSyncedRadio" i18n-content="keepeverythingsynced"></label>
-      </div>
-      <div class="sync-choice_radio">
-        <input id="chooseDataTypesRadio" type="radio"
-               name="syncChooseDataTypes"
-               onclick="setDataTypeCheckboxesEnabled(true)"/>
-        <label for="chooseDataTypesRadio" i18n-content="choosedatatypes"></label>
-      </div>
-      <table class="data_type_checkboxes_table" border="0" cellspacing="0" cellpadding="0" width="80%">
-        <tr>
-          <td>
-            <input id="bookmarksCheckbox" name="dataTypeCheckbox" type="checkbox"/>
-            <label id="bookmarksCheckboxLabel" for="bookmarksCheckbox" i18n-content="bookmarks"></label>
-          </td>
-          <td>
-            <input id="autofillCheckbox" name="dataTypeCheckbox" type="checkbox"/>
-            <label id="autofillCheckboxLabel" for="autofillCheckbox" i18n-content="autofill"></label>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <input id="preferencesCheckbox" name="dataTypeCheckbox" type="checkbox"/>
-            <label id="preferencesCheckboxLabel" for="preferencesCheckbox" i18n-content="preferences"></label>
-          </td>
-          <td>
-            <input id="extensionsCheckbox" name="dataTypeCheckbox" type="checkbox"/>
-            <label id="extensionsCheckboxLabel" for="extensionsCheckbox" i18n-content="extensions"></label>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <input id="themesCheckbox" name="dataTypeCheckbox" type="checkbox"/>
-            <label id="themesCheckboxLabel" for="themesCheckbox" i18n-content="themes"></label>
-          </td>
-          <td>
-            <input id="typedUrlsCheckbox" name="dataTypeCheckbox" type="checkbox"/>
-            <label id="typedUrlsCheckboxLabel" for="typedUrlsCheckbox" i18n-content="typedurls"></label>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <input id="passwordsCheckbox" name="dataTypeCheckbox" type="checkbox"/>
-            <label id="passwordsCheckboxLabel" for="passwordsCheckbox" i18n-content="passwords"></label>
-          </td>
-          <td>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <span id="error_text" i18n-content="synczerodatatypeserror" style="display:none"></span>
-      <span id="aborted_text" class="errormsg" i18n-content="setupabortederror" style="display:none"></span>
-    </td>
-  </tr>
-  <tr valign="bottom">
-    <td width="100%" class="endaligned">
-      <span id="throbber_container" style="visibility:hidden">
-        <span id="throb">
-        </span>
-      </span>
-      <input id="okButton" type="submit" i18n-values="value:ok" />
-      <input id="cancelButton" type="button" i18n-values="value:cancel"
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
+      onload="initializeChooseDataTypesDialog();">
+<form id="chooseDataTypesForm" 
+      onSubmit="sendChooseDataTypesAndClose(); return false;">
+
+ <div class="sync-header" 
+      i18n-content="choosedatatypesheader"></div>
+ <div class="sync-choose_data_types_instructions" 
+      i18n-content="choosedatatypesinstructions"></div>
+ <div class="sync-select-customization">
+ <div class="sync-choice_radio">
+   <input id="keepEverythingSyncedRadio" type="radio" name="syncChooseDataTypes"
+          onclick="setDataTypeCheckboxesEnabled(false)">
+   <label for="keepEverythingSyncedRadio" i18n-content="keepeverythingsynced">
+   </label>
+ </div>
+ <div id="chooseDataTypes" class="sync-choice_radio">
+   <input id="chooseDataTypesRadio" type="radio" name="syncChooseDataTypes" 
+          onclick="setDataTypeCheckboxesEnabled(true)">
+   <div id="chooseDataTypesBody">
+   <label for="chooseDataTypesRadio" i18n-content="choosedatatypes" ></label>
+   <div>
+     <!-- Autofill -->
+     <div class="sync-item-show" id="autofillItem">
+       <input id="autofillCheckbox" name="dataTypeCheckbox" type="checkbox">
+       <label id="autofillCheckboxLabel" name="dataTypeLabel" 
+              for="autofillCheckbox" i18n-content="autofill"></label>
+     </div>
+     <!-- Bookmarks -->
+     <div class="sync-item-show" id="bookmarksItem">
+       <input id="bookmarksCheckbox" name="dataTypeCheckbox" type="checkbox">
+       <label id="bookmarksCheckboxLabel" name="dataTypeLabel" 
+              for="bookmarksCheckbox" i18n-content="bookmarks"></label>
+     </div>
+     <!-- Extensions -->
+     <div class="sync-item-show" id="extensionsItem">
+       <input id="extensionsCheckbox" name="dataTypeCheckbox" type="checkbox">
+       <label id="extensionsCheckboxLabel" name="dataTypeLabel" 
+              for="extensionsCheckbox" i18n-content="extensions"></label>
+     </div>
+     <!-- Omnibox -->
+     <div class="sync-item-show" id="omniboxItem">
+       <input id="typedUrlsCheckbox" name="dataTypeCheckbox" type="checkbox">
+       <label id="typedUrlsCheckboxLabel" name="dataTypeLabel" 
+              for="typedUrlsCheckbox" i18n-content="typedurls"></label>
+     </div>
+     <!-- Passwords -->
+     <div class="sync-item-show" id="passwordsItem">
+       <input id="passwordsCheckbox" name="dataTypeCheckbox" type="checkbox">
+       <label id="passwordsCheckboxLabel" name="dataTypeLabel" 
+              for="passwordsCheckbox" i18n-content="passwords"></label>
+     </div>
+     <!-- Preferences -->
+     <div class="sync-item-show" id="preferencesItem">
+       <input id="preferencesCheckbox" name="dataTypeCheckbox" type="checkbox">
+       <label id="preferencesCheckboxLabel" name="dataTypeLabel" 
+              for="preferencesCheckbox" i18n-content="preferences"></label>
+     </div>
+     <!-- Themes -->
+     <div class="sync-item-show" id="themesItem">
+       <input id="themesCheckbox" name="dataTypeCheckbox" type="checkbox">
+       <label id="themesCheckboxLabel" name="dataTypeLabel" for="themesCheckbox"
+              i18n-content="themes"></label>
+     </div>
+  </div>
+  </div>
+ </div>
+ <div class="sync-errors">
+   <span id="error_text" i18n-content="synczerodatatypeserror"
+         class="sync-error-hide"></span>
+   <span id="aborted_text" i18n-content="setupabortederror"
+         class="sync-error-hide"></span>
+ </div>
+ <div class="sync-footer">
+   <span id="throbber_container" style="visibility:hidden">
+     <span id="throb"></span>
+   </span>
+   <input id="okButton" type="submit" i18n-values="value:ok" />
+   <input id="cancelButton" type="button" i18n-values="value:cancel"
              onclick='chrome.send("DialogClose", [""])' />
-    </td>
-  </tr>
-</table>
+ </div>
+</div>
 </form>
 </body>
 </html>
