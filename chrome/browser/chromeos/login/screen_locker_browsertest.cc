@@ -243,16 +243,16 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   tester->EmulateWindowManagerReady();
   ui_test_utils::WaitForNotification(
       NotificationType::SCREEN_LOCK_STATE_CHANGED);
-  EXPECT_TRUE(tester->IsOpen());
+  EXPECT_TRUE(tester->IsLocked());
 
   // Calling Show again simply send LockCompleted signal.
   ScreenLocker::Show();
-  EXPECT_TRUE(tester->IsOpen());
+  EXPECT_TRUE(tester->IsLocked());
 
   // Close the locker to match expectations.
   ScreenLocker::Hide();
   ui_test_utils::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(tester->IsOpen());
+  EXPECT_FALSE(tester->IsLocked());
 }
 
 }  // namespace chromeos
