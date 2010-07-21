@@ -42,7 +42,7 @@ TEST_F(MultipartResponseUITest, SingleVisit) {
   // had 10 parts.
   sql::Connection db;
   FilePath history =
-      user_data_dir_.AppendASCII("Default").AppendASCII("History");
+      user_data_dir().AppendASCII("Default").AppendASCII("History");
   ASSERT_TRUE(file_util::PathExists(history));
   ASSERT_TRUE(db.Open(history));
   std::string query(
