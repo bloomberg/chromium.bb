@@ -87,6 +87,16 @@ class EnvVarGetterImpl : public base::EnvVarGetter {
 
 namespace base {
 
+namespace env_vars {
+
+#if defined(OS_POSIX)
+// On Posix systems, this variable contains the location of the user's home
+// directory. (e.g, /home/username/).
+const char kHome[] = "HOME";
+#endif
+
+}  // namespace env_vars
+
 EnvVarGetter::~EnvVarGetter() {}
 
 bool EnvVarGetter::HasEnv(const char* variable_name) {

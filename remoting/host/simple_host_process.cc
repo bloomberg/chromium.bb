@@ -20,6 +20,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/env_var.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
@@ -49,7 +50,6 @@ const wchar_t kHomePath[] = L"HOMEPATH";
 const wchar_t* GetEnvironmentVar(const wchar_t* x) { return _wgetenv(x); }
 #else
 const std::string kDefaultConfigPath = ".ChromotingConfig.json";
-const char kHomePath[] = "HOME";
 static char* GetEnvironmentVar(const char* x) { return getenv(x); }
 #endif
 
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
   std::wstring path = GetEnvironmentVar(kHomeDrive);
   path += GetEnvironmentVar(kHomePath);
 #else
-  std::string path = GetEnvironmentVar(kHomePath);
+  std::string path = GetEnvironmentVar(base::env_vars::kHome);
 #endif
   FilePath config_path(path);
   config_path = config_path.Append(kDefaultConfigPath);

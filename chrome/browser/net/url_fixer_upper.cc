@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/env_var.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -120,7 +121,7 @@ static std::string FixupHomedir(const std::string& text) {
   DCHECK(text.length() > 0 && text[0] == '~');
 
   if (text.length() == 1 || text[1] == '/') {
-    const char* home = getenv("HOME");
+    const char* home = getenv(base::env_vars::kHome);
     if (URLFixerUpper::home_directory_override)
       home = URLFixerUpper::home_directory_override;
     // We'll probably break elsewhere if $HOME is undefined, but check here

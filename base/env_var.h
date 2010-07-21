@@ -11,6 +11,14 @@
 
 namespace base {
 
+namespace env_vars {
+
+#if defined(OS_POSIX)
+extern const char kHome[];
+#endif
+
+}  // namespace env_vars
+
 // These are used to derive mocks for unittests.
 class EnvVarGetter {
  public:
