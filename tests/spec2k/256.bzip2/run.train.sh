@@ -3,8 +3,9 @@
 set -o nounset
 set -o errexit
 
-VERIFY=${PREFIX:-yes}
 PREFIX=${PREFIX:-}
+VERIFY=${VERIFY:-yes}
+EMU_HACK=${EMU_HACK:-yes}
 
 DASHDASH=""
 if [[ "${PREFIX}" =~ "sel_ldr" ]] ; then

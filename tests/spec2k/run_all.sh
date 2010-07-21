@@ -12,13 +12,15 @@ set -o errexit
 ######################################################################
 # TODO(robertm): make this configurable from the commandline
 
-readonly FULL_LIST="164.gzip 175.vpr 176.gcc 181.mcf 186.crafty 197.parser \
-252.eon 253.perlbmk 254.gap 255.vortex 256.bzip2 300.twolf"
-
-# we skip eon for now
-readonly LIST="164.gzip 175.vpr 176.gcc 181.mcf 186.crafty 197.parser \
+readonly LIST_INT_C="164.gzip 175.vpr 176.gcc 181.mcf 186.crafty 197.parser \
 253.perlbmk 254.gap 255.vortex 256.bzip2 300.twolf"
 
+readonly LIST_FP_C="177.mesa 179.art 183.equake 188.ammp"
+
+readonly LIST_INT_CPP="252.eon"
+
+# TODO(robertm): make "252.eon" work
+LIST="${LIST_FP_C} ${LIST_INT_C}"
 #Pick one
 #SCRIPT=./run.ref.sh
 SCRIPT=./run.train.sh
