@@ -91,7 +91,9 @@ def _RunCommand(cmd, dry_run, shell=False, echo_cmd=True):
   # TODO(wtc): Check the return value of subprocess.call, which is the return
   # value of the command.
   if not dry_run:
-    subprocess.call(cmd, shell=shell)
+    return subprocess.call(cmd, shell=shell)
+  else:
+    return 0
 
 def _ReleaseLock(lock_file, lock_filename):
   """Removes the lockfile. Function-ized so we can bail from anywhere"""
@@ -126,7 +128,12 @@ def main(options, args):
   coverity_password = _ReadPassword(options.coverity_password_file)
 
   cmd = 'gclient sync'
-  _RunCommand(cmd, options.dry_run, shell=True)
+  gclient_exit = _RunCommand(cmd, options.dry_run, shell=True)
+  if gclient_exit != 0:
+    print 'gclient aborted with status %s' % gclient_exit
+    _ReleaseLock(lock_file, lock_filename)
+    sys.exit(1)
+
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
   # Do a clean build.  Remove the build output directory first.
@@ -138,7 +145,7 @@ def main(options, args):
   elif sys.platform == 'darwin':
     rm_path = os.path.join(options.source_dir,'src','xcodebuild')
   else:
-    print 'Platform "%s" unrecognized, don\'t know how to proceed'
+    print 'Platform "%s" unrecognized, aborting' % sys.platform
     _ReleaseLock(lock_file, lock_filename)
     sys.exit(1)
 
