@@ -5,7 +5,7 @@
 // TODO(arv): Move to shared/js once namespaced and tested.
 
 var global = this;
-const IS_MAC = /$Mac/.test(navigator.platform);
+const IS_MAC = /^Mac/.test(navigator.platform);
 
 function $(id) {
   return document.getElementById(id);
