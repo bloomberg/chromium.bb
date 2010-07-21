@@ -97,6 +97,12 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   // Test the no password mode with different unlock scheme given by
   // |unlock| function.
   void TestNoPassword(void (unlock)(views::Widget*)) {
+    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
+        .Times(1)
+        .RetiresOnSaturation();
     UserManager::Get()->OffTheRecordUserLoggedIn();
     ScreenLocker::Show();
     scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
@@ -124,12 +130,6 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_screen_lock_library_, AddObserver(testing::_))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
-        .Times(1)
-        .RetiresOnSaturation();
     EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockCompleted())
         .Times(1)
         .RetiresOnSaturation();
@@ -151,6 +151,12 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_CALL(*mock_input_method_library_, GetNumActiveInputMethods())
       .Times(1)
       .WillRepeatedly((testing::Return(0)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
+      .Times(1)
       .RetiresOnSaturation();
   UserManager::Get()->UserLoggedIn("user");
   ScreenLocker::Show();
@@ -224,6 +230,29 @@ void KeyPress(views::Widget* widget) {
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestNoPasswordWithKeyPress) {
   TestNoPassword(KeyPress);
+}
+
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
+      .Times(2)
+      .RetiresOnSaturation();
+
+  UserManager::Get()->UserLoggedIn("user");
+  ScreenLocker::Show();
+  scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+  tester->EmulateWindowManagerReady();
+  ui_test_utils::WaitForNotification(
+      NotificationType::SCREEN_LOCK_STATE_CHANGED);
+  EXPECT_TRUE(tester->IsOpen());
+
+  // Calling Show again simply send LockCompleted signal.
+  ScreenLocker::Show();
+  EXPECT_TRUE(tester->IsOpen());
+
+  // Close the locker to match expectations.
+  ScreenLocker::Hide();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tester->IsOpen());
 }
 
 }  // namespace chromeos

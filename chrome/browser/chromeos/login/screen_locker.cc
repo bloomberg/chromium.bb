@@ -599,7 +599,10 @@ void ScreenLocker::Show() {
         new ScreenLocker(UserManager::Get()->logged_in_user());
     locker->Init();
   } else {
-    LOG(INFO) << "Show(): screen locker already exists. ignoring";
+    LOG(INFO) << "Show(): screen locker already exists. "
+              << "just sending completion event";
+    if (CrosLibrary::Get()->EnsureLoaded())
+      CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
   }
 }
 
