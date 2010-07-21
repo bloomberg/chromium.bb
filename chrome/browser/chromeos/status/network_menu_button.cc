@@ -483,7 +483,9 @@ SkBitmap NetworkMenuButton::IconForDisplay(SkBitmap icon, SkBitmap badge) {
 
 void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   refreshing_menu_ = true;
-  CrosLibrary::Get()->GetNetworkLibrary()->RequestWifiScan();
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  cros->RequestWifiScan();
+  cros->UpdateSystemInfo();
   InitMenuItems();
   network_menu_.Rebuild();
   network_menu_.UpdateStates();

@@ -647,7 +647,9 @@ void NetworkLibraryImpl::Init() {
 }
 
 void NetworkLibraryImpl::UpdateSystemInfo() {
-  UpdateNetworkStatus();
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    UpdateNetworkStatus();
+  }
 }
 
 WifiNetwork* NetworkLibraryImpl::GetPreferredNetwork() {

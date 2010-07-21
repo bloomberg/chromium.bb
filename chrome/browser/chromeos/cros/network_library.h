@@ -298,6 +298,9 @@ class NetworkLibrary {
 
   // TODO(joth): Add GetCellTowers to retrieve a CellTowerVector.
 
+  // Force an update of the system info.
+  virtual void UpdateSystemInfo() = 0;
+
   // Attempt to connect to the preferred network if available and it is set up.
   // This call will return true if connection is started.
   // If the preferred network is not available or not setup, returns false.
@@ -477,6 +480,8 @@ class NetworkLibraryImpl : public NetworkLibrary,
   virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path);
   virtual std::string GetHtmlInfo(int refresh);
 
+  virtual void UpdateSystemInfo();
+
  private:
 
   // This method is called when there's a change in network status.
@@ -499,9 +504,6 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // This methods loads the initial list of networks on startup and starts the
   // monitoring of network changes.
   void Init();
-
-  // Force an update of the system info.
-  void UpdateSystemInfo();
 
   // Returns the preferred wifi network.
   WifiNetwork* GetPreferredNetwork();

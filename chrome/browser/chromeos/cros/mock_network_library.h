@@ -47,6 +47,7 @@ class MockNetworkLibrary : public NetworkLibrary {
                                                      CellularNetwork*));
 
   MOCK_METHOD0(RequestWifiScan, void(void));
+  MOCK_METHOD0(UpdateSystemInfo, void(void));
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
   MOCK_METHOD0(ConnectToPreferredNetworkIfAvailable, bool(void));
   MOCK_METHOD0(PreferredNetworkConnected, bool(void));

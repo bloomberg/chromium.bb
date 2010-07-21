@@ -585,7 +585,9 @@ InternetPageView::InternetPageView(Profile* profile)
     : SettingsPageView(profile),
       contents_view_(new InternetPageContentView(profile)),
       scroll_view_(new views::ScrollView) {
-  CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  cros->UpdateSystemInfo();
+  cros->AddObserver(this);
 }
 
 InternetPageView::~InternetPageView() {
