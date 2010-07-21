@@ -670,18 +670,6 @@ def Incarnation_bcld_generic(argv):
                            global_pnacl_roots[arch])
 
 
-def Incarnation_bcldarm(argv):
-  return Incarnation_bcld_generic(argv + ['-arch', 'arm'])
-
-
-def Incarnation_bcldx8632(argv):
-  return Incarnation_bcld_generic(argv + ['-arch', 'x86-32'])
-
-
-def Incarnation_bcldx8664(argv):
-  return Incarnation_bcld_generic(argv + ['-arch', 'x86-64'])
-
-
 def Incarnation_sfild(argv):
   """Run the regular linker and then patch the ABI"""
   pos = FindLinkPos(argv)
@@ -701,9 +689,6 @@ INCARNATIONS = {
    'llvm-fake-sfild': Incarnation_sfild,
 
    'llvm-fake-bcld' : Incarnation_bcld_generic,
-   'llvm-fake-bcld-arm': Incarnation_bcldarm,
-   'llvm-fake-bcld-x86-32': Incarnation_bcldx8632,
-   'llvm-fake-bcld-x86-64': Incarnation_bcldx8664,
 
    'llvm-fake-illegal': Incarnation_illegal,
    'llvm-fake-nop': Incarnation_nop,
