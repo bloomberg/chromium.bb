@@ -3392,7 +3392,6 @@
    fun:_ZN3net15SpdySessionPool3GetERKNS_12HostPortPairEPNS_18HttpNetworkSessionERKNS_11BoundNetLogE
    ...
    fun:_ZN3net12_GLOBAL__N_135SpdyHttpStreamTest_SendRequest_Test8TestBodyEv
-   Memcheck:Leak
 }
 {
    bug_47331_part_1
