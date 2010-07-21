@@ -162,11 +162,13 @@ SECKEYPublicKey* OwnerManager::ImportPublicKey(const FilePath& key_file) {
      SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der);
   if (!spki) {
     LOG(ERROR) << "Could not decode key info: " << PR_GetError();
+    SECITEM_FreeItem(&key_der, PR_FALSE);
     return NULL;
   }
 
   SECKEYPublicKey *public_key = SECKEY_ExtractPublicKey(spki);
   SECKEY_DestroySubjectPublicKeyInfo(spki);
+  SECITEM_FreeItem(&key_der, PR_FALSE);
   return public_key;
 }
 
