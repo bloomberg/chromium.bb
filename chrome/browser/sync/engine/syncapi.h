@@ -474,6 +474,10 @@ class ReadTransaction : public BaseTransaction {
  public:
   // Start a new read-only transaction on the specified repository.
   explicit ReadTransaction(UserShare* share);
+
+  // Resume the middle of a transaction. Will not close transaction.
+  ReadTransaction(UserShare* share, syncable::BaseTransaction* trans);
+
   virtual ~ReadTransaction();
 
   // BaseTransaction override.
@@ -482,7 +486,8 @@ class ReadTransaction : public BaseTransaction {
   void* operator new(size_t size);  // Transaction is meant for stack use only.
 
   // The underlying syncable object which this class wraps.
-  syncable::ReadTransaction* transaction_;
+  syncable::BaseTransaction* transaction_;
+  bool close_transaction_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadTransaction);
 };

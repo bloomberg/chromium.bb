@@ -950,6 +950,8 @@ BaseTransaction::BaseTransaction(Directory* directory, const char* name,
   Lock();
 }
 
+BaseTransaction::~BaseTransaction() {}
+
 void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
   dirkernel_->transaction_mutex.AssertAcquired();
 
@@ -972,8 +974,17 @@ void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
                                  originals.get(), this, writer_ };
   dirkernel_->changes_channel.Notify(event);
 
+  // Necessary for reads to be performed prior to transaction mutex release.
+  // Allows the listener to use the current transaction to perform reads.
+  DirectoryChangeEvent ending_event =
+      { DirectoryChangeEvent::TRANSACTION_ENDING,
+        NULL, this, INVALID };
+  dirkernel_->changes_channel.Notify(ending_event);
+
   dirkernel_->transaction_mutex.Release();
 
+  // Directly after transaction mutex release, but lock on changes channel.
+  // You cannot be re-entrant to a transaction in this handler.
   DirectoryChangeEvent complete_event =
       { DirectoryChangeEvent::TRANSACTION_COMPLETE,
         NULL, NULL, INVALID };

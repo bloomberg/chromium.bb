@@ -770,12 +770,21 @@ bool ReadNode::InitByTagLookup(const std::string& tag) {
 // ReadTransaction member definitions
 ReadTransaction::ReadTransaction(UserShare* share)
     : BaseTransaction(share),
-      transaction_(NULL) {
+      transaction_(NULL),
+      close_transaction_(true) {
   transaction_ = new syncable::ReadTransaction(GetLookup(), __FILE__, __LINE__);
 }
 
+ReadTransaction::ReadTransaction(UserShare* share,
+                                 syncable::BaseTransaction* trans)
+    : BaseTransaction(share),
+      transaction_(trans),
+      close_transaction_(false) {}
+
 ReadTransaction::~ReadTransaction() {
-  delete transaction_;
+  if (close_transaction_) {
+    delete transaction_;
+  }
 }
 
 syncable::BaseTransaction* ReadTransaction::GetWrappedTrans() const {
@@ -923,7 +932,7 @@ class SyncManager::SyncInternal
   // builds the list of sync-engine initiated changes that will be forwarded to
   // the SyncManager's Observers.
   virtual void HandleChannelEvent(const syncable::DirectoryChangeEvent& event);
-  void HandleTransactionCompleteChangeEvent(
+  void HandleTransactionEndingChangeEvent(
       const syncable::DirectoryChangeEvent& event);
   void HandleCalculateChangesChangeEventFromSyncApi(
       const syncable::DirectoryChangeEvent& event);
@@ -1143,8 +1152,8 @@ class SyncManager::SyncInternal
   // Each element of this array is a store of change records produced by
   // HandleChangeEvent during the CALCULATE_CHANGES step.  The changes are
   // segregated by model type, and are stored here to be processed and
-  // forwarded to the observer slightly later, at the TRANSACTION_COMPLETE
-  // step by HandleTransactionCompleteChangeEvent.
+  // forwarded to the observer slightly later, at the TRANSACTION_ENDING
+  // step by HandleTransactionEndingChangeEvent.
   ChangeReorderBuffer change_buffers_[syncable::MODEL_TYPE_COUNT];
 
   // The event listener hookup that is registered for HandleChangeEvent.
@@ -1635,8 +1644,8 @@ void SyncManager::SyncInternal::HandleDirectoryManagerEvent(
 // ApplyUpdates) to data_->changelist.
 void SyncManager::SyncInternal::HandleChannelEvent(
     const syncable::DirectoryChangeEvent& event) {
-  if (event.todo == syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE) {
-    HandleTransactionCompleteChangeEvent(event);
+  if (event.todo == syncable::DirectoryChangeEvent::TRANSACTION_ENDING) {
+    HandleTransactionEndingChangeEvent(event);
     return;
   } else if (event.todo == syncable::DirectoryChangeEvent::CALCULATE_CHANGES) {
     if (event.writer == syncable::SYNCAPI) {
@@ -1650,15 +1659,21 @@ void SyncManager::SyncInternal::HandleChannelEvent(
   }
 }
 
-void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
+void SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
     const syncable::DirectoryChangeEvent& event) {
-  // This notification happens immediately after a syncable WriteTransaction
-  // falls out of scope.
-  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE);
+  // This notification happens immediately before a syncable WriteTransaction
+  // falls out of scope. It happens while the channel mutex is still held,
+  // and while the transaction mutex is held, so it cannot be re-entrant.
+  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_ENDING);
   if (!observer_ || ChangeBuffersAreEmpty())
     return;
 
-  ReadTransaction trans(GetUserShare());
+  // This will continue the WriteTransaction using a read only wrapper.
+  // This is the last chance for read to occur in the WriteTransaction
+  // that's closing. This special ReadTransaction will not close the
+  // underlying transaction.
+  ReadTransaction trans(GetUserShare(), event.trans);
+
   for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
     if (change_buffers_[i].IsEmpty())
       continue;

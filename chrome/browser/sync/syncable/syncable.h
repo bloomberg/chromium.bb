@@ -586,6 +586,10 @@ struct DirectoryChangeEvent {
     // callbacks or attempt to lock anything because a
     // WriteTransaction is being held until the listener returns.
     CALCULATE_CHANGES,
+    // Means the WriteTransaction is ending, and this is the absolute
+    // last chance to perform any read operations in the current transaction.
+    // It is not recommended that the listener perform any writes.
+    TRANSACTION_ENDING,
     // Means the WriteTransaction has been released and the listener
     // can now take action on the changes it calculated.
     TRANSACTION_COMPLETE,
@@ -594,7 +598,7 @@ struct DirectoryChangeEvent {
   } todo;
   // These members are only valid for CALCULATE_CHANGES.
   const OriginalEntries* originals;
-  BaseTransaction* trans;
+  BaseTransaction* trans;  // This is valid also for TRANSACTION_ENDING
   WriterTag writer;
   typedef DirectoryChangeEvent EventType;
   static inline bool IsChannelShutdownEvent(const EventType& e) {
@@ -1044,6 +1048,8 @@ class BaseTransaction {
   inline Directory* directory() const { return directory_; }
   inline Id root_id() const { return Id(); }
 
+  virtual ~BaseTransaction();
+
  protected:
   BaseTransaction(Directory* directory, const char* name,
                   const char* source_file, int line, WriterTag writer);
@@ -1072,7 +1078,7 @@ class ReadTransaction : public BaseTransaction {
   ReadTransaction(const ScopedDirLookup& scoped_dir,
                   const char* source_file, int line);
 
-  ~ReadTransaction();
+  virtual ~ReadTransaction();
 
  protected:  // Don't allow creation on heap, except by sync API wrapper.
   friend class sync_api::ReadTransaction;
