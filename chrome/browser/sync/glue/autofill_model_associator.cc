@@ -93,7 +93,7 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutofillEntries(
         LOG(ERROR) << "Failed to create autofill sync node.";
         return false;
       }
-      node.SetTitle(UTF16ToWide(ix->key().name() + ix->key().value()));
+      node.SetTitle(UTF8ToWide(tag));
       AutofillChangeProcessor::WriteAutofillEntry(*ix, &node);
       Associate(&tag, node.GetId());
     }

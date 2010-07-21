@@ -208,8 +208,7 @@ void AutofillChangeProcessor::ObserveAutofillEntriesChanged(
             return;
           }
 
-          sync_node.SetTitle(UTF16ToWide(change->key().name() +
-                                         change->key().value()));
+          sync_node.SetTitle(UTF8ToWide(tag));
 
           WriteAutofillEntry(AutofillEntry(change->key(), timestamps),
                              &sync_node);
