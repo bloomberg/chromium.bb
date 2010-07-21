@@ -109,7 +109,7 @@ class TopSites : public NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, MockDatabase);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, DeleteNotifications);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetUpdateDelay);
-  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, MigrationTest);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, Migration);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, QueueingRequestsForTopSites);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, CancelingRequestsForTopSites);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, AddTemporaryThumbnail);
