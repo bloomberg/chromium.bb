@@ -39,6 +39,13 @@ BrowserOptions.prototype = {
     $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
       chrome.send('becomeDefaultBrowser');
     };
+
+    // Remove Windows-style accelerators from button labels.
+    // TODO(stuartmorgan): Remove this once the strings are updated.
+    $('startupAddButton').textContent =
+        localStrings.getStringWithoutAccelerator('startupAddButton');
+    $('startupRemoveButton').textContent =
+        localStrings.getStringWithoutAccelerator('startupRemoveButton');
   },
 
   /**
