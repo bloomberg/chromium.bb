@@ -254,11 +254,7 @@ class GetRawCookiesCompletion : public net::CompletionCallback {
 
     std::vector<webkit_glue::WebCookie> cookies;
     for (size_t i = 0; i < cookie_list.size(); ++i) {
-      // TODO(darin): url.host() is not necessarily the domain of the cookie.
-      // We need a different API on CookieMonster to provide the domain info.
-      // See http://crbug.com/34315.
-      cookies.push_back(
-          webkit_glue::WebCookie(cookie_list[i].first, cookie_list[i].second));
+      cookies.push_back(webkit_glue::WebCookie(cookie_list[i]));
     }
 
     ViewHostMsg_GetRawCookies::WriteReplyParams(reply_msg_, cookies);

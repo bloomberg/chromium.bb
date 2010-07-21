@@ -215,8 +215,8 @@ void CookiesView::OnTreeViewSelectionChanged(views::TreeView* tree_view) {
       GetDetailedInfo();
   if (detailed_info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
     UpdateVisibleDetailedInfo(cookie_info_view_);
-    cookie_info_view_->SetCookie(detailed_info.cookie->first,
-                                 detailed_info.cookie->second);
+    cookie_info_view_->SetCookie(detailed_info.cookie->Domain(),
+                                 *detailed_info.cookie);
   } else if (detailed_info.node_type ==
              CookieTreeNode::DetailedInfo::TYPE_DATABASE) {
     UpdateVisibleDetailedInfo(database_info_view_);

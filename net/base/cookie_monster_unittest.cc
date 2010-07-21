@@ -103,18 +103,15 @@ class MockPersistentCookieStore
 // Mock for CookieMonster::Delegate
 class MockCookieMonsterDelegate : public net::CookieMonster::Delegate {
  public:
-  typedef std::pair<net::CookieMonster::CookieListPair, bool>
+  typedef std::pair<net::CookieMonster::CanonicalCookie, bool>
       CookieNotification;
 
   MockCookieMonsterDelegate() {}
 
   virtual void OnCookieChanged(
-      const std::string& domain_key,
       const net::CookieMonster::CanonicalCookie& cookie,
       bool removed) {
-    CookieNotification notification(
-        net::CookieMonster::CookieListPair(domain_key, cookie),
-        removed);
+    CookieNotification notification(cookie, removed);
     changes_.push_back(notification);
   }
 
@@ -1139,7 +1136,7 @@ TEST(CookieMonsterTest, TestSecure) {
 
 static Time GetFirstCookieAccessDate(net::CookieMonster* cm) {
   const net::CookieMonster::CookieList all_cookies(cm->GetAllCookies());
-  return all_cookies.front().second.LastAccessDate();
+  return all_cookies.front().LastAccessDate();
 }
 
 static const int kLastAccessThresholdMilliseconds = 200;
@@ -1247,8 +1244,8 @@ static bool FindAndDeleteCookie(net::CookieMonster* cm,
   net::CookieMonster::CookieList cookies = cm->GetAllCookies();
   for (net::CookieMonster::CookieList::iterator it = cookies.begin();
        it != cookies.end(); ++it)
-    if (it->first == domain && it->second.Name() == name)
-      return cm->DeleteCookie(domain, it->second, false);
+    if (it->Domain() == domain && it->Name() == name)
+      return cm->DeleteCookie(domain, *it, false);
   return false;
 }
 
@@ -1315,12 +1312,12 @@ TEST(CookieMonsterTest, GetAllCookiesForURL) {
   net::CookieMonster::CookieList::iterator it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
-  EXPECT_EQ("www.google.izzle", it->first);
-  EXPECT_EQ("A", it->second.Name());
+  EXPECT_EQ("www.google.izzle", it->Domain());
+  EXPECT_EQ("A", it->Name());
 
   ASSERT_TRUE(++it != cookies.end());
-  EXPECT_EQ(".google.izzle", it->first);
-  EXPECT_EQ("C", it->second.Name());
+  EXPECT_EQ(".google.izzle", it->Domain());
+  EXPECT_EQ("C", it->Name());
 
   ASSERT_TRUE(++it == cookies.end());
 
@@ -1329,16 +1326,16 @@ TEST(CookieMonsterTest, GetAllCookiesForURL) {
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
-  EXPECT_EQ("www.google.izzle", it->first);
-  EXPECT_EQ("A", it->second.Name());
+  EXPECT_EQ("www.google.izzle", it->Domain());
+  EXPECT_EQ("A", it->Name());
 
   ASSERT_TRUE(++it != cookies.end());
-  EXPECT_EQ(".google.izzle", it->first);
-  EXPECT_EQ("C", it->second.Name());
+  EXPECT_EQ(".google.izzle", it->Domain());
+  EXPECT_EQ("C", it->Name());
 
   ASSERT_TRUE(++it != cookies.end());
-  EXPECT_EQ(".google.izzle", it->first);
-  EXPECT_EQ("E", it->second.Name());
+  EXPECT_EQ(".google.izzle", it->Domain());
+  EXPECT_EQ("E", it->Name());
 
   ASSERT_TRUE(++it == cookies.end());
 
@@ -1369,12 +1366,12 @@ TEST(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
   net::CookieMonster::CookieList::iterator it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
-  EXPECT_EQ("A", it->second.Name());
-  EXPECT_EQ("/foo", it->second.Path());
+  EXPECT_EQ("A", it->Name());
+  EXPECT_EQ("/foo", it->Path());
 
   ASSERT_TRUE(++it != cookies.end());
-  EXPECT_EQ("E", it->second.Name());
-  EXPECT_EQ("/", it->second.Path());
+  EXPECT_EQ("E", it->Name());
+  EXPECT_EQ("/", it->Path());
 
   ASSERT_TRUE(++it == cookies.end());
 
@@ -1382,12 +1379,12 @@ TEST(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
-  EXPECT_EQ("C", it->second.Name());
-  EXPECT_EQ("/bar", it->second.Path());
+  EXPECT_EQ("C", it->Name());
+  EXPECT_EQ("/bar", it->Path());
 
   ASSERT_TRUE(++it != cookies.end());
-  EXPECT_EQ("E", it->second.Name());
-  EXPECT_EQ("/", it->second.Path());
+  EXPECT_EQ("E", it->Name());
+  EXPECT_EQ("/", it->Path());
 
   ASSERT_TRUE(++it == cookies.end());
 }
@@ -1410,8 +1407,8 @@ TEST(CookieMonsterTest, DeleteCookieByName) {
   EXPECT_EQ(expected_size, cookies.size());
   for (net::CookieMonster::CookieList::iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    EXPECT_NE("A1", it->second.Value());
-    EXPECT_NE("A2", it->second.Value());
+    EXPECT_NE("A1", it->Value());
+    EXPECT_NE("A2", it->Value());
   }
 }
 
@@ -1578,26 +1575,26 @@ TEST(CookieMonsterTest, Delegate) {
   EXPECT_EQ("A=B; C=D; E=F", cm->GetCookies(url_google));
   ASSERT_EQ(3u, delegate->changes().size());
   EXPECT_EQ(false, delegate->changes()[0].second);
-  EXPECT_EQ(url_google.host(), delegate->changes()[0].first.first);
-  EXPECT_EQ("A", delegate->changes()[0].first.second.Name());
-  EXPECT_EQ("B", delegate->changes()[0].first.second.Value());
-  EXPECT_EQ(url_google.host(), delegate->changes()[1].first.first);
+  EXPECT_EQ(url_google.host(), delegate->changes()[0].first.Domain());
+  EXPECT_EQ("A", delegate->changes()[0].first.Name());
+  EXPECT_EQ("B", delegate->changes()[0].first.Value());
+  EXPECT_EQ(url_google.host(), delegate->changes()[1].first.Domain());
   EXPECT_EQ(false, delegate->changes()[1].second);
-  EXPECT_EQ("C", delegate->changes()[1].first.second.Name());
-  EXPECT_EQ("D", delegate->changes()[1].first.second.Value());
-  EXPECT_EQ(url_google.host(), delegate->changes()[2].first.first);
+  EXPECT_EQ("C", delegate->changes()[1].first.Name());
+  EXPECT_EQ("D", delegate->changes()[1].first.Value());
+  EXPECT_EQ(url_google.host(), delegate->changes()[2].first.Domain());
   EXPECT_EQ(false, delegate->changes()[2].second);
-  EXPECT_EQ("E", delegate->changes()[2].first.second.Name());
-  EXPECT_EQ("F", delegate->changes()[2].first.second.Value());
+  EXPECT_EQ("E", delegate->changes()[2].first.Name());
+  EXPECT_EQ("F", delegate->changes()[2].first.Value());
   delegate->reset();
 
   EXPECT_TRUE(FindAndDeleteCookie(cm, url_google.host(), "C"));
   EXPECT_EQ("A=B; E=F", cm->GetCookies(url_google));
   ASSERT_EQ(1u, delegate->changes().size());
-  EXPECT_EQ(url_google.host(), delegate->changes()[0].first.first);
+  EXPECT_EQ(url_google.host(), delegate->changes()[0].first.Domain());
   EXPECT_EQ(true, delegate->changes()[0].second);
-  EXPECT_EQ("C", delegate->changes()[0].first.second.Name());
-  EXPECT_EQ("D", delegate->changes()[0].first.second.Value());
+  EXPECT_EQ("C", delegate->changes()[0].first.Name());
+  EXPECT_EQ("D", delegate->changes()[0].first.Value());
   delegate->reset();
 
   EXPECT_FALSE(FindAndDeleteCookie(cm, "random.host", "E"));
@@ -1612,9 +1609,9 @@ TEST(CookieMonsterTest, Delegate) {
   EXPECT_EQ(CookieStoreCommand::ADD, store->commands()[0].type);
   ASSERT_EQ(1u, delegate->changes().size());
   EXPECT_EQ(false, delegate->changes()[0].second);
-  EXPECT_EQ(url_google.host(), delegate->changes()[0].first.first);
-  EXPECT_EQ("a", delegate->changes()[0].first.second.Name());
-  EXPECT_EQ("val1", delegate->changes()[0].first.second.Value());
+  EXPECT_EQ(url_google.host(), delegate->changes()[0].first.Domain());
+  EXPECT_EQ("a", delegate->changes()[0].first.Name());
+  EXPECT_EQ("val1", delegate->changes()[0].first.Value());
   delegate->reset();
 
   // Insert a cookie "a" for path "/path1", that is httponly. This should
@@ -1630,14 +1627,14 @@ TEST(CookieMonsterTest, Delegate) {
   EXPECT_EQ(CookieStoreCommand::REMOVE, store->commands()[1].type);
   EXPECT_EQ(CookieStoreCommand::ADD, store->commands()[2].type);
   ASSERT_EQ(2u, delegate->changes().size());
-  EXPECT_EQ(url_google.host(), delegate->changes()[0].first.first);
+  EXPECT_EQ(url_google.host(), delegate->changes()[0].first.Domain());
   EXPECT_EQ(true, delegate->changes()[0].second);
-  EXPECT_EQ("a", delegate->changes()[0].first.second.Name());
-  EXPECT_EQ("val1", delegate->changes()[0].first.second.Value());
-  EXPECT_EQ(url_google.host(), delegate->changes()[1].first.first);
+  EXPECT_EQ("a", delegate->changes()[0].first.Name());
+  EXPECT_EQ("val1", delegate->changes()[0].first.Value());
+  EXPECT_EQ(url_google.host(), delegate->changes()[1].first.Domain());
   EXPECT_EQ(false, delegate->changes()[1].second);
-  EXPECT_EQ("a", delegate->changes()[1].first.second.Name());
-  EXPECT_EQ("val2", delegate->changes()[1].first.second.Value());
+  EXPECT_EQ("a", delegate->changes()[1].first.Name());
+  EXPECT_EQ("val2", delegate->changes()[1].first.Value());
   delegate->reset();
 }
 
@@ -1681,14 +1678,13 @@ TEST(CookieMonsterTest, SetCookieWithDetails) {
   net::CookieMonster::CookieList::iterator it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
-  EXPECT_EQ("A", it->second.Name());
-  EXPECT_EQ("B", it->second.Value());
-  EXPECT_EQ("www.google.izzle", it->first);
-  EXPECT_EQ("www.google.izzle", it->second.Domain());
-  EXPECT_EQ("/foo", it->second.Path());
-  EXPECT_FALSE(it->second.DoesExpire());
-  EXPECT_FALSE(it->second.IsSecure());
-  EXPECT_FALSE(it->second.IsHttpOnly());
+  EXPECT_EQ("A", it->Name());
+  EXPECT_EQ("B", it->Value());
+  EXPECT_EQ("www.google.izzle", it->Domain());
+  EXPECT_EQ("/foo", it->Path());
+  EXPECT_FALSE(it->DoesExpire());
+  EXPECT_FALSE(it->IsSecure());
+  EXPECT_FALSE(it->IsHttpOnly());
 
   ASSERT_TRUE(++it == cookies.end());
 
@@ -1696,13 +1692,12 @@ TEST(CookieMonsterTest, SetCookieWithDetails) {
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
-  EXPECT_EQ("C", it->second.Name());
-  EXPECT_EQ("D", it->second.Value());
-  EXPECT_EQ(".google.izzle", it->first);
-  EXPECT_EQ(".google.izzle", it->second.Domain());
-  EXPECT_EQ("/bar", it->second.Path());
-  EXPECT_FALSE(it->second.IsSecure());
-  EXPECT_TRUE(it->second.IsHttpOnly());
+  EXPECT_EQ("C", it->Name());
+  EXPECT_EQ("D", it->Value());
+  EXPECT_EQ(".google.izzle", it->Domain());
+  EXPECT_EQ("/bar", it->Path());
+  EXPECT_FALSE(it->IsSecure());
+  EXPECT_TRUE(it->IsHttpOnly());
 
   ASSERT_TRUE(++it == cookies.end());
 
@@ -1710,12 +1705,12 @@ TEST(CookieMonsterTest, SetCookieWithDetails) {
   it = cookies.begin();
 
   ASSERT_TRUE(it != cookies.end());
-  EXPECT_EQ("E", it->second.Name());
-  EXPECT_EQ("F", it->second.Value());
-  EXPECT_EQ("/", it->second.Path());
-  EXPECT_EQ("www.google.izzle", it->second.Domain());
-  EXPECT_TRUE(it->second.IsSecure());
-  EXPECT_FALSE(it->second.IsHttpOnly());
+  EXPECT_EQ("E", it->Name());
+  EXPECT_EQ("F", it->Value());
+  EXPECT_EQ("/", it->Path());
+  EXPECT_EQ("www.google.izzle", it->Domain());
+  EXPECT_TRUE(it->IsSecure());
+  EXPECT_FALSE(it->IsHttpOnly());
 
   ASSERT_TRUE(++it == cookies.end());
 }

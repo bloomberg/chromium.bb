@@ -268,11 +268,11 @@ int CookieMonster::TrimDuplicateCookiesForHost(
     CookieMap::iterator end) {
   lock_.AssertAcquired();
 
-  // List of cookies ordered by creation time.
-  typedef std::set<CookieMap::iterator, OrderByCreationTimeDesc> CookieList;
+  // Set of cookies ordered by creation time.
+  typedef std::set<CookieMap::iterator, OrderByCreationTimeDesc> CookieSet;
 
   // Helper map we populate to find the duplicates.
-  typedef std::map<CookieSignature, CookieList> EquivalenceMap;
+  typedef std::map<CookieSignature, CookieSet> EquivalenceMap;
   EquivalenceMap equivalent_cookies;
 
   // The number of duplicate cookies that have been found.
@@ -286,7 +286,7 @@ int CookieMonster::TrimDuplicateCookiesForHost(
 
     CookieSignature signature(cookie->Name(), cookie->Domain(),
                               cookie->Path());
-    CookieList& list = equivalent_cookies[signature];
+    CookieSet& list = equivalent_cookies[signature];
 
     // We found a duplicate!
     if (!list.empty())
@@ -307,7 +307,7 @@ int CookieMonster::TrimDuplicateCookiesForHost(
        it != equivalent_cookies.end();
        ++it) {
     const CookieSignature& signature = it->first;
-    CookieList& dupes = it->second;
+    CookieSet& dupes = it->second;
 
     if (dupes.size() <= 1)
       continue;  // This cookiename/path has no duplicates.
@@ -327,7 +327,7 @@ int CookieMonster::TrimDuplicateCookiesForHost(
     // Remove all the cookies identified by |dupes|. It is valid to delete our
     // list of iterators one at a time, since |cookies_| is a multimap (they
     // don't invalidate existing iterators following deletion).
-    for (CookieList::iterator dupes_it = dupes.begin();
+    for (CookieSet::iterator dupes_it = dupes.begin();
          dupes_it != dupes.end();
          ++dupes_it) {
       InternalDeleteCookie(*dupes_it, true /*sync_to_store*/,
@@ -775,7 +775,7 @@ void CookieMonster::InternalInsertCookie(const std::string& key,
     store_->AddCookie(key, *cc);
   cookies_.insert(CookieMap::value_type(key, cc));
   if (delegate_.get())
-    delegate_->OnCookieChanged(key, *cc, false);
+    delegate_->OnCookieChanged(*cc, false);
 }
 
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc) {
@@ -811,7 +811,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   if (cc->IsPersistent() && store_ && sync_to_store)
     store_->DeleteCookie(*cc);
   if (delegate_.get())
-    delegate_->OnCookieChanged(it->first, *cc, true);
+    delegate_->OnCookieChanged(*cc, true);
   cookies_.erase(it);
   delete cc;
 }
@@ -1129,7 +1129,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
 
   CookieList cookie_list;
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end(); ++it)
-    cookie_list.push_back(CookieListPair(it->first, *it->second));
+    cookie_list.push_back(*it->second);
 
   return cookie_list;
 }
@@ -1231,7 +1231,7 @@ void CookieMonster::FindRawCookies(const std::string& key,
       continue;
     if (!cc->IsOnPath(path))
       continue;
-    list->push_back(CookieListPair(key, *cc));
+    list->push_back(*cc);
   }
 }
 
@@ -1682,3 +1682,4 @@ std::string CookieMonster::CanonicalCookie::DebugString() const {
 }
 
 }  // namespace
+

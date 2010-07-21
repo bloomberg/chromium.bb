@@ -51,8 +51,7 @@ class CookieMonster : public CookieStore {
   typedef std::multimap<std::string, CanonicalCookie*> CookieMap;
   typedef std::pair<CookieMap::iterator, CookieMap::iterator> CookieMapItPair;
   typedef std::pair<std::string, CanonicalCookie*> KeyedCanonicalCookie;
-  typedef std::pair<std::string, CanonicalCookie> CookieListPair;
-  typedef std::vector<CookieListPair> CookieList;
+  typedef std::vector<CanonicalCookie> CookieList;
 
   // The store passed in should not have had Init() called on it yet. This
   // class will take care of initializing it. The backing store is NOT owned by
@@ -430,10 +429,9 @@ class CookieMonster::Delegate
     : public base::RefCountedThreadSafe<CookieMonster::Delegate> {
  public:
   // Will be called when a cookie is added or removed. The function is passed
-  // the respective |cookie| which was added to or removed from the cookies for
-  // |domain_key|. If |removed| is true, the cookie was deleted.
-  virtual void OnCookieChanged(const std::string& domain_key,
-                               const CookieMonster::CanonicalCookie& cookie,
+  // the respective |cookie| which was added to or removed from the cookies.
+  // If |removed| is true, the cookie was deleted.
+  virtual void OnCookieChanged(const CookieMonster::CanonicalCookie& cookie,
                                bool removed) = 0;
  protected:
   friend class base::RefCountedThreadSafe<CookieMonster::Delegate>;

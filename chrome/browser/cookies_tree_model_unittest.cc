@@ -100,7 +100,7 @@ class CookiesTreeModelTest : public testing::Test {
     std::vector<std::string> parts;
     net::CookieMonster::CookieList cookie_list = monster->GetAllCookies();
     for (size_t i = 0; i < cookie_list.size(); ++i)
-      parts.push_back(cookie_list[i].second.Name());
+      parts.push_back(cookie_list[i].Name());
     return JoinString(parts, ',');
   }
 
@@ -121,7 +121,7 @@ class CookiesTreeModelTest : public testing::Test {
           case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
             return node->GetDetailedInfo().database_info->database_name + ",";
           case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
-            return node->GetDetailedInfo().cookie->second.Name() + ",";
+            return node->GetDetailedInfo().cookie->Name() + ",";
           case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
             return node->GetDetailedInfo().appcache_info->manifest_url.spec() +
                    ",";

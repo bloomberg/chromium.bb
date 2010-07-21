@@ -52,7 +52,7 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
     };
 
     DetailedInfo(const std::wstring& origin, NodeType node_type,
-        const net::CookieMonster::CookieListPair* cookie,
+        const net::CookieMonster::CanonicalCookie* cookie,
         const BrowsingDataDatabaseHelper::DatabaseInfo* database_info,
         const BrowsingDataLocalStorageHelper::LocalStorageInfo*
             local_storage_info,
@@ -70,7 +70,7 @@ class CookieTreeNode : public TreeNode<CookieTreeNode> {
 
     std::wstring origin;
     NodeType node_type;
-    const net::CookieMonster::CookieListPair* cookie;
+    const net::CookieMonster::CanonicalCookie* cookie;
     const BrowsingDataDatabaseHelper::DatabaseInfo* database_info;
     const BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info;
     const appcache::AppCacheInfo* appcache_info;
@@ -180,7 +180,7 @@ class CookieTreeCookieNode : public CookieTreeNode {
 
   // Does not take ownership of cookie, and cookie should remain valid at least
   // as long as the CookieTreeCookieNode is valid.
-  explicit CookieTreeCookieNode(net::CookieMonster::CookieListPair* cookie);
+  explicit CookieTreeCookieNode(net::CookieMonster::CanonicalCookie* cookie);
   virtual ~CookieTreeCookieNode() {}
 
   // CookieTreeNode methods:
@@ -193,7 +193,7 @@ class CookieTreeCookieNode : public CookieTreeNode {
  private:
   // Cookie_ is not owned by the node, and is expected to remain valid as long
   // as the CookieTreeCookieNode is valid.
-  net::CookieMonster::CookieListPair* cookie_;
+  net::CookieMonster::CanonicalCookie* cookie_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieTreeCookieNode);
 };
@@ -404,7 +404,6 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
     DATABASE = 2
   };
   typedef net::CookieMonster::CookieList CookieList;
-  typedef std::vector<net::CookieMonster::CookieListPair*> CookiePtrList;
   typedef std::vector<BrowsingDataDatabaseHelper::DatabaseInfo>
       DatabaseInfoList;
   typedef std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo>

@@ -58,14 +58,14 @@ void ExtensionCookiesEventRouter::CookieChanged(
   dict->SetBoolean(keys::kRemovedKey, details->removed);
   dict->Set(
       keys::kCookieKey,
-      extension_cookies_helpers::CreateCookieValue(*details->cookie_pair,
+      extension_cookies_helpers::CreateCookieValue(*details->cookie,
           extension_cookies_helpers::GetStoreIdFromProfile(profile)));
   args.Append(dict);
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
   GURL cookie_domain =
-      extension_cookies_helpers::GetURLFromCookiePair(*details->cookie_pair);
+      extension_cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);
   DispatchEvent(profile, keys::kOnChanged, json_args, cookie_domain);
 }
 
@@ -191,8 +191,7 @@ void GetCookieFunction::RespondOnUIThread() {
   for (it = cookie_list_.begin(); it != cookie_list_.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster retrieves them in reverse domain-length order.
-    const net::CookieMonster::CanonicalCookie& cookie = it->second;
-    if (cookie.Name() == name_) {
+    if (it->Name() == name_) {
       result_.reset(
           extension_cookies_helpers::CreateCookieValue(*it, store_id_));
       break;
@@ -251,7 +250,8 @@ void GetAllCookiesFunction::RespondOnUIThread() {
   if (extension) {
     ListValue* matching_list = new ListValue();
     extension_cookies_helpers::AppendMatchingCookiesToList(
-        cookie_list_, store_id_, url_, details_, GetExtension(), matching_list);
+        cookie_list_, store_id_, url_, details_,
+        GetExtension(), matching_list);
     result_.reset(matching_list);
   }
   SendResponse(true);

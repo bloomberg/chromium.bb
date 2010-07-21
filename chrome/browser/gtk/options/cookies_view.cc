@@ -252,8 +252,8 @@ void CookiesView::EnableControls() {
     if (detailed_info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
       gtk_chrome_cookie_view_display_cookie(
           GTK_CHROME_COOKIE_VIEW(cookie_display_),
-          detailed_info.cookie->first,
-          detailed_info.cookie->second);
+          detailed_info.cookie->Domain(),
+          *detailed_info.cookie);
     } else if (detailed_info.node_type ==
                CookieTreeNode::DetailedInfo::TYPE_DATABASE) {
       gtk_chrome_cookie_view_display_database(

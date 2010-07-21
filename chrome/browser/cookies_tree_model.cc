@@ -48,8 +48,8 @@ CookiesTreeModel* CookieTreeNode::GetModel() const {
 // CookieTreeCookieNode, public:
 
 CookieTreeCookieNode::CookieTreeCookieNode(
-    net::CookieMonster::CookieListPair* cookie)
-    : CookieTreeNode(UTF8ToWide(cookie->second.Name())),
+    net::CookieMonster::CanonicalCookie* cookie)
+    : CookieTreeNode(UTF8ToWide(cookie->Name())),
       cookie_(cookie) {
 }
 
@@ -62,7 +62,7 @@ void CookieTreeCookieNode::DeleteStoredObjects() {
   // invalidate our pointers), and the fact that it contains semi out-of-date
   // data is not problematic as we don't re-build the model based on that.
   GetModel()->cookie_monster_->
-      DeleteCookie(cookie_->first, cookie_->second, true);
+      DeleteCookie(cookie_->Domain(), *cookie_, true);
 }
 
 namespace {
@@ -401,9 +401,9 @@ void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
   for (CookieList::iterator it = all_cookies_.begin();
        it != all_cookies_.end(); ++it) {
-    std::string origin_host = it->first;
+        std::string origin_host = it->Domain();
     if (origin_host.length() > 1 && origin_host[0] == '.')
-      origin_host = it->first.substr(1);
+      origin_host = it->Domain().substr(1);
     // We treat secure cookies just the same as normal ones.
     GURL origin(std::string(chrome::kHttpScheme) +
                 chrome::kStandardSchemeSeparator + origin_host + "/");

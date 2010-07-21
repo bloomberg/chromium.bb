@@ -133,14 +133,13 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
 
   // net::CookieMonster::Delegate implementation.
   virtual void OnCookieChanged(
-      const std::string& domain_key,
       const net::CookieMonster::CanonicalCookie& cookie,
       bool removed) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
             &ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,
-            net::CookieMonster::CookieListPair(domain_key, cookie),
+            cookie,
             removed));
   }
 
@@ -193,10 +192,10 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
   virtual ~ChromeCookieMonsterDelegate() {}
 
   void OnCookieChangedAsyncHelper(
-      net::CookieMonster::CookieListPair cookie_pair,
+      net::CookieMonster::CanonicalCookie cookie,
       bool removed) {
     if (profile_getter_->get()) {
-      ChromeCookieDetails cookie_details(&cookie_pair, removed);
+      ChromeCookieDetails cookie_details(&cookie, removed);
       NotificationService::current()->Notify(
           NotificationType::COOKIE_CHANGED,
           Source<Profile>(profile_getter_->get()),

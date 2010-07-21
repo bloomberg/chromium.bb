@@ -239,7 +239,7 @@
   CookieTreeNode::DetailedInfo::NodeType nodeType = info.node_type;
   if (nodeType == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
     NSString* origin = base::SysWideToNSString(info.origin.c_str());
-    return [[[CocoaCookieDetails alloc] initWithCookie:&(info.cookie->second)
+    return [[[CocoaCookieDetails alloc] initWithCookie:info.cookie
                                                 origin:origin
                                      canEditExpiration:NO] autorelease];
   } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_DATABASE) {

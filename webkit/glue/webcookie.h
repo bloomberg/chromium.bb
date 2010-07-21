@@ -28,11 +28,10 @@ struct WebCookie {
         session(session) {
   }
 
-  WebCookie(const std::string& domain,
-            const net::CookieMonster::CanonicalCookie& c)
+  explicit WebCookie(const net::CookieMonster::CanonicalCookie& c)
       : name(c.Name()),
         value(c.Value()),
-        domain(domain),
+        domain(c.Domain()),
         path(c.Path()),
         expires(c.ExpiryDate().ToDoubleT() * 1000),
         http_only(c.IsHttpOnly()),
