@@ -602,7 +602,9 @@ void NetworkLibraryImpl::ParseSystem(SystemInfo* system,
                   " fav=" << service.favorite <<
                   " auto=" << service.auto_connect <<
                   " error=" << service.error;
-    if (service.type == TYPE_ETHERNET)
+    // Once a connected ethernet service is found, disregard other ethernet
+    // services that are also found
+    if (service.type == TYPE_ETHERNET && !(ethernet->connected()))
       ethernet->ConfigureFromService(service);
     else if (service.type == TYPE_WIFI)
       wifi_networks->push_back(WifiNetwork(service));
