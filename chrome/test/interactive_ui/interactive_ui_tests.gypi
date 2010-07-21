@@ -99,6 +99,8 @@
         '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.cc',
         '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.h',
       ],
+      # See comment about the same line in chrome/chrome_tests.gypi.
+      'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
     }],  # OS=="mac"
     ['toolkit_views==1', {
       'dependencies': [
