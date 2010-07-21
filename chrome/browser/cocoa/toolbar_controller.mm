@@ -259,13 +259,10 @@ class NotificationBridge : public NotificationObserver {
   [reloadButton_
       setImage:nsimage_cache::ImageNamed(kReloadButtonReloadImageName)];
   [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
+  [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
 
-  if (Singleton<UpgradeDetector>::get()->notify_upgrade()) {
+  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
     [self badgeWrenchMenu];
-  } else {
-    NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
-    [wrenchButton_ setImage:wrenchImage];
-  }
 
   [backButton_ setShowsBorderOnlyWhileMouseInside:YES];
   [forwardButton_ setShowsBorderOnlyWhileMouseInside:YES];
@@ -565,20 +562,31 @@ class NotificationBridge : public NotificationObserver {
 }
 
 - (void)badgeWrenchMenu {
-  // The wrench menu gets an upgrade dot. Currently, it's ugly.
-  // http://crbug.com/49370
-  NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
+  // The wrench menu gets an upgrade dot. This gets ugly because we only have a
+  // PNG so we need to position it. TODO(avi): Get a PDF version, one ready for
+  // overlaying. http://crbug.com/49668
+  //
+  // In the Windows version, the ball doesn't actually pulsate, and is always
+  // drawn with the inactive image. Why? (We follow suit, though not on the
+  // weird positioning they do that overlaps the button border.)
   ThemeProvider* theme_provider = profile_->GetThemeProvider();
-  NSImage* badge = theme_provider->GetNSImageNamed(IDR_UPGRADE_DOT_ACTIVE,
+  NSImage* badge = theme_provider->GetNSImageNamed(IDR_UPGRADE_DOT_INACTIVE,
                                                    true);
-  [wrenchImage lockFocus];
-  [badge drawAtPoint:NSMakePoint(1, 1)
+
+  NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
+  NSSize wrenchImageSize = [wrenchImage size];
+
+  scoped_nsobject<NSImage> overlayImage(
+      [[NSImage alloc] initWithSize:wrenchImageSize]);
+
+  [overlayImage lockFocus];
+  [badge drawAtPoint:NSZeroPoint
             fromRect:NSZeroRect
            operation:NSCompositeSourceOver
             fraction:1.0];
-  [wrenchImage unlockFocus];
-  [wrenchButton_ setImage:wrenchImage];
-  [wrenchButton_ setNeedsDisplay:YES];
+  [overlayImage unlockFocus];
+
+  [[wrenchButton_ cell] setOverlayImage:overlayImage];
 }
 
 - (void)prefChanged:(std::wstring*)prefName {

@@ -41,6 +41,7 @@ typedef NSInteger ButtonType;
   CGFloat hoverAlpha_;  // 0-1. Controls the alpha during mouse hover
   NSTimeInterval lastHoverUpdate_;
   scoped_nsobject<NSGradient> gradient_;
+  scoped_nsobject<NSImage> overlayImage_;
 }
 
 // Turn off theming.  Temporary work-around.
@@ -66,7 +67,11 @@ typedef NSInteger ButtonType;
 - (NSBezierPath*)clipPathForFrame:(NSRect)cellFrame
                            inView:(NSView*)controlView;
 
-@property(assign, nonatomic)CGFloat hoverAlpha;
+@property(assign, nonatomic) CGFloat hoverAlpha;
+
+// An image that will be drawn after the normal content of the button cell,
+// overlaying it.  Never themed.
+@property(retain, nonatomic) NSImage* overlayImage;
 @end
 
 @interface GradientButtonCell(TestingAPI)

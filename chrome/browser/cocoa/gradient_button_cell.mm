@@ -128,6 +128,15 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   shouldTheme_ = shouldTheme;
 }
 
+- (NSImage*)overlayImage {
+  return overlayImage_.get();
+}
+
+- (void)setOverlayImage:(NSImage*)image {
+  overlayImage_.reset([image retain]);
+  [[self controlView] setNeedsDisplay:YES];
+}
+
 - (NSBackgroundStyle)interiorBackgroundStyle {
   // Never lower the interior, since that just leads to a weird shadow which can
   // often interact badly with the theme.
@@ -427,14 +436,24 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
         NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
       }
     }
-
     CGContextEndTransparencyLayer(context);
+
     [NSGraphicsContext restoreGraphicsState];
   } else {
     // NSCell draws these uncentered for some reason, probably because of the
     // of control in the xib
     [super drawInteriorWithFrame:NSOffsetRect(cellFrame, 0, 1)
                           inView:controlView];
+  }
+
+  if (overlayImage_) {
+    NSRect imageRect = NSZeroRect;
+    imageRect.size = [overlayImage_ size];
+    [overlayImage_ drawInRect:[self imageRectForBounds:cellFrame]
+                     fromRect:imageRect
+                    operation:NSCompositeSourceOver
+                     fraction:[self isEnabled] ? 1.0 : 0.5
+                 neverFlipped:YES];
   }
 }
 
