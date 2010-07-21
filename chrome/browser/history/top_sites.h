@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/lock.h"
 #include "base/timer.h"
 #include "base/ref_counted.h"
@@ -103,15 +104,15 @@ class TopSites : public NotificationObserver,
  private:
   friend class base::RefCountedThreadSafe<TopSites>;
   friend class TopSitesTest;
-  friend class TopSitesTest_GetMostVisited_Test;
-  friend class TopSitesTest_RealDatabase_Test;
-  friend class TopSitesTest_MockDatabase_Test;
-  friend class TopSitesTest_DeleteNotifications_Test;
-  friend class TopSitesTest_GetUpdateDelay_Test;
-  friend class TopSitesTest_Migration_Test;
-  friend class TopSitesTest_QueueingRequestsForTopSites_Test;
-  friend class TopSitesTest_CancelingRequestsForTopSites_Test;
-  friend class TopSitesTest_AddTemporaryThumbnail_Test;
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetMostVisited);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, RealDatabase);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, MockDatabase);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, DeleteNotifications);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetUpdateDelay);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, MigrationTest);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, QueueingRequestsForTopSites);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, CancelingRequestsForTopSites);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, AddTemporaryThumbnail);
 
   ~TopSites();
 
