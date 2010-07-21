@@ -483,7 +483,7 @@ static void Quit(const std::string& username,
 }
 // Compatible with LoginStatusConsumer::OnLoginFailure()
 static void QuitAndFail(const std::string& error) {
-  EXPECT_TRUE(false) << "Login should have succeeded!";
+  ADD_FAILURE() << "Login should have succeeded!";
   MessageLoop::current()->Quit();
 }
 
