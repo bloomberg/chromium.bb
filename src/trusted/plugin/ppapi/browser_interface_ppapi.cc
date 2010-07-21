@@ -22,7 +22,7 @@ namespace {
 bool GetWindow(plugin::InstanceIdentifier instance_id, pp::Var* window) {
   pp::Instance* instance = plugin::InstanceIdentifierToPPInstance(instance_id);
   *window = instance->GetWindowObject();
-  return window->is_void();
+  return !window->is_void();
 }
 
 }  // namespace
@@ -73,10 +73,8 @@ bool BrowserInterfacePpapi::GetOrigin(InstanceIdentifier instance_id,
     return false;
   }
   pp::Var location = window.GetProperty("location");
-  if (location.is_string()) {
-    *origin = location.AsString();
-  } else {
-    pp::Var href = window.GetProperty("href");
+  if (location.is_object()) {
+    pp::Var href = location.GetProperty("href");
     if (!href.is_string()) {
       *origin = href.AsString();
     }
