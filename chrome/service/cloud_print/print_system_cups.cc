@@ -124,6 +124,7 @@ class PrintSystemCUPS : public PrintSystem {
  public:
   explicit PrintSystemCUPS(const GURL& print_server_url);
 
+  // PrintSystem implementation.
   virtual void EnumeratePrinters(PrinterList* printer_list);
 
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
@@ -132,18 +133,12 @@ class PrintSystemCUPS : public PrintSystem {
   virtual bool ValidatePrintTicket(const std::string& printer_name,
                                    const std::string& print_ticket_data);
 
-  virtual bool SpoolPrintJob(const std::string& print_ticket,
-                             const FilePath& print_data_file_path,
-                             const std::string& print_data_mime_type,
-                             const std::string& printer_name,
-                             const std::string& job_title,
-                             PlatformJobId* job_id_ret);
-
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
                              PrintJobDetails *job_details);
 
   virtual bool IsValidPrinter(const std::string& printer_name);
+
 
   // TODO(gene): Add implementation for CUPS print server watcher.
   class PrintServerWatcherCUPS
@@ -212,11 +207,53 @@ class PrintSystemCUPS : public PrintSystem {
     DISALLOW_COPY_AND_ASSIGN(PrinterWatcherCUPS);
   };
 
+  class JobSpoolerCUPS : public PrintSystem::JobSpooler {
+   public:
+    explicit JobSpoolerCUPS(PrintSystemCUPS* print_system)
+        : print_system_(print_system) {
+      DCHECK(print_system_.get());
+    }
+    // PrintSystem::JobSpooler implementation.
+    virtual bool Spool(const std::string& print_ticket,
+                       const FilePath& print_data_file_path,
+                       const std::string& print_data_mime_type,
+                       const std::string& printer_name,
+                       const std::string& job_title,
+                       JobSpooler::Delegate* delegate) {
+      DCHECK(delegate);
+      int job_id = print_system_->SpoolPrintJob(
+          print_ticket, print_data_file_path, print_data_mime_type,
+          printer_name, job_title);
+      MessageLoop::current()->PostTask(FROM_HERE,
+                                       NewRunnableFunction(
+                                           &JobSpoolerCUPS::NotifyDelegate,
+                                           delegate,
+                                           job_id));
+      return true;
+    }
+
+    static void NotifyDelegate(JobSpooler::Delegate* delegate, int job_id) {
+      if (job_id)
+        delegate->OnJobSpoolSucceeded(job_id);
+      else
+        delegate->OnJobSpoolFailed();
+    }
+   private:
+    scoped_refptr<PrintSystemCUPS> print_system_;
+    DISALLOW_COPY_AND_ASSIGN(JobSpoolerCUPS);
+  };
+
   virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher();
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
       const std::string& printer_name);
+  virtual PrintSystem::JobSpooler* CreateJobSpooler();
 
   // Helper functions.
+  PlatformJobId SpoolPrintJob(const std::string& print_ticket,
+                              const FilePath& print_data_file_path,
+                              const std::string& print_data_mime_type,
+                              const std::string& printer_name,
+                              const std::string& job_title);
   bool GetPrinterInfo(const std::string& printer_name, PrinterBasicInfo* info);
   bool ParsePrintTicket(const std::string& print_ticket,
                         std::map<std::string, std::string>* options);
@@ -228,10 +265,10 @@ class PrintSystemCUPS : public PrintSystem {
   // in the <functions>2(), it does not work in CUPS prior to 1.4.
   int GetDests(cups_dest_t** dests);
   FilePath GetPPD(const char* name);
-  int PrintFile(const char* name, const char* filename, const char* title,
-                int num_options, cups_option_t* options);
   int GetJobs(cups_job_t** jobs, const char* name,
               int myjobs, int whichjobs);
+  int PrintFile(const char* name, const char* filename, const char* title,
+                int num_options, cups_option_t* options);
 
   GURL print_server_url_;
 };
@@ -336,47 +373,6 @@ bool PrintSystemCUPS::ParsePrintTicket(const std::string& print_ticket,
   return true;
 }
 
-bool PrintSystemCUPS::SpoolPrintJob(const std::string& print_ticket,
-                                    const FilePath& print_data_file_path,
-                                    const std::string& print_data_mime_type,
-                                    const std::string& printer_name,
-                                    const std::string& job_title,
-                                    PlatformJobId* job_id_ret) {
-  DCHECK(job_id_ret);
-
-  LOG(INFO) << "CP_CUPS: Spooling print job for: " << printer_name;
-
-  // We need to store options as char* string for the duration of the
-  // cupsPrintFile2 call. We'll use map here to store options, since
-  // Dictionary value from JSON parser returns wchat_t.
-  std::map<std::string, std::string> options;
-  bool res = ParsePrintTicket(print_ticket, &options);
-  DCHECK(res);  // If print ticket is invalid we still print using defaults.
-
-  std::vector<cups_option_t> cups_options;
-  std::map<std::string, std::string>::iterator it;
-  for (it = options.begin(); it != options.end(); ++it) {
-    cups_option_t opt;
-    opt.name = const_cast<char*>(it->first.c_str());
-    opt.value = const_cast<char*>(it->second.c_str());
-    cups_options.push_back(opt);
-  }
-
-  int job_id = PrintFile(printer_name.c_str(),
-                         print_data_file_path.value().c_str(),
-                         job_title.c_str(),
-                         cups_options.size(),
-                         &(cups_options[0]));
-
-  LOG(INFO) << "CP_CUPS: Job spooled, id: " << job_id;
-
-  if (job_id == 0)
-    return false;
-
-  *job_id_ret = job_id;
-  return true;
-}
-
 bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
                                     PlatformJobId job_id,
                                     PrintJobDetails *job_details) {
@@ -462,6 +458,10 @@ PrintSystem::PrinterWatcher* PrintSystemCUPS::CreatePrinterWatcher(
   return new PrinterWatcherCUPS(this, printer_name);
 }
 
+PrintSystem::JobSpooler* PrintSystemCUPS::CreateJobSpooler() {
+  return new JobSpoolerCUPS(this);
+}
+
 std::string PrintSystem::GenerateProxyId() {
   // TODO(gene): This code should generate a unique id for proxy. ID should be
   // unique for this user. Rand may return the same number. We'll need to change
@@ -532,6 +532,41 @@ int PrintSystemCUPS::GetJobs(cups_job_t** jobs, const char* name,
     HttpConnectionCUPS http(print_server_url_);
     return cupsGetJobs2(http.http(), jobs, name, myjobs, whichjobs);
   }
+}
+
+PlatformJobId PrintSystemCUPS::SpoolPrintJob(
+    const std::string& print_ticket,
+    const FilePath& print_data_file_path,
+    const std::string& print_data_mime_type,
+    const std::string& printer_name,
+    const std::string& job_title) {
+  LOG(INFO) << "CP_CUPS: Spooling print job for: " << printer_name;
+
+  // We need to store options as char* string for the duration of the
+  // cupsPrintFile2 call. We'll use map here to store options, since
+  // Dictionary value from JSON parser returns wchat_t.
+  std::map<std::string, std::string> options;
+  bool res = ParsePrintTicket(print_ticket, &options);
+  DCHECK(res);  // If print ticket is invalid we still print using defaults.
+
+  std::vector<cups_option_t> cups_options;
+  std::map<std::string, std::string>::iterator it;
+  for (it = options.begin(); it != options.end(); ++it) {
+    cups_option_t opt;
+    opt.name = const_cast<char*>(it->first.c_str());
+    opt.value = const_cast<char*>(it->second.c_str());
+    cups_options.push_back(opt);
+  }
+
+  int job_id = PrintFile(printer_name.c_str(),
+                         print_data_file_path.value().c_str(),
+                         job_title.c_str(),
+                         cups_options.size(),
+                         &(cups_options[0]));
+
+  LOG(INFO) << "CP_CUPS: Job spooled, id: " << job_id;
+
+  return job_id;
 }
 
 }  // namespace cloud_print

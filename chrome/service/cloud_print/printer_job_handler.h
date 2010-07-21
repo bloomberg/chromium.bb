@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "base/thread.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
 #include "chrome/service/cloud_print/print_system.h"
@@ -61,7 +62,8 @@ typedef URLFetcher::Delegate URLFetcherDelegate;
 class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                           public URLFetcherDelegate,
                           public JobStatusUpdaterDelegate,
-                          public cloud_print::PrinterWatcherDelegate {
+                          public cloud_print::PrinterWatcherDelegate,
+                          public cloud_print::JobSpoolerDelegate {
   enum PrintJobError {
     SUCCESS,
     JOB_DOWNLOAD_FAILED,
@@ -120,6 +122,11 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   virtual void OnPrinterDeleted();
   virtual void OnPrinterChanged();
   virtual void OnJobChanged();
+
+  // cloud_print::JobSpoolerDelegate implementation.
+  // Called on print_thread_.
+  virtual void OnJobSpoolSucceeded(const cloud_print::PlatformJobId& job_id);
+  virtual void OnJobSpoolFailed();
 
   // End Delegate implementations
 
@@ -207,11 +214,9 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   bool HavePendingTasks();
   void FailedFetchingJobData();
 
-  static void DoPrint(const JobDetails& job_details,
-                      const std::string& printer_name,
-                      scoped_refptr<cloud_print::PrintSystem> print_system,
-                      PrinterJobHandler* job_handler,
-                      MessageLoop* job_message_loop);
+  // Called on print_thread_.
+  void DoPrint(const JobDetails& job_details,
+               const std::string& printer_name);
 
   scoped_ptr<URLFetcher> request_;
   scoped_refptr<cloud_print::PrintSystem> print_system_;
@@ -232,6 +237,13 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   int server_error_count_;
   // The thread on which the actual print operation happens
   base::Thread print_thread_;
+  // The Job spooler object. This is only non-NULL during a print operation.
+  // It lives and dies on |print_thread_|
+  scoped_refptr<cloud_print::PrintSystem::JobSpooler> job_spooler_;
+  // The message loop proxy representing the thread on which this object
+  // was created. Used by the print thread.
+  scoped_refptr<base::MessageLoopProxy> job_handler_message_loop_proxy_;
+
   // There may be pending tasks in the message queue when Shutdown is called.
   // We set this flag so as to do nothing in those tasks.
   bool shutting_down_;

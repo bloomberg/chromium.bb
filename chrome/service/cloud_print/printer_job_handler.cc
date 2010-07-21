@@ -36,6 +36,8 @@ PrinterJobHandler::PrinterJobHandler(
       next_failure_handler_(NULL),
       server_error_count_(0),
       print_thread_("Chrome_CloudPrintJobPrintThread"),
+      job_handler_message_loop_proxy_(
+          base::MessageLoopProxy::CreateForCurrentThread()),
       shutting_down_(false),
       server_job_available_(false),
       printer_update_pending_(true),
@@ -431,11 +433,9 @@ void PrinterJobHandler::StartPrinting() {
       JobFailed(PRINT_FAILED);
     } else {
       print_thread_.message_loop()->PostTask(
-          FROM_HERE, NewRunnableFunction(&PrinterJobHandler::DoPrint,
-                                         job_details_,
-                                         printer_info_.printer_name,
-                                         print_system_, this,
-                                         MessageLoop::current()));
+          FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::DoPrint,
+                                       job_details_,
+                                       printer_info_.printer_name));
     }
   }
 }
@@ -590,29 +590,41 @@ void PrinterJobHandler::FailedFetchingJobData() {
   }
 }
 
+// The following methods are called on |print_thread_|. It is not safe to
+// access any members other than |job_handler_message_loop_proxy_|,
+// |job_spooler_| and |print_system_|.
 void PrinterJobHandler::DoPrint(const JobDetails& job_details,
-                          const std::string& printer_name,
-                          scoped_refptr<cloud_print::PrintSystem> print_system,
-                          PrinterJobHandler* job_handler,
-                          MessageLoop* job_message_loop) {
-  DCHECK(job_handler);
-  DCHECK(job_message_loop);
-  LOG(INFO) << "CP_PROXY: Printing: " << printer_name;
-  cloud_print::PlatformJobId job_id = -1;
-  if (print_system->SpoolPrintJob(job_details.print_ticket_,
-                                  job_details.print_data_file_path_,
-                                  job_details.print_data_mime_type_,
-                                  printer_name,
-                                  job_details.job_title_, &job_id)) {
-    job_message_loop->PostTask(FROM_HERE,
-                               NewRunnableMethod(job_handler,
-                                                 &PrinterJobHandler::JobSpooled,
-                                                 job_id));
+                                const std::string& printer_name) {
+  job_spooler_ = print_system_->CreateJobSpooler();
+  DCHECK(job_spooler_);
+  if (job_spooler_) {
+    job_spooler_->Spool(job_details.print_ticket_,
+                        job_details.print_data_file_path_,
+                        job_details.print_data_mime_type_,
+                        printer_name,
+                        job_details.job_title_,
+                        this);
   } else {
-    job_message_loop->PostTask(FROM_HERE,
-                               NewRunnableMethod(job_handler,
-                                                 &PrinterJobHandler::JobFailed,
-                                                 PRINT_FAILED));
+    OnJobSpoolFailed();
   }
+}
+
+void PrinterJobHandler::OnJobSpoolSucceeded(
+    const cloud_print::PlatformJobId& job_id) {
+  DCHECK(MessageLoop::current() == print_thread_.message_loop());
+  job_spooler_ = NULL;
+  job_handler_message_loop_proxy_->PostTask(FROM_HERE,
+                                            NewRunnableMethod(this,
+                                                &PrinterJobHandler::JobSpooled,
+                                                job_id));
+}
+
+void PrinterJobHandler::OnJobSpoolFailed() {
+  DCHECK(MessageLoop::current() == print_thread_.message_loop());
+  job_spooler_ = NULL;
+  job_handler_message_loop_proxy_->PostTask(FROM_HERE,
+                                            NewRunnableMethod(this,
+                                                &PrinterJobHandler::JobFailed,
+                                                PRINT_FAILED));
 }
 

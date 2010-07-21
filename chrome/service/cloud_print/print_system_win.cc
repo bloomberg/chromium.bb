@@ -12,12 +12,18 @@
 #include <winspool.h>
 
 #include "base/lock.h"
+#include "base/file_util.h"
 #include "base/object_watcher.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_handle_win.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/service/service_process.h"
+#include "chrome/service/service_utility_process_host.h"
+#include "gfx/rect.h"
+#include "printing/native_metafile.h"
+#include "printing/page_range.h"
 
 #pragma comment(lib, "prntvpt.lib")
 #pragma comment(lib, "rpcrt4.lib")
@@ -114,13 +120,6 @@ HRESULT PrintTicketToDevMode(const std::string& printer_name,
     }
     PTCloseProvider(provider);
   }
-  return hr;
-}
-
-HRESULT PrintPdf2DC(HDC dc, const FilePath& pdf_filename) {
-  HRESULT hr = E_NOTIMPL;
-  // TODO(sanjeevr): Implement this.
-  NOTIMPLEMENTED();
   return hr;
 }
 
@@ -255,13 +254,6 @@ class PrintSystemWin : public PrintSystem {
   virtual bool ValidatePrintTicket(const std::string& printer_name,
                                    const std::string& print_ticket_data);
 
-  virtual bool SpoolPrintJob(const std::string& print_ticket,
-                             const FilePath& print_data_file_path,
-                             const std::string& print_data_mime_type,
-                             const std::string& printer_name,
-                             const std::string& job_title,
-                             PlatformJobId* job_id_ret);
-
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
                              PrintJobDetails *job_details);
@@ -291,13 +283,10 @@ class PrintSystemWin : public PrintSystem {
       delegate_->OnPrinterAdded();
     }
     virtual void OnPrinterDeleted() {
-      NOTREACHED();
     }
     virtual void OnPrinterChanged() {
-      NOTREACHED();
     }
     virtual void OnJobChanged() {
-      NOTREACHED();
     }
 
    private:
@@ -349,9 +338,180 @@ class PrintSystemWin : public PrintSystem {
     DISALLOW_COPY_AND_ASSIGN(PrinterWatcherWin);
   };
 
+  class JobSpoolerWin : public PrintSystem::JobSpooler {
+   public:
+    JobSpoolerWin() : core_(new Core) {}
+    // PrintSystem::JobSpooler implementation.
+    virtual bool Spool(const std::string& print_ticket,
+                       const FilePath& print_data_file_path,
+                       const std::string& print_data_mime_type,
+                       const std::string& printer_name,
+                       const std::string& job_title,
+                       JobSpooler::Delegate* delegate) {
+      return core_->Spool(print_ticket, print_data_file_path,
+                          print_data_mime_type, printer_name, job_title,
+                          delegate);
+    }
+   private:
+    // We use a Core class because we want a separate RefCountedThreadSafe
+    // implementation for ServiceUtilityProcessHost::Client.
+    class Core : public ServiceUtilityProcessHost::Client {
+     public:
+      Core()
+          : last_page_printed_(-1), job_id_(-1), delegate_(NULL), saved_dc_(0) {
+      }
+      ~Core() {
+      }
+      bool Spool(const std::string& print_ticket,
+                 const FilePath& print_data_file_path,
+                 const std::string& print_data_mime_type,
+                 const std::string& printer_name,
+                 const std::string& job_title,
+                 JobSpooler::Delegate* delegate) {
+        if (delegate_) {
+          // We are already in the process of printing.
+          NOTREACHED();
+          return false;
+        }
+        last_page_printed_ = -1;
+        // We only support PDFs for now.
+        if (print_data_mime_type != "application/pdf") {
+          NOTREACHED();
+          return false;
+        }
+
+        if (!InitXPSModule()) {
+          // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
+          return false;
+        }
+        DevMode pt_dev_mode;
+        HRESULT hr = PrintTicketToDevMode(printer_name, print_ticket,
+                                          &pt_dev_mode);
+        if (FAILED(hr)) {
+          NOTREACHED();
+          return false;
+        }
+        HDC dc = CreateDC(L"WINSPOOL", UTF8ToWide(printer_name).c_str(),
+                          NULL, pt_dev_mode.dm_);
+        if (!dc) {
+          NOTREACHED();
+          return false;
+        }
+        hr = E_FAIL;
+        DOCINFO di = {0};
+        di.cbSize = sizeof(DOCINFO);
+        std::wstring doc_name = UTF8ToWide(job_title);
+        di.lpszDocName = doc_name.c_str();
+        job_id_ = StartDoc(dc, &di);
+        if (SP_ERROR == job_id_)
+          return false;
+
+        printer_dc_.Set(dc);
+
+        int printer_dpi = ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX);
+        saved_dc_ = SaveDC(printer_dc_.Get());
+        SetGraphicsMode(printer_dc_.Get(), GM_ADVANCED);
+        XFORM xform = {0};
+        xform.eM11 = xform.eM22 = static_cast<float>(printer_dpi) /
+            static_cast<float>(GetDeviceCaps(GetDC(NULL), LOGPIXELSX));
+        ModifyWorldTransform(printer_dc_.Get(), &xform, MWT_LEFTMULTIPLY);
+        print_data_file_path_ = print_data_file_path;
+        delegate_ = delegate;
+        RenderNextPDFPages();
+        return true;
+      }
+
+      // ServiceUtilityProcessHost::Client implementation.
+      virtual void OnRenderPDFPagesToMetafileSucceeded(
+          const printing::NativeMetafile& metafile,
+          int highest_rendered_page_number) {
+        metafile.SafePlayback(printer_dc_.Get());
+        bool done_printing = (highest_rendered_page_number !=
+            last_page_printed_ + kPageCountPerBatch);
+        last_page_printed_ = highest_rendered_page_number;
+        if (done_printing)
+          PrintJobDone();
+        else
+          RenderNextPDFPages();
+      }
+      virtual void OnRenderPDFPagesToMetafileFailed() {
+        PrintJobDone();
+      }
+      virtual void OnChildDied() {
+        PrintJobDone();
+      }
+     private:
+      void PrintJobDone() {
+        // If there is no delegate, then there is nothing pending to process.
+        if (!delegate_)
+          return;
+        RestoreDC(printer_dc_.Get(), saved_dc_);
+        EndDoc(printer_dc_.Get());
+        if (-1 == last_page_printed_) {
+          delegate_->OnJobSpoolFailed();
+        } else {
+          delegate_->OnJobSpoolSucceeded(job_id_);
+        }
+        delegate_ = NULL;
+      }
+      void RenderNextPDFPages() {
+        printing::PageRange range;
+        // Render 10 pages at a time.
+        range.from = last_page_printed_ + 1;
+        range.to = last_page_printed_ + kPageCountPerBatch;
+        std::vector<printing::PageRange> page_ranges;
+        page_ranges.push_back(range);
+
+        int printer_dpi = ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX);
+        int dc_width = GetDeviceCaps(printer_dc_.Get(), PHYSICALWIDTH);
+        int dc_height = GetDeviceCaps(printer_dc_.Get(), PHYSICALHEIGHT);
+        gfx::Rect render_area(0, 0, dc_width, dc_height);
+        g_service_process->io_thread()->message_loop_proxy()->PostTask(
+            FROM_HERE,
+            NewRunnableMethod(
+                this,
+                &JobSpoolerWin::Core::RenderPDFPagesInSandbox,
+                print_data_file_path_,
+                render_area,
+                printer_dpi,
+                page_ranges,
+                base::MessageLoopProxy::CreateForCurrentThread()));
+      }
+      // Called on the service process IO thread.
+      void RenderPDFPagesInSandbox(
+          const FilePath& pdf_path, const gfx::Rect& render_area,
+          int render_dpi, const std::vector<printing::PageRange>& page_ranges,
+          const scoped_refptr<base::MessageLoopProxy>&
+              client_message_loop_proxy) {
+        DCHECK(g_service_process->io_thread()->message_loop_proxy()->
+            BelongsToCurrentThread());
+        scoped_ptr<ServiceUtilityProcessHost> utility_host(
+            new ServiceUtilityProcessHost(this, client_message_loop_proxy));
+        if (utility_host->StartRenderPDFPagesToMetafile(pdf_path,
+                                                        render_area,
+                                                        render_dpi,
+                                                        page_ranges)) {
+          // The object will self-destruct when the child process dies.
+          utility_host.release();
+        }
+      }
+      static const int kPageCountPerBatch = 10;
+      int last_page_printed_;
+      PlatformJobId job_id_;
+      PrintSystem::JobSpooler::Delegate* delegate_;
+      int saved_dc_;
+      ScopedHDC printer_dc_;
+      FilePath print_data_file_path_;
+      DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin::Core);
+    };
+    scoped_refptr<Core> core_;
+    DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin);
+  };
+
   virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher();
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
       const std::string& printer_name);
+  virtual PrintSystem::JobSpooler* CreateJobSpooler();
 };
 
 void PrintSystemWin::EnumeratePrinters(PrinterList* printer_list) {
@@ -486,48 +646,6 @@ bool PrintSystemWin::ValidatePrintTicket(
   return ret;
 }
 
-bool PrintSystemWin::SpoolPrintJob(const std::string& print_ticket,
-                                       const FilePath& print_data_file_path,
-                                       const std::string& print_data_mime_type,
-                                       const std::string& printer_name,
-                                       const std::string& job_title,
-                                       PlatformJobId* job_id_ret) {
-  if (!InitXPSModule()) {
-    // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
-    return false;
-  }
-  DevMode pt_dev_mode;
-  HRESULT hr = PrintTicketToDevMode(printer_name, print_ticket, &pt_dev_mode);
-  if (FAILED(hr)) {
-    NOTREACHED();
-    return false;
-  }
-  ScopedHDC dc(CreateDC(L"WINSPOOL", UTF8ToWide(printer_name).c_str(), NULL,
-                        pt_dev_mode.dm_));
-  if (!dc.Get()) {
-    NOTREACHED();
-    return false;
-  }
-  hr = E_FAIL;
-  DOCINFO di = {0};
-  di.cbSize = sizeof(DOCINFO);
-  std::wstring doc_name = UTF8ToWide(job_title);
-  di.lpszDocName = doc_name.c_str();
-  int job_id = StartDoc(dc.Get(), &di);
-  if (SP_ERROR != job_id) {
-    if (print_data_mime_type == "application/pdf") {
-      hr = PrintPdf2DC(dc.Get(), print_data_file_path);
-    } else {
-      NOTREACHED();
-    }
-    EndDoc(dc.Get());
-    if (SUCCEEDED(hr) && job_id_ret) {
-      *job_id_ret = job_id;
-    }
-  }
-  return SUCCEEDED(hr);
-}
-
 bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
                                        PlatformJobId job_id,
                                        PrintJobDetails *job_details) {
@@ -595,6 +713,11 @@ PrintSystem::PrinterWatcher* PrintSystemWin::CreatePrinterWatcher(
     const std::string& printer_name) {
   DCHECK(!printer_name.empty());
   return new PrinterWatcherWin(printer_name);
+}
+
+PrintSystem::JobSpooler*
+PrintSystemWin::CreateJobSpooler() {
+  return new JobSpoolerWin();
 }
 
 std::string PrintSystem::GenerateProxyId() {
