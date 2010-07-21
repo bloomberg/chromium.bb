@@ -150,7 +150,7 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
 class LockWindow : public views::WidgetGtk {
  public:
   LockWindow()
-      : WidgetGtk(views::WidgetGtk::TYPE_POPUP),
+      : WidgetGtk(views::WidgetGtk::TYPE_WINDOW),
         toplevel_focus_widget_(NULL) {
     EnableDoubleBuffer(true);
   }
