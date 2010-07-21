@@ -1363,6 +1363,16 @@
    fun:_ZN18FocusIndicationFix40currentOSHasSetFocusRingStyleInBitmapBugEv
 }
 {
+   bug_48980_mac
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSt8_Rb_treeIPN11PrefService10PreferenceES2_St9_IdentityIS2_ENS0_24PreferencePathComparatorESaIS2_EE9_M_insertEPSt18_Rb_tree_node_baseS9_RKS2_
+   fun:_ZNSt8_Rb_treeIPN11PrefService10PreferenceES2_St9_IdentityIS2_ENS0_24PreferencePathComparatorESaIS2_EE13insert_uniqueERKS2_
+   fun:_ZNSt3setIPN11PrefService10PreferenceENS0_24PreferencePathComparatorESaIS2_EE6insertERKS2_
+   fun:_ZN11PrefService18RegisterPreferenceEPNS_10PreferenceE
+   fun:_ZN44ExtensionPrefStoreTest_NotifyWhenNeeded_Test8TestBodyEv
+}
+{
    bug_49250
    Memcheck:Cond
    fun:gleUpdateFogData
