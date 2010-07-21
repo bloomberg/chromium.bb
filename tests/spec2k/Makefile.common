@@ -105,7 +105,7 @@ $(IT).opt.bc: $(IT).bc
 ######################################################################
 # BITCODE - BACKEND - ARM
 
-BC_ARM=$(LLVM_FAKE_ROOT)/llvm-fake-bcld-arm
+BC_ARM=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch arm
 LIB_BC=$(TC_ROOT)/linux_arm-untrusted/libs-bitcode
 
 $(IT).pnacl.arm: $(IT).bc
@@ -118,7 +118,7 @@ $(IT).pnacl.opt.arm: $(IT).opt.bc
 
 ######################################################################
 # BITCODE - BACKEND - X8632
-BC_X8632=$(LLVM_FAKE_ROOT)/llvm-fake-bcld-x86-32
+BC_X8632=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-32
 
 $(IT).pnacl.x8632: $(IT).bc
 	$(BC_X8632)  $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
@@ -130,7 +130,7 @@ $(IT).pnacl.opt.x8632: $(IT).opt.bc
 
 ######################################################################
 # BITCODE - BACKEND - X8664
-BC_X8664=$(LLVM_FAKE_ROOT)/llvm-fake-bcld-x86-64
+BC_X8664=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-64
 
 $(IT).pnacl.x8664: $(IT).bc
 	$(BC_X8664) $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \

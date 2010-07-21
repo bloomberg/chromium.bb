@@ -35,7 +35,7 @@ case ${TARGET_CODE:=sfi-arm} in
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
     CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch arm"
-    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-arm"
+    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch arm"
     ;;
   bc-x86-32)  # => Bitcode libraries => x86-32
     CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc -emit-llvm"
@@ -45,7 +45,7 @@ case ${TARGET_CODE:=sfi-arm} in
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
     # TODO(espindola): CCAS is probably never used.
     CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch x86-32"
-    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-x86-32"
+    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch x86-32"
     ;;
   bc-x86-64)  # => Bitcode libraries => x86-64
     CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc -emit-llvm"
@@ -55,7 +55,7 @@ case ${TARGET_CODE:=sfi-arm} in
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
     # TODO(espindola): CCAS is probably never used.
     CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch x86-64"
-    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld-x86-64"
+    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch x86-64"
     ;;
   *)
     echo "Unknown TARGET_CODE value '${TARGET_CODE}';" \
