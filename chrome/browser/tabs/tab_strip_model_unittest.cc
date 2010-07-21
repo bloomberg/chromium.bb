@@ -80,7 +80,6 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   virtual void BookmarkAllTabs() {}
   virtual bool UseVerticalTabs() const { return false; }
   virtual void ToggleUseVerticalTabs() {}
-  virtual void SetToolbarVisibility(bool val) {}
 
  private:
   // A dummy TabContents we give to callers that expect us to actually build a

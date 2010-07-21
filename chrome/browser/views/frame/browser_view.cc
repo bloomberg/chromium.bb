@@ -100,10 +100,6 @@ static int explicit_show_state = -1;
 
 // How round the 'new tab' style bookmarks bar is.
 static const int kNewtabBarRoundness = 5;
-
-// The maximum width of the big title shown for extension app windows.
-static const int kExtensionAppTitleMaxWidth = 150;
-
 // ------------
 
 // Returned from BrowserView::GetClassName.
@@ -411,8 +407,6 @@ BrowserView::BrowserView(Browser* browser)
       frame_(NULL),
       browser_(browser),
       active_bookmark_bar_(NULL),
-      extension_app_icon_(NULL),
-      extension_app_title_(NULL),
       tabstrip_(NULL),
       toolbar_(NULL),
       infobar_container_(NULL),
@@ -425,8 +419,7 @@ BrowserView::BrowserView(Browser* browser)
       hung_window_detector_(&hung_plugin_action_),
       ticker_(0),
 #endif
-      extension_shelf_(NULL),
-      extension_app_icon_loader_(this) {
+      extension_shelf_(NULL) {
   browser_->tabstrip_model()->AddObserver(this);
 }
 
@@ -1292,11 +1285,6 @@ void BrowserView::ToggleTabStripMode() {
   frame_->TabStripDisplayModeChanged();
 }
 
-void BrowserView::SetToolbarCollapsedMode(bool val) {
-  toolbar_->SetCollapsed(val);
-  Layout();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 
@@ -1718,8 +1706,6 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
     tabstrip_ = new TabStrip(tabstrip_controller);
 
   tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
-  if (browser_->extension_app() && tabstrip_->AsTabStrip())
-    tabstrip_->AsTabStrip()->set_new_tab_button_enabled(false);
   AddChildView(tabstrip_);
 
   tabstrip_controller->InitFromModel(tabstrip_);
@@ -1752,46 +1738,12 @@ void BrowserView::Init() {
   LoadAccelerators();
   SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
 
-  if (browser_->extension_app()) {
-    extension_app_icon_ = new views::ImageView();
-    extension_app_icon_->SetID(VIEW_ID_EXTENSION_APP_ICON);
-    AddChildView(extension_app_icon_);
-
-    extension_app_title_ = new views::Label();
-    extension_app_title_->SetFont(
-        extension_app_title_->font().DeriveFont(1, gfx::Font::BOLD));
-    extension_app_title_->SetColor(SK_ColorWHITE);
-    extension_app_title_->SetID(VIEW_ID_EXTENSION_APP_TITLE);
-    AddChildView(extension_app_title_);
-
-    extension_app_icon_loader_.LoadImage(
-        browser_->extension_app(),
-        browser_->extension_app()->GetIconPath(
-            Extension::EXTENSION_ICON_MEDIUM),
-        gfx::Size(Extension::EXTENSION_ICON_SMALL,
-                  Extension::EXTENSION_ICON_SMALL),
-        ImageLoadingTracker::CACHE);
-
-    extension_app_title_->SetText(
-        UTF8ToWide(browser_->extension_app()->name()));
-    extension_app_title_->SizeToPreferredSize();
-
-    if (extension_app_title_->width() > kExtensionAppTitleMaxWidth) {
-      extension_app_title_->SetBounds(extension_app_title_->x(),
-                                      extension_app_title_->y(),
-                                      kExtensionAppTitleMaxWidth,
-                                      extension_app_title_->height());
-    }
-  }
-
   InitTabStrip(browser_->tabstrip_model());
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
   toolbar_->Init(browser_->profile());
   toolbar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TOOLBAR));
-  if (browser_->type() == Browser::TYPE_EXTENSION_APP)
-    toolbar_->SetCollapsed(true);
 
   infobar_container_ = new InfoBarContainer(this);
   AddChildView(infobar_container_);
@@ -1863,12 +1815,6 @@ void BrowserView::InitSystemMenu() {
   system_menu_->Rebuild();
 }
 #endif
-
-void BrowserView::OnImageLoaded(SkBitmap* image, ExtensionResource resource,
-                                int index) {
-  if (image)
-    extension_app_icon_->SetImage(*image);
-}
 
 BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
   return static_cast<BrowserViewLayout*>(GetLayoutManager());
@@ -2023,6 +1969,10 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   //     thus are slow and look ugly
   ignore_layout_ = true;
   LocationBarView* location_bar = toolbar_->location_bar();
+#if defined(OS_WIN)
+  AutocompleteEditViewWin* edit_view =
+      static_cast<AutocompleteEditViewWin*>(location_bar->location_entry());
+#endif
   if (!fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
@@ -2034,12 +1984,15 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
     if (focus_manager->GetFocusedView() == location_bar)
       focus_manager->ClearFocus();
 
+#if defined(OS_WIN)
     // If we don't hide the edit and force it to not show until we come out of
     // fullscreen, then if the user was on the New Tab Page, the edit contents
     // will appear atop the web contents once we go into fullscreen mode.  This
     // has something to do with how we move the main window while it's hidden;
     // if we don't hide the main window below, we don't get this problem.
-    location_bar->PushForceHidden();
+    edit_view->set_force_hidden(true);
+    ShowWindow(edit_view->m_hWnd, SW_HIDE);
+#endif
   }
 #if defined(OS_WIN)
   frame_->GetWindow()->PushForceHidden();
@@ -2076,8 +2029,11 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
                                                         browser_.get()));
     }
   } else {
+#if defined(OS_WIN)
     // Show the edit again since we're no longer in fullscreen mode.
-    location_bar->PopForceHidden();
+    edit_view->set_force_hidden(false);
+    ShowWindow(edit_view->m_hWnd, SW_SHOW);
+#endif
   }
 
   // Undo our anti-jankiness hacks and force the window to relayout now that

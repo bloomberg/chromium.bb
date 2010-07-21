@@ -98,7 +98,6 @@ LocationBarView::LocationBarView(Profile* profile,
       keyword_hint_view_(NULL),
       star_view_(NULL),
       mode_(mode),
-      force_hidden_count_(0),
       show_focus_rect_(false),
       bubble_type_(FirstRun::MINIMALBUBBLE) {
   DCHECK(profile_);
@@ -994,28 +993,6 @@ void LocationBarView::SaveStateToContents(TabContents* contents) {
 
 void LocationBarView::Revert() {
   location_entry_->RevertAll();
-}
-
-void LocationBarView::PushForceHidden() {
-#if defined(OS_WIN)
-  if (force_hidden_count_++ == 0) {
-    location_entry_->set_force_hidden(true);
-    ShowWindow(location_entry_->m_hWnd, SW_HIDE);
-  }
-#endif
-}
-
-void LocationBarView::PopForceHidden() {
-#if defined(OS_WIN)
-  if (force_hidden_count_ == 0) {
-    NOTREACHED() << "Unmatched PopForceHidden() call!";
-    return;
-  }
-  if (--force_hidden_count_ == 0) {
-    location_entry_->set_force_hidden(false);
-    ShowWindow(location_entry_->m_hWnd, SW_SHOW);
-  }
-#endif
 }
 
 int LocationBarView::PageActionVisibleCount() {

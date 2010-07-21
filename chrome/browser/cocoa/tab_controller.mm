@@ -130,10 +130,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   contextMenuDelegate_.reset(
       new TabControllerInternal::MenuDelegate(target_, self));
   contextMenuModel_.reset(new TabMenuModel(contextMenuDelegate_.get(),
-                                           [self pinned],
-                                           false,   // allow_toolbar_toggle
-                                           true));  // is_toolbar_visible
-
+                                           [self pinned]));
   contextMenuController_.reset(
       [[MenuController alloc] initWithModel:contextMenuModel_.get()
                      useWithPopUpButtonCell:NO]);

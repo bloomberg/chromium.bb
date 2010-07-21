@@ -24,7 +24,6 @@
 #include "chrome/browser/views/detachable_toolbar_view.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
-#include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_source.h"
@@ -612,11 +611,7 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
 }
 
 void BrowserActionsContainer::Layout() {
-  // The parent can be visible, but collapsed. In this case we don't
-  // want the browser action container to be visible.
-  ToolbarView* parent = reinterpret_cast<ToolbarView*>(GetParent());
-
-  if (browser_action_views_.size() == 0 || parent->collapsed()) {
+  if (browser_action_views_.size() == 0) {
     SetVisible(false);
     resize_gripper_->SetVisible(false);
     chevron_->SetVisible(false);

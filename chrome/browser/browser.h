@@ -651,7 +651,6 @@ class Browser : public TabStripModelDelegate,
   virtual void ToggleUseVerticalTabs();
   virtual bool CanRestoreTab();
   virtual void RestoreTab();
-  virtual void SetToolbarVisibility(bool visible);
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,

@@ -881,10 +881,6 @@ class NotificationType {
     // session. The source is the profile.
     EXTENSION_OMNIBOX_INPUT_ENTERED,
 
-    // The source is the extension object that changed. Details is a bool*
-    // with the new visibility.
-    EXTENSION_APP_TOOLBAR_VISIBILITY_CHANGED,
-
     // Debugging ---------------------------------------------------------------
 
     // TODO(mpcomplete): Sent to diagnose a bug. Remove when fixed.

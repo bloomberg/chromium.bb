@@ -15,16 +15,14 @@ class Browser;
 // of the tab a new TabMenuModel should be created each time the menu is shown.
 class TabMenuModel : public menus::SimpleMenuModel {
  public:
-  TabMenuModel(menus::SimpleMenuModel::Delegate* delegate, bool is_pinned,
-               bool allow_toolbar_toggle, bool is_toolbar_visible);
+  TabMenuModel(menus::SimpleMenuModel::Delegate* delegate, bool is_pinned);
   virtual ~TabMenuModel() {}
 
   // Returns true if vertical tabs are enabled.
   static bool AreVerticalTabsEnabled();
 
  private:
-  void Build(bool is_pinned, bool allow_toolbar_toggle,
-             bool is_toolbar_visible);
+  void Build(bool is_pinned);
 
   DISALLOW_COPY_AND_ASSIGN(TabMenuModel);
 };

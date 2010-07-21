@@ -47,9 +47,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // for laying out subsequent controls.
   virtual int LayoutTabStrip();
 
-  // Layout the big icon and title in the top left of extension app windows.
-  void LayoutExtensionAppIconAndTitle();
-
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
   virtual int LayoutToolbar(int top);
@@ -79,8 +76,6 @@ class BrowserViewLayout : public views::LayoutManager {
   }
 
   // Child views that the layout manager manages.
-  views::ImageView* extension_app_icon_;
-  views::Label* extension_app_title_;
   BaseTabStrip* tabstrip_;
   ToolbarView* toolbar_;
   views::View* contents_split_;

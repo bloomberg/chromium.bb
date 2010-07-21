@@ -162,9 +162,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // True if we're on a page where the bookmarks bar is always visible.
   bool OnNewTabPage() const;
 
-  // True if we're on an extension apps page.
-  bool OnAppsPage() const;
-
   // How much we want the bookmark bar to overlap the toolbar.  If |return_max|
   // is true, we return the maximum overlap rather than the current overlap.
   int GetToolbarOverlap(bool return_max);

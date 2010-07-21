@@ -19,6 +19,7 @@ class SimpleMenuModel;
 
 namespace views {
 class ImageButton;
+class ImageView;
 class Menu2;
 }  // namespace views
 
