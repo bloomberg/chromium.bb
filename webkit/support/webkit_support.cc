@@ -117,6 +117,7 @@ namespace webkit_support {
 static TestEnvironment* test_environment;
 
 static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
+  base::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
 
   // Initialize the singleton CommandLine with fixed values.  Some code refer to
@@ -398,7 +399,8 @@ WebURL GetDevToolsPathAsURL() {
       DCHECK(false);
       return WebURL();
   }
-  FilePath devToolsPath = dirExe.AppendASCII("resources/inspector/devtools.html");
+  FilePath devToolsPath = dirExe.AppendASCII(
+      "resources/inspector/devtools.html");
   return net::FilePathToFileURL(devToolsPath);
 }
 
