@@ -152,13 +152,20 @@ using webkit_glue::PasswordForm;
 
 using base::Time;
 
+namespace {
+
+typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
+
 // Current version number.
-static const int kCurrentVersionNumber = 24;
-static const int kCompatibleVersionNumber = 21;
+const int kCurrentVersionNumber = 24;
+const int kCompatibleVersionNumber = 21;
 
 // Keys used in the meta table.
-static const char* kDefaultSearchProviderKey = "Default Search Provider ID";
-static const char* kBuiltinKeywordVersion = "Builtin Keyword Version";
+const char* kDefaultSearchProviderKey = "Default Search Provider ID";
+const char* kBuiltinKeywordVersion = "Builtin Keyword Version";
+
+// The maximum length allowed for form data.
+const size_t kMaxDataLength = 1024;
 
 std::string JoinStrings(const std::string& separator,
                         const std::vector<std::string>& strings) {
@@ -171,9 +178,215 @@ std::string JoinStrings(const std::string& separator,
   return result;
 }
 
-namespace {
-typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
+void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
+  s->BindString(0, WideToUTF8(url.short_name()));
+  s->BindString(1, WideToUTF8(url.keyword()));
+  GURL favicon_url = url.GetFavIconURL();
+  if (!favicon_url.is_valid()) {
+    s->BindString(2, std::string());
+  } else {
+    s->BindString(2, history::HistoryDatabase::GURLToDatabaseURL(
+                       url.GetFavIconURL()));
+  }
+  if (url.url())
+    s->BindString(3, url.url()->url());
+  else
+    s->BindString(3, std::string());
+  s->BindInt(4, url.safe_for_autoreplace() ? 1 : 0);
+  if (!url.originating_url().is_valid()) {
+    s->BindString(5, std::string());
+  } else {
+    s->BindString(5, history::HistoryDatabase::GURLToDatabaseURL(
+        url.originating_url()));
+  }
+  s->BindInt64(6, url.date_created().ToTimeT());
+  s->BindInt(7, url.usage_count());
+  s->BindString(8, JoinStrings(";", url.input_encodings()));
+  s->BindInt(9, url.show_in_default_list() ? 1 : 0);
+  if (url.suggestions_url())
+    s->BindString(10, url.suggestions_url()->url());
+  else
+    s->BindString(10, std::string());
+  s->BindInt(11, url.prepopulate_id());
+  s->BindInt(12, url.autogenerate_keyword() ? 1 : 0);
 }
+
+void InitPasswordFormFromStatement(PasswordForm* form, sql::Statement* s) {
+  std::string tmp;
+  string16 decrypted_password;
+  tmp = s->ColumnString(0);
+  form->origin = GURL(tmp);
+  tmp = s->ColumnString(1);
+  form->action = GURL(tmp);
+  form->username_element = s->ColumnString16(2);
+  form->username_value = s->ColumnString16(3);
+  form->password_element = s->ColumnString16(4);
+
+  int encrypted_password_len = s->ColumnByteLength(5);
+  std::string encrypted_password;
+  if (encrypted_password_len) {
+    encrypted_password.resize(encrypted_password_len);
+    memcpy(&encrypted_password[0], s->ColumnBlob(5), encrypted_password_len);
+    Encryptor::DecryptString16(encrypted_password, &decrypted_password);
+  }
+
+  form->password_value = decrypted_password;
+  form->submit_element = s->ColumnString16(6);
+  tmp = s->ColumnString(7);
+  form->signon_realm = tmp;
+  form->ssl_valid = (s->ColumnInt(8) > 0);
+  form->preferred = (s->ColumnInt(9) > 0);
+  form->date_created = Time::FromTimeT(s->ColumnInt64(10));
+  form->blacklisted_by_user = (s->ColumnInt(11) > 0);
+  int scheme_int = s->ColumnInt(12);
+  DCHECK((scheme_int >= 0) && (scheme_int <= PasswordForm::SCHEME_OTHER));
+  form->scheme = static_cast<PasswordForm::Scheme>(scheme_int);
+}
+
+// TODO(jhawkins): This is a temporary stop-gap measure designed to prevent
+// a malicious site from DOS'ing the browser with extremely large profile
+// data.  The correct solution is to parse this data asynchronously.
+// See http://crbug.com/49332.
+string16 LimitDataSize(const string16& data) {
+  if (data.size() > kMaxDataLength)
+    return data.substr(kMaxDataLength);
+
+  return data;
+}
+
+void BindAutoFillProfileToStatement(const AutoFillProfile& profile,
+                                    sql::Statement* s) {
+  s->BindString16(0, profile.Label());
+  s->BindInt(1, profile.unique_id());
+
+  string16 text = profile.GetFieldText(AutoFillType(NAME_FIRST));
+  s->BindString16(2, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(NAME_MIDDLE));
+  s->BindString16(3, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(NAME_LAST));
+  s->BindString16(4, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(EMAIL_ADDRESS));
+  s->BindString16(5, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(COMPANY_NAME));
+  s->BindString16(6, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1));
+  s->BindString16(7, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2));
+  s->BindString16(8, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY));
+  s->BindString16(9, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE));
+  s->BindString16(10, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP));
+  s->BindString16(11, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
+  s->BindString16(12, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER));
+  s->BindString16(13, LimitDataSize(text));
+  text = profile.GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER));
+  s->BindString16(14, LimitDataSize(text));
+}
+
+AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
+  AutoFillProfile* profile = new AutoFillProfile(
+      s.ColumnString16(0), s.ColumnInt(1));
+  profile->SetInfo(AutoFillType(NAME_FIRST),
+                   s.ColumnString16(2));
+  profile->SetInfo(AutoFillType(NAME_MIDDLE),
+                   s.ColumnString16(3));
+  profile->SetInfo(AutoFillType(NAME_LAST),
+                   s.ColumnString16(4));
+  profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
+                   s.ColumnString16(5));
+  profile->SetInfo(AutoFillType(COMPANY_NAME),
+                   s.ColumnString16(6));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                   s.ColumnString16(7));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
+                   s.ColumnString16(8));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
+                   s.ColumnString16(9));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
+                   s.ColumnString16(10));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
+                   s.ColumnString16(11));
+  profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
+                   s.ColumnString16(12));
+  profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
+                   s.ColumnString16(13));
+  profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
+                   s.ColumnString16(14));
+
+  return profile;
+}
+
+void BindCreditCardToStatement(const CreditCard& credit_card,
+                               sql::Statement* s) {
+  s->BindString16(0, credit_card.Label());
+  s->BindInt(1, credit_card.unique_id());
+
+  string16 text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME));
+  s->BindString16(2, LimitDataSize(text));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_TYPE));
+  s->BindString16(3, LimitDataSize(text));
+  text.clear();  // No unencrypted cc info.
+  s->BindString16(4, LimitDataSize(text));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH));
+  s->BindString16(5, LimitDataSize(text));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+  s->BindString16(6, LimitDataSize(text));
+  text.clear();
+  s->BindString16(7, LimitDataSize(text));
+  s->BindString16(8, credit_card.billing_address());
+  // We don't store the shipping address anymore.
+  text.clear();
+  s->BindString16(9, LimitDataSize(text));
+  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
+  std::string encrypted_data;
+  Encryptor::EncryptString16(text, &encrypted_data);
+  s->BindBlob(10, encrypted_data.data(),
+              static_cast<int>(encrypted_data.length()));
+  // We don't store the CVV anymore.
+  text.clear();
+  s->BindBlob(11, text.data(), static_cast<int>(text.length()));
+}
+
+CreditCard* CreditCardFromStatement(const sql::Statement& s) {
+  CreditCard* credit_card = new CreditCard(
+      s.ColumnString16(0), s.ColumnInt(1));
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME),
+                       s.ColumnString16(2));
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_TYPE),
+                       s.ColumnString16(3));
+  string16 credit_card_number = s.ColumnString16(4);
+  // It could be non-empty prior to version 23. After that it encrypted in
+  // the column 10.
+  if (credit_card_number.empty()) {
+    int encrypted_cc_len = s.ColumnByteLength(10);
+    std::string encrypted_cc;
+    if (encrypted_cc_len) {
+      encrypted_cc.resize(encrypted_cc_len);
+      memcpy(&encrypted_cc[0], s.ColumnBlob(10), encrypted_cc_len);
+      Encryptor::DecryptString16(encrypted_cc, &credit_card_number);
+    }
+  }
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_NUMBER), credit_card_number);
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
+                       s.ColumnString16(5));
+  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
+                       s.ColumnString16(6));
+
+  string16 credit_card_verification_code = s.ColumnString16(7);
+  // We don't store the CVV anymore.
+  credit_card->set_billing_address(s.ColumnString16(8));
+  // We don't store the shipping address anymore.
+  // Column 10 is processed above.
+  // Column 11 is processed above.
+
+  return credit_card;
+}
+
+}  // namespace
 
 WebDatabase::WebDatabase() {
 }
@@ -535,39 +748,6 @@ bool WebDatabase::InitWebAppsTable() {
   return true;
 }
 
-static void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
-  s->BindString(0, WideToUTF8(url.short_name()));
-  s->BindString(1, WideToUTF8(url.keyword()));
-  GURL favicon_url = url.GetFavIconURL();
-  if (!favicon_url.is_valid()) {
-    s->BindString(2, std::string());
-  } else {
-    s->BindString(2, history::HistoryDatabase::GURLToDatabaseURL(
-                       url.GetFavIconURL()));
-  }
-  if (url.url())
-    s->BindString(3, url.url()->url());
-  else
-    s->BindString(3, std::string());
-  s->BindInt(4, url.safe_for_autoreplace() ? 1 : 0);
-  if (!url.originating_url().is_valid()) {
-    s->BindString(5, std::string());
-  } else {
-    s->BindString(5, history::HistoryDatabase::GURLToDatabaseURL(
-        url.originating_url()));
-  }
-  s->BindInt64(6, url.date_created().ToTimeT());
-  s->BindInt(7, url.usage_count());
-  s->BindString(8, JoinStrings(";", url.input_encodings()));
-  s->BindInt(9, url.show_in_default_list() ? 1 : 0);
-  if (url.suggestions_url())
-    s->BindString(10, url.suggestions_url()->url());
-  else
-    s->BindString(10, std::string());
-  s->BindInt(11, url.prepopulate_id());
-  s->BindInt(12, url.autogenerate_keyword() ? 1 : 0);
-}
-
 bool WebDatabase::AddKeyword(const TemplateURL& url) {
   DCHECK(url.id());
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -831,39 +1011,6 @@ bool WebDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
 #endif
 
   return success;
-}
-
-static void InitPasswordFormFromStatement(PasswordForm* form,
-                                          sql::Statement* s) {
-  std::string tmp;
-  string16 decrypted_password;
-  tmp = s->ColumnString(0);
-  form->origin = GURL(tmp);
-  tmp = s->ColumnString(1);
-  form->action = GURL(tmp);
-  form->username_element = s->ColumnString16(2);
-  form->username_value = s->ColumnString16(3);
-  form->password_element = s->ColumnString16(4);
-
-  int encrypted_password_len = s->ColumnByteLength(5);
-  std::string encrypted_password;
-  if (encrypted_password_len) {
-    encrypted_password.resize(encrypted_password_len);
-    memcpy(&encrypted_password[0], s->ColumnBlob(5), encrypted_password_len);
-    Encryptor::DecryptString16(encrypted_password, &decrypted_password);
-  }
-
-  form->password_value = decrypted_password;
-  form->submit_element = s->ColumnString16(6);
-  tmp = s->ColumnString(7);
-  form->signon_realm = tmp;
-  form->ssl_valid = (s->ColumnInt(8) > 0);
-  form->preferred = (s->ColumnInt(9) > 0);
-  form->date_created = Time::FromTimeT(s->ColumnInt64(10));
-  form->blacklisted_by_user = (s->ColumnInt(11) > 0);
-  int scheme_int = s->ColumnInt(12);
-  DCHECK((scheme_int >= 0) && (scheme_int <= PasswordForm::SCHEME_OTHER));
-  form->scheme = static_cast<PasswordForm::Scheme>(scheme_int);
 }
 
 bool WebDatabase::GetLogins(const PasswordForm& form,
@@ -1374,39 +1521,6 @@ bool WebDatabase::RemoveFormElement(const string16& name,
   return false;
 }
 
-static void BindAutoFillProfileToStatement(const AutoFillProfile& profile,
-                                           sql::Statement* s) {
-  s->BindString16(0, profile.Label());
-  s->BindInt(1, profile.unique_id());
-
-  string16 text = profile.GetFieldText(AutoFillType(NAME_FIRST));
-  s->BindString16(2, text);
-  text = profile.GetFieldText(AutoFillType(NAME_MIDDLE));
-  s->BindString16(3, text);
-  text = profile.GetFieldText(AutoFillType(NAME_LAST));
-  s->BindString16(4, text);
-  text = profile.GetFieldText(AutoFillType(EMAIL_ADDRESS));
-  s->BindString16(5, text);
-  text = profile.GetFieldText(AutoFillType(COMPANY_NAME));
-  s->BindString16(6, text);
-  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1));
-  s->BindString16(7, text);
-  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2));
-  s->BindString16(8, text);
-  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY));
-  s->BindString16(9, text);
-  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE));
-  s->BindString16(10, text);
-  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP));
-  s->BindString16(11, text);
-  text = profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY));
-  s->BindString16(12, text);
-  text = profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER));
-  s->BindString16(13, text);
-  text = profile.GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER));
-  s->BindString16(14, text);
-}
-
 bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO autofill_profiles"
@@ -1427,39 +1541,6 @@ bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
   }
 
   return s.Succeeded();
-}
-
-static AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
-  AutoFillProfile* profile = new AutoFillProfile(
-      s.ColumnString16(0), s.ColumnInt(1));
-  profile->SetInfo(AutoFillType(NAME_FIRST),
-                   s.ColumnString16(2));
-  profile->SetInfo(AutoFillType(NAME_MIDDLE),
-                   s.ColumnString16(3));
-  profile->SetInfo(AutoFillType(NAME_LAST),
-                   s.ColumnString16(4));
-  profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
-                   s.ColumnString16(5));
-  profile->SetInfo(AutoFillType(COMPANY_NAME),
-                   s.ColumnString16(6));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
-                   s.ColumnString16(7));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
-                   s.ColumnString16(8));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
-                   s.ColumnString16(9));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
-                   s.ColumnString16(10));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
-                   s.ColumnString16(11));
-  profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
-                   s.ColumnString16(12));
-  profile->SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
-                   s.ColumnString16(13));
-  profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
-                   s.ColumnString16(14));
-
-  return profile;
 }
 
 bool WebDatabase::GetAutoFillProfileForLabel(const string16& label,
@@ -1549,37 +1630,6 @@ bool WebDatabase::GetAutoFillProfileForID(int profile_id,
   return s.Succeeded();
 }
 
-static void BindCreditCardToStatement(const CreditCard& credit_card,
-                                      sql::Statement* s) {
-  s->BindString16(0, credit_card.Label());
-  s->BindInt(1, credit_card.unique_id());
-
-  string16 text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME));
-  s->BindString16(2, text);
-  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_TYPE));
-  s->BindString16(3, text);
-  text.clear();  // No unencrypted cc info.
-  s->BindString16(4, text);
-  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH));
-  s->BindString16(5, text);
-  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  s->BindString16(6, text);
-  text.clear();
-  s->BindString16(7, text);
-  s->BindString16(8, credit_card.billing_address());
-  // We don't store the shipping address anymore.
-  text.clear();
-  s->BindString16(9, text);
-  text = credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER));
-  std::string encrypted_data;
-  Encryptor::EncryptString16(text, &encrypted_data);
-  s->BindBlob(10, encrypted_data.data(),
-              static_cast<int>(encrypted_data.length()));
-  // We don't store the CVV anymore.
-  text.clear();
-  s->BindBlob(11, text.data(), static_cast<int>(text.length()));
-}
-
 bool WebDatabase::AddCreditCard(const CreditCard& credit_card) {
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO credit_cards"
@@ -1601,41 +1651,6 @@ bool WebDatabase::AddCreditCard(const CreditCard& credit_card) {
 
   DCHECK_GT(db_.GetLastChangeCount(), 0);
   return s.Succeeded();
-}
-
-static CreditCard* CreditCardFromStatement(const sql::Statement& s) {
-  CreditCard* credit_card = new CreditCard(
-      s.ColumnString16(0), s.ColumnInt(1));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME),
-                       s.ColumnString16(2));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_TYPE),
-                       s.ColumnString16(3));
-  string16 credit_card_number = s.ColumnString16(4);
-  // It could be non-empty prior to version 23. After that it encrypted in
-  // the column 10.
-  if (credit_card_number.empty()) {
-    int encrypted_cc_len = s.ColumnByteLength(10);
-    std::string encrypted_cc;
-    if (encrypted_cc_len) {
-      encrypted_cc.resize(encrypted_cc_len);
-      memcpy(&encrypted_cc[0], s.ColumnBlob(10), encrypted_cc_len);
-      Encryptor::DecryptString16(encrypted_cc, &credit_card_number);
-    }
-  }
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_NUMBER), credit_card_number);
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
-                       s.ColumnString16(5));
-  credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-                       s.ColumnString16(6));
-
-  string16 credit_card_verification_code = s.ColumnString16(7);
-  // We don't store the CVV anymore.
-  credit_card->set_billing_address(s.ColumnString16(8));
-  // We don't store the shipping address anymore.
-  // Column 10 is processed above.
-  // Column 11 is processed above.
-
-  return credit_card;
 }
 
 bool WebDatabase::GetCreditCardForLabel(const string16& label,
