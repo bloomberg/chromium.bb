@@ -38,6 +38,7 @@ const std::string kValidFeed2 = "files/feeds/feed2.xml";
 const std::string kValidFeed3 = "files/feeds/feed3.xml";
 const std::string kValidFeed4 = "files/feeds/feed4.xml";
 const std::string kValidFeed5 = "files/feeds/feed5.xml";
+const std::string kValidFeed6 = "files/feeds/feed6.xml";
 const std::string kValidFeedNoLinks = "files/feeds/feed_nolinks.xml";
 const std::string kInvalidFeed1 = "files/feeds/feed_invalid1.xml";
 const std::string kInvalidFeed2 = "files/feeds/feed_invalid2.xml";
@@ -206,6 +207,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // This page action will not show an icon, since it doesn't specify one but
   // is included here to test for a crash (http://crbug.com/25562).
@@ -234,6 +236,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
 // Tests that we don't lose the page action icon on in-page navigations.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   FilePath extension_path(test_data_dir_.AppendASCII("api_test")
                                         .AppendASCII("page_action")
@@ -259,6 +262,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
 // Tests that the location bar forgets about unloaded page actions.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(LoadExtension(extension_path));
@@ -313,6 +317,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
 // more than just "alternate".
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
     test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -351,6 +356,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
@@ -479,6 +485,7 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -492,6 +499,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -505,6 +513,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -518,6 +527,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -531,6 +541,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -546,6 +557,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -558,8 +570,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
                             "This feed contains no entries.");
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
+  HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
+  // Feed that is technically invalid but still parseable.
+  NavigateToFeedAndValidate(server, kValidFeed6, browser(), true,
+                            "Feed for MyFeedTitle",
+                            "Title 1",
+                            "Desc",
+                            "No error");
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -569,11 +597,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
-                            "Not a valid feed.");
+                            "This feed contains no entries.");
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -583,11 +612,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
-                            "Not a valid feed.");
+                            "This feed contains no entries.");
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -597,11 +627,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
-                            "Not a valid feed.");
+                            "This feed contains no entries.");
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));

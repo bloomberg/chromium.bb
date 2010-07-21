@@ -176,9 +176,17 @@ function handleResponse() {
 
   var doc = req.responseXML;
   if (!doc) {
-    handleFeedParsingFailed(
-        chrome.i18n.getMessage("rss_subscription_not_valid_feed"));
-    return;
+    // If the XMLHttpRequest object fails to parse the feed we make an attempt
+    // ourselves, because sometimes feeds have html/script code appended below a
+    // valid feed, which makes the feed invalid as a whole even though it is
+    // still parsable.
+    var domParser = new DOMParser();
+    doc = domParser.parseFromString(req.responseText, "text/xml");
+    if (!doc) {
+      handleFeedParsingFailed(
+          chrome.i18n.getMessage("rss_subscription_not_valid_feed"));
+      return;
+    }
   }
 
   // We must find at least one 'entry' or 'item' element before proceeding.
