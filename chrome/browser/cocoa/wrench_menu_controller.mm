@@ -15,6 +15,7 @@
 @interface WrenchMenuController (Private)
 - (WrenchMenuModel*)wrenchMenuModel;
 - (void)adjustPositioning;
+- (void)dispatchCommandInternal:(NSNumber*)tag;
 @end
 
 @implementation WrenchMenuController
@@ -97,7 +98,17 @@
   // TODO(rsesek): It'd be great if the zoom buttons didn't have to close the
   // menu. See http://crbug.com/48679 for more info.
   [menu_ cancelTracking];
-  [self wrenchMenuModel]->ExecuteCommand(tag);
+  // Executing certain commands from the nested run loop of the menu can lead
+  // to wonky behavior (e.g. http://crbug.com/49716). To avoid this, schedule
+  // the dispatch on the outermost run loop.
+  [self performSelector:@selector(dispatchCommandInternal:)
+             withObject:[NSNumber numberWithInt:tag]
+             afterDelay:0.0];
+}
+
+// Used to perform the actual dispatch on the outermost runloop.
+- (void)dispatchCommandInternal:(NSNumber*)tag {
+  [self wrenchMenuModel]->ExecuteCommand([tag intValue]);
 }
 
 - (WrenchMenuModel*)wrenchMenuModel {
