@@ -1331,23 +1331,3 @@
    fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS0_11CaptureDataEEEE
    fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
 }
-{
-   bug_49638
-   Memcheck:Addr4
-   fun:-[BookmarkButton isFolder]
-   fun:-[BookmarkBarFolderController openBookmarkFolderFromButtonAndCloseOldOne:]
-   fun:__NSFireDelayedPerform
-   fun:CFRunLoopRunSpecific
-   fun:CFRunLoopRunInMode
-   fun:RunCurrentEventLoopInMode
-   fun:ReceiveNextEventCommon
-   fun:BlockUntilNextEventMatchingListInMode
-   fun:_DPSNextEvent
-   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
-   fun:_ZN9CocoaTest8TearDownEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
