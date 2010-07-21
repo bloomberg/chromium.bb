@@ -62,11 +62,11 @@ void DownloadFile::Cancel() {
 }
 
 // The UI has provided us with our finalized name.
-bool DownloadFile::Rename(const FilePath& new_path) {
+bool DownloadFile::Rename(const FilePath& new_path, bool is_final_rename) {
   // If the new path is same as the old one, there is no need to perform the
   // following renaming logic.
   if (new_path == full_path_) {
-    path_renamed_ = true;
+    path_renamed_ = is_final_rename;
 
     // Don't close the file if we're not done (finished or canceled).
     if (!in_progress_)
@@ -76,6 +76,8 @@ bool DownloadFile::Rename(const FilePath& new_path) {
   }
 
   Close();
+
+  file_util::CreateDirectory(new_path.DirName());
 
 #if defined(OS_WIN)
   // We cannot rename because rename will keep the same security descriptor
@@ -106,7 +108,7 @@ bool DownloadFile::Rename(const FilePath& new_path) {
 #endif
 
   full_path_ = new_path;
-  path_renamed_ = true;
+  path_renamed_ = is_final_rename;
 
   // We don't need to re-open the file if we're done (finished or canceled).
   if (!in_progress_)
@@ -120,6 +122,11 @@ bool DownloadFile::Rename(const FilePath& new_path) {
     return false;
 
   return true;
+}
+
+void DownloadFile::DeleteCrDownload() {
+  FilePath crdownload = download_util::GetCrDownloadPath(full_path_);
+  file_util::Delete(crdownload, false);
 }
 
 void DownloadFile::Close() {

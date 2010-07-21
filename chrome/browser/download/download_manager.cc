@@ -477,13 +477,6 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
     info->suggested_path = info->suggested_path.Append(filename);
   }
 
-  // Do not add the path uniquifier if we are saving to a specific path as in
-  // the drag-out case.
-  if (info->save_info.file_path.empty()) {
-    info->path_uniquifier = download_util::GetUniquePathNumber(
-        info->suggested_path);
-  }
-
   // If the download is deemed dangerous, we'll use a temporary name for it.
   if (info->is_dangerous) {
     info->original_name = FilePath(info->suggested_path).BaseName();
@@ -492,7 +485,7 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
     FilePath::StringType file_name;
     FilePath path;
     while (path.empty()) {
-      SStringPrintf(&file_name, FILE_PATH_LITERAL("unconfirmed %d.download"),
+      SStringPrintf(&file_name, FILE_PATH_LITERAL("unconfirmed %d.crdownload"),
                     base::RandInt(0, 100000));
       path = dir.Append(file_name);
       if (file_util::PathExists(path))
@@ -500,6 +493,12 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
     }
     info->suggested_path = path;
   } else {
+    // Do not add the path uniquifier if we are saving to a specific path as in
+    // the drag-out case.
+    if (info->save_info.file_path.empty()) {
+      info->path_uniquifier = download_util::GetUniquePathNumberWithCrDownload(
+          info->suggested_path);
+    }
     // We know the final path, build it if necessary.
     if (info->path_uniquifier > 0) {
       download_util::AppendNumberToPath(&(info->suggested_path),
@@ -513,12 +512,16 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
     }
   }
 
+  // Create an empty file at the suggested path so that we don't allocate the
+  // same "non-existant" path to multiple downloads.
+  // See: http://code.google.com/p/chromium/issues/detail?id=3662
   if (!info->prompt_user_for_save_location &&
       info->save_info.file_path.empty()) {
-    // Create an empty file at the suggested path so that we don't allocate the
-    // same "non-existant" path to multiple downloads.
-    // See: http://code.google.com/p/chromium/issues/detail?id=3662
-    file_util::WriteFile(info->suggested_path, "", 0);
+    if (info->is_dangerous)
+      file_util::WriteFile(info->suggested_path, "", 0);
+    else
+      file_util::WriteFile(download_util::GetCrDownloadPath(
+          info->suggested_path), "", 0);
   }
 
   // Now we return to the UI thread.
@@ -591,20 +594,36 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
     return;
   }
 
-  // Called before DownloadFinished in order to avoid a race condition where we
-  // attempt to open a completed download before it has been renamed.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_manager_, &DownloadFileManager::OnFinalDownloadName,
-          download->id(), target_path, this));
-
-  // If the download already completed by the time we reached this point, then
-  // notify observers that it did.
   PendingFinishedMap::iterator pending_it =
       pending_finished_downloads_.find(info->download_id);
-  if (pending_it != pending_finished_downloads_.end())
+  bool download_finished = (pending_it != pending_finished_downloads_.end());
+
+  if (download_finished || info->is_dangerous) {
+    // The download has already finished or the download is not safe.
+    // We can now rename the file to its final name (or its tentative name
+    // in dangerous download cases).
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            file_manager_, &DownloadFileManager::OnFinalDownloadName,
+            download->id(), target_path, !info->is_dangerous, this));
+  } else {
+    // The download hasn't finished and it is a safe download.  We need to
+    // rename it to its intermediate '.crdownload' path.
+    FilePath download_path = download_util::GetCrDownloadPath(target_path);
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            file_manager_, &DownloadFileManager::OnIntermediateDownloadName,
+            download->id(), download_path, this));
+    download->set_need_final_rename(true);
+  }
+
+  if (download_finished) {
+    // If the download already completed by the time we reached this point, then
+    // notify observers that it did.
     DownloadFinished(pending_it->first, pending_it->second);
+  }
 
   download->Rename(target_path);
 
@@ -729,6 +748,16 @@ void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
             download->full_path(), download->original_name()));
     return;
   }
+
+  if (download->need_final_rename()) {
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            file_manager_, &DownloadFileManager::OnFinalDownloadName,
+            download->id(), download->full_path(), false, this));
+    return;
+  }
+
   ContinueDownloadFinished(download);
 }
 
@@ -745,6 +774,13 @@ void DownloadManager::DownloadRenamedToFinalName(int download_id,
       download->set_name_finalized(true);
       if (download->state() == DownloadItem::COMPLETE)
         download->NotifyObserversDownloadFileCompleted();
+
+      // This was called from DownloadFinished; continue to call
+      // ContinueDownloadFinished.
+      if (download->need_final_rename()) {
+        download->set_need_final_rename(false);
+        ContinueDownloadFinished(download);
+      }
       return;
     }
     it++;

@@ -43,7 +43,8 @@ DownloadItem::DownloadItem(const DownloadCreateInfo& info)
       is_otr_(false),
       is_extension_install_(info.is_extension_install),
       name_finalized_(false),
-      is_temporary_(false) {
+      is_temporary_(false),
+      need_final_rename_(false) {
   if (state_ == IN_PROGRESS)
     state_ = CANCELLED;
   Init(false /* don't start progress timer */);
@@ -92,7 +93,8 @@ DownloadItem::DownloadItem(int32 download_id,
       is_otr_(is_otr),
       is_extension_install_(is_extension_install),
       name_finalized_(false),
-      is_temporary_(is_temporary) {
+      is_temporary_(is_temporary),
+      need_final_rename_(false) {
   Init(true /* start progress timer */);
 }
 

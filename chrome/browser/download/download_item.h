@@ -192,6 +192,10 @@ class DownloadItem {
   }
   bool is_temporary() const { return is_temporary_; }
   void set_is_temporary(bool is_temporary) { is_temporary_ = is_temporary; }
+  bool need_final_rename() const { return need_final_rename_; }
+  void set_need_final_rename(bool need_final_rename) {
+    need_final_rename_ = need_final_rename;
+  }
 
   // Returns the file-name that should be reported to the user, which is
   // file_name_ for safe downloads and original_name_ for dangerous ones with
@@ -292,6 +296,9 @@ class DownloadItem {
 
   // True if the item was downloaded temporarily.
   bool is_temporary_;
+
+  // True if the file needs final rename.
+  bool need_final_rename_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItem);
 };

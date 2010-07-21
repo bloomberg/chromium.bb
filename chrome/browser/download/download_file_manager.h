@@ -62,6 +62,10 @@ class URLRequestContextGetter;
 // Manages all in progress downloads.
 class DownloadFileManager
     : public base::RefCountedThreadSafe<DownloadFileManager> {
+
+  // For testing.
+  friend class DownloadManagerTest;
+
  public:
   explicit DownloadFileManager(ResourceDispatcherHost* rdh);
 
@@ -95,9 +99,17 @@ class DownloadFileManager
                              gfx::NativeView parent_window);
 #endif
 
+  // The DownloadManager in the UI thread has provided an intermediate
+  // .crdownload name for the download specified by 'id'.
+  void OnIntermediateDownloadName(int id, const FilePath& full_path,
+                                  DownloadManager* download_manager);
+
   // The download manager has provided a final name for a download. Sent from
   // the UI thread and run on the download thread.
+  // |need_delete_crdownload| indicates if we explicitly delete the intermediate
+  // .crdownload file or not.
   void OnFinalDownloadName(int id, const FilePath& full_path,
+                           bool need_delete_crdownload,
                            DownloadManager* download_manager);
 
  private:
@@ -128,6 +140,10 @@ class DownloadFileManager
 
   // Called on the UI thread to remove a download from the UI progress table.
   void RemoveDownloadFromUIProgress(int id);
+
+  // Called only from OnFinalDownloadName or OnIntermediateDownloadName
+  // on the FILE thread.
+  void CancelDownloadOnRename(int id);
 
   // Unique ID for each DownloadFile.
   int next_id_;

@@ -548,4 +548,31 @@ void CancelDownloadRequest(ResourceDispatcherHost* rdh,
   rdh->CancelRequest(render_process_id, request_id, false);
 }
 
+int GetUniquePathNumberWithCrDownload(const FilePath& path) {
+  const int kMaxAttempts = 100;
+
+  if (!file_util::PathExists(path) &&
+      !file_util::PathExists(GetCrDownloadPath(path)))
+    return 0;
+
+  FilePath new_path;
+  for (int count = 1; count <= kMaxAttempts; ++count) {
+    new_path = FilePath(path);
+    AppendNumberToPath(&new_path, count);
+
+    if (!file_util::PathExists(new_path) &&
+        !file_util::PathExists(GetCrDownloadPath(new_path)))
+      return count;
+  }
+
+  return -1;
+}
+
+FilePath GetCrDownloadPath(const FilePath& suggested_path) {
+  FilePath::StringType file_name;
+  SStringPrintf(&file_name, PRFilePathLiteral FILE_PATH_LITERAL(".crdownload"),
+                suggested_path.value().c_str());
+  return FilePath(file_name);
+}
+
 }  // namespace download_util

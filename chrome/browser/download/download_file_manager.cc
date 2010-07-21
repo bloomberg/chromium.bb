@@ -402,21 +402,45 @@ void DownloadFileManager::OnOpenDownloadInShell(const FilePath& full_path,
 }
 #endif  // OS_MACOSX
 
+// The DownloadManager in the UI thread has provided an intermediate .crdownload
+// name for the download specified by 'id'. Rename the in progress download.
+void DownloadFileManager::OnIntermediateDownloadName(
+    int id, const FilePath& full_path, DownloadManager* download_manager)
+{
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DownloadFileMap::iterator it = downloads_.find(id);
+  if (it == downloads_.end())
+    return;
+
+  DownloadFile* download = it->second;
+  if (!download->Rename(full_path, false)) {
+    // Error. Between the time the UI thread generated 'full_path' to the time
+    // this code runs, something happened that prevents us from renaming.
+    CancelDownloadOnRename(id);
+  }
+}
+
 // The DownloadManager in the UI thread has provided a final name for the
 // download specified by 'id'. Rename the in progress download, and remove it
 // from our table if it has been completed or cancelled already.
+// |need_delete_crdownload| indicates if we explicitly delete an intermediate
+// .crdownload file or not.
+//
+// There are 3 possible rename cases where this method can be called:
+// 1. tmp -> foo            (need_delete_crdownload=T)
+// 2. foo.crdownload -> foo (need_delete_crdownload=F)
+// 3. tmp-> unconfirmed.xxx.crdownload (need_delete_crdownload=F)
 void DownloadFileManager::OnFinalDownloadName(int id,
                                               const FilePath& full_path,
+                                              bool need_delete_crdownload,
                                               DownloadManager* manager) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   DownloadFileMap::iterator it = downloads_.find(id);
   if (it == downloads_.end())
     return;
 
-  file_util::CreateDirectory(full_path.DirName());
-
   DownloadFile* download = it->second;
-  if (download->Rename(full_path)) {
+  if (download->Rename(full_path, true)) {
 #if defined(OS_MACOSX)
     // Done here because we only want to do this once; see
     // http://crbug.com/13120 for details.
@@ -430,21 +454,11 @@ void DownloadFileManager::OnFinalDownloadName(int id,
   } else {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
-    DownloadManagerMap::iterator dmit = managers_.find(download->id());
-    if (dmit != managers_.end()) {
-      DownloadManager* dlm = dmit->second;
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(dlm, &DownloadManager::DownloadCancelled, id));
-    } else {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
-          NewRunnableFunction(&download_util::CancelDownloadRequest,
-                              resource_dispatcher_host_,
-                              download->child_id(),
-                              download->request_id()));
-    }
+    CancelDownloadOnRename(id);
   }
+
+  if (need_delete_crdownload)
+    download->DeleteCrDownload();
 
   // If the download has completed before we got this final name, we remove it
   // from our in progress map.
@@ -460,3 +474,27 @@ void DownloadFileManager::OnFinalDownloadName(int id,
   }
 }
 
+// Called only from OnFinalDownloadName or OnIntermediateDownloadName
+// on the FILE thread.
+void DownloadFileManager::CancelDownloadOnRename(int id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DownloadFileMap::iterator it = downloads_.find(id);
+  if (it == downloads_.end())
+    return;
+
+  DownloadFile* download = it->second;
+  DownloadManagerMap::iterator dmit = managers_.find(download->id());
+  if (dmit != managers_.end()) {
+    DownloadManager* dlm = dmit->second;
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(dlm, &DownloadManager::DownloadCancelled, id));
+  } else {
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableFunction(&download_util::CancelDownloadRequest,
+                            resource_dispatcher_host_,
+                            download->child_id(),
+                            download->request_id()));
+  }
+}

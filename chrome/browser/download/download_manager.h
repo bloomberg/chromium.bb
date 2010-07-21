@@ -57,6 +57,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                         public SelectFileDialog::Listener {
   // For testing.
   friend class DownloadManagerTest;
+  friend class MockDownloadManager;
 
  public:
   // A fake download table ID which representas a download that has started,
@@ -318,7 +319,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                              const FilePath& target_path);
 
   // Update the history service for a particular download.
-  void UpdateHistoryForDownload(DownloadItem* download);
+  // Marked virtual for testing.
+  virtual void UpdateHistoryForDownload(DownloadItem* download);
   void RemoveDownloadFromHistory(DownloadItem* download);
   void RemoveDownloadsFromHistoryBetween(const base::Time remove_begin,
                                          const base::Time remove_before);
@@ -351,7 +353,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // dangerous downloads are downloaded to temporary files that need to be
   // renamed on the file thread first.
   // Invoked on the UI thread.
-  void ContinueDownloadFinished(DownloadItem* download);
+  // Marked virtual for testing.
+  virtual void ContinueDownloadFinished(DownloadItem* download);
 
   // Renames a finished dangerous download from its temporary file name to its
   // real file name.
@@ -370,7 +373,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   bool IsDangerous(const FilePath& file_name);
 
   // Updates the app icon about the overall download progress.
-  void UpdateAppIcon();
+  // Marked virtual for testing.
+  virtual void UpdateAppIcon();
 
   // Changes the paths and file name of the specified |download|, propagating
   // the change to the history system.

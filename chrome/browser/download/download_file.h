@@ -26,7 +26,7 @@ struct DownloadCreateInfo;
 class DownloadFile {
  public:
   explicit DownloadFile(const DownloadCreateInfo* info);
-  ~DownloadFile();
+  virtual ~DownloadFile();
 
   bool Initialize();
 
@@ -37,10 +37,16 @@ class DownloadFile {
   void Cancel();
 
   // Rename the download file. Returns 'true' if the rename was successful.
-  bool Rename(const FilePath& full_path);
+  // path_renamed_ is set true only if |is_final_rename| is true.
+  // Marked virtual for testing.
+  virtual bool Rename(const FilePath& full_path, bool is_final_rename);
 
   // Informs the OS that this file came from the internet.
   void AnnotateWithSourceInformation();
+
+  // Deletes its .crdownload intermediate file.
+  // Marked virtual for testing.
+  virtual void DeleteCrDownload();
 
   // Accessors.
   int64 bytes_so_far() const { return bytes_so_far_; }
