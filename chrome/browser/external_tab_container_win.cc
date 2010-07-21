@@ -28,8 +28,10 @@
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/page_transition_types.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "grit/generated_resources.h"
 #include "views/grid_layout.h"
@@ -311,6 +313,20 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
         automation_->Send(new AutomationMsg_OpenURL(0, tab_handle_,
                                                     url, referrer,
                                                     disposition));
+        // TODO(ananta)
+        // We should populate other fields in the
+        // ViewHostMsg_FrameNavigate_Params structure. Another option could be
+        // to refactor the UpdateHistoryForNavigation function in TabContents.
+        ViewHostMsg_FrameNavigate_Params params;
+        params.referrer = referrer;
+        params.url = url;
+        params.page_id = -1;
+        params.transition = PageTransition::LINK;
+
+        NavigationController::LoadCommittedDetails details;
+        details.did_replace_entry = false;
+
+        tab_contents_->UpdateHistoryForNavigation(url, details, params);
       }
       break;
     default:
