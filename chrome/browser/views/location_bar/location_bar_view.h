@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
@@ -58,7 +59,8 @@ class LocationBarView : public LocationBar,
                         public LocationBarTesting,
                         public views::View,
                         public views::DragController,
-                        public AutocompleteEditController {
+                        public AutocompleteEditController,
+                        public TemplateURLModelObserver {
  public:
   // The location bar view's class name.
   static const char kViewClassName[];
@@ -103,8 +105,8 @@ class LocationBarView : public LocationBar,
 
   void Init();
 
-  // Returns whether this instance has been initialized by callin Init. Init can
-  // only be called when the receiving instance is attached to a view container.
+  // True if this instance has been initialized by calling Init, which can only
+  // be called when the receiving instance is attached to a view container.
   bool IsInitialized() const;
 
   // Returns the appropriate color for the desired kind, based on the user's
@@ -221,6 +223,9 @@ class LocationBarView : public LocationBar,
   virtual ExtensionAction* GetPageAction(size_t index);
   virtual ExtensionAction* GetVisiblePageAction(size_t index);
   virtual void TestPageActionPressed(size_t index);
+
+  // Overridden from TemplateURLModelObserver
+  virtual void OnTemplateURLModelChanged();
 
   static const int kVertMargin;     // Space above and below the edit.
   static const int kEdgeThickness;  // Unavailable space at horizontal edges.
@@ -357,12 +362,12 @@ class LocationBarView : public LocationBar,
   // focused. Used when the toolbar is in full keyboard accessibility mode.
   bool show_focus_rect_;
 
+  // Whether bubble text is short or long.
+  FirstRun::BubbleType bubble_type_;
+
 #if defined(OS_LINUX)
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 #endif
-
-  // Used to schedule a task for the first run info bubble.
-  ScopedRunnableMethodFactory<LocationBarView> first_run_bubble_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };

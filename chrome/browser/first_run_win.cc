@@ -163,15 +163,15 @@ bool WriteEULAtoTempFile(FilePath* eula_path) {
 }
 
 // Helper class that performs delayed first-run tasks that need more of the
-// chrome infrastructure to be up an running before they can be attempted.
-class FirsRunDelayedTasks : public NotificationObserver {
+// chrome infrastructure to be up and running before they can be attempted.
+class FirstRunDelayedTasks : public NotificationObserver {
  public:
   enum Tasks {
     NO_TASK,
     INSTALL_EXTENSIONS
   };
 
-  explicit FirsRunDelayedTasks(Tasks task) {
+  explicit FirstRunDelayedTasks(Tasks task) {
     if (task == INSTALL_EXTENSIONS) {
       registrar_.Add(this, NotificationType::EXTENSIONS_READY,
                      NotificationService::AllSources());
@@ -192,7 +192,7 @@ class FirsRunDelayedTasks : public NotificationObserver {
 
  private:
   // Private ctor forces it to be created only in the heap.
-  ~FirsRunDelayedTasks() {}
+  ~FirstRunDelayedTasks() {}
 
   // The extension work is to basically trigger an extension update check.
   // If the extension specified in the master pref is older than the live
@@ -304,23 +304,25 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   DictionaryValue* extensions = 0;
   if (installer_util::HasExtensionsBlock(prefs.get(), &extensions)) {
     LOG(INFO) << "Extensions block found in master preferences";
-    new FirsRunDelayedTasks(FirsRunDelayedTasks::INSTALL_EXTENSIONS);
+    new FirstRunDelayedTasks(FirstRunDelayedTasks::INSTALL_EXTENSIONS);
   }
 
-  // Add a special exception for import_search_engine preference.
-  // Even though we skip all other import_* preferences below, if
-  // skip-first-run-ui is not specified, we make exception for this one
-  // preference.
+  // If the search engine dialog is not shown, the search engine is set to
+  // Google unless master_preferences specifically turns on search engine
+  // import.
   int import_items = 0;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportSearchPref, &value)) {
-    if (value) {
-      import_items += importer::SEARCH_ENGINES;
-      out_prefs->do_import_items += importer::SEARCH_ENGINES;
-    } else {
-      out_prefs->dont_import_items += importer::SEARCH_ENGINES;
-    }
+      installer_util::master_preferences::kDistroImportSearchPref, &value)
+      && value) {
+    import_items |= importer::SEARCH_ENGINES;
+    out_prefs->do_import_items |= importer::SEARCH_ENGINES;
   }
+
+  // Check to see if search engine logos should be randomized.
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kSearchEngineExperimentRandomizePref,
+      &value) && value)
+    out_prefs->randomize_search_engine_experiment = true;
 
   // If we're suppressing the first-run bubble, set that preference now.
   // Otherwise, wait until the user has completed first run to set it, so the
@@ -331,55 +333,48 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       &value) && value)
     FirstRun::SetShowFirstRunBubblePref(false);
 
-  if (InSearchExperimentLocale() &&
-      installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSearchEngineExperimentPref,
-      &value) && value) {
-    // Set the first run dialog to include the search choice window.
-    out_prefs->run_search_engine_experiment = true;
-    // Check to see if search engine logos should be randomized.
-    if (installer_util::GetDistroBooleanPreference(prefs.get(),
-        installer_util::master_preferences::
-            kSearchEngineExperimentRandomizePref,
-        &value) && value) {
-      out_prefs->randomize_search_engine_experiment = true;
+
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportHistoryPref, &value)) {
+    if (value) {
+      import_items |= importer::HISTORY;
+    } else {
+      // Automatic history import can be turned off in master_prefs.
+      out_prefs->dont_import_items |= importer::HISTORY;
     }
-    // Set the first run bubble to minimal.
-    FirstRun::SetMinimalFirstRunBubblePref();
   }
 
-  // History is imported automatically, unless turned off in master_prefs.
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHistoryPref, &value)
-      && !value) {
-    out_prefs->dont_import_items |= importer::HISTORY;
-  }
-
-  // Home page is imported automatically only in organic builds, and can be
-  // turned off in master_prefs.
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHomePagePref, &value)
-      && !value) {
-    out_prefs->dont_import_items |= importer::HOME_PAGE;
+      installer_util::master_preferences::kDistroImportHomePagePref, &value)) {
+    if (value) {
+      import_items |= importer::HOME_PAGE;
+    } else {
+      // Automatic home page import can be turned off in master_prefs.
+      out_prefs->dont_import_items |= importer::HOME_PAGE;
+    }
   }
 
   // Bookmarks are never imported unless specifically turned on.
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksPref, &value)
       && value) {
+    import_items |= importer::FAVORITES;
     out_prefs->do_import_items |= importer::FAVORITES;
   }
 
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kMakeChromeDefaultForUser, &value) &&
+      value)
+    ShellIntegration::SetAsDefaultBrowser();
+
+  // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
+  // import process.  http://crbug.com/49647
   // Note we are skipping all other master preferences if skip-first-run-ui
   // is *not* specified. (That is, we continue only if skipping first run ui.)
   if (!installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroSkipFirstRunPref, &value) ||
       !value)
     return true;
-
-  // From here on we won't show first run so we need to do the work to show the
-  // bubble anyway, unless it's already been explicitly suppressed.
-  FirstRun::SetShowFirstRunBubblePref(true);
 
   // We need to be able to create the first run sentinel or else we cannot
   // proceed because ImportSettings will launch the importer process which
@@ -407,11 +402,6 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       LOG(WARNING) << "silent import failed";
     }
   }
-
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kMakeChromeDefaultForUser, &value) &&
-      value)
-    ShellIntegration::SetAsDefaultBrowser();
 
   return false;
 }
@@ -677,6 +667,10 @@ void FirstRun::AutoImport(Profile* profile,
       search_engine_dialog->Close();
     }
   }
+
+  FirstRun::SetShowFirstRunBubblePref(true);
+  // Set the first run bubble to minimal.
+  FirstRun::SetMinimalFirstRunBubblePref();
 
   process_singleton->Unlock();
   FirstRun::CreateSentinel();
