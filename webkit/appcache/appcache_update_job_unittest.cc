@@ -105,6 +105,11 @@ class MockHttpServer {
     } else if (path == "/files/manifest1") {
       (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
       (*body) = kManifest1Contents;
+    } else if (path == "/files/manifest1-with-notmodified") {
+      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*body) = kManifest1Contents;
+      (*body).append("CACHE:\n"
+                     "notmodified\n");
     } else if (path == "/files/manifest-fb-404") {
       (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
       (*body) = "CACHE MANIFEST\n"
@@ -529,6 +534,7 @@ class AppCacheUpdateJobTest : public testing::Test,
         expect_newest_cache_(NULL),
         expect_non_null_update_time_(false),
         tested_manifest_(NONE),
+        tested_manifest1_path_override_(NULL),
         registered_factory_(false),
         old_factory_(NULL) {
   }
@@ -1396,9 +1402,13 @@ class AppCacheUpdateJobTest : public testing::Test,
   void UpgradeFailMasterUrlFetchTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
+    tested_manifest1_path_override_ = "files/manifest1-with-notmodified";
+
     MakeService();
+    const GURL kManifestUrl =
+        MockHttpServer::GetMockUrl(tested_manifest1_path_override_);
     group_ = new AppCacheGroup(
-        service_.get(), MockHttpServer::GetMockUrl("files/manifest1"),
+        service_.get(), kManifestUrl,
         service_->storage()->NewGroupId());
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
@@ -1411,7 +1421,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     host1->AssociateCache(cache);
     host2->AssociateCache(cache);
 
-    // Give the newest cache some master entries; one will fail with a 404.
+    // Give the newest cache some existing entries; one will fail with a 404.
     cache->AddEntry(
         MockHttpServer::GetMockUrl("files/notfound"),
         AppCacheEntry(AppCacheEntry::MASTER, 222));
@@ -1421,6 +1431,20 @@ class AppCacheUpdateJobTest : public testing::Test,
     cache->AddEntry(
         MockHttpServer::GetMockUrl("files/servererror"),
         AppCacheEntry(AppCacheEntry::MASTER, 444));
+    cache->AddEntry(
+        MockHttpServer::GetMockUrl("files/notmodified"),
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 555));
+
+    // Seed the response_info working set with canned data for
+    // files/servererror and for files/notmodified to test that the
+    // existing entries for those resource are reused by the update job.
+    const char kData[] =
+        "HTTP/1.1 200 OK\0"
+        "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
+        "\0";
+    const std::string kRawHeaders(kData, arraysize(kData));
+    MakeAppCacheResponseInfo(kManifestUrl, 444, kRawHeaders);
+    MakeAppCacheResponseInfo(kManifestUrl, 555, kRawHeaders);
 
     update->StartUpdate(NULL, GURL());
     EXPECT_TRUE(update->manifest_url_request_ != NULL);
@@ -1437,8 +1461,13 @@ class AppCacheUpdateJobTest : public testing::Test,
     expect_extra_entries_.insert(AppCache::EntryMap::value_type(
         MockHttpServer::GetMockUrl("files/servererror"),
         AppCacheEntry(AppCacheEntry::MASTER)));
+    expect_extra_entries_.insert(AppCache::EntryMap::value_type(
+        MockHttpServer::GetMockUrl("files/notmodified"),
+        AppCacheEntry(AppCacheEntry::EXPLICIT)));
     expect_response_ids_.insert(std::map<GURL, int64>::value_type(
         MockHttpServer::GetMockUrl("files/servererror"), 444));  // copied
+    expect_response_ids_.insert(std::map<GURL, int64>::value_type(
+        MockHttpServer::GetMockUrl("files/notmodified"), 555));  // copied
     MockFrontend::HostIds ids1(1, host1->host_id());
     frontend1->AddExpectedEvent(ids1, CHECKING_EVENT);
     frontend1->AddExpectedEvent(ids1, DOWNLOADING_EVENT);
@@ -1447,6 +1476,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // notfound
     frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // explicit2
     frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // servererror
+    frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // notmodified
     frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // final
     frontend1->AddExpectedEvent(ids1, UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
@@ -1457,6 +1487,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);  // notfound
     frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);  // explicit2
     frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);  // servererror
+    frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);  // notmodified
     frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);  // final
     frontend2->AddExpectedEvent(ids2, UPDATE_READY_EVENT);
 
@@ -2773,6 +2804,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = NULL;
     STLDeleteContainerPointers(hosts_.begin(), hosts_.end());
     STLDeleteContainerPointers(frontends_.begin(), frontends_.end());
+    response_infos_.clear();
     service_.reset(NULL);
     if (registered_factory_)
       URLRequest::RegisterProtocolFactory("http", old_factory_);
@@ -2803,6 +2835,18 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheHost* host = new AppCacheHost(host_id, frontend, service_.get());
     hosts_.push_back(host);
     return host;
+  }
+
+  AppCacheResponseInfo* MakeAppCacheResponseInfo(
+      const GURL& manifest_url, int64 response_id,
+      const std::string& raw_headers) {
+    net::HttpResponseInfo* http_info = new net::HttpResponseInfo();
+    http_info->headers = new net::HttpResponseHeaders(raw_headers);
+    scoped_refptr<AppCacheResponseInfo> info =
+        new AppCacheResponseInfo(service_.get(), manifest_url,
+                                 response_id, http_info, 0);
+    response_infos_.push_back(info);
+    return info;
   }
 
   MockFrontend* MakeMockFrontend() {
@@ -2929,8 +2973,11 @@ class AppCacheUpdateJobTest : public testing::Test,
   void VerifyManifest1(AppCache* cache) {
     size_t expected = 3 + expect_extra_entries_.size();
     EXPECT_EQ(expected, cache->entries().size());
+    const char* kManifestPath = tested_manifest1_path_override_ ?
+        tested_manifest1_path_override_ :
+        "files/manifest1";
     AppCacheEntry* entry =
-        cache->GetEntry(MockHttpServer::GetMockUrl("files/manifest1"));
+        cache->GetEntry(MockHttpServer::GetMockUrl(kManifestPath));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
     entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit1"));
@@ -3083,6 +3130,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   // Otherwise, test can put host on the stack instead of here.
   std::vector<AppCacheHost*> hosts_;
 
+  // Response infos used by an async test that need to live until update job
+  // finishes.
+  std::vector<scoped_refptr<AppCacheResponseInfo> > response_infos_;
+
   // Flag indicating if test cares to verify the update after update finishes.
   bool do_checks_after_update_finished_;
   bool expect_group_obsolete_;
@@ -3092,6 +3143,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   bool expect_non_null_update_time_;
   std::vector<MockFrontend*> frontends_;  // to check expected events
   TestedManifest tested_manifest_;
+  const char* tested_manifest1_path_override_;
   AppCache::EntryMap expect_extra_entries_;
   std::map<GURL, int64> expect_response_ids_;
 
