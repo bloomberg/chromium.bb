@@ -51,6 +51,7 @@ const CGFloat kRapidCloseDist = 2.5;
 - (void)adjustGlowValue;
 // TODO(davidben): When we stop supporting 10.5, this can be removed.
 - (int)getWorkspaceID:(NSWindow*)window useCache:(BOOL)useCache;
+- (NSBezierPath*)bezierPathForRect:(NSRect)rect;
 
 @end  // TabView(Private)
 
@@ -617,7 +618,7 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
-- (void)drawRect:(NSRect)rect {
+- (void)drawRect:(NSRect)dirtyRect {
   // If this tab is phantom, do not draw the tab background itself. The only UI
   // element that will represent this tab is the favicon.
   if ([controller_ phantom])
@@ -625,54 +626,14 @@ const CGFloat kRapidCloseDist = 2.5;
 
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
   [context saveGraphicsState];
-  rect = [self bounds];
-  BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
-  BOOL selected = [self state];
-
-  // Outset by 0.5 in order to draw on pixels rather than on borders (which
-  // would cause blurry pixels). Subtract 1px of height to compensate, otherwise
-  // clipping will occur.
-  rect = NSInsetRect(rect, -0.5, -0.5);
-  rect.size.height -= 1.0;
-
-  NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2);
-  NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect) + 2);
-  NSPoint topRight =
-      NSMakePoint(NSMaxX(rect) - kInsetMultiplier * NSHeight(rect),
-                  NSMaxY(rect));
-  NSPoint topLeft =
-      NSMakePoint(NSMinX(rect)  + kInsetMultiplier * NSHeight(rect),
-                  NSMaxY(rect));
-
-  CGFloat baseControlPointOutset = NSHeight(rect) * kControlPoint1Multiplier;
-  CGFloat bottomControlPointInset = NSHeight(rect) * kControlPoint2Multiplier;
-
-  // Outset many of these values by 1 to cause the fill to bleed outside the
-  // clip area.
-  NSBezierPath* path = [NSBezierPath bezierPath];
-  [path moveToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y - 2)];
-  [path lineToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y)];
-  [path lineToPoint:bottomLeft];
-  [path curveToPoint:topLeft
-       controlPoint1:NSMakePoint(bottomLeft.x + baseControlPointOutset,
-                                 bottomLeft.y)
-       controlPoint2:NSMakePoint(topLeft.x - bottomControlPointInset,
-                                 topLeft.y)];
-  [path lineToPoint:topRight];
-  [path curveToPoint:bottomRight
-       controlPoint1:NSMakePoint(topRight.x + bottomControlPointInset,
-                                 topRight.y)
-       controlPoint2:NSMakePoint(bottomRight.x - baseControlPointOutset,
-                                 bottomRight.y)];
-  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y)];
-  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y - 2)];
 
   ThemeProvider* themeProvider = [[self window] themeProvider];
+  [context setPatternPhase:[[self window] themePatternPhase]];
 
-  // Set the pattern phase.
-  NSPoint phase = [[self window] themePatternPhase];
-  [context setPatternPhase:phase];
+  NSRect rect = [self bounds];
+  NSBezierPath* path = [self bezierPathForRect:rect];
 
+  BOOL selected = [self state];
   // Don't draw the window/tab bar background when selected, since the tab
   // background overlay drawn over it (see below) will be fully opaque.
   BOOL hasBackgroundImage = NO;
@@ -685,10 +646,10 @@ const CGFloat kRapidCloseDist = 2.5;
         (themeProvider->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ||
          themeProvider->HasCustomImage(IDR_THEME_FRAME));
 
-    NSColor* backgroundImageColor =
-        hasBackgroundImage ?
-          themeProvider->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND, true) :
-          nil;
+    NSColor* backgroundImageColor = hasBackgroundImage ?
+        themeProvider->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND, true) :
+        nil;
+
     if (backgroundImageColor) {
       [backgroundImageColor set];
       [path fill];
@@ -713,8 +674,7 @@ const CGFloat kRapidCloseDist = 2.5;
   if (selected || hoverAlpha > 0 || alertAlpha > 0) {
     // Draw the selected background / glow overlay.
     [context saveGraphicsState];
-    CGContextRef cgContext =
-        (CGContextRef)([context graphicsPort]);
+    CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
     CGContextBeginTransparencyLayer(cgContext, 0);
     if (!selected) {
       // The alert glow overlay is like the selected state but at most at most
@@ -740,9 +700,9 @@ const CGFloat kRapidCloseDist = 2.5;
         NSPoint point = hoverPoint_;
         point.y = NSHeight(rect);
         [glow drawFromCenter:point
-                      radius:0
+                      radius:0.0
                     toCenter:point
-                      radius:NSWidth(rect)/3
+                      radius:NSWidth(rect) / 3.0
                      options:NSGradientDrawsBeforeStartingLocation];
 
         [glow drawInBezierPath:path relativeCenterPosition:hoverPoint_];
@@ -753,25 +713,31 @@ const CGFloat kRapidCloseDist = 2.5;
     [context restoreGraphicsState];
   }
 
-  // Draw the top inner highlight.
-  NSAffineTransform* highlightTransform = [NSAffineTransform transform];
-  [highlightTransform translateXBy:1 yBy:-1];
-  scoped_nsobject<NSBezierPath> highlightPath([path copy]);
-  [highlightPath transformUsingAffineTransform:highlightTransform];
-  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2 + 0.3 * hoverAlpha]
-      setStroke];
-  [highlightPath stroke];
+  BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
+  CGFloat borderAlpha = selected ? (active ? 0.3 : 0.2) : 0.2;
+  NSColor* borderColor = [NSColor colorWithDeviceWhite:0.0 alpha:borderAlpha];
+  NSColor* highlightColor = [NSColor colorWithCalibratedWhite:0.96 alpha:1.0];
+
+  // Draw the top inner highlight within the currently selected tab.
+  if (selected) {
+    NSAffineTransform* highlightTransform = [NSAffineTransform transform];
+    [highlightTransform translateXBy:1.0 yBy:-1.0];
+    scoped_nsobject<NSBezierPath> highlightPath([path copy]);
+    [highlightPath transformUsingAffineTransform:highlightTransform];
+    [highlightColor setStroke];
+    [highlightPath setLineWidth:1.0];
+    [highlightPath stroke];
+    highlightTransform = [NSAffineTransform transform];
+    [highlightTransform translateXBy:-2.0 yBy:0.0];
+    [highlightPath transformUsingAffineTransform:highlightTransform];
+    [highlightPath stroke];
+  }
 
   [context restoreGraphicsState];
 
   // Draw the top stroke.
   [context saveGraphicsState];
-  if (selected) {
-    [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.3 : 0.15] set];
-  } else {
-    [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.2 : 0.15] set];
-    [[NSBezierPath bezierPathWithRect:NSOffsetRect(rect, 0, 2.5)] addClip];
-  }
+  [borderColor set];
   [path setLineWidth:1.0];
   [path stroke];
   [context restoreGraphicsState];
@@ -783,11 +749,11 @@ const CGFloat kRapidCloseDist = 2.5;
     NSRect borderRect = rect;
     borderRect.origin.y = 1;
     borderRect.size.height = 1;
-    [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.2 : 0.15] set];
+    [borderColor set];
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
 
     borderRect.origin.y = 0;
-    [[NSColor colorWithCalibratedWhite:0.96 alpha:1.0] set];
+    [highlightColor set];
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
 
@@ -882,6 +848,10 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 
   return [super accessibilityAttributeValue:attribute];
+}
+
+- (ViewID)viewID {
+  return VIEW_ID_TAB;
 }
 
 @end  // @implementation TabView
@@ -1031,8 +1001,46 @@ const CGFloat kRapidCloseDist = 2.5;
   return workspace;
 }
 
-- (ViewID)viewID {
-  return VIEW_ID_TAB;
+// Returns the bezier path used to draw the tab given the bounds to draw it in.
+- (NSBezierPath*)bezierPathForRect:(NSRect)rect {
+  // Outset by 0.5 in order to draw on pixels rather than on borders (which
+  // would cause blurry pixels). Subtract 1px of height to compensate, otherwise
+  // clipping will occur.
+  rect = NSInsetRect(rect, -0.5, -0.5);
+  rect.size.height -= 1.0;
+
+  NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect) + 2);
+  NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect) + 2);
+  NSPoint topRight =
+      NSMakePoint(NSMaxX(rect) - kInsetMultiplier * NSHeight(rect),
+                  NSMaxY(rect));
+  NSPoint topLeft =
+      NSMakePoint(NSMinX(rect)  + kInsetMultiplier * NSHeight(rect),
+                  NSMaxY(rect));
+
+  CGFloat baseControlPointOutset = NSHeight(rect) * kControlPoint1Multiplier;
+  CGFloat bottomControlPointInset = NSHeight(rect) * kControlPoint2Multiplier;
+
+  // Outset many of these values by 1 to cause the fill to bleed outside the
+  // clip area.
+  NSBezierPath* path = [NSBezierPath bezierPath];
+  [path moveToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y - 2)];
+  [path lineToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y)];
+  [path lineToPoint:bottomLeft];
+  [path curveToPoint:topLeft
+       controlPoint1:NSMakePoint(bottomLeft.x + baseControlPointOutset,
+                                 bottomLeft.y)
+       controlPoint2:NSMakePoint(topLeft.x - bottomControlPointInset,
+                                 topLeft.y)];
+  [path lineToPoint:topRight];
+  [path curveToPoint:bottomRight
+       controlPoint1:NSMakePoint(topRight.x + bottomControlPointInset,
+                                 topRight.y)
+       controlPoint2:NSMakePoint(bottomRight.x - baseControlPointOutset,
+                                 bottomRight.y)];
+  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y)];
+  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y - 2)];
+  return path;
 }
 
 @end  // @implementation TabView(Private)
