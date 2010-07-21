@@ -477,6 +477,8 @@
         'browser/chromeos/login/network_screen_delegate.h',
         'browser/chromeos/login/new_user_view.cc',
         'browser/chromeos/login/new_user_view.h',
+        'browser/chromeos/login/owner_manager.cc',
+        'browser/chromeos/login/owner_manager.h',
         'browser/chromeos/login/password_changed_view.cc',
         'browser/chromeos/login/password_changed_view.h',
         'browser/chromeos/login/registration_screen.cc',
