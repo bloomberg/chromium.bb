@@ -47,9 +47,10 @@ HRESULT BindContextInfo::FromBindContext(IBindCtx* bind_context,
     hr = internal.QueryFrom(context);
     DCHECK(SUCCEEDED(hr));
     if (SUCCEEDED(hr)) {
-      BindContextInfo* ret = NULL;
       hr = internal->GetCppObject(reinterpret_cast<void**>(info));
       DCHECK_EQ(hr, S_OK);
+      DLOG_IF(ERROR, *info != static_cast<BindContextInfo*>(internal.get()))
+          << "marshalling took place!";
     }
   } else {
     DCHECK(FAILED(hr));
