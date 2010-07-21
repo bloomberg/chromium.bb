@@ -19,17 +19,17 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
  public:
   // The different types of infobars that can be shown for translation.
   enum Type {
-    kBeforeTranslate,
-    kTranslating,
-    kAfterTranslate,
-    kTranslationError
+    BEFORE_TRANSLATE,
+    TRANSLATING,
+    AFTER_TRANSLATE,
+    TRANSLATION_ERROR
   };
 
   // The types of background color animations.
   enum BackgroundAnimationType {
-    kNone,
-    kNormalToError,
-    kErrorToNormal
+    NONE,
+    NORMAL_TO_ERROR,
+    ERROR_TO_NORMAL
   };
 
   // Factory method to create a non-error translate infobar.

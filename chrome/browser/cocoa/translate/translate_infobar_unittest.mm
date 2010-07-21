@@ -23,10 +23,10 @@ namespace {
 
 // All states the translate toolbar can assume.
 TranslateInfoBarDelegate::Type kTranslateToolbarStates[] = {
-  TranslateInfoBarDelegate::kBeforeTranslate,
-  TranslateInfoBarDelegate::kAfterTranslate,
-  TranslateInfoBarDelegate::kTranslating,
-  TranslateInfoBarDelegate::kTranslationError
+  TranslateInfoBarDelegate::BEFORE_TRANSLATE,
+  TranslateInfoBarDelegate::AFTER_TRANSLATE,
+  TranslateInfoBarDelegate::TRANSLATING,
+  TranslateInfoBarDelegate::TRANSLATION_ERROR
 };
 
 class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
@@ -79,7 +79,7 @@ class TranslationInfoBarTest : public CocoaTest {
   }
 
   void CreateInfoBar() {
-    CreateInfoBar(TranslateInfoBarDelegate::kBeforeTranslate);
+    CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
   }
 
   void CreateInfoBar(TranslateInfoBarDelegate::Type type) {
@@ -91,7 +91,7 @@ class TranslationInfoBarTest : public CocoaTest {
                         MSG_ROUTING_NONE,
                         NULL));
     TranslateErrors::Type error = TranslateErrors::NONE;
-    if (type == TranslateInfoBarDelegate::kTranslationError)
+    if (type == TranslateInfoBarDelegate::TRANSLATION_ERROR)
       error = TranslateErrors::NETWORK;
     infobar_delegate.reset(
         new MockTranslateInfoBarDelegate(type, error, tab_contents.get()));
@@ -125,7 +125,7 @@ TEST_F(TranslationInfoBarTest, TranslateCalledOnButtonPress) {
 // Check that clicking the "Retry" button calls Translate() when we're
 // in the error mode - http://crbug.com/41315 .
 TEST_F(TranslationInfoBarTest, TranslateCalledInErrorMode) {
-  CreateInfoBar(TranslateInfoBarDelegate::kTranslationError);
+  CreateInfoBar(TranslateInfoBarDelegate::TRANSLATION_ERROR);
 
   EXPECT_CALL(*infobar_delegate, Translate()).Times(1);
 
@@ -227,7 +227,7 @@ TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
   for (int i = 0; i < 4; ++i) {
     translate_prefs.IncrementTranslationAcceptedCount("en");
   }
-  CreateInfoBar(TranslateInfoBarDelegate::kBeforeTranslate);
+  CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
   BeforeTranslateInfobarController* controller =
       (BeforeTranslateInfobarController*)infobar_controller.get();
   EXPECT_TRUE([[controller alwaysTranslateButton] superview] !=  nil);
@@ -242,7 +242,7 @@ TEST_F(TranslationInfoBarTest, TriggerShowNeverTranslateButton) {
   for (int i = 0; i < 4; ++i) {
     translate_prefs.IncrementTranslationDeniedCount("en");
   }
-  CreateInfoBar(TranslateInfoBarDelegate::kBeforeTranslate);
+  CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
   BeforeTranslateInfobarController* controller =
       (BeforeTranslateInfobarController*)infobar_controller.get();
   EXPECT_TRUE([[controller alwaysTranslateButton] superview] == nil);

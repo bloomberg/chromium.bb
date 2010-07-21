@@ -102,16 +102,16 @@ void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   TranslateInfoBarControllerBase* infobar_controller = NULL;
   switch (type_) {
-    case kBeforeTranslate:
+    case BEFORE_TRANSLATE:
       infobar_controller =
           [[BeforeTranslateInfobarController alloc] initWithDelegate:this];
       break;
-    case kAfterTranslate:
+    case AFTER_TRANSLATE:
       infobar_controller =
           [[AfterTranslateInfobarController alloc] initWithDelegate:this];
       break;
-    case kTranslating:
-    case kTranslationError:
+    case TRANSLATING:
+    case TRANSLATION_ERROR:
       infobar_controller =
           [[TranslateMessageInfobarController alloc] initWithDelegate:this];
       break;
@@ -471,7 +471,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   [self rebuildOptionsMenu:NO];
   [[optionsPopUp_ cell] setArrowPosition:NSPopUpArrowAtBottom];
   [optionsPopUp_ sizeToFit];
-  
+
   MoveControl(closeButton_, optionsPopUp_, spaceBetweenControls_, false);
   if (!VerifyControlOrderAndSpacing(lastView, optionsPopUp_)) {
     [self rebuildOptionsMenu:YES];
@@ -490,8 +490,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 - (IBAction)ok:(id)sender {
   TranslateInfoBarDelegate* delegate = [self delegate];
   TranslateInfoBarDelegate::Type state = delegate->type();
-  DCHECK(state == TranslateInfoBarDelegate::kBeforeTranslate ||
-      state == TranslateInfoBarDelegate::kTranslationError);
+  DCHECK(state == TranslateInfoBarDelegate::BEFORE_TRANSLATE ||
+      state == TranslateInfoBarDelegate::TRANSLATION_ERROR);
   delegate->Translate();
   UMA_HISTOGRAM_COUNTS("Translate.Translate", 1);
 }
@@ -499,7 +499,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 // Called when someone clicks on the "Nope" button.
 - (IBAction)cancel:(id)sender {
   DCHECK(
-      [self delegate]->type() == TranslateInfoBarDelegate::kBeforeTranslate);
+      [self delegate]->type() == TranslateInfoBarDelegate::BEFORE_TRANSLATE);
   [self delegate]->TranslationDeclined();
   UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
   [super dismiss:nil];

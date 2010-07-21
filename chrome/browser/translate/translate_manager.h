@@ -51,7 +51,6 @@ class TranslateManager : public NotificationObserver,
   void ReportLanguageDetectionError(TabContents* tab_contents);
 
   // Clears the translate script, so it will be fetched next time we translate.
-  // Currently used by unit-tests.
   void ClearTranslateScript() { translate_script_.clear(); }
 
   // NotificationObserver implementation:
@@ -66,6 +65,12 @@ class TranslateManager : public NotificationObserver,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
+
+  // Used by unit-tests to override the default delay after which the translate
+  // script is fetched again from the translation server.
+  void set_translate_script_expiration_delay(int delay_ms) {
+    translate_script_expiration_delay_ = delay_ms;
+  }
 
   // Convenience method to know if a tab is showing a translate infobar.
   static bool IsShowingTranslateInfobar(TabContents* tab);
@@ -157,6 +162,10 @@ class TranslateManager : public NotificationObserver,
 
   // The JS injected in the page to do the translation.
   std::string translate_script_;
+
+  // Delay in milli-seconds after which the translate script is fetched again
+  // from the translate server.
+  int translate_script_expiration_delay_;
 
   // Whether the translate JS is currently being retrieved.
   bool translate_script_request_pending_;

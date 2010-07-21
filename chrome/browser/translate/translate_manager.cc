@@ -129,6 +129,8 @@ const char* const kTranslateScriptHeader =
 const char* const kReportLanguageDetectionErrorURL =
     "http://translate.google.com/translate_error";
 
+const int kTranslateScriptExpirationDelayMS = 24 * 60 * 60 * 1000;  // 1 day.
+
 }  // namespace
 
 // static
@@ -268,6 +270,12 @@ void TranslateManager::OnURLFetchComplete(const URLFetcher* source,
     DCHECK(translate_script_.empty());
     str.CopyToString(&translate_script_);
     translate_script_ += "\n" + data;
+    // We'll expire the cached script after some time, to make sure long running
+    // browsers still get fixes that might get pushed with newer scripts.
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &TranslateManager::ClearTranslateScript),
+        translate_script_expiration_delay_);
   }
 
   // Process any pending requests.
@@ -307,6 +315,7 @@ bool TranslateManager::IsShowingTranslateInfobar(TabContents* tab) {
 
 TranslateManager::TranslateManager()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      translate_script_expiration_delay_(kTranslateScriptExpirationDelayMS),
       translate_script_request_pending_(false) {
   notification_registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                               NotificationService::AllSources());
@@ -371,7 +380,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
 
   // Prompts the user if he/she wants the page translated.
   tab->AddInfoBar(TranslateInfoBarDelegate::CreateDelegate(
-      TranslateInfoBarDelegate::kBeforeTranslate, tab,
+      TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab,
       page_lang, target_lang));
 }
 
@@ -400,7 +409,7 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
     // showing (that is the case when the translation was triggered by the
     // "always translate" for example).
     infobar = TranslateInfoBarDelegate::CreateDelegate(
-        TranslateInfoBarDelegate::kTranslating, tab_contents,
+        TranslateInfoBarDelegate::TRANSLATING, tab_contents,
         source_lang, target_lang);
     ShowInfoBar(tab_contents, infobar);
   }
@@ -489,7 +498,7 @@ void TranslateManager::PageTranslated(TabContents* tab,
         details->source_language, details->target_language);
   } else {
     infobar = TranslateInfoBarDelegate::CreateDelegate(
-        TranslateInfoBarDelegate::kAfterTranslate, tab,
+        TranslateInfoBarDelegate::AFTER_TRANSLATE, tab,
         details->source_language, details->target_language);
   }
   ShowInfoBar(tab, infobar);
