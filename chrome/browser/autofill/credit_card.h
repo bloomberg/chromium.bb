@@ -59,6 +59,9 @@ class CreditCard : public FormGroup {
   // validate the number.
   static bool IsCreditCardNumber(const string16& text);
 
+  // Returns true if there are no values (field types) set.
+  bool IsEmpty() const;
+
  private:
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }

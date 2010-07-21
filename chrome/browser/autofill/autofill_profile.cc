@@ -205,6 +205,7 @@ string16 AutoFillProfile::PreviewSummary() const {
   return summary_format;
 }
 
+// static
 bool AutoFillProfile::AdjustInferredLabels(
     std::vector<AutoFillProfile*>* profiles) {
   std::vector<string16> created_labels;
@@ -222,6 +223,7 @@ bool AutoFillProfile::AdjustInferredLabels(
   return updated_labels;
 }
 
+// static
 void AutoFillProfile::CreateInferredLabels(
     const std::vector<AutoFillProfile*>* profiles,
     std::vector<string16>* created_labels,
@@ -373,6 +375,12 @@ void AutoFillProfile::CreateInferredLabels(
               &non_empty_fields);
     }
   }
+}
+
+bool AutoFillProfile::IsEmpty() const {
+  FieldTypeSet types;
+  GetAvailableFieldTypes(&types);
+  return types.empty();
 }
 
 void AutoFillProfile::operator=(const AutoFillProfile& source) {

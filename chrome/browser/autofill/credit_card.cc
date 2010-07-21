@@ -306,6 +306,7 @@ bool CreditCard::operator!=(const CreditCard& creditcard) const {
 }
 
 // Use the Luhn formula to validate the number.
+// static
 bool CreditCard::IsCreditCardNumber(const string16& text) {
   string16 number;
   RemoveChars(text, kCreditCardSeparators.c_str(), &number);
@@ -329,6 +330,13 @@ bool CreditCard::IsCreditCardNumber(const string16& text) {
 
   return (sum % 10) == 0;
 }
+
+bool CreditCard::IsEmpty() const {
+  FieldTypeSet types;
+  GetAvailableFieldTypes(&types);
+  return types.empty() && billing_address().empty();
+}
+
 
 string16 CreditCard::ExpirationMonthAsString() const {
   if (expiration_month_ == 0)

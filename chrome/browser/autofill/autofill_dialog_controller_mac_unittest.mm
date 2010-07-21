@@ -383,6 +383,9 @@ TEST_F(AutoFillDialogControllerTest, AddNewProfile) {
   [controller_ addNewAddress:nil];
   AutoFillAddressSheetController* sheet = [controller_ addressSheetController];
   ASSERT_TRUE(sheet != nil);
+  AutoFillAddressModel* model = [sheet addressModel];
+  ASSERT_TRUE(model != nil);
+  [model setFullName:@"Don"];
   [sheet save:nil];
   [controller_ save:nil];
 
@@ -393,13 +396,67 @@ TEST_F(AutoFillDialogControllerTest, AddNewProfile) {
   ASSERT_NE(observer_.profiles_.size(), profiles().size());
   ASSERT_EQ(observer_.profiles_.size(), 2UL);
 
-  // New address should match.
+  // New address should match.  Don't compare labels.
   AutoFillProfile new_profile;
+  new_profile.SetInfo(AutoFillType(NAME_FULL), ASCIIToUTF16("Don"));
+  observer_.profiles_[1].set_label(string16());
   ASSERT_EQ(observer_.profiles_[1], new_profile);
 }
 
 TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
   CreditCard credit_card(ASCIIToUTF16("Visa"), 1);
+  credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
+  credit_cards().push_back(&credit_card);
+  LoadDialog();
+  [controller_ addNewCreditCard:nil];
+  AutoFillCreditCardSheetController* sheet =
+      [controller_ creditCardSheetController];
+  ASSERT_TRUE(sheet != nil);
+  AutoFillCreditCardModel* model = [sheet creditCardModel];
+  ASSERT_TRUE(model != nil);
+  [model setNameOnCard:@"Don"];
+  [sheet save:nil];
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Sizes should be different.  New size should be 2.
+  ASSERT_NE(observer_.credit_cards_.size(), credit_cards().size());
+  ASSERT_EQ(observer_.credit_cards_.size(), 2UL);
+
+  // New credit card should match.  Don't compare labels.
+  CreditCard new_credit_card;
+  new_credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Don"));
+  observer_.credit_cards_[1].set_label(string16());
+  ASSERT_EQ(observer_.credit_cards_[1], new_credit_card);
+}
+
+TEST_F(AutoFillDialogControllerTest, AddNewEmptyProfile) {
+  AutoFillProfile profile(string16(), 1);
+  profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
+  profiles().push_back(&profile);
+  LoadDialog();
+  [controller_ addNewAddress:nil];
+  AutoFillAddressSheetController* sheet = [controller_ addressSheetController];
+  ASSERT_TRUE(sheet != nil);
+  [sheet save:nil];
+  [controller_ save:nil];
+
+  // Should hit our observer.
+  ASSERT_TRUE(observer_.hit_);
+
+  // Sizes should be same.  Empty profile should not be saved.
+  ASSERT_EQ(observer_.profiles_.size(), profiles().size());
+  ASSERT_EQ(observer_.profiles_.size(), 1UL);
+
+  // Profile should match original.
+  observer_.profiles_[0].set_label(string16());
+  ASSERT_EQ(observer_.profiles_[0], profile);
+}
+
+TEST_F(AutoFillDialogControllerTest, AddNewEmptyCreditCard) {
+  CreditCard credit_card(string16(), 1);
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards().push_back(&credit_card);
   LoadDialog();
@@ -413,13 +470,13 @@ TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
   // Should hit our observer.
   ASSERT_TRUE(observer_.hit_);
 
-  // Sizes should be different.  New size should be 2.
-  ASSERT_NE(observer_.credit_cards_.size(), credit_cards().size());
-  ASSERT_EQ(observer_.credit_cards_.size(), 2UL);
+  // Sizes should be same.  Empty credit card should not be saved.
+  ASSERT_EQ(observer_.credit_cards_.size(), credit_cards().size());
+  ASSERT_EQ(observer_.credit_cards_.size(), 1UL);
 
-  // New address should match.
-  CreditCard new_credit_card;
-  ASSERT_EQ(observer_.credit_cards_[1], new_credit_card);
+  // Credit card should match original.
+  observer_.credit_cards_[0].set_label(string16());
+  ASSERT_EQ(observer_.credit_cards_[0], credit_card);
 }
 
 TEST_F(AutoFillDialogControllerTest, DeleteProfile) {

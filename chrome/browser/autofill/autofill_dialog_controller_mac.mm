@@ -318,16 +318,18 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     // Create a new address and save it to the |profiles_| list.
     AutoFillProfile newAddress(string16(), 0);
     [addressSheetController copyModelToProfile:&newAddress];
-    profiles_.push_back(newAddress);
+    if (!newAddress.IsEmpty()) {
+      profiles_.push_back(newAddress);
 
-    // Refresh the view based on new data.
-    UpdateProfileLabels(&profiles_);
-    [tableView_ reloadData];
+      // Refresh the view based on new data.
+      UpdateProfileLabels(&profiles_);
+      [tableView_ reloadData];
 
-    // Update the selection to the newly added item.
-    NSInteger row = [self rowFromProfileIndex:profiles_.size() - 1];
-    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:row]
-            byExtendingSelection:NO];
+      // Update the selection to the newly added item.
+      NSInteger row = [self rowFromProfileIndex:profiles_.size() - 1];
+      [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:row]
+              byExtendingSelection:NO];
+    }
   }
   [sheet orderOut:self];
   addressSheetController.reset(nil);
@@ -343,15 +345,17 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     // Create a new credit card and save it to the |creditCards_| list.
     CreditCard newCreditCard(string16(), 0);
     [creditCardSheetController copyModelToCreditCard:&newCreditCard];
-    creditCards_.push_back(newCreditCard);
+    if (!newCreditCard.IsEmpty()) {
+      creditCards_.push_back(newCreditCard);
 
-    // Refresh the view based on new data.
-    [tableView_ reloadData];
+      // Refresh the view based on new data.
+      [tableView_ reloadData];
 
-    // Update the selection to the newly added item.
-    NSInteger row = [self rowFromCreditCardIndex:creditCards_.size() - 1];
-    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:row]
-            byExtendingSelection:NO];
+      // Update the selection to the newly added item.
+      NSInteger row = [self rowFromCreditCardIndex:creditCards_.size() - 1];
+      [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:row]
+              byExtendingSelection:NO];
+    }
   }
   [sheet orderOut:self];
   creditCardSheetController.reset(nil);
@@ -454,6 +458,14 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   if (returnCode) {
     AutoFillProfile* profile = static_cast<AutoFillProfile*>(contextInfo);
     [addressSheetController copyModelToProfile:profile];
+
+    if (profile->IsEmpty())
+      [tableView_ deselectAll:self];
+    profiles_.erase(
+        std::remove_if(profiles_.begin(), profiles_.end(),
+                       std::mem_fun_ref(&AutoFillProfile::IsEmpty)),
+        profiles_.end());
+
     UpdateProfileLabels(&profiles_);
     [tableView_ reloadData];
   }
@@ -470,6 +482,14 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   if (returnCode) {
     CreditCard* creditCard = static_cast<CreditCard*>(contextInfo);
     [creditCardSheetController copyModelToCreditCard:creditCard];
+
+    if (creditCard->IsEmpty())
+      [tableView_ deselectAll:self];
+    creditCards_.erase(
+        std::remove_if(
+            creditCards_.begin(), creditCards_.end(),
+            std::mem_fun_ref(&CreditCard::IsEmpty)),
+        creditCards_.end());
     [tableView_ reloadData];
   }
   [sheet orderOut:self];
