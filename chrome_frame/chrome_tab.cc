@@ -300,29 +300,93 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
   // that:
   if (g_dll_get_class_object_redir_ptr) {
     return g_dll_get_class_object_redir_ptr(rclsid, riid, ppv);
-  } else {
-    g_patch_helper.InitializeAndPatchProtocolsIfNeeded();
-    return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
   }
+
+  // Enable sniffing and switching only if asked for BHO
+  // (we use BHO to get loaded in IE).
+  if (rclsid == CLSID_ChromeFrameBHO) {
+    g_patch_helper.InitializeAndPatchProtocolsIfNeeded();
+  }
+
+  return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
+
+enum RegistrationFlags {
+  ACTIVEX             = 0x0001,
+  ACTIVEDOC           = 0x0002,
+  GCF_PROTOCOL        = 0x0004,
+  BHO_CLSID           = 0x0008,
+  BHO_REGISTRATION    = 0x0010,
+  TYPELIB             = 0x0020,
+
+  NPAPI_PLUGIN        = 0x1000,
+
+  ALL                 = 0xFFFF
+};
+
+STDAPI CustomRegistration(UINT reg_flags, BOOL reg) {
+  UINT flags = reg_flags;
+
+  if (reg && (flags & (ACTIVEDOC | ACTIVEX)))
+    flags |= (TYPELIB |GCF_PROTOCOL);
+
+  HRESULT hr = S_OK;
+
+  if ((hr == S_OK) && (flags & ACTIVEDOC)) {
+    if (!RegisterSecuredMimeHandler(reg? true : false))
+      return E_FAIL;
+    hr = ChromeActiveDocument::UpdateRegistry(reg);
+  }
+
+  if ((hr == S_OK) && (flags & ACTIVEX)) {
+    // We have to call the static T::UpdateRegistry function instead of
+    // _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_ACTIVEX, reg)
+    // because there is specific OLEMISC replacement.
+    hr = ChromeFrameActivex::UpdateRegistry(reg);
+  }
+
+  if ((hr == S_OK) && (flags & GCF_PROTOCOL)) {
+    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEPROTOCOL, reg);
+  }
+
+  if ((hr == S_OK) && (flags & BHO_CLSID)) {
+    hr = Bho::UpdateRegistry(reg);
+  }
+
+  if ((hr == S_OK) && (flags & BHO_REGISTRATION)) {
+    _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, reg);
+  }
+
+  if ((hr == S_OK) && (flags & TYPELIB)) {
+    hr = (reg)? _AtlComModule.RegisterTypeLib():
+                _AtlComModule.UnRegisterTypeLib();
+  }
+
+  if ((hr == S_OK) && (flags & NPAPI_PLUGIN)) {
+    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI, reg);
+  }
+
+  if (hr == S_OK) {
+    hr = _AtlModule.UpdateRegistryAppId(reg);
+  }
+
+  return hr;
+}
+
+
 
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer() {
-  // registers objects, typelib and all interfaces in typelib
-  HRESULT hr = _AtlModule.DllRegisterServer(TRUE);
-
-  if (SUCCEEDED(hr)) {
-    // Best effort attempt to register the BHO. At this point we silently
-    // ignore any errors during registration. There are some traces emitted
-    // to the debug log.
-    _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, TRUE);
-    if (!RegisterSecuredMimeHandler(true))
-      hr = E_FAIL;
-    SetupRunOnce();
-  }
+  UINT flags =  ACTIVEX | ACTIVEDOC | TYPELIB | GCF_PROTOCOL |
+                BHO_CLSID | BHO_REGISTRATION;
 
   if (UtilIsPersistentNPAPIMarkerSet()) {
-    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI, TRUE);
+    flags |= IDR_CHROMEFRAME_NPAPI;
+  }
+
+  HRESULT hr = CustomRegistration(flags, TRUE);
+  if (SUCCEEDED(hr)) {
+    SetupRunOnce();
   }
 
   return hr;
@@ -330,21 +394,7 @@ STDAPI DllRegisterServer() {
 
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer() {
-  HRESULT hr = _AtlModule.DllUnregisterServer(TRUE);
-
-  if (SUCCEEDED(hr)) {
-    // Best effort attempt to unregister the BHO. At this point we silently
-    // ignore any errors during unregistration. There are some traces emitted
-    // to the debug log.
-    _AtlModule.UpdateRegistryFromResourceS(IDR_REGISTER_BHO, FALSE);
-    if (!RegisterSecuredMimeHandler(false))
-      hr = E_FAIL;
-  }
-
-  if (UtilIsNPAPIPluginRegistered()) {
-    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI, FALSE);
-  }
-
+  HRESULT hr = CustomRegistration(ALL, FALSE);
   return hr;
 }
 
