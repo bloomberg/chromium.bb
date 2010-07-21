@@ -456,7 +456,9 @@ AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   AutoLock lock(unique_ids_lock_);
   AutoFillProfile* p = new AutoFillProfile(label,
-      CreateNextUniqueID(&unique_profile_ids_));
+      CreateNextUniqueID(&unique_ids_));
+  // Also update the unique profile IDs.
+  unique_profile_ids_.insert(p->unique_id());
   return p;
 }
 
