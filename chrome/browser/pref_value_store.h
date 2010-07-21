@@ -96,9 +96,16 @@ class PrefValueStore {
   bool PrefValueFromExtensionStore(const wchar_t* name);
   bool PrefValueFromUserStore(const wchar_t* name);
 
+  // Check whether a Preference value is modifiable by the user, i.e. whether
+  // there is no higher-priority source controlling it.
+  bool PrefValueUserModifiable(const wchar_t* name);
+
  private:
   // PrefStores must be listed here in order from highest to lowest priority.
   enum PrefStoreType {
+    // Not associated with an actual PrefStore but used as invalid marker, e.g.
+    // as return value.
+    INVALID = -1,
     MANAGED = 0,
     EXTENSION,
     COMMAND_LINE,
@@ -111,7 +118,10 @@ class PrefValueStore {
 
   bool PrefValueInStore(const wchar_t* name, PrefStoreType type);
 
-  bool PrefValueFromStore(const wchar_t* name, PrefStoreType type);
+  // Returns the pref store type identifying the source that controls the
+  // Preference identified by |name|. If none of the sources has a value,
+  // INVALID is returned.
+  PrefStoreType ControllingPrefStoreForPref(const wchar_t* name);
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };

@@ -100,11 +100,16 @@ bool PrefValueStore::PrefValueInUserStore(const wchar_t* name) {
 }
 
 bool PrefValueStore::PrefValueFromExtensionStore(const wchar_t* name) {
-  return PrefValueFromStore(name, EXTENSION);
+  return ControllingPrefStoreForPref(name) == EXTENSION;
 }
 
 bool PrefValueStore::PrefValueFromUserStore(const wchar_t* name) {
-  return PrefValueFromStore(name, USER);
+  return ControllingPrefStoreForPref(name) == USER;
+}
+
+bool PrefValueStore::PrefValueUserModifiable(const wchar_t* name) {
+  PrefStoreType effective_store = ControllingPrefStoreForPref(name);
+  return effective_store >= USER || effective_store == INVALID;
 }
 
 bool PrefValueStore::PrefValueInStore(const wchar_t* name, PrefStoreType type) {
@@ -116,12 +121,11 @@ bool PrefValueStore::PrefValueInStore(const wchar_t* name, PrefStoreType type) {
   return pref_stores_[type]->prefs()->Get(name, &tmp_value);
 }
 
-bool PrefValueStore::PrefValueFromStore(const wchar_t* name,
-                                        PrefStoreType type) {
-  // No need to look in PrefStores with lower priority than the one we want.
-  for (int i = 0; i <= type; ++i) {
+PrefValueStore::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
+    const wchar_t* name) {
+  for (int i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
     if (PrefValueInStore(name, static_cast<PrefStoreType>(i)))
-      return (i == type);
+      return static_cast<PrefStoreType>(i);
   }
-  return false;
+  return INVALID;
 }

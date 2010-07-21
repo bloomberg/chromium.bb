@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,13 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/pref_service.h"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
+#include "chrome/test/testing_pref_service.h"
 
 class NewTabUITest : public UITest {
  public:
@@ -75,9 +75,7 @@ TEST_F(NewTabUITest, FLAKY_ChromeInternalLoadsNTP) {
 
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
   // PrefService with JSON user-pref file only, no enforced or advised prefs.
-  FilePath user_prefs = FilePath();
-  scoped_ptr<PrefService> prefs(
-      PrefService::CreateUserPrefService(user_prefs));
+  scoped_ptr<PrefService> prefs(new TestingPrefService);
 
   // Does the migration
   NewTabUI::RegisterUserPrefs(prefs.get());
@@ -164,4 +162,3 @@ TEST_F(NewTabUITest, HomePageLink) {
                                             &is_home_page));
   ASSERT_TRUE(is_home_page);
 }
-

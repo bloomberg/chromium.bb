@@ -421,6 +421,25 @@ void PrefService::FireObserversIfChanged(const wchar_t* path,
     FireObservers(path);
 }
 
+void PrefService::FireObservers(const wchar_t* path) {
+  DCHECK(CalledOnValidThread());
+
+  // Convert path to a std::wstring because the Details constructor requires a
+  // class.
+  std::wstring path_str(path);
+  PrefObserverMap::iterator observer_iterator = pref_observers_.find(path_str);
+  if (observer_iterator == pref_observers_.end())
+    return;
+
+  NotificationObserverList::Iterator it(*(observer_iterator->second));
+  NotificationObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    observer->Observe(NotificationType::PREF_CHANGED,
+                      Source<PrefService>(this),
+                      Details<std::wstring>(&path_str));
+  }
+}
+
 bool PrefService::PrefIsChanged(const wchar_t* path,
                                 const Value* old_value) {
   Value* new_value = NULL;
@@ -791,25 +810,6 @@ Value* PrefService::GetPrefCopy(const wchar_t* path) {
   return pref->GetValue()->DeepCopy();
 }
 
-void PrefService::FireObservers(const wchar_t* path) {
-  DCHECK(CalledOnValidThread());
-
-  // Convert path to a std::wstring because the Details constructor requires a
-  // class.
-  std::wstring path_str(path);
-  PrefObserverMap::iterator observer_iterator = pref_observers_.find(path_str);
-  if (observer_iterator == pref_observers_.end())
-    return;
-
-  NotificationObserverList::Iterator it(*(observer_iterator->second));
-  NotificationObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    observer->Observe(NotificationType::PREF_CHANGED,
-                      Source<PrefService>(this),
-                      Details<std::wstring>(&path_str));
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PrefService::Preference
 
@@ -871,4 +871,8 @@ bool PrefService::Preference::IsExtensionControlled() const {
 
 bool PrefService::Preference::IsUserControlled() const {
   return pref_value_store_->PrefValueFromUserStore(name_.c_str());
+}
+
+bool PrefService::Preference::IsUserModifiable() const {
+  return pref_value_store_->PrefValueUserModifiable(name_.c_str());
 }

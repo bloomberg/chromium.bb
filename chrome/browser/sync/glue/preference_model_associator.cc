@@ -73,11 +73,12 @@ bool PreferenceModelAssociator::AssociateModels() {
 
     sync_api::WriteNode node(&trans);
     if (node.InitByClientTagLookup(syncable::PREFERENCES, tag)) {
+      // The server has a value for the preference.
       const sync_pb::PreferenceSpecifics& preference(
           node.GetPreferenceSpecifics());
       DCHECK_EQ(tag, preference.name());
 
-      if (!pref->IsManaged()) {
+      if (pref->IsUserModifiable()) {
         scoped_ptr<Value> value(
             reader.JsonToValue(preference.value(), false, false));
         std::wstring pref_name = UTF8ToWide(preference.name());
@@ -104,12 +105,9 @@ bool PreferenceModelAssociator::AssociateModels() {
           return false;
       }
       Associate(pref, node.GetId());
-    } else if (!pref->IsManaged()) {
-      // If there is no server value for this preference and it is
-      // currently its default value, don't create a new server node.
-      if (pref->IsDefaultValue())
-        continue;
-
+    } else if (pref->IsUserControlled()) {
+      // The server doesn't have a value, but we have a user-controlled value,
+      // so we push it to the server.
       sync_api::WriteNode write_node(&trans);
       if (!write_node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
         LOG(ERROR) << "Failed to create preference sync node.";

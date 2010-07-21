@@ -15,6 +15,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
@@ -39,30 +40,6 @@ static void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->gesture = NavigationGestureUser;
   params->is_post = false;
 }
-
-// Subclass the TestingProfile so that it can return certain services we need.
-class TabContentsTestingProfile : public TestingProfile {
- public:
-  TabContentsTestingProfile() : TestingProfile() {
-    CreateBookmarkModel(false);
-  }
-
-  virtual PrefService* GetPrefs() {
-    if (!prefs_.get()) {
-      FilePath source_path;
-      PathService::Get(chrome::DIR_TEST_DATA, &source_path);
-      source_path = source_path.AppendASCII("profiles")
-          .AppendASCII("chrome_prefs").AppendASCII("Preferences");
-
-      // Create a preference service that only contains user defined
-      // preference values.
-      prefs_.reset(PrefService::CreateUserPrefService(source_path));
-      Profile::RegisterUserPrefs(prefs_.get());
-      browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
-    }
-    return prefs_.get();
-  }
-};
 
 class TestInterstitialPage : public InterstitialPage {
  public:
@@ -206,7 +183,28 @@ class TabContentsTest : public RenderViewHostTestHarness {
   // Supply our own profile so we use the correct profile data. The test harness
   // is not supposed to overwrite a profile if it's already created.
   virtual void SetUp() {
-    profile_.reset(new TabContentsTestingProfile());
+    TestingProfile* profile = new TestingProfile();
+    profile->CreateBookmarkModel(false);
+    profile_.reset(profile);
+
+    // Set some (WebKit) user preferences.
+    TestingPrefService* pref_services = profile->GetPrefs();
+#if defined(TOOLKIT_USES_GTK)
+    pref_services->SetUserPref(prefs::kUsesSystemTheme,
+                               Value::CreateBooleanValue(false));
+#endif
+    pref_services->SetUserPref(prefs::kDefaultCharset,
+                               Value::CreateStringValue("utf8"));
+    pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
+                               Value::CreateIntegerValue(20));
+    pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
+                               Value::CreateBooleanValue(false));
+    pref_services->SetUserPref(prefs::kWebKitUsesUniversalDetector,
+                               Value::CreateBooleanValue(true));
+    pref_services->SetUserPref(prefs::kWebKitStandardFontIsSerif,
+                               Value::CreateBooleanValue(true));
+    pref_services->SetUserPref(L"webkit.webprefs.foo",
+                               Value::CreateStringValue(L"bar"));
 
     RenderViewHostTestHarness::SetUp();
   }

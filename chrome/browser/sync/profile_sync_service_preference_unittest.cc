@@ -173,7 +173,7 @@ class ProfileSyncServicePreferenceTest
   friend class AddPreferenceEntriesTask;
 
   scoped_ptr<TestingProfile> profile_;
-  PrefService* prefs_;
+  TestingPrefService* prefs_;
 
   PreferenceModelAssociator* model_associator_;
   PreferenceChangeProcessor* change_processor_;
@@ -410,4 +410,36 @@ TEST_F(ProfileSyncServicePreferenceTest, UpdatedSyncNodeUnknownPreference) {
 
   // Nothing interesting happens on the client when it gets an update
   // of an unknown preference.  We just should not crash.
+}
+
+TEST_F(ProfileSyncServicePreferenceTest, ManagedPreferences) {
+  // Make the homepage preference managed.
+  scoped_ptr<Value> managed_value(
+      Value::CreateStringValue(L"http://example.com"));
+  prefs_->SetManagedPref(prefs::kHomePage, managed_value->DeepCopy());
+
+  CreateRootTask task(this, syncable::PREFERENCES);
+  ASSERT_TRUE(StartSyncService(&task, false));
+  ASSERT_TRUE(task.success());
+
+  // Changing the homepage preference should not sync anything.
+  scoped_ptr<Value> user_value(
+      Value::CreateStringValue(L"http://chromium..com"));
+  prefs_->SetUserPref(prefs::kHomePage, user_value->DeepCopy());
+  EXPECT_EQ(NULL, GetSyncedValue(prefs::kHomePage));
+
+  // An incoming sync transaction shouldn't change the user value.
+  scoped_ptr<Value> sync_value(
+      Value::CreateStringValue(L"http://crbug.com"));
+  int64 node_id = SetSyncedValue(prefs::kHomePage, *sync_value);
+  ASSERT_NE(node_id, sync_api::kInvalidId);
+  scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
+  record->action = SyncManager::ChangeRecord::ACTION_UPDATE;
+  record->id = node_id;
+  {
+    sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
+    change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
+  }
+  EXPECT_TRUE(managed_value->Equals(prefs_->GetManagedPref(prefs::kHomePage)));
+  EXPECT_TRUE(user_value->Equals(prefs_->GetUserPref(prefs::kHomePage)));
 }

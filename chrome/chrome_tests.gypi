@@ -116,6 +116,8 @@
         'test/profile_mock.h',
         'test/test_browser_window.h',
         'test/test_location_bar.h',
+        'test/testing_pref_service.cc',
+        'test/testing_pref_service.h',
         'test/testing_profile.cc',
         'test/testing_profile.h',
         'test/thread_observer_helper.h',

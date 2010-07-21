@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,13 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/dummy_pref_store.h"
-#include "chrome/browser/pref_service.h"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,8 +64,7 @@ class TestPrefObserver : public NotificationObserver {
 // TODO(port): port this test to POSIX.
 #if defined(OS_WIN)
 TEST(PrefServiceTest, LocalizedPrefs) {
-  PrefService prefs(new PrefValueStore(NULL, NULL, NULL, new DummyPrefStore(),
-      NULL));
+  TestingPrefService prefs;
   const wchar_t kBoolean[] = L"boolean";
   const wchar_t kInteger[] = L"integer";
   const wchar_t kString[] = L"string";
@@ -88,8 +87,7 @@ TEST(PrefServiceTest, LocalizedPrefs) {
 #endif
 
 TEST(PrefServiceTest, NoObserverFire) {
-  PrefService prefs(new PrefValueStore(NULL, NULL, NULL, new DummyPrefStore(),
-      NULL));
+  TestingPrefService prefs;
 
   const wchar_t pref_name[] = L"homepage";
   prefs.RegisterStringPref(pref_name, "");
@@ -124,8 +122,7 @@ TEST(PrefServiceTest, NoObserverFire) {
 }
 
 TEST(PrefServiceTest, HasPrefPath) {
-  PrefService prefs(new PrefValueStore(NULL, NULL, NULL, new DummyPrefStore(),
-      NULL));
+  TestingPrefService prefs;
 
   const wchar_t path[] = L"fake.path";
 
@@ -145,11 +142,8 @@ TEST(PrefServiceTest, HasPrefPath) {
 TEST(PrefServiceTest, Observers) {
   const wchar_t pref_name[] = L"homepage";
 
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(pref_name, std::string("http://www.cnn.com"));
-  DummyPrefStore* pref_store = new DummyPrefStore();
-  pref_store->set_prefs(dict);
-  PrefService prefs(new PrefValueStore(NULL, NULL, NULL, pref_store, NULL));
+  TestingPrefService prefs;
+  prefs.SetUserPref(pref_name, Value::CreateStringValue(L"http://www.cnn.com"));
   prefs.RegisterStringPref(pref_name, "");
 
   const std::string new_pref_value("http://www.google.com/");
@@ -190,9 +184,7 @@ class PrefServiceSetValueTest : public testing::Test {
   static const char value_[];
 
   PrefServiceSetValueTest()
-      : prefs_(new PrefValueStore(NULL, NULL, NULL, new DummyPrefStore(),
-               NULL)),
-        name_string_(name_),
+      : name_string_(name_),
         null_value_(Value::CreateNullValue()) {}
 
   void SetExpectNoNotification() {
@@ -206,7 +198,7 @@ class PrefServiceSetValueTest : public testing::Test {
                                  Pointee(name_string_))));
   }
 
-  PrefService prefs_;
+  TestingPrefService prefs_;
   std::wstring name_string_;
   scoped_ptr<Value> null_value_;
   NotificationObserverMock observer_;

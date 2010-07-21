@@ -1,13 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_path.h"
 #include "chrome/browser/dummy_pref_store.h"
 #include "chrome/browser/pref_member.h"
-#include "chrome/browser/pref_service.h"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/test/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -53,8 +53,7 @@ class PrefMemberTestClass : public NotificationObserver {
 }  // anonymous namespace
 
 TEST(PrefMemberTest, BasicGetAndSet) {
-  PrefService prefs(new PrefValueStore(NULL, NULL, NULL, new DummyPrefStore(),
-      NULL));
+  TestingPrefService prefs;
   RegisterTestPrefs(&prefs);
 
   // Test bool
@@ -144,8 +143,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
 
 TEST(PrefMemberTest, TwoPrefs) {
   // Make sure two RealPrefMembers stay in sync.
-  PrefService prefs(new PrefValueStore(NULL, NULL, NULL, new DummyPrefStore(),
-      NULL));
+  TestingPrefService prefs;
   RegisterTestPrefs(&prefs);
 
   RealPrefMember pref1;
@@ -165,8 +163,7 @@ TEST(PrefMemberTest, TwoPrefs) {
 }
 
 TEST(PrefMemberTest, Observer) {
-  PrefService prefs(new PrefValueStore(NULL, NULL, NULL, new DummyPrefStore(),
-      NULL));
+  TestingPrefService prefs;
   RegisterTestPrefs(&prefs);
 
   PrefMemberTestClass test_obj(&prefs);

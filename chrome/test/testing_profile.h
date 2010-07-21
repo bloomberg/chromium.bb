@@ -27,6 +27,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "chrome/test/testing_pref_service.h"
 #include "net/base/cookie_monster.h"
 
 class ProfileSyncService;
@@ -149,12 +150,9 @@ class TestingProfile : public Profile {
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
     return NULL;
   }
-  virtual PrefService* GetPrefs() {
+  virtual TestingPrefService* GetPrefs() {
     if (!prefs_.get()) {
-      FilePath prefs_filename =
-          path_.Append(FILE_PATH_LITERAL("TestPreferences"));
-
-      prefs_.reset(PrefService::CreateUserPrefService(prefs_filename));
+      prefs_.reset(new TestingPrefService());
       Profile::RegisterUserPrefs(prefs_.get());
       browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
     }
@@ -292,7 +290,7 @@ class TestingProfile : public Profile {
   // to this.
   FilePath path_;
   base::Time start_time_;
-  scoped_ptr<PrefService> prefs_;
+  scoped_ptr<TestingPrefService> prefs_;
 
  private:
   // Destroys favicon service if it has been created.

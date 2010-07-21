@@ -73,6 +73,11 @@ class PrefService : public NonThreadSafe {
     // user setting, and not by any higher-priority source.
     bool IsUserControlled() const;
 
+    // Returns true if the user can change the Preference value, which is the
+    // case if no higher-priority source than the user store controls the
+    // Preference.
+    bool IsUserModifiable() const;
+
    private:
     friend class PrefService;
 
@@ -221,6 +226,9 @@ class PrefService : public NonThreadSafe {
   bool read_only() const { return pref_value_store_->ReadOnly(); }
 
  protected:
+  // For the given pref_name, fire any observer of the pref.
+  void FireObservers(const wchar_t* pref_name);
+
   // This should only be accessed by subclasses for unit-testing.
   bool PrefIsChanged(const wchar_t* path, const Value* old_value);
 
@@ -232,9 +240,6 @@ class PrefService : public NonThreadSafe {
   // Returns a copy of the current pref value.  The caller is responsible for
   // deleting the returned object.
   Value* GetPrefCopy(const wchar_t* pref_name);
-
-  // For the given pref_name, fire any observer of the pref.
-  void FireObservers(const wchar_t* pref_name);
 
   // Load from disk.  Returns a non-zero error code on failure.
   PrefStore::PrefReadError LoadPersistentPrefs();

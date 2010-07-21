@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,12 +48,13 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
       pref_service_->FindPreference((*name).c_str());
   DCHECK(preference);
 
-  // TODO(mnissler): Detect preference->IsManaged() state changes here and call
-  // into PreferenceModelAssociator to associate/disassociate sync nodes when
-  // the state changes.
+  // TODO(mnissler): Detect preference->IsUserControlled() state changes here
+  // and call into PreferenceModelAssociator to associate/disassociate sync
+  // nodes when the state changes.
 
-  // Do not pollute sync data with values coming from policy.
-  if (preference->IsManaged())
+  // Do not pollute sync data with values coming from policy, extensions or the
+  // commandline.
+  if (!preference->IsUserModifiable())
     return;
 
   sync_api::WriteTransaction trans(share_handle());
@@ -141,11 +142,11 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     if (model_associator_->synced_preferences().count(pref_name) == 0)
       continue;
 
-    // Don't try to overwrite preferences controlled by policy.
+    // Don't try to overwrite preferences not controllable by the user.
     const PrefService::Preference* pref =
         pref_service_->FindPreference(pref_name);
     DCHECK(pref);
-    if (pref->IsManaged())
+    if (!pref->IsUserModifiable())
       continue;
 
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
