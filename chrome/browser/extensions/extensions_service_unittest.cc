@@ -1281,6 +1281,29 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
             service_->IsIncognitoEnabled(extension));
 }
 
+// Test updating a pending theme.
+TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
+  InitializeEmptyExtensionsService();
+  service_->AddPendingExtension(
+      theme_crx, GURL(), true, false, Extension::ENABLED, false);
+  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), theme_crx));
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("theme.crx");
+  UpdateExtension(theme_crx, path, ENABLED);
+
+  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), theme_crx));
+
+  Extension* extension = service_->GetExtensionById(theme_crx, true);
+  ASSERT_TRUE(extension);
+
+  EXPECT_EQ(Extension::ENABLED,
+            service_->extension_prefs()->GetExtensionState(extension->id()));
+  EXPECT_FALSE(service_->IsIncognitoEnabled(extension));
+}
+
 // TODO(akalin): Test updating a pending extension non-silently once
 // we can mock out ExtensionInstallUI and inject our version into
 // UpdateExtension().
@@ -1304,8 +1327,11 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionWrongIsTheme) {
   // TODO(akalin): Figure out how to check that the extensions
   // directory is cleaned up properly in OnExtensionInstalled().
 
-  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
+  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
 }
+
+// TODO(akalin): Figure out how to test that installs of pending
+// unsyncable extensions are blocked.
 
 // Test updating a pending extension for one that is not pending.
 TEST_F(ExtensionsServiceTest, UpdatePendingExtensionNotPending) {

@@ -35,6 +35,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/sync/glue/extension_util.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -935,12 +936,15 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
   PendingExtensionMap::iterator it =
       pending_extensions_.find(extension->id());
   if (it != pending_extensions_.end()) {
+    PendingExtensionInfo pending_extension_info = it->second;
+    pending_extensions_.erase(it);
+    it = pending_extensions_.end();
     // Set initial state from pending extension data.
-    if (it->second.is_theme != extension->is_theme()) {
+    if (pending_extension_info.is_theme != extension->is_theme()) {
       LOG(WARNING)
           << "Not installing pending extension " << extension->id()
           << " with is_theme = " << extension->is_theme()
-          << "; expected is_theme = " << it->second.is_theme;
+          << "; expected is_theme = " << pending_extension_info.is_theme;
       // Delete the extension directory since we're not going to
       // load it.
       ChromeThread::PostTask(
@@ -948,20 +952,42 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
           NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
       return;
     }
-    if (it->second.is_theme) {
-      DCHECK(it->second.enable_on_install);
+    if (!extension->is_theme() &&
+        !browser_sync::IsExtensionSyncable(*extension)) {
+      // We're an extension installed via sync that is unsyncable,
+      // i.e. we may have been syncable previously.  We block these
+      // installs.  We'll have to update the clause above if we decide
+      // to sync other extension-like things, like apps or user
+      // scripts.
+      //
+      // Note that this creates a small window where a user who tries
+      // to download/install an extension that is simultaneously
+      // installed via sync (and blocked) will find his download
+      // blocked.
+      //
+      // TODO(akalin): Remove this check once we've put in UI to
+      // approve synced extensions.
+      LOG(WARNING)
+          << "Not installing non-syncable extension " << extension->id();
+      // Delete the extension directory since we're not going to
+      // load it.
+      ChromeThread::PostTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
+      return;
+    }
+    if (pending_extension_info.is_theme) {
+      DCHECK(pending_extension_info.enable_on_install);
       initial_state = Extension::ENABLED;
-      DCHECK(!it->second.enable_incognito_on_install);
+      DCHECK(!pending_extension_info.enable_incognito_on_install);
       initial_enable_incognito = false;
     } else {
       initial_state =
-          it->second.enable_on_install ?
+          pending_extension_info.enable_on_install ?
           Extension::ENABLED : Extension::DISABLED;
       initial_enable_incognito =
-          it->second.enable_incognito_on_install;
+          pending_extension_info.enable_incognito_on_install;
     }
-
-    pending_extensions_.erase(it);
   } else {
     // Make sure we don't enable a disabled extension.
     Extension::State existing_state =

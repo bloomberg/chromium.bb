@@ -51,6 +51,7 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
       DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
       Extension* extension = Details<Extension>(details).ptr();
       CHECK(extension);
+      // Ignore non-syncable extensions.
       if (!IsExtensionSyncable(*extension)) {
         return;
       }

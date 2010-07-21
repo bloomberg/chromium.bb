@@ -63,9 +63,6 @@ class ExtensionModelAssociator : public AssociatorInterface {
   // returns NULL.
   ExtensionsService* GetExtensionsService();
 
-  bool GetExtensionDataFromClient(
-      const std::string& id, sync_pb::ExtensionSpecifics* client_data);
-
   bool GetExtensionDataFromServer(
       const std::string& id, sync_api::WriteTransaction* trans,
       const sync_api::ReadNode& root,

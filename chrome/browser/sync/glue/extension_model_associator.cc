@@ -55,6 +55,7 @@ ExtensionData* SetOrCreateData(
 void GetSyncableExtensionsClientData(
     const ExtensionList& extensions,
     ExtensionsService* extensions_service,
+    std::set<std::string>* unsyncable_extensions,
     ExtensionDataMap* extension_data_map) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   for (ExtensionList::const_iterator it = extensions.begin();
@@ -73,6 +74,8 @@ void GetSyncableExtensionsClientData(
       // Assumes this is called before any server data is read.
       DCHECK(extension_data.NeedsUpdate(ExtensionData::SERVER));
       DCHECK(!extension_data.NeedsUpdate(ExtensionData::CLIENT));
+    } else {
+      unsyncable_extensions->insert(extension.id());
     }
   }
 }
@@ -99,6 +102,7 @@ bool ExtensionModelAssociator::AssociateModels() {
     return false;
   }
 
+  std::set<std::string> unsyncable_extensions;
   ExtensionDataMap extension_data_map;
 
   // Read client-side data.  Do this first so server data takes
@@ -109,13 +113,15 @@ bool ExtensionModelAssociator::AssociateModels() {
     const ExtensionList* extensions = extensions_service->extensions();
     CHECK(extensions);
     GetSyncableExtensionsClientData(
-        *extensions, extensions_service, &extension_data_map);
+        *extensions, extensions_service,
+        &unsyncable_extensions, &extension_data_map);
 
     const ExtensionList* disabled_extensions =
         extensions_service->disabled_extensions();
     CHECK(disabled_extensions);
     GetSyncableExtensionsClientData(
-        *disabled_extensions, extensions_service, &extension_data_map);
+        *disabled_extensions, extensions_service,
+        &unsyncable_extensions, &extension_data_map);
   }
 
   // Read server-side data.
@@ -133,12 +139,19 @@ bool ExtensionModelAssociator::AssociateModels() {
         LOG(ERROR) << "Invalid extensions specifics for id " << id;
         return false;
       }
-      // Pass in false for merge_user_properties so client user
-      // settings always take precedence.
-      const ExtensionData& extension_data =
-          *SetOrCreateData(&extension_data_map,
-                           ExtensionData::SERVER, false, server_data);
-      DcheckIsExtensionSpecificsValid(extension_data.merged_data());
+      // Don't process server data for extensions we know are
+      // unsyncable.  This doesn't catch everything, as if we don't
+      // have the extension already installed we can't check, but we
+      // also check at extension install time.
+      if (unsyncable_extensions.find(server_data.id()) ==
+          unsyncable_extensions.end()) {
+        // Pass in false for merge_user_properties so client user
+        // settings always take precedence.
+        const ExtensionData& extension_data =
+            *SetOrCreateData(&extension_data_map,
+                             ExtensionData::SERVER, false, server_data);
+        DcheckIsExtensionSpecificsValid(extension_data.merged_data());
+      }
       id = sync_node.GetSuccessorId();
     }
   }
@@ -204,9 +217,17 @@ bool ExtensionModelAssociator::OnClientUpdate(const std::string& id) {
     LOG(ERROR) << kNoExtensionsFolderError;
     return false;
   }
-
-  sync_pb::ExtensionSpecifics client_data;
-  if (GetExtensionDataFromClient(id, &client_data)) {
+  ExtensionsService* extensions_service = GetExtensionsService();
+  Extension* extension = extensions_service->GetExtensionById(id, true);
+  if (extension) {
+    if (!IsExtensionSyncable(*extension)) {
+      LOG(DFATAL) << "OnClientUpdate() called for non-syncable extension "
+                  << id;
+      return false;
+    }
+    sync_pb::ExtensionSpecifics client_data;
+    GetExtensionSpecifics(*extension, extensions_service, &client_data);
+    DcheckIsExtensionSpecificsValid(client_data);
     ExtensionData extension_data =
         ExtensionData::FromData(ExtensionData::CLIENT, client_data);
     sync_pb::ExtensionSpecifics server_data;
@@ -245,9 +266,19 @@ void ExtensionModelAssociator::OnServerUpdate(
   DcheckIsExtensionSpecificsValid(server_data);
   ExtensionData extension_data =
       ExtensionData::FromData(ExtensionData::SERVER, server_data);
-  sync_pb::ExtensionSpecifics client_data;
-  if (GetExtensionDataFromClient(server_data.id(), &client_data)) {
-    ExtensionData extension_data =
+  ExtensionsService* extensions_service = GetExtensionsService();
+  Extension* extension =
+      extensions_service->GetExtensionById(server_data.id(), true);
+  if (extension) {
+    if (!IsExtensionSyncable(*extension)) {
+      // Ignore updates for non-syncable extensions (we may get those
+      // for extensions that were previously syncable).
+      return;
+    }
+    sync_pb::ExtensionSpecifics client_data;
+    GetExtensionSpecifics(*extension, extensions_service, &client_data);
+    DcheckIsExtensionSpecificsValid(client_data);
+    extension_data =
         ExtensionData::FromData(ExtensionData::CLIENT, client_data);
     extension_data.SetData(ExtensionData::SERVER, true, server_data);
   }
@@ -265,7 +296,9 @@ void ExtensionModelAssociator::OnServerRemove(const std::string& id) {
   ExtensionsService* extensions_service = GetExtensionsService();
   Extension* extension = extensions_service->GetExtensionById(id, true);
   if (extension) {
-    extensions_service->UninstallExtension(id, false);
+    if (IsExtensionSyncable(*extension)) {
+      extensions_service->UninstallExtension(id, false);
+    }
   } else {
     LOG(ERROR) << "Trying to uninstall nonexistent extension " << id;
   }
@@ -278,18 +311,6 @@ ExtensionsService* ExtensionModelAssociator::GetExtensionsService() {
   ExtensionsService* extensions_service = profile->GetExtensionsService();
   CHECK(extensions_service);
   return extensions_service;
-}
-
-bool ExtensionModelAssociator::GetExtensionDataFromClient(
-    const std::string& id, sync_pb::ExtensionSpecifics* client_data) {
-  ExtensionsService* extensions_service = GetExtensionsService();
-  Extension* extension = extensions_service->GetExtensionById(id, true);
-  if (!extension) {
-    return false;
-  }
-  GetExtensionSpecifics(*extension, extensions_service, client_data);
-  DcheckIsExtensionSpecificsValid(*client_data);
-  return true;
 }
 
 bool ExtensionModelAssociator::GetExtensionDataFromServer(
@@ -360,6 +381,11 @@ void ExtensionModelAssociator::TryUpdateClient(
   const std::string& id = specifics.id();
   Extension* extension = extensions_service->GetExtensionById(id, true);
   if (extension) {
+    if (!IsExtensionSyncable(*extension)) {
+      LOG(DFATAL) << "TryUpdateClient() called for non-syncable extension "
+                  << extension->id();
+      return;
+    }
     SetExtensionProperties(specifics, extensions_service, extension);
     {
       sync_pb::ExtensionSpecifics extension_specifics;
