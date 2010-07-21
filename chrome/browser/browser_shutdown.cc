@@ -164,18 +164,37 @@ void Shutdown() {
 
   if (restart_last_session) {
 #if !defined(OS_CHROMEOS)
-    // Make sure to relaunch the browser with the same command line and add
-    // Restore Last Session flag if session restore is not set.
-    CommandLine command_line(*CommandLine::ForCurrentProcess());
-    if (!command_line.HasSwitch(switches::kRestoreLastSession))
-      command_line.AppendSwitch(switches::kRestoreLastSession);
+    // Make sure to relaunch the browser with the original command line plus
+    // the Restore Last Session flag. Note that Chrome can be launched (ie.
+    // through ShellExecute on Windows) with a switch argument terminator at
+    // the end (double dash, as described in b/1366444) plus a URL,
+    // which prevents us from appending to the command line directly (issue
+    // 46182). We therefore use GetSwitches to copy the command line (it stops
+    // at the switch argument terminator).
+    CommandLine old_cl(*CommandLine::ForCurrentProcess());
+    scoped_ptr<CommandLine> new_cl(new CommandLine(old_cl.GetProgram()));
+    std::map<std::string, CommandLine::StringType> switches =
+        old_cl.GetSwitches();
+    // Append the old switches to the new command line.
+    for (std::map<std::string, CommandLine::StringType>::const_iterator i =
+        switches.begin(); i != switches.end(); ++i) {
+      CommandLine::StringType switch_value = i->second;
+      if (!switch_value.empty())
+        new_cl->AppendSwitchWithValue(i->first, i->second);
+      else
+        new_cl->AppendSwitch(i->first);
+    }
+    // Ensure restore last session is set.
+    if (!new_cl->HasSwitch(switches::kRestoreLastSession))
+      new_cl->AppendSwitch(switches::kRestoreLastSession);
+
 #if defined(OS_WIN) || defined(OS_LINUX)
-    Upgrade::RelaunchChromeBrowser(command_line);
+    Upgrade::RelaunchChromeBrowser(*new_cl.get());
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX)
-    command_line.AppendSwitch(switches::kActivateOnLaunch);
-    base::LaunchApp(command_line, false, false, NULL);
+    new_cl->AppendSwitch(switches::kActivateOnLaunch);
+    base::LaunchApp(*new_cl.get(), false, false, NULL);
 #endif  // defined(OS_MACOSX)
 
 #else
