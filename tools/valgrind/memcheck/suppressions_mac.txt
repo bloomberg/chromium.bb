@@ -1378,3 +1378,13 @@
    fun:_ZN19DownloadManagerTestC2Ev
    fun:_ZN7testing8internal15TestFactoryImplI45DownloadManagerTest_TestDownloadFilename_TestE10CreateTestEv
 }
+{
+   bug_49750
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16CookiesTreeModelC2EPN3net13CookieMonsterEP26BrowsingDataDatabaseHelperP30BrowsingDataLocalStorageHelperP26BrowsingDataAppCacheHelper
+   fun:_ZN26TabSpecificContentSettings27LocalSharedObjectsContainer19GetCookiesTreeModelEv
+   fun:-[CollectedCookiesWindowController loadTreeModelFromTabContents]
+   fun:-[CollectedCookiesWindowController initWithTabContents:]
+   fun:_ZN12_GLOBAL__N_154CollectedCookiesWindowControllerTest_Construction_Test8TestBodyEv
+}
