@@ -9,6 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sha2.h"
@@ -46,14 +47,16 @@ const char GoogleAuthenticator::kLocalaccountFile[] = "localaccount";
 
 // static
 const int GoogleAuthenticator::kClientLoginTimeoutMs = 5000;
+// static
+const int GoogleAuthenticator::kLocalaccountRetryIntervalMs = 20;
 
 const int kPassHashLen = 32;
 
 GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
-      checked_for_localaccount_(false),
       unlock_(false),
-      try_again_(true) {
+      try_again_(true),
+      checked_for_localaccount_(false) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
 
   // This forces the creation of the login notification observer
@@ -77,10 +80,11 @@ void GoogleAuthenticator::TryClientLogin() {
                                         login_token_,
                                         login_captcha_);
   ChromeThread::PostDelayedTask(
-      ChromeThread::UI, FROM_HERE,
+      ChromeThread::UI,
+      FROM_HERE,
       NewRunnableMethod(this,
                         &GoogleAuthenticator::CancelClientLogin),
-                            kClientLoginTimeoutMs);
+      kClientLoginTimeoutMs);
 }
 
 void GoogleAuthenticator::PrepareClientLoginAttempt(
@@ -195,9 +199,14 @@ void GoogleAuthenticator::OnClientLoginFailure(
     return;
   }
 
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &GoogleAuthenticator::LoadLocalaccount,
+                        std::string(kLocalaccountFile)));
+
   if (error.code == GaiaAuthConsumer::NETWORK_ERROR) {
     // The fetch failed for network reasons, try offline login.
-    LoadLocalaccount(kLocalaccountFile);
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
@@ -206,7 +215,6 @@ void GoogleAuthenticator::OnClientLoginFailure(
   }
 
   // The fetch succeeded, but ClientLogin said no, or we exhausted retries.
-  LoadLocalaccount(kLocalaccountFile);
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this,
@@ -253,6 +261,20 @@ void GoogleAuthenticator::CheckOffline(const std::string& error) {
 }
 
 void GoogleAuthenticator::CheckLocalaccount(const std::string& error) {
+  {
+    AutoLock for_this_block(localaccount_lock_);
+    LOG(INFO) << "Checking localaccount";
+    if (!checked_for_localaccount_) {
+      ChromeThread::PostDelayedTask(
+          ChromeThread::UI,
+          FROM_HERE,
+          NewRunnableMethod(this,
+                            &GoogleAuthenticator::CheckLocalaccount,
+                            error),
+          kLocalaccountRetryIntervalMs);
+      return;
+    }
+  }
   int mount_error = chromeos::kCryptohomeMountErrorNone;
   if (!localaccount_.empty() && localaccount_ == username_ &&
       CrosLibrary::Get()->GetCryptohomeLibrary()->MountForBwsi(&mount_error)) {
@@ -309,8 +331,12 @@ void GoogleAuthenticator::LoadSystemSalt() {
 }
 
 void GoogleAuthenticator::LoadLocalaccount(const std::string& filename) {
-  if (checked_for_localaccount_)
-    return;
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  {
+    AutoLock for_this_block(localaccount_lock_);
+    if (checked_for_localaccount_)
+      return;
+  }
   FilePath localaccount_file;
   std::string localaccount;
   if (PathService::Get(base::DIR_EXE, &localaccount_file)) {
@@ -323,8 +349,17 @@ void GoogleAuthenticator::LoadLocalaccount(const std::string& filename) {
   } else {
     LOG(INFO) << "Assuming no localaccount";
   }
-  set_localaccount(localaccount);
+  SetLocalaccount(localaccount);
 }
+
+void GoogleAuthenticator::SetLocalaccount(const std::string& new_name) {
+  localaccount_ = new_name;
+  {  // extra braces for clarity about AutoLock scope.
+    AutoLock for_this_block(localaccount_lock_);
+    checked_for_localaccount_ = true;
+  }
+}
+
 
 std::string GoogleAuthenticator::HashPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii

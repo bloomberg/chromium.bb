@@ -32,7 +32,7 @@
 using namespace file_util;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
-using ::testing::InvokeWithoutArgs;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
 using ::testing::_;
@@ -115,9 +115,22 @@ class GoogleAuthenticatorTest : public ::testing::Test {
     return local_account_file;
   }
 
+  void ReadLocalaccountFile(GoogleAuthenticator* auth,
+                            const std::string& filename) {
+    ChromeThread file_thread(ChromeThread::FILE);
+    file_thread.Start();
+
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(auth,
+                          &GoogleAuthenticator::LoadLocalaccount,
+                          filename));
+  }
+
   void PrepForLogin(GoogleAuthenticator* auth) {
     auth->set_password_hash(hash_ascii_);
     auth->set_username(username_);
+    auth->SetLocalaccount("");
   }
 
   unsigned char fake_hash_[32];
@@ -143,7 +156,8 @@ TEST_F(GoogleAuthenticatorTest, SaltToAscii) {
   ON_CALL(*mock_library_, GetSystemSalt())
       .WillByDefault(Return(salt_v));
   EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
 
   EXPECT_EQ("0a010000000000a0", auth->SaltAsAscii());
 }
@@ -197,7 +211,7 @@ TEST_F(GoogleAuthenticatorTest, ReadLocalaccount) {
   FilePath tmp_file_path = FakeLocalaccountFile(bytes_as_ascii_);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->LoadLocalaccount(tmp_file_path.BaseName().value());
+  ReadLocalaccountFile(auth.get(), tmp_file_path.BaseName().value());
   EXPECT_EQ(auth->localaccount_, bytes_as_ascii_);
   Delete(tmp_file_path, false);
 }
@@ -207,7 +221,7 @@ TEST_F(GoogleAuthenticatorTest, ReadLocalaccountTrailingWS) {
       FakeLocalaccountFile(StringPrintf("%s\n", bytes_as_ascii_.c_str()));
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->LoadLocalaccount(tmp_file_path.BaseName().value());
+  ReadLocalaccountFile(auth.get(), tmp_file_path.BaseName().value());
   EXPECT_EQ(auth->localaccount_, bytes_as_ascii_);
   Delete(tmp_file_path, false);
 }
@@ -217,16 +231,19 @@ TEST_F(GoogleAuthenticatorTest, ReadNoLocalaccount) {
   EXPECT_TRUE(Delete(tmp_file_path, false));  // Ensure non-existent file.
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(NULL));
-  auth->LoadLocalaccount(tmp_file_path.BaseName().value());
+  ReadLocalaccountFile(auth.get(), tmp_file_path.BaseName().value());
   EXPECT_EQ(auth->localaccount_, std::string());
 }
 
 TEST_F(GoogleAuthenticatorTest, OnLoginSuccess) {
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, _));
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, _))
+      .Times(1)
+      .RetiresOnSaturation();
 
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   auth->set_password_hash(hash_ascii_);
@@ -236,10 +253,13 @@ TEST_F(GoogleAuthenticatorTest, OnLoginSuccess) {
 
 TEST_F(GoogleAuthenticatorTest, MountFailure) {
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginFailure(_));
+  EXPECT_CALL(consumer, OnLoginFailure(_))
+      .Times(1)
+      .RetiresOnSaturation();
 
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
-      .WillOnce(Return(false));
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -248,20 +268,27 @@ TEST_F(GoogleAuthenticatorTest, MountFailure) {
 
 TEST_F(GoogleAuthenticatorTest, PasswordChange) {
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnPasswordChangeDetected(result_));
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_));
+  EXPECT_CALL(consumer, OnPasswordChangeDetected(result_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
+      .Times(1)
+      .RetiresOnSaturation();
 
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
       .WillOnce(
           DoAll(SetArgumentPointee<2>(
               chromeos::kCryptohomeMountErrorKeyFailure),
                 Return(false)))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .WillOnce(Return(chromeos::CryptohomeBlob(8, 'a')));
+      .WillOnce(Return(chromeos::CryptohomeBlob(8, 'a')))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, MigrateKey(username_, _, hash_ascii_))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -272,17 +299,21 @@ TEST_F(GoogleAuthenticatorTest, PasswordChange) {
 TEST_F(GoogleAuthenticatorTest, PasswordChangeWrongPassword) {
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnPasswordChangeDetected(result_))
-      .Times(2);
+      .Times(2)
+      .RetiresOnSaturation();
 
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
       .WillOnce(
           DoAll(SetArgumentPointee<2>(
               chromeos::kCryptohomeMountErrorKeyFailure),
-                Return(false)));
+                Return(false)))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .WillOnce(Return(chromeos::CryptohomeBlob(8, 'a')));
+      .WillOnce(Return(chromeos::CryptohomeBlob(8, 'a')))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, MigrateKey(username_, _, hash_ascii_))
-      .WillOnce(Return(false));
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -292,18 +323,24 @@ TEST_F(GoogleAuthenticatorTest, PasswordChangeWrongPassword) {
 
 TEST_F(GoogleAuthenticatorTest, ForgetOldData) {
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnPasswordChangeDetected(result_));
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_));
+  EXPECT_CALL(consumer, OnPasswordChangeDetected(result_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
+      .Times(1)
+      .RetiresOnSaturation();
 
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
       .WillOnce(
           DoAll(SetArgumentPointee<2>(
               chromeos::kCryptohomeMountErrorKeyFailure),
                 Return(false)))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   EXPECT_CALL(*mock_library_, Remove(username_))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -324,9 +361,11 @@ TEST_F(GoogleAuthenticatorTest, LoginNetFailure) {
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(data))
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
-      .WillOnce(Return(false));
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -343,7 +382,8 @@ TEST_F(GoogleAuthenticatorTest, LoginDenied) {
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(_))
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -365,7 +405,8 @@ TEST_F(GoogleAuthenticatorTest, CaptchaErrorOutputted) {
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(error.data))
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -383,11 +424,14 @@ TEST_F(GoogleAuthenticatorTest, OfflineLogin) {
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -401,9 +445,11 @@ TEST_F(GoogleAuthenticatorTest, OnlineLogin) {
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
@@ -411,21 +457,81 @@ TEST_F(GoogleAuthenticatorTest, OnlineLogin) {
   message_loop.RunAllPending();
 }
 
-TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
+TEST_F(GoogleAuthenticatorTest, CheckLocalaccount) {
   GURL source(AuthResponseHandler::kTokenAuthUrl);
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, _))
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, MountForBwsi(_))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->set_localaccount(username_);
+  auth->SetLocalaccount(username_);
 
   auth->CheckLocalaccount(std::string());
+}
+
+// Compatible with LoginStatusConsumer::OnLoginSuccess()
+static void Quit(const std::string& username,
+                 const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  MessageLoop::current()->Quit();
+}
+// Compatible with LoginStatusConsumer::OnLoginFailure()
+static void QuitAndFail(const std::string& error) {
+  EXPECT_TRUE(false) << "Login should have succeeded!";
+  MessageLoop::current()->Quit();
+}
+
+TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
+  // This test checks the logic that governs asynchronously reading the
+  // localaccount name off disk and trying to authenticate against it
+  // simultaneously.
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+
+  MockConsumer consumer;
+  ON_CALL(consumer, OnLoginSuccess(username_, _))
+      .WillByDefault(Invoke(Quit));
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_library_, MountForBwsi(_))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  // Enable the test to terminate (and fail), even if the login fails.
+  ON_CALL(consumer, OnLoginFailure(_))
+      .WillByDefault(Invoke(QuitAndFail));
+
+  // Manually prep for login, so that localaccount isn't set for us.
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  auth->set_password_hash(hash_ascii_);
+  auth->set_username(username_);
+
+  // First, force a check of username_ against the localaccount -- which we
+  // haven't yet gotten off disk.
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(auth.get(),
+                        &GoogleAuthenticator::CheckLocalaccount,
+                        std::string("fail")));
+  message_loop.RunAllPending();
+  // The foregoing has now rescheduled itself in a few ms because we don't
+  // yet have the localaccount loaded off disk.
+
+  // Now, cause the FILE thread to go load the localaccount off disk.
+  FilePath tmp_file_path = FakeLocalaccountFile(username_);
+  ReadLocalaccountFile(auth.get(), tmp_file_path.BaseName().value());
+
+  // Run remaining events, until OnLoginSuccess or OnLoginFailure is called.
+  message_loop.Run();
+
+  // Cleanup.
+  Delete(tmp_file_path, false);
 }
 
 TEST_F(GoogleAuthenticatorTest, FullLogin) {
@@ -437,14 +543,17 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, Mount(username_, _, _))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
 
   ON_CALL(*mock_library_, GetSystemSalt())
       .WillByDefault(Return(salt_v));
   EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .Times(1);
+      .Times(1)
+      .RetiresOnSaturation();
 
   TestingProfile profile;
 
