@@ -124,7 +124,7 @@ readonly PNACL_CLIENT_TC_ARM="${PNACL_CLIENT_TC_ROOT}/arm"
 readonly PNACL_CLIENT_TC_X86="${PNACL_CLIENT_TC_ROOT}/x86"
 
 # Current milestones within each Hg repo:
-readonly LLVM_REV=dba662a50722
+readonly LLVM_REV=2ceae18be41b
 readonly LLVM_GCC_REV=08e173d1c977
 readonly NEWLIB_REV=5d64fed35b93
 readonly BINUTILS_REV=1675524d3abe
