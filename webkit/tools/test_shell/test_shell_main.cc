@@ -23,7 +23,7 @@
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
 #include "net/http/http_cache.h"
-#include "net/socket/ssl_test_util.h"
+#include "net/test/test_server.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
@@ -112,10 +112,10 @@ int main(int argc, char* argv[]) {
   bool enable_gp_fault_error_box = false;
   enable_gp_fault_error_box =
       parsed_command_line.HasSwitch(test_shell::kGPFaultErrorBox);
-  
-  bool allow_external_pages = 
+
+  bool allow_external_pages =
       parsed_command_line.HasSwitch(test_shell::kAllowExternalPages);
-  
+
   TestShell::InitLogging(suppress_error_dialogs,
                          layout_test_mode,
                          enable_gp_fault_error_box);

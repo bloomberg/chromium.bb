@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "net/base/cookie_monster.h"
 #include "net/http/http_cache.h"
-#include "net/socket/ssl_test_util.h"
+#include "net/test/test_server.h"
 #include "media/base/media.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"

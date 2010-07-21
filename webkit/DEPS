@@ -23,6 +23,7 @@ include_rules = [
   "+net/proxy",
   "+net/socket",
   "+net/socket_stream",
+  "+net/test",
   "+net/url_request",
   "+net/websockets",
   "+third_party/npapi/bindings",

@@ -10,7 +10,7 @@
 #include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/http/http_response_headers.h"
-#include "net/socket/ssl_test_util.h"
+#include "net/test/test_server.h"
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

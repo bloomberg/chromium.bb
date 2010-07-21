@@ -13,7 +13,7 @@
 #include "base/scoped_vector.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
 #include "net/base/mock_host_resolver.h"
-#include "net/socket/ssl_test_util.h"
+#include "net/test/test_server.h"
 
 #include <string>
 #include <vector>
