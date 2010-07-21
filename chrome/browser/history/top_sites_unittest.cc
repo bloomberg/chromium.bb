@@ -705,7 +705,9 @@ TEST_F(TopSitesTest, RealDatabase) {
   EXPECT_TRUE(high_score.Equals(out_2.thumbnail_score));
 }
 
-TEST_F(TopSitesTest, DeleteNotifications) {
+// This test has been crashing unit_tests on Mac 10.6.
+// See http://crbug.com/49799
+TEST_F(TopSitesTest, DISABLED_DeleteNotifications) {
   ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   GURL google1_url("http://google.com");
   GURL google2_url("http://google.com/redirect");
