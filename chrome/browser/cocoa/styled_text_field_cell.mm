@@ -85,6 +85,10 @@ private:
   return 0.0;
 }
 
+- (BOOL)shouldDrawBezel {
+  return NO;
+}
+
 // Returns the same value as textCursorFrameForFrame, but does not call it
 // directly to avoid potential infinite loops.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
@@ -164,6 +168,17 @@ private:
     const NSRect shadowFrame = NSOffsetRect(frame, 0.5, 0.5);
     NSColor* shadowShade = [NSColor colorWithCalibratedWhite:0.0 alpha:0.05];
     FrameRectWithInset(shadowFrame, 0.5, radius - 0.5, 1.0, shadowShade);
+  }
+
+  // Draw optional bezel below bottom stroke.
+  if ([self shouldDrawBezel]) {
+    [[NSColor colorWithCalibratedWhite:0.96 alpha:1.0] set];
+    NSRect bezelRect = NSMakeRect(cellFrame.origin.x,
+                                  NSMaxY(cellFrame) - 0.5,
+                                  NSWidth(cellFrame),
+                                  1.0);
+    bezelRect = NSInsetRect(bezelRect, radius - 0.5, 0.0);
+    NSRectFill(bezelRect);
   }
 
   // Draw the focus ring if needed.

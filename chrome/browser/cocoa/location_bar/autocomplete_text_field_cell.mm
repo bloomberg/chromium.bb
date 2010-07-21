@@ -148,6 +148,10 @@ size_t CalculatePositionsInFrame(
   return kCornerRadius;
 }
 
+- (BOOL)shouldDrawBezel {
+  return YES;
+}
+
 - (void)clearDecorations {
   leftDecorations_.clear();
   rightDecorations_.clear();
