@@ -29,6 +29,8 @@ import logging
 import optparse
 import os
 import shutil
+import signal
+import subprocess
 import sys
 import tempfile
 import time
@@ -214,6 +216,14 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       print >>sys.stderr, '%s is an invalid data file.' % data_file
       raise
     return ret
+
+  @staticmethod
+  def Kill(pid):
+    """Terminate the given pid."""
+    if PyUITest.IsWin():
+      subprocess.call(['taskkill.exe', '/T', '/F', '/PID', str(pid)])
+    else:
+      os.kill(pid, signal.SIGTERM)
 
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[]):
     """Poll on a condition until timeout.
@@ -480,6 +490,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       cmd_dict['height'] = height
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def WaitForInfobarCount(self, count, windex=0, tab_index=0):
+    """Wait until infobar count becomes |count|.
+
+    Note: Wait duration is capped by the automation timeout.
+
+    Args:
+      count: requested number of infobars
+      windex: window index.  Defaults to 0 (first window)
+      tab_index: tab index  Defaults to 0 (first tab)
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'WaitForInfobarCount',
+      'count': count,
+      'tab_index': tab_index,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
   def GetBrowserInfo(self):
     """Return info about the browser.
 
@@ -520,14 +550,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                         u'incognito': False,
                         u'is_fullscreen': False,
                         u'selected_tab': 0,
-                        u'tabs': [ { u'index': 0,
-                                     u'num_infobars': 0,
-                                     u'renderer_pid': 93747,
-                                     u'url': u'http://www.google.com/'},
-                                   { u'index': 1,
-                                     u'num_infobars': 0,
-                                     u'renderer_pid': 93919,
-                                     u'url': u'https://chrome.google.com/'}],
+                        u'tabs': [ {
+                          u'index': 0,
+                          u'infobars': [],
+                          u'renderer_pid': 93747,
+                          u'url': u'http://www.google.com/' }, {
+
+                          u'index': 1,
+                          u'infobars': [],
+                          u'renderer_pid': 93919,
+                          u'url': u'https://chrome.google.com/'}, {
+                          u'index': 2,
+                          u'infobars': [ {
+                            u'buttons': [u'Allow', u'Deny'],
+                            u'link_text': u'Learn more',
+                            u'text': u'slides.html5rocks.com wants to track '
+                                      'your physical location',
+                            u'type': u'confirm_infobar'}],
+                          u'renderer_pid': 93929,
+                          u'url': u'http://slides.html5rocks.com/#slide14'},
+                            ],
                         u'width': 925,
                         u'x': 26,
                         u'y': 44}]}
@@ -828,7 +870,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'password': password,
       'time': time
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
   def GetSavedPasswords(self):
     """Return the passwords currently saved.

@@ -16,6 +16,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
@@ -708,6 +709,30 @@ class SavePackageNotificationObserver : public NotificationObserver {
   IPC::Message* reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageNotificationObserver);
+};
+
+// Allows the automation provider to wait for a given number of infobars.
+class WaitForInfobarCountObserver : public NotificationObserver {
+ public:
+  WaitForInfobarCountObserver(AutomationProvider* automation,
+                              IPC::Message* reply_message,
+                              TabContents* tab_contents,
+                              int count);
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  void ConditionMet();
+
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  TabContents* tab_contents_;
+  int count_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaitForInfobarCountObserver);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

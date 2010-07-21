@@ -79,6 +79,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -1732,6 +1733,85 @@ void AutomationProvider::SetWindowDimensions(Browser* browser,
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
+ListValue* AutomationProvider::GetInfobarsInfo(TabContents* tc) {
+  // Each infobar may have different properties depending on the type.
+  ListValue* infobars = new ListValue;
+  for (int infobar_index = 0;
+       infobar_index < tc->infobar_delegate_count();
+       ++infobar_index) {
+    DictionaryValue* infobar_item = new DictionaryValue;
+    InfoBarDelegate* infobar = tc->GetInfoBarDelegateAt(infobar_index);
+    if (infobar->AsConfirmInfoBarDelegate()) {
+      // Also covers ThemeInstalledInfoBarDelegate and
+      // CrashedExtensionInfoBarDelegate.
+      infobar_item->SetString(L"type", "confirm_infobar");
+      ConfirmInfoBarDelegate* confirm_infobar =
+        infobar->AsConfirmInfoBarDelegate();
+      infobar_item->SetString(L"text", confirm_infobar->GetMessageText());
+      infobar_item->SetString(L"link_text", confirm_infobar->GetLinkText());
+      ListValue* buttons_list = new ListValue;
+      int buttons = confirm_infobar->GetButtons();
+      if (ConfirmInfoBarDelegate::BUTTON_OK & buttons) {
+        StringValue* button_label = new StringValue(
+            confirm_infobar->GetButtonLabel(
+              ConfirmInfoBarDelegate::BUTTON_OK));
+        buttons_list->Append(button_label);
+      }
+      if (ConfirmInfoBarDelegate::BUTTON_CANCEL & buttons) {
+        StringValue* button_label = new StringValue(
+            confirm_infobar->GetButtonLabel(
+              ConfirmInfoBarDelegate::BUTTON_CANCEL));
+        buttons_list->Append(button_label);
+      }
+      infobar_item->Set(L"buttons", buttons_list);
+    } else if (infobar->AsAlertInfoBarDelegate()) {
+      infobar_item->SetString(L"type", "alert_infobar");
+      AlertInfoBarDelegate* alert_infobar =
+        infobar->AsAlertInfoBarDelegate();
+      infobar_item->SetString(L"text", alert_infobar->GetMessageText());
+    } else if (infobar->AsLinkInfoBarDelegate()) {
+      infobar_item->SetString(L"type", "link_infobar");
+      LinkInfoBarDelegate* link_infobar = infobar->AsLinkInfoBarDelegate();
+      infobar_item->SetString(L"link_text", link_infobar->GetLinkText());
+    } else if (infobar->AsTranslateInfoBarDelegate()) {
+      infobar_item->SetString(L"type", "translate_infobar");
+      TranslateInfoBarDelegate* translate_infobar =
+          infobar->AsTranslateInfoBarDelegate();
+      infobar_item->SetString(L"original_lang_code",
+                              translate_infobar->GetOriginalLanguageCode());
+      infobar_item->SetString(L"target_lang_code",
+                              translate_infobar->GetTargetLanguageCode());
+    } else if (infobar->AsExtensionInfoBarDelegate()) {
+      infobar_item->SetString(L"type", "extension_infobar");
+    } else {
+      infobar_item->SetString(L"type", "unknown_infobar");
+    }
+    infobars->Append(infobar_item);
+  }
+  return infobars;
+}
+
+// Sample json input: { "command": "WaitForInfobarCount",
+//                      "count": COUNT,
+//                      "tab_index": INDEX }
+// Sample output: {}
+void AutomationProvider::WaitForInfobarCount(Browser* browser,
+                                        DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  int tab_index;
+  int count;
+  if (!args->GetInteger(L"count", &count) || count < 0 ||
+      !args->GetInteger(L"tab_index", &tab_index) || tab_index < 0) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Missing or invalid args: 'count', 'tab_index'.");
+    return;
+  }
+
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  // Observer deletes itself.
+  new WaitForInfobarCountObserver(this, reply_message, tab_contents, count);
+}
+
 namespace {
 
 // Task to get info about BrowserChildProcessHost. Must run on IO thread to
@@ -1836,7 +1916,7 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
       tab->SetString(L"url", tc->GetURL().spec());
       tab->SetInteger(L"renderer_pid",
                       base::GetProcId(tc->GetRenderProcessHost()->GetHandle()));
-      tab->SetInteger(L"num_infobars", tc->infobar_delegate_count());
+      tab->Set(L"infobars", GetInfobarsInfo(tc));
       tabs->Append(tab);
     }
     browser_item->Set(L"tabs", tabs);
@@ -2828,6 +2908,8 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetPluginsInfo"] = &AutomationProvider::GetPluginsInfo;
 
   handler_map["GetBrowserInfo"] = &AutomationProvider::GetBrowserInfo;
+
+  handler_map["WaitForInfobarCount"] = &AutomationProvider::WaitForInfobarCount;
 
   handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
   handler_map["AddHistoryItem"] = &AutomationProvider::AddHistoryItem;

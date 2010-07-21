@@ -1096,3 +1096,39 @@ void SavePackageNotificationObserver::Observe(
     NOTREACHED();
   }
 }
+
+WaitForInfobarCountObserver::WaitForInfobarCountObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    TabContents* tab_contents,
+    int count)
+  : automation_(automation),
+    reply_message_(reply_message),
+    tab_contents_(tab_contents),
+    count_(count) {
+  if (tab_contents->infobar_delegate_count() == count) {
+    ConditionMet();
+    return;
+  }
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
+                 Source<TabContents>(tab_contents_));
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+                 Source<TabContents>(tab_contents_));
+}
+
+void WaitForInfobarCountObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(type == NotificationType::TAB_CONTENTS_INFOBAR_ADDED ||
+         type == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED);
+  if (tab_contents_->infobar_delegate_count() == count_) {
+    ConditionMet();
+  }
+}
+
+void WaitForInfobarCountObserver::ConditionMet() {
+  registrar_.RemoveAll();
+  AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
+  delete this;
+}

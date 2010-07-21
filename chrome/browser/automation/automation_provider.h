@@ -337,6 +337,18 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
+  // Get info about infobars in the given TabContents object.
+  // This includes info about the type of infobars, the message text,
+  // buttons, etc.
+  // Caller owns the returned object.
+  ListValue* GetInfobarsInfo(TabContents* tc);
+
+  // Wait for infobar count in a given tab to become a certain value.
+  // Uses the JSON interface for input/output.
+  void WaitForInfobarCount(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
+
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.
   // Uses the JSON interface for input/output.
