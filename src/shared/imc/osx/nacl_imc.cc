@@ -109,42 +109,6 @@ const int kMaxHandles = 2048;
 ControlBlock control_table[kMaxHandles];
 #endif  // !OSX_BLEMISH_HEURISTIC
 
-// The pathname prefix for bound sockets created by BoundSocket().
-const char kNamePrefix[] = "/tmp/nacl-";
-// TODO(shiki): This is potentially unsafe. tmp cleaners can delete files out
-// from under us, if user leaves browser running but idle for a while. In
-// practice, it is a longish time, but something safer would be better, e.g.,
-// $HOME/.nacl/, if there are no other insurmountable problems with it.
-// On OS, the default is to delete everything in /Temp which hasn't been
-// accessed for >3 days. This script runs once a day. So a "long weekend" might
-// be a problem.
-// (like .mozilla, if logged in to two different machines and on both machine
-// run code that mutate files believing in having exclusive access, could cause
-// problems.)
-
-
-// Get a pointer to sockaddr that corresponds to address.
-// The sa parameter must be a valid pointer to struct sockaddr_un.
-// On return it contains the name that can be used with the bind() system call.
-// On success, a pointer to sa type-casted to sockaddr is returned. On error,
-// NULL is returned.
-struct sockaddr* GetSocketAddress(const SocketAddress* address,
-                                  struct sockaddr_un* sa) {
-  if (address == NULL || !isalnum(address->path[0])) {
-    return NULL;
-  }
-  memset(sa, 0, sizeof(struct sockaddr_un));
-  sa->sun_family = AF_UNIX;
-  memmove(sa->sun_path, kNamePrefix, sizeof kNamePrefix - 1);
-  char* p = &sa->sun_path[sizeof kNamePrefix - 1];
-  for (const char* q = address->path;
-       *q != '\0' && p < &sa->sun_path[sizeof sa->sun_path];
-       ++p, ++q) {
-    /* do not perform case-folding in a case-sensitive environment */
-    *p = *q;
-  }
-  return reinterpret_cast<sockaddr*>(sa);
-}
 
 // Gets an array of file descriptors stored in msg.
 // The fdv parameter must be an int array of kHandleCountMax elements.
@@ -197,14 +161,6 @@ bool IsSocketPair(Handle handle) {
 }
 #endif  // !OSX_BLEMISH_HEURISTIC
 
-// Returns true if handle is a bound socket.
-bool IsBoundSocket(Handle handle, struct sockaddr_un* sa, socklen_t len) {
-  return getsockname(handle, reinterpret_cast<sockaddr*>(sa), &len) == 0 &&
-         sizeof sa->sun_family < len &&
-         sa->sun_family == AF_UNIX &&
-         strncmp(sa->sun_path, kNamePrefix, sizeof kNamePrefix - 1) == 0;
-}
-
 #if SIGPIPE_ALT_FIX
 // TODO(kbr): move this to an Init() function so it isn't called all
 // the time.
@@ -221,34 +177,21 @@ bool IgnoreSIGPIPE() {
 
 }  // namespace
 
+// We keep these no-op implementations of SocketAddress-based
+// functions so that sigpipe_test continues to link.
 Handle BoundSocket(const SocketAddress* address) {
-  int s = socket(AF_UNIX, SOCK_STREAM, 0);
-  if (s == -1) {
-    return -1;
-  }
-#if SIGPIPE_ALT_FIX
-  if (!IgnoreSIGPIPE()) {
-    close(s);
-    return -1;
-  }
-#endif
-#if SIGPIPE_FIX
-  int nosigpipe = 1;
-  if (0 != setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE,
-                      &nosigpipe, sizeof nosigpipe)) {
-    close(s);
-    return -1;
-  }
-#endif
-  struct sockaddr_un sa;
-  if (bind(s, GetSocketAddress(address, &sa), sizeof sa) == 0 &&
-      listen(s, 5) == 0) {
-    int fl = fcntl(s, F_GETFL, 0);
-    fl |= O_NONBLOCK;
-    fcntl(s, F_SETFL, fl);
-    return s;
-  }
-  close(s);
+  UNREFERENCED_PARAMETER(address);
+  NaClLog(LOG_FATAL, "BoundSocket(): Not used on OSX\n");
+  return -1;
+}
+
+int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
+                   const SocketAddress* name) {
+  UNREFERENCED_PARAMETER(handle);
+  UNREFERENCED_PARAMETER(message);
+  UNREFERENCED_PARAMETER(flags);
+  UNREFERENCED_PARAMETER(name);
+  NaClLog(LOG_FATAL, "SendDatagramTo(): Not used on OSX\n");
   return -1;
 }
 
@@ -294,12 +237,8 @@ int SocketPair(Handle pair[2]) {
 }
 
 int Close(Handle handle) {
-  struct sockaddr_un sa;
-
-  if (IsBoundSocket(handle, &sa, sizeof sa)) {
-    unlink(sa.sun_path);
 #if !OSX_BLEMISH_HEURISTIC
-  } else if (IsSocketPair(handle)) {
+  if (IsSocketPair(handle)) {
     // In OS X, after a process closes one end of a socket pair which has been
     // transferred to the other process, the socket the remote process has
     // received is treated as if it is closed, and read() returns immediately
@@ -321,8 +260,8 @@ int Close(Handle handle) {
       }
     }
     block->pair_fd = -1;
-#endif  // !OSX_BLEMISH_HEURISTIC
   }
+#endif  // !OSX_BLEMISH_HEURISTIC
   return close(handle);
 }
 
@@ -410,49 +349,7 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   return result - sizeof header;
 }
 
-int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
-                   const SocketAddress* name) {
-  if (name == NULL) {
-    return SendDatagram(handle, message, flags);
-  }
-  struct sockaddr_un sa;
-  int s = socket(AF_UNIX, SOCK_STREAM, 0);
-  if  (s == -1) {
-    return -1;
-  }
-#if SIGPIPE_ALT_FIX
-  if (!IgnoreSIGPIPE()) {
-    close(s);
-    return -1;
-  }
-#endif
-#if SIGPIPE_FIX
-  int nosigpipe = 1;
-  if (0 != setsockopt(s, SOL_SOCKET, SO_NOSIGPIPE,
-                      &nosigpipe, sizeof nosigpipe)) {
-    (void) close(s);
-    return -1;
-  }
-#endif
-  if (connect(s, GetSocketAddress(name, &sa), sizeof sa) == -1) {
-    (void) close(s);
-    switch (errno) {
-      case ENOENT: {
-        errno = ECONNREFUSED;
-        break;
-      }
-    }
-    return -1;
-  }
-  int result = SendDatagram(s, message, flags);
-  close(s);
-  return result;
-}
-
-namespace {
-
-int Receive(Handle handle, MessageHeader* message, int flags,
-            bool bound_socket) {
+int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   struct msghdr msg;
   struct iovec vec[kIovLengthMax];
   unsigned char buf[CMSG_SPACE(kHandleCountMax * sizeof(int))];
@@ -528,10 +425,6 @@ int Receive(Handle handle, MessageHeader* message, int flags,
       close(message->handles[--handle_count]);
     }
     if (count == 0) {
-      if (bound_socket) {
-        errno = EAGAIN;
-        return -1;
-      }
       message->handle_count = 0;
       return 0;
     }
@@ -605,39 +498,6 @@ int Receive(Handle handle, MessageHeader* message, int flags,
     }
   }
   return count;
-}
-
-}  // namespace
-
-int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
-  struct sockaddr_un sa;
-  for (;;) {
-    socklen_t address_len = sizeof sa;
-    int s = accept(handle, reinterpret_cast<sockaddr*>(&sa), &address_len);
-    if (s != -1) {
-      int fl = fcntl(s, F_GETFL, 0);
-      fl &= ~O_NONBLOCK;
-      fcntl(s, F_SETFL, fl);
-      int result = Receive(s, message, flags & ~kDontWait, true);
-      close(s);
-      if (result == -1 && !(flags & kDontWait)) {
-        continue;
-      }
-      return result;
-    }
-    if (errno == EINVAL) {
-      return Receive(handle, message, flags, false);
-    }
-    if (errno == EWOULDBLOCK) {
-      if (flags & kDontWait) {
-        return -1;
-      }
-      struct pollfd fd = { handle, POLLIN, 0 };
-      if (poll(&fd, 1, -1) == -1) {
-        return -1;
-      }
-    }
-  }
 }
 
 }  // namespace nacl

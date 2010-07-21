@@ -29,6 +29,8 @@
 
 namespace {
 
+const bool kPlatformUsesBoundSockets = !NACL_OSX;
+
 bool gSleepBeforeReceive(false);
 std::vector<int> gTestSequence;
 
@@ -142,19 +144,21 @@ TestState::TestState(std::vector<int> *seqp, bool nso, int reps,
 }
 
 int TestState::Init() {
-  PickRandomSocketAddress(&cli_addr);
-  cli_sock = nacl::BoundSocket(&cli_addr);
-  if (nacl::kInvalidHandle == cli_sock) {
-    MyPerror("BoundSocket");
-    printf("ERROR: No client socket\n");
-    return 1;
-  }
-  PickRandomSocketAddress(&srv_addr);
-  srv_sock = nacl::BoundSocket(&srv_addr);
-  if (nacl::kInvalidHandle == srv_sock) {
-    MyPerror("BoundSocket");
-    printf("ERROR: No server socket\n");
-    return 1;
+  if (kPlatformUsesBoundSockets) {
+    PickRandomSocketAddress(&cli_addr);
+    cli_sock = nacl::BoundSocket(&cli_addr);
+    if (nacl::kInvalidHandle == cli_sock) {
+      MyPerror("BoundSocket");
+      printf("ERROR: No client socket\n");
+      return 1;
+    }
+    PickRandomSocketAddress(&srv_addr);
+    srv_sock = nacl::BoundSocket(&srv_addr);
+    if (nacl::kInvalidHandle == srv_sock) {
+      MyPerror("BoundSocket");
+      printf("ERROR: No server socket\n");
+      return 1;
+    }
   }
 
   if (-1 == nacl::SocketPair(pair)) {
@@ -791,8 +795,10 @@ int TestNaClSocket(int rep_count) {
   (void) nacl::Close(tstate.pair[0]);
   tstate.pair[0] = nacl::kInvalidHandle;
 
-  printf("Sending a datagram to an address with closed bound socket.\n");
-  SendDataNoPeer(&tstate, 0);
+  if (kPlatformUsesBoundSockets) {
+    printf("Sending a datagram to an address with closed bound socket.\n");
+    SendDataNoPeer(&tstate, 0);
+  }
   printf("Sending a datagram to a socketpair where peer was closed.\n");
   SendDataNoPeer(&tstate, 1);
 
@@ -857,7 +863,8 @@ int main(int ac,
   }
   if (gTestSequence.empty()) {
     for (size_t i = 0; i < NACL_ARRAY_SIZE(test_fn); ++i) {
-      if (!test_fn[i].flakey) {
+      if (!test_fn[i].flakey &&
+          (kPlatformUsesBoundSockets || test_fn[i].mode != 0)) {
         gTestSequence.push_back(nacl::assert_cast<int>(i));
       }
     }
