@@ -331,11 +331,12 @@ kern_return_t Inspector::ReadMessages() {
     // we are expected to read.
     // Read each key/value pair, one mach message per key/value pair.
     for (unsigned int i = 0; i < info.parameter_count; ++i) {
-      result = receive_port.WaitForMessage(&message, 1000);
+      MachReceiveMessage parameter_message;
+      result = receive_port.WaitForMessage(&parameter_message, 1000);
 
       if(result == KERN_SUCCESS) {
         KeyValueMessageData &key_value_data =
-          (KeyValueMessageData&)*message.GetData();
+          (KeyValueMessageData&)*parameter_message.GetData();
         // If we get a blank key, make sure we don't increment the
         // parameter count; in some cases (notably on-demand generation
         // many times in a short period of time) caused the Mach IPC
