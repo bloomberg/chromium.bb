@@ -117,13 +117,23 @@ bool CanvasDirect2D::ClipRectInt(int x, int y, int w, int h) {
 }
 
 void CanvasDirect2D::TranslateInt(int x, int y) {
-  rt_->SetTransform(D2D1::Matrix3x2F::Translation(static_cast<float>(x),
-                                                  static_cast<float>(y)));
+  D2D1_MATRIX_3X2_F raw;
+  rt_->GetTransform(&raw);
+  D2D1::Matrix3x2F transform(raw._11, raw._12, raw._21, raw._22, raw._31,
+                             raw._32);
+  transform = D2D1::Matrix3x2F::Translation(static_cast<float>(x),
+                                            static_cast<float>(y)) * transform;
+  rt_->SetTransform(transform);
 }
 
 void CanvasDirect2D::ScaleInt(int x, int y) {
-  rt_->SetTransform(D2D1::Matrix3x2F::Scale(static_cast<float>(x),
-                                            static_cast<float>(y)));
+  D2D1_MATRIX_3X2_F raw;
+  rt_->GetTransform(&raw);
+  D2D1::Matrix3x2F transform(raw._11, raw._12, raw._21, raw._22, raw._31,
+                             raw._32);
+  transform = D2D1::Matrix3x2F::Scale(static_cast<float>(x),
+                                      static_cast<float>(y)) * transform;
+  rt_->SetTransform(transform);
 }
 
 void CanvasDirect2D::FillRectInt(int x, int y, int w, int h,
