@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_types.h"
@@ -24,38 +25,39 @@ DownloadFile::DownloadFile(const DownloadCreateInfo* info)
       referrer_url_(info->referrer_url),
       id_(info->download_id),
       child_id_(info->child_id),
-      render_view_id_(info->render_view_id),
       request_id_(info->request_id),
-      bytes_so_far_(0),
       full_path_(info->save_info.file_path),
       path_renamed_(false),
-      in_progress_(true),
-      dont_sleep_(true),
-      save_info_(info->save_info) {
+      dont_sleep_(true) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 }
 
 DownloadFile::~DownloadFile() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   Close();
 }
 
 bool DownloadFile::Initialize() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   if (!full_path_.empty() ||
       download_util::CreateTemporaryFileForDownload(&full_path_))
     return Open();
   return false;
 }
 
-bool DownloadFile::AppendDataToFile(const char* data, int data_len) {
-  if (file_stream_.get()) {
-    // FIXME bug 595247: handle errors on file writes.
-    size_t written = file_stream_->Write(data, data_len, NULL);
-    bytes_so_far_ += written;
-    return true;
-  }
-  return false;
+bool DownloadFile::AppendDataToFile(const char* data, size_t data_len) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  if (!file_stream_.get())
+    return false;
+
+  // FIXME bug 595247: handle errors on file writes.
+  size_t written = file_stream_->Write(data, data_len, NULL);
+  return (written == data_len);
 }
 
 void DownloadFile::Cancel() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   Close();
   if (!full_path_.empty())
     file_util::Delete(full_path_, false);
@@ -63,13 +65,19 @@ void DownloadFile::Cancel() {
 
 // The UI has provided us with our finalized name.
 bool DownloadFile::Rename(const FilePath& new_path, bool is_final_rename) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  // Save the information whether the download is in progress because
+  // it will be overwritten by closing the file.
+  bool saved_in_progress = in_progress();
+
   // If the new path is same as the old one, there is no need to perform the
   // following renaming logic.
   if (new_path == full_path_) {
     path_renamed_ = is_final_rename;
 
     // Don't close the file if we're not done (finished or canceled).
-    if (!in_progress_)
+    if (!saved_in_progress)
       Close();
 
     return true;
@@ -111,7 +119,7 @@ bool DownloadFile::Rename(const FilePath& new_path, bool is_final_rename) {
   path_renamed_ = is_final_rename;
 
   // We don't need to re-open the file if we're done (finished or canceled).
-  if (!in_progress_)
+  if (!saved_in_progress)
     return true;
 
   if (!Open())
@@ -129,7 +137,13 @@ void DownloadFile::DeleteCrDownload() {
   file_util::Delete(crdownload, false);
 }
 
+void DownloadFile::Finish() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  Close();
+}
+
 void DownloadFile::Close() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   if (file_stream_.get()) {
 #if defined(OS_CHROMEOS)
     // Currently we don't really care about the return value, since if it fails
@@ -142,6 +156,7 @@ void DownloadFile::Close() {
 }
 
 bool DownloadFile::Open() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   DCHECK(!full_path_.empty());
 
   // Create a new file steram if it is not provided.
@@ -162,6 +177,7 @@ bool DownloadFile::Open() {
 }
 
 void DownloadFile::AnnotateWithSourceInformation() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 #if defined(OS_WIN)
   // Sets the Zone to tell Windows that this file comes from the internet.
   // We ignore the return value because a failure is not fatal.
@@ -172,4 +188,14 @@ void DownloadFile::AnnotateWithSourceInformation() {
   file_metadata::AddOriginMetadataToFile(full_path_, source_url_,
                                          referrer_url_);
 #endif
+}
+
+void DownloadFile::CancelDownloadRequest(ResourceDispatcherHost* rdh) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(&download_util::CancelDownloadRequest,
+                          rdh,
+                          child_id_,
+                          request_id_));
 }

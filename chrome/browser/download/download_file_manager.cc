@@ -202,7 +202,8 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 
   DCHECK(GetDownloadFile(info->download_id) == NULL);
   downloads_[info->download_id] = download;
-  info->path = download->full_path();
+  // TODO(phajdan.jr): fix the duplication of path info below.
+  info->path = info->save_info.file_path;
   {
     AutoLock lock(progress_lock_);
     ui_progress_[info->download_id] = info->received_bytes;
@@ -226,18 +227,24 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
     contents.swap(buffer->contents);
   }
 
+  // Keep track of how many bytes we have successfully saved to update
+  // our progress status in the UI.
+  int64 progress_bytes = 0;
+
   DownloadFile* download = GetDownloadFile(id);
   for (size_t i = 0; i < contents.size(); ++i) {
     net::IOBuffer* data = contents[i].first;
     const int data_len = contents[i].second;
-    if (download)
-      download->AppendDataToFile(data->data(), data_len);
+    if (download) {
+      if (download->AppendDataToFile(data->data(), data_len))
+        progress_bytes += data_len;
+    }
     data->Release();
   }
 
   if (download) {
     AutoLock lock(progress_lock_);
-    ui_progress_[download->id()] = download->bytes_so_far();
+    ui_progress_[download->id()] += progress_bytes;
   }
 }
 
@@ -247,13 +254,19 @@ void DownloadFileManager::DownloadFinished(int id, DownloadBuffer* buffer) {
   DownloadFileMap::iterator it = downloads_.find(id);
   if (it != downloads_.end()) {
     DownloadFile* download = it->second;
-    download->set_in_progress(false);
+    download->Finish();
+
+    int64 download_size = -1;
+    {
+      AutoLock lock(progress_lock_);
+      download_size = ui_progress_[download->id()];
+    }
 
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &DownloadFileManager::OnDownloadFinished,
-            id, download->bytes_so_far()));
+            id, download_size));
 
     // We need to keep the download around until the UI thread has finalized
     // the name.
@@ -277,8 +290,6 @@ void DownloadFileManager::CancelDownload(int id) {
   DownloadFileMap::iterator it = downloads_.find(id);
   if (it != downloads_.end()) {
     DownloadFile* download = it->second;
-    download->set_in_progress(false);
-
     download->Cancel();
 
     ChromeThread::PostTask(
@@ -490,11 +501,6 @@ void DownloadFileManager::CancelDownloadOnRename(int id) {
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(dlm, &DownloadManager::DownloadCancelled, id));
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableFunction(&download_util::CancelDownloadRequest,
-                            resource_dispatcher_host_,
-                            download->child_id(),
-                            download->request_id()));
+    download->CancelDownloadRequest(resource_dispatcher_host_);
   }
 }
