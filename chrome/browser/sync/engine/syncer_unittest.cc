@@ -238,6 +238,12 @@ class SyncerTest : public testing::Test,
     AddDefaultExtensionValue(syncable::BOOKMARKS, &result);
     return result;
   }
+
+  sync_pb::EntitySpecifics DefaultPreferencesSpecifics() {
+    sync_pb::EntitySpecifics result;
+    AddDefaultExtensionValue(syncable::PREFERENCES, &result);
+    return result;
+  }
   // Enumeration of alterations to entries for commit ordering tests.
   enum EntryFeature {
     LIST_END = 0,  // Denotes the end of the list of features from below.
@@ -600,6 +606,88 @@ TEST_F(SyncerTest, TestGetUnsyncedAndSimpleCommit) {
     Entry entry(&rt, syncable::GET_BY_ID, child_id_);
     ASSERT_TRUE(entry.good());
     VerifyTestDataInEntry(&rt, &entry);
+  }
+}
+
+TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
+  // Similar to above, but throw a purge operation into the mix. Bug 49278.
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  ASSERT_TRUE(dir.good());
+  syncable::Id pref_node_id = TestIdFactory::MakeServer("Tim");
+  {
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(), "Pete");
+    ASSERT_TRUE(parent.good());
+    parent.Put(syncable::IS_UNSYNCED, true);
+    parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
+    parent.Put(syncable::BASE_VERSION, 1);
+    parent.Put(syncable::ID, parent_id_);
+    MutableEntry child(&wtrans, syncable::CREATE, parent_id_, "Pete");
+    ASSERT_TRUE(child.good());
+    child.Put(syncable::ID, child_id_);
+    child.Put(syncable::BASE_VERSION, 1);
+    WriteTestDataToEntry(&wtrans, &child);
+
+    MutableEntry parent2(&wtrans, syncable::CREATE, wtrans.root_id(), "Tim");
+    ASSERT_TRUE(parent2.good());
+    parent2.Put(syncable::IS_UNSYNCED, true);
+    parent2.Put(syncable::IS_DIR, true);
+    parent2.Put(syncable::SPECIFICS, DefaultPreferencesSpecifics());
+    parent2.Put(syncable::BASE_VERSION, 1);
+    parent2.Put(syncable::ID, pref_node_id);
+  }
+
+  std::set<syncable::ModelType> types_to_purge;
+  types_to_purge.insert(syncable::PREFERENCES);
+  dir->PurgeEntriesWithTypeIn(types_to_purge);
+
+  StatusController* status = session_->status_controller();
+  syncer_->SyncShare(session_.get());
+  EXPECT_EQ(2U, status->unsynced_handles().size());
+  ASSERT_EQ(2U, mock_server_->committed_ids().size());
+  // If this test starts failing, be aware other sort orders could be valid.
+  EXPECT_TRUE(parent_id_ == mock_server_->committed_ids()[0]);
+  EXPECT_TRUE(child_id_ == mock_server_->committed_ids()[1]);
+  {
+    ReadTransaction rt(dir, __FILE__, __LINE__);
+    Entry entry(&rt, syncable::GET_BY_ID, child_id_);
+    ASSERT_TRUE(entry.good());
+    VerifyTestDataInEntry(&rt, &entry);
+  }
+  dir->SaveChanges();
+  {
+    ReadTransaction rt(dir, __FILE__, __LINE__);
+    Entry entry(&rt, syncable::GET_BY_ID, pref_node_id);
+    ASSERT_FALSE(entry.good());
+  }
+}
+
+TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
+  // Similar to above, but for unapplied items. Bug 49278.
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  ASSERT_TRUE(dir.good());
+  {
+    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(), "Pete");
+    ASSERT_TRUE(parent.good());
+    parent.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+    parent.Put(syncable::IS_DIR, true);
+    parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
+    parent.Put(syncable::BASE_VERSION, 1);
+    parent.Put(syncable::ID, parent_id_);
+  }
+
+  std::set<syncable::ModelType> types_to_purge;
+  types_to_purge.insert(syncable::BOOKMARKS);
+  dir->PurgeEntriesWithTypeIn(types_to_purge);
+
+  syncer_->SyncShare(session_.get());
+  dir->SaveChanges();
+  {
+    ReadTransaction rt(dir, __FILE__, __LINE__);
+    Entry entry(&rt, syncable::GET_BY_ID, parent_id_);
+    ASSERT_FALSE(entry.good());
   }
 }
 

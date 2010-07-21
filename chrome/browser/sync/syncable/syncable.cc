@@ -501,8 +501,13 @@ bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) const {
       !entry->ref(SYNCING) && !entry->ref(IS_UNAPPLIED_UPDATE) &&
       !entry->ref(IS_UNSYNCED);
 
-  if (safe)
-    DCHECK(kernel_->dirty_metahandles->count(entry->ref(META_HANDLE)) == 0);
+  if (safe) {
+    int64 handle = entry->ref(META_HANDLE);
+    CHECK(kernel_->dirty_metahandles->count(handle) == 0);
+    // TODO(tim): Bug 49278.
+    CHECK(!kernel_->unsynced_metahandles->count(handle));
+    CHECK(!kernel_->unapplied_update_metahandles->count(handle));
+  }
 
   return safe;
 }
@@ -581,7 +586,8 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       // We now drop deleted metahandles that are up to date on both the client
       // and the server.
       size_t num_erased = 0;
-      kernel_->flushed_metahandles.Push(entry->ref(META_HANDLE));
+      int64 handle = entry->ref(META_HANDLE);
+      kernel_->flushed_metahandles.Push(handle);
       num_erased = kernel_->ids_index->erase(entry);
       DCHECK_EQ(1u, num_erased);
       num_erased = kernel_->metahandles_index->erase(entry);
@@ -590,7 +596,7 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       // Might not be in it
       num_erased = kernel_->client_tag_index->erase(entry);
       DCHECK_EQ(entry->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
-      DCHECK(!kernel_->parent_id_child_index->count(entry));
+      CHECK(!kernel_->parent_id_child_index->count(entry));
       delete entry;
     }
   }
@@ -620,14 +626,18 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
         // Note the dance around incrementing |it|, since we sometimes erase().
         if (types.count(local_type) > 0 || types.count(server_type) > 0) {
           UnlinkEntryFromOrder(*it, NULL, &lock);
-
-          kernel_->metahandles_to_purge->insert((*it)->ref(META_HANDLE));
+          int64 handle = (*it)->ref(META_HANDLE);
+          kernel_->metahandles_to_purge->insert(handle);
 
           size_t num_erased = 0;
           num_erased = kernel_->ids_index->erase(*it);
           DCHECK_EQ(1u, num_erased);
           num_erased = kernel_->client_tag_index->erase(*it);
           DCHECK_EQ((*it)->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
+          num_erased = kernel_->unsynced_metahandles->erase(handle);
+          DCHECK_EQ((*it)->ref(IS_UNSYNCED), num_erased > 0);
+          num_erased = kernel_->unapplied_update_metahandles->erase(handle);
+          DCHECK_EQ((*it)->ref(IS_UNAPPLIED_UPDATE), num_erased > 0);
           num_erased = kernel_->parent_id_child_index->erase(*it);
           DCHECK_EQ((*it)->ref(IS_DEL), !num_erased);
           kernel_->metahandles_index->erase(it++);

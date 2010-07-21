@@ -471,8 +471,8 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
   // Update our stored copy of the server state.
   UpdateServerFieldsAfterCommit(committed_entry, entry_response, local_entry);
 
-  // If the item doesn't need to be committed again (a situation that
-  // happens if it changed locally during the commit), we can remove
+  // If the item doesn't need to be committed again (an item might need to be
+  // committed again if it changed locally during the commit), we can remove
   // it from the unsynced list.  Also, we should change the locally-
   // visible properties to apply any canonicalizations or fixups
   // that the server introduced during the commit.
