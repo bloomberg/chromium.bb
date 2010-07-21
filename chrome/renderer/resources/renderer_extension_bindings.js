@@ -168,6 +168,8 @@ var chrome = chrome || {};
         targetId = arguments[nextArg++];
       if (typeof(arguments[nextArg]) == "object")
         name = arguments[nextArg++].name || name;
+      if (nextArg != arguments.length)
+        throw new Error("Invalid arguments to connect.");
 
       var portId = OpenChannelToExtension(extensionId, targetId, name);
       if (portId >= 0)
@@ -183,8 +185,10 @@ var chrome = chrome || {};
       if (typeof(arguments[lastArg]) == "function")
         responseCallback = arguments[lastArg--];
       request = arguments[lastArg--];
-      if (lastArg >= 0)
+      if (lastArg >= 0 && typeof(arguments[lastArg]) == "string")
         targetId = arguments[lastArg--];
+      if (lastArg != -1)
+        throw new Error("Invalid arguments to sendRequest.");
 
       var port = chrome.extension.connect(targetId,
                                           {name: chromeHidden.kRequestChannel});
