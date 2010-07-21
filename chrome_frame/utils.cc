@@ -48,7 +48,6 @@ static const wchar_t kChromeFrameConfigKey[] =
     L"Software\\Google\\ChromeFrame";
 static const wchar_t kChromeFrameOptinUrlsKey[] = L"OptinUrls";
 static const wchar_t kEnableGCFProtocol[] = L"EnableGCFProtocol";
-static const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
 
 static const wchar_t kChromeFrameNPAPIKey[] =
     L"Software\\MozillaPlugins\\@google.com/ChromeFrame,version=1.0";

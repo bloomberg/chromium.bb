@@ -28,7 +28,6 @@ extern const wchar_t kChromeProtocolPrefix[];
 extern const wchar_t kChromeFrameHeadlessMode[];
 extern const wchar_t kChromeFrameUnpinnedMode[];
 extern const wchar_t kEnableGCFProtocol[];
-extern const wchar_t kEnableBuggyBhoIntercept[];
 extern const wchar_t kChromeMimeType[];
 
 typedef enum ProtocolPatchMethod {

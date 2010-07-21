@@ -606,8 +606,6 @@
         'bind_context_info.h',
         'bind_status_callback_impl.cc',
         'bind_status_callback_impl.h',
-        'buggy_bho_handling.cc',
-        'buggy_bho_handling.h',
         'chrome_active_document.cc',
         'chrome_active_document.h',
         'chrome_active_document.rgs',

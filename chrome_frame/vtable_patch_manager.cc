@@ -4,9 +4,8 @@
 
 #include "chrome_frame/vtable_patch_manager.h"
 
-#include <atlcomcli.h>
-
 #include <algorithm>
+#include <atlcomcli.h>
 
 #include "base/atomicops.h"
 #include "base/lock.h"
@@ -91,7 +90,7 @@ HRESULT PatchInterfaceMethods(void* unknown, MethodPatchInfo* patches) {
     FunctionStub* stub = NULL;
 
 #ifndef NDEBUG
-    stub = FunctionStub::FromCode(original_fn);
+    FunctionStub::FromCode(original_fn);
     if (stub != NULL) {
       DLOG(ERROR) << "attempt to patch a function that's already patched";
       DCHECK(stub->destination_function() ==
