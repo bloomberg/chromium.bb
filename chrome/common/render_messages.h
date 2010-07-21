@@ -1506,6 +1506,9 @@ template <>
 struct ParamTraits<webkit_glue::ResourceLoaderBridge::LoadTimingInfo> {
   typedef webkit_glue::ResourceLoaderBridge::LoadTimingInfo param_type;
   static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.base_time.is_null());
+    if (p.base_time.is_null())
+      return;
     WriteParam(m, p.base_time);
     WriteParam(m, p.proxy_start);
     WriteParam(m, p.proxy_end);
@@ -1521,6 +1524,12 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::LoadTimingInfo> {
     WriteParam(m, p.receive_headers_end);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
+    bool is_null;
+    if (!ReadParam(m, iter, &is_null))
+      return false;
+    if (is_null)
+      return true;
+
     return
         ReadParam(m, iter, &r->base_time) &&
         ReadParam(m, iter, &r->proxy_start) &&
@@ -1591,22 +1600,22 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     return
-      ReadParam(m, iter, &r->request_time) &&
-      ReadParam(m, iter, &r->response_time) &&
-      ReadParam(m, iter, &r->headers) &&
-      ReadParam(m, iter, &r->mime_type) &&
-      ReadParam(m, iter, &r->charset) &&
-      ReadParam(m, iter, &r->security_info) &&
-      ReadParam(m, iter, &r->content_length) &&
-      ReadParam(m, iter, &r->appcache_id) &&
-      ReadParam(m, iter, &r->appcache_manifest_url) &&
-      ReadParam(m, iter, &r->connection_id) &&
-      ReadParam(m, iter, &r->connection_reused) &&
-      ReadParam(m, iter, &r->load_timing) &&
-      ReadParam(m, iter, &r->was_fetched_via_spdy) &&
-      ReadParam(m, iter, &r->was_npn_negotiated) &&
-      ReadParam(m, iter, &r->was_alternate_protocol_available) &&
-      ReadParam(m, iter, &r->was_fetched_via_proxy);
+        ReadParam(m, iter, &r->request_time) &&
+        ReadParam(m, iter, &r->response_time) &&
+        ReadParam(m, iter, &r->headers) &&
+        ReadParam(m, iter, &r->mime_type) &&
+        ReadParam(m, iter, &r->charset) &&
+        ReadParam(m, iter, &r->security_info) &&
+        ReadParam(m, iter, &r->content_length) &&
+        ReadParam(m, iter, &r->appcache_id) &&
+        ReadParam(m, iter, &r->appcache_manifest_url) &&
+        ReadParam(m, iter, &r->connection_id) &&
+        ReadParam(m, iter, &r->connection_reused) &&
+        ReadParam(m, iter, &r->load_timing) &&
+        ReadParam(m, iter, &r->was_fetched_via_spdy) &&
+        ReadParam(m, iter, &r->was_npn_negotiated) &&
+        ReadParam(m, iter, &r->was_alternate_protocol_available) &&
+        ReadParam(m, iter, &r->was_fetched_via_proxy);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");

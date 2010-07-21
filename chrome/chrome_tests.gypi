@@ -998,6 +998,7 @@
         'browser/mock_configuration_policy_store.h',
         'browser/net/chrome_url_request_context_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
+        'browser/net/load_timing_observer_unittest.cc',
         'browser/net/passive_log_collector_unittest.cc',
         'browser/net/predictor_unittest.cc',
         'browser/net/resolve_proxy_msg_helper_unittest.cc',
