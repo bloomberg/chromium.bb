@@ -90,7 +90,8 @@ PanelController::PanelController(Delegate* delegate,
 
 void PanelController::Init(bool initial_focus,
                            const gfx::Rect& window_bounds,
-                           XID creator_xid) {
+                           XID creator_xid,
+                           WmIpcPanelUserResizeType resize_type) {
   gfx::Rect title_bounds(
       0, 0, window_bounds.width(), kTitleHeight);
 
@@ -110,6 +111,7 @@ void PanelController::Init(bool initial_focus,
   type_params.push_back(expanded_ ? 1 : 0);
   type_params.push_back(initial_focus ? 1 : 0);
   type_params.push_back(creator_xid);
+  type_params.push_back(resize_type);
   WmIpc::instance()->SetWindowType(
       GTK_WIDGET(panel_),
       WM_IPC_WINDOW_CHROME_PANEL_CONTENT,

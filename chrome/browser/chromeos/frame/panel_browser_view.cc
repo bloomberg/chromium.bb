@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
 
 #include "chrome/browser/chromeos/frame/panel_controller.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/window/window.h"
 
 namespace chromeos {
@@ -36,7 +37,9 @@ void PanelBrowserView::Init() {
 
 void PanelBrowserView::Show() {
   panel_controller_.reset(new PanelController(this, GetNativeHandle()));
-  panel_controller_->Init(true /* focus when opened */, bounds(), creator_xid_);
+  panel_controller_->Init(
+      true /* focus when opened */, bounds(), creator_xid_,
+      WM_IPC_PANEL_USER_RESIZE_HORIZONTALLY_AND_VERTICALLY);
   BrowserView::Show();
 }
 

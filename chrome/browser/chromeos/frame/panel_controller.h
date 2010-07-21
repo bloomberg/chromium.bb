@@ -9,6 +9,7 @@
 
 #include "app/x11_util.h"
 #include "views/controls/button/button.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 
 class BrowserView;
 class SkBitmap;
@@ -52,7 +53,8 @@ class PanelController {
 
   // Initializes the panel controller with the initial state of the focus and
   // the window bounds.
-  void Init(bool initial_focus, const gfx::Rect& init_bounds, XID creator_xid);
+  void Init(bool initial_focus, const gfx::Rect& init_bounds, XID creator_xid,
+            WmIpcPanelUserResizeType resize_type);
 
   bool TitleMousePressed(const views::MouseEvent& event);
   void TitleMouseReleased(const views::MouseEvent& event, bool canceled);

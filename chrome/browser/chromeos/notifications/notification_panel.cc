@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/background.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/scroll_view.h"
@@ -227,6 +228,14 @@ class BalloonSubContainer : public views::View {
     }
   }
 
+  void DismissAll() {
+    for (int i = GetChildViewCount() - 1; i >= 0; --i) {
+      BalloonViewImpl* view =
+          static_cast<BalloonViewImpl*>(GetChildViewAt(i));
+      view->Close(true);
+    }
+  }
+
   BalloonViewImpl* FindBalloonView(const Notification& notification) {
     for (int i = GetChildViewCount() - 1; i >= 0; --i) {
       BalloonViewImpl* view =
@@ -380,6 +389,10 @@ class BalloonContainer : public views::View {
     non_sticky_container_->MakeAllStale();
   }
 
+  void DismissAllNonSticky() {
+    non_sticky_container_->DismissAll();
+  }
+
   BalloonViewImpl* FindBalloonView(const Notification& notification) {
     BalloonViewImpl* view = sticky_container_->FindBalloonView(notification);
     return view ? view : non_sticky_container_->FindBalloonView(notification);
@@ -458,7 +471,8 @@ void NotificationPanel::Show() {
     panel_controller_.reset(
         new PanelController(this, GTK_WINDOW(panel_widget_->GetNativeView())));
     panel_controller_->Init(false /* don't focus when opened */,
-                            gfx::Rect(0, 0, kBalloonMinWidth, 1), 0);
+                            gfx::Rect(0, 0, kBalloonMinWidth, 1), 0,
+                            WM_IPC_PANEL_USER_RESIZE_VERTICALLY);
     registrar_.Add(this, NotificationType::PANEL_STATE_CHANGED,
                    Source<PanelController>(panel_controller_.get()));
   }
@@ -466,6 +480,7 @@ void NotificationPanel::Show() {
 }
 
 void NotificationPanel::Hide() {
+  balloon_container_->DismissAllNonSticky();
   if (panel_widget_) {
     container_host_->GetRootView()->RemoveChildView(balloon_container_.get());
 
@@ -638,7 +653,6 @@ void NotificationPanel::OnMouseLeave() {
 
 void NotificationPanel::OnMouseMotion(const gfx::Point& point) {
   SetActiveView(balloon_container_->FindBalloonView(point));
-
   SET_STATE(KEEP_SIZE);
 }
 
@@ -705,7 +719,6 @@ void NotificationPanel::UpdatePanel(bool update_container_size) {
       break;
     }
     case CLOSED:
-      balloon_container_->MakeAllStale();
       Hide();
       break;
     case MINIMIZED:

@@ -523,4 +523,27 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestActivateDeactivate) {
   EXPECT_FALSE(tester->IsActive(view2));
 }
 
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestCloseDismissAllNonSticky) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  NotificationPanel* panel = GetNotificationPanel();
+  NotificationPanelTester* tester = panel->GetTester();
+  Profile* profile = browser()->profile();
+
+  collection->Add(NewMockNotification("1"), profile);
+  collection->AddSystemNotification(
+      NewMockNotification("2"), profile, true, false);
+  collection->Add(NewMockNotification("3"), profile);
+
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(NotificationPanel::STICKY_AND_NEW, tester->state());
+  EXPECT_EQ(3, tester->GetNotificationCount());
+  EXPECT_EQ(1, tester->GetStickyNotificationCount());
+
+  // Hide
+  panel->Hide();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(1, tester->GetNotificationCount());
+  EXPECT_EQ(1, tester->GetStickyNotificationCount());
+}
+
 }  // namespace chromeos
