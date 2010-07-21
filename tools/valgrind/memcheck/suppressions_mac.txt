@@ -580,7 +580,7 @@
    fun:AEProcessAppleEvent
 }
 {
-   bug_28072
+   bug_28072a
    Memcheck:Leak
    ...
    fun:CSBackupSetItemExcluded
@@ -590,7 +590,14 @@
    fun:_ZN7history14HistoryBackend4InitEb
 }
 {
-   bug_28072
+   bug_28072b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7history14HistoryBackend8InitImplEv
+   fun:_ZN7history14HistoryBackend4InitEb
+}
+{
+   bug_28072c
    Memcheck:Addr2
    ...
    fun:CSBackupSetItemExcluded
