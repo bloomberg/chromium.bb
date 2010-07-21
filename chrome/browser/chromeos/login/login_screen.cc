@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/chromeos/browser_notification_observers.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
@@ -31,8 +31,6 @@ LoginScreen::LoginScreen(WizardScreenDelegate* delegate)
     : ViewScreen<NewUserView>(delegate),
       bubble_(NULL),
       authenticator_(NULL) {
-  // Create login observer to record time of login when successful.
-  LogLoginSuccessObserver::Get();
   if (CrosLibrary::Get()->EnsureLoaded()) {
     authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   }
@@ -48,6 +46,7 @@ NewUserView* LoginScreen::AllocateView() {
 
 void LoginScreen::OnLogin(const std::string& username,
                           const std::string& password) {
+  BootTimesLoader::Get()->RecordLoginAttempted();
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,

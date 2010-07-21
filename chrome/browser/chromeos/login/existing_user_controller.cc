@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -166,6 +167,7 @@ void ExistingUserController::SendSetLoginState(bool is_enabled) {
 
 void ExistingUserController::Login(UserController* source,
                                    const string16& password) {
+  BootTimesLoader::Get()->RecordLoginAttempted();
   std::vector<UserController*>::const_iterator i =
       std::find(controllers_.begin(), controllers_.end(), source);
   DCHECK(i != controllers_.end());

@@ -7,8 +7,12 @@
 
 #include <string>
 
+#include "base/atomic_sequence_num.h"
 #include "base/callback.h"
+#include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 namespace chromeos {
 
@@ -23,7 +27,9 @@ namespace chromeos {
 //   void OnBootTimesLoader(chromeos::BootTimesLoader::Handle,
 //                             BootTimesLoader::BootTimes boot_times);
 // . When you want the version invoke: loader.GetBootTimes(&consumer, callback);
-class BootTimesLoader : public CancelableRequestProvider {
+class BootTimesLoader
+    : public CancelableRequestProvider,
+      public NotificationObserver {
  public:
   BootTimesLoader();
 
@@ -55,6 +61,8 @@ class BootTimesLoader : public CancelableRequestProvider {
 
   typedef CancelableRequest<GetBootTimesCallback> GetBootTimesRequest;
 
+  static BootTimesLoader* Get();
+
   // Asynchronously requests the info.
   Handle GetBootTimes(
       CancelableRequestConsumerBase* consumer,
@@ -64,15 +72,24 @@ class BootTimesLoader : public CancelableRequestProvider {
   // Posts task to file thread.
   // name will be used as part of file names in /tmp.
   // Existing stats files will not be overwritten.
-  static void RecordCurrentStats(const std::string& name);
+  void RecordCurrentStats(const std::string& name);
 
   // Saves away the stats at main, so the can be recorded later. At main() time
   // the necessary threads don't exist yet for recording the data.
-  static void SaveChromeMainStats();
+  void SaveChromeMainStats();
 
   // Records the data previously saved by SaveChromeMainStats(), using the
   // file thread. Existing stats files will not be overwritten.
-  static void RecordChromeMainStats();
+  void RecordChromeMainStats();
+
+  // Records the time that a login was attempted. This will overwrite any
+  // previous login attempt times.
+  void RecordLoginAttempted();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   // BootTimesLoader calls into the Backend on the file thread to load
@@ -91,7 +108,30 @@ class BootTimesLoader : public CancelableRequestProvider {
     DISALLOW_COPY_AND_ASSIGN(Backend);
   };
 
+  struct Stats {
+    std::string uptime;
+    std::string disk;
+
+    Stats() : uptime(std::string()), disk(std::string()) {}
+  };
+
+  static void RecordStats(
+      const std::string& name, const Stats& stats);
+  static Stats GetCurrentStats();
+
+  // Used to hold the stats at main().
+  Stats chrome_main_stats_;
   scoped_refptr<Backend> backend_;
+
+  // Times for authentication and login metrics.
+  base::Time login_attempt_;
+  base::Time login_success_;
+  base::Time chrome_first_render_;
+
+  // Used to track notifications for login.
+  NotificationRegistrar registrar_;
+  base::AtomicSequenceNumber num_tabs_;
+  bool have_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(BootTimesLoader);
 };

@@ -69,7 +69,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/browser_notification_observers.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -379,14 +378,6 @@ bool BrowserInit::LaunchBrowser(
     int* return_code) {
   in_startup = process_startup;
   DCHECK(profile);
-
-  // This forces the creation of the initial tavb notification observer
-  // singleton.  It must be created before browser launch to catch first tab
-  // load.
-#if defined(OS_CHROMEOS)
-  if (process_startup)
-    chromeos::InitialTabNotificationObserver::Get();
-#endif
 
 #if defined(OS_WIN)
   // Disable the DPI-virtualization mode of Windows Vista or later because it

@@ -907,7 +907,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_CHROMEOS)
   // Now that the file thread exists we can record our stats.
-  chromeos::BootTimesLoader::RecordChromeMainStats();
+  chromeos::BootTimesLoader::Get()->RecordChromeMainStats();
 #endif
 
   // Record last shutdown time into a histogram.

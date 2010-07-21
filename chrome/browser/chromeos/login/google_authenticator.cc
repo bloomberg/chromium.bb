@@ -18,7 +18,6 @@
 #include "base/third_party/nss/sha256.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/chromeos/browser_notification_observers.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
@@ -58,10 +57,6 @@ GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
       try_again_(true),
       checked_for_localaccount_(false) {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
-
-  // This forces the creation of the login notification observer
-  // singleton.  It must be created to record login time.
-  chromeos::LogLoginSuccessObserver::Get();
 }
 
 GoogleAuthenticator::~GoogleAuthenticator() {}

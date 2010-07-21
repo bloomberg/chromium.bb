@@ -443,7 +443,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 int ChromeMain(int argc, char** argv) {
 #endif
 #if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::SaveChromeMainStats();
+  chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
 #endif
 #if defined(OS_MACOSX)
   // TODO(mark): Some of these things ought to be handled in chrome_exe_main.mm.
