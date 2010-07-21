@@ -90,6 +90,9 @@ ldr_inputs = [
     'sel_ldr.c',
     'sel_ldr-inl.c',
     'sel_ldr_standard.c',
+    # sel_main_chrome.c is compile-tested here but not otherwise used
+    # in the Scons build.
+    'sel_main_chrome.c',
     'sel_mem.c',
     'sel_util.c',
     'sel_util-inl.c',

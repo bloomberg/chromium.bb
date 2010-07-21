@@ -76,7 +76,7 @@ NPError API_CALL NaCl_NP_Shutdown() {
   return NP_Shutdown();
 }
 
-void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func) {
+static void RegisterCommon() {
   NPAPI::PluginEntryPoints entry_points = {
 #if !defined(OS_LINUX)
       NaCl_NP_GetEntryPoints,
@@ -96,13 +96,25 @@ void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func) {
       entry_points
   };
 
-  if (NULL != launch_func) {
-    launch_nacl_process = launch_func;
-  }
-
 #if NACL_WINDOWS
   NaClHandlePassBrowserInit();
 #endif
 
   NPAPI::PluginList::Singleton()->RegisterInternalPlugin(nacl_plugin_info);
+}
+
+void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func) {
+  RegisterCommon();
+  if (NULL != launch_func) {
+    launch_nacl_process = launch_func;
+  }
+}
+
+void RegisterInternalNaClPlugin(const std::map<std::string, uintptr_t>& funcs) {
+  RegisterCommon();
+  std::map<std::string, uintptr_t>::const_iterator it =
+    funcs.find("launch_nacl_process");
+  if (it != funcs.end()) {
+    launch_nacl_process = reinterpret_cast<LaunchNaClProcessFunc>(it->second);
+  }
 }

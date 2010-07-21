@@ -319,6 +319,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
 
 int NaClWaitForMainThreadToExit(struct NaClApp  *nap);
 
+int NaClMainForChromium(int handle_count, const NaClHandle *handles);
+
 /*
  * Used by syscall code.
  */

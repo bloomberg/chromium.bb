@@ -33,6 +33,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_
 
 #include <stddef.h>
+#include <map>
 #include "native_client/src/shared/imc/nacl_imc.h"
 
 typedef bool (*LaunchNaClProcessFunc)(const char* url,
@@ -44,6 +45,10 @@ typedef bool (*LaunchNaClProcessFunc)(const char* url,
 extern LaunchNaClProcessFunc launch_nacl_process;
 
 // Registers the internal NaCl plugin with PluginList.
+// Old version.  TODO(mseaborn): Remove this eventually, when Chromium
+// has stopped using it for a while.
 void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func = NULL);
+// New version.
+void RegisterInternalNaClPlugin(const std::map<std::string, uintptr_t>& funcs);
 
 #endif // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_

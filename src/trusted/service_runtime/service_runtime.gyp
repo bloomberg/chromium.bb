@@ -92,6 +92,7 @@
           'sel_ldr-inl.c',
           'sel_ldr_standard.c',
           'elf_util.c',
+          'sel_main_chrome.c',
           'sel_mem.c',
           'sel_util.c',
           'sel_util-inl.c',
