@@ -1264,6 +1264,21 @@ LRESULT ChromeActiveDocument::OnFirePrivacyChange(UINT message, WPARAM wparam,
   return 0;
 }
 
+LRESULT ChromeActiveDocument::OnShowWindow(UINT message, WPARAM wparam,
+                                           LPARAM lparam,
+                                           BOOL& handled) {  // NO_LINT
+  if (wparam)
+    SetFocus();
+  return 0;
+}
+
+LRESULT ChromeActiveDocument::OnSetFocus(UINT message, WPARAM wparam,
+                                         LPARAM lparam,
+                                         BOOL& handled) {  // NO_LINT
+  GiveFocusToChrome(false);
+  return 0;
+}
+
 namespace {
 struct ModuleAndVersion {
   const char* module_name_;

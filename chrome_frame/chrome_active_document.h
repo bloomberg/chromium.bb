@@ -236,6 +236,8 @@ BEGIN_MSG_MAP(ChromeActiveDocument)
   MESSAGE_HANDLER(WM_FIRE_PRIVACY_CHANGE_NOTIFICATION, OnFirePrivacyChange)
   COMMAND_ID_HANDLER(IDC_CHROMEFRAME_FORWARD, OnForward)
   COMMAND_ID_HANDLER(IDC_CHROMEFRAME_BACK, OnBack)
+  MESSAGE_HANDLER(WM_SHOWWINDOW, OnShowWindow)
+  MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
   CHAIN_MSG_MAP(BaseActiveX)
 END_MSG_MAP()
 
@@ -340,7 +342,7 @@ END_EXEC_COMMAND_MAP()
   bool PreProcessContextMenu(HMENU menu);
   bool HandleContextMenuCommand(UINT cmd, const IPC::ContextMenuParams& params);
 
-  // ChromeFramePlugin overrides.
+ // ChromeFramePlugin overrides.
   virtual void OnAutomationServerReady();
 
   // IEnumPrivacyRecords
@@ -421,6 +423,10 @@ END_EXEC_COMMAND_MAP()
 
   LRESULT OnFirePrivacyChange(UINT message, WPARAM wparam, LPARAM lparam,
                               BOOL& handled);
+  LRESULT OnShowWindow(UINT message, WPARAM wparam, LPARAM lparam,
+                       BOOL& handled);
+  LRESULT OnSetFocus(UINT message, WPARAM wparam, LPARAM lparam,
+                     BOOL& handled);
 
   // Checks for the presence of known-to-be-buggy BHOs.  If we find any
   // we do not fire the DocumentComplete event to avoid a crash.
