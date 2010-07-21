@@ -152,6 +152,7 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
 }
 
 void BalloonCollectionImpl::PositionBalloons(bool reposition) {
+  layout_.RefreshSystemMetrics();
   gfx::Point origin = layout_.GetLayoutOrigin();
   for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it) {
     gfx::Point upper_left = layout_.NextPosition((*it)->GetViewSize(), &origin);
