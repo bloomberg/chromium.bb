@@ -6,9 +6,15 @@
 #define NET_SPDY_SPDY_TEST_UTIL_H_
 
 #include "base/basictypes.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/base/request_priority.h"
+#include "net/base/ssl_config_service_defaults.h"
+#include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_network_session.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_session_pool.h"
 
 namespace net {
 
@@ -194,6 +200,55 @@ MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq);
 // the total length.
 int CombineFrames(const spdy::SpdyFrame** frames, int num_frames,
                   char* buff, int buff_len);
+
+// Helper to manage the lifetimes of the dependencies for a
+// HttpNetworkTransaction.
+class SpdySessionDependencies {
+ public:
+  // Default set of dependencies -- "null" proxy service.
+  SpdySessionDependencies()
+      : host_resolver(new MockHostResolver),
+        proxy_service(ProxyService::CreateNull()),
+        ssl_config_service(new SSLConfigServiceDefaults),
+        http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
+        spdy_session_pool(new SpdySessionPool()) {
+          // Note: The CancelledTransaction test does cleanup by running all
+          // tasks in the message loop (RunAllPending).  Unfortunately, that
+          // doesn't clean up tasks on the host resolver thread; and
+          // TCPConnectJob is currently not cancellable.  Using synchronous
+          // lookups allows the test to shutdown cleanly.  Until we have
+          // cancellable TCPConnectJobs, use synchronous lookups.
+          host_resolver->set_synchronous_mode(true);
+        }
+
+  // Custom proxy service dependency.
+  explicit SpdySessionDependencies(ProxyService* proxy_service)
+      : host_resolver(new MockHostResolver),
+        proxy_service(proxy_service),
+        ssl_config_service(new SSLConfigServiceDefaults),
+        http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
+        spdy_session_pool(new SpdySessionPool()) {}
+
+  scoped_refptr<MockHostResolverBase> host_resolver;
+  scoped_refptr<ProxyService> proxy_service;
+  scoped_refptr<SSLConfigService> ssl_config_service;
+  MockClientSocketFactory socket_factory;
+  scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
+  scoped_refptr<SpdySessionPool> spdy_session_pool;
+
+  static HttpNetworkSession* SpdyCreateSession(
+      SpdySessionDependencies* session_deps) {
+    return new HttpNetworkSession(session_deps->host_resolver,
+                                  session_deps->proxy_service,
+                                  &session_deps->socket_factory,
+                                  session_deps->ssl_config_service,
+                                  session_deps->spdy_session_pool,
+                                  session_deps->http_auth_handler_factory.get(),
+                                  NULL,
+                                  NULL);
+}
+};
+
 
 }  // namespace net
 
