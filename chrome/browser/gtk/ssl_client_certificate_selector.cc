@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/ssl_client_auth_handler.h"
+#include "chrome/browser/ssl_client_certificate_selector.h"
 
 #include <cert.h>
 #include <gtk/gtk.h>
@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
@@ -59,7 +60,7 @@ class SSLClientCertificateSelector {
   static void OnDestroy(GtkDialog* dialog,
                         SSLClientCertificateSelector* cert_selector);
 
-  SSLClientAuthHandler* delegate_;
+  scoped_refptr<SSLClientAuthHandler> delegate_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
 
   std::vector<std::string> details_strings_;
@@ -324,7 +325,15 @@ void SSLClientCertificateSelector::OnDestroy(
 ///////////////////////////////////////////////////////////////////////////////
 // SSLClientAuthHandler platform specific implementation:
 
-void SSLClientAuthHandler::DoSelectCertificate() {
-  // TODO(mattm): Pipe parent gfx::NativeWindow param into here somehow.
-  (new SSLClientCertificateSelector(NULL, cert_request_info_, this))->Show();
+namespace browser {
+
+void ShowSSLClientCertificateSelector(
+    gfx::NativeWindow parent,
+    net::SSLCertRequestInfo* cert_request_info,
+    SSLClientAuthHandler* delegate) {
+  (new SSLClientCertificateSelector(parent,
+                                    cert_request_info,
+                                    delegate))->Show();
 }
+
+}  // namespace browser

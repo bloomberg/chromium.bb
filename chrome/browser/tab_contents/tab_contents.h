@@ -88,6 +88,7 @@ class SkBitmap;
 class TabContents;
 class TabContentsDelegate;
 class TabContentsFactory;
+class TabContentsSSLHelper;
 class TabContentsView;
 class URLPattern;
 class URLRequestContextGetter;
@@ -167,6 +168,9 @@ class TabContents : public PageNavigator,
 
   // Returns the PluginInstaller, creating it if necessary.
   PluginInstaller* GetPluginInstaller();
+
+  // Returns the TabContentsSSLHelper, creating if it necessary.
+  TabContentsSSLHelper* GetSSLHelper();
 
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
@@ -893,6 +897,7 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
   virtual RenderViewHostDelegate::Autocomplete* GetAutocompleteDelegate();
   virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
+  virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
   virtual AutomationResourceRoutingDelegate*
       GetAutomationResourceRoutingDelegate();
   virtual TabContents* GetAsTabContents();
@@ -1066,6 +1071,9 @@ class TabContents : public PageNavigator,
 
   // PluginInstaller, lazily created.
   scoped_ptr<PluginInstaller> plugin_installer_;
+
+  // TabContentsSSLHelper, lazily created.
+  scoped_ptr<TabContentsSSLHelper> ssl_helper_;
 
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;

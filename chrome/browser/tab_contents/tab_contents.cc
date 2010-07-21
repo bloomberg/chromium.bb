@@ -71,6 +71,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/page_translated_details.h"
@@ -499,6 +500,12 @@ PluginInstaller* TabContents::GetPluginInstaller() {
   if (plugin_installer_.get() == NULL)
     plugin_installer_.reset(new PluginInstaller(this));
   return plugin_installer_.get();
+}
+
+TabContentsSSLHelper* TabContents::GetSSLHelper() {
+  if (ssl_helper_.get() == NULL)
+    ssl_helper_.reset(new TabContentsSSLHelper(this));
+  return ssl_helper_.get();
 }
 
 RenderProcessHost* TabContents::GetRenderProcessHost() const {
@@ -2175,6 +2182,10 @@ RenderViewHostDelegate::Autocomplete* TabContents::GetAutocompleteDelegate() {
 
 RenderViewHostDelegate::AutoFill* TabContents::GetAutoFillDelegate() {
   return GetAutoFillManager();
+}
+
+RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {
+  return GetSSLHelper();
 }
 
 AutomationResourceRoutingDelegate*

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/translate_errors.h"
@@ -37,6 +38,7 @@ class RenderViewHost;
 class ResourceRedirectDetails;
 class ResourceRequestDetails;
 class SkBitmap;
+class SSLClientAuthHandler;
 class TabContents;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
@@ -493,6 +495,17 @@ class RenderViewHostDelegate {
     virtual void OnDrop(const BookmarkDragData& data) = 0;
   };
 
+  // SSL -----------------------------------------------------------------------
+  // Interface for UI and other RenderViewHost-specific interactions with SSL.
+
+  class SSL {
+   public:
+    // Displays a dialog to select client certificates from |request_info|,
+    // returning them to |handler|.
+    virtual void ShowClientCertificateRequestDialog(
+        scoped_refptr<SSLClientAuthHandler> handler) = 0;
+  };
+
   // ---------------------------------------------------------------------------
 
   // Returns the current delegate associated with a feature. May return NULL if
@@ -508,6 +521,7 @@ class RenderViewHostDelegate {
   virtual Autocomplete* GetAutocompleteDelegate();
   virtual AutoFill* GetAutoFillDelegate();
   virtual BookmarkDrag* GetBookmarkDragDelegate();
+  virtual SSL* GetSSLDelegate();
 
   // Return the delegate for registering RenderViewHosts for automation resource
   // routing.

@@ -68,6 +68,11 @@ RenderViewHostDelegate::GetBookmarkDragDelegate() {
   return NULL;
 }
 
+RenderViewHostDelegate::SSL*
+RenderViewHostDelegate::GetSSLDelegate() {
+  return NULL;
+}
+
 AutomationResourceRoutingDelegate*
 RenderViewHostDelegate::GetAutomationResourceRoutingDelegate() {
   return NULL;

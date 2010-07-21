@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/chrome_thread.h"
 #include "net/base/ssl_cert_request_info.h"
 
 namespace net {
@@ -19,7 +20,8 @@ class URLRequest;
 // It is self-owned and deletes itself when the UI reports the user selection or
 // when the URLRequest is cancelled.
 class SSLClientAuthHandler
-    : public base::RefCountedThreadSafe<SSLClientAuthHandler> {
+    : public base::RefCountedThreadSafe<SSLClientAuthHandler,
+                                        ChromeThread::DeleteOnIOThread> {
  public:
   SSLClientAuthHandler(URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info);
@@ -38,14 +40,14 @@ class SSLClientAuthHandler
   // be long after DoSelectCertificate returns, if the UI is modeless/async.)
   void CertificateSelected(net::X509Certificate* cert);
 
+  // Returns the SSLCertRequestInfo for this handler.
+  net::SSLCertRequestInfo* cert_request_info() { return cert_request_info_; }
+
  private:
-  friend class base::RefCountedThreadSafe<SSLClientAuthHandler>;
+  friend class ChromeThread;
+  friend class DeleteTask<SSLClientAuthHandler>;
 
   ~SSLClientAuthHandler();
-
-  // Asks the user for a cert.
-  // Called on the UI thread.
-  void DoSelectCertificate();
 
   // Notifies that the user has selected a cert.
   // Called on the IO thread.
