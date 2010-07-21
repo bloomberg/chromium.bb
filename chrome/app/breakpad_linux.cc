@@ -28,10 +28,10 @@
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/linux/linux_syscall_support.h"
 #include "breakpad/src/common/linux/memory.h"
-#include "chrome/app/chrome_version_info_posix.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
 
