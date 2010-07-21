@@ -16,6 +16,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebLabelElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebOptionElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
@@ -33,6 +34,7 @@ using WebKit::WebInputElement;
 using WebKit::WebLabelElement;
 using WebKit::WebNode;
 using WebKit::WebNodeList;
+using WebKit::WebOptionElement;
 using WebKit::WebSelectElement;
 using WebKit::WebString;
 using WebKit::WebVector;
@@ -213,6 +215,24 @@ string16 InferLabelFromDefinitionList(
   return inferred_label;
 }
 
+void GetOptionStringsFromElement(WebKit::WebFormControlElement element,
+                                 std::vector<string16>* option_strings) {
+  DCHECK(!element.isNull());
+  DCHECK(option_strings);
+  option_strings->clear();
+  if (element.formControlType() == ASCIIToUTF16("select-one")) {
+    WebSelectElement select_element = element.to<WebSelectElement>();
+
+    // For select-one elements copy option strings.
+    WebVector<WebElement> list_items = select_element.listItems();
+    option_strings->reserve(list_items.size());
+    for (size_t i = 0; i < list_items.size(); ++i) {
+      if (list_items[i].hasTagName("option"))
+        option_strings->push_back(list_items[i].to<WebOptionElement>().value());
+    }
+  }
+}
+
 }  // namespace
 
 FormManager::FormManager() {
@@ -232,6 +252,11 @@ void FormManager::WebFormControlElementToFormField(
   // WebFormElementToFormData.
   field->set_name(element.nameForAutofill());
   field->set_form_control_type(element.formControlType());
+
+  // Set option strings on the field if available.
+  std::vector<string16> option_strings;
+  GetOptionStringsFromElement(element, &option_strings);
+  field->set_option_strings(option_strings);
 
   if (element.formControlType() == WebString::fromUTF8("text")) {
     const WebInputElement& input_element = element.toConst<WebInputElement>();

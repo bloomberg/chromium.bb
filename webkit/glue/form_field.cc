@@ -7,11 +7,15 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebOptionElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSelectElement.h"
 
 using WebKit::WebFormControlElement;
+using WebKit::WebElement;
 using WebKit::WebInputElement;
+using WebKit::WebOptionElement;
 using WebKit::WebSelectElement;
+using WebKit::WebVector;
 
 namespace webkit_glue {
 
@@ -37,6 +41,14 @@ FormField::FormField(WebFormControlElement element)
   } else if (form_control_type_ == ASCIIToUTF16("select-one")) {
     WebSelectElement select_element = element.to<WebSelectElement>();
     value_ = select_element.value();
+
+    // For select-one elements copy option strings.
+    WebVector<WebElement> list_items = select_element.listItems();
+    option_strings_.reserve(list_items.size());
+    for (size_t i = 0; i < list_items.size(); ++i) {
+      if (list_items[i].hasTagName("option"))
+        option_strings_.push_back(list_items[i].to<WebOptionElement>().value());
+    }
   }
 
   TrimWhitespace(value_, TRIM_LEADING, &value_);

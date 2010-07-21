@@ -957,15 +957,18 @@ struct ParamTraits<webkit_glue::FormField> {
     WriteParam(m, p.value());
     WriteParam(m, p.form_control_type());
     WriteParam(m, p.size());
+    WriteParam(m, p.option_strings());
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     string16 label, name, value, form_control_type;
     int size = 0;
+    std::vector<string16> options;
     bool result = ReadParam(m, iter, &label);
     result = result && ReadParam(m, iter, &name);
     result = result && ReadParam(m, iter, &value);
     result = result && ReadParam(m, iter, &form_control_type);
     result = result && ReadParam(m, iter, &size);
+    result = result && ReadParam(m, iter, &options);
     if (!result)
       return false;
 
@@ -974,6 +977,7 @@ struct ParamTraits<webkit_glue::FormField> {
     p->set_value(value);
     p->set_form_control_type(form_control_type);
     p->set_size(size);
+    p->set_option_strings(options);
     return true;
   }
   static void Log(const param_type& p, std::wstring* l) {

@@ -5,6 +5,8 @@
 #ifndef WEBKIT_GLUE_FORM_FIELD_H_
 #define WEBKIT_GLUE_FORM_FIELD_H_
 
+#include <vector>
+
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 
@@ -26,6 +28,11 @@ class FormField {
   const string16& value() const { return value_; }
   const string16& form_control_type() const { return form_control_type_; }
   int size() const { return size_; }
+  // Returns option string for elements for which they make sense (select-one,
+  // for example) for the rest of elements return an empty array.
+  const std::vector<string16>& option_strings() const {
+    return option_strings_;
+  }
 
   void set_label(const string16& label) { label_ = label; }
   void set_name(const string16& name) { name_ = name; }
@@ -34,6 +41,9 @@ class FormField {
     form_control_type_ = form_control_type;
   }
   void set_size(int size) { size_ = size; }
+  void set_option_strings(const std::vector<string16>& strings) {
+    option_strings_ = strings;
+  }
 
   // Equality tests for identity which does not include |value_| or |size_|.
   // Use |StrictlyEqualsHack| method to test all members.
@@ -52,6 +62,7 @@ class FormField {
   string16 value_;
   string16 form_control_type_;
   int size_;
+  std::vector<string16> option_strings_;
 };
 
 // So we can compare FormFields with EXPECT_EQ().
