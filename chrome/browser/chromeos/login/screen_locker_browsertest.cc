@@ -183,6 +183,12 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenUnlockRequested())
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_screen_lock_library_, NotifyScreenLockCompleted())
+      .Times(1)
+      .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   {
     Waiter waiter(browser());
