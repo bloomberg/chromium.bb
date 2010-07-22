@@ -45,3 +45,4 @@ BUG49920 MAC : fast/forms/menulist-separator-painting.html = FAIL
 BUG49920 MAC : fast/forms/menulist-style-color.html = FAIL
 BUG49920 MAC : fast/forms/select-baseline.html = FAIL
 BUG49920 MAC : fast/overflow/border-radius-clipping.html = FAIL
+BUG49920 MAC : fast/css/nested-rounded-corners.html = FAIL
