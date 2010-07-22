@@ -211,12 +211,6 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const Value* urls) {
     }
     UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlRemoved"),
                               dom_ui_->GetProfile());
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
-      history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-      ts->RemoveBlacklistedURL(GURL(WideToASCII(url)));
-      return;
-    }
-
     r = url_blacklist_->Remove(GetDictionaryKeyForURL(WideToUTF8(url)), NULL);
     DCHECK(r) << "Unknown URL removed from the NTP Most Visited blacklist.";
   }
@@ -225,12 +219,6 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const Value* urls) {
 void MostVisitedHandler::HandleClearBlacklist(const Value* value) {
   UserMetrics::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"),
                             dom_ui_->GetProfile());
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
-    history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    ts->ClearBlacklistedURLs();
-    return;
-  }
 
   url_blacklist_->Clear();
 }
@@ -275,12 +263,6 @@ void MostVisitedHandler::HandleAddPinnedURL(const Value* value) {
 }
 
 void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
-    history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    ts->AddPinnedURL(page.url, index);
-    return;
-  }
-
   // Remove any pinned URL at the given index.
   MostVisitedPage old_page;
   if (GetPinnedURLAtIndex(index, &old_page)) {
@@ -314,12 +296,6 @@ void MostVisitedHandler::HandleRemovePinnedURL(const Value* value) {
 }
 
 void MostVisitedHandler::RemovePinnedURL(const GURL& url) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
-    history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    ts->RemovePinnedURL(url);
-    return;
-  }
-
   const std::wstring key = GetDictionaryKeyForURL(url.spec());
   if (pinned_urls_->HasKey(key))
     pinned_urls_->Remove(key, NULL);
@@ -340,8 +316,7 @@ bool MostVisitedHandler::GetPinnedURLAtIndex(int index,
     Value* value;
     if (pinned_urls_->GetWithoutPathExpansion(*it, &value)) {
       if (!value->IsType(DictionaryValue::TYPE_DICTIONARY)) {
-        // Moved on to TopSites and now going back.
-        pinned_urls_->Clear();
+        NOTREACHED();
         return false;
       }
 
@@ -480,49 +455,26 @@ void MostVisitedHandler::SetPagesValue(std::vector<PageUsageData*>* data) {
   }
 }
 
-void MostVisitedHandler::SetPagesValueFromTopSites(
-    const history::MostVisitedURLList& data) {
-  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites));
-  pages_value_.reset(new ListValue);
+// Converts a MostVisitedURLList into a vector of PageUsageData to be
+// sent to the Javascript side to the New Tab Page.
+// Caller takes ownership of the PageUsageData objects in the vector.
+// NOTE: this doesn't set the thumbnail and favicon, only URL and title.
+static void MakePageUsageDataVector(const history::MostVisitedURLList& data,
+                                    std::vector<PageUsageData*>* result) {
   for (size_t i = 0; i < data.size(); i++) {
     const history::MostVisitedURL& url = data[i];
-    DictionaryValue* page_value = new DictionaryValue();
-    if (url.url.is_empty()) {
-      page_value->SetBoolean(L"filler", true);
-      pages_value_->Append(page_value);
-      continue;
-    }
-
-    NewTabUI::SetURLTitleAndDirection(page_value,
-                                      url.title,
-                                      url.url);
-    if (!url.favicon_url.is_empty())
-      page_value->SetString(L"faviconUrl", url.favicon_url.spec());
-
-    // Special case for prepopulated pages: thumbnailUrl is different from url.
-    if (url.url.spec() ==
-        WideToASCII(l10n_util::GetString(IDS_CHROME_WELCOME_URL))) {
-      page_value->SetString(L"thumbnailUrl",
-          "chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL");
-    } else if (url.url.spec() ==
-               WideToASCII(l10n_util::GetString(IDS_THEMES_GALLERY_URL))) {
-      page_value->SetString(L"thumbnailUrl",
-          "chrome://theme/IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL");
-    } else if (url.url == GetChromeStoreURLWithLocale()) {
-      page_value->SetString(L"thumbnailUrl",
-          "chrome://theme/IDR_NEWTAB_CHROME_STORE_PAGE_THUMBNAIL");
-    }
-
-    history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    if (ts->IsURLPinned(url.url))
-      page_value->SetBoolean(L"pinned", true);
-    pages_value_->Append(page_value);
+    PageUsageData* pud = new PageUsageData(0);
+    pud->SetURL(url.url);
+    pud->SetTitle(url.title);
+    result->push_back(pud);
   }
 }
 
 void MostVisitedHandler::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& data) {
-  SetPagesValueFromTopSites(data);
+  ScopedVector<PageUsageData> result;
+  MakePageUsageDataVector(data, &result.get());
+  SetPagesValue(&(result.get()));
   if (got_first_most_visited_request_) {
     SendPagesValue();
   }
@@ -567,16 +519,10 @@ const std::vector<MostVisitedHandler::MostVisitedPage>&
 MostVisitedHandler::MostVisitedPage MostVisitedHandler::GetChromeStorePage() {
   MostVisitedHandler::MostVisitedPage page = {
       l10n_util::GetString(IDS_EXTENSION_WEB_STORE_TITLE),
-      GetChromeStoreURLWithLocale(),
+      google_util::AppendGoogleLocaleParam(GURL(Extension::ChromeStoreURL())),
       GURL("chrome://theme/IDR_NEWTAB_CHROME_STORE_PAGE_THUMBNAIL"),
       GURL("chrome://theme/IDR_NEWTAB_CHROME_STORE_PAGE_FAVICON")};
   return page;
-}
-
-// static
-GURL MostVisitedHandler::GetChromeStoreURLWithLocale() {
-  return google_util::AppendGoogleLocaleParam(
-      GURL(Extension::ChromeStoreURL()));
 }
 
 void MostVisitedHandler::Observe(NotificationType type,
@@ -592,12 +538,6 @@ void MostVisitedHandler::Observe(NotificationType type,
 }
 
 void MostVisitedHandler::BlacklistURL(const GURL& url) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
-    history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    ts->AddBlacklistedURL(url);
-    return;
-  }
-
   RemovePinnedURL(url);
 
   std::wstring key = GetDictionaryKeyForURL(url.spec());

@@ -24,7 +24,6 @@
 #include "chrome/common/thumbnail_score.h"
 #include "googleurl/src/gurl.h"
 
-class DictionaryValue;
 class SkBitmap;
 class Profile;
 
@@ -102,38 +101,6 @@ class TopSites : public NotificationObserver,
   // Start reading thumbnails from the ThumbnailDatabase.
   void StartMigration();
 
-  // Blacklisted URLs
-
-  // Add a  URL to the blacklist.
-  void AddBlacklistedURL(const GURL& url);
-
-  // Returns true if the URL is blacklisted.
-  bool IsBlacklisted(const GURL& url);
-
-  // Removes a URL from the blacklist.
-  void RemoveBlacklistedURL(const GURL& url);
-
-  // Clear the blacklist.
-  void ClearBlacklistedURLs();
-
-  // Pinned URLs
-
-  // Pin a URL at |index|.
-  void AddPinnedURL(const GURL& url, size_t index);
-
-  // Get the index of a URL. Returns true if |url| is pinned.
-  bool GetIndexOfPinnedURL(const GURL& url, size_t* index);
-
-  // Returns true if a URL is pinned.
-  bool IsURLPinned(const GURL& url);
-
-  // Unpin a URL.
-  void RemovePinnedURL(const GURL& url);
-
-  // Return a URL pinned at |index| via |out|. Returns true if there
-  // is a URL pinned at |index|.
-  bool GetPinnedURLAtIndex(size_t index, GURL* out);
-
  private:
   friend class base::RefCountedThreadSafe<TopSites>;
   friend class TopSitesTest;
@@ -146,11 +113,6 @@ class TopSites : public NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, QueueingRequestsForTopSites);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, CancelingRequestsForTopSites);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, AddTemporaryThumbnail);
-  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, Blacklisting);
-  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, PinnedURLs);
-  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, BlacklistingAndPinnedURLs);
-  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, AddPrepopulatedPages);
-  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetIndexForChromeStore);
 
   ~TopSites();
 
@@ -254,33 +216,6 @@ class TopSites : public NotificationObserver,
                              const RefCountedBytes* thumbnail,
                              const ThumbnailScore& score);
 
-  // Returns an index of a thumbnail that should be replaced by the
-  // Chrome App Store. Returns -1 App Store should not be added.
-  int GetIndexForChromeStore(const MostVisitedURLList& urls);
-
-  // Adds Chrome App Store thumbnail to a list of URLs, if possible.
-  // Returns true if it was added.
-  bool AddChromeStore(MostVisitedURLList* urls);
-
-  // Add prepopulated pages: 'welcome to Chrome' and themes gallery.
-  // Returns true if any pages were added.
-  bool AddPrepopulatedPages(MostVisitedURLList* urls);
-
-  // Convert pinned_urls_ dictionary to the new format. Use URLs as
-  // dictionary keys.
-  void MigratePinnedURLs();
-
-  // Takes |urls|, produces it's copy in |out| after removing
-  // blacklisted URLs and reordering pinned URLs.
-  void ApplyBlacklistAndPinnedURLs(const MostVisitedURLList& urls,
-                                   MostVisitedURLList* out);
-
-  // Converts a url into a canonical string representation.
-  std::wstring GetURLString(const GURL& url);
-
-  // Returns an MD5 hash of the URL. Hashing is required for blacklisted URLs.
-  std::wstring GetURLHash(const GURL& url);
-
   Profile* profile_;
   // A mockup to use for testing. If NULL, use the real HistoryService
   // from the profile_. See SetMockHistoryService.
@@ -335,20 +270,8 @@ class TopSites : public NotificationObserver,
   // UpdateMostVisitedURLs call.
   std::map<GURL, Images> temp_thumbnails_map_;
 
-  // Blacklisted and pinned URLs are stored in Preferences.
-
-  // Blacklisted URLs. They are filtered out from the list of Top
-  // Sites when GetMostVisitedURLs is called. Note that we are still
-  // storing all URLs, but filtering on access. It is a dictionary,
-  // key is the URL, value is a dummy value. This is owned by the
-  // PrefService.
-  DictionaryValue* blacklist_;
-
-  // This is a dictionary for the pinned URLs for the the most visited
-  // part of the new tab page. Key is the URL, value is
-  // index where it is pinned at (may be the same as key). This is
-  // owned by the PrefService.
-  DictionaryValue* pinned_urls_;
+  // TODO(brettw): use the blacklist.
+  // std::set<GURL> blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSites);
 };

@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/browser/dom_ui/most_visited_handler.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/history/top_sites_database.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -15,9 +13,6 @@
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "googleurl/src/gurl.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -43,13 +38,6 @@ class TopSitesTest : public testing::Test {
   RefCountedBytes* weewar_thumbnail() { return weewar_thumbnail_; }
   CancelableRequestConsumer* consumer() { return &consumer_; }
   size_t number_of_callbacks() {return number_of_callbacks_; }
-  // Prepopulated URLs - added at the back of TopSites.
-  GURL welcome_url() {
-    return GURL(WideToUTF8(l10n_util::GetString(IDS_CHROME_WELCOME_URL)));
-  }
-  GURL themes_url() {
-    return GURL(WideToUTF8(l10n_util::GetString(IDS_THEMES_GALLERY_URL)));
-  }
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile);
@@ -163,7 +151,7 @@ class MockHistoryServiceImpl : public TopSites::MockHistoryService {
     MostVisitedURLList::iterator pos = std::find(most_visited_urls_.begin(),
                                                  most_visited_urls_.end(),
                                                  mvu);
-    EXPECT_TRUE(pos != most_visited_urls_.end()) << url.spec();
+    EXPECT_TRUE(pos != most_visited_urls_.end());
     scoped_refptr<RefCountedBytes> thumbnail;
     callback->Run(index, thumbnail);
     delete callback;
@@ -306,9 +294,9 @@ TEST_F(TopSitesTest, GetCanonicalURL) {
   AppendMostVisitedURL(&most_visited, news);
   StoreMostVisited(&most_visited);
 
-  // Random URLs not in the database are returned unchanged.
+  // Random URLs not in the database shouldn't be reported as being in there.
   GURL result = GetCanonicalURL(GURL("http://fark.com/"));
-  EXPECT_EQ(GURL("http://fark.com/"), result);
+  EXPECT_TRUE(result.is_empty());
 
   // Easy case, there are no redirects and the exact URL is stored.
   result = GetCanonicalURL(news);
@@ -423,12 +411,9 @@ TEST_F(TopSitesTest, GetMostVisited) {
       consumer(),
       NewCallback(static_cast<TopSitesTest*>(this),
                   &TopSitesTest::OnTopSitesAvailable));
-  // 2 extra prepopulated URLs.
-  ASSERT_EQ(4u, urls().size());
+  ASSERT_EQ(2u, urls().size());
   EXPECT_EQ(news, urls()[0].url);
   EXPECT_EQ(google, urls()[1].url);
-  EXPECT_EQ(welcome_url(), urls()[2].url);
-  EXPECT_EQ(themes_url(), urls()[3].url);
 }
 
 TEST_F(TopSitesTest, MockDatabase) {
@@ -456,11 +441,9 @@ TEST_F(TopSitesTest, MockDatabase) {
       consumer(),
       NewCallback(static_cast<TopSitesTest*>(this),
                   &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(3u, urls().size());
+  ASSERT_EQ(1u, urls().size());
   EXPECT_EQ(asdf_url, urls()[0].url);
   EXPECT_EQ(asdf_title, urls()[0].title);
-  EXPECT_EQ(welcome_url(), urls()[1].url);
-  EXPECT_EQ(themes_url(), urls()[2].url);
 
   MostVisitedURL url2;
   url2.url = google_url;
@@ -476,13 +459,11 @@ TEST_F(TopSitesTest, MockDatabase) {
       consumer(),
       NewCallback(static_cast<TopSitesTest*>(this),
                   &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(4u, urls().size());
+  ASSERT_EQ(2u, urls().size());
   EXPECT_EQ(google_url, urls()[0].url);
   EXPECT_EQ(google_title, urls()[0].title);
   EXPECT_EQ(asdf_url, urls()[1].url);
   EXPECT_EQ(asdf_title, urls()[1].title);
-  EXPECT_EQ(welcome_url(), urls()[2].url);
-  EXPECT_EQ(themes_url(), urls()[3].url);
 
   MockHistoryServiceImpl hs;
   // Add one old, one new URL to the history.
@@ -497,7 +478,7 @@ TEST_F(TopSitesTest, MockDatabase) {
   std::map<GURL, TopSites::Images> thumbnails;
   MostVisitedURLList result;
   db->GetPageThumbnails(&result, &thumbnails);
-  ASSERT_EQ(4u, result.size());
+  ASSERT_EQ(2u, result.size());
   EXPECT_EQ(google_title, result[0].title);
   EXPECT_EQ(news_title, result[1].title);
 }
@@ -616,11 +597,9 @@ TEST_F(TopSitesTest, RealDatabase) {
       consumer(),
       NewCallback(static_cast<TopSitesTest*>(this),
                   &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(3u, urls().size());
+  ASSERT_EQ(1u, urls().size());
   EXPECT_EQ(asdf_url, urls()[0].url);
   EXPECT_EQ(asdf_title, urls()[0].title);
-  EXPECT_EQ(welcome_url(), urls()[1].url);
-  EXPECT_EQ(themes_url(), urls()[2].url);
 
   TopSites::Images img_result;
   db->GetPageThumbnail(asdf_url, &img_result);
@@ -650,7 +629,7 @@ TEST_F(TopSitesTest, RealDatabase) {
       consumer(),
       NewCallback(static_cast<TopSitesTest*>(this),
                   &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(4u, urls().size());
+  ASSERT_EQ(2u, urls().size());
   EXPECT_EQ(google1_url, urls()[0].url);
   EXPECT_EQ(google_title, urls()[0].title);
   EXPECT_TRUE(top_sites().GetPageThumbnail(google1_url, &thumbnail_result));
@@ -662,8 +641,6 @@ TEST_F(TopSitesTest, RealDatabase) {
 
   EXPECT_EQ(asdf_url, urls()[1].url);
   EXPECT_EQ(asdf_title, urls()[1].title);
-  EXPECT_EQ(welcome_url(), urls()[2].url);
-  EXPECT_EQ(themes_url(), urls()[3].url);
 
   MockHistoryServiceImpl hs;
   // Add one old, one new URL to the history.
@@ -678,7 +655,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   std::map<GURL, TopSites::Images> thumbnails;
   MostVisitedURLList results;
   db->GetPageThumbnails(&results, &thumbnails);
-  ASSERT_EQ(4u, results.size());
+  ASSERT_EQ(2u, results.size());
   EXPECT_EQ(google_title, results[0].title);
   EXPECT_EQ(news_title, results[1].title);
 
@@ -752,8 +729,7 @@ TEST_F(TopSitesTest, DeleteNotifications) {
       consumer(),
       NewCallback(static_cast<TopSitesTest*>(this),
                   &TopSitesTest::OnTopSitesAvailable));
-  // 2 extra prepopulated URLs.
-  ASSERT_EQ(4u, urls().size());
+  ASSERT_EQ(2u, urls().size());
 
   hs.RemoveMostVisitedURL();
 
@@ -769,10 +745,8 @@ TEST_F(TopSitesTest, DeleteNotifications) {
       consumer(),
       NewCallback(static_cast<TopSitesTest*>(this),
                   &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(3u, urls().size());
+  ASSERT_EQ(1u, urls().size());
   EXPECT_EQ(google_title, urls()[0].title);
-  EXPECT_EQ(welcome_url(), urls()[1].url);
-  EXPECT_EQ(themes_url(), urls()[2].url);
 
   hs.RemoveMostVisitedURL();
   history_details.all_history = true;
@@ -785,9 +759,7 @@ TEST_F(TopSitesTest, DeleteNotifications) {
       consumer(),
       NewCallback(static_cast<TopSitesTest*>(this),
                   &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(2u, urls().size());
-  EXPECT_EQ(welcome_url(), urls()[0].url);
-  EXPECT_EQ(themes_url(), urls()[1].url);
+  ASSERT_EQ(0u, urls().size());
 }
 
 TEST_F(TopSitesTest, GetUpdateDelay) {
@@ -808,6 +780,8 @@ TEST_F(TopSitesTest, GetUpdateDelay) {
 TEST_F(TopSitesTest, Migration) {
   ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   GURL google1_url("http://google.com");
+  GURL google2_url("http://google.com/redirect");
+  GURL google3_url("http://www.google.com");
   string16 google_title(ASCIIToUTF16("Google"));
   GURL news_url("http://news.google.com");
   string16 news_title(ASCIIToUTF16("Google News"));
@@ -819,7 +793,6 @@ TEST_F(TopSitesTest, Migration) {
   hs.AppendMockPage(google1_url, google_title);
   hs.AppendMockPage(news_url, news_title);
   top_sites().SetMockHistoryService(&hs);
-  MessageLoop::current()->RunAllPending();
 
   top_sites().StartMigration();
   EXPECT_TRUE(top_sites().migration_in_progress_);
@@ -864,12 +837,9 @@ TEST_F(TopSitesTest, QueueingRequestsForTopSites) {
 
   EXPECT_EQ(3u, number_of_callbacks());
 
-  ASSERT_EQ(4u, urls().size());
+  ASSERT_EQ(2u, urls().size());
   EXPECT_EQ("http://1.com/", urls()[0].url.spec());
   EXPECT_EQ("http://2.com/", urls()[1].url.spec());
-  EXPECT_EQ(welcome_url(), urls()[2].url);
-  EXPECT_EQ(themes_url(), urls()[3].url);
-
 
   url.url = GURL("http://3.com/");
   url.redirects.push_back(url.url);
@@ -884,13 +854,10 @@ TEST_F(TopSitesTest, QueueingRequestsForTopSites) {
 
   EXPECT_EQ(4u, number_of_callbacks());
 
-  ASSERT_EQ(5u, urls().size());
+  ASSERT_EQ(3u, urls().size());
   EXPECT_EQ("http://1.com/", urls()[0].url.spec());
   EXPECT_EQ("http://2.com/", urls()[1].url.spec());
   EXPECT_EQ("http://3.com/", urls()[2].url.spec());
-  EXPECT_EQ(welcome_url(), urls()[3].url);
-  EXPECT_EQ(themes_url(), urls()[4].url);
-
 }
 
 TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
@@ -932,8 +899,7 @@ TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
   // 1 request was canceled.
   EXPECT_EQ(2u, number_of_callbacks());
 
-  // 2 extra prepopulated URLs.
-  ASSERT_EQ(4u, urls().size());
+  ASSERT_EQ(2u, urls().size());
   EXPECT_EQ("http://1.com/", urls()[0].url.spec());
   EXPECT_EQ("http://2.com/", urls()[1].url.spec());
 }
@@ -979,239 +945,6 @@ TEST_F(TopSitesTest, AddTemporaryThumbnail) {
                                                          out->size()));
   EXPECT_EQ(0, memcmp(thumbnail.getPixels(), out_bitmap->getPixels(),
                       thumbnail.getSize()));
-}
-
-TEST_F(TopSitesTest, Blacklisting) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
-  MostVisitedURLList pages;
-  MostVisitedURL url, url1;
-  url.url = GURL("http://bbc.com/");
-  url.redirects.push_back(url.url);
-  pages.push_back(url);
-  url1.url = GURL("http://google.com/");
-  url1.redirects.push_back(url1.url);
-  pages.push_back(url1);
-
-  CancelableRequestConsumer c;
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-  top_sites().OnTopSitesAvailable(0, pages);
-  MessageLoop::current()->RunAllPending();
-  EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://bbc.com/")));
-
-  EXPECT_EQ(1u, number_of_callbacks());
-
-  ASSERT_EQ(4u, urls().size());
-  EXPECT_EQ("http://bbc.com/", urls()[0].url.spec());
-  EXPECT_EQ("http://google.com/", urls()[1].url.spec());
-  EXPECT_EQ(welcome_url(), urls()[2].url);
-  EXPECT_EQ(themes_url(), urls()[3].url);
-
-  top_sites().AddBlacklistedURL(GURL("http://google.com/"));
-  EXPECT_TRUE(top_sites().IsBlacklisted(GURL("http://google.com/")));
-  EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://bbc.com/")));
-  EXPECT_FALSE(top_sites().IsBlacklisted(welcome_url()));
-
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-  MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(2u, number_of_callbacks());
-  ASSERT_EQ(3u, urls().size());
-  EXPECT_EQ("http://bbc.com/", urls()[0].url.spec());
-  EXPECT_EQ(welcome_url(), urls()[1].url);
-  EXPECT_EQ(themes_url(), urls()[2].url);
-
-  top_sites().AddBlacklistedURL(welcome_url());
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(2u, urls().size());
-  EXPECT_EQ("http://bbc.com/", urls()[0].url.spec());
-  EXPECT_EQ(themes_url(), urls()[1].url);
-
-  top_sites().RemoveBlacklistedURL(GURL("http://google.com/"));
-  EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://google.com/")));
-
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(3u, urls().size());
-  EXPECT_EQ("http://bbc.com/", urls()[0].url.spec());
-  EXPECT_EQ("http://google.com/", urls()[1].url.spec());
-  EXPECT_EQ(themes_url(), urls()[2].url);
-
-  top_sites().ClearBlacklistedURLs();
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-  ASSERT_EQ(4u, urls().size());
-  EXPECT_EQ("http://bbc.com/", urls()[0].url.spec());
-  EXPECT_EQ("http://google.com/", urls()[1].url.spec());
-  EXPECT_EQ(welcome_url(), urls()[2].url);
-  EXPECT_EQ(themes_url(), urls()[3].url);
-}
-
-TEST_F(TopSitesTest, PinnedURLs) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
-  MostVisitedURLList pages;
-  MostVisitedURL url, url1;
-  url.url = GURL("http://bbc.com/");
-  url.redirects.push_back(url.url);
-  pages.push_back(url);
-  url1.url = GURL("http://google.com/");
-  url1.redirects.push_back(url1.url);
-  pages.push_back(url1);
-
-  CancelableRequestConsumer c;
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-  top_sites().OnTopSitesAvailable(0, pages);
-  MessageLoop::current()->RunAllPending();
-  size_t index = 0;
-  EXPECT_FALSE(top_sites().IsURLPinned(GURL("http://bbc.com/")));
-
-  ASSERT_EQ(4u, urls().size());
-  EXPECT_EQ("http://bbc.com/", urls()[0].url.spec());
-  EXPECT_EQ("http://google.com/", urls()[1].url.spec());
-  EXPECT_EQ(welcome_url(), urls()[2].url);
-  EXPECT_EQ(themes_url(), urls()[3].url);
-
-  top_sites().AddPinnedURL(GURL("http://google.com/"), 3);
-  EXPECT_TRUE(top_sites().GetIndexOfPinnedURL(GURL("http://google.com/"),
-                                              &index));
-  EXPECT_EQ(3u, index);
-  EXPECT_FALSE(top_sites().IsURLPinned(GURL("http://bbc.com/")));
-  EXPECT_FALSE(top_sites().IsURLPinned(welcome_url()));
-
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-  EXPECT_EQ(2u, number_of_callbacks());
-  ASSERT_EQ(4u, urls().size());
-  EXPECT_EQ("http://bbc.com/", urls()[0].url.spec());
-  EXPECT_EQ(welcome_url(), urls()[1].url);
-  EXPECT_EQ(themes_url(), urls()[2].url);
-  EXPECT_EQ("http://google.com/", urls()[3].url.spec());
-
-  top_sites().RemovePinnedURL(GURL("http://google.com/"));
-  EXPECT_FALSE(top_sites().IsURLPinned(GURL("http://google.com/")));
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-
-  ASSERT_EQ(4u, urls().size());
-  EXPECT_EQ("http://bbc.com/", urls()[0].url.spec());
-  EXPECT_EQ("http://google.com/", urls()[1].url.spec());
-  EXPECT_EQ(welcome_url(), urls()[2].url);
-  EXPECT_EQ(themes_url(), urls()[3].url);
-}
-
-TEST_F(TopSitesTest, BlacklistingAndPinnedURLs) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
-  MostVisitedURLList pages;
-  CancelableRequestConsumer c;
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-  top_sites().OnTopSitesAvailable(0, pages);
-  MessageLoop::current()->RunAllPending();
-
-  ASSERT_EQ(2u, urls().size());
-  EXPECT_EQ(welcome_url(), urls()[0].url);
-  EXPECT_EQ(themes_url(), urls()[1].url);
-
-  top_sites().AddPinnedURL(themes_url(), 1);
-  top_sites().AddBlacklistedURL(welcome_url());
-
-  top_sites().GetMostVisitedURLs(
-      &c,
-      NewCallback(static_cast<TopSitesTest*>(this),
-                  &TopSitesTest::OnTopSitesAvailable));
-
-  ASSERT_EQ(2u, urls().size());
-  EXPECT_EQ(GURL(), urls()[0].url);
-  EXPECT_EQ(themes_url(), urls()[1].url);
-
-}
-
-TEST_F(TopSitesTest, AddPrepopulatedPages) {
-  MostVisitedURLList pages;
-  top_sites().AddPrepopulatedPages(&pages);
-  ASSERT_EQ(2u, pages.size());
-  EXPECT_EQ(welcome_url(), pages[0].url);
-  EXPECT_EQ(themes_url(), pages[1].url);
-
-  pages.clear();
-
-  MostVisitedURL url = {themes_url()};
-  pages.push_back(url);
-
-  top_sites().AddPrepopulatedPages(&pages);
-
-  // Themes URL is already in pages; should not be added twice.
-  ASSERT_EQ(2u, pages.size());
-  EXPECT_EQ(themes_url(), pages[0].url);
-  EXPECT_EQ(welcome_url(), pages[1].url);
-}
-
-TEST_F(TopSitesTest, GetIndexForChromeStore) {
-  MostVisitedURLList pages;
-  EXPECT_EQ(0, top_sites().GetIndexForChromeStore(pages));
-
-  MostVisitedURL url = {themes_url()};
-  pages.push_back(url);
-  EXPECT_EQ(1, top_sites().GetIndexForChromeStore(pages));
-
-  // Store should be added in the first filler.
-  top_sites().AddPinnedURL(welcome_url(), 3);
-  top_sites().AddPinnedURL(GURL("http://google.com"), 5);
-  EXPECT_EQ(1, top_sites().GetIndexForChromeStore(pages));
-
-  GURL store_url = MostVisitedHandler::GetChromeStoreURLWithLocale();
-  url.url = store_url;
-  pages.push_back(url);
-
-  // Don't add store again.
-  EXPECT_EQ(-1, top_sites().GetIndexForChromeStore(pages));
-
-  pages.pop_back();
-  EXPECT_EQ(1, top_sites().GetIndexForChromeStore(pages));
-
-  pages.clear();
-  url.url = GURL("http://bbc.com/");
-  for (int i = 0; i < 8; i++) {
-    pages.push_back(url);
-  }
-
-  EXPECT_EQ(7, top_sites().GetIndexForChromeStore(pages));
-
-  pages[7].url = GURL("http://gmail.com");
-  top_sites().AddPinnedURL(GURL("http://gmail.com"), 7);
-
-  EXPECT_EQ(6, top_sites().GetIndexForChromeStore(pages));
-
-  // If it's blacklisted, it should not be added.
-  top_sites().AddBlacklistedURL(store_url);
-  EXPECT_EQ(-1, top_sites().GetIndexForChromeStore(pages));
-
-  top_sites().RemoveBlacklistedURL(store_url);
-  EXPECT_EQ(6, top_sites().GetIndexForChromeStore(pages));
-
-  top_sites().AddPinnedURL(GURL("http://bbc.com"), 2);
-  // All pinned - can't add store.
-  EXPECT_EQ(-1, top_sites().GetIndexForChromeStore(pages));
 }
 
 }  // namespace history
