@@ -769,6 +769,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       target_lang = TranslateManager::GetLanguageCode(target_lang);
       return !!(params_.edit_flags & WebContextMenuData::CanTranslate) &&
              source_tab_contents_->language_state().page_translatable() &&
+             !original_lang.empty() &&  // Did we receive the page language yet?
              original_lang != target_lang &&
              !source_tab_contents_->language_state().IsPageTranslated() &&
              !source_tab_contents_->interstitial_page() &&

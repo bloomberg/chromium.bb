@@ -403,16 +403,10 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
     return;
   }
 
-  TranslateInfoBarDelegate* infobar = GetTranslateInfoBarDelegate(tab_contents);
-  if (infobar) {
-    // We don't show the translating infobar if no translate infobar is already
-    // showing (that is the case when the translation was triggered by the
-    // "always translate" for example).
-    infobar = TranslateInfoBarDelegate::CreateDelegate(
-        TranslateInfoBarDelegate::TRANSLATING, tab_contents,
-        source_lang, target_lang);
-    ShowInfoBar(tab_contents, infobar);
-  }
+  TranslateInfoBarDelegate* infobar = TranslateInfoBarDelegate::CreateDelegate(
+      TranslateInfoBarDelegate::TRANSLATING, tab_contents,
+      source_lang, target_lang);
+  ShowInfoBar(tab_contents, infobar);
 
   if (!translate_script_.empty()) {
     DoTranslatePage(tab_contents, translate_script_, source_lang, target_lang);

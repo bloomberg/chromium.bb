@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/common/chrome_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -24,7 +25,13 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
     const std::string& original_language,
     const std::string& target_language) {
   DCHECK(type != TRANSLATION_ERROR);
-  if (!TranslateManager::IsSupportedLanguage(original_language) ||
+  // The original language can only be "unknown" for the "translating"
+  // infobar, which is the case when the user started a translation from the
+  // context menu.
+  DCHECK(type == TRANSLATING ||
+      original_language != chrome::kUnknownLanguageCode);
+  if ((original_language != chrome::kUnknownLanguageCode &&
+          !TranslateManager::IsSupportedLanguage(original_language)) ||
       !TranslateManager::IsSupportedLanguage(target_language)) {
     return NULL;
   }
@@ -32,7 +39,6 @@ TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
       new TranslateInfoBarDelegate(type, TranslateErrors::NONE,
                                    tab_contents,
                                    original_language, target_language);
-  DCHECK(delegate->original_language_index() != -1);
   DCHECK(delegate->target_language_index() != -1);
   return delegate;
 }
@@ -111,6 +117,8 @@ string16 TranslateInfoBarDelegate::GetLanguageDisplayableNameAt(
 }
 
 std::string TranslateInfoBarDelegate::GetOriginalLanguageCode() const {
+  if (original_language_index() == -1)
+    return chrome::kUnknownLanguageCode;
   return GetLanguageCodeAt(original_language_index());
 }
 

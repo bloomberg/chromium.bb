@@ -567,9 +567,6 @@ class RenderView : public RenderWidget,
       std::string* json_retval);
   virtual WebKit::WebCookieJar* GetCookieJar();
 
-  // The language code used when the page language is unknown.
-  static const char* const kUnknownLanguageCode;
-
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
   // nearer to the top you can add it to.

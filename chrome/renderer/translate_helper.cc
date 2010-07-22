@@ -5,6 +5,7 @@
 #include "chrome/renderer/translate_helper.h"
 
 #include "base/compiler_specific.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
@@ -58,7 +59,7 @@ void TranslateHelper::TranslatePage(int page_id,
   page_id_ = page_id;
   // If the source language is undetermined, we'll let the translate element
   // detect it.
-  source_lang_ = (source_lang != RenderView::kUnknownLanguageCode) ?
+  source_lang_ = (source_lang != chrome::kUnknownLanguageCode) ?
                   source_lang : kAutoDetectionLanguage;
   target_lang_ = target_lang;
 

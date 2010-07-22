@@ -90,6 +90,10 @@ extern const int kMaxSessionHistoryEntries;
 
 extern const wchar_t kChromiumRendererIdProperty[];
 
+// The language code used when the language of a page could not be detected.
+// (Matches what the CLD -Compact Language Detection- library reports.)
+extern const char* const kUnknownLanguageCode;
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_

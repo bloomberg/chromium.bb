@@ -384,7 +384,15 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
       TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
-  SimulateURLFetch(true);  // Simulate receiving the translate script.
+
+  // To test that bug #49018 if fixed, make sure we deal correctly with errors.
+  SimulateURLFetch(false);  // Simulate a failure to fetch the translate script.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR, infobar->type());
+  EXPECT_TRUE(infobar->IsError());
+  infobar->MessageInfoBarButtonPressed();
+  SimulateURLFetch(true);  // This time succeed.
 
   // Simulate the render notifying the translation has been done, the server
   // having detected the page was in a known and supported language.
@@ -392,7 +400,7 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
       TranslateErrors::NONE));
 
   // The after translate infobar should be showing.
-  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar->type());
   EXPECT_EQ("fr", infobar->GetOriginalLanguageCode());
@@ -912,6 +920,12 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   SimulateNavigation(GURL("http://www.google.fr"), 0, "Le Google", "fr", true);
 
   // It should have triggered an automatic translation to English.
+
+  // The translating infobar should be showing.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->type());
+
   SimulateURLFetch(true);  // Simulate the translate script being retrieved.
   int page_id = 0;
   std::string original_lang, target_lang;
@@ -920,9 +934,6 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
   process()->sink().ClearMessages();
-  // And we should have no infobar (since we don't send the page translated
-  // notification, the after translate infobar is not shown).
-  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Try another language, it should not be autotranslated.
   SimulateNavigation(GURL("http://www.google.es"), 1, "El Google", "es", true);
@@ -943,12 +954,14 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   test_profile->set_off_the_record(false);  // Get back to non incognito.
 
   // Now revert the always translate pref and make sure we go back to expected
-  // behavior, which is show an infobar.
+  // behavior, which is show a "before translate" infobar.
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateWhitelists);
   translate_prefs.RemoveLanguagePairFromWhitelist("fr", "en");
   SimulateNavigation(GURL("http://www.google.fr"), 3, "Le Google", "fr", true);
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
-  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
   prefs->RemovePrefObserver(TranslatePrefs::kPrefTranslateWhitelists,
                             &pref_observer_);
 }
@@ -963,10 +976,18 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("fr"));
   EXPECT_TRUE(translate_prefs.IsSiteBlacklisted(url.host()));
 
-  // Simulate navigating to a page in French. The translate menu should show.
-  SimulateNavigation(url, 0, "Le Google", "fr", true);
+  // Simulate navigating to a page in French. The translate menu should show but
+  // should only be enabled when the page language has been received.
+  NavigateAndCommit(url);
   scoped_ptr<TestRenderViewContextMenu> menu(
       TestRenderViewContextMenu::CreateContextMenu(contents()));
+  menu->Init();
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
+
+  // Simulate receiving the language.
+  SimulateOnPageContents(url, 0, "Le Google", "fr", true);
+  menu.reset(TestRenderViewContextMenu::CreateContextMenu(contents()));
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -975,6 +996,10 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE);
 
   // That should have triggered a translation.
+  // The "translating..." infobar should be showing.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->type());
   SimulateURLFetch(true);  // Simulate the translate script being retrieved.
   int page_id = 0;
   std::string original_lang, target_lang;
@@ -1002,7 +1027,7 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   // translated does nothing (this could happen if autotranslate kicks-in and
   // the user selects the menu while the translation is being performed).
   SimulateNavigation(GURL("http://www.google.es"), 1, "El Google", "es", true);
-  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
@@ -1166,3 +1191,4 @@ TEST_F(TranslateManagerTest, ScriptExpires) {
   EXPECT_EQ("es", original_lang);
   EXPECT_EQ("en", target_lang);
 }
+

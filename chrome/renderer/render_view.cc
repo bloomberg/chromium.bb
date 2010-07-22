@@ -264,9 +264,6 @@ static const char* const kUnreachableWebDataURL =
 
 static const char* const kBackForwardNavigationScheme = "history";
 
-// static
-const char* const RenderView::kUnknownLanguageCode = "und";
-
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
@@ -372,9 +369,9 @@ static std::string DetermineTextLanguage(const string16& text) {
   // Text with less than 100 bytes will probably not provide good results.
   // Report it as unknown language.
   if (text.length() < 100)
-    return RenderView::kUnknownLanguageCode;
+    return chrome::kUnknownLanguageCode;
 
-  std::string language = RenderView::kUnknownLanguageCode;
+  std::string language = chrome::kUnknownLanguageCode;
   int num_languages = 0;
   bool is_reliable = false;
   Language cld_language =

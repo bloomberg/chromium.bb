@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/chrome_constants.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -189,7 +190,7 @@ TEST_F(TranslateHelperTest, UndefinedSourceLang) {
       .WillRepeatedly(Return(true));
 
   translate_helper_->TranslatePage(view_->page_id(),
-                                   RenderView::kUnknownLanguageCode, "fr",
+                                   chrome::kUnknownLanguageCode, "fr",
                                    std::string());
   MessageLoop::current()->RunAllPending();
 
