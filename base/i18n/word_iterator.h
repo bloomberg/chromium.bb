@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "unicode/ubrk.h"
 #include "unicode/uchar.h"
 
 #include "base/basictypes.h"
@@ -68,7 +69,7 @@ class WordIterator {
 
  private:
   // ICU iterator.
-  void* iter_;
+  UBreakIterator* iter_;
 #if !defined(WCHAR_T_IS_UTF16)
   std::vector<UChar> chars_;
 #endif
