@@ -40,8 +40,11 @@ readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
 # For different levels of make parallelism change this in your env
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 
-readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
+# TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET=arm-none-linux-gnueabi
+readonly REAL_CROSS_TARGET=pnacl
+
+readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
 readonly TARGET_ROOT="${INSTALL_ROOT}/${CROSS_TARGET}"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp3
@@ -125,7 +128,7 @@ readonly PNACL_CLIENT_TC_X86="${PNACL_CLIENT_TC_ROOT}/x86"
 # Current milestones within each Hg repo:
 readonly LLVM_REV=2ceae18be41b
 readonly LLVM_GCC_REV=08e173d1c977
-readonly NEWLIB_REV=5d64fed35b93
+readonly NEWLIB_REV=c74ed6d22b4f
 readonly BINUTILS_REV=1675524d3abe
 
 # Repositories
@@ -299,34 +302,152 @@ hg-status-common() {
   spopd
 }
 
+#@ hg-freshness-check    - Make sure all repos are at the stable revision
+hg-freshness-check() {
+  hg-pull
+  StepBanner "HG-FRESHNESS-CHECK" "Checking for updates..."
+
+  hg-freshness-check-common "${TC_SRC_LLVM}"       ${LLVM_REV}
+  hg-freshness-check-common "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
+  hg-freshness-check-common "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
+  hg-freshness-check-common "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
+}
+
+hg-freshness-check-common() {
+  local dir="$1"
+  local rev="$2"
+  local name=$(basename "${dir}")
+  local YESNO
+
+  spushd "${dir}"
+  local HGREV=($(hg identify | tr -d '+'))
+  if [ "${HGREV[0]}" != "$rev" ]; then
+    echo "*******************************************************************"
+    echo "* Repository hg/${name} is not at the 'stable' revision.           "
+    echo "* If this is intentional, enter Y to continue building.            "
+    echo "* If not, try: './tools/llvm/utman.sh hg-update-stable-${name}'    "
+    echo "*******************************************************************"
+
+    echo -n "Continue build [Y/N]? "
+    read YESNO
+    if [ "${YESNO}" != "Y" ] && [ "${YESNO}" != "y" ]; then
+      echo "Cancelled build."
+      exit -1
+    fi
+  fi
+  spopd
+}
 
 #@ hg-update-tip         - Update all repos to the tip (may merge)
-
+#@ hg-update-tip-REPO    - Update REPO to the tip
+#@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
 hg-update-tip() {
-  hg-pull
+  hg-update-tip-llvm-gcc
+  hg-update-tip-llvm
+  hg-update-tip-newlib
+  hg-update-tip-binutils
+}
 
+hg-update-tip-llvm-gcc() {
+  hg-pull-llvm-gcc
   hg-update-common "${TC_SRC_LLVM_GCC}"
+}
+
+hg-update-tip-llvm() {
+  hg-pull-llvm
   hg-update-common "${TC_SRC_LLVM}"
-  hg-update-common "${TC_SRC_NEWLIB}"
+}
+
+hg-update-tip-newlib() {
+  if hg-update-newlib-confirm; then
+    rm -rf "${TC_SRC_NEWLIB}"
+    hg-checkout-common ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
+    hg-update-common "${TC_SRC_NEWLIB}"
+    newlib-nacl-headers
+  else
+    echo "Cancelled."
+  fi
+}
+
+hg-update-tip-binutils() {
+  hg-pull-binutils
   hg-update-common "${TC_SRC_BINUTILS}"
 }
 
 #@ hg-update-stable      - Update all repos to the latest stable rev (may merge)
-
+#@ hg-update-stable-REPO - Update REPO to stable
+#@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
 hg-update-stable() {
-  hg-pull
+  hg-update-stable-llvm-gcc
+  hg-update-stable-llvm
+  hg-update-stable-newlib
+  hg-update-stable-binutils
+}
+
+hg-update-stable-llvm-gcc() {
+  hg-pull-llvm-gcc
   hg-update-common "${TC_SRC_LLVM_GCC}"  ${LLVM_GCC_REV}
+}
+
+hg-update-stable-llvm() {
+  hg-pull-llvm
   hg-update-common "${TC_SRC_LLVM}"      ${LLVM_REV}
-  hg-update-common "${TC_SRC_NEWLIB}"    ${NEWLIB_REV}
+}
+
+hg-update-stable-newlib() {
+  if hg-update-newlib-confirm; then
+    rm -rf "${TC_SRC_NEWLIB}"
+    hg-checkout-common ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
+    newlib-nacl-headers
+  else
+    echo "Cancelled."
+  fi
+}
+
+hg-update-newlib-confirm() {
+  local YESNO
+  echo
+  echo "Due to special header magic, the newlib repository cannot simply be"
+  echo "updated in place. Instead, the entire source directory must be"
+  echo "deleted and cloned again."
+  echo ""
+  echo "WARNING: Local changes to newlib will be lost."
+  echo ""
+  echo -n "Continue? [Y/N] "
+  read YESNO
+  [ "${YESNO}" = "Y" ] || [ "${YESNO}" = "y" ]
+  return $?
+}
+
+hg-update-stable-binutils() {
+  hg-pull-binutils
   hg-update-common "${TC_SRC_BINUTILS}"  ${BINUTILS_REV}
 }
 
 #@ hg-pull               - Pull all repos. (but do not update working copy)
+#@ hg-pull-REPO          - Pull repository REPO.
+#@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
 hg-pull() {
   StepBanner "HG-PULL" "Running 'hg pull' in all repos..."
+  hg-pull-llvm-gcc
+  hg-pull-llvm
+  hg-pull-newlib
+  hg-pull-binutils
+}
+
+hg-pull-llvm-gcc() {
   hg-pull-common "${TC_SRC_LLVM_GCC}"
+}
+
+hg-pull-llvm() {
   hg-pull-common "${TC_SRC_LLVM}"
+}
+
+hg-pull-newlib() {
   hg-pull-common "${TC_SRC_NEWLIB}"
+}
+
+hg-pull-binutils() {
   hg-pull-common "${TC_SRC_BINUTILS}"
 }
 
@@ -337,7 +458,7 @@ hg-pull-common() {
     "Repository $(basename "${dir}") doesn't exist. First do 'hg-checkout'"
 
   spushd "$dir"
-  hg pull
+  RunWithLog "hg-pull" hg pull
   spopd
 }
 
@@ -484,6 +605,8 @@ everything() {
   check-for-trusted
 
   hg-checkout
+  hg-freshness-check
+
   clean-install
   RecordRevisionInfo
 
@@ -820,7 +943,7 @@ gcc-stage1-sysroot() {
   rm -rf "${sys_include}" "${sys_include2}"
   mkdir -p "${sys_include}"
   ln -sf "${sys_include}" "${sys_include2}"
-  cp -r "${TC_SRC_NEWLIB}"/newlib-1.17.0/newlib/libc/include/* ${sys_include}
+  cp -r "${TC_SRC_NEWLIB}"/newlib-trunk/newlib/libc/include/* ${sys_include}
 }
 
 #+ gcc-stage1-clean      - Clean gcc stage 1
@@ -1788,14 +1911,14 @@ newlib-configure-common() {
     env -i \
     PATH="/usr/bin:/bin" \
     "${STD_ENV_FOR_NEWLIB[@]}" \
-    ${srcdir}/newlib-1.17.0/configure \
+    ${srcdir}/newlib-trunk/configure \
         --disable-libgloss \
         --disable-multilib \
         --enable-newlib-reent-small \
         --prefix="${NEWLIB_INSTALL_DIR}" \
         --disable-newlib-supplied-syscalls \
         --disable-texinfo \
-        --target="${CROSS_TARGET}"
+        --target="${REAL_CROSS_TARGET}"
   spopd
 }
 
@@ -1861,6 +1984,16 @@ newlib-arm-install() {
       "${STD_ENV_FOR_NEWLIB[@]}" \
       install ${MAKE_OPTS}
 
+  ###########################################################
+  #                -- HACK HACK HACK --
+  # newlib installs into ${REAL_CROSS_TARGET}
+  # For now, move it back to the old ${CROSS_TARGET}
+  # where everything expects it to be.
+  rm -rf "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}"
+  mv "${NEWLIB_INSTALL_DIR}/${REAL_CROSS_TARGET}" \
+     "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}"
+  ###########################################################
+
   StepBanner "NEWLIB-ARM" "Extra-install"
   local sys_include=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include
   local sys_lib=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib
@@ -1893,7 +2026,7 @@ newlib-bitcode-install() {
   mkdir -p "${destdir}"
 
   # We only install libc/libg/libm
-  cp ${objdir}/${CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
+  cp ${objdir}/${REAL_CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
 }
 
 
@@ -2003,7 +2136,7 @@ extrasdk-bitcode-install() {
 newlib-nacl-headers() {
   StepBanner "Adding nacl headers to newlib"
   here=$(pwd)
-  spushd ${TC_SRC_NEWLIB}/newlib-1.17.0
+  spushd ${TC_SRC_NEWLIB}/newlib-trunk
   ${here}/src/trusted/service_runtime/export_header.py \
       ${here}/src/trusted/service_runtime/include \
       newlib/libc/include
