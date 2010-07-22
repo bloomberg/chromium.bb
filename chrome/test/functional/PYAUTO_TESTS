@@ -31,6 +31,7 @@
     'cookies',
     'downloads',
     'history',
+    'infobars',
     'navigation',
     'omnibox',
     'passwords',

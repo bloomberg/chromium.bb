@@ -1817,6 +1817,61 @@ void AutomationProvider::WaitForInfobarCount(Browser* browser,
   new WaitForInfobarCountObserver(this, reply_message, tab_contents, count);
 }
 
+// Sample json input: { "command": "PerformActionOnInfobar",
+//                      "action": "dismiss",
+//                      "infobar_index": 0,
+//                      "tab_index": 0 }
+// Sample output: {}
+void AutomationProvider::PerformActionOnInfobar(Browser* browser,
+                                                DictionaryValue* args,
+                                                IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  int tab_index;
+  int infobar_index;
+  std::string action;
+  if (!args->GetInteger(L"tab_index", &tab_index) ||
+      !args->GetInteger(L"infobar_index", &infobar_index) ||
+      !args->GetString(L"action", &action)) {
+    reply.SendError("Invalid or missing args");
+    return;
+  }
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+  if (!tab_contents) {
+    reply.SendError(StringPrintf("No such tab at index %d", tab_index));
+    return;
+  }
+  InfoBarDelegate* infobar = NULL;
+  if (infobar_index < 0 ||
+      infobar_index >= tab_contents->infobar_delegate_count() ||
+      !(infobar = tab_contents->GetInfoBarDelegateAt(infobar_index))) {
+    reply.SendError(StringPrintf("No such infobar at index %d", infobar_index));
+    return;
+  }
+  if ("dismiss" == action) {
+    infobar->InfoBarDismissed();
+    tab_contents->RemoveInfoBar(infobar);
+    reply.SendSuccess(NULL);
+    return;
+  }
+  if ("accept" == action || "cancel" == action) {
+    ConfirmInfoBarDelegate* confirm_infobar;
+    if (!(confirm_infobar = infobar->AsConfirmInfoBarDelegate())) {
+      reply.SendError("Not a confirm infobar");
+      return;
+    }
+    if ("accept" == action) {
+      if (confirm_infobar->Accept())
+        tab_contents->RemoveInfoBar(infobar);
+    } else if ("cancel" == action) {
+      if (confirm_infobar->Cancel())
+        tab_contents->RemoveInfoBar(infobar);
+    }
+    reply.SendSuccess(NULL);
+    return;
+  }
+  reply.SendError("Invalid action");
+}
+
 namespace {
 
 // Task to get info about BrowserChildProcessHost. Must run on IO thread to
@@ -2915,6 +2970,8 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetBrowserInfo"] = &AutomationProvider::GetBrowserInfo;
 
   handler_map["WaitForInfobarCount"] = &AutomationProvider::WaitForInfobarCount;
+  handler_map["PerformActionOnInfobar"] =
+      &AutomationProvider::PerformActionOnInfobar;
 
   handler_map["GetHistoryInfo"] = &AutomationProvider::GetHistoryInfo;
   handler_map["AddHistoryItem"] = &AutomationProvider::AddHistoryItem;

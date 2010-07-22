@@ -350,6 +350,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
+  // Perform actions on an infobar like dismiss, accept, cancel.
+  // Uses the JSON interface for input/output.
+  void PerformActionOnInfobar(Browser* browser,
+                              DictionaryValue* args,
+                              IPC::Message* reply_message);
+
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.
   // Uses the JSON interface for input/output.

@@ -510,6 +510,34 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def PerformActionOnInfobar(
+      self, action, infobar_index, windex=0, tab_index=0):
+    """Perform actions on an infobar.
+
+    Args:
+      action: the action to be performed.
+              Actions depend on the type of the infobar.  The user needs to
+              call the right action for the right infobar.
+              Valid inputs are:
+              - "dismiss": closes the infobar (for all infobars)
+              - "accept", "cancel": click accept / cancel (for confirm infobars)
+      infobar_index: 0-based index of the infobar on which to perform the action
+      windex: 0-based window index  Defaults to 0 (first window)
+      tab_index: 0-based tab index.  Defaults to 0 (first tab)
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'PerformActionOnInfobar',
+      'action': action,
+      'infobar_index': infobar_index,
+      'tab_index': tab_index,
+    }
+    if action not in ('dismiss', 'accept', 'cancel'):
+      raise JSONInterfaceError('Invalid action %s' % action)
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
   def GetBrowserInfo(self):
     """Return info about the browser.
 
