@@ -24,9 +24,6 @@ UpdateObserver::~UpdateObserver() {
 
 void UpdateObserver::Changed(UpdateLibrary* object) {
   switch (object->status().status) {
-    case UPDATE_STATUS_ERROR:
-      notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_ERROR), true);
-      break;
     case UPDATE_STATUS_IDLE:
     case UPDATE_STATUS_CHECKING_FOR_UPDATE:
       // Do nothing in these cases, we don't want to notify the user of the
@@ -59,8 +56,10 @@ void UpdateObserver::Changed(UpdateLibrary* object) {
     case UPDATE_STATUS_UPDATED_NEED_REBOOT:
       notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED), true);
       break;
+    default:
+      notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_ERROR), true);
+      break;
   }
 }
 
 }  // namespace chromeos
-
