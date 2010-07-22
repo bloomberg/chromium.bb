@@ -321,6 +321,7 @@ hg-freshness-check-common() {
 
   spushd "${dir}"
   local HGREV=($(hg identify | tr -d '+'))
+  spopd
   if [ "${HGREV[0]}" != "$rev" ]; then
     echo "*******************************************************************"
     echo "* Repository hg/${name} is not at the 'stable' revision.           "
@@ -328,14 +329,18 @@ hg-freshness-check-common() {
     echo "* If not, try: './tools/llvm/utman.sh hg-update-stable-${name}'    "
     echo "*******************************************************************"
 
-    echo -n "Continue build [Y/N]? "
-    read YESNO
-    if [ "${YESNO}" != "Y" ] && [ "${YESNO}" != "y" ]; then
-      echo "Cancelled build."
-      exit -1
+    # TODO(pdox): Make this a BUILDBOT flag
+    if ${UTMAN_DEBUG}; then
+      "hg-update-stable-${name}"
+    else
+      echo -n "Continue build [Y/N]? "
+      read YESNO
+      if [ "${YESNO}" != "Y" ] && [ "${YESNO}" != "y" ]; then
+        echo "Cancelled build."
+        exit -1
+      fi
     fi
   fi
-  spopd
 }
 
 #@ hg-update-tip         - Update all repos to the tip (may merge)
@@ -395,7 +400,7 @@ hg-update-stable-llvm() {
 }
 
 hg-update-stable-newlib() {
-  if hg-update-newlib-confirm; then
+  if ${UTMAN_DEBUG} || hg-update-newlib-confirm; then
     rm -rf "${TC_SRC_NEWLIB}"
     hg-checkout-common ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
     newlib-nacl-headers
