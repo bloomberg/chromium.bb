@@ -18,11 +18,12 @@ bool CreditCardField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   // initial.
   if (cardholder_last_ == NULL) {
     // Add() will check if cardholder_ is != NULL.
-    Add(field_type_map, cardholder_, AutoFillType(CREDIT_CARD_NAME));
+    ok = ok && Add(field_type_map, cardholder_, AutoFillType(CREDIT_CARD_NAME));
+    DCHECK(ok);
   }
 
-  Add(field_type_map, type_, AutoFillType(CREDIT_CARD_TYPE));
-
+  ok = ok && Add(field_type_map, type_, AutoFillType(CREDIT_CARD_TYPE));
+  DCHECK(ok);
   ok = ok && Add(field_type_map, expiration_month_,
       AutoFillType(CREDIT_CARD_EXP_MONTH));
   DCHECK(ok);
