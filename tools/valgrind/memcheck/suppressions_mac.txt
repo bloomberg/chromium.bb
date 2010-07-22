@@ -1382,7 +1382,7 @@
    fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
 }
 {
-   bug_49253 Memcheck sanity test 04 (malloc/write left) or Memcheck sanity test 05 (malloc/write right) on Mac.
+   bug_49253 Memcheck sanity test (malloc/write left) or Memcheck sanity test (malloc/write right) on Mac.
    Memcheck:Addr1
    fun:_Z14MakeSomeErrorsPcm
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
@@ -1394,7 +1394,7 @@
    fun:main
 }
 {
-   bug_49253 Memcheck sanity test 13 (single element deleted with []) on Mac.
+   bug_49253 Memcheck sanity test (single element deleted with []) on Mac.
    Memcheck:Free
    fun:_ZdaPv
    fun:_ZN7testing4Test3RunEv
@@ -1405,7 +1405,7 @@
    fun:main
 }
 {
-   bug_49253 Memcheck sanity test 08 (new/write left) or Memcheck sanity test 09 (new/write right) on Mac.
+   bug_49253 Memcheck sanity test (new/write left) or Memcheck sanity test (new/write right) on Mac.
    Memcheck:Addr1
    fun:_Z14MakeSomeErrorsPcm
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
@@ -1417,7 +1417,7 @@
    fun:main
 }
 {
-   bug_49253 Memcheck sanity test 12 (array deleted without []) on Mac.
+   bug_49253 Memcheck sanity test (array deleted without []) on Mac.
    Memcheck:Free
    fun:_ZdlPv
    fun:_ZN7testing4Test3RunEv
