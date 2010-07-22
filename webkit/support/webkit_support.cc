@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/icu_util.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -19,6 +20,7 @@
 #include "base/weak_ptr.h"
 #include "grit/webkit_chromium_resources.h"
 #include "net/base/net_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
@@ -110,6 +112,47 @@ FilePath GetWebKitRootDirFilePath() {
   }
 }
 
+// All fatal log messages (e.g. DCHECK failures) imply unit test failures
+void UnitTestAssertHandler(const std::string& str) {
+  FAIL() << str;
+}
+
+void InitLogging(bool enable_gp_fault_error_box) {
+  logging::SetLogAssertHandler(UnitTestAssertHandler);
+
+#if defined(OS_WIN)
+  if (!::IsDebuggerPresent()) {
+    UINT new_flags = SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX;
+    if (!enable_gp_fault_error_box)
+      new_flags |= SEM_NOGPFAULTERRORBOX;
+
+    // Preserve existing error mode, as discussed at
+    // http://blogs.msdn.com/oldnewthing/archive/2004/07/27/198410.aspx
+    UINT existing_flags = SetErrorMode(new_flags);
+    SetErrorMode(existing_flags | new_flags);
+  }
+#endif
+
+  FilePath log_filename;
+  PathService::Get(base::DIR_EXE, &log_filename);
+  log_filename = log_filename.AppendASCII("DumpRenderTree.log");
+  logging::InitLogging(
+      log_filename.value().c_str(),
+      // Only log to a file. This prevents debugging output from disrupting
+      // whether or not we pass.
+      logging::LOG_ONLY_TO_FILE,
+      // We might have multiple DumpRenderTree processes going at once.
+      logging::LOCK_LOG_FILE,
+      logging::DELETE_OLD_LOG_FILE);
+
+  // We want process and thread IDs because we may have multiple processes.
+  const bool kProcessId = true;
+  const bool kThreadId = true;
+  const bool kTimestamp = true;
+  const bool kTickcount = true;
+  logging::SetLogItems(kProcessId, kThreadId, !kTimestamp, kTickcount);
+}
+
 }  // namespace
 
 namespace webkit_support {
@@ -130,6 +173,8 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   // If DRT needs these flags, specify them in the following kFixedArguments.
   const char* kFixedArguments[] = {"DumpRenderTree"};
   CommandLine::Init(arraysize(kFixedArguments), kFixedArguments);
+
+  InitLogging(false);
 
   webkit_support::BeforeInitialize();
   webkit_support::test_environment = new TestEnvironment(unit_test_mode);
@@ -163,6 +208,7 @@ void TearDownTestEnvironment() {
   delete test_environment;
   test_environment = NULL;
   AfterShutdown();
+  logging::CloseLogFile();
 }
 
 WebKit::WebKitClient* GetWebKitClient() {

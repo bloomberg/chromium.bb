@@ -13,6 +13,7 @@
       'dependencies': [
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
         'appcache',
         'database',
         'glue',
