@@ -69,12 +69,12 @@ int CrossMain(int argc, char**argv) {
 
   FilePath in_filename, out_filename;
 
-  const std::vector<CommandLine::StringType>& values = args->args();
+  std::vector<std::wstring> values = command_line->GetLooseValues();
   if (values.size() == 1) {
-    in_filename = FilePath(values[0]);
+    in_filename = o3d::WideToFilePath(values[0]);
   } else if (values.size()== 2) {
-    in_filename = FilePath(values[0]);
-    out_filename = FilePath(values[1]);
+    in_filename = o3d::WideToFilePath(values[0]);
+    out_filename = o3d::WideToFilePath(values[1]);
   } else {
     std::cerr << "Usage: " << FilePath(argv[0]).BaseName().value()
               << " [--no-condition] <infile.fx> [<outfile.fx>]\n";
