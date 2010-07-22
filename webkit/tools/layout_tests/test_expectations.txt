@@ -10,3 +10,28 @@ BUG_JOHNNYG WIN : fast/forms/input-file-directory-upload.html = TEXT
 
 // TODO(hwennborg): remove after upstream expectations are rolled.
 BUG49912 : fast/dom/prototype-inheritance.html = TEXT
+
+// TODO(bulach): remove after upstream rebaselines are rolled
+BUG49920 : fast/borders/different-color-borders.html = FAIL
+BUG49920 LINUX : animations/play-state.html = FAIL
+BUG49920 MAC : fast/borders/border-radius-constraints.html = FAIL
+BUG49920 MAC : fast/borders/border-radius-huge-assert.html = FAIL
+BUG49920 MAC : fast/borders/border-radius-split-inline.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusAllStylesAllCorners.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusArcs01.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusDashed01.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusDashed04.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusDotted06.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusDouble02.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusDouble03.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusGroove01.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusGroove02.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusInset01.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusInvalidColor.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusOutset01.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusRidge01.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusSolid01.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusSolid02.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusSolid03.html = FAIL
+BUG49920 MAC : fast/borders/borderRadiusSolid04.html = FAIL
+BUG49920 MAC : fast/borders/fieldsetBorderRadius.html = FAIL
