@@ -377,20 +377,16 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
       [self adjustButtonWidths] + (2 * bookmarks::kBookmarkVerticalPadding) +
       bookmarks::kScrollViewContentWidthMargin;
   NSPoint newWindowTopLeft = [self windowTopLeftForWidth:windowWidth];
-  NSSize windowSize = [scrollView_ convertSize:NSMakeSize(windowWidth,
-                                                          windowHeight)
-                                        toView:nil];
-  newWindowTopLeft.y -= windowSize.height;
   NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
-                                  newWindowTopLeft.y,
-                                  windowSize.width,
-                                  windowSize.height);
+                                  newWindowTopLeft.y - windowHeight,
+                                  windowWidth,
+                                  windowHeight);
 
   // Make the scrolled content be the right size (full size).
   NSRect mainViewFrame = NSMakeRect(0, 0,
-                                    windowWidth -
+                                    NSWidth(windowFrame) -
                                     bookmarks::kScrollViewContentWidthMargin,
-                                    windowHeight);
+                                    NSHeight(windowFrame));
   [mainView_ setFrame:mainViewFrame];
 
   // Make sure the window fits on the screen.  If not, constrain.
@@ -407,7 +403,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // If scrollable then offset the view and show the arrows.
   if (scrollable_) {
     [mainView_ scrollPoint:NSMakePoint(0, (NSHeight(mainViewFrame) -
-                                           windowHeight))];
+                                           NSHeight(windowFrame)))];
     [self showOrHideScrollArrows];
     [self addOrUpdateScrollTracking];
   }
