@@ -160,9 +160,11 @@ class Dependency(GClientKeywords):
     # Sanity checks
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
-    if self.name in [d.name for d in self.tree(False)]:
-      raise gclient_utils.Error('Dependency %s specified more than once' %
-          self.name)
+    tree = dict((d.name, d) for d in self.tree(False))
+    if self.name in tree:
+      raise gclient_utils.Error(
+          'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
+          (self.name, tree[self.name].hierarchy(), self.hierarchy()))
     if not isinstance(self.url,
         (basestring, self.FromImpl, self.FileImpl, None.__class__)):
       raise gclient_utils.Error('dependency url must be either a string, None, '
@@ -435,6 +437,15 @@ class Dependency(GClientKeywords):
 
   def __repr__(self):
     return '%s: %s' % (self.name, self.url)
+
+  def hierarchy(self):
+    "Returns a human-readable hierarchical reference to a Dependency."
+    out = '%s(%s)' % (self.name, self.url)
+    i = self.parent
+    while i and i.name:
+      out = '%s(%s) -> %s' % (i.name, i.url, out)
+      i = i.parent
+    return out
 
 
 class GClient(Dependency):
