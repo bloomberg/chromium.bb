@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,7 +218,7 @@ void Predictor::PredictFrameSubresources(const GURL& url) {
 struct RightToLeftStringSorter {
   bool operator()(const net::HostPortPair& left,
                   const net::HostPortPair& right) const {
-    return string_compare(left.host, right.host);
+    return string_compare(left.host(), right.host());
   }
   bool operator()(const GURL& left,
                   const GURL& right) const {

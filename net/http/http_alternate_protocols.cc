@@ -24,9 +24,7 @@ bool HttpAlternateProtocols::HasAlternateProtocolFor(
 
 bool HttpAlternateProtocols::HasAlternateProtocolFor(
     const std::string& host, uint16 port) const {
-  struct HostPortPair http_host_port_pair;
-  http_host_port_pair.host = host;
-  http_host_port_pair.port = port;
+  HostPortPair http_host_port_pair(host, port);
   return HasAlternateProtocolFor(http_host_port_pair);
 }
 
@@ -40,9 +38,7 @@ HttpAlternateProtocols::GetAlternateProtocolFor(
 HttpAlternateProtocols::PortProtocolPair
 HttpAlternateProtocols::GetAlternateProtocolFor(
     const std::string& host, uint16 port) const {
-  struct HostPortPair http_host_port_pair;
-  http_host_port_pair.host = host;
-  http_host_port_pair.port = port;
+  HostPortPair http_host_port_pair(host, port);
   return GetAlternateProtocolFor(http_host_port_pair);
 }
 

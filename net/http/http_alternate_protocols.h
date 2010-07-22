@@ -10,7 +10,9 @@
 #define NET_HTTP_HTTP_ALTERNATE_PROTOCOLS_H_
 
 #include <map>
+#include <string>
 #include <utility>
+
 #include "base/basictypes.h"
 #include "net/base/host_port_pair.h"
 

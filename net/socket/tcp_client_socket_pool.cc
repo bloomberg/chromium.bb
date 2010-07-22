@@ -23,7 +23,7 @@ namespace net {
 TCPSocketParams::TCPSocketParams(const HostPortPair& host_port_pair,
                                  RequestPriority priority, const GURL& referrer,
                                  bool disable_resolver_cache)
-    : destination_(host_port_pair.host, host_port_pair.port) {
+    : destination_(host_port_pair.host(), host_port_pair.port()) {
   Initialize(priority, referrer, disable_resolver_cache);
 }
 

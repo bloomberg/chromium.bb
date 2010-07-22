@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -119,7 +119,7 @@ void XmppConnectionGenerator::UseNextConnection() {
     const net::HostPortPair& server =
         server_list_[server_index_].server;
     net::HostResolver::RequestInfo request_info(
-        server.host, server.port);
+        server.host(), server.port());
     int status =
         host_resolver_.Resolve(
             request_info, &address_list_, resolve_callback_.get(),
@@ -175,9 +175,9 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
   settings_index_ = -1;
   settings_list_->ClearPermutations();
   settings_list_->AddPermutations(
-      server_list_[server_index_].server.host,
+      server_list_[server_index_].server.host(),
       ip_list,
-      server_list_[server_index_].server.port,
+      server_list_[server_index_].server.port(),
       server_list_[server_index_].special_port_magic,
       proxy_only_);
 }

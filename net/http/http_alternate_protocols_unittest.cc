@@ -14,9 +14,7 @@ namespace {
 
 TEST(HttpAlternateProtocols, Basic) {
   HttpAlternateProtocols alternate_protocols;
-  HostPortPair test_host_port_pair;
-  test_host_port_pair.host = "foo";
-  test_host_port_pair.port = 80;
+  HostPortPair test_host_port_pair("foo", 80);
   EXPECT_FALSE(
       alternate_protocols.HasAlternateProtocolFor(test_host_port_pair));
   alternate_protocols.SetAlternateProtocolFor(
@@ -30,9 +28,7 @@ TEST(HttpAlternateProtocols, Basic) {
 
 TEST(HttpAlternateProtocols, SetBroken) {
   HttpAlternateProtocols alternate_protocols;
-  HostPortPair test_host_port_pair;
-  test_host_port_pair.host = "foo";
-  test_host_port_pair.port = 80;
+  HostPortPair test_host_port_pair("foo", 80);
   alternate_protocols.MarkBrokenAlternateProtocolFor(test_host_port_pair);
   ASSERT_TRUE(alternate_protocols.HasAlternateProtocolFor(test_host_port_pair));
   HttpAlternateProtocols::PortProtocolPair alternate =
