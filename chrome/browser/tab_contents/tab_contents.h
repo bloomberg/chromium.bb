@@ -680,6 +680,8 @@ class TabContents : public PageNavigator,
   }
   bool closed_by_user_gesture() const { return closed_by_user_gesture_; }
 
+  bool is_displaying_pdf_content() const { return displaying_pdf_content_; }
+
   // JavaScriptMessageBoxClient ------------------------------------------------
   virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
                                           bool is_alert);
@@ -979,6 +981,7 @@ class TabContents : public PageNavigator,
   virtual bool IsExternalTabContainer() const;
   virtual void DidInsertCSS();
   virtual void FocusedNodeChanged();
+  virtual void SetDisplayingPDFContent();
 
   // SelectFileDialog::Listener ------------------------------------------------
 
@@ -1271,6 +1274,9 @@ class TabContents : public PageNavigator,
 
   // See description above setter.
   bool closed_by_user_gesture_;
+
+  // See description in RenderViewHostDelegate::SetDisplayingPDFContent.
+  bool displaying_pdf_content_;
 
   // ---------------------------------------------------------------------------
 

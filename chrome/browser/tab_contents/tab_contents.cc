@@ -300,7 +300,8 @@ TabContents::TabContents(Profile* profile,
       renderer_preferences_(),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
       language_state_(&controller_),
-      closed_by_user_gesture_(false) {
+      closed_by_user_gesture_(false),
+      displaying_pdf_content_(false) {
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
 
@@ -2475,6 +2476,9 @@ void TabContents::RequestMove(const gfx::Rect& new_bounds) {
 }
 
 void TabContents::DidStartLoading() {
+  // By default, we assume that the content is not PDF. The renderer
+  // will tell us if this is not the case.
+  displaying_pdf_content_ = false;
   SetIsLoading(true, NULL);
 }
 
@@ -2891,6 +2895,12 @@ void TabContents::FocusedNodeChanged() {
       NotificationType::FOCUS_CHANGED_IN_PAGE,
       Source<RenderViewHost>(render_view_host()),
       NotificationService::NoDetails());
+}
+
+void TabContents::SetDisplayingPDFContent() {
+  displaying_pdf_content_ = true;
+  if (delegate())
+    delegate()->ContentTypeChanged(this);
 }
 
 void TabContents::FileSelected(const FilePath& path,

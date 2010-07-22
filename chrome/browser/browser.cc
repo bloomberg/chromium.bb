@@ -2584,6 +2584,9 @@ void Browser::LoadingStateChanged(TabContents* source) {
     if (GetStatusBubble())
       GetStatusBubble()->SetStatus(GetSelectedTabContents()->GetStatusText());
 
+    if (source->is_loading())
+      UpdateZoomCommandsForTabState();
+
     if (!source->is_loading() &&
         pending_web_app_action_ == UPDATE_SHORTCUT) {
       // Schedule a shortcut update when web application info is available if
@@ -2688,7 +2691,9 @@ bool Browser::UseVerticalTabs() const {
 }
 
 void Browser::ContentsZoomChange(bool zoom_in) {
-  ExecuteCommand(zoom_in ? IDC_ZOOM_PLUS : IDC_ZOOM_MINUS);
+  int command_id = zoom_in ? IDC_ZOOM_PLUS : IDC_ZOOM_MINUS;
+  if (command_updater_.IsCommandEnabled(command_id))
+    ExecuteCommand(command_id);
 }
 
 void Browser::OnContentSettingsChange(TabContents* source) {
@@ -2907,6 +2912,11 @@ void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
 
 Browser* Browser::GetBrowser() {
   return this;
+}
+
+void Browser::ContentTypeChanged(TabContents* source) {
+  if (source == GetSelectedTabContents())
+    UpdateZoomCommandsForTabState();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3274,6 +3284,15 @@ void Browser::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
       web_app::IsValidUrl(current_tab->GetURL()));
 #endif
+  UpdateZoomCommandsForTabState();
+}
+
+void Browser::UpdateZoomCommandsForTabState() {
+  // Disable zoom commands for PDF content.
+  bool enable_zoom = !GetSelectedTabContents()->is_displaying_pdf_content();
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS, enable_zoom);
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_NORMAL, enable_zoom);
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, enable_zoom);
 }
 
 void Browser::UpdateReloadStopState(bool is_loading, bool force) {

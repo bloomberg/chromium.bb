@@ -2526,4 +2526,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityTree,
                       webkit_glue::WebAccessibility)
 
+  // Notifies the TabContents that the content being displayed is PDF.
+  // This allows the browser to handle things such as zooming differently.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_SetDisplayingPDFContent)
+
 IPC_END_MESSAGES(ViewHost)

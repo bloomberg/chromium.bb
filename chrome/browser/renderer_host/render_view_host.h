@@ -649,6 +649,7 @@ class RenderViewHost : public RenderWidgetHost {
                              const string16& display_name,
                              unsigned long estimated_size,
                              bool blocked_by_policy);
+  void OnSetDisplayingPDFContent();
 
  private:
   friend class TestRenderViewHost;

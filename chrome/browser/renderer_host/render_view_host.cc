@@ -834,6 +834,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityTree, OnAccessibilityTree)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetDisplayingPDFContent,
+                        OnSetDisplayingPDFContent)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -1968,3 +1970,8 @@ void RenderViewHost::OnWebDatabaseAccessed(const GURL& url,
     content_settings_delegate->OnWebDatabaseAccessed(
         url, name, display_name, estimated_size, blocked_by_policy);
 }
+
+void RenderViewHost::OnSetDisplayingPDFContent() {
+  delegate_->SetDisplayingPDFContent();
+}
+

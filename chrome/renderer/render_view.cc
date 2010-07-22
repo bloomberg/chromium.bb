@@ -3754,8 +3754,20 @@ WebPlugin* RenderView::CreatePluginInternal(WebFrame* frame,
   scoped_refptr<pepper::PluginModule> pepper_module =
       PepperPluginRegistry::GetInstance()->GetModule(path);
   if (pepper_module) {
-    return new pepper::WebPluginImpl(pepper_module, params,
-                                     pepper_delegate_.AsWeakPtr());
+    WebPlugin* plugin = new pepper::WebPluginImpl(pepper_module, params,
+                                                  pepper_delegate_.AsWeakPtr());
+    if (plugin && !frame->parent() && frame->document().isPluginDocument()) {
+      // If this is a full-page plugin hosting the internal PDF plugin, we want
+      // to notify the browser so that it can treat things like zooming
+      // differently.
+      // TODO(sanjeevr): Use a Pepper interface to determine this rather than
+      // hardcode this for the PDF plugin path.
+      FilePath pdf_path;
+      PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+      if (path == pdf_path)
+        Send(new ViewHostMsg_SetDisplayingPDFContent(routing_id_));
+    }
+    return plugin;
   }
 
   return new webkit_glue::WebPluginImpl(frame, params, path, actual_mime_type,

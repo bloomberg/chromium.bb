@@ -733,6 +733,7 @@ class Browser : public TabStripModelDelegate,
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id);
   virtual Browser* GetBrowser();
+  virtual void ContentTypeChanged(TabContents* source);
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);
@@ -752,6 +753,9 @@ class Browser : public TabStripModelDelegate,
 
   // Update commands whose state depends on the tab's state.
   void UpdateCommandsForTabState();
+
+  // Update zoom commands based on the tab's state
+  void UpdateZoomCommandsForTabState();
 
   // Ask the Reload/Stop button to change its icon, and update the Stop command
   // state.  |is_loading| is true if the current TabContents is loading.
