@@ -25,55 +25,55 @@ class ExtensionBookmarksTest : public testing::Test {
     model_->AddURL(folder, 0, L"Digg", GURL("http://reddit.com"));
     model_->AddURL(folder, 0, L"CNet", GURL("http://cnet.com"));
   }
-  
+
   scoped_ptr<BookmarkModel> model_;
   const BookmarkNode* folder;
 };
 TEST_F(ExtensionBookmarksTest, GetFullTreeFromRoot) {
-  DictionaryValue* tree =
-      extension_bookmark_helpers::GetNodeDictionary(model_->other_node(),
-                                                    true, // recurse
-                                                    false); // not only folders
+  DictionaryValue* tree = extension_bookmark_helpers::GetNodeDictionary(
+      model_->other_node(),
+      true,    // Recurse.
+      false);  // Not only folders.
   ListValue* children;
   tree->GetList(keys::kChildrenKey, &children);
   ASSERT_EQ(3U, children->GetSize());
 }
 
 TEST_F(ExtensionBookmarksTest, GetFoldersOnlyFromRoot) {
-  DictionaryValue* tree =
-      extension_bookmark_helpers::GetNodeDictionary(model_->other_node(),
-                                                    true, // recurse
-                                                    true); // only folders
+  DictionaryValue* tree = extension_bookmark_helpers::GetNodeDictionary(
+      model_->other_node(),
+      true,   // Recurse.
+      true);  // Only folders.
   ListValue* children;
   tree->GetList(keys::kChildrenKey, &children);
   ASSERT_EQ(1U, children->GetSize());
 }
 
 TEST_F(ExtensionBookmarksTest, GetSubtree) {
-  DictionaryValue* tree =
-      extension_bookmark_helpers::GetNodeDictionary(folder,
-                                                    true, // recurse
-                                                    false); // not only folders
+  DictionaryValue* tree = extension_bookmark_helpers::GetNodeDictionary(
+      folder,
+      true,    // Recurse.
+      false);  // Not only folders.
   ListValue* children;
   tree->GetList(keys::kChildrenKey, &children);
   ASSERT_EQ(4U, children->GetSize());
   DictionaryValue* digg;
-  children->GetDictionary(1,&digg);
+  ASSERT_TRUE(children->GetDictionary(1, &digg));
   std::string title;
   digg->GetString(keys::kTitleKey, &title);
   ASSERT_EQ("Digg", title);
 }
 
 TEST_F(ExtensionBookmarksTest, GetSubtreeFoldersOnly) {
-  DictionaryValue* tree =
-      extension_bookmark_helpers::GetNodeDictionary(folder,
-                                                    true, // recurse
-                                                    true); // only folders
+  DictionaryValue* tree = extension_bookmark_helpers::GetNodeDictionary(
+      folder,
+      true,   // Recurse.
+      true);  // Only folders.
   ListValue* children;
   tree->GetList(keys::kChildrenKey, &children);
   ASSERT_EQ(2U, children->GetSize());
   DictionaryValue* inner_folder;
-  children->GetDictionary(1,&inner_folder);
+  ASSERT_TRUE(children->GetDictionary(1, &inner_folder));
   std::string title;
   inner_folder->GetString(keys::kTitleKey, &title);
   ASSERT_EQ("inner folder 1", title);
