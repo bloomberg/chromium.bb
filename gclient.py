@@ -154,7 +154,12 @@ class Dependency(GClientKeywords):
     # A cache of the files affected by the current operation, necessary for
     # hooks.
     self.file_list = []
+    # If it is not set to True, the dependency wasn't processed for its child
+    # dependency, i.e. its DEPS wasn't read.
     self.deps_parsed = False
+    # A direct reference is dependency that is referenced by a deps, deps_os or
+    # solution. A indirect one is one that was loaded with From() or that
+    # exceeded recursion limit.
     self.direct_reference = False
 
     # Sanity checks
@@ -291,6 +296,8 @@ class Dependency(GClientKeywords):
       if name in [s.name for s in self.dependencies]:
         raise
       self.dependencies.append(Dependency(self, name, url))
+    # Note: do not sort by name, the dependencies must be specified in the
+    # logical order.
     logging.info('Loaded: %s' % str(self))
 
   def RunCommandRecursively(self, options, revision_overrides,
