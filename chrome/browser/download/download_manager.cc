@@ -631,22 +631,21 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
   // - incognito mode (that is the point of this mode)
   // - extensions (users don't think of extension installation as 'downloading')
   // - temporary download, like in drag-and-drop
+  // - history service is not available (e.g. in tests)
   // We have to make sure that these handles don't collide with normal db
   // handles, so we use a negative value. Eventually, they could overlap, but
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
+  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
+  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (download->is_otr() || download->is_extension_install() ||
-      download->is_temporary()) {
+      download->is_temporary() || !hs) {
     OnCreateDownloadEntryComplete(*info, fake_db_handle_.GetNext());
   } else {
     // Update the history system with the new download.
-    // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
-    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (hs) {
-      hs->CreateDownload(
-          *info, &cancelable_consumer_,
-          NewCallback(this, &DownloadManager::OnCreateDownloadEntryComplete));
-    }
+    hs->CreateDownload(
+        *info, &cancelable_consumer_,
+        NewCallback(this, &DownloadManager::OnCreateDownloadEntryComplete));
   }
 
   UpdateAppIcon();

@@ -59,7 +59,9 @@ class DownloadManagerTest : public testing::Test {
   ~DownloadManagerTest() {
     // profile_ must outlive download_manager_, so we explicitly delete
     // download_manager_ first.
-    download_manager_.release();
+    download_manager_ = NULL;
+    profile_.reset(NULL);
+    message_loop_.RunAllPending();
   }
 
   void GetGeneratedFilename(const std::string& content_disposition,
@@ -763,7 +765,7 @@ const struct {
 
 class MockDownloadFile : public DownloadFile {
  public:
-  MockDownloadFile(DownloadCreateInfo* info)
+  explicit MockDownloadFile(DownloadCreateInfo* info)
       : DownloadFile(info), renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
   MOCK_METHOD2(Rename, bool(const FilePath&, bool));
