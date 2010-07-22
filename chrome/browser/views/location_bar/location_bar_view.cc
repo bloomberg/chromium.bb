@@ -99,7 +99,8 @@ LocationBarView::LocationBarView(Profile* profile,
       star_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(first_run_bubble_(this)) {
+      bubble_type_(FirstRun::MINIMALBUBBLE),
+      template_url_model_(NULL) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
@@ -109,6 +110,8 @@ LocationBarView::LocationBarView(Profile* profile,
 }
 
 LocationBarView::~LocationBarView() {
+  if (template_url_model_)
+    template_url_model_->RemoveObserver(this);
 }
 
 void LocationBarView::Init() {
@@ -946,10 +949,15 @@ bool LocationBarView::CanStartDrag(View* sender,
 // LocationBarView, LocationBar implementation:
 
 void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
-  // We wait 30 milliseconds to open. It allows less flicker.
-  Task* task = first_run_bubble_.NewRunnableMethod(
-      &LocationBarView::ShowFirstRunBubbleInternal, bubble_type);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, task, 30);
+  // Wait until search engines have loaded to show the first run bubble.
+  if (!profile_->GetTemplateURLModel()->loaded()) {
+    bubble_type_ = bubble_type;
+    template_url_model_ = profile_->GetTemplateURLModel();
+    template_url_model_->AddObserver(this);
+    template_url_model_->Load();
+    return;
+  }
+  ShowFirstRunBubbleInternal(bubble_type);
 }
 
 std::wstring LocationBarView::GetInputString() const {
@@ -1035,3 +1043,10 @@ void LocationBarView::TestPageActionPressed(size_t index) {
 
   NOTREACHED();
 }
+
+void LocationBarView::OnTemplateURLModelChanged() {
+  template_url_model_->RemoveObserver(this);
+  template_url_model_ = NULL;
+  ShowFirstRunBubble(bubble_type_);
+}
+
