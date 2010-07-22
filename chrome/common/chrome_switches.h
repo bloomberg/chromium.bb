@@ -97,6 +97,7 @@ extern const char kEnableBenchmarking[];
 extern const char kEnableChromoting[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableCloudPrint[];
+extern const char kEnableDeviceOrientation[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExperimentalWebGL[];
 extern const char kEnableExtensionTimelineApi[];

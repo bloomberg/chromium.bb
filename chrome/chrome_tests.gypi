@@ -1515,6 +1515,7 @@
         'browser/chromeos/update_browsertest.cc',
         'browser/cocoa/view_id_util_browsertest.mm',
         'browser/crash_recovery_browsertest.cc',
+        'browser/device_orientation/enable_switch_browsertest.cc',
         'browser/dom_ui/file_browse_browsertest.cc',
         'browser/dom_ui/mediaplayer_browsertest.cc',
         'browser/download/save_page_browsertest.cc',

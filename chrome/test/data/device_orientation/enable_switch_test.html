@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>DeviceOrientationEnableSwitchTest</title>
+    <script type="text/javascript">
+      var failed = false;
+      function pass() {
+        if (failed)
+          return;
+        document.getElementById('status').innerHTML = 'PASS';
+        document.location = '#pass';
+      }
+      function fail() {
+        document.getElementById('status').innerHTML = 'FAIL';
+        document.location = '#fail';
+        failed = true;
+      }
+      function run() {
+        for (var property in window) {
+          if (property == "DeviceOrientationEvent")
+            fail();
+          if (property == "ondeviceorientation")
+            fail();
+        }
+
+        pass();
+      }
+    </script>
+  </head>
+  <body onload="run()">
+    <div id="status">Running...</div>
+  </body>
+</html>
