@@ -672,6 +672,7 @@
         # To allow including "chrome_tab.h"
         '<(INTERMEDIATE_DIR)',
         '<(INTERMEDIATE_DIR)/../chrome_frame',
+        '<(DEPTH)/third_party/wtl/include',
       ],
       'conditions': [
         ['OS=="win"', {
