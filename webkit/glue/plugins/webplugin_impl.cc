@@ -340,6 +340,10 @@ bool WebPluginImpl::acceptsInputEvents() {
 
 bool WebPluginImpl::handleInputEvent(
     const WebInputEvent& event, WebCursorInfo& cursor_info) {
+  // Swallow context menu events in order to suppress the default context menu.
+  if (event.type == WebInputEvent::ContextMenu)
+    return true;
+
   return delegate_->HandleInputEvent(event, &cursor_info);
 }
 
