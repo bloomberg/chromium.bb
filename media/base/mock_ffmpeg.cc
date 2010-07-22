@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ MockFFmpeg::MockFFmpeg()
     EXPECT_CALL(*this, AVCodecInit())
         .Times(AtMost(1))
         .WillOnce(Return());
-    EXPECT_CALL(*this, AVRegisterProtocol2(_,_))
+    EXPECT_CALL(*this, AVRegisterProtocol(_))
         .Times(AtMost(1))
         .WillOnce(DoAll(SaveArg<0>(&protocol_), Return(0)));
     EXPECT_CALL(*this, AVRegisterAll())
@@ -89,8 +89,8 @@ void avcodec_init() {
   media::MockFFmpeg::get()->AVCodecInit();
 }
 
-int av_register_protocol2(URLProtocol* protocol, int size) {
-  return media::MockFFmpeg::get()->AVRegisterProtocol2(protocol, size);
+int av_register_protocol(URLProtocol* protocol) {
+  return media::MockFFmpeg::get()->AVRegisterProtocol(protocol);
 }
 
 void av_register_all() {
