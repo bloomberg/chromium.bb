@@ -43,7 +43,6 @@ namespace chromeos {
 
 namespace {
 
-const int kWifiTimeoutInMS = 30000;
 static char kIncognitoUser[] = "incognito";
 
 // Prefix for Auth token received from ClientLogin request.
@@ -57,15 +56,12 @@ class LoginUtilsImpl : public LoginUtils,
                        public NotificationObserver {
  public:
   LoginUtilsImpl()
-      : wifi_connecting_(false),
-        browser_launch_enabled_(true) {
+      : browser_launch_enabled_(true) {
     registrar_.Add(
         this,
         NotificationType::LOGIN_USER_CHANGED,
         NotificationService::AllSources());
   }
-
-  virtual bool ShouldWaitForWifi();
 
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
@@ -100,9 +96,6 @@ class LoginUtilsImpl : public LoginUtils,
   void ConnectToPreferredNetwork();
 
   NotificationRegistrar registrar_;
-  bool wifi_connecting_;
-  bool wifi_connection_started_;
-  base::Time wifi_connect_start_time_;
 
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
   bool browser_launch_enabled_;
@@ -135,44 +128,6 @@ class LoginUtilsWrapper {
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
 };
-
-bool LoginUtilsImpl::ShouldWaitForWifi() {
-  // If we are connecting to the preferred network,
-  // wait kWifiTimeoutInMS until connection is made or failed.
-  if (wifi_connecting_) {
-    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-    bool failed = false;
-    if (cros->PreferredNetworkConnected()) {
-      base::TimeDelta diff = base::Time::Now() - wifi_connect_start_time_;
-      LOG(INFO) << "Wifi connection successful after " << diff.InSeconds() <<
-          " seconds.";
-      return false;
-    } else if (cros->PreferredNetworkFailed()) {
-      // Sometimes we stay in the failed state before connection starts.
-      // So we only know for sure that connection failed if we get a failed
-      // state after connection has started.
-      if (wifi_connection_started_) {
-        LOG(INFO) << "Wifi connection failed.";
-        return false;
-      }
-      failed = true;
-    }
-
-    // If state is not failed, then we know connection has started.
-    if (!wifi_connection_started_ && !failed) {
-      LOG(INFO) << "Wifi connection started.";
-      wifi_connection_started_ = true;
-    }
-
-    base::TimeDelta diff = base::Time::Now() - wifi_connect_start_time_;
-    // Keep waiting if we have not timed out yet.
-    bool timedout = (diff.InMilliseconds() > kWifiTimeoutInMS);
-    if (timedout)
-      LOG(INFO) << "Wifi connection timed out.";
-    return !timedout;
-  }
-  return false;
-}
 
 void LoginUtilsImpl::CompleteLogin(const std::string& username,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
@@ -248,11 +203,8 @@ void LoginUtilsImpl::Observe(NotificationType type,
 }
 
 void LoginUtilsImpl::ConnectToPreferredNetwork() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  wifi_connection_started_ = false;
-  wifi_connecting_ = cros->ConnectToPreferredNetworkIfAvailable();
-  if (wifi_connecting_)
-    wifi_connect_start_time_ = base::Time::Now();
+  CrosLibrary::Get()->GetNetworkLibrary()->
+      ConnectToPreferredNetworkIfAvailable();
 }
 
 LoginUtils* LoginUtils::Get() {
@@ -264,14 +216,6 @@ void LoginUtils::Set(LoginUtils* mock) {
 }
 
 void LoginUtils::DoBrowserLaunch(Profile* profile) {
-  // If we should wait for wifi connection, post this task with a 100ms delay.
-  if (LoginUtils::Get()->ShouldWaitForWifi()) {
-    ChromeThread::PostDelayedTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableFunction(&LoginUtils::DoBrowserLaunch, profile), 100);
-    return;
-  }
-
   // Browser launch was disabled due to some post login screen.
   if (!LoginUtils::Get()->IsBrowserLaunchEnabled())
     return;

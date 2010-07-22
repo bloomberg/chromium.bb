@@ -39,9 +39,6 @@ class LoginUtils {
 
   virtual ~LoginUtils() {}
 
-  // Returns true if we are still waiting for wifi connection.
-  virtual bool ShouldWaitForWifi() = 0;
-
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
   virtual void CompleteLogin(const std::string& username,
