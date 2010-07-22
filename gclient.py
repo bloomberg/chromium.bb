@@ -427,7 +427,7 @@ class Dependency(GClientKeywords):
     # Add breadth-first.
     if self.direct_reference or force_all:
       for d in self.dependencies:
-          result.append(d)
+        result.append(d)
       for d in self.dependencies:
         result.extend(d.subtree(force_all))
     return result
