@@ -9,7 +9,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_BROWSER_INTERFACE_PPAPI_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_BROWSER_INTERFACE_PPAPI_H_
 
-#include <string>
+#include <map>
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
@@ -54,6 +54,12 @@ class BrowserInterfacePpapi : public BrowserInterface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(BrowserInterfacePpapi);
+
+  // Map strings used for property and method names to unique ids and back.
+  typedef std::map<nacl::string, uintptr_t> StringToIdentifierMap;
+  typedef std::map<uintptr_t, nacl::string> IdentifierToStringMap;
+  StringToIdentifierMap string_to_identifier_map_;
+  IdentifierToStringMap identifier_to_string_map_;
 };
 
 // Convert from the API-independent instance identifier to the PPAPI

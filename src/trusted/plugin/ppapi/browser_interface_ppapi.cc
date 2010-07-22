@@ -4,6 +4,8 @@
  * be found in the LICENSE file.
  */
 
+#include <assert.h>
+
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 
 #include "native_client/src/include/checked_cast.h"
@@ -30,13 +32,21 @@ bool GetWindow(plugin::InstanceIdentifier instance_id, pp::Var* window) {
 namespace plugin {
 
 uintptr_t BrowserInterfacePpapi::StringToIdentifier(const nacl::string& str) {
-  return reinterpret_cast<uintptr_t>(new pp::Var(str));
+  StringToIdentifierMap::iterator iter = string_to_identifier_map_.find(str);
+  if (iter == string_to_identifier_map_.end()) {
+    uintptr_t id = reinterpret_cast<uintptr_t>(str.c_str());
+    string_to_identifier_map_.insert(make_pair(str, id));
+    identifier_to_string_map_.insert(make_pair(id, str));
+    return id;
+  }
+  return string_to_identifier_map_[str];
 }
 
 
 nacl::string BrowserInterfacePpapi::IdentifierToString(uintptr_t ident) {
-  pp::Var* var = reinterpret_cast<pp::Var*>(ident);
-  return var->AsString();
+  assert(identifier_to_string_map_.find(ident) !=
+         identifier_to_string_map_.end());
+  return identifier_to_string_map_[ident];
 }
 
 
