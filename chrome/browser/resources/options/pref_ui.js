@@ -41,12 +41,10 @@ PrefCheckbox.prototype = {
 cr.defineProperty(PrefCheckbox, 'pref', cr.PropertyKind.ATTR);
 
 ///////////////////////////////////////////////////////////////////////////////
-// PrefRange class:
+// PrefNumeric class:
 
-// Define a constructor that uses an input element as its underlying element.
-var PrefRange = cr.ui.define('input');
-
-PrefRange.prototype = {
+var PrefNumeric = function() {};
+PrefNumeric.prototype = {
   // Set up the prototype chain
   __proto__: HTMLInputElement.prototype,
 
@@ -54,7 +52,6 @@ PrefRange.prototype = {
    * Initialization function for the cr.ui framework.
    */
   decorate: function() {
-    this.type = 'range';
     var self = this;
 
     // Listen to pref changes.
@@ -75,7 +72,45 @@ PrefRange.prototype = {
  * The preference name.
  * @type {string}
  */
-cr.defineProperty(PrefRange, 'pref', cr.PropertyKind.ATTR);
+cr.defineProperty(PrefNumeric, 'pref', cr.PropertyKind.ATTR);
+
+///////////////////////////////////////////////////////////////////////////////
+// PrefNumber class:
+
+// Define a constructor that uses an input element as its underlying element.
+var PrefNumber = cr.ui.define('input');
+
+PrefNumber.prototype = {
+  // Set up the prototype chain
+  __proto__: PrefNumeric.prototype,
+
+  /**
+   * Initialization function for the cr.ui framework.
+   */
+  decorate: function() {
+    this.type = 'number';
+    PrefNumeric.prototype.decorate.call(this);
+  }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// PrefRange class:
+
+// Define a constructor that uses an input element as its underlying element.
+var PrefRange = cr.ui.define('input');
+
+PrefRange.prototype = {
+  // Set up the prototype chain
+  __proto__: PrefNumeric.prototype,
+
+  /**
+   * Initialization function for the cr.ui framework.
+   */
+  decorate: function() {
+    this.type = 'range';
+    PrefNumeric.prototype.decorate.call(this);
+  }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // PrefSelect class:
@@ -109,6 +144,15 @@ PrefSelect.prototype = {
         function(e) {
           Preferences.setStringPref(self.pref,
               self.options[self.selectedIndex].value);
+        });
+
+    // Initialize options.
+    this.ownerDocument.addEventListener('DOMContentLoaded',
+        function() {
+          var values = self.getAttribute('data-values');
+          if (values) {
+            self.initializeValues(templateData[values]);
+          }
         });
   },
 

@@ -53,6 +53,9 @@ void CoreOptionsHandler::GetLocalizedValues(
 #if defined(OS_CHROMEOS)
   localized_strings->SetString(L"internetPage",
       l10n_util::GetString(IDS_OPTIONS_INTERNET_TAB_LABEL));
+  localized_strings->SetString(L"languageChewingPage",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE));
   localized_strings->SetString(L"languageHangulPage",
       l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE));

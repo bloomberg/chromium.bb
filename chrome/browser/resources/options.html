@@ -48,6 +48,10 @@ function load() {
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.register(AccountsOptions.getInstance());
     // TODO(mazda): uncomment this once the language options is ready
+    // OptionsPage.register(new OptionsPage(
+    //     'languageChewing',
+    //     localStrings.getString('languageChewingPage'),
+    //     'languageChewingPage'));
     // OptionsPage.register(LanguageHangulOptions.getInstance());
   }
 
@@ -131,8 +135,11 @@ window.onpopstate = function(e) {
         <include src="options/chromeos_language_options.html">
         <include src="options/chromeos_labs.html">
         <include src="options/chromeos_accounts_options.html">
-        <!-- TODO(mazda): include options/chromeos_language_hangul_options.html
-             once the language options dialog is ready. -->
+        <!-- TODO(mazda): include the following htmls once the language options
+             dialog is ready.
+             - options/chromeos_language_chewing_options.html
+             - options/chromeos_language_hangul_options.html
+        -->
      </if>
      <include src="options/browser_options.html">
      <include src="options/personal_options.html">
@@ -145,6 +152,7 @@ window.onpopstate = function(e) {
 <script>
 // Decorate the existing elements in the document.
 cr.ui.decorate('input[pref][type=checkbox]', PrefCheckbox);
+cr.ui.decorate('input[pref][type=number]', PrefNumber);
 cr.ui.decorate('input[pref][type=range]', PrefRange);
 cr.ui.decorate('select[pref]', PrefSelect);
 cr.ui.decorate('input[pref][type=url]', PrefTextField);

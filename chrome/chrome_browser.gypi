@@ -398,6 +398,8 @@
         'browser/chromeos/dom_ui/core_chromeos_options_handler.h',
         'browser/chromeos/dom_ui/labs_handler.cc',
         'browser/chromeos/dom_ui/labs_handler.h',
+        'browser/chromeos/dom_ui/language_chewing_options_handler.cc',
+        'browser/chromeos/dom_ui/language_chewing_options_handler.h',
         'browser/chromeos/dom_ui/language_hangul_options_handler.cc',
         'browser/chromeos/dom_ui/language_hangul_options_handler.h',
         'browser/chromeos/dom_ui/language_options_handler.cc',
