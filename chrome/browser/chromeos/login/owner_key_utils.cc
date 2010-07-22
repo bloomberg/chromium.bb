@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/owner_manager.h"
+#include "chrome/browser/chromeos/login/owner_key_utils.h"
 
 #include <keyhi.h>     // SECKEY_CreateSubjectPublicKeyInfo()
 #include <pk11pub.h>
@@ -21,19 +21,73 @@
 #include "base/string_util.h"
 
 // static
-const char OwnerManager::kOwnerKeyFile[] = "/var/lib/whitelist/owner.key";
+OwnerKeyUtils::Factory* OwnerKeyUtils::factory_ = NULL;
+
+class OwnerKeyUtilsImpl : public OwnerKeyUtils {
+ public:
+  OwnerKeyUtilsImpl();
+  virtual ~OwnerKeyUtilsImpl();
+
+  bool GenerateKeyPair(SECKEYPrivateKey** private_key_out,
+                               SECKEYPublicKey** public_key_out);
+
+  bool ExportPublicKey(SECKEYPublicKey* key, const FilePath& key_file);
+
+  SECKEYPublicKey* ImportPublicKey(const FilePath& key_file);
+
+ private:
+  // Fills in fields of |key_der| with DER encoded data from a file at
+  // |key_file|.  The caller must pass in a pointer to an actual SECItem
+  // struct for |key_der|.  |key_der->data| should be initialized to NULL
+  // and |key_der->len| should be set to 0.
+  //
+  // Upon success, data is stored in key_der->data, and the caller takes
+  // ownership.  Returns false on error.
+  //
+  // To free the data, call
+  //    SECITEM_FreeItem(key_der, PR_FALSE);
+  static bool ReadDERFromFile(const FilePath& key_file, SECItem* key_der);
+
+  // The place outside the owner's encrypted home directory where her
+  // key will live.
+  static const char kOwnerKeyFile[];
+
+  // Key generation parameters.
+  static const uint32 kKeyGenMechanism;  // used by PK11_GenerateKeyPair()
+  static const unsigned long kExponent;
+  static const int kKeySizeInBits;
+
+  DISALLOW_COPY_AND_ASSIGN(OwnerKeyUtilsImpl);
+};
+
+OwnerKeyUtils::OwnerKeyUtils() {}
+
+OwnerKeyUtils::~OwnerKeyUtils() {}
+
+OwnerKeyUtils* OwnerKeyUtils::Create() {
+  if (!factory_)
+    return new OwnerKeyUtilsImpl();
+  else
+    return factory_->CreateOwnerKeyUtils();
+}
+
+// static
+const char OwnerKeyUtilsImpl::kOwnerKeyFile[] = "/var/lib/whitelist/owner.key";
 
 // We're generating and using 2048-bit RSA keys.
 // static
-const uint32 OwnerManager::kKeyGenMechanism = CKM_RSA_PKCS_KEY_PAIR_GEN;
+const uint32 OwnerKeyUtilsImpl::kKeyGenMechanism = CKM_RSA_PKCS_KEY_PAIR_GEN;
 // static
-const unsigned long OwnerManager::kExponent = 65537UL;
+const unsigned long OwnerKeyUtilsImpl::kExponent = 65537UL;
 // static
-const int OwnerManager::kKeySizeInBits = 2048;
+const int OwnerKeyUtilsImpl::kKeySizeInBits = 2048;
 
-// static
-bool OwnerManager::GenerateKeyPair(SECKEYPrivateKey** private_key_out,
-                                   SECKEYPublicKey** public_key_out) {
+OwnerKeyUtilsImpl::OwnerKeyUtilsImpl(){}
+
+OwnerKeyUtilsImpl::~OwnerKeyUtilsImpl() {}
+
+bool OwnerKeyUtilsImpl::GenerateKeyPair(SECKEYPrivateKey** private_key_out,
+                                        SECKEYPublicKey** public_key_out) {
   DCHECK(private_key_out);
   DCHECK(public_key_out);
 
@@ -115,9 +169,8 @@ bool OwnerManager::GenerateKeyPair(SECKEYPrivateKey** private_key_out,
   return is_success;
 }
 
-// static
-bool OwnerManager::ExportPublicKey(SECKEYPublicKey* key,
-                                   const FilePath& key_file) {
+bool OwnerKeyUtilsImpl::ExportPublicKey(SECKEYPublicKey* key,
+                                        const FilePath& key_file) {
   DCHECK(key);
   SECItem* der;
   bool ok = false;
@@ -147,8 +200,7 @@ bool OwnerManager::ExportPublicKey(SECKEYPublicKey* key,
   return ok;
 }
 
-// static
-SECKEYPublicKey* OwnerManager::ImportPublicKey(const FilePath& key_file) {
+SECKEYPublicKey* OwnerKeyUtilsImpl::ImportPublicKey(const FilePath& key_file) {
   SECItem key_der;
 
   if (!ReadDERFromFile(key_file, &key_der)) {
@@ -173,8 +225,8 @@ SECKEYPublicKey* OwnerManager::ImportPublicKey(const FilePath& key_file) {
 }
 
 // static
-bool OwnerManager::ReadDERFromFile(const FilePath& key_file,
-                                   SECItem* key_der) {
+bool OwnerKeyUtilsImpl::ReadDERFromFile(const FilePath& key_file,
+                                        SECItem* key_der) {
   // I'd use NSS' SECU_ReadDERFromFile() here, but the SECU_* functions are
   // considered internal to the NSS command line utils.
   // This code is lifted, in spirit, from the implementation of that function.

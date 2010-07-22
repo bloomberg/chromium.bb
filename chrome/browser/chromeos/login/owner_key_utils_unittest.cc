@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/owner_manager.h"
+#include "chrome/browser/chromeos/login/owner_key_utils.h"
 
 #include <cert.h>
 #include <keyhi.h>
@@ -17,20 +17,22 @@
 #include "base/logging.h"
 #include "base/nss_util_internal.h"
 #include "base/nss_util.h"
+#include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
-class OwnerManagerTest : public ::testing::Test {
+class OwnerKeyUtilsTest : public ::testing::Test {
  public:
-  OwnerManagerTest()
+  OwnerKeyUtilsTest()
       : private_key_(NULL),
-        public_key_(NULL) {
+        public_key_(NULL),
+        utils_(OwnerKeyUtils::Create()) {
 
   }
-  virtual ~OwnerManagerTest() {}
+  virtual ~OwnerKeyUtilsTest() {}
 
   virtual void SetUp() {
     base::OpenPersistentNSSDB();
@@ -49,24 +51,25 @@ class OwnerManagerTest : public ::testing::Test {
 
   SECKEYPrivateKey* private_key_;
   SECKEYPublicKey* public_key_;
+  scoped_ptr<OwnerKeyUtils> utils_;
 };
 
-TEST_F(OwnerManagerTest, KeyGenerate) {
-  EXPECT_TRUE(OwnerManager::GenerateKeyPair(&private_key_, &public_key_));
+TEST_F(OwnerKeyUtilsTest, KeyGenerate) {
+  EXPECT_TRUE(utils_->GenerateKeyPair(&private_key_, &public_key_));
   EXPECT_TRUE(private_key_ != NULL);
   ASSERT_TRUE(public_key_ != NULL);
   EXPECT_EQ(public_key_->keyType, rsaKey);
 }
 
-TEST_F(OwnerManagerTest, ExportImportPublicKey) {
-  EXPECT_TRUE(OwnerManager::GenerateKeyPair(&private_key_, &public_key_));
+TEST_F(OwnerKeyUtilsTest, ExportImportPublicKey) {
+  EXPECT_TRUE(utils_->GenerateKeyPair(&private_key_, &public_key_));
 
   ScopedTempDir tmpdir;
   FilePath tmpfile;
   ASSERT_TRUE(tmpdir.CreateUniqueTempDir());
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(tmpdir.path(), &tmpfile));
 
-  EXPECT_TRUE(OwnerManager::ExportPublicKey(public_key_, tmpfile));
+  EXPECT_TRUE(utils_->ExportPublicKey(public_key_, tmpfile));
 
   // Now, verify that we can look up the private key, given the public key
   // we exported.  We'll create
@@ -83,7 +86,7 @@ TEST_F(OwnerManagerTest, ExportImportPublicKey) {
   if (NULL == slot)
     goto cleanup;
 
-  from_disk = OwnerManager::ImportPublicKey(tmpfile);
+  from_disk = utils_->ImportPublicKey(tmpfile);
   ASSERT_TRUE(from_disk != NULL);
 
   ck_id = PK11_MakeIDFromPubKey(&(from_disk->u.rsa.modulus));
