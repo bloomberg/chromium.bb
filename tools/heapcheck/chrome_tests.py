@@ -239,7 +239,11 @@ class ChromeTests(object):
 
     # Sets LD_LIBRARY_PATH to the build folder so external libraries can be
     # loaded.
-    os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
+    if (os.getenv("LD_LIBRARY_PATH")):
+      os.putenv("LD_LIBRARY_PATH", "%s:%s" % (os.getenv("LD_LIBRARY_PATH"),
+                                              self._options.build_dir))
+    else:
+      os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
     return heapcheck_test.RunTool(cmd, supp, module)
 
   def TestBase(self):
