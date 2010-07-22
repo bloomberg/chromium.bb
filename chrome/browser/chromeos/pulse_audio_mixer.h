@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 
@@ -20,6 +21,14 @@ namespace chromeos {
 
 class PulseAudioMixer {
  public:
+  enum State {
+    UNINITIALIZED = 0,
+    INITIALIZING,
+    READY,
+    SHUTTING_DOWN,
+    IN_ERROR
+  };
+
   PulseAudioMixer();
   ~PulseAudioMixer();
 
@@ -27,6 +36,9 @@ class PulseAudioMixer {
   // callback when complete with success code.
   typedef Callback1<bool>::Type InitDoneCallback;
   bool Init(InitDoneCallback* callback);
+
+  // Blocking init call guarantees PulseAudio is started before returning.
+  bool InitSync();
 
   // Blocking call. Returns a default of -inf on error.
   double GetVolumeDb() const;
@@ -45,19 +57,13 @@ class PulseAudioMixer {
   // Non-Blocking call.
   void SetMute(bool mute);
 
-  // Call any time to see if we have a valid working connection to PulseAudio.
-  // Non-blocking call.
-  bool IsValid() const;
+  // Returns READY if we have a valid working connection to PulseAudio.
+  // This can return IN_ERROR if we lose the connection, even after an original
+  // successful init.  Non-blocking call.
+  State CheckState() const;
 
  private:
   struct AudioInfo;
-
-  enum State {
-    UNINITIALIZED = 0,
-    INITIALIZING,
-    READY,
-    SHUTTING_DOWN
-  };
 
   // These are the tasks to be run in the background on the worker thread.
   void DoInit(InitDoneCallback* callback);
@@ -66,6 +72,9 @@ class PulseAudioMixer {
   static void ConnectToPulseCallbackThunk(pa_context* c, void* userdata);
   void OnConnectToPulseCallback(pa_context* c, bool* connect_done);
 
+  // Helper function to just get our messsage loop thread going
+  bool InitThread();
+
   // This goes through sequence of connecting to the default PulseAudio server.
   // We will block until we either have a valid connection or something failed.
   // If a connection is lost for some reason, delete and recreate the object.
@@ -73,11 +82,6 @@ class PulseAudioMixer {
 
   // PulseAudioFree.  Disconnect from server.
   void PulseAudioFree();
-
-  // Check if the PA system is ready for communication, as well as if a default
-  // device is available to talk to.  This can return false if we lose the
-  // connection, even after an original successful init.
-  bool PulseAudioValid() const;
 
   // Iterates the PA mainloop and only returns once an operation has completed
   // (successfully or unsuccessfully).  This call only blocks the worker thread.
@@ -101,12 +105,18 @@ class PulseAudioMixer {
                                    int eol,
                                    void* userdata);
 
+  void set_mixer_state(State state) {
+    AutoLock lock(mixer_state_lock_);
+    mixer_state_ = state;
+  }
+
   // The PulseAudio index of the main device being used.
   mutable int device_id_;
 
   // Set to the number of channels on the main device.
   int last_channels_;
-  State mixer_state_;
+  mutable Lock mixer_state_lock_;
+  mutable State mixer_state_;
 
   // Cached contexts for use in PulseAudio calls.
   pa_context* pa_context_;

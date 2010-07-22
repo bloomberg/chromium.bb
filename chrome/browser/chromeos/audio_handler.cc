@@ -21,6 +21,8 @@ const double kMaxVolumeDb = 6.0;
 // A value of less than one adjusts quieter volumes in larger steps (giving
 // finer resolution in the higher volumes).
 const double kVolumeBias = 0.5;
+// If a connection is lost, we try again this many times
+const int kMaxReconnectTries = 4;
 
 }  // namespace
 
@@ -28,11 +30,9 @@ const double kVolumeBias = 0.5;
 // handles the volume level logic.
 
 // TODO(davej): Serialize volume/mute for next startup?
-// TODO(davej): Should we try to regain a connection if for some reason all was
-// initialized fine, but later IsValid() returned false?  Maybe N retries?
 
-double AudioHandler::GetVolumePercent() const {
-  if (!SanityCheck())
+double AudioHandler::GetVolumePercent() {
+  if (!VerifyMixerConnection())
     return 0;
 
   return VolumeDbToPercent(mixer_->GetVolumeDb());
@@ -41,7 +41,7 @@ double AudioHandler::GetVolumePercent() const {
 // Set volume using our internal 0-100% range.  Notice 0% is a special case of
 // silence, so we set the mixer volume to kSilenceDb instead of kMinVolumeDb.
 void AudioHandler::SetVolumePercent(double volume_percent) {
-  if (!SanityCheck())
+  if (!VerifyMixerConnection())
     return;
   DCHECK(volume_percent >= 0.0);
 
@@ -55,7 +55,7 @@ void AudioHandler::SetVolumePercent(double volume_percent) {
 }
 
 void AudioHandler::AdjustVolumeByPercent(double adjust_by_percent) {
-  if (!SanityCheck())
+  if (!VerifyMixerConnection())
     return;
 
   DLOG(INFO) << "Adjusting Volume by " << adjust_by_percent << " percent";
@@ -79,15 +79,15 @@ void AudioHandler::AdjustVolumeByPercent(double adjust_by_percent) {
     mixer_->SetVolumeDb(new_volume);
 }
 
-bool AudioHandler::IsMute() const {
-  if (!SanityCheck())
+bool AudioHandler::IsMute() {
+  if (!VerifyMixerConnection())
     return false;
 
   return mixer_->IsMute();
 }
 
 void AudioHandler::SetMute(bool do_mute) {
-  if (!SanityCheck())
+  if (!VerifyMixerConnection())
     return;
 
   DLOG(INFO) << "Setting Mute to " << do_mute;
@@ -101,7 +101,8 @@ void AudioHandler::OnMixerInitialized(bool success) {
 }
 
 AudioHandler::AudioHandler()
-    : connected_(false) {
+    : connected_(false),
+      reconnect_tries_(0) {
   mixer_.reset(new PulseAudioMixer());
   if (!mixer_->Init(NewCallback(this, &AudioHandler::OnMixerInitialized))) {
     LOG(ERROR) << "Unable to connect to PulseAudio";
@@ -111,20 +112,36 @@ AudioHandler::AudioHandler()
 AudioHandler::~AudioHandler() {
 };
 
-inline bool AudioHandler::SanityCheck() const {
-  if (!mixer_->IsValid()) {
-    if (connected_) {
-      // Something happened and the mixer is no longer valid after having been
-      // initialized earlier.
-      // TODO(davej): Try to reconnect now?
-      connected_ = false;
-      LOG(ERROR) << "Lost connection to PulseAudio";
-    } else {
-      LOG(ERROR) << "Mixer not valid";
-    }
-    return false;
+bool AudioHandler::VerifyMixerConnection() {
+  PulseAudioMixer::State mixer_state = mixer_->CheckState();
+  if (mixer_state == PulseAudioMixer::READY)
+    return true;
+  if (connected_) {
+    // Something happened and the mixer is no longer valid after having been
+    // initialized earlier.
+    connected_ = false;
+    LOG(ERROR) << "Lost connection to PulseAudio";
+  } else {
+    LOG(ERROR) << "Mixer not valid";
   }
-  return true;
+
+  if ((mixer_state == PulseAudioMixer::INITIALIZING) ||
+      (mixer_state == PulseAudioMixer::SHUTTING_DOWN))
+    return false;
+
+  if (reconnect_tries_ < kMaxReconnectTries) {
+    reconnect_tries_++;
+    LOG(INFO) << "Re-connecting to PulseAudio attempt " << reconnect_tries_
+              << "/" << kMaxReconnectTries;
+    mixer_.reset(new PulseAudioMixer());
+    connected_ = mixer_->InitSync();
+    if (connected_) {
+      reconnect_tries_ = 0;
+      return true;
+    }
+    LOG(ERROR) << "Unable to re-connect to PulseAudio";
+  }
+  return false;
 }
 
 // VolumeDbToPercent() and PercentToVolumeDb() conversion functions allow us

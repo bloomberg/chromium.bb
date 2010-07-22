@@ -22,7 +22,7 @@ class AudioHandler {
   // Volume may go above 100% if another process changes PulseAudio's volume.
   // Returns default of 0 on error.  This function will block until the volume
   // is retrieved or fails.  Blocking call.
-  double GetVolumePercent() const;
+  double GetVolumePercent();
 
   // Set volume level from 0-100%.  Volumes above 100% are OK and boost volume,
   // although clipping will occur more at higher volumes.  Volume gets quieter
@@ -36,7 +36,7 @@ class AudioHandler {
 
   // Just returns true if mute, false if not or an error occurred.
   // Blocking call.
-  bool IsMute() const;
+  bool IsMute();
 
   // Mutes all audio.  Non-blocking call.
   void SetMute(bool do_mute);
@@ -50,14 +50,15 @@ class AudioHandler {
 
   AudioHandler();
   virtual ~AudioHandler();
-  inline bool SanityCheck() const;
+  bool VerifyMixerConnection();
 
   // Conversion between our internal scaling (0-100%) and decibels.
   static double VolumeDbToPercent(double volume_db);
   static double PercentToVolumeDb(double volume_percent);
 
   scoped_ptr<PulseAudioMixer> mixer_;
-  mutable bool connected_;  // Mutable for sanity checking only
+  bool connected_;
+  int reconnect_tries_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);
 };

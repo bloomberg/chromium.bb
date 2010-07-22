@@ -58,27 +58,24 @@ PulseAudioMixer::~PulseAudioMixer() {
 }
 
 bool PulseAudioMixer::Init(InitDoneCallback* callback) {
-  // Just start up worker thread, then post the task of starting up, which can
-  // block for 200-500ms, so best not to do it on this thread.
-  if (mixer_state_ != UNINITIALIZED)
+  if (!InitThread())
     return false;
 
-  mixer_state_ = INITIALIZING;
-  if (thread_ == NULL) {
-    thread_.reset(new base::Thread("PulseAudioMixer"));
-    if (!thread_->Start()) {
-      thread_.reset();
-      return false;
-    }
-  }
+  // Post the task of starting up, which can block for 200-500ms,
+  // so best not to do it on the caller's thread.
   thread_->message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &PulseAudioMixer::DoInit,
-                        callback));
+    NewRunnableMethod(this, &PulseAudioMixer::DoInit, callback));
   return true;
 }
 
+bool PulseAudioMixer::InitSync() {
+  if (!InitThread())
+    return false;
+  return PulseAudioInit();
+}
+
 double PulseAudioMixer::GetVolumeDb() const {
-  if (!PulseAudioValid())
+  if (CheckState() != READY)
     return pa_sw_volume_to_dB(0);  // this returns -inf
   AudioInfo data;
   GetAudioInfo(&data);
@@ -87,7 +84,7 @@ double PulseAudioMixer::GetVolumeDb() const {
 
 void PulseAudioMixer::GetVolumeDbAsync(GetVolumeCallback* callback,
                                        void* user) {
-  if (!PulseAudioValid())
+  if (CheckState() != READY)
     return;
   thread_->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this,
@@ -96,7 +93,7 @@ void PulseAudioMixer::GetVolumeDbAsync(GetVolumeCallback* callback,
 }
 
 void PulseAudioMixer::SetVolumeDb(double vol_db) {
-  if (!PulseAudioValid())
+  if (CheckState() != READY)
     return;
 
   // last_channels_ determines the number of channels on the main output device,
@@ -118,7 +115,7 @@ void PulseAudioMixer::SetVolumeDb(double vol_db) {
 }
 
 bool PulseAudioMixer::IsMute() const {
-  if (!PulseAudioValid())
+  if (CheckState() != READY)
     return false;
   AudioInfo data;
   GetAudioInfo(&data);
@@ -126,7 +123,7 @@ bool PulseAudioMixer::IsMute() const {
 }
 
 void PulseAudioMixer::SetMute(bool mute) {
-  if (!PulseAudioValid())
+  if (CheckState() != READY)
     return;
   pa_operation* pa_op;
   pa_threaded_mainloop_lock(pa_mainloop_);
@@ -136,14 +133,13 @@ void PulseAudioMixer::SetMute(bool mute) {
   pa_threaded_mainloop_unlock(pa_mainloop_);
 }
 
-bool PulseAudioMixer::IsValid() const {
-  if (mixer_state_ == READY)
-    return true;
-  if (!pa_context_)
-    return false;
-  if (pa_context_get_state(pa_context_) != PA_CONTEXT_READY)
-    return false;
-  return true;
+PulseAudioMixer::State PulseAudioMixer::CheckState() const {
+  AutoLock lock(mixer_state_lock_);
+  // If we think it's ready, verify it is actually so.
+  if ((mixer_state_ == READY) &&
+      (pa_context_get_state(pa_context_) != PA_CONTEXT_READY))
+    mixer_state_ = IN_ERROR;
+  return mixer_state_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,6 +155,24 @@ void PulseAudioMixer::DoGetVolume(GetVolumeCallback* callback,
                                   void* user) {
   callback->Run(GetVolumeDb(), user);
   delete callback;
+}
+
+bool PulseAudioMixer::InitThread() {
+  {
+    AutoLock lock(mixer_state_lock_);
+    if (mixer_state_ != UNINITIALIZED)
+      return false;
+    mixer_state_ = INITIALIZING;
+  }
+
+  if (thread_ == NULL) {
+    thread_.reset(new base::Thread("PulseAudioMixer"));
+    if (!thread_->Start()) {
+      thread_.reset();
+      return false;
+    }
+  }
+  return true;
 }
 
 struct ConnectToPulseCallbackData {
@@ -256,8 +270,10 @@ bool PulseAudioMixer::PulseAudioInit() {
 
     last_channels_ = 0;
     GetDefaultPlaybackDevice();
-    mixer_state_ = READY;
+    if (device_id_ == kInvalidDeviceId)
+      break;
 
+    set_mixer_state(READY);
     return true;
   }
 
@@ -269,9 +285,8 @@ bool PulseAudioMixer::PulseAudioInit() {
 void PulseAudioMixer::PulseAudioFree() {
   if (!pa_mainloop_)
     return;
-
   DCHECK_NE(mixer_state_, UNINITIALIZED);
-  mixer_state_ = SHUTTING_DOWN;
+  set_mixer_state(SHUTTING_DOWN);
 
   if (pa_context_) {
     pa_threaded_mainloop_lock(pa_mainloop_);
@@ -285,25 +300,7 @@ void PulseAudioMixer::PulseAudioFree() {
   pa_threaded_mainloop_free(pa_mainloop_);
   pa_mainloop_ = NULL;
 
-  mixer_state_ = UNINITIALIZED;
-}
-
-bool PulseAudioMixer::PulseAudioValid() const {
-  if (mixer_state_ != READY)
-    return false;
-  if (!pa_context_) {
-    DLOG(ERROR) << "Trying to use PulseAudio when no context";
-    return false;
-  }
-  if (pa_context_get_state(pa_context_) != PA_CONTEXT_READY) {
-    LOG(ERROR) << "PulseAudio context not ready ("
-               << pa_context_get_state(pa_context_) << ")";
-    return false;
-  }
-  if (device_id_ == kInvalidDeviceId)
-    return false;
-
-  return true;
+  set_mixer_state(UNINITIALIZED);
 }
 
 void PulseAudioMixer::CompleteOperationAndUnlock(pa_operation* pa_op) const {
