@@ -825,7 +825,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif  // !defined(OS_MACOSX)
   }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  // gdk_pixbuf_loader_write always fails on chromeos device.
+  // Disabling for chromeos as well because chromeos is not using them.
+  // http://crosbug.com/4996 .
   gtk_util::SetDefaultWindowIcon();
 #endif
 
