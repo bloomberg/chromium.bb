@@ -13,7 +13,6 @@ BUG49912 : fast/dom/prototype-inheritance.html = TEXT
 
 // TODO(bulach): remove after upstream rebaselines are rolled
 BUG49920 : fast/borders/different-color-borders.html = FAIL
-BUG49920 LINUX : animations/play-state.html = FAIL
 BUG49920 MAC : fast/borders/border-radius-constraints.html = FAIL
 BUG49920 MAC : fast/borders/border-radius-huge-assert.html = FAIL
 BUG49920 MAC : fast/borders/border-radius-split-inline.html = FAIL
