@@ -151,6 +151,8 @@ void AutoFillProfilesView::AddClicked(int group_type) {
 void AutoFillProfilesView::EditClicked() {
   DCHECK(scroll_view_);
   int index = scroll_view_->FirstSelectedRow();
+  if (index == -1)
+    return;  // Happens if user double clicks and the table is empty.
   DCHECK(index >= 0);
   DCHECK(index < static_cast<int>(profiles_set_.size() +
       credit_card_set_.size()));
@@ -717,19 +719,44 @@ AutoFillProfilesView::EditableSetViewContents::GetDialogButtonLabel(
 bool AutoFillProfilesView::EditableSetViewContents::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
-  case MessageBoxFlags::DIALOGBUTTON_OK: {
-    bool phones_are_valid = true;
-    for (std::vector<PhoneSubView*>::const_iterator it =
-             phone_sub_views_.begin();
-         it != phone_sub_views_.end() && phones_are_valid; ++it)
-      phones_are_valid = (phones_are_valid && (*it)->IsValid());
-
-    return phones_are_valid;
-  }
-  case MessageBoxFlags::DIALOGBUTTON_CANCEL:
-    return true;
-  default:
-    break;
+    case MessageBoxFlags::DIALOGBUTTON_OK: {
+      // Enable the ok button if at least one non-phone number field has text,
+      // or the phone numbers are valid.
+      bool valid = false;
+      TextFieldToAutoFill* fields;
+      int field_count;
+      if (temporary_info_.is_address) {
+        fields = address_fields_;
+        field_count = arraysize(address_fields_);
+      } else {
+        fields = credit_card_fields_;
+        field_count = arraysize(credit_card_fields_);
+      }
+      for (int i = 0; i < field_count; ++i) {
+        DCHECK(text_fields_[fields[i].text_field]);
+        // Phone and fax are handled separately.
+        if (fields[i].text_field != TEXT_PHONE_PHONE &&
+            fields[i].text_field != TEXT_FAX_PHONE &&
+            !text_fields_[fields[i].text_field]->text().empty()) {
+          valid = true;
+          break;
+        }
+      }
+      for (std::vector<PhoneSubView*>::const_iterator i =
+               phone_sub_views_.begin(); i != phone_sub_views_.end(); ++i) {
+        if (!(*i)->IsValid()) {
+          valid = false;
+          break;
+        } else if (!valid && !(*i)->text_phone()->text().empty()) {
+          valid = true;
+        }
+      }
+      return valid;
+    }
+    case MessageBoxFlags::DIALOGBUTTON_CANCEL:
+      return true;
+    default:
+      break;
   }
   NOTREACHED();
   return false;

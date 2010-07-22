@@ -200,6 +200,8 @@ class AutoFillProfilesView : public views::View,
 
     bool IsValid() const;
 
+    views::Textfield* text_phone() { return text_phone_; }
+
    protected:
     // views::View methods:
     virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
