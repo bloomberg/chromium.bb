@@ -61,6 +61,9 @@ FormStructure::FormStructure(const FormData& form)
     : form_name_(form.name),
       source_url_(form.origin),
       target_url_(form.action),
+      has_credit_card_field_(false),
+      has_autofillable_field_(false),
+      has_password_fields_(false),
       autofill_count_(0) {
   // Copy the form fields.
   std::vector<webkit_glue::FormField>::const_iterator field;
