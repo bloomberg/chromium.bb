@@ -204,7 +204,7 @@ def CommandTest(test_name, options=[], extra=[], size='small'):
     if o != '':
       script_flags.append(o)
 
-  command_tester.main(script_flags + [binary] + extra)
+  return command_tester.main(script_flags + [binary] + extra)
 
 
 def ValidatePlatform():
@@ -222,6 +222,14 @@ def ValidatePlatform():
     platform += '32'
   else:
     platform += '64'
+
+  try:
+    gyp_defines = os.environ['GYP_DEFINES']
+    if gyp_defines.find('target_arch=arm') != -1:
+      print('ARM is not supported yet')
+      sys.exit(0)
+  except:
+    print('GYP_DEFINES is not set')
 
   if not GlobalSettings['platform']:
     # platform was not provided on the command line
@@ -272,6 +280,7 @@ def ProcessOptions(argv):
 def main(argv):
   ProcessOptions(argv)
   AddTests()
+  errors = 0
   for test in TESTS:
     try:
       # Don't run the test if the [test, platform] combination is in EXCEPTIONS
@@ -279,7 +288,8 @@ def main(argv):
     except ValueError:
       # Run only tests of the right size
       if not GlobalSettings['size'] or test[3] == GlobalSettings['size']:
-        CommandTest(test[0], test[1], test[2], test[3])
+        errors += CommandTest(test[0], test[1], test[2], test[3])
+  return errors
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
