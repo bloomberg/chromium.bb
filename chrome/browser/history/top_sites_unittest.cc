@@ -705,9 +705,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   EXPECT_TRUE(high_score.Equals(out_2.thumbnail_score));
 }
 
-// This test has been crashing unit_tests on Mac 10.6.
-// See http://crbug.com/49799
-TEST_F(TopSitesTest, DISABLED_DeleteNotifications) {
+TEST_F(TopSitesTest, DeleteNotifications) {
   ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   GURL google1_url("http://google.com");
   GURL google2_url("http://google.com/redirect");
@@ -735,11 +733,12 @@ TEST_F(TopSitesTest, DISABLED_DeleteNotifications) {
 
   hs.RemoveMostVisitedURL();
 
-  history::URLsDeletedDetails details;
-  details.all_history = false;
+  history::URLsDeletedDetails history_details;
+  history_details.all_history = false;
+  Details<URLsDeletedDetails> details(&history_details);
   top_sites().Observe(NotificationType::HISTORY_URLS_DELETED,
                       Source<Profile> (&profile()),
-                      (const NotificationDetails&)details);
+                      details);
   MessageLoop::current()->RunAllPending();
 
   top_sites().GetMostVisitedURLs(
@@ -750,10 +749,11 @@ TEST_F(TopSitesTest, DISABLED_DeleteNotifications) {
   EXPECT_EQ(google_title, urls()[0].title);
 
   hs.RemoveMostVisitedURL();
-  details.all_history = true;
+  history_details.all_history = true;
+  details = Details<HistoryDetails>(&history_details);
   top_sites().Observe(NotificationType::HISTORY_URLS_DELETED,
                       Source<Profile> (&profile()),
-                      (const NotificationDetails&)details);
+                      details);
   MessageLoop::current()->RunAllPending();
   top_sites().GetMostVisitedURLs(
       consumer(),
