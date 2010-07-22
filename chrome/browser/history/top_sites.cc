@@ -6,22 +6,37 @@
 
 #include <algorithm>
 
+#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/md5.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/history/top_sites_database.h"
+#include "chrome/browser/dom_ui/most_visited_handler.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/google_util.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "chrome/browser/history/top_sites_database.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/thumbnail_score.h"
 #include "gfx/codec/jpeg_codec.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace history {
 
 // How many top sites to store in the cache.
 static const size_t kTopSitesNumber = 20;
+static const size_t kTopSitesShown = 8;
 static const int kDaysOfHistory = 90;
 // Time from startup to first HistoryService query.
 static const int64 kUpdateIntervalSecs = 15;
@@ -34,11 +49,18 @@ TopSites::TopSites(Profile* profile) : profile_(profile),
                                        mock_history_service_(NULL),
                                        last_num_urls_changed_(0),
                                        migration_in_progress_(false),
-                                       waiting_for_results_(true) {
+                                       waiting_for_results_(true),
+                                       blacklist_(NULL),
+                                       pinned_urls_(NULL) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                  NotificationService::AllSources());
+
+  blacklist_ = profile_->GetPrefs()->
+      GetMutableDictionary(prefs::kNTPMostVisitedURLsBlacklist);
+  pinned_urls_ = profile_->GetPrefs()->
+      GetMutableDictionary(prefs::kNTPMostVisitedPinnedURLs);
 }
 
 TopSites::~TopSites() {
@@ -70,7 +92,10 @@ void TopSites::ReadDatabase() {
     AutoLock lock(lock_);
     MostVisitedURLList top_urls;
     db_->GetPageThumbnails(&top_urls, &thumbnails);
+    MostVisitedURLList copy(top_urls);  // StoreMostVisited destroys the list.
     StoreMostVisited(&top_urls);
+    if (AddPrepopulatedPages(&copy))
+      UpdateMostVisited(copy);
   }  // Lock is released here.
 
   for (size_t i = 0; i < top_sites_.size(); i++) {
@@ -195,7 +220,6 @@ bool TopSites::SetPageThumbnailNoDB(const GURL& url,
 
 void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
                                   GetTopSitesCallback* callback) {
-
   scoped_refptr<CancelableRequest<GetTopSitesCallback> > request(
       new CancelableRequest<GetTopSitesCallback>(callback));
   // This ensures cancelation of requests when either the consumer or the
@@ -209,7 +233,11 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
   }
   if (request->canceled())
     return;
-  request->ForwardResult(GetTopSitesCallback::TupleType(top_sites_));
+
+  MostVisitedURLList filtered_urls;
+  ApplyBlacklistAndPinnedURLs(top_sites_, &filtered_urls);
+
+  request->ForwardResult(GetTopSitesCallback::TupleType(filtered_urls));
 }
 
 bool TopSites::GetPageThumbnail(const GURL& url, RefCountedBytes** data) const {
@@ -222,43 +250,196 @@ bool TopSites::GetPageThumbnail(const GURL& url, RefCountedBytes** data) const {
   return true;
 }
 
-void TopSites::UpdateMostVisited(MostVisitedURLList most_visited) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  // TODO(brettw) filter for blacklist!
+static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
+  for (size_t i = 0; i < urls.size(); i++) {
+    if (urls[i].url == url)
+      return i;
+  }
+  return -1;
+}
 
-  if (!top_sites_.empty()) {
-    std::vector<size_t> added;    // Indices into most_visited.
-    std::vector<size_t> deleted;  // Indices into top_sites_.
-    std::vector<size_t> moved;    // Indices into most_visited.
-    DiffMostVisited(top_sites_, most_visited, &added, &deleted, &moved);
+int TopSites::GetIndexForChromeStore(const MostVisitedURLList& urls) {
+  GURL store_url = MostVisitedHandler::GetChromeStoreURLWithLocale();
+  if (IsBlacklisted(store_url))
+    return -1;
 
-    // #added == #deleted; #added + #moved = total.
-    last_num_urls_changed_ = added.size() + moved.size();
+  if (IndexOf(urls, store_url) != -1)
+    return -1;  // It's already there, no need to add.
 
-    // Process the diff: delete from images and disk, add to disk.
-    // Delete all the thumbnails associated with URLs that were deleted.
-    for (size_t i = 0; i < deleted.size(); i++) {
-      const MostVisitedURL& deleted_url = top_sites_[deleted[i]];
-      std::map<GURL, Images>::iterator found =
-          top_images_.find(deleted_url.url);
-      if (found != top_images_.end())
-        top_images_.erase(found);
+  // Should replace the first filler.
+  int first_filler = IndexOf(urls, GURL());
+  if (first_filler != -1)
+    return first_filler;
 
-      // Delete from disk.
-      if (db_.get())
-        db_->RemoveURL(deleted_url);
+  if (urls.size() < kTopSitesShown)
+    return urls.size();
+
+  // Should replace the last non-pinned url.
+  for (size_t i = kTopSitesShown - 1; i < urls.size(); i--) {
+    if (!IsURLPinned(urls[i].url))
+      return i;
+  }
+
+  // All urls are pinned.
+  return -1;
+}
+
+bool TopSites::AddChromeStore(MostVisitedURLList* urls) {
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (!service || service->HasApps())
+    return false;
+
+  int index = GetIndexForChromeStore(*urls);
+  if (index == -1)
+    return false;
+
+  if (static_cast<size_t>(index) >= urls->size())
+    urls->resize(index + 1);
+
+  // Chrome App store may replace an existing non-pinned thumbnail.
+  MostVisitedURL& url = (*urls)[index];
+  url.url = MostVisitedHandler::GetChromeStoreURLWithLocale();
+  url.title = l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE);
+  url.favicon_url =
+      GURL("chrome://theme/IDR_NEWTAB_CHROME_STORE_PAGE_FAVICON");
+  url.redirects.push_back(url.url);
+  return true;
+}
+
+bool TopSites::AddPrepopulatedPages(MostVisitedURLList* urls) {
+  // TODO(arv): This needs to get the data from some configurable place.
+  // http://crbug.com/17630
+  bool added = false;
+  GURL welcome_url(WideToUTF8(l10n_util::GetString(IDS_CHROME_WELCOME_URL)));
+  if (urls->size() < kTopSitesNumber && IndexOf(*urls, welcome_url) == -1) {
+    MostVisitedURL url = {
+      welcome_url,
+      GURL("chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON"),
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE)
+    };
+    url.redirects.push_back(welcome_url);
+    urls->push_back(url);
+    added = true;
+  }
+
+  GURL themes_url(WideToUTF8(l10n_util::GetString(IDS_THEMES_GALLERY_URL)));
+  if (urls->size() < kTopSitesNumber && IndexOf(*urls, themes_url) == -1) {
+    MostVisitedURL url = {
+      themes_url,
+      GURL("chrome://theme/IDR_NEWTAB_THEMES_GALLERY_FAVICON"),
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE)
+    };
+    url.redirects.push_back(themes_url);
+    urls->push_back(url);
+    added = true;
+  }
+
+  if (AddChromeStore(urls))
+    added = true;
+
+  return added;
+}
+
+void TopSites::MigratePinnedURLs() {
+  std::map<GURL, size_t> tmp_map;
+  for (DictionaryValue::key_iterator it = pinned_urls_->begin_keys();
+       it != pinned_urls_->end_keys(); ++it) {
+    Value* value;
+    if (!pinned_urls_->GetWithoutPathExpansion(*it, &value))
+      continue;
+
+    if (value->IsType(DictionaryValue::TYPE_DICTIONARY)) {
+      DictionaryValue* dict = static_cast<DictionaryValue*>(value);
+      std::string url_string;
+      int index;
+      if (dict->GetString(L"url", &url_string) &&
+          dict->GetInteger(L"index", &index))
+        tmp_map[GURL(url_string)] = index;
+    }
+  }
+  pinned_urls_->Clear();
+  for (std::map<GURL, size_t>::iterator it = tmp_map.begin();
+       it != tmp_map.end(); ++it)
+    AddPinnedURL(it->first, it->second);
+}
+
+void TopSites::ApplyBlacklistAndPinnedURLs(const MostVisitedURLList& urls,
+                                           MostVisitedURLList* out) {
+  for (size_t i = 0; i < urls.size(); i++) {
+    if (!IsBlacklisted(urls[i].url))
+      out->push_back(urls[i]);
+  }
+
+  for (DictionaryValue::key_iterator it = pinned_urls_->begin_keys();
+       it != pinned_urls_->end_keys(); ++it) {
+    GURL url(WideToASCII(*it));
+
+    int index = IndexOf(*out, url);
+    if (index == -1) {
+      if (url.is_empty()) {
+        MigratePinnedURLs();
+        out->clear();
+        ApplyBlacklistAndPinnedURLs(urls, out);
+        return;
+      }
+      LOG(INFO) << "Unknown url: " << url.spec();
+      continue;
     }
 
-    if (db_.get()) {
-      // Write both added and moved urls.
-      for (size_t i = 0; i < added.size(); i++) {
-        MostVisitedURL& added_url = most_visited[added[i]];
-        db_->SetPageThumbnail(added_url, added[i], Images());
-      }
-      for (size_t i = 0; i < moved.size(); i++) {
-        MostVisitedURL moved_url = most_visited[moved[i]];
-        db_->UpdatePageRank(moved_url, moved[i]);
-      }
+    size_t pinned_index;
+    DCHECK(GetIndexOfPinnedURL(url, &pinned_index)) << url.spec();
+    if (static_cast<int>(pinned_index) != index) {
+      MostVisitedURL tmp = (*out)[index];
+      out->erase(out->begin() + index);
+      if (pinned_index > out->size())
+        out->resize(pinned_index);  // Add empty URLs as fillers.
+      out->insert(out->begin() + pinned_index, tmp);
+    }
+  }
+}
+
+std::wstring TopSites::GetURLString(const GURL& url) {
+  return ASCIIToWide(GetCanonicalURL(url).spec());
+}
+
+std::wstring TopSites::GetURLHash(const GURL& url) {
+  return ASCIIToWide(MD5String(GetCanonicalURL(url).spec()));
+}
+
+void TopSites::UpdateMostVisited(MostVisitedURLList most_visited) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+
+  std::vector<size_t> added;    // Indices into most_visited.
+  std::vector<size_t> deleted;  // Indices into top_sites_.
+  std::vector<size_t> moved;    // Indices into most_visited.
+  DiffMostVisited(top_sites_, most_visited, &added, &deleted, &moved);
+
+  // #added == #deleted; #added + #moved = total.
+  last_num_urls_changed_ = added.size() + moved.size();
+
+  // Process the diff: delete from images and disk, add to disk.
+  // Delete all the thumbnails associated with URLs that were deleted.
+  for (size_t i = 0; i < deleted.size(); i++) {
+    const MostVisitedURL& deleted_url = top_sites_[deleted[i]];
+    std::map<GURL, Images>::iterator found =
+        top_images_.find(deleted_url.url);
+    if (found != top_images_.end())
+      top_images_.erase(found);
+
+    // Delete from disk.
+    if (db_.get())
+      db_->RemoveURL(deleted_url);
+  }
+
+  if (db_.get()) {
+    // Write both added and moved urls.
+    for (size_t i = 0; i < added.size(); i++) {
+      const MostVisitedURL& added_url = most_visited[added[i]];
+      db_->SetPageThumbnail(added_url, added[i], Images());
+    }
+    for (size_t i = 0; i < moved.size(); i++) {
+      const MostVisitedURL& moved_url = most_visited[moved[i]];
+      db_->UpdatePageRank(moved_url, moved[i]);
     }
   }
 
@@ -302,6 +483,12 @@ void TopSites::AddTemporaryThumbnail(const GURL& url,
 
 void TopSites::StartQueryForThumbnail(size_t index) {
   DCHECK(migration_in_progress_);
+  if (top_sites_[index].url.spec() ==
+      l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL) ||
+      top_sites_[index].url.spec() ==
+      l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL))
+    return;  // Don't need thumbnails for prepopulated URLs.
+
   migration_pending_urls_.insert(top_sites_[index].url);
 
   if (mock_history_service_) {
@@ -374,7 +561,7 @@ void TopSites::StoreRedirectChain(const RedirectList& redirects,
 GURL TopSites::GetCanonicalURL(const GURL& url) const {
   std::map<GURL, size_t>::const_iterator found = canonical_urls_.find(url);
   if (found == canonical_urls_.end())
-    return GURL();  // Don't know anything about this URL.
+    return url;  // Unknown URL - return unchanged.
   return top_sites_[found->second].url;
 }
 
@@ -459,6 +646,75 @@ void TopSites::StartMigration() {
   StartQueryForMostVisited();
 }
 
+void TopSites::AddBlacklistedURL(const GURL& url) {
+  RemovePinnedURL(url);
+  Value* dummy = Value::CreateNullValue();
+  blacklist_->SetWithoutPathExpansion(GetURLHash(url), dummy);
+}
+
+bool TopSites::IsBlacklisted(const GURL& url) {
+  Value* dummy = Value::CreateNullValue();
+  bool result = blacklist_->GetWithoutPathExpansion(GetURLHash(url), &dummy);
+  return result;
+}
+
+void TopSites::RemoveBlacklistedURL(const GURL& url) {
+  Value* dummy = NULL;
+  blacklist_->RemoveWithoutPathExpansion(GetURLHash(url), &dummy);
+}
+
+void TopSites::ClearBlacklistedURLs() {
+  blacklist_->Clear();
+}
+
+void TopSites::AddPinnedURL(const GURL& url, size_t pinned_index) {
+  GURL old;
+  if (GetPinnedURLAtIndex(pinned_index, &old)) {
+    RemovePinnedURL(old);
+  }
+
+  if (IsURLPinned(url)) {
+    RemovePinnedURL(url);
+  }
+
+  Value* index = Value::CreateIntegerValue(pinned_index);
+  pinned_urls_->SetWithoutPathExpansion(GetURLString(url), index);
+}
+
+void TopSites::RemovePinnedURL(const GURL& url) {
+  Value* dummy = NULL;
+  pinned_urls_->RemoveWithoutPathExpansion(GetURLString(url), &dummy);
+}
+
+bool TopSites::GetIndexOfPinnedURL(const GURL& url, size_t* index) {
+  int tmp;
+  bool result = pinned_urls_->GetIntegerWithoutPathExpansion(
+      GetURLString(url), &tmp);
+  *index = static_cast<size_t>(tmp);
+  return result;
+}
+
+bool TopSites::IsURLPinned(const GURL& url) {
+  int tmp;
+  bool result = pinned_urls_->GetIntegerWithoutPathExpansion(
+      GetURLString(url), &tmp);
+  return result;
+}
+
+bool TopSites::GetPinnedURLAtIndex(size_t index, GURL* url) {
+  for (DictionaryValue::key_iterator it = pinned_urls_->begin_keys();
+       it != pinned_urls_->end_keys(); ++it) {
+    int current_index;
+    if (pinned_urls_->GetIntegerWithoutPathExpansion(*it, &current_index)) {
+      if (static_cast<size_t>(current_index) == index) {
+        *url = GURL(WideToASCII(*it));
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 base::TimeDelta TopSites::GetUpdateDelay() {
   if (top_sites_.size() == 0)
     return base::TimeDelta::FromSeconds(30);
@@ -472,20 +728,24 @@ base::TimeDelta TopSites::GetUpdateDelay() {
 void TopSites::OnTopSitesAvailable(
     CancelableRequestProvider::Handle handle,
     MostVisitedURLList pages) {
+
+  AddPrepopulatedPages(&pages);
+  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, NewRunnableMethod(
+      this, &TopSites::UpdateMostVisited, pages));
+
   if (!pending_callbacks_.empty()) {
-    PendingCallbackSet copy(pending_callbacks_);
+    MostVisitedURLList filtered_urls;
+    ApplyBlacklistAndPinnedURLs(pages, &filtered_urls);
+
     PendingCallbackSet::iterator i;
     for (i = pending_callbacks_.begin();
          i != pending_callbacks_.end(); ++i) {
       scoped_refptr<CancelableRequest<GetTopSitesCallback> > request = *i;
       if (!request->canceled())
-        request->ForwardResult(GetTopSitesCallback::TupleType(pages));
+        request->ForwardResult(GetTopSitesCallback::TupleType(filtered_urls));
     }
     pending_callbacks_.clear();
   }
-
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, NewRunnableMethod(
-      this, &TopSites::UpdateMostVisited, pages));
 }
 
 void TopSites::OnThumbnailAvailable(CancelableRequestProvider::Handle handle,
