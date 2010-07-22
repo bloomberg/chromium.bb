@@ -615,6 +615,7 @@ void ProfileSyncService::OnUserCancelledDialog() {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     // A sync dialog was aborted before authentication.
     // Rollback.
+    expect_sync_configuration_aborted_ = true;
     DisableForUser();
   }
   wizard_.SetParent(NULL);
