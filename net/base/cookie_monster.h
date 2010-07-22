@@ -197,22 +197,15 @@ class CookieMonster : public CookieStore {
 
   void FindCookiesForHostAndDomain(const GURL& url,
                                    const CookieOptions& options,
+                                   bool update_access_time,
                                    std::vector<CanonicalCookie*>* cookies);
 
   void FindCookiesForKey(const std::string& key,
                          const GURL& url,
                          const CookieOptions& options,
                          const base::Time& current,
+                         bool update_access_time,
                          std::vector<CanonicalCookie*>* cookies);
-
-  void FindRawCookies(const std::string& key,
-                      bool include_secure,
-                      const std::string& path,
-                      CookieList* list);
-
-  // Internal helper returning all cookies for a given URL. The caller is
-  // assumed to hold lock_ and having called InitIfNecessary().
-  CookieList InternalGetAllCookiesForURL(const GURL& url);
 
   // Delete any cookies that are equivalent to |ecc| (same path, key, etc).
   // If |skip_httponly| is true, httponly cookies will not be deleted.  The
@@ -229,7 +222,6 @@ class CookieMonster : public CookieStore {
   // Helper function that sets a canonical cookie, deleting equivalents and
   // performing garbage collection.
   bool SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
-                          const std::string& cookie_domain,
                           const base::Time& creation_time,
                           const CookieOptions& options);
 

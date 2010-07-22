@@ -703,7 +703,7 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     COOKIE_DLOG(WARNING) << "Failed to allocate CanonicalCookie";
     return false;
   }
-  return SetCanonicalCookie(&cc, cookie_domain, creation_time, options);
+  return SetCanonicalCookie(&cc, creation_time, options);
 }
 
 bool CookieMonster::SetCookieWithDetails(
@@ -732,15 +732,14 @@ bool CookieMonster::SetCookieWithDetails(
 
   CookieOptions options;
   options.set_include_httponly();
-  return SetCanonicalCookie(&cc, cc->Domain(), creation_time, options);
+  return SetCanonicalCookie(&cc, creation_time, options);
 }
 
 bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
-                                       const std::string& cookie_domain,
                                        const Time& creation_time,
                                        const CookieOptions& options) {
-  if (DeleteAnyEquivalentCookie(cookie_domain, **cc,
-                                options.exclude_httponly())) {
+  const std::string domain((*cc)->Domain());
+  if (DeleteAnyEquivalentCookie(domain, **cc, options.exclude_httponly())) {
     COOKIE_DLOG(INFO) << "SetCookie() not clobbering httponly cookie";
     return false;
   }
@@ -753,7 +752,7 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
     // See InitializeHistograms() for details.
     histogram_expiration_duration_minutes_->Add(
         ((*cc)->ExpiryDate() - creation_time).InMinutes());
-    InternalInsertCookie(cookie_domain, cc->release(), true);
+    InternalInsertCookie(domain, cc->release(), true);
   }
 
   // We assume that hopefully setting a cookie will be less common than
@@ -761,7 +760,7 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
   // make sure that we garbage collect...  We can also make the assumption that
   // if a cookie was set, in the common case it will be used soon after,
   // and we will purge the expired cookies in GetCookies().
-  GarbageCollect(creation_time, cookie_domain);
+  GarbageCollect(creation_time, domain);
 
   return true;
 }
@@ -1057,7 +1056,7 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
 
   // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookies;
-  FindCookiesForHostAndDomain(url, options, &cookies);
+  FindCookiesForHostAndDomain(url, options, true, &cookies);
   std::sort(cookies.begin(), cookies.end(), CookieSorter);
 
   std::string cookie_line;
@@ -1090,7 +1089,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
   options.set_include_httponly();
   // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookies;
-  FindCookiesForHostAndDomain(url, options, &cookies);
+  FindCookiesForHostAndDomain(url, options, true, &cookies);
   std::set<CanonicalCookie*> matching_cookies;
 
   for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
@@ -1138,12 +1137,24 @@ CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
   AutoLock autolock(lock_);
   InitIfNecessary();
 
-  return InternalGetAllCookiesForURL(url);
+  CookieOptions options;
+  options.set_include_httponly();
+
+  std::vector<CanonicalCookie*> cookie_ptrs;
+  FindCookiesForHostAndDomain(url, options, false, &cookie_ptrs);
+
+  CookieList cookies;
+  for (std::vector<CanonicalCookie*>::const_iterator it = cookie_ptrs.begin();
+       it != cookie_ptrs.end(); it++) {
+    cookies.push_back(**it);
+  }
+  return cookies;
 }
 
 void CookieMonster::FindCookiesForHostAndDomain(
     const GURL& url,
     const CookieOptions& options,
+    bool update_access_time,
     std::vector<CanonicalCookie*>* cookies) {
   lock_.AssertAcquired();
 
@@ -1156,7 +1167,8 @@ void CookieMonster::FindCookiesForHostAndDomain(
 
   // Query for the full host, For example: 'a.c.blah.com'.
   std::string key(url.host());
-  FindCookiesForKey(key, url, options, current_time, cookies);
+  FindCookiesForKey(key, url, options, current_time, update_access_time,
+                    cookies);
 
   // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
   const std::string domain(GetEffectiveDomain(url.scheme(), key));
@@ -1172,7 +1184,8 @@ void CookieMonster::FindCookiesForHostAndDomain(
   // registrars other domains can, in which case we don't want to read their
   // cookies.
   for (key = "." + key; key.length() > domain.length(); ) {
-    FindCookiesForKey(key, url, options, current_time, cookies);
+    FindCookiesForKey(key, url, options, current_time, update_access_time,
+                      cookies);
     const size_t next_dot = key.find('.', 1);  // Skip over leading dot.
     key.erase(0, next_dot);
   }
@@ -1183,6 +1196,7 @@ void CookieMonster::FindCookiesForKey(
     const GURL& url,
     const CookieOptions& options,
     const Time& current,
+    bool update_access_time,
     std::vector<CanonicalCookie*>* cookies) {
   lock_.AssertAcquired();
 
@@ -1211,64 +1225,13 @@ void CookieMonster::FindCookiesForKey(
     if (!cc->IsOnPath(url.path()))
       continue;
 
-    // Add this cookie to the set of matching cookies.  Since we're reading the
-    // cookie, update its last access time.
-    InternalUpdateCookieAccessTime(cc);
+    // Add this cookie to the set of matching cookies.  Update the access
+    // time if we've been requested to do so.
+    if (update_access_time) {
+      InternalUpdateCookieAccessTime(cc);
+    }
     cookies->push_back(cc);
   }
-}
-
-void CookieMonster::FindRawCookies(const std::string& key,
-                                   bool include_secure,
-                                   const std::string& path,
-                                   CookieList* list) {
-  lock_.AssertAcquired();
-
-  for (CookieMapItPair its = cookies_.equal_range(key);
-       its.first != its.second; ++its.first) {
-    CanonicalCookie* cc = its.first->second;
-    if (!include_secure && cc->IsSecure())
-      continue;
-    if (!cc->IsOnPath(path))
-      continue;
-    list->push_back(*cc);
-  }
-}
-
-CookieMonster::CookieList CookieMonster::InternalGetAllCookiesForURL(
-    const GURL& url) {
-  lock_.AssertAcquired();
-
-  // Do not return removed cookies.
-  GarbageCollectExpired(Time::Now(),
-                        CookieMapItPair(cookies_.begin(), cookies_.end()),
-                        NULL);
-
-  CookieList cookie_list;
-  if (!HasCookieableScheme(url))
-    return cookie_list;
-
-  bool secure = url.SchemeIsSecure();
-
-  // Query for the full host, For example: 'a.c.blah.com'.
-  std::string key(url.host());
-  FindRawCookies(key, secure, url.path(), &cookie_list);
-
-  // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
-  const std::string domain(GetEffectiveDomain(url.scheme(), key));
-  if (domain.empty())
-    return cookie_list;
-
-  // Use same logic as in FindCookiesForHostAndDomain.
-  DCHECK_LE(domain.length(), key.length());
-  DCHECK_EQ(0, key.compare(key.length() - domain.length(), domain.length(),
-                           domain));
-  for (key = "." + key; key.length() > domain.length(); ) {
-    FindRawCookies(key, secure, url.path(), &cookie_list);
-    const size_t next_dot = key.find('.', 1);  // Skip over leading dot.
-    key.erase(0, next_dot);
-  }
-  return cookie_list;
 }
 
 // Test to see if stats should be recorded, and record them if so.
