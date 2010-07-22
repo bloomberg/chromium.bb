@@ -738,6 +738,9 @@ class TabContents : public PageNavigator,
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;
 
+  // Used to access the UpdateHistoryForNavigation member function.
+  friend class ExternalTabContainer;
+
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
   // (but can be null if not applicable). Can be overridden.
