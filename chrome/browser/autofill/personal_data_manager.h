@@ -163,8 +163,11 @@ class PersonalDataManager
   // Returns the profile of the tab contents.
   Profile* profile();
 
-  // This will create and reserve a new unique ID for a profile.
-  int CreateNextUniqueID(std::set<int>* unique_ids);
+  // This will create and reserve a new unique ID for the id pool |id_set|.
+  // The |id_set| is typically |unique_profile_ids_| or
+  // |unique_creditcard_ids_|.  The global pool |unique_ids_| is used to ensure
+  // uniqueness of ids across all pools.  The new (next) unique id is returned.
+  int CreateNextUniqueIDFor(std::set<int>* id_set);
 
   // Loads the saved profiles from the web database.
   virtual void LoadProfiles();
@@ -212,6 +215,10 @@ class PersonalDataManager
   // The set of already created unique profile IDs, used to create a new unique
   // profile ID.
   std::set<int> unique_profile_ids_;
+
+  // The set of already created unique profile IDs for auxiliary profiles, used
+  // to create a new unique auxiliary profile ID.
+  std::set<int> unique_auxiliary_profile_ids_;
 
   // The set of already created unique credit card IDs, used to create a new
   // unique credit card ID.

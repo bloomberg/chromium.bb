@@ -250,6 +250,28 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
 
 // Populate |auxiliary_profiles_| with the Address Book data.
 void PersonalDataManager::LoadAuxiliaryProfiles() {
+  AutoLock lock(unique_ids_lock_);
+
+  // Before loading new auxiliary profiles remove the unique ids from the
+  // id pools.  The |GetAddressBookMeCard()| call below clears the
+  // |auxiliary_profiles_|.
+  unique_auxiliary_profile_ids_.clear();
+  for (ScopedVector<AutoFillProfile>::iterator iter
+           = auxiliary_profiles_.begin();
+       iter != auxiliary_profiles_.end(); ++iter) {
+    if ((*iter)->unique_id() != 0) {
+      unique_ids_.erase((*iter)->unique_id());
+    }
+  }
+
   AuxiliaryProfilesImpl impl(&auxiliary_profiles_);
   impl.GetAddressBookMeCard();
+
+  // For newly fetched auxiliary profiles, ensure that we have unique ids set.
+  for (ScopedVector<AutoFillProfile>::iterator iter
+           = auxiliary_profiles_.begin();
+       iter != auxiliary_profiles_.end(); ++iter) {
+    (*iter)->set_unique_id(
+        CreateNextUniqueIDFor(&unique_auxiliary_profile_ids_));
+  }
 }

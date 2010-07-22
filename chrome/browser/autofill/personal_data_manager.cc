@@ -271,11 +271,8 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
     // unique ID.  This also means we need to add this profile to the web
     // database.
     if (iter->unique_id() == 0) {
-      iter->set_unique_id(CreateNextUniqueID(&unique_ids_));
+      iter->set_unique_id(CreateNextUniqueIDFor(&unique_profile_ids_));
       wds->AddAutoFillProfile(*iter);
-
-      // Update the list of unique profile IDs.
-      unique_profile_ids_.insert(iter->unique_id());
     }
   }
 
@@ -352,11 +349,8 @@ void PersonalDataManager::SetCreditCards(
     // unique ID.  This also means we need to add this credit card to the web
     // database.
     if (iter->unique_id() == 0) {
-      iter->set_unique_id(CreateNextUniqueID(&unique_ids_));
+      iter->set_unique_id(CreateNextUniqueIDFor(&unique_creditcard_ids_));
       wds->AddCreditCard(*iter);
-
-      // Update the list of unique credit card IDs.
-      unique_creditcard_ids_.insert(iter->unique_id());
     }
   }
 
@@ -446,9 +440,7 @@ AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   AutoLock lock(unique_ids_lock_);
   AutoFillProfile* p = new AutoFillProfile(label,
-      CreateNextUniqueID(&unique_ids_));
-  // Also update the unique profile IDs.
-  unique_profile_ids_.insert(p->unique_id());
+      CreateNextUniqueIDFor(&unique_profile_ids_));
   return p;
 }
 
@@ -470,14 +462,15 @@ void PersonalDataManager::Init(Profile* profile) {
   LoadCreditCards();
 }
 
-int PersonalDataManager::CreateNextUniqueID(std::set<int>* unique_ids) {
+int PersonalDataManager::CreateNextUniqueIDFor(std::set<int>* id_set) {
   // Profile IDs MUST start at 1 to allow 0 as an error value when reading
   // the ID from the WebDB (see LoadData()).
   unique_ids_lock_.AssertAcquired();
   int id = 1;
-  while (unique_ids->count(id) != 0)
+  while (unique_ids_.count(id) != 0)
     ++id;
-  unique_ids->insert(id);
+  unique_ids_.insert(id);
+  id_set->insert(id);
   return id;
 }
 

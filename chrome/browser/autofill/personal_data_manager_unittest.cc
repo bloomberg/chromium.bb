@@ -82,8 +82,8 @@ class PersonalDataManagerTest : public testing::Test {
   AutoFillProfile* MakeProfile() {
     AutoLock lock(personal_data_->unique_ids_lock_);
     return new AutoFillProfile(string16(),
-        personal_data_->CreateNextUniqueID(
-        &personal_data_->unique_profile_ids_));
+        personal_data_->CreateNextUniqueIDFor(
+            &personal_data_->unique_profile_ids_));
   }
 
   MessageLoopForUI message_loop_;
