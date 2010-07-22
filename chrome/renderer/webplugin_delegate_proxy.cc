@@ -347,11 +347,11 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
       // Older versions of Flash don't support CA (and they assume QuickDraw
       // support, so we can't rely on negotiation to do the right thing).
       force_opaque_mode = true;
-    } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kDisableFlashCoreAnimation)) {
-      // Temporary switch for testing; once any Flash + Core Animation issues
-      // have been shaken out, this switch (and the chrome_switches.h and
-      // command_line.h includes) can be removed.
+    } else if (!CommandLine::ForCurrentProcess()->HasSwitch(
+                   switches::kEnableFlashCoreAnimation)) {
+      // Temporary switch for testing; once we are confident that there are no
+      // regressions from CoreGraphics mode to CoreAnimation mode, this switch
+      // (and the chrome_switches.h and command_line.h includes) can be removed.
       force_opaque_mode = true;
     } else {
       // Current betas of Flash 10.1 don't respect QuickDraw negotiation either,

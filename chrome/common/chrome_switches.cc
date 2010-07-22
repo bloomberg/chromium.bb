@@ -1074,9 +1074,9 @@ const char kPasswordStore[]                 = "password-store";
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 
-// Temporary flag to prevent Flash from negotiating the Core Animation drawing
-// model. This will be removed once the last issues have been resolved.
-const char kDisableFlashCoreAnimation[]     = "disable-flash-core-animation";
+// Temporary flag to allow Flash to negotiate the Core Animation drawing model.
+// This will eventually become the default, and the flag can be removed.
+const char kEnableFlashCoreAnimation[]      = "enable-flash-core-animation";
 #else
 // Enable Kiosk mode.
 const char kKioskMode[]                     = "kiosk";
