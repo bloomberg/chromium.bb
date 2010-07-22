@@ -93,6 +93,7 @@ TEST(FormStructureTest, AutoFillCount) {
 TEST(FormStructureTest, ConvertToFormData) {
   FormData form;
   form.method = ASCIIToUTF16("post");
+  form.user_submitted = true;
   form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("username"),
                                                ASCIIToUTF16("username"),
                                                string16(),

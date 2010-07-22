@@ -330,6 +330,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
   form->method = element.method();
   form->origin = frame->url();
   form->action = frame->document().completeURL(element.action());
+  form->user_submitted = element.wasUserSubmitted();
 
   // If the completed URL is not valid, just use the action we get from
   // WebKit.

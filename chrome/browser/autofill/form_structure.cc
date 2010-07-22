@@ -329,6 +329,9 @@ FormData FormStructure::ConvertToFormData() const {
   form.origin = source_url_;
   form.action = target_url_;
 
+  // FormStructures can't be created by forms not submitted by the user.
+  form.user_submitted = true;
+
   if (method_ == GET)
     form.method = ASCIIToUTF16("GET");
   else if (method_ == POST)
