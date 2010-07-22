@@ -12,7 +12,6 @@
 #define NACL_NO_INLINE
 #endif
 
-EXTERN_C_BEGIN
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -21,7 +20,6 @@ EXTERN_C_BEGIN
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
-EXTERN_C_END
 
 int verbosity = 0;
 
