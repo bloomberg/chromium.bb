@@ -6,7 +6,8 @@
 
 // On POSIX we don't need to do anything special with the system timer.
 
-HighResolutionTimerManager::HighResolutionTimerManager() {
+HighResolutionTimerManager::HighResolutionTimerManager()
+    : hi_res_clock_used_(false) {
 }
 
 HighResolutionTimerManager::~HighResolutionTimerManager() {
