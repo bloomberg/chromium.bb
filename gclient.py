@@ -422,6 +422,16 @@ class Dependency(GClientKeywords):
   def tree(self, force_all):
     return self.parent.tree(force_all)
 
+  def subtree(self, force_all):
+    result = []
+    # Add breadth-first.
+    if self.direct_reference or force_all:
+      for d in self.dependencies:
+          result.append(d)
+      for d in self.dependencies:
+        result.extend(d.subtree(force_all))
+    return result
+
   def get_custom_deps(self, name, url):
     """Returns a custom deps if applicable."""
     if self.parent:
@@ -759,16 +769,7 @@ solutions = [
 
   def tree(self, force_all):
     """Returns a flat list of all the dependencies."""
-    def subtree(dep):
-      if not force_all and not dep.direct_reference:
-        # Was loaded from a From() keyword in a DEPS file, don't load all its
-        # dependencies.
-        return []
-      result = dep.dependencies[:]
-      for d in dep.dependencies:
-        result.extend(subtree(d))
-      return result
-    return subtree(self)
+    return self.subtree(force_all)
 
 
 #### gclient commands.
