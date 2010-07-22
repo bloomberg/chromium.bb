@@ -12,8 +12,8 @@
 
 class DeviceOrientationEnableSwitchTest : public InProcessBrowserTest {
  public:
-  GURL testUrl(const char* filename) {
-    const FilePath kTestDir("device_orientation");
+  GURL testUrl(const FilePath::CharType* filename) {
+    const FilePath kTestDir(FILE_PATH_LITERAL("device_orientation"));
     return ui_test_utils::GetTestUrl(kTestDir, FilePath(filename));
   }
 };
@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(DeviceOrientationEnableSwitchTest, UnavailabilityTest) {
   ASSERT_FALSE(has_switch) << "This test does not make sense if "
                            << "--enable-device-orientation is set.";
 
-  GURL test_url = testUrl("enable_switch_test.html");
+  GURL test_url = testUrl(FILE_PATH_LITERAL("enable_switch_test.html"));
   ui_test_utils::NavigateToURL(browser(), test_url);
   std::string status = browser()->GetSelectedTabContents()->GetURL().ref();
   EXPECT_EQ("pass", status) << "Page detected device orientation properties.";
