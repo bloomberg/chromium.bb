@@ -191,7 +191,7 @@ class Dependency(GClientKeywords):
         raise Exception('Failed to find one reference to %s. %s' % (
           url.module_name, ref))
       ref = ref[0]
-      sub_target = url.sub_target_name or url
+      sub_target = url.sub_target_name or self.name
       # Make sure the referenced dependency DEPS file is loaded and file the
       # inner referenced dependency.
       ref.ParseDepsFile(False)
@@ -752,7 +752,7 @@ solutions = [
 
   def ParseDepsFile(self, direct_reference):
     """No DEPS to parse for a .gclient file."""
-    self.direct_reference = direct_reference
+    self.direct_reference = True
     self.deps_parsed = True
 
   def root_dir(self):
