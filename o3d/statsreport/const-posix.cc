@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2010, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,10 +35,10 @@
 
 namespace stats_report {
 
-const std::string kTimingsKeyName("Timings");
-const std::string kCountsKeyName("Counts");
-const std::string kIntegersKeyName("Integers");
-const std::string kBooleansKeyName("Booleans");
-const std::string kLastTransmissionTimeValueName("LastTransmission");
+const char kTimingsKeyName = "Timings";
+const char kCountsKeyName = "Counts";
+const char kIntegersKeyName = "Integers";
+const char kBooleansKeyName = "Booleans";
+const char kLastTransmissionTimeValueName = "LastTransmission";
 
 }  // namespace stats_report

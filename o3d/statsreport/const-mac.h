@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2010, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,22 +31,22 @@
 
 
 // Constants for Mac stats aggregation and uploading
-#ifndef O3D_STATSREPORT_CONST_MAC_H__
-#define O3D_STATSREPORT_CONST_MAC_H__
+#ifndef O3D_STATSREPORT_CONST_MAC_H_
+#define O3D_STATSREPORT_CONST_MAC_H_
 
 #include <string>
 #import <Cocoa/Cocoa.h>
 
 namespace stats_report {
 
-extern const std::string kCountsKeyName;
-extern const std::string kTimingsKeyName;
-extern const std::string kIntegersKeyName;
-extern const std::string kBooleansKeyName;
+extern const char kCountsKeyName[];
+extern const char kTimingsKeyName[];
+extern const char kIntegersKeyName[];
+extern const char kBooleansKeyName[];
 
 #define kLastTransmissionTimeValueName  @"LastTransmission"
 NSString* O3DStatsPath(void);
 
 }  // namespace stats_report
 
-#endif  // O3D_STATSREPORT_CONST_MAC_H__
+#endif  // O3D_STATSREPORT_CONST_MAC_H_
