@@ -432,10 +432,17 @@ void GlesVideoRenderer::CreateTextureAndProgramEgl() {
 
     scoped_refptr<media::VideoFrame> video_frame;
     const base::TimeDelta kZero;
-    media::VideoFrame:: CreatePrivateFrame(
+    // The data/strides are not relevant in this case.
+    uint8* data[media::VideoFrame::kMaxPlanes];
+    int32 strides[media::VideoFrame::kMaxPlanes];
+    memset(data, 0, sizeof(data));
+    memset(strides, 0, sizeof(strides));
+    media::VideoFrame:: CreateFrameExternal(
         media::VideoFrame::TYPE_EGL_IMAGE,
         media::VideoFrame::RGB565,
-        width(), height(), kZero, kZero,
+        width(), height(), 3,
+        data, strides,
+        kZero, kZero,
         egl_image,
         &video_frame);
     egl_frames_.push_back(std::make_pair(video_frame, texture));
