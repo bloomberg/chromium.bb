@@ -19,6 +19,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
 
+#include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/pref_service.h"

@@ -5,12 +5,11 @@
 #ifndef CHROME_COMMON_VISITEDLINK_COMMON_H__
 #define CHROME_COMMON_VISITEDLINK_COMMON_H__
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
-#include "googleurl/src/gurl.h"
+
+class GURL;
 
 // number of bytes in the salt
 #define LINK_SALT_LENGTH 8
@@ -67,9 +66,7 @@ class VisitedLinkCommon {
   // computed if you call one with the string argument. Returns true if found.
   // Does not modify the hastable.
   bool IsVisited(const char* canonical_url, size_t url_len) const;
-  bool IsVisited(const GURL& url) const {
-    return IsVisited(url.spec().data(), url.spec().size());
-  }
+  bool IsVisited(const GURL& url) const;
   bool IsVisited(Fingerprint fingerprint) const;
 
 #ifdef UNIT_TEST

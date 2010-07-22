@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/md5.h"
+#include "googleurl/src/gurl.h"
 
 const VisitedLinkCommon::Fingerprint VisitedLinkCommon::null_fingerprint_ = 0;
 const VisitedLinkCommon::Hash VisitedLinkCommon::null_hash_ = -1;
@@ -27,6 +28,10 @@ bool VisitedLinkCommon::IsVisited(const char* canonical_url,
   if (!hash_table_ || table_length_ == 0)
     return false;
   return IsVisited(ComputeURLFingerprint(canonical_url, url_len));
+}
+
+bool VisitedLinkCommon::IsVisited(const GURL& url) const {
+  return IsVisited(url.spec().data(), url.spec().size());
 }
 
 bool VisitedLinkCommon::IsVisited(Fingerprint fingerprint) const {

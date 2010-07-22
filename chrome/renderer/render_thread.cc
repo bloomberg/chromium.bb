@@ -22,6 +22,8 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/db_message_filter.h"
+#include "chrome/common/dom_storage_common.h"
+#include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
@@ -44,6 +46,7 @@
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_extension.h"
+#include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
@@ -51,6 +54,7 @@
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_view_visitor.h"
+#include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/renderer_webindexeddatabase_impl.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
@@ -190,6 +194,15 @@ class RenderViewZoomer : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
 }  // namespace
+
+// Contains extension-related data that the renderer needs to know about.
+// TODO(mpcomplete): this doesn't feel like it belongs here. Find a better
+// place.
+struct RenderThread::ExtensionInfo {
+  std::string extension_id;
+  ExtensionExtent web_extent;
+  ExtensionExtent browse_extent;
+};
 
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.

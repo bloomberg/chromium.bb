@@ -14,6 +14,7 @@
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
+#include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_main.h"
@@ -262,6 +263,135 @@ void BrowserProcessImpl::EndSession() {
   MessageLoop::current()->Run();
 }
 
+ResourceDispatcherHost* BrowserProcessImpl::resource_dispatcher_host() {
+  DCHECK(CalledOnValidThread());
+  if (!created_resource_dispatcher_host_)
+    CreateResourceDispatcherHost();
+  return resource_dispatcher_host_.get();
+}
+
+MetricsService* BrowserProcessImpl::metrics_service() {
+  DCHECK(CalledOnValidThread());
+  if (!created_metrics_service_)
+    CreateMetricsService();
+  return metrics_service_.get();
+}
+
+IOThread* BrowserProcessImpl::io_thread() {
+  DCHECK(CalledOnValidThread());
+  if (!created_io_thread_)
+    CreateIOThread();
+  return io_thread_.get();
+}
+
+base::Thread* BrowserProcessImpl::file_thread() {
+  DCHECK(CalledOnValidThread());
+  if (!created_file_thread_)
+    CreateFileThread();
+  return file_thread_.get();
+}
+
+base::Thread* BrowserProcessImpl::db_thread() {
+  DCHECK(CalledOnValidThread());
+  if (!created_db_thread_)
+    CreateDBThread();
+  return db_thread_.get();
+}
+
+base::Thread* BrowserProcessImpl::process_launcher_thread() {
+  DCHECK(CalledOnValidThread());
+  if (!created_process_launcher_thread_)
+    CreateProcessLauncherThread();
+  return process_launcher_thread_.get();
+}
+
+base::Thread* BrowserProcessImpl::cache_thread() {
+  DCHECK(CalledOnValidThread());
+  if (!created_cache_thread_)
+    CreateCacheThread();
+  return cache_thread_.get();
+}
+
+#if defined(USE_X11)
+base::Thread* BrowserProcessImpl::background_x11_thread() {
+  DCHECK(CalledOnValidThread());
+  // The BACKGROUND_X11 thread is created when the IO thread is created.
+  if (!created_io_thread_)
+    CreateIOThread();
+  return background_x11_thread_.get();
+}
+#endif
+
+ProfileManager* BrowserProcessImpl::profile_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!created_profile_manager_)
+    CreateProfileManager();
+  return profile_manager_.get();
+}
+
+PrefService* BrowserProcessImpl::local_state() {
+  DCHECK(CalledOnValidThread());
+  if (!created_local_state_)
+    CreateLocalState();
+  return local_state_.get();
+}
+
+DevToolsManager* BrowserProcessImpl::devtools_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!created_devtools_manager_)
+    CreateDevToolsManager();
+  return devtools_manager_.get();
+}
+
+Clipboard* BrowserProcessImpl::clipboard() {
+  DCHECK(CalledOnValidThread());
+  return clipboard_.get();
+}
+
+NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!created_notification_ui_manager_)
+    CreateNotificationUIManager();
+  return notification_ui_manager_.get();
+}
+
+StatusTrayManager* BrowserProcessImpl::status_tray_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!status_tray_manager_.get())
+    CreateStatusTrayManager();
+  return status_tray_manager_.get();
+}
+
+IconManager* BrowserProcessImpl::icon_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!created_icon_manager_)
+    CreateIconManager();
+  return icon_manager_.get();
+}
+
+ThumbnailGenerator* BrowserProcessImpl::GetThumbnailGenerator() {
+  return &thumbnail_generator_;
+}
+
+AutomationProviderList* BrowserProcessImpl::InitAutomationProviderList() {
+  DCHECK(CalledOnValidThread());
+  if (automation_provider_list_.get() == NULL) {
+    automation_provider_list_.reset(AutomationProviderList::GetInstance());
+  }
+  return automation_provider_list_.get();
+}
+
+void BrowserProcessImpl::InitDebuggerWrapper(int port, bool useHttp) {
+  DCHECK(CalledOnValidThread());
+  if (!created_debugger_wrapper_)
+    CreateDebuggerWrapper(port, useHttp);
+}
+
+bool BrowserProcessImpl::IsShuttingDown() {
+  DCHECK(CalledOnValidThread());
+  return did_start_ && 0 == module_ref_count_;
+}
+
 printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
   // TODO(abarth): DCHECK(CalledOnValidThread());
   // http://code.google.com/p/chromium/issues/detail?id=6828
@@ -269,6 +399,60 @@ printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
   // destructor, so it should always be valid.
   DCHECK(print_job_manager_.get());
   return print_job_manager_.get();
+}
+
+GoogleURLTracker* BrowserProcessImpl::google_url_tracker() {
+  DCHECK(CalledOnValidThread());
+  if (!google_url_tracker_.get())
+    CreateGoogleURLTracker();
+  return google_url_tracker_.get();
+}
+
+IntranetRedirectDetector* BrowserProcessImpl::intranet_redirect_detector() {
+  DCHECK(CalledOnValidThread());
+  if (!intranet_redirect_detector_.get())
+    CreateIntranetRedirectDetector();
+  return intranet_redirect_detector_.get();
+}
+
+const std::string& BrowserProcessImpl::GetApplicationLocale() {
+  DCHECK(!locale_.empty());
+  return locale_;
+}
+
+void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
+  locale_ = locale;
+  extension_l10n_util::SetProcessLocale(locale);
+}
+
+base::WaitableEvent* BrowserProcessImpl::shutdown_event() {
+  return shutdown_event_.get();
+}
+
+TabCloseableStateWatcher* BrowserProcessImpl::tab_closeable_state_watcher() {
+  DCHECK(CalledOnValidThread());
+  if (!tab_closeable_state_watcher_.get())
+    CreateTabCloseableStateWatcher();
+  return tab_closeable_state_watcher_.get();
+}
+
+void BrowserProcessImpl::CheckForInspectorFiles() {
+  file_thread()->message_loop()->PostTask
+      (FROM_HERE,
+       NewRunnableMethod(this, &BrowserProcessImpl::DoInspectorFilesCheck));
+}
+
+#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+void BrowserProcessImpl::StartAutoupdateTimer() {
+  autoupdate_timer_.Start(
+      base::TimeDelta::FromHours(kUpdateCheckIntervalHours),
+      this,
+      &BrowserProcessImpl::OnAutoupdateTimer);
+}
+#endif
+
+bool BrowserProcessImpl::have_inspector_files() const {
+  return have_inspector_files_;
 }
 
 void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
@@ -456,11 +640,6 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
   created_notification_ui_manager_ = true;
 }
 
-void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
-  locale_ = locale;
-  extension_l10n_util::SetProcessLocale(locale);
-}
-
 void BrowserProcessImpl::CreateStatusTrayManager() {
   DCHECK(status_tray_manager_.get() == NULL);
   status_tray_manager_.reset(new StatusTrayManager());
@@ -474,21 +653,6 @@ void BrowserProcessImpl::CreateTabCloseableStateWatcher() {
 // The BrowserProcess object must outlive the file thread so we use traits
 // which don't do any management.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(BrowserProcessImpl);
-
-void BrowserProcessImpl::CheckForInspectorFiles() {
-  file_thread()->message_loop()->PostTask
-      (FROM_HERE,
-       NewRunnableMethod(this, &BrowserProcessImpl::DoInspectorFilesCheck));
-}
-
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
-void BrowserProcessImpl::StartAutoupdateTimer() {
-  autoupdate_timer_.Start(
-      base::TimeDelta::FromHours(kUpdateCheckIntervalHours),
-      this,
-      &BrowserProcessImpl::OnAutoupdateTimer);
-}
-#endif
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 

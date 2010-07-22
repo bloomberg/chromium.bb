@@ -17,7 +17,6 @@
 #include "base/non_thread_safe.h"
 #include "base/timer.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "ipc/ipc_message.h"
@@ -36,181 +35,43 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   virtual void EndSession();
 
-  virtual ResourceDispatcherHost* resource_dispatcher_host() {
-    DCHECK(CalledOnValidThread());
-    if (!created_resource_dispatcher_host_)
-      CreateResourceDispatcherHost();
-    return resource_dispatcher_host_.get();
-  }
-
-  virtual MetricsService* metrics_service() {
-    DCHECK(CalledOnValidThread());
-    if (!created_metrics_service_)
-      CreateMetricsService();
-    return metrics_service_.get();
-  }
-
-  virtual IOThread* io_thread() {
-    DCHECK(CalledOnValidThread());
-    if (!created_io_thread_)
-      CreateIOThread();
-    return io_thread_.get();
-  }
-
-  virtual base::Thread* file_thread() {
-    DCHECK(CalledOnValidThread());
-    if (!created_file_thread_)
-      CreateFileThread();
-    return file_thread_.get();
-  }
-
-  virtual base::Thread* db_thread() {
-    DCHECK(CalledOnValidThread());
-    if (!created_db_thread_)
-      CreateDBThread();
-    return db_thread_.get();
-  }
-
-  virtual base::Thread* process_launcher_thread() {
-    DCHECK(CalledOnValidThread());
-    if (!created_process_launcher_thread_)
-      CreateProcessLauncherThread();
-    return process_launcher_thread_.get();
-  }
-
-  virtual base::Thread* cache_thread() {
-    DCHECK(CalledOnValidThread());
-    if (!created_cache_thread_)
-      CreateCacheThread();
-    return cache_thread_.get();
-  }
-
+  virtual ResourceDispatcherHost* resource_dispatcher_host();
+  virtual MetricsService* metrics_service();
+  virtual IOThread* io_thread();
+  virtual base::Thread* file_thread();
+  virtual base::Thread* db_thread();
+  virtual base::Thread* process_launcher_thread();
+  virtual base::Thread* cache_thread();
 #if defined(USE_X11)
-  virtual base::Thread* background_x11_thread() {
-    DCHECK(CalledOnValidThread());
-    // The BACKGROUND_X11 thread is created when the IO thread is created.
-    if (!created_io_thread_)
-      CreateIOThread();
-    return background_x11_thread_.get();
-  }
+  virtual base::Thread* background_x11_thread();
 #endif
-
-  virtual ProfileManager* profile_manager() {
-    DCHECK(CalledOnValidThread());
-    if (!created_profile_manager_)
-      CreateProfileManager();
-    return profile_manager_.get();
-  }
-
-  virtual PrefService* local_state() {
-    DCHECK(CalledOnValidThread());
-    if (!created_local_state_)
-      CreateLocalState();
-    return local_state_.get();
-  }
-
-  virtual DevToolsManager* devtools_manager() {
-    DCHECK(CalledOnValidThread());
-    if (!created_devtools_manager_)
-      CreateDevToolsManager();
-    return devtools_manager_.get();
-  }
-
-  virtual Clipboard* clipboard() {
-    DCHECK(CalledOnValidThread());
-    return clipboard_.get();
-  }
-
-  virtual NotificationUIManager* notification_ui_manager() {
-    DCHECK(CalledOnValidThread());
-    if (!created_notification_ui_manager_)
-      CreateNotificationUIManager();
-    return notification_ui_manager_.get();
-  }
-
-  virtual StatusTrayManager* status_tray_manager() {
-    DCHECK(CalledOnValidThread());
-    if (!status_tray_manager_.get())
-      CreateStatusTrayManager();
-    return status_tray_manager_.get();
-  }
-
-  virtual IconManager* icon_manager() {
-    DCHECK(CalledOnValidThread());
-    if (!created_icon_manager_)
-      CreateIconManager();
-    return icon_manager_.get();
-  }
-
-  virtual ThumbnailGenerator* GetThumbnailGenerator() {
-    return &thumbnail_generator_;
-  }
-
-  virtual AutomationProviderList* InitAutomationProviderList() {
-    DCHECK(CalledOnValidThread());
-    if (automation_provider_list_.get() == NULL) {
-      automation_provider_list_.reset(AutomationProviderList::GetInstance());
-    }
-    return automation_provider_list_.get();
-  }
-
-  virtual void InitDebuggerWrapper(int port, bool useHttp) {
-    DCHECK(CalledOnValidThread());
-    if (!created_debugger_wrapper_)
-      CreateDebuggerWrapper(port, useHttp);
-  }
-
+  virtual ProfileManager* profile_manager();
+  virtual PrefService* local_state();
+  virtual DevToolsManager* devtools_manager();
+  virtual Clipboard* clipboard();
+  virtual NotificationUIManager* notification_ui_manager();
+  virtual StatusTrayManager* status_tray_manager();
+  virtual IconManager* icon_manager();
+  virtual ThumbnailGenerator* GetThumbnailGenerator();
+  virtual AutomationProviderList* InitAutomationProviderList();
+  virtual void InitDebuggerWrapper(int port, bool useHttp);
   virtual unsigned int AddRefModule();
-
   virtual unsigned int ReleaseModule();
-
-  virtual bool IsShuttingDown() {
-    DCHECK(CalledOnValidThread());
-    return did_start_ && 0 == module_ref_count_;
-  }
-
+  virtual bool IsShuttingDown();
   virtual printing::PrintJobManager* print_job_manager();
-
-  virtual GoogleURLTracker* google_url_tracker() {
-    DCHECK(CalledOnValidThread());
-    if (!google_url_tracker_.get())
-      CreateGoogleURLTracker();
-    return google_url_tracker_.get();
-  }
-
-  virtual IntranetRedirectDetector* intranet_redirect_detector() {
-    DCHECK(CalledOnValidThread());
-    if (!intranet_redirect_detector_.get())
-      CreateIntranetRedirectDetector();
-    return intranet_redirect_detector_.get();
-  }
-
-  virtual const std::string& GetApplicationLocale() {
-    DCHECK(!locale_.empty());
-    return locale_;
-  }
+  virtual GoogleURLTracker* google_url_tracker();
+  virtual IntranetRedirectDetector* intranet_redirect_detector();
+  virtual const std::string& GetApplicationLocale();
   virtual void SetApplicationLocale(const std::string& locale);
-
-  virtual base::WaitableEvent* shutdown_event() {
-    return shutdown_event_.get();
-  }
-
-  virtual TabCloseableStateWatcher* tab_closeable_state_watcher() {
-    DCHECK(CalledOnValidThread());
-    if (!tab_closeable_state_watcher_.get())
-      CreateTabCloseableStateWatcher();
-    return tab_closeable_state_watcher_.get();
-  }
-
+  virtual base::WaitableEvent* shutdown_event();
+  virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
   virtual void CheckForInspectorFiles();
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   void StartAutoupdateTimer();
 #endif
 
-  virtual bool have_inspector_files() const {
-    return have_inspector_files_;
-  }
+  virtual bool have_inspector_files() const;
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   virtual void SetIPCLoggingEnabled(bool enable);

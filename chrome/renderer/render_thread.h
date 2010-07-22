@@ -17,10 +17,6 @@
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
-#include "chrome/common/dom_storage_common.h"
-#include "chrome/common/extensions/extension_extent.h"
-#include "chrome/renderer/gpu_channel_host.h"
-#include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_handle.h"
@@ -31,10 +27,12 @@ class CookieMessageFilter;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class FilePath;
+class GpuChannelHost;
 class IndexedDBDispatcher;
 class ListValue;
 class NullableString16;
 class RendererHistogram;
+class RendererHistogramSnapshots;
 class RendererNetPredictor;
 class RendererWebKitClientImpl;
 class SpellCheck;
@@ -225,15 +223,6 @@ class RenderThread : public RenderThreadBase,
   std::string GetExtensionIdByBrowseExtent(const GURL& url);
 
  private:
-  // Contains extension-related data that the renderer needs to know about.
-  // TODO(mpcomplete): this doesn't feel like it belongs here. Find a better
-  // place.
-  struct ExtensionInfo {
-    std::string extension_id;
-    ExtensionExtent web_extent;
-    ExtensionExtent browse_extent;
-  };
-
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
   void Init();
@@ -368,6 +357,7 @@ class RenderThread : public RenderThreadBase,
 
   // A list of extension web extents, which tells us which URLs belong to an
   // installed app.
+  struct ExtensionInfo;
   std::vector<ExtensionInfo> extension_extents_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
