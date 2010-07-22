@@ -231,9 +231,8 @@ int SpdyNetworkTransaction::DoInitConnection() {
   }
 
   std::string connection_group = "spdy.";
-  connection_group.append(host);
-
   HostPortPair host_port_pair(host, port);
+  connection_group.append(host_port_pair.ToString());
   scoped_refptr<TCPSocketParams> tcp_params =
       new TCPSocketParams(host_port_pair, request_->priority,
                           request_->referrer, false);
