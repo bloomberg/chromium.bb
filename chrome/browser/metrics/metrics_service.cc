@@ -653,7 +653,7 @@ void MetricsService::Observe(NotificationType type,
       break;
     }
     default:
-      LOG(DFATAL);
+      NOTREACHED();
       break;
   }
 
@@ -858,7 +858,7 @@ void MetricsService::ScheduleNextStateSave() {
 void MetricsService::SaveLocalState() {
   PrefService* pref = g_browser_process->local_state();
   if (!pref) {
-    LOG(DFATAL);
+    NOTREACHED();
     return;
   }
 
@@ -1149,7 +1149,7 @@ void MetricsService::MakePendingLog() {
       break;
 
     default:
-      LOG(DFATAL);
+      NOTREACHED();
       return;
   }
 
@@ -1380,7 +1380,7 @@ static const char* StatusToString(const URLRequestStatus& status) {
       return "FAILED";
 
     default:
-      LOG(DFATAL);
+      NOTREACHED();
       return "Unknown";
   }
 }
@@ -1442,7 +1442,7 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
         break;
 
       default:
-        LOG(DFATAL);
+        NOTREACHED();
         break;
     }
 
@@ -1684,7 +1684,7 @@ void MetricsService::LogWindowChange(NotificationType type,
       break;
 
     default:
-      LOG(DFATAL);
+      NOTREACHED();
       return;
   }
 
@@ -1778,7 +1778,7 @@ void MetricsService::LogChildProcessChange(
       break;
 
     default:
-      LOG(DFATAL) << "Unexpected notification type " << type.value;
+      NOTREACHED() << "Unexpected notification type " << type.value;
       return;
   }
 }
@@ -1838,7 +1838,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
   for (ListValue::iterator value_iter = plugins->begin();
        value_iter != plugins->end(); ++value_iter) {
     if (!(*value_iter)->IsType(Value::TYPE_DICTIONARY)) {
-      LOG(DFATAL);
+      NOTREACHED();
       continue;
     }
 
@@ -1846,7 +1846,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     std::wstring plugin_name;
     plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
     if (plugin_name.empty()) {
-      LOG(DFATAL);
+      NOTREACHED();
       continue;
     }
 
