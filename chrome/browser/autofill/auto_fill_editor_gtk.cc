@@ -136,6 +136,17 @@ GtkWidget* TableBuilder::AddWidget(GtkWidget* widget, int col_span) {
   return widget;
 }
 
+// Returns true if the text contained in the entry |widget| is non-empty and
+// parses as a valid phone number.
+bool IsValidPhoneNumber(GtkWidget* widget) {
+  string16 text(GetEntryText(widget));
+  if (text.empty())
+    return true;
+
+  string16 number, city_code, country_code;
+  return PhoneNumber::ParsePhoneNumber(text, &number, &city_code,&country_code);
+}
+
 // AutoFillProfileEditor -------------------------------------------------------
 
 // Class responsible for editing or creating an AutoFillProfile.
@@ -151,6 +162,9 @@ class AutoFillProfileEditor {
   ~AutoFillProfileEditor() {}
 
   void Init();
+
+  // Registers for the text changed on all our text fields.
+  void RegisterForTextChanged();
 
   // Sets the values of the various widgets to |profile|.
   void SetWidgetValues(AutoFillProfile* profile);
@@ -172,10 +186,14 @@ class AutoFillProfileEditor {
   // when not empty.
   void SetPhoneSizeRequest(GtkWidget* widget);
 
+  // Updates the enabled state of the ok button.
+  void UpdateOkButton();
+
   CHROMEGTK_CALLBACK_0(AutoFillProfileEditor, void, OnDestroy);
   CHROMEG_CALLBACK_1(AutoFillProfileEditor, void, OnResponse, GtkDialog*, gint);
   CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnPhoneChanged, GtkEditable*);
   CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnFaxChanged, GtkEditable*);
+  CHROMEG_CALLBACK_0(AutoFillProfileEditor, void, OnFieldChanged, GtkEditable*);
 
   // Are we creating a new profile?
   const bool is_new_;
@@ -202,6 +220,7 @@ class AutoFillProfileEditor {
   GtkWidget* fax_;
   GtkWidget* fax_image_;
   GtkWidget* email_;
+  GtkWidget* ok_button_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillProfileEditor);
 };
@@ -218,6 +237,10 @@ AutoFillProfileEditor::AutoFillProfileEditor(
 
   if (auto_fill_profile)
     SetWidgetValues(auto_fill_profile);
+
+  RegisterForTextChanged();
+
+  UpdateOkButton();
 
   gtk_util::ShowDialogWithLocalizedSize(
       dialog_,
@@ -300,17 +323,39 @@ void AutoFillProfileEditor::Init() {
       l10n_util::GetStringUTF8(caption_id).c_str(),
       NULL,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      GTK_STOCK_APPLY,
-      GTK_RESPONSE_APPLY,
-      GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL,
       NULL);
+
+  ok_button_ = gtk_dialog_add_button(GTK_DIALOG(dialog_),
+                                     GTK_STOCK_APPLY,
+                                     GTK_RESPONSE_APPLY);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_APPLY);
+
+  gtk_dialog_add_button(GTK_DIALOG(dialog_), GTK_STOCK_CANCEL,
+                        GTK_RESPONSE_CANCEL);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroyThunk), this);
 
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                      main_table_builder.table(), TRUE, TRUE, 0);
+}
+
+void AutoFillProfileEditor::RegisterForTextChanged() {
+  g_signal_connect(full_name_, "changed", G_CALLBACK(OnFieldChangedThunk),
+                   this);
+  g_signal_connect(company_, "changed", G_CALLBACK(OnFieldChangedThunk),
+                   this);
+  g_signal_connect(address_1_, "changed", G_CALLBACK(OnFieldChangedThunk),
+                   this);
+  g_signal_connect(address_2_, "changed", G_CALLBACK(OnFieldChangedThunk),
+                   this);
+  g_signal_connect(city_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
+  g_signal_connect(state_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
+  g_signal_connect(zip_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
+  g_signal_connect(country_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
+  g_signal_connect(email_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
+  g_signal_connect(phone_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
+  g_signal_connect(fax_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
 }
 
 void AutoFillProfileEditor::SetWidgetValues(AutoFillProfile* profile) {
@@ -418,6 +463,29 @@ void AutoFillProfileEditor::SetPhoneSizeRequest(GtkWidget* widget) {
                               gdk_pixbuf_get_height(buf));
 }
 
+void AutoFillProfileEditor::UpdateOkButton() {
+  // Enable the ok button if at least one field is non-empty and the phone
+  // numbers are valid.
+  bool valid =
+      !GetEntryText(full_name_).empty() ||
+      !GetEntryText(company_).empty() ||
+      !GetEntryText(address_1_).empty() ||
+      !GetEntryText(address_2_).empty() ||
+      !GetEntryText(city_).empty() ||
+      !GetEntryText(state_).empty() ||
+      !GetEntryText(zip_).empty() ||
+      !GetEntryText(country_).empty() ||
+      !GetEntryText(email_).empty();
+  if (valid) {
+    valid = IsValidPhoneNumber(phone_) && IsValidPhoneNumber(fax_);
+  } else {
+    valid = IsValidPhoneNumber(phone_) && IsValidPhoneNumber(fax_) &&
+        (!GetEntryText(full_name_).empty() ||
+         !GetEntryText(company_).empty());
+  }
+  gtk_widget_set_sensitive(ok_button_, valid);
+}
+
 void AutoFillProfileEditor::OnDestroy(GtkWidget* widget) {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -440,6 +508,10 @@ void AutoFillProfileEditor::OnPhoneChanged(GtkEditable* editable) {
 
 void AutoFillProfileEditor::OnFaxChanged(GtkEditable* editable) {
   UpdatePhoneImage(fax_, fax_image_);
+}
+
+void AutoFillProfileEditor::OnFieldChanged(GtkEditable* editable) {
+  UpdateOkButton();
 }
 
 // AutoFillCreditCardEditor ----------------------------------------------------
@@ -484,6 +556,9 @@ class AutoFillCreditCardEditor {
 
   void Init();
 
+  // Registers for the text changed on all our text fields.
+  void RegisterForTextChanged();
+
   // Sets the values displayed in the various widgets from |profile|.
   void SetWidgetValues(CreditCard* profile);
 
@@ -493,9 +568,14 @@ class AutoFillCreditCardEditor {
   // Updates |card| with the values from the widgets.
   void SetCreditCardValuesFromWidgets(CreditCard* card);
 
+  // Updates the enabled state of the ok button.
+  void UpdateOkButton();
+
   CHROMEGTK_CALLBACK_0(AutoFillCreditCardEditor, void, OnDestroy);
   CHROMEG_CALLBACK_1(AutoFillCreditCardEditor, void, OnResponse, GtkDialog*,
                      gint);
+  CHROMEG_CALLBACK_0(AutoFillCreditCardEditor, void, OnFieldChanged,
+                     GtkEditable*);
 
   // Are we creating a new credit card?
   const bool is_new_;
@@ -517,6 +597,7 @@ class AutoFillCreditCardEditor {
   GtkWidget* number_;
   GtkWidget* month_;
   GtkWidget* year_;
+  GtkWidget* ok_button_;
 
   GtkListStore* address_store_;
 
@@ -549,6 +630,10 @@ AutoFillCreditCardEditor::AutoFillCreditCardEditor(
     gtk_combo_box_set_active(GTK_COMBO_BOX(month_), 0);
     gtk_combo_box_set_active(GTK_COMBO_BOX(year_), 1);
   }
+
+  RegisterForTextChanged();
+
+  UpdateOkButton();
 
   gtk_util::ShowDialogWithLocalizedSize(
       dialog_,
@@ -648,17 +733,26 @@ void AutoFillCreditCardEditor::Init() {
       l10n_util::GetStringUTF8(caption_id).c_str(),
       NULL,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      GTK_STOCK_APPLY,
-      GTK_RESPONSE_APPLY,
-      GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL,
       NULL);
+
+  ok_button_ = gtk_dialog_add_button(GTK_DIALOG(dialog_),
+                                     GTK_STOCK_APPLY,
+                                     GTK_RESPONSE_APPLY);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_APPLY);
+
+  gtk_dialog_add_button(GTK_DIALOG(dialog_), GTK_STOCK_CANCEL,
+                        GTK_RESPONSE_CANCEL);
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroyThunk), this);
 
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                      main_table_builder.table(), TRUE, TRUE, 0);
+}
+
+void AutoFillCreditCardEditor::RegisterForTextChanged() {
+  g_signal_connect(name_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
+  g_signal_connect(number_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
 }
 
 void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
@@ -775,6 +869,13 @@ void AutoFillCreditCardEditor::SetCreditCardValuesFromWidgets(
                 IntToString16(selected_year_index + base_year_));
 }
 
+void AutoFillCreditCardEditor::UpdateOkButton() {
+  // Enable the ok button if at least one field is non-empty and the phone
+  // numbers are valid.
+  bool valid = !GetEntryText(name_).empty() || !GetEntryText(number_).empty();
+  gtk_widget_set_sensitive(ok_button_, valid);
+}
+
 void AutoFillCreditCardEditor::OnDestroy(GtkWidget* widget) {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -789,6 +890,10 @@ void AutoFillCreditCardEditor::OnResponse(GtkDialog* dialog, gint response_id) {
       response_id == GTK_RESPONSE_DELETE_EVENT) {
     gtk_widget_destroy(GTK_WIDGET(dialog));
   }
+}
+
+void AutoFillCreditCardEditor::OnFieldChanged(GtkEditable* editable) {
+  UpdateOkButton();
 }
 
 }  // namespace
