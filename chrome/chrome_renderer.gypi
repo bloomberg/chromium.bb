@@ -42,6 +42,8 @@
         # But app/ is the wrong directory for them.
         # Better is to remove the dep of *_tests on renderer, but in the
         # short term I'd like the build to work.
+        'renderer/autofill_helper.cc',
+        'renderer/autofill_helper.h',
         'renderer/automation/dom_automation_controller.cc',
         'renderer/automation/dom_automation_controller.h',
         'renderer/automation/dom_automation_v8_extension.cc',

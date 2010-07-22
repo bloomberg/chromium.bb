@@ -31,11 +31,11 @@
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
+#include "chrome/renderer/autofill_helper.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/dom_ui_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
-#include "chrome/renderer/form_manager.h"
 #include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
@@ -603,17 +603,9 @@ class RenderView : public RenderWidget,
 #endif
   FRIEND_TEST(RenderViewTest, JSBlockSentAfterPageLoad);
   FRIEND_TEST(RenderViewTest, UpdateTargetURLWithInvalidURL);
-  FRIEND_TEST(RenderViewTest, SendForms);
-  FRIEND_TEST(RenderViewTest, FillFormElement);
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, int> HostZoomLevels;
-
-  enum AutoFillAction {
-    AUTOFILL_NONE,    // No state set.
-    AUTOFILL_FILL,    // Fill the AutoFill form data.
-    AUTOFILL_PREVIEW, // Preview the AutoFill form data.
-  };
 
   enum ErrorPageType {
     DNS_ERROR,
@@ -939,23 +931,6 @@ class RenderView : public RenderWidget,
 
   void Print(WebKit::WebFrame* frame, bool script_initiated);
 
-  // Queries the AutoFillManager for form data for the form containing |node|.
-  // |value| is the current text in the field, and |unique_id| is the selected
-  // profile's unique ID.  |action| specifies whether to Fill or Preview the
-  // values returned from the AutoFillManager.
-  void QueryAutoFillFormData(const WebKit::WebNode& node,
-                             const WebKit::WebString& value,
-                             const WebKit::WebString& label,
-                             int unique_id,
-                             AutoFillAction action);
-
-  // Scans the given frame for forms and sends them up to the browser.
-  void SendForms(WebKit::WebFrame* frame);
-
-  // Scans the given frame for password forms and sends them up to the browser.
-  // If |only_visible| is true, only forms visible in the layout are sent
-  void SendPasswordForms(WebKit::WebFrame* frame, bool only_visible);
-
   // Returns whether the page associated with |document| is a candidate for
   // translation.  Some pages can explictly specify (via a meta-tag) that they
   // should not be translated.
@@ -1173,25 +1148,6 @@ class RenderView : public RenderWidget,
   // https://bugs.webkit.org/show_bug.cgi?id=32807.
   base::RepeatingTimer<RenderView> preferred_size_change_timer_;
 
-  // AutoFill ------------------------------------------------------------------
-
-  // The id of the last request sent for form field AutoFill.  Used to ignore
-  // out of date responses.
-  int autofill_query_id_;
-
-  // The id of the node corresponding to the last request sent for form field
-  // AutoFill.
-  WebKit::WebNode autofill_query_node_;
-
-  // The action to take when receiving AutoFill data from the AutoFillManager.
-  AutoFillAction autofill_action_;
-
-  // The menu index of the "Clear" menu item.
-  int suggestions_clear_index_;
-
-  // The menu index of the "AutoFill options..." menu item.
-  int suggestions_options_index_;
-
   // Plugins -------------------------------------------------------------------
 
   // Remember the first uninstalled plugin, so that we can ask the plugin
@@ -1213,8 +1169,6 @@ class RenderView : public RenderWidget,
 
   // Helper objects ------------------------------------------------------------
 
-  FormManager form_manager_;
-
   ScopedRunnableMethodFactory<RenderView> method_factory_;
 
   // Responsible for translating the page contents to other languages.
@@ -1222,6 +1176,10 @@ class RenderView : public RenderWidget,
 
   // Responsible for automatically filling login and password textfields.
   PasswordAutocompleteManager password_autocomplete_manager_;
+
+  // Responsible for filling forms (AutoFill) and single text entries
+  // (Autocomplete).
+  AutoFillHelper autofill_helper_;
 
   RendererWebCookieJarImpl cookie_jar_;
 

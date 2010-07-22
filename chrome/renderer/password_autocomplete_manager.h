@@ -48,6 +48,10 @@ class PasswordAutocompleteManager {
       const WebKit::WebInputElement& password,
       const webkit_glue::PasswordFormFillData& fill_data);
 
+  // Scans the given frame for password forms and sends them up to the browser.
+  // If |only_visible| is true, only forms visible in the layout are sent.
+  void SendPasswordForms(WebKit::WebFrame* frame, bool only_visible);
+
   // WebViewClient editor related calls forwarded by the RenderView.
   void TextFieldDidBeginEditing(const WebKit::WebInputElement& element);
   void TextFieldDidEndEditing(const WebKit::WebInputElement& element);
@@ -78,6 +82,13 @@ class PasswordAutocompleteManager {
       WebKit::WebInputElement* password_element,
       const webkit_glue::PasswordFormFillData& fill_data,
       bool exact_username_match);
+
+  // Convenience method that returns the routing ID of the render view we are
+  // associated with.
+  int GetRoutingID() const;
+
+  // Weak reference.
+  RenderView* render_view_;
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;

@@ -123,7 +123,6 @@
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/video_renderer_impl.h"
-#include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/default_plugin_shared.h"
 #include "webkit/glue/plugins/pepper_webplugin_impl.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -434,14 +433,11 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       spelling_panel_visible_(false),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
-      autofill_query_id_(0),
-      autofill_action_(AUTOFILL_NONE),
-      suggestions_clear_index_(-1),
-      suggestions_options_index_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(password_autocomplete_manager_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(autofill_helper_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           notification_provider_(new NotificationProvider(this))),
@@ -1520,68 +1516,12 @@ void RenderView::OnAutoFillSuggestionsReturned(
     const std::vector<string16>& values,
     const std::vector<string16>& labels,
     const std::vector<int>& unique_ids) {
-  if (!webview() || query_id != autofill_query_id_)
-    return;
-
-  // Any popup currently showing is now obsolete.
-  webview()->hidePopups();
-
-  // No suggestions: nothing to do.
-  if (values.empty())
-    return;
-
-  std::vector<string16> v(values);
-  std::vector<string16> l(labels);
-  std::vector<int> ids(unique_ids);
-  int separator_index = -1;
-
-  // The form has been auto-filled, so give the user the chance to clear the
-  // form.  Append the 'Clear form' menu item.
-  if (form_manager_.FormWithNodeIsAutoFilled(autofill_query_node_)) {
-    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
-    l.push_back(string16());
-    ids.push_back(0);
-    suggestions_clear_index_ = v.size() - 1;
-    separator_index = values.size();
-  }
-
-  size_t autofill_item_count = 0;
-  for (size_t i = 0; i < ids.size(); ++i) {
-    if (ids[i] != 0)
-      autofill_item_count++;
-  }
-
-  // Only include "AutoFill Options" special menu item if we have AutoFill
-  // items, identified by |unique_ids| having at least one valid value.
-  if (autofill_item_count > 0) {
-    // Append the 'AutoFill Options...' menu item.
-    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
-    l.push_back(string16());
-    ids.push_back(0);
-    suggestions_options_index_ = v.size() - 1;
-    separator_index = values.size();
-  }
-
-  // Send to WebKit for display.
-  if (!v.empty()) {
-    webview()->applyAutoFillSuggestions(
-        autofill_query_node_, v, l, ids, separator_index);
-  }
+  autofill_helper_.SuggestionsReceived(query_id, values, labels, unique_ids);
 }
 
 void RenderView::OnAutoFillFormDataFilled(int query_id,
                                           const webkit_glue::FormData& form) {
-  if (!webview() || query_id != autofill_query_id_)
-    return;
-
-  DCHECK_NE(AUTOFILL_NONE, autofill_action_);
-
-  if (autofill_action_ == AUTOFILL_FILL)
-    form_manager_.FillForm(form, autofill_query_node_);
-  else if (autofill_action_ == AUTOFILL_PREVIEW)
-    form_manager_.PreviewForm(form);
-
-  autofill_action_ = AUTOFILL_NONE;
+  autofill_helper_.FormDataFilled(query_id, form);
 }
 
 void RenderView::OnAllowScriptToClose(bool script_can_close) {
@@ -2146,36 +2086,12 @@ void RenderView::didUpdateInspectorSetting(const WebString& key,
 void RenderView::queryAutofillSuggestions(const WebNode& node,
                                           const WebString& name,
                                           const WebString& value) {
-  static int query_counter = 0;
-  autofill_query_id_ = query_counter++;
-  autofill_query_node_ = node;
-
-  const WebFormControlElement& element =
-      node.toConst<WebFormControlElement>();
-
-  webkit_glue::FormField field;
-  FormManager::WebFormControlElementToFormField(element, true, &field);
-
-  // WebFormControlElementToFormField does not scrape the DOM for the field
-  // label, so find the label here.
-  // TODO(jhawkins): Add form and field identities so we can use the cached form
-  // data in FormManager.
-  field.set_label(FormManager::LabelForElement(element));
-
-  bool form_autofilled = form_manager_.FormWithNodeIsAutoFilled(node);
-  Send(new ViewHostMsg_QueryFormFieldAutoFill(
-      routing_id_, autofill_query_id_, form_autofilled, field));
+  autofill_helper_.QueryAutocompleteSuggestions(node, name, value);
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,
                                            const WebString& value) {
-  // The index of clear & options will have shifted down.
-  if (suggestions_clear_index_ != -1)
-    suggestions_clear_index_--;
-  if (suggestions_options_index_ != -1)
-    suggestions_options_index_--;
-
-  Send(new ViewHostMsg_RemoveAutocompleteEntry(routing_id_, name, value));
+  autofill_helper_.RemoveAutocompleteSuggestion(name, value);
 }
 
 void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
@@ -2183,49 +2099,19 @@ void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& label,
                                              int unique_id,
                                              unsigned index) {
-  if (suggestions_options_index_ != -1 &&
-      index == static_cast<unsigned>(suggestions_options_index_)) {
-    // User selected 'AutoFill Options'.
-    Send(new ViewHostMsg_ShowAutoFillDialog(routing_id_));
-  } else if (suggestions_clear_index_ != -1 &&
-             index == static_cast<unsigned>(suggestions_clear_index_)) {
-    // User selected 'Clear form'.
-    // The form has been auto-filled, so give the user the chance to clear the
-    // form.
-    form_manager_.ClearFormWithNode(node);
-  } else if (form_manager_.FormWithNodeIsAutoFilled(node) || !unique_id) {
-    // User selected an Autocomplete entry, so we fill directly.
-    WebInputElement element = node.toConst<WebInputElement>();
-    element.setValue(value);
-
-    WebFrame* webframe = node.document().frame();
-    if (webframe) {
-      webframe->notifiyPasswordListenerOfAutocomplete(element);
-    }
-  } else {
-    // Fill the values for the whole form.
-    QueryAutoFillFormData(node, value, label, unique_id, AUTOFILL_FILL);
-  }
-
-  suggestions_clear_index_ = -1;
-  suggestions_options_index_ = -1;
+  autofill_helper_.DidAcceptAutoFillSuggestion(node, value, label, unique_id,
+                                               index);
 }
 
 void RenderView::didSelectAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& value,
                                              const WebKit::WebString& label,
                                              int unique_id) {
-  didClearAutoFillSelection(node);
-  QueryAutoFillFormData(node, value, label, unique_id, AUTOFILL_PREVIEW);
+  autofill_helper_.DidSelectAutoFillSuggestion(node, value, label, unique_id);
 }
 
 void RenderView::didClearAutoFillSelection(const WebKit::WebNode& node) {
-  webkit_glue::FormData form;
-  const WebFormControlElement element = node.toConst<WebFormControlElement>();
-  if (!form_manager_.FindFormWithFormControlElement(
-          element, FormManager::REQUIRE_NONE, &form))
-    return;
-  form_manager_.ClearPreviewedForm(form);
+  autofill_helper_.DidClearAutoFillSelection(node);
 }
 
 void RenderView::didAcceptAutocompleteSuggestion(
@@ -2421,7 +2307,7 @@ void RenderView::willClose(WebFrame* frame) {
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   navigation_state->user_script_idle_scheduler()->Cancel();
 
-  form_manager_.ResetFrame(frame);
+  autofill_helper_.FrameWillClose(frame);
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
@@ -2947,10 +2833,8 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
 
   // The document has now been fully loaded.  Scan for forms to be sent up to
   // the browser.
-  // TODO(jhawkins): Make these use the FormManager.
-  form_manager_.ExtractForms(frame);
-  SendForms(frame);
-  SendPasswordForms(frame, false);
+  autofill_helper_.FrameContentsAvailable(frame);
+  password_autocomplete_manager_.SendPasswordForms(frame, false);
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
@@ -2997,7 +2881,7 @@ void RenderView::didFinishLoad(WebFrame* frame) {
   navigation_state->user_script_idle_scheduler()->DidFinishLoad();
 
   // Let the password manager know which password forms are actually visible.
-  SendPasswordForms(frame, true);
+  password_autocomplete_manager_.SendPasswordForms(frame, true);
 }
 
 void RenderView::didNavigateWithinPage(
@@ -5013,26 +4897,6 @@ void RenderView::focusAccessibilityObject(
 #endif
 }
 
-void RenderView::SendForms(WebFrame* frame) {
-  // TODO(jhawkins): Use FormManager once we have strict ordering of form
-  // control elements in the cache.
-  WebVector<WebFormElement> web_forms;
-  frame->forms(web_forms);
-
-  std::vector<FormData> forms;
-  for (size_t i = 0; i < web_forms.size(); ++i) {
-    const WebFormElement& web_form = web_forms[i];
-
-    FormData form;
-    if (FormManager::WebFormElementToFormData(
-            web_form, FormManager::REQUIRE_NONE, false, &form))
-        forms.push_back(form);
-  }
-
-  if (!forms.empty())
-    Send(new ViewHostMsg_FormsSeen(routing_id_, forms));
-}
-
 void RenderView::didChangeAccessibilityObjectState(
     const WebKit::WebAccessibilityObject& acc_obj) {
 #if defined(OS_WIN)
@@ -5056,38 +4920,6 @@ void RenderView::didChangeAccessibilityObjectState(
   // TODO(port): accessibility not yet implemented
   NOTIMPLEMENTED();
 #endif
-}
-
-void RenderView::SendPasswordForms(WebFrame* frame, bool only_visible) {
-  // Make sure that this security origin is allowed to use password manager.
-  WebSecurityOrigin security_origin = frame->securityOrigin();
-  if (!security_origin.canAccessPasswordManager())
-    return;
-
-  WebVector<WebFormElement> forms;
-  frame->forms(forms);
-
-  std::vector<PasswordForm> password_forms;
-  for (size_t i = 0; i < forms.size(); ++i) {
-    const WebFormElement& form = forms[i];
-
-    // Respect autocomplete=off.
-    if (!form.autoComplete())
-      continue;
-    if (only_visible && !form.hasNonEmptyBoundingBox())
-      continue;
-    scoped_ptr<PasswordForm> password_form(
-        PasswordFormDomManager::CreatePasswordForm(form));
-    if (password_form.get())
-      password_forms.push_back(*password_form);
-  }
-
-  if (password_forms.empty())
-    return;
-  if (only_visible)
-    Send(new ViewHostMsg_PasswordFormsVisible(routing_id_, password_forms));
-  else
-    Send(new ViewHostMsg_PasswordFormsFound(routing_id_, password_forms));
 }
 
 void RenderView::Print(WebFrame* frame, bool script_initiated) {
@@ -5306,8 +5138,7 @@ void RenderView::OnPageTranslated() {
     return;
 
   // The page is translated, so try to extract the form data again.
-  form_manager_.ExtractForms(frame);
-  SendForms(frame);
+  autofill_helper_.FrameContentsAvailable(frame);
 }
 
 WebKit::WebGeolocationService* RenderView::geolocationService() {
@@ -5355,21 +5186,3 @@ bool RenderView::IsNonLocalTopLevelNavigation(
   return false;
 }
 
-void RenderView::QueryAutoFillFormData(const WebKit::WebNode& node,
-                                       const WebKit::WebString& value,
-                                       const WebKit::WebString& label,
-                                       int unique_id,
-                                       AutoFillAction action) {
-  static int query_counter = 0;
-  autofill_query_id_ = query_counter++;
-
-  webkit_glue::FormData form;
-  const WebInputElement element = node.toConst<WebInputElement>();
-  if (!form_manager_.FindFormWithFormControlElement(
-          element, FormManager::REQUIRE_NONE, &form))
-    return;
-
-  autofill_action_ = action;
-  Send(new ViewHostMsg_FillAutoFillFormData(
-      routing_id_, autofill_query_id_, form, value, label, unique_id));
-}

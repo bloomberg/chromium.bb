@@ -7,14 +7,18 @@
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "chrome/common/render_messages.h"
+#include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/form_field.h"
+#include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
 namespace {
@@ -166,7 +170,8 @@ bool DoUsernamesMatch(const string16& username1,
 
 PasswordAutocompleteManager::PasswordAutocompleteManager(
     RenderView* render_view)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+    : render_view_(render_view),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
 
 PasswordAutocompleteManager::~PasswordAutocompleteManager() {
@@ -338,6 +343,43 @@ void PasswordAutocompleteManager::PerformInlineAutocomplete(
   FillUserNameAndPassword(&username, &password, fill_data, false);
 }
 
+void PasswordAutocompleteManager::SendPasswordForms(WebKit::WebFrame* frame,
+                                                    bool only_visible) {
+  // Make sure that this security origin is allowed to use password manager.
+  WebKit::WebSecurityOrigin security_origin = frame->securityOrigin();
+  if (!security_origin.canAccessPasswordManager())
+    return;
+
+  WebKit::WebVector<WebKit::WebFormElement> forms;
+  frame->forms(forms);
+
+  std::vector<webkit_glue::PasswordForm> password_forms;
+  for (size_t i = 0; i < forms.size(); ++i) {
+    const WebKit::WebFormElement& form = forms[i];
+
+    // Respect autocomplete=off.
+    if (!form.autoComplete())
+      continue;
+    if (only_visible && !form.hasNonEmptyBoundingBox())
+      continue;
+    scoped_ptr<webkit_glue::PasswordForm> password_form(
+        webkit_glue::PasswordFormDomManager::CreatePasswordForm(form));
+    if (password_form.get())
+      password_forms.push_back(*password_form);
+  }
+
+  if (password_forms.empty())
+    return;
+
+  if (only_visible) {
+    render_view_->Send(
+        new ViewHostMsg_PasswordFormsVisible(GetRoutingID(), password_forms));
+  } else {
+    render_view_->Send(
+      new ViewHostMsg_PasswordFormsFound(GetRoutingID(), password_forms));
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutocompleteManager, private:
 
@@ -414,3 +456,6 @@ bool PasswordAutocompleteManager::FillUserNameAndPassword(
   return true;
 }
 
+int PasswordAutocompleteManager::GetRoutingID() const {
+  return render_view_->routing_id();
+}
