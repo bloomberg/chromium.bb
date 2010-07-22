@@ -446,7 +446,7 @@ class Dependency(GClientKeywords):
     return '%s: %s' % (self.name, self.url)
 
   def hierarchy(self):
-    "Returns a human-readable hierarchical reference to a Dependency."
+    """Returns a human-readable hierarchical reference to a Dependency."""
     out = '%s(%s)' % (self.name, self.url)
     i = self.parent
     while i and i.name:
