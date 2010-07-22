@@ -161,7 +161,8 @@ int main(int argc, char** argv) {
       command_line->HasSwitch(kGTestHelpFlag)) {
 
 #if defined(OS_WIN)
-    if (command_line->HasSwitch(kChildProcessFlag)) {
+    if (command_line->HasSwitch(kChildProcessFlag) ||
+        command_line->HasSwitch(kSingleProcessTestsFlag)) {
       // This is the browser process, so setup the sandbox broker.
       sandbox::BrokerServices* broker_services =
           sandbox::SandboxFactory::GetBrokerServices();
