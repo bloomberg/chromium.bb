@@ -395,9 +395,13 @@ bool RenderViewContextMenu::AppendCustomItems() {
   for (size_t i = 0; i < custom_items.size(); ++i) {
     DCHECK(IDC_CONTENT_CONTEXT_CUSTOM_FIRST + custom_items[i].action <
         IDC_CONTENT_CONTEXT_CUSTOM_LAST);
-    menu_model_.AddItem(
-        custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
-        custom_items[i].label);
+    if (custom_items[i].type == WebMenuItem::SEPARATOR) {
+      menu_model_.AddSeparator();
+    } else {
+      menu_model_.AddItem(
+          custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+          custom_items[i].label);
+    }
   }
   return custom_items.size() > 0;
 }
