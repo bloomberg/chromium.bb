@@ -317,7 +317,7 @@ int32_t NaClOpenAclCheck(struct NaClApp *nap,
    * gears.  need GUI for user configuration, as well as designing an
    * appropriate language (with sufficient expressiveness), however.
    */
-  NaClLog(LOG_INFO, "NaClOpenAclCheck(0x%08"NACL_PRIxPTR", %s, 0%o, 0%o)\n",
+  NaClLog(1, "NaClOpenAclCheck(0x%08"NACL_PRIxPTR", %s, 0%o, 0%o)\n",
           (uintptr_t) nap, path, flags, mode);
   if (3 < NaClLogGetVerbosity()) {
     NaClLog(0, "O_ACCMODE: 0%o\n", flags & NACL_ABI_O_ACCMODE);
@@ -325,7 +325,7 @@ int32_t NaClOpenAclCheck(struct NaClApp *nap,
     NaClLog(0, "O_WRONLY = %d\n", NACL_ABI_O_WRONLY);
     NaClLog(0, "O_RDWR   = %d\n", NACL_ABI_O_RDWR);
 #define FLOG(VAR, BIT) do {\
-      NaClLog(LOG_INFO, "%s: %s\n", #BIT, (VAR & BIT) ? "yes" : "no");\
+      NaClLog(1, "%s: %s\n", #BIT, (VAR & BIT) ? "yes" : "no");\
     } while (0)
     FLOG(flags, NACL_ABI_O_CREAT);
     FLOG(flags, NACL_ABI_O_TRUNC);
@@ -342,17 +342,13 @@ int32_t NaClOpenAclCheck(struct NaClApp *nap,
  * NaClStatAclCheck: Is the NaCl app authorized to stat this pathname?  The
  * return value is syscall return convention, so 0 is success and
  * small negative numbers are negated errno values.
+ *
+ * This is primarily for debug use.  File access should be through
+ * SRPC-based file servers.
  */
 int32_t NaClStatAclCheck(struct NaClApp *nap,
                          char const     *path) {
-  /*
-   * TODO(bsy): provide some minimal authorization check, based on
-   * whether a debug flag is set; eventually provide a data-driven
-   * authorization configuration mechanism, perhaps persisted via
-   * gears.  need GUI for user configuration, as well as designing an
-   * appropriate language (with sufficient expressiveness), however.
-   */
-  NaClLog(LOG_INFO,
+  NaClLog(2,
           "NaClStatAclCheck(0x%08"NACL_PRIxPTR", %s)\n", (uintptr_t) nap, path);
   if (NaClAclBypassChecks) {
     return 0;
@@ -364,7 +360,7 @@ int32_t NaClIoctlAclCheck(struct NaClApp  *nap,
                           struct NaClDesc *ndp,
                           int             request,
                           void            *arg) {
-  NaClLog(LOG_INFO,
+  NaClLog(2,
           ("NaClIoctlAclCheck(0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR","
            " %d, 0x%08"NACL_PRIxPTR"\n"),
           (uintptr_t) nap, (uintptr_t) ndp, request, (uintptr_t) arg);
@@ -378,7 +374,7 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
                           int                   status) {
   struct NaClApp            *nap;
 
-  NaClLog(LOG_INFO, "Exit syscall handler: %d\n", status);
+  NaClLog(1, "Exit syscall handler: %d\n", status);
   NaClSysCommonThreadSyscallEnter(natp);
 
   nap = natp->nap;
@@ -468,7 +464,7 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
     flags &= allowed_flags;
   }
   if (0 != (mode & ~0600)) {
-    NaClLog(LOG_INFO, "IGNORING Invalid access mode bits 0%o\n", mode);
+    NaClLog(1, "IGNORING Invalid access mode bits 0%o\n", mode);
     mode &= 0600;
   }
   NaClLog(4, " attempting to copy path via sysaddr 0x%08"NACL_PRIxPTR
@@ -483,7 +479,7 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
    * survived the copy, but did there happen to be data beyond the end?
    */
   path[sizeof path - 1] = '\0';  /* always null terminate */
-  NaClLog(LOG_INFO, "NaClSysOpen: Path: %s\n", path);
+  NaClLog(1, "NaClSysOpen: Path: %s\n", path);
   len = strlen(path);
   /*
    * make sure sysaddr is a string, and the whole string is in app
@@ -528,12 +524,12 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
       goto cleanup;
     }
     retval = NaClHostDirOpen(hd, path);
-    NaClLog(LOG_INFO, "NaClHostDirOpen(0x%08"NACL_PRIxPTR", %s) returned %d\n",
+    NaClLog(1, "NaClHostDirOpen(0x%08"NACL_PRIxPTR", %s) returned %d\n",
             (uintptr_t) hd, path, retval);
     if (0 == retval) {
       retval = NaClSetAvail(natp->nap,
                             ((struct NaClDesc *) NaClDescDirDescMake(hd)));
-      NaClLog(LOG_INFO, "Entered directory into open file table at %d\n",
+      NaClLog(1, "Entered directory into open file table at %d\n",
               retval);
     }
   } else {
@@ -545,13 +541,13 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
       goto cleanup;
     }
     retval = NaClHostDescOpen(hd, path, flags, mode);
-    NaClLog(LOG_INFO,
+    NaClLog(1,
             "NaClHostDescOpen(0x%08"NACL_PRIxPTR", %s, 0%o, 0%o) returned %d\n",
             (uintptr_t) hd, path, flags, mode, retval);
     if (0 == retval) {
       retval = NaClSetAvail(natp->nap,
                             ((struct NaClDesc *) NaClDescIoDescMake(hd)));
-      NaClLog(LOG_INFO, "Entered into open file table at %d\n", retval);
+      NaClLog(1, "Entered into open file table at %d\n", retval);
     }
   }
 cleanup:
@@ -904,7 +900,7 @@ int32_t NaClCommonSysStat(struct NaClAppThread  *natp,
    * survived the copy, but did there happen to be data beyond the end?
    */
   path[sizeof path - 1] = '\0';  /* always null terminate */
-  NaClLog(LOG_INFO, "NaClCommonSysStat: Path: %s\n", path);
+  NaClLog(2, "NaClCommonSysStat: Path: %s\n", path);
   len = strlen(path);
   /*
    * make sure sysaddr is a string, and the whole string is in app
