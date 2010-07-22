@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,9 +68,9 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
 
   // Find the TabContents that contains this tab id.
   TabContents* contents = NULL;
-  ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
-                               NULL, NULL, &contents, NULL);
-  if (!contents) {
+  bool result = ExtensionTabUtil::GetTabById(
+      tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
+  if (!result || !contents) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kNoTabError,
                                                      IntToString(tab_id));
     return false;
@@ -101,9 +101,9 @@ bool PageActionFunction::InitCommon(int tab_id) {
 
   // Find the TabContents that contains this tab id.
   contents_ = NULL;
-  ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
-                               NULL, NULL, &contents_, NULL);
-  if (!contents_) {
+  bool result = ExtensionTabUtil::GetTabById(
+      tab_id, profile(), include_incognito(), NULL, NULL, &contents_, NULL);
+  if (!result || !contents_) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kNoTabError,
                                                      IntToString(tab_id));
     return false;
