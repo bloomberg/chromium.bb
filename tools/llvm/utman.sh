@@ -161,8 +161,6 @@ readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
 # NOTE: this tools.sh defines: LD_FOR_TARGET, CC_FOR_TARGET, CXX_FOR_TARGET, ...
 setup-tools-common() {
   LD_FOR_SFI_TARGET=${LD_FOR_TARGET}
-  CC_FOR_SFI_TARGET=${CC_FOR_TARGET}
-  CXX_FOR_SFI_TARGET=${CXX_FOR_TARGET}
   AR_FOR_SFI_TARGET=${AR_FOR_TARGET}
   NM_FOR_SFI_TARGET=${NM_FOR_TARGET}
   RANLIB_FOR_SFI_TARGET=${RANLIB_FOR_TARGET}
@@ -232,14 +230,18 @@ setup-tools-common() {
 # NOTE: we need to rethink the setup mechanism when we want to
 #       produce libgcc for other archs
 setup-tools-arm() {
-  export TARGET_CODE=sfi-arm
+  export TARGET_CODE=sfi
   source tools/llvm/tools.sh
+  CC_FOR_SFI_TARGET="${CC_FOR_TARGET} -arch arm"
+  CXX_FOR_SFI_TARGET="${CXX_FOR_TARGET} -arch arm"
   setup-tools-common
 }
 
 setup-tools-bitcode() {
   export TARGET_CODE=bc-arm
   source tools/llvm/tools.sh
+  CC_FOR_SFI_TARGET="${CC_FOR_TARGET} -emit-llvm"
+  CXX_FOR_SFI_TARGET="${CXX_FOR_TARGET} -emit-llvm"
   setup-tools-common
 }
 

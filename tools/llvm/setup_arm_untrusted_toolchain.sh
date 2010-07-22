@@ -21,11 +21,13 @@ case ${TARGET_CODE} in
     # NOTE: this should really be: "export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/pnacl-untrusted/arm"
     # TOOD(robertm): change this together with the rest of the builder script
     export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
+    EXTRA_FLAGS="-emit-llvm"
     ;;
 
   *)
     export NACL_SDK_LIB="${NACL_SDK_INSTALL}/lib"
     export NACL_SDK_LIB_PLATFORM="${NACL_SDK_INSTALL}/lib"
+    EXTRA_FLAGS="-arch arm"
     ;;
 esac
 
@@ -55,9 +57,10 @@ SHARED_CFLAGS=
 #     * change setup_arm_newlib.sh to use gcc
 #     * the control flow mask in src/trusted/service_runtime/nacl_config.h to 0
 
-export NACL_SDK_CC="${CC_FOR_TARGET} -std=gnu99 ${SHARED_CFLAGS}"
-export NACL_SDK_CXX="${CXX_FOR_TARGET} ${SHARED_CFLAGS}"
-export NACL_SDK_CC_NATIVE="${CC_NATIVE_FOR_TARGET} -std=gnu99 ${SHARED_CFLAGS}"
+export NACL_SDK_CC="${CC_FOR_TARGET} ${EXTRA_FLAGS} -std=gnu99 ${SHARED_CFLAGS}"
+export NACL_SDK_CXX="${CXX_FOR_TARGET} ${EXTRA_FLAGS} ${SHARED_CFLAGS}"
+export NACL_SDK_CC_NATIVE="${CC_NATIVE_FOR_TARGET} -arch arm" \
+                           "-std=gnu99 ${SHARED_CFLAGS}"
 export NACL_SDK_AR=${AR_FOR_TARGET}
 export NACL_SDK_NM=${NM_FOR_TARGET}
 export NACL_SDK_RANLIB=${RANLIB_FOR_TARGET}
@@ -72,3 +75,4 @@ unset NM_FOR_TARGET
 unset RANLIB_FOR_TARGET
 unset LD_FOR_TARGET
 unset LLVM_BIN_PATH
+unset EXTRA_FLAGS

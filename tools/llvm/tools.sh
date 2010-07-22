@@ -19,42 +19,40 @@ LLVM_DRIVER_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 
 # Define TARGET_CODE=<value> in the calling environment to override.
 case ${TARGET_CODE:=bc-arm} in
-  sfi-arm)  # => Libraries with Native Client SFI sandboxing.
-    CC_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch arm"
-    CXX_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfig++ -arch arm"
+  sfi)  # => Libraries with Native Client SFI sandboxing.
+    CC_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
+    CXX_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfig++"
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch arm"
+    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfild"
     ;;
   bc-arm)  # => Bitcode libraries => arm
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc -emit-llvm"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++ -emit-llvm"
+    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
+    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch arm"
+    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch arm"
     ;;
   bc-x86-32)  # => Bitcode libraries => x86-32
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc -emit-llvm"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++ -emit-llvm"
+    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
+    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    # TODO(espindola): CCAS is probably never used.
-    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch x86-32"
+    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch x86-32"
     ;;
   bc-x86-64)  # => Bitcode libraries => x86-64
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc -emit-llvm"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++ -emit-llvm"
+    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
+    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
     AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
     NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
     RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    # TODO(espindola): CCAS is probably never used.
-    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc -arch x86-64"
+    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
     LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch x86-64"
     ;;
   *)
