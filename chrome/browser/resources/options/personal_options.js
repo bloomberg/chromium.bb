@@ -21,6 +21,51 @@ PersonalOptions.prototype = {
     // Call base class implementation to starts preference initialization.
     OptionsPage.prototype.initializePage.call(this);
 
-    // TODO(csilv): add any needed initialization here or delete this method.
-  }
+
+    // Listen to pref changes.
+    Preferences.getInstance().addEventListener('sync.has_setup_completed',
+        function(event) {
+          if(event.value) {
+            $('text-when-synced').style.display = 'block';
+            $('button-when-synced').style.display = 'block';
+          }
+          else {
+            $('text-when-not-synced').style.display = 'block';
+            $('button-when-not-synced').style.display = 'block';
+          }
+        });
+
+    $('sync-customize').onclick = function(event) {
+      OptionsPage.showPageByName('sync');
+    };
+
+    $('showpasswords').onclick = function(event) {
+      //TODO(sargrass): Show passwords dialog here.
+    };
+
+    $('autofill_options').onclick = function(event) {
+      //TODO(sargrass): Show autofill dialog here.
+    };
+
+    $('import_data').onclick = function(event) {
+      //TODO(sargrass): Show import_data dialog here.
+    };
+
+    if(navigator.platform.match(/linux|BSD/i)) {
+      $('themes_GTK_button').onclick = function(event) {
+        //TODO(sargrass): Show themes GTK dialog here.
+      };
+
+      $('themes_set_classic').onclick = function(event) {
+        //TODO(sargrass): Show themes set classic dialog here.
+      };
+    }
+
+    if(navigator.platform.match(/Mac|Win|CrOS/i)) {
+      $('themes_reset').onclick = function(event) {
+        //TODO(sargrass): Show themes reset dialog here.
+      };
+    }
+
+  },
 };
