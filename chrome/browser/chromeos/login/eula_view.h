@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/view_screen.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/view.h"
@@ -18,16 +19,55 @@ class Checkbox;
 class Label;
 class Link;
 class NativeButton;
-class Textfield;
 
 }  // namespace views
 
+class DOMView;
+
 namespace chromeos {
+
+// Delegate for TabContents that will show EULA.
+// Blocks context menu and other actions.
+class EULATabContentsDelegate : public TabContentsDelegate {
+ public:
+  EULATabContentsDelegate() {}
+  virtual ~EULATabContentsDelegate() {}
+
+ protected:
+  // TabContentsDelegate implementation:
+  virtual void OpenURLFromTab(TabContents* source,
+                              const GURL& url, const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              PageTransition::Type transition) {}
+  virtual void NavigationStateChanged(const TabContents* source,
+                                      unsigned changed_flags) {}
+  virtual void AddNewContents(TabContents* source,
+                              TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) {}
+  virtual void ActivateContents(TabContents* contents) {}
+  virtual void LoadingStateChanged(TabContents* source) {}
+  virtual void CloseContents(TabContents* source) {}
+  virtual bool IsPopup(TabContents* source) { return false; }
+  virtual void URLStarredChanged(TabContents* source, bool starred) {}
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
+  virtual bool ShouldAddNavigationToHistory() const { return false; }
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
+  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
+  virtual bool HandleContextMenu(const ContextMenuParams& params) {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EULATabContentsDelegate);
+};
 
 class EulaView
     : public views::View,
       public views::ButtonListener,
-      public views::LinkController {
+      public views::LinkController,
+      public EULATabContentsDelegate {
  public:
   explicit EulaView(chromeos::ScreenObserver* observer);
   virtual ~EulaView();
@@ -49,11 +89,19 @@ class EulaView
   void LinkActivated(views::Link* source, int event_flags);
 
  private:
+  // Loads specified URL to the specified DOMView and updates specified
+  // label with its title.
+  void LoadEulaView(DOMView* eula_view,
+                    views::Label* eula_label,
+                    const GURL& eula_url);
+
   // Dialog controls.
-  views::Textfield* google_eula_text_;
+  views::Label* google_eula_label_;
+  DOMView* google_eula_view_;
   views::Checkbox* usage_statistics_checkbox_;
   views::Link* learn_more_link_;
-  views::Textfield* oem_eula_text_;
+  views::Label* oem_eula_label_;
+  DOMView* oem_eula_view_;
   views::Link* system_security_settings_link_;
   views::NativeButton* cancel_button_;
   views::NativeButton* continue_button_;

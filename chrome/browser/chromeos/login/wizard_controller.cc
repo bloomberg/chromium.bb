@@ -384,7 +384,7 @@ void WizardController::SetCustomization(
 }
 
 const chromeos::StartupCustomizationDocument*
-    WizardController::GetCustomization() {
+    WizardController::GetCustomization() const {
   return customization_.get();
 }
 
