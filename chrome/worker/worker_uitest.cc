@@ -423,9 +423,12 @@ TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
 // Flaky, see http://crbug.com/49381
 TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
-    "worker-simple.html",
+    "close-in-onmessage-crash.html",
+    "close-in-shared-worker.html",
+    "close-in-worker.html",
     "shared-worker-simple.html",
-    "worker-handshake-challenge-randomness.html"
+    "worker-handshake-challenge-randomness.html",
+    "worker-simple.html"
   };
 
   FilePath websocket_test_dir;
