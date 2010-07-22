@@ -15,7 +15,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
-#include "third_party/cros/chromeos_input_method.h"
+#include "cros/chromeos_input_method.h"
 
 namespace chromeos {
 

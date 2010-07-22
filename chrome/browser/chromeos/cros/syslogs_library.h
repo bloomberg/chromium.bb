@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_SYSLOGS_LIBRARY_H_
 
 #include "base/singleton.h"
-#include "third_party/cros/chromeos_syslogs.h"
+#include "cros/chromeos_syslogs.h"
 
 namespace chromeos {
 

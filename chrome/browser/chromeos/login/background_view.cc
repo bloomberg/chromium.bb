@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/label.h"

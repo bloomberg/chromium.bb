@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_SCREEN_LOCK_LIBRARY_H_
 
 #include "base/observer_list.h"
-#include "third_party/cros/chromeos_screen_lock.h"
+#include "cros/chromeos_screen_lock.h"
 
 namespace chromeos {
 

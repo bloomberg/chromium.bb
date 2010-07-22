@@ -14,7 +14,7 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "net/url_request/url_request_job_tracker.h"
-#include "third_party/cros/chromeos_network.h"
+#include "cros/chromeos_network.h"
 
 namespace chromeos {
 

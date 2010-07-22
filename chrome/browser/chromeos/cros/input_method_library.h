@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "third_party/cros/chromeos_input_method.h"
+#include "cros/chromeos_input_method.h"
 
 namespace chromeos {
 

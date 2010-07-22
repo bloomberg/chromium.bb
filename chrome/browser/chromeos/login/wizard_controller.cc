@@ -39,7 +39,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 #include "unicode/timezone.h"
 #include "views/accelerator.h"
 #include "views/painter.h"

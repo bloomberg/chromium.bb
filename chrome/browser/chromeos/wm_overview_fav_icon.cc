@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/chromeos/wm_overview_snapshot.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"

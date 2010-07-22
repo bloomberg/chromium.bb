@@ -7,6 +7,7 @@ include_rules = [
   "+chrome/profile_import",
   "+chrome/tools/profiles",  # For history unit tests.
   "+chrome/views",
+  "+cros",
   "+grit",  # For generated headers
   "+sandbox/src",
   "+skia/include",

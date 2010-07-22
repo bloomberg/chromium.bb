@@ -30,7 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"

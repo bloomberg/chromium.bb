@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/singleton.h"
-#include "third_party/cros/chromeos_cryptohome.h"
+#include "cros/chromeos_cryptohome.h"
 
 namespace chromeos {
 

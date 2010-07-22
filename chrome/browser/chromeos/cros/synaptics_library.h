@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_SYNAPTICS_LIBRARY_H_
 
 #include "base/singleton.h"
-#include "third_party/cros/chromeos_synaptics.h"
+#include "cros/chromeos_synaptics.h"
 
 namespace chromeos {
 
 // This interface defines interaction with the ChromeOS synaptics library APIs.
 // Users can get an instance of this library class like this:
 //   SynapticsLibrary::Get()
-// For a list of SynapticsPrameters, see third_party/cros/chromeos_synaptics.h
+// For a list of SynapticsPrameters, see chromeos_synaptics.h
+// in third_party/cros or /usr/include/cros
 class SynapticsLibrary {
  public:
   virtual ~SynapticsLibrary() {}
@@ -29,7 +30,8 @@ class SynapticsLibrary {
 // This class handles the interaction with the ChromeOS synaptics library APIs.
 // Users can get an instance of this library class like this:
 //   SynapticsLibrary::Get()
-// For a list of SynapticsPrameters, see third_party/cros/chromeos_synaptics.h
+// For a list of SynapticsPrameters, see chromeos_synaptics.h
+// in third_party/cros or /usr/include/cros
 class SynapticsLibraryImpl : public SynapticsLibrary {
  public:
   SynapticsLibraryImpl() {}

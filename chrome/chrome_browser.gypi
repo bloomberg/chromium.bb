@@ -3517,7 +3517,23 @@
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
                 #'../third_party/protobuf2/protobuf.gyp:protobuf',
                 '../third_party/protobuf2/protobuf.gyp:protoc#host',
-                '../third_party/cros/cros_api.gyp:cros_api',
+              ],
+              'conditions': [
+                ['system_libcros==0', {
+                  'dependencies': [
+                    '../third_party/cros/cros_api.gyp:cros_api',
+                  ],
+                  'include_dirs': [
+                    '../third_party/'
+                  ],
+                }],
+                ['system_libcros==1', {
+                  'link_settings': {
+                    'libraries': [
+                      '-lcrosapi',
+                    ],
+                  },
+                }],
               ],
               'actions': [
                 {

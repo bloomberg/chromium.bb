@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_KEYBOARD_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_KEYBOARD_LIBRARY_H_
 
-#include "third_party/cros/chromeos_keyboard.h"
+#include "cros/chromeos_keyboard.h"
 
 #include <string>
 

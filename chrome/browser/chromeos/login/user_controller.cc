@@ -18,7 +18,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 #include "views/background.h"
 #include "views/controls/label.h"
 #include "views/controls/button/native_button.h"

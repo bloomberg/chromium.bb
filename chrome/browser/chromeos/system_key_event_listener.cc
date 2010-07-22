@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/volume_bubble.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 
 namespace chromeos {
 

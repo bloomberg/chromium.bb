@@ -17,12 +17,28 @@
         '../../../../chrome/chrome.gyp:common_constants',
         '../../../../skia/skia.gyp:skia',
         '../../../../views/views.gyp:views',
-        '../cros/cros_api.gyp:cros_api',
       ],
       'sources': [
         'candidate_window.cc',
         # For loading libcros.
         '../cros/cros_library_loader.cc',
+      ],
+      'conditions': [
+        ['system_libcros==0', {
+          'dependencies': [
+            '../../../../third_party/cros/cros_api.gyp:cros_api',
+          ],
+          'include_dirs': [
+            '../../../../third_party/',
+          ],
+        }],
+        ['system_libcros==1', {
+          'link_settings': {
+            'libraries': [
+              '-lcrosapi',
+            ],
+          },
+        }],
       ],
     },
   ],

@@ -12,7 +12,7 @@
 
 #include "base/logging.h"
 #include "base/singleton.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 
 typedef unsigned long Atom;
 typedef unsigned long XID;
