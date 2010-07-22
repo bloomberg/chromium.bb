@@ -35,10 +35,10 @@
 
 namespace stats_report {
 
-const char kTimingsKeyName = "Timings";
-const char kCountsKeyName = "Counts";
-const char kIntegersKeyName = "Integers";
-const char kBooleansKeyName = "Booleans";
+const char kTimingsKeyName[] = "Timings";
+const char kCountsKeyName[] = "Counts";
+const char kIntegersKeyName[] = "Integers";
+const char kBooleansKeyName[] = "Booleans";
 
 static NSString* FindGoogleAppDirectory(void) {
   NSString *applicationSupportFolder =
