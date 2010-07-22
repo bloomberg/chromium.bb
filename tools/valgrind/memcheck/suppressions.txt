@@ -570,85 +570,85 @@
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
 {
-   Memcheck sanity test (memory leak).
+   Memcheck sanity test 01 (memory leak).
    Memcheck:Leak
    fun:_Zna*
    fun:_ZN31ToolsSanityTest_MemoryLeak_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (malloc/read left).
+   Memcheck sanity test 02 (malloc/read left).
    Memcheck:Addr1
    fun:_Z29ReadValueOutOfArrayBoundsLeftPc
    fun:_Z14MakeSomeErrorsPc*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (malloc/read right).
+   Memcheck sanity test 03 (malloc/read right).
    Memcheck:Addr1
    fun:_Z30ReadValueOutOfArrayBoundsRightPc*
    fun:_Z14MakeSomeErrorsPc*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (malloc/write left).
+   Memcheck sanity test 04 (malloc/write left).
    Memcheck:Addr1
    fun:_Z30WriteValueOutOfArrayBoundsLeftPc
    fun:_Z14MakeSomeErrorsPc*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (malloc/write right).
+   Memcheck sanity test 05 (malloc/write right).
    Memcheck:Addr1
    fun:_Z31WriteValueOutOfArrayBoundsRightPc*
    fun:_Z14MakeSomeErrorsPc*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (new/read left).
+   Memcheck sanity test 06 (new/read left).
    Memcheck:Addr1
    fun:_Z29ReadValueOutOfArrayBoundsLeftPc
    fun:_Z14MakeSomeErrorsPc*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (new/read right).
+   Memcheck sanity test 07 (new/read right).
    Memcheck:Addr1
    fun:_Z30ReadValueOutOfArrayBoundsRightPc*
    fun:_Z14MakeSomeErrorsPc*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (new/write left).
+   Memcheck sanity test 08 (new/write left).
    Memcheck:Addr1
    fun:_Z30WriteValueOutOfArrayBoundsLeftPc
    fun:_Z14MakeSomeErrorsPc*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (new/write right).
+   Memcheck sanity test 09 (new/write right).
    Memcheck:Addr1
    fun:_Z31WriteValueOutOfArrayBoundsRightPc*
    fun:_Z14MakeSomeErrorsPc*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (write after free).
+   Memcheck sanity test 10 (write after free).
    Memcheck:Addr1
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (write after delete).
+   Memcheck sanity test 11 (write after delete).
    Memcheck:Addr1
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (array deleted without []).
+   Memcheck sanity test 12 (array deleted without []).
    Memcheck:Free
    ...
    fun:_ZN46ToolsSanityTest_ArrayDeletedWithoutBraces_Test8TestBodyEv
 }
 {
-   Memcheck sanity test (single element deleted with []).
+   Memcheck sanity test 13 (single element deleted with []).
    Memcheck:Free
    ...
    fun:_ZN51ToolsSanityTest_SingleElementDeletedWithBraces_Test8TestBodyEv
