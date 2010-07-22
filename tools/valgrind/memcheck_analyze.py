@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -18,6 +18,8 @@ import sys
 import time
 from xml.dom.minidom import parse
 from xml.parsers.expat import ExpatError
+
+import common
 
 # Global symbol table (yuck)
 TheAddressTable = None
@@ -94,7 +96,8 @@ def gatherFrames(node, source_dir):
     global TheAddressTable
     if TheAddressTable != None and frame_dict[SRC_LINE] == "":
       # Try using gdb
-      TheAddressTable.Add(frame_dict[OBJECT_FILE], frame_dict[INSTRUCTION_POINTER])
+      TheAddressTable.Add(frame_dict[OBJECT_FILE],
+                          frame_dict[INSTRUCTION_POINTER])
   return frames
 
 class ValgrindError:
@@ -312,21 +315,35 @@ class MemcheckAnalyze:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
   unique them and output the results.'''
 
-  SANITY_TEST_SUPPRESSIONS = [
-      "Memcheck sanity test (array deleted without []).",
-      "Memcheck sanity test (malloc/read left).",
-      "Memcheck sanity test (malloc/read right).",
-      "Memcheck sanity test (malloc/write left).",
-      "Memcheck sanity test (malloc/write right).",
-      "Memcheck sanity test (memory leak).",
-      "Memcheck sanity test (new/read left).",
-      "Memcheck sanity test (new/read right).",
-      "Memcheck sanity test (new/write left).",
-      "Memcheck sanity test (new/write right).",
-      "Memcheck sanity test (single element deleted with []).",
-      "Memcheck sanity test (write after delete).",
-      "Memcheck sanity test (write after free).",
-  ]
+  SANITY_TEST_SUPPRESSIONS_LINUX = {
+      "Memcheck sanity test 01 (memory leak).": 1,
+      "Memcheck sanity test 02 (malloc/read left).": 1,
+      "Memcheck sanity test 03 (malloc/read right).": 1,
+      "Memcheck sanity test 04 (malloc/write left).": 1,
+      "Memcheck sanity test 05 (malloc/write right).": 1,
+      "Memcheck sanity test 06 (new/read left).": 1,
+      "Memcheck sanity test 07 (new/read right).": 1,
+      "Memcheck sanity test 08 (new/write left).": 1,
+      "Memcheck sanity test 09 (new/write right).": 1,
+      "Memcheck sanity test 10 (write after free).": 1,
+      "Memcheck sanity test 11 (write after delete).": 1,
+      "Memcheck sanity test 12 (array deleted without []).": 1,
+      "Memcheck sanity test 13 (single element deleted with []).": 1,
+  }
+
+  SANITY_TEST_SUPPRESSIONS_MAC = {
+      "Memcheck sanity test 01 (memory leak).": 1,
+      "Memcheck sanity test 02 (malloc/read left).": 1,
+      "Memcheck sanity test 03 (malloc/read right).": 1,
+      "Memcheck sanity test 06 (new/read left).": 1,
+      "Memcheck sanity test 07 (new/read right).": 1,
+      "Memcheck sanity test 10 (write after free).": 1,
+      "Memcheck sanity test 11 (write after delete).": 1,
+      "bug_49253 Memcheck sanity test 12 (array deleted without []) on Mac.": 1,
+      "bug_49253 Memcheck sanity test 13 (single element deleted with []) on Mac.": 1,
+      "bug_49253 Memcheck sanity test 04 (malloc/write left) or Memcheck sanity test 05 (malloc/write right) on Mac.": 2,
+      "bug_49253 Memcheck sanity test 08 (new/write left) or Memcheck sanity test 09 (new/write right) on Mac.": 2,
+  }
 
   def __init__(self, source_dir, files, show_all_leaks=False, use_gdb=False):
     '''Reads in a set of files.
@@ -399,7 +416,9 @@ class MemcheckAnalyze:
       else:
         newsize = os.path.getsize(file)
         if origsize > newsize+1:
-          logging.warn(str(origsize - newsize) + " bytes of junk were after </valgrindoutput> in %s!" % file)
+          logging.warn(str(origsize - newsize) +
+                       " bytes of junk were after </valgrindoutput> in %s!" %
+                       file)
         try:
           parsed_file = parse(file);
         except ExpatError, e:
@@ -470,11 +489,21 @@ class MemcheckAnalyze:
     print "-----------------------------------------------------"
     print "Suppressions used:"
     print "  count name"
-    remaining_sanity_supp = set(MemcheckAnalyze.SANITY_TEST_SUPPRESSIONS)
-    for item in sorted(self._suppcounts.items(), key=lambda (k,v): (v,k)):
-      print "%7s %s" % (item[1], item[0])
-      if item[0] in remaining_sanity_supp:
-        remaining_sanity_supp.remove(item[0])
+
+    if common.IsLinux():
+      remaining_sanity_supp = MemcheckAnalyze.SANITY_TEST_SUPPRESSIONS_LINUX
+    elif common.IsMac():
+      remaining_sanity_supp = MemcheckAnalyze.SANITY_TEST_SUPPRESSIONS_MAC
+    else:
+      remaining_sanity_supp = {}
+      if check_sanity:
+        logging.warn("No sanity test list for platform %s", sys.platform)
+
+    for (name, count) in sorted(self._suppcounts.items(),
+                                key=lambda (k,v): (v,k)):
+      print "%7d %s" % (count, name)
+      if name in remaining_sanity_supp and remaining_sanity_supp[name] == count:
+        del remaining_sanity_supp[name]
     if len(remaining_sanity_supp) == 0:
       is_sane = True
     print "-----------------------------------------------------"
@@ -497,8 +526,9 @@ class MemcheckAnalyze:
     if check_sanity and not is_sane:
       logging.error("FAIL! Sanity check failed!")
       logging.info("The following test errors were not handled: ")
-      for supp in remaining_sanity_supp:
-        logging.info("  " + supp)
+      for (name, count) in sorted(remaining_sanity_supp.items(),
+                                  key=lambda (k,v): (v,k)):
+        logging.info("%7d %s" % (count, name))
       retcode = -3
 
     if retcode != 0:

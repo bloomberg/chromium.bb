@@ -569,6 +569,8 @@
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
+
+# See tools/valgrind/memcheck_analyze.py before modifying sanity tests.
 {
    Memcheck sanity test 01 (memory leak).
    Memcheck:Leak

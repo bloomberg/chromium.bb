@@ -1381,6 +1381,8 @@
    fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS0_11CaptureDataEEEE
    fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
 }
+
+# See tools/valgrind/memcheck_analyze.py before modifying sanity tests.
 {
    bug_49253 Memcheck sanity test 04 (malloc/write left) or Memcheck sanity test 05 (malloc/write right) on Mac.
    Memcheck:Addr1
