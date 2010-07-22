@@ -14,50 +14,32 @@
 # ILLEGAL_TOOL - A tool that should never be invoked.  Used for assertions.
 
 BINUTILS_ROOT="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm-gcc-4.2"
-LLVM_BIN_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
-LLVM_DRIVER_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
+BIN_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 
 # Define TARGET_CODE=<value> in the calling environment to override.
 case ${TARGET_CODE:=bc-arm} in
   sfi)  # => Libraries with Native Client SFI sandboxing.
-    CC_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
-    CXX_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfig++"
-    AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
-    NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
-    RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
-    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfild"
+    LD_FOR_TARGET="${BIN_PATH}/llvm-fake-sfild"
     ;;
   bc-arm)  # => Bitcode libraries => arm
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
-    AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
-    NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
-    RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
-    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch arm"
+    LD_FOR_TARGET="${BIN_PATH}/llvm-fake-bcld -arch arm"
     ;;
   bc-x86-32)  # => Bitcode libraries => x86-32
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
-    AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
-    NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
-    RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
-    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch x86-32"
+    LD_FOR_TARGET="${BIN_PATH}/llvm-fake-bcld -arch x86-32"
     ;;
   bc-x86-64)  # => Bitcode libraries => x86-64
-    CC_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfigcc"
-    CXX_FOR_TARGET="${LLVM_BIN_PATH}/llvm-fake-sfig++"
-    AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
-    NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
-    RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
-    CC_NATIVE_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-sfigcc"
-    LD_FOR_TARGET="${LLVM_DRIVER_PATH}/llvm-fake-bcld -arch x86-64"
+    LD_FOR_TARGET="${BIN_PATH}/llvm-fake-bcld -arch x86-64"
     ;;
   *)
     echo "Unknown TARGET_CODE value '${TARGET_CODE}';" \
-         "(expected one of: sfi, regular, bc-arm, bcx86-32)." >&2
+         "(expected one of: sfi, bc-arm, bc-x86-32, bc-x86-64)." >&2
     return 1
     ;;
 esac
+
+CC_FOR_TARGET="${BIN_PATH}/llvm-fake-sfigcc"
+CXX_FOR_TARGET="${BIN_PATH}/llvm-fake-sfig++"
+AR_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ar"
+NM_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-nm"
+RANLIB_FOR_TARGET="${BINUTILS_ROOT}/bin/arm-none-linux-gnueabi-ranlib"
+CC_NATIVE_FOR_TARGET="${BIN_PATH}/llvm-fake-sfigcc"
