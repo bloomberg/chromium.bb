@@ -135,6 +135,7 @@ void CreateTestFormData(FormData* form) {
   form->method = ASCIIToUTF16("POST");
   form->origin = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
+  form->user_submitted = true;
 
   webkit_glue::FormField field;
   autofill_unittest::CreateTestFormField(
@@ -177,6 +178,7 @@ void CreateTestFormDataBilling(FormData* form) {
   form->method = ASCIIToUTF16("POST");
   form->origin = GURL("https://myform.com/form.html");
   form->action = GURL("https://myform.com/submit.html");
+  form->user_submitted = true;
 
   webkit_glue::FormField field;
   autofill_unittest::CreateTestFormField(
@@ -1157,6 +1159,7 @@ TEST_F(AutoFillManagerTest, HiddenFields) {
   form.method = ASCIIToUTF16("POST");
   form.origin = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
+  form.user_submitted = true;
 
   webkit_glue::FormField field;
   autofill_unittest::CreateTestFormField(
