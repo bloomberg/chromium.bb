@@ -66,6 +66,7 @@ class MockResourceLoaderBridgePeer
   MOCK_METHOD2(OnReceivedResponse, void(
       const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
       bool content_filtered));
+  MOCK_METHOD1(OnDownloadedData, void(int len));
   MOCK_METHOD2(OnReceivedData, void(const char* data, int len));
   MOCK_METHOD2(OnCompletedRequest, void(
       const URLRequestStatus& status, const std::string& security_info));

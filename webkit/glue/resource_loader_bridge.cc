@@ -15,7 +15,8 @@ ResourceLoaderBridge::RequestInfo::RequestInfo()
       request_type(ResourceType::MAIN_FRAME),
       request_context(0),
       appcache_host_id(0),
-      routing_id(0) {
+      routing_id(0),
+      download_to_file(false) {
 }
 
 ResourceLoaderBridge::RequestInfo::~RequestInfo() {

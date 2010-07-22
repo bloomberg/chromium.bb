@@ -86,6 +86,9 @@ class PluginRequestHandlerProxy
         cprequest_.get(), CPERR_SUCCESS);
   }
 
+  virtual void OnDownloadedData(int len) {
+  }
+
   virtual void OnReceivedData(const char* data, int len) {
     response_data_.append(data, len);
     if (read_buffer_) {

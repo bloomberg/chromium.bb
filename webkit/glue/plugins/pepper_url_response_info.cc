@@ -12,6 +12,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_var.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebString;
@@ -107,6 +108,10 @@ bool URLResponseInfo::Initialize(const WebURLResponse& response) {
   HeaderFlattener flattener;
   response.visitHTTPHeaderFields(&flattener);
   headers_ = flattener.buffer();
+
+  WebString file_path = response.downloadFilePath();
+  if (!file_path.isNull())
+    body_ = new FileRef(module(), webkit_glue::WebStringToFilePath(file_path));
   return true;
 }
 

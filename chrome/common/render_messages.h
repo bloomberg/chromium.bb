@@ -408,6 +408,8 @@ struct ViewHostMsg_Resource_Request {
   // Optional upload data (may be null).
   scoped_refptr<net::UploadData> upload_data;
 
+  bool download_to_file;
+
   // The following two members are specified if the request is initiated by
   // a plugin like Gears.
 
@@ -1432,6 +1434,7 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
     WriteParam(m, p.request_context);
     WriteParam(m, p.appcache_host_id);
     WriteParam(m, p.upload_data);
+    WriteParam(m, p.download_to_file);
     WriteParam(m, p.host_renderer_id);
     WriteParam(m, p.host_render_view_id);
   }
@@ -1450,6 +1453,7 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
       ReadParam(m, iter, &r->request_context) &&
       ReadParam(m, iter, &r->appcache_host_id) &&
       ReadParam(m, iter, &r->upload_data) &&
+      ReadParam(m, iter, &r->download_to_file) &&
       ReadParam(m, iter, &r->host_renderer_id) &&
       ReadParam(m, iter, &r->host_render_view_id);
   }
@@ -1474,6 +1478,8 @@ struct ParamTraits<ViewHostMsg_Resource_Request> {
     LogParam(p.request_context, l);
     l->append(L", ");
     LogParam(p.appcache_host_id, l);
+    l->append(L", ");
+    LogParam(p.download_to_file, l);
     l->append(L", ");
     LogParam(p.host_renderer_id, l);
     l->append(L", ");
@@ -1597,6 +1603,7 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     WriteParam(m, p.connection_id);
     WriteParam(m, p.connection_reused);
     WriteParam(m, p.load_timing);
+    WriteParam(m, p.download_file_path);
     WriteParam(m, p.was_fetched_via_spdy);
     WriteParam(m, p.was_npn_negotiated);
     WriteParam(m, p.was_alternate_protocol_available);
@@ -1616,6 +1623,7 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
         ReadParam(m, iter, &r->connection_id) &&
         ReadParam(m, iter, &r->connection_reused) &&
         ReadParam(m, iter, &r->load_timing) &&
+        ReadParam(m, iter, &r->download_file_path) &&
         ReadParam(m, iter, &r->was_fetched_via_spdy) &&
         ReadParam(m, iter, &r->was_npn_negotiated) &&
         ReadParam(m, iter, &r->was_alternate_protocol_available) &&
@@ -1646,6 +1654,8 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     LogParam(p.connection_reused, l);
     l->append(L", ");
     LogParam(p.load_timing, l);
+    l->append(L", ");
+    LogParam(p.download_file_path, l);
     l->append(L", ");
     LogParam(p.was_fetched_via_spdy, l);
     l->append(L", ");

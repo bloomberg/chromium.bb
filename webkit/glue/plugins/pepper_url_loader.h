@@ -49,6 +49,8 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
                            unsigned long long total_bytes_to_be_sent);
   virtual void didReceiveResponse(WebKit::WebURLLoader* loader,
                                   const WebKit::WebURLResponse& response);
+  virtual void didDownloadData(WebKit::WebURLLoader* loader,
+                               int data_length);
   virtual void didReceiveData(WebKit::WebURLLoader* loader,
                               const char* data,
                               int data_length);

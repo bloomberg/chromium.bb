@@ -15,6 +15,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 #include "webkit/glue/plugins/pepper_url_response_info.h"
@@ -148,9 +149,9 @@ URLLoader::URLLoader(PluginInstance* instance)
       instance_(instance),
       pending_callback_(),
       bytes_sent_(0),
-      total_bytes_to_be_sent_(0),
+      total_bytes_to_be_sent_(-1),
       bytes_received_(0),
-      total_bytes_to_be_received_(0),
+      total_bytes_to_be_received_(-1),
       user_buffer_(NULL),
       user_buffer_size_(0),
       done_(false) {
@@ -248,12 +249,22 @@ void URLLoader::didReceiveResponse(WebURLLoader* loader,
   if (response_info->Initialize(response))
     response_info_ = response_info;
 
+  // Sets -1 if the content length is unknown.
+  total_bytes_to_be_received_ = response.expectedContentLength();
+
   RunCallback(PP_OK);
+}
+
+void URLLoader::didDownloadData(WebURLLoader* loader,
+                                int data_length) {
+  bytes_received_ += data_length;
 }
 
 void URLLoader::didReceiveData(WebURLLoader* loader,
                                const char* data,
                                int data_length) {
+  bytes_received_ += data_length;
+
   buffer_.insert(buffer_.end(), data, data + data_length);
   if (user_buffer_) {
     RunCallback(FillUserBuffer());

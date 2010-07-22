@@ -21,6 +21,8 @@ class FileRef : public Resource {
           PP_FileSystemType file_system_type,
           const std::string& validated_path,
           const std::string& origin);
+  FileRef(PluginModule* module,
+          const FilePath& external_file_path);
   virtual ~FileRef();
 
   // Returns a pointer to the interface implementing PPB_FileRef that is

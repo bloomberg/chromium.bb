@@ -130,6 +130,13 @@ FileRef::FileRef(PluginModule* module,
   // TODO(darin): Need to initialize system_path_.
 }
 
+FileRef::FileRef(PluginModule* module,
+                 const FilePath& external_file_path)
+    : Resource(module),
+      system_path_(external_file_path),
+      fs_type_(PP_FILESYSTEMTYPE_EXTERNAL) {
+}
+
 FileRef::~FileRef() {
 }
 

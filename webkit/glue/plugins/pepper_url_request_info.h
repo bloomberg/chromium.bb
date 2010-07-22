@@ -76,6 +76,7 @@ class URLRequestInfo : public Resource {
   std::string method_;
   std::string headers_;
   Body body_;
+  bool stream_to_file_;
 };
 
 }  // namespace pepper

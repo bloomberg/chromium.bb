@@ -120,10 +120,6 @@ bool SimpleDataSource::IsStreaming() {
   return false;
 }
 
-void SimpleDataSource::OnDownloadProgress(uint64 position, uint64 size) {}
-
-void SimpleDataSource::OnUploadProgress(uint64 position, uint64 size) {}
-
 bool SimpleDataSource::OnReceivedRedirect(
     const GURL& new_url,
     const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,

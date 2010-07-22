@@ -540,6 +540,7 @@ class ResourceLoaderBridgeImpl : public ResourceLoaderBridge {
       const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info)
       : params_(new RequestParams),
         proxy_(NULL) {
+    DCHECK(!request_info.download_to_file);  // Not implemented yet!
     params_->method = request_info.method;
     params_->url = request_info.url;
     params_->first_party_for_cookies = request_info.first_party_for_cookies;

@@ -51,8 +51,7 @@ class SimpleDataSource : public media::DataSource,
   virtual bool IsStreaming();
 
   // webkit_glue::ResourceLoaderBridge::Peer implementation.
-  virtual void OnDownloadProgress(uint64 position, uint64 size);
-  virtual void OnUploadProgress(uint64 position, uint64 size);
+  virtual void OnUploadProgress(uint64 position, uint64 size) {}
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
@@ -61,6 +60,7 @@ class SimpleDataSource : public media::DataSource,
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
       bool content_filtered);
+  virtual void OnDownloadedData(int len) {}
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(const URLRequestStatus& status,
                                   const std::string& security_info);

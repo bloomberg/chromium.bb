@@ -122,7 +122,8 @@ const PPB_URLRequestInfo ppb_urlrequestinfo = {
 }  // namespace
 
 URLRequestInfo::URLRequestInfo(PluginModule* module)
-    : Resource(module) {
+    : Resource(module),
+      stream_to_file_(false) {
 }
 
 URLRequestInfo::~URLRequestInfo() {
@@ -135,8 +136,14 @@ const PPB_URLRequestInfo* URLRequestInfo::GetInterface() {
 
 bool URLRequestInfo::SetBooleanProperty(PP_URLRequestProperty property,
                                         bool value) {
-  NOTIMPLEMENTED();  // TODO(darin): Implement me!
-  return false;
+  switch (property) {
+    case PP_URLREQUESTPROPERTY_STREAMTOFILE:
+      stream_to_file_ = value;
+      return true;
+    default:
+      NOTIMPLEMENTED();  // TODO(darin): Implement me!
+      return false;
+  }
 }
 
 bool URLRequestInfo::SetStringProperty(PP_URLRequestProperty property,
@@ -167,6 +174,14 @@ bool URLRequestInfo::AppendFileToBody(FileRef* file_ref,
                                       int64_t start_offset,
                                       int64_t number_of_bytes,
                                       PP_Time expected_last_modified_time) {
+  // Ignore a call to append nothing.
+  if (number_of_bytes == 0)
+    return true;
+
+  // Check for bad values.  (-1 means read until end of file.)
+  if (start_offset < 0 || number_of_bytes < -1)
+    return false;
+
   body_.push_back(BodyItem(file_ref,
                            start_offset,
                            number_of_bytes,
@@ -178,6 +193,7 @@ WebURLRequest URLRequestInfo::ToWebURLRequest(WebFrame* frame) const {
   WebURLRequest web_request;
   web_request.initialize();
   web_request.setURL(frame->document().completeURL(WebString::fromUTF8(url_)));
+  web_request.setDownloadToFile(stream_to_file_);
 
   if (!method_.empty())
     web_request.setHTTPMethod(WebString::fromUTF8(method_));

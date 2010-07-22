@@ -21,6 +21,7 @@
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
+#include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
@@ -31,8 +32,6 @@
 namespace net {
 class HttpResponseHeaders;
 }
-
-class FilePath;
 
 namespace webkit_glue {
 
@@ -84,6 +83,10 @@ class ResourceLoaderBridge {
 
     // Used to associated the bridge with a frame's network context.
     int routing_id;
+
+    // If true, then the response body will be downloaded to a file and the
+    // path to that file will be provided in ResponseInfo::download_file_path.
+    bool download_to_file;
   };
 
   // Structure containing timing information for the request. It addresses
@@ -191,6 +194,11 @@ class ResourceLoaderBridge {
     // Tools.
     LoadTimingInfo load_timing;
 
+    // The path to a file that will contain the response body.  It may only
+    // contain a portion of the response body at the time that the ResponseInfo
+    // becomes available.
+    FilePath download_file_path;
+
     // True if the response was delivered using SPDY.
     bool was_fetched_via_spdy;
 
@@ -257,6 +265,12 @@ class ResourceLoaderBridge {
     // deemed unsafe).
     virtual void OnReceivedResponse(const ResponseInfo& info,
                                     bool content_filtered) = 0;
+
+    // Called when a chunk of response data is downloaded.  This method may be
+    // called multiple times or not at all if an error occurs.  This method is
+    // only called if RequestInfo::download_to_file was set to true, and in
+    // that case, OnReceivedData will not be called.
+    virtual void OnDownloadedData(int len) = 0;
 
     // Called when a chunk of response data is available. This method may
     // be called multiple times or not at all if an error occurs.
