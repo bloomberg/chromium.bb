@@ -305,7 +305,10 @@ class AutoFillProfilesView : public views::View,
 
     void UpdateButtons();
 
-    void UpdateContentsPhoneViews(TextFields field,
+    // If |field| is a phone or fax ContentsChanged is passed to the
+    // PhoneSubView, the appropriate fields in |temporary_info_| are updated and
+    // true is returned. Otherwise false is returned.
+    bool UpdateContentsPhoneViews(TextFields field,
                                   views::Textfield* sender,
                                   const string16& new_contents);
 

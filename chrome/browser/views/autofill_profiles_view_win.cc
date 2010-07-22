@@ -553,9 +553,8 @@ bool AutoFillProfilesView::PhoneSubView::IsValid() const {
       return true;
 
     // Try to parse it.
-    string16 country, city, stripped_phone;
-    return PhoneNumber::ParsePhoneNumber(phone, &country, &city,
-                                         &stripped_phone);
+    string16 number, city, country;
+    return PhoneNumber::ParsePhoneNumber(phone, &number, &city, &country);
   }
   return false;
 }
@@ -628,9 +627,9 @@ AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
   { AutoFillProfilesView::EditableSetViewContents::TEXT_ADDRESS_COUNTRY,
     ADDRESS_HOME_COUNTRY },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_PHONE_PHONE,
-    PHONE_HOME_NUMBER },
+    PHONE_HOME_WHOLE_NUMBER },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_FAX_PHONE,
-    PHONE_FAX_NUMBER },
+    PHONE_FAX_WHOLE_NUMBER },
 };
 
 AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
@@ -822,7 +821,6 @@ void AutoFillProfilesView::EditableSetViewContents::ButtonPressed(
   NOTREACHED();
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::EditableSetViewContents,
 // views::Textfield::Controller implementations
@@ -832,10 +830,11 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
     for (int field = 0; field < arraysize(address_fields_); ++field) {
       DCHECK(text_fields_[address_fields_[field].text_field]);
       if (text_fields_[address_fields_[field].text_field] == sender) {
-        UpdateContentsPhoneViews(address_fields_[field].text_field,
-                                 sender, new_contents);
-        temporary_info_.address.SetInfo(
-            AutoFillType(address_fields_[field].type), new_contents);
+        if (!UpdateContentsPhoneViews(address_fields_[field].text_field,
+                                      sender, new_contents)) {
+          temporary_info_.address.SetInfo(
+              AutoFillType(address_fields_[field].type), new_contents);
+        }
         UpdateButtons();
         return;
       }
@@ -1188,7 +1187,7 @@ void AutoFillProfilesView::EditableSetViewContents::UpdateButtons() {
   GetDialogClientView()->UpdateDialogButtons();
 }
 
-void AutoFillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
+bool AutoFillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
     TextFields field, views::Textfield* sender, const string16& new_contents) {
   switch (field) {
     case TEXT_PHONE_PHONE:
@@ -1196,8 +1195,22 @@ void AutoFillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
       for (std::vector<PhoneSubView*>::iterator it = phone_sub_views_.begin();
            it != phone_sub_views_.end(); ++it)
         (*it)->ContentsChanged(sender, new_contents);
-    } break;
+      DCHECK(temporary_info_.is_address);  // Only addresses have phone numbers.
+      string16 number, city, country;
+      PhoneNumber::ParsePhoneNumber(new_contents, &number, &city, &country);
+      temporary_info_.address.SetInfo(
+          AutoFillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_COUNTRY_CODE :
+                       PHONE_FAX_COUNTRY_CODE), country);
+      temporary_info_.address.SetInfo(
+          AutoFillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_CITY_CODE :
+                       PHONE_FAX_CITY_CODE), city);
+      temporary_info_.address.SetInfo(
+          AutoFillType(field == TEXT_PHONE_PHONE ? PHONE_HOME_NUMBER :
+                       PHONE_FAX_NUMBER), number);
+      return true;
+    }
   }
+  return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////
