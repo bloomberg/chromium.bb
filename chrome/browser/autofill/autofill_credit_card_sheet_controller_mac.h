@@ -33,6 +33,10 @@ typedef NSInteger AutoFillCreditCardMode;
   // "New credit card" or "Edit credit card" depending on context.
   IBOutlet NSTextField* caption_;
 
+  // The credit card number field.  This is here for unit testing purposes.
+  // The text of this field is obfuscated until edited.
+  IBOutlet NSTextField* creditCardNumberField_;
+
   // The primary model for this controller.  The model is instantiated
   // from within |initWithCreditCard:|.  We do not hold it as a scoped_nsobject
   // because it is exposed as a KVO compliant property.
@@ -77,6 +81,11 @@ typedef NSInteger AutoFillCreditCardMode;
 // Copy data from internal model to |creditCard|.
 - (void)copyModelToCreditCard:(CreditCard*)creditCard;
 
+@end
+
+// Interface exposed for unit testing.
+@interface AutoFillCreditCardSheetController (ExposedForUnitTests)
+- (NSTextField*)creditCardNumberField;
 @end
 
 #endif // CHROME_BROWSER_AUTOFILL_AUTOFILL_CREDIT_CARD_SHEET_CONTROLLER_MAC_

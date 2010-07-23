@@ -9,8 +9,6 @@
 
 #import "base/scoped_nsobject.h"
 
-#define AUTOFILL_CC_TAG 22
-
 // Subclass of NSTextField with special abilities:
 // - automatically scrolls containing NSScrollView to visually reveal itself
 //   on focus

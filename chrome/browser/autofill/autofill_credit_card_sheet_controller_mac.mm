@@ -12,6 +12,13 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "grit/generated_resources.h"
 
+// Interface exposed for unit testing.
+@implementation AutoFillCreditCardSheetController (ExposedForUnitTests)
+- (NSTextField*)creditCardNumberField {
+  return creditCardNumberField_;
+}
+@end
+
 // Private methods for the |AutoFillCreditCardSheetController| class.
 @interface AutoFillCreditCardSheetController (PrivateMethods)
 - (void)buildBillingAddressContents;

@@ -313,12 +313,18 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
   EXPECT_TRUE([[cm expirationMonth] isEqualToString:@"01"]);
   EXPECT_TRUE([[cm expirationYear] isEqualToString:@"2012"]);
 
+  // Check that user-visible text is obfuscated.
+  NSTextField* numberField = [sheet creditCardNumberField];
+  ASSERT_TRUE(numberField != nil);
+  EXPECT_TRUE([[numberField stringValue] isEqualToString:@"************1121"]);
+
   [sheet save:nil];
   [controller_ save:nil];
 
   ASSERT_TRUE(observer_.hit_);
   ASSERT_TRUE(observer_.credit_cards_.size() == 1);
 
+  // Don't compare unique ids.
   credit_cards()[0]->set_unique_id(observer_.credit_cards_[0].unique_id());
   ASSERT_EQ(observer_.credit_cards_[0], *credit_cards()[0]);
 }
