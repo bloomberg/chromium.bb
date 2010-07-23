@@ -6,7 +6,7 @@
 Import('env')
 
 
-if env.Bit('mac'):
+if env.Bit('host_mac'):
   test_args = []
 else:
   # This test will hang when the SocketAddress implementation uses
