@@ -1501,3 +1501,15 @@
    fun:-[CollectedCookiesWindowController initWithTabContents:]
    fun:_ZN12_GLOBAL__N_154CollectedCookiesWindowControllerTest_Construction_Test8TestBodyEv
 }
+{
+   bug_50002
+   Memcheck:Cond
+   fun:_ZNK6Pickle8ReadBoolEPPvPb
+   fun:_ZN3IPC11ParamTraitsI28ViewHostMsg_Resource_RequestE4ReadEPKNS_7MessageEPPvPS1_
+   fun:_ZN3IPC11ParamTraitsI6Tuple2Ii28ViewHostMsg_Resource_RequestEE4ReadEPKNS_7MessageEPPvPS3_
+   fun:_ZN3IPC16MessageWithTupleI6Tuple2Ii28ViewHostMsg_Resource_RequestEE4ReadEPKNS_7MessageEPS3_
+   fun:_ZN3IPC16MessageWithTupleI6Tuple2Ii28ViewHostMsg_Resource_RequestEE8DispatchI22ResourceDispatcherHostiRKS2_EEbPKNS_7MessageEPT_MSC_FvRSA_T0_T1_E
+   fun:_ZN22ResourceDispatcherHost17OnMessageReceivedERKN3IPC7MessageEPNS_8ReceiverEPb
+   fun:_ZN26ResourceDispatcherHostTest15MakeTestRequestEPN22ResourceDispatcherHost8ReceiverEiiRK4GURL
+   fun:_ZN40ResourceDispatcherHostTest_TestMany_Test8TestBodyEv
+}
