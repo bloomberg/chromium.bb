@@ -154,6 +154,16 @@ def main(options, args):
   else:
     shutil.rmtree(rm_path,True)
 
+  if options.preserve_intermediate_dir:
+      print 'Preserving intermediate directory.'
+  else:
+    if options.dry_run:
+      print 'shutil.rmtree(%s)' % repr(options.coverity_intermediate_dir)
+      print 'os.mkdir(%s)' % repr(options.coverity_intermediate_dir)
+    else:
+      shutil.rmtree(options.coverity_intermediate_dir,True)
+      os.mkdir(options.coverity_intermediate_dir)
+
   print 'Elapsed time: %ds' % (time.time() - start_time)
 
   use_shell_during_make = False
@@ -279,6 +289,12 @@ if '__main__' == __name__:
                            dest='coverity_password_file',
                            help='file containing the coverity password',
                            default='coverity-password')
+
+  helpmsg = ('By default, the intermediate dir is emptied before analysis. '
+             'This switch disables that behavior.')
+  option_parser.add_option('', '--preserve-intermediate-dir',
+                           action='store_true', help=helpmsg,
+                           default=False)
 
   options, args = option_parser.parse_args()
 
