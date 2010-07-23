@@ -576,6 +576,10 @@ class AutoFillCreditCardEditor {
                      gint);
   CHROMEG_CALLBACK_0(AutoFillCreditCardEditor, void, OnFieldChanged,
                      GtkEditable*);
+  CHROMEG_CALLBACK_2(AutoFillCreditCardEditor, void, OnDeleteTextFromNumber,
+                     GtkEditable*, gint, gint);
+  CHROMEG_CALLBACK_3(AutoFillCreditCardEditor, void, OnInsertTextIntoNumber,
+                     GtkEditable*, gchar*, gint, gint*);
 
   // Are we creating a new credit card?
   const bool is_new_;
@@ -590,6 +594,9 @@ class AutoFillCreditCardEditor {
 
   // Initial year shown in expiration date year combobox.
   int base_year_;
+
+  // Has the number_ field been edited by the user yet?
+  bool edited_number_;
 
   GtkWidget* dialog_;
   GtkWidget* name_;
@@ -612,7 +619,8 @@ AutoFillCreditCardEditor::AutoFillCreditCardEditor(
       credit_card_id_(credit_card ? credit_card->unique_id() : 0),
       observer_(observer),
       profile_(profile),
-      base_year_(0) {
+      base_year_(0),
+      edited_number_(false) {
   base::Time::Exploded exploded_time;
   base::Time::Now().LocalExplode(&exploded_time);
   base_year_ = exploded_time.year;
@@ -753,6 +761,10 @@ void AutoFillCreditCardEditor::Init() {
 void AutoFillCreditCardEditor::RegisterForTextChanged() {
   g_signal_connect(name_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
   g_signal_connect(number_, "changed", G_CALLBACK(OnFieldChangedThunk), this);
+  g_signal_connect(number_, "delete-text",
+                   G_CALLBACK(OnDeleteTextFromNumberThunk), this);
+  g_signal_connect(number_, "insert-text",
+                   G_CALLBACK(OnInsertTextIntoNumberThunk), this);
 }
 
 void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
@@ -769,7 +781,8 @@ void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
     }
   }
 
-  SetEntryText(number_, card, CREDIT_CARD_NUMBER);
+  gtk_entry_set_text(GTK_ENTRY(number_),
+                     UTF16ToUTF8(card->ObfuscatedNumber()).c_str());
 
   int month = StringToInt(
       UTF16ToUTF8(card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH))));
@@ -852,7 +865,8 @@ void AutoFillCreditCardEditor::SetCreditCardValuesFromWidgets(
     g_value_unset(&value);
   }
 
-  SetFormValue(number_, card, CREDIT_CARD_NUMBER);
+  if (edited_number_)
+    SetFormValue(number_, card, CREDIT_CARD_NUMBER);
 
   int selected_month_index =
       gtk_combo_box_get_active(GTK_COMBO_BOX(month_));
@@ -893,7 +907,37 @@ void AutoFillCreditCardEditor::OnResponse(GtkDialog* dialog, gint response_id) {
 }
 
 void AutoFillCreditCardEditor::OnFieldChanged(GtkEditable* editable) {
+  if (editable == GTK_EDITABLE(number_))
+    edited_number_ = true;
   UpdateOkButton();
+}
+
+void AutoFillCreditCardEditor::OnDeleteTextFromNumber(GtkEditable* editable,
+                                                      gint start,
+                                                      gint end) {
+  if (!edited_number_) {
+    // The user hasn't deleted any text yet, so delete it all.
+    edited_number_ = true;
+    g_signal_stop_emission_by_name(editable, "delete-text");
+    gtk_entry_set_text(GTK_ENTRY(number_), "");
+  }
+}
+
+void AutoFillCreditCardEditor::OnInsertTextIntoNumber(GtkEditable* editable,
+                                                      gchar* new_text,
+                                                      gint new_text_length,
+                                                      gint* position) {
+  if (!edited_number_) {
+    // This is the first edit to the number, reset the text so that any
+    // obfuscated text is removed.
+    edited_number_ = true;
+    g_signal_stop_emission_by_name(editable, "insert-text");
+
+    if (new_text_length < 0)
+      new_text_length = strlen(new_text);
+    gtk_entry_set_text(GTK_ENTRY(number_),
+                       std::string(new_text, new_text_length).c_str());
+  }
 }
 
 }  // namespace
