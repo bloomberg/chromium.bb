@@ -1,12 +1,14 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/installer/util/google_update_settings.h"
 
+#include "base/command_line.h"
 #include "base/registry.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
@@ -240,6 +242,10 @@ std::wstring GoogleUpdateSettings::GetNewGoogleUpdateApKey(
 }
 
 bool GoogleUpdateSettings::IsOrganic(const std::wstring& brand) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kOrganicInstall))
+    return true;
+
   static const wchar_t* kBrands[] = {
       L"CHFO", L"CHFT", L"CHHS", L"CHHM", L"CHMA", L"CHMB", L"CHME", L"CHMF",
       L"CHMG", L"CHMH", L"CHMI", L"CHMQ", L"CHMV", L"CHNB", L"CHNC", L"CHNG",

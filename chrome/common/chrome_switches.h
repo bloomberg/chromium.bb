@@ -195,6 +195,7 @@ extern const char kNoReferrers[];
 extern const char kNoSandbox[];
 extern const char kNumPacThreads[];
 extern const char kOpenInNewWindow[];
+extern const char kOrganicInstall[];
 extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
 extern const char kParentProfile[];
