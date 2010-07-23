@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_FAKE_LIBRARY_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_FAKE_LIBRARY_LOADER_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 
 namespace chromeos {

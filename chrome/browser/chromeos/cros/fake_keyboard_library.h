@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_FAKE_KEYBOARD_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_FAKE_KEYBOARD_LIBRARY_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 
 namespace chromeos {

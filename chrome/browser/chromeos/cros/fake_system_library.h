@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_FAKE_SYSTEM_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_FAKE_SYSTEM_LIBRARY_H_
 
+#include <string>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "unicode/timezone.h"

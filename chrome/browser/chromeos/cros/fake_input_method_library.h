@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_FAKE_INPUT_METHOD_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_FAKE_INPUT_METHOD_LIBRARY_H_
 
+#include <string>
+
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "third_party/cros/chromeos_input_method.h"
 
