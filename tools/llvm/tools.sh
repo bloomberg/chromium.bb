@@ -13,7 +13,7 @@
 # LLVM_BIN_PATH - LLVM installation.
 # ILLEGAL_TOOL - A tool that should never be invoked.  Used for assertions.
 
-BINUTILS_ROOT="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm-gcc-4.2"
+BINUTILS_ROOT="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 BIN_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 
 # Define TARGET_CODE=<value> in the calling environment to override.

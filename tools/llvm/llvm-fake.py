@@ -57,13 +57,13 @@ LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x8632_untrusted'
 LD_SCRIPT_X8664 = BASE + '/../../tools/llvm/ld_script_x8664_untrusted'
 
 # arm libstdc++
-LIBDIR_ARM_3 = BASE_ARM + '/llvm-gcc-4.2/lib'
+LIBDIR_ARM_3 = BASE_ARM + '/lib'
 
 # arm startup code + libs (+ bitcode when in bitcode mode)
 LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 
 # arm libgcc
-LIBDIR_ARM_1 = BASE_ARM + '/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
+LIBDIR_ARM_1 = BASE_ARM + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
 
 PNACL_ARM_ROOT =  BASE + '/../linux_arm-untrusted/libs-arm'
 
@@ -103,16 +103,12 @@ global_config_flags = {
     #       put all the logic/knowloedge into this driver.
     #       Currently, we have a messy mixture.
     '-isystem',
-    BASE_ARM + '/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
+    BASE_ARM + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
     '-isystem',
-    BASE_ARM +
-    '/llvm-gcc-4.2/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
-    '-isystem',
-    BASE_ARM + '/llvm-gcc-4.2/include/c++/4.2.1',
-    '-isystem',
-    BASE_ARM + '/llvm-gcc-4.2/include/c++/4.2.1/arm-none-linux-gnueabi',
-    '-isystem',
-    BASE_ARM + '/llvm-gcc-4.2/arm-none-linux-gnueabi/include',
+    BASE_ARM + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
+    '-isystem', BASE_ARM + '/include/c++/4.2.1',
+    '-isystem', BASE_ARM + '/include/c++/4.2.1/arm-none-linux-gnueabi',
+    '-isystem', BASE_ARM + '/arm-none-linux-gnueabi/include',
     # NOTE: order important
     # '-isystem',
     # BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include/nacl/abi',
@@ -208,24 +204,24 @@ global_config_flags = {
 # Executables invoked by this driver
 ######################################################################
 
-LLVM_GCC = BASE_ARM + '/llvm-gcc-4.2/bin/llvm-gcc'
+LLVM_GCC = BASE_ARM + '/bin/arm-none-linux-gnueabi-gcc'
 
-LLVM_GXX = BASE_ARM + '/llvm-gcc-4.2/bin/llvm-g++'
+LLVM_GXX = BASE_ARM + '/bin/arm-none-linux-gnueabi-g++'
 
-LLC = BASE_ARM + '/llvm/bin/llc'
+LLC = BASE_ARM + '/bin/llc'
 
-LLVM_LINK = BASE_ARM + '/llvm/bin/llvm-link'
+LLVM_LINK = BASE_ARM + '/bin/llvm-link'
 
-LLVM_LD = BASE_ARM + '/llvm/bin/llvm-ld'
+LLVM_LD = BASE_ARM + '/bin/llvm-ld'
 
-OPT = BASE_ARM + '/llvm/bin/opt'
+OPT = BASE_ARM + '/bin/opt'
 
-AS_ARM = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-as'
+AS_ARM = BASE_ARM + '/bin/arm-none-linux-gnueabi-as'
 
 # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
 AS_X86 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
 
-ELF_LD = BASE_ARM + '/llvm-gcc-4.2/bin/arm-none-linux-gnueabi-ld'
+ELF_LD = BASE_ARM + '/bin/arm-none-linux-gnueabi-ld'
 
 global_assemblers = {
   'arm' : AS_ARM,

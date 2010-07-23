@@ -48,17 +48,12 @@ readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
 readonly TARGET_ROOT="${INSTALL_ROOT}/${CROSS_TARGET}"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp3
-readonly LLVM_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}/llvm"
-readonly LLVMGCC_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}/llvm-gcc-4.2"
+readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
 readonly GCC_VER="4.2.1"
 
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
 readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
-
-# installing binutils and gcc in the same dir so that gcc
-# uses the correct as and ld even if we move the install dir.
-readonly BINUTILS_INSTALL_DIR="${LLVMGCC_INSTALL_DIR}"
 
 # This toolchain currenlty builds only on linux.
 # TODO(abetul): Remove the restriction on developer's OS choices.
@@ -66,7 +61,7 @@ readonly NACL_TOOLCHAIN=$(pwd)/toolchain/linux_x86/sdk/nacl-sdk
 
 readonly PATCH_DIR=$(pwd)/tools/patches
 
-readonly BFD_PLUGIN_DIR=${LLVMGCC_INSTALL_DIR}/lib/bfd-plugins
+readonly BFD_PLUGIN_DIR=${INSTALL_DIR}/lib/bfd-plugins
 
 
 readonly MAKE_OPTS="-j${UTMAN_CONCURRENCY} VERBOSE=1"
@@ -154,11 +149,11 @@ CC=${CC:-}
 # bug that brakes the build if we do that.
 CXX=${CXX:-g++}
 
-readonly CROSS_TARGET_AR=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-ar
-readonly CROSS_TARGET_AS=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-as
-readonly CROSS_TARGET_LD=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-ld
-readonly CROSS_TARGET_NM=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-nm
-readonly CROSS_TARGET_RANLIB=${BINUTILS_INSTALL_DIR}/bin/${CROSS_TARGET}-ranlib
+readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${CROSS_TARGET}-ar
+readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET}-as
+readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET}-ld
+readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET}-nm
+readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET}-ranlib
 readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
 
 # NOTE: this tools.sh defines: LD_FOR_TARGET, CC_FOR_TARGET, CXX_FOR_TARGET, ...
@@ -846,8 +841,8 @@ llvm-configure() {
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,x86_64,arm \
              --target=${CROSS_TARGET} \
-             --prefix=${LLVM_INSTALL_DIR} \
-             --with-llvmgccdir=${LLVMGCC_INSTALL_DIR}
+             --prefix=${INSTALL_DIR} \
+             --with-llvmgccdir=${INSTALL_DIR}
   spopd
 }
 
@@ -941,8 +936,8 @@ gcc-stage1() {
 gcc-stage1-sysroot() {
   StepBanner "GCC-STAGE1" "Setting up initial sysroot"
 
-  local sys_include="${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include"
-  local sys_include2="${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/sys-include"
+  local sys_include="${INSTALL_DIR}/${CROSS_TARGET}/include"
+  local sys_include2="${INSTALL_DIR}/${CROSS_TARGET}/sys-include"
 
   rm -rf "${sys_include}" "${sys_include2}"
   mkdir -p "${sys_include}"
@@ -979,10 +974,9 @@ gcc-stage1-configure() {
              CXX=${CXX} \
              CFLAGS="-Dinhibit_libc" \
              ${srcdir}/llvm-gcc-4.2/configure \
-               --prefix=${LLVMGCC_INSTALL_DIR} \
-               --enable-llvm=${LLVM_INSTALL_DIR} \
+               --prefix=${INSTALL_DIR} \
+               --enable-llvm=${INSTALL_DIR} \
                --without-headers \
-               --program-prefix=llvm- \
                --disable-libmudflap \
                --disable-decimal-float \
                --disable-libssp \
@@ -1022,9 +1016,9 @@ gcc-stage1-make() {
 
   ts-touch-open "${objdir}"
 
-  # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
+  # NOTE: we add ${INSTALL_DIR}/bin to PATH
   RunWithLog llvm-pregcc.make \
-       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
               CC=${CC} \
               CXX=${CXX} \
               CFLAGS="-Dinhibit_libc" \
@@ -1041,9 +1035,9 @@ gcc-stage1-install() {
 
   spushd "${TC_BUILD_LLVM_GCC1}"
 
-  # NOTE: we add ${BINUTILS_INSTALL_DIR}/bin to PATH
+  # NOTE: we add ${INSTALL_DIR}/bin to PATH
   RunWithLog llvm-pregcc.install \
-       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
               CC=${CC} \
               CXX=${CXX} \
               CFLAGS="-Dinhibit_libc" \
@@ -1120,9 +1114,8 @@ gcc-stage2-configure() {
              CXXFLAGS="-Dinhibit_libc" \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              "${srcdir}"/llvm-gcc-4.2/configure \
-               --prefix=${LLVMGCC_INSTALL_DIR} \
-               --enable-llvm=${LLVM_INSTALL_DIR} \
-               --program-prefix=llvm- \
+               --prefix=${INSTALL_DIR} \
+               --enable-llvm=${INSTALL_DIR} \
                --with-newlib \
                --disable-libmudflap \
                --disable-decimal-float \
@@ -1159,7 +1152,7 @@ gcc-stage2-make() {
 
   spushd "${objdir}"
   RunWithLog llvm-gcc.make \
-       env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
               make \
               "${STD_ENV_FOR_GCC_ETC[@]}" \
               ${MAKE_OPTS} all-gcc
@@ -1179,7 +1172,7 @@ libgcc-clean() {
 
   spushd "${TC_BUILD_LLVM_GCC2}/gcc"
   RunWithLog libgcc.clean \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
              make clean-target-libgcc
   spopd
 }
@@ -1191,7 +1184,7 @@ libgcc-make() {
 
   spushd "${objdir}"
   RunWithLog llvm-gcc.make_libgcc \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} libgcc.a
@@ -1206,7 +1199,7 @@ liberty-make() {
 
   # maybe clean libiberty first
   RunWithLog llvm-gcc.make_libiberty \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              ${MAKE_OPTS} all-target-libiberty
@@ -1222,12 +1215,12 @@ gcc-stage2-install() {
   spushd "${objdir}"
 
   cd gcc
-  cp gcc-cross "${LLVMGCC_INSTALL_DIR}/bin/llvm-gcc"
-  cp g++-cross "${LLVMGCC_INSTALL_DIR}/bin/llvm-g++"
+  cp gcc-cross "${INSTALL_DIR}/bin/${CROSS_TARGET}-gcc"
+  cp g++-cross "${INSTALL_DIR}/bin/${CROSS_TARGET}-g++"
   # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
   #       simply fix this version when this happens
-  cp cc1     "${LLVMGCC_INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/${GCC_VER}"
-  cp cc1plus "${LLVMGCC_INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/${GCC_VER}"
+  cp cc1     "${INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/${GCC_VER}"
+  cp cc1plus "${INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/${GCC_VER}"
 
   spopd
 }
@@ -1335,13 +1328,12 @@ libstdcpp-configure-common() {
   spushd "${objdir}"
 
   RunWithLog llvm-gcc.configure_libstdcpp \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         "${srcdir}"/configure \
           --host=${CROSS_TARGET} \
-          --prefix=${LLVMGCC_INSTALL_DIR} \
-          --enable-llvm=${LLVM_INSTALL_DIR} \
-          --program-prefix=llvm- \
+          --prefix=${INSTALL_DIR} \
+          --enable-llvm=${INSTALL_DIR} \
           --with-newlib \
           --disable-libstdcxx-pch \
           --disable-shared \
@@ -1391,7 +1383,7 @@ libstdcpp-make-common() {
 
   spushd "${objdir}"
   RunWithLog llvm-gcc.make_libstdcpp \
-    env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+    env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
         make \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         ${MAKE_OPTS}
@@ -1406,7 +1398,7 @@ libstdcpp-arm-install() {
 
   spushd "${objdir}"
   RunWithLog ${TMP}/llvm-gcc.install_libstdcpp.log \
-    env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+    env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
       make  ${MAKE_OPTS} install
   spopd
 }
@@ -1453,7 +1445,7 @@ gcc-stage3-install() {
 
   spushd "${objdir}"
   RunWithLog llvm-gcc.install \
-      env -i PATH=/usr/bin/:/bin:${BINUTILS_INSTALL_DIR}/bin \
+      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
              make \
              "${STD_ENV_FOR_GCC_ETC[@]}" \
              install
@@ -1469,7 +1461,7 @@ libgcc-install() {
   spushd "${objdir}"
   # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
   #       simply fix this version when this happens
-  cp gcc/libg*.a "${LLVMGCC_INSTALL_DIR}/lib/gcc/${CROSS_TARGET}/${GCC_VER}/"
+  cp gcc/libg*.a "${INSTALL_DIR}/lib/gcc/${CROSS_TARGET}/${GCC_VER}/"
   spopd
 }
 
@@ -1480,7 +1472,7 @@ liberty-install() {
   local objdir="${TC_BUILD_LLVM_GCC2}"
 
   spushd "${objdir}"
-  cp libiberty/libiberty.a "${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib"
+  cp libiberty/libiberty.a "${INSTALL_DIR}/${CROSS_TARGET}/lib"
   spopd
 }
 
@@ -1489,9 +1481,9 @@ libstdcpp-header-massage() {
   StepBanner "GCC-STAGE3" "Header massing for libstdc++"
 
   # Don't ask
-  rm -f "${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include/c++"
+  rm -f "${INSTALL_DIR}/${CROSS_TARGET}/include/c++"
   ln -s ../../include/c++ \
-        "${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include/c++"
+        "${INSTALL_DIR}/${CROSS_TARGET}/include/c++"
 
 }
 
@@ -1581,7 +1573,7 @@ binutils-arm-configure() {
     PATH="/usr/bin:/bin" \
     CC=${CC} \
     CXX=${CXX} \
-    ${srcdir}/binutils-2.20/configure --prefix=${BINUTILS_INSTALL_DIR} \
+    ${srcdir}/binutils-2.20/configure --prefix=${INSTALL_DIR} \
                                       --target=${CROSS_TARGET} \
                                       --enable-checking \
                                       --enable-gold \
@@ -1736,7 +1728,7 @@ binutils-x86-sb() {
     exit -1
   fi
 
-  if [ ! -f ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ] ; then
+  if [ ! -f ${INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ] ; then
     echo "ERROR: install Portable Native Client toolchain"
     exit -1
   fi
@@ -1765,7 +1757,7 @@ binutils-x86-sb-configure() {
 
   mkdir ${TC_BUILD_BINUTILS_X86_SB}/opcodes
   spushd ${objdir}
-  cp ${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ./opcodes/.
+  cp ${INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ./opcodes/.
   RunWithLog \
     binutils.x86.sandboxed.configure \
     env -i \
@@ -1999,8 +1991,8 @@ newlib-arm-install() {
   ###########################################################
 
   StepBanner "NEWLIB-ARM" "Extra-install"
-  local sys_include=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/include
-  local sys_lib=${LLVMGCC_INSTALL_DIR}/${CROSS_TARGET}/lib
+  local sys_include=${INSTALL_DIR}/${CROSS_TARGET}/include
+  local sys_lib=${INSTALL_DIR}/${CROSS_TARGET}/lib
   # NOTE: we provide a new one via extra-sdk
   rm ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/pthread.h
 
@@ -2246,7 +2238,7 @@ organize-native-code() {
 
   readonly arm_src=toolchain/linux_arm-untrusted
   readonly x86_src=toolchain/linux_x86/sdk/nacl-sdk
-  readonly arm_llvm_gcc=${arm_src}/arm-none-linux-gnueabi/llvm-gcc-4.2
+  readonly arm_llvm_gcc=${arm_src}/arm-none-linux-gnueabi
 
   # TODO(espindola): There is a transitive dependency from libgcc to
   # libc, libnosys and libnacl. We should try to factor this better.
@@ -2294,8 +2286,8 @@ organize-native-code() {
 ######################################################################
 
 
-readonly LLVM_DIS=${LLVM_INSTALL_DIR}/bin/llvm-dis
-readonly LLVM_AR=${LLVMGCC_INSTALL_DIR}/bin/${CROSS_TARGET}-ar
+readonly LLVM_DIS=${INSTALL_DIR}/bin/llvm-dis
+readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET}-ar
 
 
 # Usage: VerifyObject <regexp> <filename>
