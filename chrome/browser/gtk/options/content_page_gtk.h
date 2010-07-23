@@ -81,9 +81,7 @@ class ContentPageGtk : public OptionsPageBase,
   GtkWidget* sync_status_label_;
   GtkWidget* sync_action_link_background_;
   GtkWidget* sync_action_link_;
-#if !defined(OS_CHROMEOS)
   GtkWidget* sync_start_stop_button_;
-#endif
   GtkWidget* sync_customize_button_;
   GtkWidget* privacy_dashboard_link_;
 

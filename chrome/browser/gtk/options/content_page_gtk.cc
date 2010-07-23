@@ -75,8 +75,8 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
 #if !defined(OS_CHROMEOS)
       sync_action_link_background_(NULL),
       sync_action_link_(NULL),
-      sync_start_stop_button_(NULL),
 #endif
+      sync_start_stop_button_(NULL),
       sync_customize_button_(NULL),
       privacy_dashboard_link_(NULL),
       initializing_(true),
@@ -112,11 +112,9 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
   options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME),
       InitFormAutoFillGroup(), false);
-#if !defined(OS_CHROMEOS)
   options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME),
       InitBrowsingDataGroup(), false);
-#endif
   options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_APPEARANCE_GROUP_NAME),
       InitThemesGroup(), false);
@@ -358,13 +356,11 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   // depend on the spacing above.
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
-#if !defined(OS_CHROMEOS)
   sync_start_stop_button_ = gtk_button_new_with_label("");
   g_signal_connect(sync_start_stop_button_, "clicked",
                    G_CALLBACK(OnSyncStartStopButtonClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), sync_start_stop_button_, FALSE,
                      FALSE, 0);
-#endif
   sync_customize_button_ = gtk_button_new_with_label("");
   g_signal_connect(sync_customize_button_, "clicked",
                    G_CALLBACK(OnSyncCustomizeButtonClickedThunk), this);
@@ -399,29 +395,49 @@ void ContentPageGtk::UpdateSyncControls() {
   string16 status_label;
   string16 link_label;
   std::string customize_button_label;
-  std::string button_label;
   bool managed = sync_service_->IsManaged();
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(sync_service_,
       &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
   customize_button_label =
     l10n_util::GetStringUTF8(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL);
+
+  std::string start_stop_button_label;
+  bool is_start_stop_button_visible = false;
+  bool is_start_stop_button_sensitive = false;
   if (sync_setup_completed) {
-    button_label = l10n_util::GetStringUTF8(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+    start_stop_button_label =
+        l10n_util::GetStringUTF8(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+#if defined(OS_CHROMEOS)
+    is_start_stop_button_visible = false;
+#else
+    is_start_stop_button_visible = true;
+#endif
+    is_start_stop_button_sensitive = !managed;
   } else if (sync_service_->SetupInProgress()) {
-    button_label = l10n_util::GetStringUTF8(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+    start_stop_button_label =
+        l10n_util::GetStringUTF8(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+    is_start_stop_button_visible = true;
+    is_start_stop_button_sensitive = false;
   } else {
-    button_label = l10n_util::GetStringUTF8(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+    start_stop_button_label =
+        l10n_util::GetStringUTF8(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+    is_start_stop_button_visible = true;
+    is_start_stop_button_sensitive = !managed;
   }
+  gtk_widget_set_no_show_all(sync_start_stop_button_,
+                             !is_start_stop_button_visible);
+  if (is_start_stop_button_visible)
+    gtk_widget_show(sync_start_stop_button_);
+  else
+    gtk_widget_hide(sync_start_stop_button_);
+  gtk_widget_set_sensitive(sync_start_stop_button_,
+                           is_start_stop_button_sensitive);
+  gtk_button_set_label(GTK_BUTTON(sync_start_stop_button_),
+                       start_stop_button_label.c_str());
 
   gtk_label_set_label(GTK_LABEL(sync_status_label_),
                       UTF16ToUTF8(status_label).c_str());
-#if !defined(OS_CHROMEOS)
-  gtk_widget_set_sensitive(sync_start_stop_button_,
-                           !sync_service_->WizardIsVisible() && !managed);
-  gtk_button_set_label(GTK_BUTTON(sync_start_stop_button_),
-                       button_label.c_str());
-#endif
 
   gtk_widget_set_child_visible(sync_customize_button_,
       sync_setup_completed && !status_has_error);

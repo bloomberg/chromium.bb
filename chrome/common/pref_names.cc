@@ -888,6 +888,10 @@ const wchar_t kSyncExtensions[] = L"sync.extensions";
 // sync.
 const wchar_t kSyncManaged[] = L"sync.managed";
 
+// Boolean to prevent sync from automatically starting up.  This is
+// used when sync is disabled by the user via the privacy dashboard.
+const wchar_t kSyncSuppressStart[] = L"sync.suppress_start";
+
 // Create web application shortcut dialog preferences.
 const wchar_t kWebAppCreateOnDesktop[] = L"browser.web_app.create_on_desktop";
 const wchar_t kWebAppCreateInAppsMenu[] =

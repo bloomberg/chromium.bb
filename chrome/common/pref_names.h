@@ -322,6 +322,7 @@ extern const wchar_t kSyncThemes[];
 extern const wchar_t kSyncTypedUrls[];
 extern const wchar_t kSyncExtensions[];
 extern const wchar_t kSyncManaged[];
+extern const wchar_t kSyncSuppressStart[];
 
 extern const wchar_t kWebAppCreateOnDesktop[];
 extern const wchar_t kWebAppCreateInAppsMenu[];
