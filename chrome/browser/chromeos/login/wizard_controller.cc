@@ -237,8 +237,7 @@ void WizardController::Init(const std::string& first_screen_name,
       NULL);
   window->SetContentsView(contents_);
 
-  PrefService* prefs = g_browser_process->local_state();
-  bool oobe_complete = prefs->GetBoolean(kOobeComplete);
+  bool oobe_complete = IsOobeComplete();
 
   if (!oobe_complete || first_screen_name == kOutOfBoxScreenName) {
     is_out_of_box_ = true;
@@ -261,6 +260,7 @@ void WizardController::ShowBackground(const gfx::Rect& bounds) {
   background_widget_ =
       chromeos::BackgroundView::CreateWindowContainingView(bounds,
                                                            &background_view_);
+  background_view_->SetOobeProgressBarVisible(true);
   background_widget_->Show();
 }
 
@@ -317,10 +317,12 @@ chromeos::RegistrationScreen* WizardController::GetRegistrationScreen() {
 void WizardController::ShowNetworkScreen() {
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetNetworkScreen());
+  background_view_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
 }
 
 void WizardController::ShowLoginScreen() {
   SetStatusAreaVisible(true);
+  background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
 
   // When run under automation test show plain login screen.
   if (!is_test_mode_ &&
@@ -353,21 +355,26 @@ void WizardController::ShowAccountScreen() {
 void WizardController::ShowUpdateScreen() {
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUpdateScreen());
+  // There is no special step for update.
+  background_view_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
 }
 
 void WizardController::ShowUserImageScreen() {
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUserImageScreen());
+  background_view_->SetOobeProgress(chromeos::BackgroundView::PICTURE);
 }
 
 void WizardController::ShowEulaScreen() {
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetEulaScreen());
+  background_view_->SetOobeProgress(chromeos::BackgroundView::EULA);
 }
 
 void WizardController::ShowRegistrationScreen() {
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetRegistrationScreen());
+  background_view_->SetOobeProgress(chromeos::BackgroundView::REGISTRATION);
 }
 
 void WizardController::SetStatusAreaVisible(bool visible) {
@@ -632,6 +639,10 @@ chromeos::ScreenObserver* WizardController::GetObserver(WizardScreen* screen) {
   return observer_ ? observer_ : this;
 }
 
+bool WizardController::IsOobeComplete() {
+  return g_browser_process->local_state()->GetBoolean(kOobeComplete);
+}
+
 namespace browser {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
@@ -657,8 +668,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
 
   // Check whether we need to execute OOBE process.
-  bool oobe_complete = g_browser_process->local_state()->
-      GetBoolean(kOobeComplete);
+  bool oobe_complete = WizardController::IsOobeComplete();
 
   if (first_screen_name.empty() &&
       oobe_complete &&

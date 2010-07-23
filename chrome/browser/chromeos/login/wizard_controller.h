@@ -52,6 +52,9 @@ class WizardController : public chromeos::ScreenObserver,
     return default_controller_;
   }
 
+  // Returns OOBE completion status.
+  static bool IsOobeComplete();
+
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. |screen_bounds| are used to calculate position
   // of the wizard screen.

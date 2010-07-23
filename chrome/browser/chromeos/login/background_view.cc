@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/oobe_progress_bar.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/feedback_menu_button.h"
 #include "chrome/browser/chromeos/status/language_menu_button.h"
@@ -36,6 +37,7 @@ BackgroundView::BackgroundView()
     : status_area_(NULL),
       os_version_label_(NULL),
       boot_times_label_(NULL),
+      progress_bar_(NULL),
       did_paint_(false) {
   views::Painter* painter = CreateBackgroundPainter();
   set_background(views::Background::CreateBackgroundPainter(true, painter));
@@ -87,14 +89,17 @@ void BackgroundView::Paint(gfx::Canvas* canvas) {
 }
 
 void BackgroundView::Layout() {
-  int corner_padding = 5;
-  int kInfoLeftPadding = 60;
-  int kInfoBottomPadding = 40;
-  int kInfoBetweenLinesPadding = 4;
+  const int kCornerPadding = 5;
+  const int kInfoLeftPadding = 60;
+  const int kInfoBottomPadding = 10;
+  const int kInfoBetweenLinesPadding = 4;
+  const int kProgressBarBottomPadding = 20;
+  const int kProgressBarWidth = 750;
+  const int kProgressBarHeight = 70;
   gfx::Size status_area_size = status_area_->GetPreferredSize();
   status_area_->SetBounds(
-      width() - status_area_size.width() - corner_padding,
-      corner_padding,
+      width() - status_area_size.width() - kCornerPadding,
+      kCornerPadding,
       status_area_size.width(),
       status_area_size.height());
   gfx::Size version_size = os_version_label_->GetPreferredSize();
@@ -109,8 +114,15 @@ void BackgroundView::Layout() {
   boot_times_label_->SetBounds(
       kInfoLeftPadding,
       height() - (version_size.height() + kInfoBottomPadding),
-      width() - 2 * corner_padding,
+      width() - 2 * kCornerPadding,
       version_size.height());
+  if (progress_bar_) {
+    progress_bar_->SetBounds(
+        (width() - kProgressBarWidth) / 2,
+        (height() - kProgressBarBottomPadding - kProgressBarHeight),
+        kProgressBarWidth,
+        kProgressBarHeight);
+  }
 }
 
 void BackgroundView::ChildPreferredSizeChanged(View* child) {
@@ -188,6 +200,31 @@ void BackgroundView::InitInfoLabels() {
     os_version_label_->SetText(
         ASCIIToWide(CrosLibrary::Get()->load_error_string()));
   }
+}
+
+void BackgroundView::InitProgressBar() {
+  std::vector<int> steps;
+  steps.push_back(IDS_OOBE_SELECT_NETWORK);
+  steps.push_back(IDS_OOBE_EULA);
+  steps.push_back(IDS_OOBE_SIGNIN);
+  steps.push_back(IDS_OOBE_REGISTRATION);
+  steps.push_back(IDS_OOBE_PICTURE);
+  progress_bar_ = new OobeProgressBar(steps);
+  AddChildView(progress_bar_);
+}
+
+void BackgroundView::SetOobeProgressBarVisible(bool visible) {
+  if (!progress_bar_ && visible)
+    InitProgressBar();
+
+  if (progress_bar_)
+    progress_bar_->SetVisible(visible);
+}
+
+void BackgroundView::SetOobeProgress(LoginStep step) {
+  DCHECK(step <= PICTURE);
+  if (progress_bar_)
+    progress_bar_->SetProgress(step);
 }
 
 void BackgroundView::UpdateWindowType() {

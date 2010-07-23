@@ -112,6 +112,11 @@ void ExistingUserController::Init() {
     background_window_ = BackgroundView::CreateWindowContainingView(
         background_bounds_,
         &background_view_);
+
+    if (!WizardController::IsOobeComplete()) {
+      background_view_->SetOobeProgressBarVisible(true);
+      background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
+    }
     background_window_->Show();
   }
   for (size_t i = 0; i < controllers_.size(); ++i) {

@@ -20,12 +20,21 @@ class Profile;
 
 namespace chromeos {
 
+class OobeProgressBar;
 class StatusAreaView;
 
 // View used to render the background during login. BackgroundView contains
 // StatusAreaView.
 class BackgroundView : public views::View, public StatusAreaHost {
  public:
+  enum LoginStep {
+    SELECT_NETWORK,
+    EULA,
+    SIGNIN,
+    REGISTRATION,
+    PICTURE
+  };
+
   BackgroundView();
 
   // Creates a window containing an instance of WizardContentsView as the root
@@ -36,6 +45,12 @@ class BackgroundView : public views::View, public StatusAreaHost {
 
   // Toggles status area visibility.
   void SetStatusAreaVisible(bool visible);
+
+  // Toggles OOBE progress bar visibility, the bar is hidden by default.
+  void SetOobeProgressBarVisible(bool visible);
+
+  // Sets current step on OOBE progress bar.
+  void SetOobeProgress(LoginStep step);
 
  protected:
   // Overridden from views::View:
@@ -55,11 +70,13 @@ class BackgroundView : public views::View, public StatusAreaHost {
   virtual bool IsBrowserMode() const;
   virtual bool IsScreenLockerMode() const;
 
-private:
+ private:
   // Creates and adds the status_area.
   void InitStatusArea();
   // Creates and adds the labels for version and boot time.
   void InitInfoLabels();
+  // Creates and add OOBE progress bar.
+  void InitProgressBar();
 
   // Invokes SetWindowType for the window. This is invoked during startup and
   // after we've painted.
@@ -74,6 +91,7 @@ private:
   StatusAreaView* status_area_;
   views::Label* os_version_label_;
   views::Label* boot_times_label_;
+  OobeProgressBar* progress_bar_;
 
   // Handles asynchronously loading the version.
   VersionLoader version_loader_;

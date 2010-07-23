@@ -478,6 +478,8 @@
         'browser/chromeos/login/network_screen_delegate.h',
         'browser/chromeos/login/new_user_view.cc',
         'browser/chromeos/login/new_user_view.h',
+        'browser/chromeos/login/oobe_progress_bar.cc',
+        'browser/chromeos/login/oobe_progress_bar.h',
         'browser/chromeos/login/owner_key_utils.cc',
         'browser/chromeos/login/owner_key_utils.h',
         'browser/chromeos/login/password_changed_view.cc',
