@@ -147,6 +147,29 @@ class BuildTargetTests(TempDirTestCase):
     assert os.path.exists(os.path.join(dir3.dest_path, "dest_subdir_b",
                                        "urfile"))
 
+  def test_tree_hash_function(self):
+    # Check that the hash uses file and directory contents, not inode
+    # numbers and timestamps.
+    def GetHash():
+      tempdir = self.MakeTempDir()
+      os.mkdir(os.path.join(tempdir, "subdir"))
+      dirtree.WriteFile(os.path.join(tempdir, "subdir", "myfile"), "Contents")
+      dirtree.WriteFile(os.path.join(tempdir, "subdir", "script"), "echo foo")
+      subprocess.check_call(["chmod", "+x",
+                             os.path.join(tempdir, "subdir", "script")])
+      os.symlink("symlink_dest", os.path.join(tempdir, "symlink"))
+      self.assertEquals(
+          list(btarget.ListFiles(tempdir)),
+          [('subdir', 'dir'),
+           ('subdir/myfile', 'file',
+            'f5cbdf6bfb51439be085b5c6b7460a7c91eabc3c', False),
+           ('subdir/script', 'file',
+            '9f168d2f8df57c83626cf6026658c6adba47c759', True),
+           ('symlink', 'symlink', 'symlink_dest')])
+      return btarget.HashTree(tempdir)
+
+    self.assertEquals(GetHash(), GetHash())
+
 
 if __name__ == "__main__":
   unittest.main()

@@ -93,23 +93,44 @@ class TargetBase(object):
     return cached["output"]
 
 
+def HashFile(filename):
+  hasher = hashlib.sha1()
+  fh = open(filename, "r")
+  try:
+    while True:
+      data = fh.read(4096)
+      if len(data) == 0:
+        break
+      hasher.update(data)
+  finally:
+    fh.close()
+  return hasher.hexdigest()
+
+
 def ListFiles(dirpath, dirpath_rel=""):
   # Assumes that directory order does not affect things we build!
   for leafname in sorted(os.listdir(dirpath)):
     path = os.path.join(dirpath, leafname)
     path_rel = os.path.join(dirpath_rel, leafname)
     st = os.lstat(path)
-    yield path_rel, st.st_mode, st.st_mtime, st.st_dev, st.st_ino
-    # TODO(mseaborn): S_ISLNK: record link destination.
-    # Do we try to record state of things we symlink to?
-    if stat.S_ISDIR(st.st_mode):
+    if stat.S_ISREG(st.st_mode):
+      is_executable = st.st_mode & stat.S_IXUSR != 0
+      yield (path_rel, "file", HashFile(path), is_executable)
+    elif stat.S_ISLNK(st.st_mode):
+      # Should we try to record state of things we symlink to?
+      yield (path_rel, "symlink", os.readlink(path))
+    elif stat.S_ISDIR(st.st_mode):
+      yield (path_rel, "dir")
       for result in ListFiles(path, path_rel):
         yield result
+    else:
+      raise AssertionError("Unknown file type %x: %r" % (st.st_mode, path))
 
 
 def HashTree(dirpath):
-  # TODO(mseaborn): Use the same tree hashing as, say, Git, so that we
-  # handle empty directories and file execute permission.
+  # TODO(mseaborn): We could use the same tree hashing as Git so that
+  # tree snapshots can be stored in Git without needing a different ID
+  # scheme.
   state = hashlib.sha1()
   for info in ListFiles(dirpath):
     state.update(CheckedRepr(info) + "\n")
