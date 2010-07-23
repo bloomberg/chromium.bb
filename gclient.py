@@ -296,8 +296,8 @@ class Dependency(GClientKeywords):
       if name in [s.name for s in self.dependencies]:
         raise
       self.dependencies.append(Dependency(self, name, url))
-    # Note: do not sort by name, the dependencies must be specified in the
-    # logical order.
+    # Sort by name.
+    self.dependencies.sort(key=lambda x: x.name)
     logging.info('Loaded: %s' % str(self))
 
   def RunCommandRecursively(self, options, revision_overrides,

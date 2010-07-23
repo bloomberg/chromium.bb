@@ -373,19 +373,16 @@ class GClientSmokeSVN(GClientSmokeBase):
     # So verify it works with --verbose.
     out = self.parseGclient(['status', '--deps', 'mac', '--verbose'],
         [['running', join(self.root_dir, 'src')],
-          ['running', join(self.root_dir, 'src', 'third_party', 'fpp')],
           ['running', join(self.root_dir, 'src', 'other')],
+          ['running', join(self.root_dir, 'src', 'third_party', 'fpp')],
           ['running', join(self.root_dir, 'src', 'third_party', 'prout')]])
     out = self.svnBlockCleanup(out)
     self.checkString('other', out[0][1])
     self.checkString(join('third_party', 'fpp'), out[0][2])
     self.checkString(join('third_party', 'prout'), out[0][3])
-    self.checkString('hi', out[2][1])
+    self.checkString('hi', out[1][1])
     self.assertEquals(4, len(out[0]))
-    self.assertEquals(1, len(out[1]))
-    self.assertEquals(2, len(out[2]))
-    self.assertEquals(1, len(out[3]))
-    self.assertEquals(4, len(out))
+    self.assertEquals(2, len(out[1]))
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching.
