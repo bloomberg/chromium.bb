@@ -153,7 +153,7 @@ class Dependency(GClientKeywords):
     self.deps_file = deps_file or self.DEPS_FILE
     # A cache of the files affected by the current operation, necessary for
     # hooks.
-    self.file_list = []
+    self._file_list = []
     # If it is not set to True, the dependency wasn't processed for its child
     # dependency, i.e. its DEPS wasn't read.
     self.deps_parsed = False
@@ -304,7 +304,7 @@ class Dependency(GClientKeywords):
                             command, args, pm):
     """Runs 'command' before parsing the DEPS in case it's a initial checkout
     or a revert."""
-    assert self.file_list == []
+    assert self._file_list == []
     # When running runhooks, there's no need to consult the SCM.
     # All known hooks are expected to run unconditionally regardless of working
     # copy state, so skip the SCM status check.
@@ -320,13 +320,13 @@ class Dependency(GClientKeywords):
                                        self.name)
           scm.RunCommand('updatesingle', options,
                          args + [self.parsed_url.GetFilename()],
-                         self.file_list)
+                         self._file_list)
       else:
         options.revision = revision_overrides.get(self.name)
         scm = gclient_scm.CreateSCM(self.parsed_url, self.root_dir(), self.name)
-        scm.RunCommand(command, options, args, self.file_list)
-        self.file_list = [os.path.join(self.name, f.strip())
-                          for f in self.file_list]
+        scm.RunCommand(command, options, args, self._file_list)
+        self._file_list = [os.path.join(self.name, f.strip())
+                           for f in self._file_list]
       options.revision = None
     if pm:
       # The + 1 comes from the fact that .gclient is considered a step in
@@ -365,25 +365,26 @@ class Dependency(GClientKeywords):
       else:
         # TODO(phajdan.jr): We should know exactly when the paths are absolute.
         # Convert all absolute paths to relative.
-        for i in range(len(self.file_list)):
+        file_list = self.file_list()
+        for i in range(len(file_list)):
           # It depends on the command being executed (like runhooks vs sync).
-          if not os.path.isabs(self.file_list[i]):
+          if not os.path.isabs(file_list[i]):
             continue
 
           prefix = os.path.commonprefix([self.root_dir().lower(),
-                                        self.file_list[i].lower()])
-          self.file_list[i] = self.file_list[i][len(prefix):]
+                                         file_list[i].lower()])
+          file_list[i] = file_list[i][len(prefix):]
 
           # Strip any leading path separators.
-          while (self.file_list[i].startswith('\\') or
-                 self.file_list[i].startswith('/')):
-            self.file_list[i] = self.file_list[i][1:]
+          while (file_list[i].startswith('\\') or
+                 file_list[i].startswith('/')):
+            file_list[i] = file_list[i][1:]
 
         # Run hooks on the basis of whether the files from the gclient operation
         # match each hook's pattern.
         for hook_dict in self.deps_hooks:
           pattern = re.compile(hook_dict['pattern'])
-          matching_file_list = [f for f in self.file_list if pattern.search(f)]
+          matching_file_list = [f for f in file_list if pattern.search(f)]
           if matching_file_list:
             self._RunHookAction(hook_dict, matching_file_list)
     if self.recursion_limit():
@@ -439,10 +440,16 @@ class Dependency(GClientKeywords):
     # None is a valid return value to disable a dependency.
     return self.custom_deps.get(name, url)
 
+  def file_list(self):
+    result = self._file_list[:]
+    for d in self.dependencies:
+      result.extend(d.file_list())
+    return result
+
   def __str__(self):
     out = []
     for i in ('name', 'url', 'safesync_url', 'custom_deps', 'custom_vars',
-              'deps_hooks', 'file_list'):
+              'deps_hooks', '_file_list'):
       # 'deps_file'
       if self.__dict__[i]:
         out.append('%s: %s' % (i, self.__dict__[i]))
