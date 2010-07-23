@@ -17,6 +17,5 @@ include_rules = [
   "+third_party/zlib",
 
   # FIXME - refactor code and remove these dependencies
-  "+chrome/app",
   "+chrome/installer",
 ]
