@@ -52,11 +52,16 @@
     '-passwords',
   ],
 
-  'linux': [
+  'linux': [  # linux != chromeos
     '-omnibox',  # http://crbug.com/44203
     '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
   ],
 
-  # TODO(nirnimesh): Add a ChromeOS section
+  # ChromeOS is linux, but note that this section does not include the
+  # entries in the linux section above.
+  'chromeos': [
+    # you cannot resize browser window on chromeos
+    '-browser.BrowserTest.testWindowResize',
+  ],
 }

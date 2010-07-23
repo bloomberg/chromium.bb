@@ -189,13 +189,27 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
   @staticmethod
   def IsLinux():
-    """Are we on Linux?"""
+    """Are we on Linux? ChromeOS is linux too."""
     return 'linux2' == sys.platform
 
   @staticmethod
   def IsWin():
     """Are we on Win?"""
     return 'win32' == sys.platform
+
+  @staticmethod
+  def IsChromeOS():
+    """Are we on ChromeOS (or Chromium OS)?
+
+    Checks for "CHROMEOS_RELEASE_NAME=" in /etc/lsb-release.
+    """
+    lsb_release = '/etc/lsb-release'
+    if not PyUITest.IsLinux() or not os.path.isfile(lsb_release):
+      return False
+    for line in open(lsb_release).readlines():
+      if line.startswith('CHROMEOS_RELEASE_NAME='):
+        return True
+    return False
 
   @staticmethod
   def IsPosix():
@@ -1003,6 +1017,7 @@ class Main(object):
     'win32':  'win',
     'darwin': 'mac',
     'linux2': 'linux',
+    'chromeos': 'chromeos',
   }
 
   def __init__(self):
@@ -1174,8 +1189,12 @@ class Main(object):
 
   def _LoadTestNamesFrom(self, filename):
     modules= PyUITest.EvalDataFrom(filename)
+    platform = sys.platform
+    if PyUITest.IsChromeOS():  # check if it's chromeos
+      platform = 'chromeos'
+    assert platform in self._platform_map, '%s unsupported' % platform
     all_names = modules.get('all', []) + \
-                modules.get(self._platform_map[sys.platform], [])
+                modules.get(self._platform_map[platform], [])
     args = []
     excluded = []
     # Find all excluded tests.  Excluded tests begin with '-'.
