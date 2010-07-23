@@ -4,9 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// TODO(hwennborg): remove after upstream expectations are rolled.
-BUG49912 : fast/dom/prototype-inheritance.html = TEXT
-
-// TODO(bulach): remove after upstream rebaselines are rolled
-BUG49920 WIN : fast/borders/different-color-borders.html = FAIL
