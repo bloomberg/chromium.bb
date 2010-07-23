@@ -71,7 +71,8 @@ static uint32 SelectHardwarePacketSize(int channels, int sample_rate,
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
 AudioRendererHost::AudioRendererHost()
-    : process_handle_(0),
+    : process_id_(0),
+      process_handle_(0),
       ipc_sender_(NULL) {
   // Increase the ref count of this object so it is active until we do
   // Release().
