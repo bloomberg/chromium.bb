@@ -185,8 +185,9 @@ void TabStripModel::InsertTabContentsAt(int index,
                                         TabContents* contents,
                                         int add_types) {
   bool foreground = add_types & ADD_SELECTED;
-  index = ConstrainInsertionIndex(index, contents->is_app() ||
-                                  add_types & ADD_PINNED);
+  // Force app tabs to be pinned.
+  bool pin = contents->is_app() || add_types & ADD_PINNED;
+  index = ConstrainInsertionIndex(index, pin);
 
   // In tab dragging situations, if the last tab in the window was detached
   // then the user aborted the drag, we will have the |closing_all_| member
@@ -199,7 +200,7 @@ void TabStripModel::InsertTabContentsAt(int index,
   // since the old contents and the new contents will be the same...
   TabContents* selected_contents = GetSelectedTabContents();
   TabContentsData* data = new TabContentsData(contents);
-  data->pinned = (add_types & ADD_PINNED) == ADD_PINNED;
+  data->pinned = pin;
   if ((add_types & ADD_INHERIT_GROUP) && selected_contents) {
     if (foreground) {
       // Forget any existing relationships, we don't want to make things too
@@ -484,6 +485,11 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
     return;
 
   if (IsAppTab(index)) {
+    if (!pinned) {
+      // App tabs should always be pinned.
+      NOTREACHED();
+      return;
+    }
     // Changing the pinned state of an app tab doesn't effect it's mini-tab
     // status.
     contents_data_[index]->pinned = pinned;
@@ -694,7 +700,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandRestoreTab:
       return delegate_->CanRestoreTab();
     case CommandTogglePinned:
-      return true;
+      return !IsAppTab(context_index);
     case CommandBookmarkAllTabs:
       return delegate_->CanBookmarkAllTabs();
     case CommandUseVerticalTabs:

@@ -1536,7 +1536,7 @@ TEST_F(TabStripModelTest, Apps) {
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
-    EXPECT_EQ("1a 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1ap 3", GetPinnedState(tabstrip));
 
     observer.ClearStates();
   }
@@ -1550,7 +1550,7 @@ TEST_F(TabStripModelTest, Apps) {
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state.
-    EXPECT_EQ("1a 2a 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1ap 2ap 3", GetPinnedState(tabstrip));
 
     observer.ClearStates();
   }
@@ -1562,7 +1562,7 @@ TEST_F(TabStripModelTest, Apps) {
     ASSERT_EQ(0, observer.GetStateCount());
 
     // And verify the state didn't change.
-    EXPECT_EQ("1a 2a 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1ap 2ap 3", GetPinnedState(tabstrip));
 
     observer.ClearStates();
   }
@@ -1574,7 +1574,7 @@ TEST_F(TabStripModelTest, Apps) {
     ASSERT_EQ(0, observer.GetStateCount());
 
     // And verify the state didn't change.
-    EXPECT_EQ("1a 2a 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("1ap 2ap 3", GetPinnedState(tabstrip));
 
     observer.ClearStates();
   }
@@ -1589,7 +1589,7 @@ TEST_F(TabStripModelTest, Apps) {
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state didn't change.
-    EXPECT_EQ("2a 1a 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("2ap 1ap 3", GetPinnedState(tabstrip));
 
     observer.ClearStates();
   }
@@ -1606,7 +1606,7 @@ TEST_F(TabStripModelTest, Apps) {
     EXPECT_TRUE(observer.StateEquals(0, state));
 
     // And verify the state didn't change.
-    EXPECT_EQ("2a 1a 3", GetPinnedState(tabstrip));
+    EXPECT_EQ("2ap 1ap 3", GetPinnedState(tabstrip));
 
     observer.ClearStates();
   }
