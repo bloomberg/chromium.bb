@@ -2133,6 +2133,15 @@ extrasdk-bitcode-install() {
   cp -fa "${include_save}"/*    "${include_install}"
   cp -fa "${lib_save}"/*        "${lib_install}"
   cp -fa "${lib_save_native}"/* "${lib_install_native}"
+
+  # Do install_libpthread just in case it was wiped out.
+  TARGET_CODE=bc-arm RunWithLog "extra_sdk_bitcode.libpthread" \
+      ./scons MODE=nacl_extra_sdk \
+      platform=arm \
+      sdl=none \
+      naclsdk_validate=0 \
+      disable_nosys_linker_warnings=1 \
+      install_libpthread
 }
 
 #+ newlib-nacl-headers   - Add custom NaCl headers to newlib
