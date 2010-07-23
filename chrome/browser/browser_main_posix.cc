@@ -87,6 +87,8 @@ ShutdownDetector::ShutdownDetector(int shutdown_fd)
 }
 
 void ShutdownDetector::ThreadMain() {
+  PlatformThread::SetName("CrShutdownDetector");
+
   int signal;
   size_t bytes_read = 0;
   ssize_t ret;
