@@ -85,7 +85,7 @@ bool BrowserInterfacePpapi::GetOrigin(InstanceIdentifier instance_id,
   pp::Var location = window.GetProperty("location");
   if (location.is_object()) {
     pp::Var href = location.GetProperty("href");
-    if (!href.is_string()) {
+    if (href.is_string()) {
       *origin = href.AsString();
     }
   }
