@@ -15,24 +15,16 @@ NACL_SDK_INSTALL=\
 
 # NOTE: NACL_SDK_LIB is used as a destination for extra sdk builds, so
 # if we use bitcode we need to redirect to the bitcode libdir
-case ${TARGET_CODE} in
-  bc-*)
-    export NACL_SDK_LIB="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
-    # NOTE: this should really be: "export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/pnacl-untrusted/arm"
-    # TOOD(robertm): change this together with the rest of the builder script
-    export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
-    EXTRA_FLAGS="-emit-llvm"
-    ;;
 
-  *)
-    export NACL_SDK_LIB="${NACL_SDK_INSTALL}/lib"
-    export NACL_SDK_LIB_PLATFORM="${NACL_SDK_INSTALL}/lib"
-    EXTRA_FLAGS="-arch arm"
-    ;;
-esac
+export NACL_SDK_LIB="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
+# NOTE: this should really be: "export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/pnacl-untrusted/arm"
+# TOOD(robertm): change this together with the rest of the builder script
+export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
+
 
 export NACL_SDK_INCLUDE="${NACL_SDK_INSTALL}/include"
 
+EXTRA_FLAGS="-emit-llvm"
 # NOTE: NACL_* defines are currently needed for building extra_sdk, e.g.
 #       for including sel_ldr.h and atomic_ops.h from nc_thread.s
 # TODO(robertm): fix this

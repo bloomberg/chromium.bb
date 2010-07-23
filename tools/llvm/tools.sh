@@ -18,9 +18,6 @@ BIN_PATH="$(pwd)/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
 
 # Define TARGET_CODE=<value> in the calling environment to override.
 case ${TARGET_CODE:=bc-arm} in
-  sfi)  # => Libraries with Native Client SFI sandboxing.
-    LD_FOR_TARGET="${BIN_PATH}/llvm-fake-sfild"
-    ;;
   bc-arm)  # => Bitcode libraries => arm
     LD_FOR_TARGET="${BIN_PATH}/llvm-fake-bcld -arch arm"
     ;;

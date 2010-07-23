@@ -163,10 +163,9 @@ readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
 
 # NOTE: this tools.sh defines: LD_FOR_TARGET, CC_FOR_TARGET, CXX_FOR_TARGET, ...
 setup-tools-common() {
-  LD_FOR_SFI_TARGET=${LD_FOR_TARGET}
-  AR_FOR_SFI_TARGET=${AR_FOR_TARGET}
-  NM_FOR_SFI_TARGET=${NM_FOR_TARGET}
-  RANLIB_FOR_SFI_TARGET=${RANLIB_FOR_TARGET}
+  AR_FOR_SFI_TARGET="${CROSS_TARGET_AR}"
+  NM_FOR_SFI_TARGET="${CROSS_TARGET_NM}"
+  RANLIB_FOR_SFI_TARGET="${CROSS_TARGET_RANLIB}"
 
   # Preprocessor flags
   CPPFLAGS_FOR_SFI_TARGET="-D__native_client__=1 \
@@ -233,18 +232,18 @@ setup-tools-common() {
 # NOTE: we need to rethink the setup mechanism when we want to
 #       produce libgcc for other archs
 setup-tools-arm() {
-  export TARGET_CODE=sfi
-  source tools/llvm/tools.sh
-  CC_FOR_SFI_TARGET="${CC_FOR_TARGET} -arch arm"
-  CXX_FOR_SFI_TARGET="${CXX_FOR_TARGET} -arch arm"
+  CC_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfigcc -arch arm"
+  CXX_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfig++ -arch arm"
+  # NOTE: this should not be needed, since we do not really fully link anything
+  LD_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfild"
   setup-tools-common
 }
 
 setup-tools-bitcode() {
-  export TARGET_CODE=bc-arm
-  source tools/llvm/tools.sh
-  CC_FOR_SFI_TARGET="${CC_FOR_TARGET} -emit-llvm"
-  CXX_FOR_SFI_TARGET="${CXX_FOR_TARGET} -emit-llvm"
+  CC_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfigcc -emit-llvm"
+  CXX_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfig++ -emit-llvm"
+  # NOTE: this should not be needed, since we do not really fully link anything
+  LD_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-bcld -arch arm"
   setup-tools-common
 }
 
@@ -2047,6 +2046,13 @@ newlib-bitcode-install() {
 # TODO(robertm): sepatate those two duties
 
 #+ extrasdk-bitcode-clean  - Clean bitcode extra-sdk
+#+                         and also the arm native libraries
+
+# NOTE: this function does a little bit of double duty: it produces
+#       the bitcode parts of the nacl_sdk and a few additional native
+#       object like the startup code files.
+#       It would be nice to disentangle those but this will require more
+#       surgery in SConstruct and other places
 extrasdk-bitcode-clean() {
   StepBanner "EXTRASDK-BITCODE" "Clean"
   rm -rf "${TC_BUILD_EXTRASDK_BITCODE}"
