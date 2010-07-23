@@ -135,8 +135,8 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
     // many of the browser and ui tests fail. We do return the OTR profile
     // if the login-profile switch is passed so that we can test this.
     // TODO(davemoore) Fix the tests so they allow OTR profiles.
-    if (!command_line.HasSwitch(switches::kTestType) ||
-        command_line.HasSwitch(switches::kLoginProfile)) {
+    if (false && (!command_line.HasSwitch(switches::kTestType) ||
+        command_line.HasSwitch(switches::kLoginProfile))) {
       // Don't init extensions for this profile
       profile = GetProfile(default_profile_dir, false);
       profile = profile->GetOffTheRecordProfile();

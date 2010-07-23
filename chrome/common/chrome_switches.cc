@@ -1037,6 +1037,10 @@ const char kStartupManifest[]               = "startup-manifest";
 // TODO(denisromanov): delete this when not needed for testing.
 const char kServicesManifest[]              = "services-manifest";
 
+// Install a "fake" version of libcros to allow ChromeOS to run on a
+// regular linux box.  This is useful to developers working on
+// features that do not require actual ChromeOS hardware.
+const char kUseFakeLibcros[]                = "use-fake-libcros";
 #endif
 
 #if defined(OS_LINUX)

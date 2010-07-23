@@ -30,4 +30,3 @@ class CrosLibraryLoader : public LibraryLoader {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_CROS_LIBRARY_LOADER_H_
-
