@@ -804,6 +804,8 @@ def CMDupload(change_info, args):
   # consistent.
   os.chdir(previous_cwd)
 
+  print "*** Upload does not submit a try; use gcl try to submit a try. ***"
+
   return 0
 
 
