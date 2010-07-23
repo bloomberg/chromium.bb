@@ -291,7 +291,7 @@ def SfiCompile(argv, arch, assembler, as_flags):
   Run(llc)
 
   Assemble(assembler, as_flags,
-           [argv[0], '-c', filename + '.s', '-o', filename])
+           [argv[0], '-c', filename + '.s', '-o', filename], False)
 
 def FindObjectFilePos(argv):
   """Return argv index if there is and object file is being generated
@@ -372,7 +372,7 @@ def IsDiagnosticMode(argv):
   return False
 
 
-def Assemble(asm, flags, argv):
+def Assemble(asm, flags, argv, preprocess=True):
   # Some assumptions this functions has:
   # * There is one assembly file in argv.
   # * There is one output object (-o foo.o) in argv.
@@ -398,8 +398,11 @@ def Assemble(asm, flags, argv):
   cpp_file = obj_file + ".cpp"
   argv[obj_file_i] = cpp_file
 
-  Run(argv)
-  Run([asm] + flags + ['-o', obj_file, cpp_file])
+  if preprocess:
+    Run(argv)
+    Run([asm] + flags + ['-o', obj_file, cpp_file])
+  else:
+    Run([asm] + flags + ['-o', obj_file, s_file])
 
 
 def CompileToBC(argv, llvm_binary, temp = False):
