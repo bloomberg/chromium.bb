@@ -12,9 +12,9 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "remoting/base/encoder.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
 #include "remoting/host/capturer.h"
-#include "remoting/host/encoder.h"
 
 namespace media {
 
@@ -24,7 +24,7 @@ class DataBuffer;
 
 namespace remoting {
 
-class Encoder;
+class CaptureData;
 class ClientConnection;
 
 // A class for controlling and coordinate Capturer, Encoder
@@ -115,7 +115,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void ScheduleNextCapture();
 
   void DoCapture();
-  void CaptureDoneCallback(scoped_refptr<Capturer::CaptureData> capture_data);
+  void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
   void DoFinishEncode();
 
   void DoGetInitInfo(scoped_refptr<ClientConnection> client);
@@ -142,7 +142,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
 
   // Encoder thread -----------------------------------------------------------
 
-  void DoEncode(scoped_refptr<Capturer::CaptureData> capture_data);
+  void DoEncode(scoped_refptr<CaptureData> capture_data);
 
   // EncodeDataAvailableTask takes ownership of header and is responsible for
   // deleting it.

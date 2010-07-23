@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "remoting/base/mock_objects.h"
 #include "remoting/host/mock_objects.h"
 #include "remoting/host/session_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,15 +81,13 @@ TEST_F(SessionManagerTest, OneRecordCycle) {
 
   RectVector update_rects;
   update_rects.push_back(gfx::Rect(0, 0, 10, 10));
-  Capturer::DataPlanes planes;
-  for (int i = 0; i < Capturer::DataPlanes::kPlaneCount; ++i) {
+  DataPlanes planes;
+  for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
     planes.strides[i] = kWidth * 4;
   }
-  scoped_refptr<Capturer::CaptureData> data(new Capturer::CaptureData(planes,
-                                                                      kWidth,
-                                                                      kHeight,
-                                                                      kFormat));
+  scoped_refptr<CaptureData> data(new CaptureData(planes, kWidth,
+                                                  kHeight, kFormat));
   // Set the recording rate to very low to avoid capture twice.
   record_->SetMaxRate(0.01);
 

@@ -26,10 +26,10 @@
 #include "base/nss_util.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
+#include "remoting/base/encoder_verbatim.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/encoder_verbatim.h"
 #include "remoting/host/json_host_config.h"
 
 #if defined(OS_WIN)

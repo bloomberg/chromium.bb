@@ -6,7 +6,6 @@
 #define REMOTING_CLIENT_MOCK_OBJECTS_H_
 
 #include "base/ref_counted.h"
-#include "remoting/client/decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {

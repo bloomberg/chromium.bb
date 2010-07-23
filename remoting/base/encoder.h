@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_ENCODER_H_
-#define REMOTING_HOST_ENCODER_H_
+#ifndef REMOTING_BASE_ENCODER_H_
+#define REMOTING_BASE_ENCODER_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
-#include "remoting/host/capturer.h"
 
 namespace media {
   class DataBuffer;
@@ -17,6 +16,7 @@ namespace media {
 
 namespace remoting {
 
+class CaptureData;
 class HostMessage;
 
 // A class to perform the task of encoding a continous stream of
@@ -51,11 +51,11 @@ class Encoder {
   //
   // When encoded data is available, partial or full |data_available_callback|
   // is called.
-  virtual void Encode(scoped_refptr<Capturer::CaptureData> capture_data,
+  virtual void Encode(scoped_refptr<CaptureData> capture_data,
                       bool key_frame,
                       DataAvailableCallback* data_available_callback) = 0;
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_ENCODER_H_
+#endif  // REMOTING_BASE_ENCODER_H_

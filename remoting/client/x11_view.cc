@@ -10,7 +10,7 @@
 #include <X11/extensions/Xcomposite.h>
 
 #include "base/logging.h"
-#include "remoting/client/decoder_verbatim.h"
+#include "remoting/base/decoder_verbatim.h"
 
 namespace remoting {
 

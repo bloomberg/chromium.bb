@@ -5,7 +5,7 @@
 #include "remoting/client/plugin/pepper_view.h"
 
 #include "base/message_loop.h"
-#include "remoting/client/decoder_verbatim.h"
+#include "remoting/base/decoder_verbatim.h"
 #include "remoting/client/plugin/chromoting_plugin.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "third_party/ppapi/cpp/device_context_2d.h"

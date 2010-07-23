@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_DECODER_H_
-#define REMOTING_CLIENT_DECODER_H_
+#ifndef REMOTING_BASE_DECODER_H_
+#define REMOTING_BASE_DECODER_H_
 
 #include <vector>
 
@@ -111,4 +111,4 @@ class Decoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_DECODER_H_
+#endif  // REMOTING_BASE_DECODER_H_

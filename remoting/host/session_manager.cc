@@ -10,9 +10,9 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "media/base/data_buffer.h"
+#include "remoting/base/capture_data.h"
 #include "remoting/base/protocol_decoder.h"
 #include "remoting/host/client_connection.h"
-#include "remoting/host/encoder.h"
 
 namespace remoting {
 
@@ -219,7 +219,7 @@ void SessionManager::DoCapture() {
 }
 
 void SessionManager::CaptureDoneCallback(
-    scoped_refptr<Capturer::CaptureData> capture_data) {
+    scoped_refptr<CaptureData> capture_data) {
   // TODO(hclam): There is a bug if the capturer doesn't produce any dirty rects.
   DCHECK_EQ(capture_loop_, MessageLoop::current());
   encode_loop_->PostTask(
@@ -381,7 +381,7 @@ void SessionManager::DoRemoveAllClients() {
 // Encoder thread --------------------------------------------------------------
 
 void SessionManager::DoEncode(
-    scoped_refptr<Capturer::CaptureData> capture_data) {
+    scoped_refptr<CaptureData> capture_data) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
   // TODO(hclam): Enable |force_refresh| if a new client was

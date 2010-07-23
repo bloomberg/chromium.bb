@@ -21,7 +21,7 @@ CapturerFakeAscii::~CapturerFakeAscii() {
 void CapturerFakeAscii::CaptureRects(const RectVector& rects,
                                      CaptureCompletedCallback* callback) {
   GenerateImage();
-  Capturer::DataPlanes planes;
+  DataPlanes planes;
   planes.data[0] = buffers_[current_buffer_].get();
   planes.strides[0] = bytes_per_row_;
   scoped_refptr<CaptureData> capture_data(new CaptureData(planes,

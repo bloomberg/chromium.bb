@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_ENCODER_VP8_H_
-#define REMOTING_HOST_ENCODER_VP8_H_
+#ifndef REMOTING_BASE_ENCODER_VP8_H_
+#define REMOTING_BASE_ENCODER_VP8_H_
 
 #include "remoting/host/encoder.h"
 
@@ -58,4 +58,4 @@ class EncoderVp8 : public Encoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_ENCODER_VP8_H_
+#endif  // REMOTING_BASE_ENCODER_VP8_H_

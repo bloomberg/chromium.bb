@@ -17,8 +17,8 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "media/base/video_frame.h"
+#include "remoting/base/decoder.h"
 #include "remoting/client/chromoting_view.h"
-#include "remoting/client/decoder.h"
 #include "third_party/ppapi/cpp/device_context_2d.h"
 
 namespace remoting {

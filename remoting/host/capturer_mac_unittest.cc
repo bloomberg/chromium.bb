@@ -28,7 +28,7 @@ class CapturerMacTest : public testing::Test {
 class CapturerCallback {
  public:
   explicit CapturerCallback(const RectVector& rects) : rects_(rects) { }
-  void CaptureDoneCallback(scoped_refptr<Capturer::CaptureData> capture_data);
+  void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
 
  protected:
   RectVector rects_;
@@ -38,7 +38,7 @@ class CapturerCallback {
 };
 
 void CapturerCallback::CaptureDoneCallback(
-    scoped_refptr<Capturer::CaptureData> capture_data) {
+    scoped_refptr<CaptureData> capture_data) {
   CGDirectDisplayID mainDevice = CGMainDisplayID();
   int width = CGDisplayPixelsWide(mainDevice);
   int height = CGDisplayPixelsHigh(mainDevice);
@@ -46,7 +46,7 @@ void CapturerCallback::CaptureDoneCallback(
   EXPECT_EQ(rects_, capture_data->dirty_rects());
   EXPECT_EQ(width, capture_data->width());
   EXPECT_EQ(height, capture_data->height());
-  const Capturer::DataPlanes &planes = capture_data->data_planes();
+  const DataPlanes &planes = capture_data->data_planes();
   EXPECT_TRUE(planes.data[0] != NULL);
   EXPECT_TRUE(planes.data[1] == NULL);
   EXPECT_TRUE(planes.data[2] == NULL);

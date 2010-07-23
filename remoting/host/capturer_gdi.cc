@@ -79,7 +79,7 @@ void CapturerGdi::ScreenConfigurationChanged() {
 
 void CapturerGdi::CaptureRects(const RectVector& rects,
                                CaptureCompletedCallback* callback) {
-  Capturer::DataPlanes planes;
+  DataPlanes planes;
   planes.data[0] = static_cast<uint8*>(buffers_[current_buffer_]);
   planes.strides[0] = bytes_per_row_;
 

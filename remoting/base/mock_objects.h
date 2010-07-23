@@ -5,6 +5,9 @@
 #ifndef REMOTING_BASE_MOCK_OBJECTS_H_
 #define REMOTING_BASE_MOCK_OBJECTS_H_
 
+#include "remoting/base/capture_data.h"
+#include "remoting/base/decoder.h"
+#include "remoting/base/encoder.h"
 #include "remoting/base/protocol_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -23,6 +26,19 @@ class MockProtocolDecoder : public ProtocolDecoder {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProtocolDecoder);
+};
+
+class MockEncoder : public Encoder {
+ public:
+  MockEncoder() {}
+
+  MOCK_METHOD3(Encode, void(
+      scoped_refptr<CaptureData> capture_data,
+      bool key_frame,
+      DataAvailableCallback* data_available_callback));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockEncoder);
 };
 
 }  // namespace remoting

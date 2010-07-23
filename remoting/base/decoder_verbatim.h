@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_DECODER_VERBATIM_H_
-#define REMOTING_CLIENT_DECODER_VERBATIM_H_
+#ifndef REMOTING_BASE_DECODER_VERBATIM_H_
+#define REMOTING_BASE_DECODER_VERBATIM_H_
 
-#include "remoting/client/decoder.h"
+#include "remoting/base/decoder.h"
 
 namespace remoting {
 
@@ -53,4 +53,4 @@ class DecoderVerbatim : public Decoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_DECODER_VERBATIM_H_
+#endif  // REMOTING_BASE_DECODER_VERBATIM_H_

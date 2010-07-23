@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "media/base/video_frame.h"
-#include "remoting/client/decoder.h"
+#include "remoting/base/decoder.h"
 #include "remoting/client/chromoting_view.h"
 
 typedef unsigned long XID;

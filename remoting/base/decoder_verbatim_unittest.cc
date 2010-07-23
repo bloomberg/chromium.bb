@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/base/video_frame.h"
-#include "remoting/client/decoder_verbatim.h"
+#include "remoting/base/decoder_verbatim.h"
 #include "remoting/client/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

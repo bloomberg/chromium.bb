@@ -93,7 +93,7 @@ void CapturerMac::CaptureRects(const RectVector& rects,
                buffers_[current_buffer_].get());
   glPopClientAttrib();
 
-  Capturer::DataPlanes planes;
+  DataPlanes planes;
   planes.data[0] = buffers_[current_buffer_].get();
   planes.strides[0] = bytes_per_row_;
 

@@ -8,12 +8,8 @@
 #include <string>
 
 #include "base/thread.h"
-#include "remoting/host/capturer.h"
 #include "remoting/host/client_connection.h"
-#include "remoting/host/encoder.h"
-#include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
-#include "remoting/host/session_manager.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
@@ -21,8 +17,12 @@ class Task;
 
 namespace remoting {
 
+class Capturer;
 class ChromotingHostContext;
+class Encoder;
+class EventExecutor;
 class MutableHostConfig;
+class SessionManager;
 
 // A class to implement the functionality of a host process.
 //

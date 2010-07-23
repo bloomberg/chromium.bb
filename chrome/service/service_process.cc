@@ -9,9 +9,9 @@
 #include "net/base/network_change_notifier.h"
 
 #if defined(ENABLE_REMOTING)
+#include "remoting/base/encoder_verbatim.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/encoder_verbatim.h"
 #include "remoting/host/host_config.h"
 
 #if defined(OS_WIN)
@@ -97,4 +97,3 @@ ServiceProcess::~ServiceProcess() {
   DCHECK(cloud_print_proxy_list_.size() == 0);
   g_service_process = NULL;
 }
-

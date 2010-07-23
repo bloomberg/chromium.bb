@@ -9,7 +9,6 @@
 #include "remoting/base/protocol_decoder.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_connection.h"
-#include "remoting/host/encoder.h"
 #include "remoting/host/event_executor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -30,19 +29,6 @@ class MockCapturer : public Capturer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCapturer);
-};
-
-class MockEncoder : public Encoder {
- public:
-  MockEncoder() {}
-
-  MOCK_METHOD3(Encode, void(
-      scoped_refptr<Capturer::CaptureData> capture_data,
-      bool key_frame,
-      DataAvailableCallback* data_available_callback));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockEncoder);
 };
 
 class MockEventExecutor : public EventExecutor {
