@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/dom_ui/language_chewing_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_hangul_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
+#include "chrome/browser/chromeos/dom_ui/language_pinyin_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
 
@@ -131,6 +132,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageHangulOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new LanguagePinyinOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::AccountsOptionsHandler());
 #endif

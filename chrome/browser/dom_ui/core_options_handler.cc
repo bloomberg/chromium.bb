@@ -59,6 +59,9 @@ void CoreOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(L"languageHangulPage",
       l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE));
+  localized_strings->SetString(L"languagePinyinPage",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE));
 #endif
 
   localized_strings->SetString(L"ok",
