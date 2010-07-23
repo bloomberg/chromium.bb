@@ -668,7 +668,7 @@ void NaClDefOp(
     case Mpw_Operand:
     case Mpv_Operand:
     case Mpo_Operand:
-      current_inst->flags |= NACL_IFLAG(OpcodeLtC0InModRm);
+      current_inst->flags |= NACL_IFLAG(ModRmModIsnt0x3);
       NaClApplySanityChecksToInst();
       break;
     case Mmx_N_Operand:
@@ -782,6 +782,11 @@ static void NaClApplySanityChecksToInst() {
                               NACL_IFLAG(OpcodeInModRm))))) {
     NaClFatalInst(
         "Can't specify ModRmModIs0x3 unless Opcode has modrm byte");
+  }
+  if ((current_inst->flags & NACL_IFLAG(ModRmModIs0x3)) &&
+      (current_inst->flags & NACL_IFLAG(ModRmModIsnt0x3))) {
+    NaClFatalInst(
+        "Can't specify ModRmModIs0x3 and ModRmModIsnt0x3");
   }
 }
 
@@ -987,7 +992,7 @@ static void NaClDefInstInternal(
 
   /* Before starting, expand appropriate implicit flag assumnptions. */
   if (flags & NACL_IFLAG(OpcodeLtC0InModRm)) {
-    flags |= NACL_IFLAG(OpcodeInModRm);
+    flags |= NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3);
   }
 
   DEBUG(printf("Define %s %"NACL_PRIx8": %s(%d)",

@@ -137,6 +137,7 @@ void DEF_OPERAND(Mq_)(NaClInstCat icat, int operand_index) {
 
 void DEF_OPERAND(Nq_)(NaClInstCat icat, int operand_index) {
   NaClDefOp(Mmx_N_Operand, NaClGetIcatFlags(icat, operand_index));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 }
 
 void DEF_OPERAND(Pd_)(NaClInstCat icat, int operand_index) {
@@ -427,6 +428,8 @@ DEFINE_BINARY_INST(Vps, Mq_)
 DEFINE_BINARY_INST(Vps, Qpi)
 
 DEFINE_BINARY_INST(Vps, Qq_)
+
+DEFINE_BINARY_INST(Vps, Uq_)
 
 DEFINE_BINARY_INST(Vps, Wpd)
 

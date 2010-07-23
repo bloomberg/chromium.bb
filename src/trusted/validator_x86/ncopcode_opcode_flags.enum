@@ -32,8 +32,12 @@ OpcodeLtC0InModRm
 # must be 0x3.
 ModRmModIs0x3
 
+# Defines requirement during instruction matching that the ModRm mod field
+# must not be 0x3.
+ModRmModIsnt0x3
+
 # Defines instruction that the ModR/M byte contains a register operand and
-# an r/m operand. Intel's notation is /r
+# an r/m operand. Intel's notation is /r.
 OpcodeUsesModRm
 
 # Defines the size of the immediate value that must follow the opcode.

@@ -277,3 +277,5 @@
 -i=0fa4c601                              #0000000000000000: 0f a4 c6 01                                  shld %esi, %eax, 0x1
 -i=0fa5c6                                #0000000000000000: 0f a5 c6                                     shld %esi, %eax, %cl
 -i=480fa5c6                              #0000000000000000: 48 0f a5 c6                                  shld %rsi, %rax, %cl
+-i=0f16d1                                #0000000000000000: 0f 16 d1                                     movlhps %xmm2, %xmm1
+-i=0f16a500000000                        #0000000000000000: 0f 16 a5 00 00 00 00                         movhps %xmm4, [%rbp]

@@ -257,6 +257,7 @@ Movdqu
 Movdq2q
 Movhpd
 Movhps
+Movlhps
 Movlpd
 Movlps
 Movmskps

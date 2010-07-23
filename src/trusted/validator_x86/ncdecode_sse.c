@@ -38,13 +38,13 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Mq_, Vps)(NACLi_SSE, 0x13, Prefix0F, InstMovlps, Move);
   DEF_BINST(Vps, Wq_)(NACLi_SSE, 0x14, Prefix0F, InstUnpcklps, Binary);
   DEF_BINST(Vps, Wq_)(NACLi_SSE, 0x15, Prefix0F, InstUnpckhps, Binary);
-  /* TODO(karl): Turn off recognition of instruction for now, until we
-   * can distinquish between:
-   * DEF_BINST(Vps, Mq_)(NACLi_SSE, 0x16, Prefix0F, InstMovhps, Move);
-   * DEF_BINST(Vps, Uq_)(NACLi_SSE, 0x16, Prefix0F, InstMovlhps, Move);
-   */
+
+  NaClDefPrefixInstChoices(Prefix0F, 0x16, 2);
   DEF_BINST(Vps, Mq_)(NACLi_SSE, 0x16, Prefix0F, InstMovhps, Move);
-  NaClAddIFlags(NACL_IFLAG(NaClIllegal));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIsnt0x3));
+  DEF_BINST(Vps, Uq_)(NACLi_SSE, 0x16, Prefix0F, InstMovlhps, Move);
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
+
   DEF_BINST(Mq_, Vps)(NACLi_SSE, 0x17, Prefix0F, InstMovhps, Move);
 
   DEF_BINST(Vss, Wss)(NACLi_SSE, 0x10, PrefixF30F, InstMovss, Move);

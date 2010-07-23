@@ -120,7 +120,7 @@ NaClExpVector[0] = {
 };
 00000000: 8d 76 00                                     lea %esi, %ds[%esi]
   { NoPrefix, {  0x8d }, Lea,  NACLi_386,
-    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
     { M_Operand, NACL_OPFLAG(OpAddress) },
   };
@@ -138,7 +138,7 @@ NaClExpVector[10] = {
 };
 00000000: 8d 74 26 00                                  lea %esi, %ds[%esi+%esp*1]
   { NoPrefix, {  0x8d }, Lea,  NACLi_386,
-    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
     { M_Operand, NACL_OPFLAG(OpAddress) },
   };
@@ -156,7 +156,7 @@ NaClExpVector[10] = {
 };
 00000000: 8d b6 00 00 00 00                            lea %esi, %ds[%esi]
   { NoPrefix, {  0x8d }, Lea,  NACLi_386,
-    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
     { M_Operand, NACL_OPFLAG(OpAddress) },
   };
@@ -174,7 +174,7 @@ NaClExpVector[10] = {
 };
 00000000: 8d b4 26 00 00 00 00                         lea %esi, %ds[%esi+%esp*1]
   { NoPrefix, {  0x8d }, Lea,  NACLi_386,
-    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
     { M_Operand, NACL_OPFLAG(OpAddress) },
   };
@@ -204,7 +204,7 @@ NaClExpVector[4] = {
 };
 00000000: 8d bc 27 00 00 00 00                         lea %edi, %ds[%edi+%esp*1]
   { NoPrefix, {  0x8d }, Lea,  NACLi_386,
-    NACL_IFLAG(OpcodeLtC0InModRm) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
+    NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v),
     { G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OperandZeroExtends_v) },
     { M_Operand, NACL_OPFLAG(OpAddress) },
   };
@@ -321,4 +321,34 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %eip, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprConstant[0] , 0x3, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
+};
+00000000: 0f 16 d1                                     movlhps %xmm2, %xmm1
+  { Prefix0F, {  0x0f, 0x16 }, Movlhps,  NACLi_SSE,
+    NACL_IFLAG(ModRmModIs0x3) | NACL_IFLAG(OpcodeUsesModRm),
+    { Xmm_G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) },
+    { Xmm_E_Operand, NACL_OPFLAG(OpUse) },
+  };
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %xmm2, ExprSet | ExprDest },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %xmm1, ExprUsed },
+};
+00000000: 0f 16 a5 00 00 00 00                         movhps %xmm4, %ss[%ebp]
+  { Prefix0F, {  0x0f, 0x16 }, Movhps,  NACLi_SSE,
+    NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm),
+    { Xmm_G_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpDest) },
+    { Mo_Operand, NACL_OPFLAG(OpUse) },
+  };
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %xmm4, ExprSet | ExprDest },
+  { OperandReference[1] , 1, 0 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %ss, ExprUsed | ExprSize16 },
+  { ExprMemOffset[4] , 0, ExprSize32 },
+  { ExprRegister[0] , %ebp, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };

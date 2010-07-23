@@ -403,23 +403,19 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
       return FALSE;
     }
     byte = state->mpc[state->length];
-    /* Note: 0xC0 is a limit added by floating point instructions,
-     * and is marked using the ModRmLessThanC0 flag. Check for
-     * this case, and quit if the condition is violated.
-     */
-    if ((state->inst->flags & NACL_IFLAG(OpcodeLtC0InModRm)) &&
-        byte >= 0xC0) {
-      DEBUG(printf("Can't read x87 mod/rm value, %"NACL_PRIx8" not < 0xC0\n",
-                   byte));
-      return FALSE;
-    }
     /* Note: Some instructions only allow values where the ModRm mod field
-     * is 0x3.
+     * is 0x3. Others only allow values where the ModRm mod field isn't 0x3.
      */
-    if ((state->inst->flags & NACL_IFLAG(ModRmModIs0x3)) &&
-        modrm_mod(byte) != 0x3) {
-      DEBUG(printf("Can't match, modrm mod field not 0x3\n"));
-      return FALSE;
+    if (modrm_mod(byte) == 0x3) {
+      if (state->inst->flags & NACL_IFLAG(ModRmModIsnt0x3)) {
+        DEBUG(printf("Can't match, modrm mod field is 0x3\n"));
+        return FALSE;
+      }
+    } else {
+      if (state->inst->flags & NACL_IFLAG(ModRmModIs0x3)) {
+        DEBUG(printf("Can't match, modrm mod field not 0x3\n"));
+        return FALSE;
+      }
     }
     state->modrm = byte;
     state->length++;
