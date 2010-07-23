@@ -63,6 +63,8 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   enum WaitState {
     // The sync client awaits the OnAuthError() callback.
     WAITING_FOR_ON_AUTH_ERROR = 0,
+    // The sync client awaits the OnBackendInitialized() callback.
+    WAITING_FOR_ON_BACKEND_INITIALIZED,
     // The sync client is waiting for notifications_enabled to become true.
     WAITING_FOR_NOTIFICATIONS_ENABLED,
     // The sync client is waiting for an ongoing sync cycle to complete.

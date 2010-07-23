@@ -95,15 +95,8 @@ ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(
 }
 
 bool ProfileSyncServiceTestHarness::SetupSync() {
-  syncable::ModelTypeSet set;
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-      i < syncable::MODEL_TYPE_COUNT; ++i) {
-    set.insert(syncable::ModelTypeFromInt(i));
-  }
-
   service_ = profile_->GetProfileSyncService();
   service_->StartUp();
-  service_->OnUserChoseDatatypes(true, set);
   service_->AddObserver(this);
   return WaitForServiceInit();
 }
@@ -124,7 +117,13 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
   ProfileSyncService::Status status(service_->QueryDetailedSyncStatus());
   switch (wait_state_) {
     case WAITING_FOR_ON_AUTH_ERROR: {
-      SignalStateCompleteWithNextState(WAITING_FOR_NOTIFICATIONS_ENABLED);
+      SignalStateCompleteWithNextState(WAITING_FOR_ON_BACKEND_INITIALIZED);
+      break;
+    }
+    case WAITING_FOR_ON_BACKEND_INITIALIZED: {
+      if (service_->sync_initialized()) {
+        SignalStateCompleteWithNextState(WAITING_FOR_NOTIFICATIONS_ENABLED);
+      }
       break;
     }
     case WAITING_FOR_NOTIFICATIONS_ENABLED: {
@@ -245,14 +244,27 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
     return false;
   }
 
-  // Enter GAIA credentials and wait for notifications_enabled to be set to
-  // true.
+  // Enter GAIA credentials and wait for the OnBackendInitialized() callback.
   service_->backend()->Authenticate(username_, password_, std::string());
+  EXPECT_EQ(wait_state_, WAITING_FOR_ON_BACKEND_INITIALIZED);
+  if (!AwaitStatusChangeWithTimeout(30,
+      "Waiting for OnBackendInitialized().")) {
+    return false;
+  }
+
+  // Choose datatypes to be synced and wait for notifications_enabled to be set
+  // to true.
+  syncable::ModelTypeSet set;
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+      i < syncable::MODEL_TYPE_COUNT; ++i) {
+    set.insert(syncable::ModelTypeFromInt(i));
+  }
+  service_->OnUserChoseDatatypes(true, set);
   EXPECT_EQ(wait_state_, WAITING_FOR_NOTIFICATIONS_ENABLED);
   if (!AwaitStatusChangeWithTimeout(30,
       "Waiting for notifications_enabled to be set to true.")) {
     return false;
   }
 
-  return service_->sync_initialized();
+  return true;
 }
