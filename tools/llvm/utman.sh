@@ -761,7 +761,7 @@ prune() {
   StepBanner "PRUNE" "Pruning llvm sourcery tree"
 
   SubBanner "Size before: $(du -msc "${TARGET_ROOT}")"
-  rm  -f "${TARGET_ROOT}"/llvm/lib/lib*.a
+  rm  -f "${TARGET_ROOT}"/lib/lib*.a
   SubBanner "Size after: $(du -msc "${TARGET_ROOT}")"
 }
 
@@ -891,8 +891,8 @@ llvm-install() {
        make ${MAKE_OPTS} install
 
   mkdir -p "${BFD_PLUGIN_DIR}"
-  ln -sf ../../../llvm/lib/LLVMgold.so "${BFD_PLUGIN_DIR}"
-  ln -sf ../../../llvm/lib/libLTO.so "${BFD_PLUGIN_DIR}"
+  ln -sf ../../lib/LLVMgold.so "${BFD_PLUGIN_DIR}"
+  ln -sf ../../lib/libLTO.so "${BFD_PLUGIN_DIR}"
   spopd
 }
 
