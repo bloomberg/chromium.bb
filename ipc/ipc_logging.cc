@@ -49,7 +49,17 @@ Logging::Logging()
       sender_(NULL),
       main_thread_(MessageLoop::current()),
       consumer_(NULL) {
-  if (getenv("CHROME_IPC_LOGGING")) {
+#if defined(OS_WIN)
+  // getenv triggers an unsafe warning. Simply check how big of a buffer
+  // would be needed to fetch the value to see if the enviornment variable is
+  // set.
+  size_t requiredSize = 0;
+  getenv_s(&requiredSize, NULL, 0, "CHROME_IPC_LOGGING");
+  bool logging_env_var_set = (requiredSize != 0);
+#else  // !defined(OS_WIN)
+  bool logging_env_var_set = (getenv("CHROME_IPC_LOGGING") != NULL);
+#endif  //defined(OS_WIN)
+  if (logging_env_var_set) {
     enabled_ = true;
     enabled_on_stderr_ = true;
   }

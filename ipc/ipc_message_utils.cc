@@ -55,7 +55,7 @@ static void WriteValue(Message* m, const Value* value, int recursion) {
     }
     case Value::TYPE_BINARY: {
       const BinaryValue* binary = static_cast<const BinaryValue*>(value);
-      m->WriteData(binary->GetBuffer(), binary->GetSize());
+      m->WriteData(binary->GetBuffer(), static_cast<int>(binary->GetSize()));
       break;
     }
     case Value::TYPE_DICTIONARY: {
