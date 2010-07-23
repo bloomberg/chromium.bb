@@ -3019,9 +3019,8 @@
    fun:_ZN11ProfileImpl14InitExtensionsEv
    fun:_ZN14ProfileManager10AddProfileEP7Profileb
    fun:_ZN14ProfileManager10GetProfileERK8FilePathb
-   fun:_ZN14ProfileManager10GetProfileERK8FilePath
    fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
-   fun:_ZN59_GLOBAL__N_chrome_browser_browser_main.cc_00000000_2290686D13CreateProfileERK18MainFunctionParamsRK8FilePath
+   fun:_ZN14ProfileManager17GetDefaultProfileEv
    fun:_Z11BrowserMainRK18MainFunctionParams
    fun:ChromeMain
    fun:main
@@ -3070,6 +3069,7 @@
    fun:_ZN3IPC11SyncChannel11SyncContext17OnMessageReceivedERKNS_7MessageE
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
    fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
    fun:event_process_active
    fun:event_base_loop
@@ -3542,3 +3542,15 @@
    ...
    fun:*LoadTimingObserverTest*TestBodyEv
 }
+{
+   bug_50056
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackI22ContentSettingsHandlerPK5ValueEPN9Callback1IT0_E4TypeEPT_MS9_FvS5_E
+   fun:_ZN22ContentSettingsHandler16RegisterMessagesEv
+   fun:_ZN17DOMMessageHandler6AttachEP5DOMUI
+   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
+   fun:_ZN9OptionsUIC1EP11TabContents
+   fun:_Z8NewDOMUII9OptionsUIEP5DOMUIP11TabContentsRK4GURL
+}
+
