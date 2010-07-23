@@ -70,6 +70,9 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  // Returns Chrome Store URL with locale applied.
+  static GURL GetChromeStoreURLWithLocale();
+
  private:
   // Send a request to the HistoryService to get the most visited pages.
   void StartQueryForMostVisited();
@@ -78,8 +81,11 @@ class MostVisitedHandler : public DOMMessageHandler,
   void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
                                std::vector<PageUsageData*>* data);
 
-  // Sets pages_value_ form a vector of URLs.
+  // Sets pages_value_ from a vector of URLs.
   void SetPagesValue(std::vector<PageUsageData*>* data);
+
+  // Sets pages_value_ from a format produced by TopSites.
+  void SetPagesValueFromTopSites(const history::MostVisitedURLList& data);
 
   // Callback for TopSites.
   void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
