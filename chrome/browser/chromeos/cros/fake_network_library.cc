@@ -40,6 +40,10 @@ bool FakeNetworkLibrary::FindCellularNetworkByPath(
 void FakeNetworkLibrary::RequestWifiScan() {
 }
 
+bool FakeNetworkLibrary::GetWifiAccessPoints(WifiAccessPointVector* result) {
+  return true;
+}
+
 bool FakeNetworkLibrary::ConnectToPreferredNetworkIfAvailable() {
   return false;
 }

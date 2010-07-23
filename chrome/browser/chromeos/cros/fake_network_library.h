@@ -59,6 +59,7 @@ class FakeNetworkLibrary : public NetworkLibrary {
                                          CellularNetwork* network) const;
 
   virtual void RequestWifiScan();
+  virtual bool GetWifiAccessPoints(WifiAccessPointVector* result);
   virtual bool ConnectToPreferredNetworkIfAvailable();
   virtual bool PreferredNetworkConnected();
   virtual bool PreferredNetworkFailed();
