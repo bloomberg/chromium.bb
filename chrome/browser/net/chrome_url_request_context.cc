@@ -732,7 +732,9 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 // ChromeURLRequestContext
 // ----------------------------------------------------------------------------
 
-ChromeURLRequestContext::ChromeURLRequestContext() {
+ChromeURLRequestContext::ChromeURLRequestContext()
+    : is_media_(false),
+      is_off_the_record_(false) {
   CheckCurrentlyOnIOThread();
 }
 

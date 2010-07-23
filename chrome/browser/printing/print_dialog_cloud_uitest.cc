@@ -76,7 +76,10 @@ class SimpleTestJob : public URLRequestTestJob {
 
 class TestController {
  public:
-  TestController() : result_(false), use_delegate_(false) {}
+  TestController()
+      : result_(false),
+        use_delegate_(false),
+        delegate_(NULL) {}
   void set_result(bool value) {
     result_ = value;
   }

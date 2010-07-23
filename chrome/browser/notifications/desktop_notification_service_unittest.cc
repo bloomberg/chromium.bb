@@ -24,7 +24,8 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
  public:
   ThreadProxy()
       : io_event_(false, false),
-        ui_event_(false, false) {
+        ui_event_(false, false),
+        permission_(0) {
     // The current message loop was already initalized by the test superclass.
     ui_thread_.reset(
         new ChromeThread(ChromeThread::UI, MessageLoop::current()));

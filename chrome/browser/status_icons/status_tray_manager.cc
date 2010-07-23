@@ -16,7 +16,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 
-StatusTrayManager::StatusTrayManager() {
+StatusTrayManager::StatusTrayManager() : profile_(NULL) {
 }
 
 StatusTrayManager::~StatusTrayManager() {
