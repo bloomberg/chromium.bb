@@ -10,11 +10,49 @@
 #include "base/logging.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
-#include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 
 #if defined(OS_WIN)
 #include "gfx/canvas_skia_paint.h"
 #endif
+
+namespace {
+
+SkShader::TileMode TileModeToSkShaderTileMode(gfx::Canvas::TileMode tile_mode) {
+  switch (tile_mode) {
+    case gfx::Canvas::TileMode_Clamp:
+      return SkShader::kClamp_TileMode;
+    case gfx::Canvas::TileMode_Mirror:
+      return SkShader::kMirror_TileMode;
+    case gfx::Canvas::TileMode_Repeat:
+      return SkShader::kRepeat_TileMode;
+    default:
+      NOTREACHED() << "Invalid TileMode";
+  }
+  return SkShader::kClamp_TileMode;
+}
+
+// A platform wrapper for a Skia shader that makes sure the underlying
+// SkShader object is unref'ed when this object is destroyed.
+class SkiaShader : public gfx::Brush {
+ public:
+  explicit SkiaShader(SkShader* shader) : shader_(shader) {
+  }
+  virtual ~SkiaShader() {
+    shader_->unref();
+  }
+
+  // Accessor for shader, so it can be associated with a SkPaint.
+  SkShader* shader() const { return shader_; }
+
+ private:
+  SkShader* shader_;
+
+  DISALLOW_COPY_AND_ASSIGN(SkiaShader);
+};
+
+
+}  // namespace
 
 namespace gfx {
 
@@ -84,6 +122,15 @@ void CanvasSkia::FillRectInt(const SkColor& color, int x, int y, int w, int h) {
   paint.setColor(color);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  FillRectInt(x, y, w, h, paint);
+}
+
+void CanvasSkia::FillRectInt(const gfx::Brush* brush, int x, int y, int w,
+                             int h) {
+  const SkiaShader* shader = static_cast<const SkiaShader*>(brush);
+  SkPaint paint;
+  paint.setShader(shader->shader());
+  // TODO(beng): set shader transform to match canvas transform.
   FillRectInt(x, y, w, h, paint);
 }
 
@@ -294,6 +341,27 @@ gfx::NativeDrawingContext CanvasSkia::BeginPlatformPaint() {
 
 void CanvasSkia::EndPlatformPaint() {
   endPlatformPaint();
+}
+
+Brush* CanvasSkia::CreateLinearGradientBrush(
+    const gfx::Point& start_point,
+    const gfx::Point& end_point,
+    const SkColor colors[],
+    const float positions[],
+    size_t position_count,
+    TileMode tile_mode) {
+  SkPoint boundary_points[2];
+  boundary_points[0].set(SkIntToScalar(start_point.x()),
+                         SkIntToScalar(start_point.y()));
+  boundary_points[1].set(SkIntToScalar(start_point.y()),
+                         SkIntToScalar(start_point.y()));
+  SkShader* shader = SkGradientShader::CreateLinear(
+      boundary_points,
+      colors,
+      positions,
+      position_count,
+      TileModeToSkShaderTileMode(tile_mode));
+  return new SkiaShader(shader);
 }
 
 CanvasSkia* CanvasSkia::AsCanvasSkia() {

@@ -8,6 +8,7 @@
 #include <vssym32.h>
 
 #include "base/command_line.h"
+#include "base/scoped_ptr.h"
 #include "gfx/canvas_direct2d.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
@@ -200,5 +201,23 @@ TEST(CanvasDirect2D, ClipRectWithScale) {
   canvas.ScaleInt(2, 2);
   canvas.ClipRectInt(10, 10, 110, 110);
   canvas.FillRectInt(SK_ColorRED, 0, 0, 500, 500);
+  canvas.Restore();
+}
+
+TEST(CanvasDirect2D, CreateLinearGradientBrush) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  canvas.Save();
+  SkColor colors[] = { SK_ColorRED, SK_ColorWHITE };
+  float positions[] = { 0.0f, 1.0f };
+  scoped_ptr<gfx::Brush> brush(canvas.CreateLinearGradientBrush(
+      gfx::Point(0, 0),
+      gfx::Point(100, 0),
+      colors,
+      positions,
+      2,
+      gfx::Canvas::TileMode_Clamp));
+  canvas.FillRectInt(brush.get(), 0, 0, 500, 500);
   canvas.Restore();
 }

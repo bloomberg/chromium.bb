@@ -76,6 +76,7 @@
       'sources': [
         'blit.cc',
         'blit.h',
+        'brush.h',
         'canvas.h',
         'canvas_skia.h',
         'canvas_skia.cc',

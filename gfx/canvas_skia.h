@@ -91,6 +91,7 @@ class CanvasSkia : public skia::PlatformCanvas,
                            const SkPaint& paint);
   virtual void FillRectInt(const SkColor& color, int x, int y, int w,
                            int h);
+  virtual void FillRectInt(const gfx::Brush* brush, int x, int y, int w, int h);
   virtual void DrawRectInt(const SkColor& color, int x, int y, int w,
                            int h);
   virtual void DrawRectInt(const SkColor& color, int x, int y, int w, int h,
@@ -122,6 +123,13 @@ class CanvasSkia : public skia::PlatformCanvas,
                             int dest_x, int dest_y, int w, int h);
   virtual gfx::NativeDrawingContext BeginPlatformPaint();
   virtual void EndPlatformPaint();
+  virtual Brush* CreateLinearGradientBrush(
+      const gfx::Point& start_point,
+      const gfx::Point& end_point,
+      const SkColor colors[],
+      const float positions[],
+      size_t position_count,
+      TileMode tile_mode);
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;
 

@@ -7,14 +7,17 @@
 
 #include <string>
 
+#include "gfx/brush.h"
 #include "gfx/native_widget_types.h"
 // TODO(beng): remove this include when we no longer depend on SkTypes.
 #include "skia/ext/platform_canvas.h"
 
 namespace gfx {
 
+class Brush;
 class CanvasSkia;
 class Font;
+class Point;
 class Rect;
 
 // TODO(beng): documentation.
@@ -103,6 +106,10 @@ class Canvas {
   virtual void FillRectInt(const SkColor& color, int x, int y, int w,
                            int h) = 0;
 
+  // Fills the specified region with the specified brush.
+  virtual void FillRectInt(const gfx::Brush* brush, int x, int y, int w,
+                           int h) = 0;
+
   // Draws a single pixel rect in the specified region with the specified
   // color, using a transfer mode of SkXfermode::kSrcOver_Mode.
   //
@@ -184,6 +191,31 @@ class Canvas {
   // Signifies the end of platform drawing using the native drawing context
   // returned by BeginPlatformPaint().
   virtual void EndPlatformPaint() = 0;
+
+  // Defines how a brush paints the area outside its normal content area.
+  enum TileMode {
+    TileMode_Clamp,
+    TileMode_Repeat,
+    TileMode_Mirror
+  };
+
+  // Creates a linear gradient brush.
+  // |start_point| and |end_point| are the pixel positions of the start and end
+  // points of the gradient.
+  // |colors| is a list of color stops.
+  // |positions| is a list of positions corresponding to the color stops, an
+  // array of floats of increasing value ranging from 0.0f to 1.0f.
+  // |position_count| is the size of the |colors| and |positions| arrays.
+  // |tile_mode|
+  // Returns an encapsulated platform shader object which the caller must
+  // delete.
+  virtual Brush* CreateLinearGradientBrush(
+      const gfx::Point& start_point,
+      const gfx::Point& end_point,
+      const SkColor colors[],
+      const float positions[],
+      size_t position_count,
+      TileMode tile_mode) = 0;
 
   // TODO(beng): remove this once we don't need to use any skia-specific methods
   //             through this interface.

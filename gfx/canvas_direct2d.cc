@@ -25,6 +25,41 @@ D2D1_RECT_F RectToRectF(const gfx::Rect& rect) {
   return RectToRectF(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
+D2D1_POINT_2F PointToPoint2F(const gfx::Point& point) {
+  return D2D1::Point2F(static_cast<float>(point.x()),
+                       static_cast<float>(point.y()));
+}
+
+D2D1_EXTEND_MODE TileModeToExtendMode(gfx::Canvas::TileMode tile_mode) {
+  switch (tile_mode) {
+    case gfx::Canvas::TileMode_Clamp:
+      return D2D1_EXTEND_MODE_CLAMP;
+    case gfx::Canvas::TileMode_Mirror:
+      return D2D1_EXTEND_MODE_MIRROR;
+    case gfx::Canvas::TileMode_Repeat:
+      return D2D1_EXTEND_MODE_WRAP;
+    default:
+      NOTREACHED() << "Invalid TileMode";
+  }
+  return D2D1_EXTEND_MODE_CLAMP;
+}
+
+// A platform wrapper for a Direct2D brush that makes sure the underlying
+// ID2D1Brush COM object is released when this object is destroyed.
+class Direct2DBrush : public gfx::Brush {
+ public:
+  explicit Direct2DBrush(ID2D1Brush* brush) : brush_(brush) {
+  }
+
+  ID2D1Brush* brush() const { return brush_.get(); }
+
+ private:
+  ScopedComPtr<ID2D1Brush> brush_;
+
+  DISALLOW_COPY_AND_ASSIGN(Direct2DBrush);
+};
+
+
 }  // namespace
 
 namespace gfx {
@@ -147,6 +182,12 @@ void CanvasDirect2D::FillRectInt(const SkColor& color, int x, int y, int w,
   rt_->FillRectangle(RectToRectF(x, y, w, h), solid_brush);
 }
 
+void CanvasDirect2D::FillRectInt(const gfx::Brush* brush, int x, int y, int w,
+                                 int h) {
+  const Direct2DBrush* d2d_brush = static_cast<const Direct2DBrush*>(brush);
+  rt_->FillRectangle(RectToRectF(x, y, w, h), d2d_brush->brush());
+}
+
 void CanvasDirect2D::DrawRectInt(const SkColor& color, int x, int y, int w,
                                  int h) {
 
@@ -230,6 +271,37 @@ void CanvasDirect2D::EndPlatformPaint() {
   DCHECK(interop_rt_.get());
   interop_rt_->ReleaseDC(NULL);
   interop_rt_.release();
+}
+
+Brush* CanvasDirect2D::CreateLinearGradientBrush(
+    const gfx::Point& start_point,
+    const gfx::Point& end_point,
+    const SkColor colors[],
+    const float positions[],
+    size_t position_count,
+    TileMode tile_mode) {
+  ID2D1GradientStopCollection* gradient_stop_collection = NULL;
+  D2D1_GRADIENT_STOP* gradient_stops = new D2D1_GRADIENT_STOP[position_count];
+  for (size_t i = 0; i < position_count; ++i) {
+    gradient_stops[i].color = SkColorToColorF(colors[i]);
+    gradient_stops[i].position = positions[i];
+  }
+  HRESULT hr = rt_->CreateGradientStopCollection(gradient_stops,
+      position_count,
+      D2D1_GAMMA_2_2,
+      TileModeToExtendMode(tile_mode),
+      &gradient_stop_collection);
+  if (FAILED(hr))
+    return NULL;
+
+  ID2D1LinearGradientBrush* brush = NULL;
+  hr = rt_->CreateLinearGradientBrush(
+      D2D1::LinearGradientBrushProperties(PointToPoint2F(start_point),
+                                          PointToPoint2F(end_point)),
+      gradient_stop_collection,
+      &brush);
+
+  return new Direct2DBrush(brush);
 }
 
 CanvasSkia* CanvasDirect2D::AsCanvasSkia() {
