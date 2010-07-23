@@ -53,7 +53,7 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   // Helpers to instruct a waiting job with what response to
   // deliver for the request we're handling.
   void DeliverAppCachedResponse(const AppCacheEntry& entry, int64 cache_id,
-                                const GURL& manifest_url);
+                                const GURL& manifest_url, bool is_fallback);
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
 

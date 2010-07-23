@@ -9,8 +9,10 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
 namespace appcache {
@@ -21,6 +23,7 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       has_been_started_(false), has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),
       cache_id_(kNoCacheId),
+      is_fallback_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
           this, &AppCacheURLRequestJob::OnReadComplete)) {
   DCHECK(storage_);
@@ -32,13 +35,15 @@ AppCacheURLRequestJob::~AppCacheURLRequestJob() {
 }
 
 void AppCacheURLRequestJob::DeliverAppCachedResponse(
-    const GURL& manifest_url, int64 cache_id, const AppCacheEntry& entry) {
+    const GURL& manifest_url, int64 cache_id, const AppCacheEntry& entry,
+    bool is_fallback) {
   DCHECK(!has_delivery_orders());
   DCHECK(entry.has_response_id());
   delivery_type_ = APPCACHED_DELIVERY;
   manifest_url_ = manifest_url;
   cache_id_ = cache_id;
   entry_ = entry;
+  is_fallback_ = is_fallback;
   MaybeBeginDelivery();
 }
 
@@ -81,11 +86,18 @@ void AppCacheURLRequestJob::BeginDelivery() {
       break;
 
     case ERROR_DELIVERY:
+      request()->net_log().AddEvent(
+          net::NetLog::TYPE_APPCACHE_DELIVERING_ERROR_RESPONSE, NULL);
       NotifyStartError(
           URLRequestStatus(URLRequestStatus::FAILED, net::ERR_FAILED));
       break;
 
     case APPCACHED_DELIVERY:
+      request()->net_log().AddEvent(
+          is_fallback_ ?
+              net::NetLog::TYPE_APPCACHE_DELIVERING_FALLBACK_RESPONSE :
+              net::NetLog::TYPE_APPCACHE_DELIVERING_CACHED_RESPONSE,
+          NULL);
       storage_->LoadResponseInfo(manifest_url_, entry_.response_id(), this);
       break;
 

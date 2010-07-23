@@ -434,7 +434,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     const GURL kManifestUrl("http://blah/");
     const int64 kCacheId(1);
     const AppCacheEntry kEntry(AppCacheEntry::EXPLICIT, 1);
-    job->DeliverAppCachedResponse(kManifestUrl, kCacheId, kEntry);
+    job->DeliverAppCachedResponse(kManifestUrl, kCacheId, kEntry, false);
     EXPECT_FALSE(job->is_waiting());
     EXPECT_TRUE(job->is_delivering_appcache_response());
     EXPECT_FALSE(job->has_been_started());
@@ -543,7 +543,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
     if (start_after_delivery_orders) {
       job->DeliverAppCachedResponse(
           GURL(), 111,
-          AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_));
+          AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_),
+          false);
       EXPECT_TRUE(job->is_delivering_appcache_response());
     }
 
@@ -557,7 +558,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
     if (!start_after_delivery_orders) {
       job->DeliverAppCachedResponse(
           GURL(), 111,
-          AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_));
+          AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_),
+          false);
       EXPECT_TRUE(job->is_delivering_appcache_response());
     }
 
@@ -652,7 +654,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
         new AppCacheURLRequestJob(request_.get(), storage));
     job->DeliverAppCachedResponse(
         GURL(), 111,
-        AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_));
+        AppCacheEntry(AppCacheEntry::EXPLICIT, written_response_id_),
+        false);
     EXPECT_TRUE(job->is_delivering_appcache_response());
 
     // Start the request.

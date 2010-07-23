@@ -97,8 +97,8 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
     // 6.9.6, step 4: If this results in a redirect to another origin,
     // get the resource of the fallback entry.
     job_ = new AppCacheURLRequestJob(request, storage());
-    DeliverAppCachedResponse(found_fallback_entry_, found_cache_id_,
-                             found_manifest_url_);
+    DeliverAppCachedResponse(
+        found_fallback_entry_, found_cache_id_, found_manifest_url_, true);
   } else if (!found_network_namespace_) {
     // 6.9.6, step 6: Fail the resource load.
     job_ = new AppCacheURLRequestJob(request, storage());
@@ -138,8 +138,8 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
   // 6.9.6, step 4: If this results in a 4xx or 5xx status code
   // or there were network errors, get the resource of the fallback entry.
   job_ = new AppCacheURLRequestJob(request, storage());
-  DeliverAppCachedResponse(found_fallback_entry_, found_cache_id_,
-      found_manifest_url_);
+  DeliverAppCachedResponse(
+      found_fallback_entry_, found_cache_id_,  found_manifest_url_, true);
   return job_;
 }
 
@@ -156,10 +156,11 @@ void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {
 }
 
 void AppCacheRequestHandler::DeliverAppCachedResponse(
-    const AppCacheEntry& entry, int64 cache_id, const GURL& manifest_url) {
+    const AppCacheEntry& entry, int64 cache_id, const GURL& manifest_url,
+    bool is_fallback) {
   DCHECK(job_ && job_->is_waiting());
   DCHECK(entry.has_response_id());
-  job_->DeliverAppCachedResponse(manifest_url, cache_id, entry);
+  job_->DeliverAppCachedResponse(manifest_url, cache_id, entry, is_fallback);
 }
 
 void AppCacheRequestHandler::DeliverErrorResponse() {
@@ -220,8 +221,8 @@ void AppCacheRequestHandler::OnMainResponseFound(
   found_network_namespace_ = false;  // not applicable to main requests
 
   if (found_entry_.has_response_id()) {
-    DeliverAppCachedResponse(found_entry_, found_cache_id_,
-        found_manifest_url_);
+    DeliverAppCachedResponse(
+        found_entry_, found_cache_id_, found_manifest_url_, false);
   } else {
     DeliverNetworkResponse();
   }
@@ -271,7 +272,7 @@ void AppCacheRequestHandler::ContinueMaybeLoadSubResource() {
     found_cache_id_ = cache->cache_id();
     found_manifest_url_ = cache->owning_group()->manifest_url();
     DeliverAppCachedResponse(
-        found_entry_, found_cache_id_, found_manifest_url_);
+        found_entry_, found_cache_id_, found_manifest_url_, false);
     return;
   }
 
