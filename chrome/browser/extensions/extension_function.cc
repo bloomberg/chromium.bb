@@ -11,7 +11,10 @@
 #include "chrome/browser/profile.h"
 
 ExtensionFunction::ExtensionFunction()
-    : request_id_(-1), name_(""), has_callback_(false) {
+    : request_id_(-1),
+      profile_(NULL),
+      has_callback_(false),
+      include_incognito_(false) {
 }
 
 ExtensionFunction::~ExtensionFunction() {

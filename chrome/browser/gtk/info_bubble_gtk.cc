@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,6 +65,7 @@ InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider,
       theme_provider_(provider),
       accel_group_(gtk_accel_group_new()),
       toplevel_window_(NULL),
+      anchor_widget_(NULL),
       mask_region_(NULL),
       preferred_arrow_location_(ARROW_LOCATION_TOP_LEFT),
       current_arrow_location_(ARROW_LOCATION_TOP_LEFT),

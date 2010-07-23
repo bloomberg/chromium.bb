@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,7 +210,7 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
 
 class ExtensionTestingProfile : public TestingProfile {
  public:
-  ExtensionTestingProfile() {
+  ExtensionTestingProfile() : service_(NULL) {
   }
 
   void set_extensions_service(ExtensionsService* service) {
@@ -224,7 +224,8 @@ class ExtensionTestingProfile : public TestingProfile {
 
 // Our message loop may be used in tests which require it to be an IO loop.
 ExtensionsServiceTestBase::ExtensionsServiceTestBase()
-    : loop_(MessageLoop::TYPE_IO),
+    : total_successes_(0),
+      loop_(MessageLoop::TYPE_IO),
       ui_thread_(ChromeThread::UI, &loop_),
       webkit_thread_(ChromeThread::WEBKIT, &loop_),
       file_thread_(ChromeThread::FILE, &loop_),

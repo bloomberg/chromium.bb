@@ -25,12 +25,11 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/ui_test_utils.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/common/chrome_switches.h"
-#endif
-
 ExtensionBrowserTest::ExtensionBrowserTest()
-    : target_page_action_count_(-1),
+    : loaded_(false),
+      installed_(false),
+      extension_installs_observed_(0),
+      target_page_action_count_(-1),
       target_visible_page_action_count_(-1) {
 }
 
@@ -58,7 +57,6 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitchWithValue(switches::kLoginProfile, "user");
   command_line->AppendSwitch(switches::kNoFirstRun);
 #endif
-
 }
 
 bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,

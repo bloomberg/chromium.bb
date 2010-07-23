@@ -24,7 +24,11 @@ const int kNumHistoryRowsToSend = 100;
 const int kNumFavIconsToSend = 100;
 }
 
-ProfileImportThread::ProfileImportThread() {
+ProfileImportThread::ProfileImportThread()
+    : bridge_(NULL),
+      browser_type_(0),
+      items_to_import_(0),
+      importer_(NULL) {
   ChildProcess::current()->AddRefProcess();  // Balanced in Cleanup().
 }
 

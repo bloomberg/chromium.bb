@@ -128,7 +128,8 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
       session_storage_namespace_id_(session_storage_namespace_id),
-      is_extension_process_(false) {
+      is_extension_process_(false),
+      autofill_query_id_(0) {
   DCHECK(instance_);
   DCHECK(delegate_);
 }
