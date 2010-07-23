@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_FAKE_UPDATE_LIBRARY_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_FAKE_UPDATE_LIBRARY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CROS_FAKE_FAKE_UPDATE_LIBRARY_H_
+#define CHROME_BROWSER_CHROMEOS_CROS_FAKE_FAKE_UPDATE_LIBRARY_H_
 
 #include "chrome/browser/chromeos/cros/update_library.h"
 
@@ -25,4 +25,4 @@ class FakeUpdateLibrary : public UpdateLibrary {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_FAKE_UPDATE_LIBRARY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CROS_FAKE_FAKE_UPDATE_LIBRARY_H_
