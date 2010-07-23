@@ -144,18 +144,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_cryptohome_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_input_method_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_keyboard_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_library_loader.h"
-#include "chrome/browser/chromeos/cros/fake/fake_login_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_mount_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_network_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_screen_lock_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_synaptics_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_system_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_power_library.h"
-#include "chrome/browser/chromeos/cros/fake/fake_update_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -989,26 +977,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     }
 #if !defined(OS_MACOSX)  // closing brace for if
   }
-#endif
-
-#if defined(OS_CHROMEOS)
-  // Install a "fake" version of libcros if specified.
-  if (parsed_command_line.HasSwitch(switches::kUseFakeLibcros)) {
-    chromeos::CrosLibrary::TestApi* test_api =
-        chromeos::CrosLibrary::Get()->GetTestApi();
-    test_api->SetLibraryLoader(new chromeos::FakeLibraryLoader, true);
-    test_api->SetSynapticsLibrary(new chromeos::FakeSynapticsLibrary, true);
-    test_api->SetInputMethodLibrary(new chromeos::FakeInputMethodLibrary, true);
-    test_api->SetKeyboardLibrary(new chromeos::FakeKeyboardLibrary, true);
-    test_api->SetNetworkLibrary(new chromeos::FakeNetworkLibrary, true);
-    test_api->SetPowerLibrary(new chromeos::FakePowerLibrary, true);
-    test_api->SetSystemLibrary(new chromeos::FakeSystemLibrary, true);
-    test_api->SetLoginLibrary(new chromeos::FakeLoginLibrary, true);
-    test_api->SetCryptohomeLibrary(new chromeos::FakeCryptohomeLibrary, true);
-    test_api->SetScreenLockLibrary(new chromeos::FakeScreenLockLibrary, true);
-    test_api->SetMountLibrary(new chromeos::FakeMountLibrary, true);
-    test_api->SetUpdateLibrary(new chromeos::FakeUpdateLibrary, true);
-}
 #endif
 
   // Profile creation ----------------------------------------------------------

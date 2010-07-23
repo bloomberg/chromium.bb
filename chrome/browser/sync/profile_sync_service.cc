@@ -144,8 +144,7 @@ void ProfileSyncService::Initialize() {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
 
     // Automatically start sync in Chromium OS.
-    if (bootstrap_sync_authentication_ &&
-        !profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
+    if (bootstrap_sync_authentication_) {
       // If the LSID is empty, we're in a CrOS UI test that is not testing sync
       // behavior, so we don't want the sync service to start.
       if (profile()->GetTokenService() &&
@@ -217,7 +216,6 @@ void ProfileSyncService::RegisterPreferences() {
     return;
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
-  pref_service->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
 
   // If you've never synced before, or if you're using Chrome OS, all datatypes
   // are on by default.
@@ -368,7 +366,6 @@ bool ProfileSyncService::HasSyncSetupCompleted() const {
 void ProfileSyncService::SetSyncSetupCompleted() {
   PrefService* prefs = profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSyncHasSetupCompleted, true);
-  prefs->SetBoolean(prefs::kSyncSuppressStart, false);
   prefs->ScheduleSavePersistentPrefs();
 }
 
@@ -451,11 +448,7 @@ void ProfileSyncService::OnBackendInitialized() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 
   if (bootstrap_sync_authentication_) {
-    if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
-      ShowChooseDataTypes(NULL);
-    } else {
-      SetSyncSetupCompleted();
-    }
+    SetSyncSetupCompleted();
   }
 
   if (HasSyncSetupCompleted())
@@ -502,7 +495,7 @@ void ProfileSyncService::OnStopSyncingPermanently() {
     wizard_.Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
     expect_sync_configuration_aborted_ = true;
   }
-  profile_->GetPrefs()->SetBoolean(prefs::kSyncSuppressStart, true);
+
   DisableForUser();
 }
 
@@ -548,10 +541,6 @@ SyncBackendHost::Status ProfileSyncService::QueryDetailedSyncStatus() {
         { SyncBackendHost::Status::OFFLINE_UNUSABLE };
     return status;
   }
-}
-
-bool ProfileSyncService::SetupInProgress() const {
-  return !HasSyncSetupCompleted() && WizardIsVisible();
 }
 
 std::wstring ProfileSyncService::BuildSyncStatusSummaryText(

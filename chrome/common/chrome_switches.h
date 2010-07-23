@@ -303,7 +303,6 @@ extern const char kChromeosLogToFile[];
 extern const char kStartupManifest[];
 // TODO(denisromanov): Remove this flag when it is not needed for testing, too.
 extern const char kServicesManifest[];
-extern const char kUseFakeLibcros[];
 #endif
 
 #if defined(OS_LINUX)
