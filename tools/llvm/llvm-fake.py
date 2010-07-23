@@ -263,11 +263,24 @@ def Run(args):
     LogFatal('failed command: ' + StringifyCommand(args), ret)
 
 
+def OutputName(argv):
+  obj_pos = FindObjectFilePos(argv)
+  if obj_pos:
+    return argv[obj_pos]
+  if '-c' not in argv:
+    LogFatal('could not determine the output file: %s' %
+             StringifyCommand(argv))
+  src_pos = FindSourceFilePos(argv)
+  if src_pos is None:
+    LogFatal('could not determine the output file: %s' %
+             StringifyCommand(argv))
+  src_file = os.path.basename(argv[src_pos])
+  return src_file.rsplit('.',1)[0] + '.o'
+
+
 def SfiCompile(argv, arch, assembler, as_flags):
   "Run llc and the assembler to convert a bitcode file to ELF."
-  obj_pos = FindObjectFilePos(argv)
-
-  filename = argv[obj_pos]
+  filename = OutputName(argv)
 
   Run([OPT] +
       global_config_flags['OPT'] +
@@ -308,6 +321,17 @@ def FindAssemblerFilePos(argv):
   """
   for n, a in enumerate(argv):
     if a.endswith('.S') or a.endswith('.s') or a.endswith('.asm'):
+      return n
+  else:
+    return None
+
+
+def FindSourceFilePos(argv):
+  """Return the argv index of the source file.
+  Return None if no source file is found.
+  """
+  for n, a in enumerate(argv):
+    if a.endswith('.c') or a.endswith('.cc'):
       return n
   else:
     return None
@@ -390,16 +414,14 @@ def CompileToBC(argv, llvm_binary, temp = False):
 
   obj_pos = FindObjectFilePos(argv)
 
-  if obj_pos is None:
-    if IsDiagnosticMode(argv):
-      #LogWarning('diagnostic mode:' + StringifyCommand(argv))
-      Run(argv)
-    else:
-      LogFatal('weird invocation without .o:' + StringifyCommand(argv))
-    return
+  if IsDiagnosticMode(argv):
+    Run(argv)
 
   if temp:
-    argv[obj_pos] += '.bc'
+    if obj_pos is None:
+      argv += ['-o', OutputName(argv) + '.bc']
+    else:
+      argv[obj_pos] += '.bc'
 
   if '-nostdinc' in argv:
     argv += global_config_flags['LLVM_GCC_COMPILE']
