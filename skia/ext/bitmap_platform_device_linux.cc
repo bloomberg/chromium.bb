@@ -130,13 +130,6 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque,
                                                    cairo_surface_t* surface) {
-  if ((width == 0) || (height == 0)) {
-    // Empty Skia bitmaps can't be configured. Create a minimal bitmap that
-    // allows specific configurations, such as ARGB.
-    width = 1;
-    height = 1;
-  }
-
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height,
                    cairo_image_surface_get_stride(surface));
