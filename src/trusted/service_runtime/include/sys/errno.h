@@ -175,7 +175,7 @@ extern __IMPORT int _sys_nerr;
 #define NACL_ABI_EMSGSIZE 132    /* Message too long */
 
 /* From cygwin32.  */
-#define EWOULDBLOCK EAGAIN      /* Operation would block */
+#define NACL_ABI_EWOULDBLOCK NACL_ABI_EAGAIN      /* Operation would block */
 
 #ifdef __cplusplus
 }
