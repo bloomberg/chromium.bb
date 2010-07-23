@@ -27,7 +27,10 @@ bool Paint(PP_Resource resource, const PP_Rect* rect, PP_Resource image_id) {
     return false;
 
   scoped_refptr<ImageData> image(Resource::GetAs<ImageData>(image_id));
-  return widget && widget->Paint(rect, image);
+  if (!image)
+    return false;
+
+  return widget->Paint(rect, image);
 }
 
 bool HandleEvent(PP_Resource resource, const PP_Event* event) {
