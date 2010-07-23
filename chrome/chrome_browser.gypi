@@ -907,6 +907,8 @@
         'browser/cocoa/menu_controller.mm',
         'browser/cocoa/multi_key_equivalent_button.h',
         'browser/cocoa/multi_key_equivalent_button.mm',
+        'browser/cocoa/new_tab_button.h',
+        'browser/cocoa/new_tab_button.mm',
         'browser/cocoa/notifications/balloon_controller.mm',
         'browser/cocoa/notifications/balloon_controller.h',
         'browser/cocoa/notifications/balloon_view_bridge.h',
