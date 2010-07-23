@@ -230,14 +230,12 @@
 
               'sources': [
                 'src/common/dwarf/bytereader.cc',
-                'src/common/dwarf/cfi_assembler.cc',
                 'src/common/dwarf_cfi_to_module.cc',
                 'src/common/dwarf_cfi_to_module.h',
                 'src/common/dwarf_cu_to_module.cc',
                 'src/common/dwarf_cu_to_module.h',
                 'src/common/dwarf/dwarf2diehandler.cc',
                 'src/common/dwarf/dwarf2reader.cc',
-                'src/common/dwarf/functioninfo.cc',
                 'src/common/dwarf_line_to_module.cc',
                 'src/common/dwarf_line_to_module.h',
                 'src/common/language.cc',
