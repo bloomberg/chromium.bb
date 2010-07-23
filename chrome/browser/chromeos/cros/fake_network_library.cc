@@ -76,6 +76,9 @@ void FakeNetworkLibrary::DisconnectFromWirelessNetwork(
     const WirelessNetwork& network) {
 }
 
+void FakeNetworkLibrary::SaveCellularNetwork(const CellularNetwork& network) {
+}
+
 void FakeNetworkLibrary::SaveWifiNetwork(const WifiNetwork& network) {
 }
 

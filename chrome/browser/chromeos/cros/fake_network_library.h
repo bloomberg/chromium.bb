@@ -74,6 +74,7 @@ class FakeNetworkLibrary : public NetworkLibrary {
                                     bool auto_connect);
   virtual void ConnectToCellularNetwork(CellularNetwork network);
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network);
+  virtual void SaveCellularNetwork(const CellularNetwork& network);
   virtual void SaveWifiNetwork(const WifiNetwork& network);
   virtual void ForgetWirelessNetwork(const WirelessNetwork& network);
 
