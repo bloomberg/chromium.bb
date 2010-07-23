@@ -48,9 +48,6 @@ const CGFloat kTextXOffset = 25.0;
 // Animation duration when animating the popup window smaller.
 const NSTimeInterval kShrinkAnimationDuration = 0.1;
 
-// A very short animation duration used to cancel running animations.
-const NSTimeInterval kCancelAnimationDuration = 0.00001;
-
 // Maximum fraction of the popup width that can be used to display match
 // contents.
 const float kMaxContentsFraction = 0.7;
@@ -344,15 +341,34 @@ void AutocompletePopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   // Otherwise, resize immediately.
   bool animate = (NSHeight(popupFrame) < NSHeight(currentPopupFrame) &&
                   NSWidth(popupFrame) == NSWidth(currentPopupFrame));
-  NSTimeInterval duration =
-      (animate ? kShrinkAnimationDuration: kCancelAnimationDuration);
+
+  NSDictionary* savedAnimations = nil;
+  if (!animate) {
+    // In an ideal world, running a zero-length animation would cancel any
+    // running animations and set the new frame value immediately.  In practice,
+    // zero-length animations are ignored entirely.  Work around this AppKit bug
+    // by explicitly setting an NSNull animation for the "frame" key and then
+    // running the animation with a non-zero(!!) duration.  This somehow
+    // convinces AppKit to do the right thing.  Save off the current animations
+    // dictionary so it can be restored later.
+    savedAnimations = [[popup_ animations] copy];
+    [popup_ setAnimations:
+              [NSDictionary dictionaryWithObjectsAndKeys:[NSNull null],
+                                                         @"frame", nil]];
+  }
 
   [NSAnimationContext beginGrouping];
   // Don't use the GTM additon for the "Steve" slowdown because this can happen
   // async from user actions and the effects could be a surprise.
-  [[NSAnimationContext currentContext] setDuration:duration];
+  [[NSAnimationContext currentContext] setDuration:kShrinkAnimationDuration];
   [[popup_ animator] setFrame:popupFrame display:YES];
   [NSAnimationContext endGrouping];
+
+  if (!animate) {
+    // Restore the original animations dictionary.  This does not reinstate any
+    // previously running animations.
+    [popup_ setAnimations:savedAnimations];
+  }
 
   if (!IsOpen())
     [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
