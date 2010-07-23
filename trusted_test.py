@@ -223,13 +223,16 @@ def ValidatePlatform():
   else:
     platform += '64'
 
+  is_arm = 0
   try:
     gyp_defines = os.environ['GYP_DEFINES']
     if gyp_defines.find('target_arch=arm') != -1:
-      print('ARM is not supported yet')
-      sys.exit(0)
-  except OSError:
+      is_arm = 1
+  except:
     print('GYP_DEFINES is not set')
+  if (is_arm):
+    print('ARM is not supported yet')
+    sys.exit(0)
 
   if not GlobalSettings['platform']:
     # platform was not provided on the command line
