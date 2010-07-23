@@ -6,6 +6,7 @@
 /* nc_protect_base.h - For 64-bit mode, verifies that no instruction
  * changes the value of the base register.
  */
+#include <assert.h>
 
 #include "native_client/src/trusted/validator_x86/nc_protect_base.h"
 
@@ -119,10 +120,12 @@ static Bool NaClIsAddOrSubBoundedConstFromEsp(NaClInstState* state) {
       ExprConstant == vector->node[3].kind;
 }
 
-/* Returns true iff the instruction of form "lea _, [%rsp+%rbase*1]" */
-static Bool NaClIsLeaAddressRspPlusRbase(NaClValidatorState* state,
-                                         NaClInstState* inst_state) {
+/* Returns true iff the instruction of form "lea _, [%reg+%rbase*1]" */
+static Bool NaClIsLeaAddressRegPlusRbase(NaClValidatorState* state,
+                                         NaClInstState* inst_state,
+                                         NaClOpKind reg) {
   NaClInst* inst = NaClInstStateInst(inst_state);
+  assert((RegRSP == reg) || (RegRBP == reg));
   if (InstLea == inst->name &&
       2 == NaClGetInstNumberOperands(inst)) {
     NaClExpVector* vector = NaClInstStateExpVector(inst_state);
@@ -136,7 +139,7 @@ static Bool NaClIsLeaAddressRspPlusRbase(NaClValidatorState* state,
         NACL_EMPTY_EFLAGS != (op2->flags & NACL_EFLAG(ExprSize64))) {
       int base_reg_index = op2_index + 1;
       NaClOpKind base_reg = NaClGetExpVectorRegister(vector, base_reg_index);
-      if (base_reg == RegRSP) {
+      if (base_reg == reg) {
         int index_reg_index =
             base_reg_index + NaClExpWidth(vector, base_reg_index);
         NaClOpKind index_reg =
@@ -157,6 +160,36 @@ static Bool NaClIsLeaAddressRspPlusRbase(NaClValidatorState* state,
     }
   }
   /* If reached, did not match. */
+  return FALSE;
+}
+
+/* Checks for:
+ *     mov %REG(32), ...
+ *     lea %REG, [%REG+%rbase*1]
+ *
+ * where REG is the passed 64-bit register, and REG(32) is
+ * the corresponding 32-bit retister.
+ */
+
+static Bool NaClAcceptRegMoveLea32To64(struct NaClValidatorState* state,
+                                       struct NaClInstIter* iter,
+                                       NaClInst* inst,
+                                       NaClOpKind reg) {
+  NaClInstState* inst_state = NaClInstIterGetState(iter);
+  assert((RegRSP == reg) || (RegRBP == reg));
+  if (NaClOperandOneIsRegisterSet(inst_state, reg) &&
+      NaClInstIterHasLookbackState(iter, 1)) {
+    NaClInstState* prev_inst = NaClInstIterGetLookbackState(iter, 1);
+    if (NaClAssignsRegisterWithZeroExtends(
+            prev_inst, NaClGet32For64BitReg(reg)) &&
+        NaClIsLeaAddressRegPlusRbase(state, inst_state, reg)) {
+      DEBUG(const char* reg_name = NaClOpKindName(reg);
+            printf("nc protect base for 'lea %s. [%s, rbase]'\n",
+                   reg_name, reg_name));
+      NaClMarkInstructionJumpIllegal(state, inst_state);
+      return TRUE;
+    }
+  }
   return FALSE;
 }
 
@@ -216,7 +249,7 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                *
                *     Note: The code here allows any operation that zero extends
                *     ebp, not just a move. The rationale is that the MOV does
-               *     a zero extend of RBP, and is the only property that is
+               *     a zero extend of RSP, and is the only property that is
                *     needed to maintain the invariant on ESP.
                *
                * (7) mov %esp, ...
@@ -224,7 +257,7 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                *
                *     Same as (6), except that we use instructions prior to the
                *     pattern to do the add/subtract. Then let the result be
-               *     (zero-extended) moved into esp, and use the lea to fill
+               *     (zero-extended) moved into ESP, and use the lea to fill
                *     in the top 32 bits of %rsp.
                *
                *     Note: We require the scale to be 1, and rbase be in
@@ -232,8 +265,8 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                *
                *     Note: The code here allows any operation that zero extends
                *     ebp, not just a move. The rationale is that the MOV does
-               *     a zero extend of RBP, and is the only property that is
-               *     needed to maintain the invariant on ESP.
+               *     a zero extend of ESP, and is the only property that is
+               *     needed to maintain the invariant on RSP.
                *
                * Note: Cases 2, 4, 5, and 6 are maintaining the invariant that
                * the top half of RSP is the same as RBASE, and the lower half
@@ -293,23 +326,12 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                     }
                   }
                   break;
-                case InstLea: {
+                case InstLea:
+                  if (NaClAcceptRegMoveLea32To64(state, iter, inst, RegRSP)) {
                     /* case 7 */
-                    if (NaClOperandOneIsRegisterSet(inst_state, RegRSP) &&
-                        NaClInstIterHasLookbackState(iter, 1)) {
-                      NaClInstState* prev_inst =
-                          NaClInstIterGetLookbackState(iter, 1);
-                      if (NaClAssignsRegisterWithZeroExtends(prev_inst,
-                                                             RegESP) &&
-                          NaClIsLeaAddressRspPlusRbase(state, inst_state)) {
-                        DEBUG(printf("nc protect base for "
-                                     "'lea rsp. [rsp,rbase]'\n"));
-                        NaClMarkInstructionJumpIllegal(state, inst_state);
-                        locals->esp_set_inst = NULL;
-                        NaClMaybeReportPreviousBad(state, locals);
-                        return;
-                      }
-                    }
+                    locals->esp_set_inst = NULL;
+                    NaClMaybeReportPreviousBad(state, locals);
+                    return;
                   }
                   break;
                 case InstAnd:
@@ -346,7 +368,7 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                *     meeting the invariant.
                *
                * (2) mov %ebp, ...
-               *     add %rbp, %r15
+               *     add %rbp, %rbase
                *
                *     Typical use in the exit from a fucntion, restoring RBP.
                *     The ... in the MOV is gotten from a stack pop in such
@@ -354,31 +376,66 @@ void NaClBaseRegisterValidator(struct NaClValidatorState* state,
                *     be gotten from memory, or even a register.
                *
                *     Note: The code here allows any operation that zero extends
-               *     ebp, not just a move. The rationale is that the MOV does
-               *     a zero extend of rbp, and is the only property that is
-               *     needed to maintain the invarinat on ebp.
+               *     EBP, not just a move. The rationale is that the MOV does
+               *     a zero extend of RBP, and is the only property that is
+               *     needed to maintain the invarinat on RBP.
+               *
+               * (3) mov %ebp
+               *     lea %rbp, [%rbp+%rbase*1]
+               *
+               *     Same as (2), except that we use instructions prior to the
+               *     pattern to do the add/subtract. Then let the result be
+               *     (zero-extended) moved into EBP, and use the lea to fill
+               *     in the top 32 bits of %RSP.
+               *
+               *     Note: We require the scale to be 1, and rbase be in
+               *     the index position.
+               *
+               *     Note: The code here allows any operation that zero extends
+               *     EBP, not just a move. The rationale is that the MOV does
+               *     a zero extend of EBP, and is the only property that is
+               *     needed to maintain the invariant on RBP.
+
                */
-              if (!NaClIsMovUsingRegisters(inst, vector,
-                                         RegRBP, RegRSP)) {
-                if (NaClInstIterHasLookbackState(iter, 1)) {
-                  NaClInstState* prev_state =
-                      NaClInstIterGetLookbackState(iter, 1);
-                  if (NaClIsBinarySetUsingRegisters(
-                          inst, InstAdd, vector,
-                          RegRBP, state->base_register) &&
-                      NaClAssignsRegisterWithZeroExtends(prev_state, RegEBP)) {
-                    /* case 6. */
-                    NaClMarkInstructionJumpIllegal(state, inst_state);
+              switch (inst_name) {
+                case InstAdd:
+                  if (NaClInstIterHasLookbackState(iter, 1)) {
+                    NaClInstState* prev_state =
+                        NaClInstIterGetLookbackState(iter, 1);
+                    if (NaClIsBinarySetUsingRegisters(
+                            inst, InstAdd, vector,
+                            RegRBP, state->base_register) &&
+                        NaClAssignsRegisterWithZeroExtends(
+                            prev_state, RegEBP)) {
+                      /* case 2. */
+                      NaClMarkInstructionJumpIllegal(state, inst_state);
+                      locals->ebp_set_inst = NULL;
+                      NaClMaybeReportPreviousBad(state, locals);
+                      return;
+                    }
+                  }
+                  break;
+                case InstLea:
+                  if (NaClAcceptRegMoveLea32To64(state, iter, inst, RegRBP)) {
+                    /* case 3 */
                     locals->ebp_set_inst = NULL;
                     NaClMaybeReportPreviousBad(state, locals);
                     return;
                   }
-                }
-                /* If reached, not valid. */
-                NaClValidatorInstMessage(
-                    LOG_ERROR, state, inst_state,
-                    "Illegal change to register RBP\n");
+                  break;
+                default:
+                  if (NaClIsMovUsingRegisters(inst, vector, RegRBP, RegRSP)) {
+                    /* case 1 */
+                    NaClMaybeReportPreviousBad(state, locals);
+                    return;
+                  }
+                  break;
               }
+              /* If reached, not valid. */
+              NaClValidatorInstMessage(
+                  LOG_ERROR, state, inst_state,
+                  "Illegal change to register RBP\n");
+              NaClMaybeReportPreviousBad(state, locals);
               break;
             case RegESP:
               /* Record that we must recheck this after we have

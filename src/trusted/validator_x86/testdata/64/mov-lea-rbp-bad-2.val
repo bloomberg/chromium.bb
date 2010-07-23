@@ -1,0 +1,7 @@
+0000000000000002: 4a 8d 6c 35 00                               lea %rbp, [%rbp+%r14*1]
+ERROR: Illegal change to register RBP
+0000000000000000: 89 cd                                        mov %ebp, %ecx
+ERROR: Illegal assignment to EBP
+Checking jump targets: 0 to 7
+Checking that basic blocks are aligned
+***MODULE IS UNSAFE***
