@@ -55,6 +55,12 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // |extension_name| is a directory in "test/data/extensions/api_test".
   bool RunExtensionTest(const char* extension_name);
 
+  // Load |extension_name|, load page at path |subtest_page| under the
+  // extension, and wait for pass / fail notification.  |extension_name|
+  // is a directory in "test/data/extensions/api_test".
+  bool RunExtensionSubtest(const char* extension_name,
+                           const std::string& subtest_page);
+
   // Test that exactly one extension loaded.  If so, return a pointer to
   // the extension.  If not, return NULL and set message_.
   Extension* GetSingleLoadedExtension();
@@ -64,6 +70,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // If it failed, what was the error message?
   std::string message_;
+
+ private:
+  bool RunExtensionTestImpl(const char* extension_name,
+                            const std::string& test_page);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_

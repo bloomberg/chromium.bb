@@ -60,14 +60,36 @@ void ExtensionApiTest::ResultCatcher::Observe(
   }
 }
 
-// Load an extension and wait for it to notify of PASSED or FAILED.
 bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
-  ResultCatcher catcher;
+  return RunExtensionTestImpl(extension_name, "");
+}
 
+bool ExtensionApiTest::RunExtensionSubtest(const char* extension_name,
+                                           const std::string& subtest_page) {
+  DCHECK(!subtest_page.empty()) << "Argument subtest_page is required.";
+  return RunExtensionTestImpl(extension_name, subtest_page);
+}
+
+// Load an extension and wait for it to notify of PASSED or FAILED.
+bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
+                                            const std::string& subtest_page) {
+  ResultCatcher catcher;
   LOG(INFO) << "Running ExtensionApiTest with: " << extension_name;
+
   if (!LoadExtension(test_data_dir_.AppendASCII(extension_name))) {
     message_ = "Failed to load extension.";
     return false;
+  }
+
+  // If there is a subtest to load, navigate to teh subtest page.
+  if (!subtest_page.empty()) {
+    Extension* extension = GetSingleLoadedExtension();
+    if (!extension)
+      return false;  // message_ was set by GetSingleLoadedExtension().
+
+    GURL url = extension->GetResourceURL(subtest_page);
+    LOG(ERROR) << "Loading subtest page url: " << url.spec();
+    ui_test_utils::NavigateToURL(browser(), url);
   }
 
   if (!catcher.GetNextResult()) {

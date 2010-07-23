@@ -25,14 +25,6 @@
 #define MAYBE_TabOnRemoved TabOnRemoved
 #endif
 
-// CaptureVisibleTab fails on karmic 64 bit.
-// http://crbug.com/49040
-#if defined(OS_LINUX) && defined(__x86_64__) && !defined(NDEBUG)
-#define MAYBE_CaptureVisibleTab FLAKY_CaptureVisibleTab
-#else
-#define MAYBE_CaptureVisibleTab CaptureVisibleTab
-#endif
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(StartHTTPServer());
 
@@ -60,9 +52,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOnRemoved) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CaptureVisibleTab) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabJpeg) {
   ASSERT_TRUE(StartHTTPServer());
-  ASSERT_TRUE(RunExtensionTest("tabs/capture_visible_tab")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
+                                  "test_jpeg.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabPng) {
+  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
+                                  "test_png.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
