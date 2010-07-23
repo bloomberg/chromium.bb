@@ -1433,7 +1433,6 @@ gcc-stage3() {
   gcc-stage3-install
   libgcc-install
   liberty-install
-  libstdcpp-header-massage
 }
 
 #+ gcc-stage3-install          - install final llvm-gcc
@@ -1474,17 +1473,6 @@ liberty-install() {
   spushd "${objdir}"
   cp libiberty/libiberty.a "${INSTALL_DIR}/${CROSS_TARGET}/lib"
   spopd
-}
-
-#+ libstdcpp-header-massage - ?
-libstdcpp-header-massage() {
-  StepBanner "GCC-STAGE3" "Header massing for libstdc++"
-
-  # Don't ask
-  rm -f "${INSTALL_DIR}/${CROSS_TARGET}/include/c++"
-  ln -s ../../include/c++ \
-        "${INSTALL_DIR}/${CROSS_TARGET}/include/c++"
-
 }
 
 

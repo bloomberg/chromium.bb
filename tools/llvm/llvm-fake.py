@@ -106,16 +106,14 @@ global_config_flags = {
     BASE_ARM + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
     '-isystem',
     BASE_ARM + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
-    '-isystem', BASE_ARM + '/include/c++/4.2.1',
-    '-isystem', BASE_ARM + '/include/c++/4.2.1/arm-none-linux-gnueabi',
+    '-isystem', BASE_ARM + '/arm-none-linux-gnueabi/include/c++/4.2.1',
+    '-isystem', BASE_ARM + '/arm-none-linux-gnueabi/include/c++/4.2.1/arm-none-linux-gnueabi',
     '-isystem', BASE_ARM + '/arm-none-linux-gnueabi/include',
     # NOTE: order important
     # '-isystem',
     # BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include/nacl/abi',
     '-isystem',
     BASE + '/arm-newlib/arm-none-linux-gnueabi/include',
-    # '-isystem',
-    #  BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include',
   ],
 
   'OPT': [
