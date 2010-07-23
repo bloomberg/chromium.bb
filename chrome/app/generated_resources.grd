@@ -3170,7 +3170,22 @@ each locale. -->
       <message name="IDS_USER_IMAGE_SELECTED_TOOLTIP" desc="Tooltip for preview of selected user image">
         Currently selected image
       </message>
-
+      <!-- OOBE progress bar labels -->
+      <message name="IDS_OOBE_SELECT_NETWORK" desc="The label of OOBE progress bar step, must be short">
+        Select network
+      </message>
+      <message name="IDS_OOBE_EULA" desc="The label of OOBE progress bar step, must be short">
+        Accept agreement
+      </message>
+      <message name="IDS_OOBE_REGISTRATION" desc="The label of OOBE progress bar step, must be short">
+        Register
+      </message>
+      <message name="IDS_OOBE_SIGNIN" desc="The label of OOBE progress bar step, must be short">
+        Sign in
+      </message>
+      <message name="IDS_OOBE_PICTURE" desc="The label of OOBE progress bar step, must be short">
+        Take your account picture
+      </message>
 
       <!-- FindInPage strings -->
       <message name="IDS_FIND_IN_PAGE_COUNT" desc="How many matches found and what item we are showing">

@@ -416,6 +416,12 @@
         <include name="IDR_NOTIFICATION_MENU" file="notification_menu.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_NETWORK_FAILED" file="notification_network_failed.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_UPDATE" file="notification_update.png" type="BINDATA" />
+        <include name="IDR_OOBE_PROGRESS_DOT_CURRENT" file="oobe_progress_dot_current.png" type="BINDATA" />
+        <include name="IDR_OOBE_PROGRESS_DOT_EMPTY" file="oobe_progress_dot_empty.png" type="BINDATA" />
+        <include name="IDR_OOBE_PROGRESS_DOT_FILLED" file="oobe_progress_dot_filled.png" type="BINDATA" />
+        <include name="IDR_OOBE_PROGRESS_LINE" file="oobe_progress_line.png" type="BINDATA" />
+        <include name="IDR_OOBE_PROGRESS_LINE_LEFT" file="oobe_progress_line_left.png" type="BINDATA" />
+        <include name="IDR_OOBE_PROGRESS_LINE_RIGHT" file="oobe_progress_line_right.png" type="BINDATA" />
         <include name="IDR_SPINNER" file="spinner.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGED" file="statusbar_battery_charged.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_1" file="statusbar_battery1c.png" type="BINDATA" />
