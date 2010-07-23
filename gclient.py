@@ -165,11 +165,13 @@ class Dependency(GClientKeywords):
     # Sanity checks
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
-    tree = dict((d.name, d) for d in self.tree(False))
-    if self.name in tree:
-      raise gclient_utils.Error(
-          'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
-          (self.name, tree[self.name].hierarchy(), self.hierarchy()))
+    # TODO(maruel): http://crbug.com/50015 Reenable this check once
+    # self.tree(False) is corrected.
+    # tree = dict((d.name, d) for d in self.tree(False))
+    #if self.name in tree:
+    #  raise gclient_utils.Error(
+    #      'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
+    #      (self.name, tree[self.name].hierarchy(), self.hierarchy()))
     if not isinstance(self.url,
         (basestring, self.FromImpl, self.FileImpl, None.__class__)):
       raise gclient_utils.Error('dependency url must be either a string, None, '
