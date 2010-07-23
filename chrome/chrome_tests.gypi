@@ -850,6 +850,7 @@
         'browser/cocoa/location_bar/autocomplete_text_field_editor_unittest.mm',
         'browser/cocoa/location_bar/autocomplete_text_field_unittest.mm',
         'browser/cocoa/location_bar/autocomplete_text_field_unittest_helper.mm',
+        'browser/cocoa/location_bar/ev_bubble_decoration_unittest.mm',
         'browser/cocoa/location_bar/image_decoration_unittest.mm',
         'browser/cocoa/location_bar/keyword_hint_decoration_unittest.mm',
         'browser/cocoa/location_bar/selected_keyword_decoration_unittest.mm',

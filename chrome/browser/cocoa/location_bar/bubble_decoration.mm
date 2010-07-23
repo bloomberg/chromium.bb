@@ -99,6 +99,10 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   }
 }
 
+NSImage* BubbleDecoration::GetImage() {
+  return image_;
+}
+
 void BubbleDecoration::SetImage(NSImage* image) {
   image_.reset([image retain]);
 }

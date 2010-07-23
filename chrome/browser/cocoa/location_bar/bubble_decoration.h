@@ -21,6 +21,7 @@ class BubbleDecoration : public LocationBarDecoration {
   ~BubbleDecoration();
 
   // Setup the drawing parameters.
+  NSImage* GetImage();
   void SetImage(NSImage* image);
   void SetLabel(NSString* label);
   void SetColors(NSColor* border_color,
