@@ -1304,12 +1304,13 @@
    fun:_ZN17AudioRendererHost14IPCAudioSource4PlayEv
 }
 {
-   bug_46678_v_b
+   bug_46678
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_8Capturer11CaptureDataEE
-   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEES5_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_8Capturer11CaptureDataEEE6Tuple1IS5_EE3RunEv
+   fun:_Z11NewCallbackIN8remoting14SessionManagerEPNS0_11HostMessageEiEPN9Callback2IT0_T1_E4TypeEPT_MSA_FvS5_S6_E
+   fun:_ZN8remoting14SessionManager8DoEncodeE13scoped_refptrINS_11CaptureDataEE
+   fun:_Z16DispatchToMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_11CaptureDataEEES4_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN8remoting14SessionManagerEMS1_Fv13scoped_refptrINS0_11CaptureDataEEE6Tuple1IS4_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
    ...
    fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
