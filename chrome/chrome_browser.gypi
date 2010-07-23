@@ -1078,6 +1078,8 @@
         'browser/dom_ui/bookmarks_ui.h',
         'browser/dom_ui/chrome_url_data_manager.cc',
         'browser/dom_ui/chrome_url_data_manager.h',
+        'browser/dom_ui/add_startup_page_handler.cc',
+        'browser/dom_ui/add_startup_page_handler.h',
         'browser/dom_ui/advanced_options_handler.cc',
         'browser/dom_ui/advanced_options_handler.h',
         'browser/dom_ui/advanced_options_utils_mac.mm',

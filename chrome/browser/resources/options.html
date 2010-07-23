@@ -33,6 +33,7 @@
 <script src="options/personal_options.js"></script>
 <script src="options/content_settings_ui.js"></script>
 <script src="options/content_settings.js"></script>
+<script src="options/add_startup_page_overlay.js"></script>
 <script src="options/clear_browser_data_overlay.js"></script>
 <script src="options/font_settings_overlay.js"></script>
 <script>
@@ -63,6 +64,7 @@ function load() {
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
+  OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
   OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
 
@@ -114,6 +116,7 @@ window.onpopstate = function(e) {
 </div>
 <div id="overlay" class="overlay hidden">
   <div id="overlayview">
+    <include src="options/add_startup_page_overlay.html">
     <include src="options/clear_browser_data_overlay.html">
     <include src="options/font_settings_overlay.html">
     <if expr="pp_ifdef('chromeos')">

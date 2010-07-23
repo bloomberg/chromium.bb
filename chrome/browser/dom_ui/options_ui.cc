@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/add_startup_page_handler.h"
 #include "chrome/browser/dom_ui/advanced_options_handler.h"
 #include "chrome/browser/dom_ui/browser_options_handler.h"
 #include "chrome/browser/dom_ui/clear_browser_data_handler.h"
@@ -118,14 +119,17 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new CoreOptionsHandler());
 #endif
 
-  // TODO(zelidrag): Add all other page handlers here as we implement them.
+  AddOptionsPageUIHandler(localized_strings, new AddStartupPageHandler());
+  AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
+  AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
+  AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SyncOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
 #if defined(OS_CHROMEOS)
-  AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::AccountsOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LabsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageChewingOptionsHandler());
@@ -134,12 +138,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new LanguagePinyinOptionsHandler());
-  AddOptionsPageUIHandler(localized_strings,
-                          new chromeos::AccountsOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
 #endif
-  AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
-  AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
-  AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
 
   // |localized_strings| ownership is taken over by this constructor.
   OptionsUIHTMLSource* html_source =

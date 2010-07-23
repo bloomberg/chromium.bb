@@ -1,0 +1,16 @@
+<div class="page hidden" id="addStartupPageOverlay">
+  <h1 i18n-content="addStartupPageTitle"></h1>
+
+  <div class="button-strip">
+    <if expr="os != 'darwin'">
+      <button id="addStartupPageOkayButton" disabled
+          i18n-content="ok_label"></button>
+    </if>
+    <button id="addStartupPageCancelButton"
+        i18n-content="addStartupPageCancelButton"></button>
+    <if expr="os == 'darwin'">
+      <button id="addStartupPageAddButton" disabled
+          i18n-content="addStartupPageAddButton"></button>
+    </if>
+  </div>
+</div>

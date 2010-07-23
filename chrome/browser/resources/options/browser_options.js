@@ -25,7 +25,7 @@ BrowserOptions.prototype = {
 
     // Wire up buttons.
     $('startupAddButton').onclick = function(event) {
-      // TODO(stuartmorgan): Spawn add sub-dialog.
+      OptionsPage.showOverlay('addStartupPageOverlay');
     };
     $('startupRemoveButton').onclick = function(event) {
       // TODO(stuartmorgan): Remove selected element(s).

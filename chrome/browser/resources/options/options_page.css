@@ -36,6 +36,10 @@
   height: 20px;
 }
 
+#overlayview .button-strip {
+  text-align: end;
+}
+
 #overlayview {
   background: white;
   border-radius: 5px;
