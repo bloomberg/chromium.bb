@@ -413,10 +413,8 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
     if (isTemplate) {
       scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-      NSColor* shadowColor = [color gtm_legibleTextColor];
-      shadowColor = [shadowColor colorWithAlphaComponent:0.25];
-      [shadow.get() setShadowColor:shadowColor];
-      [shadow.get() setShadowOffset:NSMakeSize(0, -1.0)];
+      [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.96 alpha:1.0]];
+      [shadow setShadowOffset:NSMakeSize(0.0, -1.0)];
       [shadow setShadowBlurRadius:1.0];
       [shadow set];
     }
@@ -430,18 +428,16 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
                    operation:NSCompositeSourceOver
                     fraction:[self isEnabled] ? 1.0 : 0.5
                 neverFlipped:YES];
-    if (isTemplate) {
-      if (color) {
-        [color set];
-        NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
-      }
+    if (isTemplate && color) {
+      [color set];
+      NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
     }
     CGContextEndTransparencyLayer(context);
 
     [NSGraphicsContext restoreGraphicsState];
   } else {
-    // NSCell draws these uncentered for some reason, probably because of the
-    // of control in the xib
+    // NSCell draws these off-center for some reason, probably because of the
+    // positioning of the control in the xib.
     [super drawInteriorWithFrame:NSOffsetRect(cellFrame, 0, 1)
                           inView:controlView];
   }
