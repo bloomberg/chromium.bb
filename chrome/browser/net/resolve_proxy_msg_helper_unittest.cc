@@ -13,9 +13,11 @@
 // This ProxyConfigService always returns "http://pac" as the PAC url to use.
 class MockProxyConfigService : public net::ProxyConfigService {
  public:
-  virtual int GetProxyConfig(net::ProxyConfig* results) {
-    results->set_pac_url(GURL("http://pac"));
-    return net::OK;
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual bool GetLatestProxyConfig(net::ProxyConfig* results) {
+    *results = net::ProxyConfig::CreateFromCustomPacURL(GURL("http://pac"));
+    return true;
   }
 };
 
