@@ -13,12 +13,12 @@ class FakeScreenLockLibrary : public ScreenLockLibrary {
  public:
   FakeScreenLockLibrary() {}
   virtual ~FakeScreenLockLibrary() {}
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-  virtual void NotifyScreenLockRequested();
-  virtual void NotifyScreenLockCompleted();
-  virtual void NotifyScreenUnlockRequested();
-  virtual void NotifyScreenUnlockCompleted();
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual void NotifyScreenLockRequested() {}
+  virtual void NotifyScreenLockCompleted() {}
+  virtual void NotifyScreenUnlockRequested() {}
+  virtual void NotifyScreenUnlockCompleted() {}
 };
 
 }  // namespace chromeos

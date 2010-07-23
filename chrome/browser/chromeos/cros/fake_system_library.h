@@ -15,12 +15,19 @@ namespace chromeos {
 
 class FakeSystemLibrary : public SystemLibrary {
  public:
-  FakeSystemLibrary();
+  FakeSystemLibrary() {
+    std::string id = "US/Pacific";
+    icu::TimeZone* timezone =
+        icu::TimeZone::createTimeZone(icu::UnicodeString::fromUTF8(id));
+    timezone_.reset(timezone);
+  }
   virtual ~FakeSystemLibrary() {}
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-  virtual const icu::TimeZone& GetTimezone();
-  virtual void SetTimezone(const icu::TimeZone*);
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual const icu::TimeZone& GetTimezone() {
+    return *timezone_.get();
+  }
+  virtual void SetTimezone(const icu::TimeZone*) {}
 
  private:
   scoped_ptr<icu::TimeZone> timezone_;

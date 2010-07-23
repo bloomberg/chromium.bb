@@ -15,10 +15,16 @@ class FakeLoginLibrary : public LoginLibrary {
  public:
   FakeLoginLibrary() {}
   virtual ~FakeLoginLibrary() {}
-  virtual bool EmitLoginPromptReady();
+  virtual bool EmitLoginPromptReady() {
+    return true;
+  }
   virtual bool StartSession(const std::string& user_email,
-                            const std::string& unique_id);
-  virtual bool StopSession(const std::string& unique_id);
+                            const std::string& unique_id) {
+    return true;
+  }
+  virtual bool StopSession(const std::string& unique_id) {
+    return true;
+  }
 };
 
 }  // namespace chromeos

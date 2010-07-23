@@ -14,10 +14,14 @@ class FakeMountLibrary : public MountLibrary {
  public:
   FakeMountLibrary() {}
   virtual ~FakeMountLibrary() {}
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-  virtual const DiskVector& disks() const { return disks_; }
-  virtual bool MountPath(const char* device_path);
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual const DiskVector& disks() const {
+    return disks_;
+  }
+  virtual bool MountPath(const char* device_path) {
+    return true;
+  }
 
  private:
   DiskVector disks_;

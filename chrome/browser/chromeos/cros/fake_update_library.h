@@ -13,9 +13,11 @@ class FakeUpdateLibrary : public UpdateLibrary {
  public:
   FakeUpdateLibrary() {}
   virtual ~FakeUpdateLibrary() {}
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-  virtual const Status& status() const;
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual const Status& status() const {
+    return status_;
+  }
 
  private:
   Status status_;

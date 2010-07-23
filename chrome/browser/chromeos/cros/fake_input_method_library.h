@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "third_party/cros/chromeos_input_method.h"
 
@@ -14,22 +15,39 @@ namespace chromeos {
 
 class FakeInputMethodLibrary : public InputMethodLibrary {
  public:
-  FakeInputMethodLibrary();
+  FakeInputMethodLibrary()
+      : previous_input_method_("", "", "", ""),
+        current_input_method_("", "", "", "") {
+  }
+
   virtual ~FakeInputMethodLibrary() {}
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-  virtual InputMethodDescriptors* GetActiveInputMethods();
-  virtual size_t GetNumActiveInputMethods();
-  virtual InputMethodDescriptors* GetSupportedInputMethods();
-  virtual void ChangeInputMethod(const std::string& input_method_id);
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual InputMethodDescriptors* GetActiveInputMethods() {
+    return CreateFallbackInputMethodDescriptors();
+  }
+  virtual size_t GetNumActiveInputMethods() {
+    scoped_ptr<InputMethodDescriptors> input_methods(GetActiveInputMethods());
+    return input_methods->size();
+  }
+  virtual InputMethodDescriptors* GetSupportedInputMethods() {
+    return CreateFallbackInputMethodDescriptors();
+  }
+  virtual void ChangeInputMethod(const std::string& input_method_id) {}
   virtual void SetImePropertyActivated(const std::string& key,
-                                       bool activated);
-  virtual bool InputMethodIsActivated(const std::string& input_method_id);
+                                       bool activated) {}
+  virtual bool InputMethodIsActivated(const std::string& input_method_id) {
+    return true;
+  }
   virtual bool GetImeConfig(
-      const char* section, const char* config_name, ImeConfigValue* out_value);
+      const char* section, const char* config_name, ImeConfigValue* out_value) {
+    return true;
+  }
   virtual bool SetImeConfig(const char* section,
                             const char* config_name,
-                            const ImeConfigValue& value);
+                            const ImeConfigValue& value) {
+    return true;
+  }
 
   virtual const InputMethodDescriptor& previous_input_method() const {
     return previous_input_method_;

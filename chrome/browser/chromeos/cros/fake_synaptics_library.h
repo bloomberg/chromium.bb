@@ -13,8 +13,8 @@ class FakeSynapticsLibrary : public SynapticsLibrary {
  public:
   FakeSynapticsLibrary() {}
   virtual ~FakeSynapticsLibrary() {}
-  virtual void SetBoolParameter(SynapticsParameter param, bool value);
-  virtual void SetRangeParameter(SynapticsParameter param, int value);
+  virtual void SetBoolParameter(SynapticsParameter param, bool value) {}
+  virtual void SetRangeParameter(SynapticsParameter param, int value) {}
 };
 
 }  // namespace chromeos

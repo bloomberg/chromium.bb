@@ -16,7 +16,9 @@ class  FakeLibraryLoader : public LibraryLoader {
  public:
   FakeLibraryLoader() {}
   virtual ~FakeLibraryLoader() {}
-  virtual bool Load(std::string* load_error_string);
+  virtual bool Load(std::string* load_error_string) {
+    return true;
+  }
 };
 
 }  // namespace chromeos

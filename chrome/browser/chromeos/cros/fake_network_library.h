@@ -14,10 +14,10 @@ namespace chromeos {
 
 class FakeNetworkLibrary : public NetworkLibrary {
  public:
-  FakeNetworkLibrary();
+  FakeNetworkLibrary() : ip_address_("1.1.1.1") {}
   virtual ~FakeNetworkLibrary() {}
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
 
   virtual const EthernetNetwork& ethernet_network() const { return ethernet_; }
   virtual bool ethernet_connecting() const { return false; }
@@ -33,9 +33,15 @@ class FakeNetworkLibrary : public NetworkLibrary {
   virtual bool cellular_connected() const { return false; }
   virtual int cellular_strength() const { return 0; }
 
-  virtual bool Connected() const;
-  virtual bool Connecting() const;
-  virtual const std::string& IPAddress() const;
+  virtual bool Connected() const {
+    return true;
+  }
+  virtual bool Connecting() const {
+    return false;
+  }
+  virtual const std::string& IPAddress() const {
+    return ip_address_;
+  }
 
   virtual const WifiNetworkVector& wifi_networks() const {
     return wifi_networks_;
@@ -54,29 +60,41 @@ class FakeNetworkLibrary : public NetworkLibrary {
   }
 
   virtual bool FindWifiNetworkByPath(const std::string& path,
-                                     WifiNetwork* network) const;
+                                     WifiNetwork* network) const {
+    return false;
+  }
   virtual bool FindCellularNetworkByPath(const std::string& path,
-                                         CellularNetwork* network) const;
+                                         CellularNetwork* network) const {
+    return false;
+  }
 
-  virtual void RequestWifiScan();
-  virtual bool GetWifiAccessPoints(WifiAccessPointVector* result);
-  virtual bool ConnectToPreferredNetworkIfAvailable();
-  virtual bool PreferredNetworkConnected();
-  virtual bool PreferredNetworkFailed();
+  virtual void RequestWifiScan() {}
+  virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
+    return true;
+  }
+  virtual bool ConnectToPreferredNetworkIfAvailable() {
+    return false;
+  }
+  virtual bool PreferredNetworkConnected() {
+    return false;
+  }
+  virtual bool PreferredNetworkFailed() {
+    return false;
+  }
   virtual void ConnectToWifiNetwork(WifiNetwork network,
                                     const std::string& password,
                                     const std::string& identity,
-                                    const std::string& certpath);
+                                    const std::string& certpath) {}
   virtual void ConnectToWifiNetwork(const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath,
-                                    bool auto_connect);
-  virtual void ConnectToCellularNetwork(CellularNetwork network);
-  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network);
-  virtual void SaveCellularNetwork(const CellularNetwork& network);
-  virtual void SaveWifiNetwork(const WifiNetwork& network);
-  virtual void ForgetWirelessNetwork(const WirelessNetwork& network);
+                                    bool auto_connect) {}
+  virtual void ConnectToCellularNetwork(CellularNetwork network) {}
+  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network) {}
+  virtual void SaveCellularNetwork(const CellularNetwork& network) {}
+  virtual void SaveWifiNetwork(const WifiNetwork& network) {}
+  virtual void ForgetWirelessNetwork(const WirelessNetwork& network) {}
 
   virtual bool ethernet_available() const { return true; }
   virtual bool wifi_available() const { return false; }
@@ -88,12 +106,17 @@ class FakeNetworkLibrary : public NetworkLibrary {
 
   virtual bool offline_mode() const { return false; }
 
-  virtual void EnableEthernetNetworkDevice(bool enable);
-  virtual void EnableWifiNetworkDevice(bool enable);
-  virtual void EnableCellularNetworkDevice(bool enable);
-  virtual void EnableOfflineMode(bool enable);
-  virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path);
-  virtual std::string GetHtmlInfo(int refresh);
+  virtual void EnableEthernetNetworkDevice(bool enable) {}
+  virtual void EnableWifiNetworkDevice(bool enable) {}
+  virtual void EnableCellularNetworkDevice(bool enable) {}
+  virtual void EnableOfflineMode(bool enable) {}
+  virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path) {
+    NetworkIPConfigVector ipconfig_vector;
+    return ipconfig_vector;
+  }
+  virtual std::string GetHtmlInfo(int refresh) {
+    return "";
+  }
 
  private:
   std::string ip_address_;

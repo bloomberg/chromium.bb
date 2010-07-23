@@ -13,8 +13,8 @@ class FakePowerLibrary : public PowerLibrary {
  public:
   FakePowerLibrary() {}
   virtual ~FakePowerLibrary() {}
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
   virtual bool line_power_on() const { return true; }
   virtual bool battery_fully_charged() const { return true; }
   virtual double battery_percentage() const { return 100; }

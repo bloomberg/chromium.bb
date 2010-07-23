@@ -15,10 +15,18 @@ class FakeKeyboardLibrary : public KeyboardLibrary {
  public:
   FakeKeyboardLibrary() {}
   virtual ~FakeKeyboardLibrary() {}
-  virtual std::string GetCurrentKeyboardLayoutName() const;
-  virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name);
-  virtual bool GetKeyboardLayoutPerWindow(bool* is_per_window) const;
-  virtual bool SetKeyboardLayoutPerWindow(bool is_per_window);
+  virtual std::string GetCurrentKeyboardLayoutName() const {
+    return "";
+  }
+  virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name) {
+    return true;
+  }
+  virtual bool GetKeyboardLayoutPerWindow(bool* is_per_window) const {
+    return true;
+  }
+  virtual bool SetKeyboardLayoutPerWindow(bool is_per_window) {
+    return true;
+  }
 };
 
 }  // namespace chromeos
