@@ -658,9 +658,6 @@ const char kNumPacThreads[]                 = "num-pac-threads";
 // Launch URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 
-// Simulate an organic Chrome install.
-const char kOrganicInstall[]                = "organic";
-
 // Package an extension to a .crx installable file from a given directory.
 const char kPackExtension[]                 = "pack-extension";
 
