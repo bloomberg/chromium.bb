@@ -63,3 +63,6 @@ PREFIX : std::basic_string<char,std::char_traits<char>,std::allocator<char> >::a
 
 # 39356
 PREFIX: renderwidgethost::onmsgupdaterect___ipc::messagewithtuple<tuple1<viewhostmsg_updaterect_params> >::dispatch<renderwidgethost,void (__thiscall renderwidgethost::*)(viewhostmsg_updaterect_params const &)>___renderwidgethost::onmessagereceived___renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived___renderwidgethelper::updatemsgproxy::run___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::runwithdispatcher___messageloop::runinternal___messageloopforui::run___`anonymous namespace'::runuimessageloop___browsermain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
+
+# 50061
+PREFIX: chrome_2690000+0x54be
