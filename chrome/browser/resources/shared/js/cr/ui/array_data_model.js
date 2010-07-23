@@ -88,6 +88,21 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Appends items to the end of the model.
+     *
+     * This dispatches a splice event.
+     *
+     * @param {...*} The items to append.
+     * @return {number} The new length of the model.
+     */
+    push: function(var_args) {
+      var args = Array.prototype.slice.call(arguments);
+      args.unshift(this.length, 0);
+      this.splice.apply(this, args);
+      return this.length;
+    },
+
+    /**
      * Use this to update a given item in the array. This does not remove and
      * reinsert a new item.
      *

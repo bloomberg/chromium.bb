@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
+<script src="../../cr.js"></script>
+<script src="../event_target.js"></script>
+<script src="array_data_model.js"></script>
+<script>
+
+goog.require('goog.testing.jsunit');
+
+</script>
+
+</head>
+<body>
+
+<script>
+
+function testSlice() {
+  var m = new cr.ui.ArrayDataModel([0, 1, 2]);
+  assertArrayEquals([0, 1, 2], m.slice());
+  assertArrayEquals([1, 2], m.slice(1));
+  assertArrayEquals([1], m.slice(1, 2));
+}
+
+function testPush() {
+  var m = new cr.ui.ArrayDataModel([0, 1, 2]);
+
+  var count = 0;
+  m.addEventListener('splice', function(e) {
+    count++;
+    assertEquals(3, e.index);
+    assertArrayEquals([], e.removed);
+    assertArrayEquals([3, 4], e.added);
+  });
+
+  assertEquals(5, m.push(3, 4));
+  var a = m.slice();
+  assertArrayEquals([0, 1, 2, 3, 4], a);
+
+  assertEquals('The splice event should only fire once', 1, count);
+}
+
+</script>
+
+</body>
+</html>
