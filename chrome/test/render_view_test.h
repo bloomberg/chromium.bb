@@ -24,6 +24,15 @@ class MockRenderProcess;
 
 class RenderViewTest : public testing::Test {
  public:
+  // A special WebKitClientImpl class for getting rid off the dependency to the
+  // sandbox, which is not available in RenderViewTest.
+  class RendererWebKitClientImplNoSandbox : public RendererWebKitClientImpl {
+   public:
+    virtual WebKit::WebSandboxSupport* sandboxSupport() {
+      return NULL;
+    }
+  };
+
   RenderViewTest();
   ~RenderViewTest();
 
@@ -61,15 +70,6 @@ class RenderViewTest : public testing::Test {
   virtual void SetUp();
 
   virtual void TearDown();
-
-  // A special WebKitClientImpl class for getting rid off the dependency to the
-  // sandbox, which is not available in RenderViewTest.
-  class RendererWebKitClientImplNoSandbox : public RendererWebKitClientImpl {
-   public:
-    virtual WebKit::WebSandboxSupport* sandboxSupport() {
-      return NULL;
-    }
-  };
 
   MessageLoop msg_loop_;
   MockRenderThread render_thread_;

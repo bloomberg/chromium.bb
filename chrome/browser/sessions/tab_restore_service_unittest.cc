@@ -8,8 +8,10 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/test/render_view_test.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 
 // Create subclass that overrides TimeNow so that we can control the time used
 // for closed tabs and windows.
@@ -44,11 +46,14 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
     RenderViewHostTestHarness::SetUp();
     time_factory_ = new TabRestoreTimeFactory();
     service_ = new TabRestoreService(profile(), time_factory_);
+    WebKit::initialize(&webkitclient_);
   }
+
   virtual void TearDown() {
     service_ = NULL;
     delete time_factory_;
     RenderViewHostTestHarness::TearDown();
+    WebKit::shutdown();
   }
 
   void AddThreeNavigations() {
@@ -111,6 +116,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   GURL url3_;
   scoped_refptr<TabRestoreService> service_;
   TabRestoreTimeFactory* time_factory_;
+  RenderViewTest::RendererWebKitClientImplNoSandbox webkitclient_;
 };
 
 TEST_F(TabRestoreServiceTest, Basic) {
@@ -230,15 +236,8 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   EXPECT_TRUE(extension_app_id == tab->extension_app_id);
 }
 
-// Crashes, http://crbug.com/45977.
-#if defined(OS_WIN)
-#define MAYBE_DontPersistPostData DISABLED_DontPersistPostData
-#else
-#define MAYBE_DontPersistPostData DontPersistPostData
-#endif  // defined(OS_WIN)
-
 // Make sure we persist entries to disk that have post data.
-TEST_F(TabRestoreServiceTest, MAYBE_DontPersistPostData) {
+TEST_F(TabRestoreServiceTest, DontPersistPostData) {
   AddThreeNavigations();
   controller().GetEntryAtIndex(0)->set_has_post_data(true);
   controller().GetEntryAtIndex(1)->set_has_post_data(true);
