@@ -688,13 +688,15 @@ def main(argv):
   global LLVM_GCC
   # NOTE: we do not hook onto the "--v" flags since it may have other uses
   #       in connection with bootstrapping the gcc toolchain
-  for pos, arg in enumerate(argv):
+  new_argv = []
+  for arg in argv:
     if arg == '--pnacl-driver-verbose':
       VERBOSE = 1
-      del argv[pos]
-    if arg.startswith('--driver='):
+    elif arg.startswith('--driver='):
       LLVM_GCC = arg[len('--driver='):]
-      del argv[pos]
+    else:
+      new_argv.append(arg)
+  argv = new_argv
 
   # mechanism to overwrite some global settings, e.g.:
   #  --pnacl-driver-set-AS_X8632=-a,-b,3
