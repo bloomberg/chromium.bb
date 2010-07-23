@@ -265,7 +265,7 @@ namespace {
 
 class SimpleServer : public Worker {
  public:
-  SimpleServer(bool pump_during_send)
+  explicit SimpleServer(bool pump_during_send)
       : Worker(Channel::MODE_SERVER, "simpler_server"),
         pump_during_send_(pump_during_send) { }
   void Run() {
@@ -426,7 +426,7 @@ class UnblockServer : public Worker {
 
 class UnblockClient : public Worker {
  public:
-  UnblockClient(bool pump_during_send)
+  explicit UnblockClient(bool pump_during_send)
     : Worker(Channel::MODE_CLIENT, "unblock_client"),
       pump_during_send_(pump_during_send) { }
 
@@ -577,7 +577,7 @@ namespace {
 
 class MultipleServer1 : public Worker {
  public:
-  MultipleServer1(bool pump_during_send)
+  explicit MultipleServer1(bool pump_during_send)
     : Worker("test_channel1", Channel::MODE_SERVER),
       pump_during_send_(pump_during_send) { }
 
@@ -694,9 +694,9 @@ namespace {
 // nested calls are issued.
 class QueuedReplyServer : public Worker {
  public:
-   QueuedReplyServer(base::Thread* listener_thread,
-                     const std::string& channel_name,
-                     const std::string& reply_text)
+  QueuedReplyServer(base::Thread* listener_thread,
+                    const std::string& channel_name,
+                    const std::string& reply_text)
       : Worker(channel_name, Channel::MODE_SERVER),
         reply_text_(reply_text) {
     Worker::OverrideThread(listener_thread);
@@ -808,7 +808,7 @@ namespace {
 
 class BadServer : public Worker {
  public:
-  BadServer(bool pump_during_send)
+  explicit BadServer(bool pump_during_send)
     : Worker(Channel::MODE_SERVER, "simpler_server"),
       pump_during_send_(pump_during_send) { }
   void Run() {
@@ -899,9 +899,9 @@ namespace {
 
 class TimeoutServer : public Worker {
  public:
-   TimeoutServer(int timeout_ms,
-                 std::vector<bool> timeout_seq,
-                 bool pump_during_send)
+  TimeoutServer(int timeout_ms,
+                std::vector<bool> timeout_seq,
+                bool pump_during_send)
       : Worker(Channel::MODE_SERVER, "timeout_server"),
         timeout_ms_(timeout_ms),
         timeout_seq_(timeout_seq),
@@ -924,10 +924,10 @@ class TimeoutServer : public Worker {
 
 class UnresponsiveClient : public Worker {
  public:
-   UnresponsiveClient(std::vector<bool> timeout_seq)
+  explicit UnresponsiveClient(std::vector<bool> timeout_seq)
       : Worker(Channel::MODE_CLIENT, "unresponsive_client"),
         timeout_seq_(timeout_seq) {
-   }
+  }
 
   void OnAnswerDelay(Message* reply_msg) {
     DCHECK(!timeout_seq_.empty());
@@ -1010,7 +1010,7 @@ namespace {
 
 class NestedTask : public Task {
  public:
-  NestedTask(Worker* server) : server_(server) { }
+  explicit NestedTask(Worker* server) : server_(server) { }
   void Run() {
     // Sleep a bit so that we wake up after the reply has been received.
     PlatformThread::Sleep(250);

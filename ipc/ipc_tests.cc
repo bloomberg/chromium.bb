@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <utility>
 
 #include "ipc/ipc_tests.h"
 
@@ -20,10 +21,6 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug_on_start.h"
-#if defined(OS_POSIX)
-#include "base/at_exit.h"
-#include "base/global_descriptors_posix.h"
-#endif
 #include "base/perftimer.h"
 #include "base/test/perf_test_suite.h"
 #include "base/test/test_suite.h"
@@ -96,7 +93,7 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
   base::file_handle_mapping_vector fds_to_map;
   const int ipcfd = channel->GetClientFileDescriptor();
   if (ipcfd > -1) {
-    fds_to_map.push_back(std::pair<int,int>(ipcfd, kPrimaryIPCChannel + 3));
+    fds_to_map.push_back(std::pair<int, int>(ipcfd, kPrimaryIPCChannel + 3));
   }
 
   base::ProcessHandle ret = NULL;
@@ -271,7 +268,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
     base::file_handle_mapping_vector fds_to_map;
     const int ipcfd = chan.GetClientFileDescriptor();
     if (ipcfd > -1) {
-      fds_to_map.push_back(std::pair<int,int>(ipcfd, kPrimaryIPCChannel + 3));
+      fds_to_map.push_back(std::pair<int, int>(ipcfd, kPrimaryIPCChannel + 3));
     }
 
     base::ProcessHandle process_handle = MultiProcessTest::SpawnChild(

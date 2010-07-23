@@ -1,19 +1,22 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/child_process.h"
 
+#if defined(OS_POSIX)
+#include <signal.h>  // For SigUSR1Handler below.
+#endif
+
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/thread.h"
 #include "chrome/common/child_thread.h"
 #include "grit/chromium_strings.h"
 
 #if defined(OS_POSIX)
-#include <signal.h>
-
 static void SigUSR1Handler(int signal) { }
 #endif
 
