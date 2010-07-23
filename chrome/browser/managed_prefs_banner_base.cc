@@ -30,6 +30,11 @@ ManagedPrefsBannerBase::ManagedPrefsBannerBase(PrefService* prefs,
 #if defined(GOOGLE_CHROME_BUILD)
       AddPref(prefs::kMetricsReportingEnabled);
 #endif
+      AddPref(prefs::kNoProxyServer);
+      AddPref(prefs::kProxyAutoDetect);
+      AddPref(prefs::kProxyServer);
+      AddPref(prefs::kProxyPacUrl);
+      AddPref(prefs::kProxyBypassList);
       break;
     default:
       NOTREACHED();

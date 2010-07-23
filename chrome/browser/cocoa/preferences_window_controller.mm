@@ -416,6 +416,8 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 
 @implementation PreferencesWindowController
 
+@synthesize proxiesConfigureButtonEnabled = proxiesConfigureButtonEnabled_;
+
 - (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage {
   DCHECK(profile);
   // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
@@ -483,6 +485,11 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     PersonalDataManager* personalDataManager =
         profile_->GetPersonalDataManager();
     [autoFillSettingsButton_ setHidden:(personalDataManager == NULL)];
+
+    // Initialize the proxy pref set observer.
+    proxyPrefs_.reset(
+        PrefSetObserver::CreateProxyPrefSetObserver(prefs_, observer_.get()));
+    [self setProxiesConfigureButtonEnabled:!proxyPrefs_->IsManaged()];
   }
   return self;
 }
@@ -1379,6 +1386,9 @@ const int kDisabledIndex = 1;
   else if (*prefName == prefs::kDownloadExtensionsToOpen) {
     // Poke KVC.
     [self setFileHandlerUIEnabled:[self fileHandlerUIEnabled]];
+  }
+  else if (proxyPrefs_->IsObserved(*prefName)) {
+    [self setProxiesConfigureButtonEnabled:!proxyPrefs_->IsManaged()];
   }
 }
 

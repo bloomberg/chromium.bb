@@ -34,6 +34,7 @@
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/pref_member.h"
+#include "chrome/browser/pref_set_observer.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -349,6 +350,9 @@ class NetworkSection : public OptionsPageBase {
   }
 
  private:
+  // Overridden from OptionsPageBase.
+  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+
   struct ProxyConfigCommand {
     std::string binary;
     const char** argv;
@@ -363,8 +367,14 @@ class NetworkSection : public OptionsPageBase {
   // Start the given proxy configuration utility.
   static void StartProxyConfigUtil(const ProxyConfigCommand& command);
 
+  // Tracks the state of proxy preferences.
+  scoped_ptr<PrefSetObserver> proxy_prefs_;
+
   // The widget containing the options for this section.
   GtkWidget* page_;
+
+  // The proxy configuration button.
+  GtkWidget* change_proxies_button_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSection);
 };
@@ -379,20 +389,30 @@ NetworkSection::NetworkSection(Profile* profile)
   gtk_box_pack_start(GTK_BOX(page_), proxy_description_label,
                      FALSE, FALSE, 0);
 
-  GtkWidget* change_proxies_button = gtk_button_new_with_label(
+  change_proxies_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(
           IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON).c_str());
-  g_signal_connect(change_proxies_button, "clicked",
+  g_signal_connect(change_proxies_button_, "clicked",
                    G_CALLBACK(OnChangeProxiesButtonClicked), this);
 
   // Stick it in an hbox so it doesn't expand to the whole width.
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(button_hbox),
-                     change_proxies_button,
+                     change_proxies_button_,
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(page_),
                      gtk_util::IndentWidget(button_hbox),
                      FALSE, FALSE, 0);
+
+  proxy_prefs_.reset(PrefSetObserver::CreateProxyPrefSetObserver(
+      profile->GetPrefs(), this));
+  NotifyPrefChanged(NULL);
+}
+
+void NetworkSection::NotifyPrefChanged(const std::wstring* pref_name) {
+  if (!pref_name || proxy_prefs_->IsObserved(*pref_name))
+    gtk_widget_set_sensitive(change_proxies_button_,
+                             !proxy_prefs_->IsManaged());
 }
 
 // static

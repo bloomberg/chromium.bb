@@ -2040,6 +2040,8 @@
         'browser/pref_member.h',
         'browser/pref_service.cc',
         'browser/pref_service.h',
+        'browser/pref_set_observer.cc',
+        'browser/pref_set_observer.h',
         'browser/pref_value_store.cc',
         'browser/pref_value_store.h',
         'browser/preferences_mac.cc',

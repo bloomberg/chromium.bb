@@ -8,6 +8,7 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/pref_member.h"
+#include "chrome/browser/pref_set_observer.h"
 
 namespace PreferencesWindowControllerInternal {
 class PrefObserverBridge;
@@ -123,6 +124,8 @@ class ProfileSyncService;
   FontLanguageSettingsController* fontLanguageSettings_;
   StringPrefMember currentTheme_;
   IBOutlet NSButton* enableLoggingCheckbox_;
+  scoped_ptr<PrefSetObserver> proxyPrefs_;
+  BOOL proxiesConfigureButtonEnabled_;
 }
 
 // Designated initializer. |profile| should not be NULL.
@@ -170,6 +173,7 @@ class ProfileSyncService;
 
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property (nonatomic, readonly) CustomHomePagesModel* customPagesSource;
+@property (assign, nonatomic) BOOL proxiesConfigureButtonEnabled;
 
 @end
 

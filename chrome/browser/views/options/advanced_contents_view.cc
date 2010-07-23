@@ -29,6 +29,7 @@
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/pref_set_observer.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -953,6 +954,9 @@ class NetworkSection : public AdvancedSection,
   views::Label* change_proxies_label_;
   views::NativeButton* change_proxies_button_;
 
+  // Tracks the proxy preferences.
+  scoped_ptr<PrefSetObserver> proxy_prefs_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkSection);
 };
 
@@ -998,9 +1002,16 @@ void NetworkSection::InitControlLayout() {
                       true);
   AddLeadingControl(layout, change_proxies_button_, indented_view_set_id,
                     false);
+
+  proxy_prefs_.reset(PrefSetObserver::CreateProxyPrefSetObserver(
+      profile()->GetPrefs(), this));
+  NotifyPrefChanged(NULL);
 }
 
 void NetworkSection::NotifyPrefChanged(const std::wstring* pref_name) {
+  if (!pref_name || proxy_prefs_->IsObserved(*pref_name)) {
+    change_proxies_button_->SetEnabled(!proxy_prefs_->IsManaged());
+  }
 }
 
 }  // namespace

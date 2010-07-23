@@ -3824,6 +3824,22 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 					<int key="connectionID">714</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: proxiesConfigureButtonEnabled</string>
+						<reference key="source" ref="383918134"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="383918134"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: proxiesConfigureButtonEnabled</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">proxiesConfigureButtonEnabled</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">717</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
