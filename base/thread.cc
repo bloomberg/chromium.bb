@@ -36,7 +36,8 @@ struct Thread::StartupData {
 };
 
 Thread::Thread(const char* name)
-    : stopping_(false),
+    : started_(false),
+      stopping_(false),
       startup_data_(NULL),
       thread_(0),
       message_loop_(NULL),
@@ -85,12 +86,16 @@ bool Thread::StartWithOptions(const Options& options) {
 
   if (!PlatformThread::Create(options.stack_size, this, &thread_)) {
     DLOG(ERROR) << "failed to create thread";
-    startup_data_ = NULL;  // Record that we failed to start.
+    startup_data_ = NULL;
     return false;
   }
 
   // Wait for the thread to start and initialize message_loop_
   startup_data.event.Wait();
+
+  // set it to NULL so we don't keep a pointer to some object on the stack.
+  startup_data_ = NULL;
+  started_ = true;
 
   DCHECK(message_loop_);
   return true;
@@ -113,7 +118,7 @@ void Thread::Stop() {
   DCHECK(!message_loop_);
 
   // The thread no longer needs to be joined.
-  startup_data_ = NULL;
+  started_ = false;
 
   stopping_ = false;
 }

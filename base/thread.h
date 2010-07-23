@@ -154,9 +154,10 @@ class Thread : PlatformThread::Delegate {
   // PlatformThread::Delegate methods:
   virtual void ThreadMain();
 
-  // We piggy-back on the startup_data_ member to know if we successfully
-  // started the thread.  This way we know that we need to call Join.
-  bool thread_was_started() const { return startup_data_ != NULL; }
+  bool thread_was_started() const { return started_; }
+
+  // Whether we successfully started the thread.
+  bool started_;
 
   // If true, we're in the middle of stopping, and shouldn't access
   // |message_loop_|. It may non-NULL and invalid.
