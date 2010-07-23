@@ -51,7 +51,7 @@ PersonalOptions.prototype = {
       //TODO(sargrass): Show import_data dialog here.
     };
 
-    if(navigator.platform.match(/linux|BSD/i)) {
+    if(!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
       $('themes_GTK_button').onclick = function(event) {
         //TODO(sargrass): Show themes GTK dialog here.
       };
@@ -61,7 +61,7 @@ PersonalOptions.prototype = {
       };
     }
 
-    if(navigator.platform.match(/Mac|Win|CrOS/i)) {
+    if(cr.isMac || cr.isWindows || cr.isChromeOS) {
       $('themes_reset').onclick = function(event) {
         //TODO(sargrass): Show themes reset dialog here.
       };
