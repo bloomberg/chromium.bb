@@ -43,6 +43,10 @@ bool SrpcParams::Init(const char* in_types, const char* out_types) {
   return true;
 }
 
+uint32_t SrpcParams::InputLength() const {
+  return ArgsLength(const_cast<NaClSrpcArg**>(ins_));
+}
+
 uint32_t SrpcParams::OutputLength() const {
   return ArgsLength(const_cast<NaClSrpcArg**>(outs_));
 }

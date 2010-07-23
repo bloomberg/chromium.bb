@@ -45,6 +45,7 @@ class SrpcParams {
 
   bool Init(const char* in_types, const char* out_types);
   uint32_t SignatureLength() const;
+  uint32_t InputLength() const;
   uint32_t OutputLength() const;
 
   NaClSrpcArg** ins() const { return const_cast<NaClSrpcArg**>(ins_); }
