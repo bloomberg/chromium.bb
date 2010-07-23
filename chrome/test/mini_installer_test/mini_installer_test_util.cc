@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,15 +16,14 @@
 
 // Change current directory so that chrome.dll from current folder
 // will not be used as fall back.
-bool MiniInstallerTestUtil::ChangeCurrentDirectory(std::wstring *current_path) {
-  wchar_t backup_path[MAX_PATH];
-  DWORD ret = ::GetCurrentDirectory(MAX_PATH, backup_path);
-  if (ret == 0 && ret > MAX_PATH)
+bool MiniInstallerTestUtil::ChangeCurrentDirectory(FilePath* current_path) {
+  FilePath backup_path;
+  if (!file_util::GetCurrentDirectory(&backup_path))
     return false;
-  current_path->assign(backup_path);
-  file_util::UpOneDirectory(current_path);
-  ::SetCurrentDirectory(current_path->c_str());
-  current_path->assign(backup_path);
+
+  if (!file_util::SetCurrentDirectory(backup_path.DirName()))
+    return false;
+  *current_path = backup_path;
   return true;
 }
 

@@ -217,14 +217,14 @@ void ChromeMiniInstaller::Repair(
     DeletePvRegistryKey();
     printf("Deleted registry. Now trying to launch chrome\n");
   }
-  std::wstring current_path;
+  FilePath current_path;
   ASSERT_TRUE(MiniInstallerTestUtil::ChangeCurrentDirectory(&current_path));
   VerifyChromeLaunch(false);
   printf("\nInstalling Chrome again to see if it can be repaired\n\n");
   InstallFullInstaller(true);
   printf("Chrome repair successful.\n");
   // Set the current directory back to original path.
-  ::SetCurrentDirectory(current_path.c_str());
+  file_util::SetCurrentDirectory(current_path);
 }
 
 // This method first checks if Chrome is running.
