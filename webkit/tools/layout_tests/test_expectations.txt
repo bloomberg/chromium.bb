@@ -5,9 +5,6 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// TODO(johnnyg): remove after upstream expectations are rolled
-BUG_JOHNNYG WIN : fast/forms/input-file-directory-upload.html = TEXT
-
 // TODO(hwennborg): remove after upstream expectations are rolled.
 BUG49912 : fast/dom/prototype-inheritance.html = TEXT
 
