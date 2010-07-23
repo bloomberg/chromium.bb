@@ -32,6 +32,14 @@
 - (FindBarTextField*)findTextField {
   return findText_;
 }
+
+- (NSButton*)nextButton {
+  return nextButton_;
+}
+
+- (NSButton*)previousButton {
+  return previousButton_;
+}
 @end
 
 namespace {
@@ -49,6 +57,11 @@ class FindBarCocoaControllerTest : public CocoaTest {
 };
 
 TEST_VIEW(FindBarCocoaControllerTest, [controller_ view])
+
+TEST_F(FindBarCocoaControllerTest, ImagesLoadedProperly) {
+  EXPECT_TRUE([[[controller_ nextButton] image] isValid]);
+  EXPECT_TRUE([[[controller_ previousButton] image] isValid]);
+}
 
 TEST_F(FindBarCocoaControllerTest, ShowAndHide) {
   NSView* findBarView = [controller_ findBarView];
