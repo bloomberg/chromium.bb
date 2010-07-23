@@ -117,6 +117,7 @@ class FakeNetworkLibrary : public NetworkLibrary {
   virtual std::string GetHtmlInfo(int refresh) {
     return "";
   }
+  virtual void UpdateSystemInfo() {}
 
  private:
   std::string ip_address_;
