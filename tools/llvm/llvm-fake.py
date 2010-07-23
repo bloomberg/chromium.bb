@@ -206,8 +206,6 @@ global_config_flags = {
 
 LLVM_GCC = BASE_ARM + '/bin/arm-none-linux-gnueabi-gcc'
 
-LLVM_GXX = BASE_ARM + '/bin/arm-none-linux-gnueabi-g++'
-
 LLC = BASE_ARM + '/bin/llc'
 
 LLVM_LINK = BASE_ARM + '/bin/llvm-link'
@@ -421,16 +419,16 @@ def ExtractArch(argv):
     return None, argv[:]
 
 
-def Incarnation_gcclike(argv, tool):
+def Incarnation_gcclike(argv):
   arch, argv = ExtractArch(argv)
 
-  argv[0] = tool
+  argv[0] = LLVM_GCC
   if IsDiagnosticMode(argv):
     Run(argv)
     return
 
   if '-emit-llvm' in argv:
-    CompileToBC(argv, tool)
+    CompileToBC(argv, LLVM_GCC)
     return
 
   assert arch
@@ -442,16 +440,8 @@ def Incarnation_gcclike(argv, tool):
     Assemble(assembler, as_flags, argv)
     return
 
-  CompileToBC(argv, tool, True)
+  CompileToBC(argv, LLVM_GCC, True)
   SfiCompile(argv, arch, assembler, as_flags)
-
-
-def Incarnation_sfigcc_generic(argv):
-  Incarnation_gcclike(argv, LLVM_GCC)
-
-
-def Incarnation_sfigplusplus_generic(argv):
-  Incarnation_gcclike(argv, LLVM_GXX)
 
 
 def Incarnation_nop(argv):
@@ -679,8 +669,10 @@ def Incarnation_sfild(argv):
 ######################################################################
 
 INCARNATIONS = {
-   'llvm-fake-sfigcc': Incarnation_sfigcc_generic,
-   'llvm-fake-sfig++': Incarnation_sfigplusplus_generic,
+   # sfigcc and sfig++ are only used for compiling and assembling, so the gcc
+   # behavior is the same as the g++ behavior.
+   'llvm-fake-sfigcc': Incarnation_gcclike,
+   'llvm-fake-sfig++': Incarnation_gcclike,
 
    'llvm-fake-sfild': Incarnation_sfild,
 
@@ -693,11 +685,15 @@ INCARNATIONS = {
 
 def main(argv):
   global VERBOSE
+  global LLVM_GCC
   # NOTE: we do not hook onto the "--v" flags since it may have other uses
   #       in connection with bootstrapping the gcc toolchain
   for pos, arg in enumerate(argv):
     if arg == '--pnacl-driver-verbose':
       VERBOSE = 1
+      del argv[pos]
+    if arg.startswith('--driver='):
+      LLVM_GCC = arg[len('--driver='):]
       del argv[pos]
 
   # mechanism to overwrite some global settings, e.g.:
