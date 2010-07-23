@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/options_window.h"
+#include "chrome/browser/pref_set_observer.h"
 #include "chrome/common/notification_observer.h"
 
 class PrefService;
@@ -22,32 +24,46 @@ class ManagedPrefsBannerBase : public NotificationObserver {
   // Initialize the banner with a set of preferences suitable for the given
   // options |page|. Subclasses may change that set by calling AddPref() and
   // RemovePref() afterwards.
-  ManagedPrefsBannerBase(PrefService* prefs, OptionsPage page);
-  virtual ~ManagedPrefsBannerBase();
+  ManagedPrefsBannerBase(PrefService* local_state,
+                         PrefService* user_prefs,
+                         OptionsPage page);
+
+  // Convenience constructor that fetches the local state PrefService from the
+  // global g_browser_process.
+  ManagedPrefsBannerBase(PrefService* user_prefs, OptionsPage page);
 
   // Determine whether the banner should be visible.
   bool DetermineVisibility() const;
 
-  // |NotificationObserver| implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // Add a local state preference as visibility trigger.
+  void AddLocalStatePref(const wchar_t* pref);
+  // Remove a local state preference from being a visibility trigger.
+  void RemoveLocalStatePref(const wchar_t* pref);
+
+  // Add a user preference as visibility trigger.
+  void AddUserPref(const wchar_t* pref);
+  // Remove a user preference from being a visibility trigger.
+  void RemoveUserPref(const wchar_t* pref);
 
  protected:
-  // Add a preference as visibility trigger.
-  void AddPref(const wchar_t* pref);
-  // Remove a preference from being a visibility trigger.
-  void RemovePref(const wchar_t* pref);
-
   // Update banner visibility. This is called whenever a preference change is
   // observed that may lead to changed visibility of the banner. Subclasses may
   // override this in order to show/hide the banner.
   virtual void OnUpdateVisibility() { }
 
  private:
-  PrefService* prefs_;
-  typedef std::set<std::wstring> PrefSet;
-  PrefSet relevant_prefs_;
+  // Initialization helper, called from the constructors.
+  void Init(PrefService* local_state,
+            PrefService* user_prefs,
+            OptionsPage page);
+
+  // |NotificationObserver| implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  scoped_ptr<PrefSetObserver> local_state_set_;
+  scoped_ptr<PrefSetObserver> user_pref_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedPrefsBannerBase);
 };
