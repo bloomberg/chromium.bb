@@ -134,6 +134,12 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   return derived_key;
 }
 
+// static
+SymmetricKey* SymmetricKey::Import(Algorithm algorithm,
+                                   const std::string& raw_key) {
+  return new SymmetricKey(raw_key.data(), raw_key.size() * 8);
+}
+
 SymmetricKey::SymmetricKey(const void *key_data, size_t key_size_in_bits)
   : key_(reinterpret_cast<const char*>(key_data),
          key_size_in_bits / 8) {}
