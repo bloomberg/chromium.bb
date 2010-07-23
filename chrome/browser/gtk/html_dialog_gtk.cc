@@ -79,13 +79,14 @@ std::string HtmlDialogGtk::GetDialogArgs() const {
 }
 
 void HtmlDialogGtk::OnDialogClosed(const std::string& json_retval) {
-  DCHECK(delegate_);
   DCHECK(dialog_);
 
-  HtmlDialogUIDelegate* dialog_delegate = delegate_;
-  delegate_ = NULL;  // We will not communicate further with the delegate.
   Detach();
-  dialog_delegate->OnDialogClosed(json_retval);
+  if (delegate_) {
+    HtmlDialogUIDelegate* dialog_delegate = delegate_;
+    delegate_ = NULL;  // We will not communicate further with the delegate.
+    dialog_delegate->OnDialogClosed(json_retval);
+  }
   gtk_widget_destroy(dialog_);
   delete this;
 }

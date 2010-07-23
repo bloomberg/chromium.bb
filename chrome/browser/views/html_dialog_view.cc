@@ -129,10 +129,12 @@ std::string HtmlDialogView::GetDialogArgs() const {
 }
 
 void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
-  HtmlDialogUIDelegate* dialog_delegate = delegate_;
-  delegate_ = NULL;  // We will not communicate further with the delegate.
   HtmlDialogTabContentsDelegate::Detach();
-  dialog_delegate->OnDialogClosed(json_retval);
+  if (delegate_) {
+    HtmlDialogUIDelegate* dialog_delegate = delegate_;
+    delegate_ = NULL;  // We will not communicate further with the delegate.
+    dialog_delegate->OnDialogClosed(json_retval);
+  }
   window()->Close();
 }
 
