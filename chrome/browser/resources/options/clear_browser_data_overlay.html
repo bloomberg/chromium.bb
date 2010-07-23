@@ -1,3 +1,56 @@
 <div class="page hidden" id="clearBrowserDataOverlay">
   <h1 i18n-content="clearBrowsingDataTitle"></h1>
+  <h3 i18n-content="clearBrowsingDataLabel"></h3>
+  <table class="option-control-table">
+    <tr>
+      <td class="option-name"><label><input id="deleteBrowsingHistoryCheckbox"
+          pref="browser.clear_data.browsing_history" type="checkbox"><span
+          i18n-content="deleteBrowsingHistoryCheckbox"></span></label></td>
+    </tr>
+    <tr>
+      <td class="option-name"><label><input id="deleteDownloadHistoryCheckbox"
+          pref="browser.clear_data.download_history" type="checkbox"><span
+          i18n-content="deleteDownloadHistoryCheckbox"></span></label></td>
+    </tr>
+    <tr>
+      <td class="option-name"><label><input id="deleteCacheCheckbox"
+          pref="browser.clear_data.cache" type="checkbox"><span
+          i18n-content="deleteCacheCheckbox"></span></label>
+      </td>
+    </tr>
+    <tr>
+      <td class="option-name"><label><input id="deleteCookiesCheckbox"
+          pref="browser.clear_data.cookies" type="checkbox"><span
+          i18n-content="deleteCookiesCheckbox"></span></label></td>
+    </tr>
+    <tr>
+      <td class="option-name"><label><input id="deletePasswordsCheckbox"
+          pref="browser.clear_data.passwords" type="checkbox"><span
+          i18n-content="deletePasswordsCheckbox"></span></label></td>
+    </tr>
+    <tr>
+      <td class="option-name"><label><input id="deleteFormDataCheckbox"
+          pref="browser.clear_data.form_data" type="checkbox"><span
+          i18n-content="deleteFormDataCheckbox"></span></label></td>
+    </tr>
+    <tr>
+      <td>
+        <label><span i18n-content="clearBrowsingDataTimeLabel"></span>
+        <select id="clearBrowsingDataTimePeriod"
+            pref="browser.clear_data.time_period"></select></label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span id="cbdThrobber"></span>
+        <button id="clearBrowsingDataCommit"
+            i18n-content="clearBrowsingDataCommit"></button>
+        <button id="clearBrowsingDataDismiss" i18n-content="cancel"
+            onclick="clearBrowserDataDismiss();"></button>
+      </td>
+    </tr>
+  </table>
+  <hr>
+  <a target="_blank" i18n-content="flash_storage_settings"
+      i18n-values="href:flash_storage_url"></a>
 </div>

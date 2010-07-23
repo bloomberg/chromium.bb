@@ -28,8 +28,7 @@ PrefCheckbox.prototype = {
     // Listen to user events.
     this.addEventListener('click',
         function(e) {
-          Preferences.setBooleanPref(self.pref,
-                                     self.checked);
+          Preferences.setBooleanPref(self.pref, self.checked);
         });
   }
 };
@@ -195,8 +194,20 @@ PrefSelect.prototype = {
     // Listen to user events.
     this.addEventListener('change',
         function(e) {
-          Preferences.setStringPref(self.pref,
-              self.options[self.selectedIndex].value);
+          switch(self.dataType) {
+            case 'number':
+              Preferences.setIntegerPref(self.pref,
+                  self.options[self.selectedIndex].value);
+              break;
+            case 'boolean':
+              Preferences.setBooleanValue(self.pref,
+                  self.options[self.selectedIndex].value);
+              break;
+            case 'string':
+              Preferences.setStringPref(self.pref,
+                  self.options[self.selectedIndex].value);
+              break;
+          }
         });
 
     // Initialize options.
@@ -219,6 +230,8 @@ PrefSelect.prototype = {
    */
   initializeValues: function(options) {
     options.forEach(function (values) {
+      if (this.dataType == undefined)
+        this.dataType = typeof values[0];
       this.appendChild(new Option(values[1], values[0]));
     }, this);
   }

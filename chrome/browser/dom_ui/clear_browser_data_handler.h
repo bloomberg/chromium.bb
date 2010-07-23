@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_DOM_UI_CLEAR_BROWSER_DATA_HANDLER_H_
 
 #include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/browser/browsing_data_remover.h"
 
-// Chrome personal options page UI handler.
-class ClearBrowserDataHandler : public OptionsPageUIHandler {
+// Clear browser data handler page UI handler.
+class ClearBrowserDataHandler : public OptionsPageUIHandler,
+                                public BrowsingDataRemover::Observer {
  public:
   ClearBrowserDataHandler();
   virtual ~ClearBrowserDataHandler();
@@ -16,7 +18,19 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler {
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
+  // DOMMessageHandler implementation.
+  virtual void RegisterMessages();
+
  private:
+  void HandleClearBrowserData(const Value* value);
+
+  // Callback from BrowsingDataRemover. Closes the dialog.
+  virtual void OnBrowsingDataRemoverDone();
+
+  // If non-null it means removal is in progress. BrowsingDataRemover takes care
+  // of deleting itself when done.
+  BrowsingDataRemover* remover_;
+
   DISALLOW_COPY_AND_ASSIGN(ClearBrowserDataHandler);
 };
 

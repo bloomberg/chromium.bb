@@ -60,6 +60,23 @@ void CoreOptionsHandler::GetLocalizedValues(
       l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE));
 #endif
+
+  localized_strings->SetString(L"ok",
+      l10n_util::GetString(IDS_OK));
+  localized_strings->SetString(L"cancel",
+      l10n_util::GetString(IDS_CANCEL));
+  localized_strings->SetString(L"delete",
+      l10n_util::GetString(IDS_DELETE));
+  localized_strings->SetString(L"edit",
+      l10n_util::GetString(IDS_EDIT));
+  localized_strings->SetString(L"learnMore",
+      l10n_util::GetString(IDS_LEARN_MORE));
+  localized_strings->SetString(L"abort",
+      l10n_util::GetString(IDS_ABORT));
+  localized_strings->SetString(L"close",
+      l10n_util::GetString(IDS_CLOSE));
+  localized_strings->SetString(L"done",
+      l10n_util::GetString(IDS_DONE));
 }
 
 void CoreOptionsHandler::Observe(NotificationType type,
@@ -142,8 +159,6 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
   if (param_values->GetSize() < kMinFetchPrefsParamCount)
     return;
 
-  size_t idx = param_values->GetSize();
-  LOG(INFO) << "param_values->GetSize() = " << idx;
   // Get callback JS function name.
   Value* callback;
   if (!param_values->Get(0, &callback) || !callback->IsType(Value::TYPE_STRING))
@@ -232,8 +247,6 @@ void CoreOptionsHandler::HandleSetPref(const Value* value,
   if (!value || !value->IsType(Value::TYPE_LIST))
     return;
   const ListValue* param_values = static_cast<const ListValue*>(value);
-  size_t size = param_values->GetSize();
-  LOG(INFO) << "Array size = " << size;
   if (param_values->GetSize() != 2)
     return;
 

@@ -104,6 +104,7 @@ window.onpopstate = function(e) {
 <link rel="stylesheet" href="options/options_page.css">
 <link rel="stylesheet" href="options/browser_options_page.css">
 <link rel="stylesheet" href="options/content_settings_page.css">
+<link rel="stylesheet" href="options/clear_browser_data_overlay.css">
 <if expr="pp_ifdef('chromeos')">
   <link rel="stylesheet" href="options/chromeos_accounts_options_page.css">
   <link rel="stylesheet" href="options/chromeos_language_options.css">
@@ -115,7 +116,6 @@ window.onpopstate = function(e) {
 </div>
 <div id="overlay" class="overlay hidden">
   <div id="overlayview">
-    <button id="close-overlay" onclick="OptionsPage.clearOverlays();"></button>
     <include src="options/clear_browser_data_overlay.html">
     <include src="options/font_settings_overlay.html">
     <if expr="pp_ifdef('chromeos')">
