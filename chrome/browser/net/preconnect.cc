@@ -110,7 +110,7 @@ void Preconnect::PreconnectOnIOThread(const GURL& url) {
         new net::SSLSocketParams(tcp_params, NULL, NULL,
                                  net::ProxyServer::SCHEME_DIRECT,
                                  url.HostNoBrackets(), ssl_config,
-                                 0, false);
+                                 0, false, false);
 
     const scoped_refptr<net::SSLClientSocketPool>& pool =
         session->ssl_socket_pool();
