@@ -772,13 +772,6 @@ void TabStripGtk::Hide() {
   gtk_widget_hide(tabstrip_.get());
 }
 
-void TabStripGtk::CancelActiveDragSession() {
-  if (!IsDragSessionActive())
-   return;
-
-  drag_controller_->EndDrag(true);
-}
-
 void TabStripGtk::Layout() {
   // Called from:
   // - window resize
