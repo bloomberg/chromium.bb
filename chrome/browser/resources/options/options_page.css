@@ -28,12 +28,20 @@
 }
 
 #close-overlay {
-  float: right;
   position: relative;
-  right: -20px;
   top: -20px;
   width: 20px;
   height: 20px;
+}
+
+html[dir='ltr'] #close-overlay {
+  float: right;
+  right: -20px;
+}
+
+html[dir='rtl'] #close-overlay {
+  float: left;
+  left: -20px;
 }
 
 #overlayview .button-strip {
@@ -59,10 +67,25 @@
                                from(white),
                                color-stop(0.8, white),
                                to(#f3f3f3));
-  border-right: 1px solid #dbdbdb;
+  -webkit-border-end: 1px solid #dbdbdb;
   cursor: pointer;
   position: relative;
   width: 250px;
+}
+
+html[dir='rtl'] #navbar-container {
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(rgba(255,255,255,0)),
+                               color-stop(0.7, rgba(255,255,255,0)),
+                               to(white)),
+              -webkit-gradient(linear,
+                               right top,
+                               left top,
+                               from(white),
+                               color-stop(0.8, white),
+                               to(#f3f3f3));
 }
 
 #navbar-container > hr {
@@ -84,6 +107,10 @@
 .navbar-item-selected {
   background: -webkit-gradient(linear, left top, right top, from(white), to(#d6def3));
   font-weight: bold;
+}
+
+html[dir='rtl'] .navbar-item-selected {
+  background: -webkit-gradient(linear, right top, left top, from(white), to(#d6def3));
 }
 
 .navbar-item-normal {
