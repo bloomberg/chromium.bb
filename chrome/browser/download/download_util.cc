@@ -308,7 +308,7 @@ void DragDownload(const DownloadItem* download,
   OSExchangeData data;
 
   if (icon) {
-    drag_utils::CreateDragImageForFile(download->file_name().value(), icon,
+    drag_utils::CreateDragImageForFile(download->GetFileName().value(), icon,
                                        &data);
   }
 
@@ -322,7 +322,7 @@ void DragDownload(const DownloadItem* download,
   // Add URL so that we can load supported files when dragged to TabContents.
   if (net::IsSupportedMimeType(mime_type)) {
     data.SetURL(GURL(WideToUTF8(full_path.ToWStringHack())),
-                     download->file_name().ToWStringHack());
+                     download->GetFileName().ToWStringHack());
   }
 
 #if defined(OS_WIN)

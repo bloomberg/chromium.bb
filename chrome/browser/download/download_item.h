@@ -124,10 +124,6 @@ class DownloadItem {
   // |delete_file| is true, the file is deleted on the disk.
   void Remove(bool delete_file);
 
-  // Start/stop sending periodic updates to our observers
-  void StartProgressTimer();
-  void StopProgressTimer();
-
   // Simple calculation of the amount of time remaining to completion. Fills
   // |*remaining| with the amount of time remaining if successful. Fails and
   // returns false if we do not have the number of bytes or the speed so can
@@ -148,13 +144,12 @@ class DownloadItem {
   // Allow the user to temporarily pause a download or resume a paused download.
   void TogglePause();
 
+  // Called when the name of the download is finalized.
+  void OnNameFinalized();
+
   // Accessors
   DownloadState state() const { return state_; }
-  FilePath file_name() const { return file_name_; }
-  void set_file_name(const FilePath& name) { file_name_ = name; }
   FilePath full_path() const { return full_path_; }
-  void set_full_path(const FilePath& path) { full_path_ = path; }
-  int path_uniquifier() const { return path_uniquifier_; }
   void set_path_uniquifier(int uniquifier) { path_uniquifier_ = uniquifier; }
   GURL url() const { return url_; }
   GURL referrer_url() const { return referrer_url_; }
@@ -182,16 +177,11 @@ class DownloadItem {
   bool auto_opened() { return auto_opened_; }
   void set_auto_opened(bool auto_opened) { auto_opened_ = auto_opened; }
   FilePath original_name() const { return original_name_; }
-  void set_original_name(const FilePath& name) { original_name_ = name; }
   bool save_as() const { return save_as_; }
   bool is_otr() const { return is_otr_; }
   bool is_extension_install() const { return is_extension_install_; }
   bool name_finalized() const { return name_finalized_; }
-  void set_name_finalized(bool name_finalized) {
-    name_finalized_ = name_finalized;
-  }
   bool is_temporary() const { return is_temporary_; }
-  void set_is_temporary(bool is_temporary) { is_temporary_ = is_temporary; }
   bool need_final_rename() const { return need_final_rename_; }
   void set_need_final_rename(bool need_final_rename) {
     need_final_rename_ = need_final_rename;
@@ -205,6 +195,10 @@ class DownloadItem {
  private:
   // Internal helper for maintaining consistent received and total sizes.
   void UpdateSize(int64 size);
+
+  // Start/stop sending periodic updates to our observers
+  void StartProgressTimer();
+  void StopProgressTimer();
 
   // Request ID assigned by the ResourceDispatcherHost.
   int32 id_;

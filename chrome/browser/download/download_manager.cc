@@ -762,27 +762,16 @@ void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
 
 void DownloadManager::DownloadRenamedToFinalName(int download_id,
                                                  const FilePath& full_path) {
-  DownloadMap::iterator it = downloads_.begin();
-  while (it != downloads_.end()) {
-    DownloadItem* download = it->second;
-    if (download->id() == download_id) {
-      // The download file is meant to be completed if both the filename is
-      // finalized and the file data is downloaded. The ordering of these two
-      // actions is indeterministic. Thus, if we are still in downloading the
-      // file, delay the notification.
-      download->set_name_finalized(true);
-      if (download->state() == DownloadItem::COMPLETE)
-        download->NotifyObserversDownloadFileCompleted();
+  DownloadItem* item = GetDownloadItem(download_id);
+  if (!item)
+    return;
+  item->OnNameFinalized();
 
-      // This was called from DownloadFinished; continue to call
-      // ContinueDownloadFinished.
-      if (download->need_final_rename()) {
-        download->set_need_final_rename(false);
-        ContinueDownloadFinished(download);
-      }
-      return;
-    }
-    it++;
+  // This was called from DownloadFinished; continue to call
+  // ContinueDownloadFinished.
+  if (item->need_final_rename()) {
+    item->set_need_final_rename(false);
+    ContinueDownloadFinished(item);
   }
 }
 
@@ -1606,6 +1595,16 @@ void DownloadManager::ClearLastDownloadPath() {
 
 void DownloadManager::NotifyModelChanged() {
   FOR_EACH_OBSERVER(Observer, observers_, ModelChanged());
+}
+
+DownloadItem* DownloadManager::GetDownloadItem(int id) {
+  for (DownloadMap::iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    DownloadItem* item = it->second;
+    if (item->id() == id)
+      return item;
+  }
+  return NULL;
 }
 
 // DownloadManager::OtherDownloadManagerObserver implementation ----------------

@@ -383,6 +383,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Inform observers that the model has changed.
   void NotifyModelChanged();
 
+  DownloadItem* GetDownloadItem(int id);
+
   // 'downloads_' is map of all downloads in this profile. The key is the handle
   // returned by the history system, which is unique across sessions. This map
   // owns all the DownloadItems once they have been created in the history

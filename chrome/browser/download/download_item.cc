@@ -137,6 +137,15 @@ void DownloadItem::UpdateSize(int64 bytes_so_far) {
     total_bytes_ = 0;
 }
 
+void DownloadItem::StartProgressTimer() {
+  update_timer_.Start(base::TimeDelta::FromMilliseconds(kUpdateTimeMs), this,
+                      &DownloadItem::UpdateObservers);
+}
+
+void DownloadItem::StopProgressTimer() {
+  update_timer_.Stop();
+}
+
 // Updates from the download thread may have been posted while this download
 // was being cancelled in the UI thread, so we'll accept them unless we're
 // complete.
@@ -177,15 +186,6 @@ void DownloadItem::Remove(bool delete_on_disk) {
   // We have now been deleted.
 }
 
-void DownloadItem::StartProgressTimer() {
-  update_timer_.Start(base::TimeDelta::FromMilliseconds(kUpdateTimeMs), this,
-                      &DownloadItem::UpdateObservers);
-}
-
-void DownloadItem::StopProgressTimer() {
-  update_timer_.Stop();
-}
-
 bool DownloadItem::TimeRemaining(base::TimeDelta* remaining) const {
   if (total_bytes_ <= 0)
     return false;  // We never received the content_length for this download.
@@ -223,6 +223,17 @@ void DownloadItem::TogglePause() {
   manager_->PauseDownload(id_, !is_paused_);
   is_paused_ = !is_paused_;
   UpdateObservers();
+}
+
+void DownloadItem::OnNameFinalized() {
+  name_finalized_ = true;
+
+  // The download file is meant to be completed if both the filename is
+  // finalized and the file data is downloaded. The ordering of these two
+  // actions is indeterministic. Thus, if we are still in downloading the
+  // file, delay the notification.
+  if (state() == DownloadItem::COMPLETE)
+    NotifyObserversDownloadFileCompleted();
 }
 
 FilePath DownloadItem::GetFileName() const {

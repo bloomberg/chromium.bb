@@ -2135,7 +2135,7 @@ void AutomationProvider::GetDownloadsInfo(Browser* browser,
     dl_item_value->SetInteger(L"id", static_cast<int>((*it)->id()));
     dl_item_value->SetString(L"url", (*it)->url().spec());
     dl_item_value->SetString(L"referrer_url", (*it)->referrer_url().spec());
-    dl_item_value->SetString(L"file_name", (*it)->file_name().value());
+    dl_item_value->SetString(L"file_name", (*it)->GetFileName().value());
     dl_item_value->SetString(L"full_path", (*it)->full_path().value());
     dl_item_value->SetBoolean(L"is_paused", (*it)->is_paused());
     dl_item_value->SetBoolean(L"open_when_complete",
