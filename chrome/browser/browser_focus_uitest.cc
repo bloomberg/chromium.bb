@@ -755,8 +755,16 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
+// FocusOnReloadCrashedTab is flaky on chromium os debug build.
+// http://crbug.com/50025
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#define MAYBE_FocusOnReloadCrashedTab FLAKY_FocusOnReloadCrashedTab
+#else
+#define MAYBE_FocusOnReloadCrashedTab FocusOnReloadCrashedTab
+#endif
+
 // Tests that focus goes where expected when using reload on a crashed tab.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReloadCrashedTab) {
   HTTPTestServer* server = StartHTTPServer();
 
   // Open a regular page, crash, reload.
