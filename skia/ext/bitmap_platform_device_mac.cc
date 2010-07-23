@@ -181,6 +181,13 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
                                                    int width,
                                                    int height,
                                                    bool is_opaque) {
+  if ((width == 0) || (height == 0)) {
+    // Empty Skia bitmaps can't be configured. Create a minimal bitmap that
+    // allows specific configurations, such as ARGB.
+    width = 1;
+    height = 1;
+  }
+
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   if (bitmap.allocPixels() != true)
