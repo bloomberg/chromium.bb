@@ -15,6 +15,13 @@ namespace {
 class MultipartResponseUITest : public UITest {
 };
 
+// http://crbug.com/50060
+#if defined(OS_MACOSX)
+#define MAYBE_SingleVisit DISABLED_SingleVisit
+#else
+#define MAYBE_SingleVisit SingleVisit
+#endif
+
 #if defined(NDEBUG)
 // http://code.google.com/p/chromium/issues/detail?id=37746
 // Running this test only for release builds as it fails in debug test

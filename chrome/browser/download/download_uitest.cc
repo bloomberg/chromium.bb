@@ -492,8 +492,15 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab3) {
   CheckDownload(file);
 }
 
+// http://crbug.com/50060
+#if defined(OS_MACOSX)
+#define MAYBE_NewWindow DISABLED_NewWindow
+#else
+#define MAYBE_NewWindow NewWindow
+#endif
+
 // Regression test for http://crbug.com/44454
-TEST_F(DownloadTest, NewWindow) {
+TEST_F(DownloadTest, MAYBE_NewWindow) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
