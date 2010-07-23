@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Start two servers with different sites.
   const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> http_server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+      HTTPTestServer::CreateServer(kDocRoot);
   scoped_refptr<HTTPSTestServer> https_server =
       HTTPSTestServer::CreateGoodServer(kDocRoot);
 
@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Start two servers with different sites.
   const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> http_server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+      HTTPTestServer::CreateServer(kDocRoot);
   scoped_refptr<HTTPSTestServer> https_server =
       HTTPSTestServer::CreateGoodServer(kDocRoot);
 
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Start two servers with different sites.
   const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> http_server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+      HTTPTestServer::CreateServer(kDocRoot);
   scoped_refptr<HTTPSTestServer> https_server =
       HTTPSTestServer::CreateGoodServer(kDocRoot);
 

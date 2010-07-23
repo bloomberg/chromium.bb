@@ -27,8 +27,7 @@ class BookmarkBarGtkBrowserTest : public InProcessBrowserTest {
 // Makes sure that when you switch back to an NTP with an active findbar,
 // the findbar is above the floating bookmark bar.
 IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, FindBarTest) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // Create new tab; open findbar.
@@ -55,8 +54,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, FindBarTest) {
 
 // Makes sure that you can click on the floating bookmark bar.
 IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, ClickOnFloatingTest) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GtkWidget* other_bookmarks =

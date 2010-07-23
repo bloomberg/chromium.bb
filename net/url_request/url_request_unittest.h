@@ -26,7 +26,6 @@
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_test_constants.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -402,15 +401,8 @@ class TestDelegate : public URLRequest::Delegate {
 class BaseTestServer : public base::RefCounted<BaseTestServer> {
  protected:
   BaseTestServer() {}
-  BaseTestServer(int connection_attempts, int connection_timeout)
-      : launcher_(connection_attempts, connection_timeout) {}
 
  public:
-  void set_forking(bool forking) {
-    launcher_.set_forking(forking);
-  }
-
-  // Used with e.g. HTTPTestServer::SendQuit()
   bool WaitToFinish(int milliseconds) {
     return launcher_.WaitToFinish(milliseconds);
   }
@@ -442,8 +434,6 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
                 "@" + host_name_ + ":" + port_str_ + "/" + path);
   }
 
-  virtual bool MakeGETRequest(const std::string& page_name) = 0;
-
   FilePath GetDataDirectory() {
     return launcher_.GetDocumentRootPath();
   }
@@ -473,29 +463,6 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
     return true;
   }
 
-  // Used by MakeGETRequest to implement sync load behavior.
-  class SyncTestDelegate : public TestDelegate {
-   public:
-    SyncTestDelegate() : event_(false, false), success_(false) {
-    }
-    virtual void OnResponseCompleted(URLRequest* request) {
-      MessageLoop::current()->DeleteSoon(FROM_HERE, request);
-      success_ = request->status().is_success();
-      event_.Signal();
-    }
-    bool Wait(int64 secs) {
-      TimeDelta td = TimeDelta::FromSeconds(secs);
-      if (event_.TimedWait(td))
-        return true;
-      return false;
-    }
-    bool did_succeed() const { return success_; }
-   private:
-    base::WaitableEvent event_;
-    bool success_;
-    DISALLOW_COPY_AND_ASSIGN(SyncTestDelegate);
-  };
-
   net::TestServerLauncher launcher_;
   std::string scheme_;
   std::string host_name_;
@@ -507,65 +474,20 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
 // HTTP
 class HTTPTestServer : public BaseTestServer {
  protected:
-  explicit HTTPTestServer() : loop_(NULL) {
-  }
-
-  explicit HTTPTestServer(int connection_attempts, int connection_timeout)
-      : BaseTestServer(connection_attempts, connection_timeout), loop_(NULL) {
-  }
-
-  virtual ~HTTPTestServer() {}
+  HTTPTestServer() {}
 
  public:
   // Creates and returns a new HTTPTestServer. If |loop| is non-null, requests
   // are serviced on it, otherwise a new thread and message loop are created.
   static scoped_refptr<HTTPTestServer> CreateServer(
-      const std::wstring& document_root,
-      MessageLoop* loop) {
-    return CreateServerWithFileRootURL(document_root, std::wstring(), loop);
-  }
-
-  static scoped_refptr<HTTPTestServer> CreateServer(
-      const std::wstring& document_root,
-      MessageLoop* loop,
-      int connection_attempts,
-      int connection_timeout) {
-    return CreateServerWithFileRootURL(document_root, std::wstring(), loop,
-                                       connection_attempts,
-                                       connection_timeout);
-  }
-
-  static scoped_refptr<HTTPTestServer> CreateServerWithFileRootURL(
-      const std::wstring& document_root,
-      const std::wstring& file_root_url,
-      MessageLoop* loop) {
-    return CreateServerWithFileRootURL(document_root, file_root_url, loop,
-                                       net::kDefaultTestConnectionAttempts,
-                                       net::kDefaultTestConnectionTimeout);
-  }
-
-  static scoped_refptr<HTTPTestServer> CreateForkingServer(
       const std::wstring& document_root) {
-    scoped_refptr<HTTPTestServer> test_server =
-        new HTTPTestServer(net::kDefaultTestConnectionAttempts,
-                           net::kDefaultTestConnectionTimeout);
-    test_server->set_forking(true);
-    FilePath no_cert;
-    FilePath docroot = FilePath::FromWStringHack(document_root);
-    if (!StartTestServer(test_server.get(), docroot, no_cert, std::wstring()))
-      return NULL;
-    return test_server;
+    return CreateServerWithFileRootURL(document_root, std::wstring());
   }
 
   static scoped_refptr<HTTPTestServer> CreateServerWithFileRootURL(
       const std::wstring& document_root,
-      const std::wstring& file_root_url,
-      MessageLoop* loop,
-      int connection_attempts,
-      int connection_timeout) {
-    scoped_refptr<HTTPTestServer> test_server =
-        new HTTPTestServer(connection_attempts, connection_timeout);
-    test_server->loop_ = loop;
+      const std::wstring& file_root_url) {
+    scoped_refptr<HTTPTestServer> test_server(new HTTPTestServer());
     FilePath no_cert;
     FilePath docroot = FilePath::FromWStringHack(document_root);
     if (!StartTestServer(test_server.get(), docroot, no_cert, file_root_url))
@@ -582,75 +504,7 @@ class HTTPTestServer : public BaseTestServer {
                          file_root_url);
   }
 
-  // A subclass may wish to send the request in a different manner
-  virtual bool MakeGETRequest(const std::string& page_name) {
-    const GURL& url = TestServerPage(page_name);
-
-    // Spin up a background thread for this request so that we have access to
-    // an IO message loop, and in cases where this thread already has an IO
-    // message loop, we also want to avoid spinning a nested message loop.
-    SyncTestDelegate d;
-    {
-      MessageLoop* loop = loop_;
-      scoped_ptr<base::Thread> io_thread;
-
-      if (!loop) {
-        io_thread.reset(new base::Thread("MakeGETRequest"));
-        base::Thread::Options options;
-        options.message_loop_type = MessageLoop::TYPE_IO;
-        io_thread->StartWithOptions(options);
-        loop = io_thread->message_loop();
-      }
-      loop->PostTask(FROM_HERE, NewRunnableFunction(
-            &HTTPTestServer::StartGETRequest, url, &d));
-
-      // Build bot wait for only 300 seconds we should ensure wait do not take
-      // more than 300 seconds
-      if (!d.Wait(250))
-        return false;
-    }
-    return d.did_succeed();
-  }
-
-  static void StartGETRequest(const GURL& url, URLRequest::Delegate* delegate) {
-    URLRequest* request = new URLRequest(url, delegate);
-    request->set_context(new TestURLRequestContext());
-    request->set_method("GET");
-    request->Start();
-    EXPECT_TRUE(request->is_pending());
-  }
-
-  // Some tests use browser javascript to fetch a 'kill' url that causes
-  // the server to exit by itself (rather than letting TestServerLauncher's
-  // destructor kill it).
-  // This method does the same thing so we can unit test that mechanism.
-  // You can then use WaitToFinish() to sleep until the server terminates.
-  void SendQuit() {
-    // Append the time to avoid problems where the kill page
-    // is being cached rather than being executed on the server
-    std::string page_name = StringPrintf("kill?%u",
-        static_cast<int>(base::Time::Now().ToInternalValue()));
-    int retry_count = 5;
-    while (retry_count > 0) {
-      bool r = MakeGETRequest(page_name);
-      // BUG #1048625 causes the kill GET to fail.  For now we just retry.
-      // Once the bug is fixed, we should remove the while loop and put back
-      // the following DCHECK.
-      // DCHECK(r);
-      if (r)
-        break;
-      retry_count--;
-    }
-    // Make sure we were successful in stopping the testserver.
-    DCHECK_GT(retry_count, 0);
-  }
-
   virtual std::string scheme() { return "http"; }
-
- private:
-  // If non-null a background thread isn't created and instead this message loop
-  // is used.
-  MessageLoop* loop_;
 };
 
 //-----------------------------------------------------------------------------
@@ -748,22 +602,6 @@ class FTPTestServer : public BaseTestServer {
       return NULL;
     }
     return test_server;
-  }
-
-  virtual bool MakeGETRequest(const std::string& page_name) {
-    const GURL& url = TestServerPage(page_name);
-    TestDelegate d;
-    URLRequest request(url, &d);
-    request.set_context(new TestURLRequestContext());
-    request.set_method("GET");
-    request.Start();
-    EXPECT_TRUE(request.is_pending());
-
-    MessageLoop::current()->Run();
-    if (request.is_pending())
-      return false;
-
-    return true;
   }
 
  private:

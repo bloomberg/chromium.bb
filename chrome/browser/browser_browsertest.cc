@@ -330,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
   CommandUpdater* command_updater = browser()->command_updater();
 
   scoped_refptr<HTTPTestServer> http_server(
-        HTTPTestServer::CreateServer(kDocRoot, NULL));
+        HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != http_server.get());
   GURL http_url(http_server->TestServerPage(""));
   ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server(
-        HTTPTestServer::CreateServer(kDocRoot, NULL));
+        HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url(server->TestServerPage("files/onload_redirect_to_anchor.html"));
   GURL expected_favicon_url(server->TestServerPage("files/test.png"));
@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server(
-        HTTPTestServer::CreateServer(kDocRoot, NULL));
+        HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   TabContents* current_tab = browser()->GetSelectedTabContents();

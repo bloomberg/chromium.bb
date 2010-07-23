@@ -24,7 +24,6 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/host_resolver.h"
-#include "net/base/net_test_constants.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_pinger.h"
@@ -33,6 +32,16 @@
 #if defined(OS_WIN)
 #pragma comment(lib, "crypt32.lib")
 #endif
+
+namespace {
+
+// Number of connection attempts for tests.
+const int kServerConnectionAttempts = 10;
+
+// Connection timeout in milliseconds for tests.
+const int kServerConnectionTimeoutMs = 1000;
+
+}  // namespace
 
 namespace net {
 
@@ -49,22 +58,8 @@ const int TestServerLauncher::kBadHTTPSPort = 9666;
 // The issuer name of the cert that should be trusted for the test to work.
 const wchar_t TestServerLauncher::kCertIssuerName[] = L"Test CA";
 
-TestServerLauncher::TestServerLauncher() : process_handle_(
-    base::kNullProcessHandle),
-    forking_(false),
-    connection_attempts_(kDefaultTestConnectionAttempts),
-    connection_timeout_(kDefaultTestConnectionTimeout)
-{
-  InitCertPath();
-}
-
-TestServerLauncher::TestServerLauncher(int connection_attempts,
-                                       int connection_timeout)
-                        : process_handle_(base::kNullProcessHandle),
-                          forking_(false),
-                          connection_attempts_(connection_attempts),
-                          connection_timeout_(connection_timeout)
-{
+TestServerLauncher::TestServerLauncher()
+    : process_handle_(base::kNullProcessHandle) {
   InitCertPath();
 }
 
@@ -157,15 +152,16 @@ bool TestServerLauncher::Start(Protocol protocol,
 
 #if defined(OS_WIN)
   // Get path to python interpreter
-  if (!PathService::Get(base::DIR_SOURCE_ROOT, &python_runtime_))
+  FilePath python_exe;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &python_exe))
     return false;
-  python_runtime_ = python_runtime_
+  python_exe = python_exe
       .Append(FILE_PATH_LITERAL("third_party"))
       .Append(FILE_PATH_LITERAL("python_24"))
       .Append(FILE_PATH_LITERAL("python.exe"));
 
   std::wstring command_line =
-      L"\"" + python_runtime_.ToWStringHack() + L"\" " +
+      L"\"" + python_exe.ToWStringHack() + L"\" " +
       L"\"" + testserver_path.ToWStringHack() +
       L"\" --port=" + UTF8ToWide(port_str) +
       L" --data-dir=\"" + document_root_dir_.ToWStringHack() + L"\"";
@@ -181,8 +177,6 @@ bool TestServerLauncher::Start(Protocol protocol,
     command_line.append(file_root_url);
     command_line.append(L"\"");
   }
-  // Deliberately do not pass the --forking flag. It breaks the tests
-  // on Windows.
 
   if (!LaunchTestServerAsJob(command_line,
                              true,
@@ -201,8 +195,6 @@ bool TestServerLauncher::Start(Protocol protocol,
     command_line.push_back("-f");
   if (!cert_path.value().empty())
     command_line.push_back("--https=" + cert_path.value());
-  if (forking_)
-    command_line.push_back("--forking");
 
   base::file_handle_mapping_vector no_mappings;
   LOG(INFO) << "Trying to launch " << command_line[0] << " ...";
@@ -237,8 +229,9 @@ bool TestServerLauncher::WaitToStart(const std::string& host_name, int port) {
     return false;
 
   net::TCPPinger pinger(addr);
-  rv = pinger.Ping(base::TimeDelta::FromMilliseconds(connection_timeout_),
-                   connection_attempts_);
+  rv = pinger.Ping(
+      base::TimeDelta::FromMilliseconds(kServerConnectionTimeoutMs),
+      kServerConnectionAttempts);
   return rv == net::OK;
 }
 

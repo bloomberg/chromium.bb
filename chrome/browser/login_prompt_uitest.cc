@@ -51,8 +51,7 @@ wstring ExpectedTitleFromAuth(const wstring& username,
 
 // Test that "Basic" HTTP authentication works.
 TEST_F(LoginPromptTest, TestBasicAuth) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
@@ -74,8 +73,7 @@ TEST_F(LoginPromptTest, TestBasicAuth) {
 
 // Test that "Digest" HTTP authentication works.
 TEST_F(LoginPromptTest, TestDigestAuth) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
@@ -96,8 +94,7 @@ TEST_F(LoginPromptTest, TestDigestAuth) {
 
 // Test that logging in on 2 tabs at once works.
 TEST_F(LoginPromptTest, TestTwoAuths) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<TabProxy> basic_tab(GetActiveTab());
@@ -125,8 +122,7 @@ TEST_F(LoginPromptTest, TestTwoAuths) {
 
 // Test that cancelling authentication works.
 TEST_F(LoginPromptTest, TestCancelAuth) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
@@ -165,8 +161,7 @@ TEST_F(LoginPromptTest, TestCancelAuth) {
 // If multiple tabs are looking for the same auth, the user should only have to
 // enter it once (http://crbug.com/8914).
 TEST_F(LoginPromptTest, SupplyRedundantAuths) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<TabProxy> basic_tab1(GetActiveTab());
@@ -200,8 +195,7 @@ TEST_F(LoginPromptTest, SupplyRedundantAuths) {
 // If multiple tabs are looking for the same auth, and one is cancelled, the
 // other should be cancelled as well.
 TEST_F(LoginPromptTest, CancelRedundantAuths) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<TabProxy> basic_tab1(GetActiveTab());

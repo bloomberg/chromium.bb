@@ -37,8 +37,7 @@ class ViewSourceTest : public UITest {
 // set in the html was set successfully (it shouldn't because we rendered the
 // page in view source)
 TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   std::string cookie = "viewsource_cookie";
   std::string cookie_data = "foo";
@@ -62,8 +61,7 @@ TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
 // implementation of the view-source: prefix being consumed (removed from the
 // URL) if the URL was not changed (apart from adding the view-source prefix)
 TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // First we navigate to google.html.
@@ -82,8 +80,7 @@ TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
 // Make sure that when looking at the actual page, we can select "View Source"
 // from the menu.
 TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL url(server->TestServerPage(test_html_));
@@ -95,8 +92,7 @@ TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
 // Make sure that when looking at the page source, we can't select "View Source"
 // from the menu.
 TEST_F(ViewSourceTest, ViewSourceInMenuDisabledWhileViewingSource) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +

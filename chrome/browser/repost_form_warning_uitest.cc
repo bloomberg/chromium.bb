@@ -29,8 +29,7 @@ typedef UITest RepostFormWarningTest;
 #endif
 
 TEST_F(RepostFormWarningTest, MAYBE_TestDoubleReload) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -60,8 +59,7 @@ TEST_F(RepostFormWarningTest, MAYBE_TestDoubleReload) {
 #endif
 
 TEST_F(RepostFormWarningTest, MAYBE_TestLoginAfterRepost) {
-  scoped_refptr<HTTPTestServer> server =
-  HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());

@@ -239,11 +239,9 @@ void InProcessBrowserTest::TearDown() {
 }
 
 HTTPTestServer* InProcessBrowserTest::StartHTTPServer() {
-  // The HTTPServer must run on the IO thread.
   DCHECK(!http_server_.get());
   http_server_ = HTTPTestServer::CreateServer(
-      L"chrome/test/data",
-      g_browser_process->io_thread()->message_loop());
+      L"chrome/test/data");
   return http_server_.get();
 }
 

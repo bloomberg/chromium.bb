@@ -23,8 +23,7 @@ typedef UITest CollectedCookiesTest;
 
 // Test is flaky. http://crbug.com/49539
 TEST_F(CollectedCookiesTest, FLAKY_DoubleDisplay) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -46,8 +45,7 @@ TEST_F(CollectedCookiesTest, FLAKY_DoubleDisplay) {
 
 // Test is flaky. http://crbug.com/49539
 TEST_F(CollectedCookiesTest, FLAKY_NavigateAway) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());

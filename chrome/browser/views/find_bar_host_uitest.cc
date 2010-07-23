@@ -26,7 +26,7 @@ const std::string kSimplePage = "404_is_enough_for_us.html";
 // a new tab.
 TEST_F(FindInPageControllerTest, FindMovesOnTabClose_Issue1343052) {
   scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"chrome/test/data", NULL);
+      HTTPTestServer::CreateServer(L"chrome/test/data");
   ASSERT_TRUE(NULL != server.get());
 
   GURL url = server->TestServerPage(kSimplePage);

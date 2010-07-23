@@ -278,8 +278,7 @@ TEST_F(ChromePluginTest, CanMakeGETRequestAsync) {
 
 // Tests that the plugin can issue a POST request.
 TEST_F(ChromePluginTest, CanMakePOSTRequest) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL url = server->TestServerPage("echo");

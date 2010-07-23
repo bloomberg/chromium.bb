@@ -28,7 +28,7 @@ class SearchProviderTest : public UITest {
 };
 
 SearchProviderTest::SearchProviderTest()
-    : server_(HTTPTestServer::CreateServer(L"chrome/test/data", NULL)) {
+    : server_(HTTPTestServer::CreateServer(L"chrome/test/data")) {
   if (!server_)
     return;
 

@@ -93,8 +93,7 @@ TEST_F(ProxyScriptFetcherTest, FileUrl) {
 // Note that all mime types are allowed for PAC file, to be consistent
 // with other browsers.
 TEST_F(ProxyScriptFetcherTest, HttpMimeType) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<URLRequestContext> context = new RequestContext;
   scoped_ptr<ProxyScriptFetcher> pac_fetcher(
@@ -130,8 +129,7 @@ TEST_F(ProxyScriptFetcherTest, HttpMimeType) {
 }
 
 TEST_F(ProxyScriptFetcherTest, HttpStatusCode) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<URLRequestContext> context = new RequestContext;
   scoped_ptr<ProxyScriptFetcher> pac_fetcher(
@@ -158,8 +156,7 @@ TEST_F(ProxyScriptFetcherTest, HttpStatusCode) {
 }
 
 TEST_F(ProxyScriptFetcherTest, ContentDisposition) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<URLRequestContext> context = new RequestContext;
   scoped_ptr<ProxyScriptFetcher> pac_fetcher(
@@ -177,8 +174,7 @@ TEST_F(ProxyScriptFetcherTest, ContentDisposition) {
 }
 
 TEST_F(ProxyScriptFetcherTest, NoCache) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<URLRequestContext> context = new RequestContext;
   scoped_ptr<ProxyScriptFetcher> pac_fetcher(
@@ -212,8 +208,7 @@ TEST_F(ProxyScriptFetcherTest, NoCache) {
 }
 
 TEST_F(ProxyScriptFetcherTest, TooLarge) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<URLRequestContext> context = new RequestContext;
   scoped_ptr<ProxyScriptFetcher> pac_fetcher(
@@ -255,8 +250,7 @@ TEST_F(ProxyScriptFetcherTest, TooLarge) {
 }
 
 TEST_F(ProxyScriptFetcherTest, Hang) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<URLRequestContext> context = new RequestContext;
   scoped_ptr<ProxyScriptFetcher> pac_fetcher(
@@ -295,8 +289,7 @@ TEST_F(ProxyScriptFetcherTest, Hang) {
 // (like gzip, bzip, etc.), and apply any charset conversions to yield
 // UTF8.
 TEST_F(ProxyScriptFetcherTest, Encodings) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<URLRequestContext> context = new RequestContext;
   scoped_ptr<ProxyScriptFetcher> pac_fetcher(

@@ -24,7 +24,7 @@ TEST_F(MultipartResponseUITest, SingleVisit) {
   // creates one entry in the visits table.
   const wchar_t kDocRoot[] = L"chrome/test/data";
   scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+      HTTPTestServer::CreateServer(kDocRoot);
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));

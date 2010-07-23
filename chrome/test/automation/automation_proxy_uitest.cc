@@ -972,8 +972,7 @@ TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
 
 TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
   const wchar_t kDocRoot[] = L"chrome/test/data/external_tab";
-  scoped_refptr<HTTPTestServer> server(
-      HTTPTestServer::CreateServer(kDocRoot, NULL));
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_THAT(server.get(), testing::NotNull());
 
   scoped_refptr<TabProxy> tab;

@@ -88,7 +88,7 @@ class ConnectionTesterTest : public PlatformTest {
 
 TEST_F(ConnectionTesterTest, RunAllTests) {
   scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateForkingServer(L"net/data/url_request_unittest/");
+      HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
 
   ConnectionTester tester(&test_delegate_);
 
@@ -114,7 +114,7 @@ TEST_F(ConnectionTesterTest, RunAllTests) {
 
 TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateForkingServer(L"net/data/url_request_unittest/");
+      HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
 
   scoped_ptr<ConnectionTester> tester(new ConnectionTester(&test_delegate_));
 

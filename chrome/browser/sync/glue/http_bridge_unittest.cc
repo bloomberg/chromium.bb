@@ -174,8 +174,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
 // Full round-trip test of the HttpBridge, using default UA string and
 // no request cookies.
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -199,8 +198,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
 
 // Full round-trip test of the HttpBridge, using custom UA string
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
@@ -227,8 +225,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
 }
 
 TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
@@ -256,8 +253,7 @@ TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
 }
 
 TEST_F(HttpBridgeTest, TestResponseHeader) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 

@@ -20,8 +20,7 @@ class NotificationsPermissionTest : public UITest {
 
 TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(server.get() != NULL);
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -47,8 +46,7 @@ TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
 
 TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(server.get() != NULL);
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));

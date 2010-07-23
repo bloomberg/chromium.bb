@@ -25,8 +25,7 @@ typedef UITest RedirectTest;
 
 // Tests a single server redirect
 TEST_F(RedirectTest, Server) {
-  scoped_refptr<HTTPTestServer> server =
-    HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL final_url = server->TestServerPage(std::string());
@@ -47,8 +46,7 @@ TEST_F(RedirectTest, Server) {
 
 // Tests a single client redirect.
 TEST_F(RedirectTest, Client) {
-  scoped_refptr<HTTPTestServer> server =
-    HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL final_url = server->TestServerPage(std::string());
@@ -81,8 +79,7 @@ TEST_F(RedirectTest, Client) {
 }
 
 TEST_F(RedirectTest, ClientEmptyReferer) {
-  scoped_refptr<HTTPTestServer> server =
-    HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL final_url = server->TestServerPage(std::string());
@@ -141,8 +138,7 @@ TEST_F(RedirectTest, ClientCancelled) {
 
 // Tests a client->server->server redirect
 TEST_F(RedirectTest, ClientServerServer) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL final_url = server->TestServerPage(std::string());
@@ -175,8 +171,7 @@ TEST_F(RedirectTest, ClientServerServer) {
 
 // Tests that the "#reference" gets preserved across server redirects.
 TEST_F(RedirectTest, ServerReference) {
-  scoped_refptr<HTTPTestServer> server =
-    HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   const std::string ref("reference");
@@ -195,8 +190,7 @@ TEST_F(RedirectTest, ServerReference) {
 // A) does not crash the browser or confuse the redirect chain, see bug 1080873
 // B) does not take place.
 TEST_F(RedirectTest, NoHttpToFile) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("http_to_file.html");
@@ -218,8 +212,7 @@ TEST_F(RedirectTest, NoHttpToFile) {
 // Ensures that non-user initiated location changes (within page) are
 // flagged as client redirects. See bug 1139823.
 TEST_F(RedirectTest, ClientFragments) {
-  scoped_refptr<HTTPTestServer> server =
-    HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   FilePath test_file(test_data_directory_);
@@ -252,8 +245,7 @@ TEST_F(RedirectTest,
   // which causes it to start a provisional load, and while it is waiting
   // for the response (which means it hasn't committed the load for the client
   // redirect destination page yet), we issue a new navigation request.
-  scoped_refptr<HTTPTestServer> server =
-    HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL final_url = server->TestServerPage("files/title2.html");

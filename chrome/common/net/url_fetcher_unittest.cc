@@ -431,22 +431,21 @@ void URLFetcherCancelTest::CancelRequest() {
 }
 
 TEST_F(URLFetcherTest, SameThreadsTest) {
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  ASSERT_TRUE(NULL != server.get());
+
   // Create the fetcher on the main thread.  Since IO will happen on the main
   // thread, this will test URLFetcher's ability to do everything on one
   // thread.
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
-  ASSERT_TRUE(NULL != server.get());
-
   CreateFetcher(GURL(server->TestServerPage("defaultresponse")));
 
   MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherTest, DifferentThreadsTest) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
+
   // Create a separate thread that will create the URLFetcher.  The current
   // (main) thread will do the IO, and when the fetch is complete it will
   // terminate the main thread's message loop; then the other thread's
@@ -461,8 +460,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
 }
 
 TEST_F(URLFetcherPostTest, Basic) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   CreateFetcher(GURL(server->TestServerPage("echo")));
   MessageLoop::current()->Run();
@@ -470,7 +468,7 @@ TEST_F(URLFetcherPostTest, Basic) {
 
 TEST_F(URLFetcherHeadersTest, Headers) {
   scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"net/data/url_request_unittest", NULL);
+      HTTPTestServer::CreateServer(L"net/data/url_request_unittest");
   ASSERT_TRUE(NULL != server.get());
   CreateFetcher(GURL(server->TestServerPage("files/with-headers.html")));
   MessageLoop::current()->Run();
@@ -478,8 +476,7 @@ TEST_F(URLFetcherHeadersTest, Headers) {
 }
 
 TEST_F(URLFetcherProtectTest, Overload) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("defaultresponse"));
 
@@ -496,8 +493,7 @@ TEST_F(URLFetcherProtectTest, Overload) {
 }
 
 TEST_F(URLFetcherProtectTest, ServerUnavailable) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"chrome/test/data", NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
 
@@ -516,8 +512,7 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
 }
 
 TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
-  scoped_refptr<HTTPTestServer> server =
-    HTTPTestServer::CreateServer(L"chrome/test/data", NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
 
@@ -549,8 +544,7 @@ TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
 }
 
 TEST_F(URLFetcherCancelTest, ReleasesContext) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"chrome/test/data", NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
 
@@ -576,8 +570,7 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
 }
 
 TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"chrome/test/data", NULL);
+  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
 

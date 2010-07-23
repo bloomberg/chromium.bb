@@ -22,7 +22,7 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   scoped_refptr<HTTPTestServer> PlainServer() {
-    return HTTPTestServer::CreateServer(kDocRoot, NULL);
+    return HTTPTestServer::CreateServer(kDocRoot);
   }
 
   scoped_refptr<HTTPSTestServer> GoodCertServer() {

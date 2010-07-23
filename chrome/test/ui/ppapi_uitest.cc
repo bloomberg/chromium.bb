@@ -74,8 +74,8 @@ class PPAPITest : public UITest {
 
   void RunTestViaHTTP(const std::string& test_case) {
     const wchar_t kDocRoot[] = L"third_party/ppapi/tests";
-    scoped_refptr<HTTPTestServer> server =
-        HTTPTestServer::CreateForkingServer(kDocRoot);
+    scoped_refptr<HTTPTestServer> server(
+        HTTPTestServer::CreateServer(kDocRoot));
     ASSERT_TRUE(server);
     RunTestURL(server->TestServerPage("files/test_case.html?" + test_case));
   }

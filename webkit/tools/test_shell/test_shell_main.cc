@@ -176,7 +176,9 @@ int main(int argc, char* argv[]) {
 
   // On Linux and Mac, load the test root certificate.
   net::TestServerLauncher ssl_util;
-  ssl_util.LoadTestRootCert();
+  if (!ssl_util.LoadTestRootCert()) {
+    LOG(ERROR) << "Failed to load test root certificate.";
+  }
 
   platform.InitializeGUI();
 
