@@ -654,8 +654,7 @@ void TopSites::AddBlacklistedURL(const GURL& url) {
 }
 
 bool TopSites::IsBlacklisted(const GURL& url) {
-  Value* dummy = Value::CreateNullValue();
-  bool result = blacklist_->GetWithoutPathExpansion(GetURLHash(url), &dummy);
+  bool result = blacklist_->HasKey(GetURLHash(url));
   return result;
 }
 
