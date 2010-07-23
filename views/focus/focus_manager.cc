@@ -361,9 +361,22 @@ void FocusManager::RestoreFocusedView() {
 
   View* view = view_storage->RetrieveView(stored_focused_view_storage_id_);
   if (view) {
-    if (ContainsView(view) && (view->IsFocusableInRootView() ||
-                               view->IsAccessibilityFocusableInRootView())) {
-      SetFocusedViewWithReason(view, kReasonFocusRestore);
+    if (ContainsView(view)) {
+      if (!view->IsFocusableInRootView() &&
+          view->IsAccessibilityFocusableInRootView()) {
+        // RequestFocus would fail, but we want to restore focus to controls
+        // that had focus in accessibility mode.
+        SetFocusedViewWithReason(view, kReasonFocusRestore);
+      } else {
+        // This usually just sets the focus if this view is focusable, but
+        // let the view override RequestFocus if necessary.
+        view->RequestFocus();
+
+        // If it succeeded, the reason would be incorrect; set it to
+        // focus restore.
+        if (focused_view_ == view)
+          focus_change_reason_ = kReasonFocusRestore;
+      }
     }
   } else {
     // Clearing the focus will focus the root window, so we still get key
