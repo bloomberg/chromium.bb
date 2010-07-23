@@ -21,6 +21,8 @@
 <script src="options/pref_ui.js"></script>
 <script src="options/options_page.js"></script>
 <if expr="pp_ifdef('chromeos')">
+  <script src="options/chromeos_language_list.js"></script>
+  <script src="options/chromeos_language_options.js"></script>
   <script src="options/chromeos_system_options.js"></script>
   <script src="options/chromeos_accounts_options.js"></script>
   <script src="options/chromeos_accounts_user_list.js"></script>
@@ -69,11 +71,7 @@ function load() {
                                       localStrings.getString('labsPage'),
                                       'labsPage');
     OptionsPage.register(labsOptions);
-    var languageSettings = new OptionsPage('language',
-                                           localStrings.getString(
-                                               'languagePage'),
-                                           'languagePage');
-    OptionsPage.registerSubPage(languageSettings);
+    OptionsPage.registerSubPage(LanguageOptions.getInstance());
   }
 
   var syncSettings = new OptionsPage('sync',

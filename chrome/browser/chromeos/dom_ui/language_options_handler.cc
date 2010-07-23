@@ -7,6 +7,8 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/values.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -41,4 +43,12 @@ void LanguageOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringF(
           IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
           l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
+
+  // Build mappings of locale code (language code) to display name
+  // (ex. "en-US" => "English (United States)".
+  const std::vector<std::string>& locales = l10n_util::GetAvailableLocales();
+  for (size_t i = 0; i < locales.size(); ++i) {
+    localized_strings->SetString(UTF8ToWide(locales[i]),
+        chromeos::input_method::GetLanguageDisplayNameFromCode(locales[i]));
+  }
 }
