@@ -347,15 +347,15 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   }
 
   // Delete temporary files. These include install temporary directory
-  // and master profile file if present.
-  scoped_ptr<WorkItemList> cleanup_list(WorkItem::CreateWorkItemList());
+  // and master profile file if present. Note that we do not care about rollback
+  // here and we schedule for deletion on reboot below if the deletes fail. As
+  // such, we do not use DeleteTreeWorkItem.
   LOG(INFO) << "Deleting temporary directory " << temp_path.value();
-  cleanup_list->AddDeleteTreeWorkItem(temp_path.ToWStringHack(),
-                                      std::wstring());
+  bool cleanup_success = file_util::Delete(temp_path, true);
   if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
     std::wstring prefs_path = cmd_line.GetSwitchValue(
         installer_util::switches::kInstallerData);
-    cleanup_list->AddDeleteTreeWorkItem(prefs_path, std::wstring());
+    cleanup_success = file_util::Delete(prefs_path, true) && cleanup_success;
   }
 
   // The above cleanup has been observed to fail on several users machines.
@@ -364,7 +364,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   // as we end up filling users' disks with large-ish temp files. To mitigate
   // this, if we fail to delete the temp folders, then schedule them for
   // deletion at next reboot.
-  if (!cleanup_list->Do()) {
+  if (!cleanup_success) {
     ScheduleDirectoryForDeletion(temp_path.ToWStringHack().c_str());
     if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
       std::wstring prefs_path = cmd_line.GetSwitchValue(
