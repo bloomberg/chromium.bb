@@ -95,7 +95,7 @@ void GdkPixbufFree(guchar* pixels, gpointer data) {
 
 }  // namespace
 
-Clipboard::Clipboard() {
+Clipboard::Clipboard() : clipboard_data_(NULL) {
   clipboard_ = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   primary_selection_ = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
 }
