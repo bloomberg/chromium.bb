@@ -205,7 +205,7 @@ void GetCookieFunction::RespondOnUIThread() {
   SendResponse(true);
 }
 
-GetAllCookiesFunction::GetAllCookiesFunction() {}
+GetAllCookiesFunction::GetAllCookiesFunction() : details_(NULL) {}
 
 bool GetAllCookiesFunction::RunImpl() {
   // Return false if the arguments are malformed.
@@ -257,7 +257,11 @@ void GetAllCookiesFunction::RespondOnUIThread() {
   SendResponse(true);
 }
 
-SetCookieFunction::SetCookieFunction() : secure_(false), http_only_(false) {}
+SetCookieFunction::SetCookieFunction()
+    : secure_(false),
+      http_only_(false),
+      success_(false) {
+}
 
 bool SetCookieFunction::RunImpl() {
   // Return false if the arguments are malformed.

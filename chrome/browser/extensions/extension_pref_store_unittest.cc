@@ -27,7 +27,8 @@ class TestExtensionPrefStore : public ExtensionPrefStore {
 class MockPrefService : public PrefService {
  public:
   explicit MockPrefService(PrefValueStore* value_store)
-      : PrefService(value_store) {}
+      : PrefService(value_store),
+        fired_observers_(false) {}
 
   // Tracks whether the observers would have been notified.
   virtual void FireObserversIfChanged(const wchar_t* pref_name,
