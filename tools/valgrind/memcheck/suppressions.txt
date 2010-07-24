@@ -3553,4 +3553,20 @@
    fun:_ZN9OptionsUIC1EP11TabContents
    fun:_Z8NewDOMUII9OptionsUIEP5DOMUIP11TabContentsRK4GURL
 }
+{
+   bug_50103_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5Value15CreateNullValueEv
+   fun:_ZN7history8TopSites17AddBlacklistedURLERK4GURL
+   fun:_ZN7history40TopSitesTest_*_Test8TestBodyEv
+}
+{
+   bug_50103_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5Value18CreateIntegerValueEi
+   fun:_ZN7history8TopSites12AddPinnedURLERK4GURLj
+   fun:_ZN7history28TopSitesTest_PinnedURLs_Test8TestBodyEv
+}
 

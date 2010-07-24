@@ -935,3 +935,18 @@
    ...
    fun:LoadTimingObserverTest*
 }
+{
+   bug_50103_a
+   Heapcheck:Leak
+   fun:Value::CreateNullValue
+   fun:history::TopSites::AddBlacklistedURL
+   fun:history::TopSitesTest_*_Test::TestBody
+}
+{
+   bug_50103_b
+   Heapcheck:Leak
+   fun:Value::CreateIntegerValue
+   fun:history::TopSites::AddPinnedURL
+   fun:history::TopSitesTest_PinnedURLs_Test::TestBody
+}
+
