@@ -71,14 +71,18 @@ bool EncoderVerbatim::EncodeRect(
       &((*packet->mutable_rect_data()->mutable_data())[0]));
 
   for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
-    const uint8* in = capture_data->data_planes().data[i];
     // Skip over planes that don't have data.
-    if (!in) continue;
+    if (!capture_data->data_planes().data[i])
+      continue;
+
+    const uint8* in = capture_data->data_planes().data[i] +
+                      y * capture_data->data_planes().strides[i] +
+                      x * bytes_per_pixel;
 
     // TODO(hclam): Handle YUV since the height would be different.
     for (int j = 0; j < height; ++j) {
       DCHECK_LE(row_size, capture_data->data_planes().strides[i]);
-      memcpy(out, in, row_size);
+      memcpy(out, in, width * bytes_per_pixel);
       in += capture_data->data_planes().strides[i];
       out += row_size;
     }

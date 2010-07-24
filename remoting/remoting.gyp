@@ -342,9 +342,12 @@
         '../testing/gmock/include',
       ],
       'sources': [
+        'base/codec_test.cc',
+        'base/codec_test.h',
         'base/compressor_zlib_unittest.cc',
         'base/decoder_verbatim_unittest.cc',
         'base/decompressor_zlib_unittest.cc',
+        'base/encoder_verbatim_unittest.cc',
         # TODO(hclam): Enable VP8 in the build.
         #'base/encoder_vp8_unittest.cc',
         'base/mock_objects.h',

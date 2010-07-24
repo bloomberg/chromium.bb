@@ -21,6 +21,8 @@ class DecoderVerbatim : public Decoder {
   virtual bool PartialDecode(HostMessage* message);
   virtual void EndDecode();
 
+  void set_reverse_rows(bool reverse) { reverse_rows_ = reverse; }
+
  private:
   bool HandleBeginRect(HostMessage* message);
   bool HandleRectData(HostMessage* message);

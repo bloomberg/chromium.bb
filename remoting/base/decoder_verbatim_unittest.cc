@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/base/video_frame.h"
+#include "remoting/base/codec_test.h"
 #include "remoting/base/decoder_verbatim.h"
+#include "remoting/base/encoder_verbatim.h"
 #include "remoting/client/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,14 +61,18 @@ TEST(DecoderVerbatimTest, SimpleDecode) {
   EXPECT_EQ(kWidth, frame->width());
   EXPECT_EQ(kHeight, frame->height());
   EXPECT_EQ(media::VideoFrame::ASCII, frame->format());
-  // TODO(hclam): Enable this line.
-  // EXPECT_EQ(0, memcmp(kData, frame->data(media::VideoFrame::kRGBPlane),
-  //                     sizeof(kData)));
 
   // Check the updated rects.
   ASSERT_TRUE(rects.size() == 1);
   EXPECT_EQ(kWidth, static_cast<size_t>(rects[0].width()));
   EXPECT_EQ(kHeight, static_cast<size_t>(rects[0].height()));
+}
+
+TEST(DecoderVerbatimTest, EncodeAndDecode) {
+  EncoderVerbatim encoder;
+  DecoderVerbatim decoder;
+  decoder.set_reverse_rows(false);
+  TestEncoderDecoder(&encoder, &decoder, true);
 }
 
 }  // namespace remoting
