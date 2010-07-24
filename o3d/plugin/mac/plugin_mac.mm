@@ -687,7 +687,11 @@ void PluginObject::CleanupFullscreenOpenGLContext() {
 void PluginObject::SetMacCGLContext(CGLContextObj context) {
   mac_cgl_context_ = context;
   if (renderer_) {
+#ifdef RENDERER_GLES2
+    ((o3d::RendererGLES2*) renderer_)->set_mac_cgl_context(context);
+#else
     ((o3d::RendererGL*) renderer_)->set_mac_cgl_context(context);
+#endif
   }
 }
 

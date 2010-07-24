@@ -106,7 +106,9 @@ TEST_F(RendererTest, InitAndDestroyRenderer) {
   EXPECT_FALSE(gl_renderer->cg_context() != NULL);
 #elif defined(RENDERER_GLES2)
 #if defined(GLES2_BACKEND_DESKTOP_GL)
+#if defined(OS_LINUX)
   EXPECT_FALSE(gles2_renderer->glx_context() != NULL);
+#endif
 #elif defined(GLES2_BACKEND_NATIVE_GLES2)
   EXPECT_FALSE(gles2_renderer->egl_context() != NULL);
 #endif

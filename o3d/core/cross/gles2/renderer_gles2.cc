@@ -1367,6 +1367,22 @@ void RendererGLES2::UpdateDxClippingUniform(GLint location) {
   CHECK_GL_ERROR();
 }
 
+#if defined(OS_MACOSX) && defined(GLES2_BACKEND_DESKTOP_GL)
+void RendererGLES2::set_mac_cgl_context(CGLContextObj obj) {
+  bool changed = (mac_cgl_context_ != obj);
+  mac_cgl_context_ = obj;
+  if (changed) {
+    // We need to reset all of the OpenGL state when the context changes.
+    alpha_function_ref_changed_ = true;
+    alpha_blend_settings_changed_ = true;
+    stencil_settings_changed_ = true;
+    polygon_offset_changed_ = true;
+    // TODO(kbr): properly wire up full-screen support in this configuration.
+    // must_reset_context_ = true;
+  }
+}
+#endif
+
 void RendererGLES2::SetViewportInPixels(int left,
                                         int top,
                                         int width,
