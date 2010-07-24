@@ -334,6 +334,55 @@ TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
   EXPECT_EQ(4U, ids.size());
 }
 
+// Test care for 50047. Makes sure that unique_ids_ is populated correctly on
+// load.
+TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
+  AutoFillProfile profile0(string16(), 0);
+  autofill_unittest::SetProfileInfo(&profile0,
+      "", "y", "", "", "", "", "", "", "", "", "", "", "", "");
+
+  // This will verify that the web database has been loaded and the notification
+  // sent out.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillRepeatedly(QuitUIMessageLoop());
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+
+  // Add the profile0 to the db.
+  std::vector<AutoFillProfile> update;
+  update.push_back(profile0);
+  personal_data_->SetProfiles(&update);
+
+  // Reset the PersonalDataManager. This recreates PersonalDataManager, which
+  // should populate unique_ids_.
+  ResetPersonalDataManager();
+
+  // The message loop will exit when the PersonalDataLoadedObserver is notified.
+  MessageLoop::current()->Run();
+
+  // Verify that we've loaded the profiles from the web database.
+  const std::vector<AutoFillProfile*>& results2 = personal_data_->profiles();
+  ASSERT_EQ(1U, results2.size());
+
+  // Add a new profile.
+  AutoFillProfile profile1(string16(), 0);
+  autofill_unittest::SetProfileInfo(&profile1,
+      "", "y", "", "", "", "", "", "", "", "", "", "", "", "");
+  update.clear();
+  update.push_back(*results2[0]);
+  update.push_back(profile1);
+  personal_data_->SetProfiles(&update);
+
+  // Make sure the two profiles have different ids (and neither equal to 0,
+  // which is an invalid id).
+  const std::vector<AutoFillProfile*>& results3 = personal_data_->profiles();
+  ASSERT_EQ(2U, results3.size());
+  EXPECT_NE(results3[0]->unique_id(), results3[1]->unique_id());
+  EXPECT_NE(0, results3[0]->unique_id());
+  EXPECT_NE(0, results3[1]->unique_id());
+}
+
 TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
   AutoFillProfile profile0(string16(), 0);
   autofill_unittest::SetProfileInfo(&profile0,

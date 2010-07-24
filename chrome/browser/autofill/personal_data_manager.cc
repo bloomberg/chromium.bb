@@ -523,6 +523,7 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
   for (std::vector<AutoFillProfile*>::iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
     unique_profile_ids_.insert((*iter)->unique_id());
+    unique_ids_.insert((*iter)->unique_id());
     web_profiles_.push_back(*iter);
   }
 }
@@ -543,6 +544,7 @@ void PersonalDataManager::ReceiveLoadedCreditCards(
   for (std::vector<CreditCard*>::iterator iter = credit_cards.begin();
        iter != credit_cards.end(); ++iter) {
     unique_creditcard_ids_.insert((*iter)->unique_id());
+    unique_ids_.insert((*iter)->unique_id());
     credit_cards_.push_back(*iter);
   }
 }
