@@ -3339,7 +3339,7 @@
    fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
 }
 {
-   bug_46678
+   bug_46678_a
    Memcheck:Leak
    fun:_Znw*
    fun:_Z11NewCallbackIN8remoting14SessionManagerEPNS0_11HostMessageEiEPN9Callback2IT0_T1_E4TypeEPT_MSA_FvS5_S6_E
@@ -3349,6 +3349,20 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
    ...
    fun:_ZN8remoting38SessionManagerTest_OneRecordCycle_Test8TestBodyEv
+}
+{
+   bug_46678_b
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN8remoting18TestEncoderDecoderEPNS_7EncoderEPNS_7DecoderEb
+   fun:_ZN8remoting40DecoderVerbatimTest_EncodeAndDecode_Test8TestBodyEv
+}
+{
+   bug_46678_c
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN8remoting11TestEncoderEPNS_7EncoderEb
+   fun:_ZN8remoting36EncoderVerbatimTest_TestEncoder_Test8TestBodyEv
 }
 {
    bug_47331_part_1
