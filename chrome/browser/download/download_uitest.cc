@@ -172,7 +172,7 @@ class DownloadTest : public UITest {
 
 // Download a file with non-viewable content, verify that the
 // download tab opened and the file exists.
-// All download tests are flaky on all platforms, http://crbug.com/35275.
+// All download tests are disabled on all platforms, http://crbug.com/35275.
 // Additionally, there is Windows-specific flake, http://crbug.com/20809.
 TEST_F(DownloadTest, FLAKY_DownloadMimeType) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
@@ -350,8 +350,8 @@ TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
   CheckDownload(file);
 }
 
-// All of the following tests are flaky, see http://crbug.com/43066
-TEST_F(DownloadTest, FLAKY_DontCloseNewTab1) {
+// All of the following tests are disabled, see http://crbug.com/43066
+TEST_F(DownloadTest, DISABLED_DontCloseNewTab1) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -370,7 +370,7 @@ TEST_F(DownloadTest, FLAKY_DontCloseNewTab1) {
   WaitUntilTabCount(2);
 }
 
-TEST_F(DownloadTest, FLAKY_CloseNewTab1) {
+TEST_F(DownloadTest, DISABLED_CloseNewTab1) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -392,8 +392,8 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab1) {
   CheckDownload(file);
 }
 
-// Flaky, see http://crbug.com/43066
-TEST_F(DownloadTest, FLAKY_DontCloseNewTab2) {
+// Disabled, see http://crbug.com/43066
+TEST_F(DownloadTest, DISABLED_DontCloseNewTab2) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -417,7 +417,7 @@ TEST_F(DownloadTest, FLAKY_DontCloseNewTab2) {
 }
 
 // Flaky, see http://crbug.com/43066
-TEST_F(DownloadTest, FLAKY_DontCloseNewTab3) {
+TEST_F(DownloadTest, DISABLED_DontCloseNewTab3) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -444,7 +444,7 @@ TEST_F(DownloadTest, FLAKY_DontCloseNewTab3) {
 }
 
 // Flaky, see http://crbug.com/43066
-TEST_F(DownloadTest, FLAKY_CloseNewTab2) {
+TEST_F(DownloadTest, DISABLED_CloseNewTab2) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -468,7 +468,7 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab2) {
 }
 
 // Flaky, see http://crbug.com/43066
-TEST_F(DownloadTest, FLAKY_CloseNewTab3) {
+TEST_F(DownloadTest, DISABLED_CloseNewTab3) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
