@@ -304,7 +304,9 @@ void ImporterHost::CheckForLoadedModels(uint16 items) {
 }
 
 ExternalProcessImporterHost::ExternalProcessImporterHost()
-    : cancelled_(false),
+    : items_(0),
+      import_to_bookmark_bar_(false),
+      cancelled_(false),
       import_process_launched_(false) {
 }
 
@@ -375,7 +377,12 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
     int items,
     InProcessImporterBridge* bridge,
     bool import_to_bookmark_bar)
-    : process_importer_host_(importer_host),
+    : bookmarks_options_(0),
+      total_bookmarks_count_(0),
+      total_history_rows_count_(0),
+      total_fav_icons_count_(0),
+      process_importer_host_(importer_host),
+      profile_import_process_host_(NULL),
       profile_info_(profile_info),
       items_(items),
       import_to_bookmark_bar_(import_to_bookmark_bar),
