@@ -758,6 +758,7 @@ void ExecuteBrowserCommandObserver::Observe(
 ExecuteBrowserCommandObserver::ExecuteBrowserCommandObserver(
     AutomationProvider* automation, IPC::Message* reply_message)
     : automation_(automation),
+      notification_type_(NotificationType::ALL),
       reply_message_(reply_message) {
 }
 
