@@ -31,16 +31,12 @@
 #include "chrome/installer/util/version.h"
 #endif
 
-// TODO(finnur): For the stable channel we want to check daily and notify
-// the user if more than 2 weeks have passed since the upgrade happened
-// (without a reboot). For the dev channel however, I want quicker feedback
-// on how the feature works so I'm checking every hour and notifying the
-// user immediately.
-
 namespace {
 
 // How often to check for an upgrade.
-const int kCheckForUpgradeEveryMs = 60 * 60 * 1000;  // 1 hour.
+// TODO(finnur): Once we have a good way of determining which branch the user
+// is on at runtime we should check more frequently for the dev branch.
+const int kCheckForUpgradeEveryMs = 24 * 60 * 60 * 1000;  // Check daily.
 
 // How long to wait before notifying the user about the upgrade.
 const int kNotifyUserAfterMs = 0;
