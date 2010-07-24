@@ -63,6 +63,7 @@ class MetricsService : public NotificationObserver,
   // TODO(ziadh): This is here temporarily for a side experiment. Remove later
   // on.
   enum LogStoreStatus {
+    STORE_SUCCESS,    // Successfully presisted log.
     ENCODE_FAIL,      // Failed to encode log.
     COMPRESS_FAIL,    // Failed to compress log.
     END_STORE_STATUS  // Number of bins to use to create the histogram.

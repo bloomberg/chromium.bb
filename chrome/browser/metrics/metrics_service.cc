@@ -215,7 +215,7 @@ MetricsService::LogRecallStatus MakeRecallStatusHistogram(
 
 // TODO(ziadh): Remove this when done with experiment.
 void MakeStoreStatusHistogram(MetricsService::LogStoreStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogStore", status,
+  UMA_HISTOGRAM_ENUMERATION("PrefService.PersistentLogStore2", status,
                             MetricsService::END_STORE_STATUS);
 }
 }  // namespace
@@ -1304,6 +1304,7 @@ void MetricsService::StoreUnsentLogsHelper(
   MD5Final(&digest, &ctx);
   list->Append(Value::CreateStringValue(MD5DigestToBase16(digest)));
   DCHECK(list->GetSize() >= 3);  // Minimum of 3 elements (size, data, hash).
+  MakeStoreStatusHistogram(STORE_SUCCESS);
 }
 
 void MetricsService::StoreUnsentLogs() {
