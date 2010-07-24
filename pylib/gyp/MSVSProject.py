@@ -9,7 +9,6 @@
 import common
 import xml.dom
 import xml.dom.minidom
-import MSVSNew
 
 #------------------------------------------------------------------------------
 
@@ -82,7 +81,7 @@ class Writer(object):
       guid: GUID to use for project, if not None.
     """
     self.name = name
-    self.guid = guid or MSVSNew.MakeGuid(self.project_path)
+    self.guid = guid
 
     # Default to Win32 for platforms.
     if not platforms:

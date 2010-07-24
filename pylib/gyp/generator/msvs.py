@@ -61,6 +61,12 @@ generator_additional_non_configuration_keys = [
     'msvs_cygwin_shell',
 ]
 
+# List of precompiled header related keys.
+precomp_keys = [
+    'msvs_precompiled_header',
+    'msvs_precompiled_source',
+]
+
 cached_username = None
 cached_domain = None
 
@@ -93,6 +99,7 @@ def _GetDomainAndUserName():
   return (cached_domain, cached_username)
 
 fixpath_prefix = None
+
 
 def _FixPath(path):
   """Convert paths to a form that will make sense in a vcproj file.
@@ -247,6 +254,7 @@ def _PrepareActionRaw(spec, cmd, cygwin_shell, has_input_path, quote_cmd):
     # Collapse into a single command.
     return ' '.join(direct_cmd)
 
+
 def _PrepareAction(spec, rule, has_input_path):
   # Find path to cygwin.
   cygwin_dir = _FixPath(spec.get('msvs_cygwin_dirs', ['.'])[0])
@@ -274,6 +282,7 @@ def _PickPrimaryInput(inputs):
   else:
     return inputs[0]
 
+
 def _SetRunAs(user_file, config_name, c_data, command,
               environment={}, working_directory=""):
   """Add a run_as rule to the user file.
@@ -288,6 +297,7 @@ def _SetRunAs(user_file, config_name, c_data, command,
   """
   user_file.AddDebugSettings(_ConfigFullName(config_name, c_data),
                              command, environment, working_directory)
+
 
 def _AddCustomBuildTool(p, spec, inputs, outputs, description, cmd):
   """Add a custom build tool to execute something.
@@ -602,11 +612,11 @@ def _GenerateRules(p, output_dir, options, spec,
         sources.update(outputs)
 
 
-def _GenerateProject(vcproj_filename, build_file, spec, options, version):
+def _GenerateProject(proj_path, build_file, spec, options, version):
   """Generates a vcproj file.
 
   Arguments:
-    vcproj_filename: Filename of the vcproj file to generate.
+    proj_path: Path of the vcproj file to generate.
     build_file: Filename of the .gyp file that the vcproj file comes from.
     spec: The target dictionary containing the properties of the target.
   """
@@ -624,31 +634,119 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   if default_config.get('msvs_existing_vcproj'):
     return guid
 
-  #print 'Generating %s' % vcproj_filename
+  guid = guid or MSVSNew.MakeGuid(proj_path)
+  _GenerateMsvsProject(proj_path, guid, build_file, spec, options, version)
 
-  vcproj_dir = os.path.dirname(vcproj_filename)
+  # Return the guid so we can refer to it elsewhere.
+  return guid
+
+
+def _GenerateMsvsProject(proj_path, guid, build_file, spec, options, version):
+  """Generates a .vcproj file.  It may create .rules and .user files too.
+
+  Arguments:
+    proj_path: The path of the project file to be created.  The .rules and
+               .user files will start with the same path.
+    guid: The GUID of this project.
+    build_file: Filename of the .gyp file that the vcproj file comes from.
+    spec: The target dictionary containing the properties of the target.
+    options: Global options passed to the generator.
+    version: The VisualStudioVersion object.
+  """
+  vcproj_dir = os.path.dirname(proj_path)
   if vcproj_dir and not os.path.exists(vcproj_dir):
     os.makedirs(vcproj_dir)
 
+  platforms = _GetUniquePlatforms(spec)
+
+  p = MSVSProject.Writer(proj_path, version=version)
+  p.Create(spec['target_name'], guid=guid, platforms=platforms)
+  user_file = _CreateMsvsUserFile(proj_path, version, spec)
+
+  # Get directory project file is in.
+  gyp_dir = os.path.split(proj_path)[0]
+
+  config_type = _GetMsvsConfigurationType(spec)
+  for config_name, config in spec['configurations'].iteritems():
+    _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config)
+
+  # Prepare list of sources and excluded sources.
+  sources, excluded_sources = _PrepareListOfSources(spec, build_file)
+
+  # Add rules.
+  actions_to_add = []
+  _GenerateRules(p, gyp_dir, options, spec,
+                 sources, excluded_sources,
+                 actions_to_add)
+  sources, excluded_sources, excluded_idl = _AdjustSources(spec, options,
+      gyp_dir, sources, excluded_sources)
+
+  # Add in files.
+  p.AddFiles(sources)
+
+  # Add deferred actions to add.
+  for a in actions_to_add:
+    _AddCustomBuildTool(p, spec,
+                        inputs=a['inputs'],
+                        outputs=a['outputs'],
+                        description=a['description'],
+                        cmd=a['cmd'])
+
+  _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl)
+  _AddToolFiles(p, spec)
+  _HandlePreCompileHeaderStubs(p, spec)
+  _AddActions(p, spec)
+  has_run_as = _AddRunAs(p, spec, user_file)
+  _AddCopies(p, spec)
+
+  # Write it out.
+  p.Write()
+
+  # Write out the user file, but only if we need to.
+  if has_run_as:
+    user_file.Write()
+
+
+def _GetUniquePlatforms(spec):
+  """Return the list of unique platforms for this spec, e.g ['win32', ...]
+
+  Arguments:
+    spec: The target dictionary containing the properties of the target.
+  Returns:
+    The MSVSUserFile object created.
+  """
   # Gather list of unique platforms.
   platforms = set()
   for configuration in spec['configurations']:
     platforms.add(_ConfigPlatform(spec['configurations'][configuration]))
   platforms = list(platforms)
+  return platforms
 
-  p = MSVSProject.Writer(vcproj_filename, version=version)
-  p.Create(spec['target_name'], guid=guid, platforms=platforms)
 
-  # Create the user file.
+def _CreateMsvsUserFile(proj_path, version, spec):
+  """Generates a .user file for the user running this Gyp program.
+
+  Arguments:
+    proj_path: The path of the project file being created.  The .user file
+               shares the same path (with an appropriate suffix).
+    version: The VisualStudioVersion object.
+    spec: The target dictionary containing the properties of the target.
+  Returns:
+    The MSVSUserFile object created.
+  """
   (domain, username) = _GetDomainAndUserName()
-  vcuser_filename = '.'.join([vcproj_filename, domain, username, 'user'])
+  vcuser_filename = '.'.join([proj_path, domain, username, 'user'])
   user_file = MSVSUserFile.Writer(vcuser_filename, version=version)
   user_file.Create(spec['target_name'])
+  return user_file
 
-  # Get directory project file is in.
-  gyp_dir = os.path.split(vcproj_filename)[0]
 
-  # Pick target configuration type.
+def _GetMsvsConfigurationType(spec):
+  """Returns the configuration type for this project.  It's a number defined
+     by Microsoft.  May raise an exception.
+  Returns:
+    An integer, the configuration type.
+  """
   try:
     config_type = {
         'executable': '1',  # .exe
@@ -666,162 +764,261 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     else:
       raise Exception('Missing type field for target %s in %s.' %
                       (spec['target_name'], build_file))
+  return config_type
 
-  for config_name, c in spec['configurations'].iteritems():
-    # Process each configuration.
-    vsprops_dirs = c.get('msvs_props', [])
-    vsprops_dirs = [_FixPath(i) for i in vsprops_dirs]
 
-    # Prepare the list of tools as a dictionary.
-    tools = dict()
+def _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config):
+  """Many settings in a vcproj file are specific to a configuration.  This
+    function the main part of the vcproj file that's configuration specific.
 
-    # Add in msvs_settings.
-    for tool in c.get('msvs_settings', {}):
-      settings = c['msvs_settings'][tool]
-      for setting in settings:
-        _ToolAppend(tools, tool, setting, settings[setting])
+  Arguments:
+    p: The target project being generated.
+    spec: The target dictionary containing the properties of the target.
+    config_type: The configuration type, a number as defined by Microsoft.
+    config_name: The name of the configuration.
+    config: The dictionnary that defines the special processing to be done
+            for this configuration.
+  """
+  # Get the information for this configuration
+  include_dirs, resource_include_dirs = _GetIncludeDirs(config)
+  libraries = _GetLibraries(config, spec)
+  out_file, vc_tool = _GetOutputFilePathAndTool(spec)
+  defines = _GetDefines(config)
+  disabled_warnings = _GetDisabledWarnings(config)
+  prebuild = config.get('msvs_prebuild')
+  postbuild = config.get('msvs_postbuild')
+  def_file = _GetModuleDefinition(spec)
+  precompiled_header = config.get('msvs_precompiled_header')
 
-    # Add in includes.
-    # TODO(bradnelson): include_dirs should really be flexible enough not to
-    #                   require this sort of thing.
-    include_dirs = (
-        c.get('include_dirs', []) +
-        c.get('msvs_system_include_dirs', []))
-    resource_include_dirs = c.get('resource_include_dirs', include_dirs)
-    include_dirs = [_FixPath(i) for i in include_dirs]
-    resource_include_dirs = [_FixPath(i) for i in resource_include_dirs]
+  # Prepare the list of tools as a dictionary.
+  tools = dict()
+  # Add in user specified msvs_settings.
+  for tool in config.get('msvs_settings', {}):
+    settings = config['msvs_settings'][tool]
+    for setting in settings:
+      _ToolAppend(tools, tool, setting, settings[setting])
+  # Add the information to the appropriate tool
+  _ToolAppend(tools, 'VCCLCompilerTool',
+              'AdditionalIncludeDirectories', include_dirs)
+  _ToolAppend(tools, 'VCResourceCompilerTool',
+              'AdditionalIncludeDirectories', resource_include_dirs)
+  # Add in libraries.
+  _ToolAppend(tools, 'VCLinkerTool', 'AdditionalDependencies', libraries)
+  if out_file:
+    _ToolAppend(tools, vc_tool, 'OutputFile', out_file, only_if_unset=True)
+  # Add defines.
+  _ToolAppend(tools, 'VCCLCompilerTool', 'PreprocessorDefinitions', defines)
+  _ToolAppend(tools, 'VCResourceCompilerTool', 'PreprocessorDefinitions',
+              defines)
+  # Change program database directory to prevent collisions.
+  _ToolAppend(tools, 'VCCLCompilerTool', 'ProgramDataBaseFileName',
+              '$(IntDir)\\$(ProjectName)\\vc80.pdb')
+  # Add disabled warnings.
+  _ToolAppend(tools, 'VCCLCompilerTool',
+              'DisableSpecificWarnings', disabled_warnings)
+  # Add Pre-build.
+  _ToolAppend(tools, 'VCPreBuildEventTool', 'CommandLine', prebuild)
+  # Add Post-build.
+  _ToolAppend(tools, 'VCPostBuildEventTool', 'CommandLine', postbuild)
+  # Turn on precompiled headers if appropriate.
+  if precompiled_header:
+    precompiled_header = os.path.split(precompiled_header)[1]
+    _ToolAppend(tools, 'VCCLCompilerTool', 'UsePrecompiledHeader', '2')
     _ToolAppend(tools, 'VCCLCompilerTool',
-                'AdditionalIncludeDirectories', include_dirs)
-    _ToolAppend(tools, 'VCResourceCompilerTool',
-                'AdditionalIncludeDirectories', resource_include_dirs)
-
-    # Add in libraries.
-    libraries = spec.get('libraries', [])
-    # Strip out -l, as it is not used on windows (but is needed so we can pass
-    # in libraries that are assumed to be in the default library path).
-    libraries = [re.sub('^(\-l)', '', lib) for lib in libraries]
-    # Add them.
-    _ToolAppend(tools, 'VCLinkerTool',
-                'AdditionalDependencies', libraries)
-
-    # Select a name for the output file.
-    output_file_map = {
-        'executable': ('VCLinkerTool', '$(OutDir)\\', '.exe'),
-        'shared_library': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
-        'loadable_module': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
-        'static_library': ('VCLibrarianTool', '$(OutDir)\\lib\\', '.lib'),
-        'dummy_executable': ('VCLinkerTool', '$(IntDir)\\', '.junk'),
-    }
-    output_file_props = output_file_map.get(spec['type'])
-    if output_file_props and int(spec.get('msvs_auto_output_file', 1)):
-      vc_tool, out_dir, suffix = output_file_props
-      out_dir = spec.get('product_dir', out_dir)
-      product_extension = spec.get('product_extension')
-      if product_extension:
-        suffix = '.' + product_extension
-      prefix = spec.get('product_prefix', '')
-      product_name = spec.get('product_name', '$(ProjectName)')
-      out_file = ntpath.join(out_dir, prefix + product_name + suffix)
-      _ToolAppend(tools, vc_tool, 'OutputFile', out_file,
-                  only_if_unset=True)
-
-    # Add defines.
-    defines = []
-    for d in c.get('defines', []):
-      if type(d) == list:
-        fd = '='.join([str(dpart) for dpart in d])
-      else:
-        fd = str(d)
-      fd = _EscapeCppDefine(fd)
-      defines.append(fd)
-
+                'PrecompiledHeaderThrough', precompiled_header)
     _ToolAppend(tools, 'VCCLCompilerTool',
-                'PreprocessorDefinitions', defines)
-    _ToolAppend(tools, 'VCResourceCompilerTool',
-                'PreprocessorDefinitions', defines)
+                'ForcedIncludeFiles', precompiled_header)
+  # Loadable modules don't generate import libraries;
+  # tell dependent projects to not expect one.
+  if spec['type'] == 'loadable_module':
+    _ToolAppend(tools, 'VCLinkerTool', 'IgnoreImportLibrary', 'true')
+  # Set the module definition file if any.
+  if def_file:
+      _ToolAppend(tools, 'VCLinkerTool', 'ModuleDefinitionFile', def_file)
 
-    # Change program database directory to prevent collisions.
-    _ToolAppend(tools, 'VCCLCompilerTool', 'ProgramDataBaseFileName',
-                '$(IntDir)\\$(ProjectName)\\vc80.pdb')
+  _AddConfiguration(p, tools, config, config_type, config_name)
 
-    # Add disabled warnings.
-    disabled_warnings = [str(i) for i in c.get('msvs_disabled_warnings', [])]
-    _ToolAppend(tools, 'VCCLCompilerTool',
-                'DisableSpecificWarnings', disabled_warnings)
 
-    # Add Pre-build.
-    prebuild = c.get('msvs_prebuild')
-    _ToolAppend(tools, 'VCPreBuildEventTool', 'CommandLine', prebuild)
+def _GetIncludeDirs(config):
+  """Returns the list of directories to be used for #include directives.
 
-    # Add Post-build.
-    postbuild = c.get('msvs_postbuild')
-    _ToolAppend(tools, 'VCPostBuildEventTool', 'CommandLine', postbuild)
+  Arguments:
+    config: The dictionnary that defines the special processing to be done
+            for this configuration.
+  Returns:
+    The list of directory paths.
+  """
+  # TODO(bradnelson): include_dirs should really be flexible enough not to
+  #                   require this sort of thing.
+  include_dirs = (
+      config.get('include_dirs', []) +
+      config.get('msvs_system_include_dirs', []))
+  resource_include_dirs = config.get('resource_include_dirs', include_dirs)
+  include_dirs = [_FixPath(i) for i in include_dirs]
+  resource_include_dirs = [_FixPath(i) for i in resource_include_dirs]
+  return include_dirs, resource_include_dirs
 
-    # Turn on precompiled headers if appropriate.
-    header = c.get('msvs_precompiled_header')
-    if header:
-      header = os.path.split(header)[1]
-      _ToolAppend(tools, 'VCCLCompilerTool', 'UsePrecompiledHeader', '2')
-      _ToolAppend(tools, 'VCCLCompilerTool',
-                  'PrecompiledHeaderThrough', header)
-      _ToolAppend(tools, 'VCCLCompilerTool',
-                  'ForcedIncludeFiles', header)
 
-    # Loadable modules don't generate import libraries;
-    # tell dependent projects to not expect one.
-    if spec['type'] == 'loadable_module':
-      _ToolAppend(tools, 'VCLinkerTool', 'IgnoreImportLibrary', 'true')
+def _GetLibraries(config, spec):
+  """Returns the list of libraries for this configuration.
 
-    # Set the module definition file if any.
-    if spec['type'] in ['shared_library', 'loadable_module']:
-      def_files = [s for s in spec.get('sources', []) if s.endswith('.def')]
-      if len(def_files) == 1:
-        _ToolAppend(tools, 'VCLinkerTool', 'ModuleDefinitionFile',
-                    _FixPath(def_files[0]))
-      elif def_files:
-        raise ValueError('Multiple module definition files in one target, '
-                         'target %s lists multiple .def files: %s' % (
-            spec['target_name'], ' '.join(def_files)))
+  Arguments:
+    config: The dictionnary that defines the special processing to be done
+            for this configuration.
+    spec: The target dictionary containing the properties of the target.
+  Returns:
+    The list of directory paths.
+  """
+  libraries = spec.get('libraries', [])
+  # Strip out -l, as it is not used on windows (but is needed so we can pass
+  # in libraries that are assumed to be in the default library path).
+  return [re.sub('^(\-l)', '', lib) for lib in libraries]
 
-    # Convert tools to expected form.
-    tool_list = []
-    for tool, settings in tools.iteritems():
-      # Collapse settings with lists.
-      settings_fixed = {}
-      for setting, value in settings.iteritems():
-        if type(value) == list:
-          if ((tool == 'VCLinkerTool' and
-               setting == 'AdditionalDependencies') or
-              setting == 'AdditionalOptions'):
-            settings_fixed[setting] = ' '.join(value)
-          else:
-            settings_fixed[setting] = ';'.join(value)
+
+def _GetOutputFilePathAndTool(spec):
+  """Figures out the path of the file this spec will create and the name of
+     the VC tool that will create it.
+
+  Arguments:
+    spec: The target dictionary containing the properties of the target.
+  Returns:
+    A pair of (file path, name of the tool)
+  """
+  # Select a name for the output file.
+  out_file = ""
+  vc_tool = ""
+  output_file_map = {
+      'executable': ('VCLinkerTool', '$(OutDir)\\', '.exe'),
+      'shared_library': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
+      'loadable_module': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
+      'static_library': ('VCLibrarianTool', '$(OutDir)\\lib\\', '.lib'),
+      'dummy_executable': ('VCLinkerTool', '$(IntDir)\\', '.junk'),
+  }
+  output_file_props = output_file_map.get(spec['type'])
+  if output_file_props and int(spec.get('msvs_auto_output_file', 1)):
+    vc_tool, out_dir, suffix = output_file_props
+    out_dir = spec.get('product_dir', out_dir)
+    product_extension = spec.get('product_extension')
+    if product_extension:
+      suffix = '.' + product_extension
+    prefix = spec.get('product_prefix', '')
+    product_name = spec.get('product_name', '$(ProjectName)')
+    out_file = ntpath.join(out_dir, prefix + product_name + suffix)
+  return out_file, vc_tool
+
+
+def _GetDefines(config):
+  """Returns the list of preprocessor definitions for this configuation.
+
+  Arguments:
+    config: The dictionnary that defines the special processing to be done
+            for this configuration.
+  Returns:
+    The list of preprocessor definitions.
+  """
+  defines = []
+  for d in config.get('defines', []):
+    if type(d) == list:
+      fd = '='.join([str(dpart) for dpart in d])
+    else:
+      fd = str(d)
+    fd = _EscapeCppDefine(fd)
+    defines.append(fd)
+  return defines
+
+
+def _GetDisabledWarnings(config):
+  return [str(i) for i in config.get('msvs_disabled_warnings', [])]
+
+
+def _GetModuleDefinition(spec):
+  def_file = ""
+  if spec['type'] in ['shared_library', 'loadable_module']:
+    def_files = [s for s in spec.get('sources', []) if s.endswith('.def')]
+    if len(def_files) == 1:
+      def_file = _FixPath(def_files[0])
+    elif def_files:
+      raise ValueError('Multiple module definition files in one target, '
+                       'target %s lists multiple .def files: %s' % (
+          spec['target_name'], ' '.join(def_files)))
+  return def_file
+
+
+def _ConvertToolsToExpectedForm(tools):
+  """ Convert the content of the tools array to a form expected by
+      VisualStudio.
+
+  Arguments:
+    tools: A dictionnary of settings; the tool name is the key.
+  Returns:
+    A list of Tool objects.
+  """
+  tool_list = []
+  for tool, settings in tools.iteritems():
+    # Collapse settings with lists.
+    settings_fixed = {}
+    for setting, value in settings.iteritems():
+      if type(value) == list:
+        if ((tool == 'VCLinkerTool' and
+             setting == 'AdditionalDependencies') or
+            setting == 'AdditionalOptions'):
+          settings_fixed[setting] = ' '.join(value)
         else:
-          settings_fixed[setting] = value
-      # Add in this tool.
-      tool_list.append(MSVSProject.Tool(tool, settings_fixed))
+          settings_fixed[setting] = ';'.join(value)
+      else:
+        settings_fixed[setting] = value
+    # Add in this tool.
+    tool_list.append(MSVSProject.Tool(tool, settings_fixed))
+  return tool_list
 
-    # Prepare configuration attributes.
-    prepared_attrs = {}
-    source_attrs = c.get('msvs_configuration_attributes', {})
-    for a in source_attrs:
-      prepared_attrs[a] = source_attrs[a]
-    # Add props files.
-    if vsprops_dirs:
-      prepared_attrs['InheritedPropertySheets'] = ';'.join(vsprops_dirs)
-    # Set configuration type.
-    prepared_attrs['ConfigurationType'] = config_type
-    if not prepared_attrs.has_key('OutputDirectory'):
-      prepared_attrs['OutputDirectory'] = '$(SolutionDir)$(ConfigurationName)'
-    if not prepared_attrs.has_key('IntermediateDirectory'):
-      intermediate = '$(ConfigurationName)\\obj\\$(ProjectName)'
-      prepared_attrs['IntermediateDirectory'] = intermediate
 
-    # Add in this configuration.
-    p.AddConfig(_ConfigFullName(config_name, c),
-                attrs=prepared_attrs, tools=tool_list)
+def _AddConfiguration(p, tools, config, config_type, config_name):
+  """Add to the project file the configuration specified by config.
 
-  # Prepare list of sources and excluded sources.
+  Arguments:
+    p: The target project being generated.
+    tools: A dictionnary of settings; the tool name is the key.
+    config: The dictionnary that defines the special processing to be done
+            for this configuration.
+    config_type: The configuration type, a number as defined by Microsoft.
+    config_name: The name of the configuration.
+  """
+  # Prepare configuration attributes.
+  prepared_attrs = {}
+  source_attrs = config.get('msvs_configuration_attributes', {})
+  for a in source_attrs:
+    prepared_attrs[a] = source_attrs[a]
+  # Add props files.
+  vsprops_dirs = config.get('msvs_props', [])
+  vsprops_dirs = [_FixPath(i) for i in vsprops_dirs]
+  if vsprops_dirs:
+    prepared_attrs['InheritedPropertySheets'] = ';'.join(vsprops_dirs)
+  # Set configuration type.
+  prepared_attrs['ConfigurationType'] = config_type
+  if not prepared_attrs.has_key('OutputDirectory'):
+    prepared_attrs['OutputDirectory'] = '$(SolutionDir)$(ConfigurationName)'
+  if not prepared_attrs.has_key('IntermediateDirectory'):
+    intermediate = '$(ConfigurationName)\\obj\\$(ProjectName)'
+    prepared_attrs['IntermediateDirectory'] = intermediate
+
+  # Add in this configuration.
+  tool_list = _ConvertToolsToExpectedForm(tools)
+  p.AddConfig(_ConfigFullName(config_name, config),
+              attrs=prepared_attrs, tools=tool_list)
+
+
+def _PrepareListOfSources(spec, build_file):
+  """Prepare list of sources and excluded sources. Besides the sources
+     specified directly in the spec, adds the gyp file so that a change
+     to it will cause a re-compile.  Also adds appropriate sources for
+     actions and copies.
+
+  Arguments:
+    spec: The target dictionary containing the properties of the target.
+    build_file: Filename of the .gyp file that the vcproj file comes from.
+  Returns:
+    A pair of (list of sources, list of excluded sources)
+  """
   sources = set(spec.get('sources', []))
   excluded_sources = set()
   # Add in the gyp file.
@@ -832,7 +1029,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     inputs = a.get('inputs')
     if not inputs:
       # This is an action with no inputs.  Make the primary input
-      # by the .gyp file itself so Visual Studio has a place to
+      # be the .gyp file itself so Visual Studio has a place to
       # hang the custom build rule.
       inputs = [gyp_file]
       a['inputs'] = inputs
@@ -848,13 +1045,23 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   for cpy in spec.get('copies', []):
     files = set(cpy.get('files', []))
     sources.update(files)
+  return (sources, excluded_sources)
 
-  # Add rules.
-  actions_to_add = []
-  _GenerateRules(p, gyp_dir, options, spec,
-                 sources, excluded_sources,
-                 actions_to_add)
 
+def _AdjustSources(spec, options, gyp_dir, sources, excluded_sources):
+  """Adjusts the list of sources and excluded sources.
+     Also converts the sets to lists.
+
+  Arguments:
+    spec: The target dictionary containing the properties of the target.
+    options: Global generator options.
+    gyp_dir: The path to the gyp file being processed.
+    sources: A set of sources to be included for this project.
+    sources: A set of sources to be excluded for this project.
+  Returns:
+    A trio of (list of sources, list of excluded sources,
+               path of excluded IDL file)
+  """
   # Exclude excluded sources coming into the generator.
   excluded_sources.update(set(spec.get('sources_excluded', [])))
   # Add excluded sources into sources for good measure.
@@ -866,32 +1073,9 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   # Convert to proper windows form.
   excluded_sources = [_FixPath(i) for i in excluded_sources]
 
-  # If any non-native rules use 'idl' as an extension exclude idl files.
-  # Gather a list here to use later.
-  using_idl = False
-  for rule in spec.get('rules', []):
-    if rule['extension'] == 'idl' and int(rule.get('msvs_external_rule', 0)):
-      using_idl = True
-      break
-  if using_idl:
-    excluded_idl = [i for i in sources if i.endswith('.idl')]
-  else:
-    excluded_idl = []
+  excluded_idl = _IdlFilesHandledNonNatively(spec, sources)
 
-  # List of precompiled header related keys.
-  precomp_keys = [
-      'msvs_precompiled_header',
-      'msvs_precompiled_source',
-  ]
-
-  # Gather a list of precompiled header related sources.
-  precompiled_related = []
-  for config_name, c in spec['configurations'].iteritems():
-    for k in precomp_keys:
-      f = c.get(k)
-      if f:
-        precompiled_related.append(_FixPath(f))
-
+  precompiled_related = _GetPrecompileRelatedFiles(spec)
   # Find the excluded ones, minus the precompiled header related ones.
   fully_excluded = [i for i in excluded_sources if i not in precompiled_related]
 
@@ -904,52 +1088,78 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     dummy_relpath = gyp.common.RelativePath(
         options.depth + '\\tools\\gyp\\gyp_dummy.c', gyp_dir)
     sources.append(dummy_relpath)
-  # Add in files.
-  p.AddFiles(sources)
 
-  # Add deferred actions to add.
-  for a in actions_to_add:
-    _AddCustomBuildTool(p, spec,
-                        inputs=a['inputs'],
-                        outputs=a['outputs'],
-                        description=a['description'],
-                        cmd=a['cmd'])
+  return sources, excluded_sources, excluded_idl
 
+
+def _IdlFilesHandledNonNatively(spec, sources):
+  # If any non-native rules use 'idl' as an extension exclude idl files.
+  # Gather a list here to use later.
+  using_idl = False
+  for rule in spec.get('rules', []):
+    if rule['extension'] == 'idl' and int(rule.get('msvs_external_rule', 0)):
+      using_idl = True
+      break
+  if using_idl:
+    excluded_idl = [i for i in sources if i.endswith('.idl')]
+  else:
+    excluded_idl = []
+  return excluded_idl
+
+
+def _GetPrecompileRelatedFiles(spec):
+  # Gather a list of precompiled header related sources.
+  precompiled_related = []
+  for config_name, config in spec['configurations'].iteritems():
+    for k in precomp_keys:
+      f = config.get(k)
+      if f:
+        precompiled_related.append(_FixPath(f))
+  return precompiled_related
+
+
+def _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl):
   # Exclude excluded sources from being built.
   for f in excluded_sources:
-    for config_name, c in spec['configurations'].iteritems():
-      precomped = [_FixPath(c.get(i, '')) for i in precomp_keys]
+    for config_name, config in spec['configurations'].iteritems():
+      precomped = [_FixPath(config.get(i, '')) for i in precomp_keys]
       # Don't do this for ones that are precompiled header related.
       if f not in precomped:
-        p.AddFileConfig(f, _ConfigFullName(config_name, c),
+        p.AddFileConfig(f, _ConfigFullName(config_name, config),
                         {'ExcludedFromBuild': 'true'})
 
   # If any non-native rules use 'idl' as an extension exclude idl files.
   # Exclude them now.
-  for config_name, c in spec['configurations'].iteritems():
+  for config_name, config in spec['configurations'].iteritems():
     for f in excluded_idl:
-      p.AddFileConfig(f, _ConfigFullName(config_name, c),
+      p.AddFileConfig(f, _ConfigFullName(config_name, config),
                       {'ExcludedFromBuild': 'true'})
 
+
+def _AddToolFiles(p, spec):
   # Add in tool files (rules).
   tool_files = set()
-  for config_name, c in spec['configurations'].iteritems():
-    for f in c.get('msvs_tool_files', []):
+  for config_name, config in spec['configurations'].iteritems():
+    for f in config.get('msvs_tool_files', []):
       tool_files.add(f)
   for f in tool_files:
     p.AddToolFile(f)
 
+
+def _HandlePreCompileHeaderStubs(p, spec):
   # Handle pre-compiled headers source stubs specially.
-  for config_name, c in spec['configurations'].iteritems():
-    source = c.get('msvs_precompiled_source')
+  for config_name, config in spec['configurations'].iteritems():
+    source = config.get('msvs_precompiled_source')
     if source:
       source = _FixPath(source)
       # UsePrecompiledHeader=1 for if using precompiled headers.
       tool = MSVSProject.Tool('VCCLCompilerTool',
                               {'UsePrecompiledHeader': '1'})
-      p.AddFileConfig(source, _ConfigFullName(config_name, c),
+      p.AddFileConfig(source, _ConfigFullName(config_name, config),
                       {}, tools=[tool])
 
+
+def _AddActions(p, spec):
   # Add actions.
   actions = spec.get('actions', [])
   for a in actions:
@@ -960,6 +1170,8 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
                         description=a.get('message', a['action_name']),
                         cmd=cmd)
 
+
+def _AddRunAs(p, spec, user_file):
   # Add run_as and test targets.
   has_run_as = False
   if spec.get('run_as') or int(spec.get('test', 0)):
@@ -973,7 +1185,10 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     for config_name, c_data in spec['configurations'].iteritems():
       _SetRunAs(user_file, config_name, c_data,
                 action, environment, working_directory)
+  return has_run_as
 
+
+def _AddCopies(p, spec):
   # Add copies.
   for cpy in spec.get('copies', []):
     for src in cpy.get('files', []):
@@ -998,16 +1213,6 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
                             inputs=[src], outputs=[dst],
                             description='Copying %s to %s' % (src, dst),
                             cmd=cmd)
-
-  # Write it out.
-  p.Write()
-
-  # Write out the user file, but only if we need to.
-  if has_run_as:
-    user_file.Write()
-
-  # Return the guid so we can refer to it elsewhere.
-  return p.guid
 
 
 def _GetPathDict(root, path):
@@ -1157,8 +1362,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
   for qualified_target in target_list:
     build_file = gyp.common.BuildFile(qualified_target)
     spec = target_dicts[qualified_target]
-    for config_name, c in spec['configurations'].iteritems():
-      configs.add(_ConfigFullName(config_name, c))
+    for config_name, config in spec['configurations'].iteritems():
+      configs.add(_ConfigFullName(config_name, config))
   configs = list(configs)
 
   # Generate each project.
@@ -1171,18 +1376,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
           'Multiple toolsets not supported in msvs build (target %s)' %
           qualified_target)
     default_config = spec['configurations'][spec['default_configuration']]
-    vcproj_filename = default_config.get('msvs_existing_vcproj')
-    if not vcproj_filename:
-      vcproj_filename = spec['target_name'] + options.suffix + '.vcproj'
-    vcproj_path = os.path.join(os.path.split(build_file)[0], vcproj_filename)
+    proj_filename = default_config.get('msvs_existing_vcproj')
+    if not proj_filename:
+      proj_filename = spec['target_name'] + options.suffix + '.vcproj'
+    proj_path = os.path.join(os.path.split(build_file)[0], proj_filename)
     if options.generator_output:
-      projectDirPath = os.path.dirname(os.path.abspath(vcproj_path))
-      vcproj_path = os.path.join(options.generator_output, vcproj_path)
+      projectDirPath = os.path.dirname(os.path.abspath(proj_path))
+      proj_path = os.path.join(options.generator_output, proj_path)
       fixpath_prefix = gyp.common.RelativePath(projectDirPath,
-                                               os.path.dirname(vcproj_path))
+                                               os.path.dirname(proj_path))
     projects[qualified_target] = {
-        'vcproj_path': vcproj_path,
-        'guid': _GenerateProject(vcproj_path, build_file,
+        'vcproj_path': proj_path,
+        'guid': _GenerateProject(proj_path, build_file,
                                  spec, options, version=msvs_version),
         'spec': spec,
     }
@@ -1196,7 +1401,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
     sln_path = build_file[:-4] + options.suffix + '.sln'
     if options.generator_output:
       sln_path = os.path.join(options.generator_output, sln_path)
-    #print 'Generating %s' % sln_path
     # Get projects in the solution, and their dependents.
     sln_projects = gyp.common.BuildFileTargets(target_list, build_file)
     sln_projects += gyp.common.DeepDependencyTargets(target_dicts, sln_projects)
