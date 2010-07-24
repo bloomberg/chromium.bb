@@ -74,10 +74,9 @@ bool BrowserInterfacePpapi::EvalString(InstanceIdentifier instance_id,
 }
 
 
-bool BrowserInterfacePpapi::GetOrigin(InstanceIdentifier instance_id,
-                                      nacl::string* origin) {
-  const nacl::string kUnknownOrigin = "";
-  *origin = kUnknownOrigin;
+bool BrowserInterfacePpapi::GetFullURL(InstanceIdentifier instance_id,
+                                       nacl::string* full_url) {
+  *full_url = kUnknownURL;
   pp::Var window;
   if (!GetWindow(instance_id, &window)) {
     return false;
@@ -86,10 +85,10 @@ bool BrowserInterfacePpapi::GetOrigin(InstanceIdentifier instance_id,
   if (location.is_object()) {
     pp::Var href = location.GetProperty("href");
     if (href.is_string()) {
-      *origin = href.AsString();
+      *full_url = href.AsString();
     }
   }
-  return (kUnknownOrigin != *origin);
+  return (kUnknownURL != *full_url);
 }
 
 

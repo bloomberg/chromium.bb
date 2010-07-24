@@ -135,19 +135,18 @@ bool BrowserImplNpapi::Alert(InstanceIdentifier instance_id,
   return ok;
 }
 
-bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
-                                 nacl::string* origin) {
+bool BrowserImplNpapi::GetFullURL(InstanceIdentifier instance_id,
+                                  nacl::string* full_url) {
   NPP npp = InstanceIdentifierToNPP(instance_id);
   NPObject* win_obj = NULL;
   NPVariant loc_value;
   NPVariant href_value;
 
-  *origin = "";
+  *full_url = kUnknownURL;
 
   VOID_TO_NPVARIANT(loc_value);
   VOID_TO_NPVARIANT(href_value);
 
-  // TODO(gregoryd): consider making this block a function returning origin.
   do {
     if (NPERR_NO_ERROR !=
         NPN_GetValue(npp, NPNVWindowNPObject, &win_obj)) {
@@ -171,10 +170,9 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
         PLUGIN_PRINTF(("GetOrigin: no href property value\n"));
         break;
     }
-    *origin =
-        nacl::string(NPVARIANT_TO_STRING(href_value).UTF8Characters,
-                     NPVARIANT_TO_STRING(href_value).UTF8Length);
-    PLUGIN_PRINTF(("GetOrigin: origin %s\n", origin->c_str()));
+    *full_url = nacl::string(NPVARIANT_TO_STRING(href_value).UTF8Characters,
+                             NPVARIANT_TO_STRING(href_value).UTF8Length);
+    PLUGIN_PRINTF(("GetFullURL: full_url %s\n", full_url->c_str()));
   } while (0);
 
   if (win_obj != NULL) {
@@ -183,7 +181,7 @@ bool BrowserImplNpapi::GetOrigin(InstanceIdentifier instance_id,
   NPN_ReleaseVariantValue(&loc_value);
   NPN_ReleaseVariantValue(&href_value);
 
-  return ("" != *origin);
+  return (kUnknownURL != *full_url);
 }
 
 // Creates a browser scriptable handle for a given portable handle.

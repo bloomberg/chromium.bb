@@ -52,9 +52,13 @@ class BrowserInterface {
   virtual bool EvalString(InstanceIdentifier plugin_identifier,
                           const nacl::string& str) = 0;
 
+  // Gets the full URL of the current page.
+  virtual bool GetFullURL(InstanceIdentifier instance_id,
+                          nacl::string* full_url) = 0;
+
   // Gets the origin of the current page.  Origin is scheme://domain.
-  virtual bool GetOrigin(InstanceIdentifier instance_id,
-                         nacl::string* origin) = 0;
+  bool GetOrigin(InstanceIdentifier instance_id,
+                 nacl::string* origin);
 
   // Creates a browser scriptable handle for a given portable handle.
   // If handle is NULL, returns NULL.
@@ -73,6 +77,7 @@ class BrowserInterface {
                                    nacl::string* error);
 
   static const char* kNoError;
+  static const char* kUnknownURL;
 };
 
 }  // namespace plugin

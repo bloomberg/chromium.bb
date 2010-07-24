@@ -366,9 +366,8 @@ bool Plugin::Init(BrowserInterface* browser_interface,
                  reinterpret_cast<void*>(wrapper_factory_)));
 
   // Check that the origin is allowed.
-  nacl::string href = "";
-  if (browser_interface_->GetOrigin(instance_id_, &href)) {
-    origin_ = nacl::UrlToOrigin(href);
+  origin_ = BrowserInterface::kUnknownURL;
+  if (browser_interface_->GetOrigin(instance_id_, &origin_)) {
     PLUGIN_PRINTF(("Plugin::Init: origin=%s\n", origin_.c_str()));
     // Check that origin is in the list of permitted origins.
     origin_valid_ = nacl::OriginIsInWhitelist(origin_);

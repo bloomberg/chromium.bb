@@ -17,10 +17,25 @@
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "native_client/src/trusted/plugin/origin.h"
 
 namespace plugin {
 
 const char* BrowserInterface::kNoError = "";
+
+const char* BrowserInterface::kUnknownURL = "";
+
+bool BrowserInterface::GetOrigin(InstanceIdentifier instance_id,
+                                 nacl::string* origin) {
+  nacl::string full_url;
+  if (GetFullURL(instance_id, &full_url)) {
+    *origin = nacl::UrlToOrigin(full_url);
+    return true;
+  } else {
+    *origin = kUnknownURL;
+    return false;
+  }
+}
 
 // TODO(polina,sehr): move elf checking code to service_runtime.
 bool BrowserInterface::MightBeElfExecutable(const nacl::string& filename,

@@ -46,9 +46,9 @@ class BrowserImplNpapi : public BrowserInterface {
   virtual bool EvalString(InstanceIdentifier plugin_identifier,
                           const nacl::string& handler_string);
 
-  // Gets the origin of current page.
-  virtual bool GetOrigin(InstanceIdentifier instance_id,
-                         nacl::string* origin);
+  // Gets the full URL of the current page.
+  bool GetFullURL(InstanceIdentifier instance_id,
+                  nacl::string* full_url);
 
   // Creates a browser scriptable handle for a given portable handle.
   virtual ScriptableHandle* NewScriptableHandle(PortableHandle* handle);
