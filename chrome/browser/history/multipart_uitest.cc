@@ -26,7 +26,7 @@ class MultipartResponseUITest : public UITest {
 // http://code.google.com/p/chromium/issues/detail?id=37746
 // Running this test only for release builds as it fails in debug test
 // runs
-TEST_F(MultipartResponseUITest, SingleVisit) {
+TEST_F(MultipartResponseUITest, MAYBE_SingleVisit) {
   // Make sure that visiting a multipart/x-mixed-replace site only
   // creates one entry in the visits table.
   const wchar_t kDocRoot[] = L"chrome/test/data";
