@@ -393,15 +393,17 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // We'll scroll to allow the user to see all the content.
   NSRect screenFrame = [[[self window] screen] frame];
   screenFrame = NSInsetRect(screenFrame, 0, kScrollWindowVerticalMargin);
+  BOOL wasScrollable = scrollable_;
   if (!NSContainsRect(screenFrame, windowFrame)) {
     scrollable_ = YES;
     windowFrame = NSIntersectionRect(screenFrame, windowFrame);
   } else {
     scrollable_ = NO;
   }
-  [[self window] setFrame:windowFrame display:YES];
+  NSWindow* window = [self window];
+  [window setFrame:windowFrame display:YES];
   // If scrollable then offset the view and show the arrows.
-  if (scrollable_) {
+  if (wasScrollable != scrollable_) {
     [mainView_ scrollPoint:NSMakePoint(0, (NSHeight(mainViewFrame) -
                                            NSHeight(windowFrame)))];
     [self showOrHideScrollArrows];
