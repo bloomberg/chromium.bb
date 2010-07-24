@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,6 +117,7 @@ HttpBridge::HttpBridge(HttpBridge::RequestContextGetter* context_getter)
       request_completed_(false),
       request_succeeded_(false),
       http_response_code_(-1),
+      os_error_code_(-1),
       http_post_completed_(false, false) {
 }
 

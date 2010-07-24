@@ -425,7 +425,9 @@ class Entry {
   friend class sync_api::ReadNode;
   void* operator new(size_t size) { return (::operator new)(size); }
 
-  inline Entry(BaseTransaction* trans) : basetrans_(trans) { }
+  inline Entry(BaseTransaction* trans)
+      : basetrans_(trans),
+        kernel_(NULL) { }
 
  protected:
 

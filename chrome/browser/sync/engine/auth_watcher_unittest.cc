@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,7 +84,8 @@ class AuthWatcherTest : public testing::Test {
  public:
   AuthWatcherTest() : metadb_(kUserDisplayEmail),
                       consumer_ready(false, false),
-                      event_produced(false, false) {}
+                      event_produced(false, false),
+                      last_event_reason_(AuthWatcherEvent::ILLEGAL_VALUE) {}
   virtual void SetUp() {
 #if defined(OS_MACOSX)
     // Need to mock the Keychain for unit tests on Mac to avoid possible
