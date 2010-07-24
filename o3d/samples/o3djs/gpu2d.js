@@ -542,8 +542,10 @@ o3djs.gpu2d.generateLoopBlinnShaderSource_ = function(antialias,
         '\n' +
         '  // Linear alpha\n' +
         '  // TODO(kbr): figure out why this needs to be\n' +
-        '  // negated compared to Cg version.\n' +
-        '  float alpha = clamp(sd - 0.5, 0.0, 1.0);\n';
+        '  // negated compared to Cg version, and also why\n' +
+        '  // we need an adjustment by +1.0 for it to look good.\n' +
+        '  // float alpha = clamp(0.5 - sd, 0.0, 1.0);\n' +
+        '  float alpha = clamp(sd + 0.5, 0.0, 1.0);\n';
     } else {
       alphaComputation = '' +
         '  float t = klm.x * klm.x * klm.x - klm.y * klm.z;\n' +
