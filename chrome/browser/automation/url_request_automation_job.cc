@@ -48,6 +48,7 @@ URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
 URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
     int request_id, AutomationResourceMessageFilter* filter, bool is_pending)
     : URLRequestJob(request),
+      id_(0),
       tab_(tab),
       message_filter_(filter),
       pending_buf_size_(0),
