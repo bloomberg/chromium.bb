@@ -266,9 +266,9 @@ class EncoderTester {
         end_update->mutable_end_update_stream();
         decoder_tester_->ReceivedMessage(end_update);
       }
-	} else {
+    } else {
       delete message;
-	}
+    }
   }
 
   void AddRects(const gfx::Rect* rects, int count) {
@@ -339,7 +339,7 @@ void TestEncoder(Encoder* encoder, bool strict) {
   TestEncodingRects(encoder, &tester, data, kTestRects + 1, 1);
   TestEncodingRects(encoder, &tester, data, kTestRects + 2, 1);
   TestEncodingRects(encoder, &tester, data, kTestRects + 3, 2);
-  delete memory;
+  delete [] memory;
 }
 
 static void TestEncodingRects(Encoder* encoder,
@@ -382,7 +382,7 @@ void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
                     kTestRects + 2, 1);
   TestEncodingRects(encoder, &encoder_tester, &decoder_tester, data,
                     kTestRects + 3, 2);
-  delete memory;
+  delete [] memory;
 }
 
 }  // namespace remoting
