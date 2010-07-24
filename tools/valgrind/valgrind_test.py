@@ -170,6 +170,7 @@ class BaseTool(object):
 
     if analyze_retcode:
       logging.error("Analyze failed.")
+      logging.info("Search the log for '[ERROR]' to see the error reports.")
       return analyze_retcode
 
     if exec_retcode:
