@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -342,8 +343,7 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
     AutoFillType autofill_type(field->type());
     if (credit_card &&
         autofill_type.group() == AutoFillType::CREDIT_CARD) {
-      result.fields[i].set_value(
-          credit_card->GetFieldText(autofill_type));
+      FillCreditCardFormField(credit_card, autofill_type, &result.fields[j]);
     } else if (credit_card &&
                autofill_type.group() == AutoFillType::ADDRESS_BILLING) {
       FillBillingFormField(credit_card, autofill_type, &result.fields[j]);
@@ -643,6 +643,18 @@ void AutoFillManager::FillBillingFormField(const CreditCard* credit_card,
   }
 }
 
+void AutoFillManager::FillCreditCardFormField(const CreditCard* credit_card,
+                                              AutoFillType type,
+                                              webkit_glue::FormField* field) {
+  DCHECK(credit_card);
+  DCHECK(field);
+
+  if (field->form_control_type() == ASCIIToUTF16("select-one"))
+    autofill::FillSelectControl(credit_card, type, field);
+  else
+    field->set_value(credit_card->GetFieldText(type));
+}
+
 void AutoFillManager::FillFormField(const AutoFillProfile* profile,
                                     AutoFillType type,
                                     webkit_glue::FormField* field) {
@@ -653,7 +665,7 @@ void AutoFillManager::FillFormField(const AutoFillProfile* profile,
     FillPhoneNumberField(profile, field);
   } else {
     if (field->form_control_type() == ASCIIToUTF16("select-one"))
-      FillSelectOneField(profile, type, field);
+      autofill::FillSelectControl(profile, type, field);
     else
       field->set_value(profile->GetFieldText(type));
   }

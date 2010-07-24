@@ -136,6 +136,12 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                             AutoFillType type,
                             webkit_glue::FormField* field);
 
+  // Set |field| argument's value based on |type| and contents of the
+  // |credit_card|.
+  void FillCreditCardFormField(const CreditCard* credit_card,
+                               AutoFillType type,
+                               webkit_glue::FormField* field);
+
   // Set |field| argument's value based on |type| and contents of the |profile|.
   void FillFormField(const AutoFillProfile* profile,
                      AutoFillType type,

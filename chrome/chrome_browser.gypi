@@ -181,6 +181,8 @@
         'browser/autofill/phone_field.h',
         'browser/autofill/phone_number.cc',
         'browser/autofill/phone_number.h',
+        'browser/autofill/select_control_handler.cc',
+        'browser/autofill/select_control_handler.h',
         'browser/automation/automation_autocomplete_edit_tracker.h',
         'browser/automation/automation_browser_tracker.h',
         'browser/automation/extension_automation_constants.h',
