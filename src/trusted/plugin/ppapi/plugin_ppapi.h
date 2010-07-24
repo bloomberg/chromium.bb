@@ -9,8 +9,12 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_PPAPI_PLUGIN_PPAPI_H_
 
+#include <string>
+
+#include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/var.h"
 
 struct NaClSrpcChannel;
 
@@ -22,15 +26,21 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // Factory method for creation.
   static PluginPpapi* New(PP_Instance instance);
 
-  // Overriden pp::Instance methods:
+  // ----- Methods inherited from pp::Instance:
 
-  // Initializes this plugin with argument count |argc|, names |argn|
-  // and values |argn|. Called right after New.
+  // Initializes this plugin with <embed/object ...> tag attribute count |argc|,
+  // names |argn| and values |argn|. Returns false on failure.
+  // Gets called by the browser right after New().
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
 
-  // Overriden Plugin methods:
+  // Returns a scriptable reference to this plugin element.
+  // Called by JavaScript document.getElementById(plugin_id).
+  virtual pp::Var GetInstanceObject();
 
-  // Request a nacl module download.
+  // ----- Methods inherited from Plugin:
+
+  // Requests a NaCl module download from a |url| relative to the page origin.
+  // Returns false on failure.
   virtual bool RequestNaClModule(const nacl::string& url);
 
   // Support for proxied execution.

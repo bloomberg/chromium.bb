@@ -73,6 +73,7 @@
       'ppapi/browser_impl_ppapi.cc',
       'ppapi/plugin_ppapi.cc',
       'ppapi/scriptable_impl_ppapi.cc',
+      'ppapi/var_utils.cc',
     ],
   },
   'includes': [
