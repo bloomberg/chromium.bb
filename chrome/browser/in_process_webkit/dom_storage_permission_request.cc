@@ -16,6 +16,7 @@ DOMStoragePermissionRequest::DOMStoragePermissionRequest(
     : url_(url),
       key_(key),
       value_(value),
+      response_content_setting_(CONTENT_SETTING_DEFAULT),
       event_(true, false),  // manual reset, not initially signaled
       host_content_settings_map_(settings) {
 }

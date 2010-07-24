@@ -47,7 +47,8 @@ DOMStorageDispatcherHost::DOMStorageDispatcherHost(
     WebKitContext* webkit_context)
     : webkit_context_(webkit_context),
       resource_message_filter_(resource_message_filter),
-      process_handle_(0) {
+      process_handle_(0),
+      process_id_(0) {
   DCHECK(webkit_context_.get());
   DCHECK(resource_message_filter_);
 }
