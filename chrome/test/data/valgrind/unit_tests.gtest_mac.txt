@@ -38,3 +38,5 @@ TabStripControllerTest.AddRemoveTabs
 TaskManagerWindowControllerTest.*
 # See http://crbug.com/50002.
 ResourceDispatcherHostTest.TestMany
+ResourceDispatcherHostTest.Cancel
+
