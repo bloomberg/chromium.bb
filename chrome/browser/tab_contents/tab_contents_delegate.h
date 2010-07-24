@@ -276,7 +276,7 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual void ContentTypeChanged(TabContents* source);
 
  protected:
-  ~TabContentsDelegate();
+  virtual ~TabContentsDelegate();
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_DELEGATE_H_

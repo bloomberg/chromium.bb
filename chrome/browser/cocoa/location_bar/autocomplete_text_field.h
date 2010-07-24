@@ -89,6 +89,9 @@ class AutocompleteTextFieldObserver {
 
   // Called whenever the autocomplete text field is losing focus.
   virtual void OnKillFocus() = 0;
+
+ protected:
+  virtual ~AutocompleteTextFieldObserver() {}
 };
 
 @interface AutocompleteTextField : StyledTextField<NSTextViewDelegate,

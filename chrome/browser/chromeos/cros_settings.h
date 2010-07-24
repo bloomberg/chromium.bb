@@ -43,6 +43,9 @@ class CrosSettings {
   bool GetInteger(const std::wstring& path, int* out_value) const;
   bool GetReal(const std::wstring& path, double* out_value) const;
   bool GetString(const std::wstring& path, std::string* out_value) const;
+
+ protected:
+  virtual ~CrosSettings() {}
 };
 
 }  // namespace chromeos

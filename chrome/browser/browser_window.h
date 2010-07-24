@@ -320,7 +320,7 @@ class BrowserWindow {
   friend class BrowserView;
   virtual void DestroyBrowser() = 0;
 
-  ~BrowserWindow() {}
+  virtual ~BrowserWindow() {}
 };
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
@@ -349,6 +349,9 @@ class BrowserWindowTesting {
   // Returns the ToolbarView.
   virtual ToolbarView* GetToolbarView() const = 0;
 #endif
+
+ protected:
+  virtual ~BrowserWindowTesting() {}
 };
 
 #endif  // CHROME_BROWSER_BROWSER_WINDOW_H_

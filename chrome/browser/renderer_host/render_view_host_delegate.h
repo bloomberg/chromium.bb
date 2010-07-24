@@ -174,6 +174,9 @@ class RenderViewHostDelegate {
 
     // The contents' preferred size changed.
     virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;
+
+   protected:
+    virtual ~View() {}
   };
 
   // RendererManagerment -------------------------------------------------------
@@ -199,6 +202,9 @@ class RenderViewHostDelegate {
     // Called the ResourceDispatcherHost's associate CrossSiteRequestHandler
     // when a cross-site navigation has been canceled.
     virtual void OnCrossSiteNavigationCanceled() = 0;
+
+   protected:
+    virtual ~RendererManagement() {}
   };
 
   // BrowserIntegration --------------------------------------------------------
@@ -254,6 +260,9 @@ class RenderViewHostDelegate {
                                   const std::string& original_lang,
                                   const std::string& translated_lang,
                                   TranslateErrors::Type error_type) = 0;
+
+   protected:
+    virtual ~BrowserIntegration() {}
   };
 
   // Resource ------------------------------------------------------------------
@@ -310,6 +319,9 @@ class RenderViewHostDelegate {
 
     // Notification that a document has been loaded in a frame.
     virtual void DocumentLoadedInFrame() = 0;
+
+   protected:
+    virtual ~Resource() {}
   };
 
   // ContentSettings------------------------------------------------------------
@@ -357,6 +369,9 @@ class RenderViewHostDelegate {
     // page.
     virtual void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                             bool allowed) = 0;
+
+   protected:
+    virtual ~ContentSettings() {}
   };
 
   // Save ----------------------------------------------------------------------
@@ -382,6 +397,9 @@ class RenderViewHostDelegate {
     virtual void OnReceivedSerializedHtmlData(const GURL& frame_url,
                                               const std::string& data,
                                               int32 status) = 0;
+
+   protected:
+    virtual ~Save() {}
   };
 
   // Printing ------------------------------------------------------------------
@@ -397,6 +415,9 @@ class RenderViewHostDelegate {
     // EMF memory mapped data.
     virtual void DidPrintPage(
         const ViewHostMsg_DidPrintPage_Params& params) = 0;
+
+   protected:
+    virtual ~Printing() {}
   };
 
   // FavIcon -------------------------------------------------------------------
@@ -420,6 +441,9 @@ class RenderViewHostDelegate {
     virtual void UpdateFavIconURL(RenderViewHost* render_view_host,
                                   int32 page_id,
                                   const GURL& icon_url) = 0;
+
+   protected:
+    virtual ~FavIcon() {}
   };
 
   // Autocomplete --------------------------------------------------------------
@@ -446,6 +470,9 @@ class RenderViewHostDelegate {
     // Autocomplete suggestion from the database.
     virtual void RemoveAutocompleteEntry(const string16& field_name,
                                          const string16& value) = 0;
+
+   protected:
+    virtual ~Autocomplete() {}
   };
 
   // AutoFill ------------------------------------------------------------------
@@ -482,6 +509,9 @@ class RenderViewHostDelegate {
     // Called when the user selects the 'AutoFill Options...' suggestions in the
     // AutoFill popup.
     virtual void ShowAutoFillDialog() = 0;
+
+   protected:
+    virtual ~AutoFill() {}
   };
 
   // BookmarkDrag --------------------------------------------------------------
@@ -493,6 +523,9 @@ class RenderViewHostDelegate {
     virtual void OnDragOver(const BookmarkDragData& data) = 0;
     virtual void OnDragLeave(const BookmarkDragData& data) = 0;
     virtual void OnDrop(const BookmarkDragData& data) = 0;
+
+   protected:
+    virtual ~BookmarkDrag() {}
   };
 
   // SSL -----------------------------------------------------------------------
@@ -504,6 +537,9 @@ class RenderViewHostDelegate {
     // returning them to |handler|.
     virtual void ShowClientCertificateRequestDialog(
         scoped_refptr<SSLClientAuthHandler> handler) = 0;
+
+   protected:
+    virtual ~SSL() {}
   };
 
   // ---------------------------------------------------------------------------
@@ -555,7 +591,7 @@ class RenderViewHostDelegate {
 
   // The RenderView is going to be deleted. This is called when each
   // RenderView is going to be destroyed
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) { }
+  virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
 
   // The RenderView was navigated to a different page.
   virtual void DidNavigate(RenderViewHost* render_view_host,
@@ -724,6 +760,9 @@ class RenderViewHostDelegate {
 
   // The content being displayed is a PDF.
   virtual void SetDisplayingPDFContent() {}
+
+ protected:
+  virtual ~RenderViewHostDelegate() {}
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_

@@ -129,6 +129,9 @@ class TabStripModelObserver {
   // Sent when the tabstrip model is about to be deleted and any reference held
   // must be dropped.
   virtual void TabStripModelDeleted();
+
+ protected:
+  virtual ~TabStripModelObserver() {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -236,6 +239,9 @@ class TabStripModelDelegate {
 
   // Toggles the use of the vertical tabstrip.
   virtual void ToggleUseVerticalTabs() = 0;
+
+ protected:
+  virtual ~TabStripModelDelegate() {}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

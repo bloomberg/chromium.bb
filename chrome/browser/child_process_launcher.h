@@ -21,6 +21,9 @@ class ChildProcessLauncher {
     // Will be called on the thread that the ChildProcessLauncher was
     // constructed on.
     virtual void OnProcessLaunched() = 0;
+
+   protected:
+    virtual ~Client() {}
   };
 
   // Launches the process asynchronously, calling the client when the result is

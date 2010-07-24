@@ -12,6 +12,8 @@
 
 class OptionsLayoutBuilderGtk {
  public:
+  virtual ~OptionsLayoutBuilderGtk() {}
+
   GtkWidget* get_page_widget() {
     return page_;
   }
@@ -38,7 +40,6 @@ class OptionsLayoutBuilderGtk {
  protected:
   // The parent widget
   GtkWidget* page_;
-
 };
 
 #endif  // CHROME_BROWSER_GTK_OPTIONS_OPTIONS_LAYOUT_GTK_H_

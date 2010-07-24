@@ -113,6 +113,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
 
  protected:
+  virtual ~BalloonHost() {}
   // Must override in platform specific implementations.
   virtual void InitRenderWidgetHostView() = 0;
   virtual RenderWidgetHostView* render_widget_host_view() const = 0;

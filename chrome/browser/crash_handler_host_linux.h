@@ -38,7 +38,7 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
 
  protected:
   CrashHandlerHostLinux();
-  ~CrashHandlerHostLinux();
+  virtual ~CrashHandlerHostLinux();
   // This is here on purpose to make CrashHandlerHostLinux abstract.
   virtual void SetProcessType() = 0;
 
@@ -60,7 +60,7 @@ class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
   PluginCrashHandlerHostLinux() {
     SetProcessType();
   }
-  ~PluginCrashHandlerHostLinux() {}
+  virtual ~PluginCrashHandlerHostLinux() {}
 
   virtual void SetProcessType() {
     process_type_ = "plugin";
@@ -75,7 +75,7 @@ class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
   RendererCrashHandlerHostLinux() {
     SetProcessType();
   }
-  ~RendererCrashHandlerHostLinux() {}
+  virtual ~RendererCrashHandlerHostLinux() {}
 
   virtual void SetProcessType() {
     process_type_ = "renderer";

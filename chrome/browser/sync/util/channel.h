@@ -64,6 +64,9 @@ template <typename EventType>
 class ChannelEventHandler : public EventHandler {
  public:
   virtual void HandleChannelEvent(const EventType& event) = 0;
+
+ protected:
+  virtual ~ChannelEventHandler() {}
 };
 
 // This class manages a connection to a channel.  When it is destroyed, it

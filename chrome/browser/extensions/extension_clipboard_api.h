@@ -14,6 +14,9 @@ class ClipboardFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   virtual bool RunImpl(RenderViewHost* render_view_host) = 0;
+
+ protected:
+  virtual ~ClipboardFunction() {}
 };
 
 class ExecuteCopyClipboardFunction : public ClipboardFunction {

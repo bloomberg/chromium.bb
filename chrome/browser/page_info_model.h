@@ -21,8 +21,11 @@ class Profile;
 class PageInfoModel {
  public:
   class PageInfoModelObserver {
-    public:
-     virtual void ModelChanged() = 0;
+   public:
+    virtual void ModelChanged() = 0;
+
+   protected:
+    virtual ~PageInfoModelObserver() {}
   };
 
   struct SectionInfo {

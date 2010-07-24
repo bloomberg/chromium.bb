@@ -17,6 +17,9 @@ class BookmarkContextMenuObserver {
 
   // Invoked after the items have been removed from the model.
   virtual void DidRemoveBookmarks() = 0;
+
+ protected:
+  virtual ~BookmarkContextMenuObserver() {}
 };
 
 class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,

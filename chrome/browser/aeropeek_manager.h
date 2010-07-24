@@ -45,6 +45,9 @@ class AeroPeekWindowDelegate {
   virtual void GetContentInsets(gfx::Insets* insets) = 0;
   virtual bool GetTabThumbnail(int tab_id, SkBitmap* thumbnail) = 0;
   virtual bool GetTabPreview(int tab_id, SkBitmap* preview) = 0;
+
+ protected:
+  virtual ~AeroPeekWindowDelegate() {}
 };
 
 // A class that implements AeroPeek of Windows 7:
@@ -91,7 +94,7 @@ class AeroPeekManager : public TabStripModelObserver,
                         public AeroPeekWindowDelegate {
  public:
   explicit AeroPeekManager(HWND application_window);
-  ~AeroPeekManager();
+  virtual ~AeroPeekManager();
 
   // Sets the margins of the "user-perceived content area".
   // (See comments of |content_insets_|).

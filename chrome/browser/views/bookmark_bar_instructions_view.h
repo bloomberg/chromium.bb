@@ -26,6 +26,9 @@ class BookmarkBarInstructionsView : public views::View,
   class Delegate {
    public:
     virtual void ShowImportDialog() = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   explicit BookmarkBarInstructionsView(Delegate* delegate);

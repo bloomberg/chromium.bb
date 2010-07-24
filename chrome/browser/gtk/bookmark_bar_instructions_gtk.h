@@ -21,6 +21,9 @@ class BookmarkBarInstructionsGtk : public NotificationObserver {
   class Delegate {
    public:
     virtual void ShowImportDialog() = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   explicit BookmarkBarInstructionsGtk(Delegate* delegate, Profile* profile);

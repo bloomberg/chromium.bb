@@ -15,6 +15,8 @@ class TabContents;
 // that are displayed in the location bar.
 class ContentSettingImageModel {
  public:
+  virtual ~ContentSettingImageModel() {}
+
   // Factory function.
   static ContentSettingImageModel* CreateContentSettingImageModel(
      ContentSettingsType content_settings_type);

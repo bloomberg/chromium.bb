@@ -33,7 +33,7 @@ class BaseTab : public AnimationDelegate,
                 public views::View {
  public:
   explicit BaseTab(TabController* controller);
-  ~BaseTab();
+  virtual ~BaseTab();
 
   // Sets the data this tabs displays. Invokes DataChanged for subclasses to
   // update themselves appropriately.

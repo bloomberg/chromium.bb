@@ -43,6 +43,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   class Observer {
    public:
     virtual void BookmarkMenuDeleted(BookmarkMenuController* controller) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Creates a BookmarkMenuController showing the children of |node| starting
@@ -121,7 +124,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   typedef std::map<const BookmarkNode*, int> NodeToMenuIDMap;
 
   // BookmarkMenuController deletes itself as necessary.
-  ~BookmarkMenuController();
+  virtual ~BookmarkMenuController();
 
   // Creates a menu and adds it to node_to_menu_id_map_. This uses
   // BuildMenu to recursively populate the menu.

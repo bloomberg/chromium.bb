@@ -15,7 +15,6 @@
 class NotificationDelegate
     : public base::RefCountedThreadSafe<NotificationDelegate> {
  public:
-
   // To be called when the desktop notification is actually shown.
   virtual void Display() = 0;
 
@@ -29,6 +28,12 @@ class NotificationDelegate
 
   // Returns unique id of the notification.
   virtual std::string id() const = 0;
+
+ protected:
+  virtual ~NotificationDelegate() {}
+
+ private:
+  friend class base::RefCountedThreadSafe<NotificationDelegate>;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_DELEGATE_H_

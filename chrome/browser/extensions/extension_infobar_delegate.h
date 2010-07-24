@@ -21,6 +21,9 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   class DelegateObserver {
    public:
     virtual void OnDelegateDeleted() = 0;
+
+   protected:
+    virtual ~DelegateObserver() {}
   };
 
   ExtensionInfoBarDelegate(Browser* browser, TabContents* contents,

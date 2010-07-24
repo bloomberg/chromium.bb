@@ -33,6 +33,9 @@ class RenderWidgetHostPaintingObserver {
       RenderWidgetHost* widget,
       int tag,
       const gfx::Size& size) = 0;
+
+ protected:
+  virtual ~RenderWidgetHostPaintingObserver() {}
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_PAINTING_OBSERVER_H_

@@ -67,6 +67,9 @@ class RenderViewHostManager
 
     // Focuses the location bar.
     virtual void SetFocusToLocationBar(bool select_all) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Both delegate pointers must be non-NULL and are not owned by this class.
@@ -76,7 +79,7 @@ class RenderViewHostManager
   // You must call Init() before using this class.
   RenderViewHostManager(RenderViewHostDelegate* render_view_delegate,
                         Delegate* delegate);
-  ~RenderViewHostManager();
+  virtual ~RenderViewHostManager();
 
   // For arguments, see TabContents constructor.
   void Init(Profile* profile,

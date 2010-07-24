@@ -49,6 +49,9 @@ class TemplateURLModelObserver {
  public:
   // Notification that the template url model has changed in some way.
   virtual void OnTemplateURLModelChanged() = 0;
+
+ protected:
+  virtual ~TemplateURLModelObserver() {}
 };
 
 class TemplateURLModel : public WebDataServiceConsumer,
@@ -67,8 +70,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   explicit TemplateURLModel(Profile* profile);
   // The following is for testing.
   TemplateURLModel(const Initializer* initializers, const int count);
-
-  ~TemplateURLModel();
+  virtual ~TemplateURLModel();
 
   // Generates a suitable keyword for the specified url.  Returns an empty
   // string if a keyword couldn't be generated.  If |autodetected| is true, we
