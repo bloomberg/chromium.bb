@@ -3524,9 +3524,6 @@ each locale. -->
       <message name="IDS_ACCNAME_INFOBAR_CONTAINER" desc="The accessible name for the infobar container.">
         Infobar Container
       </message>
-      <message name="IDS_ACCNAME_INFOBAR_INFO" desc="The accessible name for the info infobar type.">
-        Info
-      </message>
       <message name="IDS_ACCNAME_INFOBAR_WARNING" desc="The accessible name for the warning infobar type.">
         Warning
       </message>

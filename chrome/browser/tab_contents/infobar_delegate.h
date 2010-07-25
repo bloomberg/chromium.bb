@@ -48,7 +48,6 @@ class InfoBarDelegate {
   // The type of the infobar. It controls its appearance, such as its background
   // color.
   enum Type {
-    INFO_TYPE,
     WARNING_TYPE,
     ERROR_TYPE,
     PAGE_ACTION_TYPE
