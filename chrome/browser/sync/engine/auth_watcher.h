@@ -13,6 +13,7 @@
 
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
+#include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
@@ -148,6 +149,10 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
 
   MessageLoop* message_loop() { return auth_backend_thread_.message_loop(); }
 
+  base::MessageLoopProxy* message_loop_proxy() {
+    return loop_proxy_;
+  }
+
   void DoRenewAuthToken(const std::string& updated_token);
 
   // These two helpers should only be called from the auth function.
@@ -208,6 +213,7 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
   scoped_ptr<Channel> channel_;
 
   base::Thread auth_backend_thread_;
+  scoped_refptr<base::MessageLoopProxy> loop_proxy_;
 
   AuthWatcherEvent::AuthenticationTrigger current_attempt_trigger_;
   DISALLOW_COPY_AND_ASSIGN(AuthWatcher);

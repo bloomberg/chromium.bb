@@ -56,6 +56,7 @@ AuthWatcher::AuthWatcher(DirectoryManager* dirman,
     NOTREACHED() << "Couldn't start SyncEngine_AuthWatcherThread";
 
   gaia_->set_message_loop(message_loop());
+  loop_proxy_ = auth_backend_thread_.message_loop_proxy();
 
   connmgr_hookup_.reset(
       NewEventListenerHookup(scm->channel(), this,
@@ -85,7 +86,7 @@ void AuthWatcher::PersistCredentials() {
 
 // TODO(chron): Full integration test suite needed. http://crbug.com/35429
 void AuthWatcher::RenewAuthToken(const std::string& updated_token) {
-  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &AuthWatcher::DoRenewAuthToken, updated_token));
 }
 
@@ -106,7 +107,7 @@ void AuthWatcher::DoRenewAuthToken(const std::string& updated_token) {
 }
 
 void AuthWatcher::AuthenticateWithLsid(const std::string& lsid) {
-  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &AuthWatcher::DoAuthenticateWithLsid, lsid));
 }
 
@@ -128,7 +129,7 @@ const char kAuthWatcher[] = "AuthWatcher";
 
 void AuthWatcher::AuthenticateWithToken(const std::string& gaia_email,
                                         const std::string& auth_token) {
-  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &AuthWatcher::DoAuthenticateWithToken, gaia_email, auth_token));
 }
 
@@ -283,7 +284,7 @@ void AuthWatcher::NotifyAuthChanged(const string& email,
 
 void AuthWatcher::HandleServerConnectionEvent(
     const ServerConnectionEvent& event) {
-  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &AuthWatcher::DoHandleServerConnectionEvent, event,
           scm_->auth_token()));
 }
@@ -330,7 +331,7 @@ void AuthWatcher::Authenticate(const string& email, const string& password,
   AuthRequest request = { FormatAsEmailAddress(email), password, empty,
                           captcha_token, captcha_value,
                           AuthWatcherEvent::USER_INITIATED };
-  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  message_loop_proxy()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &AuthWatcher::DoAuthenticate, request));
 }
 
