@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/md5.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "gfx/codec/jpeg_codec.h"
@@ -285,6 +287,9 @@ int TopSites::GetIndexForChromeStore(const MostVisitedURLList& urls) {
 }
 
 bool TopSites::AddChromeStore(MostVisitedURLList* urls) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps))
+    return false;
+
   ExtensionsService* service = profile_->GetExtensionsService();
   if (!service || service->HasApps())
     return false;
