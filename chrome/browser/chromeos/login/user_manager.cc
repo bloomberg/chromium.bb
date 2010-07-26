@@ -32,6 +32,10 @@ const wchar_t kLoggedInUsers[] = L"LoggedInUsers";
 // A dictionary that maps usernames to file paths to their images.
 const wchar_t kUserImages[] = L"UserImages";
 
+// Incognito user is represented by an empty string (since some code already
+// depends on that and it's hard to figure out what).
+const char kIncognitoUser[] = "";
+
 // The one true UserManager.
 static UserManager* user_manager_ = NULL;
 
@@ -142,10 +146,17 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
 }
 
 void UserManager::OffTheRecordUserLoggedIn() {
+  logged_in_user_ = User();
+  logged_in_user_.set_email(kIncognitoUser);
   NotifyOnLogin();
 }
 
 void UserManager::UserLoggedIn(const std::string& email) {
+  if (email == kIncognitoUser) {
+    OffTheRecordUserLoggedIn();
+    return;
+  }
+
   // Get a copy of the current users.
   std::vector<User> users = GetUsers();
 

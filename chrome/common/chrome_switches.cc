@@ -1040,6 +1040,10 @@ const char kStartupManifest[]               = "startup-manifest";
 // TODO(denisromanov): delete this when not needed for testing.
 const char kServicesManifest[]              = "services-manifest";
 
+// Indicates that the browser is in "browse without sign-in" mode.
+// Should completely disable extensions, sync and bookmarks.
+const char kBWSI[]                          = "bwsi";
+
 #endif
 
 #if defined(OS_LINUX)

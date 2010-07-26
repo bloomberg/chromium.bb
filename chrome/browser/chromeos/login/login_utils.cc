@@ -43,7 +43,6 @@ namespace chromeos {
 
 namespace {
 
-static char kIncognitoUser[] = "incognito";
 
 // Prefix for Auth token received from ClientLogin request.
 const char kAuthPrefix[] = "Auth=";
@@ -170,16 +169,18 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
 void LoginUtilsImpl::CompleteOffTheRecordLogin() {
   LOG(INFO) << "Completing off the record login";
 
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetLoginLibrary()->StartSession(kIncognitoUser, "");
-
-  // Incognito flag is not set by default.
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kIncognito);
-
   UserManager::Get()->OffTheRecordUserLoggedIn();
   ConnectToPreferredNetwork();
-  LoginUtils::DoBrowserLaunch(
-      ProfileManager::GetDefaultProfile()->GetOffTheRecordProfile());
+
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    CrosLibrary::Get()->GetLoginLibrary()->StartSession(
+        UserManager::Get()->logged_in_user().email(),
+        "");
+  }
+
+  // Session manager should restart Chrome in BWSI mode now if we exit
+  // uncleanly.
+  exit(1);
 }
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
