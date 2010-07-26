@@ -890,42 +890,68 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
-  def AddSavedPassword(self, username, password, time=None, window_index=0):
+  def AddSavedPassword(self, password_dict, window_index=0):
     """Adds the given username-password combination to the saved passwords.
 
     Args:
-      username: a string representing the username
-      password: a string representing the password
+      password_dict: a dictionary that represents a password. Example:
+      { 'username_value': 'user@example.com',        # Required
+        'password_value': 'test.password',           # Required
+        'signon_realm': 'https://www.example.com/',  # Required
+        'time': 1279317810.0,                        # Can get from time.time()
+        'origin_url': 'https://www.example.com/login',
+        'username_element': 'username',              # The HTML element
+        'password_element': 'password',              # The HTML element
+        'submit_element': 'submit',                  # The HTML element
+        'action_target': 'https://www.example.com/login/',
+        'blacklist': False }
       window_index: window index, defaults to 0
 
+    *Blacklist notes* To blacklist a site, add a blacklist password with the
+    following dictionary items: origin_url, signon_realm, username_element,
+    password_element, action_target, and 'blacklist': True. Then all sites that
+    have password forms matching those are blacklisted.
+
     Returns:
-      The success or failure of adding the password. In incognito mode, adding
-      the password should fail. Example return:
-      { "password_added": True }
+      True if adding the password succeeded, false otherwise. In incognito
+      mode, adding the password should fail.
 
     Raises:
       JSONInterfaceError on error.
     """
     cmd_dict = {  # Prepare command for the json interface
       'command': 'AddSavedPassword',
-      'username': username,
-      'password': password,
-      'time': time
+      'password': password_dict
     }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+    return self._GetResultFromJSONRequest(
+        cmd_dict, windex=window_index)['password_added']
+
+  def RemoveSavedPassword(self, password_dict):
+    """Removes the password matching the provided password dictionary.
+
+    Args:
+      password_dict: A dictionary that represents a password.
+                     For an example, see the dictionary in AddSavedPassword.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'RemoveSavedPassword',
+      'password': password_dict
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
   def GetSavedPasswords(self):
     """Return the passwords currently saved.
 
     Returns:
-      A list of 2-item lists of username, password for all saved passwords.
-      Example:
-      { 'passwords': [['username1', 'password1'], ['username2', 'password2']] }
+      A list of dictionaries representing each password. For an example
+      dictionary see AddSavedPassword documentation. The overall structure will
+      be:
+      [ {password1 dictionary}, {password2 dictionary} ]
     """
     cmd_dict = {  # Prepare command for the json interface
       'command': 'GetSavedPasswords'
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict)['passwords']
 
   def SetTheme(self, crx_file_path):
     """Installs the given theme synchronously.

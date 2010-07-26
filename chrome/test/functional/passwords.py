@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import time
-
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
 
@@ -31,29 +29,18 @@ class PasswordTest(pyauto.PyUITest):
 
   def testSavePassword(self):
     """Test saving a password and getting saved passwords."""
-    username1 = 'username1'
-    password1 = 'password1'
-    username2 = 'username2'
-    password2 = 'password2'
-
-    self.AddSavedPassword(username1, password1)
-    passwords = self.GetSavedPasswords()['passwords']
-    self.assertEqual(1, len(passwords))
-    pw = passwords[0]
-    self.assertEqual(username1, pw['username'])
-    self.assertEqual(password1, pw['password'])
-
-    now = time.time()
-    self.AddSavedPassword(username2, password2, now)
-    passwords = self.GetSavedPasswords()['passwords']
-    self.assertEqual(2, len(passwords))
-    pw1 = passwords[0]
-    pw2 = passwords[1]
-    self.assertEqual(username1, pw1['username'])
-    self.assertEqual(password1, pw1['password'])
-    self.assertEqual(username2, pw2['username'])
-    self.assertEqual(password2, pw2['password'])
-    self._AssertWithinOneSecond(now, pw2['time'])
+    password1 = { 'username_value': 'user@example.com',
+      'password_value': 'test.password',
+      'signon_realm': 'https://www.example.com/',
+      'time': 1279650942.0,
+      'origin_url': 'https://www.example.com/login',
+      'username_element': 'username',
+      'password_element': 'password',
+      'submit_element': 'submit',
+      'action_target': 'https://www.example.com/login/',
+      'blacklist': False }
+    self.assertTrue(self.AddSavedPassword(password1))
+    self.assertEquals(self.GetSavedPasswords(), [password1])
 
 
 if __name__ == '__main__':

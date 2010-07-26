@@ -2536,35 +2536,87 @@ void AutomationProvider::ImportSettings(Browser* browser,
                                      new ProfileWriter(profile), first_run);
 }
 
+namespace {
+
+// Translates a dictionary password to a PasswordForm struct.
+webkit_glue::PasswordForm GetPasswordFormFromDict(
+    const DictionaryValue& password_dict) {
+
+  // If the time is specified, change time to the specified time.
+  base::Time time = base::Time::Now();
+  int it;
+  double dt;
+  if (password_dict.GetInteger(L"time", &it))
+    time = base::Time::FromTimeT(it);
+  else if (password_dict.GetReal(L"time", &dt))
+    time = base::Time::FromDoubleT(dt);
+
+  std::string signon_realm;
+  string16 username_value;
+  string16 password_value;
+  string16 origin_url_text;
+  string16 username_element;
+  string16 password_element;
+  string16 submit_element;
+  string16 action_target_text;
+  bool blacklist = false;
+  string16 old_password_element;
+  string16 old_password_value;
+
+  // We don't care if any of these fail - they are either optional or checked
+  // before this function is called.
+  password_dict.GetString(L"signon_realm", &signon_realm);
+  password_dict.GetStringAsUTF16(L"username_value", &username_value);
+  password_dict.GetStringAsUTF16(L"password_value", &password_value);
+  password_dict.GetStringAsUTF16(L"origin_url", &origin_url_text);
+  password_dict.GetStringAsUTF16(L"username_element", &username_element);
+  password_dict.GetStringAsUTF16(L"password_element", &password_element);
+  password_dict.GetStringAsUTF16(L"submit_element", &submit_element);
+  password_dict.GetStringAsUTF16(L"action_target", &action_target_text);
+  password_dict.GetBoolean(L"blacklist", &blacklist);
+
+  GURL origin_gurl(origin_url_text);
+  GURL action_target(action_target_text);
+
+  webkit_glue::PasswordForm password_form;
+  password_form.signon_realm = signon_realm;
+  password_form.username_value = username_value;
+  password_form.password_value = password_value;
+  password_form.origin = origin_gurl;
+  password_form.username_element = username_element;
+  password_form.password_element = password_element;
+  password_form.submit_element = submit_element;
+  password_form.action = action_target;
+  password_form.blacklisted_by_user = blacklist;
+  password_form.date_created = time;
+
+  return password_form;
+}
+
+} // namespace
+
 // See AddSavedPassword() in chrome/test/functional/pyauto.py for sample json
 // input.
 // Sample json output: { "password_added": true }
 void AutomationProvider::AddSavedPassword(Browser* browser,
                                           DictionaryValue* args,
                                           IPC::Message* reply_message) {
-  string16 username;
-  string16 password;
-  base::Time time = base::Time::Now();
   AutomationJSONReply reply(this, reply_message);
+  DictionaryValue* password_dict = NULL;
 
-  if (!args->GetStringAsUTF16(L"password", &password) ||
-      !args->GetStringAsUTF16(L"username", &username)) {
-    reply.SendError("Username and password must be strings.");
+  if (!args->GetDictionary(L"password", &password_dict)) {
+    reply.SendError("Password must be a dictionary.");
     return;
   }
 
-  // If the time is specified, change time to the specified time.
-  int it;
-  double dt;
-  if (args->GetInteger(L"time", &it))
-    time = base::Time::FromTimeT(it);
-  else if (args->GetReal(L"time", &dt))
-    time = base::Time::FromDoubleT(dt);
-
-  webkit_glue::PasswordForm new_password;
-  new_password.username_value = username;
-  new_password.password_value = password;
-  new_password.date_created = time;
+  // The signon realm is effectively the primary key and must be included.
+  // Check here before calling GetPasswordFormFromDict.
+  if (!password_dict->HasKey(L"signon_realm")) {
+    reply.SendError("Password must include signon_realm.");
+    return;
+  }
+  webkit_glue::PasswordForm new_password =
+      GetPasswordFormFromDict(*password_dict);
 
   Profile* profile = browser->profile();
   // Use IMPLICIT_ACCESS since new passwords aren't added off the record.
@@ -2583,6 +2635,38 @@ void AutomationProvider::AddSavedPassword(Browser* browser,
   }
 
   reply.SendSuccess(return_value.get());
+}
+
+// See RemoveSavedPassword() in chrome/test/functional/pyauto.py for sample
+// json input.
+// Sample json output: {}
+void AutomationProvider::RemoveSavedPassword(Browser* browser,
+                                             DictionaryValue* args,
+                                             IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  DictionaryValue* password_dict = NULL;
+
+  if (!args->GetDictionary(L"password", &password_dict)) {
+    reply.SendError("Password must be a dictionary.");
+    return;
+  }
+
+  // The signon realm is effectively the primary key and must be included.
+  // Check here before calling GetPasswordFormFromDict.
+  if (!password_dict->HasKey(L"signon_realm")) {
+    reply.SendError("Password must include signon_realm.");
+    return;
+  }
+  webkit_glue::PasswordForm to_remove =
+      GetPasswordFormFromDict(*password_dict);
+
+  Profile* profile = browser->profile();
+  // Use EXPLICIT_ACCESS since passwords can be removed off the record.
+  PasswordStore* password_store =
+      profile->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+
+  password_store->RemoveLogin(to_remove);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetSavedPasswords" }
@@ -2998,6 +3082,8 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["ImportSettings"] = &AutomationProvider::ImportSettings;
 
   handler_map["AddSavedPassword"] = &AutomationProvider::AddSavedPassword;
+  handler_map["RemoveSavedPassword"] =
+      &AutomationProvider::RemoveSavedPassword;
   handler_map["GetSavedPasswords"] = &AutomationProvider::GetSavedPasswords;
 
   handler_map["ClearBrowsingData"] = &AutomationProvider::ClearBrowsingData;

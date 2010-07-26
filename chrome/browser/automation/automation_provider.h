@@ -62,6 +62,10 @@ namespace gfx {
 class Point;
 }
 
+namespace webkit_glue {
+struct PasswordForm;
+}
+
 class AutomationProvider : public base::RefCounted<AutomationProvider>,
                            public IPC::Channel::Listener,
                            public IPC::Message::Sender {
@@ -467,11 +471,20 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                       DictionaryValue* args,
                       IPC::Message* reply_message);
 
-  // Add a new username-password combination to the saved passwords.
+  // Add a new entry to the password store based on the password information
+  // provided. This method can also be used to add a blacklisted site (which
+  // will never fill in the password).
   // Uses the JSON interface for input/output.
   void AddSavedPassword(Browser* browser,
                         DictionaryValue* args,
                         IPC::Message* reply_message);
+
+  // Removes the password matching the information provided. This method can
+  // also be used to remove a blacklisted site.
+  // Uses the JSON interface for input/output.
+  void RemoveSavedPassword(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
 
   // Return the saved username/password combinations.
   // Uses the JSON interface for input/output.

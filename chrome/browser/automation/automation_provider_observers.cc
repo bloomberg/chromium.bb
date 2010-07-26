@@ -1024,13 +1024,23 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
           result.begin(); it != result.end(); ++it) {
     DictionaryValue* password_val = new DictionaryValue;
     webkit_glue::PasswordForm* password_form = *it;
-    password_val->SetStringFromUTF16(L"username",
+    password_val->SetStringFromUTF16(L"username_value",
                                      password_form->username_value);
-    password_val->SetStringFromUTF16(L"password",
+    password_val->SetStringFromUTF16(L"password_value",
                                      password_form->password_value);
+    password_val->SetString(L"signon_realm", password_form->signon_realm);
     password_val->SetReal(
         L"time", static_cast<double>(
             password_form->date_created.ToDoubleT()));
+    password_val->SetString(L"origin_url", password_form->origin.spec());
+    password_val->SetStringFromUTF16(L"username_element",
+                                     password_form->username_element);
+    password_val->SetStringFromUTF16(L"password_element",
+                                     password_form->password_element);
+    password_val->SetStringFromUTF16(L"submit_element",
+                                     password_form->submit_element);
+    password_val->SetString(L"action_target", password_form->action.spec());
+    password_val->SetBoolean(L"blacklist", password_form->blacklisted_by_user);
     passwords->Append(password_val);
   }
 
