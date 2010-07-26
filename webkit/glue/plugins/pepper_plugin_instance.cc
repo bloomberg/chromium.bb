@@ -592,7 +592,7 @@ void PluginInstance::PrintEnd() {
     plugin_print_interface_->End(GetPPInstance());
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
 #if defined(OS_MACOSX)
-  last_printed_page_ = SkBitmap();
+  last_printed_page_ = NULL;
 #elif defined(OS_LINUX)
   num_pages_ = 0;
   pdf_output_done_ = false;
@@ -730,7 +730,7 @@ bool PluginInstance::PrintRasterOutput(PP_Resource print_output,
   DrawSkBitmapToCanvas(*bitmap, canvas, dest_rect_gfx,
                        current_print_settings_.printable_area.size.height);
   // See comments in the header file.
-  last_printed_page_ = *bitmap;
+  last_printed_page_ = image;
 #else  // defined(OS_MACOSX)
   if (draw_to_canvas)
     canvas->drawBitmapRect(*bitmap, &src_rect, dest_rect);

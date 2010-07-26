@@ -42,6 +42,7 @@ class WebPluginContainer;
 namespace pepper {
 
 class DeviceContext2D;
+class ImageData;
 class PluginDelegate;
 class PluginModule;
 class URLLoader;
@@ -182,7 +183,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // On the Mac, when we draw the bitmap to the PDFContext, it seems necessary
   // to keep the pixels valid until CGContextEndPage is called. We use this
   // variable to hold on to the pixels.
-  SkBitmap last_printed_page_;
+  scoped_refptr<ImageData> last_printed_page_;
 #elif defined(OS_LINUX)
   // On Linux, we always send all pages from the renderer to the browser.
   // So, if the plugin supports printPagesAsPDF we print the entire output
