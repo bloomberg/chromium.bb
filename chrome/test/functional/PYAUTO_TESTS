@@ -48,8 +48,9 @@
   ],
 
   'mac': [
-    # Keychain popups make password tests difficult. crbug.com/49378
+    # Keychain popups make password & autofill tests difficult. crbug.com/49378
     '-passwords',
+    '-autofill',
   ],
 
   'linux': [  # linux != chromeos
