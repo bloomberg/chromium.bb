@@ -3183,6 +3183,7 @@
    fun:_ZN6Pickle6ResizeEj
    fun:_ZN6Pickle10BeginWriteEj
    fun:_ZN6Pickle10WriteBytesEPKvi
+   fun:_ZN6Pickle8WriteIntEi
    fun:_ZN6Pickle11WriteStringERKSs
    fun:_ZN10ZygoteHost12ForkRendererERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EE
    fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
