@@ -86,7 +86,7 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual void DetachContents(TabContents* source);
 
   // Called to determine if the TabContents is contained in a popup window.
-  virtual bool IsPopup(TabContents* source) = 0;
+  virtual bool IsPopup(const TabContents* source) const;
 
   // If |source| is constrained, returns the tab containing it.  Otherwise
   // returns |source|.

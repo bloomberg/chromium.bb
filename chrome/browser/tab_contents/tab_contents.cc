@@ -1366,7 +1366,7 @@ bool TabContents::ShouldAcceptDragAndDrop() const {
 #if defined(OS_CHROMEOS)
   // ChromeOS panels (pop-ups) do not take drag-n-drop.
   // See http://crosbug.com/2413
-  return delegate() && !delegate()->IsPopup(const_cast<TabContents*>(this));
+  return delegate() && !delegate()->IsPopup(this);
 #else
   return true;
 #endif

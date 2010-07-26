@@ -465,10 +465,6 @@ void DraggedTabController::MoveContents(TabContents* source,
   // own window. Should be ignored since we're moving the window...
 }
 
-bool DraggedTabController::IsPopup(TabContents* source) {
-  return false;
-}
-
 void DraggedTabController::ToolbarSizeChanged(TabContents* source,
                                             bool finished) {
   // Dragged tabs don't care about this.

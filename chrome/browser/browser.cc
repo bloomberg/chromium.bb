@@ -2637,7 +2637,7 @@ void Browser::DetachContents(TabContents* source) {
     tabstrip_model_.DetachTabContentsAt(index);
 }
 
-bool Browser::IsPopup(TabContents* source) {
+bool Browser::IsPopup(const TabContents* source) const {
   // A non-tabbed BROWSER is an unconstrained popup.
   return !!(type() & TYPE_POPUP);
 }

@@ -110,7 +110,7 @@ void BlockedPopupContainer::MoveContents(TabContents* source,
   }
 }
 
-bool BlockedPopupContainer::IsPopup(TabContents* source) {
+bool BlockedPopupContainer::IsPopup(const TabContents* source) const {
   return true;
 }
 

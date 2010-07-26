@@ -70,7 +70,7 @@ class BlockedPopupContainer : public TabContentsDelegate {
   virtual void MoveContents(TabContents* source, const gfx::Rect& new_bounds);
 
   // Always returns true.
-  virtual bool IsPopup(TabContents* source);
+  virtual bool IsPopup(const TabContents* source) const;
 
   // Returns our |owner_|.
   virtual TabContents* GetConstrainingContents(TabContents* source);

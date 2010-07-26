@@ -427,10 +427,6 @@ void ExternalTabContainer::MoveContents(TabContents* source,
                                         const gfx::Rect& pos) {
 }
 
-bool ExternalTabContainer::IsPopup(TabContents* source) {
-  return false;
-}
-
 void ExternalTabContainer::URLStarredChanged(TabContents* source,
                                              bool starred) {
 }

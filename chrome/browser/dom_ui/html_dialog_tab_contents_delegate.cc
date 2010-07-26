@@ -85,7 +85,7 @@ void HtmlDialogTabContentsDelegate::CloseContents(TabContents* source) {
   // cleanup somewhere else (namely, HtmlDialogUIDelegate::OnDialogClosed()).
 }
 
-bool HtmlDialogTabContentsDelegate::IsPopup(TabContents* source) {
+bool HtmlDialogTabContentsDelegate::IsPopup(const TabContents* source) const {
   // This needs to return true so that we are allowed to be resized by our
   // contents.
   return true;

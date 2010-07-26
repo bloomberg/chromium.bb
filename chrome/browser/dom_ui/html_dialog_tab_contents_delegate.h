@@ -49,7 +49,7 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
   virtual void ActivateContents(TabContents* contents);
   virtual void LoadingStateChanged(TabContents* source);
   virtual void CloseContents(TabContents* source);
-  virtual bool IsPopup(TabContents* source);
+  virtual bool IsPopup(const TabContents* source) const;
   virtual void URLStarredChanged(TabContents* source, bool starred);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
   virtual bool ShouldAddNavigationToHistory() const;

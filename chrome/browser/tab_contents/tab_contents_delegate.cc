@@ -7,6 +7,10 @@
 void TabContentsDelegate::DetachContents(TabContents* source) {
 }
 
+bool TabContentsDelegate::IsPopup(const TabContents* source) const {
+  return false;
+}
+
 TabContents* TabContentsDelegate::GetConstrainingContents(TabContents* source) {
   return source;
 }
