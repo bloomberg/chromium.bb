@@ -3550,13 +3550,6 @@
    fun:_ZN3net46HttpAuthHandlerNegotiateTest_DisableCname_Test8TestBodyEv
 }
 {
-   bug_49828
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:*LoadTimingObserverTest*TestBodyEv
-}
-{
    bug_50056
    Memcheck:Leak
    fun:_Znw*

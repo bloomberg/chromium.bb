@@ -36,16 +36,18 @@ void AddEndEntry(LoadTimingObserver& observer,
 void AddStartURLRequestEntries(LoadTimingObserver& observer,
                                uint32 id,
                                bool request_timing) {
+  scoped_refptr<URLRequestStartEventParameters> params(
+      new URLRequestStartEventParameters(
+          GURL(StringPrintf("http://req%d", id)),
+          "GET",
+          request_timing ? net::LOAD_ENABLE_LOAD_TIMING : 0,
+          net::LOW));
   NetLog::Source source(NetLog::SOURCE_URL_REQUEST, id);
   AddStartEntry(observer, source, NetLog::TYPE_REQUEST_ALIVE, NULL);
   AddStartEntry(observer,
                 source,
                 NetLog::TYPE_URL_REQUEST_START_JOB,
-                new URLRequestStartEventParameters(
-                    GURL(StringPrintf("http://req%d", id)),
-                    "GET",
-                    request_timing ? net::LOAD_ENABLE_LOAD_TIMING : 0,
-                    net::LOW));
+                params.get());
 }
 
 void AddEndURLRequestEntries(LoadTimingObserver& observer, uint32 id) {

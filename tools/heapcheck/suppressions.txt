@@ -930,12 +930,6 @@
    fun:HTTPTestServer::StartGETRequest
 }
 {
-   bug_49828
-   Heapcheck:Leak
-   ...
-   fun:LoadTimingObserverTest*
-}
-{
    bug_50103_a
    Heapcheck:Leak
    fun:Value::CreateNullValue
