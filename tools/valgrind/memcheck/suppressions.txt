@@ -787,6 +787,50 @@
    fun:rc4_wordconv
    fun:RC4_Encrypt
 }
+{
+   # Valgrind gets confused by fork() and reports false positive.
+   bug_46343_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIiE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseIiSaIiEE11_M_allocateEj
+   fun:_ZNSt6vectorIiSaIiEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPiS1_EERKi
+   fun:_ZNSt6vectorIiSaIiEE9push_backERKi
+   fun:_ZN10ZygoteHost12ForkRendererERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EE
+   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
+   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+{
+   bug_46343_b
+   Memcheck:Leak
+   ...
+   fun:realloc
+   fun:_ZN6Pickle6ResizeEj
+   fun:_ZN6Pickle10BeginWriteEj
+   fun:_ZN6Pickle10WriteBytesEPKvi
+   fun:_ZN6Pickle8WriteIntEi
+   fun:_ZN6Pickle11WriteStringERKSs
+   fun:_ZN10ZygoteHost12ForkRendererERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EE
+   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
+   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+{
+   bug_46343_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt4pairIjiEE8allocateEjPKv
+   fun:_ZNSt12_Vector_baseISt4pairIjiESaIS1_EE11_M_allocateEj
+   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
+   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE9push_backERKS1_
+   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
+   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -3160,49 +3204,6 @@
    fun:_ZNSs6appendEPKc
    fun:_ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_PKS3_
    fun:_ZNK21URLRequestMockHTTPJob20GetResponseInfoConstEPN3net16HttpResponseInfoE
-}
-{
-   bug_46343_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIiE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseIiSaIiEE11_M_allocateEj
-   fun:_ZNSt6vectorIiSaIiEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPiS1_EERKi
-   fun:_ZNSt6vectorIiSaIiEE9push_backERKi
-   fun:_ZN10ZygoteHost12ForkRendererERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EE
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
-   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
-{
-   bug_46343_b
-   Memcheck:Leak
-   ...
-   fun:realloc
-   fun:_ZN6Pickle6ResizeEj
-   fun:_ZN6Pickle10BeginWriteEj
-   fun:_ZN6Pickle10WriteBytesEPKvi
-   fun:_ZN6Pickle8WriteIntEi
-   fun:_ZN6Pickle11WriteStringERKSs
-   fun:_ZN10ZygoteHost12ForkRendererERKSt6vectorISsSaISsEERKS0_ISt4pairIjiESaIS6_EE
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
-   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
-{
-   bug_46343_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt4pairIjiEE8allocateEjPKv
-   fun:_ZNSt12_Vector_baseISt4pairIjiESaIS1_EE11_M_allocateEj
-   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
-   fun:_ZNSt6vectorISt4pairIjiESaIS1_EE9push_backERKS1_
-   fun:_ZN20ChildProcessLauncher7Context14LaunchInternalEbRKSt6vectorISt4pairISsSsESaIS3_EEiP11CommandLine
-   fun:_Z16DispatchToMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineEbS6_iSA_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-   fun:_ZN14RunnableMethodIN20ChildProcessLauncher7ContextEMS1_FvbRKSt6vectorISt4pairISsSsESaIS4_EEiP11CommandLineE6Tuple4IbS6_iSA_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
 }
 {
    bug_46345
