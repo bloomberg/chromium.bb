@@ -389,12 +389,12 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   EXPECT_EQ(ASCIIToUTF16("************8765"), values[4]);
   EXPECT_EQ(ASCIIToUTF16("************8765"), values[5]);
   ASSERT_EQ(6U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home; 3456"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work; 3456"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; 3456"), labels[2]);
-  EXPECT_EQ(ASCIIToUTF16("Home; 8765"), labels[3]);
-  EXPECT_EQ(ASCIIToUTF16("Work; 8765"), labels[4]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; 8765"), labels[5]);
+  EXPECT_EQ(ASCIIToUTF16("Home; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Work; *3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Home; *8765"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Work; *8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; *8765"), labels[5]);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
@@ -430,9 +430,9 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[1]);
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[2]);
   ASSERT_EQ(3U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home; 3456"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work; 3456"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; 3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Home; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Work; *3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
@@ -471,12 +471,12 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[4]);
   EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[5]);
   ASSERT_EQ(6U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home; 3456"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work; 3456"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; 3456"), labels[2]);
-  EXPECT_EQ(ASCIIToUTF16("Home; 8765"), labels[3]);
-  EXPECT_EQ(ASCIIToUTF16("Work; 8765"), labels[4]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; 8765"), labels[5]);
+  EXPECT_EQ(ASCIIToUTF16("Home; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Work; *3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Home; *8765"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Work; *8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; *8765"), labels[5]);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
@@ -526,14 +526,14 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
   EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[6]);
   EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[7]);
   ASSERT_EQ(8U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home; 3456"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work; 3456"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; 3456"), labels[2]);
-  EXPECT_EQ(ASCIIToUTF16("Home; 8765; 3456"), labels[3]);
-  EXPECT_EQ(ASCIIToUTF16("Home; 8765"), labels[4]);
-  EXPECT_EQ(ASCIIToUTF16("Work; 8765"), labels[5]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; 8765"), labels[6]);
-  EXPECT_EQ(ASCIIToUTF16("Home; 8765; 8765"), labels[7]);
+  EXPECT_EQ(ASCIIToUTF16("Home; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Work; *3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Home; 8765; *3456"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Home; *8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("Work; *8765"), labels[5]);
+  EXPECT_EQ(ASCIIToUTF16("Empty; *8765"), labels[6]);
+  EXPECT_EQ(ASCIIToUTF16("Home; 8765; *8765"), labels[7]);
 }
 
 TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
@@ -730,7 +730,7 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
       autofill_manager_->FillAutoFillFormData(kPageID,
                                               form,
                                               string16(),
-                                              ASCIIToUTF16("Home; 3456"),
+                                              ASCIIToUTF16("Home; *3456"),
                                               1));
 
   int page_id = 0;
@@ -888,7 +888,7 @@ TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
   // an IPC message back to the renderer.
   const int kPageID = 1;
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, string16(), ASCIIToUTF16("Home; 8765; 3456"), 6));
+      kPageID, form, string16(), ASCIIToUTF16("Home; 8765; *3456"), 6));
 
   int page_id = 0;
   FormData results;

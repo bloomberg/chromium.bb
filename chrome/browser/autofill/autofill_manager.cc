@@ -38,7 +38,7 @@ const int kAutoFillPhoneNumberPrefixCount = 3;
 const int kAutoFillPhoneNumberSuffixOffset = 3;
 const int kAutoFillPhoneNumberSuffixCount = 4;
 
-const string16::value_type kLabelSeparator[] = {';',' ',0};
+const string16::value_type kLabelSeparator[] = {';',' ', '*', 0};
 
 // Removes duplicate elements whilst preserving original order of |elements| and
 // |unique_ids|.
@@ -504,8 +504,7 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
          personal_data_->credit_cards().begin();
          cc != personal_data_->credit_cards().end(); ++cc) {
       expanded_values.push_back((*values)[i]);
-      string16 label = (*labels)[i] + kLabelSeparator +
-          (*cc)->LastFourDigits();
+      string16 label = (*labels)[i] + kLabelSeparator + (*cc)->LastFourDigits();
       expanded_labels.push_back(label);
       unique_ids->push_back(profile->unique_id());
     }
@@ -565,8 +564,7 @@ void AutoFillManager::GetBillingProfileSuggestions(
          iter != personal_data_->profiles().end(); ++iter) {
       values->push_back(billing_profile->GetFieldText(type));
 
-      string16 label = (*iter)->Label() +
-                       ASCIIToUTF16("; ") +
+      string16 label = (*iter)->Label() + kLabelSeparator +
                        (*cc)->LastFourDigits();
       labels->push_back(label);
       unique_ids->push_back((*iter)->unique_id());
@@ -607,8 +605,7 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
              iter != personal_data_->profiles().end(); ++iter) {
           values->push_back(creditcard_field_value);
 
-          string16 label = (*iter)->Label() +
-                           ASCIIToUTF16("; ") +
+          string16 label = (*iter)->Label() + kLabelSeparator +
                            credit_card->LastFourDigits();
           labels->push_back(label);
           unique_ids->push_back((*iter)->unique_id());
