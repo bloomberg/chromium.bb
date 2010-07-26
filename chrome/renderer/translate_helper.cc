@@ -9,6 +9,8 @@
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "v8/include/v8.h"
 
 using WebKit::WebFrame;
 using WebKit::WebScriptSource;

@@ -57,6 +57,7 @@
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
@@ -69,6 +70,8 @@
 #include "gfx/color_utils.h"
 #include "gfx/favicon_size.h"
 #include "gfx/native_widget_types.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "net/base/data_url.h"
@@ -79,6 +82,7 @@
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
@@ -113,6 +117,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWindowFeatures.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/dom_operations.h"
@@ -120,9 +125,11 @@
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/image_decoder.h"
+#include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/video_renderer_impl.h"
+#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/default_plugin_shared.h"
 #include "webkit/glue/plugins/pepper_webplugin_impl.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -527,6 +534,10 @@ void RenderView::SetNextPageID(int32 next_page_id) {
   DCHECK_EQ(next_page_id_, 1);
   DCHECK(next_page_id >= next_page_id_);
   next_page_id_ = next_page_id;
+}
+
+WebKit::WebView* RenderView::webview() const{
+  return static_cast<WebKit::WebView*>(webwidget());
 }
 
 void RenderView::UserMetricsRecordAction(const std::string& action) {
@@ -4372,8 +4383,8 @@ void RenderView::OnSetWindowVisibility(bool visible) {
   }
 }
 
-void RenderView::OnWindowFrameChanged(gfx::Rect window_frame,
-                                      gfx::Rect view_frame) {
+void RenderView::OnWindowFrameChanged(const gfx::Rect& window_frame,
+                                      const gfx::Rect& view_frame) {
   // Inform plugins that their window's frame has changed.
   std::set<WebPluginDelegateProxy*>::iterator plugin_it;
   for (plugin_it = plugin_delegates_.begin();

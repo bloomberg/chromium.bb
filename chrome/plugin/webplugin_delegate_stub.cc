@@ -363,8 +363,8 @@ void WebPluginDelegateStub::OnContainerShown(gfx::Rect window_frame,
   delegate_->SetWindowHasFocus(has_focus);
 }
 
-void WebPluginDelegateStub::OnWindowFrameChanged(gfx::Rect window_frame,
-                                                 gfx::Rect view_frame) {
+void WebPluginDelegateStub::OnWindowFrameChanged(const gfx::Rect& window_frame,
+                                                 const gfx::Rect& view_frame) {
   delegate_->WindowFrameChanged(window_frame, view_frame);
 }
 #endif  // OS_MACOSX

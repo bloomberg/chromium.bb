@@ -27,6 +27,7 @@
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "chrome/renderer/render_view_visitor.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -35,6 +36,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 using bindings_utils::GetStringResource;
 using bindings_utils::ContextInfo;

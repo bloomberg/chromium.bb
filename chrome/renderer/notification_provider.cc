@@ -14,6 +14,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPermissionCallback.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebDocument;
 using WebKit::WebNotification;

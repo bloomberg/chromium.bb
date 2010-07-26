@@ -14,55 +14,35 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
-#include "base/file_path.h"
-#include "base/id_map.h"
 #include "base/linked_ptr.h"
-#include "base/shared_memory.h"
 #include "base/timer.h"
-#include "base/values.h"
 #include "base/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/navigation_gesture.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
-#include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/autofill_helper.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
 #include "chrome/renderer/dom_ui_bindings.h"
-#include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
-#include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
-#include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
 #include "chrome/renderer/translate_helper.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializerClient.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNavigationType.h"
-#include "webkit/glue/form_data.h"
-#include "webkit/glue/image_resource_fetcher.h"
-#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/webplugin_page_delegate.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_WIN)
@@ -81,8 +61,10 @@ class GeolocationDispatcher;
 class GURL;
 class ListValue;
 class NavigationState;
+class NotificationProvider;
 class PepperDeviceTest;
 class PrintWebViewHelper;
+class RenderViewVisitor;
 class SkBitmap;
 class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
@@ -96,12 +78,21 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace gfx {
+class Point;
+class Rect;
+}
+
 namespace webkit_glue {
+class ImageResourceFetcher;
 struct FileUploadData;
+struct FormData;
+struct PasswordFormFillData;
 }
 
 namespace WebKit {
 class WebAccessibilityCache;
+class WebAccessibilityObject;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebDataSource;
@@ -113,11 +104,15 @@ class WebInputElement;
 class WebKeyboardEvent;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebNode;
 class WebPlugin;
 class WebStorageNamespace;
 class WebURLRequest;
+class WebView;
+struct WebContextMenuData;
 struct WebFileChooserParams;
 struct WebFindOptions;
+struct WebPluginParams;
 struct WebPoint;
 struct WebWindowFeatures;
 }
@@ -175,9 +170,7 @@ class RenderView : public RenderWidget,
   static void SetNextPageID(int32 next_page_id);
 
   // May return NULL when the view is closing.
-  WebKit::WebView* webview() const {
-    return static_cast<WebKit::WebView*>(webwidget());
-  }
+  WebKit::WebView* webview() const;
 
   int browser_window_id() const {
     return browser_window_id_;
@@ -820,7 +813,8 @@ class RenderView : public RenderWidget,
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
 #if defined(OS_MACOSX)
-  void OnWindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
+  void OnWindowFrameChanged(const gfx::Rect& window_frame,
+                            const gfx::Rect& view_frame);
 #endif
   void OnZoom(PageZoom::Function function);
 

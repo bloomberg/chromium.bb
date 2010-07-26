@@ -84,7 +84,8 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   void OnContainerHidden();
   void OnContainerShown(gfx::Rect window_frame, gfx::Rect view_frame,
                         bool has_focus);
-  void OnWindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
+  void OnWindowFrameChanged(const gfx::Rect& window_frame,
+                            const gfx::Rect& view_frame);
 #endif
 
   void OnDidReceiveManualResponse(
