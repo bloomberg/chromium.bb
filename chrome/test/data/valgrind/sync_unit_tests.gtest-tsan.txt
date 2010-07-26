@@ -1,0 +1,3 @@
+# This test contains a data race on string. Such races can corrupt memory,
+# so it is excluded, not suppressed. See http://crbug.com/50217
+SyncerThreadWithSyncerTest.StopSyncPermanently
