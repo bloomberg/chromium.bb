@@ -265,11 +265,7 @@ static void gtk_custom_menu_item_activate(GtkMenuItem* menu_item) {
 GtkWidget* gtk_custom_menu_item_new(const char* title) {
   GtkCustomMenuItem* item = GTK_CUSTOM_MENU_ITEM(
       g_object_new(GTK_TYPE_CUSTOM_MENU_ITEM, NULL));
-
-  char* markup = g_markup_printf_escaped("<b>%s</b>", title);
-  gtk_label_set_markup(GTK_LABEL(item->label), markup);
-  g_free(markup);
-
+  gtk_label_set_text(GTK_LABEL(item->label), title);
   return GTK_WIDGET(item);
 }
 
