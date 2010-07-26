@@ -48,7 +48,11 @@ ContentSettings.prototype = {
     // Images filter page ------------------------------------------------------
     $('images-exceptions-button').onclick = function(event) {
       // TODO(estade): show a dialog.
+      // TODO(estade): remove this hack.
+      imagesExceptionsList.redraw();
     };
+
+    options.contentSettings.ExceptionsList.decorate($('imagesExceptionsList'));
   },
 
   /**
@@ -80,6 +84,17 @@ ContentSettings.setInitialContentFilterSettingsValue = function(dict) {
   for (var group in dict) {
     document.querySelector('input[type=radio][name=' + group +
                            '][value=' + dict[group] + ']').checked = true;
+  }
+};
+
+/**
+ * Initializes the image exceptions list.
+ * @param {Array} list An array of pairs, where the first element of each pair
+ *     is the filter string, and the second is the setting (allow/block).
+ */
+ContentSettings.setImagesExceptions = function(list) {
+  for (var i = 0; i < list.length; ++i) {
+    imagesExceptionsList.addException(list[i]);
   }
 };
 

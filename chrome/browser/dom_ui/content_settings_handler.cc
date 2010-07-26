@@ -102,6 +102,10 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_COOKIES_EXCEPTIONS_BUTTON));
   localized_strings->SetString(L"contentSettingsPage",
       l10n_util::GetString(IDS_CONTENT_SETTINGS_TITLE));
+  localized_strings->SetString(L"allowException",
+      l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON));
+  localized_strings->SetString(L"blockException",
+      l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON));
 
   // Cookies filter.
   localized_strings->SetString(L"cookies_tab_label",
@@ -192,21 +196,9 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_NOTIFICATIONS_BLOCK_RADIO));
 }
 
-void ContentSettingsHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("getContentFilterSettings",
-      NewCallback(this,
-                  &ContentSettingsHandler::GetContentFilterSettings));
-  dom_ui_->RegisterMessageCallback("setContentFilter",
-      NewCallback(this,
-                  &ContentSettingsHandler::SetContentFilter));
-  dom_ui_->RegisterMessageCallback("setAllowThirdPartyCookies",
-      NewCallback(this,
-                  &ContentSettingsHandler::SetAllowThirdPartyCookies));
-}
-
-void ContentSettingsHandler::GetContentFilterSettings(const Value* value) {
+void ContentSettingsHandler::Initialize() {
   // We send a list of the <input> IDs that should be checked.
-  DictionaryValue dict_value;
+  DictionaryValue filter_settings;
 
   const HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
@@ -216,17 +208,51 @@ void ContentSettingsHandler::GetContentFilterSettings(const Value* value) {
     ContentSetting default_setting = settings_map->
         GetDefaultContentSetting(type);
 
-    dict_value.SetString(ContentSettingsTypeToGroupName(type),
-                         ContentSettingToString(default_setting));
+    filter_settings.SetString(ContentSettingsTypeToGroupName(type),
+                              ContentSettingToString(default_setting));
   }
 
   dom_ui_->CallJavascriptFunction(
-      L"ContentSettings.setInitialContentFilterSettingsValue", dict_value);
+      L"ContentSettings.setInitialContentFilterSettingsValue", filter_settings);
 
   scoped_ptr<Value> bool_value(Value::CreateBooleanValue(
       settings_map->BlockThirdPartyCookies()));
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setBlockThirdPartyCookies", *bool_value.get());
+
+  UpdateImagesExceptionsViewFromModel();
+}
+
+// TODO(estade): generalize this function to work on all content settings types
+// rather than just images.
+// TODO(estade): call this in response to content exceptions change
+// notifications.
+void ContentSettingsHandler::UpdateImagesExceptionsViewFromModel() {
+  HostContentSettingsMap::SettingsForOneType entries;
+  const HostContentSettingsMap* settings_map =
+      dom_ui_->GetProfile()->GetHostContentSettingsMap();
+  settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, &entries);
+
+  ListValue exceptions;
+  for (size_t i = 0; i < entries.size(); ++i) {
+    ListValue* exception = new ListValue();
+    exception->Append(new StringValue(entries[i].first.AsString()));
+    exception->Append(
+        new StringValue(ContentSettingToString(entries[i].second)));
+    exceptions.Append(exception);
+  }
+
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.setImagesExceptions", exceptions);
+}
+
+void ContentSettingsHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback("setContentFilter",
+      NewCallback(this,
+                  &ContentSettingsHandler::SetContentFilter));
+  dom_ui_->RegisterMessageCallback("setAllowThirdPartyCookies",
+      NewCallback(this,
+                  &ContentSettingsHandler::SetAllowThirdPartyCookies));
 }
 
 void ContentSettingsHandler::SetContentFilter(const Value* value) {

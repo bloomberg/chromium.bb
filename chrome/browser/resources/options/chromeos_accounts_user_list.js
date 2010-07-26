@@ -52,9 +52,7 @@ cr.define('options.accounts', function() {
      * @param {Object} user A user to be added to user list.
      */
     addUser: function(user) {
-      var dataModel = this.dataModel;
-      dataModel.splice(dataModel.length, 0, user);
-
+      this.dataModel.push(user);
       this.updateBackend_();
     },
 

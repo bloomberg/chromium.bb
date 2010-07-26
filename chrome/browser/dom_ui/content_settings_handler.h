@@ -15,10 +15,12 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
+  virtual void Initialize();
+
   virtual void RegisterMessages();
 
  private:
-  void GetContentFilterSettings(const Value* value);
+  void UpdateImagesExceptionsViewFromModel();
   void SetContentFilter(const Value* value);
   void SetAllowThirdPartyCookies(const Value* value);
 

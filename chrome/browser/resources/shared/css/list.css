@@ -5,6 +5,7 @@ list {
   overflow: auto;
   position: relative; /* Make sure that item offsets are relative to the
                          list. */
+  height: 200px;
 }
 
 list > * {
