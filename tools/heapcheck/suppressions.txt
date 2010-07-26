@@ -840,38 +840,6 @@
    fun:start_thread
 }
 {
-   48980_a
-   Heapcheck:Leak
-   ...
-   fun:ExtensionPrefStoreTest_NotifyWhenNeeded_Test::TestBody
-}
-{
-   48980_b
-   Heapcheck:Leak
-   ...
-   fun:PrefService::RegisterStringPref
-   fun:ExtensionPrefStoreTest_*_Test::TestBody
-}
-{
-   48980_c
-   Heapcheck:Leak
-   ...
-   fun:ExtensionPrefStore::InstallExtensionPref
-}
-{
-   48980_d
-   Heapcheck:Leak
-   ...
-   fun:basic_string
-   fun:ExtensionPrefStoreTest_*_Test::TestBody
-}
-{
-   48980_e
-   Heapcheck:Leak
-   fun:Value::CreateStringValue
-   fun:ExtensionPrefStoreTest_*_Test::TestBody
-}
-{
    bug_49300_a
    Heapcheck:Leak
    fun:disk_cache::StorageBlock::AllocateData

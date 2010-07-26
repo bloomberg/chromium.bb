@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 
 #include "base/logging.h"
-#include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "chrome/browser/pref_service.h"
 
@@ -49,6 +48,9 @@ void ExtensionPrefStore::UpdateOnePref(const wchar_t* path) {
 }
 
 void ExtensionPrefStore::UpdatePrefs(const PrefValueMap* pref_values) {
+  if (!pref_values)
+    return;
+
   for (PrefValueMap::const_iterator i = pref_values->begin();
         i != pref_values->end(); ++i) {
     UpdateOnePref(i->first);
@@ -70,14 +72,14 @@ void ExtensionPrefStore::InstallExtensionPref(std::string extension_id,
   PrefValueMap* pref_values;
   if (i != extension_stack_.end()) {
     pref_values = (*i)->pref_values;
+    delete (*pref_values)[pref_path];
     (*pref_values)[pref_path] = pref_value;
   } else {
     pref_values = new PrefValueMap();
     (*pref_values)[pref_path] = pref_value;
 
-    ExtensionPrefs* extension_prefs = new ExtensionPrefs();
-    extension_prefs->extension_id = extension_id;
-    extension_prefs->pref_values = pref_values;
+    ExtensionPrefs* extension_prefs = new ExtensionPrefs(extension_id,
+                                                         pref_values);
     extension_stack_.push_front(extension_prefs);
   }
 
@@ -87,20 +89,16 @@ void ExtensionPrefStore::InstallExtensionPref(std::string extension_id,
 
 void ExtensionPrefStore::UninstallExtension(std::string extension_id) {
   // Remove this extension from the stack.
-  scoped_ptr<PrefValueMap> pref_values;
   for (ExtensionStack::iterator i = extension_stack_.begin();
       i != extension_stack_.end(); ++i) {
     if ((*i)->extension_id == extension_id) {
-      pref_values.reset((*i)->pref_values);
-      delete *i;
+      ExtensionPrefs* to_be_deleted = *i;
       extension_stack_.erase(i);
-      break;
+      UpdatePrefs(to_be_deleted->pref_values);
+      delete to_be_deleted;
+      return;
     }
   }
-  if (!pref_values.get())
-    return;
-
-  UpdatePrefs(pref_values.get());
 }
 
 void ExtensionPrefStore::GetExtensionIDs(std::vector<std::string>* result) {

@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "chrome/common/pref_store.h"
 
 class DictionaryValue;
@@ -35,6 +36,7 @@ class ExtensionPrefStore : public PrefStore {
 
   // Begins tracking the preference and value an extension wishes to set. This
   // must be called each time an extension API tries to set a preference.
+  // The ExtensionPrefStore will take ownership of the |pref_value|.
   virtual void InstallExtensionPref(std::string extension_id,
                                     const wchar_t* pref_path,
                                     Value* pref_value);
@@ -61,26 +63,34 @@ class ExtensionPrefStore : public PrefStore {
   typedef std::map<const wchar_t*, Value*> PrefValueMap;
 
   // Applies the highest-priority extension's setting for the given preference
-  // path, or clears the setting in this PrefStore if no extensions wish to
-  // control it.
+  // path to the |prefs_| store, or clears the setting there if no extensions
+  // wish to control it.
   void UpdateOnePref(const wchar_t* path);
 
-  // Updates each preference in the |pref_values| list.
+  // Updates each preference in the key set of the |pref_values| map.
   void UpdatePrefs(const PrefValueMap* pref_values);
 
   // A cache of the highest-priority values for each preference that any
   // extension is controlling, for quick read access. Owns the stored values.
   scoped_ptr<DictionaryValue> prefs_;
 
-  // Associates an extension ID with the prefs it sets.
+  // Associates an extension ID with the prefs it sets. Owns the pref values.
   struct ExtensionPrefs {
+    ExtensionPrefs(std::string id, PrefValueMap* values)
+        : extension_id(id),
+          pref_values(values) {}
+
+    ~ExtensionPrefs() {
+      STLDeleteValues(pref_values);
+      delete pref_values;
+    }
+
     std::string extension_id;
     PrefValueMap* pref_values;
   };
 
   // A pseudo-stack of extensions and their preferences. Extensions are always
-  // added to the head, but may be removed from the middle. This stack owns
-  // the values in the extensions' PrefValueMaps.
+  // added to the head, but may be removed from the middle.
   typedef std::list<ExtensionPrefs*> ExtensionStack;
   ExtensionStack extension_stack_;
 

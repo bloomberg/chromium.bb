@@ -153,7 +153,7 @@ TEST(ExtensionPrefStoreTest, UninstallOnlyExtension) {
   eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
   eps.InstallExtensionPref("id1", kPref2, Value::CreateStringValue("val2"));
 
-  // No need to check the state here; the InstallOneExtension already has.
+  // No need to check the state here; the Install* tests cover that.
   eps.UninstallExtension("id1");
 
   TestExtensionPrefStore::ExtensionIDs ids;
@@ -256,26 +256,26 @@ TEST(ExtensionPrefStoreTest, UninstallExtensionFromMiddle) {
 }
 
 TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
-  TestExtensionPrefStore eps;
+  TestExtensionPrefStore* eps = new TestExtensionPrefStore;
 
   // The PrefValueStore takes ownership of the PrefStores; in this case, that's
-  // only an ExtensionPrefStore.
-  PrefValueStore* value_store = new PrefValueStore(NULL, &eps, NULL, NULL,
-      NULL);
-  MockPrefService* pref_service = new MockPrefService(value_store);
-  eps.SetPrefService(pref_service);
+  // only an ExtensionPrefStore. Likewise, the PrefService takes ownership of
+  // the PrefValueStore.
+  PrefValueStore* value_store = new PrefValueStore(NULL, eps, NULL, NULL, NULL);
+  scoped_ptr<MockPrefService> pref_service(new MockPrefService(value_store));
+  eps->SetPrefService(pref_service.get());
   pref_service->RegisterStringPref(kPref1, std::string());
 
-  eps.InstallExtensionPref("abc", kPref1,
+  eps->InstallExtensionPref("abc", kPref1,
       Value::CreateStringValue("https://www.chromium.org"));
   EXPECT_TRUE(pref_service->fired_observers_);
-  eps.InstallExtensionPref("abc", kPref1,
+  eps->InstallExtensionPref("abc", kPref1,
       Value::CreateStringValue("https://www.chromium.org"));
   EXPECT_FALSE(pref_service->fired_observers_);
-  eps.InstallExtensionPref("abc", kPref1,
+  eps->InstallExtensionPref("abc", kPref1,
       Value::CreateStringValue("chrome://newtab"));
   EXPECT_TRUE(pref_service->fired_observers_);
 
-  eps.UninstallExtension("abc");
+  eps->UninstallExtension("abc");
   EXPECT_TRUE(pref_service->fired_observers_);
 }
