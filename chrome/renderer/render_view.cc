@@ -2188,11 +2188,20 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
-  if (AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS))
-    return CreatePluginInternal(frame, params);
+  FilePath path;
+  std::string actual_mime_type;
+  render_thread_->Send(new ViewHostMsg_GetPluginPath(
+      params.url, frame->top()->url(), params.mimeType.utf8(), &path,
+      &actual_mime_type));
+  if (path.value().empty())
+    return NULL;
 
-  didNotAllowPlugins(frame);
-  return CreatePluginPlaceholder(frame, params);
+  if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS) &&
+      path.value() != kDefaultPluginLibraryName) {
+    didNotAllowPlugins(frame);
+    return CreatePluginPlaceholder(frame, params);
+  }
+  return CreatePluginInternal(frame, params, actual_mime_type, path);
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -3620,12 +3629,16 @@ void RenderView::ClearBlockedContentSettings() {
 }
 
 WebPlugin* RenderView::CreatePluginInternal(WebFrame* frame,
-                                            const WebPluginParams& params) {
-  FilePath path;
-  std::string actual_mime_type;
-  render_thread_->Send(new ViewHostMsg_GetPluginPath(
-      params.url, frame->top()->url(), params.mimeType.utf8(), &path,
-      &actual_mime_type));
+                                            const WebPluginParams& params,
+                                            const std::string& mime_type,
+                                            const FilePath& plugin_path) {
+  FilePath path(plugin_path);
+  std::string actual_mime_type(mime_type);
+  if (path.value().empty()) {
+    render_thread_->Send(new ViewHostMsg_GetPluginPath(
+        params.url, frame->top()->url(), params.mimeType.utf8(), &path,
+        &actual_mime_type));
+  }
   if (path.value().empty())
     return NULL;
 

@@ -280,7 +280,9 @@ class RenderView : public RenderWidget,
   // Create a new plugin without checking the content settings.
   WebKit::WebPlugin* CreatePluginInternal(
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
+      const WebKit::WebPluginParams& params,
+      const std::string& mime_type,
+      const FilePath& plugin_path);
 
   // Asks the browser for the CPBrowsingContext associated with this renderer.
   // This is an opaque identifier associated with the renderer for sending

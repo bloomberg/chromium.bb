@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/file_path.h"
 #include "base/string_piece.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/renderer/render_view.h"
@@ -75,7 +76,10 @@ void BlockedPlugin::LoadPlugin() {
   CHECK(plugin_);
   WebPluginContainer* container = plugin_->container();
   WebPlugin* new_plugin =
-      render_view_->CreatePluginInternal(frame_, plugin_params_);
+      render_view_->CreatePluginInternal(frame_,
+                                         plugin_params_,
+                                         std::string(),
+                                         FilePath());
   if (new_plugin && new_plugin->initialize(container)) {
     container->setPlugin(new_plugin);
     container->invalidate();
