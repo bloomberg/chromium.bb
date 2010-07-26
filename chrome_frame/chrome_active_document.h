@@ -433,7 +433,7 @@ END_EXEC_COMMAND_MAP()
   static bool ShouldFireDocumentComplete();
 
  protected:
-  typedef std::map<int, bool> EnabledCommandsMap;
+  typedef std::map<int, OLECMDF> CommandStatusMap;
 
   IPC::NavigationInfo navigation_info_;
   bool is_doc_object_;
@@ -446,8 +446,11 @@ END_EXEC_COMMAND_MAP()
   // Our find dialog
   CFFindDialog find_dialog_;
 
-  // Contains the list of enabled commands ids.
-  EnabledCommandsMap enabled_commands_map_;
+  // These members contain the status of the commands we support.
+  CommandStatusMap null_group_commands_map_;
+  CommandStatusMap mshtml_group_commands_map_;
+  CommandStatusMap explorer_group_commands_map_;
+  CommandStatusMap shdoc_view_group_commands_map_;
 
   // Set to true if the automation_client_ member is initialized from
   // an existing ChromeActiveDocument instance which is going away and

@@ -104,13 +104,21 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
 
   find_dialog_.Init(automation_client_.get());
 
-  enabled_commands_map_[OLECMDID_PRINT] = true;
-  enabled_commands_map_[OLECMDID_FIND] = true;
-  enabled_commands_map_[OLECMDID_CUT] = true;
-  enabled_commands_map_[OLECMDID_COPY] = true;
-  enabled_commands_map_[OLECMDID_PASTE] = true;
-  enabled_commands_map_[OLECMDID_SELECTALL] = true;
-  enabled_commands_map_[OLECMDID_SAVEAS] = true;
+  OLECMDF flags = static_cast<OLECMDF>(OLECMDF_ENABLED | OLECMDF_SUPPORTED);
+
+  null_group_commands_map_[OLECMDID_PRINT] = flags;
+  null_group_commands_map_[OLECMDID_FIND] = flags;
+  null_group_commands_map_[OLECMDID_CUT] = flags;
+  null_group_commands_map_[OLECMDID_COPY] = flags;
+  null_group_commands_map_[OLECMDID_PASTE] = flags;
+  null_group_commands_map_[OLECMDID_SELECTALL] = flags;
+  null_group_commands_map_[OLECMDID_SAVEAS] = flags;
+
+  mshtml_group_commands_map_[IDM_BASELINEFONT1] = flags;
+  mshtml_group_commands_map_[IDM_BASELINEFONT2] = flags;
+  mshtml_group_commands_map_[IDM_BASELINEFONT3] = flags;
+  mshtml_group_commands_map_[IDM_BASELINEFONT4] = flags;
+  mshtml_group_commands_map_[IDM_BASELINEFONT5] = flags;
 
   HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
   accelerator_table_ =
@@ -314,17 +322,24 @@ STDMETHODIMP ChromeActiveDocument::QueryStatus(const GUID* cmd_group_guid,
                                                OLECMD commands[],
                                                OLECMDTEXT* command_text) {
   DLOG(INFO) << __FUNCTION__;
-  const GUID* supported_groups[] = {
-    &GUID_NULL,
-    &CGID_MSHTML,
-    &CGID_Explorer,
-  };
 
-  bool supported = (cmd_group_guid == NULL);
-  for (int i = 0; !supported && i < arraysize(supported_groups); ++i)
-    supported = (IsEqualGUID(*cmd_group_guid, *supported_groups[i]) != FALSE);
+  CommandStatusMap* command_map = NULL;
 
-  if (!supported) {
+  if (cmd_group_guid) {
+    if (IsEqualGUID(*cmd_group_guid, GUID_NULL)) {
+      command_map = &null_group_commands_map_;
+    } else if (IsEqualGUID(*cmd_group_guid, CGID_MSHTML)) {
+      command_map = &mshtml_group_commands_map_;
+    } else if (IsEqualGUID(*cmd_group_guid, CGID_Explorer)) {
+      command_map = &explorer_group_commands_map_;
+    } else if (IsEqualGUID(*cmd_group_guid, CGID_ShellDocView)) {
+      command_map = &shdoc_view_group_commands_map_;
+    }
+  } else {
+    command_map = &null_group_commands_map_;
+  }
+
+  if (!command_map) {
     DLOG(INFO) << "unsupported command group: "
         << GuidToString(*cmd_group_guid);
     return OLECMDERR_E_NOTSUPPORTED;
@@ -333,9 +348,10 @@ STDMETHODIMP ChromeActiveDocument::QueryStatus(const GUID* cmd_group_guid,
   for (ULONG command_index = 0; command_index < number_of_commands;
        command_index++) {
     DLOG(INFO) << "Command id = " << commands[command_index].cmdID;
-    if (enabled_commands_map_.find(commands[command_index].cmdID) !=
-        enabled_commands_map_.end())
-      commands[command_index].cmdf = OLECMDF_ENABLED;
+    CommandStatusMap::iterator index =
+        command_map->find(commands[command_index].cmdID);
+    if (index != command_map->end())
+      commands[command_index].cmdf = index->second;
   }
   return S_OK;
 }
