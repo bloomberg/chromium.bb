@@ -418,7 +418,39 @@
    fun:::RunTest_EnsureTaskDeletion*
    fun:MessageLoopTest_*EnsureTaskDeletion_*::TestBody
 }
-
+{
+   Bug_45263_ForMisterStatistics
+   Heapcheck:Leak
+   ...
+   fun:LinearHistogram::FactoryGet
+   fun:ClientSocketPoolHistograms
+   fun:HttpNetworkSession
+   fun:net::HttpNetworkLayer::GetSession
+   fun:net::HttpNetworkLayer::CreateTransaction
+   fun:net::HttpCache::Transaction::DoSendRequest
+   fun:net::HttpCache::Transaction::DoLoop
+   fun:net::HttpCache::Transaction::Start
+   fun:URLRequestHttpJob::StartTransaction
+   fun:URLRequestHttpJob::OnCanGetCookiesCompleted
+   fun:URLRequestHttpJob::AddCookieHeaderAndStart
+   fun:URLRequestHttpJob::Start
+   fun:URLRequest::StartJob
+   fun:URLRequest::Start
+   fun:HTTPTestServer::StartGETRequest
+   fun:void DispatchToFunction
+   fun:RunnableFunction::Run
+   fun:MessageLoop::RunTask
+   fun:MessageLoop::DeferOrRunPendingTask
+   fun:MessageLoop::DoWork
+   fun:base::MessagePumpLibevent::Run
+   fun:MessageLoop::RunInternal
+   fun:MessageLoop::RunHandler
+   fun:MessageLoop::Run
+   fun:base::Thread::Run
+   fun:base::Thread::ThreadMain
+   fun:ThreadFunc
+   fun:start_thread
+}
 {
    bug_46571_a
    Heapcheck:Leak

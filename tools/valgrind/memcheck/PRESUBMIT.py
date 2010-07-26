@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,14 +8,32 @@ for more details on the presubmit API built into gcl.
 """
 
 def CheckChange(input_api, output_api):
-  """Checks that the user didn't paste 'Suppression:' into the file"""
-  keyword = 'Suppression:'
+  """Checks the memcheck suppressions files for bad data."""
+  errors = []
+  skip_next_line = False
+  func_re = input_api.re.compile('[a-z_.]+\(.+\)$')
   for f, line_num, line in input_api.RightHandSideLines(lambda x:
       x.LocalPath().endswith('.txt')):
-    if keyword in line:
-      text = '"%s" must not be included; %s line %s' % (
-          keyword, f.LocalPath(), line_num)
-      return [output_api.PresubmitError(text)]
+    line = line.lstrip()
+    if line.startswith('#') or not line:
+      continue
+
+    if skip_next_line:
+      skip_next_line = False
+      continue
+    if (line.startswith('fun:') or line.startswith('obj:') or
+        line.startswith('Memcheck:') or line == '}' or
+        line == '...'):
+      continue
+    if func_re.match(line):
+      continue
+    if line == '{':
+      skip_next_line = True
+      continue
+    errors.append('"%s" is probably wrong: %s line %s' % (line, f.LocalPath(),
+                                                          line_num))
+  if errors:
+    return [output_api.PresubmitError('\n'.join(errors))]
   return []
 
 def CheckChangeOnUpload(input_api, output_api):
