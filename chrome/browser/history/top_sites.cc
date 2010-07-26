@@ -659,8 +659,7 @@ bool TopSites::IsBlacklisted(const GURL& url) {
 }
 
 void TopSites::RemoveBlacklistedURL(const GURL& url) {
-  Value* dummy = NULL;
-  blacklist_->RemoveWithoutPathExpansion(GetURLHash(url), &dummy);
+  blacklist_->RemoveWithoutPathExpansion(GetURLHash(url), NULL);
 }
 
 void TopSites::ClearBlacklistedURLs() {
@@ -682,8 +681,7 @@ void TopSites::AddPinnedURL(const GURL& url, size_t pinned_index) {
 }
 
 void TopSites::RemovePinnedURL(const GURL& url) {
-  Value* dummy = NULL;
-  pinned_urls_->RemoveWithoutPathExpansion(GetURLString(url), &dummy);
+  pinned_urls_->RemoveWithoutPathExpansion(GetURLString(url), NULL);
 }
 
 bool TopSites::GetIndexOfPinnedURL(const GURL& url, size_t* index) {
