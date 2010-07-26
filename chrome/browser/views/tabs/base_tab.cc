@@ -508,27 +508,6 @@ void BaseTab::InitResources() {
   loading_animation_frame_count =
       loading_animation_frames->width() / loading_animation_frames->height();
 
-  // We get a DIV0 further down when the throbber is replaced by an image which
-  // is taller than wide. In this case we cannot deduce an animation sequence
-  // from it since we assume that each animation frame has the width of the
-  // image's height.
-  if (loading_animation_frame_count == 0) {
-#ifdef WIN32
-    // TODO(idanan): Remove this when we have a way to handle theme errors.
-    // See: http://code.google.com/p/chromium/issues/detail?id=12531 For now,
-    // this is Windows-specific because some users have downloaded a DLL from
-    // outside of Google to override the theme.
-    std::wstring text = l10n_util::GetString(IDS_RESOURCE_ERROR);
-    std::wstring caption = l10n_util::GetString(IDS_RESOURCE_ERROR_CAPTION);
-    UINT flags = MB_OK | MB_ICONWARNING | MB_TOPMOST;
-    win_util::MessageBox(NULL, text, caption, flags);
-#endif
-    CHECK(loading_animation_frame_count) <<
-        "Invalid throbber size. Width = " <<
-        loading_animation_frames->width() << ", height = " <<
-        loading_animation_frames->height();
-  }
-
   waiting_animation_frames = rb.GetBitmapNamed(IDR_THROBBER_WAITING);
   DCHECK(waiting_animation_frames);
   DCHECK(waiting_animation_frames->width() %
@@ -538,12 +517,6 @@ void BaseTab::InitResources() {
 
   waiting_to_loading_frame_count_ratio =
       waiting_animation_frame_count / loading_animation_frame_count;
-  // TODO(beng): eventually remove this when we have a proper themeing system.
-  //             themes not supporting IDR_THROBBER_WAITING are causing this
-  //             value to be 0 which causes DIV0 crashes. The value of 5
-  //             matches the current bitmaps in our source.
-  if (waiting_to_loading_frame_count_ratio == 0)
-    waiting_to_loading_frame_count_ratio = 5;
 
   font_ = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont));
   font_height_ = font_->height();
