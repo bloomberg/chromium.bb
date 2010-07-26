@@ -37,7 +37,10 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   ~DevToolsClientHostImpl() {}
 
   // DevToolsClientHost interface
-  virtual void InspectedTabClosing() {}
+  virtual void InspectedTabClosing() {
+    socket_->Close();
+  }
+
   virtual void SendMessageToClient(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP(DevToolsClientHostImpl, msg)
       IPC_MESSAGE_HANDLER(DevToolsClientMsg_RpcMessage, OnRpcMessage);
@@ -45,6 +48,9 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
     IPC_END_MESSAGE_MAP()
   }
 
+  void NotifyCloseListener() {
+    DevToolsClientHost::NotifyCloseListener();
+  }
  private:
   // Message handling routines
   void OnRpcMessage(const DevToolsMessageData& data) {
@@ -82,9 +88,29 @@ void DevToolsHttpProtocolHandler::Stop() {
       NewRunnableMethod(this, &DevToolsHttpProtocolHandler::Teardown));
 }
 
-void DevToolsHttpProtocolHandler::OnHttpRequest(HttpListenSocket* socket,
-                                                HttpServerRequestInfo* info) {
-  URLRequest* request = new URLRequest(GURL("chrome:/" + info->path), this);
+void DevToolsHttpProtocolHandler::OnHttpRequest(
+    HttpListenSocket* socket,
+    const HttpServerRequestInfo& info) {
+  if (info.path == "" || info.path == "/") {
+    // Pages discovery request.
+    ChromeThread::PostTask(
+        ChromeThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &DevToolsHttpProtocolHandler::OnHttpRequestUI,
+                          socket,
+                          info));
+    return;
+  }
+
+  size_t pos = info.path.find("/devtools/");
+  if (pos != 0) {
+    socket->Send404();
+    return;
+  }
+
+  // Proxy static files from chrome://devtools/*.
+  URLRequest* request = new URLRequest(GURL("chrome:/" + info.path), this);
   Bind(request, socket);
   request->set_context(
       Profile::GetDefaultRequestContext()->GetURLRequestContext());
@@ -93,8 +119,15 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(HttpListenSocket* socket,
 
 void DevToolsHttpProtocolHandler::OnWebSocketRequest(
     HttpListenSocket* socket,
-    HttpServerRequestInfo* request) {
-  socket->AcceptWebSocket(request);
+    const HttpServerRequestInfo& request) {
+  ChromeThread::PostTask(
+      ChromeThread::UI,
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &DevToolsHttpProtocolHandler::OnWebSocketRequestUI,
+          socket,
+          request));
 }
 
 void DevToolsHttpProtocolHandler::OnWebSocketMessage(HttpListenSocket* socket,
@@ -109,58 +142,142 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessage(HttpListenSocket* socket,
           data));
 }
 
+void DevToolsHttpProtocolHandler::OnClose(HttpListenSocket* socket) {
+  SocketToRequestsMap::iterator it = socket_to_requests_io_.find(socket);
+  if (it != socket_to_requests_io_.end()) {
+    // Dispose delegating socket.
+    for (std::set<URLRequest*>::iterator it2 = it->second.begin();
+         it2 != it->second.end(); ++it2) {
+      URLRequest* request = *it2;
+      request->Cancel();
+      request_to_socket_io_.erase(request);
+      request_to_buffer_io_.erase(request);
+      delete request;
+    }
+    socket_to_requests_io_.erase(socket);
+  }
+
+  ChromeThread::PostTask(
+      ChromeThread::UI,
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &DevToolsHttpProtocolHandler::OnCloseUI,
+          socket));
+}
+
+void DevToolsHttpProtocolHandler::OnHttpRequestUI(
+    HttpListenSocket* socket,
+    const HttpServerRequestInfo& info) {
+  std::string response = "<html><body>";
+  for (BrowserList::const_iterator it = BrowserList::begin(),
+       end = BrowserList::end(); it != end; ++it) {
+    TabStripModel* model = (*it)->tabstrip_model();
+    for (int i = 0, size = model->count(); i < size; ++i) {
+      TabContents* tab_contents = model->GetTabContentsAt(i);
+      NavigationController& controller = tab_contents->controller();
+      NavigationEntry* entry = controller.GetActiveEntry();
+      if (entry == NULL)
+        continue;
+
+      if (!entry->url().is_valid())
+        continue;
+
+      DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
+          GetDevToolsClientHostFor(tab_contents->render_view_host());
+      if (!client_host) {
+        response += StringPrintf(
+            "<a href='/devtools/devtools.html?page=%d'>%s (%s)</a><br>",
+            controller.session_id().id(),
+            UTF16ToUTF8(entry->title()).c_str(),
+            entry->url().spec().c_str());
+      } else {
+        response += StringPrintf(
+            "%s (%s)<br>",
+            UTF16ToUTF8(entry->title()).c_str(),
+            entry->url().spec().c_str());
+      }
+    }
+  }
+  response += "</body></html>";
+  Send200(socket, response, "text/html");
+}
+
+void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
+    HttpListenSocket* socket,
+    const HttpServerRequestInfo& request) {
+  std::string prefix = "/devtools/page/";
+  size_t pos = request.path.find(prefix);
+  if (pos != 0) {
+    Send404(socket);
+    return;
+  }
+  std::string page_id = request.path.substr(prefix.length());
+  int id = 0;
+  if (!StringToInt(page_id, &id)) {
+    Send500(socket, "Invalid page id: " + page_id);
+    return;
+  }
+
+  TabContents* tab_contents = GetTabContents(id);
+  if (tab_contents == NULL) {
+    Send500(socket, "No such page id: " + page_id);
+    return;
+  }
+
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  if (manager->GetDevToolsClientHostFor(tab_contents->render_view_host())) {
+    Send500(socket, "Page with given id is being inspected: " + page_id);
+    return;
+  }
+
+  DevToolsClientHostImpl* client_host = new DevToolsClientHostImpl(socket);
+  socket_to_client_host_ui_[socket] = client_host;
+
+  manager->RegisterDevToolsClientHostFor(
+      tab_contents->render_view_host(),
+      client_host);
+  AcceptWebSocket(socket, request);
+}
+
 void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
     HttpListenSocket* socket,
     const std::string& d) {
-  std::string data = d;
-  if (!client_host_.get() && data == "attach") {
-    client_host_.reset(new DevToolsClientHostImpl(socket));
-    BrowserList::const_iterator it = BrowserList::begin();
-    TabContents* tab_contents = (*it)->tabstrip_model()->GetTabContentsAt(0);
-    DevToolsManager* manager = DevToolsManager::GetInstance();
-    manager->RegisterDevToolsClientHostFor(tab_contents->render_view_host(),
-                                           client_host_.get());
-  } else {
-    // TODO(pfeldman): Replace with proper parsing / dispatching.
-    DevToolsMessageData message_data;
-    message_data.class_name = "ToolsAgent";
-    message_data.method_name = "dispatchOnInspectorController";
-
-    size_t pos = data.find(" ");
-    message_data.arguments.push_back(data.substr(0, pos));
-    data = data.substr(pos + 1);
-
-    pos = data.find(" ");
-    message_data.arguments.push_back(data.substr(0, pos));
-    data = data.substr(pos + 1);
-
-    message_data.arguments.push_back(data);
-
-    DevToolsManager* manager = DevToolsManager::GetInstance();
-    manager->ForwardToDevToolsAgent(client_host_.get(),
-        DevToolsAgentMsg_RpcMessage(DevToolsMessageData(message_data)));
-  }
-}
-
-void DevToolsHttpProtocolHandler::OnClose(HttpListenSocket* socket) {
-  SocketToRequestsMap::iterator it = socket_to_requests_.find(socket);
-  if (it == socket_to_requests_.end())
+  SocketToClientHostMap::iterator it = socket_to_client_host_ui_.find(socket);
+  if (it == socket_to_client_host_ui_.end())
     return;
 
-  for (std::set<URLRequest*>::iterator it2 = it->second.begin();
-       it2 != it->second.end(); ++it2) {
-    URLRequest* request = *it2;
-    request->Cancel();
-    request_to_socket_.erase(request);
-    request_to_buffer_.erase(request);
-    delete request;
-  }
-  socket_to_requests_.erase(socket);
+  std::string data = d;
+  // TODO(pfeldman): Replace with proper parsing / dispatching.
+  DevToolsMessageData message_data;
+  message_data.class_name = "ToolsAgent";
+  message_data.method_name = "dispatchOnInspectorController";
+
+  size_t pos = data.find(" ");
+  message_data.arguments.push_back(data.substr(0, pos));
+  data = data.substr(pos + 1);
+
+  message_data.arguments.push_back(data);
+
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  manager->ForwardToDevToolsAgent(it->second,
+      DevToolsAgentMsg_RpcMessage(DevToolsMessageData(message_data)));
+}
+
+void DevToolsHttpProtocolHandler::OnCloseUI(HttpListenSocket* socket) {
+  SocketToClientHostMap::iterator it = socket_to_client_host_ui_.find(socket);
+  if (it == socket_to_client_host_ui_.end())
+    return;
+  DevToolsClientHostImpl* client_host =
+      static_cast<DevToolsClientHostImpl*>(it->second);
+  client_host->NotifyCloseListener();
+  delete client_host;
+  socket_to_client_host_ui_.erase(socket);
 }
 
 void DevToolsHttpProtocolHandler::OnResponseStarted(URLRequest* request) {
-  RequestToSocketMap::iterator it = request_to_socket_.find(request);
-  if (it == request_to_socket_.end())
+  RequestToSocketMap::iterator it = request_to_socket_io_.find(request);
+  if (it == request_to_socket_io_.end())
     return;
 
   HttpListenSocket* socket = it->second;
@@ -178,9 +295,7 @@ void DevToolsHttpProtocolHandler::OnResponseStarted(URLRequest* request) {
                               content_type.c_str(),
                               expected_size));
   } else {
-    socket->Send("HTTP/1.1 404 Not Found\r\n"
-                 "Content-Length: 0\r\n"
-                 "\r\n");
+    socket->Send404();
   }
 
   int bytes_read = 0;
@@ -188,7 +303,7 @@ void DevToolsHttpProtocolHandler::OnResponseStarted(URLRequest* request) {
   // network connection as soon as possible, signal that the request has
   // completed immediately, without trying to read any data back (all we care
   // about is the response code and headers, which we already have).
-  net::IOBuffer* buffer = request_to_buffer_[request].get();
+  net::IOBuffer* buffer = request_to_buffer_io_[request].get();
   if (request->status().is_success())
     request->Read(buffer, kBufferSize, &bytes_read);
   OnReadCompleted(request, bytes_read);
@@ -196,13 +311,13 @@ void DevToolsHttpProtocolHandler::OnResponseStarted(URLRequest* request) {
 
 void DevToolsHttpProtocolHandler::OnReadCompleted(URLRequest* request,
                                                   int bytes_read) {
-  RequestToSocketMap::iterator it = request_to_socket_.find(request);
-  if (it == request_to_socket_.end())
+  RequestToSocketMap::iterator it = request_to_socket_io_.find(request);
+  if (it == request_to_socket_io_.end())
     return;
 
   HttpListenSocket* socket = it->second;
 
-  net::IOBuffer* buffer = request_to_buffer_[request].get();
+  net::IOBuffer* buffer = request_to_buffer_io_[request].get();
   do {
     if (!request->status().is_success() || bytes_read <= 0)
       break;
@@ -230,27 +345,78 @@ void DevToolsHttpProtocolHandler::Teardown() {
 
 void DevToolsHttpProtocolHandler::Bind(URLRequest* request,
                                        HttpListenSocket* socket) {
-  request_to_socket_[request] = socket;
-  SocketToRequestsMap::iterator it = socket_to_requests_.find(socket);
-  if (it == socket_to_requests_.end()) {
+  request_to_socket_io_[request] = socket;
+  SocketToRequestsMap::iterator it = socket_to_requests_io_.find(socket);
+  if (it == socket_to_requests_io_.end()) {
     std::pair<HttpListenSocket*, std::set<URLRequest*> > value(
         socket,
         std::set<URLRequest*>());
-    it = socket_to_requests_.insert(value).first;
+    it = socket_to_requests_io_.insert(value).first;
   }
   it->second.insert(request);
-  request_to_buffer_[request] = new net::IOBuffer(kBufferSize);
+  request_to_buffer_io_[request] = new net::IOBuffer(kBufferSize);
 }
 
 void DevToolsHttpProtocolHandler::RequestCompleted(URLRequest* request) {
-  RequestToSocketMap::iterator it = request_to_socket_.find(request);
-  if (it == request_to_socket_.end())
+  RequestToSocketMap::iterator it = request_to_socket_io_.find(request);
+  if (it == request_to_socket_io_.end())
     return;
 
   HttpListenSocket* socket = it->second;
-  request_to_socket_.erase(request);
-  SocketToRequestsMap::iterator it2 = socket_to_requests_.find(socket);
+  request_to_socket_io_.erase(request);
+  SocketToRequestsMap::iterator it2 = socket_to_requests_io_.find(socket);
   it2->second.erase(request);
-  request_to_buffer_.erase(request);
+  request_to_buffer_io_.erase(request);
   delete request;
+}
+
+void DevToolsHttpProtocolHandler::Send200(HttpListenSocket* socket,
+                                          const std::string& data,
+                                          const std::string& mime_type) {
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(socket,
+                        &HttpListenSocket::Send200,
+                        data,
+                        mime_type));
+}
+
+void DevToolsHttpProtocolHandler::Send404(HttpListenSocket* socket) {
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(socket,
+                        &HttpListenSocket::Send404));
+}
+
+void DevToolsHttpProtocolHandler::Send500(HttpListenSocket* socket,
+                                          const std::string& message) {
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(socket,
+                        &HttpListenSocket::Send500,
+                        message));
+}
+
+void DevToolsHttpProtocolHandler::AcceptWebSocket(
+    HttpListenSocket* socket,
+    const HttpServerRequestInfo& request) {
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(socket,
+                        &HttpListenSocket::AcceptWebSocket,
+                        request));
+}
+
+TabContents* DevToolsHttpProtocolHandler::GetTabContents(int session_id) {
+  for (BrowserList::const_iterator it = BrowserList::begin(),
+       end = BrowserList::end(); it != end; ++it) {
+    TabStripModel* model = (*it)->tabstrip_model();
+    for (int i = 0, size = model->count(); i < size; ++i) {
+      NavigationController& controller =
+          model->GetTabContentsAt(i)->controller();
+      if (controller.session_id().id() == session_id)
+        return controller.tab_contents();
+    }
+  }
+  return NULL;
 }

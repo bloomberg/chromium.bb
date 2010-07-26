@@ -15,6 +15,7 @@
 
 class DevToolsClientHost;
 class DevToolsHttpServer;
+class TabContents;
 
 class DevToolsHttpProtocolHandler
     : public HttpListenSocket::Delegate,
@@ -29,41 +30,61 @@ class DevToolsHttpProtocolHandler
   // This method should be called before the object destruction.
   void Stop();
 
+ private:
+  friend class base::RefCountedThreadSafe<DevToolsHttpProtocolHandler>;
+  virtual ~DevToolsHttpProtocolHandler();
+
   // HttpListenSocket::Delegate implementation.
   virtual void OnHttpRequest(HttpListenSocket* socket,
-                             HttpServerRequestInfo* info);
+                             const HttpServerRequestInfo& info);
   virtual void OnWebSocketRequest(HttpListenSocket* socket,
-                                  HttpServerRequestInfo* info);
+                                  const HttpServerRequestInfo& info);
   virtual void OnWebSocketMessage(HttpListenSocket* socket,
                                   const std::string& data);
   virtual void OnClose(HttpListenSocket* socket);
+
+  virtual void OnHttpRequestUI(HttpListenSocket* socket,
+                               const HttpServerRequestInfo& info);
+  virtual void OnWebSocketRequestUI(HttpListenSocket* socket,
+                                    const HttpServerRequestInfo& info);
+  virtual void OnWebSocketMessageUI(HttpListenSocket* socket,
+                                    const std::string& data);
+  virtual void OnCloseUI(HttpListenSocket* socket);
 
   // URLRequest::Delegate implementation.
   virtual void OnResponseStarted(URLRequest* request);
   virtual void OnReadCompleted(URLRequest* request, int bytes_read);
 
- private:
-  friend class base::RefCountedThreadSafe<DevToolsHttpProtocolHandler>;
-  virtual ~DevToolsHttpProtocolHandler();
-
   void Init();
   void Teardown();
   void Bind(URLRequest* request, HttpListenSocket* socket);
   void RequestCompleted(URLRequest* request);
-  void OnWebSocketMessageUI(HttpListenSocket* socket, const std::string& data);
+
+  void Send200(HttpListenSocket* socket,
+               const std::string& data,
+               const std::string& mime_type = "text/html");
+  void Send404(HttpListenSocket* socket);
+  void Send500(HttpListenSocket* socket,
+               const std::string& message);
+  void AcceptWebSocket(HttpListenSocket* socket,
+                       const HttpServerRequestInfo& request);
+
+  TabContents* GetTabContents(int session_id);
 
   int port_;
   scoped_refptr<HttpListenSocket> server_;
   typedef std::map<URLRequest*, HttpListenSocket*>
       RequestToSocketMap;
-  RequestToSocketMap request_to_socket_;
+  RequestToSocketMap request_to_socket_io_;
   typedef std::map<HttpListenSocket*, std::set<URLRequest*> >
       SocketToRequestsMap;
-  SocketToRequestsMap socket_to_requests_;
+  SocketToRequestsMap socket_to_requests_io_;
   typedef std::map<URLRequest*, scoped_refptr<net::IOBuffer> >
       BuffersMap;
-  BuffersMap request_to_buffer_;
-  scoped_ptr<DevToolsClientHost> client_host_;
+  BuffersMap request_to_buffer_io_;
+  typedef std::map<HttpListenSocket*, DevToolsClientHost*>
+      SocketToClientHostMap;
+  SocketToClientHostMap socket_to_client_host_ui_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpProtocolHandler);
 };
 

@@ -58,11 +58,11 @@ HttpListenSocket* HttpListenSocket::Listen(
 }
 
 std::string GetHeaderValue(
-    HttpServerRequestInfo* request,
+    const HttpServerRequestInfo& request,
     const std::string& header_name) {
   HttpServerRequestInfo::HeadersMap::iterator it =
-      request->headers.find(header_name);
-  if (it != request->headers.end())
+      request.headers.find(header_name);
+  if (it != request.headers.end())
     return it->second;
   return "";
 }
@@ -86,7 +86,7 @@ uint32 WebSocketKeyFingerprint(const std::string& str) {
   return htonl(static_cast<uint32>(number / spaces));
 }
 
-void HttpListenSocket::AcceptWebSocket(HttpServerRequestInfo* request) {
+void HttpListenSocket::AcceptWebSocket(const HttpServerRequestInfo& request) {
   std::string key1 = GetHeaderValue(request, "Sec-WebSocket-Key1");
   std::string key2 = GetHeaderValue(request, "Sec-WebSocket-Key2");
 
@@ -96,14 +96,14 @@ void HttpListenSocket::AcceptWebSocket(HttpServerRequestInfo* request) {
   char data[16];
   memcpy(data, &fp1, 4);
   memcpy(data + 4, &fp2, 4);
-  memcpy(data + 8, &request->data[0], 8);
+  memcpy(data + 8, &request.data[0], 8);
 
   MD5Digest digest;
   MD5Sum(data, 16, &digest);
 
   std::string origin = GetHeaderValue(request, "Origin");
   std::string host = GetHeaderValue(request, "Host");
-  std::string location = "ws://" + host + request->path;
+  std::string location = "ws://" + host + request.path;
   is_web_socket_ = true;
   Send(StringPrintf("HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
                     "Upgrade: WebSocket\r\n"
@@ -123,6 +123,33 @@ void HttpListenSocket::SendOverWebSocket(const std::string& data) {
   Send(&message_start, 1);
   Send(data);
   Send(&message_end, 1);
+}
+
+void HttpListenSocket::Send200(const std::string& data,
+                               const std::string& content_type) {
+  Send(StringPrintf("HTTP/1.1 200 OK\r\n"
+                    "Content-Type:%s\r\n"
+                    "Content-Length:%d\r\n"
+                    "\r\n",
+                    content_type.c_str(),
+                    static_cast<int>(data.length())));
+  Send(data);
+}
+
+void HttpListenSocket::Send404() {
+  Send("HTTP/1.1 404 Not Found\r\n"
+       "Content-Length: 0\r\n"
+       "\r\n");
+}
+
+void HttpListenSocket::Send500(const std::string& message) {
+  Send(StringPrintf("HTTP/1.1 500 Internal Error\r\n"
+                    "Content-Type:text/html\r\n"
+                    "Content-Length:%d\r\n"
+                    "\r\n"
+                    "%s",
+                    static_cast<int>(message.length()),
+                    message.c_str()));
 }
 
 //
@@ -199,11 +226,10 @@ int charToInput(char ch) {
   return INPUT_DEFAULT;
 }
 
-HttpServerRequestInfo* HttpListenSocket::ParseHeaders() {
+bool HttpListenSocket::ParseHeaders(HttpServerRequestInfo* info) {
   int pos = 0;
   int data_len = recv_data_.length();
   int state = is_web_socket_ ? ST_WS_READY : ST_METHOD;
-  scoped_ptr<HttpServerRequestInfo> info(new HttpServerRequestInfo());
   std::string buffer;
   std::string header_name;
   std::string header_value;
@@ -247,7 +273,7 @@ HttpServerRequestInfo* HttpListenSocket::ParseHeaders() {
           recv_data_ = recv_data_.substr(pos);
           info->data = buffer;
           buffer.clear();
-          return info.release();
+          return true;
           break;
       }
       state = next_state;
@@ -266,17 +292,17 @@ HttpServerRequestInfo* HttpListenSocket::ParseHeaders() {
           recv_data_ = recv_data_.substr(pos);
           info->data = recv_data_;
           recv_data_.clear();
-          return info.release();
+          return true;
         case ST_WS_CLOSE:
           is_web_socket_ = false;
-          return NULL;
+          return false;
         case ST_ERR:
-          return NULL;
+          return false;
       }
     }
   }
   // No more characters, but we haven't finished parsing yet.
-  return NULL;
+  return false;
 }
 
 void HttpListenSocket::DidAccept(ListenSocket* server,
@@ -289,26 +315,26 @@ void HttpListenSocket::DidRead(ListenSocket*,
                                int len) {
   recv_data_.append(data, len);
   while (recv_data_.length()) {
-    scoped_ptr<HttpServerRequestInfo> request(ParseHeaders());
-    if (!request.get())
+    HttpServerRequestInfo request;
+    if (!ParseHeaders(&request))
       break;
 
     if (is_web_socket_) {
-      delegate_->OnWebSocketMessage(this, request->data);
+      delegate_->OnWebSocketMessage(this, request.data);
       continue;
     }
 
-    std::string connection = GetHeaderValue(request.get(), "Connection");
+    std::string connection = GetHeaderValue(request, "Connection");
     if (connection == "Upgrade") {
       // Is this WebSocket and if yes, upgrade the connection.
-      std::string key1 = GetHeaderValue(request.get(), "Sec-WebSocket-Key1");
-      std::string key2 = GetHeaderValue(request.get(), "Sec-WebSocket-Key2");
+      std::string key1 = GetHeaderValue(request, "Sec-WebSocket-Key1");
+      std::string key2 = GetHeaderValue(request, "Sec-WebSocket-Key2");
       if (!key1.empty() && !key2.empty()) {
-        delegate_->OnWebSocketRequest(this, request.get());
+        delegate_->OnWebSocketRequest(this, request);
         continue;
       }
     }
-    delegate_->OnHttpRequest(this, request.get());
+    delegate_->OnHttpRequest(this, request);
   }
 }
 
