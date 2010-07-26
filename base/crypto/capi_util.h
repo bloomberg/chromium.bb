@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef BASE_CRYPTO_CAPI_UTIL_H_
-#define BASE_CRYPTO_CAPI_UTIl_H_
+#define BASE_CRYPTO_CAPI_UTIL_H_
 
 #include <windows.h>
 #include <wincrypt.h>
@@ -28,4 +28,4 @@ BOOL CryptAcquireContextLocked(HCRYPTPROV* prov,
 
 }  // namespace base
 
-#endif  // BASE_CRYPTO_CAPI_UTIl_H_
+#endif  // BASE_CRYPTO_CAPI_UTIL_H_
