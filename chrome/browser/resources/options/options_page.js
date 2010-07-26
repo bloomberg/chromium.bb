@@ -146,13 +146,14 @@ OptionsPage.prototype = {
       return;
 
     if (visible) {
-      window.history.pushState({pageName: this.name},
-                               this.title,
-                               '/' + this.name);
       this.pageDiv.style.display = 'block';
       if (this.isOverlay) {
         var overlay = $('overlay');
         overlay.classList.remove('hidden');
+      } else {
+        window.history.pushState({pageName: this.name},
+                                 this.title,
+                                 '/' + this.name);
       }
       if (this.tab) {
         this.tab.classList.add('navbar-item-selected');
