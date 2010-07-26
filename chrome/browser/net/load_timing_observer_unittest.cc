@@ -225,10 +225,12 @@ TEST(LoadTimingObserverTest, DnsTime) {
   AddEndEntry(observer, connect_source, NetLog::TYPE_HOST_RESOLVER_IMPL, NULL);
 
   // Bind to connect job.
+  scoped_refptr<net::NetLogSourceParameter> params(
+      new net::NetLogSourceParameter("connect_job", connect_source));
   AddStartEntry(observer,
                 source,
                 NetLog::TYPE_SOCKET_POOL_BOUND_TO_CONNECT_JOB,
-                new net::NetLogSourceParameter("connect_job", connect_source));
+                params.get());
 
   LoadTimingObserver::URLRequestRecord* record =
       observer.GetURLRequestRecord(0);
@@ -305,10 +307,12 @@ TEST(LoadTimingObserverTest, SslTime) {
   AddEndEntry(observer, socket_source, NetLog::TYPE_SSL_CONNECT, NULL);
 
   // Bind to connect job.
+  scoped_refptr<net::NetLogSourceParameter> params(
+      new net::NetLogSourceParameter("socket", socket_source));
   AddStartEntry(observer,
                 source,
                 NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET,
-                new net::NetLogSourceParameter("socket", socket_source));
+                params.get());
 
   LoadTimingObserver::URLRequestRecord* record =
       observer.GetURLRequestRecord(0);
