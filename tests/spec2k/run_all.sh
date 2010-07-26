@@ -59,16 +59,39 @@ Usage() {
 
 #@
 #@ SetupGccX8632
-#@   use system compiler
+#@   use system compiler for x86-32
 SetupGccX8632() {
   PREFIX=
   SUFFIX=gcc.x8632
 }
 
 #@
-#@ SetupNaClX8632
-#@   use nacl-gcc compiler
-SetupNaclX8632() {
+#@ SetupGccX8632Opt
+#@   use system compiler for x86-32 with optimization
+SetupGccX8632Opt() {
+  PREFIX=
+  SUFFIX=gcc.opt.x8632
+}
+
+#@
+#@ SetupGccX8664
+#@   use system compiler for x86-64
+SetupGccX8664() {
+  PREFIX=
+  SUFFIX=gcc.x8664
+}
+
+#@
+#@ SetupGccX8664Opt
+#@   use system compiler for x86-64 with optimization
+SetupGccX8664Opt() {
+  PREFIX=
+  SUFFIX=gcc.opt.x8664
+}
+
+######################################################################
+
+SetupNaclX8632Common() {
   SEL_LDR=../../scons-out/opt-linux-x86-32/staging/sel_ldr
   if [[ ! -x ${SEL_LDR} ]] ; then
     echo "you have not build the sel_ldr yet"
@@ -76,13 +99,25 @@ SetupNaclX8632() {
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
   PREFIX="${SEL_LDR} -d -f"
+}
+
+#@
+#@ SetupNaClX8632
+#@   use nacl-gcc compiler
+SetupNaclX8632() {
+  SetupNaclX8632Common
   SUFFIX=nacl.x8632
 }
 
 #@
-#@ SetupNaClX8664
-#@   use nacl-gcc compiler
-SetupNaclX8664() {
+#@ SetupNaClX8632Opt
+#@   use nacl-gcc compiler with optimizations
+SetupNaclX8632Opt() {
+  SetupNaclX8632Common
+  SUFFIX=nacl.opt.x8632
+}
+
+SetupNaclX8664Common() {
   SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
   if [[ ! -x ${SEL_LDR} ]] ; then
     echo "you have not build the sel_ldr yet"
@@ -90,8 +125,25 @@ SetupNaclX8664() {
   fi
   SEL_LDR=$(readlink -f ${SEL_LDR})
   PREFIX="${SEL_LDR} -d -f"
+}
+
+#@
+#@ SetupNaClX8664
+#@   use nacl-gcc64 compiler
+SetupNaclX8664() {
+  SetupNaclX8664Common
   SUFFIX=nacl.x8664
 }
+
+#@
+#@ SetupNaClX8664Opt
+#@   use nacl-gcc64 compiler with optimizations
+SetupNaclX8664Opt() {
+  SetupNaclX8664Common
+  SUFFIX=nacl.opt.x8664
+}
+
+######################################################################
 
 SetupPnaclX8664Common() {
   SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
@@ -104,16 +156,16 @@ SetupPnaclX8664Common() {
 }
 
 #@
-#@ SetupNaclX8632
-#@    use pnacl x8632 compiler (no lto)
+#@ SetupPnaclX8664
+#@    use pnacl x86-64 compiler (no lto)
 SetupPnaclX8664() {
   SetupPnaclX8664Common
   SUFFIX=pnacl.x8664
 }
 
 #@
-#@ SetupNaclX8632Opt
-#@    use pnacl x8632 compiler (with lto)
+#@ SetupPnaclX864Opt
+#@    use pnacl x86-64 compiler (with lto)
 SetupPnaclX8664Opt() {
   SetupPnaclX8664Common
   SUFFIX=pnacl.opt.x8664
@@ -130,20 +182,21 @@ SetupPnaclX8632Common() {
 }
 
 #@
-#@ SetupNaclX8632
-#@    use pnacl x8632 compiler (no lto)
+#@ SetupPnaclX8632
+#@    use pnacl x86-32 compiler (no lto)
 SetupPnaclX8632() {
   SetupPnaclX8632Common
   SUFFIX=pnacl.x8632
 }
 
 #@
-#@ SetupNaclX8632Opt
-#@    use pnacl x8632 compiler (with lto)
+#@ SetupPnaclX8632Opt
+#@    use pnacl x86-32 compiler (with lto)
 SetupPnaclX8632Opt() {
   SetupPnaclX8632Common
   SUFFIX=pnacl.opt.x8632
 }
+
 
 #@
 #@ SetupGccArm
@@ -221,7 +274,7 @@ CleanBenchmarks() {
   local list=$(GetBenchmarkList "$@")
   rm -rf bin/
   for i in ${list} ; do
-    Banner "Cleanig: $i"
+    Banner "Cleaning: $i"
     cd $i
     make clean
     rm -rf src/ data/
