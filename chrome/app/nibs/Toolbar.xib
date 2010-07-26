@@ -63,7 +63,7 @@
 							<int key="NSCellFlags">-1804468671</int>
 							<int key="NSCellFlags2">66560</int>
 							<string key="NSContents">chromium.org</string>
-							<object class="NSFont" key="NSSupport">
+							<object class="NSFont" key="NSSupport" id="654028904">
 								<string key="NSName">LucidaGrande</string>
 								<double key="NSSize">13</double>
 								<int key="NSfFlags">16</int>
@@ -242,7 +242,7 @@
 							<object class="NSTextField" id="950178043">
 								<reference key="NSNextResponder" ref="685460050"/>
 								<int key="NSvFlags">270</int>
-								<string key="NSFrame">{{17, 20}, {63, 18}}</string>
+								<string key="NSFrame">{{17, 20}, {73, 17}}</string>
 								<reference key="NSSuperview" ref="685460050"/>
 								<reference key="NSNextKeyView" ref="311802185"/>
 								<bool key="NSEnabled">YES</bool>
@@ -250,11 +250,7 @@
 									<int key="NSCellFlags">68288064</int>
 									<int key="NSCellFlags2">272630784</int>
 									<string key="NSContents">^IDS_EDIT</string>
-									<object class="NSFont" key="NSSupport" id="530887179">
-										<string key="NSName">LucidaGrande-Bold</string>
-										<double key="NSSize">14</double>
-										<int key="NSfFlags">16</int>
-									</object>
+									<reference key="NSSupport" ref="654028904"/>
 									<reference key="NSControlView" ref="950178043"/>
 									<object class="NSColor" key="NSBackgroundColor" id="738720100">
 										<int key="NSColorSpace">6</int>
@@ -441,7 +437,7 @@
 							<object class="NSTextField" id="370565926">
 								<reference key="NSNextResponder" ref="38627075"/>
 								<int key="NSvFlags">270</int>
-								<string key="NSFrame">{{17, 20}, {82, 18}}</string>
+								<string key="NSFrame">{{17, 20}, {131, 17}}</string>
 								<reference key="NSSuperview" ref="38627075"/>
 								<reference key="NSNextKeyView" ref="529291232"/>
 								<bool key="NSEnabled">YES</bool>
@@ -449,7 +445,7 @@
 									<int key="NSCellFlags">68288064</int>
 									<int key="NSCellFlags2">272630784</int>
 									<string key="NSContents">^IDS_ZOOM_MENU</string>
-									<reference key="NSSupport" ref="530887179"/>
+									<reference key="NSSupport" ref="654028904"/>
 									<reference key="NSControlView" ref="370565926"/>
 									<reference key="NSBackgroundColor" ref="738720100"/>
 									<reference key="NSTextColor" ref="722572692"/>
@@ -1113,7 +1109,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{654, 736}, {275, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{646, 736}, {275, 20}}</string>
+					<string>{{644, 640}, {275, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
