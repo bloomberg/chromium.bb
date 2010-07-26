@@ -133,12 +133,12 @@ int NaClWouldBlock();
 /*
  * Sends a message on a socket.
  *
- * NaClSendDatagram() and NaClSend() send the message to the remote
- * peer of the connection created by SocketPair().
+ * NaClSendDatagram() sends the message to the remote peer of the
+ * connection created by SocketPair().
  *
- * NaClSendDatagramTo() and NaClSendTo() send the message to the
- * socket specified by the name. The socket parameter should be a
- * socket created by NaClBoundSocket().
+ * NaClSendDatagramTo() sends the message to the socket specified by
+ * the name. The socket parameter should be a socket created by
+ * NaClBoundSocket().
  *
  * The send functions return the number of bytes sent, or -1 upon
  * failure.  If NACL_DONT_WAIT flag is specified with the call and the
@@ -148,15 +148,12 @@ int NaClWouldBlock();
  *
  * Note it is not safe to send messages from the same socket handle by
  * multiple threads simultaneously unless the destination address is
- * explicitly specified by NaClSendDatagramTo() or NaClSendTo().
+ * explicitly specified by NaClSendDatagramTo().
  */
 int NaClSendDatagram(NaClHandle socket, const NaClMessageHeader* message,
                      int flags);
 int NaClSendDatagramTo(NaClHandle socket, const NaClMessageHeader* message,
                        int flags, const NaClSocketAddress* name);
-int NaClSend(NaClHandle socket, const void* buffer, size_t length, int flags);
-int NaClSendTo(NaClHandle socket, const void* buffer, size_t length, int flags,
-               const NaClSocketAddress* name);
 
 /*
  * Receives a message from a socket.

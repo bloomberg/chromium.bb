@@ -55,20 +55,6 @@ int Send(Handle socket, const void* buffer, size_t length, int flags) {
   return SendDatagram(socket, &header, flags);
 }
 
-int SendTo(Handle socket, const void* buffer, size_t length, int flags,
-           const SocketAddress* name) {
-  MessageHeader header;
-  IOVec vec;
-  int retval;
-
-  retval = InitHeader(&vec, &header, buffer, length);
-  if (retval) {
-    return retval;
-  }
-
-  return SendDatagramTo(socket, &header, flags, name);
-}
-
 int Receive(Handle socket, void* buffer, size_t length, int flags) {
   MessageHeader header;
   IOVec vec;

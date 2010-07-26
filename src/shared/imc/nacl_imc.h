@@ -207,22 +207,6 @@ int Send(Handle socket, const void* buffer, size_t length, int flags);
 
 /**
  *  @nacl
- *  Sends the message to the socket specified by the name. The socket parameter
- *  should be a socket created by BoundSocket().
- *  The total number of bytes sent must be less than 2**32.
- *  @param socket The socket descriptor.
- *  @param buffer Pointer to the data to send.
- *  @param length The length of the data to send.
- *  @param flags Either 0 or kDontWait.
- *  @param name The target socket address to which the message is sent.
- *  @return The number of bytes sent, or -1 upon failure.
- *  @see SendDatagram()
- */
-int SendTo(Handle socket, const void* buffer, size_t length, int flags,
-           const SocketAddress* name);
-
-/**
- *  @nacl
  *  Receives a message from a socket.
  *
  *  If kDontWait flag is specified with the call and no messages are available
