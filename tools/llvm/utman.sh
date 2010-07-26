@@ -616,12 +616,11 @@ everything() {
   driver
   gcc-stage1
 
-  # TODO(robertm): get rid of this. Carefull, also installs headers
-  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=708
-  newlib-arm
-  misc-tools
-
   rebuild-pnacl-libs
+
+  # NOTE: we delay the tool building till after the sdk is essentially
+  #      complete, so that sdk sanity checks don't fail
+  misc-tools
 
   verify
 }
@@ -1624,26 +1623,6 @@ binutils-x8632-sb-install() {
 #     < NEWLIB-BITCODE >
 #########################################################################
 
-#+-------------------------------------------------------------------------
-#+ newlib-arm            - Build and install newlib for ARM.
-newlib-arm() {
-  StepBanner "NEWLIB-ARM"
-
-  if newlib-arm-needs-configure; then
-    newlib-arm-clean
-    newlib-arm-configure
-  else
-    SkipBanner "NEWLIB-ARM" "configure"
-  fi
-
-  if newlib-arm-needs-make; then
-    newlib-arm-make
-  else
-    SkipBanner "NEWLIB-ARM" "make"
-  fi
-  newlib-arm-install
-}
-
 #+ newlib-bitcode        - Build and install newlib in bitcode.
 newlib-bitcode() {
   StepBanner "NEWLIB-BITCODE"
@@ -1664,25 +1643,10 @@ newlib-bitcode() {
   newlib-bitcode-install
 }
 
-#+ newlib-arm-clean      - Clean ARM newlib.
-newlib-arm-clean() {
-  StepBanner "NEWLIB-ARM" "Clean"
-  rm -rf "${TC_BUILD_NEWLIB_ARM}"
-}
-
 #+ newlib-bitcode-clean  - Clean bitcode newlib.
 newlib-bitcode-clean() {
   StepBanner "NEWLIB-BITCODE" "Clean"
   rm -rf "${TC_BUILD_NEWLIB_BITCODE}"
-}
-
-newlib-arm-needs-configure() {
-  speculative-check "gcc-stage1" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC1}" \
-                   "${TC_BUILD_NEWLIB_ARM}" && return 0
-
-  [ ! -f "${TC_BUILD_NEWLIB_ARM}/config.status" ]
-  return #?
 }
 
 newlib-bitcode-needs-configure() {
@@ -1692,12 +1656,6 @@ newlib-bitcode-needs-configure() {
 
   [ ! -f "${TC_BUILD_NEWLIB_BITCODE}/config.status" ]
   return #?
-}
-
-#+ newlib-arm-configure  - Configure ARM Newlib
-newlib-arm-configure() {
-  StepBanner "NEWLIB-ARM" "Configure"
-  newlib-configure-common "${TC_BUILD_NEWLIB_ARM}"
 }
 
 #+ newlib-bitcode-configure - Configure bitcode Newlib
@@ -1729,26 +1687,12 @@ newlib-configure-common() {
   spopd
 }
 
-newlib-arm-needs-make() {
-  local srcdir="${TC_SRC_NEWLIB}"
-  local objdir="${TC_BUILD_NEWLIB_ARM}"
-
-  ts-modified "$srcdir" "$objdir"
-  return $?
-}
-
 newlib-bitcode-needs-make() {
   local srcdir="${TC_SRC_NEWLIB}"
   local objdir="${TC_BUILD_NEWLIB_BITCODE}"
 
   ts-modified "$srcdir" "$objdir"
   return $?
-}
-
-#+ newlib-arm-make       - Make ARM Newlib
-newlib-arm-make() {
-  StepBanner "NEWLIB-ARM" "Make"
-  newlib-make-common "${TC_BUILD_NEWLIB_ARM}"
 }
 
 #+ newlib-bitcode-make   - Make bitcode Newlib
@@ -1778,13 +1722,16 @@ newlib-make-common() {
 
 }
 
-#+ newlib-arm-install    - Install ARM Newlib
-newlib-arm-install() {
-  StepBanner "NEWLIB-ARM" "Install"
+#+ newlib-bitcde-install    - Install Bitcode Newlib
+newlib-bitcode-install() {
+  StepBanner "NEWLIB-BITCODE" "Install"
 
-  local objdir="${TC_BUILD_NEWLIB_ARM}"
+  local objdir="${TC_BUILD_NEWLIB_BITCODE}"
+
   spushd "${objdir}"
 
+  # NOTE: we might be better off not using install, as we are already
+  #       doing a bunch of copying of headers and libs further down
   RunWithLog newlib.install \
     env -i PATH="/usr/bin:/bin" \
       make \
@@ -1801,7 +1748,7 @@ newlib-arm-install() {
      "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}"
   ###########################################################
 
-  StepBanner "NEWLIB-ARM" "Extra-install"
+  StepBanner "NEWLIB-BITCODE" "Extra-install"
   local sys_include=${INSTALL_DIR}/${CROSS_TARGET}/include
   local sys_lib=${INSTALL_DIR}/${CROSS_TARGET}/lib
   # NOTE: we provide a new one via extra-sdk
@@ -1814,30 +1761,19 @@ newlib-arm-install() {
   cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/newlib.h \
     ${sys_include}
 
-  cp -r ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/lib/* ${sys_lib}
-
   # NOTE: we provide our own pthread.h via extra-sdk
-  StepBanner "NEWLIB-ARM" "Removing old pthreads"
+  StepBanner "NEWLIB-BITCODE" "Removing old pthreads headers"
   rm -f "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr/include/pthread.h"
   rm -f "${sys_include}/pthread.h"
 
+  StepBanner "NEWLIB-BITCODE" "copying libraries"
+  local destdir="${PNACL_BITCODE_ROOT}"
+  # We only install libc/libg/libm
+  mkdir -p "${destdir}"
+  cp ${objdir}/${REAL_CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
+
   spopd
 }
-
-#+ newlib-bitcode-install - Install Bitcode Newlib
-newlib-bitcode-install() {
-  StepBanner "NEWLIB-BITCODE" "Install (lib[cgm]) into"
-
-  local objdir="${TC_BUILD_NEWLIB_BITCODE}"
-  local destdir="${PNACL_BITCODE_ROOT}"
-  mkdir -p "${destdir}"
-
-  # We only install libc/libg/libm
-  cp ${objdir}/${REAL_CROSS_TARGET}/newlib/lib[cgm].a "${destdir}"
-}
-
-
-
 
 
 #########################################################################
