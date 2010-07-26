@@ -613,9 +613,6 @@ everything() {
   llvm
   driver
   gcc-stage1
-  # TODO(robertm): get rid of this. Carefull, also installs headers
-  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=708
-  gcc-stage3
 
   # TODO(robertm): get rid of this. Carefull, also installs headers
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=708
@@ -1196,65 +1193,6 @@ libstdcpp-bitcode-install() {
 
   cp "${objdir}/src/.libs/libstdc++.a" "${dest}"
 
-  spopd
-}
-
-
-#########################################################################
-#########################################################################
-#
-#                          < GCC-STAGE3 >
-#
-#########################################################################
-#########################################################################
-
-#+-------------------------------------------------------------------------
-#+ gcc-stage3            - install final llvm-gcc and libraries (needs stage2)
-gcc-stage3() {
-  StepBanner "GCC-STAGE3"
-
-  gcc-stage3-install
-  libgcc-install
-  liberty-install
-}
-
-#+ gcc-stage3-install          - install final llvm-gcc
-gcc-stage3-install() {
-  StepBanner "GCC-STAGE3" "Install"
-
-  # NOTE: this is the build dir from stage2
-  local objdir="${TC_BUILD_LLVM_GCC1}"
-
-  spushd "${objdir}"
-  RunWithLog llvm-gcc.install \
-      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
-             make \
-             "${STD_ENV_FOR_GCC_ETC[@]}" \
-             install
-
-  spopd
-}
-
-#+ libgcc-install        - install libgcc
-libgcc-install() {
-  StepBanner "GCC-STAGE3" "Installing libgcc"
-
-  local objdir="${TC_BUILD_LLVM_GCC1}"
-  spushd "${objdir}"
-  # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
-  #       simply fix this version when this happens
-  cp gcc/libg*.a "${INSTALL_DIR}/lib/gcc/${CROSS_TARGET}/${GCC_VER}/"
-  spopd
-}
-
-#+ liberty-install       - install liberty
-liberty-install() {
-  StepBanner "GCC-STAGE3" "Installing liberty"
-
-  local objdir="${TC_BUILD_LLVM_GCC1}"
-
-  spushd "${objdir}"
-  cp libiberty/libiberty.a "${INSTALL_DIR}/${CROSS_TARGET}/lib"
   spopd
 }
 
