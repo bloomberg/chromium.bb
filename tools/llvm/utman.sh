@@ -90,6 +90,7 @@ readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 # These should be absolute paths.
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
+readonly TC_BUILD_LLVM_TOOLS_X8632_SB="${TC_BUILD}/llvm-tools-x8632-sandboxed"
 readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
 readonly TC_BUILD_BINUTILS_ARM_SB="${TC_BUILD}/binutils-arm-sandboxed"
 readonly TC_BUILD_BINUTILS_X86_SB="${TC_BUILD}/binutils-x86-sandboxed"
@@ -116,7 +117,8 @@ readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
 # PNaCl client-toolchain (sandboxed) binary locations
 readonly PNACL_CLIENT_TC_ROOT="$(pwd)/toolchain/sandboxed_translators"
 readonly PNACL_CLIENT_TC_ARM="${PNACL_CLIENT_TC_ROOT}/arm"
-readonly PNACL_CLIENT_TC_X86="${PNACL_CLIENT_TC_ROOT}/x86"
+readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
+readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 
 # Current milestones within each Hg repo:
 readonly LLVM_REV=3b27ab07879a
@@ -1342,6 +1344,107 @@ binutils-arm-install() {
 #########################################################################
 
 #+-------------------------------------------------------------------------
+#+ llvm-tools-x8632-sb       - Build and install x8632 llvm tools (sandboxed)
+llvm-tools-x8632-sb() {
+  StepBanner "LLVM-TOOLS-X8632-SB"
+
+  local srcdir="${TC_SRC_LLVM}"
+
+  assert-dir "${srcdir}" "You need to checkout llvm."
+
+  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
+    echo "ERROR: install Native Client toolchain"
+    exit -1
+  fi
+
+  llvm-tools-x8632-sb-clean
+  llvm-tools-x8632-sb-configure
+  llvm-tools-x8632-sb-make
+  llvm-tools-x8632-sb-install
+}
+
+llvm-tools-x8632-sb-needs-configure() {
+  [ ! -f "${TC_BUILD_LLVM_TOOLS_X8632_SB}/config.status" ]
+  return $?
+}
+
+#+ llvm-tools-x8632-sb-clean - Clean x8632 llvm tools (sandboxed)
+llvm-tools-x8632-sb-clean() {
+  StepBanner "LLVM-TOOLS-X8632-SB" "Clean"
+  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+
+  rm -rf "${objdir}"
+  mkdir -p "${objdir}"
+}
+
+#+ llvm-tools-x8632-sb-configure - Configure x8632 llvm tools (sandboxed)
+llvm-tools-x8632-sb-configure() {
+  StepBanner "LLVM-TOOLS-X8632-SB" "Configure"
+  local srcdir="${TC_SRC_LLVM}"
+  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+
+  spushd ${objdir}
+  RunWithLog \
+    llvm.tools.x8632.sandboxed.configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
+    AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
+    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc -DPNACL_TOOLCHAIN_SANDBOX=1 -m32 -O2 -static -I${NACL_TOOLCHAIN}/nacl/include" \
+    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++ -DPNACL_TOOLCHAIN_SANDBOX=1 -m32 -O2 -static -I${NACL_TOOLCHAIN}/nacl/include" \
+    EMULATOR_FOR_BUILD="$(pwd)/scons-out/opt-linux-x86-32/staging/sel_ldr -d" \
+    LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
+    RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
+    LDFLAGS="-s" \
+    ${srcdir}/llvm-trunk/configure \
+                             --prefix=${PNACL_CLIENT_TC_X8632} \
+                             --host=nacl \
+                             --target=${CROSS_TARGET} \
+                             --disable-jit \
+                             --enable-optimized \
+                             --enable-targets=x86,x86_64 \
+                             --enable-static \
+                             --enable-threads=no \
+                             --enable-pic=no \
+                             --enable-shared=no \
+                             --with-sysroot=${NEWLIB_INSTALL_DIR}
+  spopd
+}
+
+llvm-tools-x8632-sb-needs-make() {
+  local srcdir="${TC_SRC_LLVM}"
+  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+
+  ts-modified "$srcdir" "$objdir"
+  return $?
+}
+
+#+ llvm-tools-x8632-sb-make - Make x8632 llvm tools (sandboxed)
+llvm-tools-x8632-sb-make() {
+  StepBanner "LLVM-TOOLS-X8632-SB" "Make"
+  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+  spushd ${objdir}
+
+  RunWithLog llvm.tools.x8632.sandboxed.make \
+    env -i PATH="/usr/bin:/bin" \
+    make VERBOSE=1 tools-only
+  spopd
+}
+
+#+ llvm-tools-x8632-sb-install - Install x8632 llvm tools (sandboxed)
+llvm-tools-x8632-sb-install() {
+  StepBanner "LLVM-TOOLS-X8632-SB" "Install"
+  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+  spushd ${objdir}
+
+  RunWithLog llvm.tools.x8632.sandboxed.install \
+    env -i PATH="/usr/bin:/bin" \
+    make install
+
+  spopd
+}
+
+#+-------------------------------------------------------------------------
 #+ binutils-arm-sb       - build and install binutils (sandboxed) for ARM
 binutils-arm-sb() {
   StepBanner "BINUTILS-ARM-SB"
@@ -1482,7 +1585,7 @@ binutils-x86-sb-configure() {
     LDFLAGS="-s" \
     LDFLAGS_FOR_BUILD="-L." \
     ${srcdir}/binutils-2.20/configure \
-                             --prefix=${PNACL_CLIENT_TC_X86} \
+                             --prefix=${PNACL_CLIENT_TC_X8632} \
                              --host=nacl \
                              --target=nacl64 \
                              --disable-nls \
