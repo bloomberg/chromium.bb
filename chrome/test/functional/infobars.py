@@ -82,6 +82,7 @@ class InfobarTest(pyauto.PyUITest):
     url = 'http://m.flickr.com/#/nearby/'  # automatically triggers geolocation
     match_text='m.flickr.com wants to track your physical location'
     self.NavigateToURL(url)
+    self.WaitForInfobarCount(1)
     self._VerifyGeolocationInfobar(windex=0, tab_index=0, match_text=match_text)
     # Accept, and verify that the infobar went away
     self.PerformActionOnInfobar('accept', infobar_index=0)
@@ -93,15 +94,18 @@ class InfobarTest(pyauto.PyUITest):
     match_text='m.flickr.com wants to track your physical location'
     for tab_index in range(1, 2):
       self.AppendTab(pyauto.GURL(url))
+      self.WaitForInfobarCount(1, windex=0, tab_index=tab_index)
       self._VerifyGeolocationInfobar(windex=0, tab_index=tab_index,
                                      match_text=match_text)
     # Try in a new window
     self.OpenNewBrowserWindow(True)
     self.NavigateToURL(url, 1, 0)
+    self.WaitForInfobarCount(1, windex=1, tab_index=0)
     self._VerifyGeolocationInfobar(windex=1, tab_index=0, match_text=match_text)
     # Incognito window
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
     self.NavigateToURL(url, 2, 0)
+    self.WaitForInfobarCount(1, windex=2, tab_index=0)
     self._VerifyGeolocationInfobar(windex=2, tab_index=0, match_text=match_text)
 
 
