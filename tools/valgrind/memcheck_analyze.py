@@ -24,6 +24,15 @@ import common
 # Global symbol table (yuck)
 TheAddressTable = None
 
+# Contains the time when the we started analyzing the first log file.
+# This variable is used to skip incomplete logs after some timeout.
+# TODO(timurrrr): Currently, this needs to be a global variable
+# because analyzer can be called multiple times (e.g. ui_tests)
+# unless we re-factor the analyze system to avoid creating multiple analyzers.
+AnalyzeStartTime = None
+
+# Max time to wait for memcheck logs to complete.
+LOG_COMPLETION_TIMEOUT = 180.0
 
 # These are functions (using C++ mangled names) that we look for in stack
 # traces. We don't show stack frames while pretty printing when they are below
@@ -380,7 +389,10 @@ class MemcheckAnalyze:
     self._errors = set()
     self._suppcounts = {}
     badfiles = set()
-    start = time.time()
+
+    global AnalyzeStartTime
+    if AnalyzeStartTime == None:
+      AnalyzeStartTime = time.time()
     self._parse_failed = False
     for file in files:
       # Wait up to three minutes for valgrind to finish writing all files,
@@ -394,7 +406,8 @@ class MemcheckAnalyze:
       firstrun = True
       origsize = os.path.getsize(file)
       while (running and not found and
-             (firstrun or ((time.time() - start) < 180.0))):
+             (firstrun or
+              ((time.time() - AnalyzeStartTime) < LOG_COMPLETION_TIMEOUT))):
         firstrun = False
         f.seek(0)
         if pid:
