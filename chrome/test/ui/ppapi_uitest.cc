@@ -122,10 +122,9 @@ TEST_F(PPAPITest, PaintAgggregator) {
   RunTestViaHTTP("PaintAggregator");
 }
 
-// http://crbug.com/48544
 #if defined(OS_LINUX)
-// TODO(jabdelmalek) this fails on Linux for unknown reasons.
-TEST_F(PPAPITest, FAILS_Scrollbar) {
+// Flaky, http://crbug.com/48544.
+TEST_F(PPAPITest, FLAKY_Scrollbar) {
 #else
 TEST_F(PPAPITest, Scrollbar) {
 #endif
