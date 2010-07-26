@@ -255,6 +255,7 @@ Movdq
 Movdqa
 Movdqu
 Movdq2q
+Movhlps
 Movhpd
 Movhps
 Movlhps
@@ -473,6 +474,8 @@ Sfence
 Shl
 Shld
 Shr
+Shufpd
+Shufps
 Sqrtps
 Sqrtpd
 Sqrtsd

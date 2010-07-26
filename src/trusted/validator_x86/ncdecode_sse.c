@@ -28,13 +28,13 @@ static void NaClDefBinarySseInsts() {
 
   DEF_BINST(Vps, Wps)(NACLi_SSE, 0x10, Prefix0F, InstMovups, Move);
   DEF_BINST(Wps, Vps)(NACLi_SSE, 0x11, Prefix0F, InstMovups, Move);
-  /* TODO(karl): Turn off recognition of instruction for now, until we
-   * can distinquish between:
-   * DEF_BINST(Vps, _Mq)t(NACLi_SSE, 0x12, Prefix0F, InstMovlps, Move);
-   * DEF_BINST(Vps, Uq_)(NACLi_SSE, 0x12, Prefix0F, InstMovhlps, Move);
-   */
+
+  NaClDefPrefixInstChoices(Prefix0F, 0x12, 2);
   DEF_BINST(Vps, Mq_)(NACLi_SSE, 0x12, Prefix0F, InstMovlps, Move);
-  NaClAddIFlags(NACL_IFLAG(NaClIllegal));
+  NaClAddIFlags(NACL_IFLAG(ModRmModIsnt0x3));
+  DEF_BINST(Vps, Uq_)(NACLi_SSE, 0x12, Prefix0F, InstMovhlps, Move);
+  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
+
   DEF_BINST(Mq_, Vps)(NACLi_SSE, 0x13, Prefix0F, InstMovlps, Move);
   DEF_BINST(Vps, Wq_)(NACLi_SSE, 0x14, Prefix0F, InstUnpcklps, Binary);
   DEF_BINST(Vps, Wq_)(NACLi_SSE, 0x15, Prefix0F, InstUnpckhps, Binary);
@@ -372,6 +372,9 @@ static void NaClDefBinarySseInsts() {
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   NaClAddOpFlags(0, NACL_OPFLAG(OperandZeroExtends_v));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Vps, Wps)(NACLi_SSE, 0xc6, Prefix0F, InstShufps, Binary);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInvalidIcode(Prefix660F, 0xc3);
   DEF_BINST(Vdq, E__)(NACLi_SSE, 0xc4, Prefix660F, InstPinsrw, Move);
@@ -380,6 +383,9 @@ static void NaClDefBinarySseInsts() {
   DEF_BINST(Gd_, Udq)(NACLi_SSE41, 0xc5, Prefix660F, InstPextrw, Move);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   NaClAddOpFlags(0, NACL_OPFLAG(OperandZeroExtends_v));
+  NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
+  DEF_BINST(Vpd, Wpd)(NACLi_SSE2, 0xC6, Prefix660F, InstShufpd, Binary);
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
   NaClDefInvalidIcode(PrefixF20F, 0xc3);

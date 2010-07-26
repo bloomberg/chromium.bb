@@ -77,3 +77,4 @@
 # Note: Should use %eax instead of %rax
 -i=a38877665544332211                                   # 0:	a3 88 77 66 55 44 33 22 11	mov [0x55667788], %rax
 -i=48a38877665544332211                                 # 0:	48 a3 88 77 66 55 44 33 22 11	mov [0x55667788], %rax
+-i=0f12e8                                               # 0:	0f 12 e8            	movlps %xmm5, %rbp
