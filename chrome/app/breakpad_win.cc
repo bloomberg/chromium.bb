@@ -488,7 +488,7 @@ void InitCrashReporterWithDllPath(const std::wstring& dll_path) {
 
     // Query the custom_info now because if we do it in the thread it's going to
     // fail in the sandbox. The thread will delete this object.
-    scoped_ptr<CrashReporterInfo> info(new CrashReporterInfo);
+    CrashReporterInfo* info(new CrashReporterInfo);
     info->process_type = command.GetSwitchValue(switches::kProcessType);
     if (info->process_type.empty())
       info->process_type = L"browser";
@@ -501,14 +501,14 @@ void InitCrashReporterWithDllPath(const std::wstring& dll_path) {
     // it may take some times to initialize the crash_service process.  We use
     // the Windows worker pool to make better reuse of the thread.
     if (info->process_type != L"browser") {
-      InitCrashReporterThread(info.release());
+      InitCrashReporterThread(info);
     } else {
       if (QueueUserWorkItem(
               &InitCrashReporterThread,
-              info.release(),
+              info,
               WT_EXECUTELONGFUNCTION) == 0) {
         // We failed to queue to the worker pool, initialize in this thread.
-        InitCrashReporterThread(info.release());
+        InitCrashReporterThread(info);
       }
     }
   }
