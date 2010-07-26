@@ -90,7 +90,6 @@ readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 # These should be absolute paths.
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
-readonly TC_BUILD_LLVM_GCC2="${TC_BUILD}/llvm-gcc-stage2"
 readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
 readonly TC_BUILD_BINUTILS_ARM_SB="${TC_BUILD}/binutils-arm-sandboxed"
 readonly TC_BUILD_BINUTILS_X86_SB="${TC_BUILD}/binutils-x86-sandboxed"
@@ -98,10 +97,9 @@ readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
 
 # This apparently has to be at this location or gcc install breaks.
-readonly TC_BUILD_LIBSTDCPP=\
-"${TC_BUILD_LLVM_GCC2}/${CROSS_TARGET}/libstdc++-v3"
+readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC1}/${CROSS_TARGET}/libstdc++-v3"
 
-readonly TC_BUILD_LIBSTDCPP_BITCODE="${TC_BUILD_LLVM_GCC2}/libstdcpp-bitcode"
+readonly TC_BUILD_LIBSTDCPP_BITCODE="${TC_BUILD_LLVM_GCC1}/libstdcpp-bitcode"
 
 # These are fake directories, for storing the timestamp only
 readonly TC_BUILD_EXTRASDK_BITCODE="${TC_BUILD}/extrasdk-bitcode"
@@ -613,12 +611,10 @@ everything() {
 
   binutils-arm
   llvm
-  gcc-stage1
   driver
-  gcc-stage2
+  gcc-stage1
   # TODO(robertm): get rid of this. Carefull, also installs headers
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=708
-  libstdcpp-arm
   gcc-stage3
 
   # TODO(robertm): get rid of this. Carefull, also installs headers
@@ -661,8 +657,6 @@ status() {
   status-helper "BINUTILS-ARM"      binutils-arm
   status-helper "LLVM"              llvm
   status-helper "GCC-STAGE1"        gcc-stage1
-  status-helper "GCC-STAGE2"        gcc-stage2
-  status-helper "LIBSTDCPP-ARM"     libstdcpp-arm
 
   status-helper "NEWLIB-ARM"        newlib-arm
 
@@ -976,18 +970,20 @@ gcc-stage1-configure() {
              ${srcdir}/llvm-gcc-4.2/configure \
                --prefix=${INSTALL_DIR} \
                --enable-llvm=${INSTALL_DIR} \
-               --without-headers \
+               --with-newlib \
                --disable-libmudflap \
                --disable-decimal-float \
                --disable-libssp \
                --disable-libgomp \
-               --enable-languages=c \
+               --enable-languages=c,c++ \
                --disable-threads \
                --disable-libstdcxx-pch \
                --disable-shared \
+               --without-headers \
                --target=${CROSS_TARGET} \
                --with-arch=${ARM_ARCH} \
-               --with-fpu=${ARM_FPU}
+               --with-fpu=${ARM_FPU} \
+               --with-sysroot="${NEWLIB_INSTALL_DIR}"
 
   spopd
 }
@@ -1022,11 +1018,48 @@ gcc-stage1-make() {
               CC=${CC} \
               CXX=${CXX} \
               CFLAGS="-Dinhibit_libc" \
+              make ${MAKE_OPTS} all-gcc
+
+  xgcc-patch
+
+  # NOTE: This builds more than what we need right now. For example,
+  # libstdc++ is unused (we always use the bitcode one). This might change
+  # when we start supporting shared libraries.
+  RunWithLog llvm-pregcc2.make \
+       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+              CC=${CC} \
+              CXX=${CXX} \
+              CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} all
+
+  rm gcc/xgcc
+  mv gcc/xgcc-real gcc/xgcc
 
   ts-touch-commit "${objdir}"
 
   spopd
+}
+
+#+ xgcc-patch          - Patch xgcc and clean libgcc
+xgcc-patch() {
+  # This is a hack. Ideally gcc would be configured with a pnacl-nacl target
+  # and xgcc would produce sfi code automatically. This is not the case, so
+  # we cheat gcc's build by replacing xgcc behind its back.
+
+  StepBanner "GCC-STAGE1" "Patching xgcc and cleaning libgcc"
+
+  mv gcc/xgcc gcc/xgcc-real
+  cat > gcc/xgcc <<EOF
+#!/bin/sh
+
+DIR="\$(readlink -mn \${0%/*})"
+\${DIR}/../../../../toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm-fake-sfigcc --driver=\${DIR}/xgcc-real -arch arm ${CFLAGS_FOR_SFI_TARGET} "\$@"
+EOF
+  chmod 755 gcc/xgcc
+
+  RunWithLog libgcc.clean \
+      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+             make clean-target-libgcc
 }
 
 #+ gcc-stage1-install    - Install GCC stage 1
@@ -1047,216 +1080,11 @@ gcc-stage1-install() {
 }
 
 
-
-#########################################################################
-#   < GCC STAGE 2 >
-#########################################################################
-
-#+-------------------------------------------------------------------------
-#+ gcc-stage2            - build libgcc, libiberty, libstdc++ (needs stage1)
-# Build gcc again in order to build libgcc and other essential libs
-# Note: depends on
-gcc-stage2() {
-  StepBanner "GCC-STAGE2"
-
-  if gcc-stage2-needs-configure; then
-    gcc-stage2-clean
-    gcc-stage2-configure
-  else
-    SkipBanner "GCC-STAGE2" "configure"
-  fi
-
-  if gcc-stage2-needs-make; then
-    gcc-stage2-make
-  else
-    SkipBanner "GCC-STAGE2" "make"
-  fi
-
-  gcc-stage2-install   # Partial install for libstdcpp
-}
-
-#+ gcc-stage2-clean      - Clean gcc-stage2
-gcc-stage2-clean() {
-  StepBanner "GCC-STAGE2" "Clean"
-  local objdir="${TC_BUILD_LLVM_GCC2}"
-
-  rm -rf "${objdir}"
-}
-
-
-gcc-stage2-needs-configure() {
-
-
-  # If stage1 has been rebuilt, return true.
-  speculative-check "gcc-stage1" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC1}" "${TC_BUILD_LLVM_GCC2}" && return 0
-
-  [ ! -f "${TC_BUILD_LLVM_GCC2}/config.status" ]
-  return $?
-}
-
-#+ gcc-stage2-configure  - Configure gcc-stage2
-gcc-stage2-configure() {
-  StepBanner "GCC-STAGE2" "Configure"
-
-  local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC2}"
-
-  mkdir -p "${objdir}"
-  spushd "${objdir}"
-
-  # TODO(robertm): do we really need CROSS_TARGET_*
-  RunWithLog llvm-gcc.configure \
-      env -i PATH=/usr/bin/:/bin \
-             CC=${CC} \
-             CXX=${CXX} \
-             CFLAGS="-Dinhibit_libc" \
-             CXXFLAGS="-Dinhibit_libc" \
-             "${STD_ENV_FOR_GCC_ETC[@]}" \
-             "${srcdir}"/llvm-gcc-4.2/configure \
-               --prefix=${INSTALL_DIR} \
-               --enable-llvm=${INSTALL_DIR} \
-               --with-newlib \
-               --disable-libmudflap \
-               --disable-decimal-float \
-               --disable-libssp \
-               --disable-libgomp \
-               --enable-languages=c,c++ \
-               --disable-threads \
-               --disable-libstdcxx-pch \
-               --disable-shared \
-               --target=${CROSS_TARGET} \
-               --with-arch=${ARM_ARCH} \
-               --with-fpu=${ARM_FPU} \
-               --with-sysroot="${NEWLIB_INSTALL_DIR}"
-
-  spopd
-}
-
-gcc-stage2-needs-make() {
-  local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC2}"
-
-  ts-modified "$srcdir" "$objdir"
-  return $?
-}
-
-#+ gcc-stage2-make       - Make gcc-stage2
-gcc-stage2-make() {
-  StepBanner "GCC-STAGE2" "Make"
-
-  local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC2}"
-
-  ts-touch-open "${objdir}"
-
-  spushd "${objdir}"
-  RunWithLog llvm-gcc.make \
-       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
-              make \
-              "${STD_ENV_FOR_GCC_ETC[@]}" \
-              ${MAKE_OPTS} all-gcc
-  spopd
-
-  # These are here so they become part of the stage2 'transaction'
-  libgcc-clean
-  libgcc-make
-  liberty-make
-
-  ts-touch-commit "${objdir}"
-}
-
-#+ libgcc-clean          - Clean libgcc
-libgcc-clean() {
-  StepBanner "GCC-STAGE2" "Cleaning libgcc"
-
-  spushd "${TC_BUILD_LLVM_GCC2}/gcc"
-  RunWithLog libgcc.clean \
-      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
-             make clean-target-libgcc
-  spopd
-}
-
-#+ libgcc-make           - Make libgcc
-libgcc-make() {
-  StepBanner "GCC-STAGE2" "Making libgcc"
-  local objdir="${TC_BUILD_LLVM_GCC2}/gcc"
-
-  spushd "${objdir}"
-  RunWithLog llvm-gcc.make_libgcc \
-      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
-             make \
-             "${STD_ENV_FOR_GCC_ETC[@]}" \
-             ${MAKE_OPTS} libgcc.a
-  spopd
-}
-
-#+ liberty-make          - Make liberty
-liberty-make() {
-  StepBanner "GCC-STAGE2" "Making Liberty"
-
-  spushd "${TC_BUILD_LLVM_GCC2}"
-
-  # maybe clean libiberty first
-  RunWithLog llvm-gcc.make_libiberty \
-      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
-             make \
-             "${STD_ENV_FOR_GCC_ETC[@]}" \
-             ${MAKE_OPTS} all-target-libiberty
-
-  spopd
-}
-
-#+ gcc-stage2-install    - Install gcc-stage2
-gcc-stage2-install() {
-  StepBanner "GCC-STAGE2" "Install (Partial)"
-
-  local objdir="${TC_BUILD_LLVM_GCC2}"
-  spushd "${objdir}"
-
-  cd gcc
-  cp gcc-cross "${INSTALL_DIR}/bin/${CROSS_TARGET}-gcc"
-  cp g++-cross "${INSTALL_DIR}/bin/${CROSS_TARGET}-g++"
-  # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
-  #       simply fix this version when this happens
-  cp cc1     "${INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/${GCC_VER}"
-  cp cc1plus "${INSTALL_DIR}/libexec/gcc/${CROSS_TARGET}/${GCC_VER}"
-
-  spopd
-}
-
-
-
 #########################################################################
 #########################################################################
-#                          < LIBSTDCPP-ARM >
 #                          < LIBSTDCPP-BITCODE >
 #########################################################################
 #########################################################################
-
-#+-------------------------------------------------------------------------
-#+ libstdcpp-arm         - build and install libstdcpp for ARM
-
-
-libstdcpp-arm() {
-  StepBanner "LIBSTDCPP-ARM"
-
-  if libstdcpp-arm-needs-configure; then
-    libstdcpp-arm-clean
-    libstdcpp-arm-configure
-  else
-    SkipBanner "LIBSTDCPP-ARM" "configure"
-  fi
-
-
-  if libstdcpp-arm-needs-make; then
-    libstdcpp-arm-make
-  else
-    SkipBanner "LIBSTDCPP-ARM" "make"
-  fi
-
-  #libstdcpp-arm-install
-}
 
 #+ libstdcpp-bitcode     - build and install libstdcpp in bitcode
 libstdcpp-bitcode() {
@@ -1278,38 +1106,18 @@ libstdcpp-bitcode() {
   libstdcpp-bitcode-install
 }
 
-#+ libstdcpp-arm-clean   - clean libstdcpp for ARM
-libstdcpp-arm-clean() {
-  StepBanner "LIBSTDCPP-ARM" "Clean"
-  rm -rf "${TC_BUILD_LIBSTDCPP}"
-}
-
 #+ libstdcpp-bitcode-clean - clean libstdcpp in bitcode
 libstdcpp-bitcode-clean() {
   StepBanner "LIBSTDCPP-BITCODE" "Clean"
   rm -rf "${TC_BUILD_LIBSTDCPP_BITCODE}"
 }
 
-libstdcpp-arm-needs-configure() {
-  speculative-check "gcc-stage2" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC2}" "${TC_BUILD_LIBSTDCPP}" && return 0
-
-  [ ! -f "${TC_BUILD_LIBSTDCPP}/config.status" ]
-  return #?
-}
-
 libstdcpp-bitcode-needs-configure() {
-  speculative-check "gcc-stage2" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC2}" \
+  speculative-check "gcc-stage1" && return 0
+  ts-newer-than "${TC_BUILD_LLVM_GCC1}" \
                 "${TC_BUILD_LIBSTDCPP_BITCODE}" && return 0
   [ ! -f "${TC_BUILD_LIBSTDCPP_BITCODE}/config.status" ]
   return #?
-}
-
-#+ libstdcpp-arm-configure - configure libstdcpp for ARM
-libstdcpp-arm-configure() {
-  StepBanner "LIBSTDCPP-ARM" "Configure"
-  libstdcpp-configure-common "${TC_BUILD_LIBSTDCPP}"
 }
 
 #+ libstdcpp-bitcode-configure - configure libstdcpp for bitcode
@@ -1345,26 +1153,12 @@ libstdcpp-configure-common() {
   spopd
 }
 
-libstdcpp-arm-needs-make() {
-  local srcdir="${TC_SRC_LIBSTDCPP}"
-  local objdir="${TC_BUILD_LIBSTDCPP}"
-
-  ts-modified "$srcdir" "$objdir"
-  return $?
-}
-
 libstdcpp-bitcode-needs-make() {
   local srcdir="${TC_SRC_LIBSTDCPP}"
   local objdir="${TC_BUILD_LIBSTDCPP_BITCODE}"
 
   ts-modified "$srcdir" "$objdir"
   return $?
-}
-
-#+ libstdcpp-arm-make    - Make libstdcpp for ARM
-libstdcpp-arm-make() {
-  StepBanner "LIBSTDCPP-ARM" "Make"
-  libstdcpp-make-common "${TC_BUILD_LIBSTDCPP}"
 }
 
 #+ libstdcpp-bitcode-make - Make libstdcpp in bitcode
@@ -1390,17 +1184,6 @@ libstdcpp-make-common() {
   spopd
 
   ts-touch-commit "${objdir}"
-}
-#+ libstdcpp-arm-install - Install libstdcpp for ARM
-libstdcpp-arm-install() {
-  StepBanner "LIBSTDCPP-ARM" "Install"
-  local objdir="${TC_BUILD_LIBSTDCPP}"
-
-  spushd "${objdir}"
-  RunWithLog ${TMP}/llvm-gcc.install_libstdcpp.log \
-    env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
-      make  ${MAKE_OPTS} install
-  spopd
 }
 
 #+ libstdcpp-bitcode-install - Install libstdcpp in bitcode
@@ -1440,7 +1223,7 @@ gcc-stage3-install() {
   StepBanner "GCC-STAGE3" "Install"
 
   # NOTE: this is the build dir from stage2
-  local objdir="${TC_BUILD_LLVM_GCC2}"
+  local objdir="${TC_BUILD_LLVM_GCC1}"
 
   spushd "${objdir}"
   RunWithLog llvm-gcc.install \
@@ -1456,7 +1239,7 @@ gcc-stage3-install() {
 libgcc-install() {
   StepBanner "GCC-STAGE3" "Installing libgcc"
 
-  local objdir="${TC_BUILD_LLVM_GCC2}"
+  local objdir="${TC_BUILD_LLVM_GCC1}"
   spushd "${objdir}"
   # NOTE: the "cp" will fail when we upgrade to a more recent compiler,
   #       simply fix this version when this happens
@@ -1468,7 +1251,7 @@ libgcc-install() {
 liberty-install() {
   StepBanner "GCC-STAGE3" "Installing liberty"
 
-  local objdir="${TC_BUILD_LLVM_GCC2}"
+  local objdir="${TC_BUILD_LLVM_GCC1}"
 
   spushd "${objdir}"
   cp libiberty/libiberty.a "${INSTALL_DIR}/${CROSS_TARGET}/lib"
@@ -1854,8 +1637,8 @@ newlib-bitcode-clean() {
 }
 
 newlib-arm-needs-configure() {
-  speculative-check "gcc-stage2" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC2}" \
+  speculative-check "gcc-stage1" && return 0
+  ts-newer-than "${TC_BUILD_LLVM_GCC1}" \
                    "${TC_BUILD_NEWLIB_ARM}" && return 0
 
   [ ! -f "${TC_BUILD_NEWLIB_ARM}/config.status" ]
@@ -1863,8 +1646,8 @@ newlib-arm-needs-configure() {
 }
 
 newlib-bitcode-needs-configure() {
-  speculative-check "gcc-stage2" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC2}" \
+  speculative-check "gcc-stage1" && return 0
+  ts-newer-than "${TC_BUILD_LLVM_GCC1}" \
                    "${TC_BUILD_NEWLIB_BITCODE}" && return 0
 
   [ ! -f "${TC_BUILD_NEWLIB_BITCODE}/config.status" ]
@@ -2050,8 +1833,8 @@ extrasdk-bitcode() {
 
 
 extrasdk-bitcode-needs-make() {
-  speculative-check "gcc-stage2" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC2}" \
+  speculative-check "gcc-stage1" && return 0
+  ts-newer-than "${TC_BUILD_LLVM_GCC1}" \
                 "${TC_BUILD_EXTRASDK_BITCODE}" && return 0
   return 1   # false
 }
