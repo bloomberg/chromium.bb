@@ -524,7 +524,6 @@ def MassageFinalLinkCommandPnacl(args, native_dir, flags):
     out.append(native_dir + '/crtn.o')
     out.append('-L' + native_dir)
     out.append('-lgcc')
-    out.append('-lc')
   return out
 
 

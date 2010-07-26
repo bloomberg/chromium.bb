@@ -2246,7 +2246,6 @@ organize-native-code() {
   mkdir -p ${PNACL_ARM_ROOT}
 
   cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}/libgcc.a \
-    ${arm_src}/arm-newlib/arm-none-linux-gnueabi/lib/libc.a \
     ${PNACL_ARM_ROOT}
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
@@ -2256,7 +2255,6 @@ organize-native-code() {
   DebugRun Banner "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
   cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/32/libgcc.a \
-    ${x86_src}/nacl64/lib/32/libc.a \
     ${x86_src}/nacl64/lib/32/crt*.o \
     ${x86_src}/nacl64/lib/32/libcrt*.a \
     ${x86_src}/nacl64/lib/32/intrinsics.o \
@@ -2266,7 +2264,6 @@ organize-native-code() {
   DebugRun Banner "x86-64 native code: ${PNACL_X8664_ROOT}"
   mkdir -p ${PNACL_X8664_ROOT}
   cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/libgcc.a \
-    ${x86_src}/nacl64/lib/libc.a \
     ${x86_src}/nacl64/lib/crt*.o \
     ${x86_src}/nacl64/lib/libcrt*.a \
     ${x86_src}/nacl64/lib/intrinsics.o \
