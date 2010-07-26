@@ -5,10 +5,6 @@
 
 Import('env')
 
-# TODO(robertm): not sure why this is necessary - the driver should add it, c.f.
-#                http://code.google.com/p/nativeclient/issues/detail?id=707
-env.Append(CPPDEFINES=[('__native_client__','1')])
-
 if env['TARGET_ARCHITECTURE'] == 'arm':
   assert env.get('CC_NATIVE')
   # NOTE: we make sure everything in this directory gets compiled
