@@ -657,10 +657,16 @@ void WebMediaPlayerImpl::OnPipelineError() {
 void WebMediaPlayerImpl::OnNetworkEvent() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
-    if (pipeline_->IsNetworkActive())
+    if (pipeline_->IsNetworkActive()) {
       SetNetworkState(WebKit::WebMediaPlayer::Loading);
-    else
+    } else {
+      // If we are inactive because we just finished receiving all the data,
+      // do one final repaint to show final progress.
+      if (bytesLoaded() == totalBytes() &&
+          network_state_ != WebKit::WebMediaPlayer::Idle)
+        Repaint();
       SetNetworkState(WebKit::WebMediaPlayer::Idle);
+    }
   }
 }
 
