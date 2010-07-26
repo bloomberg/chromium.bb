@@ -10,12 +10,12 @@
 #ifndef CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
 #define CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/time.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 struct ViewMsg_AudioStreamState_Params;
 
@@ -66,8 +66,8 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // For access to |message_loop_|.
   friend class AudioRendererImplTest;
 
-  FRIEND_TEST(AudioMessageFilterTest, Basic);
-  FRIEND_TEST(AudioMessageFilterTest, Delegates);
+  FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(AudioMessageFilterTest, Delegates);
 
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message);

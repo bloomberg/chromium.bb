@@ -7,10 +7,10 @@
 
 #include <map>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BackgroundContents;
 class CommandLine;
@@ -39,8 +39,10 @@ class BackgroundContentsService : private NotificationObserver {
 
  private:
   friend class BackgroundContentsServiceTest;
-  FRIEND_TEST(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy);
-  FRIEND_TEST(BackgroundContentsServiceTest, TestApplicationIDLinkage);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
+                           BackgroundContentsCreateDestroy);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
+                           TestApplicationIDLinkage);
 
   // Registers for various notifications.
   void StartObserving(Profile* profile);

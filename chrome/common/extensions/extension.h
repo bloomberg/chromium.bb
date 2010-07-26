@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -19,7 +20,6 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "gfx/size.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class ExtensionAction;
 class ExtensionResource;
@@ -577,8 +577,8 @@ class Extension {
   // True while the extension is being upgraded.
   bool being_upgraded_;
 
-  FRIEND_TEST(ExtensionTest, LoadPageActionHelper);
-  FRIEND_TEST(TabStripModelTest, Apps);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionTest, LoadPageActionHelper);
+  FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, Apps);
 
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };

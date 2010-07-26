@@ -5,8 +5,8 @@
 #ifndef GFX_SKBITMAP_OPERATIONS_H_
 #define GFX_SKBITMAP_OPERATIONS_H_
 
+#include "base/gtest_prod_util.h"
 #include "gfx/color_utils.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class SkBitmap;
 
@@ -91,8 +91,8 @@ class SkBitmapOperations {
  private:
   SkBitmapOperations();  // Class for scoping only.
 
-  FRIEND_TEST(SkBitmapOperationsTest, DownsampleByTwo);
-  FRIEND_TEST(SkBitmapOperationsTest, DownsampleByTwoSmall);
+  FRIEND_TEST_ALL_PREFIXES(SkBitmapOperationsTest, DownsampleByTwo);
+  FRIEND_TEST_ALL_PREFIXES(SkBitmapOperationsTest, DownsampleByTwoSmall);
 };
 
 #endif  // GFX_SKBITMAP_OPERATIONS_H_

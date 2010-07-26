@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "net/http/http_util.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 // Forward declarations
 class HtmlUtilUnittest;
@@ -88,7 +88,7 @@ class HTMLScanner {
 
  private:
   friend class HtmlUtilUnittest;
-  FRIEND_TEST(HtmlUtilUnittest, BasicTest);
+  FRIEND_TEST_ALL_PREFIXES(HtmlUtilUnittest, BasicTest);
 
   // Given html_string which represents the remaining html range, this method
   // returns the next tag in tag and advances html_string to one character after

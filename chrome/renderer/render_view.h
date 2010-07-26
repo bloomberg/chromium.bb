@@ -14,6 +14,7 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/linked_ptr.h"
 #include "base/timer.h"
 #include "base/weak_ptr.h"
@@ -34,7 +35,6 @@
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
 #include "chrome/renderer/translate_helper.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
@@ -584,20 +584,20 @@ class RenderView : public RenderWidget,
   // For unit tests.
   friend class RenderViewTest;
   friend class PepperDeviceTest;
-  FRIEND_TEST(RenderViewTest, OnNavStateChanged);
-  FRIEND_TEST(RenderViewTest, OnImeStateChanged);
-  FRIEND_TEST(RenderViewTest, ImeComposition);
-  FRIEND_TEST(RenderViewTest, OnSetTextDirection);
-  FRIEND_TEST(RenderViewTest, OnPrintPages);
-  FRIEND_TEST(RenderViewTest, PrintWithIframe);
-  FRIEND_TEST(RenderViewTest, PrintLayoutTest);
-  FRIEND_TEST(RenderViewTest, OnHandleKeyboardEvent);
-  FRIEND_TEST(RenderViewTest, InsertCharacters);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnNavStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnImeStateChanged);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, ImeComposition);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnSetTextDirection);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnPrintPages);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintWithIframe);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, PrintLayoutTest);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnHandleKeyboardEvent);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, InsertCharacters);
 #if defined(OS_MACOSX)
-  FRIEND_TEST(RenderViewTest, MacTestCmdUp);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
 #endif
-  FRIEND_TEST(RenderViewTest, JSBlockSentAfterPageLoad);
-  FRIEND_TEST(RenderViewTest, UpdateTargetURLWithInvalidURL);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, JSBlockSentAfterPageLoad);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewTest, UpdateTargetURLWithInvalidURL);
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, int> HostZoomLevels;

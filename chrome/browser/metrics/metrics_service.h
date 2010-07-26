@@ -488,13 +488,13 @@ class MetricsService : public NotificationObserver,
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 #endif
 
-  FRIEND_TEST(MetricsServiceTest, EmptyLogList);
-  FRIEND_TEST(MetricsServiceTest, SingleElementLogList);
-  FRIEND_TEST(MetricsServiceTest, OverLimitLogList);
-  FRIEND_TEST(MetricsServiceTest, SmallRecoveredListSize);
-  FRIEND_TEST(MetricsServiceTest, RemoveSizeFromLogList);
-  FRIEND_TEST(MetricsServiceTest, CorruptSizeOfLogList);
-  FRIEND_TEST(MetricsServiceTest, CorruptChecksumOfLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, EmptyLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, SingleElementLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, OverLimitLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, SmallRecoveredListSize);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RemoveSizeFromLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, CorruptSizeOfLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, CorruptChecksumOfLogList);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdGeneratesAllZeroes);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdGeneratesCorrectly);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdCorrectlyFormatted);

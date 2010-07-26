@@ -31,10 +31,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/message_loop.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace gaia {
 
@@ -80,7 +80,8 @@ struct GaiaAuthEvent {
 // GaiaAuthenticator can be used to pass user credentials to Gaia and obtain
 // cookies set by the Gaia servers.
 class GaiaAuthenticator {
-  FRIEND_TEST(GaiaAuthenticatorTest, TestNewlineAtEndOfAuthTokenRemoved);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticatorTest,
+                           TestNewlineAtEndOfAuthTokenRemoved);
  public:
 
   // Since GaiaAuthenticator can be used for any service, or by any client, you

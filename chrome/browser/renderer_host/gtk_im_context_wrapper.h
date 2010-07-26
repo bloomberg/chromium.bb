@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/string16.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
 
@@ -58,7 +58,7 @@ class GtkIMContextWrapper {
  private:
   // For unit tests.
   class GtkIMContextWrapperTest;
-  FRIEND_TEST(GtkIMContextWrapperTest, ExtractCompositionInfo);
+  FRIEND_TEST_ALL_PREFIXES(GtkIMContextWrapperTest, ExtractCompositionInfo);
 
   // Check if a text needs commit by forwarding a char event instead of
   // by confirming as a composition text.

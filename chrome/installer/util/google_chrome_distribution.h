@@ -8,10 +8,9 @@
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_CHROME_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_CHROME_DISTRIBUTION_H_
 
+#include "base/gtest_prod_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
-
-#include "testing/gtest/include/gtest/gtest_prod.h"  // for FRIEND_TEST
 
 class DictionaryValue;
 
@@ -88,7 +87,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
  private:
   friend class BrowserDistribution;
 
-  FRIEND_TEST(GoogleChromeDistTest, TestExtractUninstallMetrics);
+  FRIEND_TEST_ALL_PREFIXES(GoogleChromeDistTest, TestExtractUninstallMetrics);
 
   // Extracts uninstall metrics from the JSON file located at file_path.
   // Returns them in a form suitable for appending to a url that already

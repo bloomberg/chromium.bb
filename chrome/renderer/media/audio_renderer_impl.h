@@ -37,6 +37,7 @@
 #ifndef CHROME_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
 #define CHROME_RENDERER_MEDIA_AUDIO_RENDERER_IMPL_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/lock.h"
 #include "base/shared_memory.h"
@@ -46,7 +47,6 @@
 #include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_base.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class AudioMessageFilter;
 
@@ -98,8 +98,9 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // For access to constructor and IO thread methods.
   friend class AudioRendererImplTest;
-  FRIEND_TEST(AudioRendererImplTest, Stop);
-  FRIEND_TEST(AudioRendererImplTest, DestroyedMessageLoop_OnReadComplete);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, Stop);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest,
+                           DestroyedMessageLoop_OnReadComplete);
 
   explicit AudioRendererImpl(AudioMessageFilter* filter);
   virtual ~AudioRendererImpl();
