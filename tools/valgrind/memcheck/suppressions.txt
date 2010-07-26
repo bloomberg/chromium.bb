@@ -2856,7 +2856,7 @@
    bug_42958
    Memcheck:Leak
    fun:malloc
-   fun:malloc
+   ...
    fun:_ZN3WTF10fastMallocEj
    fun:_ZN3WTF13FastAllocBasenwEj
    fun:_NPN_RegisterObject
@@ -3049,7 +3049,7 @@
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   ...
    fun:event_process_active
    fun:event_base_loop
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
