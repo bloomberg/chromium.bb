@@ -7,7 +7,7 @@
 // to provide a compatibility layer between MSVC and skia
 
 #ifndef SKIA_CONFIG_WIN_STDINT_H_
-#define SKIA_CONFIG_WIN_STDINT_H
+#define SKIA_CONFIG_WIN_STDINT_H_
 
 #if !defined(_MSC_VER)
 #error This file should only be included when compiling with MSVC.
@@ -23,4 +23,4 @@ typedef unsigned short        uint16_t;
 typedef unsigned int          uint32_t;
 typedef unsigned long long    uint64_t;
 
-#endif  // SKIA_CONFIG_WIN_STDINT_H
+#endif  // SKIA_CONFIG_WIN_STDINT_H_
