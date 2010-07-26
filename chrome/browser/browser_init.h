@@ -76,6 +76,13 @@ class BrowserInit {
                      const std::wstring& cur_dir, bool process_startup,
                      int* return_code);
 
+#if defined(OS_CHROMEOS)
+  // Processes the OEM services customization document and modifies browser
+  // settings like initial startup page, web apps and extentions.
+  bool ApplyServicesCustomization(
+      const chromeos::ServicesCustomizationDocument* customization);
+#endif
+
   // LaunchWithProfile ---------------------------------------------------------
   //
   // Assists launching the application and appending the initial tabs for a

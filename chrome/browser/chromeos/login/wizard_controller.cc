@@ -12,10 +12,8 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
@@ -52,19 +50,6 @@ namespace {
 
 // A boolean pref of the OOBE complete flag.
 const wchar_t kOobeComplete[] = L"OobeComplete";
-
-// Path to OEM partner startup customization manifest.
-const char kStartupCustomizationManifestPath[] =
-    "/mnt/partner_partition/etc/chromeos/startup_manifest.json";
-
-// URL where to fetch OEM services customization manifest from.
-// TODO(denisromanov): Change this to real URL when it becomes available.
-const char kServicesCustomizationManifestUrl[] =
-    "file:///mnt/partner_partition/etc/chromeos/services_manifest.json";
-
-// Path to flag file indicating that OOBE was completed successfully.
-const char kOobeCompleteFlagFilePath[] =
-    "/home/chronos/.oobe_completed";
 
 // Default size of the OOBE screen.
 const int kWizardScreenWidth = 700;
@@ -177,11 +162,6 @@ void DeleteWizardControllerAndLaunchBrowser(WizardController* controller) {
                           ProfileManager::GetDefaultProfile()));
 }
 
-void DeleteWizardControllerAndApplyCustomization(WizardController* controller) {
-  controller->ApplyPartnerServicesCustomizations();
-  delete controller;
-}
-
 }  // namespace
 
 const char WizardController::kNetworkScreenName[] = "network";
@@ -257,7 +237,7 @@ void WizardController::Init(const std::string& first_screen_name,
       NULL);
   window->SetContentsView(contents_);
 
-  bool oobe_complete = IsOobeCompleted();
+  bool oobe_complete = IsOobeComplete();
 
   if (!oobe_complete || first_screen_name == kOutOfBoxScreenName) {
     is_out_of_box_ = true;
@@ -360,18 +340,7 @@ void WizardController::ShowLoginScreen() {
     controller->Init();
     background_widget_ = NULL;
     background_view_ = NULL;
-
-    FilePath startup_manifest_path(kStartupCustomizationManifestPath);
-    if (file_util::PathExists(startup_manifest_path)) {
-      services_manifest_fetcher_.reset(new StringFetcher(
-          kServicesCustomizationManifestUrl));
-    }
-    ChromeThread::PostTask(
-        ChromeThread::UI,
-        FROM_HERE,
-        NewRunnableFunction(&DeleteWizardControllerAndApplyCustomization,
-                            this));
-
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
     return;
   }
 
@@ -481,7 +450,7 @@ void WizardController::OnAccountCreated() {
     if (!password_.empty()) {
       login->view()->SetPassword(password_);
       // TODO(dpolukhin): clear password memory for real. Now it is not
-      // a problem because we can't extract password from the form.
+      // a problem becuase we can't extract password from the form.
       password_.clear();
       login->view()->Login();
     }
@@ -537,7 +506,6 @@ void WizardController::OnUserImageSkipped() {
 }
 
 void WizardController::OnRegistrationSuccess() {
-  MarkDeviceRegistered();
   // TODO(nkostylev): Registration screen should be shown on first sign in.
   ShowLoginScreen();
 }
@@ -601,42 +569,6 @@ void WizardController::MarkOobeCompleted() {
   prefs->SetBoolean(kOobeComplete, true);
   // Make sure that changes are reflected immediately.
   prefs->SavePersistentPrefs();
-}
-
-void WizardController::MarkDeviceRegistered() {
-  // Create flag file for boot-time init scripts.
-  FilePath oobe_complete_path(kOobeCompleteFlagFilePath);
-  FILE* oobe_flag_file = file_util::OpenFile(oobe_complete_path, "w+b");
-  DCHECK(oobe_flag_file != NULL) << kOobeCompleteFlagFilePath;
-  if (oobe_flag_file != NULL)
-    file_util::CloseFile(oobe_flag_file);
-}
-
-void WizardController::ApplyPartnerServicesCustomizations() {
-  if (services_manifest_fetcher_.get() == NULL ||
-      services_manifest_fetcher_->result().empty()) {
-    return;
-  }
-  scoped_ptr<chromeos::ServicesCustomizationDocument> customization;
-  bool manifest_loaded;
-  customization.reset(new chromeos::ServicesCustomizationDocument());
-  manifest_loaded = customization->LoadManifestFromString(
-      services_manifest_fetcher_->result());
-  DCHECK(manifest_loaded) << "Customization manifest fetch error: "
-                          << services_manifest_fetcher_->result();
-  if (!manifest_loaded)
-    return;
-  LOG(INFO) << "partner services customizations manifest loaded successfully";
-  if (!customization->initial_start_page_url().empty()) {
-    // Append partner's start page url to command line so it gets opened
-    // on browser startup.
-    CommandLine::ForCurrentProcess()->AppendLooseValue(
-        UTF8ToWide(customization->initial_start_page_url()));
-    LOG(INFO) << "initial_start_page_url: "
-              << customization->initial_start_page_url();
-  }
-  // TODO(dpolukhin): apply customized apps, exts and support page.
-  MarkDeviceRegistered();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -707,13 +639,8 @@ chromeos::ScreenObserver* WizardController::GetObserver(WizardScreen* screen) {
   return observer_ ? observer_ : this;
 }
 
-bool WizardController::IsOobeCompleted() {
+bool WizardController::IsOobeComplete() {
   return g_browser_process->local_state()->GetBoolean(kOobeComplete);
-}
-
-bool WizardController::IsDeviceRegistered() {
-  FilePath oobe_complete_flag_file_path(kOobeCompleteFlagFilePath);
-  return file_util::PathExists(oobe_complete_flag_file_path);
 }
 
 namespace browser {
@@ -741,7 +668,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
 
   // Check whether we need to execute OOBE process.
-  bool oobe_complete = WizardController::IsOobeCompleted();
+  bool oobe_complete = WizardController::IsOobeComplete();
 
   if (first_screen_name.empty() &&
       oobe_complete &&
@@ -755,61 +682,47 @@ void ShowLoginWizard(const std::string& first_screen_name,
     return;
   }
 
-  // Create and show the wizard.
-  WizardController* controller = new WizardController();
+  scoped_ptr<chromeos::StartupCustomizationDocument> customization;
 
-  // Load partner customization startup manifest if it is available.
-  FilePath startup_manifest_path(kStartupCustomizationManifestPath);
-  std::string locale;
-  if (file_util::PathExists(startup_manifest_path)) {
-    scoped_ptr<chromeos::StartupCustomizationDocument> customization(
-        new chromeos::StartupCustomizationDocument());
-    bool manifest_loaded = customization->LoadManifestFromFile(
-        FilePath(kStartupCustomizationManifestPath));
-    DCHECK(manifest_loaded) << kStartupCustomizationManifestPath;
-    if (manifest_loaded) {
-      LOG(INFO) << "startup manifest loaded successfully";
-      // Switch to initial locale if specified by customization
-      // and has not been set yet. We cannot call
-      // chromeos::LanguageSwitchMenu::SwitchLanguage here before
-      // EmitLoginPromptReady.
-      const std::string current_locale =
-          g_browser_process->local_state()->GetString(
-              prefs::kApplicationLocale);
-      LOG(INFO) << "current locale: " << current_locale;
-      if (current_locale.empty()) {
-        locale = customization->initial_locale();
-        LOG(INFO) << "initial locale: " << locale;
-        if (!locale.empty()) {
-          ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
-        }
+  if (!oobe_complete) {
+    // Load partner customization startup manifest if needed.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kStartupManifest)) {
+      customization.reset(new chromeos::StartupCustomizationDocument());
+      FilePath manifest_path =
+          CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+              switches::kStartupManifest);
+      bool manifest_loaded = customization->LoadManifestFromFile(manifest_path);
+      DCHECK(manifest_loaded) << manifest_path.value();
+    }
+
+    // Do UX customizations if needed.
+    if (customization != NULL) {
+      // Switch to initial locale if specified by customization.
+      const std::string locale = customization->initial_locale();
+      if (!locale.empty()) {
+        chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
       }
 
-      controller->SetCustomization(customization.release());
+      // Set initial timezone if specified by customization.
+      const std::string timezone_name = customization->initial_timezone();
+      if (!timezone_name.empty()) {
+        icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
+            icu::UnicodeString::fromUTF8(timezone_name));
+        chromeos::CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone);
+      }
     }
   }
 
+  // Create and show the wizard.
+  WizardController* controller = new WizardController();
+  if (!oobe_complete)
+    controller->SetCustomization(customization.release());
   controller->ShowBackground(screen_bounds);
   controller->Init(first_screen_name, screen_bounds);
   controller->Show();
-
   if (chromeos::CrosLibrary::Get()->EnsureLoaded())
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
-
-  if (controller->GetCustomization() != NULL) {
-    if (!locale.empty())
-      chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
-
-    // Set initial timezone if specified by customization.
-    const std::string timezone_name =
-        controller->GetCustomization()->initial_timezone();
-    LOG(INFO) << "initial time zone: " << timezone_name;
-    if (!timezone_name.empty()) {
-      icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
-          icu::UnicodeString::fromUTF8(timezone_name));
-      chromeos::CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone);
-    }
-  }
 }
 
 }  // namespace browser

@@ -113,7 +113,7 @@ void ExistingUserController::Init() {
         background_bounds_,
         &background_view_);
 
-    if (!WizardController::IsOobeCompleted()) {
+    if (!WizardController::IsOobeComplete()) {
       background_view_->SetOobeProgressBarVisible(true);
       background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
     }

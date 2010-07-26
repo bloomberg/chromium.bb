@@ -108,6 +108,7 @@
 #include "app/win_util.h"
 #include "base/registry.h"
 #include "base/win_util.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -644,10 +645,40 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
   }
 }
 
+bool OptionallyApplyServicesCustomizationFromCommandLine(
+    const CommandLine& parsed_command_line,
+    BrowserInit* browser_init) {
+  // For Chrome OS, we may need to fetch OEM partner's services customization
+  // manifest and apply the customizations. This happens on the very first run
+  // or if startup manifest is passed on the command line.
+  scoped_ptr<chromeos::ServicesCustomizationDocument> customization;
+  customization.reset(new chromeos::ServicesCustomizationDocument());
+  bool manifest_loaded = false;
+  if (parsed_command_line.HasSwitch(switches::kServicesManifest)) {
+    // Load manifest from file specified by command line switch.
+    FilePath manifest_path =
+        parsed_command_line.GetSwitchValuePath(switches::kServicesManifest);
+    manifest_loaded = customization->LoadManifestFromFile(manifest_path);
+    DCHECK(manifest_loaded) << manifest_path.value();
+  }
+  // If manifest was loaded successfully, apply the customizations.
+  if (manifest_loaded) {
+    browser_init->ApplyServicesCustomization(customization.get());
+  }
+  return manifest_loaded;
+}
+
 #else
 
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
   // Dummy empty function for non-ChromeOS builds to avoid extra ifdefs below.
+}
+
+bool OptionallyApplyServicesCustomizationFromCommandLine(
+    const CommandLine& parsed_command_line,
+    BrowserInit* browser_init) {
+  // Dummy empty function for non-ChromeOS builds to avoid extra ifdefs below.
+  return false;
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -1095,6 +1126,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RegisterURLRequestChromeJob();
   RegisterExtensionProtocols();
   RegisterMetadataURLRequestHandler();
+
+  // If path to partner services customization document was passed on command
+  // line, apply the customizations (Chrome OS only).
+  // TODO(denisromanov): Remove this when not needed for testing.
+  OptionallyApplyServicesCustomizationFromCommandLine(parsed_command_line,
+                                                      &browser_init);
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global GoogleURLTracker and IntranetRedirectDetector instances, which
