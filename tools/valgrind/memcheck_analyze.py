@@ -559,7 +559,7 @@ def _main():
                     "(used to normalize source paths in baseline)")
 
   (options, args) = parser.parse_args()
-  if not len(args) >= 1:
+  if len(args) == 0:
     parser.error("no filename specified")
   filenames = args
 
