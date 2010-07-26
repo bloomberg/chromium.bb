@@ -19,7 +19,7 @@ CFLAGS = $(CFLAGS_EXTRA)
 
 ######################################################################
 clean:
-	rm -f *.bc *.o *.s *.x86 *.arm *.sfiarm *.c~ .h~ \
+	rm -f *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
               $(IT) $(IT).* *.out src/*bc $(EXTRA_CLEAN)
 
 
@@ -36,6 +36,8 @@ nosfi_bin: $(IT).gcc.x8632 $(IT).gcc.opt.x8632 \
 all: pnacl_bin nacl_bin nosfi_bin
 
 
+######################################################################
+## NON-SANDBOXING TOOLCHAINS
 ######################################################################
 LOCAL_GCC=/usr/bin/gcc
 
@@ -67,6 +69,8 @@ $(IT).gcc.opt.arm: $(SRC)
 	$(LOCAL_CROSS_GCC) -O3 -march=armv6 $(CFLAGS) $(SRC)  -static -lm  -o $@
 
 ######################################################################
+## NACL-GCC TOOLCHAINS
+######################################################################
 NACL_GCC=$(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl-gcc
 
 # nacl x86 gcc
@@ -90,9 +94,12 @@ $(IT).nacl.opt.x8664: $(SRC)
 
 
 ######################################################################
+## BITCODE TOOLCHAINS
+######################################################################
 # BITCODE - FRONTEND
 
 LLVM_FAKE_ROOT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi
+TRANSLATOR_ROOT=$(TC_ROOT)/sandboxed_translators
 BC_GCC=$(LLVM_FAKE_ROOT)/llvm-fake-sfigcc -emit-llvm
 BC_LD=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/bin/llvm-ld
 BC_OPT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/bin/opt
@@ -114,38 +121,57 @@ $(IT).opt.bc: $(IT).bc
 
 ######################################################################
 # BITCODE - BACKEND - ARM
+LIB_BC_PATH=$(TC_ROOT)/linux_arm-untrusted/libs-bitcode
+LIBS_BC = -lc -lm -lnacl -lpthread -lnosys
 
 BC_ARM=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch arm
-LIB_BC=$(TC_ROOT)/linux_arm-untrusted/libs-bitcode
+BC_ARM_TRANSLATOR=${TRANSLATOR_ROOT}/arm/translator
 
 $(IT).pnacl.arm: $(IT).bc
-	$(BC_ARM) $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
-	-lnosys -o $@
+	$(BC_ARM) $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
+
+# TODO(robertm): the arm translator is not fully supported at this time
+$(IT).pnacl_translator.arm: $(IT).bc
+	$(BC_ARM_TRANSLATOR) $(IT).bc $@
 
 $(IT).pnacl.opt.arm: $(IT).opt.bc
-	$(BC_ARM) $(PNACL) $(IT).opt.bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
-	-lnosys  -o $@
+	$(BC_ARM) $(PNACL) $(IT).opt.bc  -L$(LIB_BC_PATH)  $(LIBS_BC) -o $@
+
+# TODO(robertm): the arm translator is not fully supported at this time
+$(IT).pnacl_translator.opt.arm: $(IT).opt.bc
+	$(BC_ARM_TRANSLATOR) $(IT).opt.bc $@
 
 ######################################################################
 # BITCODE - BACKEND - X8632
 BC_X8632=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-32
+BC_X8632_TRANSLATOR=${TRANSLATOR_ROOT}/x8632/translator
 
 $(IT).pnacl.x8632: $(IT).bc
-	$(BC_X8632)  $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
-	-lnosys  -o $@
+	$(BC_X8632)  $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
+
+$(IT).pnacl_translator.x8632: $(IT).bc
+	$(BC_X8632_TRANSLATOR) $(IT).bc $@
 
 $(IT).pnacl.opt.x8632: $(IT).opt.bc
-	$(BC_X8632) $(PNACL) $(IT).opt.bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
-	-lnosys  -o $@
+	$(BC_X8632) $(PNACL) $(IT).opt.bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
+
+$(IT).pnacl_translator.opt.x8632: $(IT).bc
+	$(BC_X8632_TRANSLATOR) $(IT).opt.bc $@
 
 ######################################################################
 # BITCODE - BACKEND - X8664
 BC_X8664=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-64
+BC_X8664_TRANSLATOR=${TRANSLATOR_ROOT}/x8664/translator
 
 $(IT).pnacl.x8664: $(IT).bc
-	$(BC_X8664) $(PNACL) $(IT).bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
-	-lnosys  -o $@
+	$(BC_X8664) $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
+
+$(IT).pnacl_translator.x8664: $(IT).bc
+	$(BC_X8664_TRANSLATOR) $(IT).bc $@
 
 $(IT).pnacl.opt.x8664: $(IT).opt.bc
-	$(BC_X8664) $(PNACL) $(IT).opt.bc -L$(LIB_BC) -lc -lm -lnacl -lpthread \
-	-lnosys  -o $@
+	$(BC_X8664) $(PNACL) $(IT).opt.bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
+
+$(IT).pnacl_translator.opt.x8664: $(IT).bc
+	$(BC_X8664_TRANSLATOR) $(IT).opt.bc $@
+

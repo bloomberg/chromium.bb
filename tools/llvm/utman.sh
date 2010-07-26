@@ -1618,6 +1618,24 @@ binutils-x8632-sb-install() {
   spopd
 }
 
+#@ build_sandboxed_translators - build and package up sandbox translators
+build_sandboxed_translators() {
+  StepBanner "TRANSLATORS"
+
+  StepBanner "TRANSLATORS" "arm"
+  # TODO: this is just skeleton at this point
+  mkdir -p "${PNACL_CLIENT_TC_ARM}"
+
+  StepBanner "TRANSLATORS" "x86-32"
+  mkdir -p "${PNACL_CLIENT_TC_X8632}"
+  cp tools/llvm/dummy_translator_x8632.sh "${PNACL_CLIENT_TC_X8632}/translator"
+
+  StepBanner "TRANSLATORS" "x86-64"
+  mkdir -p "${PNACL_CLIENT_TC_X8664}"
+  cp tools/llvm/dummy_translator_x8664.sh "${PNACL_CLIENT_TC_X8664}/translator"
+
+}
+
 #########################################################################
 #     < NEWLIB-ARM >
 #     < NEWLIB-BITCODE >

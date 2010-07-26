@@ -164,11 +164,27 @@ SetupPnaclX8664() {
 }
 
 #@
-#@ SetupPnaclX864Opt
+#@ SetupPnaclX8664Opt
 #@    use pnacl x86-64 compiler (with lto)
 SetupPnaclX8664Opt() {
   SetupPnaclX8664Common
   SUFFIX=pnacl.opt.x8664
+}
+
+#@
+#@ SetupPnaclTranslatorX8664
+#@    use pnacl x8664 translator (no lto)
+SetupPnaclTranslatorX8664() {
+  SetupPnaclX8664Common
+  SUFFIX=pnacl_translator.x8664
+}
+
+#@
+#@ SetupPnaclTranslatorX8664Opt
+#@    use pnacl x8664 translator (with lto)
+SetupPnaclTranslatorX8664Opt() {
+  SetupPnaclX8664Common
+  SUFFIX=pnacl_translator.opt.x8664
 }
 
 SetupPnaclX8632Common() {
@@ -197,6 +213,22 @@ SetupPnaclX8632Opt() {
   SUFFIX=pnacl.opt.x8632
 }
 
+
+#@
+#@ SetupPnaclTranslatorX8632
+#@    use pnacl x8632 translator (no lto)
+SetupPnaclTranslatorX8632() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl_translator.x8632
+}
+
+#@
+#@ SetupPnaclTranslatorX8632Opt
+#@    use pnacl x8632 translator (with lto)
+SetupPnaclTranslatorX8632Opt() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl_translator.opt.x8632
+}
 
 #@
 #@ SetupGccArm
@@ -236,6 +268,7 @@ SetupPnaclArm() {
   SUFFIX=pnacl.arm
 }
 
+# TODO(robertm): add arm translator support
 
 ConfigInfo() {
   Banner "Config Info"
