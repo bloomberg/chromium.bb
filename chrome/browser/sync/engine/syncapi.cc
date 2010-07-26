@@ -2139,4 +2139,9 @@ UserShare* SyncManager::GetUserShare() const {
   return data_->GetUserShare();
 }
 
+bool SyncManager::HasUnsyncedItems() const {
+  sync_api::ReadTransaction trans(GetUserShare());
+  return (trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0);
+}
+
 }  // namespace sync_api

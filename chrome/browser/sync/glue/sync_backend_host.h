@@ -178,6 +178,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   virtual void GetWorkers(std::vector<browser_sync::ModelSafeWorker*>* out);
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
 
+  // Determines if the underlying sync engine has made any local changes to
+  // items that have not yet been synced with the server.
+  bool HasUnsyncedItems() const;
+
 #if defined(UNIT_TEST)
   // Called from unit test to bypass authentication and initialize the syncapi
   // to a state suitable for testing but not production.

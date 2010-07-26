@@ -11,6 +11,8 @@
 #include "base/time.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 
+using browser_sync::sessions::SyncSessionSnapshot;
+
 class Profile;
 
 // An instance of this class is basically our notion of a "sync client" for
@@ -44,13 +46,24 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // the |partner| should be the passive responder who responds to the actions
   // of |this|.  This method relies upon the synchronization of callbacks
   // from the message queue. Returns true if two sync cycles have completed.
+  // Note: Use this method when exactly one client makes local change(s), and
+  // exactly one client is waiting to receive those changes.
   bool AwaitMutualSyncCycleCompletion(ProfileSyncServiceTestHarness* partner);
 
   // Blocks the caller until |this| completes its ongoing sync cycle and every
   // other client in |partners| has a timestamp that is greater than or equal to
-  // the timestamp of |this|.
+  // the timestamp of |this|. Note: Use this method when exactly one client
+  // makes local change(s), and more than one client is waiting to receive those
+  // changes.
   bool AwaitGroupSyncCycleCompletion(
       std::vector<ProfileSyncServiceTestHarness*>& partners);
+
+  // Blocks the caller until every client in |clients| completes its ongoing
+  // sync cycle and all the clients' timestamps match.  Note: Use this method
+  // when more than one client makes local change(s), and more than one client
+  // is waiting to receive those changes.
+  static bool AwaitQuiescence(
+      std::vector<ProfileSyncServiceTestHarness*>& clients);
 
   ProfileSyncService* service() { return service_; }
 
@@ -95,6 +108,9 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
 
   Profile* profile_;
   ProfileSyncService* service_;
+
+  // Returns a snapshot of the current sync session.
+  const SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
   // State tracking.  Used for debugging and tracking of state.
   ProfileSyncService::Status last_status_;

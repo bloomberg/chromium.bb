@@ -14,8 +14,6 @@
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::sessions::SyncSessionSnapshot;
-
 // The default value for min_timestamp_needed_ when we're not in the
 // WAITING_FOR_UPDATES state.
 static const int kMinTimestampNeededNone = -1;
@@ -133,8 +131,7 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       break;
     }
     case WAITING_FOR_SYNC_TO_FINISH: {
-      const SyncSessionSnapshot* snap =
-          service_->backend()->GetLastSessionSnapshot();
+      const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
       DCHECK(snap) << "Should have been at least one sync session by now";
       // TODO(rsimha): In an ideal world, snap->has_more_to_sync == false should
       // be a sufficient condition for sync to have completed. However, the
@@ -150,8 +147,7 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       break;
     }
     case WAITING_FOR_UPDATES: {
-      const SyncSessionSnapshot* snap =
-          service_->backend()->GetLastSessionSnapshot();
+      const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
       DCHECK(snap) << "Should have been at least one sync session by now";
       if (snap->max_local_timestamp < min_timestamp_needed_)
         break;
@@ -175,8 +171,12 @@ void ProfileSyncServiceTestHarness::OnStateChanged() {
 
 bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
     const std::string& reason) {
-  wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
-  return AwaitStatusChangeWithTimeout(60, reason);
+  if (service()->backend()->HasUnsyncedItems()) {
+    wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
+    return AwaitStatusChangeWithTimeout(60, reason);
+  } else {
+    return true;
+  }
 }
 
 bool ProfileSyncServiceTestHarness::AwaitMutualSyncCycleCompletion(
@@ -207,11 +207,22 @@ bool ProfileSyncServiceTestHarness::AwaitGroupSyncCycleCompletion(
   return return_value;
 }
 
+// static
+bool ProfileSyncServiceTestHarness::AwaitQuiescence(
+    std::vector<ProfileSyncServiceTestHarness*>& clients) {
+  bool return_value = true;
+  for (std::vector<ProfileSyncServiceTestHarness*>::iterator it =
+      clients.begin(); it != clients.end(); ++it) {
+    return_value = return_value &&
+        (*it)->AwaitGroupSyncCycleCompletion(clients);
+  }
+  return return_value;
+}
+
 bool ProfileSyncServiceTestHarness::WaitUntilTimestampIsAtLeast(
     int64 timestamp, const std::string& reason) {
   min_timestamp_needed_ = timestamp;
-  const SyncSessionSnapshot* snap =
-      service_->backend()->GetLastSessionSnapshot();
+  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   DCHECK(snap) << "Should have been at least one sync session by now";
   if (snap->max_local_timestamp < min_timestamp_needed_) {
     wait_state_ = WAITING_FOR_UPDATES;
@@ -267,4 +278,10 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
   }
 
   return true;
+}
+
+const SyncSessionSnapshot*
+    ProfileSyncServiceTestHarness::GetLastSessionSnapshot() const {
+  EXPECT_FALSE(service_ == NULL) << "Sync service has not yet been set up.";
+  return service_->backend()->GetLastSessionSnapshot();
 }

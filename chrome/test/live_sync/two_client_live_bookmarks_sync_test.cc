@@ -90,9 +90,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
     bm1->SetTitle(google_two, L"Google--");
   }
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  // Make sure that client2 has pushed all of it's changes as well.
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 }

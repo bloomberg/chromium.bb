@@ -812,6 +812,10 @@ class SyncManager {
 
   UserShare* GetUserShare() const;
 
+  // Uses a read-only transaction to determine if the directory being synced has
+  // any remaining unsynced items.
+  bool HasUnsyncedItems() const;
+
  private:
   // An opaque pointer to the nested private class.
   SyncInternal* data_;

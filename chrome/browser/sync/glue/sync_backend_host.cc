@@ -344,6 +344,10 @@ void SyncBackendHost::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
   out->swap(copy);
 }
 
+bool SyncBackendHost::HasUnsyncedItems() const {
+  return core_->syncapi()->HasUnsyncedItems();
+}
+
 SyncBackendHost::Core::Core(SyncBackendHost* backend)
     : host_(backend),
       syncapi_(new sync_api::SyncManager()) {
