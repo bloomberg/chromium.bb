@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
 #define VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
+#pragma once
 
 #include "app/animation.h"
 #include "views/controls/button/button.h"

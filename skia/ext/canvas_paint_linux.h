@@ -5,6 +5,7 @@
 
 #ifndef SKIA_EXT_CANVAS_PAINT_LINUX_H_
 #define SKIA_EXT_CANVAS_PAINT_LINUX_H_
+#pragma once
 
 #include "base/logging.h"
 #include "skia/ext/platform_canvas.h"

@@ -4,6 +4,7 @@
 
 #ifndef BASE_RAND_UTIL_C_H_
 #define BASE_RAND_UTIL_C_H_
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_
 #define CHROME_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_
+#pragma once
 
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/common/geoposition.h"

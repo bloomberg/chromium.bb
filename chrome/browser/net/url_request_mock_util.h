@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NET_URL_REQUEST_MOCK_UTIL_H_
 #define CHROME_BROWSER_NET_URL_REQUEST_MOCK_UTIL_H_
+#pragma once
 
 // You should use routines in this file only for test code!
 

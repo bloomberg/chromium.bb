@@ -4,6 +4,7 @@
 
 #ifndef APP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_
 #define APP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_
+#pragma once
 
 #include <objidl.h>
 #include <shlobj.h>

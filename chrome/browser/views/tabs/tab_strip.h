@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_H_
 #define CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_H_
+#pragma once
 
 #include "app/animation_container.h"
 #include "base/message_loop.h"

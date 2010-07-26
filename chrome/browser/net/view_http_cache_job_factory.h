@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NET_VIEW_HTTP_CACHE_JOB_FACTORY_H_
 #define CHROME_BROWSER_NET_VIEW_HTTP_CACHE_JOB_FACTORY_H_
+#pragma once
 
 class GURL;
 class URLRequest;

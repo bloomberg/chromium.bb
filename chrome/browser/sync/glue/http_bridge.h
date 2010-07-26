@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_HTTP_BRIDGE_H_
 #define CHROME_BROWSER_SYNC_GLUE_HTTP_BRIDGE_H_
+#pragma once
 
 #include <string>
 

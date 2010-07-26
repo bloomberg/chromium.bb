@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_LABEL_H_
 #define VIEWS_CONTROLS_LABEL_H_
+#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "gfx/font.h"

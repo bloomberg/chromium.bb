@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_CONFIG_H_
 #define CHROME_GPU_GPU_CONFIG_H_
+#pragma once
 
 // This file declares common preprocessor configuration for the GPU process.
 

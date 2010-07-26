@@ -22,6 +22,7 @@
 
 #ifndef CHROME_COMMON_WEBKIT_PARAM_TRAITS_H_
 #define CHROME_COMMON_WEBKIT_PARAM_TRAITS_H_
+#pragma once
 
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"

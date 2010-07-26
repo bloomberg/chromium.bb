@@ -7,6 +7,7 @@
 
 #ifndef BASE_COMPAT_EXECINFO_H_
 #define BASE_COMPAT_EXECINFO_H_
+#pragma once
 
 #include "build/build_config.h"
 

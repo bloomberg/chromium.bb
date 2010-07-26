@@ -4,6 +4,7 @@
 
 #ifndef APP_ANIMATION_H_
 #define APP_ANIMATION_H_
+#pragma once
 
 #include "app/animation_container.h"
 #include "base/ref_counted.h"

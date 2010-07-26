@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_TOOLTIP_MANAGER_H_
 #define VIEWS_WIDGET_TOOLTIP_MANAGER_H_
+#pragma once
 
 #include <string>
 

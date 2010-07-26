@@ -7,6 +7,7 @@
 
 #ifndef BASE_HMAC_H_
 #define BASE_HMAC_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_THEME_INSTALL_BUBBLE_VIEW_GTK_H_
 #define CHROME_BROWSER_GTK_THEME_INSTALL_BUBBLE_VIEW_GTK_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

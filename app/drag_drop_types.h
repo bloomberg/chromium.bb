@@ -4,6 +4,7 @@
 
 #ifndef APP_DRAG_DROP_TYPES_H_
 #define APP_DRAG_DROP_TYPES_H_
+#pragma once
 
 #include "build/build_config.h"
 

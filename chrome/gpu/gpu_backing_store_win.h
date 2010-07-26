@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_BACKING_STORE_WIN_H_
 #define CHROME_GPU_GPU_BACKING_STORE_WIN_H_
+#pragma once
 
 #include <windows.h>
 

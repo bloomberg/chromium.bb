@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDER_PROCESS_IMPL_H_
 #define CHROME_RENDERER_RENDER_PROCESS_IMPL_H_
+#pragma once
 
 #include "base/timer.h"
 #include "chrome/renderer/render_process.h"

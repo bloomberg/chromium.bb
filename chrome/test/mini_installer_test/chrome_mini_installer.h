@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H_
 #define CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H_
+#pragma once
 
 #include <windows.h>
 #include <string>

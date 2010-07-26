@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_DATABASE_UTIL_H_
 #define CHROME_COMMON_DATABASE_UTIL_H_
+#pragma once
 
 #include "webkit/glue/webkitclient_impl.h"
 

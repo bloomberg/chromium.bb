@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_VIEW_H_
 #define CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_VIEW_H_
+#pragma once
 
 #include "build/build_config.h"
 #include "gfx/point.h"

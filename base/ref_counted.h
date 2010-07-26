@@ -4,6 +4,7 @@
 
 #ifndef BASE_REF_COUNTED_H_
 #define BASE_REF_COUNTED_H_
+#pragma once
 
 #include "base/atomic_ref_count.h"
 #include "base/thread_collision_warner.h"

@@ -29,6 +29,7 @@
 
 #ifndef BASE_SINGLETON_OBJC_H_
 #define BASE_SINGLETON_OBJC_H_
+#pragma once
 
 #import <Foundation/Foundation.h>
 #include "base/singleton.h"

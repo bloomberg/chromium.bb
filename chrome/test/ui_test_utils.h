@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_UI_TEST_UTILS_H_
 #define CHROME_TEST_UI_TEST_UTILS_H_
+#pragma once
 
 #include <map>
 #include <string>

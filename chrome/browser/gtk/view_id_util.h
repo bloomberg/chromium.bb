@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_VIEW_ID_UTIL_H_
 #define CHROME_BROWSER_GTK_VIEW_ID_UTIL_H_
+#pragma once
 
 #include "chrome/browser/view_ids.h"
 

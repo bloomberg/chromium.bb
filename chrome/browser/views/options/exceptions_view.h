@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_EXCEPTIONS_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_EXCEPTIONS_VIEW_H_
+#pragma once
 
 #include <string>
 

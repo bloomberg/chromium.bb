@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
 #define VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
+#pragma once
 
 #if defined (OS_LINUX)
 #include <gdk/gdk.h>

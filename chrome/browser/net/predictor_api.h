@@ -10,6 +10,7 @@
 
 #ifndef CHROME_BROWSER_NET_PREDICTOR_API_H_
 #define CHROME_BROWSER_NET_PREDICTOR_API_H_
+#pragma once
 
 
 #include <string>

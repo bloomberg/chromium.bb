@@ -6,6 +6,7 @@
 
 #ifndef IPC_IPC_SWITCHES_H_
 #define IPC_IPC_SWITCHES_H_
+#pragma once
 
 #include "base/base_switches.h"
 

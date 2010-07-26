@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_SANDBOX_POLICY_H_
 #define CHROME_COMMON_SANDBOX_POLICY_H_
+#pragma once
 
 #include "base/process.h"
 #include "base/file_path.h"

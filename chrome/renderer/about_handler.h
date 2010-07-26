@@ -9,6 +9,7 @@
 
 #ifndef CHROME_RENDERER_ABOUT_HANDLER_H__
 #define CHROME_RENDERER_ABOUT_HANDLER_H__
+#pragma once
 
 #include "base/basictypes.h"
 

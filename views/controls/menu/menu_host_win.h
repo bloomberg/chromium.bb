@@ -5,6 +5,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_MENU_HOST_WIN_H_
 #define VIEWS_CONTROLS_MENU_MENU_HOST_WIN_H_
+#pragma once
 
 #include "views/controls/menu/menu_host.h"
 #include "views/widget/widget_win.h"

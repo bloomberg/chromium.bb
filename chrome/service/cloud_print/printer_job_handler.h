@@ -4,6 +4,7 @@
 
 #ifndef CHROME_SERVICE_CLOUD_PRINT_PRINTER_JOB_HANDLER_H_
 #define CHROME_SERVICE_CLOUD_PRINT_PRINTER_JOB_HANDLER_H_
+#pragma once
 
 #include <list>
 #include <string>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_FAV_ICON_H_
 #define CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_FAV_ICON_H_
+#pragma once
 
 #include "views/widget/widget_gtk.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_DEFAULT_PLUGIN_PLUGIN_DATABASE_HANDLER_H_
 #define CHROME_DEFAULT_PLUGIN_PLUGIN_DATABASE_HANDLER_H_
+#pragma once
 
 #include <windows.h>
 #include <string>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_FRAME_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_FRAME_CHROMEOS_H_
+#pragma once
 
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 

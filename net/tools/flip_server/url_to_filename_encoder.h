@@ -4,6 +4,7 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_URL_TO_FILE_ENCODER_H__
 #define NET_TOOLS_FLIP_SERVER_URL_TO_FILE_ENCODER_H__
+#pragma once
 
 #include <string>
 #include "net/tools/flip_server/url_utilities.h"

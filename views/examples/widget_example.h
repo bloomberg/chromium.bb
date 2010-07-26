@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_WIDGET_EXAMPLE_H_
 #define VIEWS_EXAMPLES_WIDGET_EXAMPLE_H_
+#pragma once
 
 #include "views/background.h"
 #include "views/box_layout.h"

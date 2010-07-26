@@ -5,6 +5,7 @@
 
 #ifndef BASE_REGISTRY_H_
 #define BASE_REGISTRY_H_
+#pragma once
 
 #include <windows.h>
 #include <tchar.h>

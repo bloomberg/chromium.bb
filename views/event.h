@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EVENT_H_
 #define VIEWS_EVENT_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/keyboard_codes.h"

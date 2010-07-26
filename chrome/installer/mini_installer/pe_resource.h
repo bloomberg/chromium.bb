@@ -4,6 +4,7 @@
 
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_H_
+#pragma once
 
 #include <windows.h>
 

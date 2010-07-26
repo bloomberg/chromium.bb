@@ -4,6 +4,7 @@
 
 #ifndef GFX_CANVAS_DIRECT2D_H_
 #define GFX_CANVAS_DIRECT2D_H_
+#pragma once
 
 #include <d2d1.h>
 

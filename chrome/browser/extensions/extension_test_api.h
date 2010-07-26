@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_
+#pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
 

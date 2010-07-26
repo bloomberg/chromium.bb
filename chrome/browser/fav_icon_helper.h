@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_FAV_ICON_HELPER_H__
 #define CHROME_BROWSER_FAV_ICON_HELPER_H__
+#pragma once
 
 #include <map>
 #include <vector>

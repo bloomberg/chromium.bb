@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_VIEW_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBAR_VIEW_H_
+#pragma once
 
 // This interface should be implemented by classes that are the view (in the MVC
 // sense) of the TranslateInfoBarDelegate (which is the model).

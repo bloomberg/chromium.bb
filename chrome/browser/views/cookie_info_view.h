@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_COOKIE_INFO_VIEW_H_
 #define CHROME_BROWSER_VIEWS_COOKIE_INFO_VIEW_H_
+#pragma once
 
 #include <string>
 #include <vector>

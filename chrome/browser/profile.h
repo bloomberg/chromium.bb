@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_PROFILE_H_
 #define CHROME_BROWSER_PROFILE_H_
+#pragma once
 
 #include <set>
 #include <string>

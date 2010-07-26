@@ -4,6 +4,7 @@
 
 #ifndef BASE_SCOPED_NSDISABLE_SCREEN_UPDATES_H_
 #define BASE_SCOPED_NSDISABLE_SCREEN_UPDATES_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

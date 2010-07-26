@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NET_CHROME_NETWORK_DELEGATE_H_
 #define CHROME_BROWSER_NET_CHROME_NETWORK_DELEGATE_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "net/http/http_network_delegate.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_SAD_TAB_VIEW_H_
 #define CHROME_BROWSER_VIEWS_SAD_TAB_VIEW_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "gfx/font.h"

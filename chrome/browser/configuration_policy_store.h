@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CONFIGURATION_POLICY_STORE_H_
 #define CHROME_BROWSER_CONFIGURATION_POLICY_STORE_H_
+#pragma once
 
 #include "base/values.h"
 

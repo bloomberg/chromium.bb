@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_SCOPED_AUTHORIZATIONREF_H_
 #define CHROME_BROWSER_COCOA_SCOPED_AUTHORIZATIONREF_H_
+#pragma once
 
 #include <Security/Authorization.h>
 

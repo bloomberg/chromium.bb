@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_LISTBOX_LISTBOX_H_
 #define VIEWS_CONTROLS_LISTBOX_LISTBOX_H_
+#pragma once
 
 #include "build/build_config.h"
 

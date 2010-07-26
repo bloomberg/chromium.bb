@@ -4,6 +4,7 @@
 
 #ifndef CHROME_PLUGIN_WEBPLUGIN_PROXY_H_
 #define CHROME_PLUGIN_WEBPLUGIN_PROXY_H_
+#pragma once
 
 #include <string>
 

@@ -7,6 +7,7 @@
 
 #ifndef CHROME_PLUGIN_NPOBJECT_STUB_H_
 #define CHROME_PLUGIN_NPOBJECT_STUB_H_
+#pragma once
 
 #include <vector>
 

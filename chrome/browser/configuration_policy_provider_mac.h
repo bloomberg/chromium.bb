@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_MAC_H_
 #define CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_MAC_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/configuration_policy_store.h"

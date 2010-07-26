@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_
+#pragma once
 
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {

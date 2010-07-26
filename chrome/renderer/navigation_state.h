@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_NAVIGATION_STATE_H_
 #define CHROME_RENDERER_NAVIGATION_STATE_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "base/time.h"

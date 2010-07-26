@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H_
 #define CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"

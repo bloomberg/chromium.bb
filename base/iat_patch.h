@@ -11,6 +11,7 @@
 
 #ifndef BASE_IAT_PATCH_H__
 #define BASE_IAT_PATCH_H__
+#pragma once
 
 #include <windows.h>
 #include "base/basictypes.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_INDEXED_DB_KEY_H_
 #define CHROME_COMMON_INDEXED_DB_KEY_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

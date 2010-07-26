@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
 #define CHROME_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
+#pragma once
 
 #include "base/timer.h"
 #include "chrome/browser/visitedlink_master.h"

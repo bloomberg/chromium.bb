@@ -7,6 +7,7 @@
 
 #ifndef CHROME_RENDERER_LOADTIMES_EXTENSION_BINDINGS_H_
 #define CHROME_RENDERER_LOADTIMES_EXTENSION_BINDINGS_H_
+#pragma once
 
 namespace v8 {
 class Extension;

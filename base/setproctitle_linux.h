@@ -4,6 +4,7 @@
 
 #ifndef BASE_SETPROCTITLE_LINUX_H_
 #define BASE_SETPROCTITLE_LINUX_H_
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {

@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_GOOGLE_UTIL_H__
 #define CHROME_BROWSER_GOOGLE_UTIL_H__
+#pragma once
 
 class GURL;
 

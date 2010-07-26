@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_ZIP_H_
 #define CHROME_COMMON_ZIP_H_
+#pragma once
 
 #include <vector>
 

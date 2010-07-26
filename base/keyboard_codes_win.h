@@ -4,6 +4,7 @@
 
 #ifndef BASE_KEYBOARD_CODES_WIN_H_
 #define BASE_KEYBOARD_CODES_WIN_H_
+#pragma once
 
 #include <windows.h>
 

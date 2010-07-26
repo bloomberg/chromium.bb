@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_GTK_CUSTOM_MENU_H_
 #define CHROME_BROWSER_GTK_GTK_CUSTOM_MENU_H_
+#pragma once
 
 // GtkCustomMenu is a GtkMenu subclass that can contain, and collaborates with,
 // GtkCustomMenuItem instances. GtkCustomMenuItem is a GtkMenuItem that can

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_WORKER_WORKER_THREAD_H_
 #define CHROME_WORKER_WORKER_THREAD_H_
+#pragma once
 
 #include <set>
 

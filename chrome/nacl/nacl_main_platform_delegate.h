@@ -4,6 +4,7 @@
 
 #ifndef CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
 #define CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
+#pragma once
 
 #include "chrome/common/main_function_params.h"
 

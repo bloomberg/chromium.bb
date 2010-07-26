@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
+#pragma once
 
 #include "app/slide_animation.h"
 #include "third_party/skia/include/core/SkColor.h"

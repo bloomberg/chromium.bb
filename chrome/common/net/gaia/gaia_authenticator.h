@@ -27,6 +27,7 @@
 // artifacts of the sync code which needs to be cleaned up.
 #ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR_H_
 #define CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR_H_
+#pragma once
 
 #include <string>
 

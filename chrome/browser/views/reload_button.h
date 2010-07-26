@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_RELOAD_BUTTON_H__
 #define CHROME_BROWSER_VIEWS_RELOAD_BUTTON_H__
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/timer.h"

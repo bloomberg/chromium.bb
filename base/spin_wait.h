@@ -14,6 +14,7 @@
 
 #ifndef BASE_SPIN_WAIT_H__
 #define BASE_SPIN_WAIT_H__
+#pragma once
 
 #include "base/platform_thread.h"
 #include "base/time.h"

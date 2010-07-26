@@ -44,6 +44,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_OSX_WIFI_H_
 #define CHROME_BROWSER_GEOLOCATION_OSX_WIFI_H_
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 

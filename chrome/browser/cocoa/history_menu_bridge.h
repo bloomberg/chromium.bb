@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_HISTORY_MENU_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_HISTORY_MENU_BRIDGE_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 #include <map>

@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_DROP_TARGET_WIN_H_
 #define VIEWS_WIDGET_DROP_TARGET_WIN_H_
+#pragma once
 
 #include "base/base_drop_target.h"
 #include "views/widget/drop_helper.h"

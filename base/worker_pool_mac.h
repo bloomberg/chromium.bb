@@ -4,6 +4,7 @@
 
 #ifndef BASE_WORKER_POOL_MAC_H_
 #define BASE_WORKER_POOL_MAC_H_
+#pragma once
 
 #include "base/worker_pool.h"
 

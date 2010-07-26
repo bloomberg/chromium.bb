@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_H_
 #define CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_H_
+#pragma once
 
 #include "app/surface/transport_dib.h"
 #include "base/scoped_ptr.h"

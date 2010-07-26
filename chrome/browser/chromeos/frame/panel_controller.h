@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_FRAME_PANEL_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_FRAME_PANEL_CONTROLLER_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

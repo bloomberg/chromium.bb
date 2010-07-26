@@ -10,6 +10,7 @@
 
 #ifndef NET_BASE_LISTEN_SOCKET_H_
 #define NET_BASE_LISTEN_SOCKET_H_
+#pragma once
 
 #include "build/build_config.h"
 

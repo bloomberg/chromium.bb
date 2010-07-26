@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_CHROME_PLUGIN_UTIL_H_
 #define CHROME_COMMON_CHROME_PLUGIN_UTIL_H_
+#pragma once
 
 #include <string>
 

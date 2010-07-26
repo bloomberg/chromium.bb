@@ -4,6 +4,7 @@
 
 #ifndef APP_SURFACE_TRANSPORT_DIB_H_
 #define APP_SURFACE_TRANSPORT_DIB_H_
+#pragma once
 
 #include "base/basictypes.h"
 

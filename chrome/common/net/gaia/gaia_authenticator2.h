@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_H_
 #define CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_H_
+#pragma once
 
 #include <string>
 

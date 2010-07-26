@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_LANGUAGE_ORDER_TABLE_MODEL_H_
 #define CHROME_BROWSER_LANGUAGE_ORDER_TABLE_MODEL_H_
+#pragma once
 
 #include <string>
 #include <vector>

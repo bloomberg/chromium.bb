@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_VERTICAL_GRADIENT_VIEW_H_
 #define CHROME_BROWSER_COCOA_VERTICAL_GRADIENT_VIEW_H_
+#pragma once
 
 #include "base/scoped_nsobject.h"
 

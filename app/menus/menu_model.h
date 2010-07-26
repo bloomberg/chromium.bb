@@ -4,6 +4,7 @@
 
 #ifndef APP_MENUS_MENU_MODEL_H_
 #define APP_MENUS_MENU_MODEL_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "base/string16.h"

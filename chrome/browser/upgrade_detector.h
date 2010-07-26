@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_UPGRADE_DETECTOR_H_
 #define CHROME_BROWSER_UPGRADE_DETECTOR_H_
+#pragma once
 
 #include "base/singleton.h"
 #include "base/timer.h"

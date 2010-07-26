@@ -4,6 +4,7 @@
 
 #ifndef CHROME_PLUGIN_COMMAND_BUFFER_STUB_H_
 #define CHROME_PLUGIN_COMMAND_BUFFER_STUB_H_
+#pragma once
 
 #if defined(ENABLE_GPU)
 

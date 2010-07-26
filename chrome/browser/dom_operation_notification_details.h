@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_DOM_OPERATION_NOTIFICATION_DETAILS_H__
 #define CHROME_BROWSER_DOM_OPERATION_NOTIFICATION_DETAILS_H__
+#pragma once
 
 class DomOperationNotificationDetails {
  public:

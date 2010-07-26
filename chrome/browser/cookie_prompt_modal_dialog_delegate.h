@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COOKIE_PROMPT_MODAL_DIALOG_DELEGATE_H_
 #define CHROME_BROWSER_COOKIE_PROMPT_MODAL_DIALOG_DELEGATE_H_
+#pragma once
 
 // Delegate for handling modal dialog results from CookiePromptModalDialog.
 // The implementer of this MUST guarentee that from the time it's passed to the

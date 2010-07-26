@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_PROCESS_SUB_THREAD_H_
 #define CHROME_BROWSER_BROWSER_PROCESS_SUB_THREAD_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/chrome_thread.h"
@@ -37,4 +38,4 @@ class BrowserProcessSubThread : public ChromeThread {
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessSubThread);
 };
 
-#endif // CHROME_BROWSER_BROWSER_PROCESS_SUB_THREAD_H_
+#endif  // CHROME_BROWSER_BROWSER_PROCESS_SUB_THREAD_H_

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_WIN_H_
 #define CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_WIN_H_
+#pragma once
 
 #include <string>
 #include <vector>

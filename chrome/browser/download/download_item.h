@@ -16,6 +16,7 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef APP_L10N_UTIL_MAC_H_
 #define APP_L10N_UTIL_MAC_H_
+#pragma once
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"

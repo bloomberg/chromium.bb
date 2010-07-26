@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CONTENT_SETTING_BUBBLE_MODEL_H_
 #define CHROME_BROWSER_CONTENT_SETTING_BUBBLE_MODEL_H_
+#pragma once
 
 #include <set>
 #include <string>

@@ -8,6 +8,7 @@
 
 #ifndef CHROME_COMMON_NOTIFICATION_SERVICE_H_
 #define CHROME_COMMON_NOTIFICATION_SERVICE_H_
+#pragma once
 
 #include <map>
 

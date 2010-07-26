@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_MOCK_H__
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_MOCK_H__
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/profile_sync_service.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_ARCHIVED_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_ARCHIVED_DATABASE_H_
+#pragma once
 
 #include "app/sql/connection.h"
 #include "app/sql/init_status.h"

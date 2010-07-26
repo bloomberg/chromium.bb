@@ -4,6 +4,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_HTML_DIALOG_H_
 #define CHROME_INSTALLER_UTIL_HTML_DIALOG_H_
+#pragma once
 
 #include <string>
 

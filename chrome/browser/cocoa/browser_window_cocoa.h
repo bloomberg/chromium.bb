@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BROWSER_WINDOW_COCOA_H_
 #define CHROME_BROWSER_COCOA_BROWSER_WINDOW_COCOA_H_
+#pragma once
 
 #include "base/task.h"
 #include "chrome/browser/browser_window.h"

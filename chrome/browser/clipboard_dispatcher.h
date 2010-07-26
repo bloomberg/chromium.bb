@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CLIPBOARD_DISPATCHER_H_
 #define CHROME_BROWSER_CLIPBOARD_DISPATCHER_H_
+#pragma once
 
 #include <vector>
 
@@ -38,4 +39,3 @@ class ClipboardDispatcher {
 };
 
 #endif  // CHROME_BROWSER_CLIPBOARD_DISPATCHER_H_
-

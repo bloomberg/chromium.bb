@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_GLOBAL_REQUEST_ID_H_
 #define CHROME_BROWSER_RENDERER_HOST_GLOBAL_REQUEST_ID_H_
+#pragma once
 
 // Uniquely identifies a URLRequest.
 struct GlobalRequestID {

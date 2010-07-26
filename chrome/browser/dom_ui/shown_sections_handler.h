@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_SHOWN_SECTIONS_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_SHOWN_SECTIONS_HANDLER_H_
+#pragma once
 
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/common/notification_observer.h"

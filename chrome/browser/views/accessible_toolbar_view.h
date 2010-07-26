@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_ACCESSIBLE_TOOLBAR_VIEW_H_
 #define CHROME_BROWSER_VIEWS_ACCESSIBLE_TOOLBAR_VIEW_H_
+#pragma once
 
 #include "base/hash_tables.h"
 #include "base/task.h"

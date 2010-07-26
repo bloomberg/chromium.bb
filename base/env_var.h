@@ -4,6 +4,7 @@
 
 #ifndef BASE_ENV_VAR_H_
 #define BASE_ENV_VAR_H_
+#pragma once
 
 #include <string>
 

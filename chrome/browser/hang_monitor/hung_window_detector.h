@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__
 #define CHROME_BROWSER_HANG_MONITOR_HUNG_WINDOW_DETECTOR_H__
+#pragma once
 
 #include "base/lock.h"
 #include "chrome/common/worker_thread_ticker.h"

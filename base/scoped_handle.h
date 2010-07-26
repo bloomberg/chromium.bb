@@ -4,6 +4,7 @@
 
 #ifndef BASE_SCOPED_HANDLE_H_
 #define BASE_SCOPED_HANDLE_H_
+#pragma once
 
 #include <stdio.h>
 

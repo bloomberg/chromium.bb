@@ -4,6 +4,7 @@
 
 #ifndef BASE_TASK_H_
 #define BASE_TASK_H_
+#pragma once
 
 #include "base/non_thread_safe.h"
 #include "base/raw_scoped_refptr_mismatch_checker.h"

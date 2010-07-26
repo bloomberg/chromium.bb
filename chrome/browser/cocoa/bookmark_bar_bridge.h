@@ -10,6 +10,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_BAR_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_BAR_BRIDGE_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"

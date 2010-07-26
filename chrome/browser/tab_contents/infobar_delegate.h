@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_DELEGATE_H_
+#pragma once
 
 #include <string>
 

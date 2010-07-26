@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_
 #define CHROME_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_
+#pragma once
 
 #include "base/file_descriptor_posix.h"
 #include "base/process.h"

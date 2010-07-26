@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_MENU_BUTTON_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_MENU_BUTTON_H_
+#pragma once
 
 #include <string>
 #include <vector>

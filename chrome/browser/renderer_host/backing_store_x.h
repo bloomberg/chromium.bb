@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_X_H_
 #define CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_X_H_
+#pragma once
 
 #include "app/x11_util.h"
 #include "base/basictypes.h"

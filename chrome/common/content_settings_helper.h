@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_CONTENT_SETTINGS_HELPER_H_
 #define CHROME_COMMON_CONTENT_SETTINGS_HELPER_H_
+#pragma once
 
 #include <string>
 

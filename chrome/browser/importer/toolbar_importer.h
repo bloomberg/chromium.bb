@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_TOOLBAR_IMPORTER_H_
 #define CHROME_BROWSER_IMPORTER_TOOLBAR_IMPORTER_H_
+#pragma once
 
 #include <string>
 #include <vector>

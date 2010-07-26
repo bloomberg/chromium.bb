@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SHELL_DIALOGS_H_
 #define CHROME_BROWSER_SHELL_DIALOGS_H_
+#pragma once
 
 #include <string>
 #include <vector>

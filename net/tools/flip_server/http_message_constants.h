@@ -4,6 +4,7 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_HTTP_MESSAGE_CONSTANTS_H__
 #define NET_TOOLS_FLIP_SERVER_HTTP_MESSAGE_CONSTANTS_H__
+#pragma once
 
 namespace net {
 

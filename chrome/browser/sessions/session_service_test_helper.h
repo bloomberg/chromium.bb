@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SESSIONS_SESSION_SERVICE_TEST_HELPER_H_
 #define CHROME_BROWSER_SESSIONS_SESSION_SERVICE_TEST_HELPER_H_
+#pragma once
 
 #include <string>
 #include <vector>

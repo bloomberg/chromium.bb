@@ -4,6 +4,7 @@
 
 #ifndef BASE_BASE_DRAG_SOURCE_H_
 #define BASE_BASE_DRAG_SOURCE_H_
+#pragma once
 
 #include <objidl.h>
 

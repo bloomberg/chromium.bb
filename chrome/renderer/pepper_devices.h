@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_PEPPER_DEVICES_H_
 #define CHROME_RENDERER_PEPPER_DEVICES_H_
+#pragma once
 
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"

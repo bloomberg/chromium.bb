@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_SAD_TAB_VIEW_H_
 #define CHROME_BROWSER_COCOA_SAD_TAB_VIEW_H_
+#pragma once
 
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/base_view.h"

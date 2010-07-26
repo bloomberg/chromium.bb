@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_CLIENT_HOST_H_
 #define CHROME_BROWSER_DEBUGGER_DEVTOOLS_CLIENT_HOST_H_
+#pragma once
 
 #include "base/basictypes.h"
 

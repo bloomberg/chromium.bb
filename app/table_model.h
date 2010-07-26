@@ -4,6 +4,7 @@
 
 #ifndef APP_TABLE_MODEL_H_
 #define APP_TABLE_MODEL_H_
+#pragma once
 
 #include <string>
 #include <vector>

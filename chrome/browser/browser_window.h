@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_WINDOW_H_
 #define CHROME_BROWSER_BROWSER_WINDOW_H_
+#pragma once
 
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings_types.h"

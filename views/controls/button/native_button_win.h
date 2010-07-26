@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_BUTTON_NATIVE_BUTTON_WIN_H_
 #define VIEWS_CONTROLS_BUTTON_NATIVE_BUTTON_WIN_H_
+#pragma once
 
 #include "views/controls/native_control_win.h"
 #include "views/controls/button/native_button_wrapper.h"

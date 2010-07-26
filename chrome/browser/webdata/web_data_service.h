@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
 #define CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__
+#pragma once
 
 #include <map>
 #include <vector>

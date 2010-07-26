@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_NSOBJECT_ZOMBIE_H_
 #define CHROME_BROWSER_COCOA_NSOBJECT_ZOMBIE_H_
+#pragma once
 
 #import <Foundation/Foundation.h>
 

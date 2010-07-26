@@ -4,6 +4,7 @@
 
 #ifndef BASE_MIME_UTIL_H_
 #define BASE_MIME_UTIL_H_
+#pragma once
 
 #include <string>
 

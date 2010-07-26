@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_
 #define CHROME_BROWSER_SYNC_SYNC_SETUP_FLOW_H_
+#pragma once
 
 #include <string>
 #include <vector>

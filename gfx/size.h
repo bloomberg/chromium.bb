@@ -4,6 +4,7 @@
 
 #ifndef GFX_SIZE_H_
 #define GFX_SIZE_H_
+#pragma once
 
 #include "build/build_config.h"
 

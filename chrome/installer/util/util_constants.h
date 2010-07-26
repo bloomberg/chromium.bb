@@ -7,6 +7,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_
 #define CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_
+#pragma once
 
 namespace installer_util {
 

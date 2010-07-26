@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNC_CONSTANTS_H_
 #define CHROME_BROWSER_SYNC_SYNC_CONSTANTS_H_
+#pragma once
 
 namespace browser_sync {
 

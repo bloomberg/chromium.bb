@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
 #define CHROME_BROWSER_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model.h"

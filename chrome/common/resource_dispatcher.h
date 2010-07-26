@@ -6,6 +6,7 @@
 
 #ifndef CHROME_COMMON_RESOURCE_DISPATCHER_H__
 #define CHROME_COMMON_RESOURCE_DISPATCHER_H__
+#pragma once
 
 #include <deque>
 #include <string>

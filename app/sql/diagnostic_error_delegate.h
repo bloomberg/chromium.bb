@@ -4,6 +4,7 @@
 
 #ifndef APP_SQL_DIAGNOSTIC_ERROR_DELEGATE_H_
 #define APP_SQL_DIAGNOSTIC_ERROR_DELEGATE_H_
+#pragma once
 
 #include "app/sql/connection.h"
 #include "base/histogram.h"

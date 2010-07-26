@@ -4,6 +4,7 @@
 
 #ifndef CHROME_PLUGIN_PLUGIN_CHANNEL_H_
 #define CHROME_PLUGIN_PLUGIN_CHANNEL_H_
+#pragma once
 
 #include <vector>
 #include "base/ref_counted.h"

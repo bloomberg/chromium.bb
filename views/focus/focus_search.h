@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_FOCUS_SEARCH_H_
 #define VIEWS_WIDGET_FOCUS_SEARCH_H_
+#pragma once
 
 #include "views/view.h"
 

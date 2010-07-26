@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_PACK_EXTENSION_JOB_H_
 #define CHROME_BROWSER_EXTENSIONS_PACK_EXTENSION_JOB_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_CREATE_APPLICATION_SHORTCUT_VIEW_H_
 #define CHROME_BROWSER_VIEWS_CREATE_APPLICATION_SHORTCUT_VIEW_H_
+#pragma once
 
 #include <string>
 #include <vector>

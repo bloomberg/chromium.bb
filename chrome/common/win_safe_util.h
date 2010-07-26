@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_WIN_SAFE_UTIL_H__
 #define CHROME_COMMON_WIN_SAFE_UTIL_H__
+#pragma once
 
 #include <string>
 #include <windows.h>

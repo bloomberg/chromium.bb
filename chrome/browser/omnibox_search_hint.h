@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_OMNIBOX_SEARCH_HINT_H_
 #define CHROME_BROWSER_OMNIBOX_SEARCH_HINT_H_
+#pragma once
 
 #include <map>
 #include <string>

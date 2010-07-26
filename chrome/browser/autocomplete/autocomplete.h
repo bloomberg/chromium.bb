@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_H_
+#pragma once
 
 #include <string>
 #include <vector>

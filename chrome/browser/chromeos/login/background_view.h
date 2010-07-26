@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_BACKGROUND_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_BACKGROUND_VIEW_H_
+#pragma once
 
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

@@ -10,6 +10,7 @@
 
 #ifndef BASE_PE_IMAGE_H_
 #define BASE_PE_IMAGE_H_
+#pragma once
 
 #include <windows.h>
 #include <DelayIMP.h>

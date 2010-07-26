@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_BROWSER_WITH_TEST_WINDOW_TEST_H_
 #define CHROME_TEST_BROWSER_WITH_TEST_WINDOW_TEST_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
 #define CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
+#pragma once
 
 #include "third_party/WebKit/WebKit/chromium/public/WebMimeRegistry.h"
 #include "webkit/glue/webfilesystem_impl.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_TAB_CONTENTS_DRAG_SOURCE_H_
 #define CHROME_BROWSER_GTK_TAB_CONTENTS_DRAG_SOURCE_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

@@ -10,6 +10,7 @@
 
 #ifndef CHROME_COMMON_COMMON_PARAM_TRAITS_H_
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_H_
+#pragma once
 
 #include <vector>
 

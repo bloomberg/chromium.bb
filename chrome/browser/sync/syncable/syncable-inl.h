@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_INL_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_INL_H_
+#pragma once
 
 #include "chrome/common/sqlite_utils.h"
 

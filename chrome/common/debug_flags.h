@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_DEBUG_FLAGS_H__
 #define CHROME_COMMON_DEBUG_FLAGS_H__
+#pragma once
 
 #include "chrome/common/child_process_info.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_BLOB_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_BLOB_H_
+#pragma once
 
 #include <vector>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_BOOKMARK_EDITOR_GTK_H_
 #define CHROME_BROWSER_GTK_BOOKMARK_EDITOR_GTK_H_
+#pragma once
 
 #include <string>
 

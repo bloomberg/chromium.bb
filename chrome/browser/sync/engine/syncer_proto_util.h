@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_PROTO_UTIL_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_PROTO_UTIL_H_
+#pragma once
 
 #include <string>
 

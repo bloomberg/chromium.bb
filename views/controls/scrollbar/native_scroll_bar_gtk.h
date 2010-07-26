@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
 #define VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
+#pragma once
 
 #include "views/controls/native_control_gtk.h"
 #include "views/controls/scrollbar/native_scroll_bar_wrapper.h"

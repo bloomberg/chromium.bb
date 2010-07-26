@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_FILEICON_SOURCE_H_
 #define CHROME_BROWSER_DOM_UI_FILEICON_SOURCE_H_
+#pragma once
 
 #include <string>
 

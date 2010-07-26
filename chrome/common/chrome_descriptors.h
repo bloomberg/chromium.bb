@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_CHROME_DESCRIPTORS_H_
 #define CHROME_COMMON_CHROME_DESCRIPTORS_H_
+#pragma once
 
 #include "ipc/ipc_descriptors.h"
 // This is a list of global descriptor keys to be used with the

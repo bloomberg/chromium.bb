@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SESSIONS_SESSION_RESTORE_H_
 #define CHROME_BROWSER_SESSIONS_SESSION_RESTORE_H_
+#pragma once
 
 #include <vector>
 

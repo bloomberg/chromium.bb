@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_CHILD_PROCESS_INFO_H_
 #define CHROME_COMMON_CHILD_PROCESS_INFO_H_
+#pragma once
 
 #include <string>
 

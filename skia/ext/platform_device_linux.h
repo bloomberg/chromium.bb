@@ -4,6 +4,7 @@
 
 #ifndef SKIA_EXT_PLATFORM_DEVICE_LINUX_H_
 #define SKIA_EXT_PLATFORM_DEVICE_LINUX_H_
+#pragma once
 
 #include "third_party/skia/include/core/SkDevice.h"
 

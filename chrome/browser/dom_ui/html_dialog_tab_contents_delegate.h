@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_HTML_DIALOG_TAB_CONTENTS_DELEGATE_H_
 #define CHROME_BROWSER_DOM_UI_HTML_DIALOG_TAB_CONTENTS_DELEGATE_H_
+#pragma once
 
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 

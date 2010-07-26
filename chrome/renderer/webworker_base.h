@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_WEBWORKER_BASE_H_
 #define CHROME_RENDERER_WEBWORKER_BASE_H_
+#pragma once
 
 #include <vector>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_LOCATION_BAR_CLICK_HANDLER_H_
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_CLICK_HANDLER_H_
+#pragma once
 
 #include "base/basictypes.h"
 

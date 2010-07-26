@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_FAKE_ACCESS_TOKEN_STORE_H_
 #define CHROME_BROWSER_GEOLOCATION_FAKE_ACCESS_TOKEN_STORE_H_
+#pragma once
 
 #include "chrome/browser/geolocation/access_token_store.h"
 #include "testing/gtest/include/gtest/gtest.h"

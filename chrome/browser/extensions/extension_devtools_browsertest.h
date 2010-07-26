@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_DEVTOOLS_BROWSERTEST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_DEVTOOLS_BROWSERTEST_H_
+#pragma once
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

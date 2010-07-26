@@ -4,6 +4,7 @@
 
 #ifndef APP_GFX_GL_GL_CONTEXT_H_
 #define APP_GFX_GL_GL_CONTEXT_H_
+#pragma once
 
 #include "base/logging.h"
 #include "build/build_config.h"

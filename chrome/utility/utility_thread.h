@@ -4,6 +4,7 @@
 
 #ifndef CHROME_UTILITY_UTILITY_THREAD_H_
 #define CHROME_UTILITY_UTILITY_THREAD_H_
+#pragma once
 
 #include <string>
 #include <vector>

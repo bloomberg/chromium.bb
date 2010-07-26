@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_STATUS_BUBBLE_VIEWS_H_
 #define CHROME_BROWSER_VIEWS_STATUS_BUBBLE_VIEWS_H_
+#pragma once
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"

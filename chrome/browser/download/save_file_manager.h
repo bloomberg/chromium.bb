@@ -57,6 +57,7 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H__
 #define CHROME_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H__
+#pragma once
 
 #include <string>
 

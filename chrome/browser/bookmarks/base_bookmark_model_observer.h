@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BASE_BOOKMARK_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_BOOKMARKS_BASE_BOOKMARK_MODEL_OBSERVER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"

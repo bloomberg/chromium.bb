@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_H_
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_H_
+#pragma once
 
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"

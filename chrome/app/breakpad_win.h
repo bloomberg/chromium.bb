@@ -4,6 +4,7 @@
 
 #ifndef CHROME_APP_BREAKPAD_WIN_H_
 #define CHROME_APP_BREAKPAD_WIN_H_
+#pragma once
 
 #include <windows.h>
 #include <string>

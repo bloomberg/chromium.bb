@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CALLBACKS_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CALLBACKS_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/logging.h"

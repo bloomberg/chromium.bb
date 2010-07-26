@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_IMPORTER_LOCK_VIEW_H__
 #define CHROME_BROWSER_VIEWS_IMPORTER_LOCK_VIEW_H__
+#pragma once
 
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"

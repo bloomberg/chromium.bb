@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_SOCKET_STREAM_DISPATCHER_H_
 #define CHROME_COMMON_SOCKET_STREAM_DISPATCHER_H_
+#pragma once
 
 #include <vector>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_SYSTEM_PAGE_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_SYSTEM_PAGE_VIEW_H_
+#pragma once
 
 #include "chrome/browser/chromeos/options/settings_page_view.h"
 

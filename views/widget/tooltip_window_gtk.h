@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_TOOLTIP_WINDOW_GTK_H_
 #define VIEWS_WIDGET_TOOLTIP_WINDOW_GTK_H_
+#pragma once
 
 #include <string>
 

@@ -11,6 +11,7 @@
 // Directory objects everywhere.
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_MANAGER_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_MANAGER_H_
+#pragma once
 
 #include <string>
 #include <vector>

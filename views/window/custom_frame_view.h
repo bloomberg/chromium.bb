@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
 #define VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
+#pragma once
 
 #include "views/controls/button/image_button.h"
 #include "views/window/non_client_view.h"

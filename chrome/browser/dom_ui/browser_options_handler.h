@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_BROWSER_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_BROWSER_OPTIONS_HANDLER_H_
+#pragma once
 
 #include "chrome/browser/dom_ui/options_ui.h"
 #include "chrome/browser/search_engines/template_url_model.h"

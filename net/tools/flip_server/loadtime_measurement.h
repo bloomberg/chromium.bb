@@ -4,6 +4,7 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_LOADTIME_MEASUREMENT_H__
 #define NET_TOOLS_FLIP_SERVER_LOADTIME_MEASUREMENT_H__
+#pragma once
 
 #include <errno.h>
 #include <fcntl.h>

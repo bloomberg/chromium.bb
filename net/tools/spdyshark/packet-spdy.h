@@ -26,6 +26,7 @@
 
 #ifndef __PACKET_SPDY_H__
 #define __PACKET_SPDY_H__
+#pragma once
 
 #include <epan/packet.h>
 #ifdef HAVE_LIBZ

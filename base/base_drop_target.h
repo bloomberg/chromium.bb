@@ -4,6 +4,7 @@
 
 #ifndef BASE_BASE_DROP_TARGET_H_
 #define BASE_BASE_DROP_TARGET_H_
+#pragma once
 
 #include <objidl.h>
 

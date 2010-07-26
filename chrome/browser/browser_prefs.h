@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_PREFS_H__
 #define CHROME_BROWSER_BROWSER_PREFS_H__
+#pragma once
 
 class PrefService;
 

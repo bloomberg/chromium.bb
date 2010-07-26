@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_
 #define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_
+#pragma once
 
 #include "base/string16.h"
 #include "gfx/native_widget_types.h"

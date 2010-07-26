@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_JSON_VALUE_SERIALIZER_H_
 #define CHROME_COMMON_JSON_VALUE_SERIALIZER_H_
+#pragma once
 
 #include <string>
 

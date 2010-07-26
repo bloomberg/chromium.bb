@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PLUGIN_UPDATER_H_
 #define CHROME_BROWSER_PLUGIN_UPDATER_H_
+#pragma once
 
 #include <set>
 #include <vector>

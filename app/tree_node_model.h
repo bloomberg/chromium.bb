@@ -4,6 +4,7 @@
 
 #ifndef APP_TREE_NODE_MODEL_H_
 #define APP_TREE_NODE_MODEL_H_
+#pragma once
 
 #include <algorithm>
 #include <string>

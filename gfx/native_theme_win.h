@@ -10,6 +10,7 @@
 
 #ifndef APP_GFX_NATIVE_THEME_WIN_H_
 #define APP_GFX_NATIVE_THEME_WIN_H_
+#pragma once
 
 #include <windows.h>
 #include <uxtheme.h>

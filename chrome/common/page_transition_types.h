@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_PAGE_TRANSITION_TYPES_H__
 #define CHROME_COMMON_PAGE_TRANSITION_TYPES_H__
+#pragma once
 
 #include "base/basictypes.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DUMMY_CONFIGURATION_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_DUMMY_CONFIGURATION_POLICY_PROVIDER_H_
+#pragma once
 
 #include "chrome/browser/configuration_policy_store.h"
 #include "chrome/browser/configuration_policy_provider.h"

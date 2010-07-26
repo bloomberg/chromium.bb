@@ -4,6 +4,7 @@
 
 #ifndef APP_DOWNLOAD_FILE_INTERFACE_H_
 #define APP_DOWNLOAD_FILE_INTERFACE_H_
+#pragma once
 
 #include "build/build_config.h"
 

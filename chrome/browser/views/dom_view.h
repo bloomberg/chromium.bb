@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_DOM_VIEW_H_
 #define CHROME_BROWSER_VIEWS_DOM_VIEW_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"

@@ -4,6 +4,7 @@
 
 #ifndef GFX_TEST_SUITE_H_
 #define GFX_TEST_SUITE_H_
+#pragma once
 
 #include "build/build_config.h"
 

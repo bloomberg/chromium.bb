@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_FIRST_RUN_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_FIRST_RUN_BUBBLE_H_
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/task.h"

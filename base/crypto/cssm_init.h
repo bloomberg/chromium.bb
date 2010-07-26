@@ -4,6 +4,7 @@
 
 #ifndef BASE_CRYPTO_CSSM_INIT_H_
 #define BASE_CRYPTO_CSSM_INIT_H_
+#pragma once
 
 #include <Security/cssm.h>
 

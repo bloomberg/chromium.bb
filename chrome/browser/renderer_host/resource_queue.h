@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_RESOURCE_QUEUE_H_
 #define CHROME_BROWSER_RENDERER_HOST_RESOURCE_QUEUE_H_
+#pragma once
 
 #include <map>
 #include <set>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_DIR_OPEN_RESULT_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_DIR_OPEN_RESULT_H_
+#pragma once
 
 namespace syncable {
 enum DirOpenResult { OPENED,   // success.

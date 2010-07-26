@@ -4,6 +4,7 @@
 
 #ifndef BASE_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
 #define BASE_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "base/tuple.h"

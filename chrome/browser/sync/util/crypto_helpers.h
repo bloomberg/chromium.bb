@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_UTIL_CRYPTO_HELPERS_H_
 #define CHROME_BROWSER_SYNC_UTIL_CRYPTO_HELPERS_H_
+#pragma once
 
 #include <string>
 #include <vector>

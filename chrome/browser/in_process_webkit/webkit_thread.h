@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_THREAD_H_
+#pragma once
 
 #include "base/lock.h"
 #include "base/logging.h"

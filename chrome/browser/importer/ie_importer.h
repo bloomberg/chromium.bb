@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_IE_IMPORTER_H_
 #define CHROME_BROWSER_IMPORTER_IE_IMPORTER_H_
+#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/importer/importer.h"

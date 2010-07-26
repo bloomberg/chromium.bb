@@ -6,6 +6,7 @@
 
 #ifndef CHROME_PLUGIN_NPOBJECT_BASE_H_
 #define CHROME_PLUGIN_NPOBJECT_BASE_H_
+#pragma once
 
 #include "ipc/ipc_channel.h"
 #include "third_party/npapi/bindings/npruntime.h"

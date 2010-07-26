@@ -19,6 +19,7 @@
 // as well as potentially from multiple binary trace files.
 #ifndef BASE_EVENT_TRACE_CONTROLLER_WIN_H_
 #define BASE_EVENT_TRACE_CONTROLLER_WIN_H_
+#pragma once
 
 #include <windows.h>
 #include <wmistr.h>

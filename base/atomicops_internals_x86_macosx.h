@@ -6,6 +6,7 @@
 
 #ifndef BASE_ATOMICOPS_INTERNALS_X86_MACOSX_H_
 #define BASE_ATOMICOPS_INTERNALS_X86_MACOSX_H_
+#pragma once
 
 #include <libkern/OSAtomic.h>
 

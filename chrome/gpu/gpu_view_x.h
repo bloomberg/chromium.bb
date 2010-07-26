@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_VIEW_X_H_
 #define CHROME_GPU_GPU_VIEW_X_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"

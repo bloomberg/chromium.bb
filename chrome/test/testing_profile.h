@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_TESTING_PROFILE_H_
 #define CHROME_TEST_TESTING_PROFILE_H_
+#pragma once
 
 #include "base/base_paths.h"
 #include "base/file_util.h"

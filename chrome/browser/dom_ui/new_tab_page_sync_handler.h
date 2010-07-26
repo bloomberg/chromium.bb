@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_NEW_TAB_PAGE_SYNC_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_NEW_TAB_PAGE_SYNC_HANDLER_H_
+#pragma once
 
 #include <string>
 

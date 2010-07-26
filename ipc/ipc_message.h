@@ -4,6 +4,7 @@
 
 #ifndef IPC_IPC_MESSAGE_H__
 #define IPC_IPC_MESSAGE_H__
+#pragma once
 
 #include <string>
 

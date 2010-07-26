@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_GPU_VIEW_HOST_H_
 #define CHROME_BROWSER_RENDERER_HOST_GPU_VIEW_HOST_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/common/gpu_native_window_handle.h"

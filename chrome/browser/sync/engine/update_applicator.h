@@ -10,6 +10,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_UPDATE_APPLICATOR_H_
 #define CHROME_BROWSER_SYNC_ENGINE_UPDATE_APPLICATOR_H_
+#pragma once
 
 #include <set>
 #include <vector>

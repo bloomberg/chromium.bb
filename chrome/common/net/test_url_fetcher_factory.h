@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
 #define CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
+#pragma once
 
 #include <map>
 #include <string>

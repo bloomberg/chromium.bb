@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_NATIVE_CONTROL_WIN_H_
 #define VIEWS_CONTROLS_NATIVE_CONTROL_WIN_H_
+#pragma once
 
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/native/native_view_host.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_TEST_UTILS_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_TEST_UTILS_H_
+#pragma once
 
 class BookmarkModel;
 class BookmarkNode;

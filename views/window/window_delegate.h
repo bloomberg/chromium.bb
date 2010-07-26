@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_WINDOW_DELEGATE_H_
 #define VIEWS_WINDOW_WINDOW_DELEGATE_H_
+#pragma once
 
 #include <string>
 

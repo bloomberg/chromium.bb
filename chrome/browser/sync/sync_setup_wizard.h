@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNC_SETUP_WIZARD_H_
 #define CHROME_BROWSER_SYNC_SYNC_SETUP_WIZARD_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "gfx/native_widget_types.h"

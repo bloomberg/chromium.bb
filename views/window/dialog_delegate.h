@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_DIALOG_DELEGATE_H_
 #define VIEWS_WINDOW_DIALOG_DELEGATE_H_
+#pragma once
 
 #include "app/message_box_flags.h"
 #include "views/accessibility/accessibility_types.h"

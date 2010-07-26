@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_PINNED_CONTENTS_INFO_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_PINNED_CONTENTS_INFO_BUBBLE_H_
+#pragma once
 
 #include "chrome/browser/views/info_bubble.h"
 

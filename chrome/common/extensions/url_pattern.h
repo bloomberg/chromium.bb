@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #ifndef CHROME_COMMON_EXTENSIONS_URL_PATTERN_H_
 #define CHROME_COMMON_EXTENSIONS_URL_PATTERN_H_
+#pragma once
 
 #include <string>
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_VIEWS_MENU_GTK_H_
 #define VIEWS_CONTROLS_MENU_VIEWS_MENU_GTK_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "views/controls/menu/menu.h"

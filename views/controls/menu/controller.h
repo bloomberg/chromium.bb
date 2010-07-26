@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_CONTROLLER_H_
 #define VIEWS_CONTROLS_MENU_CONTROLLER_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_GROUP_VIEW_H__
 #define CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_GROUP_VIEW_H__
+#pragma once
 
 #include "views/view.h"
 

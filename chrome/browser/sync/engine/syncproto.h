@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCPROTO_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCPROTO_H_
+#pragma once
 
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"

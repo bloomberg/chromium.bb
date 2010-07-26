@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_SANDBOX_MAC_UNITTEST_RUNNER_H_
 #define CHROME_COMMON_SANDBOX_MAC_UNITTEST_RUNNER_H_
+#pragma once
 
 #include "base/multiprocess_test.h"
 #include "chrome/common/sandbox_mac.h"

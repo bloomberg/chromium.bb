@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_SINGLE_SPLIT_VIEW_H_
 #define VIEWS_CONTROLS_SINGLE_SPLIT_VIEW_H_
+#pragma once
 
 #include "views/view.h"
 

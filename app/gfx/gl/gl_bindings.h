@@ -9,6 +9,7 @@
 
 #ifndef APP_GFX_GL_GL_BINDINGS_H_
 #define APP_GFX_GL_GL_BINDINGS_H_
+#pragma once
 
 #include <GL/gl.h>
 #include <GL/glext.h>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_VIEWS_H_
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_VIEWS_H_
+#pragma once
 
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"

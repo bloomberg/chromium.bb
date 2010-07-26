@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_NINE_BOX_H_
 #define CHROME_BROWSER_GTK_NINE_BOX_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

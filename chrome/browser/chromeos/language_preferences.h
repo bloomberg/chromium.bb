@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LANGUAGE_PREFERENCES_H_
 #define CHROME_BROWSER_CHROMEOS_LANGUAGE_PREFERENCES_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/common/pref_names.h"

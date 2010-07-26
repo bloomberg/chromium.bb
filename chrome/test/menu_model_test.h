@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_MENU_MODEL_TEST_H_
 #define CHROME_TEST_MENU_MODEL_TEST_H_
+#pragma once
 
 #include "app/menus/simple_menu_model.h"
 

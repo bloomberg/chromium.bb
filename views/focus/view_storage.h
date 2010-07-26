@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_FOCUS_VIEW_STORAGE_H_
 #define VIEWS_FOCUS_VIEW_STORAGE_H_
+#pragma once
 
 #include "base/singleton.h"
 #include "views/view.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
 #define CHROME_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_
+#pragma once
 
 #include <Carbon/Carbon.h>
 

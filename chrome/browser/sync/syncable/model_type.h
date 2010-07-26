@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_MODEL_TYPE_H_
+#pragma once
 
 #include <bitset>
 #include <set>

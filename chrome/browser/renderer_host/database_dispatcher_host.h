@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_DATABASE_DISPATCHER_HOST_H_
 #define CHROME_BROWSER_RENDERER_HOST_DATABASE_DISPATCHER_HOST_H_
+#pragma once
 
 #include "base/hash_tables.h"
 #include "base/process.h"

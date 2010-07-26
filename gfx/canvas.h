@@ -4,6 +4,7 @@
 
 #ifndef GFX_CANVAS_H_
 #define GFX_CANVAS_H_
+#pragma once
 
 #include <string>
 

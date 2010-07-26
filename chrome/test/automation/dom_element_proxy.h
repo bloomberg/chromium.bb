@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_AUTOMATION_DOM_ELEMENT_PROXY_H_
 #define CHROME_TEST_AUTOMATION_DOM_ELEMENT_PROXY_H_
+#pragma once
 
 #include <string>
 #include <vector>

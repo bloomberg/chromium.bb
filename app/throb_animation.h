@@ -4,6 +4,7 @@
 
 #ifndef APP_THROB_ANIMATION_H_
 #define APP_THROB_ANIMATION_H_
+#pragma once
 
 #include "app/slide_animation.h"
 

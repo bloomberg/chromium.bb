@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_IDIRECT3D9_MOCK_WIN_H__
 #define CHROME_GPU_GPU_IDIRECT3D9_MOCK_WIN_H__
+#pragma once
 
 #include <d3d9.h>
 #include <windows.h>

@@ -4,6 +4,7 @@
 
 #ifndef NET_BASE_TELNET_SERVER_H_
 #define NET_BASE_TELNET_SERVER_H_
+#pragma once
 
 #include "net/base/listen_socket.h"
 

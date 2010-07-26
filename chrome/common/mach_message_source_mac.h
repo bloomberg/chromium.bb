@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_MACH_MESSAGE_SOURCE_MAC_H_
 #define CHROME_COMMON_MACH_MESSAGE_SOURCE_MAC_H_
+#pragma once
 
 #include <CoreServices/CoreServices.h>
 

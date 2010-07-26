@@ -4,6 +4,7 @@
 
 #ifndef APP_GTK_SIGNAL_REGISTRAR_H_
 #define APP_GTK_SIGNAL_REGISTRAR_H_
+#pragma once
 
 #include <glib.h>
 #include <map>

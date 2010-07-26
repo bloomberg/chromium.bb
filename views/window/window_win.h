@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_WINDOW_WIN_H_
 #define VIEWS_WINDOW_WINDOW_WIN_H_
+#pragma once
 
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"

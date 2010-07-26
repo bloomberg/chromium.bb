@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_CORE_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_CORE_OPTIONS_HANDLER_H_
+#pragma once
 
 #include <map>
 #include <string>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SCREEN_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SCREEN_DELEGATE_H_
+#pragma once
 
 #include "app/combobox_model.h"
 #include "chrome/browser/chromeos/cros/network_library.h"

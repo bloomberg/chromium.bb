@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_QUERY_PARSER_H_
 #define CHROME_BROWSER_HISTORY_QUERY_PARSER_H_
+#pragma once
 
 #include <vector>
 

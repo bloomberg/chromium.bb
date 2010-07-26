@@ -7,6 +7,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_
 #define CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_
+#pragma once
 
 #include <vector>
 

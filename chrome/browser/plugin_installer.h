@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PLUGIN_INSTALLER_H_
 #define CHROME_BROWSER_PLUGIN_INSTALLER_H_
+#pragma once
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 

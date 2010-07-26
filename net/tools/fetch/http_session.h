@@ -4,6 +4,7 @@
 
 #ifndef NET_BASE_TOOLS_HTTP_SESSION_H_
 #define NET_BASE_TOOLS_HTTP_SESSION_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "net/http/http_request_info.h"

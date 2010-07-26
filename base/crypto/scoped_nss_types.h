@@ -4,6 +4,7 @@
 
 #ifndef BASE_SCOPED_NSS_TYPES_H_
 #define BASE_SCOPED_NSS_TYPES_H_
+#pragma once
 
 #include <nss.h>
 #include <pk11pub.h>

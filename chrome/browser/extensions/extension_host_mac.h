@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_HOST_MAC_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_HOST_MAC_H_
+#pragma once
 
 #include "chrome/browser/extensions/extension_host.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_UTIL_H_
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_UTIL_H_
+#pragma once
 
 class URLRequest;
 class TabContents;

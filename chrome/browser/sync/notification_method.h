@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_NOTIFICATION_METHOD_H_
 #define CHROME_BROWSER_SYNC_NOTIFICATION_METHOD_H_
+#pragma once
 
 #include <string>
 

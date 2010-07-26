@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_IMPORTING_PROGRESS_VIEW_H_
 #define CHROME_BROWSER_VIEWS_IMPORTING_PROGRESS_VIEW_H_
+#pragma once
 
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"

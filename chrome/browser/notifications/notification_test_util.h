@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_TEST_UTIL_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_TEST_UTIL_H_
+#pragma once
 
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/balloon.h"

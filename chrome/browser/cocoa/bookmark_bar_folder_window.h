@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_BAR_FOLDER_WINDOW_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_BAR_FOLDER_WINDOW_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 #import "base/cocoa_protocols_mac.h"

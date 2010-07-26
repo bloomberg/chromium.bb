@@ -4,6 +4,7 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_SPLIT_H_
 #define NET_TOOLS_FLIP_SERVER_SPLIT_H_
+#pragma once
 
 #include <vector>
 #include "base/string_piece.h"

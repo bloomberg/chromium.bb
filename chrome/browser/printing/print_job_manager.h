@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_MANAGER_H_
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_MANAGER_H_
+#pragma once
 
 #include <string>
 #include <vector>

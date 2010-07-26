@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_COMBOBOX_EXAMPLE_H_
 #define VIEWS_EXAMPLES_COMBOBOX_EXAMPLE_H_
+#pragma once
 
 #include "app/combobox_model.h"
 #include "base/string_util.h"

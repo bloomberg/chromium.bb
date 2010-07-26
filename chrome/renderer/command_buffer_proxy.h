@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_COMMAND_BUFFER_PROXY_H_
 #define CHROME_RENDERER_COMMAND_BUFFER_PROXY_H_
+#pragma once
 
 #if defined(ENABLE_GPU)
 

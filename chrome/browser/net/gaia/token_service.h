@@ -10,6 +10,7 @@
 
 #ifndef CHROME_BROWSER_NET_GAIA_TOKEN_SERVICE_H_
 #define CHROME_BROWSER_NET_GAIA_TOKEN_SERVICE_H_
+#pragma once
 
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
 #define CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
+#pragma once
 
 #include <set>
 #include <string>

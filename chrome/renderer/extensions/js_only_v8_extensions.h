@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_JS_ONLY_V8_EXTENSIONS_H_
 #define CHROME_RENDERER_EXTENSIONS_JS_ONLY_V8_EXTENSIONS_H_
+#pragma once
 
 #include "v8/include/v8.h"
 

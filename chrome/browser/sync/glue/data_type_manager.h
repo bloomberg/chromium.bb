@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_H__
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_H__
+#pragma once
 
 #include <set>
 

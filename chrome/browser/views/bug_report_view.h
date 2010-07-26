@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_BUG_REPORT_VIEW_H_
 #define CHROME_BROWSER_VIEWS_BUG_REPORT_VIEW_H_
+#pragma once
 
 #include "chrome/common/net/url_fetcher.h"
 #include "gfx/rect.h"

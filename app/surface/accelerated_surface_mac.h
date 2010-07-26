@@ -4,6 +4,7 @@
 
 #ifndef APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
 #define APP_SURFACE_ACCELERATED_SURFACE_MAC_H_
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 

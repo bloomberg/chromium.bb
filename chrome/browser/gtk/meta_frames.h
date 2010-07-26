@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_META_FRAMES_H_
 #define CHROME_BROWSER_GTK_META_FRAMES_H_
+#pragma once
 
 #include <gdk/gdk.h>
 #include <gtk/gtkwindow.h>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "chrome/browser/views/info_bubble.h"

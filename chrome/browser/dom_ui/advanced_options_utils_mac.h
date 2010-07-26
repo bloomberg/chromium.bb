@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_ADVANCED_OPTIONS_UTILS_MAC_H_
 #define CHROME_BROWSER_DOM_UI_ADVANCED_OPTIONS_UTILS_MAC_H_
+#pragma once
 
 #include "base/basictypes.h"
 

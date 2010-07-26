@@ -4,6 +4,7 @@
 
 #ifndef APP_GTK_SIGNAL_H_
 #define APP_GTK_SIGNAL_H_
+#pragma once
 
 typedef void* gpointer;
 typedef struct _GtkWidget GtkWidget;

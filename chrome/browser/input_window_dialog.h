@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_INPUT_WINDOW_DIALOG_H_
 #define CHROME_BROWSER_INPUT_WINDOW_DIALOG_H_
+#pragma once
 
 #include <string>
 

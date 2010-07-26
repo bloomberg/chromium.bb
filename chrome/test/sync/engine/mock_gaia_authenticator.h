@@ -22,6 +22,7 @@
 
 #ifndef CHROME_TEST_SYNC_ENGINE_MOCK_GAIA_AUTHENTICATOR_H_
 #define CHROME_TEST_SYNC_ENGINE_MOCK_GAIA_AUTHENTICATOR_H_
+#pragma once
 
 #include <map>
 #include <string>

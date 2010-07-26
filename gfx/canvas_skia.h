@@ -4,6 +4,7 @@
 
 #ifndef GFX_CANVAS_SKIA_H_
 #define GFX_CANVAS_SKIA_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "gfx/canvas.h"

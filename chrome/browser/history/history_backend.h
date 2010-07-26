@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_BACKEND_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_BACKEND_H_
+#pragma once
 
 #include <utility>
 

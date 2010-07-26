@@ -8,6 +8,7 @@
 
 #ifndef BASE_DEBUG_UTIL_H_
 #define BASE_DEBUG_UTIL_H_
+#pragma once
 
 #include <iosfwd>
 #include <vector>

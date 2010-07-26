@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_GEOLOCATION_DISPATCHER_H_
 #define CHROME_RENDERER_GEOLOCATION_DISPATCHER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/id_map.h"

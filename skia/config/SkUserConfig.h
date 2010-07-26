@@ -16,6 +16,7 @@
 
 #ifndef SkUserConfig_DEFINED
 #define SkUserConfig_DEFINED
+#pragma once
 
 /*  SkTypes.h, the root of the public header files, does the following trick:
  

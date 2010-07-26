@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
+#pragma once
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/views/browser_bubble.h"

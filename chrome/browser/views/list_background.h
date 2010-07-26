@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_LIST_BACKGROUND_H_
 #define CHROME_BROWSER_VIEWS_LIST_BACKGROUND_H_
+#pragma once
 
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"

@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_HISTORY_API_CONSTANTS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_HISTORY_API_CONSTANTS_H_
+#pragma once
 
 namespace extension_history_api_constants {
 

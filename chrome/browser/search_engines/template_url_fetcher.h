@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_
+#pragma once
 
 #include "base/scoped_vector.h"
 #include "gfx/native_widget_types.h"

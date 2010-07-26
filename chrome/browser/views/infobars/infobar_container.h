@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_
 #define CHROME_BROWSER_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_
+#pragma once
 
 #include "chrome/common/notification_registrar.h"
 #include "views/view.h"

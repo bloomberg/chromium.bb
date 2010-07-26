@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_GTK_H_
 #define VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_GTK_H_
+#pragma once
 
 #include "app/gtk_signal.h"
 #include "views/controls/combobox/native_combobox_wrapper.h"

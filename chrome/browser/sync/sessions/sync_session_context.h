@@ -17,6 +17,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_
 #define CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_
+#pragma once
 
 #include <string>
 #include "chrome/browser/chrome_thread.h"

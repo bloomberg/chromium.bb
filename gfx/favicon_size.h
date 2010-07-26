@@ -4,6 +4,7 @@
 
 #ifndef APP_GFX_FAVICON_SIZE_H_
 #define APP_GFX_FAVICON_SIZE_H_
+#pragma once
 
 #include "base/compiler_specific.h"
 

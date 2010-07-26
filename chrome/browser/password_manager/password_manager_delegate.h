@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_DELEGATE_H_
+#pragma once
 
 namespace webkit_glue {
 struct PasswordFormFillData;

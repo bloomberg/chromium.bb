@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_UNITTEST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_UNITTEST_H_
+#pragma once
 
 #include "base/file_path.h"
 #include "base/message_loop.h"

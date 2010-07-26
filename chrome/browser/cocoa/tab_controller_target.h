@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_TAB_CONTROLLER_TARGET_H_
 #define CHROME_BROWSER_COCOA_TAB_CONTROLLER_TARGET_H_
+#pragma once
 
 #include "chrome/browser/tabs/tab_strip_model.h"
 

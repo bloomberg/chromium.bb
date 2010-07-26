@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_IPC_TEST_SINK_H_
 #define CHROME_COMMON_IPC_TEST_SINK_H_
+#pragma once
 
 #include <utility>
 #include <vector>

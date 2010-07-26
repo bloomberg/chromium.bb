@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_TABLE2_EXAMPLE_H_
 #define VIEWS_EXAMPLES_TABLE2_EXAMPLE_H_
+#pragma once
 
 #include <vector>
 

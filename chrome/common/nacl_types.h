@@ -5,6 +5,7 @@
 // Handle passing definitions for NaCl
 #ifndef CHROME_COMMON_NACL_TYPES_H_
 #define CHROME_COMMON_NACL_TYPES_H_
+#pragma once
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

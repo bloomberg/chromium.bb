@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NACL_CMD_LINE_H_
 #define CHROME_COMMON_NACL_CMD_LINE_H_
+#pragma once
 
 #include "base/command_line.h"
 

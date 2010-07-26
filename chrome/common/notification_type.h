@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NOTIFICATION_TYPE_H_
 #define CHROME_COMMON_NOTIFICATION_TYPE_H_
+#pragma once
 
 // This file describes various types used to describe and filter notifications
 // that pass through the NotificationService.

@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_BUTTON_NATIVE_BUTTON_H_
 #define VIEWS_CONTROLS_BUTTON_NATIVE_BUTTON_H_
+#pragma once
 
 #include "gfx/font.h"
 #include "views/controls/button/button.h"

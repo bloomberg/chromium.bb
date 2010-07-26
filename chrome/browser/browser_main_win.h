@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_MAIN_WIN_H_
 #define CHROME_BROWSER_BROWSER_MAIN_WIN_H_
+#pragma once
 
 class CommandLine;
 class MetricsService;

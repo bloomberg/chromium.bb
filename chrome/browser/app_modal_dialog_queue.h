@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H_
 #define CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H_
+#pragma once
 
 #include <queue>
 

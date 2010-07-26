@@ -4,6 +4,7 @@
 
 #ifndef BASE_SCOPED_CFTYPEREF_H_
 #define BASE_SCOPED_CFTYPEREF_H_
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/basictypes.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_TESTING_PREF_SERVICE_H_
 #define CHROME_TEST_TESTING_PREF_SERVICE_H_
+#pragma once
 
 #include <chrome/browser/pref_service.h>
 

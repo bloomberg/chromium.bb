@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_H_
+#pragma once
 
 #include "base/observer_list.h"
 #include "chrome/common/extensions/extension.h"

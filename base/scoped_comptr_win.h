@@ -4,6 +4,7 @@
 
 #ifndef BASE_SCOPED_COMPTR_WIN_H_
 #define BASE_SCOPED_COMPTR_WIN_H_
+#pragma once
 
 #include <unknwn.h>
 

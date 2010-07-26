@@ -7,6 +7,7 @@
 
 #ifndef BASE_RESOURCE_UTIL_H__
 #define BASE_RESOURCE_UTIL_H__
+#pragma once
 
 #include <windows.h>
 #include <string>

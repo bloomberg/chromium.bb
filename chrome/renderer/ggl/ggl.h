@@ -9,6 +9,7 @@
 
 #ifndef CHROME_RENDERER_GGL_GGL_H_
 #define CHROME_RENDERER_GGL_GGL_H_
+#pragma once
 
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"

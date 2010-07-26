@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_WEB_CACHE_MANAGER_H_
 #define CHROME_BROWSER_RENDERER_HOST_WEB_CACHE_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <list>

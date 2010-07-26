@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_MENU_EXAMPLE_H_
 #define VIEWS_EXAMPLES_MENU_EXAMPLE_H_
+#pragma once
 
 #include <set>
 

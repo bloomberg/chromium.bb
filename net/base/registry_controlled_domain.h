@@ -109,6 +109,7 @@
 
 #ifndef NET_BASE_REGISTRY_CONTROLLED_DOMAIN_H_
 #define NET_BASE_REGISTRY_CONTROLLED_DOMAIN_H_
+#pragma once
 
 #include <string>
 

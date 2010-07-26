@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_FORM_MANAGER_H_
 #define CHROME_RENDERER_FORM_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_CHROME_VERSION_INFO_H_
 #define CHROME_COMMON_CHROME_VERSION_INFO_H_
+#pragma once
 
 class FileVersionInfo;
 

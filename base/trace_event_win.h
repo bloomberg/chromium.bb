@@ -5,6 +5,7 @@
 // This file contains the Windows-specific declarations for trace_event.h.
 #ifndef BASE_TRACE_EVENT_WIN_H_
 #define BASE_TRACE_EVENT_WIN_H_
+#pragma once
 
 #include <string>
 #include "base/event_trace_provider_win.h"

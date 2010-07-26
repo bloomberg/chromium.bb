@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_MEMORY_PURGER_H_
 #define CHROME_BROWSER_MEMORY_PURGER_H_
+#pragma once
 
 #include "base/basictypes.h"
 

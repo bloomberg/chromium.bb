@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_COMMAND_OBSERVER_BRIDGE
 #define CHROME_BROWSER_COCOA_COMMAND_OBSERVER_BRIDGE
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

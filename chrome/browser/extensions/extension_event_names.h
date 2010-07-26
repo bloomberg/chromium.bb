@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_EVENT_NAMES_H_
+#pragma once
 
 namespace extension_event_names {
 

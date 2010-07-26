@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_STATUS_ICONS_STATUS_TRAY_WIN_H_
 #define CHROME_BROWSER_VIEWS_STATUS_ICONS_STATUS_TRAY_WIN_H_
+#pragma once
 
 #include <windows.h>
 

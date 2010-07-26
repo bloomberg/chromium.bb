@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_BOOKMARK_CONTEXT_MENU_H_
 #define CHROME_BROWSER_VIEWS_BOOKMARK_CONTEXT_MENU_H_
+#pragma once
 
 #include "chrome/browser/views/bookmark_context_menu_controller_views.h"
 #include "views/controls/menu/menu_delegate.h"

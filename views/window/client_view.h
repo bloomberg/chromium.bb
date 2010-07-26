@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_CLIENT_VIEW_H_
 #define VIEWS_WINDOW_CLIENT_VIEW_H_
+#pragma once
 
 #include "views/view.h"
 

@@ -6,6 +6,7 @@
 
 #ifndef CHROME_COMMON_CHROME_COUNTERS_H_
 #define CHROME_COMMON_CHROME_COUNTERS_H_
+#pragma once
 
 class StatsCounter;
 class StatsCounterTimer;

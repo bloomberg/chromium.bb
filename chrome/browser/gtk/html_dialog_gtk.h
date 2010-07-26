@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_HTML_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_HTML_DIALOG_GTK_H_
+#pragma once
 
 #include <string>
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_WINDOW_SHAPE_H_
 #define VIEWS_WINDOW_WINDOW_SHAPE_H_
+#pragma once
 
 namespace gfx {
 class Size;

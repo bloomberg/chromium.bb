@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BUG_REPORT_UTIL_H_
 #define CHROME_BROWSER_BUG_REPORT_UTIL_H_
+#pragma once
 
 #include <string>
 #include <vector>

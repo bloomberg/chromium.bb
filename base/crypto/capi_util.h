@@ -4,6 +4,7 @@
 
 #ifndef BASE_CRYPTO_CAPI_UTIL_H_
 #define BASE_CRYPTO_CAPI_UTIL_H_
+#pragma once
 
 #include <windows.h>
 #include <wincrypt.h>

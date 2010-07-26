@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_CONFIG_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_CONFIG_UTIL_H_
+#pragma once
 
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "views/controls/combobox/combobox.h"

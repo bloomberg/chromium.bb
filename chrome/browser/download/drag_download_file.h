@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
 #define CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
+#pragma once
 
 #include "app/download_file_interface.h"
 #include "base/file_path.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_BACKING_STORE_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_BACKING_STORE_H_
+#pragma once
 
 #include <set>
 #include <string>

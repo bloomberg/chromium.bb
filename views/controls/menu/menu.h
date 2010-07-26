@@ -4,6 +4,7 @@
 
 #ifndef CONTROLS_MENU_VIEWS_MENU_H_
 #define CONTROLS_MENU_VIEWS_MENU_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "gfx/native_widget_types.h"

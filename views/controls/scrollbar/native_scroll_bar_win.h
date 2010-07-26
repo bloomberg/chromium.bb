@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_
 #define VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_
+#pragma once
 
 #include "views/controls/native_control_win.h"
 #include "views/controls/scrollbar/native_scroll_bar_wrapper.h"

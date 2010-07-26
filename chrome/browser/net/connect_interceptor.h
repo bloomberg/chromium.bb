@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
 #define CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
+#pragma once
 
 #include "net/url_request/url_request.h"
 

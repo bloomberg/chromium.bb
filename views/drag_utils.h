@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_DRAG_UTILS_H_
 #define VIEWS_DRAG_UTILS_H_
+#pragma once
 
 #include <string>
 

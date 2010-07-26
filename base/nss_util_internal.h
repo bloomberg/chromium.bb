@@ -4,6 +4,7 @@
 
 #ifndef BASE_NSS_SLOT_UTIL_H_
 #define BASE_NSS_SLOT_UTIL_H_
+#pragma once
 
 #include <secmodt.h>
 

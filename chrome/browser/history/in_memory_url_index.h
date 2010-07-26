@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_H_
 #define CHROME_BROWSER_HISTORY_IN_MEMORY_URL_INDEX_H_
+#pragma once
 
 namespace history {
 

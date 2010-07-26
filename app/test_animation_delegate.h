@@ -4,6 +4,7 @@
 
 #ifndef APP_TEST_ANIMATION_DELEGATE_H_
 #define APP_TEST_ANIMATION_DELEGATE_H_
+#pragma once
 
 #include "app/animation.h"
 #include "base/message_loop.h"

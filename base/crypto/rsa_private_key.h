@@ -4,6 +4,7 @@
 
 #ifndef BASE_CRYPTO_RSA_PRIVATE_KEY_H_
 #define BASE_CRYPTO_RSA_PRIVATE_KEY_H_
+#pragma once
 
 #include "build/build_config.h"
 

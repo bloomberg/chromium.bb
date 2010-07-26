@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H__
 #define CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H__
+#pragma once
 
 #include "chrome/browser/views/options/options_page_view.h"
 

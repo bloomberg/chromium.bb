@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NOTIFICATION_OBSERVER_H_
 #define CHROME_COMMON_NOTIFICATION_OBSERVER_H_
+#pragma once
 
 class NotificationDetails;
 class NotificationSource;

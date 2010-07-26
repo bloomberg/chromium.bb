@@ -4,6 +4,7 @@
 
 #ifndef APP_GFX_GDI_UTIL_H_
 #define APP_GFX_GDI_UTIL_H_
+#pragma once
 
 #include <vector>
 #include <windows.h>

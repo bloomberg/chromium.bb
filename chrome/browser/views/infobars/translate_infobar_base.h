@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_INFOBARS_TRANSLATE_INFOBAR_BASE_H_
 #define CHROME_BROWSER_VIEWS_INFOBARS_TRANSLATE_INFOBAR_BASE_H_
+#pragma once
 
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/views/infobars/infobars.h"

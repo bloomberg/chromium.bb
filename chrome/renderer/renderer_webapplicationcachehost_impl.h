@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
+#pragma once
 
 #include "webkit/appcache/web_application_cache_host_impl.h"
 

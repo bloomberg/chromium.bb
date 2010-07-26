@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_MOCK_H__
 #define CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_MOCK_H__
+#pragma once
 
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_LANGUAGE_MENU_BUTTON_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_LANGUAGE_MENU_BUTTON_H_
+#pragma once
 
 #include "app/menus/simple_menu_model.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"

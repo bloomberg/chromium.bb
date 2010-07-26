@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_H_
 #define CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_H_
+#pragma once
 
 #include "build/build_config.h"
 #include "views/window/non_client_view.h"

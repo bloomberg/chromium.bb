@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_CLEANUP_DISABLED_TYPES_COMMAND_H_
 #define CHROME_BROWSER_SYNC_ENGINE_CLEANUP_DISABLED_TYPES_COMMAND_H_
+#pragma once
 
 #include "chrome/browser/sync/engine/syncer_command.h"
 

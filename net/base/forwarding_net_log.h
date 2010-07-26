@@ -4,6 +4,7 @@
 
 #ifndef NET_BASE_FORWARDING_NET_LOG_H_
 #define NET_BASE_FORWARDING_NET_LOG_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "net/base/net_log.h"

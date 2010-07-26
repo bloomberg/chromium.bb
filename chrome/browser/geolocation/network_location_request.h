@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_
 #define CHROME_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_
+#pragma once
 
 #include <string>
 #include "base/basictypes.h"

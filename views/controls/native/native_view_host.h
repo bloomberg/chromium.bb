@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_H_
 #define VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_H_
+#pragma once
 
 #include <string>
 

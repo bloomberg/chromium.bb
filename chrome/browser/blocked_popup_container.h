@@ -9,6 +9,7 @@
 
 #ifndef CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
 #define CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
+#pragma once
 
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 

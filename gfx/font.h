@@ -4,6 +4,7 @@
 
 #ifndef GFX_FONT_H_
 #define GFX_FONT_H_
+#pragma once
 
 #include "build/build_config.h"
 

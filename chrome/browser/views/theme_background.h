@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_THEME_BACKGROUND_H_
 #define CHROME_BROWSER_VIEWS_THEME_BACKGROUND_H_
+#pragma once
 
 #include "views/background.h"
 

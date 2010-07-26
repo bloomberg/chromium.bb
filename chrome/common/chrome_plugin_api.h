@@ -12,6 +12,7 @@
 
 #ifndef CHROME_COMMON_CHROME_PLUGIN_API_H__
 #define CHROME_COMMON_CHROME_PLUGIN_API_H__
+#pragma once
 
 #include "base/basictypes.h"
 

@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_LOAD_NOTIFICATION_DETAILS_H__
 #define CHROME_BROWSER_LOAD_NOTIFICATION_DETAILS_H__
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/time.h"

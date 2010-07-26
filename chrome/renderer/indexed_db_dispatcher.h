@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_INDEXED_DB_DISPATCHER_H_
 #define CHROME_RENDERER_INDEXED_DB_DISPATCHER_H_
+#pragma once
 
 #include "base/id_map.h"
 #include "base/nullable_string16.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_LIMITER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_LIMITER_H_
+#pragma once
 
 #include <map>
 #include <string>

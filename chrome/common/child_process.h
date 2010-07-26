@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_CHILD_PROCESS_H__
 #define CHROME_COMMON_CHILD_PROCESS_H__
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"

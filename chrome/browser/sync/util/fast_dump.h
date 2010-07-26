@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_UTIL_FAST_DUMP_H_
 #define CHROME_BROWSER_SYNC_UTIL_FAST_DUMP_H_
+#pragma once
 
 #include <ostream>
 #include <streambuf>

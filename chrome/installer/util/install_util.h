@@ -8,6 +8,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_INSTALL_UTIL_H__
 #define CHROME_INSTALLER_UTIL_INSTALL_UTIL_H__
+#pragma once
 
 #include <tchar.h>
 #include <windows.h>

@@ -4,6 +4,7 @@
 
 #ifndef BASE_NSS_UTIL_H_
 #define BASE_NSS_UTIL_H_
+#pragma once
 
 #include "base/basictypes.h"
 

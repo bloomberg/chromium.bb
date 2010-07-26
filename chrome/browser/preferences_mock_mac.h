@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PREFERENCES_MOCK_MAC_H_
 #define CHROME_BROWSER_PREFERENCES_MOCK_MAC_H_
+#pragma once
 
 #include "base/scoped_cftyperef.h"
 #include "chrome/browser/preferences_mac.h"

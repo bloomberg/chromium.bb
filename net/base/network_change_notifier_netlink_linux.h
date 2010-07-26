@@ -8,6 +8,7 @@
 
 #ifndef NET_BASE_NETWORK_CHANGE_NOTIFIER_NETLINK_LINUX_H_
 #define NET_BASE_NETWORK_CHANGE_NOTIFIER_NETLINK_LINUX_H_
+#pragma once
 
 #include <cstddef>
 

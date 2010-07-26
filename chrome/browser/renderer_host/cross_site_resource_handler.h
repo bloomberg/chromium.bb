@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_CROSS_SITE_RESOURCE_HANDLER_H_
 #define CHROME_BROWSER_RENDERER_HOST_CROSS_SITE_RESOURCE_HANDLER_H_
+#pragma once
 
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "net/url_request/url_request_status.h"

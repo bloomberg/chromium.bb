@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_MOCK_SYSTEM_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_MOCK_SYSTEM_LIBRARY_H_
+#pragma once
 
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "testing/gmock/include/gmock/gmock.h"

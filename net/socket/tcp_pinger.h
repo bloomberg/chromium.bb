@@ -4,6 +4,7 @@
 
 #ifndef NET_SOCKET_TCP_PINGER_H_
 #define NET_SOCKET_TCP_PINGER_H_
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/ref_counted.h"

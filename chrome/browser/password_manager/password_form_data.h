@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_DATA_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_DATA_H_
+#pragma once
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/glue/password_form.h"

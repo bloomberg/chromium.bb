@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_COLUMNS_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_COLUMNS_H_
+#pragma once
 
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"

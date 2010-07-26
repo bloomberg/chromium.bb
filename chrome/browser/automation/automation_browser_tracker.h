@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_BROWSER_TRACKER_H__
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_BROWSER_TRACKER_H__
+#pragma once
 
 #include "chrome/browser/automation/automation_resource_tracker.h"
 #include "chrome/browser/browser.h"

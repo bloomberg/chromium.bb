@@ -6,6 +6,7 @@
 
 #ifndef CHROME_PLUGIN_NPOBJECT_UTIL_H__
 #define CHROME_PLUGIN_NPOBJECT_UTIL_H__
+#pragma once
 
 #include "build/build_config.h"
 

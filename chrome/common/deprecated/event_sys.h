@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_DEPRECATED_EVENT_SYS_H_
 #define CHROME_COMMON_DEPRECATED_EVENT_SYS_H_
+#pragma once
 
 // TODO: This class should be removed or moved to Notifier code.
 // See Bug 42450 (http://code.google.com/p/chromium/issues/detail?id=42450).

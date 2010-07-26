@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_SCREEN_H_
 #define VIEWS_SCREEN_H_
+#pragma once
 
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"

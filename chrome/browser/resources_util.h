@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_THEME_RESOURCES_UTIL_H_
 #define CHROME_BROWSER_THEME_RESOURCES_UTIL_H_
+#pragma once
 
 #include <string>
 

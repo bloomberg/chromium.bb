@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_HOST_ZOOM_MAP_H_
 #define CHROME_BROWSER_HOST_ZOOM_MAP_H_
+#pragma once
 
 #include <map>
 #include <string>

@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONSTANTS_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONSTANTS_H_
+#pragma once
 
 namespace bookmarks {
 

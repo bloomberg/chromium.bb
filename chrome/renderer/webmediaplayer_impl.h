@@ -42,6 +42,7 @@
 
 #ifndef CHROME_RENDERER_WEBMEDIAPLAYER_IMPL_H_
 #define CHROME_RENDERER_WEBMEDIAPLAYER_IMPL_H_
+#pragma once
 
 #include <vector>
 

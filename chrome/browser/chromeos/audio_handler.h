@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_AUDIO_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_AUDIO_HANDLER_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"

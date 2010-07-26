@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_IMAGE_VIEW_H_
 #define VIEWS_CONTROLS_IMAGE_VIEW_H_
+#pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"

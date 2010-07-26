@@ -7,6 +7,7 @@
 
 #ifndef CHROME_TEST_RELIABILITY_PAGE_LOAD_TEST_H_
 #define CHROME_TEST_RELIABILITY_PAGE_LOAD_TEST_H_
+#pragma once
 
 #include "base/command_line.h"
 

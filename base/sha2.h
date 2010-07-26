@@ -4,6 +4,7 @@
 
 #ifndef BASE_SHA2_H_
 #define BASE_SHA2_H_
+#pragma once
 
 #include <string>
 

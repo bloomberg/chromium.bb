@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TASK_MANAGER_RESOURCE_PROVIDERS_H_
 #define CHROME_BROWSER_TASK_MANAGER_RESOURCE_PROVIDERS_H_
+#pragma once
 
 #include <map>
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COMMAND_UPDATER_H_
 #define CHROME_BROWSER_COMMAND_UPDATER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"

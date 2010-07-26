@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GPU_PROCESS_HOST_UI_SHIM_H_
 #define CHROME_BROWSER_GPU_PROCESS_HOST_UI_SHIM_H_
+#pragma once
 
 // This class lives on the UI thread and supports classes like the
 // BackingStoreProxy, which must live on the UI thread. The IO thread

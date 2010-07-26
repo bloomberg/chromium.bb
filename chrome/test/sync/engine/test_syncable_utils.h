@@ -7,6 +7,7 @@
 
 #ifndef CHROME_TEST_SYNC_ENGINE_TEST_SYNCABLE_UTILS_H_
 #define CHROME_TEST_SYNC_ENGINE_TEST_SYNCABLE_UTILS_H_
+#pragma once
 
 #include <string>
 

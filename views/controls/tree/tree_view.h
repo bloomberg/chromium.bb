@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TREE_TREE_VIEW_H_
 #define VIEWS_CONTROLS_TREE_TREE_VIEW_H_
+#pragma once
 
 #include <windows.h>
 #include <commctrl.h>

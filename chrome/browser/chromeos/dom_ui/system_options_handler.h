@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_DOM_UI_SYSTEM_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_DOM_UI_SYSTEM_OPTIONS_HANDLER_H_
+#pragma once
 
 #include <string>
 #include <vector>

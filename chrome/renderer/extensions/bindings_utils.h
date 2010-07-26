@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_BINDINGS_UTILS_H_
 #define CHROME_RENDERER_EXTENSIONS_BINDINGS_UTILS_H_
+#pragma once
 
 #include "app/resource_bundle.h"
 #include "base/linked_ptr.h"

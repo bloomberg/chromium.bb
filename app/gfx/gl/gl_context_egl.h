@@ -4,6 +4,7 @@
 
 #ifndef APP_GFX_GL_GL_CONTEXT_EGL_H_
 #define APP_GFX_GL_GL_CONTEXT_EGL_H_
+#pragma once
 
 #include "gfx/size.h"
 #include "app/gfx/gl/gl_context.h"

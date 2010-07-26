@@ -4,6 +4,7 @@
 
 #ifndef SKIA_EXT_VECTOR_PLATFORM_DEVICE_H_
 #define SKIA_EXT_VECTOR_PLATFORM_DEVICE_H_
+#pragma once
 
 // This file provides an easy way to include the appropriate
 // VectorPlatformDevice header file for your platform.

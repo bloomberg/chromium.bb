@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 #define CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
+#pragma once
 
 #include "base/string16.h"
 #include "base/time.h"

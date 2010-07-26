@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_NOTIFICATION_PROVIDER_H_
 #define CHROME_RENDERER_NOTIFICATION_PROVIDER_H_
+#pragma once
 
 #include <map>
 

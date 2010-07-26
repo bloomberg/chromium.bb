@@ -5,6 +5,7 @@
 
 #ifndef CHROME_TEST_CHROME_PLUGIN_TEST_CHROME_PLUGIN_H__
 #define CHROME_TEST_CHROME_PLUGIN_TEST_CHROME_PLUGIN_H__
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NET_RESOLVE_PROXY_MSG_HELPER_H_
 #define CHROME_BROWSER_NET_RESOLVE_PROXY_MSG_HELPER_H_
+#pragma once
 
 #include <deque>
 #include <string>

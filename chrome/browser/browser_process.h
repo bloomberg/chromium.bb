@@ -9,6 +9,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_PROCESS_H_
 #define CHROME_BROWSER_BROWSER_PROCESS_H_
+#pragma once
 
 #include <string>
 #include <vector>

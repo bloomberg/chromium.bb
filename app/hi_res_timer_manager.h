@@ -4,6 +4,7 @@
 
 #ifndef APP_HI_RES_TIMER_MANAGER_H_
 #define APP_HI_RES_TIMER_MANAGER_H_
+#pragma once
 
 #include "app/system_monitor.h"
 

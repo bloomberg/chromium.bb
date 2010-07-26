@@ -6,6 +6,7 @@
 
 #ifndef VIEWS_VIEW_TEXT_UTILS_H_
 #define VIEWS_VIEW_TEXT_UTILS_H_
+#pragma once
 
 #include <string>
 

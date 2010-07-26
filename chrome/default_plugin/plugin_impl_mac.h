@@ -4,6 +4,7 @@
 
 #ifndef CHROME_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
 #define CHROME_DEFAULT_PLUGIN_PLUGIN_IMPL_MAC_H_
+#pragma once
 
 #include <string>
 #include <vector>

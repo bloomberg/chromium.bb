@@ -5,6 +5,7 @@
 
 #ifndef BASE_STATS_COUNTERS_H__
 #define BASE_STATS_COUNTERS_H__
+#pragma once
 
 #include <string>
 #include "base/stats_table.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_EDIT_COMMAND_H_
 #define CHROME_COMMON_EDIT_COMMAND_H_
+#pragma once
 
 #include <string>
 #include <vector>

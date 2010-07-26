@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
 #define CHROME_BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <string>

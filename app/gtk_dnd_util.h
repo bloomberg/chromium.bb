@@ -4,6 +4,7 @@
 
 #ifndef APP_GTK_DND_UTIL_H_
 #define APP_GTK_DND_UTIL_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

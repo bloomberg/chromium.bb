@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROTOCOLS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROTOCOLS_H_
+#pragma once
 
 // Registers support for the extension URL scheme.
 void RegisterExtensionProtocols();

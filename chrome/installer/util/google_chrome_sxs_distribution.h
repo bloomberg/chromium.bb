@@ -4,6 +4,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_CHROME_SXS_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_CHROME_SXS_DISTRIBUTION_H_
+#pragma once
 
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"

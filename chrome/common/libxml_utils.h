@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_LIBXML_UTILS_H__
 #define CHROME_COMMON_LIBXML_UTILS_H__
+#pragma once
 
 #include <string>
 

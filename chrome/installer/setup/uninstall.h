@@ -6,6 +6,7 @@
 
 #ifndef CHROME_INSTALLER_SETUP_UNINSTALL_H_
 #define CHROME_INSTALLER_SETUP_UNINSTALL_H_
+#pragma once
 
 #include <string>
 

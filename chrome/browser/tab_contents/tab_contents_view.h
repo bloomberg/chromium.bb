@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_H_
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_H_
+#pragma once
 
 #include <map>
 #include <string>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_PAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_PAGE_VIEW_H_
+#pragma once
 
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/button/button.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_WORK_ITEM_LIST_H_
 #define CHROME_INSTALLER_UTIL_WORK_ITEM_LIST_H_
+#pragma once
 
 #include <windows.h>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_TOP_SITES_H_
 #define CHROME_BROWSER_HISTORY_TOP_SITES_H_
+#pragma once
 
 #include <map>
 #include <set>

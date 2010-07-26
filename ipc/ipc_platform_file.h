@@ -4,6 +4,7 @@
 
 #ifndef IPC_IPC_PLATFORM_FILE_H_
 #define IPC_IPC_PLATFORM_FILE_H_
+#pragma once
 
 #include "base/basictypes.h"
 

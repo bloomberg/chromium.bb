@@ -4,6 +4,7 @@
 
 #ifndef APP_SLIDE_ANIMATION_H_
 #define APP_SLIDE_ANIMATION_H_
+#pragma once
 
 #include "app/linear_animation.h"
 #include "app/tween.h"

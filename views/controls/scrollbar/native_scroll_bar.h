@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_H_
 #define VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H
 #define CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

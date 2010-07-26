@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_MOCK_CROS_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_MOCK_CROS_SETTINGS_H_
+#pragma once
 
 #include "base/singleton.h"
 #include "base/scoped_ptr.h"

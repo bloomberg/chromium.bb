@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_SYSTEM_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_SYSTEM_LIBRARY_H_
+#pragma once
 
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"

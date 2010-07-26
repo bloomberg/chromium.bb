@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_EXTENSIONS_USER_SCRIPT_H_
 #define CHROME_COMMON_EXTENSIONS_USER_SCRIPT_H_
+#pragma once
 
 #include <vector>
 #include <string>

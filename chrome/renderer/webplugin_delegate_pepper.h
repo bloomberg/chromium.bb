@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_WEBPLUGIN_DELEGATE_PEPPER_H_
 #define CHROME_RENDERER_WEBPLUGIN_DELEGATE_PEPPER_H_
+#pragma once
 
 #include "build/build_config.h"
 

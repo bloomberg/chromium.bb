@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_PROXY_H_
 #define CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_PROXY_H_
+#pragma once
 
 #include "chrome/browser/renderer_host/video_layer.h"
 #include "ipc/ipc_channel.h"

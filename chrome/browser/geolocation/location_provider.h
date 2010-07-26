@@ -12,6 +12,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_
 #define CHROME_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_
+#pragma once
 
 #include <map>
 #include "base/non_thread_safe.h"

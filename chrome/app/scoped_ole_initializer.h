@@ -4,6 +4,7 @@
 
 #ifndef CHROME_APP_SCOPED_OLE_INITIALIZER_H_
 #define CHROME_APP_SCOPED_OLE_INITIALIZER_H_
+#pragma once
 
 #include "base/logging.h"
 #include "build/build_config.h"

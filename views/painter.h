@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_PAINTER_H_
 #define VIEWS_PAINTER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_CONTROLLER_H_
+#pragma once
 
 #include "base/message_loop.h"
 #include "base/timer.h"

@@ -6,6 +6,7 @@
 
 #ifndef APP_APP_SWITCHES_H_
 #define APP_APP_SWITCHES_H_
+#pragma once
 
 namespace switches {
 

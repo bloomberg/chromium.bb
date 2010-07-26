@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_SAVE_TYPES_H_
 #define CHROME_BROWSER_DOWNLOAD_SAVE_TYPES_H_
+#pragma once
 
 #include <string>
 #include <utility>

@@ -4,6 +4,7 @@
 
 #ifndef APP_SQL_STATEMENT_H_
 #define APP_SQL_STATEMENT_H_
+#pragma once
 
 #include <string>
 #include <vector>

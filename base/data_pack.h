@@ -8,6 +8,7 @@
 
 #ifndef BASE_DATA_PACK_H_
 #define BASE_DATA_PACK_H_
+#pragma once
 
 #include <map>
 

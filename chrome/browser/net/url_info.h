@@ -15,6 +15,7 @@
 
 #ifndef CHROME_BROWSER_NET_URL_INFO_H_
 #define CHROME_BROWSER_NET_URL_INFO_H_
+#pragma once
 
 #include <string>
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_OPTIONS_OPTIONS_LAYOUT_GTK_H_
 #define CHROME_BROWSER_GTK_OPTIONS_OPTIONS_LAYOUT_GTK_H_
+#pragma once
 
 #include <gtk/gtk.h>
 #include <string>

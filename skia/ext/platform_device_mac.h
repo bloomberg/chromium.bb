@@ -4,6 +4,7 @@
 
 #ifndef SKIA_EXT_PLATFORM_DEVICE_MAC_H_
 #define SKIA_EXT_PLATFORM_DEVICE_MAC_H_
+#pragma once
 
 #import <ApplicationServices/ApplicationServices.h>
 #include "third_party/skia/include/core/SkDevice.h"

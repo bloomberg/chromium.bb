@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SESSIONS_SESSION_ID_H_
 #define CHROME_BROWSER_SESSIONS_SESSION_ID_H_
+#pragma once
 
 #include "base/basictypes.h"
 

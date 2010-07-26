@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_TAB_STRIP_MODEL_OBSERVER_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_TAB_STRIP_MODEL_OBSERVER_BRIDGE_H_
+#pragma once
 
 #import <Foundation/Foundation.h>
 

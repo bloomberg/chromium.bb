@@ -8,6 +8,7 @@
 
 #ifndef CHROME_COMMON_GEOPOSITION_H_
 #define CHROME_COMMON_GEOPOSITION_H_
+#pragma once
 
 #include <string>
 #include "base/time.h"

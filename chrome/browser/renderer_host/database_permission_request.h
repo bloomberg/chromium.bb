@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_DATABASE_PERMISSION_REQUEST_H_
 #define CHROME_BROWSER_RENDERER_HOST_DATABASE_PERMISSION_REQUEST_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

@@ -7,6 +7,7 @@
 
 #ifndef BASE_FIX_WP64_H__
 #define BASE_FIX_WP64_H__
+#pragma once
 
 #include <windows.h>
 

@@ -6,6 +6,7 @@
 
 #ifndef CHROME_COMMON_RESOURCE_RESPONSE_H_
 #define CHROME_COMMON_RESOURCE_RESPONSE_H_
+#pragma once
 
 #include <string>
 

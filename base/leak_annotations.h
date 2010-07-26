@@ -4,6 +4,7 @@
 
 #ifndef BASE_LEAK_ANNOTATIONS_H_
 #define BASE_LEAK_ANNOTATIONS_H_
+#pragma once
 
 #include "build/build_config.h"
 

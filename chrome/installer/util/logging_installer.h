@@ -4,6 +4,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_
 #define CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_
+#pragma once
 
 #include <string>
 

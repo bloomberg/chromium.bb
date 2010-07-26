@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_UI_MODEL_WORKER_H_
 #define CHROME_BROWSER_SYNC_GLUE_UI_MODEL_WORKER_H_
+#pragma once
 
 #include "base/callback.h"
 #include "base/condition_variable.h"

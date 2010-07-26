@@ -11,6 +11,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_URL_HANDLER_H_
 #define CHROME_BROWSER_BROWSER_URL_HANDLER_H_
+#pragma once
 
 #include <vector>
 #include <utility>

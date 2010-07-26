@@ -4,6 +4,7 @@
 
 #ifndef APP_GFX_GL_GL_CONTEXT_OSMESA_H_
 #define APP_GFX_GL_GL_CONTEXT_OSMESA_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "gfx/size.h"

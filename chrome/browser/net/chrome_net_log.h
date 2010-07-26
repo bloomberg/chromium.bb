@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NET_CHROME_NET_LOG_H_
 #define CHROME_BROWSER_NET_CHROME_NET_LOG_H_
+#pragma once
 
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"

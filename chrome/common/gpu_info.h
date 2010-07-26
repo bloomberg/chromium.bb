@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_GPU_INFO_H__
 #define CHROME_COMMON_GPU_INFO_H__
+#pragma once
 
 // Provides access to the GPU information for the system
 // on which chrome is currently running.

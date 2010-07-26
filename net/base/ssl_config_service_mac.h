@@ -4,6 +4,7 @@
 
 #ifndef NET_BASE_SSL_CONFIG_SERVICE_MAC_H_
 #define NET_BASE_SSL_CONFIG_SERVICE_MAC_H_
+#pragma once
 
 #include "base/time.h"
 #include "net/base/ssl_config_service.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_ABOUT_HANDLER_H__
 #define CHROME_COMMON_ABOUT_HANDLER_H__
+#pragma once
 
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"

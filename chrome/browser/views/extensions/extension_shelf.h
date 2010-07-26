@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_SHELF_H_
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_SHELF_H_
+#pragma once
 
 #include "app/slide_animation.h"
 #include "base/task.h"

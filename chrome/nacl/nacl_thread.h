@@ -4,6 +4,7 @@
 
 #ifndef CHROME_NACL_NACL_THREAD_H_
 #define CHROME_NACL_NACL_THREAD_H_
+#pragma once
 
 #include "base/file_path.h"
 #include "base/native_library.h"

@@ -4,6 +4,7 @@
 
 #ifndef BASE_FILE_DESCRIPTOR_SHUFFLE_H_
 #define BASE_FILE_DESCRIPTOR_SHUFFLE_H_
+#pragma once
 
 // This code exists to perform the shuffling of file descriptors which is
 // commonly needed when forking subprocesses. The naive approve is very simple,

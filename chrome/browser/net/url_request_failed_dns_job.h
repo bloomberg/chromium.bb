@@ -5,6 +5,7 @@
 
 #ifndef CHROME_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
 #define CHROME_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
+#pragma once
 
 #include "net/url_request/url_request_job.h"
 

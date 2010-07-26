@@ -4,6 +4,7 @@
 
 #ifndef NET_TOOLS_DUMP_CACHE_CACHE_DUMPER_H_
 #define NET_TOOLS_DUMP_CACHE_CACHE_DUMPER_H_
+#pragma once
 
 #include <string>
 #include "base/file_path.h"

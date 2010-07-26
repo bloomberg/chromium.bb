@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CONFIG_DIR_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_CONFIG_DIR_POLICY_PROVIDER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

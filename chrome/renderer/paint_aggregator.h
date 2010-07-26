@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_PAINT_AGGREGATOR_H_
 #define CHROME_RENDERER_PAINT_AGGREGATOR_H_
+#pragma once
 
 #include <vector>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_LOGIN_VIEW_H_
 #define CHROME_BROWSER_VIEWS_LOGIN_VIEW_H_
+#pragma once
 
 #include "base/task.h"
 #include "chrome/browser/login_model.h"

@@ -4,6 +4,7 @@
 
 #ifndef BASE_SCOPED_NSOBJECT_H_
 #define BASE_SCOPED_NSOBJECT_H_
+#pragma once
 
 #import <Foundation/Foundation.h>
 #include "base/basictypes.h"

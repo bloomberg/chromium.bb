@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_UTILITY_PROCESS_HOST_H_
 #define CHROME_BROWSER_UTILITY_PROCESS_HOST_H_
+#pragma once
 
 #include <string>
 #include <vector>

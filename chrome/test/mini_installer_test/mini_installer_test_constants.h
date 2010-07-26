@@ -6,6 +6,7 @@
 
 #ifndef CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_CONSTANTS_H__
 #define CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_CONSTANTS_H__
+#pragma once
 
 namespace mini_installer_constants {
 

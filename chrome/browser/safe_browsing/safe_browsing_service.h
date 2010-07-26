@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
+#pragma once
 
 #include <deque>
 #include <set>

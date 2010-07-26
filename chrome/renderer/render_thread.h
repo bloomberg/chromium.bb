@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDER_THREAD_H_
 #define CHROME_RENDERER_RENDER_THREAD_H_
+#pragma once
 
 #include <set>
 #include <string>

@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
 #define VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
+#pragma once
 
 #include <string>
 

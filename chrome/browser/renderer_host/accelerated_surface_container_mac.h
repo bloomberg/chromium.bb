@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
 #define CHROME_BROWSER_RENDERER_HOST_GPU_PLUGIN_CONTAINER_MAC_H_
+#pragma once
 
 // The "GPU plugin" is currently implemented as a special kind of
 // NPAPI plugin to provide high-performance on-screen 3D rendering for

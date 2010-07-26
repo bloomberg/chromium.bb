@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_GTK_H_
 #define VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_GTK_H_
+#pragma once
 
 #include "views/controls/native_control_gtk.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"

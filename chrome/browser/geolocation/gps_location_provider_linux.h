@@ -9,6 +9,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_GPS_LOCATION_PROVIDER_LINUX_H_
 #define CHROME_BROWSER_GEOLOCATION_GPS_LOCATION_PROVIDER_LINUX_H_
+#pragma once
 
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/common/geoposition.h"

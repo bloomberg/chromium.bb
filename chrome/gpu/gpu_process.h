@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_PROCESS_H_
 #define CHROME_GPU_GPU_PROCESS_H_
+#pragma once
 
 #include "chrome/common/child_process.h"
 

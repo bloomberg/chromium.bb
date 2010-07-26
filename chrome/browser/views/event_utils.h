@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_EVENT_UTILS_H__
 #define CHROME_BROWSER_VIEWS_EVENT_UTILS_H__
+#pragma once
 
 #include "webkit/glue/window_open_disposition.h"
 

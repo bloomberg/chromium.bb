@@ -4,6 +4,7 @@
 
 #ifndef SKIA_EXT_BITMAP_PLATFORM_DEVICE_LINUX_H_
 #define SKIA_EXT_BITMAP_PLATFORM_DEVICE_LINUX_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "skia/ext/platform_device_linux.h"

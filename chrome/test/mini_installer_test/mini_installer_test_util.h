@@ -8,6 +8,7 @@
 
 #ifndef CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_UTIL_H_
 #define CHROME_TEST_MINI_INSTALLER_TEST_MINI_INSTALLER_TEST_UTIL_H_
+#pragma once
 
 #include <windows.h>
 #include <vector>

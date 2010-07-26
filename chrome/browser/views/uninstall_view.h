@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_UNINSTALL_VIEW_H_
 #define CHROME_BROWSER_VIEWS_UNINSTALL_VIEW_H_
+#pragma once
 
 #include "app/combobox_model.h"
 #include "views/controls/combobox/combobox.h"

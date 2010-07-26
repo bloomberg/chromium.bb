@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_LIVE_SYNC_BOOKMARK_MODEL_VERIFIER_H_
 #define CHROME_TEST_LIVE_SYNC_BOOKMARK_MODEL_VERIFIER_H_
+#pragma once
 
 #include <string>
 #include "chrome/browser/profile.h"

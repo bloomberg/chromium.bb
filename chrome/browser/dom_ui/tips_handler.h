@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_TIPS_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_TIPS_HANDLER_H_
+#pragma once
 
 #include <string>
 

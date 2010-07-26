@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CONTENT_SETTING_COMBO_MODEL_H_
 #define CHROME_BROWSER_CONTENT_SETTING_COMBO_MODEL_H_
+#pragma once
 
 #include "app/combobox_model.h"
 

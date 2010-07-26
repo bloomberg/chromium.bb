@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_TASK_QUEUE_H__
 #define CHROME_COMMON_TASK_QUEUE_H__
+#pragma once
 
 #include <deque>
 

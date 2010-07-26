@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_DOM_STORAGE_COMMON_H_
 #define CHROME_COMMON_DOM_STORAGE_COMMON_H_
+#pragma once
 
 const int64 kLocalStorageNamespaceId = 0;
 const int64 kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;

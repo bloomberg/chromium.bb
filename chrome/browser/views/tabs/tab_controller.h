@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_TABS_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_VIEWS_TABS_TAB_CONTROLLER_H_
+#pragma once
 
 class BaseTab;
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_LZMA_UTIL_H_
 #define CHROME_INSTALLER_UTIL_LZMA_UTIL_H_
+#pragma once
 
 #include <string>
 #include <windows.h>

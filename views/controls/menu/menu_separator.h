@@ -5,6 +5,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_MENU_SEPARATOR_H_
 #define VIEWS_CONTROLS_MENU_MENU_SEPARATOR_H_
+#pragma once
 
 #include "views/view.h"
 

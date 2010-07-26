@@ -4,6 +4,7 @@
 
 #ifndef BASE_SCOPED_OPEN_PROCESS_H_
 #define BASE_SCOPED_OPEN_PROCESS_H_
+#pragma once
 
 #include "base/process.h"
 #include "base/process_util.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_
 #define CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_
+#pragma once
 
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chrome_thread.h"

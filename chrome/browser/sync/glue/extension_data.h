@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_EXTENSION_DATA_H_
 #define CHROME_BROWSER_SYNC_GLUE_EXTENSION_DATA_H_
+#pragma once
 
 // ExtensionData is the class used to manage the client and server
 // versions of the data for a particular extension.

@@ -6,6 +6,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_CONSTANTS_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_CONSTANTS_H_
+#pragma once
 
 namespace google_update {
 

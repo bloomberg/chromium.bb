@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_CONTAINER_H_
 #define CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_CONTAINER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "views/view.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_PROFILE_IMPORT_PROFILE_IMPORT_THREAD_H_
 #define CHROME_PROFILE_IMPORT_PROFILE_IMPORT_THREAD_H_
+#pragma once
 
 #include <string>
 #include <vector>

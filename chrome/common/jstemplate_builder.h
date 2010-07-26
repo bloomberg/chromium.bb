@@ -12,6 +12,7 @@
 
 #ifndef CHROME_COMMON_JSTEMPLATE_BUILDER_H_
 #define CHROME_COMMON_JSTEMPLATE_BUILDER_H_
+#pragma once
 
 #include <string>
 

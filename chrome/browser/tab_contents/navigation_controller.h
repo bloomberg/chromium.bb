@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_H_
 #define CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_H_
+#pragma once
 
 #include "build/build_config.h"
 

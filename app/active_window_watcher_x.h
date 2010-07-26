@@ -4,6 +4,7 @@
 
 #ifndef APP_ACTIVE_WINDOW_WATCHER_X_H_
 #define APP_ACTIVE_WINDOW_WATCHER_X_H_
+#pragma once
 
 #include <gdk/gdk.h>
 

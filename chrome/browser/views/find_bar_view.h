@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_FIND_BAR_VIEW_H_
 #define CHROME_BROWSER_VIEWS_FIND_BAR_VIEW_H_
+#pragma once
 
 #include "base/string16.h"
 #include "chrome/browser/find_notification_details.h"

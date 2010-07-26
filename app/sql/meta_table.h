@@ -4,6 +4,7 @@
 
 #ifndef APP_SQL_META_TABLE_H_
 #define APP_SQL_META_TABLE_H_
+#pragma once
 
 #include <string>
 

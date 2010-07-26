@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_LISTBOX_NATIVE_LISTBOX_WIN_H_
 #define VIEWS_CONTROLS_LISTBOX_NATIVE_LISTBOX_WIN_H_
+#pragma once
 
 #include <windows.h>
 

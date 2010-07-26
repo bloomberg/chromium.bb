@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NATIVE_WEB_KEYBOARD_EVENT_H_
 #define CHROME_COMMON_NATIVE_WEB_KEYBOARD_EVENT_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"

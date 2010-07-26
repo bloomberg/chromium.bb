@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WIN_H_
 #define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WIN_H_
+#pragma once
 
 #include <atlbase.h>
 #include <atlapp.h>

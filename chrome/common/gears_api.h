@@ -6,6 +6,7 @@
 
 #ifndef CHROME_COMMON_GEARS_API_H__
 #define CHROME_COMMON_GEARS_API_H__
+#pragma once
 
 #include "chrome/common/chrome_plugin_api.h"
 

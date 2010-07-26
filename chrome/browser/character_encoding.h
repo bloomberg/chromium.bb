@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHARACTER_ENCODING_H_
 #define CHROME_BROWSER_CHARACTER_ENCODING_H_
+#pragma once
 
 #include <string>
 #include <vector>

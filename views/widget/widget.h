@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_WIDGET_H_
 #define VIEWS_WIDGET_WIDGET_H_
+#pragma once
 
 #include <vector>
 

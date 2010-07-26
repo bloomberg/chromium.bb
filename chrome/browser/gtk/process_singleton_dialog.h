@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_PROCESS_SINGLETON_DIALOG_H_
 #define CHROME_BROWSER_GTK_PROCESS_SINGLETON_DIALOG_H_
+#pragma once
 
 #include <string>
 

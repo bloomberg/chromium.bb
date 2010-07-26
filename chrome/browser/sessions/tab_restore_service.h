@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_H_
 #define CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_H_
+#pragma once
 
 #include <list>
 #include <set>

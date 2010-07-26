@@ -4,6 +4,7 @@
 
 #ifndef BASE_MULTIPROCESS_TEST_H_
 #define BASE_MULTIPROCESS_TEST_H_
+#pragma once
 
 #include "base/base_switches.h"
 #include "base/command_line.h"

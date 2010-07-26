@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_GENERIC_INFO_VIEW_H_
 #define CHROME_BROWSER_VIEWS_GENERIC_INFO_VIEW_H_
+#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"

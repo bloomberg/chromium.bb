@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_FOCUS_FOCUS_UTIL_WIN_H_
 #define VIEWS_FOCUS_FOCUS_UTIL_WIN_H_
+#pragma once
 
 #include <windows.h>
 

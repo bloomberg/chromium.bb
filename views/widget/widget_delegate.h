@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_WIDGET_DELEGATE_H_
 #define VIEWS_WIDGET_WIDGET_DELEGATE_H_
+#pragma once
 
 namespace views {
 

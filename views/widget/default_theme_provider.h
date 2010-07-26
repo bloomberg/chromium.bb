@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_DEFAULT_THEME_PROVIDER_H_
 #define VIEWS_DEFAULT_THEME_PROVIDER_H_
+#pragma once
 
 #include <vector>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_H_
 #define CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_H_
+#pragma once
 
 #include <vector>
 #include "chrome/common/appcache/appcache_backend_proxy.h"

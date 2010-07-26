@@ -5,6 +5,7 @@
 
 #ifndef APP_LINEAR_ANIMATION_H_
 #define APP_LINEAR_ANIMATION_H_
+#pragma once
 
 #include "app/animation.h"
 #include "base/time.h"

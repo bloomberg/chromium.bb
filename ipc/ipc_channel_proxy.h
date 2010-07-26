@@ -4,6 +4,7 @@
 
 #ifndef IPC_IPC_CHANNEL_PROXY_H__
 #define IPC_IPC_CHANNEL_PROXY_H__
+#pragma once
 
 #include <vector>
 

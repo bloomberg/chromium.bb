@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_H_
 #define CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/callback.h"

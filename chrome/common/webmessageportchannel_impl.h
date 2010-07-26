@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_WEBMESSAGEPORTCHANNEL_IMPL_H_
 #define CHROME_COMMON_WEBMESSAGEPORTCHANNEL_IMPL_H_
+#pragma once
 
 #include <queue>
 #include <vector>

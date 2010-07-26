@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_URL_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_URL_DATABASE_H_
+#pragma once
 
 #include "app/sql/statement.h"
 #include "base/basictypes.h"

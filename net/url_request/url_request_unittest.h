@@ -4,6 +4,7 @@
 
 #ifndef NET_URL_REQUEST_URL_REQUEST_UNITTEST_H_
 #define NET_URL_REQUEST_URL_REQUEST_UNITTEST_H_
+#pragma once
 
 #include <stdlib.h>
 

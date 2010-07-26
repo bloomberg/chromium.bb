@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_OWNER_H__
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_OWNER_H__
+#pragma once
 
 #include "base/ref_counted.h"
 #include "printing/printing_context.h"

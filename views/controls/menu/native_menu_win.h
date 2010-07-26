@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_NATIVE_MENU_WIN_H_
 #define VIEWS_CONTROLS_MENU_NATIVE_MENU_WIN_H_
+#pragma once
 
 #include <vector>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_VIEW_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"

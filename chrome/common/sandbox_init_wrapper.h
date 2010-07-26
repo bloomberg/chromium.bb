@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_SANDBOX_INIT_WRAPPER_H_
 #define CHROME_COMMON_SANDBOX_INIT_WRAPPER_H_
+#pragma once
 
 // Wraps the sandbox initialization and platform variables to consolodate
 // the code and reduce the number of platform ifdefs elsewhere. The POSIX

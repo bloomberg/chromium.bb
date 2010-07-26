@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_CONTENT_BLOCKED_BUBBLE_CONTENTS_H_
 #define CHROME_BROWSER_VIEWS_CONTENT_BLOCKED_BUBBLE_CONTENTS_H_
+#pragma once
 
 #include <map>
 #include <string>

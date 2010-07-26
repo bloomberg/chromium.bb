@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_RELIABILITY_RELIABILITY_TEST_SUITE_H_
 #define CHROME_TEST_RELIABILITY_RELIABILITY_TEST_SUITE_H_
+#pragma once
 
 #include "chrome/test/reliability/page_load_test.h"
 #include "chrome/test/ui/ui_test_suite.h"

@@ -10,6 +10,7 @@
 
 #ifndef CHROME_BROWSER_LOCATION_BAR_H_
 #define CHROME_BROWSER_LOCATION_BAR_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_THREAD_OBSERVER_HELPER_H__
 #define CHROME_TEST_THREAD_OBSERVER_HELPER_H__
+#pragma once
 
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"

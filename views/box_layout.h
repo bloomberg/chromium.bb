@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_BOX_LAYOUT_H_
 #define VIEWS_BOX_LAYOUT_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "views/layout_manager.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_FIND_BAR_CONTROLLER_H_
 #define CHROME_BROWSER_FIND_BAR_CONTROLLER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"

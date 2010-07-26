@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_NEW_TAB_BUTTON
 #define CHROME_BROWSER_COCOA_NEW_TAB_BUTTON
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

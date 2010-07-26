@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_NOTIFICATIONS_BALLOON_VIEW_H_
 #define CHROME_BROWSER_VIEWS_NOTIFICATIONS_BALLOON_VIEW_H_
+#pragma once
 
 #include "app/slide_animation.h"
 #include "base/basictypes.h"

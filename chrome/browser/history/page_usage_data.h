@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_PAGE_USAGE_DATA_H__
 #define CHROME_BROWSER_HISTORY_PAGE_USAGE_DATA_H__
+#pragma once
 
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"

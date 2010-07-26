@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_USER_STYLE_SHEET_WATCHER_H_
 #define CHROME_BROWSER_USER_STYLE_SHEET_WATCHER_H_
+#pragma once
 
 #include "base/file_path.h"
 #include "base/logging.h"

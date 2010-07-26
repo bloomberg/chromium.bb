@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "base/timer.h"

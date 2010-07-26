@@ -4,6 +4,7 @@
 
 #ifndef GFX_WINDOW_IMPL_H_
 #define GFX_WINDOW_IMPL_H_
+#pragma once
 
 #include <atlbase.h>
 #include <atlapp.h>

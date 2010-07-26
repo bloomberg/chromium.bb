@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_TEXT_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_TEXT_DATABASE_H_
+#pragma once
 
 #include <set>
 #include <vector>

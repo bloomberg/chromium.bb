@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_
 #define CHROME_BROWSER_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_
+#pragma once
 
 #import "chrome/browser/cocoa/browser_window_controller.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef SKIA_EXT_CANVAS_PAINT_H_
 #define SKIA_EXT_CANVAS_PAINT_H_
+#pragma once
 
 // This file provides an easy way to include the appropriate CanvasPaint
 // header file on your platform.

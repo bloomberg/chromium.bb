@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_CHILD_THREAD_H_
 #define CHROME_COMMON_CHILD_THREAD_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"

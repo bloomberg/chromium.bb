@@ -9,6 +9,7 @@
 
 #ifndef CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
 #define CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
+#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"

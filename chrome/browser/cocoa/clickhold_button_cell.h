@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_CLICKHOLD_BUTTON_CELL_H_
 #define CHROME_BROWSER_COCOA_CLICKHOLD_BUTTON_CELL_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

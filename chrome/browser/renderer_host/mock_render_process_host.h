@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_MOCK_RENDER_PROCESS_HOST_H_
 #define CHROME_BROWSER_RENDERER_HOST_MOCK_RENDER_PROCESS_HOST_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/renderer_host/render_process_host.h"

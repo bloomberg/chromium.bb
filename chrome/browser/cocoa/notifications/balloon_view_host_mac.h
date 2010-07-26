@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_NOTIFICATIONS_BALLOON_VIEW_HOST_MAC_H_
 #define CHROME_BROWSER_COCOA_NOTIFICATIONS_BALLOON_VIEW_HOST_MAC_H_
+#pragma once
 
 #include "chrome/browser/notifications/balloon_host.h"
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"

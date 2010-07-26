@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
 #define CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
+#pragma once
 
 #include <vector>
 #include "base/string16.h"

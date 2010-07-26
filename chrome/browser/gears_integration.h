@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GEARS_INTEGRATION_H__
 #define CHROME_BROWSER_GEARS_INTEGRATION_H__
+#pragma once
 
 #include "base/callback.h"
 #include "base/string16.h"

@@ -36,6 +36,7 @@
 
 #ifndef BASE_LINKED_PTR_H_
 #define BASE_LINKED_PTR_H_
+#pragma once
 
 #include "base/logging.h"  // for CHECK macros
 

@@ -4,6 +4,7 @@
 
 #ifndef BASE_CRYPTO_SIGNATURE_CREATOR_H_
 #define BASE_CRYPTO_SIGNATURE_CREATOR_H_
+#pragma once
 
 #include "build/build_config.h"
 

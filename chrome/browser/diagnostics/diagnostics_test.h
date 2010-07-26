@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_TEST_H_
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_TEST_H_
+#pragma once
 
 #include "base/file_path.h"
 #include "base/path_service.h"

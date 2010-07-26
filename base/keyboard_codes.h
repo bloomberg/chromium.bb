@@ -4,6 +4,7 @@
 
 #ifndef BASE_KEYBOARD_CODES_H_
 #define BASE_KEYBOARD_CODES_H_
+#pragma once
 
 #include "build/build_config.h"
 

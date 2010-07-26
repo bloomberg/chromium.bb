@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_HUNG_RENDERER_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_HUNG_RENDERER_CONTROLLER_H_
+#pragma once
 
 // A controller for the Mac hung renderer dialog window.  Only one
 // instance of this controller can exist at any time, although a given

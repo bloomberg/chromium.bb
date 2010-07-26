@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_BOOKMARK_LOAD_OBSERVER_H_
 #define CHROME_TEST_BOOKMARK_LOAD_OBSERVER_H_
+#pragma once
 
 #include "base/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

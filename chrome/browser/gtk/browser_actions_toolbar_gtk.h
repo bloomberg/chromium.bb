@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_BROWSER_ACTIONS_TOOLBAR_GTK_H_
 #define CHROME_BROWSER_GTK_BROWSER_ACTIONS_TOOLBAR_GTK_H_
+#pragma once
 
 #include <map>
 #include <string>

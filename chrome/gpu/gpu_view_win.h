@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_VIEW_WIN_H_
 #define CHROME_GPU_GPU_VIEW_WIN_H_
+#pragma once
 
 #include <atlbase.h>
 #include <atlapp.h>

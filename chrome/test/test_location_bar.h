@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_TEST_LOCATION_BAR_H_
 #define CHROME_TEST_TEST_LOCATION_BAR_H_
+#pragma once
 
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/location_bar.h"

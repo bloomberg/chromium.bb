@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_SERIALIZED_SCRIPT_VALUE_H_
 #define CHROME_COMMON_SERIALIZED_SCRIPT_VALUE_H_
+#pragma once
 
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"

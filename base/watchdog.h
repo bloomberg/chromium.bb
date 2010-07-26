@@ -17,6 +17,7 @@
 
 #ifndef BASE_WATCHDOG_H__
 #define BASE_WATCHDOG_H__
+#pragma once
 
 #include <string>
 

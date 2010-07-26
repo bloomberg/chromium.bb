@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
 #define CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
+#pragma once
 
 #include "chrome/browser/net/url_request_mock_http_job.h"
 

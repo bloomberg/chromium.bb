@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_WRENCH_MENU_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_WRENCH_MENU_CONTROLLER_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

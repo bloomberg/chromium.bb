@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_H__
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_H__
+#pragma once
 
 #include <utility>
 #include "base/task.h"

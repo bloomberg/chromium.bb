@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_NACL_NACL_TEST_H_
 #define CHROME_TEST_NACL_NACL_TEST_H_
+#pragma once
 
 #include "chrome/test/ui/ui_test.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_DB_MESSAGE_FILTER_H_
 #define CHROME_COMMON_DB_MESSAGE_FILTER_H_
+#pragma once
 
 #include "ipc/ipc_channel_proxy.h"
 

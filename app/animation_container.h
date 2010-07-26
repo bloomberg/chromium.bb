@@ -4,6 +4,7 @@
 
 #ifndef APP_ANIMATION_CONTAINER_H_
 #define APP_ANIMATION_CONTAINER_H_
+#pragma once
 
 #include <set>
 

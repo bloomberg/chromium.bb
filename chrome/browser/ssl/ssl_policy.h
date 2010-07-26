@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SSL_SSL_POLICY_H_
 #define CHROME_BROWSER_SSL_SSL_POLICY_H_
+#pragma once
 
 #include <string>
 

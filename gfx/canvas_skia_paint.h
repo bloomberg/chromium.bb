@@ -4,6 +4,7 @@
 
 #ifndef GFX_CANVAS_SKIA_PAINT_H_
 #define GFX_CANVAS_SKIA_PAINT_H_
+#pragma once
 
 #include "gfx/canvas_skia.h"
 #include "skia/ext/canvas_paint.h"

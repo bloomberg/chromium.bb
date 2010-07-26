@@ -41,6 +41,7 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_MORK_READER_H__
 #define CHROME_BROWSER_IMPORTER_MORK_READER_H__
+#pragma once
 
 #include <iosfwd>
 #include <fstream>

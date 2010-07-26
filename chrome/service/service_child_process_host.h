@@ -4,6 +4,7 @@
 
 #ifndef CHROME_SERVICE_SERVICE_CHILD_PROCESS_HOST_H_
 #define CHROME_SERVICE_SERVICE_CHILD_PROCESS_HOST_H_
+#pragma once
 
 #include "base/process.h"
 #include "chrome/common/child_process_host.h"

@@ -7,6 +7,7 @@
 // does not support a timeout, but is greatly simplified.
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
+#pragma once
 
 #include <list>
 #include <map>

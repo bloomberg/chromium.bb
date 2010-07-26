@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDERER_WEBCOOKIEJAR_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBCOOKIEJAR_IMPL_H_
+#pragma once
 
 #include "ipc/ipc_message.h"
 // TODO(darin): WebCookieJar.h is missing a WebString.h include!

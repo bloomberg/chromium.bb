@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_IDLE_API_CONSTANTS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_IDLE_API_CONSTANTS_H_
+#pragma once
 
 namespace extension_idle_api_constants {
 

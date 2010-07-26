@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_LOGGING_CHROME_H__
 #define CHROME_COMMON_LOGGING_CHROME_H__
+#pragma once
 
 #include <string>
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_TEXT_FIELD_MAC_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_TEXT_FIELD_MAC_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

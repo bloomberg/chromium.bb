@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_MANAGER_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <set>

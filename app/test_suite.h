@@ -4,6 +4,7 @@
 
 #ifndef APP_TEST_SUITE_H_
 #define APP_TEST_SUITE_H_
+#pragma once
 
 #include "build/build_config.h"
 

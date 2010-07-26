@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_IDLE_QUERY_LINUX_H_
 #define CHROME_BROWSER_SYNC_ENGINE_IDLE_QUERY_LINUX_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 

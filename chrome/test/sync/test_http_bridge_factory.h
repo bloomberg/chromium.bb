@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_
 #define CHROME_TEST_SYNC_TEST_HTTP_BRIDGE_FACTORY_H_
+#pragma once
 
 #include "chrome/browser/sync/engine/syncapi.h"
 

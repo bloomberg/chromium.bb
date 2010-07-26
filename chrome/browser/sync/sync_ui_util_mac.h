@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNC_UI_UTIL_MAC_H_
 #define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_MAC_H_
+#pragma once
 
 #include "chrome/browser/sync/sync_ui_util.h"
 

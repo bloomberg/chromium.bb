@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_COMMAND_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_COMMAND_H_
+#pragma once
 
 #include "base/basictypes.h"
 

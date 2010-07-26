@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SESSION_STARTUP_PREF_H__
 #define CHROME_BROWSER_SESSION_STARTUP_PREF_H__
+#pragma once
 
 #include <vector>
 

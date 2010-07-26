@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NET_URL_REQUEST_INTERCEPT_JOB_H_
 #define CHROME_COMMON_NET_URL_REQUEST_INTERCEPT_JOB_H_
+#pragma once
 
 #include <string>
 

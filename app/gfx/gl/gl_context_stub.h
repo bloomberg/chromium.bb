@@ -6,6 +6,7 @@
 
 #ifndef APP_GFX_GL_GL_CONTEXT_STUB_H_
 #define APP_GFX_GL_GL_CONTEXT_STUB_H_
+#pragma once
 
 #include "app/gfx/gl/gl_context.h"
 

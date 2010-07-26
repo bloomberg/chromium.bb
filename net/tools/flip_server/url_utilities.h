@@ -4,6 +4,7 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_URL_UTILITIES_H__
 #define NET_TOOLS_FLIP_SERVER_URL_UTILITIES_H__
+#pragma once
 
 #include <string>
 

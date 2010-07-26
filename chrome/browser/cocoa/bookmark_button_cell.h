@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_BUTTON_CELL_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_BUTTON_CELL_H_
+#pragma once
 
 #import "base/cocoa_protocols_mac.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"

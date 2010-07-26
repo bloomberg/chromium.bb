@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_MANAGED_PREFS_BANNER_BASE_H_
 #define CHROME_BROWSER_MANAGED_PREFS_BANNER_BASE_H_
+#pragma once
 
 #include <set>
 #include <string>

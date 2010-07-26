@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_BROWSER_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_BROWSER_BUBBLE_H_
+#pragma once
 
 #include "views/view.h"
 #include "views/widget/widget.h"

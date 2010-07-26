@@ -4,6 +4,7 @@
 
 #ifndef BASE_I18N_WORD_ITERATOR_H_
 #define BASE_I18N_WORD_ITERATOR_H_
+#pragma once
 
 #include <string>
 #include <vector>

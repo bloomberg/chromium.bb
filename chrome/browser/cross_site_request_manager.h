@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CROSS_SITE_REQUEST_MANAGER_H__
 #define CHROME_BROWSER_CROSS_SITE_REQUEST_MANAGER_H__
+#pragma once
 
 #include <set>
 #include <utility>

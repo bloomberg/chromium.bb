@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_H_
 #define VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_H_
+#pragma once
 
 #include <atlbase.h>
 #include <atlcom.h>

@@ -48,6 +48,7 @@
 
 #ifndef CHROME_COMMON_OWNED_WIDGET_GTK_H_
 #define CHROME_COMMON_OWNED_WIDGET_GTK_H_
+#pragma once
 
 #include "base/basictypes.h"
 

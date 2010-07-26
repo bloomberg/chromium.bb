@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_GTK_H_
 #define CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_GTK_H_
+#pragma once
 
 #include "base/weak_ptr.h"
 #include "views/widget/widget_gtk.h"

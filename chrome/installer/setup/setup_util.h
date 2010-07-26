@@ -6,6 +6,7 @@
 
 #ifndef CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
 #define CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
+#pragma once
 
 #include "chrome/installer/util/version.h"
 

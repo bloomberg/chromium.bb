@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_INJECTION_TEST_DLL_H__
 #define CHROME_TEST_INJECTION_TEST_DLL_H__
+#pragma once
 
 // This file defines the entry points for any DLL that can be loaded into the
 // renderer or plugin process for the purposes of testing. The DLL code must

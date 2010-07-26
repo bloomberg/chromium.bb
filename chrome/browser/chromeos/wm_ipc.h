@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_WM_IPC_H_
 #define CHROME_BROWSER_CHROMEOS_WM_IPC_H_
+#pragma once
 
 #include <gtk/gtk.h>
 #include <map>

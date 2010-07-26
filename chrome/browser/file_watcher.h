@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_FILE_WATCHER_H_
 #define CHROME_BROWSER_FILE_WATCHER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"

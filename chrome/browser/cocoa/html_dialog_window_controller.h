@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_HTML_DIALOG_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_HTML_DIALOG_WINDOW_CONTROLLER_H_
+#pragma once
 
 #include <string>
 #include <vector>

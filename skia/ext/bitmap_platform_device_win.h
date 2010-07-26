@@ -4,6 +4,7 @@
 
 #ifndef SKIA_BITMAP_PLATFORM_DEVICE_WIN_H_
 #define SKIA_BITMAP_PLATFORM_DEVICE_WIN_H_
+#pragma once
 
 #include "skia/ext/platform_device_win.h"
 

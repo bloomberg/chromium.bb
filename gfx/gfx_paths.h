@@ -4,6 +4,7 @@
 
 #ifndef GFX_GFX_PATHS_H_
 #define GFX_GFX_PATHS_H_
+#pragma once
 
 // This file declares path keys for the app module.  These can be used with
 // the PathService to access various special directories and files.

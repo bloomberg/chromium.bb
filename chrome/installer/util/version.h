@@ -4,6 +4,7 @@
 
 #ifndef CHROME_INSTALLER_UTIL_VERSION_H_
 #define CHROME_INSTALLER_UTIL_VERSION_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

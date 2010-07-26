@@ -6,6 +6,7 @@
 
 #ifndef CHROME_TEST_SYNC_ENGINE_MOCK_CONNECTION_MANAGER_H_
 #define CHROME_TEST_SYNC_ENGINE_MOCK_CONNECTION_MANAGER_H_
+#pragma once
 
 #include <bitset>
 #include <string>

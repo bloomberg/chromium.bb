@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H__
 #define CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H__
+#pragma once
 
 #include "chrome/browser/options_page_base.h"
 #include "views/controls/link.h"

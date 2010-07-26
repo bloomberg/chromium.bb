@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_MOCK_RENDER_PROCESS_H_
 #define CHROME_RENDERER_MOCK_RENDER_PROCESS_H_
+#pragma once
 
 #include "chrome/renderer/render_process.h"
 

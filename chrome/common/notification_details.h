@@ -7,6 +7,7 @@
 
 #ifndef CHROME_COMMON_NOTIFICATION_DETAILS_H__
 #define CHROME_COMMON_NOTIFICATION_DETAILS_H__
+#pragma once
 
 #include "base/basictypes.h"
 

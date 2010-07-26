@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_SNAPSHOT_H_
 #define CHROME_BROWSER_CHROMEOS_WM_OVERVIEW_SNAPSHOT_H_
+#pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"

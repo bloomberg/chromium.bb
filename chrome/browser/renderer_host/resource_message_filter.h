@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
+#pragma once
 
 #if defined(OS_WIN)
 #include <windows.h>

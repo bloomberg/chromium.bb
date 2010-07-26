@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_
 #define CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_
+#pragma once
 
 #include "chrome/test/in_process_browser_test.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_WORKER_HOST_MESSAGE_PORT_DISPATCHER_H_
 #define CHROME_BROWSER_WORKER_HOST_MESSAGE_PORT_DISPATCHER_H_
+#pragma once
 
 #include <map>
 #include <utility>

@@ -23,6 +23,7 @@
 
 #ifndef FontConfigInterface_DEFINED
 #define FontConfigInterface_DEFINED
+#pragma once
 
 #include <string>
 

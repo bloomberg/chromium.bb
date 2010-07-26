@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 #define CHROME_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"

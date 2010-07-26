@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_DELEGATE_H
 #define CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_DELEGATE_H
+#pragma once
 
 @class BrowserAccessibility;
 @class NSWindow;

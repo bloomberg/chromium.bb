@@ -4,6 +4,7 @@
 
 #ifndef BASE_COCOA_PROTOCOLS_MAC_H_
 #define BASE_COCOA_PROTOCOLS_MAC_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

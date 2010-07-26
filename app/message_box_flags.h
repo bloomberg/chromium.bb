@@ -4,6 +4,7 @@
 
 #ifndef APP_MESSAGE_BOX_FLAGS_H_
 #define APP_MESSAGE_BOX_FLAGS_H_
+#pragma once
 
 #include "base/basictypes.h"
 

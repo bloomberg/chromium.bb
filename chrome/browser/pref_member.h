@@ -23,6 +23,7 @@
 
 #ifndef CHROME_BROWSER_PREF_MEMBER_H_
 #define CHROME_BROWSER_PREF_MEMBER_H_
+#pragma once
 
 #include <string>
 

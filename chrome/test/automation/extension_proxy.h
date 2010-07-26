@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_AUTOMATION_EXTENSION_PROXY_H_
 #define CHROME_TEST_AUTOMATION_EXTENSION_PROXY_H_
+#pragma once
 
 #include <string>
 

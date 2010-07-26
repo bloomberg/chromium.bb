@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_GTK_NOTIFICATIONS_BALLOON_VIEW_GTK_H_
 #define CHROME_BROWSER_GTK_NOTIFICATIONS_BALLOON_VIEW_GTK_H_
+#pragma once
 
 #include "app/animation.h"
 #include "app/gtk_signal.h"

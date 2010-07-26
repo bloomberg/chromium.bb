@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_PLUGIN_GROUP_H_
 #define CHROME_COMMON_PLUGIN_GROUP_H_
+#pragma once
 
 #include <set>
 #include <vector>

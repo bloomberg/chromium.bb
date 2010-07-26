@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_FULLSCREEN_EXIT_BUBBLE_H__
 #define CHROME_BROWSER_VIEWS_FULLSCREEN_EXIT_BUBBLE_H__
+#pragma once
 
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"

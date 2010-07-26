@@ -6,6 +6,7 @@
 
 #ifndef NET_BASE_COOKIE_STORE_H_
 #define NET_BASE_COOKIE_STORE_H_
+#pragma once
 
 #include <string>
 

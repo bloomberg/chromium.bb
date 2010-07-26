@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_PROPERTY_BAG_H_
 #define CHROME_COMMON_PROPERTY_BAG_H_
+#pragma once
 
 #include <map>
 

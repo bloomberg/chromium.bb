@@ -11,6 +11,7 @@
 
 #ifndef CHROME_BROWSER_GTK_OPTIONS_LANGUAGES_PAGE_GTK_H_
 #define CHROME_BROWSER_GTK_OPTIONS_LANGUAGES_PAGE_GTK_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

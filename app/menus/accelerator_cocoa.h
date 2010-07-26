@@ -4,6 +4,7 @@
 
 #ifndef APP_MENUS_ACCELERATOR_COCOA_H_
 #define APP_MENUS_ACCELERATOR_COCOA_H_
+#pragma once
 
 #include <Foundation/Foundation.h>
 

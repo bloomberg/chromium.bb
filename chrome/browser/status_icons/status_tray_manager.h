@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_MANAGER_H_
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_MANAGER_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/status_icons/status_icon.h"

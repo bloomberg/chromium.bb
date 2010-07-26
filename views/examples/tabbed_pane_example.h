@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_TABBED_PANE_EXAMPLE_H_
 #define VIEWS_EXAMPLES_TABBED_PANE_EXAMPLE_H_
+#pragma once
 
 #include "base/string_util.h"
 #include "views/controls/button/text_button.h"

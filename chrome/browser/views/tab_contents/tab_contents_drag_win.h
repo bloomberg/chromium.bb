@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_DRAG_WIN_H_
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_TAB_CONTENTS_DRAG_WIN_H_
+#pragma once
 
 #include "app/os_exchange_data_provider_win.h"
 #include "base/platform_thread.h"

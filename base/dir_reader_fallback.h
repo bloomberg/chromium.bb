@@ -4,6 +4,7 @@
 
 #ifndef BASE_DIR_READER_FALLBACK_H_
 #define BASE_DIR_READER_FALLBACK_H_
+#pragma once
 
 namespace base {
 

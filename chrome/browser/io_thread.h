@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IO_THREAD_H_
 #define CHROME_BROWSER_IO_THREAD_H_
+#pragma once
 
 #include <vector>
 

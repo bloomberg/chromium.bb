@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_COLLECTED_COOKIES_WIN_H_
 #define CHROME_BROWSER_VIEWS_COLLECTED_COOKIES_WIN_H_
+#pragma once
 
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/common/content_settings.h"

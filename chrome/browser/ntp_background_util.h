@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NTP_BACKGROUND_UTIL_H_
 #define CHROME_BROWSER_NTP_BACKGROUND_UTIL_H_
+#pragma once
 
 class ThemeProvider;
 

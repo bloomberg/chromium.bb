@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_UPDATE_RECOMMENDED_DIALOG_H_
 #define CHROME_BROWSER_GTK_UPDATE_RECOMMENDED_DIALOG_H_
+#pragma once
 
 #include "app/gtk_integers.h"
 #include "app/gtk_signal.h"

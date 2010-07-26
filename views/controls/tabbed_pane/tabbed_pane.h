@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TABBED_PANE_H_
 #define VIEWS_CONTROLS_TABBED_PANE_H_
+#pragma once
 
 #include "views/view.h"
 

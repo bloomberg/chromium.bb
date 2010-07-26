@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_NATIVE_HOST_VIEW_GTK_H_
 #define VIEWS_CONTROLS_NATIVE_HOST_VIEW_GTK_H_
+#pragma once
 
 #include <gtk/gtk.h>
 #include <string>

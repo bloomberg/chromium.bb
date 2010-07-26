@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_USER_DATA_DIR_DIALOG_H_
 #define CHROME_BROWSER_VIEWS_USER_DATA_DIR_DIALOG_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"

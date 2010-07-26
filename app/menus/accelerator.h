@@ -4,6 +4,7 @@
 
 #ifndef APP_MENUS_ACCELERATOR_H_
 #define APP_MENUS_ACCELERATOR_H_
+#pragma once
 
 #include "base/keyboard_codes.h"
 

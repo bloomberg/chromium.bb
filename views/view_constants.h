@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_VIEW_CONSTANTS_H_
 #define VIEWS_VIEW_CONSTANTS_H_
+#pragma once
 
 namespace views {
 

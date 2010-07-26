@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
 #define CHROME_TEST_IN_PROCESS_BROWSER_TEST_H_
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "net/url_request/url_request_unittest.h"

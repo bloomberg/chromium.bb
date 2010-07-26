@@ -9,6 +9,7 @@
 
 #ifndef CHROME_RENDERER_MEDIA_IPC_VIDEO_RENDERER_H_
 #define CHROME_RENDERER_MEDIA_IPC_VIDEO_RENDERER_H_
+#pragma once
 
 #include "app/surface/transport_dib.h"
 #include "base/waitable_event.h"

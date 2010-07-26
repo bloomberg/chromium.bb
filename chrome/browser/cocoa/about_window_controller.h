@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_ABOUT_WINDOW_CONTROLLER_H_
+#pragma once
 
 #import <AppKit/AppKit.h>
 

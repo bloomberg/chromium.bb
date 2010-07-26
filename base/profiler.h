@@ -8,6 +8,7 @@
 
 #ifndef BASE_PROFILER_H__
 #define BASE_PROFILER_H__
+#pragma once
 
 #include "base/basictypes.h"
 

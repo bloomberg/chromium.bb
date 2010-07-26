@@ -6,6 +6,7 @@
 
 #ifndef CHROME_INSTALLER_SETUP_INSTALL_H_
 #define CHROME_INSTALLER_SETUP_INSTALL_H_
+#pragma once
 
 #include <base/values.h>
 

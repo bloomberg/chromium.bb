@@ -4,6 +4,7 @@
 
 #ifndef BASE_NSIMAGE_CACHE_MAC_H_
 #define BASE_NSIMAGE_CACHE_MAC_H_
+#pragma once
 
 #ifdef __OBJC__
 @class NSImage;

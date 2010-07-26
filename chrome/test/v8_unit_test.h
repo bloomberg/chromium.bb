@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_V8_UNIT_TEST_H_
 #define CHROME_TEST_V8_UNIT_TEST_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_PULSE_AUDIO_MIXER_H_
 #define CHROME_BROWSER_CHROMEOS_PULSE_AUDIO_MIXER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/callback.h"

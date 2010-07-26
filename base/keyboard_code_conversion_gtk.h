@@ -35,6 +35,7 @@
 
 #ifndef BASE_KEYBOARD_CODE_CONVERSION_GTK_H_
 #define BASE_KEYBOARD_CODE_CONVERSION_GTK_H_
+#pragma once
 
 #include "base/keyboard_codes_posix.h"
 

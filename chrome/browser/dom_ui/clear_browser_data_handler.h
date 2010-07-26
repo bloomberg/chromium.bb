@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_CLEAR_BROWSER_DATA_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_CLEAR_BROWSER_DATA_HANDLER_H_
+#pragma once
 
 #include "chrome/browser/dom_ui/options_ui.h"
 #include "chrome/browser/browsing_data_remover.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
 #define CHROME_BROWSER_VIEWS_EXTERNAL_PROTOCOL_DIALOG_H_
+#pragma once
 
 #include "base/time.h"
 #include "googleurl/src/gurl.h"

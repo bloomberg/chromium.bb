@@ -4,6 +4,7 @@
 
 #ifndef NET_BASE_TOOLS_HTTP_LISTEN_SOCKET_H_
 #define NET_BASE_TOOLS_HTTP_LISTEN_SOCKET_H_
+#pragma once
 
 #include "base/message_loop.h"
 #include "net/base/listen_socket.h"

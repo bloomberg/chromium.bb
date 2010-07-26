@@ -19,6 +19,7 @@
 
 #ifndef BASE_STATS_TABLE_H__
 #define BASE_STATS_TABLE_H__
+#pragma once
 
 #include <string>
 #include "base/basictypes.h"

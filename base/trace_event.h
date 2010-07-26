@@ -14,6 +14,7 @@
 
 #ifndef BASE_TRACE_EVENT_H_
 #define BASE_TRACE_EVENT_H_
+#pragma once
 
 #include "build/build_config.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_DOWNLOAD_UPDATES_COMMAND_H_
 #define CHROME_BROWSER_SYNC_ENGINE_DOWNLOAD_UPDATES_COMMAND_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"

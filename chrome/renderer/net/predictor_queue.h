@@ -23,6 +23,7 @@
 
 #ifndef CHROME_RENDERER_NET_PREDICTOR_QUEUE_H__
 #define CHROME_RENDERER_NET_PREDICTOR_QUEUE_H__
+#pragma once
 
 #include <string>
 

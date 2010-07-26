@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NAVIGATION_GESTURE_H_
 #define CHROME_COMMON_NAVIGATION_GESTURE_H_
+#pragma once
 
 enum NavigationGesture {
   NavigationGestureUser,    // User initiated navigation/load. This is not

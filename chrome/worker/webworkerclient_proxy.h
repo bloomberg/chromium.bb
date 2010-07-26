@@ -4,6 +4,7 @@
 
 #ifndef CHROME_WORKER_WEBWORKERCLIENT_PROXY_H_
 #define CHROME_WORKER_WEBWORKERCLIENT_PROXY_H_
+#pragma once
 
 #include <vector>
 

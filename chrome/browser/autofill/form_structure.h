@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_FORM_STRUCTURE_H_
 #define CHROME_BROWSER_AUTOFILL_FORM_STRUCTURE_H_
+#pragma once
 
 #include <string>
 #include <vector>

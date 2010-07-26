@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_CONSTRAINED_WINDOW_MAC_H_
 #define CHROME_BROWSER_COCOA_CONSTRAINED_WINDOW_MAC_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

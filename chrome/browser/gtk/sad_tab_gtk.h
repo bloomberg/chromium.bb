@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_SAD_TAB_GTK_H_
 #define CHROME_BROWSER_GTK_SAD_TAB_GTK_H_
+#pragma once
 
 typedef struct _GtkWidget GtkWidget;
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_PARSER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_PARSER_H_
+#pragma once
 
 // Parse the data returned from the chunk response.
 //

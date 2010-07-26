@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_FONTS_LANGUAGES_WINDOW_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_FONTS_LANGUAGES_WINDOW_VIEW_H_
+#pragma once
 
 #include "chrome/browser/fonts_languages_window.h"
 #include "views/view.h"

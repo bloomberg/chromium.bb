@@ -4,6 +4,7 @@
 
 #ifndef GFX_CODEC_PNG_CODEC_H_
 #define GFX_CODEC_PNG_CODEC_H_
+#pragma once
 
 #include <vector>
 

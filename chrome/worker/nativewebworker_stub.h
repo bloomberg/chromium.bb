@@ -4,6 +4,7 @@
 
 #ifndef CHROME_WORKER_NATIVEWEBWORKER_STUB_H_
 #define CHROME_WORKER_NATIVEWEBWORKER_STUB_H_
+#pragma once
 // Native WebWorker support stub header.
 
 #include <stddef.h>

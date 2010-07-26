@@ -4,6 +4,7 @@
 
 #ifndef CONTROLS_MENU_VIEWS_MENU_WIN_H_
 #define CONTROLS_MENU_VIEWS_MENU_WIN_H_
+#pragma once
 
 #include <vector>
 #include <windows.h>

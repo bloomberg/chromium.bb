@@ -4,6 +4,7 @@
 
 #ifndef GFX_NATIVE_WIDGET_TYPES_H_
 #define GFX_NATIVE_WIDGET_TYPES_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "build/build_config.h"

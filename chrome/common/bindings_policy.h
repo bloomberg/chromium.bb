@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_BINDINGS_POLICY_H__
 #define CHROME_COMMON_BINDINGS_POLICY_H__
+#pragma once
 
 // This is a utility class that specifies flag values for the types of
 // JavaScript bindings exposed to renderers.

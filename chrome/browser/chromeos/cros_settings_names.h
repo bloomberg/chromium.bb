@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_NAMES_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_NAMES_H_
+#pragma once
 
 namespace chromeos {
 

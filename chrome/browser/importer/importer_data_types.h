@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_DATA_TYPES_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_DATA_TYPES_H_
+#pragma once
 
 #include <string>
 

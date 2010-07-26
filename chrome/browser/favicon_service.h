@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_FAVICON_SERVICE_H__
 #define CHROME_BROWSER_FAVICON_SERVICE_H__
+#pragma once
 
 #include <vector>
 

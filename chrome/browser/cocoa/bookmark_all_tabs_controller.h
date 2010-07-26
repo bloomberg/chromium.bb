@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_ALL_TABS_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_ALL_TABS_CONTROLLER_H_
+#pragma once
 
 #include <utility>
 #include <vector>

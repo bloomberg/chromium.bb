@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_
+#pragma once
 
 #include <string>
 #include "base/string16.h"

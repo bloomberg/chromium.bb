@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PARSERS_METADATA_PARSER_JPEG_H_
 #define CHROME_BROWSER_PARSERS_METADATA_PARSER_JPEG_H_
+#pragma once
 
 #include "chrome/browser/parsers/metadata_parser_filebase.h"
 

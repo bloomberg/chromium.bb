@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_GPU_CHANNEL_HOST_H_
 #define CHROME_RENDERER_GPU_CHANNEL_HOST_H_
+#pragma once
 
 #include <string>
 

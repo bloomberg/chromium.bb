@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_LOCATION_BAR_STAR_VIEW_H_
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_STAR_VIEW_H_
+#pragma once
 
 #include "chrome/browser/views/info_bubble.h"
 #include "views/controls/image_view.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_TIME_FORMAT_H__
 #define CHROME_COMMON_TIME_FORMAT_H__
+#pragma once
 
 // This file defines methods to format time values as strings.
 

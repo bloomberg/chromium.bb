@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_SCOPED_PREF_UPDATE_H_
 #define CHROME_BROWSER_SCOPED_PREF_UPDATE_H_
+#pragma once
 
 #include "chrome/browser/pref_service.h"
 

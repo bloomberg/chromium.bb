@@ -4,6 +4,7 @@
 
 #ifndef BASE_NON_THREAD_SAFE_H__
 #define BASE_NON_THREAD_SAFE_H__
+#pragma once
 
 #include "base/platform_thread.h"
 

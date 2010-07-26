@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_SAFARI_IMPORTER_H_
 #define CHROME_BROWSER_IMPORTER_SAFARI_IMPORTER_H_
+#pragma once
 
 #include "chrome/browser/importer/importer.h"
 

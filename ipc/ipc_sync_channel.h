@@ -4,6 +4,7 @@
 
 #ifndef IPC_IPC_SYNC_SENDER_H__
 #define IPC_IPC_SYNC_SENDER_H__
+#pragma once
 
 #include <string>
 #include <deque>

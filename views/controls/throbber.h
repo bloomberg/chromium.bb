@@ -6,6 +6,7 @@
 
 #ifndef VIEWS_CONTROLS_THROBBER_H_
 #define VIEWS_CONTROLS_THROBBER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/time.h"

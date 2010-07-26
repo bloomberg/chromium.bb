@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
+#pragma once
 
 #include "webkit/glue/webfilesystem_impl.h"
 #include "webkit/glue/webkitclient_impl.h"

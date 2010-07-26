@@ -32,6 +32,7 @@
 
 #ifndef CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
 #define CHROME_BROWSER_TRANSPORT_SECURITY_PERSISTER_H_
+#pragma once
 
 #include "base/file_path.h"
 #include "base/lock.h"

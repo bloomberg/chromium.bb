@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_NATIVE_FRAME_VIEW_H_
 #define VIEWS_WINDOW_NATIVE_FRAME_VIEW_H_
+#pragma once
 
 #include "views/window/non_client_view.h"
 

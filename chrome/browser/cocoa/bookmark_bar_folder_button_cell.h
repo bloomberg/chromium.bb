@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_BAR_FOLDER_BUTTON_CELL_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_BAR_FOLDER_BUTTON_CELL_H_
+#pragma once
 
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 

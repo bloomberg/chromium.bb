@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_
 #define CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_
+#pragma once
 
 #include <string>
 #include <vector>

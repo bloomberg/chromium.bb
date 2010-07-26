@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_X_H_
 #define CHROME_BROWSER_RENDERER_HOST_VIDEO_LAYER_X_H_
+#pragma once
 
 #include "app/x11_util.h"
 #include "chrome/browser/renderer_host/video_layer.h"

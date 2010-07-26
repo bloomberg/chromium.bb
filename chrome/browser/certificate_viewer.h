@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CERTIFICATE_VIEWER_H_
 #define CHROME_BROWSER_CERTIFICATE_VIEWER_H_
+#pragma once
 
 #include "gfx/native_widget_types.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_INTERACTIVE_UI_VIEW_EVENT_TEST_BASE_H_
 #define CHROME_TEST_INTERACTIVE_UI_VIEW_EVENT_TEST_BASE_H_
+#pragma once
 
 #include "base/message_loop.h"
 #include "base/task.h"

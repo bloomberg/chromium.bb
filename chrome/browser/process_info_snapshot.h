@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PROCESS_INFO_SNAPSHOT_H_
 #define CHROME_BROWSER_PROCESS_INFO_SNAPSHOT_H_
+#pragma once
 
 #include <sys/types.h>
 

@@ -4,6 +4,7 @@
 
 #ifndef NET_BASE_SCOPED_CERT_CHAIN_CONTEXT_H_
 #define NET_BASE_SCOPED_CERT_CHAIN_CONTEXT_H_
+#pragma once
 
 #include <windows.h>
 #include <wincrypt.h>

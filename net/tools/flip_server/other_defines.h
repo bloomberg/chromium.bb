@@ -1,5 +1,6 @@
 #ifndef NET_TOOLS_FLIP_SERVER_OTHER_DEFINES
 #define NET_TOOLS_FLIP_SERVER_OTHER_DEFINES
+#pragma once
 
 class NullStream {
  public:

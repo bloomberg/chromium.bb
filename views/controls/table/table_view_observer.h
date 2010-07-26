@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TABLE_TABLE_VIEW_OBSERVER_H_
 #define VIEWS_CONTROLS_TABLE_TABLE_VIEW_OBSERVER_H_
+#pragma once
 
 #include "base/keyboard_codes.h"
 

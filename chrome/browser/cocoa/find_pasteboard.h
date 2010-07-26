@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_FIND_PASTEBOARD_H_
 #define CHROME_BROWSER_COCOA_FIND_PASTEBOARD_H_
+#pragma once
 
 #include "base/string16.h"
 

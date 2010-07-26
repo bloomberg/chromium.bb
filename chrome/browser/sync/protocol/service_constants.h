@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_PROTOCOL_SERVICE_CONSTANTS_H_
 #define CHROME_BROWSER_SYNC_PROTOCOL_SERVICE_CONSTANTS_H_
+#pragma once
 
 // These fixed service names are used to obtain auth cookies for the
 // corresponding services. It might be interesting to make these updateable

@@ -4,6 +4,7 @@
 
 #ifndef APP_SCOPED_HANDLE_GTK_H_
 #define APP_SCOPED_HANDLE_GTK_H_
+#pragma once
 
 #include <gdk/gdk.h>
 

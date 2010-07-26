@@ -4,6 +4,7 @@
 
 #ifndef APP_GFX_FONT_UTIL_H_
 #define APP_GFX_FONT_UTIL_H_
+#pragma once
 
 #include "gfx/size.h"
 

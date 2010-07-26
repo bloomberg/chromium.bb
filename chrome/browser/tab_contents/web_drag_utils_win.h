@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_UTILS_WIN_H_
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_UTILS_WIN_H_
+#pragma once
 
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 

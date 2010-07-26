@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDER_VIEW_VISITOR_H_
 #define CHROME_RENDERER_RENDER_VIEW_VISITOR_H_
+#pragma once
 
 class RenderViewVisitor {
  public:

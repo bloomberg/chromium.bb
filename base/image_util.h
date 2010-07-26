@@ -8,6 +8,7 @@
 
 #ifndef BASE_IMAGE_UTIL_H_
 #define BASE_IMAGE_UTIL_H_
+#pragma once
 
 #include <windows.h>
 #include <vector>

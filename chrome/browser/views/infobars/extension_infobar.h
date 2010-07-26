@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_INFOBARS_EXTENSION_INFOBAR_H_
 #define CHROME_BROWSER_VIEWS_INFOBARS_EXTENSION_INFOBAR_H_
+#pragma once
 
 #include "chrome/browser/views/infobars/infobars.h"
 

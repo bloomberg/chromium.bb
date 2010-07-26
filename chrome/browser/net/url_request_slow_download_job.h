@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 #define CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#pragma once
 
 #include <string>
 #include <vector>

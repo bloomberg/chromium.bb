@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_NATIVE_CONTROL_H_
 #define VIEWS_CONTROLS_NATIVE_CONTROL_H_
+#pragma once
 
 #include <windows.h>
 

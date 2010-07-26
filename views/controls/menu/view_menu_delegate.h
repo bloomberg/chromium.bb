@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_VIEW_MENU_DELEGATE_H_
 #define VIEWS_CONTROLS_MENU_VIEW_MENU_DELEGATE_H_
+#pragma once
 
 #include "gfx/native_widget_types.h"
 

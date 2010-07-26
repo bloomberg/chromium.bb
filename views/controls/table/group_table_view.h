@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_
 #define VIEWS_CONTROLS_TABLE_GROUP_TABLE_VIEW_H_
+#pragma once
 
 #include "app/table_model.h"
 #include "base/task.h"

@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
 #define CHROME_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
+#pragma once
 
 #include <string>
 #include <vector>

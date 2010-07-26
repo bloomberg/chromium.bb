@@ -4,6 +4,7 @@
 
 #ifndef NET_SPDY_SPDY_TRANSACTION_FACTORY_H__
 #define NET_SPDY_SPDY_TRANSACTION_FACTORY_H__
+#pragma once
 
 #include "net/http/http_transaction_factory.h"
 #include "net/spdy/spdy_network_transaction.h"

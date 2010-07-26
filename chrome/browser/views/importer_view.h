@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H_
 #define CHROME_BROWSER_VIEWS_IMPORTER_VIEW_H_
+#pragma once
 
 #include "app/combobox_model.h"
 #include "chrome/browser/importer/importer.h"

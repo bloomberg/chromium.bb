@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_AUTOMATION_CONSTANTS_H__
 #define CHROME_COMMON_AUTOMATION_CONSTANTS_H__
+#pragma once
 
 namespace automation {
 // JSON value labels for proxy settings that are passed in via

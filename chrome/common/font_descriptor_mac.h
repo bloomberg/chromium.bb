@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_FONT_DESCRIPTOR_MAC_H_
 #define CHROME_COMMON_FONT_DESCRIPTOR_MAC_H_
+#pragma once
 
 #include "base/string16.h"
 

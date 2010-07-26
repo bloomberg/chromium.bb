@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_COOKIE_FETCHER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_COOKIE_FETCHER_H_
+#pragma once
 
 #include <string>
 #include "base/scoped_ptr.h"

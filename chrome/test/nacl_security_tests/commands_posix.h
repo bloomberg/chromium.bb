@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_NACL_SECURITY_TESTS_COMMANDS_POSIX_H_
 #define CHROME_TEST_NACL_SECURITY_TESTS_COMMANDS_POSIX_H_
+#pragma once
 
 // TODO(jvoung): factor out the SboxTestResult from
 // sandbox/tests/common/controller.h

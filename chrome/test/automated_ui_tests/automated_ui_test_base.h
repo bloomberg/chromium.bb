@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TEST_BASE_H_
 #define CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TEST_BASE_H_
+#pragma once
 
 #include "chrome/test/ui/ui_test.h"
 

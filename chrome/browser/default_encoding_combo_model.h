@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DEFAULT_ENCODING_COMBO_MODEL_H_
 #define CHROME_BROWSER_DEFAULT_ENCODING_COMBO_MODEL_H_
+#pragma once
 
 #include <string>
 #include <vector>

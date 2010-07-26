@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PREFERENCES_MAC_H_
 #define CHROME_BROWSER_PREFERENCES_MAC_H_
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 

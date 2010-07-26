@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_
 #define CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_
+#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/background.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_COMMAND_EXECUTOR_H_
 #define CHROME_BROWSER_BROWSER_COMMAND_EXECUTOR_H_
+#pragma once
 
 // Defines a protocol for any object that can execute commands in the
 // context of some underlying browser object.

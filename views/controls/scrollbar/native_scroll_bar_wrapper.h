@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_NATIVE_SCROLL_BAR_WRAPPER_H_
 #define VIEWS_CONTROLS_NATIVE_SCROLL_BAR_WRAPPER_H_
+#pragma once
 
 namespace views {
 

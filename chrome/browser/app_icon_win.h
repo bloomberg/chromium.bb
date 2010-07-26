@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_APP_ICON_WIN_H_
 #define CHROME_BROWSER_APP_ICON_WIN_H_
+#pragma once
 
 #include <windows.h>
 

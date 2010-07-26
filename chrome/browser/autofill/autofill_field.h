@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_FIELD_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_FIELD_H_
+#pragma once
 
 #include <string>
 

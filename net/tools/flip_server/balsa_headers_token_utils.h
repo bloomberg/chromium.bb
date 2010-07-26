@@ -7,6 +7,7 @@
 
 #ifndef NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
 #define NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_TOKEN_UTILS_H_
+#pragma once
 
 #include "net/tools/flip_server/balsa_headers.h"
 #include "base/string_piece.h"

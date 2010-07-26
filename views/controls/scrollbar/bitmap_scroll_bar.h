@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_SCROLLBAR_BITMAP_SCROLL_BAR_H_
 #define VIEWS_CONTROLS_SCROLLBAR_BITMAP_SCROLL_BAR_H_
+#pragma once
 
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu.h"

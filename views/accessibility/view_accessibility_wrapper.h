@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_WRAPPER_H_
 #define VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_WRAPPER_H_
+#pragma once
 
 #include <atlcomcli.h>
 //  Necessary to define OleAcc GUID's used in window_win.cc.

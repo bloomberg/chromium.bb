@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_ZYGOTE_HOST_LINUX_H_
 #define CHROME_BROWSER_ZYGOTE_HOST_LINUX_H_
+#pragma once
 
 #include <unistd.h>
 

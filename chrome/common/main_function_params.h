@@ -8,6 +8,7 @@
 
 #ifndef CHROME_COMMON_MAIN_FUNCTION_PARAMS_H_
 #define CHROME_COMMON_MAIN_FUNCTION_PARAMS_H_
+#pragma once
 
 #include "base/command_line.h"
 #include "chrome/common/sandbox_init_wrapper.h"

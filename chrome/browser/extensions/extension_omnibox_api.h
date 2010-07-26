@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_
+#pragma once
 
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete.h"

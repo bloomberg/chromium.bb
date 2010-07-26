@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_GVIEW_REQUEST_INTERCEPTOR_H__
 #define CHROME_BROWSER_CHROMEOS_GVIEW_REQUEST_INTERCEPTOR_H__
+#pragma once
 
 #include <string>
 #include "base/hash_tables.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_FRAME_PANEL_BROWSER_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_FRAME_PANEL_BROWSER_VIEW_H_
+#pragma once
 
 #include "app/x11_util.h"
 #include "base/scoped_ptr.h"

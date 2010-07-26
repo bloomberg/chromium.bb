@@ -4,6 +4,7 @@
 
 #ifndef APP_L10N_UTIL_COLLATOR_H_
 #define APP_L10N_UTIL_COLLATOR_H_
+#pragma once
 
 #include <algorithm>
 #include <functional>

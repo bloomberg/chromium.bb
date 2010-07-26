@@ -7,6 +7,7 @@
 
 #ifndef APP_GFX_GL_GL_MOCK_H_
 #define APP_GFX_GL_GL_MOCK_H_
+#pragma once
 
 #include "app/gfx/gl/gl_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"

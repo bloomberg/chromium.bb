@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_DOM_UI_CORE_CHROMEOS_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_DOM_UI_CORE_CHROMEOS_OPTIONS_HANDLER_H_
+#pragma once
 
 #include "chrome/browser/dom_ui/core_options_handler.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef BASE_SCOPED_NSAUTORELEASE_POOL_H_
 #define BASE_SCOPED_NSAUTORELEASE_POOL_H_
+#pragma once
 
 #include "base/basictypes.h"
 

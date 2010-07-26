@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_APP_CONTROLLER_CPPSAFE_MAC_H_
 #define CHROME_BROWSER_APP_CONTROLLER_CPPSAFE_MAC_H_
+#pragma once
 
 // We declare this in a separate file that is safe for including in C++ code.
 

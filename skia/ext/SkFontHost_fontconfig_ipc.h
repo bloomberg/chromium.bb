@@ -17,6 +17,7 @@
 
 #ifndef FontConfigIPC_DEFINED
 #define FontConfigIPC_DEFINED
+#pragma once
 
 // http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
 

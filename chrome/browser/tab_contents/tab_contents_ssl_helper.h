@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_SSL_HELPER_H_
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_SSL_HELPER_H_
+#pragma once
 
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 

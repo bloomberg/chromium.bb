@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_DETACHABLE_TOOLBAR_VIEW_H_
 #define CHROME_BROWSER_VIEWS_DETACHABLE_TOOLBAR_VIEW_H_
+#pragma once
 
 #include "chrome/browser/views/accessible_toolbar_view.h"
 

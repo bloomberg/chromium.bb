@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_FILE_METADATA_H_
 #define CHROME_BROWSER_COCOA_FILE_METADATA_H_
+#pragma once
 
 class FilePath;
 class GURL;

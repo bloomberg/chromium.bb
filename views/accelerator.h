@@ -10,6 +10,7 @@
 
 #ifndef VIEWS_ACCELERATOR_H_
 #define VIEWS_ACCELERATOR_H_
+#pragma once
 
 #include <string>
 

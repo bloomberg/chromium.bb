@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_VIEWS_DELEGATE_H_
 #define VIEWS_VIEWS_DELEGATE_H_
+#pragma once
 
 #include <string>
 #if defined(OS_WIN)

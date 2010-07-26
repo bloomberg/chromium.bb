@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_ROOT_VIEW_H_
 #define VIEWS_WIDGET_ROOT_VIEW_H_
+#pragma once
 
 #include <string>
 

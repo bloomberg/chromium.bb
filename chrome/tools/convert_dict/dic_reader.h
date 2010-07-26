@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TOOLS_CONVERT_DICT_DIC_READER_H__
 #define CHROME_TOOLS_CONVERT_DICT_DIC_READER_H__
+#pragma once
 
 #include <stdio.h>
 #include <map>

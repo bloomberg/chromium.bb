@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_KEYWORD_EDITOR_VIEW_H_
 #define CHROME_BROWSER_GTK_KEYWORD_EDITOR_VIEW_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

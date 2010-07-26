@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_DEPRECATED_EVENT_SYS_INL_H_
 #define CHROME_COMMON_DEPRECATED_EVENT_SYS_INL_H_
+#pragma once
 
 #include <map>
 

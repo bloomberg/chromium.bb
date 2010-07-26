@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
+#pragma once
 
 #include <string>
 

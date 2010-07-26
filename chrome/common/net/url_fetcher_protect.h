@@ -7,6 +7,7 @@
 
 #ifndef CHROME_COMMON_NET_URL_FETCHER_PROTECT_H_
 #define CHROME_COMMON_NET_URL_FETCHER_PROTECT_H_
+#pragma once
 
 #include <map>
 #include <queue>

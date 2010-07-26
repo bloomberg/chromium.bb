@@ -11,6 +11,7 @@
 
 #ifndef GFX_RECT_H_
 #define GFX_RECT_H_
+#pragma once
 
 #include <iosfwd>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_NOTIFICATIONS_BALLOON_VIEW_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_NOTIFICATIONS_BALLOON_VIEW_BRIDGE_H_
+#pragma once
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/notifications/balloon_controller.h"

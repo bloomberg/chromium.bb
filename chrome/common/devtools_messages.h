@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_DEVTOOLS_MESSAGES_H_
 #define CHROME_COMMON_DEVTOOLS_MESSAGES_H_
+#pragma once
 
 #include "ipc/ipc_message_utils.h"
 #include "webkit/glue/devtools_message_data.h"

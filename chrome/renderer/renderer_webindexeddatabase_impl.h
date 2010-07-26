@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDERER_WEBINDEXEDDATABASE_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBINDEXEDDATABASE_IMPL_H_
+#pragma once
 
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"

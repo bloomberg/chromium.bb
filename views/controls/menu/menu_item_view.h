@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
 #define VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
+#pragma once
 
 #if defined(OS_WIN)
 #include <windows.h>

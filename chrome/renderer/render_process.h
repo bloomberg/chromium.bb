@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDER_PROCESS_H_
 #define CHROME_RENDERER_RENDER_PROCESS_H_
+#pragma once
 
 #include "chrome/common/child_process.h"
 #include "skia/ext/platform_canvas.h"

@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_HWND_VIEW_H_
 #define VIEWS_CONTROLS_HWND_VIEW_H_
+#pragma once
 
 #include "base/logging.h"
 #include "views/controls/native/native_view_host_wrapper.h"

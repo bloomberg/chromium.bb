@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_DATABASE_OPEN_INFO_VIEW_H_
 #define CHROME_BROWSER_VIEWS_DATABASE_OPEN_INFO_VIEW_H_
+#pragma once
 
 #include "base/string16.h"
 #include "chrome/browser/views/generic_info_view.h"

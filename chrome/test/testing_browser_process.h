@@ -9,6 +9,7 @@
 
 #ifndef CHROME_TEST_TESTING_BROWSER_PROCESS_H_
 #define CHROME_TEST_TESTING_BROWSER_PROCESS_H_
+#pragma once
 
 #include "build/build_config.h"
 

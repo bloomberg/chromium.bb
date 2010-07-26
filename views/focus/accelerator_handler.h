@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_FOCUS_ACCELERATOR_HANDLER_H_
 #define VIEWS_FOCUS_ACCELERATOR_HANDLER_H_
+#pragma once
 
 #include "build/build_config.h"
 

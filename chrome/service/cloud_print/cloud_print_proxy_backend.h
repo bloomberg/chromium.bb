@@ -4,6 +4,7 @@
 
 #ifndef CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
+#pragma once
 
 #include <map>
 #include <string>

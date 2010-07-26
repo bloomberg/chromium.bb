@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_DOM_UI_BINDINGS_H_
 #define CHROME_RENDERER_DOM_UI_BINDINGS_H_
+#pragma once
 
 #include "ipc/ipc_message.h"
 #include "webkit/glue/cpp_bound_class.h"

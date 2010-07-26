@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_REPOST_FORM_WARNING_CONTROLLER_H_
 #define CHROME_BROWSER_REPOST_FORM_WARNING_CONTROLLER_H_
+#pragma once
 
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/common/notification_registrar.h"

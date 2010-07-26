@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
+#pragma once
 
 #include <string>
 

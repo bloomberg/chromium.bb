@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_REF_COUNTED_UTIL_H__
 #define CHROME_COMMON_REF_COUNTED_UTIL_H__
+#pragma once
 
 #include "base/ref_counted.h"
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef APP_CLIPBOARD_CLIPBOARD_H_
 #define APP_CLIPBOARD_CLIPBOARD_H_
+#pragma once
 
 #include <map>
 #include <string>

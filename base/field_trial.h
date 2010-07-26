@@ -61,6 +61,7 @@
 
 #ifndef BASE_FIELD_TRIAL_H_
 #define BASE_FIELD_TRIAL_H_
+#pragma once
 
 #include <map>
 #include <string>

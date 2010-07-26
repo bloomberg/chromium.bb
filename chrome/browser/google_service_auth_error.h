@@ -21,6 +21,7 @@
 
 #ifndef CHROME_BROWSER_GOOGLE_SERVICE_AUTH_ERROR_H_
 #define CHROME_BROWSER_GOOGLE_SERVICE_AUTH_ERROR_H_
+#pragma once
 
 #include <string>
 #include "googleurl/src/gurl.h"

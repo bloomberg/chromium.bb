@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_H_
 #define CHROME_BROWSER_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_H_
+#pragma once
 
 #include "chrome/browser/views/frame/browser_view.h"
 #include "views/layout_manager.h"

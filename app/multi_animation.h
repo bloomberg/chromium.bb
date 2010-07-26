@@ -4,6 +4,7 @@
 
 #ifndef APP_MULTI_ANIMATION_H_
 #define APP_MULTI_ANIMATION_H_
+#pragma once
 
 #include <vector>
 

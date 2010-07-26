@@ -50,6 +50,7 @@
 
 #ifndef BASE_WEAK_PTR_H_
 #define BASE_WEAK_PTR_H_
+#pragma once
 
 #include "base/logging.h"
 #include "base/non_thread_safe.h"

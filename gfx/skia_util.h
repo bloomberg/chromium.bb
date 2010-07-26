@@ -4,6 +4,7 @@
 
 #ifndef APP_GFX_SKIA_UTIL_H_
 #define APP_GFX_SKIA_UTIL_H_
+#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"

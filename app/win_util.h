@@ -4,6 +4,7 @@
 
 #ifndef APP_WIN_UTIL_H_
 #define APP_WIN_UTIL_H_
+#pragma once
 
 #include <objbase.h>
 

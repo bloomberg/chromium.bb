@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_FOCUS_FOCUS_MANAGER_H_
 #define VIEWS_FOCUS_FOCUS_MANAGER_H_
+#pragma once
 
 #include <list>
 #include <map>

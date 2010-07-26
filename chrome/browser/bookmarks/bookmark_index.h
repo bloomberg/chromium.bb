@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_INDEX_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_INDEX_H_
+#pragma once
 
 #include <list>
 #include <map>

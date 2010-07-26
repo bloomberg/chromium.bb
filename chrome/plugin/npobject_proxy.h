@@ -7,6 +7,7 @@
 
 #ifndef CHROME_PLUGIN_NPOBJECT_PROXY_H_
 #define CHROME_PLUGIN_NPOBJECT_PROXY_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "chrome/plugin/npobject_base.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_JSMESSAGE_BOX_CLIENT_H_
 #define CHROME_BROWSER_JSMESSAGE_BOX_CLIENT_H_
+#pragma once
 
 // JavaScriptMessageBoxClient
 //

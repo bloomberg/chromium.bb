@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_BOOKMARK_BAR_INSTRUCTIONS_VIEW_H_
 #define CHROME_BROWSER_VIEWS_BOOKMARK_BAR_INSTRUCTIONS_VIEW_H_
+#pragma once
 
 #include "views/view.h"
 #include "views/controls/link.h"

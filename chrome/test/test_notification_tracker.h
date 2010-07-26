@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_TEST_NOTIFICATION_TRACKER_H_
 #define CHROME_TEST_TEST_NOTIFICATION_TRACKER_H_
+#pragma once
 
 #include <vector>
 

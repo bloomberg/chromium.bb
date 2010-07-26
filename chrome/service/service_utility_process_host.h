@@ -4,6 +4,7 @@
 
 #ifndef CHROME_SERVICE_SERVICE_UTILITY_PROCESS_HOST_H_
 #define CHROME_SERVICE_SERVICE_UTILITY_PROCESS_HOST_H_
+#pragma once
 
 #if defined(OS_WIN)
 #include <windows.h>

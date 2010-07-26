@@ -6,6 +6,7 @@
 
 #ifndef APP_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
 #define APP_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
+#pragma once
 
 #include <shlobj.h>
 #include <string>

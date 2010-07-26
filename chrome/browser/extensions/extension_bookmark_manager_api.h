@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_MANAGER_API_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_MANAGER_API_H_
+#pragma once
 
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"

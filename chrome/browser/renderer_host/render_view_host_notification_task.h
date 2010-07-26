@@ -9,6 +9,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_NOTIFICATION_TASK_H_
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_NOTIFICATION_TASK_H_
+#pragma once
 
 #include "base/callback.h"
 #include "base/task.h"

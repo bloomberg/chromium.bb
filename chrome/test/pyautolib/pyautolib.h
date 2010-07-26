@@ -7,6 +7,7 @@
 
 #ifndef CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
 #define CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
+#pragma once
 
 #include "base/message_loop.h"
 #include "base/scoped_nsautorelease_pool.h"

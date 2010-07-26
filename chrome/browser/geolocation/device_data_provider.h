@@ -21,6 +21,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_DEVICE_DATA_PROVIDER_H_
 #define CHROME_BROWSER_GEOLOCATION_DEVICE_DATA_PROVIDER_H_
+#pragma once
 
 #include <algorithm>
 #include <functional>

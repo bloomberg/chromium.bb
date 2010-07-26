@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_LANGUAGES_PAGE_VIEW_H__
 #define CHROME_BROWSER_VIEWS_OPTIONS_LANGUAGES_PAGE_VIEW_H__
+#pragma once
 
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/views/options/options_page_view.h"

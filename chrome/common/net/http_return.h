@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NET_HTTP_RETURN_H_
 #define CHROME_COMMON_NET_HTTP_RETURN_H_
+#pragma once
 
 // TODO(sanjeevr): This has been moved from the sync library so it only
 // contains a few HTTP return codes. Add more HTTP return codes.

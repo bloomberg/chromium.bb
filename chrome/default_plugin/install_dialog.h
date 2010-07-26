@@ -4,6 +4,7 @@
 
 #ifndef CHROME_DEFAULT_PLUGIN_INSTALL_DIALOG_H_
 #define CHROME_DEFAULT_PLUGIN_INSTALL_DIALOG_H_
+#pragma once
 
 #include <atlbase.h>
 #include <atlwin.h>

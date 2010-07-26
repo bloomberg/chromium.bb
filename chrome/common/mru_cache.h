@@ -15,6 +15,7 @@
 
 #ifndef CHROME_COMMON_MRU_CACHE_H__
 #define CHROME_COMMON_MRU_CACHE_H__
+#pragma once
 
 #include <list>
 #include <map>

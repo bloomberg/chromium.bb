@@ -4,6 +4,7 @@
 
 #ifndef SKIA_EXT_VECTOR_PLATFORM_DEVICE_WIN_H_
 #define SKIA_EXT_VECTOR_PLATFORM_DEVICE_WIN_H_
+#pragma once
 
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMatrix.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
 #define CHROME_BROWSER_GTK_FULLSCREEN_EXIT_BUBBLE_GTK_H_
+#pragma once
 
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"

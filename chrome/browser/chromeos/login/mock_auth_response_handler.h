@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_AUTH_RESPONSE_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_AUTH_RESPONSE_HANDLER_H_
+#pragma once
 
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 

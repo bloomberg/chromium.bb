@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_X_UTIL_H_
 #define CHROME_GPU_X_UTIL_H_
+#pragma once
 
 // Some X-Windows specific stuff. This can be included on any platform, and will
 // be a NOP on non-Linux ones.

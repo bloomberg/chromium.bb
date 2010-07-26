@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_MENU_HOST_ROOT_VIEW_H_
 #define VIEWS_CONTROLS_MENU_MENU_HOST_ROOT_VIEW_H_
+#pragma once
 
 #include "views/widget/root_view.h"
 

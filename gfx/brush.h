@@ -4,6 +4,7 @@
 
 #ifndef GFX_BRUSH_H_
 #define GFX_BRUSH_H_
+#pragma once
 
 namespace gfx {
 

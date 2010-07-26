@@ -4,6 +4,7 @@
 
 #ifndef BASE_CANCELLATION_FLAG_H_
 #define BASE_CANCELLATION_FLAG_H_
+#pragma once
 
 #include "base/atomicops.h"
 #include "base/platform_thread.h"

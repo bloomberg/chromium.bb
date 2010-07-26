@@ -6,6 +6,7 @@
 // Windows Event Tracing for logging transport and control.
 #ifndef BASE_EVENT_TRACE_PROVIDER_WIN_H_
 #define BASE_EVENT_TRACE_PROVIDER_WIN_H_
+#pragma once
 
 #include <windows.h>
 #include <wmistr.h>

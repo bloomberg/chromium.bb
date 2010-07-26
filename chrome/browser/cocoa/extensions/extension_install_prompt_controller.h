@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_EXTENSION_INSTALL_PROMPT_H_
 #define CHROME_BROWSER_COCOA_EXTENSION_INSTALL_PROMPT_H_
+#pragma once
 
 #include <string>
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_THEME_UTIL_H_
 #define CHROME_BROWSER_SYNC_GLUE_THEME_UTIL_H_
+#pragma once
 
 class Extension;
 class Profile;

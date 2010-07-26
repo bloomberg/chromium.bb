@@ -4,6 +4,7 @@
 
 #ifndef BASE_WORKER_POOL_H_
 #define BASE_WORKER_POOL_H_
+#pragma once
 
 #include "base/tracked.h"
 

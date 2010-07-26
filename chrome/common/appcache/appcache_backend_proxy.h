@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_APPCACHE_APPCACHE_BACKEND_PROXY_H_
 #define CHROME_COMMON_APPCACHE_APPCACHE_BACKEND_PROXY_H_
+#pragma once
 
 #include "ipc/ipc_message.h"
 #include "webkit/appcache/appcache_interfaces.h"

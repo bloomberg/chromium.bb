@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_DROPDOWN_BAR_HOST_H_
 #define CHROME_BROWSER_VIEWS_DROPDOWN_BAR_HOST_H_
+#pragma once
 
 #include "app/animation.h"
 #include "base/scoped_ptr.h"

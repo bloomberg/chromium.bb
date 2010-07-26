@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_WINDOW_RESOURCES_H_
 #define VIEWS_WINDOW_WINDOW_RESOURCES_H_
+#pragma once
 
 class SkBitmap;
 

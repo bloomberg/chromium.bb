@@ -4,6 +4,7 @@
 
 #ifndef BASE_FOUNDATION_UTILS_MAC_H_
 #define BASE_FOUNDATION_UTILS_MAC_H_
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>

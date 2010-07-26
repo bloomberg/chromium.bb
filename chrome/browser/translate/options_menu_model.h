@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TRANSLATE_OPTIONS_MENU_MODEL_H_
 #define CHROME_BROWSER_TRANSLATE_OPTIONS_MENU_MODEL_H_
+#pragma once
 
 #include "app/menus/simple_menu_model.h"
 

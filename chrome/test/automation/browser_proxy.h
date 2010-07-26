@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_AUTOMATION_BROWSER_PROXY_H_
 #define CHROME_TEST_AUTOMATION_BROWSER_PROXY_H_
+#pragma once
 
 #include "build/build_config.h"
 

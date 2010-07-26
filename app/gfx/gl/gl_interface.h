@@ -8,6 +8,7 @@
 
 #ifndef APP_GFX_GL_GL_INTERFACE_H_
 #define APP_GFX_GL_GL_INTERFACE_H_
+#pragma once
 
 #include "app/gfx/gl/gl_bindings.h"
 

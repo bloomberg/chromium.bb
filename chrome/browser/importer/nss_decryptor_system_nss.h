@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_SYSTEM_NSS_H_
 #define CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_SYSTEM_NSS_H_
+#pragma once
 
 #include <secmodt.h>
 #include <string>

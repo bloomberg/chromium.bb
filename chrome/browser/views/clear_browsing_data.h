@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_CLEAR_BROWSING_DATA_H_
 #define CHROME_BROWSER_VIEWS_CLEAR_BROWSING_DATA_H_
+#pragma once
 
 #include "app/combobox_model.h"
 #include "chrome/browser/browsing_data_remover.h"

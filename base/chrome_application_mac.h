@@ -4,6 +4,7 @@
 
 #ifndef BASE_CHROME_APPLICATION_MAC_H_
 #define BASE_CHROME_APPLICATION_MAC_H_
+#pragma once
 
 #import <AppKit/AppKit.h>
 

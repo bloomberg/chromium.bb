@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_UNITTEST_HELPER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_STORE_UNITTEST_HELPER_H_
+#pragma once
 
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 

@@ -8,6 +8,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_CHANGE_REORDER_BUFFER_H_
 #define CHROME_BROWSER_SYNC_ENGINE_CHANGE_REORDER_BUFFER_H_
+#pragma once
 
 #include <map>
 #include <vector>

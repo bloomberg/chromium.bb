@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_HIT_TEST_H_
 #define VIEWS_WINDOW_HIT_TEST_H_
+#pragma once
 
 // Defines the same symbolic names used by the WM_NCHITTEST Notification under
 // win32 (the integer values are not guaranteed to be equivalent). We do this

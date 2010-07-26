@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_IMPORTER_LOCK_DIALOG_H_
 #define CHROME_BROWSER_COCOA_IMPORTER_LOCK_DIALOG_H_
+#pragma once
 
 class ImporterHost;
 

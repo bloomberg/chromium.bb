@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_H_
+#pragma once
 
 #include "build/build_config.h"
 

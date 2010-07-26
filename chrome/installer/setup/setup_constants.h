@@ -6,6 +6,7 @@
 
 #ifndef CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H__
 #define CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H__
+#pragma once
 
 namespace installer {
 

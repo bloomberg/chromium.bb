@@ -11,6 +11,7 @@
 
 #ifndef CHROME_COMMON_RENDERER_PREFERENCES_H_
 #define CHROME_COMMON_RENDERER_PREFERENCES_H_
+#pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
 

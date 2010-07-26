@@ -4,6 +4,7 @@
 
 #ifndef BASE_LOCK_H_
 #define BASE_LOCK_H_
+#pragma once
 
 #include "base/lock_impl.h"
 

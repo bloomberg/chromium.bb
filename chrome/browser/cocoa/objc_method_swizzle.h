@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_OBJC_METHOD_SWIZZLE_H_
 #define CHROME_BROWSER_COCOA_OBJC_METHOD_SWIZZLE_H_
+#pragma once
 
 #import <objc/objc-class.h>
 

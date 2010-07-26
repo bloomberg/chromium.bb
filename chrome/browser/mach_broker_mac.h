@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_MACH_BROKER_H_
 #define CHROME_BROWSER_MACH_BROKER_H_
+#pragma once
 
 #include <map>
 

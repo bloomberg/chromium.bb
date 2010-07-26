@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NET_URL_REQUEST_CONTEXT_GETTER_H_
 #define CHROME_COMMON_NET_URL_REQUEST_CONTEXT_GETTER_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "base/task.h"

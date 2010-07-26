@@ -4,6 +4,7 @@
 
 #ifndef APP_GTK_INTEGERS_H_
 #define APP_GTK_INTEGERS_H_
+#pragma once
 
 // GLib/Gobject/Gtk all use their own integer typedefs. They are copied here
 // for forward declaration reasons so we don't pull in all of gtk.h when we

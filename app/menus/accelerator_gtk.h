@@ -4,6 +4,7 @@
 
 #ifndef APP_MENUS_ACCELERATOR_GTK_H_
 #define APP_MENUS_ACCELERATOR_GTK_H_
+#pragma once
 
 #include <gdk/gdk.h>
 

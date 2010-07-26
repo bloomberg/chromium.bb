@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_MODEL_SAFE_WORKER_H_
 #define CHROME_BROWSER_SYNC_ENGINE_MODEL_SAFE_WORKER_H_
+#pragma once
 
 #include <map>
 #include <string>

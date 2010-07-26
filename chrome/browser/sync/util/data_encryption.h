@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_UTIL_DATA_ENCRYPTION_H_
 #define CHROME_BROWSER_SYNC_UTIL_DATA_ENCRYPTION_H_
+#pragma once
 
 #include <string>
 #include <vector>

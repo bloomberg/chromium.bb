@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
 #define VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
+#pragma once
 
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_BUTTON_H_
 #define CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_BUTTON_H_
+#pragma once
 
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"

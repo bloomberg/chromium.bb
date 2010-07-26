@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDERER_WEBIDBINDEX_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBIDBINDEX_IMPL_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"

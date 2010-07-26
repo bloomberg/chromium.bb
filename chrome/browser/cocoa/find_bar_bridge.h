@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_FIND_BAR_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_FIND_BAR_BRIDGE_H_
+#pragma once
 
 #include "base/logging.h"
 #include "chrome/browser/find_bar.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_CHANNEL_H_
 #define CHROME_GPU_GPU_CHANNEL_H_
+#pragma once
 
 #include <string>
 

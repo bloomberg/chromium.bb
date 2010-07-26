@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NET_URL_REQUEST_TRACKING_H_
 #define CHROME_BROWSER_NET_URL_REQUEST_TRACKING_H_
+#pragma once
 
 class URLRequest;
 

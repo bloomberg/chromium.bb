@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_DEVTOOLS_AGENT_FILTER_H_
 #define CHROME_RENDERER_DEVTOOLS_AGENT_FILTER_H_
+#pragma once
 
 #include <set>
 #include <string>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PAGE_STATE_H__
 #define CHROME_BROWSER_PAGE_STATE_H__
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"

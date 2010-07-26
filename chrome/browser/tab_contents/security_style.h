@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_SECURITY_STYLE_H_
 #define CHROME_BROWSER_TAB_CONTENTS_SECURITY_STYLE_H_
+#pragma once
 
 // Various aspects of the UI change their appearance according to the security
 // context in which they are displayed.  For example, the location bar displays

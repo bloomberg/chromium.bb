@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_PAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_PAGE_VIEW_H_
+#pragma once
 
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/pref_member.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_H_
+#pragma once
 
 #include <map>
 #include <set>

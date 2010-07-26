@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_GTK_THEME_INSTALLED_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_GTK_THEME_INSTALLED_INFOBAR_DELEGATE_H_
+#pragma once
 
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 

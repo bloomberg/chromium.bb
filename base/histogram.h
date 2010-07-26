@@ -30,6 +30,7 @@
 
 #ifndef BASE_HISTOGRAM_H_
 #define BASE_HISTOGRAM_H_
+#pragma once
 
 #include <map>
 #include <string>

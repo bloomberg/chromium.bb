@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_LOCALIZED_ERROR_H_
 #define CHROME_RENDERER_LOCALIZED_ERROR_H_
+#pragma once
 
 class DictionaryValue;
 class GURL;

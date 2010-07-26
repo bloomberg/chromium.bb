@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_APP_MODE_COMMON_MAC_H_
 #define CHROME_COMMON_APP_MODE_COMMON_MAC_H_
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 

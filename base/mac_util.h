@@ -4,6 +4,7 @@
 
 #ifndef BASE_MAC_UTIL_H_
 #define BASE_MAC_UTIL_H_
+#pragma once
 
 #include <Carbon/Carbon.h>
 #include <string>

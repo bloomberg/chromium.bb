@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_ANIMATABLE_IMAGE_H_
 #define CHROME_BROWSER_COCOA_ANIMATABLE_IMAGE_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>

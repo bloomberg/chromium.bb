@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_CAPTCHA_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_CAPTCHA_VIEW_H_
+#pragma once
 
 #include <string>
 

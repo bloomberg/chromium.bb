@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_
+#pragma once
 
 #include <string>
 #include <vector>

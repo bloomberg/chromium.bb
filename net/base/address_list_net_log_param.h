@@ -4,6 +4,7 @@
 
 #ifndef NET_BASE_ADDRESS_LIST_NET_LOG_PARAM_H_
 #define NET_BASE_ADDRESS_LIST_NET_LOG_PARAM_H_
+#pragma once
 
 #include "net/base/address_list.h"
 #include "net/base/net_log.h"

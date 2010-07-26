@@ -4,6 +4,7 @@
 
 #ifndef APP_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
 #define APP_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/mach.h>

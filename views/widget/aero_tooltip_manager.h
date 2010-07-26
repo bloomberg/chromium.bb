@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_AERO_TOOLTIP_MANAGER_H_
 #define VIEWS_WIDGET_AERO_TOOLTIP_MANAGER_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "base/task.h"

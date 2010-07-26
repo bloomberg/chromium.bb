@@ -4,6 +4,7 @@
 
 #ifndef CHROME_WORKER_WEBWORKER_STUB_BASE_H_
 #define CHROME_WORKER_WEBWORKER_STUB_BASE_H_
+#pragma once
 
 #include "chrome/worker/webworkerclient_proxy.h"
 #include "chrome/worker/worker_webapplicationcachehost_impl.h"

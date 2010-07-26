@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_CUSTOM_HOME_PAGES_MODEL_H_
 #define CHROME_BROWSER_COCOA_CUSTOM_HOME_PAGES_MODEL_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

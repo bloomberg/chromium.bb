@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NET_SOCKET_STREAM_H_
 #define CHROME_COMMON_NET_SOCKET_STREAM_H_
+#pragma once
 
 namespace chrome_common_net {
 

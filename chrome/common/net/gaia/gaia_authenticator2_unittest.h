@@ -7,6 +7,7 @@
 
 #ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_UNITTEST_H_
 #define CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_UNITTEST_H_
+#pragma once
 
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/url_fetcher.h"

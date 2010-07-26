@@ -4,6 +4,7 @@
 
 #ifndef NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_H_
 #define NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_H_
+#pragma once
 
 #include <string>
 

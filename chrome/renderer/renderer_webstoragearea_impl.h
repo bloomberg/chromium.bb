@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

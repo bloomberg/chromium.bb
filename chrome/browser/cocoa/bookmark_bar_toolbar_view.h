@@ -9,6 +9,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_BAR_TOOLBAR_VIEW_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_BAR_TOOLBAR_VIEW_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

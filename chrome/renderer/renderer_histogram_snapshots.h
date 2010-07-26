@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDERER_HISTOGRAM_SNAPSHOTS_H_
 #define CHROME_RENDERER_RENDERER_HISTOGRAM_SNAPSHOTS_H_
+#pragma once
 
 #include <list>
 #include <map>

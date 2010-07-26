@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_EVENT_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_EVENT_H_
+#pragma once
 
 namespace syncable {
 

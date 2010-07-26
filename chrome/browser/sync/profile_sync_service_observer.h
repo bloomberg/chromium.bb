@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
+#pragma once
 
 // Various UI components such as the New Tab page can be driven by observing
 // the ProfileSyncService through this interface.

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_GTK_TREE_H_
 #define CHROME_BROWSER_GTK_GTK_TREE_H_
+#pragma once
 
 #include <gtk/gtk.h>
 #include <set>

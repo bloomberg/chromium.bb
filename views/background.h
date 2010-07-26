@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_BACKGROUND_H_
 #define VIEWS_BACKGROUND_H_
+#pragma once
 
 #include "build/build_config.h"
 

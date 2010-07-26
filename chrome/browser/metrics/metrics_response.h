@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_METRICS_METRICS_RESPONSE_H_
 #define CHROME_BROWSER_METRICS_METRICS_RESPONSE_H_
+#pragma once
 
 #include <string>
 

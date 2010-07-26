@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
 #define CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
+#pragma once
 
 #include <vector>
 

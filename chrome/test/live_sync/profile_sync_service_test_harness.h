@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_LIVE_SYNC_PROFILE_SYNC_SERVICE_TEST_HARNESS_H_
 #define CHROME_TEST_LIVE_SYNC_PROFILE_SYNC_SERVICE_TEST_HARNESS_H_
+#pragma once
 
 #include <string>
 #include <vector>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_SESSIONS_ORDERED_COMMIT_SET_H_
 #define CHROME_BROWSER_SYNC_SESSIONS_ORDERED_COMMIT_SET_H_
+#pragma once
 
 #include <map>
 #include <set>

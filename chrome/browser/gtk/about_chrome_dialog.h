@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_ABOUT_CHROME_DIALOG_H_
 #define CHROME_BROWSER_GTK_ABOUT_CHROME_DIALOG_H_
+#pragma once
 
 class Profile;
 typedef struct _GtkWindow GtkWindow;

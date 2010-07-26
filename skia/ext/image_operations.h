@@ -4,6 +4,7 @@
 
 #ifndef SKIA_EXT_IMAGE_OPERATIONS_H_
 #define SKIA_EXT_IMAGE_OPERATIONS_H_
+#pragma once
 
 class SkBitmap;
 struct SkIRect;

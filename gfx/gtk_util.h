@@ -4,6 +4,7 @@
 
 #ifndef GFX_GTK_UTIL_H_
 #define GFX_GTK_UTIL_H_
+#pragma once
 
 #include <stdint.h>
 #include <vector>

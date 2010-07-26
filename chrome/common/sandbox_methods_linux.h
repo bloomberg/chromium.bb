@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_SANDBOX_METHODS_LINUX_H_
 #define CHROME_COMMON_SANDBOX_METHODS_LINUX_H_
+#pragma once
 
 // This is a list of sandbox IPC methods which the renderer may send to the
 // sandbox host. See http://code.google.com/p/chromium/LinuxSandboxIPC

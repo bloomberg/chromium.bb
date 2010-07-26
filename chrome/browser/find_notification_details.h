@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_FIND_NOTIFICATION_DETAILS_H_
 #define CHROME_BROWSER_FIND_NOTIFICATION_DETAILS_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "gfx/rect.h"

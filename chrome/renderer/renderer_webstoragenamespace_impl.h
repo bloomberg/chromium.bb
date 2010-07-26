@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDERER_WEBSTORAGENAMESPACE_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBSTORAGENAMESPACE_IMPL_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/common/dom_storage_common.h"

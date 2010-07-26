@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STARTED_ANIMATION_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STARTED_ANIMATION_H_
+#pragma once
 
 #include "base/basictypes.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_CHROME_VIEWS_DELEGATE_H_
 #define CHROME_BROWSER_VIEWS_CHROME_VIEWS_DELEGATE_H_
+#pragma once
 
 #include "base/logging.h"
 #include "views/views_delegate.h"

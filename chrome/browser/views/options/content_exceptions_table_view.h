@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_EXCEPTIONS_TABLE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_EXCEPTIONS_TABLE_VIEW_H_
+#pragma once
 
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "views/controls/table/table_view.h"

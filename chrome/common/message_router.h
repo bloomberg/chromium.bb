@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_MESSAGE_ROUTER_H__
 #define CHROME_COMMON_MESSAGE_ROUTER_H__
+#pragma once
 
 #include "base/id_map.h"
 #include "ipc/ipc_channel.h"

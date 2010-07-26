@@ -4,6 +4,7 @@
 
 #ifndef CHROME_WORKER_WEBSHAREDWORKER_STUB_H_
 #define CHROME_WORKER_WEBSHAREDWORKER_STUB_H_
+#pragma once
 
 #include "chrome/worker/webworker_stub_base.h"
 #include "chrome/worker/webworkerclient_proxy.h"

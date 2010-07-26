@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_DEBUGGER_DEBUGGER_HOST_H_
 #define CHROME_BROWSER_DEBUGGER_DEBUGGER_HOST_H_
+#pragma once
 
 #include <string>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_SHARED_RESOURCES_DATA_SOURCE_H_
 #define CHROME_BROWSER_DOM_UI_SHARED_RESOURCES_DATA_SOURCE_H_
+#pragma once
 
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 

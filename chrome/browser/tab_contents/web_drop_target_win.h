@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DROP_TARGET_WIN_H_
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DROP_TARGET_WIN_H_
+#pragma once
 
 #include "base/base_drop_target.h"
 #include "base/scoped_ptr.h"

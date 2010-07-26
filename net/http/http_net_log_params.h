@@ -4,6 +4,7 @@
 
 #ifndef NET_HTTP_HTTP_NET_LOG_PARAMS_H_
 #define NET_HTTP_HTTP_NET_LOG_PARAMS_H_
+#pragma once
 
 #include <string>
 #include <vector>

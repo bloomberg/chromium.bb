@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_
 #define CHROME_BROWSER_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_
+#pragma once
 
 #include <atlbase.h>
 #include <atlcom.h>

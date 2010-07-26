@@ -26,6 +26,7 @@
 
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
+#pragma once
 
 #include <map>
 #include <set>

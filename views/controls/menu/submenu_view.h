@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_SUBMENU_VIEW_H_
 #define VIEWS_CONTROLS_MENU_SUBMENU_VIEW_H_
+#pragma once
 
 #include "views/controls/menu/menu_delegate.h"
 #include "views/view.h"

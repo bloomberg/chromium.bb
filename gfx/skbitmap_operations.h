@@ -4,6 +4,7 @@
 
 #ifndef GFX_SKBITMAP_OPERATIONS_H_
 #define GFX_SKBITMAP_OPERATIONS_H_
+#pragma once
 
 #include "base/gtest_prod_util.h"
 #include "gfx/color_utils.h"

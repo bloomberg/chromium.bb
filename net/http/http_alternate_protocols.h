@@ -8,6 +8,7 @@
 
 #ifndef NET_HTTP_HTTP_ALTERNATE_PROTOCOLS_H_
 #define NET_HTTP_HTTP_ALTERNATE_PROTOCOLS_H_
+#pragma once
 
 #include <map>
 #include <string>

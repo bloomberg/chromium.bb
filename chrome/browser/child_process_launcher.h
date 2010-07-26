@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHILD_PROCESS_LAUNCHER_H_
 #define CHROME_BROWSER_CHILD_PROCESS_LAUNCHER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/process_util.h"

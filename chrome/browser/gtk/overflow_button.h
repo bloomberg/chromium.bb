@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_OVERFLOW_BUTTON_H_
 #define CHROME_BROWSER_GTK_OVERFLOW_BUTTON_H_
+#pragma once
 
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

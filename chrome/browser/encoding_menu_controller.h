@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_ENCODING_MENU_CONTROLLER_H_
 #define CHROME_BROWSER_ENCODING_MENU_CONTROLLER_H_
+#pragma once
 
 #include <utility>
 #include <string>

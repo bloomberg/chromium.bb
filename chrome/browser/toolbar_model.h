@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TOOLBAR_MODEL_H__
 #define CHROME_BROWSER_TOOLBAR_MODEL_H__
+#pragma once
 
 #include <string>
 

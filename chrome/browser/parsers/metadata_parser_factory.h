@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PARSERS_METADATA_PARSER_FACTORY_H_
 #define CHROME_BROWSER_PARSERS_METADATA_PARSER_FACTORY_H_
+#pragma once
 
 #include "chrome/browser/parsers/metadata_parser.h"
 

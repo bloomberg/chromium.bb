@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_ABOUT_IPC_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_ABOUT_IPC_BRIDGE_H_
+#pragma once
 
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_utils.h"

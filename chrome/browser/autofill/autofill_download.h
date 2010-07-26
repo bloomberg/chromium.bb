@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_DOWNLOAD_H_
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_DOWNLOAD_H_
+#pragma once
 
 #include <map>
 #include <vector>

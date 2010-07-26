@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_H_
+#pragma once
 
 #include <map>
 #include <set>

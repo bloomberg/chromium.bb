@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_WINDOW_SIZE_AUTOSAVER_H_
 #define CHROME_BROWSER_COCOA_WINDOW_SIZE_AUTOSAVER_H_
+#pragma once
 
 class PrefService;
 @class NSWindow;

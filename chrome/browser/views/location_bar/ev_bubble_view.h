@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_LOCATION_BAR_EV_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_EV_BUBBLE_VIEW_H_
+#pragma once
 
 #include "chrome/browser/views/location_bar/click_handler.h"
 #include "chrome/browser/views/location_bar/icon_label_bubble_view.h"

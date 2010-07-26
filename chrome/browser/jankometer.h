@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_JANKOMETER_H_
 #define CHROME_BROWSER_JANKOMETER_H_
+#pragma once
 
 class CommandLine;
 

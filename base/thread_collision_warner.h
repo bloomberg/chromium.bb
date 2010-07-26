@@ -4,6 +4,7 @@
 
 #ifndef BASE_THREAD_COLLISION_WARNER_H_
 #define BASE_THREAD_COLLISION_WARNER_H_
+#pragma once
 
 #include <memory>
 

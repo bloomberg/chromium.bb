@@ -4,6 +4,7 @@
 
 #ifndef GFX_ICON_UTIL_H_
 #define GFX_ICON_UTIL_H_
+#pragma once
 
 #include <windows.h>
 #include <string>

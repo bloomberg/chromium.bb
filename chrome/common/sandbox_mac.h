@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_SANDBOX_MAC_H_
 #define CHROME_COMMON_SANDBOX_MAC_H_
+#pragma once
 
 #include "base/file_path.h"
 

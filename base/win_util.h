@@ -4,6 +4,7 @@
 
 #ifndef BASE_WIN_UTIL_H__
 #define BASE_WIN_UTIL_H__
+#pragma once
 
 #include <windows.h>
 #include <aclapi.h>

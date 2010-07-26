@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
 #define CHROME_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
+#pragma once
 
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

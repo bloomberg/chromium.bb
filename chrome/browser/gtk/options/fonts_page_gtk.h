@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_GTK_OPTIONS_FONTS_PAGE_GTK_H_
 #define CHROME_BROWSER_GTK_OPTIONS_FONTS_PAGE_GTK_H_
+#pragma once
 
 #include <gtk/gtk.h>
 #include <vector>

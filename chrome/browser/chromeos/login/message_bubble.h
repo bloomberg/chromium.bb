@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MESSAGE_BUBBLE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MESSAGE_BUBBLE_H_
+#pragma once
 
 #include "chrome/browser/views/info_bubble.h"
 #include "views/controls/button/button.h"

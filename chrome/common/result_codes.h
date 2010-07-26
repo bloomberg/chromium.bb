@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_RESULT_CODES_H_
 #define CHROME_COMMON_RESULT_CODES_H_
+#pragma once
 
 #include "base/process_util.h"
 

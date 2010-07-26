@@ -30,6 +30,7 @@
 
 #ifndef BASE_KEYBOARD_CODES_POSIX_H_
 #define BASE_KEYBOARD_CODES_POSIX_H_
+#pragma once
 
 namespace base {
 

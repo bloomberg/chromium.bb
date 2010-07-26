@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_SPECIFIC_CONTENT_SETTINGS_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"

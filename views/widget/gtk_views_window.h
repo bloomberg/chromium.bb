@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_GTK_VIEWS_WINDOW_H_
 #define VIEWS_WIDGET_GTK_VIEWS_WINDOW_H_
+#pragma once
 
 #include <gtk/gtkwindow.h>
 

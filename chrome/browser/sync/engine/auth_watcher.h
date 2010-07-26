@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_AUTH_WATCHER_H_
 #define CHROME_BROWSER_SYNC_ENGINE_AUTH_WATCHER_H_
+#pragma once
 
 #include <map>
 #include <string>

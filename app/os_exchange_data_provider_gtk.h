@@ -4,6 +4,7 @@
 
 #ifndef APP_OS_EXCHANGE_DATA_PROVIDER_GTK_H_
 #define APP_OS_EXCHANGE_DATA_PROVIDER_GTK_H_
+#pragma once
 
 #include <gtk/gtk.h>
 #include <map>

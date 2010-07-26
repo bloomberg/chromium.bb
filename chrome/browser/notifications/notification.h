@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"

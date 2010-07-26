@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WINDOW_WINDOW_H_
 #define VIEWS_WINDOW_WINDOW_H_
+#pragma once
 
 #include "gfx/native_widget_types.h"
 

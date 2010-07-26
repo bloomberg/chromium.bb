@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GEOLOCATION_EMPTY_DEVICE_DATA_PROVIDER_H_
 #define CHROME_BROWSER_GEOLOCATION_EMPTY_DEVICE_DATA_PROVIDER_H_
+#pragma once
 
 #include "chrome/browser/geolocation/device_data_provider.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef APP_TABLE_MODEL_OBSERVER_H_
 #define APP_TABLE_MODEL_OBSERVER_H_
+#pragma once
 
 // Observer for a TableModel. Anytime the model changes, it must notify its
 // observer.

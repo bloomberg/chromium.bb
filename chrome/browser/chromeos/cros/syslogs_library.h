@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_SYSLOGS_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_SYSLOGS_LIBRARY_H_
+#pragma once
 
 #include "base/singleton.h"
 #include "cros/chromeos_syslogs.h"

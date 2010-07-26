@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_WIDGET_GTK_H_
 #define VIEWS_WIDGET_WIDGET_GTK_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

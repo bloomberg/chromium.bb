@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_DROP_TARGET_GTK_H_
 #define VIEWS_WIDGET_DROP_TARGET_GTK_H_
+#pragma once
 
 #include <gtk/gtk.h>
 #include <set>

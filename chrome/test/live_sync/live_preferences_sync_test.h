@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_LIVE_SYNC_LIVE_PREFERENCES_SYNC_TEST_H_
 #define CHROME_TEST_LIVE_SYNC_LIVE_PREFERENCES_SYNC_TEST_H_
+#pragma once
 
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROME_THREAD_H_
 #define CHROME_BROWSER_CHROME_THREAD_H_
+#pragma once
 
 #include "base/lock.h"
 #include "base/task.h"

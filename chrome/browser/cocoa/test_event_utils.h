@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_TEST_EVENT_UTILS_H_
 #define CHROME_BROWSER_COCOA_TEST_EVENT_UTILS_H_
+#pragma once
 
 #include <utility>
 

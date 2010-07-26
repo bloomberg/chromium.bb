@@ -4,6 +4,7 @@
 
 #ifndef BASE_NO_WINDOWS2000_UNITTEST_H_
 #define BASE_NO_WINDOWS2000_UNITTEST_H_
+#pragma once
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "base/win_util.h"

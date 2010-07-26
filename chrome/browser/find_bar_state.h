@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_FIND_BAR_STATE_H_
 #define CHROME_BROWSER_FIND_BAR_STATE_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/string16.h"

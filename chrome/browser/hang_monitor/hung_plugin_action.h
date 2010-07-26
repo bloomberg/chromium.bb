@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HANG_MONITOR_HUNG_PLUGIN_ACTION_H__
 #define CHROME_BROWSER_HANG_MONITOR_HUNG_PLUGIN_ACTION_H__
+#pragma once
 
 #include "chrome/browser/hang_monitor/hung_window_detector.h"
 // This class provides an implementation the

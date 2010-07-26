@@ -37,6 +37,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCAPI_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCAPI_H_
+#pragma once
 
 #include <string>
 #include <vector>

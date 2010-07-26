@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
 #define CHROME_BROWSER_VIEWS_UNHANDLED_KEYBOARD_EVENT_HANDLER_H_
+#pragma once
 
 #include "views/view.h"
 #include "chrome/common/native_web_keyboard_event.h"

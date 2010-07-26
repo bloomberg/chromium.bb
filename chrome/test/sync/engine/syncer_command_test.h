@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_SYNC_ENGINE_SYNCER_COMMAND_TEST_H_
 #define CHROME_TEST_SYNC_ENGINE_SYNCER_COMMAND_TEST_H_
+#pragma once
 
 #include <vector>
 

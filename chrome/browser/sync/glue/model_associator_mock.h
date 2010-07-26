@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_MOCK_H__
 #define CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_MOCK_H__
+#pragma once
 
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "testing/gmock/include/gmock/gmock.h"

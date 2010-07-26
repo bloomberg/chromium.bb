@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_ABOUT_IPC_DIALOG_H_
 #define CHROME_BROWSER_VIEWS_ABOUT_IPC_DIALOG_H_
+#pragma once
 
 #if defined(OS_WIN) && defined(IPC_MESSAGE_LOG_ENABLED)
 

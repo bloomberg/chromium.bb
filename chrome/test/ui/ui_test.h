@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_UI_UI_TEST_H_
 #define CHROME_TEST_UI_UI_TEST_H_
+#pragma once
 
 // This file provides a common base for running UI unit tests, which operate
 // the entire browser application in a separate process for holistic

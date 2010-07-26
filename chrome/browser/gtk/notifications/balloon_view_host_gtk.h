@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_NOTIFICATIONS_BALLOON_VIEW_HOST_GTK_H_
 #define CHROME_BROWSER_GTK_NOTIFICATIONS_BALLOON_VIEW_HOST_GTK_H_
+#pragma once
 
 #include "chrome/browser/notifications/balloon_host.h"
 #include "gfx/native_widget_types.h"

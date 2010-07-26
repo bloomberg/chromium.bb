@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_DEFAULTS_H_
 #define CHROME_BROWSER_DEFAULTS_H_
+#pragma once
 
 #include "build/build_config.h"
 #include "chrome/browser/session_startup_pref.h"

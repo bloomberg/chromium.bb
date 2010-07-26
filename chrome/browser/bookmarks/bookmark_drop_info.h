@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_DROP_INFO_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_DROP_INFO_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/timer.h"

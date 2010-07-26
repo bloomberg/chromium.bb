@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_STORAGE_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_STORAGE_H_
+#pragma once
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"

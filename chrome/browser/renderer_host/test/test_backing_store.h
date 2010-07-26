@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
 #define CHROME_BROWSER_RENDERER_HOST_TEST_TEST_BACKING_STORE_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/renderer_host/backing_store.h"

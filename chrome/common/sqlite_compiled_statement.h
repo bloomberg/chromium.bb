@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_SQLITE_COMPILED_STATEMENT_H_
 #define CHROME_COMMON_SQLITE_COMPILED_STATEMENT_H_
+#pragma once
 
 #include <map>
 #include <string>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTERNAL_TAB_CONTAINER_WIN_H_
 #define CHROME_BROWSER_EXTERNAL_TAB_CONTAINER_WIN_H_
+#pragma once
 
 #include <vector>
 #include <map>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BROWSING_INSTANCE_H_
 #define CHROME_BROWSER_BROWSING_INSTANCE_H_
+#pragma once
 
 #include "base/hash_tables.h"
 #include "base/logging.h"

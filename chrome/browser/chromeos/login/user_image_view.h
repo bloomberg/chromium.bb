@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_VIEW_H_
+#pragma once
 
 #include "views/controls/button/button.h"
 #include "views/view.h"

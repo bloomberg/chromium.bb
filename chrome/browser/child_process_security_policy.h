@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
 #define CHROME_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
+#pragma once
 
 #include <string>
 #include <map>

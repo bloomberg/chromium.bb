@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H__
 #define CHROME_BROWSER_LOAD_FROM_MEMORY_CACHE_DETAILS_H__
+#pragma once
 
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"

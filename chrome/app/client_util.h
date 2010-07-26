@@ -7,6 +7,7 @@
 
 #ifndef CHROME_APP_CLIENT_UTIL_H_
 #define CHROME_APP_CLIENT_UTIL_H_
+#pragma once
 
 #include <windows.h>
 #include <string>

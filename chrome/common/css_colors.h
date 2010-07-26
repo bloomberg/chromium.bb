@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_CSS_COLORS_H_
 #define CHROME_COMMON_CSS_COLORS_H_
+#pragma once
 
 #include <utility>
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_TAB_CONTENTS_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_TAB_CONTENTS_CONTROLLER_H_
+#pragma once
 
 #include <Cocoa/Cocoa.h>
 

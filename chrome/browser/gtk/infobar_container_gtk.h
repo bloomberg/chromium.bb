@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_INFOBAR_CONTAINER_GTK_H_
 #define CHROME_BROWSER_GTK_INFOBAR_CONTAINER_GTK_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/common/notification_registrar.h"

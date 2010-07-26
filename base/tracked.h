@@ -17,6 +17,7 @@
 
 #ifndef BASE_TRACKED_H_
 #define BASE_TRACKED_H_
+#pragma once
 
 #include <string>
 

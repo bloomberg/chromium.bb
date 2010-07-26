@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_H_
 #define CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_H_
+#pragma once
 
 #include <string>
 #include <vector>

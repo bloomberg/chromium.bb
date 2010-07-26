@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_EXTENSIONS_EXTENSION_INFOBAR_CONTROLLER_H_
 #define CHROME_BROWSER_COCOA_EXTENSIONS_EXTENSION_INFOBAR_CONTROLLER_H_
+#pragma once
 
 #import "chrome/browser/cocoa/infobar_controller.h"
 

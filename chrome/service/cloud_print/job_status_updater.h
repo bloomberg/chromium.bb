@@ -4,6 +4,7 @@
 
 #ifndef CHROME_SERVICE_CLOUD_PRINT_JOB_STATUS_UPDATER_H_
 #define CHROME_SERVICE_CLOUD_PRINT_JOB_STATUS_UPDATER_H_
+#pragma once
 
 #include <string>
 

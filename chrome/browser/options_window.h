@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_OPTIONS_WINDOW_H__
 #define CHROME_BROWSER_OPTIONS_WINDOW_H__
+#pragma once
 
 class Profile;
 

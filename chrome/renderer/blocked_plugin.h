@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_BLOCKED_PLUGIN_H_
 #define CHROME_RENDERER_BLOCKED_PLUGIN_H_
+#pragma once
 
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"

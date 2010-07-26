@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_HISTORY_VISIT_TRACKER_H__
 #define CHROME_BROWSER_HISTORY_VISIT_TRACKER_H__
+#pragma once
 
 #include <map>
 #include <vector>

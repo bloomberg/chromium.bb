@@ -19,6 +19,7 @@
 
 #ifndef BASE_WMI_UTIL_H__
 #define BASE_WMI_UTIL_H__
+#pragma once
 
 #include <string>
 #include <wbemidl.h>

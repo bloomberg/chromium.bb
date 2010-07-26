@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_AUTOCOMPLETE_EDIT_TRACKER_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_AUTOCOMPLETE_EDIT_TRACKER_H_
+#pragma once
 
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/automation/automation_resource_tracker.h"

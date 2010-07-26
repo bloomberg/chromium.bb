@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_COMMAND_BUFFER_STUB_H_
 #define CHROME_GPU_GPU_COMMAND_BUFFER_STUB_H_
+#pragma once
 
 #if defined(ENABLE_GPU)
 

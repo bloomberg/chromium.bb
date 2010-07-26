@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COMMAND_LINE_PREF_STORE_H_
 #define CHROME_BROWSER_COMMAND_LINE_PREF_STORE_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/command_line.h"

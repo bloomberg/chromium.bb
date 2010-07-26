@@ -4,6 +4,7 @@
 
 #ifndef SKIA_EXT_PLATFORM_DEVICE_WIN_H_
 #define SKIA_EXT_PLATFORM_DEVICE_WIN_H_
+#pragma once
 
 #include <windows.h>
 

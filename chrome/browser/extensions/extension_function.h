@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_H_
+#pragma once
 
 #include <string>
 #include <list>

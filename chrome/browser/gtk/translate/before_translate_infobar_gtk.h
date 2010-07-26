@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_TRANSLATE_BEFORE_TRANSLATE_INFOBAR_GTK_H_
 #define CHROME_BROWSER_GTK_TRANSLATE_BEFORE_TRANSLATE_INFOBAR_GTK_H_
+#pragma once
 
 #include "chrome/browser/gtk/translate/translate_infobar_base_gtk.h"
 

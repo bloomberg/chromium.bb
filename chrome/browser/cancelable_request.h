@@ -85,6 +85,7 @@
 
 #ifndef CHROME_BROWSER_CANCELABLE_REQUEST_H__
 #define CHROME_BROWSER_CANCELABLE_REQUEST_H__
+#pragma once
 
 #include <map>
 #include <vector>

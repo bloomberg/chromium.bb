@@ -4,6 +4,7 @@
 
 #ifndef BASE_CRYPTO_SYMMETRIC_KEY_H_
 #define BASE_CRYPTO_SYMMETRIC_KEY_H_
+#pragma once
 
 #include <string>
 

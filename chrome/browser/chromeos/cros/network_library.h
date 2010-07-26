@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_H_
+#pragma once
 
 #include <string>
 #include <vector>

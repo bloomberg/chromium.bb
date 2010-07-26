@@ -4,6 +4,7 @@
 
 #ifndef BASE_GTK_UTIL_H_
 #define BASE_GTK_UTIL_H_
+#pragma once
 
 #include <string>
 

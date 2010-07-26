@@ -4,6 +4,7 @@
 
 #ifndef APP_TEXT_ELIDER_H_
 #define APP_TEXT_ELIDER_H_
+#pragma once
 
 #include <unicode/coll.h>
 #include <unicode/uchar.h>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_CREATE_APPLICATION_SHORTCUTS_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_CREATE_APPLICATION_SHORTCUTS_DIALOG_GTK_H_
+#pragma once
 
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"

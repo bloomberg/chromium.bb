@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PARSERS_METADATA_PARSER_MANAGER_H_
 #define CHROME_BROWSER_PARSERS_METADATA_PARSER_MANAGER_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_vector.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TESTS_H_
 #define CHROME_TEST_AUTOMATED_UI_TESTS_AUTOMATED_UI_TESTS_H_
+#pragma once
 
 // This takes an input file of commands, which consist of a series of
 // actions, and runs every command, reporting the status of each one

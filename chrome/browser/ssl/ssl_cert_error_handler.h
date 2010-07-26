@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_
 #define CHROME_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_
+#pragma once
 
 #include <string>
 

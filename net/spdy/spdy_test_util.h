@@ -4,6 +4,7 @@
 
 #ifndef NET_SPDY_SPDY_TEST_UTIL_H_
 #define NET_SPDY_SPDY_TEST_UTIL_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "net/base/mock_host_resolver.h"

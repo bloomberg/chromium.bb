@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_KWALLET_X_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_KWALLET_X_H_
+#pragma once
 
 #include <dbus/dbus-glib.h>
 #include <glib.h>

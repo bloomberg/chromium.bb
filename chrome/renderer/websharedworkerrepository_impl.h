@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_WEBSHAREDWORKERREPOSITORY_IMPL_H_
 #define CHROME_RENDERER_WEBSHAREDWORKERREPOSITORY_IMPL_H_
+#pragma once
 
 #include "third_party/WebKit/WebKit/chromium/public/WebSharedWorkerRepository.h"
 

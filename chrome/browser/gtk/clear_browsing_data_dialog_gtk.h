@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_CLEAR_BROWSING_DATA_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_CLEAR_BROWSING_DATA_DIALOG_GTK_H_
+#pragma once
 
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"

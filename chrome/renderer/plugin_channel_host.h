@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_PLUGIN_CHANNEL_HOST_H_
 #define CHROME_RENDERER_PLUGIN_CHANNEL_HOST_H_
+#pragma once
 
 #include "base/hash_tables.h"
 #include "chrome/plugin/plugin_channel_base.h"

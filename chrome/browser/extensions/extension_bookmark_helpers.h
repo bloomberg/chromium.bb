@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_HELPERS_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_BOOKMARK_HELPERS_H_
+#pragma once
 
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

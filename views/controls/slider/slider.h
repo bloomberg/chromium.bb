@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_SLIDER_SLIDER_H_
 #define VIEWS_CONTROLS_SLIDER_SLIDER_H_
+#pragma once
 
 #if defined(OS_LINUX)
 #include <gdk/gdk.h>

@@ -4,6 +4,7 @@
 
 #ifndef APP_COMBOBOX_MODEL_H_
 #define APP_COMBOBOX_MODEL_H_
+#pragma once
 
 #include <string>
 

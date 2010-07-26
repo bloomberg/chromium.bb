@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
+#pragma once
 
 #include "base/platform_file.h"
 #include "base/scoped_ptr.h"

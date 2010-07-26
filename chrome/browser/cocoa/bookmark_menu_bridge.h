@@ -19,6 +19,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_MENU_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_MENU_BRIDGE_H_
+#pragma once
 
 #include <map>
 #include "base/scoped_nsobject.h"

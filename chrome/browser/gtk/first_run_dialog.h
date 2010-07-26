@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_FIRST_RUN_DIALOG_H_
 #define CHROME_BROWSER_GTK_FIRST_RUN_DIALOG_H_
+#pragma once
 
 typedef struct _GtkButton GtkButton;
 typedef struct _GtkWidget GtkWidget;

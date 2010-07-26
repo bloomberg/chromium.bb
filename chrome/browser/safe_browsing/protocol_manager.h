@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_MANAGER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_PROTOCOL_MANAGER_H_
+#pragma once
 
 // A class that implements Chrome's interface with the SafeBrowsing protocol.
 // The SafeBrowsingProtocolManager handles formatting and making requests of,

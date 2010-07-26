@@ -4,6 +4,7 @@
 
 #ifndef IPC_IPC_SYNC_MESSAGE_H_
 #define IPC_IPC_SYNC_MESSAGE_H_
+#pragma once
 
 #if defined(OS_WIN)
 #include <windows.h>

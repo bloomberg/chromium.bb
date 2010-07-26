@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
 #define VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
+#pragma once
 
 #include "base/task.h"
 #include "views/controls/button/image_button.h"

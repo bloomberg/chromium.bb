@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_MENU_MENU_HOST_H_
 #define VIEWS_CONTROLS_MENU_MENU_HOST_H_
+#pragma once
 
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"

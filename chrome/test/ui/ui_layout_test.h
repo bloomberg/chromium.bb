@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_UI_UI_LAYOUT_TEST_H_
 #define CHROME_TEST_UI_UI_LAYOUT_TEST_H_
+#pragma once
 
 #include "base/file_path.h"
 #include "chrome/test/ui/ui_test.h"

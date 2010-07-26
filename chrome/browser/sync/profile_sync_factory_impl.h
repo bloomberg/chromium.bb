@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_IMPL_H__
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_IMPL_H__
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/profile_sync_factory.h"

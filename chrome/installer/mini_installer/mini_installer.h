@@ -4,6 +4,7 @@
 
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_MINI_INSTALLER_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_MINI_INSTALLER_H_
+#pragma once
 
 // The windows command line to uncompress a LZ compressed file. It is a define
 // because we need the string to be writable. We don't need the full path

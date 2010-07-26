@@ -4,6 +4,7 @@
 
 #ifndef APP_BIDI_LINE_ITERATOR_H_
 #define APP_BIDI_LINE_ITERATOR_H_
+#pragma once
 
 #include <string>
 

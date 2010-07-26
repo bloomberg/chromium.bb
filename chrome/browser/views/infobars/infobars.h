@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_INFOBARS_INFOBARS_H_
 #define CHROME_BROWSER_VIEWS_INFOBARS_INFOBARS_H_
+#pragma once
 
 #include "app/animation.h"
 #include "base/task.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
 #define CHROME_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_
+#pragma once
 
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabaseObserver.h"

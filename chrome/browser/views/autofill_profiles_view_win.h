@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_
 #define CHROME_BROWSER_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_
+#pragma once
 
 #include <list>
 #include <vector>

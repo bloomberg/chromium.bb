@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_TABS_PINNED_TAB_CODEC_H_
 #define CHROME_BROWSER_TABS_PINNED_TAB_CODEC_H_
+#pragma once
 
 #include <string>
 #include <vector>

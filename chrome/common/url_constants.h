@@ -6,6 +6,7 @@
 
 #ifndef CHROME_COMMON_URL_CONSTANTS_H_
 #define CHROME_COMMON_URL_CONSTANTS_H_
+#pragma once
 
 namespace chrome {
 

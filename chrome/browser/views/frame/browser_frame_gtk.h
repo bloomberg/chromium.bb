@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_GTK_H_
 #define CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_GTK_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/browser/views/frame/browser_frame.h"

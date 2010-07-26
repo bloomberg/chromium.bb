@@ -4,6 +4,7 @@
 
 #ifndef APP_L10N_UTIL_WIN_H_
 #define APP_L10N_UTIL_WIN_H_
+#pragma once
 
 #include <windows.h>
 

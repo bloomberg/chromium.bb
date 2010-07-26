@@ -8,6 +8,7 @@
 
 #ifndef BASE_MEMORY_DEBUG_H_
 #define BASE_MEMORY_DEBUG_H_
+#pragma once
 
 #include "base/basictypes.h"
 

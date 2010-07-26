@@ -11,6 +11,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_AUTHENTICATOR_H_
 #define CHROME_BROWSER_SYNC_ENGINE_AUTHENTICATOR_H_
+#pragma once
 
 #include <string>
 

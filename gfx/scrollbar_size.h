@@ -4,6 +4,7 @@
 
 #ifndef GFX_SCROLLBAR_SIZE_H_
 #define GFX_SCROLLBAR_SIZE_H_
+#pragma once
 
 namespace gfx {
 

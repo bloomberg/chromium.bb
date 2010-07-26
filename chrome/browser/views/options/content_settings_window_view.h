@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_SETTINGS_WINDOW_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_SETTINGS_WINDOW_VIEW_H_
+#pragma once
 
 #include "chrome/browser/pref_member.h"
 #include "chrome/common/content_settings_types.h"

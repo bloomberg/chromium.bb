@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PAGE_INFO_WINDOW_H_
 #define CHROME_BROWSER_PAGE_INFO_WINDOW_H_
+#pragma once
 
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "gfx/native_widget_types.h"

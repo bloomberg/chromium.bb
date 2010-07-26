@@ -4,6 +4,7 @@
 
 #ifndef GFX_POINT_H_
 #define GFX_POINT_H_
+#pragma once
 
 #include "build/build_config.h"
 

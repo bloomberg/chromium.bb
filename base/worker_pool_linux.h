@@ -23,6 +23,7 @@
 
 #ifndef BASE_WORKER_POOL_LINUX_H_
 #define BASE_WORKER_POOL_LINUX_H_
+#pragma once
 
 #include <queue>
 #include <string>

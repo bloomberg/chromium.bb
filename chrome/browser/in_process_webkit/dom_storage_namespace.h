@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_NAMESPACE_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_NAMESPACE_H_
+#pragma once
 
 #include "base/string16.h"
 #include "base/hash_tables.h"

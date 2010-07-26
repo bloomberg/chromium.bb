@@ -9,6 +9,7 @@
 
 #ifndef CHROME_BROWSER_GTK_BROWSER_TITLEBAR_H_
 #define CHROME_BROWSER_GTK_BROWSER_TITLEBAR_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

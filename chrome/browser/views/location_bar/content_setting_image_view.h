@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/views/info_bubble.h"

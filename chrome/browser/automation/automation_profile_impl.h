@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_PROFILE_IMPL_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_PROFILE_IMPL_H_
+#pragma once
 
 #include "ipc/ipc_message.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_PLUGIN_PLUGIN_CHANNEL_BASE_H_
 #define CHROME_PLUGIN_PLUGIN_CHANNEL_BASE_H_
+#pragma once
 
 #include <string>
 

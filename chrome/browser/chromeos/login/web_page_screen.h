@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WEB_PAGE_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WEB_PAGE_SCREEN_H_
+#pragma once
 
 #include "base/scoped_ptr.h"
 #include "base/timer.h"

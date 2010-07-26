@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_EXAMPLE_BASE_H_
 #define VIEWS_EXAMPLES_EXAMPLE_BASE_H_
+#pragma once
 
 #include <string>
 

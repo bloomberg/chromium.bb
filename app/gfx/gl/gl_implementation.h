@@ -4,6 +4,7 @@
 
 #ifndef APP_GFX_GL_GL_IMPLEMENTATION_H_
 #define APP_GFX_GL_GL_IMPLEMENTATION_H_
+#pragma once
 
 #include <string>
 

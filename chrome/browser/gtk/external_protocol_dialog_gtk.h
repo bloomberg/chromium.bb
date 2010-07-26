@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_GTK_EXTERNAL_PROTOCOL_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_EXTERNAL_PROTOCOL_DIALOG_GTK_H_
+#pragma once
 
 #include "app/gtk_signal.h"
 #include "base/time.h"

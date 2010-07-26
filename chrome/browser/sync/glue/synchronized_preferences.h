@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNCHRONIZED_PREFERENCES_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNCHRONIZED_PREFERENCES_H_
+#pragma once
 
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/pref_names.h"

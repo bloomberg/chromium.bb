@@ -4,6 +4,7 @@
 
 #ifndef CHROME_APP_BREAKPAD_MAC_H_
 #define CHROME_APP_BREAKPAD_MAC_H_
+#pragma once
 
 // This header defines the Chrome entry points for Breakpad integration.
 

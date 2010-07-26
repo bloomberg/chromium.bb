@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
 #define VIEWS_CONTROLS_COMBOBOX_COMBOBOX_H_
+#pragma once
 
 #include <string>
 

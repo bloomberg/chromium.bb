@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_STANDARD_LAYOUT_H_
 #define VIEWS_STANDARD_LAYOUT_H_
+#pragma once
 
 #include "views/grid_layout.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_SINGLE_SPLIT_VIEW_EXAMPLE_H_
 #define VIEWS_EXAMPLES_SINGLE_SPLIT_VIEW_EXAMPLE_H_
+#pragma once
 
 #include "views/controls/single_split_view.h"
 #include "views/examples/example_base.h"

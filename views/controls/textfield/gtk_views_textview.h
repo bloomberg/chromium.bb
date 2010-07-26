@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_TEXTFIELD_GTK_VIEWS_TEXTVIEW_H_
 #define VIEWS_CONTROLS_TEXTFIELD_GTK_VIEWS_TEXTVIEW_H_
+#pragma once
 
 #include <gdk/gdk.h>
 #include <gtk/gtktextview.h>

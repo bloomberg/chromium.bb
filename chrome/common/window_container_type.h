@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_WINDOW_CONTAINER_TYPE_H_
 #define CHROME_COMMON_WINDOW_CONTAINER_TYPE_H_
+#pragma once
 
 namespace WebKit {
 

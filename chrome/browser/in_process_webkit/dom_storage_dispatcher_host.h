@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
+#pragma once
 
 #include "base/process.h"
 #include "base/ref_counted.h"

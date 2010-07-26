@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_TRANSLATE_INFOBAR_BASE_H_
 #define CHROME_BROWSER_COCOA_TRANSLATE_INFOBAR_BASE_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/cocoa/infobar_controller.h"

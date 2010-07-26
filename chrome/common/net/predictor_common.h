@@ -7,6 +7,7 @@
 
 #ifndef CHROME_COMMON_NET_PREDICTOR_COMMON_H_
 #define CHROME_COMMON_NET_PREDICTOR_COMMON_H_
+#pragma once
 
 #include <string>
 #include <vector>

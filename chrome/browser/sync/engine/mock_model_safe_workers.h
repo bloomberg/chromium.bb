@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_SYNC_ENGINE_MOCK_MODEL_SAFE_WORKERS_H_
 #define CHROME_BROWSER_SYNC_ENGINE_MOCK_MODEL_SAFE_WORKERS_H_
+#pragma once
 
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 

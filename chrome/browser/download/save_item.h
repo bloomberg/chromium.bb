@@ -4,6 +4,7 @@
 //
 #ifndef CHROME_BROWSER_DOWNLOAD_SAVE_ITEM_H__
 #define CHROME_BROWSER_DOWNLOAD_SAVE_ITEM_H__
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

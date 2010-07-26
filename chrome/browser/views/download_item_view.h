@@ -15,6 +15,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_DOWNLOAD_ITEM_VIEW_H__
 #define CHROME_BROWSER_VIEWS_DOWNLOAD_ITEM_VIEW_H__
+#pragma once
 
 #include <string>
 

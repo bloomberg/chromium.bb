@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_WIDGET_GTK_VIEWS_FIXED_H_
 #define VIEWS_WIDGET_GTK_VIEWS_FIXED_H_
+#pragma once
 
 #include <gdk/gdk.h>
 #include <gtk/gtkfixed.h>

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_RENDERER_MOCK_KEYBOARD_DRIVER_WIN_H_
 #define CHROME_RENDERER_MOCK_KEYBOARD_DRIVER_WIN_H_
+#pragma once
 
 #include <windows.h>
 

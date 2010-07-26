@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_URL_PICKER_H_
 #define CHROME_BROWSER_VIEWS_URL_PICKER_H_
+#pragma once
 
 #include "views/controls/button/native_button.h"
 #include "views/controls/table/table_view_observer.h"

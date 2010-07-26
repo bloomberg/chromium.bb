@@ -6,6 +6,7 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_VIEW_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"

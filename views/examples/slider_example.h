@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_SLIDER_EXAMPLE_H_
 #define VIEWS_EXAMPLES_SLIDER_EXAMPLE_H_
+#pragma once
 
 #include "views/controls/slider/slider.h"
 #include "views/examples/example_base.h"

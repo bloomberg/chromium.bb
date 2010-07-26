@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_NET_NET_RESOURCE_PROVIDER_H_
 #define CHROME_COMMON_NET_NET_RESOURCE_PROVIDER_H_
+#pragma once
 
 namespace base {
 class StringPiece;

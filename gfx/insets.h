@@ -4,6 +4,7 @@
 
 #ifndef GFX_INSETS_H_
 #define GFX_INSETS_H_
+#pragma once
 
 #include "build/build_config.h"
 

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_DOM_UI_DOM_UI_FACTORY_H_
 #define CHROME_BROWSER_DOM_UI_DOM_UI_FACTORY_H_
+#pragma once
 
 #include <vector>
 

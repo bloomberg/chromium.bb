@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_EXAMPLES_RADIO_BUTTON_EXAMPLE_H_
 #define VIEWS_EXAMPLES_RADIO_BUTTON_EXAMPLE_H_
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/string_util.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_COCOA_SEARCH_ENGINE_LIST_MODEL_H_
 #define CHROME_BROWSER_COCOA_SEARCH_ENGINE_LIST_MODEL_H_
+#pragma once
 
 #import <Cocoa/Cocoa.h>
 

@@ -7,6 +7,7 @@
 
 #ifndef CHROME_BROWSER_GTK_MENU_BAR_HELPER_H_
 #define CHROME_BROWSER_GTK_MENU_BAR_HELPER_H_
+#pragma once
 
 #include <gtk/gtk.h>
 

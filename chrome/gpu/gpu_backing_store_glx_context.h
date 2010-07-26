@@ -4,6 +4,7 @@
 
 #ifndef CHROME_GPU_GPU_BACKING_STORE_GLX_CONTEXT_H_
 #define CHROME_GPU_GPU_BACKING_STORE_GLX_CONTEXT_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "chrome/gpu/x_util.h"

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_FONTS_PAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_FONTS_PAGE_VIEW_H_
+#pragma once
 
 #include <string>
 

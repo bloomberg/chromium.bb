@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_APPCACHE_INFO_VIEW_H_
 #define CHROME_BROWSER_VIEWS_APPCACHE_INFO_VIEW_H_
+#pragma once
 
 #include "chrome/browser/views/generic_info_view.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"

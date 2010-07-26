@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_H_
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_H_
+#pragma once
 
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/common/notification_registrar.h"

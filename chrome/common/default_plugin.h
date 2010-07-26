@@ -4,6 +4,7 @@
 
 #ifndef CHROME_COMMON_DEFAULT_PLUGIN_H_
 #define CHROME_COMMON_DEFAULT_PLUGIN_H_
+#pragma once
 
 namespace chrome {
 

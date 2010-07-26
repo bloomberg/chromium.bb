@@ -4,6 +4,7 @@
 
 #ifndef VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_WRAPPER_H_
 #define VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_WRAPPER_H_
+#pragma once
 
 #include "gfx/native_widget_types.h"
 

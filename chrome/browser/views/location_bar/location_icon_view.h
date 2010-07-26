@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
+#pragma once
 
 #include "chrome/browser/views/location_bar/click_handler.h"
 #include "views/controls/image_view.h"

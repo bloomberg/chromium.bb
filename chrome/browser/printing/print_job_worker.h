@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
+#pragma once
 
 #include "base/task.h"
 #include "base/thread.h"

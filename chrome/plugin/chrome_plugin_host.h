@@ -4,6 +4,7 @@
 
 #ifndef CHROME_PLUGIN_CHROME_PLUGIN_HOST_H_
 #define CHROME_PLUGIN_CHROME_PLUGIN_HOST_H_
+#pragma once
 
 #include "chrome/common/chrome_plugin_api.h"
 

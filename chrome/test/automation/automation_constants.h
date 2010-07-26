@@ -4,6 +4,7 @@
 
 #ifndef CHROME_TEST_AUTOMATION_AUTOMATION_CONSTANTS_H_
 #define CHROME_TEST_AUTOMATION_AUTOMATION_CONSTANTS_H_
+#pragma once
 
 namespace automation {
 // Amount of time to wait before querying the browser.

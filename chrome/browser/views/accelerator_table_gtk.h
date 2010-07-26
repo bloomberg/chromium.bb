@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_VIEWS_ACCELERATOR_TABLE_GTK_H_
 #define CHROME_BROWSER_VIEWS_ACCELERATOR_TABLE_GTK_H_
+#pragma once
 
 #include <stdio.h>
 
