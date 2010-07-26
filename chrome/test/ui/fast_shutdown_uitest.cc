@@ -23,7 +23,7 @@ class FastShutdown : public UITest {
 #define MAYBE_SlowTermination DISABLED_SlowTermination
 #elif defined(OS_LINUX)
 // http://crbug.com/46614
-#define MAYBE_SlowTermination FAILS_SlowTermination
+#define MAYBE_SlowTermination FLAKY_SlowTermination
 #else
 // Times out: http://crbug.com/46616
 #define MAYBE_SlowTermination DISABLED_SlowTermination
