@@ -93,7 +93,7 @@ readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
 readonly TC_BUILD_LLVM_TOOLS_X8632_SB="${TC_BUILD}/llvm-tools-x8632-sandboxed"
 readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
 readonly TC_BUILD_BINUTILS_ARM_SB="${TC_BUILD}/binutils-arm-sandboxed"
-readonly TC_BUILD_BINUTILS_X86_SB="${TC_BUILD}/binutils-x86-sandboxed"
+readonly TC_BUILD_BINUTILS_X8632_SB="${TC_BUILD}/binutils-x8632-sandboxed"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
 
@@ -1198,7 +1198,6 @@ libstdcpp-bitcode-install() {
   spopd
 }
 
-
 #+ misc-tools            - Build and install sel_ldr and validator for ARM.
 misc-tools() {
   StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
@@ -1445,7 +1444,7 @@ llvm-tools-x8632-sb-install() {
 }
 
 #+-------------------------------------------------------------------------
-#+ binutils-arm-sb       - build and install binutils (sandboxed) for ARM
+#+ binutils-arm-sb       - Build and install binutils (sandboxed) for ARM
 binutils-arm-sb() {
   StepBanner "BINUTILS-ARM-SB"
 
@@ -1460,7 +1459,7 @@ binutils-arm-sb() {
   binutils-arm-sb-make
   binutils-arm-sb-install
 }
-#+ binutils-arm-sb-clean - clean binutils (sandboxed) for ARM
+#+ binutils-arm-sb-clean - Clean binutils (sandboxed) for ARM
 binutils-arm-sb-clean() {
   StepBanner "BINUTILS-ARM-SB" "Clean"
   local objdir="${TC_BUILD_BINUTILS_ARM_SB}"
@@ -1469,7 +1468,7 @@ binutils-arm-sb-clean() {
   mkdir -p "${objdir}"
 }
 
-#+ binutils-arm-sb-configure - configure binutils (sandboxed) for ARM
+#+ binutils-arm-sb-configure - Configure binutils (sandboxed) for ARM
 binutils-arm-sb-configure() {
   StepBanner "BINUTILS-ARM-SB" "Configure"
   local srcdir="${TC_SRC_BINUTILS}"
@@ -1505,7 +1504,7 @@ binutils-arm-sb-configure() {
   spopd
 }
 
-#+ binutils-arm-sb-make - Install binutils (sandboxed) for ARM
+#+ binutils-arm-sb-make - Make binutils (sandboxed) for ARM
 binutils-arm-sb-make() {
   StepBanner "BINUTILS-ARM-SB" "Make"
   local objdir="${TC_BUILD_BINUTILS_ARM_SB}"
@@ -1531,9 +1530,9 @@ binutils-arm-sb-install() {
 }
 
 #+-------------------------------------------------------------------------
-#+ binutils-x86-sb       - build and install binutils (sandboxed) for x86
-binutils-x86-sb() {
-  StepBanner "BINUTILS-X86-SB"
+#+ binutils-x8632-sb       - Build and install binutils (sandboxed) for x8632
+binutils-x8632-sb() {
+  StepBanner "BINUTILS-X8632-SB"
 
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
     echo "ERROR: install Native Client toolchain"
@@ -1546,32 +1545,32 @@ binutils-x86-sb() {
   fi
 
   # TODO(pdox): make this incremental
-  binutils-x86-sb-clean
-  binutils-x86-sb-configure
-  binutils-x86-sb-make
-  binutils-x86-sb-install
+  binutils-x8632-sb-clean
+  binutils-x8632-sb-configure
+  binutils-x8632-sb-make
+  binutils-x8632-sb-install
 }
 
-#+ binutils-x86-sb-clean - clean binutils (sandboxed) for x86
-binutils-x86-sb-clean() {
-  StepBanner "BINUTILS-X86-SB" "Clean"
-  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+#+ binutils-x8632-sb-clean - Clean binutils (sandboxed) for x8632
+binutils-x8632-sb-clean() {
+  StepBanner "BINUTILS-X8632-SB" "Clean"
+  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
 
   rm -rf "${objdir}"
   mkdir -p "${objdir}"
 }
 
-#+ binutils-x86-sb-configure - configure binutils (sandboxed) for x86
-binutils-x86-sb-configure() {
-  StepBanner "BINUTILS-X86-SB" "Configure"
+#+ binutils-x8632-sb-configure - Configure binutils (sandboxed) for x8632
+binutils-x8632-sb-configure() {
+  StepBanner "BINUTILS-X8632-SB" "Configure"
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
 
-  mkdir ${TC_BUILD_BINUTILS_X86_SB}/opcodes
+  mkdir ${TC_BUILD_BINUTILS_X8632_SB}/opcodes
   spushd ${objdir}
   cp ${INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ./opcodes/.
   RunWithLog \
-    binutils.x86.sandboxed.configure \
+    binutils.x8632.sandboxed.configure \
     env -i \
     PATH="/usr/bin:/bin" \
     AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
@@ -1587,7 +1586,7 @@ binutils-x86-sb-configure() {
     ${srcdir}/binutils-2.20/configure \
                              --prefix=${PNACL_CLIENT_TC_X8632} \
                              --host=nacl \
-                             --target=nacl64 \
+                             --target=nacl \
                              --disable-nls \
                              --enable-static \
                              --enable-shared=no \
@@ -1595,25 +1594,25 @@ binutils-x86-sb-configure() {
   spopd
 }
 
-#+ binutils-x86-sb-make - Install binutils (sandboxed) for x86
-binutils-x86-sb-make() {
-  StepBanner "BINUTILS-X86-SB" "Make"
-  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+#+ binutils-x8632-sb-make - Make binutils (sandboxed) for x8632
+binutils-x8632-sb-make() {
+  StepBanner "BINUTILS-X8632-SB" "Make"
+  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
   spushd ${objdir}
 
-  RunWithLog binutils.x86.sandboxed.make \
+  RunWithLog binutils.x8632.sandboxed.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS} all-gas
   spopd
 }
 
-#+ binutils-x86-sb-install - Install binutils (sandboxed) for x86
-binutils-x86-sb-install() {
-  StepBanner "BINUTILS-X86-SB" "Install"
-  local objdir="${TC_BUILD_BINUTILS_X86_SB}"
+#+ binutils-x8632-sb-install - Install binutils (sandboxed) for x8632
+binutils-x8632-sb-install() {
+  StepBanner "BINUTILS-X8632-SB" "Install"
+  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
   spushd ${objdir}
 
-  RunWithLog binutils.x86.sandboxed.install \
+  RunWithLog binutils.x8632.sandboxed.install \
     env -i PATH="/usr/bin:/bin" \
     make install-gas
 
