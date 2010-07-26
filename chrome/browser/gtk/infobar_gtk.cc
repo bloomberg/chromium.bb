@@ -214,6 +214,11 @@ void InfoBar::GetTopColor(InfoBarDelegate::Type type,
   // browser/views/infobars/infobars.cc, and then changed into 0-1 ranged
   // values for cairo.
   switch (type) {
+    case InfoBarDelegate::INFO_TYPE:
+      *r = 170.0 / 255.0;
+      *g = 214.0 / 255.0;
+      *b = 112.0 / 255.0;
+      break;
     case InfoBarDelegate::WARNING_TYPE:
     case InfoBarDelegate::ERROR_TYPE:
       *r = 255.0 / 255.0;
@@ -231,6 +236,11 @@ void InfoBar::GetTopColor(InfoBarDelegate::Type type,
 void InfoBar::GetBottomColor(InfoBarDelegate::Type type,
                              double* r, double* g, double *b) {
   switch (type) {
+    case InfoBarDelegate::INFO_TYPE:
+      *r = 146.0 / 255.0;
+      *g = 205.0 / 255.0;
+      *b = 114.0 / 255.0;
+      break;
     case InfoBarDelegate::WARNING_TYPE:
     case InfoBarDelegate::ERROR_TYPE:
       *r = 250.0 / 255.0;
