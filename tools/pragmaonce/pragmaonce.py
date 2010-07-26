@@ -7,7 +7,7 @@ import sys
 
 # A tool to add "#pragma once" lines to files that don't have it yet.
 # Intended usage:
-#   find chrome -name '*.h' -exec  python tools/pragmaonce/pragmaonce.py {} \;
+#   find chrome -name '*.h' -exec python tools/pragmaonce/pragmaonce.py {} \;
 
 # Some files have absurdly long comments at the top
 NUM_LINES_TO_SCAN_FOR_GUARD = 250
@@ -19,8 +19,8 @@ def main(filename):
 
   index = -1
   for i in xrange(min(NUM_LINES_TO_SCAN_FOR_GUARD, len(lines) - 1)):
-    m1 = re.match(r'^#ifndef ([A-Z_]+)', lines[i])
-    m2 = re.match(r'^#define ([A-Z_]+)', lines[i + 1])
+    m1 = re.match(r'^#ifndef ([A-Z_0-9]+)$', lines[i])
+    m2 = re.match(r'^#define ([A-Z_0-9]+)$', lines[i + 1])
     if m1 and m2:
       if m1.group(1) != m2.group(1):
         print 'Skipping', filename, \
