@@ -1505,7 +1505,7 @@
    bug_50281
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN12_GLOBAL__N_127ChromeCookieMonsterDelegateC2EP7Profile
+   fun:_ZN*
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    fun:_ZN12_GLOBAL__N_122FactoryForOffTheRecordC2EP7Profile
    fun:_ZN29ChromeURLRequestContextGetter18CreateOffTheRecordEP7Profile
@@ -1526,4 +1526,18 @@
    fun:_ZN4base24MessagePumpCFRunLoopBase7RunWorkEv
    fun:CFRunLoopRunSpecific
    fun:CFRunLoopRunInMode
+}
+{
+   bug_50286
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11ProfileImpl14InitExtensionsEv
+   fun:_ZN14ProfileManager10AddProfileEP7Profileb
+   fun:_ZN14ProfileManager10GetProfileERK8FilePathb
+   fun:_ZN14ProfileManager10GetProfileERK8FilePath
+   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
+   fun:_ZN12_GLOBAL__N_113CreateProfileERK18MainFunctionParamsRK8FilePath
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
 }
