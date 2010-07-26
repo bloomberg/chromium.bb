@@ -5725,12 +5725,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
         Clear form
       </message>
-      <if expr="os == 'win32'">
+      <if expr="os != 'darwin'">
         <message name="IDS_AUTOFILL_OPTIONS" desc="The title of the AutoFill dialog.">
           AutoFill options
         </message>
       </if>
-      <if expr="os != 'win32'">
+      <if expr="os == 'darwin'">
         <message name="IDS_AUTOFILL_OPTIONS" desc="The title of the AutoFill dialog.">
           AutoFill preferences
         </message>
