@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
+#include "chrome/browser/chromeos/login/string_fetcher.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -53,7 +54,10 @@ class WizardController : public chromeos::ScreenObserver,
   }
 
   // Returns OOBE completion status.
-  static bool IsOobeComplete();
+  static bool IsOobeCompleted();
+
+  // Returns device registration completion status, i.e. second part of OOBE.
+  static bool IsDeviceRegistered();
 
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. |screen_bounds| are used to calculate position
@@ -113,6 +117,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Registers OOBE preferences.
   static void RegisterPrefs(PrefService* local_state);
 
+  // Applies partner services customizations.
+  void ApplyPartnerServicesCustomizations();
+
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
   static const char kAccountScreenName[];
@@ -164,6 +171,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Marks OOBE process as completed.
   void MarkOobeCompleted();
 
+  // Marks device registered. i.e. second part of OOBE is completed.
+  void MarkDeviceRegistered();
+
   // Widget we're showing in.
   views::Widget* widget_;
 
@@ -204,6 +214,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Partner startup customizations.
   scoped_ptr<const chromeos::StartupCustomizationDocument> customization_;
+
+  // Partner services manifest fetcher.
+  scoped_ptr<StringFetcher> services_manifest_fetcher_;
 
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorNetwork);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorUpdate);

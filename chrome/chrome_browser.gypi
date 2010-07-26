@@ -495,6 +495,8 @@
         'browser/chromeos/login/screen_lock_view.cc',
         'browser/chromeos/login/screen_lock_view.h',
         'browser/chromeos/login/screen_observer.h',
+        'browser/chromeos/login/string_fetcher.h',
+        'browser/chromeos/login/string_fetcher.cc',
         'browser/chromeos/login/update_screen.cc',
         'browser/chromeos/login/update_screen.h',
         'browser/chromeos/login/update_view.cc',

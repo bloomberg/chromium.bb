@@ -1032,14 +1032,6 @@ const char kChromeosFrame[]                 = "chromeos-frame";
 // Set logging output to the given file.
 const char kChromeosLogToFile[]             = "logtofile";
 
-// Specify startup customization manifest.
-// TODO(denisromanov): delete this when not needed for testing.
-const char kStartupManifest[]               = "startup-manifest";
-
-// Specify services customization manifest.
-// TODO(denisromanov): delete this when not needed for testing.
-const char kServicesManifest[]              = "services-manifest";
-
 // Indicates that the browser is in "browse without sign-in" mode.
 // Should completely disable extensions, sync and bookmarks.
 const char kBWSI[]                          = "bwsi";
