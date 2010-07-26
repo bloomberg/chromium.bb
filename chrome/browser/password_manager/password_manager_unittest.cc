@@ -72,7 +72,8 @@ ACTION_P(SaveToScopedPtr, scoped) {
 
 class PasswordManagerTest : public testing::Test {
  public:
-  PasswordManagerTest() {}
+  PasswordManagerTest()
+      : ui_thread_(ChromeThread::UI, &message_loop_) {}
  protected:
 
   virtual void SetUp() {
@@ -104,6 +105,10 @@ class PasswordManagerTest : public testing::Test {
   }
 
   PasswordManager* manager() { return manager_.get(); }
+
+  // We create a UI thread to satisfy PasswordStore.
+  MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
 
   scoped_ptr<Profile> profile_;
   scoped_refptr<MockPasswordStore> store_;

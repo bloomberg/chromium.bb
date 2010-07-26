@@ -33,7 +33,8 @@ class PasswordStoreConsumer {
 };
 
 // Interface for storing form passwords in a platform-specific secure way.
-// The login request/manipulation API is not threadsafe.
+// The login request/manipulation API is not threadsafe and must be used
+// from the UI thread.
 class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
  public:
   PasswordStore();

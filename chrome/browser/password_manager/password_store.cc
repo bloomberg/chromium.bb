@@ -90,6 +90,7 @@ void PasswordStore::NotifyConsumer(GetLoginsRequest* request,
 void PasswordStore::NotifyConsumerImpl(PasswordStoreConsumer* consumer,
                                        int handle,
                                        const vector<PasswordForm*> forms) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Don't notify the consumer if the request was canceled.
   if (pending_requests_.find(handle) == pending_requests_.end()) {
     // |forms| is const so we iterate rather than use STLDeleteElements().
@@ -103,12 +104,14 @@ void PasswordStore::NotifyConsumerImpl(PasswordStoreConsumer* consumer,
 }
 
 int PasswordStore::GetNewRequestHandle() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   int handle = handle_++;
   pending_requests_.insert(handle);
   return handle;
 }
 
 void PasswordStore::CancelLoginsQuery(int handle) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   pending_requests_.erase(handle);
 }
 
