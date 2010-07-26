@@ -80,6 +80,12 @@ class InputMethodLibrary {
                             const char* config_name,
                             const ImeConfigValue& value) = 0;
 
+  // Start the IME process.
+  virtual void StartIme() = 0;
+
+  // Shutdown the IME process.
+  virtual void StopIme() = 0;
+
   virtual const InputMethodDescriptor& previous_input_method() const = 0;
   virtual const InputMethodDescriptor& current_input_method() const = 0;
 
@@ -121,6 +127,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     return current_ime_properties_;
   }
 
+  virtual void StartIme();
+  virtual void StopIme();
+
  private:
   // This method is called when there's a change in input method status.
   static void InputMethodChangedHandler(
@@ -159,9 +168,20 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   // Called by the handler to update input method properties.
   void UpdateProperty(const ImePropertyList& prop_list);
 
+  void MaybeUpdateImeState(const char* section, const char* config_name,
+                           const ImeConfigValue& value);
+
   // Tries to send all pending SetImeConfig requests to the input method config
   // daemon.
   void FlushImeConfig();
+
+  // Launch any IME processes that should currently be running, but aren't.
+  void MaybeLaunchIme();
+
+  // Handle one of the ime processes shutting down.  If it was shutdown by us,
+  // just close the handle.  If it crashed, restart it.
+  static void OnImeShutdown(int pid, int status,
+                            InputMethodLibraryImpl* library);
 
   // A reference to the language api, to allow callbacks when the input method
   // status changes.
@@ -192,6 +212,11 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   // A timer for retrying to send |pendning_config_commands_| to the input
   // method config daemon.
   base::OneShotTimer<InputMethodLibraryImpl> timer_;
+
+  bool ime_running_;
+
+  int ime_handle_;
+  int candidate_window_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryImpl);
 };

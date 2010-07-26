@@ -13,6 +13,9 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 
+#include <glib.h>
+#include <signal.h>
+
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::InputMethodLibraryImpl);
@@ -47,16 +50,17 @@ namespace chromeos {
 InputMethodLibraryImpl::InputMethodLibraryImpl()
     : input_method_status_connection_(NULL),
       previous_input_method_("", "", "", ""),
-      current_input_method_("", "", "", "") {
+      current_input_method_("", "", "", ""),
+      ime_running_(false),
+      ime_handle_(0),
+      candidate_window_handle_(0) {
   scoped_ptr<InputMethodDescriptors> input_method_descriptors(
       CreateFallbackInputMethodDescriptors());
   current_input_method_ = input_method_descriptors->at(0);
 }
 
 InputMethodLibraryImpl::~InputMethodLibraryImpl() {
-  if (input_method_status_connection_) {
-    chromeos::DisconnectInputMethodStatus(input_method_status_connection_);
-  }
+  StopIme();
 }
 
 InputMethodLibraryImpl::Observer::~Observer() {
@@ -143,12 +147,31 @@ bool InputMethodLibraryImpl::GetImeConfig(
 
 bool InputMethodLibraryImpl::SetImeConfig(
     const char* section, const char* config_name, const ImeConfigValue& value) {
+  MaybeUpdateImeState(section, config_name, value);
+
   const ConfigKeyType key = std::make_pair(section, config_name);
   pending_config_requests_.erase(key);
   pending_config_requests_.insert(std::make_pair(key, value));
   current_config_values_[key] = value;
   FlushImeConfig();
   return pending_config_requests_.empty();
+}
+
+void InputMethodLibraryImpl::MaybeUpdateImeState(
+    const char* section, const char* config_name, const ImeConfigValue& value) {
+  if (!strcmp(kGeneralSectionName, section) &&
+      !strcmp(kPreloadEnginesConfigName, config_name)) {
+    if (EnsureLoadedAndStarted()) {
+      if (value.type == ImeConfigValue::kValueTypeStringList &&
+          value.string_list_value.size() == 1 &&
+          value.string_list_value[0] == kHardwareKeyboardLayout) {
+        StopIme();
+      } else {
+        StartIme();
+      }
+      chromeos::SetActiveInputMethods(input_method_status_connection_, value);
+    }
+  }
 }
 
 void InputMethodLibraryImpl::FlushImeConfig() {
@@ -296,6 +319,101 @@ void InputMethodLibraryImpl::UpdateProperty(const ImePropertyList& prop_list) {
     FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
   }
   FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
+}
+
+void InputMethodLibraryImpl::StartIme() {
+  ime_running_ = true;
+  MaybeLaunchIme();
+}
+
+void InputMethodLibraryImpl::MaybeLaunchIme() {
+  if (!ime_running_) {
+    return;
+  }
+
+  // TODO(zork): export "LD_PRELOAD=/usr/lib/libcrash.so"
+  GSpawnFlags flags = G_SPAWN_DO_NOT_REAP_CHILD;
+  if (ime_handle_ == 0) {
+    GError *error = NULL;
+    gchar **argv;
+    gint argc;
+
+    if (!g_shell_parse_argv(
+        "/usr/bin/ibus-daemon --panel=disable --cache=none --restart",
+        &argc, &argv, &error)) {
+      LOG(ERROR) << "Could not parse command: " << error->message;
+      g_error_free(error);
+      return;
+    }
+
+    error = NULL;
+    int handle;
+    // TODO(zork): Send output to /var/log/ibus.log
+    gboolean result = g_spawn_async(NULL, argv, NULL,
+                                    flags, NULL, NULL,
+                                    &handle, &error);
+    g_strfreev(argv);
+    if (!result) {
+      LOG(ERROR) << "Could not launch ime: " << error->message;
+      g_error_free(error);
+      return;
+    }
+    ime_handle_ = handle;
+    g_child_watch_add(ime_handle_, (GChildWatchFunc)OnImeShutdown, this);
+  }
+
+  if (candidate_window_handle_ == 0) {
+    GError *error = NULL;
+    gchar **argv;
+    gint argc;
+
+    if (!g_shell_parse_argv("/opt/google/chrome/candidate_window",
+                            &argc, &argv, &error)) {
+      LOG(ERROR) << "Could not parse command: " << error->message;
+      g_error_free(error);
+      return;
+    }
+
+    error = NULL;
+    int handle;
+    gboolean result = g_spawn_async(NULL, argv, NULL,
+                                    flags, NULL, NULL,
+                                    &handle, &error);
+    g_strfreev(argv);
+    if (!result) {
+      LOG(ERROR) << "Could not launch ime candidate window" << error->message;
+      g_error_free(error);
+      return;
+    }
+    candidate_window_handle_ = handle;
+    g_child_watch_add(candidate_window_handle_,
+                      (GChildWatchFunc)OnImeShutdown, this);
+  }
+}
+
+void InputMethodLibraryImpl::StopIme() {
+  ime_running_ = false;
+  if (ime_handle_) {
+    kill(ime_handle_, SIGTERM);
+    ime_handle_ = 0;
+  }
+  if (candidate_window_handle_) {
+    kill(candidate_window_handle_, SIGTERM);
+    candidate_window_handle_ = 0;
+  }
+}
+
+// static
+void InputMethodLibraryImpl::OnImeShutdown(int pid, int status,
+                                           InputMethodLibraryImpl* library) {
+  g_spawn_close_pid(pid);
+  if (library->ime_handle_ == pid) {
+    library->ime_handle_ = 0;
+  } else if (library->candidate_window_handle_ == pid) {
+    library->candidate_window_handle_ = 0;
+  }
+
+  library->MaybeLaunchIme();
 }
 
 }  // namespace chromeos

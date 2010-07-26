@@ -32,9 +32,10 @@ class MockInputMethodLibrary : public InputMethodLibrary {
   MOCK_CONST_METHOD0(previous_input_method, const InputMethodDescriptor&(void));
   MOCK_CONST_METHOD0(current_input_method, const InputMethodDescriptor&(void));
   MOCK_CONST_METHOD0(current_ime_properties, const ImePropertyList&(void));
+  MOCK_METHOD0(StartIme, void(void));
+  MOCK_METHOD0(StopIme, void(void));
 };
 
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_MOCK_INPUT_METHOD_LIBRARY_H_
-
