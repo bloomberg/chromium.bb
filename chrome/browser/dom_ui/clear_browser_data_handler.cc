@@ -14,10 +14,13 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
-ClearBrowserDataHandler::ClearBrowserDataHandler() {
+ClearBrowserDataHandler::ClearBrowserDataHandler() : remover_(NULL) {
 }
 
 ClearBrowserDataHandler::~ClearBrowserDataHandler() {
+  if (remover_) {
+    remover_->RemoveObserver(this);
+  }
 }
 
 void ClearBrowserDataHandler::GetLocalizedValues(
