@@ -22,15 +22,18 @@ DecoderZlib::DecoderZlib()
 }
 
 bool DecoderZlib::BeginDecode(scoped_refptr<media::VideoFrame> frame,
-                                  UpdatedRects* updated_rects,
-                                  Task* partial_decode_done,
-                                  Task* decode_done) {
+                              UpdatedRects* updated_rects,
+                              Task* partial_decode_done,
+                              Task* decode_done) {
   DCHECK(!partial_decode_done_.get());
   DCHECK(!decode_done_.get());
   DCHECK(!updated_rects_);
   DCHECK_EQ(kWaitingForBeginRect, state_);
-  CHECK(static_cast<PixelFormat>(frame->format()) == PixelFormatRgb32)
-      << "Only RGB32 is supported";
+
+  if (static_cast<PixelFormat>(frame->format()) != PixelFormatRgb32) {
+    LOG(INFO) << "DecoderZlib only supports RGB32.";
+    return false;
+  }
 
   partial_decode_done_.reset(partial_decode_done);
   decode_done_.reset(decode_done);

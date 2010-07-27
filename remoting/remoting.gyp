@@ -74,7 +74,6 @@
         'chromoting_client',
         'chromoting_jingle_glue',
         '../third_party/ppapi/ppapi.gyp:ppapi_cpp_objects',
-        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'sources': [
         'client/plugin/chromoting_plugin.cc',

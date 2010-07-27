@@ -26,7 +26,7 @@
 #include "base/nss_util.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
-#include "remoting/base/encoder_verbatim.h"
+#include "remoting/base/encoder_zlib.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
   capturer.reset(new remoting::CapturerMac());
   executor.reset(new remoting::EventExecutorMac());
 #endif
-  encoder.reset(new remoting::EncoderVerbatim());
+  encoder.reset(new remoting::EncoderZlib());
 
   // Check the argument to see if we should use a fake capturer and encoder.
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);

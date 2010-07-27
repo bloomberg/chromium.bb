@@ -5,7 +5,7 @@
 #include "remoting/client/plugin/pepper_view.h"
 
 #include "base/message_loop.h"
-#include "remoting/base/decoder_verbatim.h"
+#include "remoting/base/decoder_zlib.h"
 #include "remoting/client/plugin/chromoting_plugin.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "third_party/ppapi/cpp/device_context_2d.h"
@@ -150,7 +150,7 @@ void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
   // TODO(hclam): Use the information from the message to create the decoder.
   // We lazily construct the decoder.
   if (!decoder_.get()) {
-    decoder_.reset(new DecoderVerbatim());
+    decoder_.reset(new DecoderZlib());
   }
 
   if (!frame_) {

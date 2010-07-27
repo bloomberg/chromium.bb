@@ -9,7 +9,7 @@
 #include "net/base/network_change_notifier.h"
 
 #if defined(ENABLE_REMOTING)
-#include "remoting/base/encoder_verbatim.h"
+#include "remoting/base/encoder_zlib.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_config.h"
@@ -85,7 +85,7 @@ remoting::ChromotingHost* ServiceProcess::CreateChromotingHost(
   capturer.reset(new remoting::CapturerMac());
   executor.reset(new remoting::EventExecutorMac());
 #endif
-  encoder.reset(new remoting::EncoderVerbatim());
+  encoder.reset(new remoting::EncoderZlib());
 
   return new remoting::ChromotingHost(context, config, capturer.release(),
                                       encoder.release(), executor.release());
