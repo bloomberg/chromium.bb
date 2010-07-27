@@ -24,6 +24,13 @@ bool KeyboardLibraryImpl::SetCurrentKeyboardLayoutByName(
   return false;
 }
 
+bool KeyboardLibraryImpl::RemapModifierKeys(const ModifierMap& modifier_map) {
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    return chromeos::RemapModifierKeys(modifier_map);
+  }
+  return false;
+}
+
 bool KeyboardLibraryImpl::GetKeyboardLayoutPerWindow(
     bool* is_per_window) const {
   if (CrosLibrary::Get()->EnsureLoaded()) {

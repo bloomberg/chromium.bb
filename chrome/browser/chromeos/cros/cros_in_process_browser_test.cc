@@ -152,6 +152,10 @@ void CrosInProcessBrowserTest::SetKeyboardLibraryStatusAreaExpectations() {
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)))
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_keyboard_library_, RemapModifierKeys(_))
+      .Times(AnyNumber())
+      .WillRepeatedly((Return(true)))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_keyboard_library_, SetKeyboardLayoutPerWindow(_))
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)))

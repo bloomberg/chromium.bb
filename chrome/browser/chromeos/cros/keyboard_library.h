@@ -27,6 +27,9 @@ class KeyboardLibrary {
   virtual bool SetCurrentKeyboardLayoutByName(
       const std::string& layout_name) = 0;
 
+  // Remaps modifier keys.  Returns true on success.
+  virtual bool RemapModifierKeys(const ModifierMap& modifier_map) = 0;
+
   // Gets whehter we have separate keyboard layout per window, or not. The
   // result is stored in |is_per_window|.  Returns true on success.
   virtual bool GetKeyboardLayoutPerWindow(bool* is_per_window) const = 0;
@@ -45,6 +48,7 @@ class KeyboardLibraryImpl : public KeyboardLibrary {
   // KeyboardLibrary overrides.
   virtual std::string GetCurrentKeyboardLayoutName() const;
   virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name);
+  virtual bool RemapModifierKeys(const ModifierMap& modifier_map);
   virtual bool GetKeyboardLayoutPerWindow(bool* is_per_window) const;
   virtual bool SetKeyboardLayoutPerWindow(bool is_per_window);
 
