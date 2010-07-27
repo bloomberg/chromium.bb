@@ -38,7 +38,11 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
   // DevToolsClientHost interface
   virtual void InspectedTabClosing() {
-    socket_->Close();
+    ChromeThread::PostTask(
+        ChromeThread::IO,
+        FROM_HERE,
+        NewRunnableMethod(socket_,
+                          &HttpListenSocket::Close));
   }
 
   virtual void SendMessageToClient(const IPC::Message& msg) {
