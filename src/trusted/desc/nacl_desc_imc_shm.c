@@ -125,10 +125,9 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
    * this API must supply a start_addr, so NACL_ABI_MAP_FIXED is
    * assumed.
    */
-  if ((NACL_ABI_MAP_SHARED) !=
-      (flags & (NACL_ABI_MAP_SHARING_MASK))) {
+  if (NACL_ABI_MAP_SHARED != (flags & NACL_ABI_MAP_SHARING_MASK)) {
     NaClLog(LOG_INFO,
-            ("NaClDescImcShmMap: Mappig not NACL_ABI_MAP_FIXED,"
+            ("NaClDescImcShmMap: Mapping not NACL_ABI_MAP_SHARED,"
              " flags 0x%x\n"),
             flags);
     return -NACL_ABI_EINVAL;
