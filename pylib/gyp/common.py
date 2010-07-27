@@ -221,20 +221,22 @@ def EncodePOSIXShellList(list):
 
 
 def DeepDependencyTargets(target_dicts, roots):
-  """Returns the recursive list of target dependencies.
-  """
+  """Returns the recursive list of target dependencies."""
   dependencies = set()
-  for r in roots:
+  pending = set(roots)
+  while pending:
+    # Pluck out one.
+    r = pending.pop()
+    # Skip if visited already.
+    if r in dependencies:
+      continue
+    # Add it.
+    dependencies.add(r)
+    # Add its children.
     spec = target_dicts[r]
-    r_deps = list(set((spec.get('dependencies', []) +
-                       spec.get('dependencies_original', []))))
-    for d in r_deps:
-      if d not in roots:
-        dependencies.add(d)
-    for d in DeepDependencyTargets(target_dicts, r_deps):
-      if d not in roots:
-        dependencies.add(d)
-  return list(dependencies)
+    pending.update(set(spec.get('dependencies', [])))
+    pending.update(set(spec.get('dependencies_original', [])))
+  return list(dependencies - set(roots))
 
 
 def BuildFileTargets(target_list, build_file):
