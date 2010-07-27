@@ -9,7 +9,7 @@
 
 namespace remoting {
 
-class ClientConfig;
+struct ClientConfig;
 
 // Get the login info from the cmdline args (or request from the console if
 // not present) and write values into |config|.

@@ -11,7 +11,7 @@
 
 namespace remoting {
 
-class ClientConfig;
+struct ClientConfig;
 
 class HostConnection {
  public:

@@ -31,8 +31,9 @@ class MessageLoop;
 
 namespace remoting {
 
-class ClientConfig;
 class JingleThread;
+
+struct ClientConfig;
 
 class JingleHostConnection : public HostConnection,
                              public JingleChannel::Callback,
