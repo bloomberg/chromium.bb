@@ -14,7 +14,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "gfx/codec/png_codec.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -85,9 +84,7 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
 
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
       const GURL url = browser->GetTabContentsAt(tab_index)->GetURL();
-      if (!url.is_empty() &&
-          !(url.SchemeIs(chrome::kChromeUIScheme) &&
-            url.host() == chrome::kChromeUIOptionsHost))
+      if (!url.is_empty())
         Add(add_index++, url);
     }
   }

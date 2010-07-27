@@ -23,19 +23,15 @@ BrowserOptions.prototype = {
     // Call base class implementation to start preference initialization.
     OptionsPage.prototype.initializePage.call(this);
 
-    // Wire up controls.
-    var self = this;
-    $('startupPages').onchange = function(event) {
-      self.updateRemoveButtonState_();
-    };
+    // Wire up buttons.
     $('startupAddButton').onclick = function(event) {
       OptionsPage.showOverlay('addStartupPageOverlay');
     };
     $('startupRemoveButton').onclick = function(event) {
-      self.removeSelectedStartupPages_();
+      // TODO(stuartmorgan): Remove selected element(s).
     };
     $('startupUseCurrentButton').onclick = function(event) {
-      chrome.send('setStartupPagesToCurrentPages');
+      // TODO(stuartmorgan): Add all open tabs (except this one).
     };
     $('defaultSearchManageEnginesButton').onclick = function(event) {
       OptionsPage.showPageByName('searchEngines');
@@ -85,10 +81,10 @@ BrowserOptions.prototype = {
   updateSearchEngines_: function(engines, defaultValue) {
     this.clearSearchEngines_();
     engineSelect = $('defaultSearchEngine');
-    engineCount = engines.length;
+    engineCount = engines.length
     var defaultIndex = -1;
     for (var i = 0; i < engineCount; i++) {
-      var engine = engines[i];
+      var engine = engines[i]
       var option = new Option(engine['name'], engine['index']);
       if (defaultValue == option.value)
         defaultIndex = i;
@@ -96,55 +92,6 @@ BrowserOptions.prototype = {
     }
     if (defaultIndex >= 0)
       engineSelect.selectedIndex = defaultIndex;
-  },
-
-  /**
-   * Clears the startup page list.
-   * @private
-   */
-  clearStartupPages_: function() {
-    $('startupPages').textContent = '';
-  },
-
-  /**
-   * Updates the startup pages list with the given entries.
-   * @param {Array} pages List of startup pages.
-   */
-  updateStartupPages_: function(pages) {
-    // TODO(stuartmorgan): Replace <select> with a DOMUI List.
-    this.clearStartupPages_();
-    pageList = $('startupPages');
-    pageCount = pages.length;
-    for (var i = 0; i < pageCount; i++) {
-      var page = pages[i];
-      var option = new Option(page['title']);
-      option.title = page['tooltip'];
-      pageList.appendChild(option);
-    }
-
-    this.updateRemoveButtonState_();
-  },
-
-  /**
-   * Sets the enabled state of the startup page Remove button based on
-   * the current selection in the startup pages list.
-   */
-  updateRemoveButtonState_: function() {
-    $('startupRemoveButton').disabled = ($('startupPages').selectedIndex == -1);
-  },
-
-  /**
-   * Removes the selected startup pages.
-   */
-  removeSelectedStartupPages_: function() {
-    var pageSelect = $('startupPages');
-    var optionCount = pageSelect.options.length;
-    var selections = [];
-    for (var i = 0; i < optionCount; i++) {
-      if (pageSelect.options[i].selected)
-        selections.push(String(i));
-    }
-    chrome.send('removeStartupPages', selections);
   },
 
   /**
@@ -163,12 +110,8 @@ BrowserOptions.prototype = {
 BrowserOptions.updateDefaultBrowserState = function(statusString, isDefault) {
   BrowserOptions.getInstance().updateDefaultBrowserState_(statusString,
                                                           isDefault);
-};
+}
 
 BrowserOptions.updateSearchEngines = function(engines, defaultValue) {
   BrowserOptions.getInstance().updateSearchEngines_(engines, defaultValue);
-};
-
-BrowserOptions.updateStartupPages = function(pages) {
-  BrowserOptions.getInstance().updateStartupPages_(pages);
-};
+}
