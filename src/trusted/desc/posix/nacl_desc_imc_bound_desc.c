@@ -100,7 +100,9 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
         cmsg->cmsg_type == SCM_RIGHTS &&
         cmsg->cmsg_len == CMSG_LEN(sizeof(int))) {
       CHECK(received_fd == -1);
-      received_fd = *(int *) CMSG_DATA(cmsg);
+      /* We use memcpy() rather than assignment through a cast to avoid
+         strict-aliasing warnings */
+      memcpy(&received_fd, CMSG_DATA(cmsg), sizeof(int));
     }
   }
   if (received_fd == -1) {

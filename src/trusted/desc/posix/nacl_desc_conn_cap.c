@@ -106,7 +106,9 @@ int NaClDescConnCapFdConnectAddr(struct NaClDesc          *vself,
   cmsg->cmsg_len = CMSG_LEN(sizeof(int));
   cmsg->cmsg_level = SOL_SOCKET;
   cmsg->cmsg_type = SCM_RIGHTS;
-  *(int *) CMSG_DATA(cmsg) = sock_pair[0];
+  /* We use memcpy() rather than assignment through a cast to avoid
+     strict-aliasing warnings */
+  memcpy(CMSG_DATA(cmsg), &sock_pair[0], sizeof(int));
 
   sent = sendmsg(self->connect_fd, &connect_msg, 0);
   NaClClose(sock_pair[0]);
