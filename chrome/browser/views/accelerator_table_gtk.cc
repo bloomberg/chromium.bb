@@ -44,16 +44,24 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if defined(OS_CHROMEOS)
   { base::VKEY_S,              true,  false, true,  IDC_FOCUS_CHROMEOS_STATUS },
 #endif
-#if !defined(OS_CHROMEOS)
-  { base::VKEY_F6,             false, false, false, IDC_FOCUS_NEXT_PANE },
-  { base::VKEY_F6,             true,  false, false, IDC_FOCUS_PREVIOUS_PANE },
-#endif
   { base::VKEY_D,              false, false, true,  IDC_FOCUS_LOCATION },
   { base::VKEY_L,              false, true,  false, IDC_FOCUS_LOCATION },
 #if !defined(OS_CHROMEOS)
   { base::VKEY_F10,            false, false, false, IDC_FOCUS_MENU_BAR },
 #endif
   { base::VKEY_MENU,           false, false, false, IDC_FOCUS_MENU_BAR },
+#if !defined(OS_CHROMEOS)
+  { base::VKEY_F6,             false, false, false, IDC_FOCUS_NEXT_PANE },
+#endif
+#if defined(OS_CHROMEOS)
+  { base::VKEY_F2,             false, true,  false, IDC_FOCUS_NEXT_PANE },
+#endif
+#if !defined(OS_CHROMEOS)
+  { base::VKEY_F6,             true,  false, false, IDC_FOCUS_PREVIOUS_PANE },
+#endif
+#if defined(OS_CHROMEOS)
+  { base::VKEY_F1,             false, true,  false, IDC_FOCUS_PREVIOUS_PANE },
+#endif
   { base::VKEY_K,              false, true,  false, IDC_FOCUS_SEARCH },
   { base::VKEY_E,              false, true,  false, IDC_FOCUS_SEARCH },
   { base::VKEY_BROWSER_SEARCH, false, false, false, IDC_FOCUS_SEARCH },
