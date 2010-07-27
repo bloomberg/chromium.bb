@@ -88,7 +88,7 @@ void EnablePluginFile(bool enable, const FilePath::StringType& path) {
     NPAPI::PluginList::Singleton()->DisablePlugin(file_path);
 }
 
-static bool enable_internal_pdf_ = true;
+static bool enable_internal_pdf_ = false;
 
 void DisablePluginGroupsFromPrefs(Profile* profile) {
   bool update_internal_dir = false;
