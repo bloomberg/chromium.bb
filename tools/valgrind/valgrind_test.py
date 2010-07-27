@@ -587,6 +587,13 @@ class ThreadSanitizerBase(object):
     parser.add_option("", "--announce-threads", default="yes",
                       dest="announce_threads",
                       help="Show the the stack traces of thread creation")
+    parser.add_option("", "--free-is-write", default="no",
+                      dest="free_is_write",
+                      help="Treat free()/operator delete as memory write. "
+                      "This helps finding more data races, but (currently) "
+                      "this may give false positive reports on std::string "
+                      "internals, see http://code.google.com/p/data-race-test"
+                      "/issues/detail?id=40")
 
   def EvalBoolFlag(self, flag_value):
     if (flag_value in ["1", "true", "yes"]):
@@ -621,6 +628,12 @@ class ThreadSanitizerBase(object):
 
     if self.EvalBoolFlag(self._options.announce_threads):
       ret += ["--announce-threads"]
+
+    if self.EvalBoolFlag(self._options.free_is_write):
+      ret += ["--free-is-write=yes"]
+    else:
+      ret += ["--free-is-write=no"]
+
 
     # --show-pc flag is needed for parsing the error logs on Darwin.
     if platform_suffix == 'mac':
