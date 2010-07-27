@@ -21,12 +21,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Sanity) {
             GetPrefs(1)->GetBoolean(prefs::kHomePageIsNewTabPage));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, FAILS_Race) {
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Race) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   GetPrefs(0)->SetString(prefs::kHomePage, "http://www.google.com/1");
   GetPrefs(1)->SetString(prefs::kHomePage, "http://www.google.com/2");
-  EXPECT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_EQ(GetPrefs(0)->GetString(prefs::kHomePage),
             GetPrefs(1)->GetString(prefs::kHomePage));

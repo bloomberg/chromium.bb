@@ -140,7 +140,6 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       if (snap->has_more_to_sync || snap->unsynced_count != 0) {
         break;
       }
-
       EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
       last_timestamp_ = snap->max_local_timestamp;
       SignalStateCompleteWithNextState(FULLY_SYNCED);
@@ -149,9 +148,11 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
     case WAITING_FOR_UPDATES: {
       const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
       DCHECK(snap) << "Should have been at least one sync session by now";
-      if (snap->max_local_timestamp < min_timestamp_needed_)
+      if (snap->max_local_timestamp < min_timestamp_needed_) {
         break;
-
+      }
+      EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
+      last_timestamp_ = snap->max_local_timestamp;
       SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
@@ -171,10 +172,18 @@ void ProfileSyncServiceTestHarness::OnStateChanged() {
 
 bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
     const std::string& reason) {
-  if (service()->backend()->HasUnsyncedItems()) {
+  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
+  DCHECK(snap) << "Should have been at least one sync session by now";
+  // TODO(rsimha): Remove additional checks of snap->has_more_to_sync and
+  // snap->unsynced_count once http://crbug.com/48989 is fixed.
+  if (service()->backend()->HasUnsyncedItems() ||
+      snap->has_more_to_sync ||
+      snap->unsynced_count != 0) {
     wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
     return AwaitStatusChangeWithTimeout(60, reason);
   } else {
+    EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
+    last_timestamp_ = snap->max_local_timestamp;
     return true;
   }
 }

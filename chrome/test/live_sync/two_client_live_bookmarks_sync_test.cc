@@ -132,9 +132,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         BookmarkEditor::EditDetails(google_two), title, third_url);
   }
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  // Make sure that client2 has pushed all of it's changes as well.
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 
   {
@@ -158,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   v->ExpectMatch(bm1);
 
   {
-    // Let's add first bookmark folder to client1
+    // Let's add first bookmark folder to client0
     const BookmarkNode* new_folder_one =
         v->AddGroup(bm0, bm_bar0, 0, L"TestFolder");
     ASSERT_TRUE(new_folder_one != NULL);
@@ -284,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 370563.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_AddSeveralBMsAndFolders) {
+    SC_AddSeveralBMsAndFolders) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -374,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371817.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_RenameBMName) {
+    SC_RenameBMName) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -486,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371826.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_RenameBMFolderWithLongHierarchy) {
+    SC_RenameBMFolderWithLongHierarchy) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -824,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371857.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_DelBMsUnderBMFoldEmptyFolderAfterwards) {
+    SC_DelBMsUnderBMFoldEmptyFolderAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -942,6 +940,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 // Test Scribe ID - 371879.
+// TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     FAILS_SC_DelBMFoldWithBMsNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -997,19 +996,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     ASSERT_TRUE(nofavicon_bm != NULL);
   }
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  v->ExpectMatch(bm0);
-  v->ExpectMatch(bm1);
+  BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 
   // Let's delete the bookmark folder (bm_folder_one)
   v->Remove(bm0, bm_bar0, 1);
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  v->ExpectMatch(bm0);
-  v->ExpectMatch(bm1);
+  BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 }
 
-
 // Test Scribe ID - 371880.
+// TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     FAILS_SC_DelBMFoldWithBMsAndBMFoldsNonEmptyACAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -1101,19 +1098,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
      }
     }
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  v->ExpectMatch(bm0);
-  v->ExpectMatch(bm1);
+  BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 
   // Let's delete the bookmark folder (bm_folder_one)
   v->Remove(bm0, bm_bar0, 1);
 
-
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  v->ExpectMatch(bm0);
-  v->ExpectMatch(bm1);
+  BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 }
 
 // Test Scribe ID - 371882.
+// TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     FAILS_SC_DelBMFoldWithParentAndChildrenBMsAndBMFolds) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -1169,16 +1164,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   }
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  v->ExpectMatch(bm0);
-  v->ExpectMatch(bm1);
+  BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 
   // Let's delete test_bm_folder
   v->Remove(bm0, parent_bm_folder, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  v->ExpectMatch(bm0);
-  v->ExpectMatch(bm1);
-}
 
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
+}
 
 // Test Scribe ID - 371931.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
@@ -1295,7 +1288,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371957.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_MovingBMsFromBMFoldToBMBar) {
+    SC_MovingBMsFromBMFoldToBMBar) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1461,7 +1454,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371967.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_HoistBMs10LevelUp) {
+    SC_HoistBMs10LevelUp) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1600,7 +1593,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371980.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_SinkEmptyBMFold5LevelsDown) {
+    SC_SinkEmptyBMFold5LevelsDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1655,7 +1648,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 371997.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_SinkNonEmptyBMFold5LevelsDown) {
+    SC_SinkNonEmptyBMFold5LevelsDown) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1821,7 +1814,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 372028.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_ReverseTheOrderOfTenBMFolders) {
+    SC_ReverseTheOrderOfTenBMFolders) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1879,31 +1872,25 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     ASSERT_TRUE(bm_foo4 != NULL);
   }
 
-
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  // Make sure that client2 has pushed all of it's changes as well.
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 }
 
 // Test Scribe ID - 373506.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_MC_BootStrapEmptyStateEverywhere) {
+    MC_BootStrapEmptyStateEverywhere) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
-
-  // Wait for changes to propagate.
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  // Let's compare and make sure both bookmark models are same after sync.
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   v->ExpectMatch(bm0);
   v->ExpectMatch(bm1);
 }
 
 // Test Scribe ID - 373508.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_MC_SimpleMergeOfDifferentBMModels) {
+    MC_SimpleMergeOfDifferentBMModels) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
@@ -1954,7 +1941,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Wait for changes to propagate.
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   // Let's make sure there aren't any duplicates after sync.
   BookmarkModelVerifier::VerifyNoDuplicates(bm0);
   // Let's compare and make sure both bookmark models are same after sync.
@@ -1964,7 +1951,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 386586.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_MC_MergeSimpleBMHierarchyUnderBMBar) {
+    MC_MergeSimpleBMHierarchyUnderBMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
@@ -2004,7 +1991,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Wait for changes to propagate.
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   // Let's make sure there aren't any duplicates after sync.
   BookmarkModelVerifier::VerifyNoDuplicates(bm0);
   // Let's compare and make sure both bookmark models are same after sync.
@@ -2014,7 +2001,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
 // Test Scribe ID - 386589.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
+    MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
@@ -2042,7 +2029,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Wait for changes to propagate.
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   // Let's make sure there aren't any duplicates after sync.
   BookmarkModelVerifier::VerifyNoDuplicates(bm0);
   // Let's compare and make sure both bookmark models are same after sync.

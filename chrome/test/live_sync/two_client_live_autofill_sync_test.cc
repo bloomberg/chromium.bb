@@ -16,6 +16,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, Client1HasData) {
   AddFormFieldsToWebData(GetWebDataService(0), keys);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   AutofillKeys wd1_keys;
   GetAllAutofillKeys(GetWebDataService(1), &wd1_keys);
@@ -39,8 +40,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, BothHaveData) {
   AddFormFieldsToWebData(GetWebDataService(1), keys2);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  // Wait for client1 to get the new keys from client2.
-  EXPECT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("sync cycle"));
+  EXPECT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   AutofillKeys expected_keys;
   expected_keys.insert(AutofillKey("name0", "value0"));
@@ -142,6 +142,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileClient1HasData) {
   AddProfile(GetPersonalDataManager(0), *expected_profiles[1]);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
       GetAllAutoFillProfiles(GetPersonalDataManager(0))));
@@ -167,6 +168,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   AddProfile(GetPersonalDataManager(1), *profiles2[0]);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   // Since client1 associates first, client2's "Shipping" profile will
   // be overwritten by the one stored in the cloud by profile1.
@@ -192,6 +194,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   AddProfile(GetPersonalDataManager(0), *expected_profiles[1]);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   // One of the duplicate profiles will have its label renamed to
   // "Shipping2".
