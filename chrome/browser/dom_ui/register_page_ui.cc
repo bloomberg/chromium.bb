@@ -119,9 +119,6 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_HOST_REGISTRATION_PAGE_HTML));
 
-  // TODO(nkostylev): Embed registration form URL from startup manifest.
-  // http://crosbug.com/4645.
-
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(register_html.size());
   std::copy(register_html.begin(),
@@ -166,8 +163,10 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const Value* value) {
 #if defined(OS_CHROMEOS)
   if (WizardController::default_controller() &&
       WizardController::default_controller()->GetCustomization()) {
-    StringValue url_value(WizardController::default_controller()->
-        GetCustomization()->registration_url());
+    const std::string& url = WizardController::default_controller()->
+        GetCustomization()->registration_url();
+    LOG(INFO) << "Loading registration form with URL: " << url;
+    StringValue url_value(url);
     dom_ui_->CallJavascriptFunction(L"setRegistrationUrl", url_value);
   } else {
     LOG(ERROR) << "Startup manifest not defined.";
@@ -225,6 +224,7 @@ void RegisterPageHandler::SendUserInfo() {
   value.SetString(L"user_first_name", L"");
   value.SetString(L"user_last_name", L"");
 
+  LOG(INFO) << "Sending user info to host page";
   dom_ui_->CallJavascriptFunction(L"setUserInfo", value);
 #endif
 }

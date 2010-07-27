@@ -106,9 +106,11 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
                                          PageTransition::Type transition) {
   if (url.spec() == kRegistrationSuccessUrl) {
     source->Stop();
+    LOG(INFO) << "Registration form completed.";
     CloseScreen(ScreenObserver::REGISTRATION_SUCCESS);
   } else if (url.spec() == kRegistrationSkippedUrl) {
     source->Stop();
+    LOG(INFO) << "Registration form skipped.";
     CloseScreen(ScreenObserver::REGISTRATION_SKIPPED);
   } else {
     source->Stop();
