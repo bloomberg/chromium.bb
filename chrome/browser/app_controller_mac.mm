@@ -215,6 +215,10 @@ void RecordLastRunAppBundlePath() {
   if (parsed_command_line.HasSwitch(switches::kActivateOnLaunch)) {
     [NSApp activateIgnoringOtherApps:YES];
   }
+
+  if (!parsed_command_line.HasSwitch(switches::kEnableExposeForTabs)) {
+    [tabposeMenuItem_ setHidden:YES];
+  }
 }
 
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override

@@ -7466,6 +7466,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PREV_TAB_MAC" desc="The Mac menu item for previous tab in the window menu.">
           Select Previous Tab
         </message>
+        <message name="IDS_SHOW_TABPOSE_MAC" desc="The Mac menu item for showing a tab overview. This item is in the window menu.">
+          Show Tab Overview...
+        </message>
         <message name="IDS_SHOW_DOWNLOADS_MAC" desc="The Mac menu item to show downloads in the window menu.">
           Downloads
         </message>

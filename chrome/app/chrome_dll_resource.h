@@ -103,6 +103,7 @@
 #define IDC_MOVE_TAB_PREVIOUS           34033
 #define IDC_TOGGLE_VERTICAL_TABS        34034
 #define IDC_SEARCH                      34035
+#define IDC_TABPOSE                     34036
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000

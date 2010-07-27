@@ -2128,6 +2128,7 @@ bool Browser::IsReservedCommand(int command_id) {
          command_id == IDC_RESTORE_TAB ||
          command_id == IDC_SELECT_NEXT_TAB ||
          command_id == IDC_SELECT_PREVIOUS_TAB ||
+         command_id == IDC_TABPOSE ||
          command_id == IDC_EXIT ||
          command_id == IDC_SEARCH;
 }
@@ -3211,6 +3212,9 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_6, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
+#if defined(OS_MACOSX)
+  command_updater_.UpdateCommandEnabled(IDC_TABPOSE, normal_window);
+#endif
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);

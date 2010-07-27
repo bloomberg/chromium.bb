@@ -50,6 +50,9 @@ class Profile;
   // Outlet for the help menu so we can bless it so Cocoa adds the search item
   // to it.
   IBOutlet NSMenu* helpMenu_;
+
+  // Outlet for the tabpose menu item so we can hide it.
+  IBOutlet NSMenuItem* tabposeMenuItem_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;
