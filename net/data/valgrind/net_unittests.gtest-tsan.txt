@@ -1,0 +1,3 @@
+# These huge tests are flaky and sometimes crash the following tests.
+# See http://crbug.com/50346
+DiskCacheEntryTest.*HugeSparse*
