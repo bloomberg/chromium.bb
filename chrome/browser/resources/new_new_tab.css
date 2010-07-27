@@ -281,7 +281,6 @@ html[dir=rtl] .item {
 #tip-line button {
   /* We do not want a trailing single word from a link on the last line */
   white-space: nowrap;
-  padding: 0;
 }
 
 #option-button {

@@ -84,7 +84,6 @@ class DOMUITest : public RenderViewHostTestHarness {
 // TabContents when we first navigate to a DOM UI page, then to a standard
 // non-DOM-UI page.
 TEST_F(DOMUITest, DOMUIToStandard) {
-  profile_->CreateBookmarkModel(true);
   DoNavigationTest(contents(), 1);
 
   // Test the case where we're not doing the initial navigation. This is

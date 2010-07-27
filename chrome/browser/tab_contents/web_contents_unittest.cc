@@ -184,7 +184,6 @@ class TabContentsTest : public RenderViewHostTestHarness {
   // is not supposed to overwrite a profile if it's already created.
   virtual void SetUp() {
     TestingProfile* profile = new TestingProfile();
-    profile->CreateBookmarkModel(false);
     profile_.reset(profile);
 
     // Set some (WebKit) user preferences.

@@ -15,9 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/singleton.h"
 #include "base/thread.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
@@ -26,7 +24,6 @@
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/dom_ui/tips_handler.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -40,11 +37,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/views/importer_view.h"
-#include "views/window/window.h"
-#endif
 
 namespace {
 
@@ -437,43 +429,6 @@ void NewTabPageSetHomePageHandler::HandleSetHomePage(
   dom_ui_->CallJavascriptFunction(L"onHomePageSet", list_value);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// NewTabPageImportBookmarksHandler
-class NewTabPageImportBookmarksHandler : public DOMMessageHandler {
- public:
-  NewTabPageImportBookmarksHandler() {}
-  virtual ~NewTabPageImportBookmarksHandler() {}
-
-  // DOMMessageHandler implementation.
-  virtual void RegisterMessages();
-
-  // Callback for "importBookmarks".
-  void HandleImportBookmarks(const Value* value);
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabPageImportBookmarksHandler);
-};
-
-void NewTabPageImportBookmarksHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("importBookmarks", NewCallback(
-      this, &NewTabPageImportBookmarksHandler::HandleImportBookmarks));
-}
-
-void NewTabPageImportBookmarksHandler::HandleImportBookmarks(
-    const Value* value) {
-  Browser* browser = NULL;
-  TabContentsDelegate* delegate = dom_ui_->tab_contents()->delegate();
-  if (delegate)
-    browser = delegate->GetBrowser();
-  DCHECK(browser);
-#if defined(OS_WIN)
-  views::Window::CreateChromeWindow(
-      browser->window()->GetNativeHandle(),
-      gfx::Rect(),
-      new ImporterView(dom_ui_->GetProfile(), importer::FAVORITES))->Show();
-#endif
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -499,10 +454,6 @@ NewTabUI::NewTabUI(TabContents* contents)
 
   static bool first_view = true;
   if (first_view) {
-    Profile* profile = GetProfile();
-    profile->GetPrefs()->SetInteger(prefs::kNTPPromoViewsRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPPromoViewsRemaining) - 1);
-    profile->GetBookmarkModel()->AddObserver(this);
     first_view = false;
   }
 
@@ -525,7 +476,6 @@ NewTabUI::NewTabUI(TabContents* contents)
     }
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
-    AddMessageHandler((new NewTabPageImportBookmarksHandler())->Attach(this));
   }
 
   // Initializing the CSS and HTML can require some CPU, so do it after
@@ -550,9 +500,6 @@ NewTabUI::NewTabUI(TabContents* contents)
 }
 
 NewTabUI::~NewTabUI() {
-  BookmarkModel* bookmark_model = GetProfile()->GetBookmarkModel();
-  if (bookmark_model)
-    bookmark_model->RemoveObserver(this);
 }
 
 void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {
@@ -561,14 +508,6 @@ void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {
 
 void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
   render_view_host->set_paint_observer(new PaintTimer);
-}
-
-void NewTabUI::BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) {
-  // Stop showing the promo, and no longer observe the bookmark model.
-  GetProfile()->GetPrefs()->SetInteger(prefs::kNTPPromoViewsRemaining, 0);
-  GetProfile()->GetBookmarkModel()->RemoveObserver(this);
 }
 
 void NewTabUI::Observe(NotificationType type,

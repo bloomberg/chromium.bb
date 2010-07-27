@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/notification_registrar.h"
@@ -21,8 +20,7 @@ class Profile;
 
 // The TabContents used for the New Tab page.
 class NewTabUI : public DOMUI,
-                 public NotificationObserver,
-                 public BookmarkModelObserver {
+                 public NotificationObserver {
  public:
   explicit NewTabUI(TabContents* manager);
   ~NewTabUI();
@@ -31,29 +29,6 @@ class NewTabUI : public DOMUI,
   // view host.
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReused(RenderViewHost* render_view_host);
-
-  // Overridden from BookmarkModelObserver so we can remove the promo for
-  // importing bookmarks if the user adds a bookmark in any way.
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-    const BookmarkNode* parent,
-    int index);
-
-  // These methods must be overridden so that the NTP can be a
-  // BookmarkModelObserver.
-  virtual void Loaded(BookmarkModel* model) {}
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {}
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-    const BookmarkNode* old_parent, int old_index,
-    const BookmarkNode* new_parent, int new_index) {}
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-    const BookmarkNode* parent, int old_index,
-    const BookmarkNode* node) {}
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-    const BookmarkNode* node) {}
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
-    const BookmarkNode* node) {}
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-    const BookmarkNode* node) {}
 
   static void RegisterUserPrefs(PrefService* prefs);
   static void MigrateUserPrefs(PrefService* prefs, int old_pref_version,

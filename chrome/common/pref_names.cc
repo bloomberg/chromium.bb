@@ -454,11 +454,6 @@ const wchar_t kUseCustomChromeFrame[] = L"browser.custom_chrome_frame";
 // done directly from the omnibox should be shown.
 const wchar_t kShowOmniboxSearchHint[] = L"browser.show_omnibox_search_hint";
 
-// Int which specifies how many times left to show a promotional message on the
-// NTP.  This value decrements each time the NTP is shown for the first time
-// in a session.
-const wchar_t kNTPPromoViewsRemaining[] = L"browser.ntp.promo_remaining";
-
 // The list of origins which are allowed|denied to show desktop notifications.
 const wchar_t kDesktopNotificationDefaultContentSetting[] =
     L"profile.notifications_default_content_setting";

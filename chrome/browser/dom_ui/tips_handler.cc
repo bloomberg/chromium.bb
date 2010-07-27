@@ -54,17 +54,6 @@ void TipsHandler::HandleGetTips(const Value* content) {
     }
   }
 
-  // If the user has just started using Chrome with a fresh profile, send only
-  // the "Import bookmarks" promo until the user has either seen it five times
-  // or added or imported bookmarks.
-  if (current_prefs->GetInteger(prefs::kNTPPromoViewsRemaining) > 0) {
-    SendTip(WideToUTF8(l10n_util::GetStringF(IDS_IMPORT_BOOKMARKS_PROMO,
-        std::wstring(L"<button class='link'>"),
-        std::wstring(L"</button>"))),
-        L"set_promo_tip", 0);
-    return;
-  }
-
   if (tips_cache_ != NULL && !tips_cache_->empty()) {
     if (tips_cache_->GetInteger(
         WebResourceService::kCurrentTipPrefName, &current_tip_index) &&

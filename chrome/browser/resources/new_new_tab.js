@@ -27,12 +27,6 @@ function createTip(data) {
       homepageButton.textContent = data[0].set_homepage_tip;
       homepageButton.addEventListener('click', setAsHomePageLinkClicked);
       return homepageButton;
-    } else if (data[0].set_promo_tip) {
-      var promoMessage = document.createElement('span');
-      promoMessage.innerHTML = data[0].set_promo_tip;
-      var promoButton = promoMessage.querySelector('button');
-      promoButton.addEventListener('click', importBookmarksLinkClicked);
-      return promoMessage;
     } else {
       try {
         return parseHtmlSubset(data[0].tip_html_text);
@@ -447,6 +441,14 @@ function hideNotification() {
   actionLink.blur();
 }
 
+function showFirstRunNotification() {
+  showNotification(localStrings.getString('firstrunnotification'),
+                   localStrings.getString('closefirstrunnotification'),
+                   null, 30000);
+  var notificationElement = $('notification');
+  notification.classList.add('first-run');
+}
+
 /**
  * This handles the option menu.
  * @param {Element} button The button element.
@@ -850,11 +852,6 @@ function setAsHomePageLinkClicked(e) {
   e.preventDefault();
 }
 
-function importBookmarksLinkClicked(e) {
-  chrome.send('importBookmarks');
-  e.preventDefault();
-}
-
 function onHomePageSet(data) {
   showNotification(data[0], data[1]);
   // Removes the "make this my home page" tip.
@@ -934,6 +931,11 @@ function mostVisitedPages(data, firstRun) {
     mostVisited.ensureSmallGridCorrect();
     document.body.classList.remove('loading');
   }, 1);
+
+  // Only show the first run notification if first run.
+  if (firstRun) {
+    showFirstRunNotification();
+  }
 }
 
 // Log clicked links from the tips section.
