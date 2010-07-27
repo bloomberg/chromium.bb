@@ -14,9 +14,6 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
-}
-
 void DidEndMainMessageLoop() {
 }
 

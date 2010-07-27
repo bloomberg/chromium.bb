@@ -158,7 +158,10 @@ BrowserMainParts::BrowserMainParts(const MainFunctionParams& parameters)
       parsed_command_line_(parameters.command_line_) {
 }
 
-// BrowserMainParts: EarlyInitialization() and related -------------------------
+BrowserMainParts::~BrowserMainParts() {
+}
+
+// BrowserMainParts: |EarlyInitialization()| and related -----------------------
 
 void BrowserMainParts::EarlyInitialization() {
   PreEarlyInitialization();
@@ -315,6 +318,33 @@ void BrowserMainParts::InitializeSSL() {
     base::EnsureNSPRInit();
   }
 #endif
+}
+
+// BrowserMainParts: |MainMessageLoopStart()| and related ----------------------
+
+void BrowserMainParts::MainMessageLoopStart() {
+  PreMainMessageLoopStart();
+
+  main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
+
+  // TODO(viettrungluu): should these really go before setting the thread name?
+  system_monitor_.reset(new SystemMonitor);
+  hi_res_timer_manager_.reset(new HighResolutionTimerManager);
+  network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+
+  InitializeMainThread();
+
+  PostMainMessageLoopStart();
+}
+
+void BrowserMainParts::InitializeMainThread() {
+  const char* kThreadName = "CrBrowserMain";
+  PlatformThread::SetName(kThreadName);
+  main_message_loop().set_thread_name(kThreadName);
+
+  // Register the main thread by instantiating it, but don't call any methods.
+  main_thread_.reset(new ChromeThread(ChromeThread::UI,
+                                      MessageLoop::current()));
 }
 
 // -----------------------------------------------------------------------------
@@ -680,39 +710,18 @@ int BrowserMain(const MainFunctionParams& parameters) {
       parts(BrowserMainParts::CreateBrowserMainParts(parameters));
 
   parts->EarlyInitialization();
+  parts->MainMessageLoopStart();
 
-  // TODO(viettrungluu): put the remainder into BrowserMainParts
-  const CommandLine& parsed_command_line = parameters.command_line_;
-  base::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
-
-  // WARNING: If we get a WM_ENDSESSION objects created on the stack here
+  // WARNING: If we get a WM_ENDSESSION, objects created on the stack here
   // are NOT deleted. If you need something to run during WM_ENDSESSION add it
   // to browser_shutdown::Shutdown or BrowserProcess::EndSession.
 
   // TODO(beng, brettw): someday, break this out into sub functions with well
   //                     defined roles (e.g. pre/post-profile startup, etc).
 
-  // Do platform-specific things (such as finishing initializing Cocoa)
-  // prior to instantiating the message loop. This could be turned into a
-  // broadcast notification.
-  WillInitializeMainMessageLoop(parameters);
-
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-
-  SystemMonitor system_monitor;
-  HighResolutionTimerManager hi_res_timer_manager;
-  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
-
-  const char* kThreadName = "CrBrowserMain";
-  PlatformThread::SetName(kThreadName);
-  main_message_loop.set_thread_name(kThreadName);
-
-  // Register the main thread by instantiating it, but don't call any methods.
-  ChromeThread main_thread(ChromeThread::UI, MessageLoop::current());
-
-  // TODO(viettrungluu): temporary while I refactor BrowserMain()
-  parts->TemporaryPosix_1();
+  // TODO(viettrungluu): put the remainder into BrowserMainParts
+  const CommandLine& parsed_command_line = parameters.command_line_;
+  base::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
 
   FilePath user_data_dir;
 #if defined(OS_WIN)
@@ -776,9 +785,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parameters.ui_task) {
     g_browser_process->SetApplicationLocale("en-US");
   } else {
-    // Mac starts it earlier in WillInitializeMainMessageLoop (because
-    // it is needed when loading the MainMenu.nib and the language doesn't
-    // depend on anything since it comes from Cocoa.
+    // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
+    // needed when loading the MainMenu.nib and the language doesn't depend on
+    // anything since it comes from Cocoa.
 #if defined(OS_MACOSX)
     g_browser_process->SetApplicationLocale(l10n_util::GetLocaleOverride());
 #else

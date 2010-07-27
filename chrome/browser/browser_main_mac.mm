@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_main.h"
+#include "chrome/browser/browser_main_posix.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -25,54 +25,6 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/result_codes.h"
-
-// Tell Cooca to finish its initalization, which we want to do manually
-// instead of calling NSApplicationMain(). The primary reason is that NSAM()
-// never returns, which would leave all the objects currently on the stack
-// in scoped_ptrs hanging and never cleaned up. We then load the main nib
-// directly. The main event loop is run from common code using the
-// MessageLoop API, which works out ok for us because it's a wrapper around
-// CFRunLoop.
-void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
-  // Initialize NSApplication using the custom subclass.
-  [BrowserCrApplication sharedApplication];
-
-  // If ui_task is not NULL, the app is actually a browser_test, so startup is
-  // handled outside of BrowserMain (which is what called this).
-  if (!parameters.ui_task) {
-    // The browser process only wants to support the language Cocoa will use, so
-    // force the app locale to be overriden with that value.
-    l10n_util::OverrideLocaleWithCocoaLocale();
-
-    // Before we load the nib, we need to start up the resource bundle so we
-    // have the strings avaiable for localization.
-    std::wstring pref_locale;
-    // TODO(markusheintz): Read preference pref::kApplicationLocale in order to
-    // enforce the application locale.
-    ResourceBundle::InitSharedInstance(pref_locale);
-
-    FilePath resources_pack_path;
-    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-    ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
-  }
-
-  // Now load the nib (from the right bundle).
-  scoped_nsobject<NSNib>
-      nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
-                                   bundle:mac_util::MainAppBundle()]);
-  [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
-  // Make sure the app controller has been created.
-  DCHECK([NSApp delegate]);
-
-  // This is a no-op if the KeystoneRegistration framework is not present.
-  // The framework is only distributed with branded Google Chrome builds.
-  [[KeystoneGlue defaultKeystoneGlue] registerWithKeystone];
-
-  // Prevent Cocoa from turning command-line arguments into
-  // |-application:openFiles:|, since we already handle them directly.
-  [[NSUserDefaults standardUserDefaults]
-      setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
-}
 
 void DidEndMainMessageLoop() {
   AppController* appController = [NSApp delegate];
@@ -103,4 +55,70 @@ bool CheckMachineLevelInstall() {
 }
 
 void PrepareRestartOnCrashEnviroment(const CommandLine& parsed_command_line) {
+}
+
+// BrowserMainPartsMac ---------------------------------------------------------
+
+class BrowserMainPartsMac : public BrowserMainPartsPosix {
+ public:
+  explicit BrowserMainPartsMac(const MainFunctionParams& parameters)
+      : BrowserMainPartsPosix(parameters) {}
+
+ protected:
+  virtual void PreMainMessageLoopStart() {
+    BrowserMainPartsPosix::PreMainMessageLoopStart();
+
+    // Tell Cooca to finish its initalization, which we want to do manually
+    // instead of calling NSApplicationMain(). The primary reason is that NSAM()
+    // never returns, which would leave all the objects currently on the stack
+    // in scoped_ptrs hanging and never cleaned up. We then load the main nib
+    // directly. The main event loop is run from common code using the
+    // MessageLoop API, which works out ok for us because it's a wrapper around
+    // CFRunLoop.
+
+    // Initialize NSApplication using the custom subclass.
+    [BrowserCrApplication sharedApplication];
+
+    // If ui_task is not NULL, the app is actually a browser_test, so startup is
+    // handled outside of BrowserMain (which is what called this).
+    if (!parameters().ui_task) {
+      // The browser process only wants to support the language Cocoa will use,
+      // so force the app locale to be overriden with that value.
+      l10n_util::OverrideLocaleWithCocoaLocale();
+
+      // Before we load the nib, we need to start up the resource bundle so we
+      // have the strings avaiable for localization.
+      std::wstring pref_locale;
+      // TODO(markusheintz): Read preference pref::kApplicationLocale in order
+      // to enforce the application locale.
+      ResourceBundle::InitSharedInstance(pref_locale);
+
+      FilePath resources_pack_path;
+      PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+      ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
+    }
+
+    // Now load the nib (from the right bundle).
+    scoped_nsobject<NSNib>
+        nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
+                                     bundle:mac_util::MainAppBundle()]);
+    [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
+    // Make sure the app controller has been created.
+    DCHECK([NSApp delegate]);
+
+    // This is a no-op if the KeystoneRegistration framework is not present.
+    // The framework is only distributed with branded Google Chrome builds.
+    [[KeystoneGlue defaultKeystoneGlue] registerWithKeystone];
+
+    // Prevent Cocoa from turning command-line arguments into
+    // |-application:openFiles:|, since we already handle them directly.
+    [[NSUserDefaults standardUserDefaults]
+        setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
+  }
+};
+
+// static
+BrowserMainParts* BrowserMainParts::CreateBrowserMainParts(
+    const MainFunctionParams& parameters) {
+  return new BrowserMainPartsMac(parameters);
 }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser_main_posix.h"
+
 #include <errno.h>
 #include <signal.h>
 #include <sys/resource.h>
@@ -11,7 +13,6 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_main.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -155,76 +156,72 @@ void SetFileDescriptorLimit(unsigned int max_descriptors) {
 
 // BrowserMainPartsPosix -------------------------------------------------------
 
-class BrowserMainPartsPosix : public BrowserMainParts {
- public:
-  explicit BrowserMainPartsPosix(const MainFunctionParams& parameters)
-      : BrowserMainParts(parameters) {}
+void BrowserMainPartsPosix::PreEarlyInitialization() {
+  // We need to accept SIGCHLD, even though our handler is a no-op because
+  // otherwise we cannot wait on children. (According to POSIX 2001.)
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = SIGCHLDHandler;
+  CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
 
-  virtual void TemporaryPosix_1() {
-    int pipefd[2];
-    int ret = pipe(pipefd);
-    if (ret < 0) {
-      PLOG(DFATAL) << "Failed to create pipe";
-    } else {
-      g_shutdown_pipe_read_fd = pipefd[0];
-      g_shutdown_pipe_write_fd = pipefd[1];
-      const size_t kShutdownDetectorThreadStackSize = 4096;
-      if (!PlatformThread::CreateNonJoinable(
-          kShutdownDetectorThreadStackSize,
-          new ShutdownDetector(g_shutdown_pipe_read_fd))) {
-        LOG(DFATAL) << "Failed to create shutdown detector task.";
-      }
-    }
+  // If adding to this list of signal handlers, note the new signal probably
+  // needs to be reset in child processes. See
+  // base/process_util_posix.cc:LaunchApp
+
+  // We need to handle SIGTERM, because that is how many POSIX-based distros ask
+  // processes to quit gracefully at shutdown time.
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = SIGTERMHandler;
+  CHECK(sigaction(SIGTERM, &action, NULL) == 0);
+  // Also handle SIGINT - when the user terminates the browser via Ctrl+C. If
+  // the browser process is being debugged, GDB will catch the SIGINT first.
+  action.sa_handler = SIGINTHandler;
+  CHECK(sigaction(SIGINT, &action, NULL) == 0);
+  // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
+  // distros send SIGHUP, SIGTERM, and then SIGKILL.
+  action.sa_handler = SIGHUPHandler;
+  CHECK(sigaction(SIGHUP, &action, NULL) == 0);
+
+  const std::string fd_limit_string =
+      parsed_command_line().GetSwitchValueASCII(
+          switches::kFileDescriptorLimit);
+  int fd_limit = 0;
+  if (!fd_limit_string.empty()) {
+    StringToInt(fd_limit_string, &fd_limit);
   }
-
- private:
-  virtual void PreEarlyInitialization() {
-    // We need to accept SIGCHLD, even though our handler is a no-op because
-    // otherwise we cannot wait on children. (According to POSIX 2001.)
-    struct sigaction action;
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = SIGCHLDHandler;
-    CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
-
-    // If adding to this list of signal handlers, note the new signal probably
-    // needs to be reset in child processes. See
-    // base/process_util_posix.cc:LaunchApp
-
-    // We need to handle SIGTERM, because that is how many POSIX-based distros
-    // ask processes to quit gracefully at shutdown time.
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = SIGTERMHandler;
-    CHECK(sigaction(SIGTERM, &action, NULL) == 0);
-    // Also handle SIGINT - when the user terminates the browser via Ctrl+C. If
-    // the browser process is being debugged, GDB will catch the SIGINT first.
-    action.sa_handler = SIGINTHandler;
-    CHECK(sigaction(SIGINT, &action, NULL) == 0);
-    // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
-    // distros send SIGHUP, SIGTERM, and then SIGKILL.
-    action.sa_handler = SIGHUPHandler;
-    CHECK(sigaction(SIGHUP, &action, NULL) == 0);
-
-    const std::string fd_limit_string =
-        parsed_command_line().GetSwitchValueASCII(
-            switches::kFileDescriptorLimit);
-    int fd_limit = 0;
-    if (!fd_limit_string.empty()) {
-      StringToInt(fd_limit_string, &fd_limit);
-    }
 #if defined(OS_MACOSX)
-    // We use quite a few file descriptors for our IPC, and the default limit on
-    // the Mac is low (256), so bump it up if there is no explicit override.
-    if (fd_limit == 0) {
-      fd_limit = 1024;
-    }
-#endif  // OS_MACOSX
-    if (fd_limit > 0)
-      SetFileDescriptorLimit(fd_limit);
+  // We use quite a few file descriptors for our IPC, and the default limit on
+  // the Mac is low (256), so bump it up if there is no explicit override.
+  if (fd_limit == 0) {
+    fd_limit = 1024;
   }
-};
+#endif  // OS_MACOSX
+  if (fd_limit > 0)
+    SetFileDescriptorLimit(fd_limit);
+}
 
+void BrowserMainPartsPosix::PostMainMessageLoopStart() {
+  int pipefd[2];
+  int ret = pipe(pipefd);
+  if (ret < 0) {
+    PLOG(DFATAL) << "Failed to create pipe";
+  } else {
+    g_shutdown_pipe_read_fd = pipefd[0];
+    g_shutdown_pipe_write_fd = pipefd[1];
+    const size_t kShutdownDetectorThreadStackSize = 4096;
+    if (!PlatformThread::CreateNonJoinable(
+        kShutdownDetectorThreadStackSize,
+        new ShutdownDetector(g_shutdown_pipe_read_fd))) {
+      LOG(DFATAL) << "Failed to create shutdown detector task.";
+    }
+  }
+}
+
+// Mac further subclasses BrowserMainPartsPosix
+#if !defined(OS_MACOSX)
 // static
 BrowserMainParts* BrowserMainParts::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
   return new BrowserMainPartsPosix(parameters);
 }
+#endif  // !defined(OS_MACOSX)

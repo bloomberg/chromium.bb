@@ -33,10 +33,6 @@
 #include "views/focus/accelerator_handler.h"
 #include "views/window/window.h"
 
-void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
-  OleInitialize(NULL);
-}
-
 void DidEndMainMessageLoop() {
   OleUninitialize();
 }
@@ -211,10 +207,14 @@ class BrowserMainPartsWin : public BrowserMainParts {
   explicit BrowserMainPartsWin(const MainFunctionParams& parameters)
       : BrowserMainParts(parameters) {}
 
- private:
+ protected:
   virtual void PreEarlyInitialization() {
     // Initialize Winsock.
     net::EnsureWinsockInit();
+  }
+
+  virtual void PreMainMessageLoopStart() {
+    OleInitialize(NULL);
   }
 };
 
