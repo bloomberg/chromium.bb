@@ -46,8 +46,9 @@ if not env.Bit('mac'):
   env['COMPONENT_STATIC'] = False
 
 
+plugin_env = env.Clone()
 if env.Bit('linux'):
-    env.Append(
+    plugin_env.Append(
         CCFLAGS=['-fPIC', '-Wno-long-long',],
         CPPDEFINES = ['XP_UNIX', 'MOZ_X11'],
         # Catch unresolved symbols in libraries.
@@ -55,10 +56,10 @@ if env.Bit('linux'):
         )
 
     # We usually try to build things statically, but the plugin is a .so
-    env.FilterOut(LINKFLAGS=['-static'])
+    plugin_env.FilterOut(LINKFLAGS=['-static'])
 
 if env.Bit('mac'):
-    env.Append(
+    plugin_env.Append(
         CCFLAGS=['-Wno-long-long',
                  # warning: Basically all of our 2d Mac stuff is deprecated.
                  '-Wno-deprecated',
@@ -81,11 +82,11 @@ if env.Bit('mac'):
     )
 
 if env.Bit('windows'):
-    env.Append(
+    plugin_env.Append(
         CCFLAGS = ['/EHsc',],
         CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
     )
-    env.Tool('atlmfc_vc80')
+    plugin_env.Tool('atlmfc_vc80')
 
 # Both the NPAPI and PPAPI plugins depend upon the code that is in the
 # top (plugin) directory and on a large set of libraries.
@@ -114,7 +115,7 @@ common_inputs = [
     'utility.cc',
 ]
 
-common_objs = env.ComponentObject(common_inputs)
+common_objs = plugin_env.ComponentObject(common_inputs)
 
 # The common libraries are those used by both the NPAPI and PPAPI plugins.
 # They and the NPAPI/PPAPI specific libraries must come before OS libraries,
@@ -134,10 +135,10 @@ common_libs = [
 ]
 
 os_libs = [ ]
-if env.Bit('linux'):
+if plugin_env.Bit('linux'):
   os_libs += ['dl', 'Xt', 'X11', 'crypto']
 
-if env.Bit('windows'):
+if plugin_env.Bit('windows'):
   os_libs += ['gdi32', 'user32', ]
 
 # The NPAPI plugin build is for use as an out-of-process plugin on Chrome
@@ -146,12 +147,12 @@ if env.Bit('windows'):
 # proxying between the plugin and NaCl NPAPI modules.
 npapi_inputs = [
     # NPAPI specific code
-    env.ComponentObject('np_entry',
-                        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
-                        'np_entry.cc'),
-    env.ComponentObject('npn_gate',
-                        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
-                        'npn_gate.cc'),
+    plugin_env.ComponentObject(
+        'np_entry',
+        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/np_entry.cc'),
+    plugin_env.ComponentObject(
+        'npn_gate',
+        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/npn_gate.cc'),
     'npapi/async_receive.cc',
     'npapi/browser_impl_npapi.cc',
     'npapi/closure.cc',
@@ -180,7 +181,7 @@ npGoogleNaClPlugin = 'npGoogleNaClPlugin'
 
 # Because of the libraries difference, the NPAPI plugin needs a distinct
 # environment.
-npapi_env = env.Clone()
+npapi_env = plugin_env.Clone()
 npapi_libs = common_libs + [ 'google_nacl_npruntime', ]
 if npapi_env['SHARED_LIBS_SPECIAL']:
   npapi_env.Append(LIBS=[l + '_shared' for l in npapi_libs] + os_libs)
@@ -222,31 +223,28 @@ else:
 # The test for the NPAPI plugin mostly determines that the proper entry
 # points are defined and that there are no unresolved external symbols in
 # the .so.
-nptest_env = npapi_env.Clone()
-nptest_env.FilterOut(LINKFLAGS=['-bundle'])
 
 # Rather than link nacl_plugin_code statically, this unittest uses dlopen.
-if nptest_env['TARGET_ARCHITECTURE'] == 'x86' and nptest_env.Bit('linux'):
-  unittest = nptest_env.ComponentProgram('plugin_unittest',
-                                         'npapi/plugin_unittest.cc',
-                                         no_import_lib=True)
-  node = nptest_env.CommandTest('plugin_unittest.out',
-                                command=[unittest, plugin])
-  nptest_env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
-elif nptest_env['TARGET_ARCHITECTURE'] == 'x86' and nptest_env.Bit('mac'):
-  unittest = nptest_env.ComponentProgram('plugin_unittest',
-                                         'npapi/plugin_unittest.cc')
-  node = nptest_env.CommandTest('plugin_unittest.out',
-                                command=[unittest, exe])
-  nptest_env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
+if env['TARGET_ARCHITECTURE'] == 'x86' and env.Bit('linux'):
+  unittest = env.ComponentProgram('plugin_unittest',
+                                  'npapi/plugin_unittest.cc',
+                                  no_import_lib=True,
+                                  EXTRA_LIBS=['dl'])
+  node = env.CommandTest('plugin_unittest.out',
+                         command=[unittest, plugin])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
+elif env['TARGET_ARCHITECTURE'] == 'x86' and env.Bit('mac'):
+  unittest = env.ComponentProgram('plugin_unittest',
+                                  'npapi/plugin_unittest.cc')
+  node = env.CommandTest('plugin_unittest.out',
+                         command=[unittest, exe])
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_plugin_unittest')
 
 
 # This test fails to link in our ARM cross-compile environment because
 # the toolchain tarball lacks libraries, specifically libSM.so.6.
 if env['TARGET_ARCHITECTURE'] != 'arm':
-  test_env = env.Clone()
-  test_env.FilterOut(LINKFLAGS=['-bundle'])
-  string_encoding_test = test_env.ComponentProgram(
+  string_encoding_test = env.ComponentProgram(
       'string_encoding_test',
       ['string_encoding_test.cc',
        env.ComponentObject('string_encoding_for_test',
@@ -273,7 +271,7 @@ ppapi_inputs = [
 
 ppNaClPlugin = 'ppNaClPlugin'
 
-ppapi_env = env.Clone()
+ppapi_env = plugin_env.Clone()
 # TODO(sehr,polina): when there is a google_nacl_ppruntime, it goes here.
 ppapi_libs = common_libs + [ 'ppapi_cpp' ]
 if ppapi_env['SHARED_LIBS_SPECIAL']:
