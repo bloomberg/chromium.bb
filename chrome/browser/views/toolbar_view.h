@@ -28,10 +28,6 @@ class Browser;
 class Profile;
 class WrenchMenu;
 
-namespace views {
-class Menu2;
-}
-
 // The Browser Window's toolbar.
 class ToolbarView : public AccessibleToolbarView,
                     public views::ViewMenuDelegate,
@@ -133,13 +129,6 @@ class ToolbarView : public AccessibleToolbarView,
 
   // Loads the images for all the child views.
   void LoadImages();
-
-  // Check if the menu exited with a code indicating the user wants to
-  // switch to the other menu, and then switch to that other menu.
-  void SwitchToOtherMenuIfNeeded(views::Menu2* previous_menu,
-                                 views::MenuButton* next_menu_button);
-
-  void ActivateMenuButton(views::MenuButton* menu_button);
 
   // Types of display mode this toolbar can have.
   enum DisplayMode {

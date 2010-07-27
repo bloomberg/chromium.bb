@@ -627,9 +627,8 @@ SkBitmap ToolbarView::GetAppMenuIcon() {
     // Convert animation values that start from 0.0 and incrementally go
     // up to 1.0 into values that start in 0.0, go to 1.0 and then back
     // to 0.0 (to create a pulsing effect).
-    double value = 1.0 -
-                   abs(2.0 * update_reminder_animation_->GetCurrentValue() -
-                       1.0);
+    double value =
+        1.0 - abs(2.0 * update_reminder_animation_->GetCurrentValue() - 1.0);
 
     // Add the badge to it.
     badge = SkBitmapOperations::CreateBlendedBitmap(
@@ -642,30 +641,4 @@ SkBitmap ToolbarView::GetAppMenuIcon() {
                         icon.height() - badge.height());
 
   return canvas->ExtractBitmap();
-}
-
-void ToolbarView::ActivateMenuButton(views::MenuButton* menu_button) {
-#if defined(OS_WIN)
-  // On Windows, we have to explicitly clear the focus before opening
-  // the pop-up menu, then set the focus again when it closes.
-  GetFocusManager()->ClearFocus();
-#elif defined(OS_LINUX)
-  // Under GTK, opening a pop-up menu causes the main window to lose focus.
-  // Focus is automatically returned when the menu closes.
-  //
-  // Make sure that the menu button being activated has focus, so that
-  // when the user escapes from the menu without selecting anything, focus
-  // will be returned here.
-  if (!menu_button->HasFocus()) {
-    menu_button->RequestFocus();
-    GetFocusManager()->StoreFocusedView();
-  }
-#endif
-
-  // Tell the menu button to activate, opening its pop-up menu.
-  menu_button->Activate();
-
-#if defined(OS_WIN)
-  SetToolbarFocus(NULL, menu_button);
-#endif
 }
