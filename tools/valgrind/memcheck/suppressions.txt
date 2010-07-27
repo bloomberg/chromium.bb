@@ -3428,6 +3428,20 @@
    fun:_ZN14ProfileManager13CreateProfileERK8FilePath
 }
 {
+   bug_48130_c
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:*IdMapsC1Ev
+   ...
+   fun:*IdMapsE22DefaultSingletonTraitsIS1_ES1_E3getEv
+   fun:_ZN8chromeos12input_method31GetInputMethodDisplayNameFromIdERKSs
+   fun:_ZN22LanguageOptionsHandler18GetInputMethodListEv
+   fun:_ZN22LanguageOptionsHandler18GetLocalizedValuesEP15DictionaryValue
+   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
+   fun:_ZN9OptionsUIC1EP11TabContents
+}
+{
    bug_48553
    Memcheck:Leak
    fun:malloc
