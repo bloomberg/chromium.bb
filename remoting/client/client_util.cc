@@ -72,9 +72,9 @@ bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
     return false;
   }
 
-  config->set_host_jid(host_jid);
-  config->set_username(username);
-  config->set_auth_token(auth_token);
+  config->host_jid = host_jid;
+  config->username = username;
+  config->auth_token = auth_token;
   return true;
 }
 
@@ -110,9 +110,9 @@ bool GetLoginInfoFromUrlParams(const std::string& url, ClientConfig* config) {
   }
   std::string host_jid = parts[2].substr(pos + 1);
 
-  config->set_host_jid(host_jid);
-  config->set_username(username);
-  config->set_auth_token(auth_token);
+  config->host_jid = host_jid;
+  config->username = username;
+  config->auth_token = auth_token;
   return true;
 }
 

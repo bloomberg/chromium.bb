@@ -86,7 +86,7 @@ bool ChromotingPlugin::Init(uint32_t argc,
   host_connection_.reset(new JingleHostConnection(context_.get()));
   view_.reset(new PepperView(this));
   input_handler_.reset(new PepperInputHandler());
-  client_.reset(new ChromotingClient(&config,
+  client_.reset(new ChromotingClient(config,
                                      context_.get(),
                                      host_connection_.get(),
                                      view_.get(),

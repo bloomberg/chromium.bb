@@ -25,12 +25,11 @@ TEST_F(ClientUtilTest, GetLoginInfoFromUrlParams) {
   std::string host_jid;
   ClientConfig config;
 
-  ASSERT_TRUE(
-      GetLoginInfoFromUrlParams(url, &config));
+  ASSERT_TRUE(GetLoginInfoFromUrlParams(url, &config));
 
-  EXPECT_EQ("auser", config.username());
-  EXPECT_EQ("someauth", config.auth_token());
-  EXPECT_EQ("ajid", config.host_jid());
+  EXPECT_EQ("auser", config.username);
+  EXPECT_EQ("someauth", config.auth_token);
+  EXPECT_EQ("ajid", config.host_jid);
 }
 
 }  // namespace remoting

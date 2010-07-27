@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "remoting/client/chromoting_view.h"
-#include "remoting/client/client_config.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/client/input_handler.h"
@@ -17,7 +16,7 @@ static const uint32 kFailedColor = 0xffcc00ff;
 
 namespace remoting {
 
-ChromotingClient::ChromotingClient(ClientConfig* config,
+ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ClientContext* context,
                                    HostConnection* connection,
                                    ChromotingView* view,

@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
   remoting::JingleHostConnection connection(&context);
   remoting::X11View view;
   remoting::X11InputHandler input_handler(&context, &view);
-  remoting::ChromotingClient client(&config, &context, &connection, &view,
+  remoting::ChromotingClient client(config, &context, &connection, &view,
       &input_handler, NewRunnableFunction(&ClientQuit, &ui_loop));
 
   // Run the client on a new MessageLoop until
