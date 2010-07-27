@@ -10,7 +10,7 @@
 
 #include "app/x11_util.h"
 #include "views/controls/button/button.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 
 class BrowserView;
 class SkBitmap;

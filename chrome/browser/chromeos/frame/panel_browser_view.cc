@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
 
 #include "chrome/browser/chromeos/frame/panel_controller.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 #include "views/window/window.h"
 
 namespace chromeos {

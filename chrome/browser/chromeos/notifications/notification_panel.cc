@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/notifications/balloon_view.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
-#include "third_party/cros/chromeos_wm_ipc_enums.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 #include "views/background.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/scroll_view.h"

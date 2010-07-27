@@ -21,7 +21,6 @@ include_rules = [
   "+libxml", # For search engine definition parsing.
   "+media/audio", # Chrome's lightweight audio library.
   "+media/base",
-  "+third_party/cros",
   "+third_party/expat",
   "+third_party/gpsd",
   "+third_party/sqlite",

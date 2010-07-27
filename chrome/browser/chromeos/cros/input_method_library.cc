@@ -191,8 +191,8 @@ void InputMethodLibraryImpl::FlushImeConfig() {
           active_input_methods_are_changed = true;
         }
       } else {
-        LOG(ERROR) << "chromeos::SetImeConfig failed. Will retry later: "
-                   << section << "/" << config_name;
+//        LOG(ERROR) << "chromeos::SetImeConfig failed. Will retry later: "
+//                   << section << "/" << config_name;
         ++iter;  // Do not remove the command.
       }
     }
