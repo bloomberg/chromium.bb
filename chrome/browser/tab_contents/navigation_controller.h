@@ -458,7 +458,7 @@ class NavigationController {
   bool RendererDidNavigateAutoSubframe(
       const ViewHostMsg_FrameNavigate_Params& params);
 
-  // Helper function for code shared between Reload() and ReloadAll().
+  // Helper function for code shared between Reload() and ReloadIgnoringCache().
   void ReloadInternal(bool check_for_repost, ReloadType reload_type);
 
   // Actually issues the navigation held in pending_entry.

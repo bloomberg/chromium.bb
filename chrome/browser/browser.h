@@ -897,7 +897,7 @@ class Browser : public TabStripModelDelegate,
   // done only once per application name / per session.
   static void RegisterAppPrefs(const std::wstring& app_name);
 
-  // Shared code between Reload() and ReloadAll().
+  // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
 
   // Return true if the window dispositions means opening a new tab.
