@@ -3099,9 +3099,9 @@
    fun:_ZN11ProfileImpl14InitExtensionsEv
    fun:_ZN14ProfileManager10AddProfileEP7Profileb
    fun:_ZN14ProfileManager10GetProfileERK8FilePathb
-   fun:_ZN14ProfileManager10GetProfileERK8FilePath
+   ...
    fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
-   fun:*18MainFunctionParams13CreateProfileERK18MainFunctionParamsRK8FilePath
+   ...
    fun:_Z11BrowserMainRK18MainFunctionParams
    fun:ChromeMain
    fun:main
