@@ -58,7 +58,6 @@
         <include name="IDR_MINIMIZE_H" file="linux_minimize_h.png" type="BINDATA" />
         <include name="IDR_MINIMIZE_P" file="linux_minimize_p.png" type="BINDATA" />
       </if>
-      <include name="IDR_RESIZE_GRIPPER" file="resize_gripper.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_RESTORE" file="restore.png" type="BINDATA" />
         <include name="IDR_RESTORE_H" file="restore_h.png" type="BINDATA" />

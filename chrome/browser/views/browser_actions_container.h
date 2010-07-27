@@ -22,7 +22,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/controls/resize_gripper.h"
+#include "views/controls/resize_area.h"
 #include "views/view.h"
 
 class Browser;
@@ -183,11 +183,11 @@ class BrowserActionView : public views::View {
 // The BrowserActionsContainer (when it contains one or more icons) consists of
 // the following elements, numbered as seen below the line:
 //
-//    || _ Icon _ Icon _ Icon _ [chevron] _ | _
+//    r _ Icon _ Icon _ Icon _ [chevron] _ | _
 //    -----------------------------------------
-//     1 2   3  4                   5     6 7 8
+//    1 2   3  4                   5     6 7 8
 //
-// 1) The ResizeGripper view.
+// 1) An invisible resize area.
 // 2) Padding  (kHorizontalPadding).
 // 3) The browser action icon button (BrowserActionView).
 // 4) Padding to visually separate icons from one another
@@ -204,8 +204,8 @@ class BrowserActionView : public views::View {
 // 1) The container can never grow beyond the space needed to show all icons
 // (hereby referred to as the max width).
 // 2) The container can never shrink below the space needed to show just the
-// resize gripper and the chevron (ignoring the case where there are no icons to
-// show, in which case the container won't be visible anyway).
+// initial padding and the chevron (ignoring the case where there are no icons
+// to show, in which case the container won't be visible anyway).
 // 3) The container snaps into place (to the pixel count that fits the visible
 // icons) to make sure there is no wasted space at the edges of the container.
 // 4) If the user adds or removes icons (read: installs/uninstalls browser
@@ -219,12 +219,11 @@ class BrowserActionView : public views::View {
 //
 // Resizing the BrowserActionsContainer:
 //
-// The ResizeGripper view sends OnResize messages to the BrowserActionsContainer
-// class as the user drags the gripper. This modifies the value for
-// |resize_amount_|. That indicates to the container that a resize is in
-// progress and is used to calculate the size in GetPreferredSize(), though
-// that function never exceeds the defined minimum and maximum size of the
-// container.
+// The ResizeArea view sends OnResize messages to the BrowserActionsContainer
+// class as the user drags it. This modifies the value for |resize_amount_|.
+// That indicates to the container that a resize is in progress and is used to
+// calculate the size in GetPreferredSize(), though that function never exceeds
+// the defined minimum and maximum size of the container.
 //
 // When the user releases the mouse (ends the resize), we calculate a target
 // size for the container (animation_target_size_), clamp that value to the
@@ -252,7 +251,7 @@ class BrowserActionsContainer
   : public views::View,
     public views::ViewMenuDelegate,
     public views::DragController,
-    public views::ResizeGripper::ResizeGripperDelegate,
+    public views::ResizeArea::ResizeAreaDelegate,
     public AnimationDelegate,
     public ExtensionToolbarModel::Observer,
     public BrowserActionOverflowMenuController::Observer,
@@ -338,7 +337,7 @@ class BrowserActionsContainer
                             const gfx::Point& press_pt,
                             const gfx::Point& p);
 
-  // Overridden from ResizeGripper::ResizeGripperDelegate:
+  // Overridden from ResizeArea::ResizeAreaDelegate:
   virtual void OnResize(int resize_amount, bool done_resizing);
 
   // Overridden from AnimationDelegate:
@@ -421,7 +420,7 @@ class BrowserActionsContainer
   int WidthOfNonIconArea() const;
 
   // Given a number of |icons| return the amount of pixels needed to draw it,
-  // including the controls (chevron if visible and resize gripper).
+  // including the controls (chevron if visible and resize area).
   int IconCountToWidth(int icons) const;
 
   // Returns the absolute minimum size you can shrink the container down to and
@@ -464,8 +463,8 @@ class BrowserActionsContainer
   // The current size of the container.
   gfx::Size container_size_;
 
-  // The resize gripper for the container.
-  views::ResizeGripper* resize_gripper_;
+  // The resize area for the container.
+  views::ResizeArea* resize_area_;
 
   // The chevron for accessing the overflow items.
   views::MenuButton* chevron_;

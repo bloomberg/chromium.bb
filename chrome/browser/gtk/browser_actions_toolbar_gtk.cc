@@ -350,7 +350,6 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
       resize_animation_(this),
       desired_width_(0),
       start_width_(0),
-      draw_gripper_(false),
       method_factory_(this) {
   ExtensionsService* extension_service = profile_->GetExtensionsService();
   // The |extension_service| can be NULL in Incognito.
@@ -754,21 +753,6 @@ gboolean BrowserActionsToolbarGtk::OnGripperMotionNotify(
 
 gboolean BrowserActionsToolbarGtk::OnGripperExpose(GtkWidget* gripper,
                                                    GdkEventExpose* expose) {
-  if (!draw_gripper_)
-    return TRUE;
-
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(expose->window));
-
-  CairoCachedSurface* surface = theme_provider_->GetSurfaceNamed(
-      IDR_RESIZE_GRIPPER, gripper);
-  gfx::Point center = gfx::Rect(gripper->allocation).CenterPoint();
-  center.Offset(-surface->Width() / 2, -surface->Height() / 2);
-  surface->SetSource(cr, center.x(), center.y());
-  gdk_cairo_rectangle(cr, &expose->area);
-  cairo_fill(cr);
-
-  cairo_destroy(cr);
-
   return TRUE;
 }
 
@@ -781,18 +765,13 @@ gboolean BrowserActionsToolbarGtk::OnGripperEnterNotify(
     GtkWidget* gripper, GdkEventCrossing* event) {
   gdk_window_set_cursor(gripper->window,
                         gtk_util::GetCursor(GDK_SB_H_DOUBLE_ARROW));
-  draw_gripper_ = true;
-
   return FALSE;
 }
 
 gboolean BrowserActionsToolbarGtk::OnGripperLeaveNotify(
     GtkWidget* gripper, GdkEventCrossing* event) {
-  if (!(event->state & GDK_BUTTON1_MASK)) {
+  if (!(event->state & GDK_BUTTON1_MASK))
     gdk_window_set_cursor(gripper->window, NULL);
-    draw_gripper_ = false;
-  }
-
   return FALSE;
 }
 
@@ -801,11 +780,8 @@ gboolean BrowserActionsToolbarGtk::OnGripperButtonRelease(
   gfx::Rect gripper_rect(0, 0,
                          gripper->allocation.width, gripper->allocation.height);
   gfx::Point release_point(event->x, event->y);
-  if (!gripper_rect.Contains(release_point)) {
+  if (!gripper_rect.Contains(release_point))
     gdk_window_set_cursor(gripper->window, NULL);
-    draw_gripper_ = false;
-    gtk_widget_queue_draw(gripper);
-  }
 
   // After the user resizes the toolbar, we want to smartly resize it to be
   // the perfect size to fit the buttons.

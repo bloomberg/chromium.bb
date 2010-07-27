@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_RESIZE_GRIPPER_H_
-#define VIEWS_CONTROLS_RESIZE_GRIPPER_H_
+#ifndef VIEWS_CONTROLS_RESIZE_AREA_H_
+#define VIEWS_CONTROLS_RESIZE_AREA_H_
 #pragma once
 
 #include <string>
 
-#include "views/controls/image_view.h"
+#include "views/view.h"
 
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// A simple resize gripper (two vertical bars).
+// An invisible area that acts like a horizontal resizer.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class ResizeGripper : public ImageView {
+class ResizeArea : public View {
  public:
   //////////////////////////////////////////////////////////////////////////////
   //
   // The interface needed for getting notified about the resize event.
   //
   //////////////////////////////////////////////////////////////////////////////
-  class ResizeGripperDelegate {
+  class ResizeAreaDelegate {
    public:
     // OnResize is sent when resizing is detected. |resize_amount| specifies the
     // number of pixels that the user wants to resize by, and can be negative or
@@ -37,15 +37,13 @@ class ResizeGripper : public ImageView {
 
   static const char kViewClassName[];
 
-  explicit ResizeGripper(ResizeGripperDelegate* delegate);
-  virtual ~ResizeGripper();
+  explicit ResizeArea(ResizeAreaDelegate* delegate);
+  virtual ~ResizeArea();
 
   // Overridden from views::View:
   virtual std::string GetClassName() const;
   virtual gfx::NativeCursor GetCursorForPoint(Event::EventType event_type,
                                               const gfx::Point& p);
-  virtual void OnMouseEntered(const views::MouseEvent& event);
-  virtual void OnMouseExited(const views::MouseEvent& event);
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
@@ -56,22 +54,15 @@ class ResizeGripper : public ImageView {
   // directionality.
   void ReportResizeAmount(int resize_amount, bool last_update);
 
-  // Changes the visibility of the gripper.
-  void SetGripperVisible(bool visible);
-
   // The delegate to notify when we have updates.
-  ResizeGripperDelegate* delegate_;
+  ResizeAreaDelegate* delegate_;
 
   // The mouse position at start (in screen coordinates).
   int initial_position_;
 
-  // Are we showing the resize gripper? We only show the resize gripper when
-  // the mouse is over us.
-  bool gripper_visible_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResizeGripper);
+  DISALLOW_COPY_AND_ASSIGN(ResizeArea);
 };
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_RESIZE_GRIPPER_H_
+#endif  // VIEWS_CONTROLS_RESIZE_AREA_H_

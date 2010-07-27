@@ -26,6 +26,7 @@
 #include "grit/theme_resources.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/image_button.h"
+#include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/standard_layout.h"
 #include "views/view.h"
