@@ -1138,7 +1138,7 @@ void DownloadManager::GenerateExtension(
     //    an executable is hidden in a benign file extension;
     //    E.g. my-cat.jpg becomes my-cat.jpg.js if content type is
     //         application/x-javascript.
-    // 4. New extension is not ".tar" for .gz files. For misconfigured web
+    // 4. New extension is not ".tar" for .tar.gz files. For misconfigured web
     //    servers, i.e. bug 5772.
     // 5. The original extension is not ".tgz" & the new extension is not "gz".
     FilePath::StringType append_extension;
@@ -1149,7 +1149,7 @@ void DownloadManager::GenerateExtension(
           !(append_extension == FILE_PATH_LITERAL("gz") &&
             extension == FILE_PATH_LITERAL("tgz")) &&
           (append_extension != FILE_PATH_LITERAL("tar") ||
-           extension != FILE_PATH_LITERAL("gz"))) {
+           extension != FILE_PATH_LITERAL("tar.gz"))) {
         extension += FILE_PATH_LITERAL(".");
         extension += append_extension;
       }
