@@ -646,6 +646,101 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return history_info.HistoryInfo(
         self._SendJSONRequest(0, json.dumps(cmd_dict)))
 
+  def GetTranslateInfo(self, tab_index=0, window_index=0):
+    """Returns info about translate for the given page.
+
+    If the translate bar is showing, also returns information about the bar.
+
+    Args:
+      tab_index: The tab index, default is 0.
+      window_index: The window index, default is 0.
+
+    Returns:
+      A dictionary of information about translate for the page. Example:
+      { u'can_translate_page': True,
+        u'original_language': u'es',
+        u'page_translated': False,
+        # The below will only appear if the translate bar is showing.
+        u'translate_bar': { u'bar_state': u'BEFORE_TRANSLATE',
+                            u'original_lang_code': u'es',
+                            u'target_lang_code': u'en'}}
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetTranslateInfo',
+      'tab_index': tab_index
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+
+  def ClickTranslateBarTranslate(self, tab_index=0, window_index=0):
+    """If the translate bar is showing, clicks the 'Translate' button on the
+       bar. This will show the 'this page has been translated...' infobar.
+
+    Args:
+      tab_index: The index of the tab, default is 0.
+      window_index: The index of the window, default is 0.
+
+    Returns:
+      True if the translation was successful or false if there was an error.
+      Note that an error shouldn't neccessarily mean a failed test - retry the
+      call on error.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'SelectTranslateOption',
+      'tab_index': tab_index,
+      'option': 'translate_page'
+    }
+    return self._GetResultFromJSONRequest(
+        cmd_dict, windex=window_index)['translation_success']
+
+  def RevertPageTranslation(self, tab_index=0, window_index=0):
+    """Select the 'Show original' button on  the 'this page has been
+       translated...' infobar. This will remove the infobar and revert the
+       page translation.
+
+    Args:
+      tab_index: The index of the tab, default is 0.
+      window_index: The index of the window, default is 0.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'SelectTranslateOption',
+      'tab_index': tab_index,
+      'option': 'revert_translation'
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+
+  def SelectTranslateOption(self, option, tab_index=0, window_index=0):
+    """Selects one of the options in the drop-down menu for the translate bar.
+
+    Args:
+      option: One of 'never_translate_language', 'never_translate_site', or
+              'toggle_always_translate'. See notes on each below.
+      tab_index: The index of the tab, default is 0.
+      window_index: The index of the window, default is 0.
+
+    *Notes*
+    never translate language:  Selecting this means that no sites in this
+      language will be translated. This dismisses the infobar.
+    never translate site: Selecting this means that this site will never be
+      translated, regardless of the language. This dismisses the infobar.
+    toggle always translate: This does not dismiss the infobar or translate the
+      page. See ClickTranslateBarTranslate and PerformActioOnInfobar to do
+      those. If a language is selected to be always translated, then whenver
+      the user visits a page with that language, the infobar will show the
+      'This page has been translated...' message.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation returns an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'SelectTranslateOption',
+      'option': option,
+      'tab_index': tab_index
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+
   def FillAutoFillProfile(self, profiles=None, credit_cards=None,
                           tab_index=0, window_index=0):
     """Set the autofill profile to contain the given profiles and credit cards.

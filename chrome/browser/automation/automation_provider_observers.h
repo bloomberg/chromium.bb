@@ -30,6 +30,7 @@ class ExtensionProcessManager;
 class NavigationController;
 class SavePackage;
 class TabContents;
+class TranslateInfoBarDelegate;
 
 namespace IPC {
 class Message;
@@ -485,6 +486,47 @@ class MetricEventDurationObserver : public NotificationObserver {
   EventDurationMap durations_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricEventDurationObserver);
+};
+
+class PageTranslatedObserver : public NotificationObserver {
+ public:
+  PageTranslatedObserver(AutomationProvider* automation,
+                         IPC::Message* reply_message,
+                         TabContents* tab_contents);
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  scoped_refptr<AutomationProvider> automation_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageTranslatedObserver);
+};
+
+class TabLanguageDeterminedObserver : public NotificationObserver {
+ public:
+  TabLanguageDeterminedObserver(AutomationProvider* automation,
+                                IPC::Message* reply_message,
+                                TabContents* tab_contents,
+                                TranslateInfoBarDelegate* translate_bar);
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  TabContents* tab_contents_;
+  TranslateInfoBarDelegate* translate_bar_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabLanguageDeterminedObserver);
 };
 
 #if defined(OS_CHROMEOS)

@@ -57,6 +57,7 @@ class LoginHandler;
 class MetricEventDurationObserver;
 class InitialLoadObserver;
 class NavigationControllerRestoredObserver;
+class TranslateInfoBarDelegate;
 struct AutocompleteMatchData;
 
 namespace gfx {
@@ -505,6 +506,18 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetThemeInfo(Browser* browser,
                     DictionaryValue* args,
                     IPC::Message* reply_message);
+
+  // Returns information about translation for a given tab. Includes
+  // information about the translate bar if it is showing.
+  void GetTranslateInfo(Browser* browser,
+                        DictionaryValue* args,
+                        IPC::Message* reply_message);
+
+  // Takes the specified action on the translate bar.
+  // Uses the JSON interface for input/output.
+  void SelectTranslateOption(Browser* browser,
+                             DictionaryValue* args,
+                             IPC::Message* reply_message);
 
   // Get the profiles that are currently saved to the DB.
   // Uses the JSON interface for input/output.

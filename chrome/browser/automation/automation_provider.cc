@@ -2744,6 +2744,131 @@ void AutomationProvider::ClearBrowsingData(Browser* browser,
   // The observer also deletes itself after sending the reply.
 }
 
+namespace {
+
+  // Get the TabContents from a dictionary of arguments.
+  TabContents* GetTabContentsFromDict(const Browser* browser,
+                                      const DictionaryValue* args,
+                                      std::string* error_message) {
+    int tab_index;
+    if (!args->GetInteger(L"tab_index", &tab_index)) {
+      *error_message = "Must include tab_index.";
+      return NULL;
+    }
+
+    TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+    if (!tab_contents) {
+      *error_message = StringPrintf("No tab at index %d.", tab_index);
+      return NULL;
+    }
+    return tab_contents;
+  }
+
+  // Get the TranslateInfoBarDelegate from TabContents.
+  TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
+      TabContents* tab_contents) {
+    for (int i = 0; i < tab_contents->infobar_delegate_count(); i++) {
+      InfoBarDelegate* infobar = tab_contents->GetInfoBarDelegateAt(i);
+      if (infobar->AsTranslateInfoBarDelegate())
+        return infobar->AsTranslateInfoBarDelegate();
+    }
+    // No translate infobar.
+    return NULL;
+  }
+
+}  // namespace
+
+// See GetTranslateInfo() in chrome/test/pyautolib/pyauto.py for sample json
+// input and output.
+void AutomationProvider::GetTranslateInfo(Browser* browser,
+                                          DictionaryValue* args,
+                                          IPC::Message* reply_message) {
+  std::string error_message;
+  TabContents* tab_contents = GetTabContentsFromDict(browser, args,
+                                                     &error_message);
+  if (!tab_contents) {
+    AutomationJSONReply(this, reply_message).SendError(error_message);
+    return;
+  }
+
+  // Get the translate bar if there is one and pass it to the observer.
+  // The observer will check for null and populate the information accordingly.
+  TranslateInfoBarDelegate* translate_bar =
+      GetTranslateInfoBarDelegate(tab_contents);
+
+  TabLanguageDeterminedObserver* observer = new TabLanguageDeterminedObserver(
+      this, reply_message, tab_contents, translate_bar);
+  // If the language for the page hasn't been loaded yet, then just make
+  // the observer, otherwise call observe directly.
+  std::string language = tab_contents->language_state().original_language();
+  if (!language.empty()) {
+    observer->Observe(NotificationType::TAB_LANGUAGE_DETERMINED,
+                      Source<TabContents>(tab_contents),
+                      Details<std::string>(&language));
+  }
+}
+
+// See SelectTranslateOption() in chrome/test/pyautolib/pyauto.py for sample
+// json input.
+// Sample json output: {}
+void AutomationProvider::SelectTranslateOption(Browser* browser,
+                                               DictionaryValue* args,
+                                               IPC::Message* reply_message) {
+  std::string option;
+  std::string error_message;
+  TabContents* tab_contents = GetTabContentsFromDict(browser, args,
+                                                     &error_message);
+  if (!tab_contents) {
+    AutomationJSONReply(this, reply_message).SendError(error_message);
+    return;
+  }
+
+  TranslateInfoBarDelegate* translate_bar =
+      GetTranslateInfoBarDelegate(tab_contents);
+  if (!translate_bar) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("There is no translate bar open.");
+    return;
+  }
+
+  if (!args->GetString(L"option", &option)) {
+    AutomationJSONReply(this, reply_message).SendError("Must include option");
+    return;
+  }
+
+  if (option == "translate_page") {
+    // Make a new notification observer which will send the reply.
+    new PageTranslatedObserver(this, reply_message, tab_contents);
+    translate_bar->Translate();
+    return;
+  }
+
+  AutomationJSONReply reply(this, reply_message);
+  if (option == "never_translate_language") {
+    if (translate_bar->IsLanguageBlacklisted()) {
+      reply.SendError("The language was already blacklisted.");
+      return;
+    }
+    translate_bar->ToggleLanguageBlacklist();
+    reply.SendSuccess(NULL);
+  } else if (option == "never_translate_site") {
+    if (translate_bar->IsSiteBlacklisted()) {
+      reply.SendError("The site was already blacklisted.");
+      return;
+    }
+    translate_bar->ToggleSiteBlacklist();
+    reply.SendSuccess(NULL);
+  } else if (option == "toggle_always_translate") {
+    translate_bar->ToggleAlwaysTranslate();
+    reply.SendSuccess(NULL);
+  } else if (option == "revert_translation") {
+    translate_bar->RevertTranslation();
+    reply.SendSuccess(NULL);
+  } else {
+    reply.SendError("Invalid string found for option.");
+  }
+}
+
 // Sample json input: { "command": "GetThemeInfo" }
 // Refer GetThemeInfo() in chrome/test/pyautolib/pyauto.py for sample output.
 void AutomationProvider::GetThemeInfo(Browser* browser,
@@ -3090,6 +3215,10 @@ void AutomationProvider::SendJSONRequest(int handle,
 
   // SetTheme() implemented using InstallExtension().
   handler_map["GetThemeInfo"] = &AutomationProvider::GetThemeInfo;
+
+  handler_map["SelectTranslateOption"] =
+      &AutomationProvider::SelectTranslateOption;
+  handler_map["GetTranslateInfo"] =  &AutomationProvider::GetTranslateInfo;
 
   handler_map["GetAutoFillProfile"] = &AutomationProvider::GetAutoFillProfile;
   handler_map["FillAutoFillProfile"] = &AutomationProvider::FillAutoFillProfile;
