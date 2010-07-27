@@ -72,6 +72,8 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
 int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
                                 int32_t               *stack_flag);
 
+extern int NaClAclBypassChecks;
+
 void NaClInsecurelyBypassAllAclChecks(void);
 
 int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,

@@ -290,7 +290,7 @@ cleanup_no_lock:
   return rv;
 }
 
-static int NaClAclBypassChecks = 0;
+int NaClAclBypassChecks = 0;
 
 void NaClInsecurelyBypassAllAclChecks(void) {
   NaClLog(LOG_WARNING, "BYPASSING ALL ACL CHECKS\n");

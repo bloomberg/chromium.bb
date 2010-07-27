@@ -39,6 +39,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+#include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 /* may redefine main() to install a hook */
@@ -442,6 +443,21 @@ int main(int  ac,
     }
   }
 
+#if NACL_OSX
+  /*
+   * Enable the outer sandbox on Mac.  Do this as soon as possible.
+   * It would be good to do this as soon as we have opened the
+   * executable file and log file, but nacl_text.c currently does not
+   * work in the sandbox.  See
+   * http://code.google.com/p/nativeclient/issues/detail?id=583
+   *
+   * We cannot enable the sandbox if file access is enabled.
+   */
+  if (!NaClAclBypassChecks) {
+    NaClEnableOuterSandbox();
+  }
+#endif
+
   if (LOAD_OK == errcode) {
     if (verbosity) {
       gprintf((struct Gio *) &gout, "printing NaClApp details\n");
@@ -535,7 +551,12 @@ int main(int  ac,
   NaClLog(1, "NACL: Application output follows\n");
 
   /*
-   * Chroot() ourselves.  Based on agl's chrome implementation.,
+   * Chroot() ourselves.  Based on agl's chrome implementation.
+   *
+   * TODO(mseaborn): This enables a SUID-based Linux outer sandbox,
+   * but it is not used now.  When we do have an outer sandbox for
+   * standalone sel_ldr, we should enable it earlier on, and merge it
+   * with NaClEnableOuterSandbox().
    */
   sandbox_fd_string = getenv(NACL_SANDBOX_CHROOT_FD);
   if (NULL != sandbox_fd_string) {

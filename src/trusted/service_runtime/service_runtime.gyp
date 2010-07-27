@@ -140,6 +140,7 @@
                 'linux/sel_memory.c',
                 'linux/x86/sel_segments.c',
                 'osx/nacl_thread_nice.c',
+                'osx/outer_sandbox.c',
               ],
             }],
             ['OS=="win"', {
