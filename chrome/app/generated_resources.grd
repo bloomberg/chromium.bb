@@ -212,11 +212,6 @@ each locale. -->
       </message>
 
 
-      <message name="IDS_HISTORY_SEARCH_STRING" desc="Text showing what the user searched for">
-        Search Results for '<ph name="SEARCH_STRING">
-          $1<ex>pie</ex>
-        </ph>'
-      </message>
       <message name="IDS_HISTORY_START_EDITING_HISTORY" desc="Title of the link that allows the user to enable controls for deleting single history items">
         Edit items...
       </message>
@@ -4633,9 +4628,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- About Chrome View -->
-      <message name="IDS_ABOUT_CHROME_ACKNOWLEDGEMENTS" desc="Acknowledgements link">
-        Acknowledgements
-      </message>
       <if expr="os == 'darwin'">
         <message name="IDS_ABOUT_CHROME_PROMOTE_UPDATER" desc="The 'Set Up Automatic Updates for All Users' button in the About window.  Mac-only.">
           Set Up Automatic Updates for All Users
@@ -7546,9 +7538,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </message>
     <message name="IDS_GEOLOCATION_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using geolocation.">
       This page has been blocked from tracking your location.
-    </message>
-    <message name="IDS_GEOLOCATION_PENDING_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using geolocation.">
-      This page wants to track your location.
     </message>
 
     <!-- ProcessSingleton -->
