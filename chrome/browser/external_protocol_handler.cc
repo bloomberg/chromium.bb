@@ -180,7 +180,7 @@ void ExternalProtocolHandler::RegisterPrefs(PrefService* prefs) {
 }
 
 // static
-void ExternalProtocolHandler::OnUserGesture() {
+void ExternalProtocolHandler::PermitLaunchUrl() {
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
   g_accept_requests = true;
 }

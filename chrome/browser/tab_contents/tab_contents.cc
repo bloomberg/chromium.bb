@@ -1873,7 +1873,7 @@ void TabContents::OnUserGesture() {
       g_browser_process->download_request_limiter();
   if (limiter)
     limiter->OnUserGesture(this);
-  ExternalProtocolHandler::OnUserGesture();
+  ExternalProtocolHandler::PermitLaunchUrl();
   controller_.OnUserGesture();
 }
 

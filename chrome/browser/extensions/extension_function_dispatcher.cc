@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
+#include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
@@ -412,6 +413,9 @@ void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
 
   ExtensionsQuotaService* quota = service->quota_service();
   if (quota->Assess(extension_id(), function, args, base::TimeTicks::Now())) {
+    // See crbug.com/39178.
+    ExternalProtocolHandler::PermitLaunchUrl();
+
     function->Run();
   } else {
     render_view_host_->SendExtensionResponse(function->request_id(), false,

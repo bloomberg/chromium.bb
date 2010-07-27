@@ -69,8 +69,11 @@ class ExternalProtocolHandler {
   // preferences for them do not already exist.
   static void PrepopulateDictionary(DictionaryValue* win_pref);
 
-  // Called when the user interacts with a web page.
-  static void OnUserGesture();
+  // Allows LaunchUrl to proceed with launching an external protocol handler.
+  // This is typically triggered by a user gesture, but is also called for
+  // each extension API function. Note that each call to LaunchUrl resets
+  // the state to false (not allowed).
+  static void PermitLaunchUrl();
 };
 
 #endif  // CHROME_BROWSER_EXTERNAL_PROTOCOL_HANDLER_H_
