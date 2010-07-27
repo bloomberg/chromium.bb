@@ -396,3 +396,9 @@ bool WrenchMenuModel::IsDynamicItem(int index) const {
   return command_id == IDC_SYNC_BOOKMARKS ||
          command_id == IDC_ABOUT;
 }
+
+bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
+  if (delegate_)
+    return delegate_->IsCommandIdEnabled(command_id);
+  return true;
+}

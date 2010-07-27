@@ -94,6 +94,7 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   virtual bool IsLabelForCommandIdDynamic(int command_id) const;
   virtual string16 GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
+  virtual bool IsCommandIdEnabled(int command_id) const;
 
   // Overridden from TabStripModelObserver:
   virtual void TabSelectedAt(TabContents* old_contents,

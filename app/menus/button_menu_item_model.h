@@ -31,6 +31,7 @@ class ButtonMenuItemModel {
 
     // Performs the action associated with the specified command id.
     virtual void ExecuteCommand(int command_id) = 0;
+    virtual bool IsCommandIdEnabled(int command_id) const { return true; }
   };
 
   ButtonMenuItemModel(int string_id, ButtonMenuItemModel::Delegate* delegate);
@@ -76,6 +77,9 @@ class ButtonMenuItemModel {
 
   // Called from implementations.
   void ActivatedCommand(int command_id);
+
+  // Returns the enabled state of the button at |index|.
+  bool IsEnabledAt(int index) const;
 
   const string16& label() const { return item_label_; }
 

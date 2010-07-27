@@ -102,4 +102,10 @@ void ButtonMenuItemModel::ActivatedCommand(int command_id) {
     delegate_->ExecuteCommand(command_id);
 }
 
+bool ButtonMenuItemModel::IsEnabledAt(int index) const {
+  if (delegate_)
+    return delegate_->IsCommandIdEnabled(items_[index].command_id);
+  return true;
+}
+
 }  // namespace menus
