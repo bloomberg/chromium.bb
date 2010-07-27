@@ -36,6 +36,3 @@ RenderViewTest.Print*
 TabStripControllerTest.AddRemoveTabs
 # See http://crbug.com/30398.
 TaskManagerWindowControllerTest.*
-# See http://crbug.com/50002.
-ResourceDispatcherHostTest.*
-
