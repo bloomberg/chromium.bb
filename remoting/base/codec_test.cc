@@ -10,6 +10,7 @@
 #include "remoting/base/codec_test.h"
 #include "remoting/base/encoder.h"
 #include "remoting/base/mock_objects.h"
+#include "remoting/base/protocol_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const int kWidth = 320;
@@ -22,7 +23,7 @@ static const gfx::Rect kTestRects[] = {
   gfx::Rect(0, 0, kWidth / 2, kHeight / 2),
   gfx::Rect(kWidth / 2, kHeight / 2, kWidth / 2, kHeight / 2),
   gfx::Rect(16, 16, 16, 16),
-  gfx::Rect(128, 64, 32, 32)
+  gfx::Rect(128, 64, 32, 32),
 };
 
 namespace remoting {
@@ -70,6 +71,7 @@ class EncoderMessageTester {
       : begin_rect_(0),
         rect_data_(0),
         end_rect_(0),
+        added_rects_(0),
         state_(kWaitingForBeginRect),
         strict_(false) {
   }
@@ -77,6 +79,9 @@ class EncoderMessageTester {
   ~EncoderMessageTester() {
     EXPECT_EQ(begin_rect_, end_rect_);
     EXPECT_EQ(kWaitingForBeginRect, state_);
+    if (strict_){
+      EXPECT_EQ(begin_rect_, added_rects_);
+    }
   }
 
   // Test that we received the correct message.
@@ -123,6 +128,7 @@ class EncoderMessageTester {
 
   void AddRects(const gfx::Rect* rects, int count) {
     rects_.insert(rects_.begin() + rects_.size(), rects, rects + count);
+    added_rects_ += count;
   }
 
  private:
@@ -134,6 +140,7 @@ class EncoderMessageTester {
   int begin_rect_;
   int rect_data_;
   int end_rect_;
+  int added_rects_;
   State state_;
   bool strict_;
 
@@ -172,7 +179,6 @@ class DecoderTester {
       decoder_->EndDecode();
     }
     delete message;
-    return;
   }
 
   void set_strict(bool strict) {
@@ -194,11 +200,28 @@ class DecoderTester {
   void OnPartialDecodeDone() {
     if (!strict_)
       return;
+
+    // Test the content of the update rect.
     for (size_t i = 0; i < update_rects_.size(); ++i) {
+      LOG(INFO) << "Testing Rect " << i;
       EXPECT_FALSE(rects_.empty());
       gfx::Rect rect = rects_.front();
       rects_.pop_front();
       EXPECT_EQ(rect, update_rects_[i]);
+
+      EXPECT_EQ(frame_->stride(0), capture_data_->data_planes().strides[0]);
+      const int stride = frame_->stride(0);
+      const int offset =  stride * update_rects_[i].y() +
+          kBytesPerPixel * update_rects_[i].x();
+      const uint8* original = capture_data_->data_planes().data[0] + offset;
+      const uint8* decoded = frame_->data(0) + offset;
+      const int row_size = kBytesPerPixel * update_rects_[i].width();
+      for (int y = 0; y < update_rects_[i].height(); ++y) {
+        EXPECT_EQ(0, memcmp(original, decoded, row_size))
+            << "Row " << y << " is different";
+        original += stride;
+        decoded += stride;
+      }
     }
   }
 
@@ -353,6 +376,22 @@ static void TestEncodingRects(Encoder* encoder,
   encoder_tester->AddRects(rects, count);
   decoder_tester->AddRects(rects, count);
   decoder_tester->reset_decode_done();
+
+  // Generate random data for the updated rects.
+  srand(0);
+  for (int i = 0; i < count; ++i) {
+    const gfx::Rect rect = rects[i];
+    const int bytes_per_pixel = GetBytesPerPixel(data->pixel_format());
+    const int row_size = bytes_per_pixel * rect.width();
+    uint8* memory = data->data_planes().data[0] +
+                    data->data_planes().strides[0] * rect.y() +
+                    bytes_per_pixel * rect.x();
+    for (int y = 0; y < rect.height(); ++y) {
+      for (int x = 0; x < row_size; ++x)
+        memory[x] = rand() % 256;
+      memory += data->data_planes().strides[0];
+    }
+  }
 
   encoder->Encode(data, true,
                   NewCallback(encoder_tester, &EncoderTester::DataAvailable));

@@ -21,7 +21,7 @@ class CompressorZlib : public Compressor {
   // Compressor implementations.
   virtual bool Process(const uint8* input_data, int input_size,
                        uint8* output_data, int output_size,
-                       int* consumed, int* written);
+                       CompressorFlush flush, int* consumed, int* written);
 
  private:
   scoped_ptr<z_stream> stream_;

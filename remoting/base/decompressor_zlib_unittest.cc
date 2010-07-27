@@ -8,6 +8,8 @@
 #include "remoting/base/decompressor_zlib.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace remoting {
+
 static void GenerateTestData(uint8* data, int size, int seed) {
   srand(seed);
   for (int i = 0; i < size; ++i)
@@ -25,9 +27,11 @@ static void Compress(remoting::Compressor* compressor,
   *compressed_size = 0;
   while (true) {
     int consumed, written;
-    bool ret = compressor->Process(input_data, input_size,
-                                   output_data, output_size,
-                                   &consumed, &written);
+    bool ret = compressor->Process(
+        input_data, input_size, output_data, output_size,
+        input_size == 0 ?
+            Compressor::CompressorFinish : Compressor::CompressorNoFlush,
+        &consumed, &written);
     input_data += consumed;
     input_size -= consumed;
     output_data += written;
@@ -134,3 +138,5 @@ TEST(DecompressorZlibTest, SmallOutputBuffer) {
   }
   EXPECT_EQ(kRawDataSize, decompressed_size);
 }
+
+}  // namespace remoting

@@ -67,8 +67,7 @@ bool EncoderVerbatim::EncodeRect(
 
   // Resize the output data buffer.
   packet->mutable_rect_data()->mutable_data()->resize(output_size);
-  uint8* out = reinterpret_cast<uint8*>(
-      &((*packet->mutable_rect_data()->mutable_data())[0]));
+  uint8* out = (uint8*)packet->mutable_rect_data()->mutable_data()->data();
 
   for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
     // Skip over planes that don't have data.

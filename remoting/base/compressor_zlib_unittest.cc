@@ -7,6 +7,8 @@
 #include "remoting/base/compressor_zlib.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace remoting {
+
 static void GenerateTestData(uint8* data, int size, int seed) {
   srand(seed);
   for (int i = 0; i < size; ++i)
@@ -23,9 +25,11 @@ static void Compress(remoting::Compressor* compressor,
   // This loop will rewrite |output_data| continuously.
   int consumed = 0;
   int written = 0;
-  while (compressor->Process(input_data, input_size,
-                             output_data, output_size,
-                             &consumed, &written)) {
+  while (compressor->Process(
+             input_data, input_size, output_data, output_size,
+             input_size == 0 ?
+                 Compressor::CompressorFinish : Compressor::CompressorNoFlush,
+             &consumed, &written)) {
     input_data += consumed;
     input_size -= consumed;
   }
@@ -62,3 +66,5 @@ TEST(CompressorZlibTest, SmallOutputBuffer) {
   Compress(&compressor, raw_data, kRawDataSize,
            compressed_data, kCompressedDataSize);
 }
+
+}  // namespace remoting
