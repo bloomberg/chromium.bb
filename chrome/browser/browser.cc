@@ -3272,10 +3272,15 @@ void Browser::UpdateCommandsForTabState() {
   bool is_savable_url =
       SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL());
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, is_savable_url);
-  command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU, is_savable_url &&
-      SavePackage::IsSavableContents(current_tab->contents_mime_type()));
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
       current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
+
+  // Changing the encoding is not possible on Chrome-internal webpages.
+  bool is_chrome_internal = (active_entry ?
+      active_entry->url().SchemeIs(chrome::kChromeUIScheme) : false);
+  command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
+      !is_chrome_internal && SavePackage::IsSavableContents(
+          current_tab->contents_mime_type()));
 
   // Show various bits of UI
   // TODO(pinkerton): Disable app-mode in the model until we implement it
