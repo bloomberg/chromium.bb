@@ -352,7 +352,7 @@ def __AddNcDisTests(use_iter):
     DIS_TEST_NAME = TEST_PREFIX + "_dis"
     node_dis = env.CommandTest(
         DIS_TEST_NAME + ".out",
-        ['$OBJ_ROOT/src/trusted/validator_x86/ncdis'] + options,
+        [ncdis[0]] + options,
         stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
         stdout_golden = env.File(TESTDATA_DIR + vtest + "." + ext))
 
