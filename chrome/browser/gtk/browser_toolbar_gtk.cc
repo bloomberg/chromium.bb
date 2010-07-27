@@ -175,10 +175,16 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_left_), reload_->widget(), FALSE, FALSE,
                      0);
 
-  home_.reset(BuildToolbarButton(IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0,
-                                 IDR_BUTTON_MASK,
-                                 l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME),
-                                 GTK_STOCK_HOME, kToolbarWidgetSpacing));
+  home_.reset(new CustomDrawButton(GtkThemeProvider::GetFrom(profile_),
+                                   IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0,
+                                   IDR_BUTTON_MASK, GTK_STOCK_HOME,
+                                   GTK_ICON_SIZE_SMALL_TOOLBAR));
+  gtk_widget_set_tooltip_text(home_->widget(),
+      l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME).c_str());
+  g_signal_connect(home_->widget(), "clicked",
+                   G_CALLBACK(OnButtonClickThunk), this);
+  gtk_box_pack_start(GTK_BOX(toolbar_left_), home_->widget(), FALSE, FALSE,
+                     kToolbarWidgetSpacing);
   gtk_util::SetButtonTriggersNavigation(home_->widget());
 
   gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_left_, FALSE, FALSE, 0);
@@ -425,25 +431,6 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
 }
 
 // BrowserToolbarGtk, private --------------------------------------------------
-
-CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
-    int normal_id, int active_id, int highlight_id, int depressed_id,
-    int background_id, const std::string& localized_tooltip,
-    const char* stock_id, int spacing) {
-  CustomDrawButton* button = new CustomDrawButton(
-      GtkThemeProvider::GetFrom(profile_),
-      normal_id, active_id, highlight_id, depressed_id, background_id, stock_id,
-      GTK_ICON_SIZE_SMALL_TOOLBAR);
-
-  gtk_widget_set_tooltip_text(button->widget(),
-                              localized_tooltip.c_str());
-  g_signal_connect(button->widget(), "clicked",
-                   G_CALLBACK(OnButtonClickThunk), this);
-
-  gtk_box_pack_start(GTK_BOX(toolbar_left_), button->widget(), FALSE, FALSE,
-                     spacing);
-  return button;
-}
 
 GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
     const std::string& localized_tooltip,

@@ -121,18 +121,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 
  private:
-  // Builds a toolbar button with all the properties set.
-  // |spacing| is the width of padding (in pixels) on the left and right of the
-  // button.
-  CustomDrawButton* BuildToolbarButton(int normal_id,
-                                       int active_id,
-                                       int highlight_id,
-                                       int depressed_id,
-                                       int background_id,
-                                       const std::string& localized_tooltip,
-                                       const char* stock_id,
-                                       int spacing);
-
   // Create a menu for the toolbar given the icon id and tooltip.  Returns the
   // widget created.
   GtkWidget* BuildToolbarMenuButton(const std::string& localized_tooltip,

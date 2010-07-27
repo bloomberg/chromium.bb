@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,14 +19,17 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
-    int normal_id, int active_id, int highlight_id, int depressed_id,
-    int background_id)
+                                           int normal_id,
+                                           int pressed_id,
+                                           int hover_id,
+                                           int disabled_id,
+                                           int background_id)
     : background_image_(NULL),
       paint_override_(-1),
       normal_id_(normal_id),
-      active_id_(active_id),
-      highlight_id_(highlight_id),
-      depressed_id_(depressed_id),
+      pressed_id_(pressed_id),
+      hover_id_(hover_id),
+      disabled_id_(disabled_id),
       button_background_id_(background_id),
       theme_provider_(theme_provider),
       flipped_(false) {
@@ -46,14 +49,14 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
     // Load the button images from the resource bundle.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     surfaces_[GTK_STATE_NORMAL]->UsePixbuf(
-        normal_id ? rb.GetRTLEnabledPixbufNamed(normal_id) : NULL);
+        normal_id_ ? rb.GetRTLEnabledPixbufNamed(normal_id_) : NULL);
     surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(
-        active_id ? rb.GetRTLEnabledPixbufNamed(active_id) : NULL);
+        pressed_id_ ? rb.GetRTLEnabledPixbufNamed(pressed_id_) : NULL);
     surfaces_[GTK_STATE_PRELIGHT]->UsePixbuf(
-        highlight_id ? rb.GetRTLEnabledPixbufNamed(highlight_id) : NULL);
+        hover_id_ ? rb.GetRTLEnabledPixbufNamed(hover_id_) : NULL);
     surfaces_[GTK_STATE_SELECTED]->UsePixbuf(NULL);
     surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(
-        depressed_id ? rb.GetRTLEnabledPixbufNamed(depressed_id) : NULL);
+        disabled_id_ ? rb.GetRTLEnabledPixbufNamed(disabled_id_) : NULL);
   }
 }
 
@@ -144,13 +147,13 @@ void CustomDrawButtonBase::Observe(NotificationType type,
 
   surfaces_[GTK_STATE_NORMAL]->UsePixbuf(normal_id_ ?
       theme_provider_->GetRTLEnabledPixbufNamed(normal_id_) : NULL);
-  surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(active_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(active_id_) : NULL);
-  surfaces_[GTK_STATE_PRELIGHT]->UsePixbuf(highlight_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(highlight_id_) : NULL);
+  surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(pressed_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(pressed_id_) : NULL);
+  surfaces_[GTK_STATE_PRELIGHT]->UsePixbuf(hover_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(hover_id_) : NULL);
   surfaces_[GTK_STATE_SELECTED]->UsePixbuf(NULL);
-  surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(depressed_id_ ?
-      theme_provider_->GetRTLEnabledPixbufNamed(depressed_id_) : NULL);
+  surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(disabled_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(disabled_id_) : NULL);
 
   // Use the tinted background in some themes.
   if (button_background_id_) {
@@ -228,9 +231,11 @@ gboolean CustomDrawHoverController::OnLeave(
 
 // CustomDrawButton ------------------------------------------------------------
 
-CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
-    int highlight_id, int depressed_id)
-    : button_base_(NULL, normal_id, active_id, highlight_id, depressed_id, 0),
+CustomDrawButton::CustomDrawButton(int normal_id,
+                                   int pressed_id,
+                                   int hover_id,
+                                   int disabled_id)
+    : button_base_(NULL, normal_id, pressed_id, hover_id, disabled_id, 0),
       theme_provider_(NULL),
       gtk_stock_name_(NULL),
       icon_size_(GTK_ICON_SIZE_INVALID) {
@@ -241,10 +246,15 @@ CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
 }
 
 CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
-    int normal_id, int active_id, int highlight_id, int depressed_id,
-    int background_id, const char* stock_id, GtkIconSize stock_size)
-    : button_base_(theme_provider, normal_id, active_id, highlight_id,
-                   depressed_id, background_id),
+                                   int normal_id,
+                                   int pressed_id,
+                                   int hover_id,
+                                   int disabled_id,
+                                   int background_id,
+                                   const char* stock_id,
+                                   GtkIconSize stock_size)
+    : button_base_(theme_provider, normal_id, pressed_id, hover_id,
+                   disabled_id, background_id),
       theme_provider_(theme_provider),
       gtk_stock_name_(stock_id),
       icon_size_(stock_size) {

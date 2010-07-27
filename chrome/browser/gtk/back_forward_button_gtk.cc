@@ -26,36 +26,34 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
     : browser_(browser),
       is_forward_(is_forward),
       show_menu_factory_(this) {
-  int normal, active, highlight, depressed, background, tooltip;
+  int normal, pushed, hover, disabled, background, tooltip;
   const char* stock;
   if (is_forward) {
     normal = IDR_FORWARD;
-    active = IDR_FORWARD_P;
-    highlight = IDR_FORWARD_H;
-    depressed = IDR_FORWARD_D;
+    pushed = IDR_FORWARD_P;
+    hover = IDR_FORWARD_H;
+    disabled = IDR_FORWARD_D;
     background = IDR_FORWARD_MASK;
     tooltip = IDS_TOOLTIP_FORWARD;
     stock = GTK_STOCK_GO_FORWARD;
   } else {
     normal = IDR_BACK;
-    active = IDR_BACK_P;
-    highlight = IDR_BACK_H;
-    depressed = IDR_BACK_D;
+    pushed = IDR_BACK_P;
+    hover = IDR_BACK_H;
+    disabled = IDR_BACK_D;
     background = IDR_BACK_MASK;
     tooltip = IDS_TOOLTIP_BACK;
     stock = GTK_STOCK_GO_BACK;
   }
   button_.reset(new CustomDrawButton(
       GtkThemeProvider::GetFrom(browser_->profile()),
-      normal, active, highlight, depressed, background, stock,
+      normal, pushed, hover, disabled, background, stock,
       GTK_ICON_SIZE_SMALL_TOOLBAR));
   gtk_widget_set_tooltip_text(widget(),
                               l10n_util::GetStringUTF8(tooltip).c_str());
-  menu_model_.reset(
-      new BackForwardMenuModel(browser,
-          is_forward ?
-              BackForwardMenuModel::FORWARD_MENU :
-              BackForwardMenuModel::BACKWARD_MENU));
+  menu_model_.reset(new BackForwardMenuModel(browser, is_forward ?
+      BackForwardMenuModel::FORWARD_MENU :
+      BackForwardMenuModel::BACKWARD_MENU));
 
   g_signal_connect(widget(), "clicked",
                    G_CALLBACK(OnClickThunk), this);

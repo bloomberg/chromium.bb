@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,9 @@ class CustomDrawButtonBase : public NotificationObserver {
   // pass in NULL for |theme_provider|.
   CustomDrawButtonBase(GtkThemeProvider* theme_provider,
                        int normal_id,
-                       int active_id,
-                       int highlight_id,
-                       int depressed_id,
+                       int pressed_id,
+                       int hover_id,
+                       int disabled_id,
                        int background_id);
 
   ~CustomDrawButtonBase();
@@ -79,9 +79,9 @@ class CustomDrawButtonBase : public NotificationObserver {
   // We need to remember the image ids that the user passes in and the theme
   // provider so we can reload images if the user changes theme.
   int normal_id_;
-  int active_id_;
-  int highlight_id_;
-  int depressed_id_;
+  int pressed_id_;
+  int hover_id_;
+  int disabled_id_;
   int button_background_id_;
   GtkThemeProvider* theme_provider_;
 
@@ -133,16 +133,16 @@ class CustomDrawButton : public NotificationObserver {
   // The constructor takes 4 resource ids.  If a resource doesn't exist for a
   // button, pass in 0.
   CustomDrawButton(int normal_id,
-                   int active_id,
-                   int highlight_id,
-                   int depressed_id);
+                   int pressed_id,
+                   int hover_id,
+                   int disabled_id);
 
   // Same as above, but uses themed (and possibly tinted) images.
   CustomDrawButton(GtkThemeProvider* theme_provider,
                    int normal_id,
-                   int active_id,
-                   int highlight_id,
-                   int depressed_id,
+                   int pressed_id,
+                   int hover_id,
+                   int disabled_id,
                    int background_id,
                    const char* stock_id,
                    GtkIconSize stock_size);
