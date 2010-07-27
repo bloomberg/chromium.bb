@@ -453,6 +453,80 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   }
 }
 
+// Overriden from NSButtonCell so we can display a nice fadeout effect for
+// button titles that overflow.
+// This method is copied in the most part from GTMFadeTruncatingTextFieldCell,
+// the only difference is that here we draw the text ourselves rather than
+// calling the super to do the work.
+// We can't use GTMFadeTruncatingTextFieldCell because there's no easy way to
+// get it to work with NSButtonCell.
+// TODO(jeremy): Move this to GTM.
+- (NSRect)drawTitle:(NSAttributedString *)title
+          withFrame:(NSRect)cellFrame
+             inView:(NSView *)controlView {
+  NSSize size = [title size];
+
+  // Don't complicate drawing unless we need to clip
+  if (size.width <= NSWidth(cellFrame)) {
+    return [super drawTitle:title withFrame:cellFrame inView:controlView];
+  }
+
+  // Gradient is about twice our line height long.
+  CGFloat gradientWidth = MIN(size.height * 2, NSWidth(cellFrame) / 4);
+
+  NSRect solidPart, gradientPart;
+  NSDivideRect(cellFrame, &gradientPart, &solidPart, gradientWidth, NSMaxXEdge);
+
+  // Draw non-gradient part without transparency layer, as light text on a dark
+  // background looks bad with a gradient layer.
+  [[NSGraphicsContext currentContext] saveGraphicsState];
+  [NSBezierPath clipRect:solidPart];
+
+  // 11 is the magic number needed to make this match the native NSButtonCell's
+  // label display.
+  CGFloat textLeft = [[self image] size].width + 11;
+
+  // For some reason, the height of cellFrame as passed in is totally bogus.
+  // For vertical centering purposes, we need the bounds of the containing
+  // view.
+  NSRect buttonFrame = [[self controlView] frame];
+
+  // Off-by-one to match native NSButtonCell's version.
+  NSPoint textOffset = NSMakePoint(textLeft,
+                        (NSHeight(buttonFrame) - size.height)/2 + 1);
+  [title drawAtPoint:textOffset];
+  [[NSGraphicsContext currentContext] restoreGraphicsState];
+
+  // Draw the gradient part with a transparency layer. This makes the text look
+  // suboptimal, but since it fades out, that's ok.
+  [[NSGraphicsContext currentContext] saveGraphicsState];
+  [NSBezierPath clipRect:gradientPart];
+  CGContextRef context = static_cast<CGContextRef>(
+      [[NSGraphicsContext currentContext] graphicsPort]);
+  CGContextBeginTransparencyLayerWithRect(context,
+                                          NSRectToCGRect(gradientPart), 0);
+  [title drawAtPoint:textOffset];
+
+  // TODO(alcor): switch this to GTMLinearRGBShading if we ever need on 10.4
+  NSColor *color = [NSColor textColor]; //[self textColor];
+  NSColor *alphaColor = [color colorWithAlphaComponent:0.0];
+  NSGradient *mask = [[NSGradient alloc] initWithStartingColor:color
+                                                   endingColor:alphaColor];
+
+  // Draw the gradient mask
+  CGContextSetBlendMode(context, kCGBlendModeDestinationIn);
+  [mask drawFromPoint:NSMakePoint(NSMaxX(cellFrame) - gradientWidth,
+                                  NSMinY(cellFrame))
+              toPoint:NSMakePoint(NSMaxX(cellFrame),
+                                  NSMinY(cellFrame))
+              options:NSGradientDrawsBeforeStartingLocation];
+  [mask release];
+  CGContextEndTransparencyLayer(context);
+  [[NSGraphicsContext currentContext] restoreGraphicsState];
+
+  return cellFrame;
+}
+
 - (NSBezierPath*)clipPathForFrame:(NSRect)cellFrame
                            inView:(NSView*)controlView {
   NSBezierPath* boundingPath = nil;
