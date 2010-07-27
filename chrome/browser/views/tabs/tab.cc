@@ -235,7 +235,8 @@ void Tab::Layout() {
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
   int content_height = std::max(kFavIconSize, font_height());
-  content_height = std::max(content_height, close_button_height());
+  gfx::Size close_button_size(close_button()->GetPreferredSize());
+  content_height = std::max(content_height, close_button_size.height());
 
   // Size the Favicon.
   showing_icon_ = ShouldShowIcon();
@@ -272,13 +273,12 @@ void Tab::Layout() {
   // Size the Close button.
   showing_close_button_ = ShouldShowCloseBox();
   if (showing_close_button_) {
-    int close_button_top =
-        kTopPadding + kCloseButtonVertFuzz +
-        (content_height - close_button_height()) / 2;
+    int close_button_top = kTopPadding + kCloseButtonVertFuzz +
+        (content_height - close_button_size.height()) / 2;
     // If the ratio of the close button size to tab width exceeds the maximum.
     close_button()->SetBounds(lb.width() + kCloseButtonHorzFuzz,
-                              close_button_top, close_button_width(),
-                              close_button_height());
+                              close_button_top, close_button_size.width(),
+                              close_button_size.height());
     close_button()->SetVisible(true);
   } else {
     close_button()->SetBounds(0, 0, 0, 0);

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #endif
 
 #include "app/resource_bundle.h"
+#include "app/theme_provider.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -26,14 +27,11 @@
 
 static bool g_initialized = false;
 static SkBitmap* g_default_fav_icon = NULL;
-static SkBitmap* g_throbber_frames = NULL;
-static SkBitmap* g_throbber_frames_light = NULL;
-static int g_throbber_frame_count;
 
 // static
 void TabIconView::InitializeIfNeeded() {
   if (!g_initialized) {
-    ResourceBundle &rb = ResourceBundle::GetSharedInstance();
+    g_initialized = true;
 
 #if defined(OS_WIN)
     // The default window icon is the application icon, not the default
@@ -43,18 +41,9 @@ void TabIconView::InitializeIfNeeded() {
         IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16));
     DestroyIcon(app_icon);
 #else
-    g_default_fav_icon = rb.GetBitmapNamed(IDR_PRODUCT_LOGO_16);
+    g_default_fav_icon =
+        ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_PRODUCT_LOGO_16);
 #endif
-
-    g_throbber_frames = rb.GetBitmapNamed(IDR_THROBBER);
-    g_throbber_frames_light = rb.GetBitmapNamed(IDR_THROBBER_LIGHT);
-    g_throbber_frame_count = g_throbber_frames->width() /
-        g_throbber_frames->height();
-
-    // Verify that our light and dark styles have the same number of frames.
-    DCHECK(g_throbber_frame_count ==
-        g_throbber_frames_light->width() / g_throbber_frames_light->height());
-    g_initialized = true;
   }
 }
 
@@ -70,6 +59,15 @@ TabIconView::~TabIconView() {
 }
 
 void TabIconView::Update() {
+  static bool initialized = false;
+  static int throbber_frame_count = 0;
+  if (!initialized) {
+    initialized = true;
+    SkBitmap throbber(
+        *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_THROBBER));
+    throbber_frame_count = throbber.width() / throbber.height();
+  }
+
   if (throbber_running_) {
     // We think the tab is loading.
     if (!model_->ShouldTabIconViewAnimate()) {
@@ -79,7 +77,7 @@ void TabIconView::Update() {
       SchedulePaint();
     } else {
       // The tab is still loading, increment the frame.
-      throbber_frame_ = (throbber_frame_ + 1) % g_throbber_frame_count;
+      throbber_frame_ = (throbber_frame_ + 1) % throbber_frame_count;
       SchedulePaint();
     }
   } else if (model_->ShouldTabIconViewAnimate()) {
@@ -92,9 +90,11 @@ void TabIconView::Update() {
 }
 
 void TabIconView::PaintThrobber(gfx::Canvas* canvas) {
-  int image_size = g_throbber_frames->height();
-  PaintIcon(canvas, is_light_ ? *g_throbber_frames_light : *g_throbber_frames,
-            throbber_frame_ * image_size, 0, image_size, image_size, false);
+  SkBitmap throbber(*GetThemeProvider()->GetBitmapNamed(
+      is_light_ ? IDR_THROBBER_LIGHT : IDR_THROBBER));
+  int image_size = throbber.height();
+  PaintIcon(canvas, throbber, throbber_frame_ * image_size, 0, image_size,
+            image_size, false);
 }
 
 void TabIconView::PaintFavIcon(gfx::Canvas* canvas, const SkBitmap& bitmap) {
