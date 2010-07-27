@@ -1495,7 +1495,7 @@
    bug_22450
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net26DefaultClientSocketFactory21CreateTCPClientSocketERKNS_11AddressListE
+   fun:_ZN3net64_GLOBAL__N_net_socket_client_socket_factory.cc_00000000_EA9FDEC926DefaultClientSocketFactory21CreateTCPClientSocketERKNS_11AddressListEPNS_6NetLogE
    fun:_ZN3net13TCPConnectJob12DoTCPConnectEv
    fun:_ZN3net13TCPConnectJob6DoLoopEi
    fun:_ZN3net13TCPConnectJob12OnIOCompleteEi
