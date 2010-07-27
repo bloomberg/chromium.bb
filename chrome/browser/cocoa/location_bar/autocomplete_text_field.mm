@@ -27,6 +27,8 @@
 
 - (void)awakeFromNib {
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
+  [[self cell] setTruncatesLastVisibleLine:YES];
+  [[self cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   currentToolTips_.reset([[NSMutableArray alloc] init]);
 }
 
