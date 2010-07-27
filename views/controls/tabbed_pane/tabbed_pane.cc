@@ -49,8 +49,9 @@ View* TabbedPane::GetSelectedTab() {
 }
 
 View* TabbedPane::RemoveTabAtIndex(int index) {
-  return native_tabbed_pane_->RemoveTabAtIndex(index);
+  View* tab = native_tabbed_pane_->RemoveTabAtIndex(index);
   PreferredSizeChanged();
+  return tab;
 }
 
 void TabbedPane::SelectTabAt(int index) {
