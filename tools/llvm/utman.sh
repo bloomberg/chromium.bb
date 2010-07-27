@@ -230,7 +230,7 @@ setup-tools-arm() {
   CC_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfigcc -arch arm"
   CXX_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfig++ -arch arm"
   # NOTE: this should not be needed, since we do not really fully link anything
-  LD_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfild"
+  LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
 }
 
@@ -238,7 +238,7 @@ setup-tools-bitcode() {
   CC_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfigcc -emit-llvm"
   CXX_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfig++ -emit-llvm"
   # NOTE: this should not be needed, since we do not really fully link anything
-  LD_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-bcld -arch arm"
+  LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
 }
 
