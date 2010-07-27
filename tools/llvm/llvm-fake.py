@@ -475,37 +475,6 @@ def Incarnation_illegal(argv):
   LogFatal('illegal command ' + StringifyCommand(argv))
 
 
-def MassageFinalLinkCommandArm(args):
-  out = global_config_flags['LD']['arm']
-
-  # add init code
-  if '-nostdlib' not in args:
-    out.append(LIBDIR_ARM_2 + '/crt1.o')
-    out.append(LIBDIR_ARM_2 + '/crti.o')
-    out.append(LIBDIR_ARM_2 + '/nacl_startup.o')
-    out.append(LIBDIR_ARM_2 + '/intrinsics.o')
-
-  out += args
-
-  # add fini code
-  if '-nostdlib' not in args:
-    # NOTE: there is a circular dependency between libgcc and libc: raise()
-    out.append(LIBDIR_ARM_2 + '/crtn.o')
-    out.append('-L' + LIBDIR_ARM_3)
-    out.append('-lstdc++')
-    out.append('-L' + LIBDIR_ARM_1)
-    # NOTE: bad things happen if ''-lc' is not first
-    out.append('--start-group')
-    out.append('-lc')
-    out.append('-lnacl')
-    out.append('-lgcc')
-    out.append('-lnosys')
-    out.append('-lcrt_platform')
-    out.append('--end-group')
-  return out
-
-
-
 def MassageFinalLinkCommandPnacl(args, native_dir, flags):
   out = flags
 
@@ -677,15 +646,6 @@ def Incarnation_bcld_generic(argv):
                            global_config_flags['LD'][arch],
                            global_pnacl_roots[arch])
 
-
-def Incarnation_sfild(argv):
-  """Run the regular linker and then patch the ABI"""
-  pos = FindLinkPos(argv)
-  assert pos
-  output = argv[pos]
-  extra = []
-  Run([ELF_LD] +  MassageFinalLinkCommandArm(extra + argv[1:]))
-
 ######################################################################
 # Dispatch based on name the scripts is invoked with
 ######################################################################
@@ -695,8 +655,6 @@ INCARNATIONS = {
    # behavior is the same as the g++ behavior.
    'llvm-fake-sfigcc': Incarnation_gcclike,
    'llvm-fake-sfig++': Incarnation_gcclike,
-
-   'llvm-fake-sfild': Incarnation_sfild,
 
    'llvm-fake-bcld' : Incarnation_bcld_generic,
 
