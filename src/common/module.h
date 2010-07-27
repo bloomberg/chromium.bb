@@ -269,12 +269,12 @@ class Module {
   // A map from filenames to File structures.  The map's keys are
   // pointers to the Files' names.
   typedef map<const string *, File *, CompareStringPtrs> FileByNameMap;
+  typedef set<Function *, FunctionCompare> FunctionSet;
 
   // The module owns all the files and functions that have been added
   // to it; destroying the module frees the Files and Functions these
   // point to.
-  FileByNameMap files_;                         // This module's source files.
-  typedef set<Function *, FunctionCompare> FunctionSet;
+  FileByNameMap files_;    // This module's source files.
   FunctionSet functions_;  // This module's functions.
 
   // The module owns all the call frame info entries that have been

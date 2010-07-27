@@ -387,12 +387,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					_GLIBCXX_DEBUG_PEDANTIC,
-					_GLIBCXX_DEBUG,
-					_GLIBCPP_CONCEPT_CHECKS,
-				);
 				OTHER_LDFLAGS = "-lcrypto";
 				PRODUCT_NAME = crash_report;
 				USER_HEADER_SEARCH_PATHS = "../../../../** $(inherited)";
@@ -403,7 +397,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				OTHER_LDFLAGS = "-lcrypto";
 				PRODUCT_NAME = crash_report;
 				USER_HEADER_SEARCH_PATHS = "../../../../** $(inherited)";
