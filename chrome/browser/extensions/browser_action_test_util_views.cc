@@ -41,8 +41,8 @@ void BrowserActionTestUtil::WaitForBrowserActionUpdated(int index) {
 }
 
 bool BrowserActionTestUtil::HasIcon(int index) {
-  return !GetContainer(browser_)->GetBrowserActionViewAt(index)->
-      button()->icon().empty();
+  return GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
+      HasIcon();
 }
 
 void BrowserActionTestUtil::Press(int index) {

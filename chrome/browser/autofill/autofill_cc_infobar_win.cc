@@ -173,7 +173,6 @@ views::TextButton* SaveCCInfoConfirmInfoBar::CreateTextButton(
   text_button->SetHighlightColor(SK_ColorBLACK);
   text_button->SetHoverColor(SK_ColorBLACK);
   text_button->SetNormalHasBorder(true);
-  text_button->SetShowHighlighted(true);
 
   // Set font then text, then size button to fit text.
   text_button->SetFont(ResourceBundle::GetSharedInstance().GetFont(

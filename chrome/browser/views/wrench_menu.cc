@@ -60,7 +60,8 @@ const int kHorizontalPadding = 6;
 // Subclass of ImageButton whose preferred size includes the size of the border.
 class FullscreenButton : public ImageButton {
  public:
-  FullscreenButton(views::ButtonListener* listener) : ImageButton(listener) {}
+  explicit FullscreenButton(views::ButtonListener* listener)
+      : ImageButton(listener) { }
 
   virtual gfx::Size GetPreferredSize() {
     gfx::Size pref = ImageButton::GetPreferredSize();
@@ -258,7 +259,6 @@ TextButton* CreateAndConfigureButton(View* parent,
     *background = bg;
   button->set_border(new MenuButtonBorder());
   button->set_alignment(TextButton::ALIGN_CENTER);
-  button->SetShowHighlighted(true);
   button->SetNormalHasBorder(true);
   button->SetFont(views::MenuConfig::instance().font);
   button->ClearMaxTextSize();

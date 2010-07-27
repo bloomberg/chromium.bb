@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@ namespace chromeos {
 StatusAreaButton::StatusAreaButton(views::ViewMenuDelegate* menu_delegate)
     : MenuButton(NULL, std::wstring(), menu_delegate, false) {
   set_border(NULL);
-  SetShowHighlighted(true);
 }
 
 void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {

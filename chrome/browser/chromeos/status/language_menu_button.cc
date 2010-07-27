@@ -143,7 +143,7 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
   SetDisabledColor(0x00FFFFFF);  // White with 00% Alpha (invisible)
-  SetShowHighlighted(false);
+  SetShowMultipleIconStates(false);
   // Update the model
   RebuildModel();
   // Grab the real estate.
