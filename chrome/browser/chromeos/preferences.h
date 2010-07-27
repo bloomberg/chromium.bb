@@ -100,6 +100,7 @@ class Preferences : public NotificationObserver {
   StringPrefMember language_mozc_multiple_choice_prefs_[
       kNumMozcMultipleChoicePrefs];
   IntegerPrefMember language_mozc_integer_prefs_[kNumMozcIntegerPrefs];
+  IntegerPrefMember language_xkb_modifier_remap_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

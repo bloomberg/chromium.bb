@@ -94,6 +94,25 @@ const LanguageIntegerRangePreference kChewingIntegerPrefs[] = {
 };
 const size_t kNumChewingIntegerPrefs = ARRAYSIZE_UNSAFE(kChewingIntegerPrefs);
 
+// Temporary solution for crosbug.com/2636. We'll implement a complete dialog
+// using DOMUI later.
+enum RemapType {
+  kNoRemap = 0,
+  kSwapCtrlAndAlt = 1,
+  kSwapSearchAndCtrl = 2,
+};
+const LanguageMultipleChoicePreference<int> kXkbModifierMultipleChoicePrefs = {
+  prefs::kLanguageXkbModifierRemap,
+  kNoRemap,
+  "dummy",  // does not use the ibus configuration service.
+  {{ kNoRemap, IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_NO_REMAP },
+   { kSwapCtrlAndAlt,
+     IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_CTRL_ALT },
+   { kSwapSearchAndCtrl,
+     IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_SEARCH_CTRL }},
+  0,  // does not use the label.
+};
+
 const LanguageMultipleChoicePreference<const char*>
     kChewingMultipleChoicePrefs[] = {
   { prefs::kLanguageChewingKeyboardType,

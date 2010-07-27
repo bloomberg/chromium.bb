@@ -128,6 +128,7 @@ extern const wchar_t kLanguageMozcUseNumberConversion[];
 extern const wchar_t kLanguageMozcUseHistorySuggest[];
 extern const wchar_t kLanguageMozcUseDictionarySuggest[];
 extern const wchar_t kLanguageMozcSuggestionsSize[];
+extern const wchar_t kLanguageXkbModifierRemap[];
 extern const wchar_t kAccessibilityEnabled[];
 extern const wchar_t kLabsAdvancedFilesystemEnabled[];
 extern const wchar_t kLabsMediaplayerEnabled[];

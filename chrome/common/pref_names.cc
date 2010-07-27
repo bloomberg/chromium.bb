@@ -337,6 +337,15 @@ const wchar_t kLanguageMozcUseDictionarySuggest[] =
 const wchar_t kLanguageMozcSuggestionsSize[] =
     L"settings.language.mozc_suggestions_size";
 
+// A integer pref which determines how we remap the XKB modifier keys.
+//   0: Do not remap.
+//   1: Swap Left Control and Left Alt.
+//   2: Swap Left Win (i.e. Search) and Left Control.
+// TODO(yusukes): Delete this pref when the final configration dialog (using
+// DOM UI) is implemented. See crosbug.com/2636.
+const wchar_t kLanguageXkbModifierRemap[] =
+    L"settings.language.xkb_modifier_remap";
+
 // A boolean pref which determines whether accessibility is enabled.
 const wchar_t kAccessibilityEnabled[] = L"settings.accessibility";
 

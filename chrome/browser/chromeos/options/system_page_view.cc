@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
+#include "chrome/browser/chromeos/options/language_config_util.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/pref_member.h"
@@ -349,7 +350,8 @@ void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
 
 // TextInput section for text input settings.
 class LanguageSection : public SettingsPageSection,
-                        public views::ButtonListener {
+                        public views::ButtonListener,
+                        public views::Combobox::Listener {
  public:
   explicit LanguageSection(Profile* profile);
   virtual ~LanguageSection() {}
@@ -360,28 +362,49 @@ class LanguageSection : public SettingsPageSection,
   };
   // Overridden from SettingsPageSection:
   virtual void InitContents(GridLayout* layout);
+  void NotifyPrefChanged(const std::wstring* pref_name);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
+
+  // Overridden from views::Combobox::Listener:
+  virtual void ItemChanged(views::Combobox* sender,
+                           int prev_index,
+                           int new_index);
+
+  IntegerPrefMember xkb_pref_;
+  views::Combobox* xkb_modifier_combobox_;
+  chromeos::LanguageComboboxModel<int> xkb_modifier_combobox_model_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageSection);
 };
 
 LanguageSection::LanguageSection(Profile* profile)
     : SettingsPageSection(profile,
-                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE) {
+                          IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE),
+      xkb_modifier_combobox_(NULL),
+      xkb_modifier_combobox_model_(&kXkbModifierMultipleChoicePrefs) {
+  xkb_pref_.Init(prefs::kLanguageXkbModifierRemap, profile->GetPrefs(), this);
 }
 
 void LanguageSection::InitContents(GridLayout* layout) {
-  // Add the customize button.
-  layout->StartRow(0, single_column_view_set_id());
+  // Add the customize button and XKB combobox.
+  layout->StartRow(0, double_column_view_set_id());
   views::NativeButton* customize_languages_button = new views::NativeButton(
       this,
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
   customize_languages_button->set_tag(kCustomizeLanguagesButton);
   layout->AddView(customize_languages_button, 1, 1,
                   GridLayout::LEADING, GridLayout::CENTER);
+
+  xkb_modifier_combobox_ = new views::Combobox(&xkb_modifier_combobox_model_);
+  xkb_modifier_combobox_->set_listener(this);
+  // Initialize the combobox to what's saved in user preferences. Otherwise,
+  // ItemChanged() will be called with |new_index| == 0.
+  NotifyPrefChanged(NULL);
+
+  layout->AddView(xkb_modifier_combobox_);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
 }
 
@@ -389,6 +412,22 @@ void LanguageSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender->tag() == kCustomizeLanguagesButton) {
     LanguageConfigView::Show(profile(), GetOptionsViewParent());
+  }
+}
+
+void LanguageSection::ItemChanged(views::Combobox* sender,
+                                  int prev_index,
+                                  int new_index) {
+  LOG(INFO) << "Changing XKB modofier pref to " << new_index;
+  xkb_pref_.SetValue(new_index);
+}
+
+void LanguageSection::NotifyPrefChanged(const std::wstring* pref_name) {
+  if (!pref_name || *pref_name == prefs::kLanguageXkbModifierRemap) {
+    const int id = xkb_pref_.GetValue();
+    if (id >= 0) {
+      xkb_modifier_combobox_->SetSelectedItem(id);
+    }
   }
 }
 

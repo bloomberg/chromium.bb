@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -83,6 +84,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     prefs->RegisterIntegerPref(kMozcIntegerPrefs[i].pref_name,
                                kMozcIntegerPrefs[i].default_pref_value);
   }
+  prefs->RegisterIntegerPref(
+      kXkbModifierMultipleChoicePrefs.pref_name,
+      kXkbModifierMultipleChoicePrefs.default_pref_value);
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -137,6 +141,8 @@ void Preferences::Init(PrefService* prefs) {
     language_mozc_integer_prefs_[i].Init(
         kMozcIntegerPrefs[i].pref_name, prefs, this);
   }
+  language_xkb_modifier_remap_.Init(
+      kXkbModifierMultipleChoicePrefs.pref_name, prefs, this);
 
   std::string locale(g_browser_process->GetApplicationLocale());
   // Add input methods based on the application locale when the user first
@@ -295,6 +301,32 @@ void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
                                kMozcIntegerPrefs[i].ibus_config_name,
                                language_mozc_integer_prefs_[i].GetValue());
     }
+  }
+  if (!pref_name || *pref_name == kXkbModifierMultipleChoicePrefs.pref_name) {
+    chromeos::ModifierMap modifier_map;
+    const int remap_type = language_xkb_modifier_remap_.GetValue();
+    switch (remap_type) {
+      default:
+        LOG(ERROR) << "Unknown XKB remapping type: " << remap_type;
+        /* fall through */
+      case kNoRemap:
+        modifier_map.push_back(ModifierKeyPair(kSearchKey, kSearchKey));
+        modifier_map.push_back(
+            ModifierKeyPair(kLeftControlKey, kLeftControlKey));
+        modifier_map.push_back(ModifierKeyPair(kLeftAltKey, kLeftAltKey));
+        break;
+      case kSwapCtrlAndAlt:
+        modifier_map.push_back(ModifierKeyPair(kSearchKey, kSearchKey));
+        modifier_map.push_back(ModifierKeyPair(kLeftControlKey, kLeftAltKey));
+        modifier_map.push_back(ModifierKeyPair(kLeftAltKey, kLeftControlKey));
+        break;
+      case kSwapSearchAndCtrl:
+        modifier_map.push_back(ModifierKeyPair(kSearchKey, kLeftControlKey));
+        modifier_map.push_back(ModifierKeyPair(kLeftControlKey, kSearchKey));
+        modifier_map.push_back(ModifierKeyPair(kLeftAltKey, kLeftAltKey));
+        break;
+    }
+    CrosLibrary::Get()->GetKeyboardLibrary()->RemapModifierKeys(modifier_map);
   }
 }
 

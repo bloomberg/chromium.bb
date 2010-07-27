@@ -22,7 +22,7 @@ namespace chromeos {
 
 // The combobox model is used for adding languages in the language config
 // view.
-class AddLanguageComboboxModel : public LanguageComboboxModel {
+class AddLanguageComboboxModel : public ::LanguageComboboxModel {
  public:
   AddLanguageComboboxModel(Profile* profile,
                            const std::vector<std::string>& locale_codes);

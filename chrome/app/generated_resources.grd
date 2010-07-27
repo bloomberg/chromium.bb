@@ -8442,6 +8442,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The slider label for a Mozc input method preference">
         Maximum number of suggestions
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_NO_REMAP"
+               desc="The label for 'Configure modifier keys' drop-down">
+        Do not swap modifier keys
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_CTRL_ALT"
+               desc="The label for 'Configure modifier keys' drop-down">
+        Swap Left Control and Left Alt keys
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_SEARCH_CTRL"
+               desc="The label for 'Configure modifier keys' drop-down">
+        Swap Search and Left Control keys
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
                desc="The label for the configure button for input methods">
         Configure...
