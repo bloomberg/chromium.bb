@@ -1115,6 +1115,36 @@ TEST_F(TopSitesTest, PinnedURLs) {
   EXPECT_EQ("http://google.com/", urls()[1].url.spec());
   EXPECT_EQ(welcome_url(), urls()[2].url);
   EXPECT_EQ(themes_url(), urls()[3].url);
+
+  top_sites().AddPinnedURL(GURL("http://bbc.com"), 1);
+  top_sites().AddPinnedURL(themes_url(), 0);
+  top_sites().GetMostVisitedURLs(
+      &c,
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+
+  ASSERT_EQ(4u, urls().size());
+  EXPECT_EQ(themes_url(), urls()[0].url);
+  EXPECT_EQ("http://bbc.com/", urls()[1].url.spec());
+  EXPECT_EQ("http://google.com/", urls()[2].url.spec());
+  EXPECT_EQ(welcome_url(), urls()[3].url);
+
+  top_sites().RemovePinnedURL(GURL("http://bbc.com"));
+  top_sites().RemovePinnedURL(themes_url());
+
+  top_sites().AddPinnedURL(welcome_url(), 1);
+  top_sites().AddPinnedURL(GURL("http://bbc.com"), 3);
+
+  top_sites().GetMostVisitedURLs(
+      &c,
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+
+  ASSERT_EQ(4u, urls().size());
+  EXPECT_EQ("http://google.com/", urls()[0].url.spec());
+  EXPECT_EQ(welcome_url(), urls()[1].url);
+  EXPECT_EQ(themes_url(), urls()[2].url);
+  EXPECT_EQ("http://bbc.com/", urls()[3].url.spec());
 }
 
 TEST_F(TopSitesTest, BlacklistingAndPinnedURLs) {

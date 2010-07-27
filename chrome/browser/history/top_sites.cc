@@ -370,36 +370,48 @@ void TopSites::MigratePinnedURLs() {
 
 void TopSites::ApplyBlacklistAndPinnedURLs(const MostVisitedURLList& urls,
                                            MostVisitedURLList* out) {
+  MostVisitedURLList urls_copy;
   for (size_t i = 0; i < urls.size(); i++) {
     if (!IsBlacklisted(urls[i].url))
-      out->push_back(urls[i]);
+      urls_copy.push_back(urls[i]);
   }
 
-  for (DictionaryValue::key_iterator it = pinned_urls_->begin_keys();
-       it != pinned_urls_->end_keys(); ++it) {
-    GURL url(WideToASCII(*it));
-
-    int index = IndexOf(*out, url);
-    if (index == -1) {
-      if (url.is_empty()) {
-        MigratePinnedURLs();
-        out->clear();
-        ApplyBlacklistAndPinnedURLs(urls, out);
-        return;
-      }
-      LOG(INFO) << "Unknown url: " << url.spec();
+  for (size_t pinned_index = 0; pinned_index < kTopSitesShown; pinned_index++) {
+    GURL url;
+    bool found = GetPinnedURLAtIndex(pinned_index, &url);
+    if (!found)
       continue;
-    }
 
-    size_t pinned_index = 0;
-    bool result = GetIndexOfPinnedURL(url, &pinned_index);
-    DCHECK(result) << url.spec();
-    if (static_cast<int>(pinned_index) != index) {
-      MostVisitedURL tmp = (*out)[index];
-      out->erase(out->begin() + index);
-      if (pinned_index > out->size())
-        out->resize(pinned_index);  // Add empty URLs as fillers.
-      out->insert(out->begin() + pinned_index, tmp);
+    DCHECK(!url.is_empty());
+    int cur_index = IndexOf(urls_copy, url);
+    MostVisitedURL tmp;
+    if (cur_index < 0) {
+      // Pinned URL not in urls.
+      tmp.url = url;
+    } else {
+      tmp = urls_copy[cur_index];
+      urls_copy.erase(urls_copy.begin() + cur_index);
+    }
+    if (pinned_index > out->size())
+      out->resize(pinned_index);  // Add empty URLs as fillers.
+    out->insert(out->begin() + pinned_index, tmp);
+  }
+
+  // Add non-pinned URLs in the empty spots.
+  size_t current_url = 0;  // Index into the remaining URLs in urls_copy.
+  for (size_t i = 0; i < kTopSitesShown && current_url < urls_copy.size();
+       i++) {
+    if (i == out->size()) {
+      out->push_back(urls_copy[current_url]);
+      current_url++;
+    } else if (i < out->size()) {
+      if ((*out)[i].url.is_empty()) {
+        // Replace the filler
+        (*out)[i] = urls_copy[current_url];
+        current_url++;
+      }
+    } else {
+      NOTREACHED();
     }
   }
 }
@@ -650,6 +662,7 @@ void TopSites::StartQueryForMostVisited() {
 void TopSites::StartMigration() {
   migration_in_progress_ = true;
   StartQueryForMostVisited();
+  MigratePinnedURLs();
 }
 
 void TopSites::AddBlacklistedURL(const GURL& url) {
