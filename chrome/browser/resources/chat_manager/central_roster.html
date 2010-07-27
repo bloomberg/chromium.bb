@@ -20,8 +20,7 @@ Central roster: hosting all Google Talk chats in ChromeOS.
     width: 100%;
     height: 100%;
     border: none;
-    overflow-x: hidden;
-    overflow-y: hidden;
+    overflow: hidden;
   }
   body {
     text-align: center;
@@ -58,9 +57,9 @@ Central roster: hosting all Google Talk chats in ChromeOS.
 
   function runGTalkScript() {
     var script = document.createElement('script');
-    script.setAttribute('src', notifierScriptUrl);
-    script.setAttribute('onload', 'loadGTalk()');
-    script.setAttribute('onerror', 'loadGTalk()');
+    script.src = notifierScriptUrl;
+    script.onload = loadGTalk;
+    script.onerror = loadGTalk;
     document.body.appendChild(script);
   }
   function retryConnection() {
