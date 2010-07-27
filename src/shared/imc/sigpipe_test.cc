@@ -226,7 +226,7 @@ int SendDescriptor(TestState *tsp, int mode) {
   switch (mode) {
     case 0: {
       op = "SendDatagramTo";
-      result = nacl::SendDatagramTo(tsp->cli_sock, &hdr, 0, &tsp->srv_addr);
+      result = nacl::SendDatagramTo(&hdr, 0, &tsp->srv_addr);
       break;
     }
     case 1: {
@@ -362,7 +362,7 @@ int SendData(TestState *tsp, int mode) {
   switch (mode) {
     case 0: {
       op = "SendDatagramTo";
-      nbytes = nacl::SendDatagramTo(tsp->cli_sock, &hdr, 0, &tsp->srv_addr);
+      nbytes = nacl::SendDatagramTo(&hdr, 0, &tsp->srv_addr);
       break;
     }
     case 1: {
@@ -501,7 +501,7 @@ int SendDataNoPeer(TestState *tsp, int mode) {
   switch (mode) {
     case 0: {
       op = "SendDatagramTo";
-      nbytes = nacl::SendDatagramTo(tsp->cli_sock, &hdr, 0, &tsp->srv_addr);
+      nbytes = nacl::SendDatagramTo(&hdr, 0, &tsp->srv_addr);
       break;
     }
     case 1: {

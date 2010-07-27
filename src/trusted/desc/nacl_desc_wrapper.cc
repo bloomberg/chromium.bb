@@ -75,19 +75,11 @@ class DescWrapperCommon {
 
  private:
   DescWrapperCommon() : is_initialized_(false), ref_count_(1) {
-    sockets_[0] = NULL;
-    sockets_[1] = NULL;
     NaClMutexCtor(&ref_count_mu_);
   }
   ~DescWrapperCommon() {
     if (is_initialized_) {
       effp()->vtbl->Dtor(effp());
-      // effector took ownership of sockets_, so no need to Unref directly.
-    } else {
-      NaClDescSafeUnref(sockets_[0]);
-      sockets_[0] = NULL;
-      NaClDescSafeUnref(sockets_[1]);
-      sockets_[1] = NULL;
     }
     NaClMutexDtor(&ref_count_mu_);
   }
@@ -99,8 +91,6 @@ class DescWrapperCommon {
   bool is_initialized_;
   // Effector for transferring descriptors.
   struct NaClNrdXferEffector eff_;
-  // Bound socket, socket address pair (used for effectors).
-  struct NaClDesc* sockets_[2];
   // The reference count and the mutex to protect it.
   RefCountType ref_count_;
   struct NaClMutex ref_count_mu_;
@@ -109,18 +99,10 @@ class DescWrapperCommon {
 };
 
 bool DescWrapperCommon::Init() {
-  // Create a bound socket for use by the transfer effector.
-  if (0 != NaClCommonDescMakeBoundSock(sockets_)) {
-    return false;
-  }
   // Set up the transfer effector.
-  if (!NaClNrdXferEffectorCtor(&eff_, sockets_[0])) {
+  if (!NaClNrdXferEffectorCtor(&eff_)) {
     return false;
   }
-  NaClDescUnref(sockets_[0]);
-  sockets_[0] = NULL;  // eff_ took ownership.
-  NaClDescUnref(sockets_[1]);
-  sockets_[1] = NULL;  // NaClDescUnref freed this already.
   // Successfully initialized.
   is_initialized_ = true;
   return true;

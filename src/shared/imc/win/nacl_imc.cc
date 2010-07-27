@@ -309,8 +309,9 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   return static_cast<int>(header.message_length);
 }
 
-int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
+int SendDatagramTo(const MessageHeader* message, int flags,
                    const SocketAddress* name) {
+  Handle handle;
   if (kHandleCountMax < message->handle_count) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return -1;

@@ -99,7 +99,7 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   if (NULL == handle) {
     return 0;
   }
-  if (0 == NaClNrdXferEffectorCtor(&channel->eff, handle)) {
+  if (0 == NaClNrdXferEffectorCtor(&channel->eff)) {
     return 0;
   }
   channel->imc_handle = NaClDescRef(handle);
@@ -134,7 +134,7 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
   if (NULL == handle) {
     return 0;
   }
-  if (0 == NaClNrdXferEffectorCtor(&channel->eff, handle)) {
+  if (0 == NaClNrdXferEffectorCtor(&channel->eff)) {
     return 0;
   }
   channel->imc_handle = NaClDescRef(handle);

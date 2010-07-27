@@ -101,14 +101,6 @@ struct NaClDescEffectorVtbl {
                                   uintptr_t               sysaddr,
                                   size_t                  nbytes,
                                   int                     prot);
-
-  /*
-   * The bound IMC socket to use as the sender when making a
-   * connection.  Does not transfer ownership nor change refcount, so
-   * returned value's lifetime should be lower-bounded by the lifetime
-   * of the NaClDescEffector object.
-   */
-  struct NaClDescImcBoundDesc *(*SourceSock)(struct NaClDescEffector *vself);
 };
 
 EXTERN_C_END

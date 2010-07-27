@@ -103,7 +103,7 @@ int main() {
   header.iov_length = 1;
   header.handles = broken;
   header.handle_count = sizeof broken / sizeof broken[0];
-  result = nacl::SendDatagramTo(g_front, &header, 0, &server_address);
+  result = nacl::SendDatagramTo(&header, 0, &server_address);
   assert(result == -1);
 
   // Send pair[1] to the server.
@@ -111,7 +111,7 @@ int main() {
   header.iov_length = 1;
   header.handles = &pair[1];
   header.handle_count = 1;
-  result = nacl::SendDatagramTo(g_front, &header, 0, &server_address);
+  result = nacl::SendDatagramTo(&header, 0, &server_address);
   if (static_cast<size_t>(result) != vec[0].length) {
     PrintError("SendDatagram");
     exit(EXIT_FAILURE);

@@ -94,7 +94,6 @@ int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
    * nacl_desc_imc_bound_desc.c
    */
   struct NaClDescConnCap      *self;
-  struct NaClDescImcBoundDesc *sender;
   int                         retval;
   NaClHandle                  nh[2];
   size_t                      ix;
@@ -107,13 +106,6 @@ int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
   peer = NULL;
   for (ix = 0; ix < NACL_ARRAY_SIZE(nh); ++ix) {
     nh[ix] = NACL_INVALID_HANDLE;
-  }
-
-  sender = (*effp->vtbl->SourceSock)(effp);
-  if (NULL == sender) {
-    NaClLog(LOG_ERROR, "NaClDescConnCapConnectAddr: service socket NULL\n");
-    retval = -NACL_ABI_EIO;
-    goto cleanup;
   }
 
   NaClLog(4, " socket address %.*s\n", NACL_PATH_MAX, self->cap.path);
@@ -135,10 +127,7 @@ int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
   conn_msg.flags = 0;
 
   NaClLog(4, " sending connection message\n");
-  if (-1 == NaClSendDatagramTo(sender->h,
-                               &conn_msg,
-                               0,
-                               &self->cap)) {
+  if (-1 == NaClSendDatagramTo(&conn_msg, 0, &self->cap)) {
     NaClLog(LOG_ERROR, ("NaClDescConnCapConnectAddr:"
                         " initial connect message could not be sent.\n"));
     retval = -NACL_ABI_EIO;

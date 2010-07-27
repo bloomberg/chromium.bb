@@ -43,10 +43,9 @@ int NaClSendDatagram(NaClHandle socket, const NaClMessageHeader* message,
       flags);
 }
 
-int NaClSendDatagramTo(NaClHandle socket, const NaClMessageHeader* message,
+int NaClSendDatagramTo(const NaClMessageHeader* message,
                        int flags, const NaClSocketAddress* name) {
   return nacl::SendDatagramTo(
-      socket,
       reinterpret_cast<const nacl::MessageHeader*>(message),
       flags,
       reinterpret_cast<const nacl::SocketAddress*>(name));

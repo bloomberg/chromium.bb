@@ -132,17 +132,9 @@ static uintptr_t NaClDescEffLdrMapAnonMem(struct NaClDescEffector *vself,
                          (off_t) 0);
 }
 
-static struct NaClDescImcBoundDesc *NaClDescEffLdrSourceSock(
-    struct NaClDescEffector *vself) {
-  struct NaClDescEffectorLdr  *self = (struct NaClDescEffectorLdr *) vself;
-
-  return (struct NaClDescImcBoundDesc *) self->natp->nap->service_port;
-}
-
 static struct NaClDescEffectorVtbl NaClDescEffectorLdrVtbl = {
   NaClDescEffLdrDtor,
   NaClDescEffLdrReturnCreatedDesc,
   NaClDescEffLdrUnmapMemory,
   NaClDescEffLdrMapAnonMem,
-  NaClDescEffLdrSourceSock,
 };

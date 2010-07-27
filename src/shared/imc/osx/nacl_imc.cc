@@ -185,9 +185,8 @@ Handle BoundSocket(const SocketAddress* address) {
   return -1;
 }
 
-int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
+int SendDatagramTo(const MessageHeader* message, int flags,
                    const SocketAddress* name) {
-  UNREFERENCED_PARAMETER(handle);
   UNREFERENCED_PARAMETER(message);
   UNREFERENCED_PARAMETER(flags);
   UNREFERENCED_PARAMETER(name);

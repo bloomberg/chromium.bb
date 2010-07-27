@@ -55,17 +55,9 @@ static uintptr_t NaClDescEffCleanMapAnonMem(struct NaClDescEffector *vself,
   return 0;
 }
 
-static struct NaClDescImcBoundDesc *NaClDescEffCleanSourceSock(
-    struct NaClDescEffector *vself) {
-  UNREFERENCED_PARAMETER(vself);
-  NaClLog(LOG_FATAL, "Cleanup effector's SourceSock called\n");
-  return 0;
-}
-
 static struct NaClDescEffectorVtbl NaClDescEffectorCleanupVtbl = {
   NaClDescEffCleanDtor,
   NaClDescEffCleanReturnCreatedDesc,
   NaClDescEffCleanUnmapMemory,
   NaClDescEffCleanMapAnonMem,
-  NaClDescEffCleanSourceSock,
 };

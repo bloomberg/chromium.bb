@@ -81,22 +81,11 @@ uintptr_t NaClDescEffectorShmMapAnonymousMemory(struct NaClDescEffector *vself,
 }
 
 static
-struct NaClDescImcBoundDesc *NaClDescEffectorShmSourceSock(
-    struct NaClDescEffector *vself) {
-  UNREFERENCED_PARAMETER(vself);
-
-  NaClLog(LOG_FATAL, "NaClDescEffectorShmSourceSock called\n");
-  /* NOTREACHED but gcc doesn't know that */
-  return NULL;
-}
-
-static
 struct NaClDescEffectorVtbl kNaClDescEffectorShmVtbl = {
   NaClDescEffectorShmDtor,
   NaClDescEffectorShmReturnCreatedDesc,
   NaClDescEffectorShmUnmapMemory,
   NaClDescEffectorShmMapAnonymousMemory,
-  NaClDescEffectorShmSourceSock,
 };
 
 int NaClDescEffectorShmCtor(struct NaClDescEffectorShm *self) {

@@ -137,8 +137,7 @@ int NaClWouldBlock();
  * connection created by SocketPair().
  *
  * NaClSendDatagramTo() sends the message to the socket specified by
- * the name. The socket parameter should be a socket created by
- * NaClBoundSocket().
+ * the name.
  *
  * The send functions return the number of bytes sent, or -1 upon
  * failure.  If NACL_DONT_WAIT flag is specified with the call and the
@@ -152,7 +151,7 @@ int NaClWouldBlock();
  */
 int NaClSendDatagram(NaClHandle socket, const NaClMessageHeader* message,
                      int flags);
-int NaClSendDatagramTo(NaClHandle socket, const NaClMessageHeader* message,
+int NaClSendDatagramTo(const NaClMessageHeader* message,
                        int flags, const NaClSocketAddress* name);
 
 /*

@@ -19,10 +19,7 @@
 /* fwd */
 static struct NaClDescEffectorVtbl NaClNrdXferEffectorVtbl;
 
-int NaClNrdXferEffectorCtor(struct NaClNrdXferEffector  *self,
-                            struct NaClDesc             *src_desc) {
-  self->src_desc = src_desc;
-  NaClDescRef(src_desc);
+int NaClNrdXferEffectorCtor(struct NaClNrdXferEffector  *self) {
   self->out_desc = NULL;
 
   self->base.vtbl = &NaClNrdXferEffectorVtbl;
@@ -32,8 +29,6 @@ int NaClNrdXferEffectorCtor(struct NaClNrdXferEffector  *self,
 static void NaClNrdXferEffectorDtor(struct NaClDescEffector *vself) {
   struct NaClNrdXferEffector *self = (struct NaClNrdXferEffector *) vself;
 
-  NaClDescUnref(self->src_desc);
-  self->src_desc = NULL;
   if (NULL != self->out_desc) {
     NaClLog(LOG_WARNING,
             ("NaClNrdXferEffectorDtor: called with out_desc non-NULL,"
@@ -93,18 +88,9 @@ static uintptr_t NaClNrdXferEffectorMapAnonymousMemory(
   return 0;
 }
 
-static struct NaClDescImcBoundDesc *NaClNrdXferEffectorSourceSock(
-    struct NaClDescEffector *vself) {
-  struct NaClNrdXferEffector *self = (struct NaClNrdXferEffector *) vself;
-
-  return (struct NaClDescImcBoundDesc *) self->src_desc;
-  /* does not inc refcount */
-}
-
 static struct NaClDescEffectorVtbl NaClNrdXferEffectorVtbl = {
   NaClNrdXferEffectorDtor,
   NaClNrdXferEffectorReturnCreatedDesc,
   NaClNrdXferEffectorUnmapMemory,
   NaClNrdXferEffectorMapAnonymousMemory,
-  NaClNrdXferEffectorSourceSock,
 };

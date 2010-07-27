@@ -176,17 +176,15 @@ int SendDatagram(Handle socket, const MessageHeader* message, int flags);
 
 /**
  *  @nacl
- *  Sends the message to the socket specified by the name. The socket parameter
- *  should be a socket created by BoundSocket().
+ *  Sends the message to the socket specified by the name.
  *  The total number of bytes sent must be less than 2**32.
- *  @param socket The socket descriptor.
  *  @param message Pointer to MessageHeader to send.
  *  @param flags Either 0 or kDontWait.
  *  @param name The target socket address to which the message is sent.
  *  @return The number of bytes sent, or -1 upon failure
  *  @see SendDatagram()
  */
-int SendDatagramTo(Handle socket, const MessageHeader* message, int flags,
+int SendDatagramTo(const MessageHeader* message, int flags,
                    const SocketAddress* name);
 
 /**

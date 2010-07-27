@@ -762,7 +762,7 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   /*
    * service_address and service_port are set together.
    */
-  (void) NaClNrdXferEffectorCtor(&nnxep, nap->service_port);
+  (void) NaClNrdXferEffectorCtor(&nnxep);
 
   hdr.iov = (struct NaClImcMsgIoVec *) NULL;
   hdr.iov_length = 0;
@@ -997,7 +997,7 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
   int                         status;
 
   NaClLog(4, "Waiting for secure command channel connect\n");
-  (void) NaClNrdXferEffectorCtor(&nnxep, nap->service_port);
+  (void) NaClNrdXferEffectorCtor(&nnxep);
   /*
    * this block until the plugin connects
    */

@@ -58,17 +58,9 @@ static uintptr_t NaClDescEffTrustedMemMapAnonMem(
   return 0;
 }
 
-static struct NaClDescImcBoundDesc *NaClDescEffTrustedMemSourceSock(
-    struct NaClDescEffector *vself) {
-  UNREFERENCED_PARAMETER(vself);
-  NaClLog(LOG_FATAL, "TrustedMem effector's SourceSock called\n");
-  return 0;
-}
-
 static struct NaClDescEffectorVtbl NaClDescEffectorTrustedMemVtbl = {
   NaClDescEffTrustedMemDtor,
   NaClDescEffTrustedMemReturnCreatedDesc,
   NaClDescEffTrustedMemUnmapMemory,
   NaClDescEffTrustedMemMapAnonMem,
-  NaClDescEffTrustedMemSourceSock,
 };
