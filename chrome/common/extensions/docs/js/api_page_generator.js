@@ -373,6 +373,11 @@ function getFullyQualifiedFunctionName(func) {
   return getModuleName() + "." + func.name;
 }
 
+function isExperimentalAPIPage() {
+  return (getPageName().indexOf('.experimental.') >= 0 &&
+          getPageName().indexOf('.experimental.*') < 0);
+}
+
 function hasCallback(parameters) {
   return (parameters.length > 0 &&
           parameters[parameters.length - 1].type == "function");
