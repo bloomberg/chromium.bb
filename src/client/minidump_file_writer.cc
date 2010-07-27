@@ -92,17 +92,17 @@ bool MinidumpFileWriter::CopyStringToMDString(const wchar_t *str,
   } else {
     u_int16_t out[2];
     int out_idx = 0;
-    
+
     // Copy the string character by character
     while (length && result) {
       UTF32ToUTF16Char(*str, out);
       if (!out[0])
         return false;
-      
+
       // Process one character at a time
       --length;
       ++str;
-      
+
       // Append the one or two UTF-16 characters.  The first one will be non-
       // zero, but the second one may be zero, depending on the conversion from
       // UTF-32.
@@ -127,11 +127,11 @@ bool MinidumpFileWriter::CopyStringToMDString(const char *str,
     int conversion_count = UTF8ToUTF16Char(str, length, out);
     if (!conversion_count)
       return false;
-    
+
     // Move the pointer along based on the nubmer of converted characters
     length -= conversion_count;
     str += conversion_count;
-    
+
     // Append the one or two UTF-16 characters
     int out_count = out[1] ? 2 : 1;
     size_t out_size = sizeof(u_int16_t) * out_count;
@@ -161,7 +161,7 @@ bool MinidumpFileWriter::WriteStringCore(const CharType *str,
     return false;
 
   // Set length excluding the NULL and copy the string
-  mdstring.get()->length = 
+  mdstring.get()->length =
       static_cast<u_int32_t>(mdstring_length * sizeof(u_int16_t));
   bool result = CopyStringToMDString(str, mdstring_length, &mdstring);
 
@@ -241,10 +241,10 @@ bool MinidumpFileWriter::Copy(MDRVA position, const void *src, ssize_t size) {
 
   // Seek and write the data
 #if __linux__
-  if (sys_lseek(file_, position, SEEK_SET) == position) {
+  if (sys_lseek(file_, position, SEEK_SET) == static_cast<off_t>(position)) {
     if (sys_write(file_, src, size) == size) {
 #else
-  if (lseek(file_, position, SEEK_SET) == position) {
+  if (lseek(file_, position, SEEK_SET) == static_cast<off_t>(position)) {
     if (write(file_, src, size) == size) {
 #endif
       return true;
