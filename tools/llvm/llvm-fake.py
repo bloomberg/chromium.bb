@@ -364,9 +364,6 @@ def IsDiagnosticMode(argv):
     # dump versioning info - not sure about "-V"
     if a in ['-v', '--version', '--v', '-V']:
       return True
-    # used by configure
-    if a == 'conftest.c':
-      return True
   return False
 
 
@@ -415,20 +412,11 @@ def CompileToBC(argv, llvm_binary, temp = False):
 
   obj_pos = FindObjectFilePos(argv)
 
-  if IsDiagnosticMode(argv):
-    Run(argv)
-
   if temp:
     if obj_pos is None:
       argv += ['-o', OutputName(argv) + '.bc']
     else:
       argv[obj_pos] += '.bc'
-
-  if '-nostdinc' in argv:
-    argv += global_config_flags['LLVM_GCC_COMPILE']
-  else:
-    argv += global_config_flags['LLVM_GCC_COMPILE']
-    argv += global_config_flags['LLVM_GCC_COMPILE_HEADERS']
 
   argv.append('--emit-llvm')
   argv.append('-fno-expand-va-arg')
@@ -447,6 +435,16 @@ def Incarnation_gcclike(argv):
 
   argv[0] = LLVM_GCC
   if IsDiagnosticMode(argv):
+    Run(argv)
+    return
+
+  if '-nostdinc' in argv:
+    argv += global_config_flags['LLVM_GCC_COMPILE']
+  else:
+    argv += global_config_flags['LLVM_GCC_COMPILE']
+    argv += global_config_flags['LLVM_GCC_COMPILE_HEADERS']
+
+  if '-E' in argv:
     Run(argv)
     return
 
