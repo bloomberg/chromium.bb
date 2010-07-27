@@ -162,116 +162,6 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
 #endif
 }
 
-class SetCookieCompletion : public net::CompletionCallback {
- public:
-  SetCookieCompletion(int render_process_id,
-                      int render_view_id,
-                      const GURL& url,
-                      const std::string& cookie_line,
-                      ChromeURLRequestContext* context)
-      : render_process_id_(render_process_id),
-        render_view_id_(render_view_id),
-        url_(url),
-        cookie_line_(cookie_line),
-        context_(context) {
-  }
-
-  virtual void RunWithParams(const Tuple1<int>& params) {
-    int result = params.a;
-    bool blocked_by_policy = true;
-    if (result == net::OK ||
-        result == net::OK_FOR_SESSION_ONLY) {
-      blocked_by_policy = false;
-      net::CookieOptions options;
-      if (result == net::OK_FOR_SESSION_ONLY)
-        options.set_force_session();
-      context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
-                                                     options);
-    }
-    if (!context_->IsExternal()) {
-      CallRenderViewHostContentSettingsDelegate(
-          render_process_id_, render_view_id_,
-          &RenderViewHostDelegate::ContentSettings::OnCookieAccessed,
-          url_, cookie_line_, blocked_by_policy);
-    }
-    delete this;
-  }
-
- private:
-  int render_process_id_;
-  int render_view_id_;
-  GURL url_;
-  std::string cookie_line_;
-  scoped_refptr<ChromeURLRequestContext> context_;
-};
-
-class GetCookiesCompletion : public net::CompletionCallback {
- public:
-  GetCookiesCompletion(const GURL& url, IPC::Message* reply_msg,
-                       ResourceMessageFilter* filter,
-                       URLRequestContext* context)
-      : url_(url),
-        reply_msg_(reply_msg),
-        filter_(filter),
-        context_(context) {
-  }
-
-  virtual void RunWithParams(const Tuple1<int>& params) {
-    int result = params.a;
-    std::string cookies;
-    if (result == net::OK)
-      cookies = context_->cookie_store()->GetCookies(url_);
-    ViewHostMsg_GetCookies::WriteReplyParams(reply_msg_, cookies);
-    filter_->Send(reply_msg_);
-    delete this;
-  }
-
- private:
-  GURL url_;
-  IPC::Message* reply_msg_;
-  scoped_refptr<ResourceMessageFilter> filter_;
-  scoped_refptr<URLRequestContext> context_;
-};
-
-class GetRawCookiesCompletion : public net::CompletionCallback {
- public:
-  GetRawCookiesCompletion(const GURL& url, IPC::Message* reply_msg,
-                          ResourceMessageFilter* filter,
-                          URLRequestContext* context)
-      : url_(url),
-        reply_msg_(reply_msg),
-        filter_(filter),
-        context_(context) {
-  }
-
-  virtual void RunWithParams(const Tuple1<int>& params) {
-    // Ignore the policy result.  We only waited on the policy result so that
-    // any pending 'set-cookie' requests could be flushed.  The intent of
-    // querying the raw cookies is to reveal the contents of the cookie DB, so
-    // it important that we don't read the cookie db ahead of pending writes.
-
-    net::CookieMonster* cookie_monster =
-        context_->cookie_store()->GetCookieMonster();
-    net::CookieMonster::CookieList cookie_list =
-        cookie_monster->GetAllCookiesForURL(url_);
-
-    std::vector<webkit_glue::WebCookie> cookies;
-    for (size_t i = 0; i < cookie_list.size(); ++i) {
-      cookies.push_back(webkit_glue::WebCookie(cookie_list[i]));
-    }
-
-    ViewHostMsg_GetRawCookies::WriteReplyParams(reply_msg_, cookies);
-    filter_->Send(reply_msg_);
-    delete this;
-  }
-
- private:
-  GURL url_;
-  IPC::Message* reply_msg_;
-  scoped_refptr<ResourceMessageFilter> filter_;
-  scoped_refptr<URLRequestContext> context_;
-};
-
 class ClearCacheCompletion : public net::CompletionCallback {
  public:
   ClearCacheCompletion(IPC::Message* reply_msg,
@@ -688,7 +578,8 @@ void ResourceMessageFilter::OnGetCookies(const GURL& url,
   URLRequestContext* context = GetRequestContextForURL(url);
 
   GetCookiesCompletion* callback =
-      new GetCookiesCompletion(url, reply_msg, this, context);
+      new GetCookiesCompletion(id(), reply_msg->routing_id(), url, reply_msg,
+                               this, context, false);
 
   int policy = net::OK;
   if (context->cookie_policy()) {
@@ -722,8 +613,9 @@ void ResourceMessageFilter::OnGetRawCookies(
     return;
   }
 
-  GetRawCookiesCompletion* callback =
-      new GetRawCookiesCompletion(url, reply_msg, this, context);
+  GetCookiesCompletion* callback =
+      new GetCookiesCompletion(id(), reply_msg->routing_id(), url,
+                               reply_msg, this, context, true);
 
   // We check policy here to avoid sending back cookies that would not normally
   // be applied to outbound requests for the given URL.  Since this cookie info
@@ -1678,3 +1570,83 @@ void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
+
+SetCookieCompletion::SetCookieCompletion(int render_process_id,
+                                         int render_view_id,
+                                         const GURL& url,
+                                         const std::string& cookie_line,
+                                         ChromeURLRequestContext* context)
+    : render_process_id_(render_process_id),
+      render_view_id_(render_view_id),
+      url_(url),
+      cookie_line_(cookie_line),
+      context_(context) {
+}
+
+void SetCookieCompletion::RunWithParams(const Tuple1<int>& params) {
+  int result = params.a;
+  bool blocked_by_policy = true;
+  if (result == net::OK ||
+      result == net::OK_FOR_SESSION_ONLY) {
+    blocked_by_policy = false;
+    net::CookieOptions options;
+    if (result == net::OK_FOR_SESSION_ONLY)
+      options.set_force_session();
+    context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
+                                                   options);
+  }
+  if (!context_->IsExternal()) {
+    CallRenderViewHostContentSettingsDelegate(
+        render_process_id_, render_view_id_,
+        &RenderViewHostDelegate::ContentSettings::OnCookieAccessed,
+        url_, cookie_line_, blocked_by_policy);
+  }
+  delete this;
+}
+
+GetCookiesCompletion::GetCookiesCompletion(int render_process_id,
+                                           int render_view_id,
+                                           const GURL& url,
+                                           IPC::Message* reply_msg,
+                                           ResourceMessageFilter* filter,
+                                           URLRequestContext* context,
+                                           bool raw_cookies)
+    : url_(url),
+      reply_msg_(reply_msg),
+      filter_(filter),
+      context_(context),
+      render_process_id_(render_process_id),
+      render_view_id_(render_view_id),
+      raw_cookies_(raw_cookies) {
+}
+
+void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
+  if (!raw_cookies_) {
+    int result = params.a;
+    std::string cookies;
+    if (result == net::OK)
+      cookies = context_->cookie_store()->GetCookies(url_);
+    ViewHostMsg_GetCookies::WriteReplyParams(reply_msg_, cookies);
+    filter_->Send(reply_msg_);
+    delete this;
+  } else {
+    // Ignore the policy result.  We only waited on the policy result so that
+    // any pending 'set-cookie' requests could be flushed.  The intent of
+    // querying the raw cookies is to reveal the contents of the cookie DB, so
+    // it important that we don't read the cookie db ahead of pending writes.
+    net::CookieMonster* cookie_monster =
+        context_->cookie_store()->GetCookieMonster();
+    net::CookieMonster::CookieList cookie_list =
+        cookie_monster->GetAllCookiesForURL(url_);
+
+    std::vector<webkit_glue::WebCookie> cookies;
+    for (size_t i = 0; i < cookie_list.size(); ++i) {
+      cookies.push_back(webkit_glue::WebCookie(cookie_list[i]));
+    }
+
+    ViewHostMsg_GetRawCookies::WriteReplyParams(reply_msg_, cookies);
+    filter_->Send(reply_msg_);
+    delete this;
+  }
+}
+

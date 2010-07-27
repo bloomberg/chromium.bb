@@ -97,16 +97,6 @@ class AutomationCookieStore : public net::CookieStore {
   }
 
  protected:
-  void SendIPCMessageOnIOThread(IPC::Message* m) {
-    if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      automation_client_->Send(m);
-    } else {
-      Task* task = NewRunnableMethod(this,
-          &AutomationCookieStore::SendIPCMessageOnIOThread, m);
-      ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, task);
-    }
-  }
-
   net::CookieStore* original_cookie_store_;
   scoped_refptr<AutomationResourceMessageFilter> automation_client_;
   int tab_handle_;
@@ -130,23 +120,20 @@ class AutomationCookiePolicy : public net::CookiePolicy {
                             net::CompletionCallback* callback) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-    if (automation_client_.get()) {
-      automation_client_->GetCookiesForUrl(tab_handle_, url, callback,
-                                           cookie_store_.get());
-      return net::ERR_IO_PENDING;
-    }
-    return net::ERR_ACCESS_DENIED;
+    AutomationResourceMessageFilter::GetCookiesForUrl(tab_handle_, url,
+                                                      callback,
+                                                      cookie_store_.get());
+    return net::ERR_IO_PENDING;
   }
 
   virtual int CanSetCookie(const GURL& url,
                            const GURL& first_party_for_cookies,
                            const std::string& cookie_line,
                            net::CompletionCallback* callback) {
-    if (automation_client_.get()) {
-      automation_client_->Send(new AutomationMsg_SetCookieAsync(0,
-          tab_handle_, url, cookie_line));
-    }
-    return net::ERR_ACCESS_DENIED;
+    AutomationResourceMessageFilter::SetCookiesForUrl(tab_handle_, url,
+                                                      cookie_line,
+                                                      callback);
+    return net::ERR_IO_PENDING;
   }
 
  private:

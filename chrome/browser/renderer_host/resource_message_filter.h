@@ -446,4 +446,61 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };
 
+// These classes implement completion callbacks for getting and setting
+// cookies.
+class SetCookieCompletion : public net::CompletionCallback {
+ public:
+  SetCookieCompletion(int render_process_id,
+                      int render_view_id,
+                      const GURL& url,
+                      const std::string& cookie_line,
+                      ChromeURLRequestContext* context);
+
+  virtual void RunWithParams(const Tuple1<int>& params);
+
+  int render_process_id() const {
+    return render_process_id_;
+  }
+
+  int render_view_id() const {
+    return render_view_id_;
+  }
+
+ private:
+  int render_process_id_;
+  int render_view_id_;
+  GURL url_;
+  std::string cookie_line_;
+  scoped_refptr<ChromeURLRequestContext> context_;
+};
+
+class GetCookiesCompletion : public net::CompletionCallback {
+ public:
+  GetCookiesCompletion(int render_process_id,
+                       int render_view_id,
+                       const GURL& url, IPC::Message* reply_msg,
+                       ResourceMessageFilter* filter,
+                       URLRequestContext* context,
+                       bool raw_cookies);
+
+  virtual void RunWithParams(const Tuple1<int>& params);
+
+  int render_process_id() const {
+    return render_process_id_;
+  }
+
+  int render_view_id() const {
+    return render_view_id_;
+  }
+
+ private:
+  GURL url_;
+  IPC::Message* reply_msg_;
+  scoped_refptr<ResourceMessageFilter> filter_;
+  scoped_refptr<URLRequestContext> context_;
+  int render_process_id_;
+  int render_view_id_;
+  bool raw_cookies_;
+};
+
 #endif  // CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
