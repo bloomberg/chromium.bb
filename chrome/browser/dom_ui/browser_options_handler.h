@@ -6,14 +6,18 @@
 #define CHROME_BROWSER_DOM_UI_BROWSER_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "app/table_model_observer.h"
 #include "chrome/browser/dom_ui/options_ui.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/shell_integration.h"
 
+class CustomHomePagesTableModel;
+
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler : public OptionsPageUIHandler,
                               public ShellIntegration::DefaultBrowserObserver,
-                              public TemplateURLModelObserver {
+                              public TemplateURLModelObserver,
+                              public TableModelObserver {
  public:
   BrowserOptionsHandler();
   virtual ~BrowserOptionsHandler();
@@ -31,12 +35,24 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // TemplateURLModelObserver implementation.
   virtual void OnTemplateURLModelChanged();
 
+  // TableModelObserver implementation.
+  virtual void OnModelChanged();
+  virtual void OnItemsChanged(int start, int length);
+  virtual void OnItemsAdded(int start, int length);
+  virtual void OnItemsRemoved(int start, int length);
+
  private:
   // Makes this the default browser. Called from DOMUI.
   void BecomeDefaultBrowser(const Value* value);
 
   // Sets the search engine at the given index to be default. Called from DOMUI.
   void SetDefaultSearchEngine(const Value* value);
+
+  // Removes the startup page at the given indexes. Called from DOMUI.
+  void RemoveStartupPages(const Value* value);
+
+  // Sets the startup page set to the current pages. Called from DOMUI.
+  void SetStartupPagesToCurrentPages(const Value* value);
 
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultBrowserState state);
@@ -48,9 +64,23 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // Updates the UI with the given state for the default browser.
   void SetDefaultBrowserUIString(int status_string_id);
 
+  // Loads the current set of custom startup pages and reports it to the DOMUI.
+  void UpdateStartupPages();
+
+  // Loads the possible default search engine list and reports it to the DOMUI.
+  void UpdateSearchEngines();
+
+  // Writes the current set of startup pages to prefs.
+  void SaveStartupPagesPref();
+
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
 
   TemplateURLModel* template_url_model_;  // Weak.
+
+  // TODO(stuartmorgan): Once there are no other clients of
+  // CustomHomePagesTableModel, consider changing it to something more like
+  // TemplateURLModel.
+  scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };
