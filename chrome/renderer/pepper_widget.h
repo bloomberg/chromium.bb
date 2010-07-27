@@ -27,7 +27,7 @@ class PepperWidget {
   virtual void SetProperty(NPWidgetProperty property, void* value) = 0;
 
  protected:
-  ~PepperWidget();
+  virtual ~PepperWidget();
 
   // Tells the plugin that a property changed.
   void WidgetPropertyChanged(NPWidgetProperty property);

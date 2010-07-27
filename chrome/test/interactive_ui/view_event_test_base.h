@@ -84,6 +84,8 @@ class ViewEventTestBase : public views::WindowDelegate,
   static bool ImplementsThreadSafeReferenceCounting() { return false; }
 
  protected:
+  virtual ~ViewEventTestBase() {}
+
   // Returns the view that is added to the window.
   virtual views::View* CreateContentsView() = 0;
 

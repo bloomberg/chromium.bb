@@ -26,6 +26,8 @@ namespace views {
 // implementation.
 class ViewsDelegate {
  public:
+  virtual ~ViewsDelegate() {}
+
   // Gets the clipboard.
   virtual Clipboard* GetClipboard() const = 0;
 

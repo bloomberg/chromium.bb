@@ -70,6 +70,8 @@ class MacSandboxTest : public MultiProcessTest {
 // REGISTER_SANDBOX_TEST_CASE so it's visible to the test driver.
 class MacSandboxTestCase {
  public:
+  virtual ~MacSandboxTestCase() {}
+
   // Code that runs in the sandboxed subprocess before the sandbox is
   // initialized.
   // Returning false from this function will cause the entire test case to fail.

@@ -22,6 +22,9 @@ class PrintedPagesSource {
 
   // Returns the URL's source of the document if applicable.
   virtual GURL RenderSourceUrl() = 0;
+
+ protected:
+  virtual ~PrintedPagesSource() {}
 };
 
 }  // namespace printing

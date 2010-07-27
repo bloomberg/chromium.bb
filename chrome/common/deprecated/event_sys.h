@@ -20,6 +20,9 @@ template <typename EventType>
 class EventListener {
  public:
   virtual void HandleEvent(const EventType& event) = 0;
+
+ protected:
+  virtual ~EventListener() {}
 };
 
 // See the -inl.h for details about the following.

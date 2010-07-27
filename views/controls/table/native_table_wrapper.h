@@ -70,6 +70,9 @@ class NativeTableWrapper {
 
   // Creates an appropriate NativeButtonWrapper for the platform.
   static NativeTableWrapper* CreateNativeWrapper(TableView2* table);
+
+ protected:
+  virtual ~NativeTableWrapper() {}
 };
 
 }  // namespace views

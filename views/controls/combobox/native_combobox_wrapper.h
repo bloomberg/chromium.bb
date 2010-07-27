@@ -47,6 +47,9 @@ class NativeComboboxWrapper {
   virtual gfx::NativeView GetTestingHandle() const = 0;
 
   static NativeComboboxWrapper* CreateWrapper(Combobox* combobox);
+
+ protected:
+  virtual ~NativeComboboxWrapper() {}
 };
 
 }  // namespace views

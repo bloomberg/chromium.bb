@@ -33,6 +33,9 @@ class NpEventListener {
   virtual bool Unsubscribe(NPP instance,
                            const char* event_names[],
                            int event_name_count) = 0;
+
+ protected:
+  virtual ~NpEventListener() {}
 };
 
 // A little helper class to implement simple ref counting
@@ -40,7 +43,7 @@ class NpEventListener {
 template <class T>
 class NpEventListenerBase : public NpEventListener {
  public:
-  NpEventListenerBase(NpEventDelegate* delegate)
+  explicit NpEventListenerBase(NpEventDelegate* delegate)
       : ref_count_(0), delegate_(delegate) {
     DCHECK(delegate_);
     thread_id_ = ::GetCurrentThreadId();
@@ -83,8 +86,8 @@ class DomEventListener
   : public nsIDOMEventListener,
   public NpEventListenerBase<DomEventListener> {
  public:
-  DomEventListener(NpEventDelegate* delegate);
-  ~DomEventListener();
+  explicit DomEventListener(NpEventDelegate* delegate);
+  virtual ~DomEventListener();
 
   // Implementation of NpEventListener
   virtual bool Subscribe(NPP instance,
@@ -118,7 +121,7 @@ class DomEventListener
 class NPObjectEventListener
   : public NpEventListenerBase<NPObjectEventListener> {
  public:
-  NPObjectEventListener(NpEventDelegate* delegate);
+  explicit NPObjectEventListener(NpEventDelegate* delegate);
   ~NPObjectEventListener();
 
   // Implementation of NpEventListener
@@ -133,7 +136,7 @@ class NPObjectEventListener
   // NPObject structure which is exposed by NPObjectEventListener.
   class Npo : public NPObject {
    public:
-    Npo(NPP npp) : npp_(npp), listener_(NULL) {
+    explicit Npo(NPP npp) : npp_(npp), listener_(NULL) {
     }
 
     void Initialize(NPObjectEventListener* listener) {

@@ -33,6 +33,9 @@ class NativeListboxWrapper {
       Listbox* listbox,
       const std::vector<string16>& strings,
       Listbox::Listener* listener);
+
+ protected:
+  virtual ~NativeListboxWrapper() {}
 };
 
 }  // namespace views

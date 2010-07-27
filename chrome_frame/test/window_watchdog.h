@@ -17,6 +17,9 @@ struct FunctionStub;
 class WindowObserver {  // NOLINT
  public:
   virtual void OnWindowDetected(HWND hwnd, const std::string& caption) = 0;
+
+ protected:
+  virtual ~WindowObserver() {}
 };
 
 // Watch a for window to be shown with the given window class name.

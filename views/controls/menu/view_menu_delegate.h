@@ -30,6 +30,9 @@ class ViewMenuDelegate {
   // Create and show a menu at the specified position. Source is the view the
   // ViewMenuDelegate was set on.
   virtual void RunMenu(View* source, const gfx::Point& pt) = 0;
+
+ protected:
+  virtual ~ViewMenuDelegate() {}
 };
 
 }  // namespace views

@@ -18,6 +18,9 @@ class Event;
 class ButtonListener {
  public:
   virtual void ButtonPressed(Button* sender, const views::Event& event) = 0;
+
+ protected:
+  virtual ~ButtonListener() {}
 };
 
 // A View representing a button. Depending on the specific type, the button

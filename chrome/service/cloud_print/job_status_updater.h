@@ -27,6 +27,9 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   class Delegate {
    public:
     virtual bool OnJobCompleted(JobStatusUpdater* updater) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   JobStatusUpdater(const std::string& printer_name,

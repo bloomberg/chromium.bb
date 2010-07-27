@@ -39,7 +39,12 @@ class HTMLDialog {
     // The native window has been created and is about to be visible. Use it
     // to customize the native |window| appearance.
     virtual void OnBeforeDisplay(void* window) = 0;
+
+    protected:
+     virtual ~CustomizationCallback() {}
   };
+
+  virtual ~HTMLDialog() {}
 
   // Shows the HTML in a modal dialog. The buttons and other UI are also done
   // in HTML so each native implementation needs to map the user action into
@@ -51,7 +56,6 @@ class HTMLDialog {
   // If the result of ShowModal() was EXTRA, the information is available
   // as a string using this method.
   virtual std::wstring GetExtraResult() = 0;
-
 };
 
 // Factory method for the native HTML Dialog. When done with the object use

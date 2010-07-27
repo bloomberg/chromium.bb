@@ -12,7 +12,7 @@ class RenderViewVisitor {
   virtual bool Visit(RenderView* render_view) = 0;
 
  protected:
-  ~RenderViewVisitor() {}
+  virtual ~RenderViewVisitor() {}
 };
 
 #endif  // CHROME_RENDERER_RENDER_VIEW_VISITOR_H_

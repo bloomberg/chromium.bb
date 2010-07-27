@@ -23,6 +23,9 @@ class Link;
 class LinkController {
  public:
   virtual void LinkActivated(Link* source, int event_flags) = 0;
+
+ protected:
+  virtual ~LinkController() {}
 };
 
 ////////////////////////////////////////////////////////////////////////////////

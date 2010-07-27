@@ -32,6 +32,9 @@ class ButtonMenuItemModel {
     // Performs the action associated with the specified command id.
     virtual void ExecuteCommand(int command_id) = 0;
     virtual bool IsCommandIdEnabled(int command_id) const { return true; }
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   ButtonMenuItemModel(int string_id, ButtonMenuItemModel::Delegate* delegate);
