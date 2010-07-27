@@ -209,7 +209,11 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
         hr = t->ActiveXDocActivate(OLEIVERB_UIACTIVATE);
       }
     } else {
-      t->InPlaceMenuDestroy();
+      // Menu integration is still not complete, so do not destroy
+      // IE's menus.  If we call InPlaceMenuDestroy here, menu items such
+      // as Print etc will be disabled and we will not get calls to QueryStatus
+      // for those commands.
+      // t->InPlaceMenuDestroy();
       // t->DestroyToolbar();
       hr = t->UIDeactivate();
     }
