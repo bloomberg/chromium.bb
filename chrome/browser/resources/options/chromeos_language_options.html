@@ -7,24 +7,20 @@
       <h3 i18n-content="languages"></h3>
       <list id="language-options-list"></list>
       <div class="language-options-lower-left">
-        <button id="add-button" i18n-content="add_button"></button>
-        <button id="remove-button" i18n-content="remove_button"></button>
+        <button id="language-options-add-button"
+                i18n-content="add_button"></button>
+        <button id="language-options-remove-button"
+                i18n-content="remove_button"></button>
       </div>
     </div>
     <div class="language-options-right">
-      <!-- TODO: The contents should be dynamically changed. -->
-      <h3>English (United States)</h3>
+      <h3 id="language-options-language-name"></h3>
       <div class="language-options-contents">
-        <button id="ui-language-button"
-                i18n-content="display_in_this_language"></button>
+        <button id="language-options-ui-language-button"></button>
       </div>
       <h3 i18n-content="input_method"></h3>
-      <div class="language-options-contents">
-        <!-- TODO: The contents should be dynamically changed. -->
-        <label><input type="checkbox">US English</label>
-        <label><input type="checkbox">Dvorak</label>
-        <label><input type="checkbox">Dvorak - Left</label>
-        <label><input type="checkbox">Dvorak - Right</label>
+      <div id="language-options-input-method-list"
+           class="language-options-contents">
       </div>
     </div>
   </div>

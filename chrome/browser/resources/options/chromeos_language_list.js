@@ -27,7 +27,7 @@ cr.define('options.language', function() {
       // HACK(arv): http://crbug.com/40902
       window.addEventListener('resize', cr.bind(this.redraw, this));
 
-      // Listens to pref change.
+      // Listen to pref change.
       Preferences.getInstance().addEventListener(this.pref,
           cr.bind(this.handlePrefChange_, this));
     },
@@ -39,11 +39,11 @@ cr.define('options.language', function() {
 
     /**
      * Handles pref change.
-     * @param {Event} event The change event object.
+     * @param {Event} e The change event object.
      * @private
      */
-    handlePrefChange_: function(event) {
-      this.load_(event.value);
+    handlePrefChange_: function(e) {
+      this.load_(e.value);
     },
 
     /**
@@ -54,6 +54,11 @@ cr.define('options.language', function() {
     load_: function(languageCodesInCsv) {
       var languageCodes = languageCodesInCsv.split(',');
       this.dataModel = new ArrayDataModel(languageCodes);
+      // Select the first item if it's not empty.
+      // TODO(satorux): Switch to a single item selection model that does
+      // not allow no selection, one it's ready: crbug.com/49893
+      if (this.dataModel.length > 0)
+        this.selectionModel.selectedIndex = 0;
     },
 
     /**

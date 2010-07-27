@@ -9,6 +9,7 @@
 #include "chrome/browser/dom_ui/options_ui.h"
 
 class DictionaryValue;
+class ListValue;
 
 // ChromeOS language options page UI handler.
 class LanguageOptionsHandler : public OptionsPageUIHandler {
@@ -20,6 +21,9 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
  private:
+  // Get the list of input methods.
+  ListValue* GetInputMethodList();
+
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandler);
 };
 
