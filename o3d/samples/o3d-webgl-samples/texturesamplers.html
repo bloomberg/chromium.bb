@@ -185,10 +185,10 @@ function initStep2(clientElements) {
   samplers[1].minFilter = g_o3d.Sampler.ANISOTROPIC;
   samplers[1].maxAnisotropy = 4;
 
-  // Uses BORDER addressing mode with a red border.
-  samplers[2].addressModeU = g_o3d.Sampler.BORDER;
-  samplers[2].addressModeV = g_o3d.Sampler.BORDER;
-  samplers[2].borderColor = [1, 0, 0, 1];
+  // Note: BORDER addressing is not supported in WebGL.
+  //samplers[2].addressModeU = g_o3d.Sampler.BORDER;
+  //samplers[2].addressModeV = g_o3d.Sampler.BORDER;
+  //samplers[2].borderColor = [1, 0, 0, 1];
 
   // Uses POINT sampling for minification.
   samplers[3].addressModeU = g_o3d.Sampler.WRAP;

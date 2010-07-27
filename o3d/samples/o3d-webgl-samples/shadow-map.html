@@ -260,9 +260,11 @@ function initMaterials() {
   g_shadowSampler.minFilter = g_o3d.Sampler.POINT;
   g_shadowSampler.magFilter = g_o3d.Sampler.POINT;
   g_shadowSampler.mipFilter = g_o3d.Sampler.POINT;
-  g_shadowSampler.addressModeU = g_o3d.Sampler.BORDER;
-  g_shadowSampler.addressModeV = g_o3d.Sampler.BORDER;
-  g_shadowSampler.borderColor = [1, 1, 1, 1];
+  // Note: The o3d-plugin used BORDER as address mode, but that is not available
+  // in WebGL so use WRAP instead.
+  g_shadowSampler.addressModeU = g_o3d.Sampler.WRAP;
+  g_shadowSampler.addressModeV = g_o3d.Sampler.WRAP;
+  //g_shadowSampler.borderColor = [1, 1, 1, 1];
 }
 
 
