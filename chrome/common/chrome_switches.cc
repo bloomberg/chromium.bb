@@ -1065,13 +1065,16 @@ const char kPasswordStore[]                 = "password-store";
 #endif
 
 #if defined(OS_MACOSX)
-// Cause the OS X sandbox write to syslog every time an access to a resource
-// is denied by the sandbox.
-const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
-
 // Temporary flag to prevent Flash from negotiating the Core Animation drawing
 // model. This will be removed once the last issues have been resolved.
 const char kDisableFlashCoreAnimation[]     = "disable-flash-core-animation";
+
+// Enables the tabs expose feature ( http://crbug.com/50307 ).
+const char kEnableExposeForTabs[] = "enable-expose-for-tabs";
+
+// Cause the OS X sandbox write to syslog every time an access to a resource
+// is denied by the sandbox.
+const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
 #else
 // Enable Kiosk mode.
 const char kKioskMode[]                     = "kiosk";

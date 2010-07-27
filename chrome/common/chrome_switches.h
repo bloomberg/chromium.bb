@@ -320,6 +320,7 @@ extern const char kPasswordStore[];
 
 #if defined(OS_MACOSX)
 extern const char kDisableFlashCoreAnimation[];
+extern const char kEnableExposeForTabs[];
 extern const char kEnableSandboxLogging[];
 #else
 extern const char kKioskMode[];
