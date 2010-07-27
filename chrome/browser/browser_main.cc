@@ -181,30 +181,36 @@ void BrowserMainParts::EarlyInitialization() {
 // on browsing. Too large a value might cause us to run into SYN flood detection
 // mechanisms.
 void BrowserMainParts::ConnectionFieldTrial() {
-  const FieldTrial::Probability kConnDivisor = 100;
-  const FieldTrial::Probability kConn16 = 10;  // 10% probability
-  const FieldTrial::Probability kRemainingConn = 30;  // 30% probability
+  const FieldTrial::Probability kConnectDivisor = 100;
+  const FieldTrial::Probability kConnectProbability = 20;  // 20% probability
 
-  scoped_refptr<FieldTrial> conn_trial =
-      new FieldTrial("ConnCountImpact", kConnDivisor);
+  scoped_refptr<FieldTrial> connect_trial =
+      new FieldTrial("ConnCountImpact", kConnectDivisor);
 
-  const int conn_16 = conn_trial->AppendGroup("_conn_count_16", kConn16);
-  const int conn_4 = conn_trial->AppendGroup("_conn_count_4", kRemainingConn);
-  const int conn_8 = conn_trial->AppendGroup("_conn_count_8", kRemainingConn);
-  const int conn_6 = conn_trial->AppendGroup("_conn_count_6",
+  const int connect_5 = connect_trial->AppendGroup("_conn_count_5",
+                                                   kConnectProbability);
+  const int connect_6 = connect_trial->AppendGroup("_conn_count_6",
+                                                   kConnectProbability);
+  const int connect_7 = connect_trial->AppendGroup("_conn_count_7",
+                                                   kConnectProbability);
+  const int connect_8 = connect_trial->AppendGroup("_conn_count_8",
+                                                   kConnectProbability);
+  const int connect_9 = connect_trial->AppendGroup("_conn_count_9",
       FieldTrial::kAllRemainingProbability);
 
-  const int conn_trial_grp = conn_trial->group();
+  const int connect_trial_group = connect_trial->group();
 
-  if (conn_trial_grp == conn_4) {
-    net::HttpNetworkSession::set_max_sockets_per_group(4);
-  } else if (conn_trial_grp == conn_6) {
+  if (connect_trial_group == connect_5) {
+    net::HttpNetworkSession::set_max_sockets_per_group(5);
+  } else if (connect_trial_group == connect_6) {
     // This (6) is the current default value.
     net::HttpNetworkSession::set_max_sockets_per_group(6);
-  } else if (conn_trial_grp == conn_8) {
+  } else if (connect_trial_group == connect_7) {
+    net::HttpNetworkSession::set_max_sockets_per_group(7);
+  } else if (connect_trial_group == connect_8) {
     net::HttpNetworkSession::set_max_sockets_per_group(8);
-  } else if (conn_trial_grp == conn_16) {
-    net::HttpNetworkSession::set_max_sockets_per_group(16);
+  } else if (connect_trial_group == connect_9) {
+    net::HttpNetworkSession::set_max_sockets_per_group(9);
   } else {
     NOTREACHED();
   }
@@ -216,32 +222,36 @@ void BrowserMainParts::ConnectionFieldTrial() {
 // result in more ERR_CONNECT_RESETs, requiring one RTT to receive the RST
 // packet and possibly another RTT to re-establish the connection.
 void BrowserMainParts::SocketTimeoutFieldTrial() {
-  const FieldTrial::Probability kIdleSktToDivisor = 100;  // Idle socket timeout
-  const FieldTrial::Probability kSktToProb = 25;  // 25% probability
+  const FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
+  // 25% probability
+  const FieldTrial::Probability kSocketTimeoutProbability = 25;
 
   scoped_refptr<FieldTrial> socket_timeout_trial =
-      new FieldTrial("IdleSktToImpact", kIdleSktToDivisor);
+      new FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor);
 
   const int socket_timeout_5 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_5", kSktToProb);
+      socket_timeout_trial->AppendGroup("_idle_timeout_5",
+                                        kSocketTimeoutProbability);
   const int socket_timeout_10 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_10", kSktToProb);
+      socket_timeout_trial->AppendGroup("_idle_timeout_10",
+                                        kSocketTimeoutProbability);
   const int socket_timeout_20 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_20", kSktToProb);
+      socket_timeout_trial->AppendGroup("_idle_timeout_20",
+                                        kSocketTimeoutProbability);
   const int socket_timeout_60 =
       socket_timeout_trial->AppendGroup("_idle_timeout_60",
                                         FieldTrial::kAllRemainingProbability);
 
-  const int idle_to_trial_grp = socket_timeout_trial->group();
+  const int idle_to_trial_group = socket_timeout_trial->group();
 
-  if (idle_to_trial_grp == socket_timeout_5) {
+  if (idle_to_trial_group == socket_timeout_5) {
     net::ClientSocketPool::set_unused_idle_socket_timeout(5);
-  } else if (idle_to_trial_grp == socket_timeout_10) {
+  } else if (idle_to_trial_group == socket_timeout_10) {
     // This (10 seconds) is the current default value.
     net::ClientSocketPool::set_unused_idle_socket_timeout(10);
-  } else if (idle_to_trial_grp == socket_timeout_20) {
+  } else if (idle_to_trial_group == socket_timeout_20) {
     net::ClientSocketPool::set_unused_idle_socket_timeout(20);
-  } else if (idle_to_trial_grp == socket_timeout_60) {
+  } else if (idle_to_trial_group == socket_timeout_60) {
     net::ClientSocketPool::set_unused_idle_socket_timeout(60);
   } else {
     NOTREACHED();
