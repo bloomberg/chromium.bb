@@ -68,10 +68,6 @@ class BrowserActionButton : public views::MenuButton,
   // Returns the default icon, if any.
   const SkBitmap& default_icon() const { return default_icon_; }
 
-  // Overridden from views::View. Return a 0-inset so the icon can draw all the
-  // way to the edge of the view if it wants.
-  virtual gfx::Insets GetInsets() const;
-
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
@@ -236,9 +232,9 @@ class BrowserActionView : public views::View {
 // visible icons. This can be triggered when the user finishes resizing the
 // container or when Browser Actions are added/removed.
 //
-// We always animate from the current width (container_size_.width()) to the
-// target size (animation_target_size_), using |resize_amount| to keep track of
-// the animation progress.
+// We always animate from the current width (container_width_) to the target
+// size (animation_target_size_), using |resize_amount| to keep track of the
+// animation progress.
 //
 // NOTE: When adding Browser Actions to a maximum width container (no overflow)
 // we make sure to suppress the chevron menu if it wasn't visible. This is
@@ -248,15 +244,15 @@ class BrowserActionView : public views::View {
 //
 ////////////////////////////////////////////////////////////////////////////////
 class BrowserActionsContainer
-  : public views::View,
-    public views::ViewMenuDelegate,
-    public views::DragController,
-    public views::ResizeArea::ResizeAreaDelegate,
-    public AnimationDelegate,
-    public ExtensionToolbarModel::Observer,
-    public BrowserActionOverflowMenuController::Observer,
-    public ExtensionContextMenuModel::PopupDelegate,
-    public ExtensionPopup::Observer {
+    : public views::View,
+      public views::ViewMenuDelegate,
+      public views::DragController,
+      public views::ResizeArea::ResizeAreaDelegate,
+      public AnimationDelegate,
+      public ExtensionToolbarModel::Observer,
+      public BrowserActionOverflowMenuController::Observer,
+      public ExtensionContextMenuModel::PopupDelegate,
+      public ExtensionPopup::Observer {
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
@@ -460,8 +456,8 @@ class BrowserActionsContainer
   // The model that tracks the order of the toolbar icons.
   ExtensionToolbarModel* model_;
 
-  // The current size of the container.
-  gfx::Size container_size_;
+  // The current width of the container.
+  int container_width_;
 
   // The resize area for the container.
   views::ResizeArea* resize_area_;

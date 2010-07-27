@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   std::string idB = browser_actions_bar()->GetExtensionId(1);
 
-  EXPECT_STRNE(idA.c_str(), idB.c_str());
+  EXPECT_NE(idA, idB);
 
   // Load extension C (contains browser action).
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   DisableExtension(idA);
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_STREQ(idB.c_str(), browser_actions_bar()->GetExtensionId(0).c_str());
+  EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(0));
 
   // Enable A again. A should get its spot in the same location and the bar
   // should not grow (chevron is showing). For details: http://crbug.com/35349.
@@ -110,19 +110,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   EnableExtension(idA);
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_STREQ(idA.c_str(), browser_actions_bar()->GetExtensionId(0).c_str());
+  EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
 
   // Disable C (in overflow). State becomes: A, [B].
   DisableExtension(idC);
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_STREQ(idA.c_str(), browser_actions_bar()->GetExtensionId(0).c_str());
+  EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
 
   // Enable C again. State becomes: A, [B, C].
   EnableExtension(idC);
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_STREQ(idA.c_str(), browser_actions_bar()->GetExtensionId(0).c_str());
+  EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
 
   // Now we have 3 extensions. Make sure they are all visible. State: A, B, C.
   browser_actions_bar()->SetIconVisibilityCount(3);
@@ -132,23 +132,23 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   DisableExtension(idA);
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_STREQ(idB.c_str(), browser_actions_bar()->GetExtensionId(0).c_str());
+  EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(0));
 
   // Disable extension B (should disappear). State becomes: C.
   DisableExtension(idB);
   EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_STREQ(idC.c_str(), browser_actions_bar()->GetExtensionId(0).c_str());
+  EXPECT_EQ(idC, browser_actions_bar()->GetExtensionId(0));
 
   // Enable B (makes B and C showing now). State becomes: B, C.
   EnableExtension(idB);
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_STREQ(idB.c_str(), browser_actions_bar()->GetExtensionId(0).c_str());
+  EXPECT_EQ(idB, browser_actions_bar()->GetExtensionId(0));
 
   // Enable A (makes A, B and C showing now). State becomes: B, C, A.
   EnableExtension(idA);
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_STREQ(idA.c_str(), browser_actions_bar()->GetExtensionId(2).c_str());
+  EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(2));
 }
