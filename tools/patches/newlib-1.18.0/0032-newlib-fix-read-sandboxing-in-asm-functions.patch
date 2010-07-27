@@ -150,8 +150,7 @@ index 81f6da8..747cbbb 100644
  
  SYM (longjmp):
 -  movl    edi, edi        /* Sandbox */
--  movq    rsi, rax        /* Return value */
-+  movq    esi, eax        /* Return value */
+   movq    rsi, rax        /* Return value */
  
 -  naclrestbp 40 (r15,rdi), r15
 +  naclrestbp %nacl: 40 (r15,rdi), r15
