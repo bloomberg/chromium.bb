@@ -465,6 +465,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
 }
 
 void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   DCHECK(info);
 
   // Check writability of the suggested path. If we can't write to it, default
@@ -524,7 +525,6 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
           info->suggested_path), "", 0);
   }
 
-  // Now we return to the UI thread.
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this,
@@ -564,39 +564,18 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
 
 void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                             const FilePath& target_path) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   scoped_ptr<DownloadCreateInfo> infop(info);
   info->path = target_path;
 
-  DownloadItem* download = NULL;
-  DownloadMap::iterator it = in_progress_.find(info->download_id);
-  if (it == in_progress_.end()) {
-    download = new DownloadItem(info->download_id,
-                                info->path,
-                                info->path_uniquifier,
-                                info->url,
-                                info->referrer_url,
-                                info->mime_type,
-                                info->original_mime_type,
-                                info->original_name,
-                                info->start_time,
-                                info->total_bytes,
-                                info->child_id,
-                                info->request_id,
-                                info->is_dangerous,
-                                info->prompt_user_for_save_location,
-                                profile_->IsOffTheRecord(),
-                                info->is_extension_install,
-                                !info->save_info.file_path.empty());
-    download->set_manager(this);
-    in_progress_[info->download_id] = download;
-  } else {
-    NOTREACHED();  // Should not exist!
-    return;
-  }
+  DownloadItem* download = new DownloadItem(this, *info,
+                                            profile_->IsOffTheRecord());
+  DCHECK(!ContainsKey(in_progress_, info->download_id));
+  in_progress_[info->download_id] = download;
 
-  PendingFinishedMap::iterator pending_it =
-      pending_finished_downloads_.find(info->download_id);
-  bool download_finished = (pending_it != pending_finished_downloads_.end());
+  bool download_finished = ContainsKey(pending_finished_downloads_,
+                                       info->download_id);
 
   if (download_finished || info->is_dangerous) {
     // The download has already finished or the download is not safe.
@@ -622,7 +601,8 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
   if (download_finished) {
     // If the download already completed by the time we reached this point, then
     // notify observers that it did.
-    DownloadFinished(pending_it->first, pending_it->second);
+    DownloadFinished(info->download_id,
+                     pending_finished_downloads_[info->download_id]);
   }
 
   download->Rename(target_path);
@@ -762,6 +742,8 @@ void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
 
 void DownloadManager::DownloadRenamedToFinalName(int download_id,
                                                  const FilePath& full_path) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   DownloadItem* item = GetDownloadItem(download_id);
   if (!item)
     return;
@@ -776,11 +758,11 @@ void DownloadManager::DownloadRenamedToFinalName(int download_id,
 }
 
 void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   // If this was a dangerous download, it has now been approved and must be
   // removed from dangerous_finished_ so it does not get deleted on shutdown.
-  DownloadMap::iterator it = dangerous_finished_.find(download->id());
-  if (it != dangerous_finished_.end())
-    dangerous_finished_.erase(it);
+  dangerous_finished_.erase(download->id());
 
   // Handle chrome extensions explicitly and skip the shell execute.
   if (download->is_extension_install()) {
@@ -1495,10 +1477,9 @@ void DownloadManager::GenerateSafeFileName(const std::string& mime_type,
 void DownloadManager::OnQueryDownloadEntriesComplete(
     std::vector<DownloadCreateInfo>* entries) {
   for (size_t i = 0; i < entries->size(); ++i) {
-    DownloadItem* download = new DownloadItem(entries->at(i));
-    DCHECK(downloads_.find(download->db_handle()) == downloads_.end());
+    DownloadItem* download = new DownloadItem(this, entries->at(i));
+    DCHECK(!ContainsKey(downloads_, download->db_handle()));
     downloads_[download->db_handle()] = download;
-    download->set_manager(this);
   }
   NotifyModelChanged();
 }

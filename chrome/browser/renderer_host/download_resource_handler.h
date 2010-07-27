@@ -27,7 +27,7 @@ class DownloadResourceHandler : public ResourceHandler {
                           int render_view_id,
                           int request_id,
                           const GURL& url,
-                          DownloadFileManager* manager,
+                          DownloadFileManager* download_file_manager,
                           URLRequest* request,
                           bool save_as,
                           const DownloadSaveInfo& save_info);
@@ -77,7 +77,7 @@ class DownloadResourceHandler : public ResourceHandler {
   std::string content_disposition_;
   GURL url_;
   int64 content_length_;
-  DownloadFileManager* download_manager_;
+  DownloadFileManager* download_file_manager_;
   URLRequest* request_;
   bool save_as_;  // Request was initiated via "Save As" by the user.
   DownloadSaveInfo save_info_;

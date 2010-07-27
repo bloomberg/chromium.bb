@@ -29,13 +29,10 @@ DownloadShelfContextMenu::~DownloadShelfContextMenu() {
 
 bool DownloadShelfContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
-    case OPEN_WHEN_COMPLETE: {
+    case OPEN_WHEN_COMPLETE:
       return download_->open_when_complete();
-    }
-    case ALWAYS_OPEN_TYPE: {
-      return download_->manager()->ShouldOpenFileBasedOnExtension(
-          download_->full_path());
-    }
+    case ALWAYS_OPEN_TYPE:
+      return download_->ShouldOpenFileBasedOnExtension();
   }
   return false;
 }
@@ -70,7 +67,7 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
     case OPEN_WHEN_COMPLETE:
       return download_->state() != DownloadItem::CANCELLED;
     case ALWAYS_OPEN_TYPE:
-      return download_util::CanOpenDownload(download_);
+      return download_->CanOpenDownload();
     case CANCEL:
       return download_->state() == DownloadItem::IN_PROGRESS;
     case TOGGLE_PAUSE:
@@ -83,14 +80,14 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
 void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
   switch (command_id) {
     case SHOW_IN_FOLDER:
-      download_->manager()->ShowDownloadInShell(download_);
+      download_->ShowDownloadInShell();
       break;
     case OPEN_WHEN_COMPLETE:
-      download_util::OpenDownload(download_);
+      download_->OpenDownload();
       break;
     case ALWAYS_OPEN_TYPE: {
-      download_->manager()->OpenFilesBasedOnExtension(
-          download_->full_path(), !IsCommandIdChecked(ALWAYS_OPEN_TYPE));
+      download_->OpenFilesBasedOnExtension(
+          !IsCommandIdChecked(ALWAYS_OPEN_TYPE));
       break;
     }
     case CANCEL:

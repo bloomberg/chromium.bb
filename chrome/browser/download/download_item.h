@@ -65,32 +65,21 @@ class DownloadItem {
   };
 
   // Constructing from persistent store:
-  explicit DownloadItem(const DownloadCreateInfo& info);
+  DownloadItem(DownloadManager* download_manager,
+               const DownloadCreateInfo& info);
 
-  // Constructing from user action:
-  DownloadItem(int32 download_id,
+  // Constructing for a regular download:
+  DownloadItem(DownloadManager* download_manager,
+               const DownloadCreateInfo& info,
+               bool is_otr);
+
+  // Constructing for the "Save Page As..." feature:
+  DownloadItem(DownloadManager* download_manager,
                const FilePath& path,
-               int path_uniquifier,
                const GURL& url,
-               const GURL& referrer_url,
-               const std::string& mime_type,
-               const std::string& original_mime_type,
-               const FilePath& original_name,
-               const base::Time start_time,
-               int64 download_size,
-               int render_process_id,
-               int request_id,
-               bool is_dangerous,
-               bool save_as,
-               bool is_otr,
-               bool is_extension_install,
-               bool is_temporary);
+               bool is_otr);
 
   ~DownloadItem();
-
-  void Init(bool start_timer);
-
-  // Public API
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -101,8 +90,26 @@ class DownloadItem {
   // Notifies our observers the downloaded file has been completed.
   void NotifyObserversDownloadFileCompleted();
 
-  // Notifies our observers the downloaded file has been opened.
-  void NotifyObserversDownloadOpened();
+  // Whether it is OK to open this download.
+  bool CanOpenDownload();
+
+  // Tests if a file type should be opened automatically.
+  bool ShouldOpenFileBasedOnExtension();
+
+  // Registers this file extension for automatic opening upon download
+  // completion if 'open' is true, or prevents the extension from automatic
+  // opening if 'open' is false.
+  void OpenFilesBasedOnExtension(bool open);
+
+  // Open the file associated with this download (wait for the download to
+  // complete if it is in progress).
+  void OpenDownload();
+
+  // Show the download via the OS shell.
+  void ShowDownloadInShell();
+
+  // Called when the user has validated the download of a dangerous file.
+  void DangerousDownloadValidated();
 
   // Received a new chunk of data
   void Update(int64 bytes_so_far);
@@ -163,8 +170,6 @@ class DownloadItem {
   base::Time start_time() const { return start_time_; }
   void set_db_handle(int64 handle) { db_handle_ = handle; }
   int64 db_handle() const { return db_handle_; }
-  DownloadManager* manager() const { return manager_; }
-  void set_manager(DownloadManager* manager) { manager_ = manager; }
   bool is_paused() const { return is_paused_; }
   void set_is_paused(bool pause) { is_paused_ = pause; }
   bool open_when_complete() const { return open_when_complete_; }
@@ -194,6 +199,8 @@ class DownloadItem {
   FilePath GetFileName() const;
 
  private:
+  void Init(bool start_timer);
+
   // Internal helper for maintaining consistent received and total sizes.
   void UpdateSize(int64 size);
 
@@ -252,7 +259,7 @@ class DownloadItem {
   base::RepeatingTimer<DownloadItem> update_timer_;
 
   // Our owning object
-  DownloadManager* manager_;
+  DownloadManager* download_manager_;
 
   // In progress downloads may be paused by the user, we note it here
   bool is_paused_;

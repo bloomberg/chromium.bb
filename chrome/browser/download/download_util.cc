@@ -29,7 +29,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/time_format.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/rect.h"
@@ -69,26 +68,6 @@ namespace download_util {
 // How many times to cycle the complete animation. This should be an odd number
 // so that the animation ends faded out.
 static const int kCompleteAnimationCycles = 5;
-
-// Download opening ------------------------------------------------------------
-
-bool CanOpenDownload(DownloadItem* download) {
-  FilePath file_to_use = download->full_path();
-  if (!download->original_name().value().empty())
-    file_to_use = download->original_name();
-
-  return !Extension::IsExtension(file_to_use) &&
-         !download->manager()->IsExecutableFile(file_to_use);
-}
-
-void OpenDownload(DownloadItem* download) {
-  if (download->state() == DownloadItem::IN_PROGRESS) {
-    download->set_open_when_complete(!download->open_when_complete());
-  } else if (download->state() == DownloadItem::COMPLETE) {
-    download->NotifyObserversDownloadOpened();
-    download->manager()->OpenDownload(download, NULL);
-  }
-}
 
 // Download temporary file creation --------------------------------------------
 

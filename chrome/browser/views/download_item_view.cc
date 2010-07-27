@@ -433,7 +433,7 @@ void DownloadItemView::ButtonPressed(
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
                              base::Time::Now() - creation_time_);
     // This will change the state and notify us.
-    download_->manager()->DangerousDownloadValidated(download_);
+    download_->DangerousDownloadValidated();
   }
 }
 
@@ -907,11 +907,7 @@ void DownloadItemView::OpenDownload() {
   // open downloads super quickly, we should be concerned about clickjacking.
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
                            base::Time::Now() - creation_time_);
-  if (download_->state() == DownloadItem::IN_PROGRESS) {
-    download_->set_open_when_complete(!download_->open_when_complete());
-  } else if (download_->state() == DownloadItem::COMPLETE) {
-    download_util::OpenDownload(download_);
-  }
+  download_->OpenDownload();
 }
 
 void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,

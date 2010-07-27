@@ -34,6 +34,8 @@ DownloadFile::DownloadFile(const DownloadCreateInfo* info)
 
 DownloadFile::~DownloadFile() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  if (in_progress())
+    Cancel();
   Close();
 }
 

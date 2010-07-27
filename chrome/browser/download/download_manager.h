@@ -238,7 +238,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Deletes the specified path on the file thread.
   void DeleteDownload(const FilePath& path);
 
-  // Called when the user has validated the donwload of a dangerous file.
+  // Called when the user has validated the download of a dangerous file.
   void DangerousDownloadValidated(DownloadItem* download);
 
   // Used to make sure we have a safe file extension and filename for a

@@ -244,10 +244,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (IBAction)handleButtonClick:(id)sender {
   DownloadItem* download = bridge_->download_model()->download();
-  if (download->state() == DownloadItem::IN_PROGRESS)
-    download->set_open_when_complete(!download->open_when_complete());
-  else if (download->state() == DownloadItem::COMPLETE)
-    download_util::OpenDownload(download);
+  download->OpenDownload();
 }
 
 - (NSSize)preferredSize {
@@ -318,8 +315,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
                            base::Time::Now() - creationTime_);
   // This will change the state and notify us.
-  bridge_->download_model()->download()->manager()->DangerousDownloadValidated(
-      bridge_->download_model()->download());
+  bridge_->download_model()->download()->DangerousDownloadValidated();
 }
 
 - (IBAction)discardDownload:(id)sender {

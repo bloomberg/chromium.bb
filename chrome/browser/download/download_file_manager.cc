@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 
 #include "base/file_util.h"
+#include "base/stl_util-inl.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -58,15 +59,7 @@ void DownloadFileManager::Shutdown() {
 // Cease download thread operations.
 void DownloadFileManager::OnShutdown() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  // Delete any partial downloads during shutdown.
-  for (DownloadFileMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    DownloadFile* download = it->second;
-    if (download->in_progress())
-      download->Cancel();
-    delete download;
-  }
-  downloads_.clear();
+  STLDeleteValues(&downloads_);
 }
 
 // Notifications sent from the download thread and run on the UI thread.
@@ -446,11 +439,11 @@ void DownloadFileManager::OnFinalDownloadName(int id,
                                               bool need_delete_crdownload,
                                               DownloadManager* manager) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  DownloadFileMap::iterator it = downloads_.find(id);
-  if (it == downloads_.end())
+
+  DownloadFile* download = GetDownloadFile(id);
+  if (!download)
     return;
 
-  DownloadFile* download = it->second;
   if (download->Rename(full_path, true)) {
 #if defined(OS_MACOSX)
     // Done here because we only want to do this once; see
@@ -474,7 +467,7 @@ void DownloadFileManager::OnFinalDownloadName(int id,
   // If the download has completed before we got this final name, we remove it
   // from our in progress map.
   if (!download->in_progress()) {
-    downloads_.erase(it);
+    downloads_.erase(id);
     delete download;
   }
 
@@ -489,11 +482,11 @@ void DownloadFileManager::OnFinalDownloadName(int id,
 // on the FILE thread.
 void DownloadFileManager::CancelDownloadOnRename(int id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  DownloadFileMap::iterator it = downloads_.find(id);
-  if (it == downloads_.end())
+
+  DownloadFile* download = GetDownloadFile(id);
+  if (!download)
     return;
 
-  DownloadFile* download = it->second;
   DownloadManagerMap::iterator dmit = managers_.find(download->id());
   if (dmit != managers_.end()) {
     DownloadManager* dlm = dmit->second;

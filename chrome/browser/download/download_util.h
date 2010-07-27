@@ -35,15 +35,6 @@ struct DownloadSaveInfo;
 
 namespace download_util {
 
-// Download opening ------------------------------------------------------------
-
-// Whether it is OK to open this download.
-bool CanOpenDownload(DownloadItem* download);
-
-// Open the file associated with this download (wait for the download to
-// complete if it is in progress).
-void OpenDownload(DownloadItem* download);
-
 // Download temporary file creation --------------------------------------------
 
 // Return the default download directory.

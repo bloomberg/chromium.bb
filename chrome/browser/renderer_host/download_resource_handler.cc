@@ -21,7 +21,7 @@ DownloadResourceHandler::DownloadResourceHandler(
     int render_view_id,
     int request_id,
     const GURL& url,
-    DownloadFileManager* manager,
+    DownloadFileManager* download_file_manager,
     URLRequest* request,
     bool save_as,
     const DownloadSaveInfo& save_info)
@@ -30,7 +30,7 @@ DownloadResourceHandler::DownloadResourceHandler(
       render_view_id_(render_view_id),
       url_(url),
       content_length_(0),
-      download_manager_(manager),
+      download_file_manager_(download_file_manager),
       request_(request),
       save_as_(save_as),
       save_info_(save_info),
@@ -63,8 +63,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   set_content_disposition(content_disposition);
   set_content_length(response->response_head.content_length);
 
-  download_id_ = download_manager_->GetNextId();
-  // |download_manager_| consumes (deletes):
+  download_id_ = download_file_manager_->GetNextId();
+  // |download_file_manager_| consumes (deletes):
   DownloadCreateInfo* info = new DownloadCreateInfo;
   info->url = url_;
   info->referrer_url = GURL(request_->referrer());
@@ -93,7 +93,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
-          download_manager_, &DownloadFileManager::StartDownload, info));
+          download_file_manager_, &DownloadFileManager::StartDownload, info));
   return true;
 }
 
@@ -133,7 +133,7 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   if (need_update) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
-        NewRunnableMethod(download_manager_,
+        NewRunnableMethod(download_file_manager_,
                           &DownloadFileManager::UpdateDownload,
                           download_id_,
                           buffer_));
@@ -153,7 +153,7 @@ bool DownloadResourceHandler::OnResponseCompleted(
     const std::string& security_info) {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(download_manager_,
+      NewRunnableMethod(download_file_manager_,
                         &DownloadFileManager::DownloadFinished,
                         download_id_,
                         buffer_));
