@@ -17,7 +17,6 @@ class ConnectionOptions {
   ConnectionOptions();
 
   bool autodetect_proxy() const { return autodetect_proxy_; }
-  bool auto_reconnect() const { return auto_reconnect_; }
   const std::string& proxy_host() const { return proxy_host_; }
   int proxy_port() const { return proxy_port_; }
   bool use_proxy_auth() const { return use_proxy_auth_; }
@@ -26,7 +25,6 @@ class ConnectionOptions {
   bool allow_unverified_certs() const { return allow_unverified_certs_; }
 
   void set_autodetect_proxy(bool f) { autodetect_proxy_ = f; }
-  void set_auto_reconnect(bool f) { auto_reconnect_ = f; }
   void set_proxy_host(const std::string& val) { proxy_host_ = val; }
   void set_proxy_port(int val) { proxy_port_ = val; }
   void set_use_proxy_auth(bool f) { use_proxy_auth_ = f; }
@@ -41,7 +39,6 @@ class ConnectionOptions {
 
  private:
   bool autodetect_proxy_;
-  bool auto_reconnect_;
   std::string proxy_host_;
   int proxy_port_;
   bool use_proxy_auth_;

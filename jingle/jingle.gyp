@@ -23,8 +23,6 @@
         'notifier/base/static_assert.h',
         'notifier/base/task_pump.cc',
         'notifier/base/task_pump.h',
-        'notifier/communicator/auto_reconnect.cc',
-        'notifier/communicator/auto_reconnect.h',
         'notifier/communicator/connection_options.cc',
         'notifier/communicator/connection_options.h',
         'notifier/communicator/connection_settings.cc',

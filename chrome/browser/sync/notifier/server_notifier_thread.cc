@@ -15,7 +15,7 @@ namespace sync_notifier {
 
 ServerNotifierThread::ServerNotifierThread(bool use_chrome_async_socket)
     : notifier::MediatorThreadImpl(use_chrome_async_socket),
-      state_(notifier::STATE_CLOSED) {}
+      state_(notifier::STATE_DISCONNECTED) {}
 
 ServerNotifierThread::~ServerNotifierThread() {}
 
@@ -77,8 +77,7 @@ void ServerNotifierThread::OnClientStateChangeMessage(
     notifier::LoginConnectionState state) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   state_ = state;
-  if (state_ != notifier::STATE_OPENED) {
-    // Assume anything but an opened state invalidates xmpp_client().
+  if (state_ != notifier::STATE_CONNECTED) {
     StopInvalidationListener();
   }
   MediatorThreadImpl::OnClientStateChangeMessage(state);
@@ -86,7 +85,7 @@ void ServerNotifierThread::OnClientStateChangeMessage(
 
 void ServerNotifierThread::StartInvalidationListener() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  if (state_ != notifier::STATE_OPENED) {
+  if (state_ != notifier::STATE_CONNECTED) {
     return;
   }
   buzz::XmppClient* client = xmpp_client();
@@ -108,7 +107,7 @@ void ServerNotifierThread::StartInvalidationListener() {
 
 void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  if (state_ != notifier::STATE_OPENED) {
+  if (state_ != notifier::STATE_CONNECTED) {
     return;
   }
 

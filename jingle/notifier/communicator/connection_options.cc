@@ -8,7 +8,6 @@ namespace notifier {
 
 ConnectionOptions::ConnectionOptions()
     : autodetect_proxy_(true),
-      auto_reconnect_(true),
       proxy_port_(0),
       use_proxy_auth_(0),
       allow_unverified_certs_(false) {

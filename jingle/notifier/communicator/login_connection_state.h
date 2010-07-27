@@ -11,12 +11,8 @@
 namespace notifier {
 
 enum LoginConnectionState {
-  STATE_CLOSED,
-  // Same as the closed state but indicates that a countdown is
-  // happening for auto-retrying the connection.
-  STATE_RETRYING,
-  STATE_OPENING,
-  STATE_OPENED,
+  STATE_DISCONNECTED,
+  STATE_CONNECTED,
 };
 
 }  // namespace notifier

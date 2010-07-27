@@ -99,10 +99,6 @@ SingleLoginAttempt::~SingleLoginAttempt() {
   DCHECK(!client_);
 }
 
-bool SingleLoginAttempt::auto_reconnect() const {
-  return login_settings_->connection_options().auto_reconnect();
-}
-
 const talk_base::ProxyInfo& SingleLoginAttempt::proxy() const {
   DCHECK(connection_generator_.get());
   return connection_generator_->proxy();
@@ -157,7 +153,7 @@ void SingleLoginAttempt::OnAttemptedAllConnections(
   LOG(INFO) << "Connection failed with error " << code_;
 
   // We were connected and we had a problem.
-  if (successful_connection_ && auto_reconnect()) {
+  if (successful_connection_) {
     SignalNeedAutoReconnect();
     // Expect to be deleted at this point.
     return;

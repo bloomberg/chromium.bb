@@ -118,8 +118,6 @@ class SingleLoginAttempt : public talk_base::Task, public sigslot::has_slots<> {
   void OnAttemptedAllConnections(bool successfully_resolved_dns,
                                  int first_dns_error);
 
-  bool auto_reconnect() const;
-
   bool use_chrome_async_socket_;
   buzz::XmppEngine::State state_;
   buzz::XmppEngine::Error code_;

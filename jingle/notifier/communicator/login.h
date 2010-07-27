@@ -10,7 +10,6 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "jingle/notifier/base/sigslotrepeater.h"
-#include "jingle/notifier/communicator/auto_reconnect.h"
 #include "jingle/notifier/communicator/login_connection_state.h"
 #include "net/base/network_change_notifier.h"
 #include "talk/base/proxyinfo.h"
@@ -58,44 +57,14 @@ class Login : public net::NetworkChangeNotifier::Observer,
         ServerInformation* server_list,
         int server_count,
         talk_base::FirewallManager* firewall,
-        bool proxy_only,
-        bool previous_login_successful);
+        bool proxy_only);
   virtual ~Login();
 
-  LoginConnectionState connection_state() const {
-    return state_;
-  }
-
   void StartConnection();
-  void UseNextConnection();
-  void UseCurrentConnection();
+
   buzz::XmppClient* xmpp_client();
 
-  // Start the auto-reconnect.  It may not do the auto-reconnect if
-  // auto-reconnect is turned off.
-  void DoAutoReconnect();
-
-  const LoginSettings& login_settings() const {
-    return *(login_settings_.get());
-  }
-
-  // Returns the best guess at the host responsible for the account (which we
-  // use to determine if it is a dasher account or not).
-  //
-  // After login this may return a more accurate answer, which accounts for
-  // open sign-up accounts.
-  const std::string& google_host() const;
-
-  // Analogous to google_host but for the user account ("fred" in
-  // "fred@gmail.com").
-  const std::string& google_user() const;
-
-  // Returns the proxy that is being used to connect (or the default proxy
-  // information if all attempted connections failed).
-  //
-  // Do not call until StartConnection has been called.
-  const talk_base::ProxyInfo& proxy() const;
-
+  // net::NetworkChangeNotifier::Observer implementation.
   virtual void OnIPAddressChanged();
 
   sigslot::signal1<LoginConnectionState> SignalClientStateChange;
@@ -103,47 +72,44 @@ class Login : public net::NetworkChangeNotifier::Observer,
   sigslot::signal1<const LoginFailure&> SignalLoginFailure;
   sigslot::repeater2<const char*, int> SignalLogInput;
   sigslot::repeater2<const char*, int> SignalLogOutput;
-  sigslot::repeater1<bool> SignalIdleChange;
-
-  // The creator should hook this up to a signal that indicates when the power
-  // is being suspended.
-  sigslot::repeater1<bool> SignalPowerSuspended;
 
  private:
-  void CheckConnection();
-
-  void OnRedirect(const std::string& redirect_server, int redirect_port);
-  void OnUnexpectedDisconnect();
-  void OnClientStateChange(buzz::XmppEngine::State state);
   void OnLoginFailure(const LoginFailure& failure);
   void OnLogoff();
-  void OnAutoReconnectTimerChange();
+  void OnRedirect(const std::string& redirect_server, int redirect_port);
+  void OnClientStateChange(buzz::XmppEngine::State state);
 
-  void HandleClientStateChange(LoginConnectionState new_state);
-  void ResetUnexpectedDisconnect();
+  void ChangeState(LoginConnectionState new_state);
 
-  void OnDisconnectTimeout();
+  // Abort any existing connection.
+  void Disconnect();
+
+  // Stops any existing reconnect timer and sets an initial reconnect
+  // interval.
+  void ResetReconnectState();
+
+  // Tries to reconnect in some point in the future.  If called
+  // repeatedly, will wait longer and longer until reconnecting.
+  void TryReconnect();
+
+  // The actual function (called by |reconnect_timer_|) that does the
+  // reconnection.
+  void DoReconnect();
 
   talk_base::TaskParent* parent_;
   bool use_chrome_async_socket_;
   scoped_ptr<LoginSettings> login_settings_;
-  AutoReconnect auto_reconnect_;
-  SingleLoginAttempt* single_attempt_;
-  bool successful_connection_;
-
   LoginConnectionState state_;
+  SingleLoginAttempt* single_attempt_;
+
+  // reconnection state.
+  base::TimeDelta reconnect_interval_;
+  base::OneShotTimer<Login> reconnect_timer_;
 
   // server redirect information
   base::Time redirect_time_;
   std::string redirect_server_;
   int redirect_port_;
-  bool unexpected_disconnect_occurred_;
-  base::OneShotTimer<Login> reset_unexpected_timer_;
-  std::string google_host_;
-  std::string google_user_;
-  talk_base::ProxyInfo proxy_info_;
-
-  base::OneShotTimer<Login> disconnect_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };
