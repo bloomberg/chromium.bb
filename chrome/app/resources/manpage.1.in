@@ -24,7 +24,7 @@ stable flags.
 \fB\-\-user\-data\-dir\fR=\fIDIR\fR
 Specifies the directory that user data (your "profile") is kept in.
 Defaults to
-.I ~/.config/@@CONFDIR@@/Default .
+.I ~/.config/@@CONFDIR@@ .
 Separate instances of @@NAME@@ must use separate user data directories;
 repeated invocations of @@FILENAME@@ will reuse an existing process for
 a given user data directory.
