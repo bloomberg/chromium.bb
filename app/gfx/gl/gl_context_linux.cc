@@ -318,7 +318,7 @@ void OSMesaViewGLContext::Destroy() {
 
   if (pixmap_) {
     XFreePixmap(display, pixmap_);
-    pixmap_ = NULL;
+    pixmap_ = 0;
   }
 
   if (window_graphics_context_) {
@@ -406,7 +406,7 @@ bool OSMesaViewGLContext::UpdateSize() {
   }
   if (pixmap_) {
     XFreePixmap(display, pixmap_);
-    pixmap_ = NULL;
+    pixmap_ = 0;
   }
 
   // Recreate a pixmap to hold the frame.

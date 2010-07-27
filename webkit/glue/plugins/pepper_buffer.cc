@@ -22,11 +22,11 @@ namespace {
 PP_Resource Create(PP_Module module_id, int32_t size) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
-    return NULL;
+    return 0;
 
   scoped_refptr<Buffer> buffer(new Buffer(module));
   if (!buffer->Init(size))
-    return NULL;
+    return 0;
 
   return buffer->GetReference();
 }

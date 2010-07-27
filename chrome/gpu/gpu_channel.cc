@@ -105,7 +105,7 @@ void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
 
 #if defined(ENABLE_GPU)
 
-  gfx::PluginWindowHandle handle = NULL;
+  gfx::PluginWindowHandle handle = gfx::kNullPluginWindow;
 #if defined(OS_WIN)
   gfx::NativeView view = gfx::NativeViewFromId(view_id);
 
@@ -151,7 +151,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(int32 parent_route_id,
 
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this,
-      NULL,
+      gfx::kNullPluginWindow,
       parent_stub,
       size,
       parent_texture_id,

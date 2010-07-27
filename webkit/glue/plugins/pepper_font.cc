@@ -24,14 +24,14 @@ PP_Resource MatchFontWithFallback(PP_Module module_id,
 #if defined(OS_LINUX)
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
-    return NULL;
+    return 0;
 
   int fd = webkit_glue::MatchFontWithFallback(description->face,
                                               description->weight >= 700,
                                               description->italic,
                                               description->charset);
   if (fd == -1)
-    return NULL;
+    return 0;
 
   scoped_refptr<Font> font(new Font(module, fd));
 

@@ -28,7 +28,7 @@ namespace {
 PP_Resource Create(PP_Instance instance_id, bool vertical) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
-    return NULL;
+    return 0;
 
   scoped_refptr<Scrollbar> scrollbar(new Scrollbar(instance, vertical));
   return scrollbar->GetReference();

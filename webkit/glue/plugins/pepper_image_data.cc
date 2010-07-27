@@ -31,11 +31,11 @@ PP_Resource Create(PP_Module module_id,
                    bool init_to_zero) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
-    return NULL;
+    return 0;
 
   scoped_refptr<ImageData> data(new ImageData(module));
   if (!data->Init(format, size->width, size->height, init_to_zero))
-    return NULL;
+    return 0;
 
   return data->GetReference();
 }

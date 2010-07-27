@@ -68,11 +68,11 @@ PP_Resource Create(PP_Module module_id,
                    bool is_always_opaque) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
-    return NULL;
+    return 0;
 
   scoped_refptr<DeviceContext2D> context(new DeviceContext2D(module));
   if (!context->Init(size->width, size->height, is_always_opaque))
-    return NULL;
+    return 0;
   return context->GetReference();
 }
 
