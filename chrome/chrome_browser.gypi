@@ -222,6 +222,7 @@
         'browser/automation/automation_window_tracker.h',
         'browser/automation/extension_port_container.cc',
         'browser/automation/extension_port_container.h',
+        'browser/automation/ui_controls_internal.h',
         'browser/automation/ui_controls_linux.cc',
         'browser/automation/ui_controls_mac.mm',
         'browser/automation/ui_controls_win.cc',

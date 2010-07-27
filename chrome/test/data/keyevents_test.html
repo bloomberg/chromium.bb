@@ -11,7 +11,10 @@ var keyEventResult = [];
 var focusedElement = "";
 var lastFocusedElement = "";
 var testStarted = false;
-var keyEventCount = 0;
+var expectedEventCount = 0;
+var eventCount = 0;
+var keyDownCount = 0;
+var keyUpCount = 0;
 
 function init() {
   document.addEventListener("keydown", handleEvent, false);
@@ -31,10 +34,11 @@ function setDefaultAction(type, value) {
   return defaultActions[type];
 }
 
-function startTest() {
+function startTest(count) {
   if (!testStarted) {
     clearResult();
     testStarted = true;
+    expectedEventCount = count;
     log("Start test.");
     return true;
   }
@@ -72,17 +76,19 @@ function handleEvent(e) {
     result += (evt.keyCode + ' ' + evt.charCode + ' ' +
         (keyId == 'Control' ? true : evt.ctrlKey) + ' ' +
         (keyId == 'Shift' ? true : evt.shiftKey) + ' ' +
-        (keyId == 'Alt' ? true : evt.altKey));
+        (keyId == 'Alt' ? true : evt.altKey) + ' ' +
+        (keyId == 'Meta' ? true : evt.metaKey));
   }
   keyEventResult.push(result);
   log(result);
 
   if (testStarted) {
+    ++eventCount;
     if (evt.type == "keydown") {
-      ++keyEventCount;
+      ++keyDownCount;
     } else if (evt.type == "keyup") {
-      --keyEventCount;
-      if (keyEventCount == 0)
+      ++keyUpCount;
+      if (keyDownCount == keyUpCount || (eventCount >= expectedEventCount))
         finishTest();
     }
   }
@@ -102,7 +108,10 @@ function handleWindowBlur() {
 function clearResult() {
   keyEventResult = [];
   testStarted = false;
-  keyEventCount = 0;
+  expectedEventCount = 0;
+  eventCount = 0;
+  keyDownCount = 0;
+  keyUpCount = 0;
   document.getElementById('log').innerHTML = "";
   return true;
 }
@@ -157,7 +166,7 @@ function onClick(element) {
     onfocus="onFocus(this)" onblur="onBlur(this)"/>
   <input type="text" id="A" accesskey="A"
     onfocus="onFocus(this)" onblur="onBlur(this)"/>
-  <input type="text" id="B" accesskey="B"
+  <input type="password" id="B" accesskey="B"
     onfocus="onFocus(this)" onblur="onBlur(this)"/>
   <button id="clear" accesskey='C' onclick="clearResult()">Clear</button>
   <p id="log"></p>

@@ -33,9 +33,6 @@
 
 // WindowsKeyCodeForGdkKeyCode is copied from platform/gtk/KeyEventGtk.cpp
 
-#ifndef BASE_KEYBOARD_CODE_CONVERSION_GTK_H_
-#define BASE_KEYBOARD_CODE_CONVERSION_GTK_H_
-
 #include "base/keyboard_code_conversion_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
@@ -615,6 +612,4 @@ int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode, bool shift) {
     }
 }
 
-} // namespace
-
-#endif  // BASE_KEYBOARD_CODE_CONVERSION_GTK_H_
+}  // namespace base

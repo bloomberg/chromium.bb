@@ -5,6 +5,7 @@
 #include "build/build_config.h"
 
 #include "base/format_macros.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -19,9 +20,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+
+#if defined(TOOLKIT_VIEWS) || defined(OS_WIN)
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/window/window.h"
+#endif
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/frame/browser_view.h"
@@ -34,12 +38,20 @@
 #endif
 
 #if defined(OS_LINUX)
+#define MAYBE_FocusTraversal FocusTraversal
 // For some reason we hit an external DNS lookup in this test in Linux but not
 // on Windows. TODO(estade): investigate.
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 // TODO(jcampan): http://crbug.com/23683
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
-#else
+#elif defined(OS_MACOSX)
+// TODO(suzhe): http://crbug.com/49738 (following two tests)
+#define MAYBE_FocusTraversal FAILS_FocusTraversal
+#define MAYBE_FocusTraversalOnInterstitial FAILS_FocusTraversalOnInterstitial
+// TODO(suzhe): http://crbug.com/49737
+#define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
+#elif defined(OS_WIN)
+#define MAYBE_FocusTraversal FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
 #define MAYBE_TabsRememberFocusFindInPage TabsRememberFocusFindInPage
 #endif
@@ -70,28 +82,9 @@ class BrowserFocusTest : public InProcessBrowserTest {
     ui_test_utils::ClickOnView(browser(), vid);
   }
 
-  static void HideNativeWindow(gfx::NativeWindow window) {
-#if defined(OS_WIN)
-    // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
-    // using Windows API.
-    ::ShowWindow(window, SW_HIDE);
-#elif defined(TOOLKIT_USES_GTK)
-    gtk_widget_hide(GTK_WIDGET(window));
-#else
-    NOTIMPLEMENTED();
-#endif
-  }
-
-  static void ShowNativeWindow(gfx::NativeWindow window) {
-#if defined(OS_WIN)
-    // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
-    // using Windows API.
-    ::ShowWindow(window, SW_SHOW);
-#elif defined(TOOLKIT_USES_GTK)
-    gtk_widget_hide(GTK_WIDGET(window));
-#else
-    NOTIMPLEMENTED();
-#endif
+  void BringBrowserWindowToFront() {
+    ui_test_utils::ShowAndFocusNativeWindow(
+        browser()->window()->GetNativeHandle());
   }
 };
 
@@ -170,7 +163,8 @@ class TestInterstitialPage : public InterstitialPage {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
-#if defined(USE_X11)
+  BringBrowserWindowToFront();
+#if defined(USE_X11) || defined(OS_MACOSX)
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
@@ -189,7 +183,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test page.
   GURL url = server->TestServerPage(kSimplePage);
@@ -200,15 +196,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   // The focus should be on the Tab contents.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   // Now hide the window, show it again, the focus should not have changed.
-  HideNativeWindow(window);
-  ShowNativeWindow(window);
+  ui_test_utils::HideNativeWindow(window);
+  ui_test_utils::ShowAndFocusNativeWindow(window);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   browser()->FocusLocationBar();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
   // Hide the window, show it again, the focus should not have changed.
-  HideNativeWindow(window);
-  ShowNativeWindow(window);
+  ui_test_utils::HideNativeWindow(window);
+  ui_test_utils::ShowAndFocusNativeWindow(window);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // The rest of this test does not make sense on Linux because the behavior
@@ -252,7 +248,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
 
 // Tabs remember focus.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test page.
   GURL url = server->TestServerPage(kSimplePage);
@@ -326,7 +324,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
 
 // Tabs remember focus with find-in-page box.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test page.
   GURL url = server->TestServerPage(kSimplePage);
@@ -364,7 +364,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
 
 // Background window does not steal focus.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test page.
   GURL url = server->TestServerPage(kSimplePage);
@@ -393,6 +395,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
 #elif defined(OS_WIN)
   focused_browser = browser();
   unfocused_browser = browser2;
+#elif defined(OS_MACOSX)
+  // On Mac, the newly created window always gets the focus.
+  focused_browser = browser2;
+  unfocused_browser = browser();
 #endif
 
   GURL steal_focus_url = server->TestServerPage(kStealFocusPage);
@@ -415,7 +421,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
 
 // Page cannot steal focus when focus is on location bar.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // Open the page that steals focus.
   GURL url = server->TestServerPage(kStealFocusPage);
@@ -435,8 +443,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
 // focus has changed in the page.  The notification in the renderer may change
 // at which point this test would fail (see comment in
 // RenderWidget::didFocus()).
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test page.
   GURL url = server->TestServerPage(kTypicalPage);
@@ -528,7 +538,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
 
 // Focus traversal while an interstitial is showing.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test page.
   GURL url = server->TestServerPage(kSimplePage);
@@ -618,7 +630,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 
 // Focus stays on page with interstitials.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // First we navigate to our test page.
   GURL url = server->TestServerPage(kSimplePage);
@@ -653,7 +667,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 
 // Make sure Find box can request focus, even when it is already open.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // Open some page (any page that doesn't steal focus).
   GURL url = server->TestServerPage(kTypicalPage);
@@ -661,10 +677,17 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
   gfx::NativeWindow window = browser()->window()->GetNativeHandle();
 
+#if defined(OS_MACOSX)
+  // Press Cmd+F, which will make the Find box open and request focus.
+  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, false,
+                                          false, false, true,
+                                          new MessageLoop::QuitTask());
+#else
   // Press Ctrl+F, which will make the Find box open and request focus.
   ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
                                           false, false, false,
                                           new MessageLoop::QuitTask());
+#endif
   ui_test_utils::RunMessageLoop();
 
   // Ideally, we wouldn't sleep here and instead would intercept the
@@ -682,9 +705,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Now press Ctrl+F again and focus should move to the Find box.
+#if defined(OS_MACOSX)
+  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, false,
+                                          false, false, true,
+                                          new MessageLoop::QuitTask());
+#else
   ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
                                           false, false, false,
                                           new MessageLoop::QuitTask());
+#endif
   ui_test_utils::RunMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
@@ -693,9 +722,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Now press Ctrl+F again and focus should move to the Find box.
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true, false,
-                                          false, false,
+#if defined(OS_MACOSX)
+  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, false,
+                                          false, false, true,
                                           new MessageLoop::QuitTask());
+#else
+  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
+                                          false, false, false,
+                                          new MessageLoop::QuitTask());
+#endif
   ui_test_utils::RunMessageLoop();
 
   // See remark above on why we wait.
@@ -708,6 +743,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
+  BringBrowserWindowToFront();
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
 
@@ -732,7 +768,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
 
 // Tests that focus goes where expected when using reload.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // Open the new tab, reload.
   browser()->NewTab();
@@ -765,7 +803,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 
 // Tests that focus goes where expected when using reload on a crashed tab.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReloadCrashedTab) {
+  BringBrowserWindowToFront();
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   // Open a regular page, crash, reload.
   ui_test_utils::NavigateToURL(browser(), server->TestServerPage(kSimplePage));

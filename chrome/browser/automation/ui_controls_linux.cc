@@ -12,6 +12,7 @@
 #include "base/keyboard_code_conversion_gtk.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/automation/ui_controls_internal.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/test/automation/automation_constants.h"
 
@@ -60,27 +61,6 @@ class EventWaiter : public MessageLoopForUI::Observer {
   GdkEventType type_;
   // The number of events of this type to wait for.
   int count_;
-};
-
-class ClickTask : public Task {
- public:
-  ClickTask(ui_controls::MouseButton button, int state, Task* followup)
-      : button_(button), state_(state), followup_(followup)  {
-  }
-
-  virtual ~ClickTask() {}
-
-  virtual void Run() {
-    if (followup_)
-      ui_controls::SendMouseEventsNotifyWhenDone(button_, state_, followup_);
-    else
-      ui_controls::SendMouseEvents(button_, state_);
-  }
-
- private:
-  ui_controls::MouseButton button_;
-  int state_;
-  Task* followup_;
 };
 
 void FakeAMouseMotionEvent(gint x, gint y) {

@@ -85,4 +85,12 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   RunMessageLoop();
 }
 
+void HideNativeWindow(gfx::NativeWindow window) {
+  gtk_widget_hide(GTK_WIDGET(window));
+}
+
+void ShowAndFocusNativeWindow(gfx::NativeWindow window) {
+  gtk_window_present(GTK_WINDOW(window));
+}
+
 }  // namespace ui_test_utils

@@ -41,8 +41,11 @@ const wchar_t kSetFocusedElementJS[] =
 const wchar_t kGetTextBoxValueJS[] =
     L"window.domAutomationController.send("
     L"document.getElementById('%ls').value);";
+const wchar_t kSetTextBoxValueJS[] =
+    L"window.domAutomationController.send("
+    L"document.getElementById('%ls').value = '%ls');";
 const wchar_t kStartTestJS[] =
-    L"window.domAutomationController.send(startTest());";
+    L"window.domAutomationController.send(startTest(%d));";
 
 // Maximum lenght of the result array in KeyEventTestData structure.
 const size_t kMaxResultLength = 10;
@@ -51,10 +54,10 @@ const size_t kMaxResultLength = 10;
 // Each keyboard event may generate multiple result strings representing
 // the result of keydown, keypress, keyup and textInput events.
 // For keydown, keypress and keyup events, the format of the result string is:
-// <type> <keyCode> <charCode> <ctrlKey> <shiftKey> <altKey>
+// <type> <keyCode> <charCode> <ctrlKey> <shiftKey> <altKey> <commandKey>
 // where <type> may be 'D' (keydown), 'P' (keypress) or 'U' (keyup).
-// <ctrlKey>, <shiftKey> and <altKey> are boolean value indicating the state of
-// corresponding modifier key.
+// <ctrlKey>, <shiftKey> <altKey> and <commandKey> are boolean value indicating
+// the state of corresponding modifier key.
 // For textInput event, the format is: T <text>, where <text> is the text to be
 // input.
 // Please refer to chrome/test/data/keyevents_test.html for details.
@@ -63,6 +66,7 @@ struct KeyEventTestData {
   bool ctrl;
   bool shift;
   bool alt;
+  bool command;
 
   bool suppress_keydown;
   bool suppress_keypress;
@@ -131,12 +135,21 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_TRUE(*native_window);
   }
 
-  void SendKey(base::KeyboardCode key, bool control, bool shift, bool alt) {
+  void BringBrowserWindowToFront() {
+    gfx::NativeWindow window = NULL;
+    ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
+    ui_test_utils::ShowAndFocusNativeWindow(window);
+  }
+
+  void SendKey(base::KeyboardCode key,
+               bool control,
+               bool shift,
+               bool alt,
+               bool command) {
     gfx::NativeWindow window = NULL;
     ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
     EXPECT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-                    window, key, control, shift, alt,
-                    false /* command, */,
+                    window, key, control, shift, alt, command,
                     new MessageLoop::QuitTask()));
     ui_test_utils::RunMessageLoop();
   }
@@ -238,12 +251,24 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_EQ(WideToUTF8(value), actual);
   }
 
-  void StartTest(int tab_index) {
+  void SetTextBoxValue(int tab_index, const wchar_t* id,
+                       const wchar_t* value) {
+    ASSERT_LT(tab_index, browser()->tab_count());
+    std::string actual;
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+        browser()->GetTabContentsAt(tab_index)->render_view_host(),
+        L"",
+        StringPrintf(kSetTextBoxValueJS, id, value),
+        &actual));
+    ASSERT_EQ(WideToUTF8(value), actual);
+  }
+
+  void StartTest(int tab_index, int result_length) {
     ASSERT_LT(tab_index, browser()->tab_count());
     bool actual;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         browser()->GetTabContentsAt(tab_index)->render_view_host(),
-        L"", kStartTestJS, &actual));
+        L"", StringPrintf(kStartTestJS, result_length), &actual));
     ASSERT_TRUE(actual);
   }
 
@@ -253,7 +278,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
     // Inform our testing web page that we are about to start testing a key
     // event.
-    ASSERT_NO_FATAL_FAILURE(StartTest(tab_index));
+    ASSERT_NO_FATAL_FAILURE(StartTest(tab_index, test.result_length));
     ASSERT_NO_FATAL_FAILURE(SuppressEvents(
         tab_index, test.suppress_keydown, test.suppress_keypress,
         test.suppress_keyup, test.suppress_textinput));
@@ -264,7 +289,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     TestFinishObserver finish_observer(
         browser()->GetTabContentsAt(tab_index)->render_view_host());
 
-    ASSERT_NO_FATAL_FAILURE(SendKey(test.key, test.ctrl, test.shift, test.alt));
+    ASSERT_NO_FATAL_FAILURE(
+        SendKey(test.key, test.ctrl, test.shift, test.alt, test.command));
     ASSERT_TRUE(finish_observer.WaitForFinish());
     ASSERT_NO_FATAL_FAILURE(CheckResult(
         tab_index, test.result_length, test.result));
@@ -272,10 +298,10 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
   std::string GetTestDataDescription(const KeyEventTestData& data) {
     std::string desc = StringPrintf(
-        " VKEY:0x%02x, ctrl:%d, shift:%d, alt:%d\n"
+        " VKEY:0x%02x, ctrl:%d, shift:%d, alt:%d, command:%d\n"
         " Suppress: keydown:%d, keypress:%d, keyup:%d, textInput:%d\n"
         " Expected results(%d):\n",
-        data.key, data.ctrl, data.shift, data.alt,
+        data.key, data.ctrl, data.shift, data.alt, data.command,
         data.suppress_keydown, data.suppress_keypress, data.suppress_keyup,
         data.suppress_textinput, data.result_length);
     for (int i = 0; i < data.result_length; ++i) {
@@ -289,69 +315,70 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
 }  // namespace
 
-// Flaky since r51395. See crbug.com/48671.
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_NormalKeyEvents) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
   static const KeyEventTestData kTestNoInput[] = {
     // a
-    { base::VKEY_A, false, false, false,
+    { base::VKEY_A, false, false, false, false,
       false, false, false, false, 3,
-      { "D 65 0 false false false",
-        "P 97 97 false false false",
-        "U 65 0 false false false" } },
+      { "D 65 0 false false false false",
+        "P 97 97 false false false false",
+        "U 65 0 false false false false" } },
     // shift-a
-    { base::VKEY_A, false, true, false,
+    { base::VKEY_A, false, true, false, false,
       false, false, false, false, 5,
-      { "D 16 0 false true false",
-        "D 65 0 false true false",
-        "P 65 65 false true false",
-        "U 65 0 false true false",
-        "U 16 0 false true false" } },
+      { "D 16 0 false true false false",
+        "D 65 0 false true false false",
+        "P 65 65 false true false false",
+        "U 65 0 false true false false",
+        "U 16 0 false true false false" } },
     // a, suppress keydown
-    { base::VKEY_A, false, false, false,
+    { base::VKEY_A, false, false, false, false,
       true, false, false, false, 2,
-      { "D 65 0 false false false",
-        "U 65 0 false false false" } },
+      { "D 65 0 false false false false",
+        "U 65 0 false false false false" } },
   };
 
   static const KeyEventTestData kTestWithInput[] = {
     // a
-    { base::VKEY_A, false, false, false,
+    { base::VKEY_A, false, false, false, false,
       false, false, false, false, 4,
-      { "D 65 0 false false false",
-        "P 97 97 false false false",
+      { "D 65 0 false false false false",
+        "P 97 97 false false false false",
         "T a",
-        "U 65 0 false false false" } },
+        "U 65 0 false false false false" } },
     // shift-a
-    { base::VKEY_A, false, true, false,
+    { base::VKEY_A, false, true, false, false,
       false, false, false, false, 6,
-      { "D 16 0 false true false",
-        "D 65 0 false true false",
-        "P 65 65 false true false",
+      { "D 16 0 false true false false",
+        "D 65 0 false true false false",
+        "P 65 65 false true false false",
         "T A",
-        "U 65 0 false true false",
-        "U 16 0 false true false" } },
+        "U 65 0 false true false false",
+        "U 16 0 false true false false" } },
     // a, suppress keydown
-    { base::VKEY_A, false, false, false,
+    { base::VKEY_A, false, false, false, false,
       true, false, false, false, 2,
-      { "D 65 0 false false false",
-        "U 65 0 false false false" } },
+      { "D 65 0 false false false false",
+        "U 65 0 false false false false" } },
     // a, suppress keypress
-    { base::VKEY_A, false, false, false,
+    { base::VKEY_A, false, false, false, false,
       false, true, false, false, 3,
-      { "D 65 0 false false false",
-        "P 97 97 false false false",
-        "U 65 0 false false false" } },
+      { "D 65 0 false false false false",
+        "P 97 97 false false false false",
+        "U 65 0 false false false false" } },
     // a, suppress textInput
-    { base::VKEY_A, false, false, false,
+    { base::VKEY_A, false, false, false, false,
       false, false, false, true, 4,
-      { "D 65 0 false false false",
-        "P 97 97 false false false",
+      { "D 65 0 false false false false",
+        "P 97 97 false false false false",
         "T a",
-        "U 65 0 false false false" } },
+        "U 65 0 false false false false" } },
   };
 
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
+  BringBrowserWindowToFront();
   GURL url = server->TestServerPage(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -365,67 +392,79 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_NormalKeyEvents) {
         << GetTestDataDescription(kTestNoInput[i]);
   }
 
+  // Input in normal text box.
   ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"A"));
   for (size_t i = 0; i < arraysize(kTestWithInput); ++i) {
     EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestWithInput[i]))
-        << "kTestWithInput[" << i << "] failed:\n"
+        << "kTestWithInput[" << i << "] in text box failed:\n"
         << GetTestDataDescription(kTestWithInput[i]);
   }
-
   EXPECT_NO_FATAL_FAILURE(CheckTextBoxValue(tab_index, L"A", L"aA"));
+
+  // Input in password box.
+  ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"B"));
+  for (size_t i = 0; i < arraysize(kTestWithInput); ++i) {
+    EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestWithInput[i]))
+        << "kTestWithInput[" << i << "] in password box failed:\n"
+        << GetTestDataDescription(kTestWithInput[i]);
+  }
+  EXPECT_NO_FATAL_FAILURE(CheckTextBoxValue(tab_index, L"B", L"aA"));
 }
 
+#if defined(OS_WIN) || defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   static const KeyEventTestData kTestCtrlF = {
-    base::VKEY_F, true, false, false,
+    base::VKEY_F, true, false, false, false,
     false, false, false, false, 2,
-    { "D 17 0 true false false",
-      "D 70 0 true false false" }
+    { "D 17 0 true false false false",
+      "D 70 0 true false false false" }
   };
 
   static const KeyEventTestData kTestCtrlFSuppressKeyDown = {
-    base::VKEY_F, true, false, false,
+    base::VKEY_F, true, false, false, false,
     true, false, false, false, 4,
-    { "D 17 0 true false false",
-      "D 70 0 true false false",
-      "U 70 0 true false false",
-      "U 17 0 true false false" }
+    { "D 17 0 true false false false",
+      "D 70 0 true false false false",
+      "U 70 0 true false false false",
+      "U 17 0 true false false false" }
   };
 
   // Ctrl+Z doesn't bind to any accelerators, which then should generate a
   // keypress event with charCode=26.
   static const KeyEventTestData kTestCtrlZ = {
-    base::VKEY_Z, true, false, false,
+    base::VKEY_Z, true, false, false, false,
     false, false, false, false, 5,
-    { "D 17 0 true false false",
-      "D 90 0 true false false",
-      "P 26 26 true false false",
-      "U 90 0 true false false",
-      "U 17 0 true false false" }
+    { "D 17 0 true false false false",
+      "D 90 0 true false false false",
+      "P 26 26 true false false false",
+      "U 90 0 true false false false",
+      "U 17 0 true false false false" }
   };
 
   static const KeyEventTestData kTestCtrlZSuppressKeyDown = {
-    base::VKEY_Z, true, false, false,
+    base::VKEY_Z, true, false, false, false,
     true, false, false, false, 4,
-    { "D 17 0 true false false",
-      "D 90 0 true false false",
-      "U 90 0 true false false",
-      "U 17 0 true false false" }
+    { "D 17 0 true false false false",
+      "D 90 0 true false false false",
+      "U 90 0 true false false false",
+      "U 17 0 true false false false" }
   };
 
   // Ctrl+Enter shall generate a keypress event with charCode=10 (LF).
   static const KeyEventTestData kTestCtrlEnter = {
-    base::VKEY_RETURN, true, false, false,
+    base::VKEY_RETURN, true, false, false, false,
     false, false, false, false, 5,
-    { "D 17 0 true false false",
-      "D 13 0 true false false",
-      "P 10 10 true false false",
-      "U 13 0 true false false",
-      "U 17 0 true false false" }
+    { "D 17 0 true false false false",
+      "D 13 0 true false false false",
+      "P 10 10 true false false false",
+      "U 13 0 true false false false",
+      "U 17 0 true false false false" }
   };
 
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
+  BringBrowserWindowToFront();
   GURL url = server->TestServerPage(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -438,7 +477,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Press Escape to close the Find box and move the focus back to the web page.
-  ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_ESCAPE, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(
+      SendKey(base::VKEY_ESCAPE, false, false, false, false));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Press Ctrl+F with keydown suppressed shall not open the find box.
@@ -449,6 +489,49 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlZSuppressKeyDown));
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlEnter));
 }
+#elif defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
+  static const KeyEventTestData kTestCmdF = {
+    base::VKEY_F, false, false, false, true,
+    false, false, false, false, 2,
+    { "D 91 0 false false false true",
+      "D 70 0 false false false true" }
+  };
+
+  // On Mac we don't send key up events when command modifier is down.
+  static const KeyEventTestData kTestCmdFSuppressKeyDown = {
+    base::VKEY_F, false, false, false, true,
+    true, false, false, false, 3,
+    { "D 91 0 false false false true",
+      "D 70 0 false false false true",
+      "U 91 0 false false false true" }
+  };
+
+  HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
+
+  BringBrowserWindowToFront();
+  GURL url = server->TestServerPage(kTestingPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+  int tab_index = browser()->selected_index();
+  // Press Cmd+F, which will make the Find box open and request focus.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCmdF));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // Press Escape to close the Find box and move the focus back to the web page.
+  ASSERT_NO_FATAL_FAILURE(
+      SendKey(base::VKEY_ESCAPE, false, false, false, false));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+  // Press Cmd+F with keydown suppressed shall not open the find box.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCmdFSuppressKeyDown));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+}
+#endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
 // See http://crbug.com/40037 for details.
@@ -458,42 +541,80 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
-  static const KeyEventTestData kTestAltA = {
-    base::VKEY_A, false, false, true,
-    false, false, false, false, 4,
-    { "D 18 0 false false true",
-      "D 65 0 false false true",
-      "U 65 0 false false true",
-      "U 18 0 false false true" }
+#if defined(OS_MACOSX)
+  // On Mac, access keys use ctrl+alt modifiers.
+  static const KeyEventTestData kTestAccessA = {
+    base::VKEY_A, true, false, true, false,
+    false, false, false, false, 6,
+    { "D 17 0 true false false false",
+      "D 18 0 true false true false",
+      "D 65 0 true false true false",
+      "U 65 0 true false true false",
+      "U 18 0 true false true false",
+      "U 17 0 true false false false" }
   };
 
-  static const KeyEventTestData kTestAltD = {
-    base::VKEY_D, false, false, true,
+  static const KeyEventTestData kTestAccessDSuppress = {
+    base::VKEY_D, true, false, true, false,
+    true, true, true, false, 6,
+    { "D 17 0 true false false false",
+      "D 18 0 true false true false",
+      "D 68 0 true false true false",
+      "U 68 0 true false true false",
+      "U 18 0 true false true false",
+      "U 17 0 true false false false" }
+  };
+
+  static const KeyEventTestData kTestAccess1 = {
+    base::VKEY_1, true, false, true, false,
+    false, false, false, false, 6,
+    { "D 17 0 true false false false",
+      "D 18 0 true false true false",
+      "D 49 0 true false true false",
+      "U 49 0 true false true false",
+      "U 18 0 true false true false",
+      "U 17 0 true false false false" }
+  };
+#else
+  static const KeyEventTestData kTestAccessA = {
+    base::VKEY_A, false, false, true, false,
+    false, false, false, false, 4,
+    { "D 18 0 false false true false",
+      "D 65 0 false false true false",
+      "U 65 0 false false true false",
+      "U 18 0 false false true false" }
+  };
+
+  static const KeyEventTestData kTestAccessD = {
+    base::VKEY_D, false, false, true, false,
     false, false, false, false, 2,
-    { "D 18 0 false false true",
-      "D 68 0 false false true" }
+    { "D 18 0 false false true false",
+      "D 68 0 false false true false" }
   };
 
-  static const KeyEventTestData kTestAltDSuppress = {
-    base::VKEY_D, false, false, true,
+  static const KeyEventTestData kTestAccessDSuppress = {
+    base::VKEY_D, false, false, true, false,
     true, true, true, false, 4,
-    { "D 18 0 false false true",
-      "D 68 0 false false true",
-      "U 68 0 false false true",
-      "U 18 0 false false true" }
+    { "D 18 0 false false true false",
+      "D 68 0 false false true false",
+      "U 68 0 false false true false",
+      "U 18 0 false false true false" }
   };
 
-  static const KeyEventTestData kTestAlt1 = {
-    base::VKEY_1, false, false, true,
+  static const KeyEventTestData kTestAccess1 = {
+    base::VKEY_1, false, false, true, false,
     false, false, false, false, 4,
-    { "D 18 0 false false true",
-      "D 49 0 false false true",
-      "U 49 0 false false true",
-      "U 18 0 false false true" }
+    { "D 18 0 false false true false",
+      "D 49 0 false false true false",
+      "U 49 0 false false true false",
+      "U 18 0 false false true false" }
   };
+#endif
 
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
+  BringBrowserWindowToFront();
   GURL url = server->TestServerPage(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -505,15 +626,17 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
   // Alt+A should focus the element with accesskey = "A".
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAltA));
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccessA));
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L"A"));
 
   // Blur the focused element.
   EXPECT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L""));
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
+
+#if !defined(OS_MACOSX)
   // Alt+D should move the focus to the location entry.
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAltD));
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccessD));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
   // No element should be focused, as Alt+D was handled by the browser.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
@@ -524,11 +647,13 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
+#endif
+
   // If the keydown event is suppressed, then Alt+D should be handled as an
   // accesskey rather than an accelerator key. Activation of an accesskey is not
   // a part of the default action of the key event, so it should not be
   // suppressed at all.
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAltDSuppress));
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccessDSuppress));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L"D"));
 
@@ -536,30 +661,32 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
   EXPECT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L""));
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAlt1));
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccess1));
 #if defined(TOOLKIT_GTK)
   // On GTK, alt-0..9 are assigned as tab selection accelerators, so they can
   // not be used as accesskeys.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
-#elif defined(OS_WIN)
+#else
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L"1"));
 #endif
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
+  BringBrowserWindowToFront();
   GURL url = server->TestServerPage(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
   static const KeyEventTestData kTestCtrlT = {
-    base::VKEY_T, true, false, false,
+    base::VKEY_T, true, false, false, false,
     true, false, false, false, 1,
-    { "D 17 0 true false false" }
+    { "D 17 0 true false false false" }
   };
 
   ASSERT_EQ(1, browser()->tab_count());
@@ -576,46 +703,68 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   // Reserved accelerators can't be suppressed.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
   // Press Ctrl+W, which will close the tab.
-  ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_W, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_W, true, false, false, false));
   EXPECT_EQ(1, browser()->tab_count());
+#elif defined(OS_MACOSX)
+  static const KeyEventTestData kTestCmdT = {
+    base::VKEY_T, false, false, false, true,
+    true, false, false, false, 1,
+    { "D 91 0 false false false true" }
+  };
 
+  ASSERT_EQ(1, browser()->tab_count());
+  // Press Cmd+T, which will open a new tab.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCmdT));
+  EXPECT_EQ(2, browser()->tab_count());
+  browser()->SelectNumberedTab(0);
+  ASSERT_EQ(0, browser()->selected_index());
+
+  int result_length;
+  ASSERT_NO_FATAL_FAILURE(GetResultLength(0, &result_length));
+  EXPECT_EQ(1, result_length);
+
+  // Reserved accelerators can't be suppressed.
+  ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
+  // Press Cmd+W, which will close the tab.
+  ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_W, false, false, false, true));
+  EXPECT_EQ(1, browser()->tab_count());
 #elif defined(TOOLKIT_GTK)
   // Ctrl-[a-z] are not treated as reserved accelerators on GTK.
   static const KeyEventTestData kTestCtrlT = {
-    base::VKEY_T, true, false, false,
+    base::VKEY_T, true, false, false, false,
     false, false, false, false, 2,
-    { "D 17 0 true false false",
-      "D 84 0 true false false" }
+    { "D 17 0 true false false false",
+      "D 84 0 true false false false" }
   };
 
   static const KeyEventTestData kTestCtrlPageDown = {
-    base::VKEY_NEXT, true, false, false,
+    base::VKEY_NEXT, true, false, false, false,
     true, false, false, false, 1,
-    { "D 17 0 true false false" }
+    { "D 17 0 true false false false" }
   };
 
   static const KeyEventTestData kTestCtrlTab = {
-    base::VKEY_TAB, true, false, false,
+    base::VKEY_TAB, true, false, false, false,
     true, false, false, false, 1,
-    { "D 17 0 true false false" }
+    { "D 17 0 true false false false" }
   };
 
   static const KeyEventTestData kTestCtrlTBlocked = {
-    base::VKEY_T, true, false, false,
+    base::VKEY_T, true, false, false, false,
     true, false, false, false, 4,
-    { "D 17 0 true false false",
-      "D 84 0 true false false",
-      "U 84 0 true false false",
-      "U 17 0 true false false" }
+    { "D 17 0 true false false false",
+      "D 84 0 true false false false",
+      "U 84 0 true false false false",
+      "U 17 0 true false false false" }
   };
 
   static const KeyEventTestData kTestCtrlWBlocked = {
-    base::VKEY_W, true, false, false,
+    base::VKEY_W, true, false, false, false,
     true, false, false, false, 4,
-    { "D 17 0 true false false",
-      "D 87 0 true false false",
-      "U 87 0 true false false",
-      "U 17 0 true false false" }
+    { "D 17 0 true false false false",
+      "D 87 0 true false false false",
+      "U 87 0 true false false false",
+      "U 17 0 true false false false" }
   };
 
   ASSERT_EQ(1, browser()->tab_count());
@@ -647,7 +796,91 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
 
   // Ctrl+F4 to close the tab.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
-  ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_F4, true, false, false));
+  ASSERT_NO_FATAL_FAILURE( SendKey(base::VKEY_F4, true, false, false, false));
   ASSERT_EQ(1, browser()->tab_count());
 #endif
+}
+
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
+  static const KeyEventTestData kTestCtrlA = {
+    base::VKEY_A, true, false, false, false,
+    false, false, false, false, 4,
+    { "D 17 0 true false false false",
+      "D 65 0 true false false false",
+      "U 65 0 true false false false",
+      "U 17 0 true false false false" }
+  };
+
+  static const KeyEventTestData kTestCtrlF = {
+    base::VKEY_F, true, false, false, false,
+    false, false, false, false, 4,
+    { "D 17 0 true false false false",
+      "D 70 0 true false false false",
+      "U 70 0 true false false false",
+      "U 17 0 true false false false" }
+  };
+
+  static const KeyEventTestData kTestCtrlK = {
+    base::VKEY_K, true, false, false, false,
+    false, false, false, false, 4,
+    { "D 17 0 true false false false",
+      "D 75 0 true false false false",
+      "U 75 0 true false false false",
+      "U 17 0 true false false false" }
+  };
+
+  HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
+
+  BringBrowserWindowToFront();
+  GURL url = server->TestServerPage(kTestingPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+  int tab_index = browser()->selected_index();
+  ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"A"));
+  ASSERT_NO_FATAL_FAILURE(SetTextBoxValue(tab_index, L"A", L"Hello"));
+  // Move the caret to the beginning of the line.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlA));
+  // Forward one character
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlF));
+  // Delete to the end of the line.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlK));
+  EXPECT_NO_FATAL_FAILURE(CheckTextBoxValue(tab_index, L"A", L"H"));
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
+  static const KeyEventTestData kTestPageUp = {
+    base::VKEY_PRIOR, false, false, false, false,
+    false, false, false, false, 2,
+    { "D 33 0 false false false false",
+      "U 33 0 false false false false" }
+  };
+
+  static const KeyEventTestData kTestPageDown = {
+    base::VKEY_NEXT, false, false, false, false,
+    false, false, false, false, 2,
+    { "D 34 0 false false false false",
+      "U 34 0 false false false false" }
+  };
+
+  HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
+
+  BringBrowserWindowToFront();
+  GURL url = server->TestServerPage(kTestingPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+  int tab_index = browser()->selected_index();
+  ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"A"));
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestPageUp));
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestPageDown));
+  EXPECT_NO_FATAL_FAILURE(CheckTextBoxValue(tab_index, L"A", L""));
 }

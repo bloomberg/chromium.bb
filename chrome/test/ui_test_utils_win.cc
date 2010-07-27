@@ -39,4 +39,16 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   RunMessageLoop();
 }
 
+void HideNativeWindow(gfx::NativeWindow window) {
+  // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
+  // using Windows API.
+  ::ShowWindow(window, SW_HIDE);
+}
+
+void ShowAndFocusNativeWindow(gfx::NativeWindow window) {
+  // TODO(jcampan): retrieve the WidgetWin and show/hide on it instead of
+  // using Windows API.
+  ::ShowWindow(window, SW_SHOW);
+}
+
 }  // namespace ui_test_utils

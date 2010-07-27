@@ -6,8 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 #include <mach/mach_time.h>
+#include <vector>
 
+#include "base/keyboard_code_conversion_mac.h"
 #include "base/message_loop.h"
+#include "chrome/browser/automation/ui_controls_internal.h"
 #include "chrome/browser/chrome_thread.h"
 
 // Implementation details: We use [NSApplication sendEvent:] instead
@@ -21,6 +24,23 @@
 // observer/notification.  Unlike windows, I cannot post non-events
 // into the event queue.  (I can post other kinds of tasks but can't
 // guarantee their order with regards to events).
+
+// But [NSApplication sendEvent:] causes a problem when sending mouse click
+// events. Because in order to handle mouse drag, when processing a mouse
+// click event, the application may want to retrieve the next event
+// synchronously by calling NSApplication's nextEventMatchingMask method.
+// In this case, [NSApplication sendEvent:] causes deadlock.
+// So we need to use [NSApplication postEvent:atStart:] for mouse click
+// events. In order to notify the caller correctly after all events has been
+// processed, we setup a task to watch for the event queue time to time and
+// notify the caller as soon as there is no event in the queue.
+//
+// TODO(suzhe):
+// 1. Investigate why using [NSApplication postEvent:atStart:] for keyboard
+//    events causes BrowserKeyEventsTest.CommandKeyEvents to fail.
+//    See http://crbug.com/49270
+// 2. On OSX 10.6, [NSEvent addLocalMonitorForEventsMatchingMask:handler:] may
+//    be used, so that we don't need to poll the event queue time to time.
 
 namespace {
 
@@ -53,6 +73,148 @@ NSTimeInterval TimeIntervalSinceSystemStartup() {
   return UpTimeInNanoseconds() / 1000000000.0;
 }
 
+// Creates and returns an autoreleased key event.
+NSEvent* SynthesizeKeyEvent(NSWindow* window,
+                            bool keyDown,
+                            base::KeyboardCode keycode,
+                            NSUInteger flags) {
+  unichar character;
+  unichar characterIgnoringModifiers;
+  int macKeycode = base::MacKeyCodeForWindowsKeyCode(
+      keycode, flags, &character, &characterIgnoringModifiers);
+
+  if (macKeycode < 0)
+    return nil;
+
+  NSString* charactersIgnoringModifiers =
+      [[[NSString alloc] initWithCharacters:&characterIgnoringModifiers
+                                     length:1]
+        autorelease];
+  NSString* characters =
+      [[[NSString alloc] initWithCharacters:&character length:1] autorelease];
+
+  NSEventType type = (keyDown ? NSKeyDown : NSKeyUp);
+
+  // Modifier keys generate NSFlagsChanged event rather than
+  // NSKeyDown/NSKeyUp events.
+  if (keycode == base::VKEY_CONTROL || keycode == base::VKEY_SHIFT ||
+      keycode == base::VKEY_MENU || keycode == base::VKEY_COMMAND)
+    type = NSFlagsChanged;
+
+  // For events other than mouse moved, [event locationInWindow] is
+  // UNDEFINED if the event is not NSMouseMoved.  Thus, the (0,0)
+  // location should be fine.
+  NSEvent* event =
+      [NSEvent keyEventWithType:type
+                       location:NSMakePoint(0, 0)
+                  modifierFlags:flags
+                      timestamp:TimeIntervalSinceSystemStartup()
+                   windowNumber:[window windowNumber]
+                        context:nil
+                     characters:characters
+    charactersIgnoringModifiers:charactersIgnoringModifiers
+                      isARepeat:NO
+                        keyCode:(unsigned short)macKeycode];
+
+  return event;
+}
+
+// Creates the proper sequence of autoreleased key events for a key down + up.
+void SynthesizeKeyEventsSequence(NSWindow* window,
+                                 base::KeyboardCode keycode,
+                                 bool control,
+                                 bool shift,
+                                 bool alt,
+                                 bool command,
+                                 std::vector<NSEvent*>* events) {
+  NSEvent* event = nil;
+  NSUInteger flags = 0;
+  if (control) {
+    flags |= NSControlKeyMask;
+    event = SynthesizeKeyEvent(window, true, base::VKEY_CONTROL, flags);
+    DCHECK(event);
+    events->push_back(event);
+  }
+  if (shift) {
+    flags |= NSShiftKeyMask;
+    event = SynthesizeKeyEvent(window, true, base::VKEY_SHIFT, flags);
+    DCHECK(event);
+    events->push_back(event);
+  }
+  if (alt) {
+    flags |= NSAlternateKeyMask;
+    event = SynthesizeKeyEvent(window, true, base::VKEY_MENU, flags);
+    DCHECK(event);
+    events->push_back(event);
+  }
+  if (command) {
+    flags |= NSCommandKeyMask;
+    event = SynthesizeKeyEvent(window, true, base::VKEY_COMMAND, flags);
+    DCHECK(event);
+    events->push_back(event);
+  }
+
+  event = SynthesizeKeyEvent(window, true, keycode, flags);
+  DCHECK(event);
+  events->push_back(event);
+  event = SynthesizeKeyEvent(window, false, keycode, flags);
+  DCHECK(event);
+  events->push_back(event);
+
+  if (command) {
+    flags &= ~NSCommandKeyMask;
+    event = SynthesizeKeyEvent(window, false, base::VKEY_COMMAND, flags);
+    DCHECK(event);
+    events->push_back(event);
+  }
+  if (alt) {
+    flags &= ~NSAlternateKeyMask;
+    event = SynthesizeKeyEvent(window, false, base::VKEY_MENU, flags);
+    DCHECK(event);
+    events->push_back(event);
+  }
+  if (shift) {
+    flags &= ~NSShiftKeyMask;
+    event = SynthesizeKeyEvent(window, false, base::VKEY_SHIFT, flags);
+    DCHECK(event);
+    events->push_back(event);
+  }
+  if (control) {
+    flags &= ~NSControlKeyMask;
+    event = SynthesizeKeyEvent(window, false, base::VKEY_CONTROL, flags);
+    DCHECK(event);
+    events->push_back(event);
+  }
+}
+
+// A task class to watch for the event queue. The specific task will be fired
+// when there is no more event in the queue.
+class EventQueueWatcher : public Task {
+ public:
+  EventQueueWatcher(Task* task) : task_(task) {}
+
+  virtual ~EventQueueWatcher() {}
+
+  virtual void Run() {
+    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                        untilDate:nil
+                                           inMode:NSDefaultRunLoopMode
+                                          dequeue:NO];
+    // If there is still event in the queue, then we need to check again.
+    if (event)
+      MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task_));
+    else
+      MessageLoop::current()->PostTask(FROM_HERE, task_);
+  }
+
+ private:
+  Task* task_;
+};
+
+// Stores the current mouse location on the screen. So that we can use it
+// when firing keyboard and mouse click events.
+NSPoint g_mouse_location = { 0, 0 };
+
 }  // anonymous namespace
 
 
@@ -71,8 +233,6 @@ bool SendKeyPress(gfx::NativeWindow window,
 
 // Win and Linux implement a SendKeyPress() this as a
 // SendKeyPressAndRelease(), so we should as well (despite the name).
-//
-// TODO(jrg): handle "characters" better (e.g. apply shift?)
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 base::KeyboardCode key,
                                 bool control,
@@ -81,55 +241,23 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool command,
                                 Task* task) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  NSUInteger flags = 0;
-  if (control)
-    flags |= NSControlKeyMask;
-  if (shift)
-    flags |= NSShiftKeyMask;
-  if (alt)
-    flags |= NSAlternateKeyMask;
-  if (command)
-    flags |= NSCommandKeyMask;
-  unsigned char keycode = key;
-  NSString* charactersIgnoringModifiers = [[[NSString alloc]
-                                             initWithBytes:&keycode
-                                                    length:1
-                                                  encoding:NSUTF8StringEncoding]
-                                            autorelease];
-  NSString* characters = charactersIgnoringModifiers;
 
-  // For events other than mouse moved, [event locationInWindow] is
-  // UNDEFINED if the event is not NSMouseMoved.  Thus, the (0,0)
-  // locaiton should be fine.
-  // First a key down...
-  NSEvent* event =
-      [NSEvent keyEventWithType:NSKeyDown
-                       location:NSMakePoint(0,0)
-                  modifierFlags:flags
-                      timestamp:TimeIntervalSinceSystemStartup()
-                   windowNumber:[window windowNumber]
-                        context:nil
-                     characters:characters
-    charactersIgnoringModifiers:charactersIgnoringModifiers
-                      isARepeat:NO
-                        keyCode:key];
-  [[NSApplication sharedApplication] sendEvent:event];
-  // Then a key up.
-  event =
-      [NSEvent keyEventWithType:NSKeyUp
-                       location:NSMakePoint(0,0)
-                  modifierFlags:flags
-                      timestamp:TimeIntervalSinceSystemStartup()
-                   windowNumber:[window windowNumber]
-                        context:nil
-                     characters:characters
-    charactersIgnoringModifiers:charactersIgnoringModifiers
-                      isARepeat:NO
-                        keyCode:key];
-  [[NSApplication sharedApplication] sendEvent:event];
+  std::vector<NSEvent*> events;
+  SynthesizeKeyEventsSequence(
+      window, key, control, shift, alt, command, &events);
+
+  // TODO(suzhe): Using [NSApplication postEvent:atStart:] here causes
+  // BrowserKeyEventsTest.CommandKeyEvents to fail. See http://crbug.com/49270
+  // But using [NSApplication sendEvent:] should be safe for keyboard events,
+  // because until now, no code wants to retrieve the next event when handling
+  // a keyboard event.
+  for (std::vector<NSEvent*>::iterator iter = events.begin();
+       iter != events.end(); ++iter)
+    [[NSApplication sharedApplication] sendEvent:*iter];
 
   if (task)
-    MessageLoop::current()->PostTask(FROM_HERE, task);
+    MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task));
+
   return true;
 }
 
@@ -144,7 +272,8 @@ bool SendMouseMove(long x, long y) {
 bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
   NSWindow* window = [[NSApplication sharedApplication] keyWindow];
   CGFloat screenHeight = [[NSScreen mainScreen] frame].size.height;
-  NSPoint pointInWindow = NSMakePoint(x, screenHeight - y);  // flip!
+  g_mouse_location = NSMakePoint(x, screenHeight - y);  // flip!
+  NSPoint pointInWindow = g_mouse_location;
   if (window)
     pointInWindow = [window convertScreenToBase:pointInWindow];
   NSTimeInterval timestamp = TimeIntervalSinceSystemStartup();
@@ -160,8 +289,10 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
                        clickCount:0
                          pressure:0.0];
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
+
   if (task)
-    MessageLoop::current()->PostTask(FROM_HERE, task);
+    MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task));
+
   return true;
 }
 
@@ -176,7 +307,6 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
     return (SendMouseEventsNotifyWhenDone(type, DOWN, NULL) &&
             SendMouseEventsNotifyWhenDone(type, UP, task));
   }
-
   NSEventType etype = 0;
   if (type == LEFT) {
     if (state == UP) {
@@ -200,8 +330,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
     return false;
   }
   NSWindow* window = [[NSApplication sharedApplication] keyWindow];
-  NSPoint location = [NSEvent mouseLocation];
-  NSPoint pointInWindow = location;
+  NSPoint pointInWindow = g_mouse_location;
   if (window)
     pointInWindow = [window convertScreenToBase:pointInWindow];
 
@@ -213,11 +342,13 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
                      windowNumber:[window windowNumber]
                           context:nil
                       eventNumber:0
-                       clickCount:0
-                         pressure:0.0];
-  [[NSApplication sharedApplication] sendEvent:event];
+                       clickCount:1
+                         pressure:(state == DOWN ? 1.0 : 0.0 )];
+  [[NSApplication sharedApplication] postEvent:event atStart:NO];
+
   if (task)
-    MessageLoop::current()->PostTask(FROM_HERE, task);
+    MessageLoop::current()->PostTask(FROM_HERE, new EventQueueWatcher(task));
+
   return true;
 }
 
@@ -225,18 +356,27 @@ bool SendMouseClick(MouseButton type) {
  return SendMouseEventsNotifyWhenDone(type, UP|DOWN, NULL);
 }
 
-// This appears to only be used by a function in test/ui_test_utils.h:
-// ui_test_utils::ClickOnView().  That is not implemented on Mac, so
-// we don't need to implement MoveMouseToCenterAndPress().  I've
-// suggested an implementation of ClickOnView() which would call Cocoa
-// directly and not need this indirection, so this may not be needed,
-// ever.
 void MoveMouseToCenterAndPress(
-    NSWindow* window,
+    NSView* view,
     MouseButton button,
     int state,
     Task* task) {
-  NOTIMPLEMENTED();
+  DCHECK(view);
+  NSWindow* window = [view window];
+  DCHECK(window);
+  NSScreen* screen = [window screen];
+  DCHECK(screen);
+
+  // Converts the center position of the view into the coordinates accepted
+  // by SendMouseMoveNotifyWhenDone() method.
+  NSRect bounds = [view bounds];
+  NSPoint center = NSMakePoint(NSMidX(bounds), NSMidY(bounds));
+  center = [view convertPoint:center toView:nil];
+  center = [window convertBaseToScreen:center];
+  center = NSMakePoint(center.x, [screen frame].size.height - center.y);
+
+  SendMouseMoveNotifyWhenDone(center.x, center.y,
+                              new ClickTask(button, state, task));
 }
 
 }  // ui_controls

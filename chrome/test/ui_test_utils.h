@@ -10,6 +10,7 @@
 #include <string>
 #include <set>
 
+#include "gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
@@ -416,6 +417,12 @@ class WindowedNotificationObserverWithDetails
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserverWithDetails);
 };
+
+// Hide a native window.
+void HideNativeWindow(gfx::NativeWindow window);
+
+// Show and focus a native window.
+void ShowAndFocusNativeWindow(gfx::NativeWindow window);
 
 }  // namespace ui_test_utils
 
