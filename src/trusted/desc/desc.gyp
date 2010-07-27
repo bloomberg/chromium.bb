@@ -100,20 +100,20 @@
           ['OS=="win"', { 'sources': [
               'win/nacl_desc.c',
           ]}],
-          ['OS=="mac"',
+          ['OS=="win"',
+           # String-based bound socket implementation.
+           { 'sources': [
+               'nacl_desc_conn_cap.c',
+               'nacl_desc_imc_bound_desc.c',
+               'nacl_makeboundsock.c',
+             ],
+           },
            # FD-based bound socket implementation.
            {
              'sources': [
                'posix/nacl_desc_conn_cap.c',
                'posix/nacl_desc_imc_bound_desc.c',
                'posix/nacl_makeboundsock.c',
-             ],
-           },
-           # String-based bound socket implementation.
-           { 'sources': [
-               'nacl_desc_conn_cap.c',
-               'nacl_desc_imc_bound_desc.c',
-               'nacl_makeboundsock.c',
              ],
            }],
         ],

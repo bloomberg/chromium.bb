@@ -72,8 +72,7 @@ struct redir {
   int           nacl_desc;
   enum {
     HOST_DESC,
-    IMC_DESC,
-    IMC_ADDR
+    IMC_DESC
   }             tag;
   union {
     struct {
@@ -117,16 +116,13 @@ static void PrintUsage() {
   /* NOTE: this is broken up into multiple statements to work around
            the constant string size limit */
   fprintf(stderr,
-          "Usage: sel_ldr [-a d:addr]\n"
-          "               [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
+          "Usage: sel_ldr [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
           "               [-P SRPC port number]\n"
           "\n"
-          "               [-D desc]\n"
           "               [-X d] [-dmMv] -- [nacl_file] [args]\n"
           "\n");
   fprintf(stderr,
-          " -a associates an IMC address with application descriptor d\n"
           " -h\n"
           " -r\n"
           " -w associate a host POSIX descriptor D with app desc d\n"
@@ -155,8 +151,6 @@ static void PrintUsage() {
           " (testing flags)\n"
           " -d debug mode (allow access to files! dangerous!)\n"
           " -s safely stub out non-validating instructions\n"
-          " -D dump bound socket address (if any) to this POSIX\n"
-          "    descriptor\n"
           " -Q disable platform qualification (dangerous!)\n"
           " -I disable ELF ABI version number check (safe)\n"
           " -l <file>  write log output to the given file\n");
@@ -188,7 +182,6 @@ int main(int  ac,
   char                          *nacl_file = 0;
   int                           main_thread_only = 1;
   int                           export_addr_to = -2;
-  int                           dump_sock_addr_to = -1;
   enum NaClAbiCheckOption       check_abi = NACL_ABI_CHECK_OPTION_CHECK;
 
   struct NaClApp                *nap;
@@ -259,24 +252,8 @@ int main(int  ac,
     exit(1);
   }
 
-  while ((opt = getopt(ac, av, "a:dD:f:h:i:Il:mMP:Qr:svw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "df:h:i:Il:mMP:Qr:svw:X:")) != -1) {
     switch (opt) {
-      case 'a':
-        /* import IMC socket address */
-        entry = malloc(sizeof *entry);
-        if (NULL == entry) {
-          fprintf(stderr, "No memory for redirection queue\n");
-          exit(1);
-        }
-        entry->next = NULL;
-        entry->nacl_desc = strtol(optarg, &rest, 0);
-        entry->tag = IMC_ADDR;
-        strncpy(entry->u.addr.path, rest + 1, NACL_PATH_MAX);
-        /* NUL terminate */
-        entry->u.addr.path[NACL_PATH_MAX-1] = '\0';
-        *redir_qend = entry;
-        redir_qend = &entry->next;
-        break;
       case 'd':
         fprintf(stderr, "DEBUG MODE ENABLED\n");
         NaClInsecurelyBypassAllAclChecks();
@@ -324,9 +301,6 @@ int main(int  ac,
         break;
       case 'M':
         main_thread_only = 0;
-        break;
-      case 'D':
-        dump_sock_addr_to = strtol(optarg, (char **) 0, 0);
         break;
       case 'f':
         nacl_file = optarg;
@@ -520,9 +494,6 @@ int main(int  ac,
       case IMC_DESC:
         NaClAddImcHandle(nap, entry->u.handle, entry->nacl_desc);
         break;
-      case IMC_ADDR:
-        NaClAddImcAddr(nap, &entry->u.addr, entry->nacl_desc);
-        break;
     }
   }
   /*
@@ -556,10 +527,6 @@ int main(int  ac,
    * may have created a thread, so need to synchronize uses of nap
    * contents
    */
-
-  if (-1 != dump_sock_addr_to) {
-    NaClDumpServiceAddressTo(nap, dump_sock_addr_to);
-  }
 
   /*
    * Print out a marker for scripts to use to mark the start of app

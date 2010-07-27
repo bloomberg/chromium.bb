@@ -125,12 +125,12 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
   NaClDescInvalidInternalize,
   NaClDescDirInternalize,
   NaClDescIoInternalize,
-#if NACL_OSX
-  NaClDescInternalizeNotImplemented,
-  NaClDescConnCapFdInternalize,
-#else
+#if NACL_WINDOWS
   NaClDescConnCapInternalize,
   NaClDescInternalizeNotImplemented,
+#else
+  NaClDescInternalizeNotImplemented,
+  NaClDescConnCapFdInternalize,
 #endif
   NaClDescInternalizeNotImplemented,  /* bound sockets cannot be transferred */
   NaClDescInternalizeNotImplemented,  /* connected abstract base class */

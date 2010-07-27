@@ -27,17 +27,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 
-/* Dummy implementation, required to get the implementation of
-   sel_ldr's "-a" option (NaClAddImcAddr()) to link.
-   TODO(mseaborn): Remove this when "-a" is gone. */
-int NaClDescConnCapCtor(struct NaClDescConnCap          *self,
-                        struct NaClSocketAddress const  *nsap) {
-  UNREFERENCED_PARAMETER(self);
-  UNREFERENCED_PARAMETER(nsap);
-  return 0; /* Error */
-}
-
-
 void NaClDescConnCapFdDtor(struct NaClDesc *vself) {
   struct NaClDescConnCapFd *self = (struct NaClDescConnCapFd *) vself;
 

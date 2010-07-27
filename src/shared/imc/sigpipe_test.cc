@@ -29,7 +29,7 @@
 
 namespace {
 
-const bool kPlatformUsesBoundSockets = !NACL_OSX;
+const bool kPlatformUsesBoundSockets = NACL_WINDOWS;
 
 bool gSleepBeforeReceive(false);
 std::vector<int> gTestSequence;

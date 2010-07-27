@@ -669,22 +669,6 @@ void NaClAddImcHandle(struct NaClApp  *nap,
   NaClSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
 }
 
-void NaClAddImcAddr(struct NaClApp                  *nap,
-                    struct NaClSocketAddress const  *addr,
-                    int                             nacl_desc) {
-  struct NaClDescConnCap  *dp;
-
-  dp = malloc(sizeof *dp);
-  if (NULL == dp) {
-    NaClLog(LOG_FATAL, "NaClAddImcAddr: no memory\n");
-  }
-  if (!NaClDescConnCapCtor(dp, addr)) {
-    NaClLog(LOG_FATAL, ("NaClAddImcAddr: canot construct"
-                        " connection capability object\n"));
-  }
-  NaClSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
-}
-
 void NaClAppVmmapUpdate(struct NaClApp    *nap,
                         uintptr_t         page_num,
                         size_t            npages,
@@ -1035,28 +1019,6 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
                  nap,
                  NACL_KERN_STACK_SIZE);
   NaClLog(4, "NaClSecureCommandChannel: thread spawned, continuing\n");
-}
-
-void NaClDumpServiceAddressTo(struct NaClApp  *nap,
-                              int             desc) {
-  NaClLog(4,
-          "NaClDumpServiceAddressTo(0x%08"NACL_PRIxPTR", %d)\n",
-          (uintptr_t) nap,
-          desc);
-  if (NULL == nap->service_address ||
-      NACL_DESC_CONN_CAP != nap->service_address->vtbl->typeTag) {
-    NaClLog(LOG_FATAL,
-            "NaClDumpServiceAddressTo: service address not set\n");
-    return;
-  }
-  if (sizeof ((struct NaClDescConnCap *) nap->service_address)->cap.path
-      != write(desc,
-               ((struct NaClDescConnCap *) nap->service_address)->cap.path,
-               sizeof
-               ((struct NaClDescConnCap *) nap->service_address)->cap.path)) {
-    NaClLog(LOG_FATAL,
-            "NaClDumpServiceAddressTo: could not send service address\n");
-  }
 }
 
 

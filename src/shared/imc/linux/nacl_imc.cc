@@ -26,34 +26,6 @@ namespace nacl {
 
 namespace {
 
-// The pathname prefix for bound sockets created by BoundSocket().
-const char kNamePrefix[] = "google-nacl-";
-
-// Get a pointer to sockaddr that corresponds to address.
-// The sa parameter must be a valid pointer to struct sockaddr_un.
-// On return it contains the name that can be used with the bind() system call.
-// On success, a pointer to sa type-casted to sockaddr is returned. On error,
-// NULL is returned.
-struct sockaddr* GetSocketAddress(const SocketAddress* address,
-                                  struct sockaddr_un* sa) {
-  // Create a pathname for the abstract namespace. Note the abstract namespace
-  // was introduced with Linux 2.2.
-  if (address == NULL || !isalnum(address->path[0])) {
-    return NULL;
-  }
-  memset(sa, 0, sizeof(struct sockaddr_un));
-  sa->sun_family = AF_UNIX;
-  memmove(sa->sun_path + 1, kNamePrefix, sizeof kNamePrefix - 1);
-  char* p = &sa->sun_path[sizeof kNamePrefix];
-  for (const char* q = address->path;
-      *q != '\0' && p < &sa->sun_path[sizeof sa->sun_path];
-      ++p, ++q) {
-    /* do not perform case-folding in a case-sensitive environment */
-    *p = *q;
-  }
-  return reinterpret_cast<sockaddr*>(sa);
-}
-
 // Gets an array of file descriptors stored in msg.
 // The fdv parameter must be an int array of kHandleCountMax elements.
 // GetRights() returns the number of file descriptors copied into fdv.
@@ -74,16 +46,21 @@ size_t GetRights(struct msghdr* msg, int* fdv) {
 
 }  // namespace
 
+// We keep these no-op implementations of SocketAddress-based
+// functions so that sigpipe_test continues to link.
 Handle BoundSocket(const SocketAddress* address) {
-  int s = socket(AF_UNIX, SOCK_DGRAM, 0);
-  if (s == -1) {
-    return -1;
-  }
-  struct sockaddr_un sa;
-  if (bind(s, GetSocketAddress(address, &sa), sizeof sa) == 0) {
-    return s;
-  }
-  close(s);
+  UNREFERENCED_PARAMETER(address);
+  NaClLog(LOG_FATAL, "BoundSocket(): Not used on Linux\n");
+  return -1;
+}
+
+int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
+                   const SocketAddress* name) {
+  UNREFERENCED_PARAMETER(handle);
+  UNREFERENCED_PARAMETER(message);
+  UNREFERENCED_PARAMETER(flags);
+  UNREFERENCED_PARAMETER(name);
+  NaClLog(LOG_FATAL, "SendDatagramTo(): Not used on OSX\n");
   return -1;
 }
 
@@ -99,29 +76,12 @@ int Close(Handle handle) {
 }
 
 int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
-  return SendDatagramTo(handle, message, flags, NULL);
-}
-
-int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
-                   const SocketAddress* name) {
   struct msghdr msg;
-  struct sockaddr_un sa;
   unsigned char buf[CMSG_SPACE(kHandleCountMax * sizeof(int))];
 
   if (kHandleCountMax < message->handle_count) {
     errno = EMSGSIZE;
     return -1;
-  }
-  if (name != NULL) {
-    msg.msg_name = GetSocketAddress(name, &sa);
-    if (msg.msg_name == NULL) {
-      errno = EINVAL;
-      return -1;
-    }
-    msg.msg_namelen = sizeof sa;
-  } else {
-    msg.msg_name = 0;
-    msg.msg_namelen = 0;
   }
   /*
    * The following assert was an earlier attempt to remember/check the
@@ -145,6 +105,8 @@ int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
 
   msg.msg_iov = reinterpret_cast<struct iovec*>(message->iov);
   msg.msg_iovlen = message->iov_length;
+  msg.msg_name = 0;
+  msg.msg_namelen = 0;
 
   if (0 < message->handle_count && message->handles != NULL) {
     int size = message->handle_count * sizeof(int);

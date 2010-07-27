@@ -35,31 +35,8 @@ Import('env')
 env.FilterOut(CCFLAGS=['-pedantic'])
 
 
-nrd_xfer_test = env.ComponentProgram('nrd_xfer_test.nexe', 'nrd_xfer_test.c',
-                                     EXTRA_LIBS=['pthread'])
-
 env.ComponentProgram('nrd_xfer_test2.nexe', 'nrd_xfer_test2.c',
                      EXTRA_LIBS=['pthread'])
 
 env.ComponentProgram('nrd_xfer_perf.nexe', 'nrd_xfer_perf.c',
                      EXTRA_LIBS=['pthread'])
-
-# TODO(bsy): add more tests and investigate 64 bit issue
-# NOTE: "env" is an untrusted  nacl env but we can only run this shell script
-#       in a trusted linux build env
-trusted = env.get('TRUSTED_ENV', None)
-if trusted and trusted.Bit('linux') and trusted['BUILD_SUBARCH'] == '32':
-  # TODO(robertm): factor this hack
-  sel_ldr = trusted.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
-
-  test_args = [ nrd_xfer_test[0] ]
-
-  if env['BUILD_ARCHITECTURE'] == 'arm':
-    test_args += ["-Q"]
-
-  node = env.CommandTest(
-      'sel_ldr_nrd_xfer_test.out',
-      [env.File('nrd_xfer_test.sh'), sel_ldr] + test_args,
-      direct_emulation=False,
-      )
-  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_sel_ldr_nrd_xfer_test')

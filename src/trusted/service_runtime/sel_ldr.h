@@ -301,10 +301,6 @@ void NaClAddImcHandle(struct NaClApp  *nap,
                       NaClHandle      h,
                       int             nacl_desc);
 
-void NaClAddImcAddr(struct NaClApp                  *nap,
-                    struct NaClSocketAddress const  *addr,
-                    int                             nacl_desc);
-
 /*
  * Used to launch the main thread.  NB: calling thread may in the
  * future become the main NaCl app thread, and this function will
@@ -408,9 +404,6 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
                               int             desc);
 
 void NaClSecureCommandChannel(struct NaClApp  *nap);
-
-void NaClDumpServiceAddressTo(struct NaClApp  *nap,
-                              int             desc);
 
 void NaClWaitForModuleStartStatusCall(struct NaClApp *nap);
 
