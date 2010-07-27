@@ -160,8 +160,6 @@ class TestInterstitialPage : public InterstitialPage {
   std::string dom_response_;
 };
 
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
   BringBrowserWindowToFront();
 #if defined(USE_X11) || defined(OS_MACOSX)
@@ -816,3 +814,5 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReloadCrashedTab) {
   browser()->ShowDownloadsTab();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
+
+}  // namespace

@@ -313,8 +313,6 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   }
 };
 
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
   static const KeyEventTestData kTestNoInput[] = {
     // a
@@ -884,3 +882,5 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestPageDown));
   EXPECT_NO_FATAL_FAILURE(CheckTextBoxValue(tab_index, L"A", L""));
 }
+
+}  // namespace
