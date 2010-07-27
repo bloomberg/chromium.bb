@@ -929,4 +929,66 @@
    fun:URLRequest::Start
    fun:HTTPTestServer::StartGETRequest
 }
+{
+   bug_50349
+   Heapcheck:Leak
+   ...
+   fun:syncable::Id::Id
+   fun:syncable::BaseTransaction::root_id
+}
+{
+   bug_50335
+   Heapcheck:Leak
+   ...
+   fun:syncable::MutableEntry::MutableEntry
+}
 
+# "*sync*" stands for {syncable,browser_sync}
+{
+   bug_50348
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_S_construct
+   fun:std::string::_S_construct_aux
+   fun:std::string::_S_construct
+   fun:std::basic_string::basic_string
+   fun:*sync*::*Sync*_Test::TestBody
+}
+{
+   bug_50334
+   Heapcheck:Leak
+   ...
+   fun:google::protobuf::internal::ExtensionSet::MutableMessage
+   fun:google::protobuf::internal::ExtensionSet::MergeFrom
+   fun:sync_pb::EntitySpecifics::MergeFrom
+   fun:sync_pb::EntitySpecifics::CopyFrom
+   fun:syncable::EntryKernel::put
+   fun:syncable::MutableEntry::Put
+}
+{
+   bug_50336
+   Heapcheck:Leak
+   ...
+   fun:syncable::UnpackEntry
+   fun:syncable::DirectoryBackingStore::LoadEntries
+}
+
+{
+   bug_50347
+   Heapcheck:Leak
+   ...
+   fun:syncable::Id::CreateFromServerId
+   fun:browser_sync::TestIdFactory::*
+}
+
+# "Schedule*" stands for {ScheduleImmediately,ScheduleWithDelay}.
+{
+   bug_50345
+   Heapcheck:Leak
+   ...
+   fun:ScopedRunnableMethodFactory::NewRunnableMethod
+   fun:sync_notifier::ChromeSystemResources::MakeTaskToPost
+   fun:sync_notifier::ChromeSystemResources::Schedule*
+   fun:sync_notifier::::ChromeSystemResourcesTest::ScheduleShouldNotRun
+}
