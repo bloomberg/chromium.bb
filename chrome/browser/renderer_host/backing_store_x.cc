@@ -331,8 +331,8 @@ bool BackingStoreX::CopyFromBackingStore(const gfx::Rect& rect,
     }
     // Create the shared memory segment for the image and map it.
     if (image->bytes_per_line == 0 || image->height == 0 ||
-        (std::numeric_limits<size_t>::max() / image->bytes_per_line) >
-        static_cast<size_t>(image->height)) {
+        static_cast<size_t>(image->height) >
+        (std::numeric_limits<size_t>::max() / image->bytes_per_line)) {
       XDestroyImage(image);
       return false;
     }
