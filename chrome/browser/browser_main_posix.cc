@@ -209,6 +209,8 @@ void BrowserMainPartsPosix::PostMainMessageLoopStart() {
     g_shutdown_pipe_read_fd = pipefd[0];
     g_shutdown_pipe_write_fd = pipefd[1];
     const size_t kShutdownDetectorThreadStackSize = 4096;
+    // TODO(viettrungluu,willchan): crbug.com/29675 - This currently leaks, so
+    // if you change this, you'll probably need to change the suppression.
     if (!PlatformThread::CreateNonJoinable(
         kShutdownDetectorThreadStackSize,
         new ShutdownDetector(g_shutdown_pipe_read_fd))) {
