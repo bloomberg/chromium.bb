@@ -91,6 +91,7 @@ class ChromeTests(object):
       "printing": self.TestPrinting,    "printing_unittests": self.TestPrinting,
       "remoting": self.TestRemoting,    "remoting_unittests": self.TestRemoting,
       "startup": self.TestStartup,      "startup_tests": self.TestStartup,
+      "sync": self.TestSync,            "sync_unit_tests": self.TestSync,
       "test_shell": self.TestTestShell, "test_shell_tests": self.TestTestShell,
       "ui": self.TestUI,                "ui_tests": self.TestUI,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
@@ -266,6 +267,9 @@ class ChromeTests(object):
 
   def TestRemoting(self):
     return self.SimpleTest("chrome", "remoting_unittests")
+
+  def TestSync(self):
+    return self.SimpleTest("chrome", "sync_unit_tests")
 
   def TestIpc(self):
     return self.SimpleTest("ipc", "ipc_tests")
