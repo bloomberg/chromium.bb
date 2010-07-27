@@ -94,7 +94,7 @@ index 3db10ee..2465cc9 100644
    movntiq r14, %nacl: 120 (r15,rdi)
  
 -  leaq    128 (rsi), rsi
-+  leaq    128 (rsi), esi
++  leal    128 (rsi), esi
    leal    128 (rdi), edi
  
    dec     ecx
