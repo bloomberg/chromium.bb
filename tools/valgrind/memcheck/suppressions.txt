@@ -2038,6 +2038,8 @@
    bug_29675
    Memcheck:Leak
    fun:_Znw*
+   fun:_ZN21BrowserMainPartsPosix24PostMainMessageLoopStartEv
+   fun:_ZN16BrowserMainParts20MainMessageLoopStartEv
    fun:_Z11BrowserMainRK18MainFunctionParams
 }
 {
@@ -3479,15 +3481,6 @@
    fun:_ZN17AudioRendererHost14OnCreateStreamERKN3IPC7MessageEiRK37ViewHostMsg_Audio_CreateStream_Paramsb
    fun:_ZN21AudioRendererHostTest16CreateLowLatencyEv
    fun:_ZN51AudioRendererHostTest_CreateLowLatencyAndClose_Test8TestBodyEv
-}
-{
-   bug_48998
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN21BrowserMainPartsPosix16TemporaryPosix_1Ev
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
 }
 {
    bug_49262
