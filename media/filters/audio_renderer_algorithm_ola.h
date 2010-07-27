@@ -14,8 +14,8 @@
 #ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_OLA_H_
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_OLA_H_
 
+#include "base/gtest_prod_util.h"
 #include "media/filters/audio_renderer_algorithm_base.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace media {
 
@@ -30,10 +30,14 @@ class AudioRendererAlgorithmOLA : public AudioRendererAlgorithmBase {
   virtual void set_playback_rate(float new_rate);
 
  private:
-  FRIEND_TEST(AudioRendererAlgorithmOLATest, FillBuffer_NormalRate);
-  FRIEND_TEST(AudioRendererAlgorithmOLATest, FillBuffer_DoubleRate);
-  FRIEND_TEST(AudioRendererAlgorithmOLATest, FillBuffer_HalfRate);
-  FRIEND_TEST(AudioRendererAlgorithmOLATest, FillBuffer_QuarterRate);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmOLATest,
+                           FillBuffer_NormalRate);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmOLATest,
+                           FillBuffer_DoubleRate);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmOLATest,
+                           FillBuffer_HalfRate);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmOLATest,
+                           FillBuffer_QuarterRate);
 
   // Aligns |value| to a channel and sample boundary.
   void AlignToSampleBoundary(uint32* value);

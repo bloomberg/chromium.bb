@@ -13,9 +13,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
-
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 // FFmpeg types.
 struct AVBitStreamFilterContext;
@@ -66,9 +65,10 @@ class FFmpegBitstreamConverter : public BitstreamConverter {
   virtual bool ConvertPacket(AVPacket* packet);
 
  private:
-  FRIEND_TEST(BitstreamConverterTest, ConvertPacket_FailedFilter);
-  FRIEND_TEST(BitstreamConverterTest, ConvertPacket_Success);
-  FRIEND_TEST(BitstreamConverterTest, ConvertPacket_SuccessInPlace);
+  FRIEND_TEST_ALL_PREFIXES(BitstreamConverterTest, ConvertPacket_FailedFilter);
+  FRIEND_TEST_ALL_PREFIXES(BitstreamConverterTest, ConvertPacket_Success);
+  FRIEND_TEST_ALL_PREFIXES(BitstreamConverterTest,
+                           ConvertPacket_SuccessInPlace);
 
   std::string filter_name_;
   AVBitStreamFilterContext* stream_filter_;

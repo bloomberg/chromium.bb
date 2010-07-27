@@ -12,13 +12,13 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "jingle/notifier/listener/mediator_thread.h"
 #include "jingle/notifier/listener/talk_mediator.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppclientsettings.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace notifier {
 
@@ -92,10 +92,11 @@ class TalkMediatorImpl
 
   std::vector<std::string> subscribed_services_list_;
 
-  FRIEND_TEST(TalkMediatorImplTest, SetAuthTokenWithBadInput);
-  FRIEND_TEST(TalkMediatorImplTest, SetAuthTokenWithGoodInput);
-  FRIEND_TEST(TalkMediatorImplTest, SendNotification);
-  FRIEND_TEST(TalkMediatorImplTest, MediatorThreadCallbacks);
+  FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthTokenWithBadInput);
+  FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SetAuthTokenWithGoodInput);
+  FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, SendNotification);
+  FRIEND_TEST_ALL_PREFIXES(TalkMediatorImplTest, MediatorThreadCallbacks);
+
   DISALLOW_COPY_AND_ASSIGN(TalkMediatorImpl);
 };
 
