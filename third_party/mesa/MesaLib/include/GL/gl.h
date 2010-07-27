@@ -55,7 +55,11 @@
 #  if (defined(_MSC_VER) || defined(__MINGW32__)) && defined(BUILD_GL32) /* tag specify we're building mesa as a DLL */
 #    define GLAPI __declspec(dllexport)
 #  elif (defined(_MSC_VER) || defined(__MINGW32__)) && defined(_DLL) /* tag specifying we're building for DLL runtime support */
-#    define GLAPI __declspec(dllimport)
+// We always retrieve the entry points dynamically via GetProcAddress or
+// OSMesaGetProcAddress. This works around an issue where using the MSVC
+// multi-threaded runtime library, which defines _DLL.
+//#    define GLAPI __declspec(dllimport)
+#    define GLAPI
 #  else /* for use with static link lib build of Win32 edition only */
 #    define GLAPI extern
 #  endif /* _STATIC_MESA support */

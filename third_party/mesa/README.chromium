@@ -35,3 +35,6 @@ Later modifications:
 #if defined(__BEOS__) || defined(__QUICKDRAW__)
 #pragma export on
 #endif
+
+- Commented out this in gl.h:
+#    define GLAPI __declspec(dllimport)
