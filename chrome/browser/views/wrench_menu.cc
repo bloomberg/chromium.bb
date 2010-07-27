@@ -563,7 +563,8 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   gfx::Rect bounds(screen_loc.x(), screen_loc.y(), host->width(),
                    host->height() - 1);
   root_->RunMenuAt(host->GetWindow()->GetNativeWindow(), host, bounds,
-                   MenuItemView::TOPRIGHT, true);
+      base::i18n::IsRTL() ? MenuItemView::TOPLEFT : MenuItemView::TOPRIGHT,
+      true);
   if (selected_menu_model_)
     selected_menu_model_->ActivatedAt(selected_index_);
 }
