@@ -45,7 +45,7 @@ namespace chromeos {
 const char GoogleAuthenticator::kLocalaccountFile[] = "localaccount";
 
 // static
-const int GoogleAuthenticator::kClientLoginTimeoutMs = 5000;
+const int GoogleAuthenticator::kClientLoginTimeoutMs = 10000;
 // static
 const int GoogleAuthenticator::kLocalaccountRetryIntervalMs = 20;
 
@@ -64,7 +64,7 @@ GoogleAuthenticator::~GoogleAuthenticator() {}
 void GoogleAuthenticator::CancelClientLogin() {
   if (gaia_authenticator_->HasPendingFetch()) {
     gaia_authenticator_->CancelRequest();
-    OnLoginFailure("Login has timed out; please try again!");
+    CheckOffline("Login has timed out; please try again!");
   }
 }
 

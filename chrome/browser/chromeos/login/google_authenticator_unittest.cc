@@ -133,6 +133,15 @@ class GoogleAuthenticatorTest : public ::testing::Test {
     auth->SetLocalaccount("");
   }
 
+  void CancelLogin(GoogleAuthenticator* auth) {
+    ChromeThread::PostDelayedTask(
+        ChromeThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(auth,
+                          &GoogleAuthenticator::CancelClientLogin),
+        50);
+  }
+
   unsigned char fake_hash_[32];
   std::string hash_ascii_;
   std::string username_;
@@ -537,8 +546,6 @@ TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
 TEST_F(GoogleAuthenticatorTest, FullLogin) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
-  GURL source(AuthResponseHandler::kTokenAuthUrl);
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   chromeos::CryptohomeBlob salt_v(fake_hash_, fake_hash_ + sizeof(fake_hash_));
 
   MockConsumer consumer;
@@ -549,10 +556,8 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
       .WillOnce(Return(true))
       .RetiresOnSaturation();
 
-  ON_CALL(*mock_library_, GetSystemSalt())
-      .WillByDefault(Return(salt_v));
   EXPECT_CALL(*mock_library_, GetSystemSalt())
-      .Times(1)
+      .WillOnce(Return(salt_v))
       .RetiresOnSaturation();
 
   TestingProfile profile;
@@ -564,6 +569,38 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
   auth->AuthenticateToLogin(
       &profile, username_, hash_ascii_, std::string(), std::string());
 
+  URLFetcher::set_factory(NULL);
+  message_loop.RunAllPending();
+}
+
+TEST_F(GoogleAuthenticatorTest, CancelLogin) {
+  MessageLoopForUI message_loop;
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+  chromeos::CryptohomeBlob salt_v(fake_hash_, fake_hash_ + sizeof(fake_hash_));
+
+  MockConsumer consumer;
+  EXPECT_CALL(consumer, OnLoginFailure(_))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*mock_library_, GetSystemSalt())
+      .WillOnce(Return(salt_v))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_library_, CheckKey(username_, _))
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
+
+  TestingProfile profile;
+
+  MockFactory factory;
+  factory.set_success(false);
+  URLFetcher::set_factory(&factory);
+
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  ReadLocalaccountFile(auth.get(), "");  // No localaccount file.
+  auth->AuthenticateToLogin(
+      &profile, username_, hash_ascii_, std::string(), std::string());
+  CancelLogin(auth.get());
   URLFetcher::set_factory(NULL);
   message_loop.RunAllPending();
 }
