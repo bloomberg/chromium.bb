@@ -397,14 +397,6 @@
         <include name="IDR_INFOBARBUTTON_TOP_RIGHT_P" file="infobarbutton_tr_p.png" type="BINDATA" />
       </if>
 
-      <!-- Images only used by GTK. -->
-      <if expr="not pp_ifdef('toolkit_views') and os != 'darwin'">
-        <include name="IDR_OMNIBOX_HISTORY_DARK_TRANSPARENT" file="omnibox_history_dark_transparent.png" type="BINDATA" />
-        <include name="IDR_OMNIBOX_HISTORY_TRANSPARENT" file="omnibox_history_transparent.png" type="BINDATA" />
-        <include name="IDR_OMNIBOX_HTTP_DARK_TRANSPARENT" file="omnibox_http_dark_transparent.png" type="BINDATA" />
-        <include name="IDR_OMNIBOX_HTTP_TRANSPARENT" file="omnibox_http_transparent.png" type="BINDATA" />
-      </if>
-
       <!-- Images only used by ChromeOS. -->
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />

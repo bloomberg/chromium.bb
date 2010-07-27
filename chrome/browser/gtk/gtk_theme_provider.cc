@@ -912,38 +912,23 @@ SkBitmap* GtkThemeProvider::GenerateGtkThemeBitmap(int id) const {
     // instead should tint based on the foreground text entry color in GTK+
     // mode because some themes that try to be dark *and* light have very
     // different colors between the omnibox and the normal background area.
-    case IDR_OMNIBOX_SEARCH:
+    case IDR_OMNIBOX_HISTORY:
+    case IDR_OMNIBOX_HTTP:
     case IDR_OMNIBOX_MORE:
+    case IDR_OMNIBOX_SEARCH:
     case IDR_OMNIBOX_STAR:
     case IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON:
     case IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON: {
       return GenerateTintedIcon(id, entry_tint_);
     }
-    // Two sets of omnibox icons, the one for normal http and the one for
-    // history, include white backgrounds (and are supposed to, for the windows
-    // chrome-theme). On linux, where we have all sorts of wacky themes and
-    // color combinations we need to deal with, switch them out with
-    // transparent background versions.
-    case IDR_OMNIBOX_HTTP: {
-      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_TRANSPARENT, entry_tint_);
-    }
-    case IDR_OMNIBOX_HISTORY: {
-      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_TRANSPARENT, entry_tint_);
-    }
     // In GTK mode, the dark versions of the omnibox icons only ever appear in
     // the autocomplete popup and only against the current theme's GtkEntry
     // base[GTK_STATE_SELECTED] color, so tint the icons so they won't collide
     // with the selected color.
-    case IDR_OMNIBOX_HTTP_DARK: {
-      return GenerateTintedIcon(IDR_OMNIBOX_HTTP_DARK_TRANSPARENT,
-                                selected_entry_tint_);
-    }
-    case IDR_OMNIBOX_HISTORY_DARK: {
-      return GenerateTintedIcon(IDR_OMNIBOX_HISTORY_DARK_TRANSPARENT,
-                                selected_entry_tint_);
-    }
-    case IDR_OMNIBOX_SEARCH_DARK:
+    case IDR_OMNIBOX_HISTORY_DARK:
+    case IDR_OMNIBOX_HTTP_DARK:
     case IDR_OMNIBOX_MORE_DARK:
+    case IDR_OMNIBOX_SEARCH_DARK:
     case IDR_OMNIBOX_STAR_DARK: {
       return GenerateTintedIcon(id, selected_entry_tint_);
     }
