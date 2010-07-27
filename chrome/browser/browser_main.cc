@@ -415,16 +415,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
     net::CookieMonster::EnableFileScheme();
   }
 
-  if (parsed_command_line.HasSwitch(switches::kFixedHttpPort)) {
-    net::HttpNetworkSession::set_fixed_http_port(StringToInt(
-        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpPort)));
-  }
-
-  if (parsed_command_line.HasSwitch(switches::kFixedHttpsPort)) {
-    net::HttpNetworkSession::set_fixed_https_port(StringToInt(
-        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpsPort)));
-  }
-
   if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     net::HttpNetworkTransaction::IgnoreCertificateErrors(true);
 

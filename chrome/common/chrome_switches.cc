@@ -930,10 +930,6 @@ const char kUninstall[]                     = "uninstall";
 // This is a temporary testing flag.
 const char kUseSpdy[]                       = "use-spdy";
 
-// These two flags are used to force http and https requests to fixed ports.
-const char kFixedHttpPort[]                 = "testing-fixed-http-port";
-const char kFixedHttpsPort[]                = "testing-fixed-https-port";
-
 // Ignore certificate related errors.
 const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
 
