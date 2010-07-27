@@ -1257,16 +1257,6 @@
    fun:mallocWithAlarm
    fun:sqlite3Malloc
    ...
-   fun:sqlite3CreateIndex
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare
-   fun:sqlite3_exec
-   fun:sqlite3InitCallback
-   fun:sqlite3_exec
    fun:sqlite3VdbeExec
    fun:sqlite3Step
    fun:sqlite3_step
@@ -1495,7 +1485,7 @@
    bug_22450
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net64_GLOBAL__N_net_socket_client_socket_factory.cc_00000000_EA9FDEC926DefaultClientSocketFactory21CreateTCPClientSocketERKNS_11AddressListEPNS_6NetLogE
+   fun:*DefaultClientSocketFactory21CreateTCPClientSocketERKNS_11AddressListEPNS_6NetLogE
    fun:_ZN3net13TCPConnectJob12DoTCPConnectEv
    fun:_ZN3net13TCPConnectJob6DoLoopEi
    fun:_ZN3net13TCPConnectJob12OnIOCompleteEi
@@ -3325,7 +3315,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   obj:/usr/lib/libstdc++.so.6.0.9
+   ...
    fun:_ZNSsC1EPKcRKSaIcE
    fun:_ZN9file_util15GetShmemTempDirEP8FilePath
    fun:_ZN9file_util31CreateAndOpenTemporaryShmemFileEP8FilePath
@@ -3342,6 +3332,32 @@
    fun:_ZN20ChromeURLDataManager13DataAvailableEi13scoped_refptrI16RefCountedMemoryE
    fun:_Z16DispatchToMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEEiS3_EvPT_T0_RK6Tuple2IT1_T2_E
    fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
+}
+{
+   bug_46570_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   ...
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN9file_util15GetShmemTempDirEP8FilePath
+   fun:_ZN9file_util31CreateAndOpenTemporaryShmemFileEP8FilePath
+   fun:_ZN4base12SharedMemory12CreateOrOpenERKSbIwSt11char_traitsIwESaIwEEij
+   fun:_ZN4base12SharedMemory6CreateERKSbIwSt11char_traitsIwESaIwEEbbj
+   fun:_ZN14SharedIOBuffer4InitEv
+   fun:_ZN20AsyncResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN23BufferedResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN27SafeBrowsingResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN22OfflineResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   fun:_ZN22ResourceDispatcherHost4ReadEP10URLRequestPi
+   fun:_ZN22ResourceDispatcherHost12StartReadingEP10URLRequest
+   fun:_ZN22ResourceDispatcherHost17OnResponseStartedEP10URLRequest
+   fun:_ZN10URLRequest15ResponseStartedEv
+   fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
+   fun:_ZN17URLRequestHttpJob21NotifyHeadersCompleteEv
+   fun:_ZN17URLRequestHttpJob14SaveNextCookieEv
+   fun:_ZN17URLRequestHttpJob23OnCanSetCookieCompletedEi
+   fun:_ZN17URLRequestHttpJob14SaveNextCookieEv
 }
 {
    bug_46678
@@ -3552,9 +3568,10 @@
    fun:_ZNSs7reserveEj
    fun:_ZNSs6appendEjc
    fun:_ZNK8FilePath6AppendERKSs
-   fun:_ZNK7history14HistoryBackend*FileNameEv
+   ...
    fun:_ZN7history14HistoryBackend8InitImplEv
    fun:_ZN7history14HistoryBackend4InitEb
    fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvbEbEvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
 }
+
