@@ -1105,6 +1105,8 @@
         'browser/dom_ui/personal_options_handler.h',
         'browser/dom_ui/sync_options_handler.cc',
         'browser/dom_ui/sync_options_handler.h',
+        'browser/dom_ui/search_engine_manager_handler.cc',
+        'browser/dom_ui/search_engine_manager_handler.h',
         'browser/dom_ui/devtools_ui.cc',
         'browser/dom_ui/devtools_ui.h',
         'browser/dom_ui/dom_ui.cc',

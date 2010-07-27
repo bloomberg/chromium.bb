@@ -28,15 +28,16 @@
   <script src="options/chromeos_accounts_user_list.js"></script>
   <script src="options/chromeos_accounts_add_user_overlay.js"></script>
 </if>
+<script src="options/add_startup_page_overlay.js"></script>
 <script src="options/advanced_options.js"></script>
 <script src="options/browser_options.js"></script>
-<script src="options/personal_options.js"></script>
+<script src="options/clear_browser_data_overlay.js"></script>
+<script src="options/content_settings.js"></script>
 <script src="options/content_settings_exceptions_list.js"></script>
 <script src="options/content_settings_ui.js"></script>
-<script src="options/content_settings.js"></script>
-<script src="options/add_startup_page_overlay.js"></script>
-<script src="options/clear_browser_data_overlay.js"></script>
 <script src="options/font_settings_overlay.js"></script>
+<script src="options/personal_options.js"></script>
+<script src="options/search_engine_manager.js"></script>
 <script>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,6 +66,7 @@ function load() {
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
+  OptionsPage.registerSubPage(SearchEngineManager.getInstance());
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
   OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
@@ -147,11 +149,12 @@ window.onpopstate = function(e) {
              - options/chromeos_language_pinyin_options.html
         -->
      </if>
-     <include src="options/browser_options.html">
-     <include src="options/personal_options.html">
-     <include src="options/sync_options.html">
      <include src="options/advanced_options.html">
+     <include src="options/browser_options.html">
      <include src="options/content_settings.html">
+     <include src="options/personal_options.html">
+     <include src="options/search_engine_manager.html">
+     <include src="options/sync_options.html">
   </div>
 </div>
 

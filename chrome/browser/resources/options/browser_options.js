@@ -34,7 +34,7 @@ BrowserOptions.prototype = {
       // TODO(stuartmorgan): Add all open tabs (except this one).
     };
     $('defaultSearchManageEnginesButton').onclick = function(event) {
-      // TODO(stuartmorgan): Spawn search engine management sub-dialog.
+      OptionsPage.showPageByName('searchEngines');
     };
     $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
       chrome.send('becomeDefaultBrowser');
