@@ -199,6 +199,7 @@ const struct EnglishToResouceId {
   { "Belgium", IDS_STATUSBAR_LAYOUT_BELGIUM },
   { "Bulgaria", IDS_STATUSBAR_LAYOUT_BULGARIA },
   { "Switzerland", IDS_STATUSBAR_LAYOUT_SWITZERLAND },
+  { "Switzerland - French", IDS_STATUSBAR_LAYOUT_SWITZERLAND_FRENCH },
   { "Turkey", IDS_STATUSBAR_LAYOUT_TURKEY },
   { "Portugal", IDS_STATUSBAR_LAYOUT_PORTUGAL },
   { "Spain", IDS_STATUSBAR_LAYOUT_SPAIN },
@@ -211,6 +212,8 @@ const struct EnglishToResouceId {
   { "Sweden", IDS_STATUSBAR_LAYOUT_SWEDEN },
   { "Netherlands", IDS_STATUSBAR_LAYOUT_NETHERLANDS },
   { "Latvia", IDS_STATUSBAR_LAYOUT_LATVIA },
+  { "Canada", IDS_STATUSBAR_LAYOUT_CANADA },
+  { "Canada - English", IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH },
 };
 const size_t kNumEntries = arraysize(kEnglishToResourceIdArray);
 

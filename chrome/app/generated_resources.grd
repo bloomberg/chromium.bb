@@ -8762,6 +8762,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND" desc="In the language menu button, this shows the input mode.">
         Swiss keyboard layout
       </message>
+      <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND_FRENCH" desc="In the language menu button, this shows the input mode.">
+        Swiss (French) keyboard layout
+      </message>
       <message name="IDS_STATUSBAR_LAYOUT_TURKEY" desc="In the language menu button, this shows the input mode.">
         Turkish keyboard layout
       </message>
@@ -8794,6 +8797,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_LATVIA" desc="In the language menu button, this shows the input mode.">
         Latvian keyboard layout
+      </message>
+      <message name="IDS_STATUSBAR_LAYOUT_CANADA" desc="In the language menu button, this shows the input mode.">
+        Canadian (French) keyboard layout
+      </message>
+      <message name="IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH" desc="In the language menu button, this shows the input mode.">
+        Canadian (English) keyboard layout
       </message>
 
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't log in because username / password invalid">
