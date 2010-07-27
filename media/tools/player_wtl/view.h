@@ -235,6 +235,7 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
         }
         frame = NULL;
       }
+      renderer_->PutCurrentFrame(frame);
 
 #ifdef TESTING
       double paint_time_start = GetTime();
