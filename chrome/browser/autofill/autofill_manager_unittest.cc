@@ -1189,4 +1189,28 @@ TEST_F(AutoFillManagerTest, HiddenFields) {
   // fields.  Need to query the PDM.
 }
 
+// Checks that resetting the auxiliary profile enabled preference does the right
+// thing on all platforms.
+TEST_F(AutoFillManagerTest, AuxiliaryProfilesReset) {
+#if defined(OS_MACOSX)
+  // Auxiliary profiles is implemented on Mac only.  It enables Mac Address
+  // Book integration.
+  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+  profile()->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, false);
+  profile()->GetPrefs()->ClearPref(prefs::kAutoFillAuxiliaryProfilesEnabled);
+  ASSERT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+#else
+  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+  profile()->GetPrefs()->SetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled, true);
+  profile()->GetPrefs()->ClearPref(prefs::kAutoFillAuxiliaryProfilesEnabled);
+  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(
+      prefs::kAutoFillAuxiliaryProfilesEnabled));
+#endif
+}
+
 }  // namespace

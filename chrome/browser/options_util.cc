@@ -45,6 +45,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kEnableSpellCheck,
     prefs::kEnableTranslate,
     prefs::kAutoFillEnabled,
+    prefs::kAutoFillAuxiliaryProfilesEnabled,
     prefs::kHomePage,
     prefs::kHomePageIsNewTabPage,
     prefs::kPromptForDownload,
