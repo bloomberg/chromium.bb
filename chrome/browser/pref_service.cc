@@ -12,27 +12,15 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/configuration_policy_provider_win.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/configuration_policy_provider_mac.h"
-#elif defined(OS_POSIX)
-#include "chrome/browser/config_dir_policy_provider.h"
-#endif
-#include "chrome/browser/dummy_configuration_policy_provider.h"
-
 #include "chrome/browser/command_line_pref_store.h"
 #include "chrome/browser/configuration_policy_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -93,7 +81,6 @@ void NotifyReadError(PrefService* pref, int message_id) {
 
 // static
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
-  PrefStore* managed_prefs = NULL;
   // TODO(pamg): Reinstate extension pref store after Mstone6 branch, when its
   // memory leaks are fixed and any extension API is using it.
   // ExtensionPrefStore* extension_prefs = new ExtensionPrefStore(NULL);
@@ -103,46 +90,14 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
   PrefStore* local_prefs = new JsonPrefStore(
       pref_filename,
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
-  PrefStore* recommended_prefs = NULL;
-
-  ConfigurationPolicyProvider* managed_prefs_provider = NULL;
-  ConfigurationPolicyProvider* recommended_prefs_provider = NULL;
-
-#if defined(OS_WIN)
-  managed_prefs_provider = new ConfigurationPolicyProviderWin();
-  recommended_prefs_provider = new DummyConfigurationPolicyProvider();
-#elif defined(OS_MACOSX)
-  managed_prefs_provider = new ConfigurationPolicyProviderMac();
-  recommended_prefs_provider = new DummyConfigurationPolicyProvider();
-#elif defined(OS_POSIX)
-  FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-    managed_prefs_provider = new ConfigDirPolicyProvider(
-        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
-    recommended_prefs_provider = new ConfigDirPolicyProvider(
-        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
-  } else {
-    managed_prefs_provider = new DummyConfigurationPolicyProvider();
-    recommended_prefs_provider = new DummyConfigurationPolicyProvider();
-  }
-#endif
-
-  // The ConfigurationPolicyPrefStore takes ownership of the passed
-  // |provider|.
-  managed_prefs = new ConfigurationPolicyPrefStore(
-      CommandLine::ForCurrentProcess(),
-      managed_prefs_provider);
-  recommended_prefs = new ConfigurationPolicyPrefStore(
-      CommandLine::ForCurrentProcess(),
-      recommended_prefs_provider);
 
   // The PrefValueStore takes ownership of the PrefStores.
   PrefValueStore* value_store = new PrefValueStore(
-      managed_prefs,
+      ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore(),
       extension_prefs,
       command_line_prefs,
       local_prefs,
-      recommended_prefs);
+      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore());
 
   PrefService* pref_service = new PrefService(value_store);
   // TODO(pamg): Uncomment when ExtensionPrefStore is reinstated.

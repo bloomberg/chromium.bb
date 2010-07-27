@@ -33,6 +33,12 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   virtual PrefReadError ReadPrefs();
   virtual DictionaryValue* prefs() { return prefs_.get(); }
 
+  // Creates a ConfigurationPolicyPrefStore that reads managed policy.
+  static ConfigurationPolicyPrefStore* CreateManagedPolicyPrefStore();
+
+  // Creates a ConfigurationPolicyPrefStore that reads recommended policy.
+  static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();
+
  private:
   // For unit tests.
   friend class ConfigurationPolicyPrefStoreTest;

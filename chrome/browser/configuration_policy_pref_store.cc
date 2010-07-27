@@ -6,10 +6,20 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/configuration_policy_provider.h"
+#if defined(OS_WIN)
+#include "chrome/browser/configuration_policy_provider_win.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/configuration_policy_provider_mac.h"
+#elif defined(OS_POSIX)
+#include "chrome/browser/config_dir_policy_provider.h"
+#endif
+#include "chrome/browser/dummy_configuration_policy_provider.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
@@ -99,6 +109,48 @@ PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
 
   return (provider_.get() == NULL || provider_->Provide(this)) ?
       PrefStore::PREF_READ_ERROR_NONE : PrefStore::PREF_READ_ERROR_OTHER;
+}
+
+// static
+ConfigurationPolicyPrefStore*
+ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore() {
+  ConfigurationPolicyProvider* provider;
+#if defined(OS_WIN)
+  provider = new ConfigurationPolicyProviderWin();
+#elif defined(OS_MACOSX)
+  provider = new ConfigurationPolicyProviderMac();
+#elif defined(OS_POSIX)
+  FilePath config_dir_path;
+  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path))
+    provider = new ConfigDirPolicyProvider(
+        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
+  else
+    provider = new DummyConfigurationPolicyProvider();
+#else
+  provider = new DummyConfigurationPolicyProvider();
+#endif
+
+  return new ConfigurationPolicyPrefStore(CommandLine::ForCurrentProcess(),
+                                          provider);
+}
+
+// static
+ConfigurationPolicyPrefStore*
+ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
+  ConfigurationPolicyProvider* provider;
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  FilePath config_dir_path;
+  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path))
+    provider = new ConfigDirPolicyProvider(
+        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
+  else
+    provider = new DummyConfigurationPolicyProvider();
+#else
+  provider = new DummyConfigurationPolicyProvider();
+#endif
+
+  return new ConfigurationPolicyPrefStore(CommandLine::ForCurrentProcess(),
+                                          provider);
 }
 
 bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
