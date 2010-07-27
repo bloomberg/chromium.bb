@@ -462,19 +462,6 @@ bool BrowserInit::LaunchBrowser(
   return true;
 }
 
-#if defined(OS_CHROMEOS)
-bool BrowserInit::ApplyServicesCustomization(
-    const chromeos::ServicesCustomizationDocument* customization) {
-  GURL welcome_url(customization->initial_start_page_url());
-  DCHECK(welcome_url.is_valid()) << welcome_url;
-  if (welcome_url.is_valid()) {
-    AddFirstRunTab(welcome_url);
-  }
-  // TODO(denisromanov): Add extensions and web apps customization here.
-  return true;
-}
-#endif
-
 // LaunchWithProfile ----------------------------------------------------------
 
 BrowserInit::LaunchWithProfile::LaunchWithProfile(
