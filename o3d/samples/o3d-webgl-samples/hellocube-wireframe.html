@@ -368,7 +368,7 @@ This example shows how to display a cube in O3D using different primitive types.
     <option value="TriangleList">TriangleList</option>
     <option value="TriangleStrip">TriangleStrip</option>
     <option value="TriangleFan">TriangleFan</option>
-  </select> (PointList might be hard to see.)
+  </select>
   </p>
 
   <p>
@@ -402,6 +402,8 @@ This example shows how to display a cube in O3D using different primitive types.
     // Multiply the vertex positions by the worldViewProjection matrix to
     // transform them to screen space.
     gl_Position = projection * view * world * position;
+    // Make points larger, so they can been seen.
+    gl_PointSize = 5.0;
     pos = position;
   }
 </textarea>
