@@ -8,8 +8,17 @@ from constants import *
 from X509 import X509
 from X509CertChain import X509CertChain
 
-import sha
-import md5
+# The sha module is deprecated in Python 2.6 
+try:
+    import sha
+except ImportError:
+    from hashlib import sha1 as sha
+
+# The md5 module is deprecated in Python 2.6
+try:
+    import md5
+except ImportError:
+    from hashlib import md5
 
 class RecordHeader3:
     def __init__(self):

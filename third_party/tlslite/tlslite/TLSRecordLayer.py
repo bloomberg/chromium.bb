@@ -12,8 +12,19 @@ from constants import *
 from utils.cryptomath import getRandomBytes
 from utils import hmac
 from FileObject import FileObject
-import sha
-import md5
+
+# The sha module is deprecated in Python 2.6 
+try:
+    import sha
+except ImportError:
+    from hashlib import sha1 as sha
+
+# The md5 module is deprecated in Python 2.6
+try:
+    import md5
+except ImportError:
+    from hashlib import md5
+
 import socket
 import errno
 import traceback

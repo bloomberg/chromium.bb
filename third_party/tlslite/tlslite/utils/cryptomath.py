@@ -6,7 +6,18 @@ import os
 import math
 import base64
 import binascii
-import sha
+
+# The sha module is deprecated in Python 2.6 
+try:
+    import sha
+except ImportError:
+    from hashlib import sha1 as sha
+
+# The md5 module is deprecated in Python 2.6
+try:
+    import md5
+except ImportError:
+    from hashlib import md5
 
 from compat import *
 
