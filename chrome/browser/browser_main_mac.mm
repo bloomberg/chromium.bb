@@ -102,6 +102,8 @@ class BrowserMainPartsMac : public BrowserMainPartsPosix {
     scoped_nsobject<NSNib>
         nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
                                      bundle:mac_util::MainAppBundle()]);
+    // TODO(viettrungluu): crbug.com/20504 - This currently leaks, so if you
+    // change this, you'll probably need to change the Valgrind suppression.
     [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];
     // Make sure the app controller has been created.
     DCHECK([NSApp delegate]);
