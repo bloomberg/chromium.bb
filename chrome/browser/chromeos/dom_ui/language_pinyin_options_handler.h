@@ -9,7 +9,6 @@
 #include "chrome/browser/dom_ui/options_ui.h"
 
 class DictionaryValue;
-class ListValue;
 
 // Pinyin options page UI handler.
 class LanguagePinyinOptionsHandler : public OptionsPageUIHandler {

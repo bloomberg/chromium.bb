@@ -10,38 +10,12 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/dom_ui/language_options_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 
 namespace {
 
-// Returns an i18n-content value corresponding to |preference|.
-template <typename T>
-std::wstring GetI18nContentValue(const T& preference) {
-  return ASCIIToWide(preference.ibus_config_name) + L"Content";
-}
-
-// Returns a property name of templateData corresponding to |preference|.
-template <typename T>
-std::wstring GetTemplateDataPropertyName(const T& preference) {
-  return ASCIIToWide(preference.ibus_config_name) + L"Value";
-}
-
-// Returns an property name of templateData corresponding the value of the min
-// attribute.
-template <typename T>
-std::wstring GetTemplateDataMinName(const T& preference) {
-  return ASCIIToWide(preference.ibus_config_name) + L"Min";
-}
-
-// Returns an property name of templateData corresponding the value of the max
-// attribute.
-template <typename T>
-std::wstring GetTemplateDataMaxName(const T& preference) {
-  return ASCIIToWide(preference.ibus_config_name) + L"Max";
-}
-
-// Returns a list of options for LanguageMultipleChoicePreference.
 ListValue* CreateMultipleChoiceList(
     const chromeos::LanguageMultipleChoicePreference<const char*>& preference) {
   int list_length = 0;
