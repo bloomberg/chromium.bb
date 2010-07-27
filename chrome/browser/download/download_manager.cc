@@ -84,6 +84,12 @@ void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
       download_util::GetDefaultDownloadDirectory();
   prefs->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
                               default_download_path);
+#if defined(OS_CHROMEOS)
+  // Ensure that the download directory specified in the preferences exists.
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(&file_util::CreateDirectory, default_download_path));
+#endif
 
   // If the download path is dangerous we forcefully reset it. But if we do
   // so we set a flag to make sure we only do it once, to avoid fighting
@@ -342,7 +348,6 @@ bool DownloadManager::Init(Profile* profile) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs, NULL);
 
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
-
   // Ensure that the download directory specified in the preferences exists.
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
@@ -433,10 +438,11 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // Determine the proper path for a download, by either one of the following:
     // 1) using the default download directory.
     // 2) prompting the user.
-    if (info->prompt_user_for_save_location && !last_download_path_.empty())
+    if (info->prompt_user_for_save_location && !last_download_path_.empty()){
       info->suggested_path = last_download_path_;
-    else
+    } else {
       info->suggested_path = download_path();
+    }
     info->suggested_path = info->suggested_path.Append(generated_name);
   } else {
     info->suggested_path = info->save_info.file_path;
