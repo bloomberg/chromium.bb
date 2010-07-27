@@ -7,7 +7,6 @@ SpdyNetworkTransactionTest.SynReplyHeadersVary
 X509CertificateTest.UnoSoftCertParsing
 URLRequestTest.DoNotSaveCookies
 URLRequestTest.QuitTest
-DiskCacheEntryTest.*HugeSparse*
 
 # See http://crbug.com/46647
 DiskCacheBackendTest.*
