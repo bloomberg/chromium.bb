@@ -122,7 +122,7 @@ void OobeProgressBar::Paint(gfx::Canvas* canvas) {
   }
 }
 
-void OobeProgressBar::LocaleChanged() {
+void OobeProgressBar::OnLocaleChanged() {
   SchedulePaint();
 }
 

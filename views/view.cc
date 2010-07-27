@@ -667,15 +667,16 @@ bool View::IsFocusable() const {
   return focusable_ && IsEnabled() && IsVisible();
 }
 
-void View::ThemeChanged() {
+void View::PropagateThemeChanged() {
   for (int i = GetChildViewCount() - 1; i >= 0; --i)
-    GetChildViewAt(i)->ThemeChanged();
+    GetChildViewAt(i)->PropagateThemeChanged();
+  OnThemeChanged();
 }
 
-void View::NotifyLocaleChanged() {
-  LocaleChanged();
+void View::PropagateLocaleChanged() {
   for (int i = GetChildViewCount() - 1; i >= 0; --i)
-    GetChildViewAt(i)->NotifyLocaleChanged();
+    GetChildViewAt(i)->PropagateLocaleChanged();
+  OnLocaleChanged();
 }
 
 #ifndef NDEBUG

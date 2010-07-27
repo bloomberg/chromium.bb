@@ -382,7 +382,7 @@ class BookmarkBarView : public DetachableToolbarView,
                        const NotificationDetails& details);
 
   // Overridden from views::View.
-  virtual void ThemeChanged();
+  virtual void OnThemeChanged();
 
   // If the ModelChangedListener is non-null, ModelChanged is invoked on it.
   void NotifyModelChanged();

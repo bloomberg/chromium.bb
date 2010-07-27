@@ -77,7 +77,7 @@ class FindBarView : public DropdownBarView,
   void UpdateMatchCountAppearance(bool no_match);
 
   // Overridden from views::View.
-  virtual void ThemeChanged();
+  virtual void OnThemeChanged();
 
   // We use a hidden view to grab mouse clicks and bring focus to the find
   // text box. This is because although the find text box may look like it

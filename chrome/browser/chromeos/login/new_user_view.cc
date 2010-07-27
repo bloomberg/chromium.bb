@@ -198,7 +198,7 @@ void NewUserView::UpdateLocalizedStrings() {
   languages_menubutton_->SetText(language_switch_menu_.GetCurrentLocaleName());
 }
 
-void NewUserView::LocaleChanged() {
+void NewUserView::OnLocaleChanged() {
   UpdateLocalizedStrings();
   Layout();
   SchedulePaint();

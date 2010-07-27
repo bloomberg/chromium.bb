@@ -302,7 +302,7 @@ void DownloadShelfView::UpdateButtonColors() {
   }
 }
 
-void DownloadShelfView::ThemeChanged() {
+void DownloadShelfView::OnThemeChanged() {
   UpdateButtonColors();
 }
 

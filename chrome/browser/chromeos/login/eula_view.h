@@ -81,7 +81,7 @@ class EulaView
 
  protected:
   // views::View implementation.
-  virtual void LocaleChanged();
+  virtual void OnLocaleChanged();
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

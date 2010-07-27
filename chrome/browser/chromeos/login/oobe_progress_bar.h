@@ -36,7 +36,7 @@ class OobeProgressBar : public views::View {
 
  protected:
   // Overridden from View:
-  virtual void LocaleChanged();
+  virtual void OnLocaleChanged();
 
  private:
   static void InitClass();

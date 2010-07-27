@@ -129,7 +129,7 @@ class BaseTab : public AnimationDelegate,
                                bool is_mouse_gesture);
 
   // views::View overrides:
-  virtual void ThemeChanged();
+  virtual void OnThemeChanged();
 
   // Returns the bounds of the title.
   virtual const gfx::Rect& title_bounds() const = 0;

@@ -119,7 +119,7 @@ class ToolbarView : public AccessibleToolbarView,
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
-  virtual void ThemeChanged();
+  virtual void OnThemeChanged();
 
  protected:
 

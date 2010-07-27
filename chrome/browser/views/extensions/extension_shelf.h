@@ -52,7 +52,7 @@ class ExtensionShelf : public DetachableToolbarView,
   virtual void OnMouseExited(const views::MouseEvent& event);
   virtual void OnMouseEntered(const views::MouseEvent& event);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual void ThemeChanged();
+  virtual void OnThemeChanged();
 
   // ExtensionContainer methods:
   virtual void OnExtensionMouseEvent(ExtensionView* view);

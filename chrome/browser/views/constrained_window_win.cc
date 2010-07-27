@@ -178,7 +178,7 @@ class ConstrainedWindowFrameView
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
-  virtual void ThemeChanged();
+  virtual void OnThemeChanged();
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -372,7 +372,7 @@ void ConstrainedWindowFrameView::Layout() {
   client_view_bounds_ = CalculateClientAreaBounds(width(), height());
 }
 
-void ConstrainedWindowFrameView::ThemeChanged() {
+void ConstrainedWindowFrameView::OnThemeChanged() {
   InitWindowResources();
 }
 

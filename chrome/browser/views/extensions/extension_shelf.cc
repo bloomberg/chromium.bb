@@ -780,7 +780,7 @@ bool ExtensionShelf::GetAccessibleRole(AccessibilityTypes::Role* role) {
   return true;
 }
 
-void ExtensionShelf::ThemeChanged() {
+void ExtensionShelf::OnThemeChanged() {
   // Refresh the CSS to update toolstrip text colors from theme.
   int count = model_->count();
   for (int i = 0; i < count; ++i)

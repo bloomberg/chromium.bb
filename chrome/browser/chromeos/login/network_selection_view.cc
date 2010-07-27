@@ -156,7 +156,7 @@ void NetworkSelectionView::ChildPreferredSizeChanged(View* child) {
   SchedulePaint();
 }
 
-void NetworkSelectionView::LocaleChanged() {
+void NetworkSelectionView::OnLocaleChanged() {
   UpdateLocalizedStrings();
   NetworkModelChanged();
   // Explicitly set selected item - index 0 is a localized string.

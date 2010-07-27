@@ -61,7 +61,7 @@ void NonClientView::WindowClosing() {
 
 void NonClientView::UpdateFrame() {
   SetFrameView(frame_->CreateFrameViewForWindow());
-  GetRootView()->ThemeChanged();
+  GetRootView()->NotifyThemeChanged();
   Layout();
   SchedulePaint();
   frame_->UpdateFrameAfterFrameChange();

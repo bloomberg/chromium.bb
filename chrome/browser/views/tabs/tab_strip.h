@@ -80,7 +80,7 @@ class TabStrip : public BaseTabStrip,
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual views::View* GetViewForPoint(const gfx::Point& point);
-  virtual void ThemeChanged();
+  virtual void OnThemeChanged();
 
  protected:
   // BaseTabStrip overrides:

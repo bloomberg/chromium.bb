@@ -80,11 +80,11 @@ class RootView : public View,
 
   // Public API for broadcasting theme change notifications to this View
   // hierarchy.
-  virtual void ThemeChanged();
+  void NotifyThemeChanged();
 
   // Public API for broadcasting locale change notifications to this View
   // hierarchy.
-  virtual void NotifyLocaleChanged();
+  void NotifyLocaleChanged();
 
   // The following event methods are overridden to propagate event to the
   // control tree

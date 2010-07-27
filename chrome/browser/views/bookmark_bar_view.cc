@@ -1325,7 +1325,7 @@ void BookmarkBarView::Observe(NotificationType type,
   }
 }
 
-void BookmarkBarView::ThemeChanged() {
+void BookmarkBarView::OnThemeChanged() {
   UpdateColors();
 }
 

@@ -444,8 +444,7 @@ void BaseTab::ShowContextMenu(views::View* source,
     controller()->ShowContextMenu(this, p);
 }
 
-void BaseTab::ThemeChanged() {
-  views::View::ThemeChanged();
+void BaseTab::OnThemeChanged() {
   LoadThemeImages();
 }
 

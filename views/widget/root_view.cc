@@ -238,13 +238,12 @@ Widget* RootView::GetWidget() const {
   return widget_;
 }
 
-void RootView::ThemeChanged() {
-  View::ThemeChanged();
+void RootView::NotifyThemeChanged() {
+  View::PropagateThemeChanged();
 }
 
 void RootView::NotifyLocaleChanged() {
-  // Propagate downside. Note that View::NotifyLocaleChanged() is private.
-  View::NotifyLocaleChanged();
+  View::PropagateLocaleChanged();
 }
 
 /////////////////////////////////////////////////////////////////////////////

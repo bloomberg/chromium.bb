@@ -319,8 +319,7 @@ void Tab::Layout() {
   title_bounds_.set_x(MirroredLeftPointForRect(title_bounds_));
 }
 
-void Tab::ThemeChanged() {
-  BaseTab::ThemeChanged();
+void Tab::OnThemeChanged() {
   Tab::LoadTabImages();
 }
 

@@ -61,7 +61,7 @@ class UserImageView : public views::View,
 
  protected:
   // views::View overrides:
-  virtual void LocaleChanged();
+  virtual void OnLocaleChanged();
 
  private:
   // Delete and recreate native controls that fail to update preferred size

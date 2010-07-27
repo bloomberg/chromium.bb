@@ -323,7 +323,7 @@ void FindBarView::Layout() {
                            sz.width(),
                            sz.height());
   // Set the color.
-  ThemeChanged();
+  OnThemeChanged();
 
   // Next, the FindNext button to the left the close button.
   sz = find_next_button_->GetPreferredSize();
@@ -525,7 +525,7 @@ FindBarHost* FindBarView::find_bar_host() const {
   return static_cast<FindBarHost*>(host());
 }
 
-void FindBarView::ThemeChanged() {
+void FindBarView::OnThemeChanged() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (GetThemeProvider()) {
     close_button_->SetBackground(

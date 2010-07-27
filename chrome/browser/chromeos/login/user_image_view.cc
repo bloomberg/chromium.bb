@@ -147,7 +147,7 @@ void UserImageView::OnVideoImageClicked() {
   ok_button_->RequestFocus();
 }
 
-void UserImageView::LocaleChanged() {
+void UserImageView::OnLocaleChanged() {
   UpdateLocalizedStrings();
   Layout();
 }
