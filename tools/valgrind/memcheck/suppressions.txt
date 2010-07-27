@@ -3574,4 +3574,39 @@
    fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvbEbEvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
 }
-
+{
+   bug_50334
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKiN6google8protobuf8internal12ExtensionSet9ExtensionEEEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeIiSt4pairIKiN6google8protobuf8internal12ExtensionSet9ExtensionEESt10_Select1stIS7_ESt4lessIiESaIS7_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeIiSt4pairIKiN6google8protobuf8internal12ExtensionSet9ExtensionEESt10_Select1stIS7_ESt4lessIiESaIS7_EE14_M_create_nodeERKS7_
+   fun:_ZNSt8_Rb_treeIiSt4pairIKiN6google8protobuf8internal12ExtensionSet9ExtensionEESt10_Select1stIS7_ESt4lessIiESaIS7_EE9_M_insertEPSt18_Rb_tree_node_baseSF_RKS7_
+   fun:_ZNSt8_Rb_treeIiSt4pairIKiN6google8protobuf8internal12ExtensionSet9ExtensionEESt10_Select1stIS7_ESt4lessIiESaIS7_EE16_M_insert_uniqueERKS7_
+   fun:_ZNSt3mapIiN6google8protobuf8internal12ExtensionSet9ExtensionESt4lessIiESaISt4pairIKiS4_EEE6insertERKS9_
+   fun:_ZN6google8protobuf8internal12ExtensionSet17MaybeNewExtensionEiPKNS0_15FieldDescriptorEPPNS2_9ExtensionE
+   fun:_ZN6google8protobuf8internal12ExtensionSet14MutableMessageEihRKNS0_11MessageLiteEPKNS0_15FieldDescriptorE
+   ...
+   fun:_ZN7sync_pb15EntitySpecifics*
+}
+{
+   bug_50335a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8syncable12MutableEntryC1EPNS_16WriteTransactionENS_19CreateNewUpdateItemERKNS_2IdE
+}
+{
+   bug_50335b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8syncable12MutableEntry4InitEPNS_16WriteTransactionERKNS_2IdERKSs
+   fun:_ZN8syncable12MutableEntryC1EPNS_16WriteTransactionENS_6CreateERKNS_2IdERKSs
+}
+{
+   bug_50336
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8syncable11UnpackEntryEP12SQLStatementPPNS_11EntryKernelE
+   fun:_ZN8syncable21DirectoryBackingStore11LoadEntriesEPSt3setIPNS_11EntryKernelENS_9LessFieldINS_15MetahandleFieldELS5_0EEESaIS3_EE
+   fun:_ZN8syncable44DirectoryBackingStoreTest_DeleteEntries_Test8TestBodyEv
+}
