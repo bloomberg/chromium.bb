@@ -38,28 +38,32 @@ class ReferrerValue {
   // Used during deserialization.
   void SetSubresourceUseRate(double rate) { subresource_use_rate_ = rate; }
 
-  base::TimeDelta latency() const { return latency_; }
   base::Time birth_time() const { return birth_time_; }
-  void AccrueValue(const base::TimeDelta& delta) { latency_ += delta; }
 
-  // Record the fact that we navigated to the associated subresource URL.
+  // Record the fact that we navigated to the associated subresource URL.  This
+  // will increase the value of the expected subresource_use_rate_
   void SubresourceIsNeeded();
 
-  // Evaluate if it is worth making this preconnection, and return true if it
-  // seems worthwhile.  As a side effect, we also tally the proconnection for
-  // statistical purposes only.
-  bool IsPreconnectWorthDoing();
+  // Record the fact that the referrer of this subresource was observed. This
+  // will diminish the expected subresource_use_rate_ (and will only be
+  // counteracted later if we really needed this subresource as a consequence
+  // of our associated referrer.)
+  void ReferrerWasObserved();
 
   int64 navigation_count() const { return navigation_count_; }
-  int64 preconnection_count() const { return preconnection_count_; }
   double subresource_use_rate() const { return subresource_use_rate_; }
 
-  // Reduce the latency figure by a factor of 2, and return true if any latency
-  // remains.
+  int64 preconnection_count() const { return preconnection_count_; }
+  void IncrementPreconnectionCount() { ++preconnection_count_; }
+
+  int64 preresolution_count() const { return preresolution_count_; }
+  void preresolution_increment() { ++preresolution_count_; }
+
+  // Reduce the latency figure by a factor of 2, and return true if it still has
+  // subresources that could potentially be used.
   bool Trim();
 
  private:
-  base::TimeDelta latency_;  // Accumulated DNS resolution latency savings.
   const base::Time birth_time_;
 
   // The number of times this item was navigated to with the fixed referrer.
@@ -69,7 +73,12 @@ class ReferrerValue {
   // referrer.
   int64 preconnection_count_;
 
-  // A smoothed estimate of the probability that a connection will be needed.
+  // The number of times this item was pre-resolved (via DNS) as a consequence
+  // of its referrer.
+  int64 preresolution_count_;
+
+  // A smoothed estimate of the expected number of connections that will be made
+  // to this subresource.
   double subresource_use_rate_;
 };
 
@@ -99,14 +108,9 @@ class Referrer : public SubresourceMap {
   // discarded to make room for this insertion.
   void SuggestHost(const GURL& url);
 
-  // Record additional usefulness of having this url in the list.
-  // Value is expressed as positive latency of amount delta.
-  void AccrueValue(const base::TimeDelta& delta,
-                   const GURL& url);
-
-  // Trim the Referrer, by first diminishing (scaling down) the latency for each
-  // ReferredValue.
-  // Returns true if there are any referring names with some latency left.
+  // Trim the Referrer, by first diminishing (scaling down) the subresource
+  // use expectation for each ReferredValue.
+  // Returns true if there are any referring names left.
   bool Trim();
 
   // Provide methods for persisting, and restoring contents into a Value class.

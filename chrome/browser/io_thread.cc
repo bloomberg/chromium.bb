@@ -336,17 +336,16 @@ void IOThread::InitNetworkPredictorOnIOThread(
       preconnect_enabled);
   predictor_->AddRef();
 
-  // TODO(jar): Until connection notification and DNS observation handling are
-  // properly combined into a learning model, we'll only use one observation
-  // mechanism or the other.
-  if (preconnect_enabled) {
-    DCHECK(!speculative_interceptor_);
-    speculative_interceptor_ = new chrome_browser_net::ConnectInterceptor;
-  } else {
-    DCHECK(!prefetch_observer_);
-    prefetch_observer_ = chrome_browser_net::CreateResolverObserver();
-    globals_->host_resolver->AddObserver(prefetch_observer_);
-  }
+  // Speculative_interceptor_ is used to predict subresource usage.
+  DCHECK(!speculative_interceptor_);
+  speculative_interceptor_ = new chrome_browser_net::ConnectInterceptor;
+
+  // TODO(jar): We can completely replace prefetch_observer with
+  // speculative_interceptor.
+  // Prefetch_observer is used to monitor initial resolutions.
+  DCHECK(!prefetch_observer_);
+  prefetch_observer_ = chrome_browser_net::CreateResolverObserver();
+  globals_->host_resolver->AddObserver(prefetch_observer_);
 
   FinalizePredictorInitialization(
       predictor_, prefetch_observer_, startup_urls, referral_list);

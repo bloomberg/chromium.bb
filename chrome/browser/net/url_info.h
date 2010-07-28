@@ -29,14 +29,6 @@ namespace chrome_browser_net {
 // Use command line switch to enable detailed logging.
 void EnablePredictorDetailedLog(bool enable);
 
-enum DnsBenefit {
-  PREFETCH_NO_BENEFIT,  // Prefetch never hit the network. Name was pre-cached.
-  PREFETCH_CACHE_EVICTION,  // Prefetch used network, but so did HTTP stack.
-  PREFETCH_NAME_NONEXISTANT,  // Valuable prefetch of "name not found" was used.
-  PREFETCH_NAME_FOUND,  // Valuable prefetch was used.
-  PREFETCH_OBLIVIOUS  // No prefetch attempt was even made.
-};
-
 class UrlInfo {
  public:
   // Reasons for a domain to be resolved.
@@ -55,6 +47,8 @@ class UrlInfo {
     // TODO(jar): Support STATIC_REFERAL_MOTIVATED API and integration.
     STATIC_REFERAL_MOTIVATED,  // External database suggested this resolution.
     LEARNED_REFERAL_MOTIVATED,  // Prior navigation taught us this resolution.
+
+    MAX_MOTIVATED  // Beyond all enums, for use in histogram bounding.
   };
 
   enum DnsProcessingState {
@@ -65,16 +59,13 @@ class UrlInfo {
       ASSIGNED_BUT_MARKED,  // Needs to be deleted as soon as it's resolved.
       FOUND,         // DNS resolution completed.
       NO_SUCH_NAME,  // DNS resolution completed.
-      // When processed by the network stack during navigation, the states are:
-      STARTED,               // Resolution has begun for a navigation.
-      FINISHED,              // Resolution has completed for a navigation.
-      FINISHED_UNRESOLVED};  // No resolution found, so navigation will fail.
+  };
   static const base::TimeDelta kMaxNonNetworkDnsLookupDuration;
   // The number of OS cache entries we can guarantee(?) before cache eviction
   // might likely take place.
   static const int kMaxGuaranteedDnsCacheSize = 50;
 
-  typedef std::vector<UrlInfo> DnsInfoTable;
+  typedef std::vector<UrlInfo> UrlInfoTable;
 
   static const base::TimeDelta kNullDuration;
 
@@ -85,7 +76,6 @@ class UrlInfo {
         old_prequeue_state_(state_),
         resolve_duration_(kNullDuration),
         queue_duration_(kNullDuration),
-        benefits_remaining_(),
         sequence_number_(0),
         motivation_(NO_PREFETCH_MOTIVATION),
         was_linked_(false) {
@@ -108,9 +98,6 @@ class UrlInfo {
   void SetPendingDeleteState();
   void SetFoundState();
   void SetNoSuchNameState();
-  // The actual browsing resolution lifecycle.
-  void SetStartedState();
-  void SetFinishedState(bool was_resolved);
 
   // Finish initialization. Must only be called once.
   void SetUrl(const GURL& url);
@@ -136,13 +123,10 @@ class UrlInfo {
 
   base::TimeDelta resolve_duration() const { return resolve_duration_;}
   base::TimeDelta queue_duration() const { return queue_duration_;}
-  base::TimeDelta benefits_remaining() const { return benefits_remaining_; }
-
-  DnsBenefit AccruePrefetchBenefits(UrlInfo* navigation_info);
 
   void DLogResultsStats(const char* message) const;
 
-  static void GetHtmlTable(const DnsInfoTable host_infos,
+  static void GetHtmlTable(const UrlInfoTable host_infos,
                            const char* description,
                            const bool brief,
                            std::string* output);
@@ -182,8 +166,6 @@ class UrlInfo {
   base::TimeDelta resolve_duration_;
   // Time spent in queue.
   base::TimeDelta queue_duration_;
-  // Unused potential benefits of a prefetch.
-  base::TimeDelta benefits_remaining_;
 
   int sequence_number_;  // Used to calculate potential of cache eviction.
   static int sequence_counter;  // Used to allocate sequence_number_'s.

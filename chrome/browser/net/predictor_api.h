@@ -59,10 +59,6 @@ void AnticipateUrl(const GURL& url, bool preconnectable);
 void PredictorGetHtmlInfo(std::string* output);
 
 //------------------------------------------------------------------------------
-// When we navigate, we may know in advance some other URLs that will need to
-// be resolved.  This function initiates those side effects.
-void PredictSubresources(const GURL& url);
-
 // When we navigate to a frame that may contain embedded resources, we may know
 // in advance some other URLs that will need to be connected to (via TCP and
 // sometimes SSL).  This function initiates those connections

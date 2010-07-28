@@ -115,70 +115,6 @@ TEST_F(PredictorTest, StartupShutdownTest) {
   testing_master->Shutdown();
 }
 
-TEST_F(PredictorTest, BenefitLookupTest) {
-  scoped_refptr<Predictor> testing_master = new Predictor(
-      host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
-
-  GURL goog("http://www.google.com:80"),
-      goog2("http://gmail.google.com.com:80"),
-      goog3("http://mail.google.com:80"),
-      goog4("http://gmail.com:80");
-  UrlInfo goog_info, goog2_info, goog3_info, goog4_info;
-
-  // Simulate getting similar names from a network observer
-  goog_info.SetUrl(goog);
-  goog2_info.SetUrl(goog2);
-  goog3_info.SetUrl(goog3);
-  goog4_info.SetUrl(goog4);
-
-  goog_info.SetStartedState();
-  goog2_info.SetStartedState();
-  goog3_info.SetStartedState();
-  goog4_info.SetStartedState();
-
-  goog_info.SetFinishedState(true);
-  goog2_info.SetFinishedState(true);
-  goog3_info.SetFinishedState(true);
-  goog4_info.SetFinishedState(true);
-
-  UrlList names;
-  names.push_back(goog);
-  names.push_back(goog2);
-  names.push_back(goog3);
-  names.push_back(goog4);
-
-  testing_master->ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
-
-  WaitForResolution(testing_master, names);
-
-  EXPECT_TRUE(testing_master->WasFound(goog));
-  EXPECT_TRUE(testing_master->WasFound(goog2));
-  EXPECT_TRUE(testing_master->WasFound(goog3));
-  EXPECT_TRUE(testing_master->WasFound(goog4));
-
-  // With the mock DNS, each of these should have taken some time, and hence
-  // shown a benefit (i.e., prefetch cost more than network access time).
-
-  GURL referer;  // Null host.
-
-  // Simulate actual navigation, and acrue the benefit for "helping" the DNS
-  // part of the navigation.
-  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(referer, &goog_info));
-  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(referer, &goog2_info));
-  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(referer, &goog3_info));
-  EXPECT_TRUE(testing_master->AccruePrefetchBenefits(referer, &goog4_info));
-
-  // Benefits can ONLY be reported once (for the first navigation).
-  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(referer, &goog_info));
-  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(referer, &goog2_info));
-  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(referer, &goog3_info));
-  EXPECT_FALSE(testing_master->AccruePrefetchBenefits(referer, &goog4_info));
-
-  testing_master->Shutdown();
-}
 
 TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
   scoped_refptr<net::WaitingHostResolverProc> resolver_proc =
@@ -327,7 +263,7 @@ static ListValue* FindSerializationMotivation(
   CHECK_LT(0u, referral_list.GetSize());  // Room for version.
   int format_version = -1;
   CHECK(referral_list.GetInteger(0, &format_version));
-  CHECK_EQ(Predictor::DNS_REFERRER_VERSION, format_version);
+  CHECK_EQ(Predictor::PREDICTOR_REFERRER_VERSION, format_version);
   ListValue* motivation_list(NULL);
   for (size_t i = 1; i < referral_list.GetSize(); ++i) {
     referral_list.GetList(i, &motivation_list);
@@ -342,17 +278,16 @@ static ListValue* FindSerializationMotivation(
 // Create a new empty serialization list.
 static ListValue* NewEmptySerializationList() {
   ListValue* list = new ListValue;
-  list->Append(new FundamentalValue(Predictor::DNS_REFERRER_VERSION));
+  list->Append(new FundamentalValue(Predictor::PREDICTOR_REFERRER_VERSION));
   return list;
 }
 
-// Add a motivating_host and a subresource_host to a serialized list, using
+// Add a motivating_url and a subresource_url to a serialized list, using
 // this given latency. This is a helper function for quickly building these
 // lists.
 static void AddToSerializedList(const GURL& motivation,
                                 const GURL& subresource,
-                                int latency,
-                                double rate,
+                                double use_rate,
                                 ListValue* referral_list ) {
   // Find the motivation if it is already used.
   ListValue* motivation_list = FindSerializationMotivation(motivation,
@@ -377,8 +312,7 @@ static void AddToSerializedList(const GURL& motivation,
   // existing value(s) will be added to the referrer.
 
   subresource_list->Append(new StringValue(subresource.spec()));
-  subresource_list->Append(new FundamentalValue(latency));
-  subresource_list->Append(new FundamentalValue(rate));
+  subresource_list->Append(new FundamentalValue(use_rate));
 }
 
 static const int kLatencyNotFound = -1;
@@ -386,12 +320,11 @@ static const int kLatencyNotFound = -1;
 // For a given motivation, and subresource, find what latency is currently
 // listed.  This assume a well formed serialization, which has at most one such
 // entry for any pair of names.  If no such pair is found, then return false.
-// Data is written into rate and latency arguments.
+// Data is written into use_rate arguments.
 static bool GetDataFromSerialization(const GURL& motivation,
                                      const GURL& subresource,
                                      const ListValue& referral_list,
-                                     double* rate,
-                                     int* latency) {
+                                     double* use_rate) {
   ListValue* motivation_list = FindSerializationMotivation(motivation,
                                                            referral_list);
   if (!motivation_list)
@@ -401,8 +334,7 @@ static bool GetDataFromSerialization(const GURL& motivation,
   for (size_t i = 0; i < subresource_list->GetSize();) {
     std::string url_spec;
     EXPECT_TRUE(subresource_list->GetString(i++, &url_spec));
-    EXPECT_TRUE(subresource_list->GetInteger(i++, latency));
-    EXPECT_TRUE(subresource_list->GetReal(i++, rate));
+    EXPECT_TRUE(subresource_list->GetReal(i++, use_rate));
     if (subresource == GURL(url_spec)) {
       return true;
     }
@@ -423,7 +355,7 @@ TEST_F(PredictorTest, ReferrerSerializationNilTest) {
   EXPECT_EQ(1U, referral_list->GetSize());
   EXPECT_FALSE(GetDataFromSerialization(
     GURL("http://a.com:79"), GURL("http://b.com:78"),
-      *referral_list.get(), NULL, NULL));
+      *referral_list.get(), NULL));
 
   predictor->Shutdown();
 }
@@ -438,25 +370,21 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
       false);
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
-  const int kLatency = 3;
-  const double kRate = 23.4;
+  const double kUseRate = 23.4;
   scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
 
   AddToSerializedList(motivation_url, subresource_url,
-      kLatency, kRate, referral_list.get());
+      kUseRate, referral_list.get());
 
   predictor->DeserializeReferrers(*referral_list.get());
 
   ListValue recovered_referral_list;
   predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
-  int latency;
   double rate;
   EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, subresource_url, recovered_referral_list, &rate,
-      &latency));
-  EXPECT_EQ(rate, kRate);
-  EXPECT_EQ(latency, kLatency);
+      motivation_url, subresource_url, recovered_referral_list, &rate));
+  EXPECT_EQ(rate, kUseRate);
 
   predictor->Shutdown();
 }
@@ -470,99 +398,73 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   GURL motivation_url("http://www.google.com:110");
 
   GURL icon_subresource_url("http://icons.google.com:111");
-  const int kLatencyIcon = 10;
-  const double kRateIcon = 0.;  // User low rate, so latency will dominate.
+  const double kRateIcon = 16.0 * Predictor::kPersistWorthyExpectedValue;
   GURL img_subresource_url("http://img.google.com:118");
-  const int kLatencyImg = 3;
-  const double kRateImg = 0.;
+  const double kRateImg = 8.0 * Predictor::kPersistWorthyExpectedValue;
 
   scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
   AddToSerializedList(
-      motivation_url, icon_subresource_url,
-      kLatencyIcon, kRateIcon, referral_list.get());
+      motivation_url, icon_subresource_url, kRateIcon, referral_list.get());
   AddToSerializedList(
-      motivation_url, img_subresource_url,
-      kLatencyImg, kRateImg, referral_list.get());
+      motivation_url, img_subresource_url, kRateImg, referral_list.get());
 
   predictor->DeserializeReferrers(*referral_list.get());
 
   ListValue recovered_referral_list;
   predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
-  int latency;
   double rate;
   EXPECT_TRUE(GetDataFromSerialization(
       motivation_url, icon_subresource_url, recovered_referral_list,
-      &rate, &latency));
-  EXPECT_EQ(latency, kLatencyIcon);
+      &rate));
   EXPECT_EQ(rate, kRateIcon);
 
   EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list,
-      &rate, &latency));
-  EXPECT_EQ(latency, kLatencyImg);
+      motivation_url, img_subresource_url, recovered_referral_list, &rate));
   EXPECT_EQ(rate, kRateImg);
 
-  // Each time we Trim, the latency figures should reduce by a factor of two,
-  // until they both are 0, an then a trim will delete the whole entry.
+  // Each time we Trim, the user_rate figures should reduce by a factor of two,
+  // until they both are small, an then a trim will delete the whole entry.
   predictor->TrimReferrers();
   predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list,
-      &rate, &latency));
-  EXPECT_EQ(latency, kLatencyIcon / 2);
-  EXPECT_EQ(rate, kRateIcon);
+      motivation_url, icon_subresource_url, recovered_referral_list, &rate));
+  EXPECT_EQ(rate, kRateIcon / 2);
 
   EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list,
-      &rate, &latency));
-  EXPECT_EQ(latency, kLatencyImg / 2);
-  EXPECT_EQ(rate, kRateImg);
+      motivation_url, img_subresource_url, recovered_referral_list, &rate));
+  EXPECT_EQ(rate, kRateImg / 2);
 
   predictor->TrimReferrers();
   predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list,
-      &rate, &latency));
-  EXPECT_EQ(latency, kLatencyIcon / 4);
-  EXPECT_EQ(rate, kRateIcon);
-  // Img is down to zero, but we don't delete it yet.
+      motivation_url, icon_subresource_url, recovered_referral_list, &rate));
+  EXPECT_EQ(rate, kRateIcon / 4);
   EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list,
-      &rate, &latency));
-  EXPECT_EQ(kLatencyImg / 4, 0);
-  EXPECT_EQ(latency, kLatencyImg / 4);
-  EXPECT_EQ(rate, kRateImg);
+      motivation_url, img_subresource_url, recovered_referral_list, &rate));
+  EXPECT_EQ(rate, kRateImg / 4);
 
   predictor->TrimReferrers();
   predictor->SerializeReferrers(&recovered_referral_list);
   EXPECT_EQ(2U, recovered_referral_list.GetSize());
   EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list,
-      &rate, &latency));
-  EXPECT_EQ(latency, kLatencyIcon / 8);
-  EXPECT_EQ(rate, kRateIcon);
+      motivation_url, icon_subresource_url, recovered_referral_list, &rate));
+  EXPECT_EQ(rate, kRateIcon / 8);
 
-  // Img is down to zero, but we don't delete it yet.
-  EXPECT_TRUE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list,
-      &rate, &latency));
-  EXPECT_EQ(kLatencyImg / 8, 0);
-  EXPECT_EQ(latency, kLatencyImg / 8);
-  EXPECT_EQ(rate, kRateImg);
+  // Img is below threshold, and so it gets deleted.
+  EXPECT_FALSE(GetDataFromSerialization(
+      motivation_url, img_subresource_url, recovered_referral_list, &rate));
 
   predictor->TrimReferrers();
   predictor->SerializeReferrers(&recovered_referral_list);
   // Icon is also trimmed away, so entire set gets discarded.
   EXPECT_EQ(1U, recovered_referral_list.GetSize());
   EXPECT_FALSE(GetDataFromSerialization(
-      motivation_url, icon_subresource_url, recovered_referral_list,
-      &rate, &latency));
+      motivation_url, icon_subresource_url, recovered_referral_list, &rate));
   EXPECT_FALSE(GetDataFromSerialization(
-      motivation_url, img_subresource_url, recovered_referral_list,
-      &rate, &latency));
+      motivation_url, img_subresource_url, recovered_referral_list, &rate));
 
   predictor->Shutdown();
 }

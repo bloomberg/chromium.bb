@@ -13,8 +13,8 @@
 // Subresource relationships are usually acquired from the referrer field in a
 // navigation.  A subresource URL may be associated with a referrer URL.  Later
 // navigations may, if the likelihood of needing the subresource is high enough,
-// cause this module to speculatively create a TCP/IP connection that will
-// probably be needed to fetch the subresource.
+// cause this module to speculatively create a TCP/IP connection. If there is
+// only a low likelihood, then a DNS pre-resolution operation may be performed.
 
 #ifndef CHROME_BROWSER_NET_PREDICTOR_H_
 #define CHROME_BROWSER_NET_PREDICTOR_H_
@@ -49,9 +49,19 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
  public:
   // A version number for prefs that are saved. This should be incremented when
   // we change the format so that we discard old data.
-  enum { DNS_REFERRER_VERSION = 1 };
+  enum { PREDICTOR_REFERRER_VERSION = 2 };
 
-// |max_concurrent| specifies how many concurrent (parallel) prefetches will
+  // Depending on the expected_subresource_use_, we may either make a TCP/IP
+  // preconnection, or merely pre-resolve the hostname via DNS (or even do
+  // nothing).  The following are the threasholds for taking those actions.
+  static const double kPreconnectWorthyExpectedValue;
+  static const double kDNSPreresolutionWorthyExpectedValue;
+  // Values of expected_subresource_use_ that are less than the following
+  // threshold will be discarded when we Trim() the values, such as is done when
+  // the process ends, and some values are persisted.
+  static const double kPersistWorthyExpectedValue;
+
+  // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued through |host_resolver|.
   Predictor(net::HostResolver* host_resolver,
             base::TimeDelta max_queue_delay_ms, size_t max_concurrent,
@@ -72,14 +82,6 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
                    UrlInfo::ResolutionMotivation motivation);
   void Resolve(const GURL& url,
                UrlInfo::ResolutionMotivation motivation);
-
-  // Get latency benefit of the prefetch that we are navigating to.
-  bool AccruePrefetchBenefits(const GURL& referrer,
-                              UrlInfo* navigation_info);
-
-  // Instigate preresolution of any domains we predict will be needed after this
-  // navigation.
-  void PredictSubresources(const GURL& url);
 
   // Instigate pre-connection to any URLs we predict will be needed after this
   // navigation (typically more-embedded resources on a page).
@@ -239,12 +241,6 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
 
   // When true, we don't make new lookup requests.
   bool shutdown_;
-
-  // A list of successful events resulting from pre-fetching.
-  UrlInfo::DnsInfoTable dns_cache_hits_;
-  // A map of hosts that were evicted from our cache (after we prefetched them)
-  // and before the HTTP stack tried to look them up.
-  Results cache_eviction_map_;
 
   // The number of concurrent lookups currently allowed.
   const size_t max_concurrent_dns_lookups_;

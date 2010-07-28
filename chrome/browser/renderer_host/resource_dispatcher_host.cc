@@ -425,8 +425,11 @@ void ResourceDispatcherHost::BeginRequest(
   // EV certificate verification could be expensive.  We don't want to spend
   // time performing EV certificate verification on all resources because
   // EV status is irrelevant to sub-frames and sub-resources.
-  if (request_data.resource_type == ResourceType::MAIN_FRAME)
-    load_flags |= net::LOAD_VERIFY_EV_CERT;
+  if (request_data.resource_type == ResourceType::MAIN_FRAME) {
+    load_flags |= net::LOAD_VERIFY_EV_CERT | net::LOAD_MAIN_FRAME;
+  } else if (request_data.resource_type == ResourceType::SUB_FRAME) {
+    load_flags |= net::LOAD_SUB_FRAME;
+  }
   request->set_load_flags(load_flags);
   request->set_context(context);
   request->set_priority(DetermineRequestPriority(request_data.resource_type));

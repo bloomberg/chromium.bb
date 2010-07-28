@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/ref_counted.h"
+#include "chrome/browser/net/url_info.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/socket/client_socket_handle.h"
@@ -20,9 +21,14 @@ namespace chrome_browser_net {
 
 class Preconnect : public net::CompletionCallback {
  public:
-  static bool PreconnectOnUIThread(const GURL& url);
+  // Try to preconnect.  Typically motivated by OMNIBOX to reach search service.
+  static void PreconnectOnUIThread(const GURL& url,
+                                   UrlInfo::ResolutionMotivation motivation);
 
-  static void PreconnectOnIOThread(const GURL& url);
+  // Try to preconnect.  Typically used by predictor when a subresource probably
+  // needs a connection.
+  static void PreconnectOnIOThread(const GURL& url,
+                                   UrlInfo::ResolutionMotivation motivation);
 
   static void SetPreconnectDespiteProxy(bool status) {
     preconnect_despite_proxy_ = status;

@@ -26,17 +26,18 @@ bool Preconnect::preconnect_despite_proxy_ = false;
 Preconnect* Preconnect::callback_instance_;
 
 // static
-bool Preconnect::PreconnectOnUIThread(const GURL& url) {
+void Preconnect::PreconnectOnUIThread(const GURL& url,
+    UrlInfo::ResolutionMotivation motivation) {
   // Try to do connection warming for this search provider.
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   if (!getter)
-    return false;
+    return;
   // Prewarm connection to Search URL.
   ChromeThread::PostTask(
       ChromeThread::IO,
       FROM_HERE,
-      NewRunnableFunction(Preconnect::PreconnectOnIOThread, url));
-  return true;
+      NewRunnableFunction(Preconnect::PreconnectOnIOThread, url, motivation));
+  return;
 }
 
 enum ProxyStatus {
@@ -53,8 +54,8 @@ static void HistogramPreconnectStatus(ProxyStatus status) {
 }
 
 // static
-void Preconnect::PreconnectOnIOThread(const GURL& url) {
-  // TODO(jar): This does not handle proxies currently.
+void Preconnect::PreconnectOnIOThread(const GURL& url,
+    UrlInfo::ResolutionMotivation motivation) {
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   if (!getter)
     return;
@@ -83,6 +84,9 @@ void Preconnect::PreconnectOnIOThread(const GURL& url) {
       HistogramPreconnectStatus(PROXY_NOT_USED);
     }
   }
+
+  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
+                            UrlInfo::MAX_MOTIVATED);
 
   net::HttpTransactionFactory* factory = context->http_transaction_factory();
   net::HttpNetworkSession* session = factory->GetSession();

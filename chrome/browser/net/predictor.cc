@@ -26,6 +26,14 @@ using base::TimeDelta;
 
 namespace chrome_browser_net {
 
+// static
+const double Predictor::kPreconnectWorthyExpectedValue = 0.7;
+// static
+const double Predictor::kDNSPreresolutionWorthyExpectedValue = 0.2;
+// static
+const double Predictor::kPersistWorthyExpectedValue = 0.1;
+
+
 class Predictor::LookupRequest {
  public:
   LookupRequest(Predictor* predictor,
@@ -118,60 +126,6 @@ void Predictor::Resolve(const GURL& url,
   AppendToResolutionQueue(url, motivation);
 }
 
-bool Predictor::AccruePrefetchBenefits(const GURL& referrer,
-                                       UrlInfo* navigation_info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  GURL url = navigation_info->url();
-  Results::iterator it = results_.find(url);
-  if (it == results_.end()) {
-    // Use UMA histogram to quantify potential future gains here.
-    UMA_HISTOGRAM_LONG_TIMES("DNS.UnexpectedResolutionL",
-                             navigation_info->resolve_duration());
-    navigation_info->DLogResultsStats("DNS UnexpectedResolution");
-
-    LearnFromNavigation(referrer, navigation_info->url());
-    return false;
-  }
-  UrlInfo& prefetched_host_info(it->second);
-
-  // Sometimes a host is used as a subresource by several referrers, so it is
-  // in our list, but was never motivated by a page-link-scan.  In that case, it
-  // really is an "unexpected" navigation, and we should tally it, and augment
-  // our referrers_.
-  bool referrer_based_prefetch = !prefetched_host_info.was_linked();
-  if (referrer_based_prefetch) {
-    // This wasn't the first time this host refered to *some* referrer.
-    LearnFromNavigation(referrer, navigation_info->url());
-  }
-
-  DnsBenefit benefit = prefetched_host_info.AccruePrefetchBenefits(
-      navigation_info);
-  switch (benefit) {
-    case PREFETCH_NAME_FOUND:
-    case PREFETCH_NAME_NONEXISTANT:
-      dns_cache_hits_.push_back(*navigation_info);
-      if (referrer_based_prefetch) {
-        if (referrer.has_host()) {
-          referrers_[referrer].AccrueValue(
-              navigation_info->benefits_remaining(), url);
-        }
-      }
-      return true;
-
-    case PREFETCH_CACHE_EVICTION:
-      cache_eviction_map_[url] = *navigation_info;
-      return false;
-
-    case PREFETCH_NO_BENEFIT:
-      // Prefetch never hit the network. Name was pre-cached.
-      return false;
-
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
 void Predictor::LearnFromNavigation(const GURL& referring_url,
                                     const GURL& target_url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
@@ -182,22 +136,12 @@ void Predictor::LearnFromNavigation(const GURL& referring_url,
   }
 }
 
-void Predictor::PredictSubresources(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  Referrers::iterator it = referrers_.find(url);
-  if (referrers_.end() == it)
-    return;
-  Referrer* referrer = &(it->second);
-  referrer->IncrementUseCount();
-  for (Referrer::iterator future_url = referrer->begin();
-       future_url != referrer->end(); ++future_url) {
-    UrlInfo* queued_info = AppendToResolutionQueue(
-        future_url->first,
-        UrlInfo::LEARNED_REFERAL_MOTIVATED);
-    if (queued_info)
-      queued_info->SetReferringHostname(url);
-  }
-}
+enum SubresourceValue {
+  PRECONNECTION,
+  PRERESOLUTION,
+  TOO_NEW,
+  SUBRESOURCE_VALUE_MAX
+};
 
 void Predictor::PredictFrameSubresources(const GURL& url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
@@ -207,19 +151,36 @@ void Predictor::PredictFrameSubresources(const GURL& url) {
     return;
   Referrer* referrer = &(it->second);
   referrer->IncrementUseCount();
+  const UrlInfo::ResolutionMotivation motivation =
+      UrlInfo::LEARNED_REFERAL_MOTIVATED;
   for (Referrer::iterator future_url = referrer->begin();
        future_url != referrer->end(); ++future_url) {
-    if (future_url->second.IsPreconnectWorthDoing())
-      Preconnect::PreconnectOnIOThread(future_url->first);
+    SubresourceValue evalution(TOO_NEW);
+    double connection_expectation = future_url->second.subresource_use_rate();
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.PreconnectSubresourceExpectation",
+                                static_cast<int>(connection_expectation * 100),
+                                10, 5000, 50);
+    future_url->second.ReferrerWasObserved();
+    if (preconnect_enabled_ &&
+        kPreconnectWorthyExpectedValue < connection_expectation) {
+      evalution = PRECONNECTION;
+      future_url->second.IncrementPreconnectionCount();
+      Preconnect::PreconnectOnIOThread(future_url->first, motivation);
+    } else if (kDNSPreresolutionWorthyExpectedValue < connection_expectation) {
+      evalution = PRERESOLUTION;
+      future_url->second.preresolution_increment();
+      UrlInfo* queued_info = AppendToResolutionQueue(future_url->first,
+                                                     motivation);
+      if (queued_info)
+        queued_info->SetReferringHostname(url);
+    }
+    UMA_HISTOGRAM_ENUMERATION("Net.PreconnectSubresourceEval", evalution,
+                              SUBRESOURCE_VALUE_MAX);
   }
 }
 
 // Provide sort order so all .com's are together, etc.
 struct RightToLeftStringSorter {
-  bool operator()(const net::HostPortPair& left,
-                  const net::HostPortPair& right) const {
-    return string_compare(left.host(), right.host());
-  }
   bool operator()(const GURL& left,
                   const GURL& right) const {
     return string_compare(left.host(), right.host());
@@ -301,8 +262,8 @@ void Predictor::GetHtmlReferrerLists(std::string* output) {
       "<th>Page Load<br>Count</th>"
       "<th>Subresource<br>Navigations</th>"
       "<th>Subresource<br>PreConnects</th>"
+      "<th>Subresource<br>PreResolves</th>"
       "<th>Expected<br>Connects</th>"
-      "<th>DNS<br>Savings</th>"
       "<th>Subresource Spec</th></tr>");
 
   for (SortedNames::iterator it = sorted_names.begin();
@@ -320,11 +281,11 @@ void Predictor::GetHtmlReferrerLists(std::string* output) {
                       static_cast<int>(referrer->use_count()));
       first_set_of_futures = false;
       StringAppendF(output,
-          "<td>%d</td><td>%d</td><td>%2.3f</td><td>%dms</td><td>%s</td></tr>",
+          "<td>%d</td><td>%d</td><td>%d</td><td>%2.3f</td><td>%s</td></tr>",
           static_cast<int>(future_url->second.navigation_count()),
           static_cast<int>(future_url->second.preconnection_count()),
+          static_cast<int>(future_url->second.preresolution_count()),
           static_cast<double>(future_url->second.subresource_use_rate()),
-          static_cast<int>(future_url->second.latency().InMilliseconds()),
           future_url->first.spec().c_str());
     }
   }
@@ -334,53 +295,26 @@ void Predictor::GetHtmlReferrerLists(std::string* output) {
 void Predictor::GetHtmlInfo(std::string* output) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // Local lists for calling UrlInfo
-  UrlInfo::DnsInfoTable cache_hits;
-  UrlInfo::DnsInfoTable cache_evictions;
-  UrlInfo::DnsInfoTable name_not_found;
-  UrlInfo::DnsInfoTable network_hits;
-  UrlInfo::DnsInfoTable already_cached;
+  UrlInfo::UrlInfoTable name_not_found;
+  UrlInfo::UrlInfoTable name_preresolved;
 
   // Get copies of all useful data.
-  typedef std::map<GURL, UrlInfo, RightToLeftStringSorter>
-      Snapshot;
-  Snapshot snapshot;
-  {
-    // UrlInfo supports value semantics, so we can do a shallow copy.
-    for (Results::iterator it(results_.begin()); it != results_.end(); it++) {
-      snapshot[it->first] = it->second;
-    }
-    for (Results::iterator it(cache_eviction_map_.begin());
-         it != cache_eviction_map_.end();
-         it++) {
-      cache_evictions.push_back(it->second);
-    }
-    // Reverse list as we copy cache hits, so that new hits are at the top.
-    size_t index = dns_cache_hits_.size();
-    while (index > 0) {
-      index--;
-      cache_hits.push_back(dns_cache_hits_[index]);
-    }
-  }
+  typedef std::map<GURL, UrlInfo, RightToLeftStringSorter> SortedUrlInfo;
+  SortedUrlInfo snapshot;
+  // UrlInfo supports value semantics, so we can do a shallow copy.
+  for (Results::iterator it(results_.begin()); it != results_.end(); it++)
+    snapshot[it->first] = it->second;
 
   // Partition the UrlInfo's into categories.
-  for (Snapshot::iterator it(snapshot.begin()); it != snapshot.end(); it++) {
+  for (SortedUrlInfo::iterator it(snapshot.begin());
+       it != snapshot.end(); it++) {
     if (it->second.was_nonexistant()) {
       name_not_found.push_back(it->second);
       continue;
     }
     if (!it->second.was_found())
       continue;  // Still being processed.
-    if (TimeDelta() != it->second.benefits_remaining()) {
-      network_hits.push_back(it->second);  // With no benefit yet.
-      continue;
-    }
-    if (UrlInfo::kMaxNonNetworkDnsLookupDuration >
-      it->second.resolve_duration()) {
-      already_cached.push_back(it->second);
-      continue;
-    }
-    // Remaining case is where prefetch benefit was significant, and was used.
-    // Since we shot those cases as historical hits, we won't bother here.
+    name_preresolved.push_back(it->second);
   }
 
   bool brief = false;
@@ -389,16 +323,10 @@ void Predictor::GetHtmlInfo(std::string* output) {
 #endif  // NDEBUG
 
   // Call for display of each table, along with title.
-  UrlInfo::GetHtmlTable(cache_hits,
-      "Prefetching DNS records produced benefits for ", false, output);
-  UrlInfo::GetHtmlTable(cache_evictions,
-      "Cache evictions negated DNS prefetching benefits for ", brief, output);
-  UrlInfo::GetHtmlTable(network_hits,
-      "Prefetching DNS records was not yet beneficial for ", brief, output);
-  UrlInfo::GetHtmlTable(already_cached,
-      "Previously cached resolutions were found for ", brief, output);
+  UrlInfo::GetHtmlTable(name_preresolved,
+      "Preresolution DNS records performed for ", brief, output);
   UrlInfo::GetHtmlTable(name_not_found,
-      "Prefetching DNS records revealed non-existance for ", brief, output);
+      "Preresolving DNS records revealed non-existance for ", brief, output);
 }
 
 UrlInfo* Predictor::AppendToResolutionQueue(
@@ -507,8 +435,6 @@ void Predictor::LookupFinished(LookupRequest* request, const GURL& url,
 void Predictor::DiscardAllResults() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // Delete anything listed so far in this session that shows in about:dns.
-  cache_eviction_map_.clear();
-  dns_cache_hits_.clear();
   referrers_.clear();
 
 
@@ -559,7 +485,7 @@ void Predictor::TrimReferrers() {
 void Predictor::SerializeReferrers(ListValue* referral_list) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   referral_list->Clear();
-  referral_list->Append(new FundamentalValue(DNS_REFERRER_VERSION));
+  referral_list->Append(new FundamentalValue(PREDICTOR_REFERRER_VERSION));
   for (Referrers::const_iterator it = referrers_.begin();
        it != referrers_.end(); ++it) {
     // Serialize the list of subresource names.
@@ -579,7 +505,7 @@ void Predictor::DeserializeReferrers(const ListValue& referral_list) {
   int format_version = -1;
   if (referral_list.GetSize() > 0 &&
       referral_list.GetInteger(0, &format_version) &&
-      format_version == DNS_REFERRER_VERSION) {
+      format_version == PREDICTOR_REFERRER_VERSION) {
     for (size_t i = 1; i < referral_list.GetSize(); ++i) {
       ListValue* motivator;
       if (!referral_list.GetList(i, &motivator)) {
