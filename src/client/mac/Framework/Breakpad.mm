@@ -164,7 +164,7 @@ class Breakpad {
     : handler_(NULL),
       config_params_(NULL),
       send_and_exit_(true),
-      filter_callback_(NULL), 
+      filter_callback_(NULL),
       filter_callback_context_(NULL) {
     inspector_path_[0] = 0;
   }
@@ -289,9 +289,9 @@ NSString * GetResourcePath() {
   Dl_info info;
   if (dladdr((const void*)GetResourcePath, &info) != 0) {
     NSFileManager *filemgr = [NSFileManager defaultManager];
-    NSString *filePath 
-      = [filemgr stringWithFileSystemRepresentation:info.dli_fname
-                                           length:strlen(info.dli_fname)];
+    NSString *filePath =
+        [filemgr stringWithFileSystemRepresentation:info.dli_fname
+                                             length:strlen(info.dli_fname)];
     NSString *bundlePath = [filePath stringByDeletingLastPathComponent];
     // The "Resources" directory should be in the same directory as the
     // executable code, since that's how the Breakpad framework is built.
@@ -300,7 +300,7 @@ NSString * GetResourcePath() {
     DEBUGLOG(stderr, "Could not find GetResourcePath\n");
     // fallback plan
     NSBundle *bundle =
-      [NSBundle bundleWithIdentifier:@"com.Google.BreakpadFramework"];
+        [NSBundle bundleWithIdentifier:@"com.Google.BreakpadFramework"];
     resourcePath = [bundle resourcePath];
   }
 
@@ -364,9 +364,10 @@ bool Breakpad::Initialize(NSDictionary *parameters) {
 
   // Create the handler (allocating it in our special protected pool)
   handler_ =
-    new (gBreakpadAllocator->Allocate(sizeof(google_breakpad::ExceptionHandler)))
-      google_breakpad::ExceptionHandler(
-        Breakpad::ExceptionHandlerDirectCallback, this, true);
+      new (gBreakpadAllocator->Allocate(
+          sizeof(google_breakpad::ExceptionHandler)))
+          google_breakpad::ExceptionHandler(
+              Breakpad::ExceptionHandlerDirectCallback, this, true);
   return true;
 }
 
@@ -396,22 +397,23 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   NSString *urlStr = [parameters objectForKey:@BREAKPAD_URL];
   NSString *interval = [parameters objectForKey:@BREAKPAD_REPORT_INTERVAL];
   NSString *inspectorPathString =
-                [parameters objectForKey:@BREAKPAD_INSPECTOR_LOCATION];
+      [parameters objectForKey:@BREAKPAD_INSPECTOR_LOCATION];
   NSString *reporterPathString =
-                [parameters objectForKey:@BREAKPAD_REPORTER_EXE_LOCATION];
+      [parameters objectForKey:@BREAKPAD_REPORTER_EXE_LOCATION];
   NSString *timeout = [parameters objectForKey:@BREAKPAD_CONFIRM_TIMEOUT];
   NSArray  *logFilePaths = [parameters objectForKey:@BREAKPAD_LOGFILES];
-  NSString *logFileTailSize = [parameters objectForKey:@BREAKPAD_LOGFILE_UPLOAD_SIZE];
+  NSString *logFileTailSize =
+      [parameters objectForKey:@BREAKPAD_LOGFILE_UPLOAD_SIZE];
   NSString *requestUserText =
-                [parameters objectForKey:@BREAKPAD_REQUEST_COMMENTS];
+      [parameters objectForKey:@BREAKPAD_REQUEST_COMMENTS];
   NSString *requestEmail = [parameters objectForKey:@BREAKPAD_REQUEST_EMAIL];
   NSString *vendor =
-    [parameters objectForKey:@BREAKPAD_VENDOR];
+      [parameters objectForKey:@BREAKPAD_VENDOR];
   NSString *dumpSubdirectory =
-    [parameters objectForKey:@BREAKPAD_DUMP_DIRECTORY];
+      [parameters objectForKey:@BREAKPAD_DUMP_DIRECTORY];
 
-  NSDictionary *serverParameters = 
-    [parameters objectForKey:@BREAKPAD_SERVER_PARAMETER_DICT];
+  NSDictionary *serverParameters =
+      [parameters objectForKey:@BREAKPAD_SERVER_PARAMETER_DICT];
 
   // These may have been set above as user prefs, which take priority.
   if (!skipConfirm) {
@@ -424,8 +426,12 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   if (!product)
     product = [parameters objectForKey:@"CFBundleName"];
 
-  if (!display)
-    display = product;
+  if (!display) {
+    display = [parameters objectForKey:@"CFBundleDisplayName"];
+    if (!display) {
+      display = product;
+    }
+  }
 
   if (!version)
     version = [parameters objectForKey:@"CFBundleVersion"];
@@ -505,8 +511,10 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   // Find Reporter.
   if (!reporterPathString) {
     reporterPathString =
-      [resourcePath stringByAppendingPathComponent:@"crash_report_sender.app"];
-    reporterPathString = [[NSBundle bundleWithPath:reporterPathString] executablePath];
+        [resourcePath
+         stringByAppendingPathComponent:@"crash_report_sender.app"];
+    reporterPathString =
+        [[NSBundle bundleWithPath:reporterPathString] executablePath];
   }
 
   // Verify that there is a Reporter application.
@@ -551,9 +559,9 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   dictionary.SetKeyValue(BREAKPAD_SKIP_CONFIRM,    [skipConfirm UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_CONFIRM_TIMEOUT, [timeout UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_INSPECTOR_LOCATION,
-                           [inspectorPathString fileSystemRepresentation]);
+                         [inspectorPathString fileSystemRepresentation]);
   dictionary.SetKeyValue(BREAKPAD_REPORTER_EXE_LOCATION,
-                           [reporterPathString fileSystemRepresentation]);
+                         [reporterPathString fileSystemRepresentation]);
   dictionary.SetKeyValue(BREAKPAD_LOGFILE_UPLOAD_SIZE,
                          [logFileTailSize UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_REQUEST_COMMENTS,
@@ -562,7 +570,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   dictionary.SetKeyValue(BREAKPAD_VENDOR, [vendor UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_DUMP_DIRECTORY,
                          [dumpSubdirectory UTF8String]);
-  
+
   struct timeval tv;
   gettimeofday(&tv, NULL);
   char timeStartedString[32];
@@ -593,7 +601,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
 }
 
 //=============================================================================
-void        Breakpad::SetKeyValue(NSString *key, NSString *value) {
+void Breakpad::SetKeyValue(NSString *key, NSString *value) {
   // We allow nil values. This is the same as removing the keyvalue.
   if (!config_params_ || !key)
     return;
@@ -602,7 +610,7 @@ void        Breakpad::SetKeyValue(NSString *key, NSString *value) {
 }
 
 //=============================================================================
-NSString *  Breakpad::KeyValue(NSString *key) {
+NSString *Breakpad::KeyValue(NSString *key) {
   if (!config_params_ || !key)
     return nil;
 
@@ -611,25 +619,24 @@ NSString *  Breakpad::KeyValue(NSString *key) {
 }
 
 //=============================================================================
-void        Breakpad::RemoveKeyValue(NSString *key) {
-  if (!config_params_ || !key)
-    return;
+void Breakpad::RemoveKeyValue(NSString *key) {
+  if (!config_params_ || !key) return;
 
   config_params_->RemoveKey([key UTF8String]);
 }
 
 //=============================================================================
-void        Breakpad::GenerateAndSendReport() {
+void Breakpad::GenerateAndSendReport() {
   config_params_->SetKeyValue(BREAKPAD_ON_DEMAND, "YES");
-  HandleException(0, 0, 0, mach_thread_self()); 
+  HandleException(0, 0, 0, mach_thread_self());
   config_params_->SetKeyValue(BREAKPAD_ON_DEMAND, "NO");
 }
 
 //=============================================================================
-bool Breakpad::HandleException(int           exception_type,
-                               int           exception_code,
-                               int           exception_subcode,
-                               mach_port_t   crashing_thread) {
+bool Breakpad::HandleException(int exception_type,
+                               int exception_code,
+                               int exception_subcode,
+                               mach_port_t crashing_thread) {
   DEBUGLOG(stderr, "Breakpad: an exception occurred\n");
 
   if (filter_callback_) {
@@ -705,8 +712,7 @@ bool Breakpad::HandleException(int           exception_type,
 
   // If we don't want any forwarding, return true here to indicate that we've
   // processed things as much as we want.
-  if (send_and_exit_)
-    return true;
+  if (send_and_exit_) return true;
 
   return false;
 }
@@ -732,11 +738,11 @@ BreakpadRef BreakpadCreate(NSDictionary *parameters) {
     // since once it does its allocations and locks the memory, smashes to itself
     // don't affect anything we care about.
     gMasterAllocator =
-      new ProtectedMemoryAllocator(sizeof(ProtectedMemoryAllocator) * 2);
+        new ProtectedMemoryAllocator(sizeof(ProtectedMemoryAllocator) * 2);
 
     gKeyValueAllocator =
-      new (gMasterAllocator->Allocate(sizeof(ProtectedMemoryAllocator)))
-        ProtectedMemoryAllocator(sizeof(SimpleStringDictionary));
+        new (gMasterAllocator->Allocate(sizeof(ProtectedMemoryAllocator)))
+            ProtectedMemoryAllocator(sizeof(SimpleStringDictionary));
 
     // Create a mutex for use in accessing the SimpleStringDictionary
     int mutexResult = pthread_mutex_init(&gDictionaryMutex, NULL);
@@ -754,8 +760,8 @@ BreakpadRef BreakpadCreate(NSDictionary *parameters) {
        */
 
       gBreakpadAllocator =
-        new (gMasterAllocator->Allocate(sizeof(ProtectedMemoryAllocator)))
-          ProtectedMemoryAllocator(breakpad_pool_size);
+          new (gMasterAllocator->Allocate(sizeof(ProtectedMemoryAllocator)))
+              ProtectedMemoryAllocator(breakpad_pool_size);
 
       // Stack-based autorelease pool for Breakpad::Create() obj-c code.
       NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];

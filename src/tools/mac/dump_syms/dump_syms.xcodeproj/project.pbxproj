@@ -1210,7 +1210,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 8B3102D411F0D60300FCF3E4 /* BreakpadDebug.xcconfig */;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "\"../../../**\"";
+				HEADER_SEARCH_PATHS = ../../..;
 			};
 			name = Debug;
 		};
@@ -1218,7 +1218,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 8B3102D511F0D60300FCF3E4 /* BreakpadRelease.xcconfig */;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "\"../../../**\"";
+				HEADER_SEARCH_PATHS = ../../..;
 			};
 			name = Release;
 		};
