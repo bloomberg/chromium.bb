@@ -61,7 +61,7 @@ class ExpectCanceledFetcher : public URLFetcher {
       : URLFetcher(url, request_type, d) {
   }
 
-  ~ExpectCanceledFetcher() {
+  virtual ~ExpectCanceledFetcher() {
     task_->Cancel();
   }
 
@@ -518,6 +518,8 @@ TEST_F(GoogleAuthenticatorTest, CheckLocalaccount) {
   auth->CheckLocalaccount(std::string());
 }
 
+namespace {
+
 // Compatible with LoginStatusConsumer::OnLoginSuccess()
 static void OnSuccessQuit(
     const std::string& username,
@@ -541,6 +543,8 @@ static void OnFailQuitAndFail(const std::string& error) {
   ADD_FAILURE() << "Login should have succeeded!";
   MessageLoop::current()->Quit();
 }
+
+}  // anonymous namespace
 
 TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
   // This test checks the logic that governs asynchronously reading the
