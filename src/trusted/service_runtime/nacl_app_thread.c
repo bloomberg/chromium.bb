@@ -24,10 +24,6 @@ void WINAPI NaClThreadLauncher(void *state) {
   struct NaClAppThread *natp = (struct NaClAppThread *) state;
   NaClLog(4, "NaClThreadLauncher: entered\n");
 
-#ifdef NACL_BREAKPAD
-  NaClBreakpadInit();
-#endif
-
   NaClSignalStackRegister(natp->signal_stack);
 
   NaClLog(4, "      natp = 0x%016"NACL_PRIxPTR"\n", (uintptr_t) natp);
@@ -60,10 +56,6 @@ void WINAPI NaClThreadLauncher(void *state) {
   WINDOWS_EXCEPTION_TRY;
   NaClStartThreadInApp(natp, natp->user.prog_ctr);
   WINDOWS_EXCEPTION_CATCH;
-
-#ifdef NACL_BREAKPAD
-  NaClBreakpadFini();
-#endif
 }
 
 int NaClAppThreadCtor(struct NaClAppThread  *natp,

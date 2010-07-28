@@ -32,7 +32,7 @@ using google_breakpad::ReportResult;
 #endif
 
 #if NACL_BREAKPAD_DUMP_UNTRUSTED
-THREAD ExceptionHandler* g_pBreakpadHandler = NULL;
+static ExceptionHandler* g_pBreakpadHandler = NULL;
 static volatile LONG handling_exception = 0;
 #endif  // NACL_BREAKPAD_DUMP_UNTRUSTED
 //

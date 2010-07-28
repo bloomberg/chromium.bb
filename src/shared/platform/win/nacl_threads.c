@@ -38,7 +38,7 @@ int NaClThreadCtor(struct NaClThread  *ntp,
                                    (unsigned (WINAPI *)(void *))  start_fn,
                                    /* the argument for the thread function */
                                    state,
-                                   0,         /*start running */
+                                   CREATE_SUSPENDED ,  /* start suspended */
                                    NULL);
   if (0 == handle){  /* we don't need the thread id */
     NaClLog(LOG_ERROR,
@@ -47,6 +47,9 @@ int NaClThreadCtor(struct NaClThread  *ntp,
     return 0;
   }
   ntp->tid = handle;  /* we need the handle to kill the thread etc. */
+
+  /* Now that the structure is filled, the thread can start */
+  ResumeThread(handle);
 
   return 1;
 }
