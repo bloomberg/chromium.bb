@@ -38,6 +38,7 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   int32_t FollowRedirect(PP_CompletionCallback callback);
   int32_t ReadResponseBody(char* buffer, int32_t bytes_to_read,
                            PP_CompletionCallback callback);
+  int32_t FinishStreamingToFile(PP_CompletionCallback callback);
   void Close();
 
   // WebKit::WebURLLoaderClient implementation.
@@ -83,7 +84,7 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   int64_t total_bytes_to_be_received_;
   char* user_buffer_;
   size_t user_buffer_size_;
-  bool done_;
+  int32_t done_status_;
 };
 
 }  // namespace pepper

@@ -34,6 +34,7 @@
 #include "chrome/browser/renderer_host/cross_site_resource_handler.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
+#include "chrome/browser/renderer_host/redirect_to_file_resource_handler.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
@@ -400,6 +401,9 @@ void ResourceDispatcherHost::BeginRequest(
                                        request_data.url,
                                        this);
   }
+
+  if (request_data.download_to_file)
+    handler = new RedirectToFileResourceHandler(handler, child_id, this);
 
   if (HandleExternalProtocol(request_id, child_id, route_id,
                              request_data.url, request_data.resource_type,

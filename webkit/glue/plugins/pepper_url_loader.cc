@@ -122,6 +122,15 @@ int32_t ReadResponseBody(PP_Resource loader_id,
   return loader->ReadResponseBody(buffer, bytes_to_read, callback);
 }
 
+int32_t FinishStreamingToFile(PP_Resource loader_id,
+                              PP_CompletionCallback callback) {
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
+  if (!loader)
+    return PP_ERROR_BADRESOURCE;
+
+  return loader->FinishStreamingToFile(callback);
+}
+
 void Close(PP_Resource loader_id) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader)
@@ -139,6 +148,7 @@ const PPB_URLLoader ppb_urlloader = {
   &GetDownloadProgress,
   &GetResponseInfo,
   &ReadResponseBody,
+  &FinishStreamingToFile,
   &Close
 };
 
@@ -154,7 +164,7 @@ URLLoader::URLLoader(PluginInstance* instance)
       total_bytes_to_be_received_(-1),
       user_buffer_(NULL),
       user_buffer_size_(0),
-      done_(false) {
+      done_status_(PP_ERROR_WOULDBLOCK) {
 }
 
 URLLoader::~URLLoader() {
@@ -200,6 +210,8 @@ int32_t URLLoader::FollowRedirect(PP_CompletionCallback callback) {
 
 int32_t URLLoader::ReadResponseBody(char* buffer, int32_t bytes_to_read,
                                     PP_CompletionCallback callback) {
+  if (!response_info_ || response_info_->body())
+    return PP_ERROR_FAILED;
   if (bytes_to_read <= 0 || !buffer)
     return PP_ERROR_BADARGUMENT;
   if (pending_callback_.func)
@@ -215,12 +227,28 @@ int32_t URLLoader::ReadResponseBody(char* buffer, int32_t bytes_to_read,
   if (!buffer_.empty())
     return FillUserBuffer();
 
-  if (done_) {
+  // We may have already reached EOF.
+  if (done_status_ != PP_ERROR_WOULDBLOCK) {
     user_buffer_ = NULL;
     user_buffer_size_ = 0;
-    return 0;
+    return done_status_;
   }
 
+  pending_callback_ = callback;
+  return PP_ERROR_WOULDBLOCK;
+}
+
+int32_t URLLoader::FinishStreamingToFile(PP_CompletionCallback callback) {
+  if (!response_info_ || !response_info_->body())
+    return PP_ERROR_FAILED;
+  if (pending_callback_.func)
+    return PP_ERROR_INPROGRESS;
+
+  // We may have already reached EOF.
+  if (done_status_ != PP_ERROR_WOULDBLOCK)
+    return done_status_;
+
+  // Wait for didFinishLoading / didFail.
   pending_callback_ = callback;
   return PP_ERROR_WOULDBLOCK;
 }
@@ -274,14 +302,14 @@ void URLLoader::didReceiveData(WebURLLoader* loader,
 }
 
 void URLLoader::didFinishLoading(WebURLLoader* loader) {
-  done_ = true;
-  RunCallback(PP_OK);
+  done_status_ = PP_OK;
+  RunCallback(done_status_);
 }
 
 void URLLoader::didFail(WebURLLoader* loader, const WebURLError& error) {
-  done_ = true;
   // TODO(darin): Provide more detailed error information.
-  RunCallback(PP_ERROR_FAILED);
+  done_status_ = PP_ERROR_FAILED;
+  RunCallback(done_status_);
 }
 
 void URLLoader::RunCallback(int32_t result) {

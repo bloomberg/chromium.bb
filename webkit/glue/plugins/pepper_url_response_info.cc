@@ -110,7 +110,7 @@ bool URLResponseInfo::Initialize(const WebURLResponse& response) {
   headers_ = flattener.buffer();
 
   WebString file_path = response.downloadFilePath();
-  if (!file_path.isNull())
+  if (!file_path.isEmpty())
     body_ = new FileRef(module(), webkit_glue::WebStringToFilePath(file_path));
   return true;
 }
