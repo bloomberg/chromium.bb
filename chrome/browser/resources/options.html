@@ -38,8 +38,10 @@
 <script src="options/content_settings_exceptions_area.js"></script>
 <script src="options/content_settings_ui.js"></script>
 <script src="options/font_settings_overlay.js"></script>
+<script src="options/import_data_overlay.js"></script>
 <script src="options/personal_options.js"></script>
 <script src="options/search_engine_manager.js"></script>
+<script src="options/stop_syncing_overlay.js"></script>
 <script>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,14 +74,16 @@ function load() {
     //     'languagePinyinPage'));
   }
 
+  OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
   OptionsPage.register(PersonalOptions.getInstance());
-  OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance());
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
   OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
+  OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
+  OptionsPage.registerOverlay(StopSyncingOverlay.getInstance());
 
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());
@@ -135,6 +139,11 @@ window.onpopstate = function(e) {
     <include src="options/add_startup_page_overlay.html">
     <include src="options/clear_browser_data_overlay.html">
     <include src="options/font_settings_overlay.html">
+    <include src="options/import_data_overlay.html">
+    <include src="options/stop_syncing_overlay.html">
+    <if expr="pp_ifdef('chromeos')">
+       <include src="options/chromeos_accounts_add_user_overlay.html">
+    </if>
   </div>
 </div>
 <div id="main-content">
