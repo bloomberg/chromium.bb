@@ -15,7 +15,8 @@
 
 namespace base {
 
-bool SendMsg(int fd, const void* buf, size_t length, std::vector<int>& fds) {
+bool SendMsg(int fd, const void* buf, size_t length,
+             const std::vector<int>& fds) {
   struct msghdr msg;
   memset(&msg, 0, sizeof(msg));
   struct iovec iov = {const_cast<void*>(buf), length};
@@ -26,11 +27,8 @@ bool SendMsg(int fd, const void* buf, size_t length, std::vector<int>& fds) {
   if (fds.size()) {
     const unsigned control_len = CMSG_SPACE(sizeof(int) * fds.size());
     control_buffer = new char[control_len];
-    if (!control_buffer)
-      return false;
 
     struct cmsghdr *cmsg;
-
     msg.msg_control = control_buffer;
     msg.msg_controllen = control_len;
     cmsg = CMSG_FIRSTHDR(&msg);

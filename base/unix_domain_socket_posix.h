@@ -17,7 +17,7 @@ namespace base {
 // Use sendmsg to write the given msg and include a vector
 // of file descriptors. Returns true iff successful.
 bool SendMsg(int fd, const void* msg, size_t length,
-             std::vector<int>& fds);
+             const std::vector<int>& fds);
 // Use recvmsg to read a message and an array of file descriptors. Returns
 // -1 on failure. Note: will read, at most, 16 descriptors.
 ssize_t RecvMsg(int fd, void* msg, size_t length, std::vector<int>* fds);
