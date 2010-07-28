@@ -114,6 +114,14 @@ class PrefsTest(pyauto.PyUITest):
     self.RestartBrowser(clear_profile=False)
     self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
 
+  def testDnsPrefectchingEnabledPref(self):
+    """Verify DNS prefetching pref."""
+    # Assert default
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kDnsPrefetchingEnabled))
+    self.SetPrefs(pyauto.kDnsPrefetchingEnabled, False)
+    self.RestartBrowser(clear_profile=False)
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kDnsPrefetchingEnabled))
+
   def testHomepagePrefs(self):
     """Verify homepage prefs."""
     # "Use the New Tab page"
