@@ -251,6 +251,9 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     { "searchMagnifierResults", IDR_SEARCH_MAGNIFIER_RESULTS },
     { "textAreaResizeCorner", IDR_TEXTAREA_RESIZER },
     { "tickmarkDash", IDR_TICKMARK_DASH },
+    { "inputSpeech", IDR_INPUT_SPEECH },
+    { "inputSpeechRecording", IDR_INPUT_SPEECH_RECORDING },
+    { "inputSpeechWaiting", IDR_INPUT_SPEECH_WAITING },
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     // TODO(port): rename these to "skia" instead of "Linux".
     { "linuxCheckboxDisabledIndeterminate",
