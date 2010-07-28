@@ -189,13 +189,17 @@ void BrowserMainParts::ConnectionFieldTrial() {
 
   const int connect_5 = connect_trial->AppendGroup("_conn_count_5",
                                                    kConnectProbability);
-  const int connect_6 = connect_trial->AppendGroup("_conn_count_6",
-                                                   kConnectProbability);
   const int connect_7 = connect_trial->AppendGroup("_conn_count_7",
                                                    kConnectProbability);
   const int connect_8 = connect_trial->AppendGroup("_conn_count_8",
                                                    kConnectProbability);
   const int connect_9 = connect_trial->AppendGroup("_conn_count_9",
+                                                   kConnectProbability);
+  // This (6) is the current default value. Having this group declared here
+  // makes it straightforward to modify |kConnectProbability| such that the same
+  // probability value will be assigned to all the other groups, while
+  // preserving the remainder of the of probability space to the default value.
+  const int connect_6 = connect_trial->AppendGroup("_conn_count_6",
       FieldTrial::kAllRemainingProbability);
 
   const int connect_trial_group = connect_trial->group();
@@ -203,7 +207,6 @@ void BrowserMainParts::ConnectionFieldTrial() {
   if (connect_trial_group == connect_5) {
     net::HttpNetworkSession::set_max_sockets_per_group(5);
   } else if (connect_trial_group == connect_6) {
-    // This (6) is the current default value.
     net::HttpNetworkSession::set_max_sockets_per_group(6);
   } else if (connect_trial_group == connect_7) {
     net::HttpNetworkSession::set_max_sockets_per_group(7);
@@ -232,14 +235,19 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   const int socket_timeout_5 =
       socket_timeout_trial->AppendGroup("_idle_timeout_5",
                                         kSocketTimeoutProbability);
-  const int socket_timeout_10 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_10",
-                                        kSocketTimeoutProbability);
   const int socket_timeout_20 =
       socket_timeout_trial->AppendGroup("_idle_timeout_20",
                                         kSocketTimeoutProbability);
   const int socket_timeout_60 =
       socket_timeout_trial->AppendGroup("_idle_timeout_60",
+                                        kSocketTimeoutProbability);
+  // This (10 seconds) is the current default value. Declaring it at the end
+  // allows for assigning the remainder of the probability space to it; which
+  // will make it to modify this value (by changing |kSocketTimeoutProbability|)
+  // down the road if we see the need to, while the remaining groups are
+  // are assigned an equal share of the probability space.
+  const int socket_timeout_10 =
+      socket_timeout_trial->AppendGroup("_idle_timeout_10",
                                         FieldTrial::kAllRemainingProbability);
 
   const int idle_to_trial_group = socket_timeout_trial->group();
@@ -247,7 +255,6 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   if (idle_to_trial_group == socket_timeout_5) {
     net::ClientSocketPool::set_unused_idle_socket_timeout(5);
   } else if (idle_to_trial_group == socket_timeout_10) {
-    // This (10 seconds) is the current default value.
     net::ClientSocketPool::set_unused_idle_socket_timeout(10);
   } else if (idle_to_trial_group == socket_timeout_20) {
     net::ClientSocketPool::set_unused_idle_socket_timeout(20);
