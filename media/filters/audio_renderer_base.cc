@@ -67,6 +67,7 @@ void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {
   DCHECK_EQ(0u, pending_reads_) << "Pending reads should have completed";
   state_ = kSeeking;
   seek_callback_.reset(callback);
+  seek_timestamp_ = time;
 
   // Throw away everything and schedule our reads.
   last_fill_buffer_time_ = base::TimeDelta();
@@ -147,9 +148,14 @@ void AudioRendererBase::OnFillBufferDone(scoped_refptr<Buffer> buffer_in) {
     return;
   }
 
-  // Don't enqueue an end-of-stream buffer because it has no data.
+  // Don't enqueue an end-of-stream buffer because it has no data, otherwise
+  // discard decoded audio data until we reach our desired seek timestamp.
   if (buffer_in->IsEndOfStream()) {
     recieved_end_of_stream_ = true;
+  } else if (state_ == kSeeking && !buffer_in->IsEndOfStream() &&
+             (buffer_in->GetTimestamp() + buffer_in->GetDuration()) <
+                 seek_timestamp_) {
+    ScheduleRead_Locked();
   } else {
     // Note: Calling this may schedule more reads.
     algorithm_->EnqueueBuffer(buffer_in);

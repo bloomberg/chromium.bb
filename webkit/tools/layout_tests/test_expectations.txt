@@ -34,3 +34,5 @@ BUGWK42371 : ietestcenter/Javascript/15.3.4.5-8-1.html = FAIL
 BUGWK42371 : ietestcenter/Javascript/15.3.4.5-8-2.html = FAIL
 BUGWK42371 : ietestcenter/Javascript/15.3.4.5-9-1.html = FAIL
 BUGWK42371 : ietestcenter/Javascript/15.3.4.5-9-2.html = FAIL
+
+BUG50438 : media/controls-drag-timebar.html = PASS FAIL
