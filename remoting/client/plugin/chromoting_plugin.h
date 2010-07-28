@@ -12,7 +12,6 @@
 
 #include "base/at_exit.h"
 #include "base/scoped_ptr.h"
-#include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/ppapi/c/pp_event.h"
@@ -21,7 +20,6 @@
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/cpp/instance.h"
 #include "third_party/ppapi/cpp/device_context_2d.h"
-#include "third_party/ppapi/cpp/var.h"
 
 class MessageLoop;
 
@@ -51,14 +49,13 @@ class ChromotingPlugin : public pp::Instance {
   virtual ~ChromotingPlugin();
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
-  virtual void Connect(const ClientConfig& config);
   virtual bool HandleEvent(const PP_Event& event);
-  virtual pp::Var GetInstanceObject();
-  virtual void ViewChanged(const pp::Rect& position, const pp::Rect& clip);
+  virtual void ViewChanged(const PP_Rect& position, const PP_Rect& clip);
 
   virtual bool CurrentlyOnPluginThread() const;
 
  private:
+  FRIEND_TEST(ChromotingPluginTest, ParseUrl);
   FRIEND_TEST(ChromotingPluginTest, TestCaseSetup);
 
   // Since we're an internal plugin, we can just grab the message loop during
@@ -69,12 +66,15 @@ class ChromotingPlugin : public pp::Instance {
   // TODO(ajwong): Think if there is a better way to safeguard this.
   MessageLoop* pepper_main_loop_dont_post_to_me_;
 
-  ClientContext context_;
+  scoped_ptr<ClientContext> context_;
+
   scoped_ptr<HostConnection> host_connection_;
+
   scoped_ptr<PepperView> view_;
+
   scoped_ptr<InputHandler> input_handler_;
+
   scoped_ptr<ChromotingClient> client_;
-  pp::Var instance_object_;  // JavaScript interface to control this instance.
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingPlugin);
 };

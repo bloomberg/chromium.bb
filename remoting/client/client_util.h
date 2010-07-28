@@ -16,6 +16,10 @@ struct ClientConfig;
 // Return true if successful.
 bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config);
 
+// Get the login info from the URL params and write values into |config|.
+// Return true if successful.
+bool GetLoginInfoFromUrlParams(const std::string& url, ClientConfig* config);
+
 }  // namespace remoting
 
 #endif  // REMOTING_CLIENT_CLIENT_UTIL_H_
