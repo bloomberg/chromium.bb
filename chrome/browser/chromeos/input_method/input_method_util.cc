@@ -29,9 +29,9 @@ namespace {
 // Map from language code to associated input method IDs, etc.
 typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
 struct IdMaps {
-  LanguageCodeToIdsMap* language_code_to_ids;
-  std::map<std::string, std::string>* id_to_language_code;
-  std::map<std::string, std::string>* id_to_display_name;
+  scoped_ptr<LanguageCodeToIdsMap> language_code_to_ids;
+  scoped_ptr<std::map<std::string, std::string> > id_to_language_code;
+  scoped_ptr<std::map<std::string, std::string> > id_to_display_name;
 
  private:
   IdMaps() : language_code_to_ids(NULL),
@@ -46,9 +46,9 @@ struct IdMaps {
       // TODO(yusukes): Handle this error in nicer way.
     }
 
-    language_code_to_ids = new LanguageCodeToIdsMap;
-    id_to_language_code = new std::map<std::string, std::string>;
-    id_to_display_name = new std::map<std::string, std::string>;
+    language_code_to_ids.reset(new LanguageCodeToIdsMap);
+    id_to_language_code.reset(new std::map<std::string, std::string>);
+    id_to_display_name.reset(new std::map<std::string, std::string>);
 
     // Build the id to descriptor map for handling kExtraLanguages later.
     typedef std::map<std::string,
