@@ -32,6 +32,7 @@
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stl_util-inl.h"
 #include "base/time.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
@@ -183,10 +184,6 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       next_metahandle(info.max_metahandle + 1) {
 }
 
-inline void DeleteEntry(EntryKernel* kernel) {
-  delete kernel;
-}
-
 void Directory::Kernel::AddRef() {
   base::subtle::NoBarrier_AtomicIncrement(&refcount, 1);
 }
@@ -207,7 +204,7 @@ Directory::Kernel::~Kernel() {
   delete parent_id_child_index;
   delete client_tag_index;
   delete ids_index;
-  for_each(metahandles_index->begin(), metahandles_index->end(), DeleteEntry);
+  STLDeleteElements(metahandles_index);
   delete metahandles_index;
 }
 
@@ -339,7 +336,7 @@ EntryKernel* Directory::GetEntryByHandle(const int64 metahandle,
   // Look up in memory
   kernel_->needle.put(META_HANDLE, metahandle);
   MetahandlesIndex::iterator found =
-    kernel_->metahandles_index->find(&kernel_->needle);
+      kernel_->metahandles_index->find(&kernel_->needle);
   if (found != kernel_->metahandles_index->end()) {
     // Found it in memory.  Easy.
     return *found;
@@ -630,17 +627,19 @@ void Directory::PurgeEntriesWithTypeIn(const std::set<ModelType>& types) {
           kernel_->metahandles_to_purge->insert(handle);
 
           size_t num_erased = 0;
-          num_erased = kernel_->ids_index->erase(*it);
+          EntryKernel* entry = *it;
+          num_erased = kernel_->ids_index->erase(entry);
           DCHECK_EQ(1u, num_erased);
-          num_erased = kernel_->client_tag_index->erase(*it);
-          DCHECK_EQ((*it)->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
+          num_erased = kernel_->client_tag_index->erase(entry);
+          DCHECK_EQ(entry->ref(UNIQUE_CLIENT_TAG).empty(), !num_erased);
           num_erased = kernel_->unsynced_metahandles->erase(handle);
-          DCHECK_EQ((*it)->ref(IS_UNSYNCED), num_erased > 0);
+          DCHECK_EQ(entry->ref(IS_UNSYNCED), num_erased > 0);
           num_erased = kernel_->unapplied_update_metahandles->erase(handle);
-          DCHECK_EQ((*it)->ref(IS_UNAPPLIED_UPDATE), num_erased > 0);
-          num_erased = kernel_->parent_id_child_index->erase(*it);
-          DCHECK_EQ((*it)->ref(IS_DEL), !num_erased);
+          DCHECK_EQ(entry->ref(IS_UNAPPLIED_UPDATE), num_erased > 0);
+          num_erased = kernel_->parent_id_child_index->erase(entry);
+          DCHECK_EQ(entry->ref(IS_DEL), !num_erased);
           kernel_->metahandles_index->erase(it++);
+          delete entry;
         } else {
           ++it;
         }

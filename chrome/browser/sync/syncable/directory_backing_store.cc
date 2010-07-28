@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -214,23 +215,42 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
   return false;
 }
 
+DirOpenResult DirectoryBackingStore::DoLoad(MetahandlesIndex* entry_bucket,
+    Directory::KernelLoadInfo* kernel_load_info) {
+  {
+    DirOpenResult result = InitializeTables();
+    if (result != OPENED)
+      return result;
+  }
+
+  if (!DropDeletedEntries())
+    return FAILED_DATABASE_CORRUPT;
+  if (!LoadEntries(entry_bucket))
+    return FAILED_DATABASE_CORRUPT;
+  if (!LoadInfo(kernel_load_info))
+    return FAILED_DATABASE_CORRUPT;
+
+  return OPENED;
+}
+
 DirOpenResult DirectoryBackingStore::Load(MetahandlesIndex* entry_bucket,
     Directory::KernelLoadInfo* kernel_load_info) {
+
+  // Open database handle.
   if (!BeginLoad())
     return FAILED_OPEN_DATABASE;
 
-  DirOpenResult result = InitializeTables();
-  if (OPENED != result)
-    return result;
+  // Load data from the database.
+  DirOpenResult result = DoLoad(entry_bucket, kernel_load_info);
 
-  if (!DropDeletedEntries() ||
-      !LoadEntries(entry_bucket) ||
-      !LoadInfo(kernel_load_info)) {
-    return FAILED_DATABASE_CORRUPT;
-  }
+  // Clean up partial results after failure.
+  if (result != OPENED)
+    STLDeleteElements(entry_bucket);
 
+  // Close database handle.
   EndLoad();
-  return OPENED;
+
+  return result;
 }
 
 bool DirectoryBackingStore::BeginLoad() {

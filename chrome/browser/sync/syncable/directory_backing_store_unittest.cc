@@ -879,6 +879,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   }
 
   MetahandlesIndex index;
+  STLElementDeleter<MetahandlesIndex> index_deleter(&index);
   dbs->LoadEntries(&index);
   dbs->EndLoad();
 
@@ -1004,8 +1005,6 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   ASSERT_EQ(14, (*it)->ref(META_HANDLE));
 
   ASSERT_TRUE(++it == index.end());
-
-  STLDeleteElements(&index);
 }
 
 INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
@@ -1048,8 +1047,8 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   scoped_ptr<DirectoryBackingStore> dbs(
       new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
   dbs->BeginLoad();
-
   MetahandlesIndex index;
+  STLElementDeleter<MetahandlesIndex> index_deleter(&index);
   dbs->LoadEntries(&index);
   size_t initial_size = index.size();
   ASSERT_LT(0U, initial_size) << "Test requires entries to delete.";
@@ -1058,7 +1057,7 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   to_delete.insert(first_to_die);
   EXPECT_TRUE(dbs->DeleteEntries(to_delete));
 
-  index.clear();
+  STLDeleteElements(&index);
   dbs->LoadEntries(&index);
 
   EXPECT_EQ(initial_size - 1, index.size());
@@ -1080,7 +1079,7 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
 
   EXPECT_TRUE(dbs->DeleteEntries(to_delete));
 
-  index.clear();
+  STLDeleteElements(&index);
   dbs->LoadEntries(&index);
   EXPECT_EQ(0U, index.size());
 

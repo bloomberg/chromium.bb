@@ -123,6 +123,8 @@ class DirectoryBackingStore {
   // Initialize and destroy load_dbhandle_.  Broken out for testing.
   bool BeginLoad();
   void EndLoad();
+  DirOpenResult DoLoad(MetahandlesIndex* entry_bucket,
+      Directory::KernelLoadInfo* kernel_load_info);
 
   // Close save_dbhandle_.  Broken out for testing.
   void EndSave();
