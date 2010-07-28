@@ -1,12 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/base/cookie_monster.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
-#include "net/base/cookie_monster.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/cookie_monster_store_test.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
   class ParsedCookieTest : public testing::Test { };
@@ -161,3 +162,36 @@ TEST(CookieMonsterTest, TestDomainTree) {
   }
   timer2.Done();
 }
+
+TEST(CookieMonsterTest, TestImport) {
+  scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
+  std::vector<net::CookieMonster::KeyedCanonicalCookie> initial_cookies;
+
+  // We want to setup a fairly large backing store, with 300 domains of 50
+  // cookies each.  Creation times must be unique.
+  int64 time_tick(base::Time::Now().ToInternalValue());
+
+  for (int domain_num = 0; domain_num < 300; domain_num++) {
+    std::string domain_name(StringPrintf(".Domain_%d.com", domain_num));
+    std::string gurl("www" + domain_name);
+    for (int cookie_num = 0; cookie_num < 50; cookie_num++) {
+      std::string cookie_line(StringPrintf("Cookie_%d=1; Path=/", cookie_num));
+      AddKeyedCookieToList(gurl, cookie_line,
+                           base::Time::FromInternalValue(time_tick++),
+                           &initial_cookies);
+    }
+  }
+
+  store->SetLoadExpectation(true, initial_cookies);
+
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(store, NULL));
+
+  // Import will happen on first access.
+  GURL gurl("www.google.com");
+  net::CookieOptions options;
+  PerfTimeLogger timer("Cookie_monster_import_from_store");
+  cm->GetCookiesWithOptions(gurl, options);
+  timer.Done();
+}
+
+

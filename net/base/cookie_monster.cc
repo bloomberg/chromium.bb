@@ -185,13 +185,29 @@ void CookieMonster::InitStore() {
   // This prevents multiple vector growth / copies as we append cookies.
   cookies.reserve(kNumCookiesTotal);
   store_->Load(&cookies);
+
+  // Avoid ever letting cookies with duplicate creation times into the store;
+  // that way we don't have to worry about what sections of code are safe
+  // to call while it's in that state.
+  std::set<int64> creation_times;
   for (std::vector<KeyedCanonicalCookie>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    InternalInsertCookie(it->first, it->second, false);
+    int64 cookie_creation_time = it->second->CreationDate().ToInternalValue();
+
+    if (creation_times.insert(cookie_creation_time).second) {
+      InternalInsertCookie(it->first, it->second, false);
+    } else {
+      LOG(ERROR) << StringPrintf("Found cookies with duplicate creation "
+                                 "times in backing store: "
+                                 "{name='%s', domain='%s', path='%s'}",
+                                 it->second->Name().c_str(),
+                                 it->first.c_str(),
+                                 it->second->Path().c_str());
+    }
   }
 
   // After importing cookies from the PersistentCookieStore, verify that
-  // none of our constraints are violated.
+  // none of our other constraints are violated.
   //
   // In particular, the backing store might have given us duplicate cookies.
   EnsureCookiesMapIsValid();
@@ -218,9 +234,6 @@ void CookieMonster::EnsureCookiesMapIsValid() {
   // Record how many duplicates were found in the database.
   // See InitializeHistograms() for details.
   histogram_cookie_deletion_cause_->Add(num_duplicates_trimmed);
-
-  // TODO(eroman): Should also verify that there are no cookies with the same
-  // creation time, since that is assumed to be unique by the rest of the code.
 }
 
 // Our strategy to find duplicates is:
@@ -294,12 +307,17 @@ int CookieMonster::TrimDuplicateCookiesForHost(
 
     // We save the iterator into |cookies_| rather than the actual cookie
     // pointer, since we may need to delete it later.
-    list.insert(it);
+    bool insert_success = list.insert(it).second;
+    DCHECK(insert_success) <<
+        "Duplicate creation times found in duplicate cookie name scan.";
   }
 
   // If there were no duplicates, we are done!
   if (num_duplicates == 0)
     return 0;
+
+  // Make sure we find everything below that we did above.
+  int num_duplicates_found = 0;
 
   // Otherwise, delete all the duplicate cookies, both from our in-memory store
   // and from the backing store.
@@ -311,6 +329,7 @@ int CookieMonster::TrimDuplicateCookiesForHost(
 
     if (dupes.size() <= 1)
       continue;  // This cookiename/path has no duplicates.
+    num_duplicates_found += dupes.size() - 1;
 
     // Since |dups| is sorted by creation time (descending), the first cookie
     // is the most recent one, so we will keep it. The rest are duplicates.
@@ -334,6 +353,7 @@ int CookieMonster::TrimDuplicateCookiesForHost(
                            DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE);
     }
   }
+  DCHECK_EQ(num_duplicates, num_duplicates_found);
 
   return num_duplicates;
 }
@@ -654,13 +674,7 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     const std::string& cookie_line,
     const Time& creation_time_or_null,
     const CookieOptions& options) {
-  AutoLock autolock(lock_);
-
-  if (!HasCookieableScheme(url)) {
-    return false;
-  }
-
-  InitIfNecessary();
+  lock_.AssertAcquired();
 
   COOKIE_DLOG(INFO) << "SetCookie() line: " << cookie_line;
 
@@ -704,6 +718,20 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     return false;
   }
   return SetCanonicalCookie(&cc, creation_time, options);
+}
+
+bool CookieMonster::SetCookieWithCreationTime(const GURL& url,
+                                              const std::string& cookie_line,
+                                              const base::Time& creation_time) {
+  AutoLock autolock(lock_);
+
+  if (!HasCookieableScheme(url)) {
+    return false;
+  }
+
+  InitIfNecessary();
+  return SetCookieWithCreationTimeAndOptions(url, cookie_line, creation_time,
+                                             CookieOptions());
 }
 
 bool CookieMonster::SetCookieWithDetails(
@@ -1030,6 +1058,14 @@ static bool CookieSorter(CookieMonster::CanonicalCookie* cc1,
 bool CookieMonster::SetCookieWithOptions(const GURL& url,
                                          const std::string& cookie_line,
                                          const CookieOptions& options) {
+  AutoLock autolock(lock_);
+
+  if (!HasCookieableScheme(url)) {
+    return false;
+  }
+
+  InitIfNecessary();
+
   return SetCookieWithCreationTimeAndOptions(url, cookie_line, Time(), options);
 }
 

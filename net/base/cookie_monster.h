@@ -20,6 +20,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "net/base/cookie_store.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
 
@@ -107,18 +108,6 @@ class CookieMonster : public CookieStore {
                             const base::Time& expiration_time,
                             bool secure, bool http_only);
 
-  // Exposed for unit testing.
-  bool SetCookieWithCreationTimeAndOptions(const GURL& url,
-                                           const std::string& cookie_line,
-                                           const base::Time& creation_time,
-                                           const CookieOptions& options);
-  bool SetCookieWithCreationTime(const GURL& url,
-                                 const std::string& cookie_line,
-                                 const base::Time& creation_time) {
-    return SetCookieWithCreationTimeAndOptions(url, cookie_line, creation_time,
-                                               CookieOptions());
-  }
-
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed.
   CookieList GetAllCookies();
@@ -166,6 +155,14 @@ class CookieMonster : public CookieStore {
 
  private:
   ~CookieMonster();
+
+  // Testing support.
+  friend class CookieMonsterTest;
+  FRIEND_TEST(CookieMonsterTest, TestCookieDeleteAllCreatedAfterTimestamp);
+  FRIEND_TEST(CookieMonsterTest, TestCookieDeleteAllCreatedBetweenTimestamps);
+  bool SetCookieWithCreationTime(const GURL& url,
+                                 const std::string& cookie_line,
+                                 const base::Time& creation_time);
 
   // Called by all non-static functions to ensure that the cookies store has
   // been initialized. This is not done during creating so it doesn't block
@@ -219,6 +216,15 @@ class CookieMonster : public CookieStore {
   void InternalInsertCookie(const std::string& key,
                             CanonicalCookie* cc,
                             bool sync_to_store);
+
+  // Helper function that sets cookies with more control.
+  // Not exposed as we don't want callers to have the ability
+  // to specify (potentially duplicate) creation times.
+  bool SetCookieWithCreationTimeAndOptions(const GURL& url,
+                                           const std::string& cookie_line,
+                                           const base::Time& creation_time,
+                                           const CookieOptions& options);
+
 
   // Helper function that sets a canonical cookie, deleting equivalents and
   // performing garbage collection.
