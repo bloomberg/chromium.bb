@@ -1929,17 +1929,18 @@ organize-native-code() {
   # NOTE: the (cyclic) dependency from libgcc to libgcc has likely
   #       been removed for arm but may still exist for x86-32/64
 
-  DebugRun Banner "arm native code: ${PNACL_ARM_ROOT}"
+  StepBanner "PNaCl" "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
 
   cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}/libgcc.a \
     ${PNACL_ARM_ROOT}
+
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
   # TODO(espindola): These files have been built with the conventional
   # nacl-gcc. The ABI might not be exactly the same as the one used by
   # PNaCl. We should build these files with PNaCl.
-  DebugRun Banner "x86-32 native code: ${PNACL_X8632_ROOT}"
+  StepBanner "PNaCl" "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
   cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/32/libgcc.a \
     ${x86_src}/nacl64/lib/32/crt*.o \
@@ -1948,7 +1949,7 @@ organize-native-code() {
     ${PNACL_X8632_ROOT}
   DebugRun ls -l ${PNACL_X8632_ROOT}
 
-  DebugRun Banner "x86-64 native code: ${PNACL_X8664_ROOT}"
+  StepBanner "PNaCl" "x86-64 native code: ${PNACL_X8664_ROOT}"
   mkdir -p ${PNACL_X8664_ROOT}
   cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/libgcc.a \
     ${x86_src}/nacl64/lib/crt*.o \
@@ -2117,51 +2118,66 @@ show-tests() {
   cat $(find tests -name nacl.scons) | grep -o 'run_[A-Za-z_-]*' | sort | uniq
 }
 
+
+scons-build-sel_ldr () {
+  local  platform=$1
+  ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
+}
+
+scons-clean-pnacl-build-dir () {
+  local  platform=$1
+  # NOTE: we expect to have differnt dirs for each platform soon
+  rm -rf scons-out/nacl-arm
+}
+
+scons-pnacl-build () {
+  local platform=$1
+  shift
+  # NOTE: we currently run all of pnacl through the arm target so we need
+  #       to turn of qemu emulation when we are not really targeting arm
+  #
+  local emu_flags="force_emulator="
+  if [[ ${platform} == "arm" ]] ; then
+    emu_flags=""
+  fi
+  TARGET_CODE=bc-${platform} ./scons ${SCONS_ARGS[@]} \
+          force_sel_ldr=scons-out/opt-linux-${platform}/staging/sel_ldr \
+          ${emu_flags} "$@"
+}
+
+test-scons-common () {
+  local platform=$1
+  shift
+  scons-build-sel_ldr ${platform}
+  scons-clean-pnacl-build-dir ${platform}
+
+  if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
+    # first build everything
+    # TODO(robertm): enable this as soon as the c++ builds are working again
+    # scons-pnacl-build ${platform}
+    # then also run some of the tests built before
+    scons-pnacl-build ${platform} smoke_tests "$@"
+  else
+    scons-pnacl-build ${platform} "$@"
+  fi
+}
+
 #@ test-arm              - run arm tests via pnacl toolchain
 #@ test-arm <test>       - run a single arm test via pnacl toolchain
 test-arm() {
-  ./scons platform=arm ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-  rm -rf scons-out/nacl-arm
-
-  local fixedargs=""
-  if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
-    fixedargs="smoke_tests"
-  fi
-  TARGET_CODE=bc-arm ./scons ${SCONS_ARGS[@]} \
-          force_sel_ldr=scons-out/opt-linux-arm/staging/sel_ldr \
-          ${fixedargs} "$@"
+  test-scons-common arm "$@"
 }
 
 #@ test-x86-32           - run x86-32 tests via pnacl toolchain
 #@ test-x86-32 <test>    - run a single x86-32 test via pnacl toolchain
 test-x86-32() {
-  ./scons platform=x86-32 ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-  rm -rf scons-out/nacl-arm
-
-  local fixedargs=""
-  if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
-    fixedargs="smoke_tests"
-  fi
-  TARGET_CODE=bc-x86-32 ./scons ${SCONS_ARGS[@]} \
-          force_emulator= \
-          force_sel_ldr=scons-out/opt-linux-x86-32/staging/sel_ldr \
-          ${fixedargs} "$@"
+  test-scons-common x86-32 "$@"
 }
 
 #@ test-x86-64           - run all x86-64 tests via pnacl toolchain
 #@ test-x86-64 <test>    - run a single x86-64 test via pnacl toolchain
 test-x86-64() {
-  ./scons platform=x86-64 ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
-  rm -rf scons-out/nacl-arm
-
-  local fixedargs=""
-  if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
-    fixedargs="smoke_tests"
-  fi
-  TARGET_CODE=bc-x86-64 ./scons ${SCONS_ARGS[@]} \
-          force_emulator= \
-          force_sel_ldr=scons-out/opt-linux-x86-64/staging/sel_ldr \
-          ${fixedargs} "$@"
+  test-scons-common x86-64 "$@"
 }
 
 
@@ -2198,8 +2214,14 @@ test-bot-base() {
 
 #@ test-bot-extra <spec-official> - additional tests run on the bots
 test-bot-extra() {
-  test-spec "$1" SetupNaclX8632Opt
-  test-spec "$1" SetupNaclX8632
+  official=$(readlink -f $1)
+  spushd tests/spec2k
+  ./run_all.sh CleanBenchmarks
+  ./run_all.sh PoplateFromSpecHarness ${official}
+  ./run_all.sh BuildAndRunBenchmarks SetupPnaclX8632Opt
+  ./run_all.sh BuildAndRunBenchmarks SetupPnaclX8632Opt
+  ./run_all.sh BuildAndRunBenchmarks SetupPnaclArmOpt
+
 }
 ######################################################################
 ######################################################################
