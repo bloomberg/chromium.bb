@@ -93,9 +93,8 @@ global_config_flags = {
     '-DNACL_TARGET_ARCH=arm',
     # TODO: get rid of the next two lines
     '-DNACL_TARGET_SUBARCH=32',
-    '-DNACL_LINUX=1',
-    '-ffixed-r9',
-  ] + arm_flags + cpp_flags,
+    '-DNACL_LINUX=1'
+  ] + cpp_flags,
 
   'LLVM_GCC_COMPILE_HEADERS': [
     # NOTE: the two competing approaches here
