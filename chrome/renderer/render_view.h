@@ -433,6 +433,7 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebCookieJar* cookieJar();
   virtual void willClose(WebKit::WebFrame* frame);
   virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual void loadURLExternally(WebKit::WebFrame* frame,
                                  const WebKit::WebURLRequest& request,
                                  WebKit::WebNavigationPolicy policy);

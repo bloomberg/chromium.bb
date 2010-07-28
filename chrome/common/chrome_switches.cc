@@ -286,6 +286,9 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // Chromoting Host Process within the service process.
 const char kEnableChromoting[]              = "enable-chromoting";
 
+// Enable click-to-play for blocked plugins.
+const char kEnableClickToPlay[]             = "enable-click-to-play";
+
 // This applies only when the process type is "service". Enables the
 // Cloud Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";

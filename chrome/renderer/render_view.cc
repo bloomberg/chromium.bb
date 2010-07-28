@@ -2207,10 +2207,13 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (path.value().empty())
     return NULL;
 
-  if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS) &&
-      path.value() != kDefaultPluginLibraryName) {
-    didNotAllowPlugins(frame);
-    return CreatePluginPlaceholder(frame, params);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClickToPlay)) {
+    if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS) &&
+        path.value() != kDefaultPluginLibraryName) {
+      didNotAllowPlugins(frame);
+      return CreatePluginPlaceholder(frame, params);
+    }
   }
   return CreatePluginInternal(frame, params, actual_mime_type, path);
 }
@@ -2341,6 +2344,16 @@ bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES);
   return false;  // Other protocols fall through here.
 }
+
+bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClickToPlay)) {
+    return WebFrameClient::allowPlugins(frame, enabled_per_settings);
+  }
+  return (enabled_per_settings &&
+      AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS));
+}
+
 
 void RenderView::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
