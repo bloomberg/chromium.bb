@@ -109,6 +109,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                              bool include_cc_labels,
                              std::vector<string16>* values,
                              std::vector<string16>* labels,
+                             std::vector<string16>* icons,
                              std::vector<int>* unique_ids);
 
   // Same as GetProfileSuggestions, but the list of stored profiles is limited
@@ -118,6 +119,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                     AutoFillType type,
                                     std::vector<string16>* values,
                                     std::vector<string16>* labels,
+                                    std::vector<string16>* icons,
                                     std::vector<int>* unique_ids);
 
   // Returns a list of values from the stored credit cards that match |type| and
@@ -127,6 +129,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                 AutoFillType type,
                                 std::vector<string16>* values,
                                 std::vector<string16>* labels,
+                                std::vector<string16>* icons,
                                 std::vector<int>* unique_ids);
 
   // Set |field| argument's value based on |type| and contents of the

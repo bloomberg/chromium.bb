@@ -28,7 +28,8 @@
 
 using webkit_glue::FormData;
 
-typedef Tuple4<int,
+typedef Tuple5<int,
+               std::vector<string16>,
                std::vector<string16>,
                std::vector<string16>,
                std::vector<int> > AutoFillParam;

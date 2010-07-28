@@ -235,6 +235,7 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     const char* name;
     int id;
   } resources[] = {
+    { "genericCC", IDR_AUTOFILL_CC_GENERIC },
     { "missingImage", IDR_BROKENIMAGE },
     { "mediaPause", IDR_MEDIA_PAUSE_BUTTON },
     { "mediaPlay", IDR_MEDIA_PLAY_BUTTON },

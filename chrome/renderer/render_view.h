@@ -705,6 +705,7 @@ class RenderView : public RenderWidget,
       int query_id,
       const std::vector<string16>& values,
       const std::vector<string16>& labels,
+      const std::vector<string16>& icons,
       const std::vector<int>& unique_ids);
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();

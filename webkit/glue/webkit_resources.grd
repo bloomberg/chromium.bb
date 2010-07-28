@@ -45,6 +45,7 @@
       <include name="IDC_VERTICALTEXT" file="resources\vertical_text.cur" type="CURSOR" />
       <include name="IDC_ZOOMIN" file="resources\zoom_in.cur" type="CURSOR" />
       <include name="IDC_ZOOMOUT" file="resources\zoom_out.cur" type="CURSOR" />
+      <include name="IDR_AUTOFILL_CC_GENERIC" file="resources\cc-generic.png" type="BINDATA" />
 
       <if expr="os == 'linux2' or os.find('bsd') != -1 or os == 'sunos5'">
         <include name="IDR_LINUX_CHECKBOX_DISABLED_INDETERMINATE" file="resources\linux-checkbox-disabled-indeterminate.png" type="BINDATA" />

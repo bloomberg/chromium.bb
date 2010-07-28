@@ -39,8 +39,15 @@ const int kAutoFillPhoneNumberPrefixCount = 3;
 const int kAutoFillPhoneNumberSuffixOffset = 3;
 const int kAutoFillPhoneNumberSuffixCount = 4;
 
+
 const string16::value_type kCreditCardLabelPrefix[] = {'*', 0};
 const string16::value_type kLabelSeparator[] = {';',' ', '*', 0};
+
+// The name of the generic credit card icon, which maps to the image resource ID
+// in webkit/glue:WebKitClientImpl.
+// TODO(jhawkins): Move the images to chrome/common and implement the resource
+// handling in RendererWebKitClientImpl.
+const char kGenericCC[] = "genericCC";
 
 // Removes duplicate elements whilst preserving original order of |elements| and
 // |unique_ids|.
@@ -199,6 +206,7 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
 
   std::vector<string16> values;
   std::vector<string16> labels;
+  std::vector<string16> icons;
   std::vector<int> unique_ids;
   AutoFillType type(autofill_field->type());
 
@@ -207,15 +215,17 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   bool handle_billing = FormIsHTTPS(form);
 
   if (type.group() == AutoFillType::CREDIT_CARD)
-    GetCreditCardSuggestions(form, field, type, &values, &labels, &unique_ids);
+    GetCreditCardSuggestions(
+        form, field, type, &values, &labels, &icons, &unique_ids);
   else if (type.group() == AutoFillType::ADDRESS_BILLING)
     GetBillingProfileSuggestions(
-        form, field, type, &values, &labels, &unique_ids);
+        form, field, type, &values, &labels, &icons, &unique_ids);
   else
-    GetProfileSuggestions(
-        form, field, type, handle_billing, &values, &labels, &unique_ids);
+    GetProfileSuggestions(form, field, type, handle_billing,
+                          &values, &labels, &icons, &unique_ids);
 
   DCHECK_EQ(values.size(), labels.size());
+  DCHECK_EQ(values.size(), icons.size());
   DCHECK_EQ(values.size(), unique_ids.size());
 
   // No suggestions.
@@ -229,12 +239,16 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
   if (form_autofilled) {
     RemoveDuplicateElements(&values, &unique_ids);
     labels.resize(values.size());
+    icons.resize(values.size());
 
-    for (size_t i = 0; i < labels.size(); ++i)
+    for (size_t i = 0; i < labels.size(); ++i) {
       labels[i] = string16();
+      icons[i] = string16();
+    }
   }
 
-  host->AutoFillSuggestionsReturned(query_id, values, labels, unique_ids);
+  host->AutoFillSuggestionsReturned(
+      query_id, values, labels, icons, unique_ids);
   return true;
 }
 
@@ -461,6 +475,7 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
                                             bool include_cc_labels,
                                             std::vector<string16>* values,
                                             std::vector<string16>* labels,
+                                            std::vector<string16>* icons,
                                             std::vector<int>* unique_ids) {
   const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
   std::vector<AutoFillProfile*> matched_profiles;
@@ -478,6 +493,9 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
       unique_ids->push_back(PackIDs(0, profile->unique_id()));
     }
   }
+
+  // No CC, so no icons.
+  icons->resize(values->size());
 
   AutoFillProfile::CreateInferredLabels(&matched_profiles, labels, 0,
                                         type.field_type());
@@ -513,6 +531,7 @@ void AutoFillManager::GetBillingProfileSuggestions(
     AutoFillType type,
     std::vector<string16>* values,
     std::vector<string16>* labels,
+    std::vector<string16>* icons,
     std::vector<int>* unique_ids) {
   std::vector<CreditCard*> matching_creditcards;
   std::vector<AutoFillProfile*> matching_profiles;
@@ -523,7 +542,8 @@ void AutoFillManager::GetBillingProfileSuggestions(
   // user the option of filling the billing address fields with regular address
   // data.
   if (!FormIsHTTPS(form)) {
-    GetProfileSuggestions(form, field, type, false, values, labels, unique_ids);
+    GetProfileSuggestions(
+        form, field, type, false, values, icons, labels, unique_ids);
     return;
   }
 
@@ -561,6 +581,7 @@ void AutoFillManager::GetBillingProfileSuggestions(
       string16 label = (*iter)->Label() + kLabelSeparator +
                        (*cc)->LastFourDigits();
       labels->push_back(label);
+      icons->push_back(ASCIIToUTF16(kGenericCC));
       unique_ids->push_back(
           PackIDs((*cc)->unique_id(), (*iter)->unique_id()));
     }
@@ -572,6 +593,7 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
                                                AutoFillType type,
                                                std::vector<string16>* values,
                                                std::vector<string16>* labels,
+                                               std::vector<string16>* icons,
                                                std::vector<int>* unique_ids) {
   // Don't return CC suggestions for non-HTTPS pages.
   if (!FormIsHTTPS(form))
@@ -603,6 +625,7 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
           string16 label = (*iter)->Label() + kLabelSeparator +
                            credit_card->LastFourDigits();
           labels->push_back(label);
+          icons->push_back(ASCIIToUTF16(kGenericCC));
           unique_ids->push_back(
             PackIDs(credit_card->unique_id(), (*iter)->unique_id()));
         }

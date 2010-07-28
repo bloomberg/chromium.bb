@@ -392,6 +392,7 @@ class RenderViewHost : public RenderWidgetHost {
       int query_id,
       const std::vector<string16>& values,
       const std::vector<string16>& labels,
+      const std::vector<string16>& icons,
       const std::vector<int>& unique_ids);
 
   // Called by the AutocompleteHistoryManager when the list of suggestions is
@@ -728,6 +729,7 @@ class RenderViewHost : public RenderWidgetHost {
   int autofill_query_id_;
   std::vector<string16> autofill_values_;
   std::vector<string16> autofill_labels_;
+  std::vector<string16> autofill_icons_;
   std::vector<int> autofill_unique_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);

@@ -44,6 +44,7 @@ class AutoFillHelper {
   void SuggestionsReceived(int query_id,
                            const std::vector<string16>& values,
                            const std::vector<string16>& labels,
+                           const std::vector<string16>& icons,
                            const std::vector<int>& unique_ids);
 
   // Called when we have received suggestions for an entire form from the

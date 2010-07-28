@@ -641,10 +641,11 @@ IPC_BEGIN_MESSAGES(View)
 
   // Reply to the ViewHostMsg_QueryFormFieldAutoFill message with the
   // AutoFill suggestions.
-  IPC_MESSAGE_ROUTED4(ViewMsg_AutoFillSuggestionsReturned,
+  IPC_MESSAGE_ROUTED5(ViewMsg_AutoFillSuggestionsReturned,
                       int /* id of the request message */,
                       std::vector<string16> /* names */,
                       std::vector<string16> /* labels */,
+                      std::vector<string16> /* icons */,
                       std::vector<int> /* unique_ids */)
 
   // Reply to the ViewHostMsg_FillAutoFillFormData message with the
