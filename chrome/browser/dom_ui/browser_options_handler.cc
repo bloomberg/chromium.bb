@@ -10,13 +10,15 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/session_startup_pref.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 BrowserOptionsHandler::BrowserOptionsHandler()
-    : template_url_model_(NULL) {
+    : template_url_model_(NULL), startup_custom_pages_table_model_(NULL) {
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
 #endif
@@ -75,17 +77,18 @@ void BrowserOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "setDefaultSearchEngine",
       NewCallback(this, &BrowserOptionsHandler::SetDefaultSearchEngine));
+  dom_ui_->RegisterMessageCallback(
+      "removeStartupPages",
+      NewCallback(this, &BrowserOptionsHandler::RemoveStartupPages));
+  dom_ui_->RegisterMessageCallback(
+      "setStartupPagesToCurrentPages",
+      NewCallback(this, &BrowserOptionsHandler::SetStartupPagesToCurrentPages));
 }
 
 void BrowserOptionsHandler::Initialize() {
   UpdateDefaultBrowserState();
-
-  template_url_model_ = dom_ui_->GetProfile()->GetTemplateURLModel();
-  if (template_url_model_) {
-    template_url_model_->Load();
-    template_url_model_->AddObserver(this);
-    OnTemplateURLModelChanged();
-  }
+  UpdateStartupPages();
+  UpdateSearchEngines();
 }
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
@@ -211,3 +214,89 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const Value* value) {
     template_url_model_->SetDefaultSearchProvider(model_urls[selected_index]);
 }
 
+void BrowserOptionsHandler::UpdateSearchEngines() {
+  template_url_model_ = dom_ui_->GetProfile()->GetTemplateURLModel();
+  if (template_url_model_) {
+    template_url_model_->Load();
+    template_url_model_->AddObserver(this);
+    OnTemplateURLModelChanged();
+  }
+}
+
+void BrowserOptionsHandler::UpdateStartupPages() {
+  Profile* profile = dom_ui_->GetProfile();
+  startup_custom_pages_table_model_.reset(
+      new CustomHomePagesTableModel(profile));
+  startup_custom_pages_table_model_->SetObserver(this);
+
+  const SessionStartupPref startup_pref =
+      SessionStartupPref::GetStartupPref(profile->GetPrefs());
+  startup_custom_pages_table_model_->SetURLs(startup_pref.urls);
+}
+
+void BrowserOptionsHandler::OnModelChanged() {
+  // TODO(stuartmorgan): Add support for showing favicons.
+  ListValue startup_pages;
+  int page_count = startup_custom_pages_table_model_->RowCount();
+  for (int i = 0; i < page_count; ++i) {
+    DictionaryValue* entry = new DictionaryValue();
+    entry->SetString(L"title",
+                     startup_custom_pages_table_model_->GetText(i, 0));
+    entry->SetString(L"tooltip",
+                     startup_custom_pages_table_model_->GetTooltip(i));
+    startup_pages.Append(entry);
+  }
+
+  dom_ui_->CallJavascriptFunction(L"BrowserOptions.updateStartupPages",
+                                  startup_pages);
+}
+
+void BrowserOptionsHandler::OnItemsChanged(int start, int length) {
+  OnModelChanged();
+}
+
+void BrowserOptionsHandler::OnItemsAdded(int start, int length) {
+  OnModelChanged();
+}
+
+void BrowserOptionsHandler::OnItemsRemoved(int start, int length) {
+  OnModelChanged();
+}
+
+void BrowserOptionsHandler::SetStartupPagesToCurrentPages(const Value* value) {
+  startup_custom_pages_table_model_->SetToCurrentlyOpenPages();
+  SaveStartupPagesPref();
+}
+
+void BrowserOptionsHandler::RemoveStartupPages(const Value* value) {
+  if (!value || !value->IsType(Value::TYPE_LIST)) {
+    NOTREACHED();
+    return;
+  }
+  const ListValue* param_values = static_cast<const ListValue*>(value);
+  for (int i = param_values->GetSize() - 1; i >= 0; --i) {
+    std::string string_value;
+    if (!param_values->GetString(i, &string_value)) {
+      NOTREACHED();
+      return;
+    }
+    int selected_index = StringToInt(string_value);
+    if (selected_index < 0 ||
+        selected_index >= startup_custom_pages_table_model_->RowCount()) {
+      NOTREACHED();
+      return;
+    }
+    startup_custom_pages_table_model_->Remove(selected_index);
+  }
+
+  SaveStartupPagesPref();
+}
+
+void BrowserOptionsHandler::SaveStartupPagesPref() {
+  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
+  pref.urls = startup_custom_pages_table_model_->GetURLs();
+
+  SessionStartupPref::SetStartupPref(prefs, pref);
+}
