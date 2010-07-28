@@ -51,10 +51,9 @@ def FindSVNRev(target_rev):
   # regexp matching the git-svn line from the log.
   git_svn_re = re.compile(r'^\s+git-svn-id: [^@]+@(\d+) ')
 
-  # On Windows, use shell=True to get PATH interpretation.
-  shell = (os.name == 'nt')
   log = subprocess.Popen(['git', 'log', '--no-color', '--first-parent',
-                          '--pretty=medium', 'origin'], shell=shell,
+                          '--pretty=medium', 'origin'],
+                         shell=(os.name == 'nt'),
                          stdout=subprocess.PIPE)
   # Track whether we saw a revision *later* than the one we're seeking.
   saw_later = False
@@ -88,7 +87,7 @@ def UpdateGClientBranch(webkit_rev):
   target = FindSVNRev(webkit_rev)
   if not target:
     print "r%s not available; fetching." % webkit_rev
-    subprocess.check_call(['git', 'fetch'])
+    subprocess.check_call(['git', 'fetch'], shell=(os.name == 'nt'))
     target = FindSVNRev(webkit_rev)
   if not target:
     print "ERROR: Couldn't map r%s to a git revision." % webkit_rev
@@ -99,7 +98,8 @@ def UpdateGClientBranch(webkit_rev):
     return False  # No change necessary.
 
   subprocess.check_call(['git', 'update-ref', '-m', 'gclient sync',
-                         MAGIC_GCLIENT_BRANCH, target])
+                         MAGIC_GCLIENT_BRANCH, target],
+                         shell=(os.name == 'nt'))
   return True
 
 def UpdateCurrentCheckoutIfAppropriate():
@@ -113,9 +113,9 @@ def UpdateCurrentCheckoutIfAppropriate():
     return 1
 
   if subprocess.call(['git', 'diff-index', '--exit-code', '--shortstat',
-                      'HEAD']):
+                      'HEAD'], shell=(os.name == 'nt')):
     print "Resetting tree state to new revision."
-    subprocess.check_call(['git', 'reset', '--hard'])
+    subprocess.check_call(['git', 'reset', '--hard'], shell=(os.name == 'nt'))
 
 def main():
   if not os.path.exists('third_party/WebKit/.git'):
