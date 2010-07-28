@@ -377,16 +377,20 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
       [self adjustButtonWidths] + (2 * bookmarks::kBookmarkVerticalPadding) +
       bookmarks::kScrollViewContentWidthMargin;
   NSPoint newWindowTopLeft = [self windowTopLeftForWidth:windowWidth];
+  NSSize windowSize = [scrollView_ convertSize:NSMakeSize(windowWidth,
+                                                          windowHeight)
+                                        toView:nil];
+  newWindowTopLeft.y -= windowSize.height;
   NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
-                                  newWindowTopLeft.y - windowHeight,
-                                  windowWidth,
-                                  windowHeight);
+                                  newWindowTopLeft.y,
+                                  windowSize.width,
+                                  windowSize.height);
 
   // Make the scrolled content be the right size (full size).
   NSRect mainViewFrame = NSMakeRect(0, 0,
-                                    NSWidth(windowFrame) -
+                                    windowWidth -
                                     bookmarks::kScrollViewContentWidthMargin,
-                                    NSHeight(windowFrame));
+                                    windowHeight);
   [mainView_ setFrame:mainViewFrame];
 
   // Make sure the window fits on the screen.  If not, constrain.
@@ -404,8 +408,10 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   [window setFrame:windowFrame display:YES];
   // If scrollable then offset the view and show the arrows.
   if (wasScrollable != scrollable_) {
+    NSSize windowLocalSize = [scrollView_ convertSize:windowFrame.size
+                                             fromView:nil];
     [mainView_ scrollPoint:NSMakePoint(0, (NSHeight(mainViewFrame) -
-                                           NSHeight(windowFrame)))];
+                                           windowLocalSize.height))];
     [self showOrHideScrollArrows];
     [self addOrUpdateScrollTracking];
   }
