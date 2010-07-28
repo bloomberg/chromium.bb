@@ -32,6 +32,11 @@ PersonalOptionsHandler::~PersonalOptionsHandler() {
 
 void PersonalOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+  ProfileSyncService* service = profile->GetProfileSyncService();
 
   DCHECK(localized_strings);
   //Personal Stuff page
@@ -42,6 +47,10 @@ void PersonalOptionsHandler::GetLocalizedValues(
           l10n_util::GetString(IDS_PRODUCT_NAME)));
   localized_strings->SetString(L"start_sync",
       l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL));
+  localized_strings->SetString(L"synced_to_user_with_time",
+      l10n_util::GetStringF(IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
+          UTF16ToWide(service->GetAuthenticatedUsername()),
+          service->GetLastSyncedTimeString()));
   localized_strings->SetString(L"sync_customize",
       l10n_util::GetString(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
   localized_strings->SetString(L"stop_sync",
@@ -93,27 +102,4 @@ void PersonalOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(L"themes_default",
       l10n_util::GetString(IDS_THEMES_DEFAULT_THEME_LABEL));
 #endif
-}
-
-void PersonalOptionsHandler::RegisterMessages() {
-  DCHECK(dom_ui_);
-  dom_ui_->RegisterMessageCallback(
-      "getSyncStatus",
-      NewCallback(this,&PersonalOptionsHandler::SetSyncStatusUIString));
-}
-
-void PersonalOptionsHandler::SetSyncStatusUIString(const Value* value) {
-  DCHECK(dom_ui_);
-
-  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
-  if(service != NULL && ProfileSyncService::IsSyncEnabled()) {
-    scoped_ptr<Value> status_string(Value::CreateStringValue(
-        l10n_util::GetStringF(IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
-                              UTF16ToWide(service->GetAuthenticatedUsername()),
-                              service->GetLastSyncedTimeString())));
-
-    dom_ui_->CallJavascriptFunction(
-        L"PersonalOptions.syncStatusCallback",
-        *(status_string.get()));
-  }
 }
