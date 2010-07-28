@@ -4,16 +4,12 @@
 
 #include "chrome/browser/dom_ui/advanced_options_handler.h"
 
-#if defined(OS_WIN)
-#include <cryptuiapi.h>
-#pragma comment(lib, "cryptui.lib")
-#endif
-
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/values.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -25,14 +21,12 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
-#if defined(OS_WIN)
-#include "net/base/ssl_config_service_win.h"
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/dom_ui/advanced_options_utils.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
-// The URL for Linux ssl certificate configuration help.
-const char* const kLinuxCertificatesConfigUrl =
-    "http://code.google.com/p/chromium/wiki/LinuxCertManagement";
+#if defined(OS_WIN)
+#include "net/base/ssl_config_service_win.h"
 #endif
 
 AdvancedOptionsHandler::AdvancedOptionsHandler() {
@@ -157,12 +151,14 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("autoOpenFileTypesAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleAutoOpenButton));
+#if !defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("showManageSSLCertificates",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowManageSSLCertificates));
   dom_ui_->RegisterMessageCallback("showNetworkProxySettings",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowNetworkProxySettings));
+#endif
 
 #if defined(OS_WIN)
   // Setup Windows specific callbacks.
@@ -249,6 +245,21 @@ void AdvancedOptionsHandler::HandleUseSSL2Checkbox(const Value* value) {
 }
 #endif
 
+#if !defined(OS_CHROMEOS)
+void AdvancedOptionsHandler::ShowNetworkProxySettings(const Value* value) {
+  UserMetricsRecordAction(UserMetricsAction("Options_ShowProxySettings"), NULL);
+  DCHECK(dom_ui_);
+  AdvancedOptionsUtilities::ShowNetworkProxySettings(dom_ui_->tab_contents());
+}
+
+void AdvancedOptionsHandler::ShowManageSSLCertificates(const Value* value) {
+  UserMetricsRecordAction(UserMetricsAction("Options_ManageSSLCertificates"),
+                          NULL);
+  DCHECK(dom_ui_);
+  AdvancedOptionsUtilities::ShowManageSSLCertificates(dom_ui_->tab_contents());
+}
+#endif
+
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {
   DCHECK(dom_ui_);
   StringValue value(default_download_location_.GetValue().value());
@@ -286,26 +297,3 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
       L"advancedOptionsSetUseSSL2CheckboxStatechecked", useSSLValue);
 }
 #endif
-
-void AdvancedOptionsHandler::ShowNetworkProxySettings(const Value* value) {
-#if defined(OS_MACOSX)
-  AdvancedOptionsUtilities::ShowNetworkProxySettings();
-#endif
-}
-
-void AdvancedOptionsHandler::ShowManageSSLCertificates(const Value* value) {
-#if defined(OS_MACOSX)
-  AdvancedOptionsUtilities::ShowManageSSLCertificates();
-#elif defined(OS_WIN)
-  DCHECK(dom_ui_);
-  CRYPTUI_CERT_MGR_STRUCT cert_mgr = { 0 };
-  cert_mgr.dwSize = sizeof(CRYPTUI_CERT_MGR_STRUCT);
-  cert_mgr.hwndParent =
-      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow();
-  ::CryptUIDlgCertMgr(&cert_mgr);
-#elif defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
-  DCHECK(dom_ui_);
-  dom_ui_->tab_contents()->OpenURL(GURL(kLinuxCertificatesConfigUrl), GURL(),
-                                   NEW_WINDOW, PageTransition::LINK);
-#endif
-}

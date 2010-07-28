@@ -10,10 +10,6 @@
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/shell_dialogs.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/dom_ui/advanced_options_utils_mac.h"
-#endif
-
 // Chrome advanced options page UI handler.
 class AdvancedOptionsHandler
     : public OptionsPageUIHandler,
@@ -57,6 +53,16 @@ class AdvancedOptionsHandler
   void HandleUseSSL2Checkbox(const Value* value);
 #endif
 
+#if !defined(OS_CHROMEOS)
+  // Callback for the "showNetworkProxySettings" message. This will invoke
+  // an appropriate dialog for configuring proxy settings.
+  void ShowNetworkProxySettings(const Value* value);
+
+  // Callback for the "showManageSSLCertificates" message. This will invoke
+  // an appropriate certificate management action based on the platform.
+  void ShowManageSSLCertificates(const Value* value);
+#endif
+
   // Setup the download path based on user preferences.
   void SetupDownloadLocationPath();
 
@@ -67,14 +73,6 @@ class AdvancedOptionsHandler
   // Setup the checked state SSL related checkboxes.
   void SetupSSLConfigSettings();
 #endif
-
-  // Callback for the "showNetworkProxySettings" message. This will invoke
-  // an appropriate dialog for configuring proxy settings.
-  void ShowNetworkProxySettings(const Value* value);
-
-  // Callback for the "showManageSSLCertificates" message. This will invoke
-  // an appropriate certificate management action based on the platform.
-  void ShowManageSSLCertificates(const Value* value);
 
   scoped_refptr<SelectFileDialog> select_folder_dialog_;
   FilePathPrefMember default_download_location_;
