@@ -1,14 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
 #define CHROME_BROWSER_CHILD_PROCESS_SECURITY_POLICY_H_
+
 #pragma once
 
-#include <string>
 #include <map>
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -116,7 +117,8 @@ class ChildProcessSecurityPolicy {
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak);
+  FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest,
+                           NoLeak);
 
   class SecurityState;
 

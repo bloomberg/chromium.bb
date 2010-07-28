@@ -97,7 +97,8 @@ struct BookmarkDragData {
   void WriteToClipboard(Profile* profile) const;
 
   // Reads bookmarks from the general copy/paste clipboard. Prefers data
-  // written via WriteToClipboard but will also attempt to read a plain bookmark.
+  // written via WriteToClipboard but will also attempt to read a plain
+  // bookmark.
   bool ReadFromClipboard();
 #if defined(OS_MACOSX)
   // Reads bookmarks that are being dragged from the drag and drop

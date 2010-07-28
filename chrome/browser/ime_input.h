@@ -224,8 +224,8 @@ class ImeInput {
   //       position without finishing it.
   void EnableIME(HWND window_handle);
 
-  // Disables the IME attached to the given window, i.e. prohibits any user-input
-  // events from being dispatched to the IME.
+  // Disables the IME attached to the given window, i.e. prohibits any
+  // user-input events from being dispatched to the IME.
   // In Chrome, this function is used when:
   //   * a renreder process sets its input focus to a password input.
   // Parameters

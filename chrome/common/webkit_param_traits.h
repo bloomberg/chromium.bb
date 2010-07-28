@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // This file contains ParamTraits templates to support serialization of WebKit
 // data types over IPC.
@@ -13,12 +13,12 @@
 //
 //   o  Many WebKit structures are not thread-safe.  WebString, for example,
 //      contains a reference counted buffer, which does not use thread-safe
-//      reference counting.  If we allowed serializing WebString, then we may run
-//      the risk of introducing subtle thread-safety bugs if people passed a
+//      reference counting.  If we allowed serializing WebString, then we may
+//      run the risk of introducing subtle thread-safety bugs if people passed a
 //      WebString across threads via PostTask(NewRunnableMethod(...)).
 //
-//   o  The WebKit API has redundant types for strings, and we should avoid using
-//      those beyond code that interfaces with the WebKit API.
+//   o  The WebKit API has redundant types for strings, and we should avoid
+//      using those beyond code that interfaces with the WebKit API.
 
 #ifndef CHROME_COMMON_WEBKIT_PARAM_TRAITS_H_
 #define CHROME_COMMON_WEBKIT_PARAM_TRAITS_H_
