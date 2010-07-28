@@ -43,16 +43,18 @@ cr.define('options.language', function() {
      * @private
      */
     handlePrefChange_: function(e) {
-      this.load_(e.value);
+      var languageCodesInCsv = e.value;
+      var languageCodes = this.filterBadLanguageCodes_(
+          languageCodesInCsv.split(','));
+      this.load_(languageCodes);
     },
 
     /**
      * Loads given language list.
-     * @param {string} languageCodesInCsv A CSV string of language codes.
+     * @param {Array} languageCodes List of language codes.
      * @private
      */
-    load_: function(languageCodesInCsv) {
-      var languageCodes = languageCodesInCsv.split(',');
+    load_: function(languageCodes) {
       this.dataModel = new ArrayDataModel(languageCodes);
       // Select the first item if it's not empty.
       // TODO(satorux): Switch to a single item selection model that does
@@ -67,6 +69,24 @@ cr.define('options.language', function() {
     updateBackend_: function() {
       // Encode the language codes into a CSV string.
       Preferences.setStringPref(this.pref, this.dataModel.slice().join(','));
+    },
+
+    /**
+     * Filters bad language codes in case bad language codes are
+     * stored in the preference.
+     * @param {Array} languageCodes List of language codes.
+     * @private
+     */
+    filterBadLanguageCodes_: function(languageCodes) {
+      var filteredLanguageCodes = [];
+      for (var i = 0; i < languageCodes.length; i++) {
+        // Check if the translation for the language code is
+        // present. Otherwise, skip it.
+        if (localStrings.getString(languageCodes[i])) {
+          filteredLanguageCodes.push(languageCodes[i]);
+        }
+      }
+      return filteredLanguageCodes;
     },
   };
 

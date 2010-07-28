@@ -40,6 +40,10 @@ LanguageOptions.prototype = {
   },
 
   languageListInitalized_: false,
+  // The preference is a CSV string that describes preload engines
+  // (i.e. active input methods).
+  preloadEnginesPref: 'settings.language.preload_engines',
+  preloadEngines_: [],
 
   /**
    * Initializes the input method list.
@@ -57,7 +61,9 @@ LanguageOptions.prototype = {
       var input = document.createElement('input');
       input.type = 'checkbox';
       input.inputMethodId = inputMethod.id;
-
+      // Listen to user clicks.
+      input.addEventListener('click',
+                             cr.bind(this.handleCheckboxClick_, this));
       var label = document.createElement('label');
       label.appendChild(input);
       label.appendChild(document.createTextNode(inputMethod.displayName));
@@ -66,6 +72,9 @@ LanguageOptions.prototype = {
 
       inputMethodList.appendChild(label);
     }
+    // Listen to pref change once the input method list is initialized.
+    Preferences.getInstance().addEventListener(this.preloadEnginesPref,
+        cr.bind(this.handlePreloadEnginesPrefChange_, this));
   },
 
   /**
@@ -112,5 +121,85 @@ LanguageOptions.prototype = {
         labels[i].style.display = 'none';
       }
     }
+  },
+
+  /**
+   * Handles preloadEnginesPref change.
+   * @param {Event} e Change event.
+   * @private
+   */
+  handlePreloadEnginesPrefChange_: function(e) {
+    this.preloadEngines_ = this.filterBadPreloadEngines_(e.value.split(','));
+    this.updateCheckboxesFromPreloadEngines_();
+  },
+
+  /**
+   * Handles input method checkbox's click event.
+   * @param {Event} e Click event.
+   * @private
+   */
+  handleCheckboxClick_ : function(e) {
+    this.updatePreloadEnginesFromCheckboxes_();
+    Preferences.setStringPref(this.preloadEnginesPref,
+                              this.preloadEngines_.join(','));
+  },
+
+  /**
+   * Updates the checkboxes in the input method list from the preload
+   * engines preference.
+   * @private
+   */
+  updateCheckboxesFromPreloadEngines_: function() {
+    // Convert the list into a dictonary for simpler lookup.
+    var dictionary = {};
+    for (var i = 0; i < this.preloadEngines_.length; i++) {
+      dictionary[this.preloadEngines_[i]] = true;
+    }
+
+    var inputMethodList = $('language-options-input-method-list');
+    var checkboxes = inputMethodList.querySelectorAll('input');
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = (checkboxes[i].inputMethodId in dictionary);
+    }
+  },
+
+  /**
+   * Updates the preload engines preference from the checkboxes in the
+   * input method list.
+   * @private
+   */
+  updatePreloadEnginesFromCheckboxes_: function() {
+    this.preloadEngines_ = [];
+    var inputMethodList = $('language-options-input-method-list');
+    var checkboxes = inputMethodList.querySelectorAll('input');
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked) {
+        this.preloadEngines_.push(checkboxes[i].inputMethodId);
+      }
+    }
+  },
+
+  /**
+   * Filters bad preload engines in case bad preload engines are
+   * stored in the preference.
+   * @param {Array} preloadEngines List of preload engines.
+   * @private
+   */
+  filterBadPreloadEngines_: function(preloadEngines) {
+    // Convert the list into a dictonary for simpler lookup.
+    var dictionary = {};
+    for (var i = 0; i < templateData.inputMethodList.length; i++) {
+      dictionary[templateData.inputMethodList[i].id] = true;
+    }
+
+    var filteredPreloadEngines = [];
+    for (var i = 0; i < preloadEngines.length; i++) {
+      // Check if the preload engine is present in the
+      // dictionary. Otherwise, skip it.
+      if (preloadEngines[i] in dictionary) {
+          filteredPreloadEngines.push(preloadEngines[i]);
+      }
+    }
+    return filteredPreloadEngines;
   }
 };
