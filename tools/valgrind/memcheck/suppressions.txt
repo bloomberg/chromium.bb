@@ -3612,7 +3612,7 @@
    fun:_ZN8syncable44DirectoryBackingStoreTest_DeleteEntries_Test8TestBodyEv
 }
 {
-   big_50484
+   bug_50484
    Memcheck:Leak
    ...
    fun:_ZN15SyncSetupWizard*EP18ProfileSyncService
@@ -3624,4 +3624,14 @@
    fun:_ZN7Browser31UpdateCommandsForFullscreenModeEb
    fun:_ZN7Browser16InitCommandStateEv
    fun:_ZN7Browser*ENS_4TypeEP7Profile
+}
+{
+   bug_50504
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN25SharedResourcesDataSource8RegisterEv
+   fun:_Z27RegisterURLRequestChromeJobv
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
 }
