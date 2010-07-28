@@ -566,6 +566,7 @@ def GenerateCombinedBitcodeFile(argv):
                         '-lc',
                         '-lnacl',
                         '-lstdc++',
+                        '-lc',
                         '-lnosys',
                         ])
 
