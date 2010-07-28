@@ -992,3 +992,19 @@
    fun:sync_notifier::ChromeSystemResources::Schedule*
    fun:sync_notifier::::ChromeSystemResourcesTest::ScheduleShouldNotRun
 }
+
+{
+   bug_50484
+   Heapcheck:Leak
+   ...
+   fun:SyncSetupWizard
+   fun:ProfileSyncService
+   fun:ProfileSyncServiceMock
+   fun:NiceMock
+   fun:TestingProfile::GetProfileSyncService
+   fun:Profile::IsSyncAccessible
+   fun:Browser::UpdateCommandsForFullscreenMode
+   fun:Browser::InitCommandState
+   fun:Browser
+   fun:BrowserWithTestWindowTest::SetUp
+}
