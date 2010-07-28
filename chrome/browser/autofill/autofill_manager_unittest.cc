@@ -280,7 +280,15 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(AutoFillManagerTest);
 };
 
-TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
+// TODO(georgey): All of these tests crash in official
+// builds. http://crbug.com/50537
+#if defined(GOOGLE_CHROME_BUILD)
+#define SKIP_BRANDED(test) DISABLED_##test
+#else
+#define SKIP_BRANDED(test) test
+#endif
+
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetProfileSuggestionsEmptyValue)) {
   FormData form;
   CreateTestFormData(&form);
 
@@ -318,7 +326,7 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsEmptyValue) {
   EXPECT_EQ(ASCIIToUTF16("123 Apple St."), labels[1]);
 }
 
-TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetProfileSuggestionsMatchCharacter)) {
   FormData form;
   CreateTestFormData(&form);
 
@@ -352,7 +360,7 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsMatchCharacter) {
   EXPECT_EQ(ASCIIToUTF16("3734 Elvis Presley Blvd."), labels[0]);
 }
 
-TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsEmptyValue)) {
   FormData form;
   CreateTestFormDataBilling(&form);
 
@@ -396,7 +404,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   EXPECT_EQ(ASCIIToUTF16("Empty; *8765"), labels[5]);
 }
 
-TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
+TEST_F(AutoFillManagerTest,
+       SKIP_BRANDED(GetCreditCardSuggestionsMatchCharacter)) {
   FormData form;
   CreateTestFormDataBilling(&form);
 
@@ -434,7 +443,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
   EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
 }
 
-TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsNonCCNumber)) {
   FormData form;
   CreateTestFormDataBilling(&form);
 
@@ -478,7 +487,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   EXPECT_EQ(ASCIIToUTF16("Empty; *8765"), labels[5]);
 }
 
-TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsSemicolon)) {
   // |profile| will be owned by the mock PersonalDataManager.
   AutoFillProfile* profile = new AutoFillProfile;
   autofill_unittest::SetProfileInfo(profile, "Home; 8765", "Joe", "", "Ely",
@@ -535,7 +544,7 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsSemicolon) {
   EXPECT_EQ(ASCIIToUTF16("Home; 8765; *8765"), labels[7]);
 }
 
-TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsNonHTTPS)) {
   FormData form;
   CreateTestFormDataBilling(&form);
   form.origin = GURL("http://myform.com/form.html");
@@ -556,7 +565,8 @@ TEST_F(AutoFillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
       autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
 }
 
-TEST_F(AutoFillManagerTest, GetCombinedAutoFillAndAutocompleteSuggestions) {
+TEST_F(AutoFillManagerTest,
+       SKIP_BRANDED(GetCombinedAutoFillAndAutocompleteSuggestions)) {
   FormData form;
   CreateTestFormData(&form);
 
@@ -599,7 +609,7 @@ TEST_F(AutoFillManagerTest, GetCombinedAutoFillAndAutocompleteSuggestions) {
   EXPECT_EQ(string16(), labels[3]);
 }
 
-TEST_F(AutoFillManagerTest, GetFieldSuggestionsFormIsAutoFilled) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetFieldSuggestionsFormIsAutoFilled)) {
   FormData form;
   CreateTestFormData(&form);
 
@@ -635,7 +645,8 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsFormIsAutoFilled) {
   EXPECT_EQ(string16(), labels[1]);
 }
 
-TEST_F(AutoFillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
+TEST_F(AutoFillManagerTest,
+       SKIP_BRANDED(GetFieldSuggestionsForAutocompleteOnly)) {
   FormData form;
   CreateTestFormData(&form);
 
@@ -671,7 +682,8 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
   ASSERT_EQ(0U, labels.size());
 }
 
-TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
+TEST_F(AutoFillManagerTest,
+       SKIP_BRANDED(GetFieldSuggestionsWithDuplicateValues)) {
   FormData form;
   CreateTestFormData(&form);
 
@@ -713,7 +725,7 @@ TEST_F(AutoFillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   EXPECT_EQ(string16(), labels[1]);
 }
 
-TEST_F(AutoFillManagerTest, FillCreditCardForm) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(FillCreditCardForm)) {
   FormData form;
   CreateTestFormDataBilling(&form);
 
@@ -790,7 +802,7 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
 }
 
-TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(FillNonBillingFormSemicolon)) {
   // |profile| will be owned by the mock PersonalDataManager.
   AutoFillProfile* profile = new AutoFillProfile;
   autofill_unittest::SetProfileInfo(profile, "Home; 8765", "Joe", "", "Ely",
@@ -864,7 +876,7 @@ TEST_F(AutoFillManagerTest, FillNonBillingFormSemicolon) {
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[10]));
 }
 
-TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(FillBillFormSemicolon)) {
   // |profile| will be owned by the mock PersonalDataManager.
   AutoFillProfile* profile = new AutoFillProfile;
   autofill_unittest::SetProfileInfo(profile, "Home; 8765", "Joe", "", "Ely",
@@ -948,7 +960,7 @@ TEST_F(AutoFillManagerTest, FillBillFormSemicolon) {
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[14]));
 }
 
-TEST_F(AutoFillManagerTest, FillPhoneNumber) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(FillPhoneNumber)) {
   FormData form;
 
   form.name = ASCIIToUTF16("MyPhoneForm");
@@ -1021,7 +1033,7 @@ TEST_F(AutoFillManagerTest, FillPhoneNumber) {
   work_profile->SetInfo(phone_type, saved_phone);
 }
 
-TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(FormChangesRemoveField)) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.method = ASCIIToUTF16("POST");
@@ -1088,7 +1100,7 @@ TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[3]));
 }
 
-TEST_F(AutoFillManagerTest, FormChangesAddField) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(FormChangesAddField)) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.method = ASCIIToUTF16("POST");
@@ -1158,7 +1170,7 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   EXPECT_TRUE(field.StrictlyEqualsHack(results.fields[4]));
 }
 
-TEST_F(AutoFillManagerTest, HiddenFields) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(HiddenFields)) {
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
   form.method = ASCIIToUTF16("POST");
