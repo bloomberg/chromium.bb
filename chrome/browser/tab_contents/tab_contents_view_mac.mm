@@ -9,7 +9,6 @@
 #include <string>
 
 #import "base/chrome_application_mac.h"
-#include "chrome/browser/browser.h" // TODO(beng): this dependency is awful.
 #import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
