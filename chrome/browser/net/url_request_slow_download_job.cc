@@ -100,7 +100,6 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
     *bytes_read = send_size;
     first_download_size_remaining_ -= send_size;
 
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
     DCHECK(!is_done());
     return true;
   }
@@ -112,6 +111,7 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 
   // If we make it here, the first chunk has been sent and we need to wait
   // until a request is made for kFinishDownloadUrl.
+  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
   MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
       this, &URLRequestSlowDownloadJob::CheckDoneStatus), 100);
   AddRef();
