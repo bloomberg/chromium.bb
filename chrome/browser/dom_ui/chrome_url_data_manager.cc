@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/ref_counted_memory.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -268,6 +269,14 @@ void ChromeURLDataManager::DataAvailable(
     pending_requests_.erase(i);
     job->DataAvailable(bytes);
   }
+}
+
+ChromeURLDataManager::DataSource::DataSource(const std::string& source_name,
+                                             MessageLoop* message_loop)
+    : source_name_(source_name), message_loop_(message_loop) {
+}
+
+ChromeURLDataManager::DataSource::~DataSource() {
 }
 
 void ChromeURLDataManager::DataSource::SendResponse(

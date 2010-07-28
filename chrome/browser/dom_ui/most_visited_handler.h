@@ -14,9 +14,9 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "googleurl/src/gurl.h"
 
 class DictionaryValue;
+class GURL;
 class ListValue;
 class PageUsageData;
 class PrefService;
@@ -26,14 +26,6 @@ class Value;
 class MostVisitedHandler : public DOMMessageHandler,
                            public NotificationObserver {
  public:
-  // This struct is used when getting the pre-populated pages in case the user
-  // hasn't filled up his most visited pages.
-  struct MostVisitedPage {
-    std::wstring title;
-    GURL url;
-    GURL thumbnail_url;
-    GURL favicon_url;
-  };
 
   MostVisitedHandler();
   virtual ~MostVisitedHandler() { }
@@ -75,6 +67,8 @@ class MostVisitedHandler : public DOMMessageHandler,
   static GURL GetChromeStoreURLWithLocale();
 
  private:
+  struct MostVisitedPage;
+
   // Send a request to the HistoryService to get the most visited pages.
   void StartQueryForMostVisited();
 
@@ -110,6 +104,11 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   // Returns true if we should treat this as the first run of the new tab page.
   bool IsFirstRun();
+
+  // Adds the fields in the page to the dictionary.
+  static void SetMostVisistedPage(
+      DictionaryValue* dict,
+      const MostVisitedHandler::MostVisitedPage& page);
 
   static const std::vector<MostVisitedPage>& GetPrePopulatedPages();
 

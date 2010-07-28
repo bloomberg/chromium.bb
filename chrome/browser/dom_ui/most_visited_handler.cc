@@ -33,6 +33,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
+#include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -45,17 +46,16 @@ const size_t kMostVisitedPages = 8;
 // The number of days of history we consider for most visited entries.
 const int kMostVisitedScope = 90;
 
-// Adds the fields in the page to the dictionary.
-void SetMostVisistedPage(DictionaryValue* dict,
-                         const MostVisitedHandler::MostVisitedPage& page) {
-  NewTabUI::SetURLTitleAndDirection(dict, WideToUTF16(page.title), page.url);
-  if (!page.favicon_url.is_empty())
-    dict->SetString(L"faviconUrl", page.favicon_url.spec());
-  if (!page.thumbnail_url.is_empty())
-    dict->SetString(L"thumbnailUrl", page.thumbnail_url.spec());
-}
-
 }  // namespace
+
+// This struct is used when getting the pre-populated pages in case the user
+// hasn't filled up his most visited pages.
+struct MostVisitedHandler::MostVisitedPage {
+  std::wstring title;
+  GURL url;
+  GURL thumbnail_url;
+  GURL favicon_url;
+};
 
 MostVisitedHandler::MostVisitedHandler()
     : url_blacklist_(NULL),
@@ -539,6 +539,18 @@ bool MostVisitedHandler::IsFirstRun() {
   NewTabUI::NewTabHTMLSource::set_first_run(false);
   return first_run;
 }
+
+// static
+void MostVisitedHandler::SetMostVisistedPage(
+    DictionaryValue* dict,
+    const MostVisitedHandler::MostVisitedPage& page) {
+  NewTabUI::SetURLTitleAndDirection(dict, WideToUTF16(page.title), page.url);
+  if (!page.favicon_url.is_empty())
+    dict->SetString(L"faviconUrl", page.favicon_url.spec());
+  if (!page.thumbnail_url.is_empty())
+    dict->SetString(L"thumbnailUrl", page.thumbnail_url.spec());
+}
+
 
 // static
 const std::vector<MostVisitedHandler::MostVisitedPage>&

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/message_loop.h"
+#include "base/ref_counted_memory.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
@@ -33,6 +34,9 @@ DOMUIThemeSource::DOMUIThemeSource(Profile* profile)
       profile_(profile->GetOriginalProfile()) {
   css_bytes_ = profile_->GetNTPResourceCache()->GetNewTabCSS(
       profile->IsOffTheRecord());
+}
+
+DOMUIThemeSource::~DOMUIThemeSource() {
 }
 
 void DOMUIThemeSource::StartDataRequest(const std::string& path,

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,14 @@ DOMUIThumbnailSource::DOMUIThumbnailSource(Profile* profile)
       profile_(profile) {
 }
 
+DOMUIThumbnailSource::~DOMUIThumbnailSource() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+}
+
 void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     scoped_refptr<history::TopSites> top_sites = profile_->GetTopSites();
     RefCountedBytes* data = NULL;
@@ -51,6 +56,12 @@ void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
   }
 }
 
+std::string DOMUIThumbnailSource::GetMimeType(const std::string&) const {
+  // We need to explicitly return a mime type, otherwise if the user tries to
+  // drag the image they get no extension.
+  return "image/png";
+}
+
 void DOMUIThumbnailSource::SendDefaultThumbnail(int request_id) {
   // Use placeholder thumbnail.
   if (!default_thumbnail_.get()) {
@@ -64,6 +75,7 @@ void DOMUIThumbnailSource::SendDefaultThumbnail(int request_id) {
 void DOMUIThumbnailSource::OnThumbnailDataAvailable(
     HistoryService::Handle request_handle,
     scoped_refptr<RefCountedBytes> data) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   HistoryService* hs =
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   int request_id = cancelable_consumer_.GetClientData(hs, request_handle);

@@ -60,16 +60,14 @@ class NewTabUI : public DOMUI,
                                   bool is_off_the_record,
                                   int request_id);
 
-    virtual std::string GetMimeType(const std::string&) const {
-      return "text/html";
-    }
+    virtual std::string GetMimeType(const std::string&) const;
 
     // Setters and getters for first_run.
     static void set_first_run(bool first_run) { first_run_ = first_run; }
     static bool first_run() { return first_run_; }
 
    private:
-    ~NewTabHTMLSource() {}
+    virtual ~NewTabHTMLSource() {}
 
     // Whether this is the first run.
     static bool first_run_;

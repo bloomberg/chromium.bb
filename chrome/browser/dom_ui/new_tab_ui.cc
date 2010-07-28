@@ -656,3 +656,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
 
   SendResponse(request_id, html_bytes);
 }
+
+std::string NewTabUI::NewTabHTMLSource::GetMimeType(const std::string&) const {
+  return "text/html";
+}

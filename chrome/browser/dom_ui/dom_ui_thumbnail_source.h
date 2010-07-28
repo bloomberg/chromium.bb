@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
 #pragma once
 
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -31,18 +29,14 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource {
                                 bool is_off_the_record,
                                 int request_id);
 
-  virtual std::string GetMimeType(const std::string&) const {
-    // We need to explicitly return a mime type, otherwise if the user tries to
-    // drag the image they get no extension.
-    return "image/png";
-  }
+  virtual std::string GetMimeType(const std::string&) const;
 
   // Called when thumbnail data is available from the history backend.
   void OnThumbnailDataAvailable(HistoryService::Handle request_handle,
                                 scoped_refptr<RefCountedBytes> data);
 
  private:
-  ~DOMUIThumbnailSource() {}
+  virtual ~DOMUIThumbnailSource();
 
   // Send the default thumbnail when we are missing a real one.
   void SendDefaultThumbnail(int request_id);
@@ -53,10 +47,6 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource {
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.
   scoped_refptr<RefCountedMemory> default_thumbnail_;
-
-  // Store requests when the ThumbnailStore isn't ready. When a notification is
-  // received that it is ready, then serve these requests.
-  std::vector<std::pair<std::string, int> > pending_requests_;
 
   // To register to be notified when the ThumbnailStore is ready.
   NotificationRegistrar registrar_;

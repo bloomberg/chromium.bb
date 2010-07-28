@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,14 @@
 #include <string>
 
 #include "base/task.h"
-#include "base/ref_counted_memory.h"
+#include "base/ref_counted.h"
+#include "chrome/browser/chrome_thread.h"
 
 class DictionaryValue;
 class FilePath;
 class GURL;
 class MessageLoop;
+class RefCountedMemory;
 class URLRequest;
 class URLRequestChromeJob;
 class URLRequestJob;
@@ -34,17 +36,21 @@ class ChromeURLDataManager {
   typedef int RequestID;
 
   // A DataSource is an object that can answer requests for data
-  // asynchronously.  It should live on a thread that outlives the IO thread
-  // (in particular, the UI thread).
-  // An implementation of DataSource should handle calls to StartDataRequest()
-  // by starting its (implementation-specific) asynchronous request for
-  // the data, then call SendResponse() to notify
-  class DataSource : public base::RefCountedThreadSafe<DataSource> {
+  // asynchronously. DataSources are collectively owned with refcounting smart
+  // pointers and should never be deleted on the IO thread, since their calls
+  // are handled almost always on the UI thread and there's a possibility of a
+  // data race.
+  //
+  // An implementation of DataSource should handle calls to
+  // StartDataRequest() by starting its (implementation-specific) asynchronous
+  // request for the data, then call SendResponse() to notify
+  class DataSource
+      : public base::RefCountedThreadSafe<DataSource,
+                                          ChromeThread::DeleteOnUIThread> {
    public:
     // See source_name_ and message_loop_ below for docs on these parameters.
     DataSource(const std::string& source_name,
-               MessageLoop* message_loop)
-        : source_name_(source_name), message_loop_(message_loop) {}
+               MessageLoop* message_loop);
 
     // Sent by the DataManager to request data at |path|.  The source should
     // call SendResponse() when the data is available or if the request could
@@ -80,8 +86,10 @@ class ChromeURLDataManager {
 
    protected:
     friend class base::RefCountedThreadSafe<DataSource>;
+    friend struct ChromeThread::DeleteOnThread<ChromeThread::UI>;
+    friend class DeleteTask<DataSource>;
 
-    virtual ~DataSource() {}
+    virtual ~DataSource();
 
    private:
     // The name of this source.
