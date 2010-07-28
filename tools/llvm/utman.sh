@@ -2345,8 +2345,7 @@ test-scons-common () {
 
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
     # first build everything
-    # TODO(robertm): enable this as soon as the c++ builds are working again
-    # scons-pnacl-build ${platform}
+    scons-pnacl-build ${platform}
     # then also run some of the tests built before
     scons-pnacl-build ${platform} smoke_tests "$@"
   else
@@ -2363,13 +2362,17 @@ test-arm() {
 #@ test-x86-32           - run x86-32 tests via pnacl toolchain
 #@ test-x86-32 <test>    - run a single x86-32 test via pnacl toolchain
 test-x86-32() {
-  test-scons-common x86-32 "$@"
+  # TODO(robertm): we cannot run the full suite because c++ derived bitcode
+  #                has arm bias with respect to exception handling
+  test-scons-common x86-32 smoke_tests "$@"
 }
 
 #@ test-x86-64           - run all x86-64 tests via pnacl toolchain
 #@ test-x86-64 <test>    - run a single x86-64 test via pnacl toolchain
 test-x86-64() {
-  test-scons-common x86-64 "$@"
+  # TODO(robertm): we cannot run the full suite because c++ derived bitcode
+  #                causes the x86-64 backend to crash
+  test-scons-common x86-64 smoke_tests "$@"
 }
 
 
