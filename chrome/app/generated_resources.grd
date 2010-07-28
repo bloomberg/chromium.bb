@@ -5483,7 +5483,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Labs
         </message>
         <message name="IDS_OPTIONS_ACCOUNTS_TAB_LABEL" desc="The title of the Accounts tab">
-          Accounts
+          Users
         </message>
       </if>
       <message name="IDS_OPTIONS_GENERAL_TAB_LABEL" desc="The title of the Basics tab">
@@ -7891,19 +7891,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allow browse without signing in.
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_GUEST_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow guest to sign in.">
-        Allow guest signin.
+        Allow anyone to sign in.
       </message>
-      <message name="IDS_OPTIONS_ACCOUNTS_USER_LIST_TITLE" desc="In the Accounts settings tab, the title text on top of user list table.">
-        Users
+      <message name="IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to show user names and pictures on signin screen.">
+        Show user names and pictures on sign-in screen.
       </message>
-      <message name="IDS_OPTIONS_ACCOUNTS_ADD_USER" desc="In the Accounts settings tab, the text on the button to add a user.">
-        Add user
+      <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT" desc="In the Accounts settings tab, the instruction text on an empty username edit.">
+        Enter names or addresses.
       </message>
-      <message name="IDS_OPTIONS_ACCOUNTS_REMOVE_USER" desc="In the Accounts settings tab, the text on the button to remove a user.">
-        Remove user
+      <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT" desc="In the Accounts settings tab, the text format to create user name and owner tag.">
+        <ph name="NAME">$1<ex>John Doe</ex></ph> - Owner
       </message>
-      <message name="IDS_OPTIONS_ACCOUNTS_EMAIL_LABEL" desc="In the Accounts add user overlay, the label text for email input edit.">
-        Email:
+      <message name="IDS_OPTIONS_ACCOUNTS_ADD_USERS" desc="In the Accounts settings tab, the label text above the user name edit box.">
+        Add users
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings internet options, the label for the network id.">
         Network id:

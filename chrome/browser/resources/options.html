@@ -28,7 +28,7 @@
   <script src="options/chromeos_system_options.js"></script>
   <script src="options/chromeos_accounts_options.js"></script>
   <script src="options/chromeos_accounts_user_list.js"></script>
-  <script src="options/chromeos_accounts_add_user_overlay.js"></script>
+  <script src="options/chromeos_accounts_user_name_edit.js"></script>
 </if>
 <script src="options/add_startup_page_overlay.js"></script>
 <script src="options/advanced_options.js"></script>
@@ -53,7 +53,6 @@ function load() {
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.register(InternetOptions.getInstance());
-    OptionsPage.register(AccountsOptions.getInstance());
     // TODO(mazda): uncomment this once the language options is ready
     // OptionsPage.register(new OptionsPage(
     //     'languageChewing',
@@ -83,6 +82,7 @@ function load() {
   OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
 
   if (cr.isChromeOS) {
+    OptionsPage.register(AccountsOptions.getInstance());
     var labsOptions = new OptionsPage('labs',
                                       localStrings.getString('labsPage'),
                                       'labsPage');
@@ -134,9 +134,6 @@ window.onpopstate = function(e) {
     <include src="options/add_startup_page_overlay.html">
     <include src="options/clear_browser_data_overlay.html">
     <include src="options/font_settings_overlay.html">
-    <if expr="pp_ifdef('chromeos')">
-       <include src="options/chromeos_accounts_add_user_overlay.html">
-    </if>
   </div>
 </div>
 <div id="main-content">

@@ -28,6 +28,7 @@
 #include "chrome/browser/dom_ui/personal_options_handler.h"
 #include "chrome/browser/dom_ui/search_engine_manager_handler.h"
 #include "chrome/browser/dom_ui/sync_options_handler.h"
+#include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -161,6 +162,15 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(html_source)));
+
+  // Set up chrome://theme/ source.
+  DOMUIThemeSource* theme = new DOMUIThemeSource(GetProfile());
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(theme)));
 }
 
 // static

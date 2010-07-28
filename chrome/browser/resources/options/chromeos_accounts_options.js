@@ -33,32 +33,35 @@ AccountsOptions.prototype = {
     OptionsPage.prototype.initializePage.call(this);
 
     // Set up accounts page.
-    $('addUserButton').onclick = function(e) {
-      OptionsPage.showOverlay('addUserOverlay');
-    };
-    $('removeUserButton').onclick = function(e) {
-      $('userList').removeSelectedUser();
-    };
-
     options.accounts.UserList.decorate($('userList'));
 
-    this.addEventListener('visibleChange',
-                          cr.bind(this.handleVisibleChange_, this));
+    var userNameEdit = $('userNameEdit');
+    options.accounts.UserNameEdit.decorate(userNameEdit);
+    userNameEdit.addEventListener('add', this.handleAddUser_);
 
-    // Setup add user overlay page.
-    OptionsPage.registerOverlay(AddUserOverlay.getInstance());
+    this.addEventListener('visibleChange', this.handleVisibleChange_);
   },
 
   userListInitalized_: false,
 
   /**
    * Handler for OptionsPage's visible property change event.
+   * @private
    * @param {Event} e Property change event.
    */
-  handleVisibleChange_ : function(e) {
+  handleVisibleChange_: function(e) {
     if (!this.userListInitalized_ && this.visible) {
       this.userListInitalized_ = true;
       userList.redraw();
     }
+  },
+
+  /**
+   * Handler for "add" event fired from userNameEdit.
+   * @private
+   * @param {Event} e Add event fired from userNameEdit.
+   */
+  handleAddUser_: function(e) {
+    $('userList').addUser(e.user);
   }
 };
