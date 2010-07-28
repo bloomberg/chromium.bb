@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile_manager.h"

@@ -11,6 +11,7 @@
 #include "base/process_util.h"
 #include "base/sha2.h"
 #include "base/stats_counters.h"
+#include "base/string_util.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/common/sqlite_compiled_statement.h"
 #include "chrome/common/sqlite_utils.h"

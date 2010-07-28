@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/scoped_vector.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"

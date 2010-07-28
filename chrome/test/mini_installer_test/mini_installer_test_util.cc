@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/logging_installer.h"

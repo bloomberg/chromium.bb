@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/histogram.h"

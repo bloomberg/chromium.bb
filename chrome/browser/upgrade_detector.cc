@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/task.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_thread.h"

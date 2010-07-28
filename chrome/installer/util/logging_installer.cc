@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace installer {

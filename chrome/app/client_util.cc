@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <shlwapi.h>
 
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "base/file_util.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"

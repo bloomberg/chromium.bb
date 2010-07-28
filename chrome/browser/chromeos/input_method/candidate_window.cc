@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/common/chrome_paths.h"

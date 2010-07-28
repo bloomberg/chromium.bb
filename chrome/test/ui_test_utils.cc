@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"

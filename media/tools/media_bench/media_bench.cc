@@ -25,6 +25,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/md5.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/djb2.h"

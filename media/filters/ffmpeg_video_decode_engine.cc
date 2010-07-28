@@ -5,6 +5,7 @@
 #include "media/filters/ffmpeg_video_decode_engine.h"
 
 #include "base/command_line.h"
+#include "base/string_util.h"
 #include "base/task.h"
 #include "media/base/buffers.h"
 #include "media/base/callback.h"

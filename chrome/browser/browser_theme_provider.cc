@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser_theme_pack.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/user_metrics.h"

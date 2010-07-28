@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/table_model_observer.h"
+#include "base/command_line.h"
 #include "base/stats_table.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_list.h"

@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/gtk/first_run_dialog.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/shell_integration.h"

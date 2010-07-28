@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/histogram.h"
 #include "base/i18n/number_formatting.h"

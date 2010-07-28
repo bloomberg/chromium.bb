@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "chrome/browser/configuration_policy_pref_store.h"
 #include "chrome/browser/mock_configuration_policy_provider.h"
 #include "chrome/common/pref_names.h"

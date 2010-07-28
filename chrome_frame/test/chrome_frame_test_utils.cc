@@ -9,6 +9,7 @@
 #include <iepmapi.h>
 #include <sddl.h>
 
+#include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -19,6 +20,7 @@
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_comptr_win.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -956,6 +958,11 @@ void DelaySendExtendedKeysEnter(TimedMsgLoop* loop, int delay, char c,
 
   loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
     simulate_input::SendCharA, VK_RETURN, simulate_input::NONE), next_delay);
+}
+
+CloseIeAtEndOfScope::~CloseIeAtEndOfScope() {
+  int closed = CloseAllIEWindows();
+  DLOG_IF(ERROR, closed != 0) << "Closed " << closed << " windows forcefully";
 }
 
 base::ProcessHandle StartCrashService() {

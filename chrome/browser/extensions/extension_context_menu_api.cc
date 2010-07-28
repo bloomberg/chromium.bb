@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "base/string_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension_error_utils.h"

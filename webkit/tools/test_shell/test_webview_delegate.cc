@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/native_widget_types.h"

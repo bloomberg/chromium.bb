@@ -18,6 +18,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/stats_table.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "gfx/codec/png_codec.h"

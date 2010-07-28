@@ -18,6 +18,7 @@
 #include "base/resource_util.h"
 #include "base/stack_container.h"
 #include "base/string_piece.h"
+#include "base/string_util.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"

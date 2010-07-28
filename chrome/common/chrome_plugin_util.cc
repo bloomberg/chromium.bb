@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"

@@ -12,6 +12,7 @@
 #include "chrome/installer/util/install_util.h"
 #endif
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/importer/importer.h"

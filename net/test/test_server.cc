@@ -21,6 +21,7 @@
 #include "base/leak_annotations.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/host_resolver.h"

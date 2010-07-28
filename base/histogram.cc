@@ -84,6 +84,10 @@ Histogram::~Histogram() {
   DCHECK(ValidateBucketRanges());
 }
 
+bool Histogram::PrintEmptyBucket(size_t index) const {
+  return true;
+}
+
 void Histogram::Add(int value) {
   if (value >= kSampleType_MAX)
     value = kSampleType_MAX - 1;
@@ -95,8 +99,16 @@ void Histogram::Add(int value) {
   Accumulate(value, 1, index);
 }
 
+void Histogram::AddBoolean(bool value) {
+  DCHECK(false);
+}
+
 void Histogram::AddSampleSet(const SampleSet& sample) {
   sample_.Add(sample);
+}
+
+void Histogram::SetRangeDescriptions(const DescriptionPair descriptions[]) {
+  DCHECK(false);
 }
 
 // The following methods provide a graphical histogram display.
@@ -288,6 +300,20 @@ void Histogram::Accumulate(Sample value, Count count, size_t index) {
 void Histogram::SnapshotSample(SampleSet* sample) const {
   // Note locking not done in this version!!!
   *sample = sample_;
+}
+
+bool Histogram::HasConstructorArguments(Sample minimum, Sample maximum,
+                                        size_t bucket_count) {
+  return ((minimum == declared_min_) && (maximum == declared_max_) &&
+          (bucket_count == bucket_count_));
+}
+
+bool Histogram::HasConstructorTimeDeltaArguments(base::TimeDelta minimum,
+                                                 base::TimeDelta maximum,
+                                                 size_t bucket_count) {
+  return ((minimum.InMilliseconds() == declared_min_) &&
+          (maximum.InMilliseconds() == declared_max_) &&
+          (bucket_count == bucket_count_));
 }
 
 //------------------------------------------------------------------------------
@@ -613,6 +639,10 @@ LinearHistogram::LinearHistogram(const std::string& name,
   DCHECK(ValidateBucketRanges());
 }
 
+Histogram::ClassType LinearHistogram::histogram_type() const {
+  return LINEAR_HISTOGRAM;
+}
+
 void LinearHistogram::SetRangeDescriptions(
     const DescriptionPair descriptions[]) {
   for (int i =0; descriptions[i].description; ++i) {
@@ -671,6 +701,17 @@ scoped_refptr<Histogram> BooleanHistogram::FactoryGet(const std::string& name,
   return histogram;
 }
 
+Histogram::ClassType BooleanHistogram::histogram_type() const {
+  return BOOLEAN_HISTOGRAM;
+}
+
+void BooleanHistogram::AddBoolean(bool value) {
+  Add(value ? 1 : 0);
+}
+
+BooleanHistogram::BooleanHistogram(const std::string& name)
+    : LinearHistogram(name, 1, 2, 3) {
+}
 
 //------------------------------------------------------------------------------
 // CustomHistogram:
@@ -704,6 +745,10 @@ scoped_refptr<Histogram> CustomHistogram::FactoryGet(
                                             ranges.size()));
   histogram->SetFlags(flags);
   return histogram;
+}
+
+Histogram::ClassType CustomHistogram::histogram_type() const {
+  return CUSTOM_HISTOGRAM;
 }
 
 CustomHistogram::CustomHistogram(const std::string& name,

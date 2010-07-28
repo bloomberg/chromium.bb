@@ -319,7 +319,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   void Add(int value);
 
   // This method is an interface, used only by BooleanHistogram.
-  virtual void AddBoolean(bool value) { DCHECK(false); }
+  virtual void AddBoolean(bool value);
 
   // Accept a TimeDelta to increment.
   void AddTime(base::TimeDelta time) {
@@ -329,8 +329,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   void AddSampleSet(const SampleSet& sample);
 
   // This method is an interface, used only by LinearHistogram.
-  virtual void SetRangeDescriptions(const DescriptionPair descriptions[])
-      { DCHECK(false); }
+  virtual void SetRangeDescriptions(const DescriptionPair descriptions[]);
 
   // The following methods provide graphical histogram displays.
   void WriteHTMLGraph(std::string* output) const;
@@ -373,17 +372,11 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   virtual void SnapshotSample(SampleSet* sample) const;
 
   virtual bool HasConstructorArguments(Sample minimum, Sample maximum,
-      size_t bucket_count) {
-    return ((minimum == declared_min_) && (maximum == declared_max_) &&
-            (bucket_count == bucket_count_));
-  }
+                                       size_t bucket_count);
 
   virtual bool HasConstructorTimeDeltaArguments(base::TimeDelta minimum,
-      base::TimeDelta maximum, size_t bucket_count) {
-    return ((minimum.InMilliseconds() == declared_min_) &&
-            (maximum.InMilliseconds() == declared_max_) &&
-            (bucket_count == bucket_count_));
-  }
+                                                base::TimeDelta maximum,
+                                                size_t bucket_count);
 
  protected:
   friend class base::RefCountedThreadSafe<Histogram>;
@@ -395,7 +388,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   virtual ~Histogram();
 
   // Method to override to skip the display of the i'th bucket if it's empty.
-  virtual bool PrintEmptyBucket(size_t index) const { return true; }
+  virtual bool PrintEmptyBucket(size_t index) const;
 
   //----------------------------------------------------------------------------
   // Methods to override to create histogram with different bucket widths.
@@ -488,7 +481,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
 // buckets.
 class LinearHistogram : public Histogram {
  public:
-  virtual ClassType histogram_type() const { return LINEAR_HISTOGRAM; }
+  virtual ClassType histogram_type() const;
 
   // Store a list of number/text values for use in rendering the histogram.
   // The last element in the array has a null in its "description" slot.
@@ -539,14 +532,12 @@ class BooleanHistogram : public LinearHistogram {
   static scoped_refptr<Histogram> FactoryGet(const std::string& name,
       Flags flags);
 
-  virtual ClassType histogram_type() const { return BOOLEAN_HISTOGRAM; }
+  virtual ClassType histogram_type() const;
 
-  virtual void AddBoolean(bool value) { Add(value ? 1 : 0); }
+  virtual void AddBoolean(bool value);
 
  private:
-  explicit BooleanHistogram(const std::string& name)
-      : LinearHistogram(name, 1, 2, 3) {
-  }
+  explicit BooleanHistogram(const std::string& name);
 
   DISALLOW_COPY_AND_ASSIGN(BooleanHistogram);
 };
@@ -556,7 +547,7 @@ class BooleanHistogram : public LinearHistogram {
 // CustomHistogram is a histogram for a set of custom integers.
 class CustomHistogram : public Histogram {
  public:
-  virtual ClassType histogram_type() const { return CUSTOM_HISTOGRAM; }
+  virtual ClassType histogram_type() const;
 
   static scoped_refptr<Histogram> FactoryGet(const std::string& name,
       const std::vector<int>& custom_ranges, Flags flags);

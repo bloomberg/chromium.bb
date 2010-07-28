@@ -21,6 +21,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
+#include "base/file_path.h"
 #include "base/global_descriptors_posix.h"
 #include "base/hash_tables.h"
 #include "base/linux_util.h"

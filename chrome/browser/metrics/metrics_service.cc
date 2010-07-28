@@ -164,6 +164,7 @@
 #endif
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/md5.h"
 #include "base/thread.h"

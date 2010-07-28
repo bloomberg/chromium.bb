@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media.h"

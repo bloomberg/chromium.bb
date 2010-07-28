@@ -24,6 +24,7 @@
 #include "base/process_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_tokenizer.h"
+#include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"

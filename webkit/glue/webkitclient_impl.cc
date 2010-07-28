@@ -18,6 +18,7 @@
 #include "base/platform_file.h"
 #include "base/singleton.h"
 #include "base/stats_counters.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/trace_event.h"

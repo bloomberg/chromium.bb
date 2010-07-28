@@ -374,11 +374,7 @@ void DelaySendExtendedKeysEnter(TimedMsgLoop* loop, int delay, char c,
 class CloseIeAtEndOfScope {
  public:
   CloseIeAtEndOfScope() {}
-  ~CloseIeAtEndOfScope() {
-    int closed = CloseAllIEWindows();
-    DLOG_IF(ERROR, closed != 0)
-        << StringPrintf("Closed %i windows forcefully", closed);
-  }
+  ~CloseIeAtEndOfScope();
 };
 
 // Starts the Chrome crash service which enables us to gather crash dumps

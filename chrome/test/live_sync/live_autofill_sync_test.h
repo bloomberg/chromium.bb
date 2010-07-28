@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 
+#include "base/command_line.h"
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"

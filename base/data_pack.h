@@ -13,13 +13,13 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/ref_counted_memory.h"
 #include "base/scoped_ptr.h"
 
 namespace file_util {
   class MemoryMappedFile;
 }
 class FilePath;
+class RefCountedStaticMemory;
 
 namespace base {
 

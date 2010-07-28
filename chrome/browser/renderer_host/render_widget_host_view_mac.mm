@@ -8,6 +8,7 @@
 
 #include "app/surface/io_surface_support_mac.h"
 #import "base/chrome_application_mac.h"
+#include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
