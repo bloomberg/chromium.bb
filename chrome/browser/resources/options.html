@@ -60,6 +60,14 @@ function load() {
     //     'languageHangul',
     //     localStrings.getString('languageHangulPage'),
     //     'languageHangulPage'));
+    // OptionsPage.register(new OptionsPage(
+    //     'languageMozc',
+    //     localStrings.getString('languageMozcPage'),
+    //     'languageMozcPage'));
+    // OptionsPage.register(new OptionsPage(
+    //     'languagePinyin',
+    //     localStrings.getString('languagePinyinPage'),
+    //     'languagePinyinPage'));
   }
 
   OptionsPage.register(BrowserOptions.getInstance());
@@ -146,6 +154,7 @@ window.onpopstate = function(e) {
              dialog is ready.
              - options/chromeos_language_chewing_options.html
              - options/chromeos_language_hangul_options.html
+             - options/chromeos_language_mozc_options.html
              - options/chromeos_language_pinyin_options.html
         -->
      </if>
