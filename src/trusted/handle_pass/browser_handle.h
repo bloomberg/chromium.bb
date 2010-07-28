@@ -11,7 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_HANDLE_PASS_BROWSER_HANDLE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_HANDLE_PASS_BROWSER_HANDLE_H_
 
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+#if NACL_WINDOWS
 
 #include <windows.h>
 #include "native_client/src/include/nacl_base.h"
