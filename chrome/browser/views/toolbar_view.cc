@@ -67,8 +67,8 @@ ToolbarView::ToolbarView(Browser* browser)
     : model_(browser->toolbar_model()),
       back_(NULL),
       forward_(NULL),
-      home_(NULL),
       reload_(NULL),
+      home_(NULL),
       location_bar_(NULL),
       browser_actions_(NULL),
       app_menu_(NULL),
@@ -131,14 +131,6 @@ void ToolbarView::Init(Profile* profile) {
   forward_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_FORWARD));
   forward_->SetID(VIEW_ID_FORWARD_BUTTON);
 
-  home_ = new views::ImageButton(this);
-  home_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
-                                     views::Event::EF_MIDDLE_BUTTON_DOWN);
-  home_->set_tag(IDC_HOME);
-  home_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_HOME));
-  home_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_HOME));
-  home_->SetID(VIEW_ID_HOME_BUTTON);
-
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
   location_bar_ = new LocationBarView(profile, browser_->command_updater(),
       model_, this, (display_mode_ == DISPLAYMODE_LOCATION) ?
@@ -151,6 +143,14 @@ void ToolbarView::Init(Profile* profile) {
   reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
   reload_->SetID(VIEW_ID_RELOAD_BUTTON);
+
+  home_ = new views::ImageButton(this);
+  home_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
+                                     views::Event::EF_MIDDLE_BUTTON_DOWN);
+  home_->set_tag(IDC_HOME);
+  home_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_HOME));
+  home_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_HOME));
+  home_->SetID(VIEW_ID_HOME_BUTTON);
 
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
@@ -170,8 +170,8 @@ void ToolbarView::Init(Profile* profile) {
   // Always add children in order from left to right, for accessibility.
   AddChildView(back_);
   AddChildView(forward_);
-  AddChildView(home_);
   AddChildView(reload_);
+  AddChildView(home_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
   AddChildView(app_menu_);
@@ -388,9 +388,9 @@ gfx::Size ToolbarView::GetPreferredSize() {
   if (IsDisplayModeNormal()) {
     int min_width = kControlIndent + back_->GetPreferredSize().width() +
         forward_->GetPreferredSize().width() + kControlHorizOffset +
+        reload_->GetPreferredSize().width() + kControlHorizOffset +
         (show_home_button_.GetValue() ?
             (home_->GetPreferredSize().width() + kControlHorizOffset) : 0) +
-        reload_->GetPreferredSize().width() + kControlHorizOffset +
         browser_actions_->GetPreferredSize().width() +
         kMenuButtonOffset +
         app_menu_->GetPreferredSize().width() + kPaddingRight;
@@ -445,22 +445,21 @@ void ToolbarView::Layout() {
   forward_->SetBounds(back_->x() + back_->width(), child_y,
                       forward_->GetPreferredSize().width(), child_height);
 
+  reload_->SetBounds(forward_->x() + forward_->width() + kControlHorizOffset,
+      child_y, reload_->GetPreferredSize().width(), child_height);
+
   if (show_home_button_.GetValue()) {
     home_->SetVisible(true);
-    home_->SetBounds(forward_->x() + forward_->width() + kControlHorizOffset,
+    home_->SetBounds(reload_->x() + reload_->width() + kControlHorizOffset,
                      child_y, home_->GetPreferredSize().width(), child_height);
   } else {
     home_->SetVisible(false);
-    home_->SetBounds(forward_->x() + forward_->width(), child_y, 0,
-                     child_height);
+    home_->SetBounds(reload_->x() + reload_->width(), child_y, 0, child_height);
   }
-
-  reload_->SetBounds(home_->x() + home_->width() + kControlHorizOffset, child_y,
-                     reload_->GetPreferredSize().width(), child_height);
 
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
   int app_menu_width = app_menu_->GetPreferredSize().width();
-  int location_x = reload_->x() + reload_->width() + kControlHorizOffset;
+  int location_x = home_->x() + home_->width() + kControlHorizOffset;
   int available_width = width() - kPaddingRight - app_menu_width -
       browser_actions_width - kMenuButtonOffset - location_x;
 
@@ -557,13 +556,6 @@ void ToolbarView::LoadImages() {
   forward_->SetBackground(color, background,
       tp->GetBitmapNamed(IDR_FORWARD_MASK));
 
-  home_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_HOME));
-  home_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_HOME_H));
-  home_->SetImage(views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_HOME_P));
-  home_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_BUTTON_MASK));
-
   reload_->SetImage(views::CustomButton::BS_NORMAL,
       tp->GetBitmapNamed(IDR_RELOAD));
   reload_->SetImage(views::CustomButton::BS_HOT,
@@ -577,6 +569,13 @@ void ToolbarView::LoadImages() {
   reload_->SetToggledImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_STOP_P));
   reload_->SetBackground(color, background,
+      tp->GetBitmapNamed(IDR_BUTTON_MASK));
+
+  home_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_HOME));
+  home_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_HOME_H));
+  home_->SetImage(views::CustomButton::BS_PUSHED,
+      tp->GetBitmapNamed(IDR_HOME_P));
+  home_->SetBackground(color, background,
       tp->GetBitmapNamed(IDR_BUTTON_MASK));
 
   app_menu_->SetIcon(GetAppMenuIcon());
