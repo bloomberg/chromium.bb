@@ -28,4 +28,4 @@ class ChromeNetworkDelegate : public net::HttpNetworkDelegate {
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };
 
-#endif // CHROME_BROWSER_NET_CHROME_NETWORK_DELEGATE_H_
+#endif  // CHROME_BROWSER_NET_CHROME_NETWORK_DELEGATE_H_

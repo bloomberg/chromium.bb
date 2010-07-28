@@ -146,7 +146,7 @@ struct SyncerEvent {
 };
 
 struct SyncerShutdownEvent {
-  SyncerShutdownEvent(Syncer *syncer_ptr) : syncer(syncer_ptr) {}
+  explicit SyncerShutdownEvent(Syncer *syncer_ptr) : syncer(syncer_ptr) {}
   Syncer* syncer;
   static bool IsChannelShutdownEvent(Syncer* syncer) {
     return true;

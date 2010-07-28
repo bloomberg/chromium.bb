@@ -21,4 +21,4 @@ class ScopedPrefUpdate {
   std::wstring path_;
 };
 
-#endif
+#endif  // CHROME_BROWSER_SCOPED_PREF_UPDATE_H_

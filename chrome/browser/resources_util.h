@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_THEME_RESOURCES_UTIL_H_
-#define CHROME_BROWSER_THEME_RESOURCES_UTIL_H_
+#ifndef CHROME_BROWSER_RESOURCES_UTIL_H_
+#define CHROME_BROWSER_RESOURCES_UTIL_H_
 #pragma once
 
 #include <string>
@@ -20,4 +20,4 @@ class ResourcesUtil {
   DISALLOW_COPY_AND_ASSIGN(ResourcesUtil);
 };
 
-#endif  // CHROME_BROWSER_THEME_RESOURCES_UTIL_H_
+#endif  // CHROME_BROWSER_RESOURCES_UTIL_H_

@@ -47,9 +47,8 @@ class TemplateURLModel;
 // action "[keyword] %s".  If the user has typed a (possibly partial) keyword
 // but no search terms, the suggested result is shown greyed out, with
 // "<enter term(s)>" as the substituted input, and does nothing when selected.
-class KeywordProvider :
-    public AutocompleteProvider,
-    public NotificationObserver {
+class KeywordProvider : public AutocompleteProvider,
+                        public NotificationObserver {
  public:
   KeywordProvider(ACProviderListener* listener, Profile* profile);
   // For testing.

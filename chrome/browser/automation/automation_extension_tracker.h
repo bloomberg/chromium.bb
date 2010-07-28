@@ -14,7 +14,7 @@ class Extension;
 class AutomationExtensionTracker
     : public AutomationResourceTracker<Extension*> {
  public:
-  AutomationExtensionTracker(IPC::Message::Sender* automation);
+  explicit AutomationExtensionTracker(IPC::Message::Sender* automation);
 
   virtual ~AutomationExtensionTracker();
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_
-#define CHROME_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_
+#ifndef CHROME_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_H_
+#define CHROME_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_H_
 #pragma once
 
 #include "base/file_descriptor_posix.h"
@@ -53,4 +53,4 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   DISALLOW_COPY_AND_ASSIGN(AudioSyncReader);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_
+#endif  // CHROME_BROWSER_RENDERER_HOST_AUDIO_SYNC_READER_H_
