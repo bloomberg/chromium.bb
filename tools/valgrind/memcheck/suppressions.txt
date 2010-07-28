@@ -3617,3 +3617,17 @@
    fun:_ZN8syncable21DirectoryBackingStore11LoadEntriesEPSt3setIPNS_11EntryKernelENS_9LessFieldINS_15MetahandleFieldELS5_0EEESaIS3_EE
    fun:_ZN8syncable44DirectoryBackingStoreTest_DeleteEntries_Test8TestBodyEv
 }
+{
+   big_50484
+   Memcheck:Leak
+   ...
+   fun:_ZN15SyncSetupWizard*EP18ProfileSyncService
+   fun:_ZN18ProfileSyncService*
+   fun:_ZN22ProfileSync*
+   ...
+   fun:*GetProfileSyncServiceEv
+   fun:_ZN7Profile16IsSyncAccessibleEv
+   fun:_ZN7Browser31UpdateCommandsForFullscreenModeEb
+   fun:_ZN7Browser16InitCommandStateEv
+   fun:_ZN7Browser*ENS_4TypeEP7Profile
+}
