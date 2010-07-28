@@ -1021,12 +1021,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(
         cmd_dict, windex=window_index)['password_added']
 
-  def RemoveSavedPassword(self, password_dict):
+  def RemoveSavedPassword(self, password_dict, window_index=0):
     """Removes the password matching the provided password dictionary.
 
     Args:
       password_dict: A dictionary that represents a password.
                      For an example, see the dictionary in AddSavedPassword.
+      window_index: The window index, default is 0.
     """
     cmd_dict = {  # Prepare command for the json interface
       'command': 'RemoveSavedPassword',
