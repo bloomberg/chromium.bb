@@ -532,6 +532,14 @@ void TopSites::StartQueryForThumbnail(size_t index) {
   cancelable_consumer_.SetClientData(hs, handle, index);
 }
 
+void TopSites::GenerateCanonicalURLs() {
+  canonical_urls_.clear();
+  for (size_t i = 0; i < top_sites_.size(); i++) {
+    const MostVisitedURL& mv = top_sites_[i];
+    StoreRedirectChain(mv.redirects, i);
+  }
+}
+
 void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
   // Take ownership of the most visited data.
@@ -540,11 +548,10 @@ void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
   waiting_for_results_ = false;
 
   // Save the redirect information for quickly mapping to the canonical URLs.
-  canonical_urls_.clear();
+  GenerateCanonicalURLs();
+
   for (size_t i = 0; i < top_sites_.size(); i++) {
     const MostVisitedURL& mv = top_sites_[i];
-    StoreRedirectChain(mv.redirects, i);
-
     std::map<GURL, Images>::iterator it = temp_thumbnails_map_.begin();
     GURL canonical_url = GetCanonicalURL(mv.url);
     for (; it != temp_thumbnails_map_.end(); it++) {
@@ -802,17 +809,24 @@ void TopSites::Observe(NotificationType type,
       ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
                              NewRunnableMethod(this, &TopSites::ResetDatabase));
     } else {
+      std::set<size_t> indices_to_delete;  // Indices into top_sites_.
       std::set<GURL>::iterator it;
       for (it = deleted_details->urls.begin();
            it != deleted_details->urls.end(); ++it) {
-        for (size_t i = 0; i < top_sites_.size(); i++) {
-          if (top_sites_[i].url == *it) {
-            top_sites_.erase(top_sites_.begin() + i);
-            break;
-          }
-        }
+        std::map<GURL,size_t>::const_iterator found = canonical_urls_.find(*it);
+        if (found != canonical_urls_.end())
+          indices_to_delete.insert(found->second);
+      }
+
+      for (std::set<size_t>::reverse_iterator i = indices_to_delete.rbegin();
+           i != indices_to_delete.rend(); i++) {
+        size_t index = *i;
+        RemovePinnedURL(top_sites_[index].url);
+        top_sites_.erase(top_sites_.begin() + index);
       }
     }
+    // Canonical URLs are not valid any more.
+    GenerateCanonicalURLs();
     StartQueryForMostVisited();
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
     if (top_sites_.size() < kTopSitesNumber) {

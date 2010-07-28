@@ -142,6 +142,7 @@ class TopSites : public NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, RealDatabase);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, MockDatabase);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, DeleteNotifications);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, PinnedURLsDeleted);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetUpdateDelay);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, Migration);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, QueueingRequestsForTopSites);
@@ -182,6 +183,9 @@ class TopSites : public NotificationObserver,
   // Called when history service returns a thumbnail.
   void OnThumbnailAvailable(CancelableRequestProvider::Handle handle,
                             scoped_refptr<RefCountedBytes> thumbnail);
+
+  // Sets canonical_urls_ from top_sites_.
+  void GenerateCanonicalURLs();
 
   // Saves the set of the top URLs visited by this user. The 0th item is the
   // most popular.

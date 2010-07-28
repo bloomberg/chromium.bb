@@ -790,6 +790,80 @@ TEST_F(TopSitesTest, DeleteNotifications) {
   EXPECT_EQ(themes_url(), urls()[1].url);
 }
 
+TEST_F(TopSitesTest, PinnedURLsDeleted) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  GURL google1_url("http://google.com");
+  GURL google2_url("http://google.com/redirect");
+  GURL google3_url("http://www.google.com");
+  string16 google_title(ASCIIToUTF16("Google"));
+  GURL news_url("http://news.google.com");
+  string16 news_title(ASCIIToUTF16("Google News"));
+
+  MockHistoryServiceImpl hs;
+
+  top_sites().Init(file_name());
+
+  hs.AppendMockPage(google1_url, google_title);
+  hs.AppendMockPage(news_url, news_title);
+  top_sites().SetMockHistoryService(&hs);
+
+  top_sites().StartQueryForMostVisited();
+  MessageLoop::current()->RunAllPending();
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(1u, number_of_callbacks());
+  // 2 extra prepopulated URLs.
+  ASSERT_EQ(4u, urls().size());
+
+  top_sites().AddPinnedURL(news_url, 3);
+  EXPECT_TRUE(top_sites().IsURLPinned(news_url));
+
+  hs.RemoveMostVisitedURL();
+  history::URLsDeletedDetails history_details;
+  history_details.all_history = false;
+  history_details.urls.insert(news_url);
+  Details<URLsDeletedDetails> details(&history_details);
+  top_sites().Observe(NotificationType::HISTORY_URLS_DELETED,
+                      Source<Profile> (&profile()),
+                      details);
+  MessageLoop::current()->RunAllPending();
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(2u, number_of_callbacks());
+  ASSERT_EQ(3u, urls().size());
+  EXPECT_FALSE(top_sites().IsURLPinned(news_url));
+
+  hs.RemoveMostVisitedURL();
+  history_details.all_history = true;
+  details = Details<HistoryDetails>(&history_details);
+  top_sites().Observe(NotificationType::HISTORY_URLS_DELETED,
+                      Source<Profile> (&profile()),
+                      details);
+  MessageLoop::current()->RunAllPending();
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(2u, urls().size());
+  MessageLoop::current()->RunAllPending();
+
+  top_sites().StartQueryForMostVisited();
+  MessageLoop::current()->RunAllPending();
+  top_sites().GetMostVisitedURLs(
+      consumer(),
+      NewCallback(static_cast<TopSitesTest*>(this),
+                  &TopSitesTest::OnTopSitesAvailable));
+  ASSERT_EQ(2u, urls().size());
+  EXPECT_EQ(welcome_url(), urls()[0].url);
+  EXPECT_EQ(themes_url(), urls()[1].url);
+}
+
 TEST_F(TopSitesTest, GetUpdateDelay) {
   top_sites().last_num_urls_changed_ = 0;
   EXPECT_EQ(30, top_sites().GetUpdateDelay().InSeconds());
