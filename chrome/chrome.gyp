@@ -739,9 +739,10 @@
                 '<(PRODUCT_DIR)/<(output)',
               ],
               'action': [
-                'expand',
+                'python',
+                '../build/extract_from_cab.py',
                 '..\\third_party\\directxsdk\\files\\Redist\\<(input)',
-                '-F:<(output)',
+                '<(output)',
                 '<(PRODUCT_DIR)',
               ],
             },
