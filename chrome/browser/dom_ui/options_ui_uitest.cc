@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_switches.h"
@@ -10,6 +11,9 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
 namespace {
 
@@ -24,7 +28,10 @@ class OptionsUITest : public UITest {
   void AssertIsOptionsPage(TabProxy* tab) {
     std::wstring title;
     ASSERT_TRUE(tab->GetTabTitle(&title));
-    ASSERT_EQ(L"Chromium Options", title);
+    std::wstring expected_title =
+        l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
+            l10n_util::GetString(IDS_PRODUCT_NAME));
+    ASSERT_EQ(expected_title, title);
   }
 };
 
