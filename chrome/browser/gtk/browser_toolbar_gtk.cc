@@ -176,9 +176,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
                      0);
 
   home_.reset(new CustomDrawButton(GtkThemeProvider::GetFrom(profile_),
-                                   IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0,
-                                   IDR_BUTTON_MASK, GTK_STOCK_HOME,
-                                   GTK_ICON_SIZE_SMALL_TOOLBAR));
+      IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0, GTK_STOCK_HOME,
+      GTK_ICON_SIZE_SMALL_TOOLBAR));
   gtk_widget_set_tooltip_text(home_->widget(),
       l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME).c_str());
   g_signal_connect(home_->widget(), "clicked",

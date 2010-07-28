@@ -31,10 +31,8 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
       visible_mode_(MODE_RELOAD),
       theme_provider_(browser ?
                       GtkThemeProvider::GetFrom(browser->profile()) : NULL),
-      reload_(theme_provider_, IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
-              IDR_BUTTON_MASK),
-      stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0,
-            IDR_BUTTON_MASK),
+      reload_(theme_provider_, IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0),
+      stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0),
       widget_(gtk_chrome_button_new()) {
   gtk_widget_set_size_request(widget_.get(), reload_.Width(), reload_.Height());
 

@@ -36,8 +36,7 @@ class CustomDrawButtonBase : public NotificationObserver {
                        int normal_id,
                        int pressed_id,
                        int hover_id,
-                       int disabled_id,
-                       int background_id);
+                       int disabled_id);
 
   ~CustomDrawButtonBase();
 
@@ -82,7 +81,6 @@ class CustomDrawButtonBase : public NotificationObserver {
   int pressed_id_;
   int hover_id_;
   int disabled_id_;
-  int button_background_id_;
   GtkThemeProvider* theme_provider_;
 
   // Whether the button is flipped horizontally. Not used for RTL (we get
@@ -143,7 +141,6 @@ class CustomDrawButton : public NotificationObserver {
                    int pressed_id,
                    int hover_id,
                    int disabled_id,
-                   int background_id,
                    const char* stock_id,
                    GtkIconSize stock_size);
 

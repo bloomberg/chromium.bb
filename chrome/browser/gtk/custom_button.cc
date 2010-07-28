@@ -22,15 +22,13 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
                                            int normal_id,
                                            int pressed_id,
                                            int hover_id,
-                                           int disabled_id,
-                                           int background_id)
+                                           int disabled_id)
     : background_image_(NULL),
       paint_override_(-1),
       normal_id_(normal_id),
       pressed_id_(pressed_id),
       hover_id_(hover_id),
       disabled_id_(disabled_id),
-      button_background_id_(background_id),
       theme_provider_(theme_provider),
       flipped_(false) {
   for (int i = 0; i < (GTK_STATE_INSENSITIVE + 1); ++i)
@@ -154,17 +152,6 @@ void CustomDrawButtonBase::Observe(NotificationType type,
   surfaces_[GTK_STATE_SELECTED]->UsePixbuf(NULL);
   surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(disabled_id_ ?
       theme_provider_->GetRTLEnabledPixbufNamed(disabled_id_) : NULL);
-
-  // Use the tinted background in some themes.
-  if (button_background_id_) {
-    SkColor color = theme_provider_->GetColor(
-        BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
-    SkBitmap* background = theme_provider_->GetBitmapNamed(
-        IDR_THEME_BUTTON_BACKGROUND);
-    SkBitmap* mask = theme_provider_->GetBitmapNamed(button_background_id_);
-
-    SetBackground(color, background, mask);
-  }
 }
 
 CairoCachedSurface* CustomDrawButtonBase::PixbufForState(int state) {
@@ -235,7 +222,7 @@ CustomDrawButton::CustomDrawButton(int normal_id,
                                    int pressed_id,
                                    int hover_id,
                                    int disabled_id)
-    : button_base_(NULL, normal_id, pressed_id, hover_id, disabled_id, 0),
+    : button_base_(NULL, normal_id, pressed_id, hover_id, disabled_id),
       theme_provider_(NULL),
       gtk_stock_name_(NULL),
       icon_size_(GTK_ICON_SIZE_INVALID) {
@@ -250,11 +237,10 @@ CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
                                    int pressed_id,
                                    int hover_id,
                                    int disabled_id,
-                                   int background_id,
                                    const char* stock_id,
                                    GtkIconSize stock_size)
     : button_base_(theme_provider, normal_id, pressed_id, hover_id,
-                   disabled_id, background_id),
+                   disabled_id),
       theme_provider_(theme_provider),
       gtk_stock_name_(stock_id),
       icon_size_(stock_size) {
@@ -317,9 +303,8 @@ gboolean CustomDrawButton::OnCustomExpose(GtkWidget* widget,
 // static
 CustomDrawButton* CustomDrawButton::CloseButton(
     GtkThemeProvider* theme_provider) {
-  CustomDrawButton* button = new CustomDrawButton(
-      theme_provider, IDR_CLOSE_BAR, IDR_CLOSE_BAR_P,
-      IDR_CLOSE_BAR_H, 0, 0, GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
+  CustomDrawButton* button = new CustomDrawButton(theme_provider, IDR_CLOSE_BAR,
+      IDR_CLOSE_BAR_P, IDR_CLOSE_BAR_H, 0, GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
   return button;
 }
 
