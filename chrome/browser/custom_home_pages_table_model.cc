@@ -19,13 +19,12 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 
-// static
-SkBitmap CustomHomePagesTableModel::default_favicon_;
-
 CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
-    : profile_(profile),
+    : default_favicon_(NULL),
+      profile_(profile),
       observer_(NULL) {
-  InitClass();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  default_favicon_ = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
 }
 
 void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {
@@ -109,7 +108,7 @@ std::wstring CustomHomePagesTableModel::GetText(int row, int column_id) {
 
 SkBitmap CustomHomePagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  return entries_[row].icon.isNull() ? default_favicon_ : entries_[row].icon;
+  return entries_[row].icon.isNull() ? *default_favicon_ : entries_[row].icon;
 }
 
 std::wstring CustomHomePagesTableModel::GetTooltip(int row) {
@@ -120,15 +119,6 @@ std::wstring CustomHomePagesTableModel::GetTooltip(int row) {
 
 void CustomHomePagesTableModel::SetObserver(TableModelObserver* observer) {
   observer_ = observer;
-}
-
-void CustomHomePagesTableModel::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_favicon_ = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
-    initialized = true;
-  }
 }
 
 void CustomHomePagesTableModel::LoadTitleAndFavIcon(Entry* entry) {

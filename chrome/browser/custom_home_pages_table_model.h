@@ -71,8 +71,6 @@ class CustomHomePagesTableModel : public TableModel {
     FaviconService::Handle fav_icon_handle;
   };
 
-  static void InitClass();
-
   // Loads the title and favicon for the specified entry.
   void LoadTitleAndFavIcon(Entry* entry);
 
@@ -109,7 +107,7 @@ class CustomHomePagesTableModel : public TableModel {
   std::vector<Entry> entries_;
 
   // Default icon to show when one can't be found for the URL.
-  static SkBitmap default_favicon_;
+  SkBitmap* default_favicon_;
 
   // Profile used to load titles and icons.
   Profile* profile_;
