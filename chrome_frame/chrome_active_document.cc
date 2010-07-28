@@ -65,8 +65,7 @@ ChromeActiveDocument::ChromeActiveDocument()
     : first_navigation_(true),
       is_automation_client_reused_(false),
       popup_allowed_(false),
-      accelerator_table_(NULL),
-      is_new_navigation_(false) {
+      accelerator_table_(NULL) {
   TRACE_EVENT_BEGIN("chromeframe.createactivedocument", this, "");
 
   url_fetcher_.set_frame_busting(false);
@@ -125,6 +124,14 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
     LoadAccelerators(this_module,
                      MAKEINTRESOURCE(IDR_CHROME_FRAME_IE_FULL_TAB));
   DCHECK(accelerator_table_ != NULL);
+
+  HRESULT hr = security_manager_.CreateInstance(CLSID_InternetSecurityManager);
+  if (FAILED(hr)) {
+    NOTREACHED() << __FUNCTION__
+                 << " Failed to create InternetSecurityManager. Error: 0x%x"
+                 << hr;
+  }
+
   return S_OK;
 }
 
@@ -260,15 +267,13 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
                                   mgr ? mgr->url(): std::wstring());
   }
 
-  // The is_new_navigation variable indicates if this a navigation initiated
-  // by typing in a URL for e.g. in the IE address bar, or from Chrome by
-  // a window.open call from javascript, in which case the current IE tab
-  // will attach to an existing ExternalTabContainer instance.
-  bool is_new_navigation = true;
-  bool is_chrome_protocol = false;
-
-  if (!ParseUrl(url, &is_new_navigation, &is_chrome_protocol, &url)) {
+  ChromeFrameUrl cf_url;
+  if (!cf_url.Parse(url)) {
     DLOG(WARNING) << __FUNCTION__ << " Failed to parse url:" << url;
+    return E_INVALIDARG;
+  }
+
+  if (!CanNavigateInFullTabMode(cf_url, security_manager_)) {
     return E_INVALIDARG;
   }
 
@@ -282,16 +287,17 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
       referrer = prot_data->referrer();
   }
 
-  if (!LaunchUrl(url, referrer, is_new_navigation)) {
+  if (!LaunchUrl(cf_url, referrer)) {
     NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
     return E_INVALIDARG;
   }
 
-  if (!is_chrome_protocol)
-    url_fetcher_.SetInfoForUrl(url, moniker_name, bind_context);
+  if (!cf_url.is_chrome_protocol() && !cf_url.attach_to_external_tab())
+    url_fetcher_.SetInfoForUrl(cf_url.url(), moniker_name, bind_context);
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
-                                          is_chrome_protocol, 0, 1, 2);
+                                          cf_url.is_chrome_protocol(),
+                                          0, 1, 2);
   return S_OK;
 }
 
@@ -387,16 +393,18 @@ STDMETHODIMP ChromeActiveDocument::LoadHistory(IStream* stream,
   stream->Read(url_bstr.AllocateBytes(url_size), url_size, &bytes_read);
   std::wstring url(url_bstr);
 
-  bool is_new_navigation = true;
-  bool is_chrome_protocol = false;
-
-  if (!ParseUrl(url, &is_new_navigation, &is_chrome_protocol, &url)) {
+  ChromeFrameUrl cf_url;
+  if (!cf_url.Parse(url)) {
     DLOG(WARNING) << __FUNCTION__ << " Failed to parse url:" << url;
     return E_INVALIDARG;
   }
 
+  if (!CanNavigateInFullTabMode(cf_url, security_manager_)) {
+    return E_INVALIDARG;
+  }
+
   const std::string& referrer = EmptyString();
-  if (!LaunchUrl(url, referrer, is_new_navigation)) {
+  if (!LaunchUrl(cf_url, referrer)) {
     NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
     return E_INVALIDARG;
   }
@@ -729,8 +737,7 @@ void ChromeActiveDocument::UpdateNavigationState(
   bool is_internal_navigation = ((new_navigation_info.navigation_index > 0) &&
       (new_navigation_info.navigation_index !=
        navigation_info_.navigation_index)) ||
-       StartsWith(static_cast<BSTR>(url_), kChromeAttachExternalTabPrefix,
-                  false);
+       MatchPatternWide(static_cast<BSTR>(url_), kChromeFrameAttachTabPattern);
 
   if (new_navigation_info.url.is_valid())
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
@@ -950,124 +957,30 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
   return hr;
 }
 
-DWORD ChromeActiveDocument::MapUrlToZone(const wchar_t* url) {
-  DWORD zone = URLZONE_INVALID;
-  if (security_manager_.get() == NULL) {
-    HRESULT hr = CoCreateInstance(
-        CLSID_InternetSecurityManager,
-        NULL,
-        CLSCTX_ALL,
-        IID_IInternetSecurityManager,
-        reinterpret_cast<void**>(security_manager_.Receive()));
-
-    if (FAILED(hr)) {
-      NOTREACHED() << __FUNCTION__
-                   << " Failed to create InternetSecurityManager. Error: 0x%x"
-                   << hr;
-      return zone;
-    }
-  }
-
-  security_manager_->MapUrlToZone(url, &zone, 0);
-  return zone;
-}
-
-bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
-                                    bool* is_new_navigation,
-                                    bool* is_chrome_protocol,
-                                    std::wstring* parsed_url) {
-  if (!is_new_navigation || !is_chrome_protocol|| !parsed_url) {
-    NOTREACHED() << __FUNCTION__ << " Invalid arguments";
-    return false;
-  }
-
-  std::wstring initial_url = url;
-
-  *is_chrome_protocol = StartsWith(initial_url, kChromeProtocolPrefix,
-                                   false);
-
-  *is_new_navigation = true;
-
-  if (*is_chrome_protocol) {
-    initial_url.erase(0, lstrlen(kChromeProtocolPrefix));
-    *is_new_navigation =
-        !StartsWith(initial_url, kChromeAttachExternalTabPrefix, false);
-  }
-
-  if (!IsValidUrlScheme(initial_url, is_privileged_)) {
-    DLOG(WARNING) << __FUNCTION__ << " Disallowing navigation to url: "
-                  << url;
-    return false;
-  }
-
-  if (URLZONE_UNTRUSTED == MapUrlToZone(initial_url.c_str())) {
-    DLOG(WARNING) << __FUNCTION__
-                  << " Disallowing navigation to restricted url: "
-                  << initial_url;
-    return false;
-  }
-
-  if (*is_chrome_protocol) {
-    // Allow chrome protocol (gcf:) if -
-    // - explicitly enabled using registry
-    // - for gcf:attach_external_tab
-    // - for gcf:about and gcf:view-source
-    GURL crack_url(initial_url);
-    bool allow_gcf_protocol = !*is_new_navigation ||
-        GetConfigBool(false, kEnableGCFProtocol) ||
-        crack_url.SchemeIs(chrome::kAboutScheme) ||
-        crack_url.SchemeIs(chrome::kViewSourceScheme);
-    if (!allow_gcf_protocol)
-      return false;
-  }
-
-  *parsed_url = initial_url;
-  return true;
-}
-
-bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
-                                     const std::string& referrer,
-                                     bool is_new_navigation) {
+bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
+                                     const std::string& referrer) {
   DCHECK(automation_client_.get() != NULL);
+  DCHECK(!cf_url.url().empty());
 
-  url_.Allocate(url.c_str());
+  url_.Allocate(cf_url.url().c_str());
 
   std::string utf8_url;
+  WideToUTF8(url_, url_.Length(), &utf8_url);
 
-  if (!is_new_navigation) {
-    int disposition = 0;
-    uint64 external_tab_cookie = 0;
+  DLOG(INFO) << "Url is " << url_;
 
-    if (!ParseAttachExternalTabUrl(url, &external_tab_cookie, &dimensions_,
-                                   &disposition)) {
-      NOTREACHED() << "Failed to parse attach tab url:" << url;
-      return false;
-    }
-
-    if (external_tab_cookie == 0) {
-      NOTREACHED() << "invalid url for attach tab: " << url;
-      return false;
-    }
-
-    is_new_navigation_ = false;
-    automation_client_->AttachExternalTab(external_tab_cookie);
-  } else {
-    is_new_navigation_ = true;
-    // Initiate navigation before launching chrome so that the url will be
-    // cached and sent with launch settings.
-    if (url_.Length()) {
-      WideToUTF8(url_, url_.Length(), &utf8_url);
-      if (!automation_client_->InitiateNavigation(utf8_url,
-                                                  referrer,
-                                                  is_privileged_)) {
-        DLOG(ERROR) << "Invalid URL: " << url;
-        Error(L"Invalid URL");
-        url_.Reset();
-        return false;
-      }
-
-      DLOG(INFO) << "Url is " << url_;
-    }
+  // Initiate navigation before launching chrome so that the url will be
+  // cached and sent with launch settings.
+  if (cf_url.attach_to_external_tab()) {
+    dimensions_ = cf_url.dimensions();
+    automation_client_->AttachExternalTab(cf_url.cookie());
+  } else if (!automation_client_->InitiateNavigation(utf8_url,
+                                                     referrer,
+                                                     is_privileged_)) {
+    DLOG(ERROR) << "Invalid URL: " << url_;
+    Error(L"Invalid URL");
+    url_.Reset();
+    return false;
   }
 
   if (is_automation_client_reused_)

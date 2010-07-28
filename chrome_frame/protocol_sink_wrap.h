@@ -36,8 +36,10 @@ typedef HRESULT (STDMETHODCALLTYPE* InternetProtocol_StartEx_Fn)(
     IInternetProtocolEx* this_object, IUri* uri,
     IInternetProtocolSink* prot_sink, IInternetBindInfo* bind_info,
     DWORD flags, HANDLE_PTR reserved);
-typedef HRESULT (STDMETHODCALLTYPE* InternetProtocolRoot_Continue_Fn)(
-    IInternetProtocolRoot* me, PROTOCOLDATA* data);
+typedef HRESULT (STDMETHODCALLTYPE* InternetProtocol_LockRequest_Fn)(
+    IInternetProtocol* this_object, DWORD options);
+typedef HRESULT (STDMETHODCALLTYPE* InternetProtocol_UnlockRequest_Fn)(
+    IInternetProtocol* this_object);
 
 
 enum RendererType {
@@ -128,6 +130,10 @@ class ProtData : public base::RefCounted<ProtData> {
   // Valid only if renderer_type_ is CHROME.
   const std::string& referrer() const {
     return referrer_;
+  }
+
+  bool is_attach_external_tab_request() const {
+    return read_fun_ == NULL;
   }
 
  private:

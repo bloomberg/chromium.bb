@@ -30,6 +30,7 @@ extern const wchar_t kChromeFrameUnpinnedMode[];
 extern const wchar_t kEnableGCFProtocol[];
 extern const wchar_t kEnableBuggyBhoIntercept[];
 extern const wchar_t kChromeMimeType[];
+extern const wchar_t kChromeFrameAttachTabPattern[];
 
 typedef enum ProtocolPatchMethod {
   PATCH_METHOD_IBROWSER = 0,
@@ -472,13 +473,58 @@ std::string Bscf2Str(DWORD flags);
 // Reads data from a stream into a string.
 HRESULT ReadStream(IStream* stream, size_t size, std::string* data);
 
-// Parses the attach external tab url, which comes in from Chrome in the course
-// of a window.open operation. The format of this URL is as below:-
-// gcf:attach_external_tab&n1&n2&x&y&width&height
-// n1 -> cookie, n2 -> disposition, x, y, width, height -> dimensions of the
-// window.
-// Returns true on success.
-bool ParseAttachExternalTabUrl(const std::wstring& url, uint64* cookie,
-                               gfx::Rect* dimensions, int* disposition);
+// Parses urls targetted at ChromeFrame. This class maintains state like
+// whether a url is prefixed with the gcf: prefix, whether it is being
+// attached to an existing external tab, etc.
+class ChromeFrameUrl {
+ public:
+  ChromeFrameUrl();
+
+  // Parses the url passed in. Returns true on success.
+  bool Parse(const std::wstring& url);
+
+  bool is_chrome_protocol() const {
+    return is_chrome_protocol_;
+  }
+
+  bool attach_to_external_tab() const {
+    return attach_to_external_tab_;
+  }
+
+  uint64 cookie() const {
+    return cookie_;
+  }
+
+  int disposition() const {
+    return disposition_;
+  }
+
+  const gfx::Rect& dimensions() const {
+    return dimensions_;
+  }
+
+  const std::wstring& url() const {
+    return url_;
+  }
+
+ private:
+  // If we are attaching to an existing external tab, this function parses the
+  // suffix portion of the URL which contains the attach_external_tab prefix.
+  bool ParseAttachExternalTabUrl();
+
+  bool attach_to_external_tab_;
+  bool is_chrome_protocol_;
+  std::wstring url_;
+  uint64 cookie_;
+  gfx::Rect dimensions_;
+  int disposition_;
+};
+
+// Returns true if we can navigate to this URL.
+// This function checks if the url scheme is valid for navigation within
+// chrome and whether it is a restricted URL as per IE settings. In either of
+// these cases it returns false.
+bool CanNavigateInFullTabMode(const ChromeFrameUrl& cf_url,
+                              IInternetSecurityManager* security_manager);
 
 #endif  // CHROME_FRAME_UTILS_H_

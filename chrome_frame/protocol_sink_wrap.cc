@@ -13,6 +13,7 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 
+#include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/function_stub.h"
 #include "chrome_frame/utils.h"
@@ -30,6 +31,8 @@ const wchar_t kUrlMonDllName[] = L"urlmon.dll";
 static const int kInternetProtocolStartIndex = 3;
 static const int kInternetProtocolReadIndex = 9;
 static const int kInternetProtocolStartExIndex = 13;
+static const int kInternetProtocolLockRequestIndex = 11;
+static const int kInternetProtocolUnlockRequestIndex = 12;
 
 
 // IInternetProtocol/Ex patches.
@@ -55,10 +58,18 @@ STDMETHODIMP Hook_Read(InternetProtocol_Read_Fn orig_read,
                        ULONG size,
                        ULONG* size_read);
 
+STDMETHODIMP Hook_LockRequest(InternetProtocol_LockRequest_Fn orig_req,
+                              IInternetProtocol* protocol, DWORD dwOptions);
+
+STDMETHODIMP Hook_UnlockRequest(InternetProtocol_UnlockRequest_Fn orig_req,
+                                IInternetProtocol* protocol);
+
 /////////////////////////////////////////////////////////////////////////////
 BEGIN_VTABLE_PATCHES(CTransaction)
   VTABLE_PATCH_ENTRY(kInternetProtocolStartIndex, Hook_Start)
   VTABLE_PATCH_ENTRY(kInternetProtocolReadIndex, Hook_Read)
+  VTABLE_PATCH_ENTRY(kInternetProtocolLockRequestIndex, Hook_LockRequest)
+  VTABLE_PATCH_ENTRY(kInternetProtocolUnlockRequestIndex, Hook_UnlockRequest)
 END_VTABLE_PATCHES()
 
 BEGIN_VTABLE_PATCHES(CTransaction2)
@@ -502,7 +513,6 @@ void ProtData::SaveReferrer(IInternetProtocolSink* delegate) {
   DCHECK_EQ(CHROME, renderer_type_);
   ScopedComPtr<IWinInetHttpInfo> info;
   info.QueryFrom(delegate);
-  DCHECK(info);
   if (info) {
     char buffer[4096] = {0};
     DWORD len = sizeof(buffer);
@@ -512,6 +522,8 @@ void ProtData::SaveReferrer(IInternetProtocolSink* delegate) {
         buffer, &len, &flags, 0);
     if (hr == S_OK && len > 0)
       referrer_.assign(buffer);
+  } else {
+    DLOG(WARNING) << "Failed to QI for IWinInetHttpInfo";
   }
 }
 
@@ -523,6 +535,38 @@ scoped_refptr<ProtData> ProtData::DataFromProtocol(
   if (datamap_.end() != it)
     instance = it->second;
   return instance;
+}
+
+// This function looks for the url pattern indicating that this request needs
+// to be forced into chrome frame.
+// This hack is required because window.open requests from Chrome don't have
+// the URL up front. The URL comes in much later when the renderer initiates a
+// top level navigation for the url passed into window.open.
+// The new page must be rendered in ChromeFrame to preserve the opener
+// relationship with its parent even if the new page does not have the chrome
+// meta tag.
+bool HandleAttachToExistingExternalTab(LPCWSTR url,
+                                       IInternetProtocol* protocol,
+                                       IInternetProtocolSink* prot_sink,
+                                       IBindCtx* bind_ctx) {
+  if (MatchPatternWide(url, kChromeFrameAttachTabPattern)) {
+    scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
+    if (!prot_data) {
+      // Pass NULL as the read function which indicates that always return EOF
+      // without calling the underlying protocol.
+      prot_data = new ProtData(protocol, NULL, url);
+      PutProtData(bind_ctx, prot_data);
+    }
+
+    prot_sink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
+
+    int data_flags = BSCF_FIRSTDATANOTIFICATION | BSCF_LASTDATANOTIFICATION;
+    prot_sink->ReportData(data_flags, 0, 0);
+
+    prot_sink->ReportResult(S_OK, 0, NULL);
+    return true;
+  }
+  return false;
 }
 
 // IInternetProtocol/Ex hooks.
@@ -540,6 +584,10 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
     // moniker and binding, by directly grabbing protocol from InternetSession
     DLOG(INFO) << "DirectBind for " << url;
     return orig_start(protocol, url, prot_sink, bind_info, flags, reserved);
+  }
+
+  if (HandleAttachToExistingExternalTab(url, protocol, prot_sink, bind_ctx)) {
+    return S_OK;
   }
 
   if (IsCFRequest(bind_ctx)) {
@@ -589,6 +637,10 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
     return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
   }
 
+  if (HandleAttachToExistingExternalTab(url, protocol, prot_sink, bind_ctx)) {
+    return S_OK;
+  }
+
   if (IsCFRequest(bind_ctx)) {
     return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
   }
@@ -620,13 +672,49 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
 STDMETHODIMP Hook_Read(InternetProtocol_Read_Fn orig_read,
     IInternetProtocol* protocol, void* buffer, ULONG size, ULONG* size_read) {
   DCHECK(orig_read);
+  HRESULT hr = E_FAIL;
+
   scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
   if (!prot_data) {
-    return orig_read(protocol, buffer, size, size_read);
+    hr = orig_read(protocol, buffer, size, size_read);
+    return hr;
   }
 
-  HRESULT hr = prot_data->Read(buffer, size, size_read);
+  if (prot_data->is_attach_external_tab_request()) {
+    // return EOF always.
+    if (size_read)
+      *size_read = 0;
+    return S_FALSE;
+  }
+
+  hr = prot_data->Read(buffer, size, size_read);
   return hr;
+}
+
+STDMETHODIMP Hook_LockRequest(InternetProtocol_LockRequest_Fn orig_req,
+                              IInternetProtocol* protocol, DWORD options) {
+  DCHECK(orig_req);
+
+  scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
+  if (prot_data && prot_data->is_attach_external_tab_request()) {
+    prot_data->AddRef();
+    return S_OK;
+  }
+
+  return orig_req(protocol, options);
+}
+
+STDMETHODIMP Hook_UnlockRequest(InternetProtocol_UnlockRequest_Fn orig_req,
+                                IInternetProtocol* protocol) {
+  DCHECK(orig_req);
+
+  scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
+  if (prot_data && prot_data->is_attach_external_tab_request()) {
+    prot_data->Release();
+    return S_OK;
+  }
+
+  return orig_req(protocol);
 }
 
 // Patching / Hooking code.

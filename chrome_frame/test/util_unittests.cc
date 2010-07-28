@@ -5,7 +5,9 @@
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
 #include "chrome_frame/utils.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 const wchar_t kChannelName[] = L"-dev";
 const wchar_t kSuffix[] = L"-fix";
@@ -114,27 +116,130 @@ TEST(UtilTests, GetTempInternetFiles) {
 }
 
 TEST(UtilTests, ParseAttachTabUrlTest) {
-  std::wstring url = L"attach_external_tab&10&1&0&0&100&100";
+  ChromeFrameUrl cf_url;
 
-  uint64 cookie = 0;
-  gfx::Rect dimensions;
-  int disposition = 0;
+  EXPECT_TRUE(cf_url.Parse(L"http://f/?attach_external_tab&10&1&0&0&100&100"));
 
-  EXPECT_TRUE(ParseAttachExternalTabUrl(url, &cookie, &dimensions,
-                                        &disposition));
-  EXPECT_EQ(10, cookie);
-  EXPECT_EQ(1, disposition);
-  EXPECT_EQ(0, dimensions.x());
-  EXPECT_EQ(0, dimensions.y());
-  EXPECT_EQ(100, dimensions.width());
-  EXPECT_EQ(100, dimensions.height());
+  EXPECT_TRUE(cf_url.attach_to_external_tab());
+  EXPECT_FALSE(cf_url.is_chrome_protocol());
 
-  url = L"http://www.foobar.com?&10&1&0&0&100&100";
-  EXPECT_FALSE(ParseAttachExternalTabUrl(url, &cookie, &dimensions,
-                                         &disposition));
-  url = L"attach_external_tab&10&1";
-  EXPECT_FALSE(ParseAttachExternalTabUrl(url, &cookie, &dimensions,
-                                         &disposition));
+  EXPECT_EQ(10, cf_url.cookie());
+  EXPECT_EQ(1, cf_url.disposition());
+  EXPECT_EQ(0, cf_url.dimensions().x());
+  EXPECT_EQ(0, cf_url.dimensions().y());
+  EXPECT_EQ(100, cf_url.dimensions().width());
+  EXPECT_EQ(100, cf_url.dimensions().height());
+
+  EXPECT_TRUE(cf_url.Parse(L"http://www.foobar.com?&10&1&0&0&100&100"));
+  EXPECT_FALSE(cf_url.attach_to_external_tab());
+
+  EXPECT_FALSE(cf_url.Parse(L"attach_external_tab&10&1"));
+  EXPECT_TRUE(cf_url.attach_to_external_tab());
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:http://f/?attach_tab&10&1&0&0&100&100"));
+  EXPECT_FALSE(cf_url.attach_to_external_tab());
+  EXPECT_TRUE(cf_url.is_chrome_protocol());
+}
+
+// Mock for the IInternetSecurityManager interface
+class MockIInternetSecurityManager : public IInternetSecurityManager {
+ public:
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, QueryInterface,
+      HRESULT(REFIID iid, void** object));
+
+  MOCK_METHOD0_WITH_CALLTYPE(__stdcall, AddRef, ULONG());
+  MOCK_METHOD0_WITH_CALLTYPE(__stdcall, Release, ULONG());
+
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, SetSecuritySite,
+      HRESULT(IInternetSecurityMgrSite* site));
+  MOCK_METHOD1_WITH_CALLTYPE(__stdcall, GetSecuritySite,
+      HRESULT(IInternetSecurityMgrSite** site));
+  MOCK_METHOD3_WITH_CALLTYPE(__stdcall, MapUrlToZone,
+      HRESULT(LPCWSTR url, DWORD* zone, DWORD flags));
+  MOCK_METHOD4_WITH_CALLTYPE(__stdcall, GetSecurityId,
+      HRESULT(LPCWSTR url, BYTE* security_id, DWORD* security_size,
+              DWORD_PTR reserved));
+  MOCK_METHOD8_WITH_CALLTYPE(__stdcall, ProcessUrlAction,
+      HRESULT(LPCWSTR url, DWORD action, BYTE* policy, DWORD cb_policy,
+              BYTE* context, DWORD context_size, DWORD flags,
+              DWORD reserved));
+  MOCK_METHOD7_WITH_CALLTYPE(__stdcall, QueryCustomPolicy,
+      HRESULT(LPCWSTR url, REFGUID guid, BYTE** policy, DWORD* cb_policy,
+              BYTE* context, DWORD cb_context, DWORD reserved));
+  MOCK_METHOD3_WITH_CALLTYPE(__stdcall, SetZoneMapping,
+      HRESULT(DWORD zone, LPCWSTR pattern, DWORD flags));
+  MOCK_METHOD3_WITH_CALLTYPE(__stdcall, GetZoneMappings,
+      HRESULT(DWORD zone, IEnumString** enum_string, DWORD flags));
+};
+
+TEST(UtilTests, CanNavigateFullTabModeTest) {
+  ChromeFrameUrl cf_url;
+
+  MockIInternetSecurityManager mock;
+  EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(L"http://blah"),
+                                                     testing::_, testing::_))
+    .WillRepeatedly(testing::DoAll(
+        testing::SetArgumentPointee<1>(URLZONE_INTERNET),
+        testing::Return(S_OK)));
+
+  EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(L"http://untrusted"),
+                                                     testing::_, testing::_))
+    .WillRepeatedly(testing::DoAll(
+        testing::SetArgumentPointee<1>(URLZONE_UNTRUSTED),
+        testing::Return(S_OK)));
+
+  EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(L"about:"),
+                                                     testing::_, testing::_))
+    .WillRepeatedly(testing::DoAll(
+        testing::SetArgumentPointee<1>(URLZONE_TRUSTED),
+        testing::Return(S_OK)));
+
+  EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(L"view-source:"),
+                                                     testing::_, testing::_))
+    .WillRepeatedly(testing::DoAll(
+        testing::SetArgumentPointee<1>(URLZONE_TRUSTED),
+        testing::Return(S_OK)));
+
+  EXPECT_TRUE(cf_url.Parse(
+      L"http://blah/?attach_external_tab&10&1&0&0&100&100"));
+  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  EXPECT_TRUE(cf_url.Parse(
+      L"http://untrusted/bar.html"));
+  EXPECT_FALSE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  EXPECT_TRUE(cf_url.Parse(
+      L"http://blah/?attach_external_tab&10&1&0&0&100&100"));
+  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:about:blank"));
+  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:view-source:http://www.foo.com"));
+  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:about:version"));
+  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:about:bar"));
+  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  bool enable_gcf = GetConfigBool(false, kEnableGCFProtocol);
+
+  SetConfigBool(kEnableGCFProtocol, false);
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:http://blah"));
+  EXPECT_FALSE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  SetConfigBool(kEnableGCFProtocol, true);
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:http://blah"));
+  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:http://untrusted/bar"));
+  EXPECT_FALSE(CanNavigateInFullTabMode(cf_url, &mock));
+
+  SetConfigBool(kEnableGCFProtocol, enable_gcf);
 }
 
 TEST(UtilTests, ParseVersionTest) {

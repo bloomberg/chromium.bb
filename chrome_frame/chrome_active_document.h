@@ -9,10 +9,10 @@
 #include <atlcom.h>
 #include <atlctl.h>
 #include <htiframe.h>
+#include <map>
 #include <mshtmcid.h>
 #include <perhist.h>
-
-#include <map>
+#include <string>
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_comptr_win.h"
@@ -382,20 +382,9 @@ END_EXEC_COMMAND_MAP()
   HRESULT IEExec(const GUID* cmd_group_guid, DWORD command_id,
                  DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
 
-  DWORD MapUrlToZone(const wchar_t* url);
-
-  // Parses the URL and returns information whether it is a new navigation and
-  // the actual url after stripping out the cf: prefix if any.
-  // This function also checks if the url scheme is valid for navigation within
-  // chrome and whether it is a restricted URL as per IE settings. In either of
-  // these cases it returns false.
-  bool ParseUrl(const std::wstring& url, bool* is_new_navigation,
-                bool* is_chrome_protocol, std::wstring* parsed_url);
-
   // Initiates navigation to the URL passed in.
   // Returns true on success.
-  bool LaunchUrl(const std::wstring& url, const std::string& referrer,
-                 bool is_new_navigation);
+  bool LaunchUrl(const ChromeFrameUrl& cf_url, const std::string& referrer);
 
   // Handler to set the page font size in Chrome.
   HRESULT SetPageFontSize(const GUID* cmd_group_guid,
@@ -471,8 +460,6 @@ END_EXEC_COMMAND_MAP()
 
   // Dimensions of the window. Used only when opening popups.
   gfx::Rect dimensions_;
-  // Set to true if the document was loaded by a window.open in chrome.
-  bool is_new_navigation_;
  public:
   ScopedComPtr<IOleInPlaceFrame> in_place_frame_;
   OLEINPLACEFRAMEINFO frame_info_;
