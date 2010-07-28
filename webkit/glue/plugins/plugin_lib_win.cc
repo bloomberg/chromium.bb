@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,13 @@
 
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
-namespace NPAPI
-{
+namespace NPAPI {
+
 bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
                                   WebPluginInfo* info) {
   // On windows, the way we get the mime types for the library is
@@ -21,8 +22,12 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   //     video/quicktime|audio/aiff|image/jpeg
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(filename.value()));
-  if (!version_info.get())
+  if (!version_info.get()) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "Could not get version info for plugin "
+        << filename.value();
     return false;
+  }
 
   FileVersionInfoWin* version_info_win =
       static_cast<FileVersionInfoWin*>(version_info.get());

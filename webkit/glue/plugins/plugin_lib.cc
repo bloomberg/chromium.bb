@@ -98,8 +98,9 @@ NPPluginFuncs* PluginLib::functions() {
 }
 
 NPError PluginLib::NP_Initialize() {
-  LOG(INFO) << "PluginLib::NP_Initialize(" << web_plugin_info_.path.value() <<
-               "): initialized=" << initialized_;
+  LOG_IF(ERROR, PluginList::DebugPluginLoading())
+      << "PluginLib::NP_Initialize(" << web_plugin_info_.path.value()
+      << "): initialized=" << initialized_;
   if (initialized_)
     return NPERR_NO_ERROR;
 
@@ -123,8 +124,9 @@ NPError PluginLib::NP_Initialize() {
   }
 #endif  // OS_MACOSX
 #endif
-  LOG(INFO) << "PluginLib::NP_Initialize(" << web_plugin_info_.path.value() <<
-               "): result=" << rv;
+  LOG_IF(ERROR, PluginList::DebugPluginLoading())
+      << "PluginLib::NP_Initialize(" << web_plugin_info_.path.value()
+      << "): result=" << rv;
   initialized_ = (rv == NPERR_NO_ERROR);
   return rv;
 }
@@ -165,7 +167,7 @@ bool PluginLib::Load() {
   if (!internal_) {
     library = base::LoadNativeLibrary(web_plugin_info_.path);
     if (library == 0) {
-      LOG_IF(INFO, PluginList::DebugPluginLoading())
+      LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Couldn't load plugin " << web_plugin_info_.path.value();
       return rv;
     }
@@ -215,12 +217,12 @@ bool PluginLib::Load() {
 
   if (!internal_) {
     if (rv) {
-      LOG_IF(INFO, PluginList::DebugPluginLoading())
+      LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Plugin " << web_plugin_info_.path.value()
           << " loaded successfully.";
       library_ = library;
     } else {
-      LOG_IF(INFO, PluginList::DebugPluginLoading())
+      LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Plugin " << web_plugin_info_.path.value()
           << " failed to load, unloading.";
       base::UnloadNativeLibrary(library);
@@ -277,14 +279,14 @@ void PluginLib::Unload() {
       FreePluginLibraryTask* free_library_task =
           new FreePluginLibraryTask(skip_unload_ ? NULL : library_,
                                     entry_points_.np_shutdown);
-      LOG_IF(INFO, PluginList::DebugPluginLoading())
+      LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Scheduling delayed unload for plugin "
           << web_plugin_info_.path.value();
       MessageLoop::current()->PostTask(FROM_HERE, free_library_task);
     } else {
       Shutdown();
       if (!skip_unload_) {
-        LOG_IF(INFO, PluginList::DebugPluginLoading())
+        LOG_IF(ERROR, PluginList::DebugPluginLoading())
             << "Unloading plugin " << web_plugin_info_.path.value();
         base::UnloadNativeLibrary(library_);
       }

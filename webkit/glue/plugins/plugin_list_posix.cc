@@ -183,18 +183,18 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
     // symlinks.
     FilePath orig_path = path;
     file_util::AbsolutePath(&path);
-    LOG_IF(INFO, PluginList::DebugPluginLoading())
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Resolved " << orig_path.value() << " -> " << path.value();
 
     if (visited_plugins->find(path) != visited_plugins->end()) {
-      LOG_IF(INFO, PluginList::DebugPluginLoading())
+      LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Skipping duplicate instance of " << path.value();
       continue;
     }
     visited_plugins->insert(path);
 
     if (IsBlacklistedPlugin(path)) {
-      LOG_IF(INFO, PluginList::DebugPluginLoading())
+      LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Skipping blacklisted plugin " << path.value();
       continue;
     }
@@ -209,8 +209,9 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
         // Go back to the old path.
         path = orig_path;
       } else {
-        LOG(ERROR) << "Flash misbehaves when used from a directory containing "
-                   << kNetscapeInPath << ", so skipping " << orig_path.value();
+        LOG_IF(ERROR, PluginList::DebugPluginLoading())
+            << "Flash misbehaves when used from a directory containing "
+            << kNetscapeInPath << ", so skipping " << orig_path.value();
         continue;
       }
     }
@@ -232,14 +233,13 @@ void PluginList::LoadPluginsFromDir(const FilePath& dir_path,
   }
 }
 
-
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
-  LOG_IF(INFO, PluginList::DebugPluginLoading())
+  LOG_IF(ERROR, PluginList::DebugPluginLoading())
       << "Considering " << info.path.value() << " (" << info.name << ")";
 
   if (IsUndesirablePlugin(info)) {
-    LOG_IF(INFO, PluginList::DebugPluginLoading())
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << info.path.value() << " is undesirable.";
 
     // See if we have a better version of this plugin.
@@ -248,7 +248,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
           !IsUndesirablePlugin(plugins->at(i))) {
         // Skip the current undesirable one so we can use the better one
         // we just found.
-        LOG_IF(INFO, PluginList::DebugPluginLoading())
+        LOG_IF(ERROR, PluginList::DebugPluginLoading())
             << "Skipping " << info.path.value() << ", preferring "
             << plugins->at(i).path.value();
         return false;
