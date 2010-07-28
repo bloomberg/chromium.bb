@@ -4737,17 +4737,16 @@ void RenderView::DumpLoadHistograms() const {
         "PLT.BeginToFinishDoc_LinkLoad", "CacheSize"), begin_to_finish_doc);
   }
 
-  // Histograms to determine if SPDY has an impact.
+
+  GURL url = GURL(main_frame->url());
+
+  // Histograms to determine if SPDY has an impact for https traffic.
   // TODO(mbelshe): After we've seen the difference between BeginToFinish
   //                and StartToFinish, consider removing one or the other.
   static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
       !FieldTrialList::Find("SpdyImpact")->group_name().empty());
-  // Spdy requests triggered by alternate protocol are excluded here.
-  // This is because when alternate protocol is avaiable, FieldTrial will
-  // either use npn_spdy or pure http, not npn_http via TLS. That will cause
-  // bias for npn_spdy and npn_http.
-  if (use_spdy_histogram && navigation_state->was_npn_negotiated() &&
-      !navigation_state->was_alternate_protocol_available()) {
+  if (use_spdy_histogram && url.SchemeIs("https") &&
+      navigation_state->was_npn_negotiated()) {
     UMA_HISTOGRAM_ENUMERATION(
         FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
         abandoned_page ? 1 : 0, 2);
@@ -4779,9 +4778,10 @@ void RenderView::DumpLoadHistograms() const {
     }
   }
 
-  // Histograms to compare the impact of alternate protocol: when the
-  // protocol(spdy) is used vs. when it is ignored and http is used.
-  if (navigation_state->was_alternate_protocol_available()) {
+  // Histograms to compare the impact of alternate protocol over http traffic:
+  // when spdy is used vs. when http is used.
+  if (url.SchemeIs("http") &&
+      navigation_state->was_alternate_protocol_available()) {
     if (!navigation_state->was_npn_negotiated()) {
       // This means that even there is alternate protocols for npn_http or
       // npn_spdy, they are not taken (due to the fieldtrial).
@@ -4830,7 +4830,6 @@ void RenderView::DumpLoadHistograms() const {
   }
 
   // Record page load time and abandonment rates for proxy cases.
-  GURL url = GURL(main_frame->url());
   if (navigation_state->was_fetched_via_proxy()) {
     if (url.SchemeIs("https")) {
       PLT_HISTOGRAM("PLT.StartToFinish.Proxy.https", start_to_finish);
@@ -5209,4 +5208,3 @@ bool RenderView::IsNonLocalTopLevelNavigation(
   }
   return false;
 }
-
