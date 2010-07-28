@@ -453,10 +453,11 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
   // Wait for the exception info
   while (1) {
     receive.header.msgh_local_port = self->handler_port_;
-    receive.header.msgh_size = sizeof(receive);
+    receive.header.msgh_size = static_cast<mach_msg_size_t>(sizeof(receive));
     kern_return_t result = mach_msg(&(receive.header),
                                     MACH_RCV_MSG | MACH_RCV_LARGE, 0,
-                                    sizeof(receive), self->handler_port_,
+                                    receive.header.msgh_size,
+                                    self->handler_port_,
                                     MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
 
 

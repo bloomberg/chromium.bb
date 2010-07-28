@@ -194,7 +194,7 @@ bool MinidumpGenerator::Write(const char *path) {
     if (!header.Allocate())
       return false;
 
-    int writer_count = sizeof(writers) / sizeof(writers[0]);
+    int writer_count = static_cast<int>(sizeof(writers) / sizeof(writers[0]));
 
     // If we don't have exception information, don't write out the
     // exception stream
@@ -358,7 +358,7 @@ bool MinidumpGenerator::WriteContext(breakpad_thread_state_data_t state,
 
 #define AddReg(a) context_ptr->a = REGISTER_FROM_THREADSTATE(machine_state, a)
 #define AddGPR(a) context_ptr->gpr[a] = REGISTER_FROM_THREADSTATE(machine_state, r ## a)
- 
+
   AddReg(srr0);
   AddReg(cr);
   AddReg(xer);
@@ -505,7 +505,8 @@ bool MinidumpGenerator::WriteContext(breakpad_thread_state_data_t state,
 bool MinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
                                           MDRawThread *thread) {
   breakpad_thread_state_data_t state;
-  mach_msg_type_number_t state_count = sizeof(state);
+  mach_msg_type_number_t state_count
+      = static_cast<mach_msg_type_number_t>(sizeof(state));
 
   if (thread_get_state(thread_id, BREAKPAD_MACHINE_THREAD_STATE,
                        state, &state_count) ==
@@ -580,7 +581,8 @@ MinidumpGenerator::WriteExceptionStream(MDRawDirectory *exception_stream) {
   exception_ptr->exception_record.exception_flags = exception_code_;
 
   breakpad_thread_state_data_t state;
-  mach_msg_type_number_t stateCount = sizeof(state);
+  mach_msg_type_number_t stateCount
+      = static_cast<mach_msg_type_number_t>(sizeof(state));
 
   if (thread_get_state(exception_thread_,
                        BREAKPAD_MACHINE_THREAD_STATE,
@@ -934,7 +936,7 @@ bool MinidumpGenerator::WriteMiscInfoStream(MDRawDirectory *misc_info_stream) {
   misc_info_stream->location = info.location();
 
   MDRawMiscInfo *info_ptr = info.get();
-  info_ptr->size_of_info = sizeof(MDRawMiscInfo);
+  info_ptr->size_of_info = static_cast<u_int32_t>(sizeof(MDRawMiscInfo));
   info_ptr->flags1 = MD_MISCINFO_FLAGS1_PROCESS_ID |
     MD_MISCINFO_FLAGS1_PROCESS_TIMES |
     MD_MISCINFO_FLAGS1_PROCESSOR_POWER_INFO;
@@ -952,15 +954,16 @@ bool MinidumpGenerator::WriteMiscInfoStream(MDRawDirectory *misc_info_stream) {
         static_cast<u_int32_t>(usage.ru_stime.tv_sec);
   }
   int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, info_ptr->process_id };
+  u_int mibsize = static_cast<u_int>(sizeof(mib) / sizeof(mib[0]));
   size_t size;
-  if (!sysctl(mib, sizeof(mib) / sizeof(mib[0]), NULL, &size, NULL, 0)) {
+  if (!sysctl(mib, mibsize, NULL, &size, NULL, 0)) {
     mach_vm_address_t addr;
     if (mach_vm_allocate(mach_task_self(),
                          &addr,
                          size,
                          true) == KERN_SUCCESS) {
       struct kinfo_proc *proc = (struct kinfo_proc *)addr;
-      if (!sysctl(mib, sizeof(mib) / sizeof(mib[0]), proc, &size, NULL, 0))
+      if (!sysctl(mib, mibsize, proc, &size, NULL, 0))
         info_ptr->process_create_time =
             static_cast<u_int32_t>(proc->kp_proc.p_starttime.tv_sec);
       mach_vm_deallocate(mach_task_self(), addr, size);

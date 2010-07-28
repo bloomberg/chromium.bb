@@ -111,13 +111,13 @@ class DynamicImage {
     : header_(header),
       header_size_(header_size),
       load_address_(load_address),
-      file_mod_date_(image_mod_date),
-      task_(task),
       vmaddr_(0),
-      vmsize_(0), 
-      slide_(0), 
-      version_(0), 
-      file_path_(NULL) {
+      vmsize_(0),
+      slide_(0),
+      version_(0),
+      file_path_(NULL),
+      file_mod_date_(image_mod_date),
+      task_(task) {
     InitializeFilePath(inFilePath);
     CalculateMemoryAndVersionInfo();
   }
@@ -163,7 +163,7 @@ class DynamicImage {
 
   // Debugging
   void Print();
- 
+
  private:
   DynamicImage(const DynamicImage &);
   DynamicImage &operator=(const DynamicImage &);
