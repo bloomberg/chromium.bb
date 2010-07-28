@@ -12,20 +12,21 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/id_map.h"
 #include "base/ref_counted.h"
-#include "base/task.h"
 #include "base/weak_ptr.h"
 #include "chrome/renderer/pepper_devices.h"
-#include "chrome/renderer/render_view.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
-#include "webkit/glue/webcursor.h"
+
+class FilePath;
+class RenderView;
+class WebCursor;
+class WebPluginDelegateProxy;
 
 namespace NPAPI {
 class PluginInstance;

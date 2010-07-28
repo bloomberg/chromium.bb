@@ -13,6 +13,7 @@
 #include <unistd.h>
 #endif
 
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/keyboard_codes.h"
 #if defined(OS_MACOSX)
@@ -28,11 +29,13 @@
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/pepper_widget.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/render_view.h"
 #if defined(OS_LINUX)
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
@@ -55,6 +58,7 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
+#include "webkit/glue/webcursor.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(ENABLE_GPU)

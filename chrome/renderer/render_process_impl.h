@@ -8,9 +8,11 @@
 
 #include "base/timer.h"
 #include "chrome/renderer/render_process.h"
-#include "chrome/renderer/render_thread.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
-#include "skia/ext/platform_canvas.h"
+
+namespace skia {
+class PlatformCanvas;
+}
 
 // Implementation of the RenderProcess interface for the regular browser.
 // See also MockRenderProcess which implements the active "RenderProcess" when

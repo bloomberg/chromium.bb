@@ -21,6 +21,9 @@ RendererHistogramSnapshots::RendererHistogramSnapshots()
         renderer_histogram_snapshots_factory_(this)) {
 }
 
+RendererHistogramSnapshots::~RendererHistogramSnapshots() {
+}
+
 // Send data quickly!
 void RendererHistogramSnapshots::SendHistograms(int sequence_number) {
   RenderThread::current()->message_loop()->PostTask(FROM_HERE,

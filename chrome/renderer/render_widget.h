@@ -11,15 +11,12 @@
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "base/shared_memory.h"
 #include "chrome/renderer/paint_aggregator.h"
 #include "chrome/renderer/render_process.h"
 #include "gfx/native_widget_types.h"
-#include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
@@ -31,6 +28,14 @@
 
 class RenderThreadBase;
 struct ViewHostMsg_ShowPopup_Params;
+
+namespace gfx {
+class Point;
+}
+
+namespace skia {
+class PlatformCanvas;
+}
 
 namespace WebKit {
 struct WebPopupMenuInfo;

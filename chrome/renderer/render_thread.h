@@ -6,13 +6,11 @@
 #define CHROME_RENDERER_RENDER_THREAD_H_
 #pragma once
 
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/shared_memory.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -20,7 +18,6 @@
 #include "chrome/common/css_colors.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "gfx/native_widget_types.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 
 class AppCacheDispatcher;
@@ -48,6 +45,10 @@ struct ViewMsg_DOMStorageEvent_Params;
 struct ViewMsg_ExtensionExtentsUpdated_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;
+
+namespace IPC {
+struct ChannelHandle;
+}
 
 namespace WebKit {
 class WebStorageEventDispatcher;

@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/renderer/pepper_scrollbar_widget.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
+#include "skia/ext/platform_canvas.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
@@ -25,7 +26,7 @@ NPError NPCreateWidget(NPP instance,
                        void* params,
                        NPWidgetID* id) {
   PepperWidget* widget;
-  switch(type) {
+  switch (type) {
     case NPWidgetTypeScrollbar:
       widget = new PepperScrollbarWidget(
           *static_cast<NPScrollbarCreateParams*>(params));

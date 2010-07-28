@@ -6,9 +6,7 @@
 #define CHROME_RENDERER_RENDERER_HISTOGRAM_SNAPSHOTS_H_
 #pragma once
 
-#include <list>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -21,8 +19,7 @@
 class RendererHistogramSnapshots {
  public:
   RendererHistogramSnapshots();
-
-  ~RendererHistogramSnapshots() {}
+  ~RendererHistogramSnapshots();
 
   // Send the histogram data.
   void SendHistograms(int sequence_number);

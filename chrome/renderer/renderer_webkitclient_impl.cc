@@ -21,6 +21,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/renderer/webgles2context_impl.h"
 #include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
+#include "chrome/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -29,15 +30,28 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "webkit/glue/simple_webmimeregistry_impl.h"
+#include "webkit/glue/webclipboard_impl.h"
+#include "webkit/glue/webfilesystem_impl.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_WIN)
+#include "third_party/WebKit/WebKit/chromium/public/win/WebSandboxSupport.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "chrome/common/font_descriptor_mac.h"
 #include "chrome/common/font_loader_mac.h"
+#include "third_party/WebKit/WebKit/chromium/public/mac/WebSandboxSupport.h"
 #endif
 
 #if defined(OS_LINUX)
+#include <string>
+#include <map>
+
+#include "base/lock.h"
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
+#include "third_party/WebKit/WebKit/chromium/public/linux/WebSandboxSupport.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -54,8 +68,59 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
+//------------------------------------------------------------------------------
+
+class RendererWebKitClientImpl::MimeRegistry
+    : public webkit_glue::SimpleWebMimeRegistryImpl {
+ public:
+  virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString&);
+  virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString&);
+  virtual WebKit::WebString preferredExtensionForMIMEType(
+      const WebKit::WebString&);
+};
+
+class RendererWebKitClientImpl::FileSystem
+    : public webkit_glue::WebFileSystemImpl {
+ public:
+  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
+  virtual bool getFileModificationTime(const WebKit::WebString& path,
+                                       double& result);
+  virtual base::PlatformFile openFile(const WebKit::WebString& path,
+                                      int mode);
+};
+
+class RendererWebKitClientImpl::SandboxSupport
+    : public WebKit::WebSandboxSupport {
+ public:
+#if defined(OS_WIN)
+  virtual bool ensureFontLoaded(HFONT);
+#elif defined(OS_MACOSX)
+  virtual bool loadFont(NSFont* srcFont, ATSFontContainerRef* out);
+#elif defined(OS_LINUX)
+  virtual WebKit::WebString getFontFamilyForCharacters(
+      const WebKit::WebUChar* characters, size_t numCharacters);
+  virtual void getRenderStyleForStrike(
+      const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out);
+
+ private:
+  // WebKit likes to ask us for the correct font family to use for a set of
+  // unicode code points. It needs this information frequently so we cache it
+  // here. The key in this map is an array of 16-bit UTF16 values from WebKit.
+  // The value is a string containing the correct font family.
+  Lock unicode_font_families_mutex_;
+  std::map<std::string, std::string> unicode_font_families_;
+#endif
+};
+
+//------------------------------------------------------------------------------
+
 RendererWebKitClientImpl::RendererWebKitClientImpl()
-    : sudden_termination_disables_(0) {
+    : clipboard_(new webkit_glue::WebClipboardImpl),
+      file_system_(new RendererWebKitClientImpl::FileSystem),
+      mime_registry_(new RendererWebKitClientImpl::MimeRegistry),
+      sandbox_support_(new RendererWebKitClientImpl::SandboxSupport),
+      sudden_termination_disables_(0),
+      shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
 }
 
 RendererWebKitClientImpl::~RendererWebKitClientImpl() {
@@ -64,19 +129,19 @@ RendererWebKitClientImpl::~RendererWebKitClientImpl() {
 //------------------------------------------------------------------------------
 
 WebKit::WebClipboard* RendererWebKitClientImpl::clipboard() {
-  return &clipboard_;
+  return clipboard_.get();
 }
 
 WebKit::WebMimeRegistry* RendererWebKitClientImpl::mimeRegistry() {
-  return &mime_registry_;
+  return mime_registry_.get();
 }
 
 WebKit::WebFileSystem* RendererWebKitClientImpl::fileSystem() {
-  return &file_system_;
+  return file_system_.get();
 }
 
 WebKit::WebSandboxSupport* RendererWebKitClientImpl::sandboxSupport() {
-  return &sandbox_support_;
+  return sandbox_support_.get();
 }
 
 WebKit::WebCookieJar* RendererWebKitClientImpl::cookieJar() {
@@ -385,7 +450,7 @@ WebKit::WebSharedWorkerRepository*
 RendererWebKitClientImpl::sharedWorkerRepository() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSharedWorkers)) {
-    return &shared_worker_repository_;
+    return shared_worker_repository_.get();
   } else {
     return NULL;
   }
