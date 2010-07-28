@@ -306,7 +306,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObjectStores(
   std::vector<string16> object_stores;
   object_stores.reserve(web_object_stores.length());
   for (unsigned i = 0; i < web_object_stores.length(); ++i)
-    object_stores[i] = web_object_stores.item(i);
+    object_stores.push_back(web_object_stores.item(i));
   ViewHostMsg_IDBDatabaseObjectStores::WriteReplyParams(reply_msg,
                                                         object_stores);
   parent_->Send(reply_msg);
