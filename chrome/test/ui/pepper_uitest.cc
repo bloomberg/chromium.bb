@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+
+#include "app/app_switches.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
@@ -28,6 +30,9 @@ class PepperTester : public NPAPITesterBase {
     launch_arguments_.AppendSwitch(switches::kNoSandbox);
     launch_arguments_.AppendSwitch(switches::kInternalPepper);
     launch_arguments_.AppendSwitch(switches::kEnableGPUPlugin);
+    // Use Mesa software renderer so it can run on testbots without any
+    // graphics hardware.
+    launch_arguments_.AppendSwitchWithValue(switches::kUseGL, "osmesa");
     NPAPITesterBase::SetUp();
   }
 };
@@ -36,8 +41,7 @@ class PepperTester : public NPAPITesterBase {
 // TODO(alokp): Enable the test after making sure it works on all platforms
 // and buildbots have OpenGL support.
 #if defined(OS_WIN)
-// Disabled after failing on buildbots: crbug/46662
-TEST_F(PepperTester, DISABLED_Pepper3D) {
+TEST_F(PepperTester, Pepper3D) {
   const FilePath dir(FILE_PATH_LITERAL("pepper"));
   const FilePath file(FILE_PATH_LITERAL("pepper_3d.html"));
   GURL url = ui_test_utils::GetTestUrl(dir, file);
