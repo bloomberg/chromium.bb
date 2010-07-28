@@ -29,11 +29,11 @@
       <include name="IDR_BACK_P" file="back_p.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE" file="balloon_close.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH" file="balloon_wrench.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_HOVER" file="balloon_wrench_hover.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH" file="notification_wrench.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH_HOVER" file="notification_wrench_h.png" type="BINDATA" />
       <include name="IDR_BLOCKED_COOKIES" file="blocked_cookies.png" type="BINDATA" />
       <include name="IDR_BLOCKED_IMAGES" file="blocked_images.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_javascript.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_script.png" type="BINDATA" />
       <include name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" type="BINDATA" />
       <include name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" type="BINDATA" />
       <include name="IDR_BOOKMARKS_FAVICON" file="bookmarks_favicon.png" type="BINDATA" />
@@ -47,15 +47,15 @@
       <include name="IDR_BUBBLE_B" file="bubble_b.png" type="BINDATA" />
       <include name="IDR_BUBBLE_BL" file="bubble_bl.png" type="BINDATA" />
       <include name="IDR_BUBBLE_BR" file="bubble_br.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_B_ARROW" file="bubble_b_arrow.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_B_ARROW" file="bubble_pointer_b.png" type="BINDATA" />
       <include name="IDR_BUBBLE_L" file="bubble_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_L_ARROW" file="bubble_l_arrow.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_l.png" type="BINDATA" />
       <include name="IDR_BUBBLE_R" file="bubble_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_R_ARROW" file="bubble_r_arrow.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_r.png" type="BINDATA" />
       <include name="IDR_BUBBLE_T" file="bubble_t.png" type="BINDATA" />
       <include name="IDR_BUBBLE_TL" file="bubble_tl.png" type="BINDATA" />
       <include name="IDR_BUBBLE_TR" file="bubble_tr.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_T_ARROW" file="bubble_t_arrow.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t.png" type="BINDATA" />
       <include name="IDR_BUTTON_MASK" file="button_mask.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
@@ -174,20 +174,20 @@
       </if>
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
       <include name="IDR_INPUT_ALERT" file="input_alert.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_C" file="locationbg_c.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_L" file="locationbg_l.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="locationbg_readonly_center.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="locationbg_readonly_edge.png" type="BINDATA" />
-      <include name="IDR_LOCATIONBG_R" file="locationbg_r.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_c.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="omnibox_popup_edge.png" type="BINDATA" />
+      <include name="IDR_LOCATIONBG_R" file="omnibox_r.png" type="BINDATA" />
       <if expr="os != 'darwin'">
         <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab.png" type="BINDATA" />
       </if>
       <if expr="os == 'darwin'">
         <include name="IDR_LOCATION_BAR_KEYWORD_HINT_TAB" file="keyword_hint_tab_mac.png" type="BINDATA" />
       </if>
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="location_bar_keyword_search_c.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="location_bar_keyword_search_l.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="location_bar_keyword_search_r.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" type="BINDATA" />
       <include name="IDR_MAXIMIZE_BUTTON_MASK" file="maximize_button_mask.png" type="BINDATA" />
       <include name="IDR_MINIMIZE_BUTTON_MASK" file="minimize_button_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON" file="newtab.png" type="BINDATA" />
@@ -204,9 +204,9 @@
       <include name="IDR_NEWTAB_OPTION_P" file="ntp_option_p.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_FAVICON" file="ntp_themes_gallery_favicon.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL" file="ntp_themes_gallery_thumb.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="omnibox_ev_bubble_background_c.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="omnibox_ev_bubble_background_l.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="omnibox_ev_bubble_background_r.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HISTORY" file="omnibox_history.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HISTORY_DARK" file="omnibox_history_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HISTORY_SELECTED" file="omnibox_history_selected.png" type="BINDATA" />
