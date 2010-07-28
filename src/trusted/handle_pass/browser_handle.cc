@@ -104,7 +104,6 @@ static NaClSrpcError Shutdown(NaClSrpcChannel* channel,
 
 static void WINAPI HandleServer(void* dummy) {
   // Set up an effector.
-  struct NaClDesc* pair[2];
   struct NaClNrdXferEffector effector;
   struct NaClDescEffector* effp;
   struct NaClDesc* lookup_desc;
@@ -113,13 +112,9 @@ static void WINAPI HandleServer(void* dummy) {
       { "shutdown::", Shutdown },
       { (char const *) NULL, (NaClSrpcMethod) 0, },};
 
-  // Create a bound socket for use by the effector.
-  if (0 != NaClCommonDescMakeBoundSock(pair)) {
-    goto no_state;
-  }
   // Create an effector to use to receive the connected socket.
-  if (!NaClNrdXferEffectorCtor(&effector, pair[0])) {
-    goto bound_sock_created;
+  if (!NaClNrdXferEffectorCtor(&effector)) {
+    goto no_state;
   }
   effp = (struct NaClDescEffector*) &effector;
   // Accept on the bound socket.
@@ -134,9 +129,6 @@ static void WINAPI HandleServer(void* dummy) {
 
  effector_constructed:
   effp->vtbl->Dtor(effp);
- bound_sock_created:
-  NaClDescUnref(pair[1]);
-  NaClDescUnref(pair[0]);
  no_state:
   NaClThreadExit();
 }

@@ -32,7 +32,6 @@ void NaClHandlePassLdrInit() {
 int NaClHandlePassLdrCtor(struct NaClDesc* socket_address,
                           DWORD renderer_pid,
                           NaClHandle renderer_handle) {
-  struct NaClDesc* pair[2];
   struct NaClNrdXferEffector effector;
   struct NaClDescEffector* effp;
   int retval = 0;
@@ -48,13 +47,9 @@ int NaClHandlePassLdrCtor(struct NaClDesc* socket_address,
   NaClMutexUnlock(&pid_handle_map_mu);
   NaClHandlePassSetLookupMode(HANDLE_PASS_CLIENT_PROCESS);
 
-  // Create a bound socket for use by the effector.
-  if (0 != NaClCommonDescMakeBoundSock(pair)) {
-    goto no_state;
-  }
   // Create an effector to use to receive the connected socket.
-  if (!NaClNrdXferEffectorCtor(&effector, pair[0])) {
-    goto bound_sock_created;
+  if (!NaClNrdXferEffectorCtor(&effector)) {
+    goto no_state;
   }
   effp = reinterpret_cast<struct NaClDescEffector*>(&effector);
   // Connect to the given socket address.
@@ -76,9 +71,6 @@ int NaClHandlePassLdrCtor(struct NaClDesc* socket_address,
  effector_constructed:
   // Clean up the effector.
   effp->vtbl->Dtor(effp);
- bound_sock_created:
-  NaClDescUnref(pair[1]);
-  NaClDescUnref(pair[0]);
  no_state:
   return retval;
 }
