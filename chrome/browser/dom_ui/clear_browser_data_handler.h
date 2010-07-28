@@ -36,4 +36,3 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 };
 
 #endif  // CHROME_BROWSER_DOM_UI_CLEAR_BROWSER_DATA_HANDLER_H_
-

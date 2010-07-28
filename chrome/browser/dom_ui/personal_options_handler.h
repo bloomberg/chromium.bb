@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 
 // Chrome personal options page UI handler.
 class PersonalOptionsHandler : public OptionsPageUIHandler {
@@ -17,7 +18,12 @@ class PersonalOptionsHandler : public OptionsPageUIHandler {
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
+  // DOMMessageHandler implementation.
+  virtual void RegisterMessages();
+
  private:
+  virtual void SetSyncStatusUIString(const Value* value);
+
   DISALLOW_COPY_AND_ASSIGN(PersonalOptionsHandler);
 };
 
