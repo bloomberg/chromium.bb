@@ -27,6 +27,26 @@ enum SearchEngineType {
     SEARCH_ENGINE_NETSPRINT,
     SEARCH_ENGINE_VIRGILIO,
     SEARCH_ENGINE_MAILRU,
+    SEARCH_ENGINE_ABCSOK,
+    SEARCH_ENGINE_ALTAVISTA,
+    SEARCH_ENGINE_BAIDU,
+    SEARCH_ENGINE_DAUM,
+    SEARCH_ENGINE_DELFI,
+    SEARCH_ENGINE_DIRI,
+    SEARCH_ENGINE_GOO,
+    SEARCH_ENGINE_IN,
+    SEARCH_ENGINE_NAJDI,
+    SEARCH_ENGINE_NAVER,
+    SEARCH_ENGINE_NETI,
+    SEARCH_ENGINE_OK,
+    SEARCH_ENGINE_POGODAK,
+    SEARCH_ENGINE_POGODOK_MK,
+    SEARCH_ENGINE_RAMBLER,
+    SEARCH_ENGINE_SANOOK,
+    SEARCH_ENGINE_SAPO,
+    SEARCH_ENGINE_TUT,
+    SEARCH_ENGINE_WALLA,
+    SEARCH_ENGINE_ZOZNAM,
     SEARCH_ENGINE_MAX  // Bounding max value needed for UMA histogram macro.
 };
 
@@ -44,14 +64,6 @@ int GetDataVersion(PrefService* prefs);
 void GetPrepopulatedEngines(PrefService* prefs,
                             std::vector<TemplateURL*>* t_urls,
                             size_t* default_search_provider_index);
-
-// Returns the type of the search engine to be recorded in UMA. The type
-// is determined by mapping the search engine's |id| to the set of search
-// engines we are interested in. Because this is only a temporary test
-// for a small set of search engines, we use this simple switch statement
-// instead of embedding a UMA type as part of the struct of every search
-// engine.
-SearchEngineType GetSearchEngineType(const TemplateURL* search_engine);
 
 }  // namespace TemplateURLPrepopulateData
 

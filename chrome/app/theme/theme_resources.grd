@@ -252,33 +252,71 @@
       <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
       <include name="IDR_SEARCH_ENGINE_DIALOG_TOP" file="search_engine_top.png" type="BINDATA" />
+      <include name="IDR_SEARCH_ENGINE_LOGO_OTHER" file="notused.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome')">
+        <include name="IDR_SEARCH_ENGINE_LOGO_ABCSOK" file="google_chrome/search_abcsok.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_ALTAVISTA" file="google_chrome/search_altavista.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ASK" file="google_chrome/search_ask.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_BAIDU" file="google_chrome/search_baidu.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_BING" file="google_chrome/search_bing.png" type="BINDATA" />
-        <include name="IDR_SEARCH_ENGINE_LOGO_CENTRUMCZ" file="google_chrome/search_centrumcz.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_CENTRUM" file="google_chrome/search_centrumcz.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_DAUM" file="google_chrome/search_daum.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_DELFI" file="google_chrome/search_delfi.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_DIRI" file="google_chrome/search_diri.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_GOO" file="google_chrome/search_goo.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_GOOGLE" file="google_chrome/search_google.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_IN" file="google_chrome/search_in.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_MAILRU" file="google_chrome/search_mailru.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_NAJDI" file="google_chrome/search_najdi.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_NAVER" file="google_chrome/search_naver.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_NETI" file="google_chrome/search_neti.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_NETSPRINT" file="google_chrome/search_netsprint.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_OK" file="google_chrome/search_ok.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_POGODAK" file="google_chrome/search_pogodak.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_POGODOK_MK" file="google_chrome/search_pogodok_mk.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_RAMBLER" file="google_chrome/search_rambler.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_SANOOK" file="google_chrome/search_sanook.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_SAPO" file="google_chrome/search_sapo.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_SEZNAM" file="google_chrome/search_seznam.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_TUT" file="google_chrome/search_tut.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_VIRGILIO" file="google_chrome/search_virgilio.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_WALLA" file="google_chrome/search_walla.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YAHOO" file="google_chrome/search_yahoo.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YAHOOJP" file="google_chrome/search_yahoojp.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YANDEX" file="google_chrome/search_yandex.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_ZOZNAM" file="google_chrome/search_zoznam.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('_google_chrome')">
+        <include name="IDR_SEARCH_ENGINE_LOGO_ABCSOK" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_ALTAVISTA" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ASK" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_BAIDU" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_BING" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_CENTRUMCZ" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_DAUM" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_DELFI" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_GOO" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_GOOGLE" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_IN" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_MAILRU" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_NAJDI" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_NAVER" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_NETI" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_NETSPRINT" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_OK" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_POGODAK" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_POGODOK_MK" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_RAMBLER" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_SANOOK" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_SAPO" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_SEZNAM" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_TUT" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_VIRGILIO" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_WALLA" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YAHOO" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YAHOOJP" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YANDEX" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_ZOZNAM" file="notused.png" type="BINDATA" />
       </if>
       <include name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome') and (os == 'darwin')">

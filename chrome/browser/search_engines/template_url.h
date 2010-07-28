@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "googleurl/src/gurl.h"
 
 class TemplateURL;
@@ -274,6 +275,8 @@ class TemplateURL {
         id_(0),
         date_created_(base::Time::Now()),
         usage_count_(0),
+        search_engine_type_(TemplateURLPrepopulateData::SEARCH_ENGINE_OTHER),
+        logo_id_(0),
         prepopulate_id_(0) {}
   ~TemplateURL() {}
 
@@ -414,6 +417,17 @@ class TemplateURL {
     return input_encodings_;
   }
 
+  void set_search_engine_type(TemplateURLPrepopulateData::SearchEngineType
+      search_engine_type) {
+    search_engine_type_ = search_engine_type;
+  }
+  TemplateURLPrepopulateData::SearchEngineType search_engine_type() const {
+    return search_engine_type_;
+  }
+
+  void set_logo_id(int logo_id) { logo_id_ = logo_id; }
+  int logo_id() const { return logo_id_; }
+
   // Returns the unique identifier of this TemplateURL. The unique ID is set
   // by the TemplateURLModel when the TemplateURL is added to it.
   IDType id() const { return id_; }
@@ -456,6 +470,8 @@ class TemplateURL {
   IDType id_;
   base::Time date_created_;
   int usage_count_;
+  TemplateURLPrepopulateData::SearchEngineType search_engine_type_;
+  int logo_id_;
   int prepopulate_id_;
 
   // TODO(sky): Add date last parsed OSD file.

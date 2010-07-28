@@ -35,9 +35,6 @@ using TemplateURLPrepopulateData::SearchEngineType;
 
 namespace {
 
-// Represents an id for which we have no logo.
-const int kNoLogo = -1;
-
 // Size to scale logos down to if showing 4 instead of 3 choices. Logo images
 // are all originally sized at 180 x 120 pixels, with the logo text baseline
 // located 74 pixels beneath the top of the image.
@@ -46,54 +43,6 @@ const int kSmallLogoHeight = 88;
 
 // Used to pad text label height so it fits nicely in view.
 const int kLabelPadding = 25;
-
-int GetSearchEngineLogo(const TemplateURL* template_url) {
-  typedef std::map<SearchEngineType, int> LogoMap;
-  static LogoMap type_to_logo;
-  if (type_to_logo.empty()) {
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_GOOGLE,
-        IDR_SEARCH_ENGINE_LOGO_GOOGLE));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_YAHOO,
-        IDR_SEARCH_ENGINE_LOGO_YAHOO));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_YAHOOJP,
-        IDR_SEARCH_ENGINE_LOGO_YAHOOJP));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_BING,
-        IDR_SEARCH_ENGINE_LOGO_BING));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_ASK,
-        IDR_SEARCH_ENGINE_LOGO_ASK));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_YANDEX,
-        IDR_SEARCH_ENGINE_LOGO_YANDEX));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_SEZNAM,
-        IDR_SEARCH_ENGINE_LOGO_SEZNAM));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_CENTRUM,
-        IDR_SEARCH_ENGINE_LOGO_CENTRUMCZ));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_NETSPRINT,
-        IDR_SEARCH_ENGINE_LOGO_NETSPRINT));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_VIRGILIO,
-        IDR_SEARCH_ENGINE_LOGO_VIRGILIO));
-    type_to_logo.insert(std::make_pair<SearchEngineType, int>(
-        TemplateURLPrepopulateData::SEARCH_ENGINE_MAILRU,
-        IDR_SEARCH_ENGINE_LOGO_MAILRU));
-  }
-
-  LogoMap::iterator logo = type_to_logo.find(
-      TemplateURLPrepopulateData::GetSearchEngineType(template_url));
-  if (logo != type_to_logo.end())
-    return logo->second;
-
-  // Logo does not exist:
-  return kNoLogo;
-}
 
 }  // namespace
 
@@ -107,8 +56,8 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
 #if defined(GOOGLE_CHROME_BUILD)
   use_images = true;
 #endif
-  int logo_id = GetSearchEngineLogo(search_engine_);
-  if (use_images && logo_id != kNoLogo) {
+  int logo_id = search_engine_->logo_id();
+  if (use_images && logo_id > 0) {
     is_image_label_ = true;
     views::ImageView* logo_image = new views::ImageView();
     SkBitmap* logo_bmp =

@@ -1240,8 +1240,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     if (master_prefs.run_search_engine_experiment) {
       UMA_HISTOGRAM_ENUMERATION(
           "Chrome.SearchSelectExperiment",
-          TemplateURLPrepopulateData::GetSearchEngineType(
-          default_search_engine),
+          default_search_engine->search_engine_type(),
           TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
       // If the selection has been randomized, also record the winner by slot.
       if (master_prefs.randomize_search_engine_experiment) {
@@ -1253,8 +1252,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
           experiment_type.push_back('1' + engine_pos);
           UMA_HISTOGRAM_ENUMERATION(
               experiment_type,
-              TemplateURLPrepopulateData::GetSearchEngineType(
-              default_search_engine),
+              default_search_engine->search_engine_type(),
               TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
         } else {
           NOTREACHED() << "Invalid search engine selection slot.";
@@ -1263,8 +1261,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           "Chrome.SearchSelectExempt",
-          TemplateURLPrepopulateData::GetSearchEngineType(
-              default_search_engine),
+          default_search_engine->search_engine_type(),
           TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
     }
   }

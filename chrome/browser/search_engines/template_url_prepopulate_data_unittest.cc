@@ -92,6 +92,8 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
       "       \"favicon_url\":\"http://foi.com/favicon.ico\","
       "       \"suggest_url\":\"\","
       "       \"encoding\":\"UTF-8\","
+      "       \"search_engine_type\":1,"
+      "       \"logo_id\":0,"
       "       \"id\":1001"
       "     }"
       "   ]"
@@ -121,4 +123,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   EXPECT_EQ("foi.com", t_urls[0]->GetFavIconURL().host());
   EXPECT_EQ(1u, t_urls[0]->input_encodings().size());
   EXPECT_EQ(1001, t_urls[0]->prepopulate_id());
+  EXPECT_EQ(TemplateURLPrepopulateData::SEARCH_ENGINE_GOOGLE,
+            t_urls[0]->search_engine_type());
+  EXPECT_EQ(0, t_urls[0]->logo_id());
 }
