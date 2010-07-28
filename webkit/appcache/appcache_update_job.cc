@@ -507,12 +507,16 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
 
   int response_code = -1;
   std::string mime_type;
+  bool is_valid_response_code = false;
+  bool is_valid_mime_type = false;
   if (request->status().is_success()) {
     response_code = request->GetResponseCode();
+    is_valid_response_code = (response_code / 100 == 2);
     request->GetMimeType(&mime_type);
+    is_valid_mime_type = (mime_type == kManifestMimeType);
   }
 
-  if ((response_code / 100 == 2) && mime_type == kManifestMimeType) {
+  if (is_valid_response_code && is_valid_mime_type) {
     manifest_response_info_.reset(
         new net::HttpResponseInfo(request->response_info()));
     if (update_type_ == UPGRADE_ATTEMPT)
@@ -524,9 +528,17 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
   } else if (response_code == 404 || response_code == 410) {
     service_->storage()->MakeGroupObsolete(group_, this);  // async
   } else {
-    const char* kFormatString = "Manifest fetch failed (%d) %s";
-    const std::string message = StringPrintf(kFormatString, response_code,
-                                             manifest_url_.spec().c_str());
+    std::string message;
+    if (!is_valid_response_code) {
+      const char* kFormatString = "Manifest fetch failed (%d) %s";
+      message = StringPrintf(kFormatString, response_code,
+                             manifest_url_.spec().c_str());
+    } else {
+      DCHECK(!is_valid_mime_type);
+      const char* kFormatString = "Invalid manifest mime type (%s) %s";
+      message = StringPrintf(kFormatString, mime_type.c_str(),
+                             manifest_url_.spec().c_str());
+    }
     HandleCacheFailure(message);
   }
 }
