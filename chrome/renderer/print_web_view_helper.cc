@@ -439,6 +439,7 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
     WebFrame* frame, ViewMsg_Print_Params* params) {
   double content_width_in_points;
   double content_height_in_points;
+  PrepareFrameAndViewForPrint prepare(*params, frame, frame->view());
   PrintWebViewHelper::GetPageSizeAndMarginsInPoints(frame, 0, *params,
                                                     &content_width_in_points,
                                                     &content_height_in_points,
