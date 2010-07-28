@@ -19,13 +19,13 @@ struct FontDescriptor {
   explicit FontDescriptor(NSFont* font);
 
   FontDescriptor() : font_point_size(0) {}
-  
+
   // Return an autoreleased NSFont corresponding to the font description.
   NSFont* nsFont() const;
 
   // Name of the font.
   string16 font_name;
-  
+
   // Size in points.
   float font_point_size;
 };
