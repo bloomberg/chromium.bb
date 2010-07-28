@@ -120,8 +120,6 @@ void AppLaunchedAnimationWin::OnImageLoaded(SkBitmap* image,
     animation_->SetTweenType(Tween::LINEAR);
     animation_->Reset(1.0);
     animation_->Hide();
-  } else {
-    popup_->Close();
   }
 }
 
