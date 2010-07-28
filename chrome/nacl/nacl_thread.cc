@@ -16,7 +16,9 @@ typedef HANDLE NaClHandle;
 typedef int NaClHandle;
 #endif  // NaClHandle
 
-int SelMain(const int desc, const NaClHandle handle);
+// This is currently necessary because we have a conflict between
+// NaCl's "struct NaClThread" and Chromium's "class NaClThread".
+extern "C" int NaClMainForChromium(int handle_count, const NaClHandle* handles);
 
 NaClThread::NaClThread() {
 }
@@ -36,5 +38,6 @@ void NaClThread::OnControlMessageReceived(const IPC::Message& msg) {
 
 void NaClThread::OnStartSelLdr(int channel_descriptor,
                                nacl::FileDescriptor handle) {
-  SelMain(channel_descriptor, nacl::ToNativeHandle(handle));
+  NaClHandle nacl_handle = nacl::ToNativeHandle(handle);
+  NaClMainForChromium(/* handle_count= */ 1, &nacl_handle);
 }

@@ -154,8 +154,12 @@ RenderProcessImpl::RenderProcessImpl()
   }
 
 #ifndef DISABLE_NACL
-  if (command_line.HasSwitch(switches::kInternalNaCl))
-    RegisterInternalNaClPlugin(LaunchNaClProcess);
+  if (command_line.HasSwitch(switches::kInternalNaCl)) {
+    std::map<std::string, uintptr_t> funcs;
+    funcs["launch_nacl_process"] =
+      reinterpret_cast<uintptr_t>(LaunchNaClProcess);
+    RegisterInternalNaClPlugin(funcs);
+  }
 #endif
 
   if (!command_line.HasSwitch(switches::kDisableByteRangeSupport)) {

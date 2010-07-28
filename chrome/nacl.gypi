@@ -30,7 +30,6 @@
           'nacl/nacl_main_platform_delegate_win.cc',
           'nacl/nacl_thread.cc',
           'nacl/nacl_thread.h',
-          'nacl/sel_main.cc',
         ],
         # TODO(gregoryd): consider switching NaCl to use Chrome OS defines
         'conditions': [
