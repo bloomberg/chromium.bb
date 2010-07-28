@@ -209,7 +209,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   GtkWidget* tab_to_search_hbox = gtk_hbox_new(FALSE, 0);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   tab_to_search_magnifier_ = gtk_image_new_from_pixbuf(
-      rb.GetPixbufNamed(IDR_OMNIBOX_SEARCH));
+      rb.GetPixbufNamed(IDR_KEYWORD_SEARCH_MAGNIFIER));
   gtk_box_pack_start(GTK_BOX(tab_to_search_hbox), tab_to_search_magnifier_,
                      FALSE, FALSE, 0);
   gtk_util::CenterWidgetInHBox(tab_to_search_hbox, tab_to_search_label_hbox,
@@ -1062,7 +1062,7 @@ void LocationBarViewGtk::UpdateStarIcon() {
 
   gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
       theme_provider_->GetPixbufNamed(
-          starred_ ? IDR_OMNIBOX_STAR_LIT : IDR_OMNIBOX_STAR));
+          starred_ ? IDR_STAR_LIT : IDR_STAR));
 }
 
 bool LocationBarViewGtk::ShouldOnlyShowLocation() {

@@ -30,7 +30,7 @@ StarDecoration::~StarDecoration() {
 }
 
 void StarDecoration::SetStarred(bool starred) {
-  const int image_id = starred ? IDR_OMNIBOX_STAR_LIT : IDR_OMNIBOX_STAR;
+  const int image_id = starred ? IDR_STAR_LIT : IDR_STAR;
   const int tip_id = starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
   SetImage(AutocompleteEditViewMac::ImageForResource(image_id));
   tooltip_.reset([l10n_util::GetNSStringWithFixup(tip_id) retain]);

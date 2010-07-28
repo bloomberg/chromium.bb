@@ -267,7 +267,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   close_button_.reset(new CustomDrawButton(IDR_BALLOON_CLOSE,
                                            IDR_BALLOON_CLOSE_HOVER,
                                            IDR_BALLOON_CLOSE_HOVER,
-                                           IDR_BALLOON_CLOSE_HOVER));
+                                           0));
   gtk_widget_set_tooltip_text(close_button_->widget(), dismiss_text.c_str());
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);
@@ -281,9 +281,9 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   // Create a button for showing the options menu, and add it to the toolbar.
   options_menu_button_.reset(new CustomDrawButton(IDR_BALLOON_WRENCH,
-                                                  IDR_BALLOON_WRENCH_HOVER,
-                                                  IDR_BALLOON_WRENCH_HOVER,
-                                                  IDR_BALLOON_WRENCH_HOVER));
+                                                  IDR_BALLOON_WRENCH_P,
+                                                  IDR_BALLOON_WRENCH_H,
+                                                  0));
   gtk_widget_set_tooltip_text(options_menu_button_->widget(),
                               options_text.c_str());
   g_signal_connect(options_menu_button_->widget(), "clicked",

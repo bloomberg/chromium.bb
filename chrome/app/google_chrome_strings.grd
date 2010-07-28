@@ -186,7 +186,7 @@ Chrome supports. -->
           Google Chrome OS
         </message>
       </if>
-      <if expr="os == 'win32'">
+      <if expr="os.find('win') != -1">
         <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">
           Google Chrome Frame
         </message>

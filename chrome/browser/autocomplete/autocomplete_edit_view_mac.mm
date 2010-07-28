@@ -126,8 +126,8 @@ NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
   switch(resource_id) {
     // From the autocomplete popup, or the star icon at the RHS of the
     // text field.
-    case IDR_OMNIBOX_STAR: image_name = @"omnibox_star.pdf"; break;
-    case IDR_OMNIBOX_STAR_LIT: image_name = @"omnibox_star_lit.pdf"; break;
+    case IDR_STAR: image_name = @"star.pdf"; break;
+    case IDR_STAR_LIT: image_name = @"star_lit.pdf"; break;
 
     // Values from |AutocompleteMatch::TypeToIcon()|.
     case IDR_OMNIBOX_SEARCH: image_name = @"omnibox_search.pdf"; break;

@@ -14,8 +14,8 @@
 
 SelectedKeywordDecoration::SelectedKeywordDecoration(NSFont* font)
     : BubbleDecoration(font) {
-  search_image_.reset(
-      [AutocompleteEditViewMac::ImageForResource(IDR_OMNIBOX_SEARCH) retain]);
+  search_image_.reset([AutocompleteEditViewMac::ImageForResource(
+      IDR_KEYWORD_SEARCH_MAGNIFIER) retain]);
 
   // Matches the color of the highlighted line in the popup.
   NSColor* background_color = [NSColor selectedControlColor];

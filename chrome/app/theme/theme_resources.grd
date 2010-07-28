@@ -29,7 +29,8 @@
       <include name="IDR_BALLOON_CLOSE" file="balloon_close.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
       <include name="IDR_BALLOON_WRENCH" file="notification_wrench.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_HOVER" file="notification_wrench_h.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH_H" file="notification_wrench_h.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH_P" file="notification_wrench_p.png" type="BINDATA" />
       <include name="IDR_BLOCKED_COOKIES" file="blocked_cookies.png" type="BINDATA" />
       <include name="IDR_BLOCKED_IMAGES" file="blocked_images.png" type="BINDATA" />
       <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_script.png" type="BINDATA" />
@@ -42,6 +43,19 @@
       </if>
       <if expr="os == 'darwin'">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
+      </if>
+      <include name="IDR_BROWSER_ACTION" file="browser_action.png" type="BINDATA" />
+      <include name="IDR_BROWSER_ACTION_H" file="browser_action_h.png" type="BINDATA" />
+      <include name="IDR_BROWSER_ACTION_P" file="browser_action_p.png" type="BINDATA" />
+      <if expr="os.find('win') == -1">
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_h.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_p.png" type="BINDATA" />
+      </if>
+      <if expr="os.find('win') != -1">
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow_win.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_win_h.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_win_p.png" type="BINDATA" />
       </if>
       <include name="IDR_BUBBLE_B" file="bubble_b.png" type="BINDATA" />
       <include name="IDR_BUBBLE_BL" file="bubble_bl.png" type="BINDATA" />
@@ -171,6 +185,7 @@
       </if>
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
       <include name="IDR_INPUT_ALERT" file="input_alert.png" type="BINDATA" />
+      <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_c.png" type="BINDATA" />
@@ -221,7 +236,6 @@
       <include name="IDR_OMNIBOX_SEARCH_SELECTED" file="omnibox_search_selected.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_STAR" file="omnibox_star.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_STAR_DARK" file="omnibox_star_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_STAR_LIT" file="omnibox_star_lit.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_STAR_SELECTED" file="omnibox_star_selected.png" type="BINDATA" />
       <include name="IDR_OTR_ICON" file="otr_icon.png" type="BINDATA" />
       <include name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" type="BINDATA" />
@@ -316,6 +330,8 @@
         <include name="IDR_SEARCH_ENGINE_LOGO_ZOZNAM" file="notused.png" type="BINDATA" />
       </if>
       <include name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" type="BINDATA" />
+      <include name="IDR_STAR" file="star.png" type="BINDATA" />
+      <include name="IDR_STAR_LIT" file="star_lit.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome') and (os == 'darwin')">
         <include name="IDR_STATUS_TRAY_ICON" file="google_chrome/product_logo_22_mono.png" type="BINDATA" />
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="google_chrome/product_logo_22_mono_invert.png" type="BINDATA" />
@@ -385,6 +401,8 @@
       <include name="IDR_THROBBER_WAITING" file="throbber_waiting.png" type="BINDATA" />
       <include name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" type="BINDATA" />
       <include name="IDR_TOOLS" file="tools.png" type="BINDATA" />
+      <include name="IDR_TOOLS_H" file="tools_h.png" type="BINDATA" />
+      <include name="IDR_TOOLS_P" file="tools_p.png" type="BINDATA" />
       <include name="IDR_UPDATE_AVAILABLE" file="update_available.png" type="BINDATA" />
       <include name="IDR_UPDATE_FAIL" file="update_fail.png" type="BINDATA" />
       <include name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" type="BINDATA" />

@@ -338,7 +338,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   close_button_->SetBounds(GetCloseButtonBounds());
 
   options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_WRENCH));
-  options_menu_button_->SetHoverIcon(*rb.GetBitmapNamed(IDR_BALLOON_WRENCH));
+  options_menu_button_->SetHoverIcon(*rb.GetBitmapNamed(IDR_BALLOON_WRENCH_H));
+  options_menu_button_->SetPushedIcon(*rb.GetBitmapNamed(IDR_BALLOON_WRENCH_P));
   options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
   options_menu_button_->SetBounds(GetOptionsButtonBounds());
 
