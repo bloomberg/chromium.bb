@@ -124,29 +124,38 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   // If we're repurposing an existing local entry with a new server ID,
   // change the ID now, after we're sure that the update can succeed.
   if (local_id != server_id) {
+    DCHECK(!update.deleted());
     SyncerUtil::ChangeEntryIDAndUpdateChildren(&trans, &target_entry,
         server_id);
     // When IDs change, versions become irrelevant.  Forcing BASE_VERSION
-    // to zero would ensure that this update gets applied, but historically,
-    // that's an illegal state unless the item is using the client tag.
-    // Alternatively, we can force BASE_VERSION to entry.version(), but
-    // this has the effect of suppressing update application.
-    // TODO(nick): Make the treatment of these two cases consistent.
-    int64 new_version = target_entry.Get(UNIQUE_CLIENT_TAG).empty() ?
-        update.version() : 0;
-    target_entry.Put(BASE_VERSION, new_version);
+    // to zero would ensure that this update gets applied, but would indicate
+    // creation or undeletion if it were committed that way.  Instead, prefer
+    // forcing BASE_VERSION to entry.version() while also forcing
+    // IS_UNAPPLIED_UPDATE to true.  If the item is UNSYNCED, it's committable
+    // from the new state; it may commit before the conflict resolver gets
+    // a crack at it.
+    if (target_entry.Get(IS_UNSYNCED) || target_entry.Get(BASE_VERSION) > 0) {
+      // If either of these conditions are met, then we can expect valid client
+      // fields for this entry.  When BASE_VERSION is positive, consistency is
+      // enforced on the client fields at update-application time.  Otherwise,
+      // we leave the BASE_VERSION field alone; it'll get updated the first time
+      // we successfully apply this update.
+      target_entry.Put(BASE_VERSION, update.version());
+    }
+    // Force application of this update, no matter what.
+    target_entry.Put(IS_UNAPPLIED_UPDATE, true);
   }
 
   SyncerUtil::UpdateServerFieldsFromUpdate(&target_entry, update, name);
 
   if (target_entry.Get(SERVER_VERSION) == target_entry.Get(BASE_VERSION) &&
-      !target_entry.Get(IS_UNSYNCED)) {
-      // It's largely OK if data doesn't match exactly since a future update
-      // will just clobber the data. Conflict resolution will overwrite and
-      // take one side as the winner and does not try to merge, so strict
-      // equality isn't necessary.
-      LOG_IF(ERROR, !SyncerUtil::ServerAndLocalEntriesMatch(&target_entry))
-          << target_entry;
+      !target_entry.Get(IS_UNSYNCED) &&
+      !target_entry.Get(IS_UNAPPLIED_UPDATE)) {
+    // If these don't match, it means that we have a different view of the
+    // truth from other clients.  That's a sync bug, though we may be able
+    // to recover the next time this item commits.
+    LOG_IF(ERROR, !SyncerUtil::ServerAndLocalEntriesMatch(&target_entry))
+        << target_entry;
   }
   return SUCCESS_PROCESSED;
 }

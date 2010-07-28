@@ -4363,8 +4363,8 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
 
     Entry tag_a(&trans, GET_BY_CLIENT_TAG, "tag a");
     ASSERT_TRUE(tag_a.good());
-    ASSERT_TRUE(tag_a.Get(ID).ServerKnows());
-    ASSERT_TRUE(ids_.FromNumber(1) == tag_a.Get(ID));
+    EXPECT_TRUE(tag_a.Get(ID).ServerKnows());
+    EXPECT_EQ(ids_.FromNumber(1), tag_a.Get(ID));
     EXPECT_FALSE(tag_a.Get(IS_DEL));
     EXPECT_FALSE(tag_a.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(tag_a.Get(IS_UNSYNCED));
@@ -4374,8 +4374,8 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
 
     Entry tag_b(&trans, GET_BY_CLIENT_TAG, "tag b");
     ASSERT_TRUE(tag_b.good());
-    ASSERT_TRUE(tag_b.Get(ID).ServerKnows());
-    ASSERT_TRUE(ids_.FromNumber(101) == tag_b.Get(ID));
+    EXPECT_TRUE(tag_b.Get(ID).ServerKnows());
+    EXPECT_EQ(ids_.FromNumber(101), tag_b.Get(ID));
     EXPECT_FALSE(tag_b.Get(IS_DEL));
     EXPECT_FALSE(tag_b.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(tag_b.Get(IS_UNSYNCED));
@@ -4385,8 +4385,8 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
 
     Entry tag_c(&trans, GET_BY_CLIENT_TAG, "tag c");
     ASSERT_TRUE(tag_c.good());
-    ASSERT_TRUE(tag_c.Get(ID).ServerKnows());
-    ASSERT_TRUE(ids_.FromNumber(201) == tag_c.Get(ID));
+    EXPECT_TRUE(tag_c.Get(ID).ServerKnows());
+    EXPECT_EQ(ids_.FromNumber(201), tag_c.Get(ID));
     EXPECT_FALSE(tag_c.Get(IS_DEL));
     EXPECT_FALSE(tag_c.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(tag_c.Get(IS_UNSYNCED));

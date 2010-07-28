@@ -227,12 +227,12 @@ void BuildAndProcessConflictSetsCommand::BuildConflictSets(
   set<syncable::Id>::iterator i = conflict_progress->ConflictingItemsBegin();
   while (i != conflict_progress->ConflictingItemsEnd()) {
     syncable::Entry entry(trans, syncable::GET_BY_ID, *i);
-    CHECK(entry.good());
-    if (!entry.Get(syncable::IS_UNSYNCED) &&
-        !entry.Get(syncable::IS_UNAPPLIED_UPDATE)) {
+    if (!entry.good() ||
+        (!entry.Get(syncable::IS_UNSYNCED) &&
+         !entry.Get(syncable::IS_UNAPPLIED_UPDATE))) {
       // This can happen very rarely. It means we had a simply conflicting item
-      // that randomly committed. We drop the entry as it's no longer
-      // conflicting.
+      // that randomly committed; its ID could have changed during the commit.
+      // We drop the entry as it's no longer conflicting.
       conflict_progress->EraseConflictingItemById(*(i++));
       continue;
     }
