@@ -19,6 +19,8 @@ typedef struct SECItemStr SECItem;
 
 class FilePath;
 
+namespace chromeos {
+
 class OwnerKeyUtils {
  public:
   class Factory {
@@ -53,19 +55,40 @@ class OwnerKeyUtils {
   virtual bool GenerateKeyPair(SECKEYPrivateKey** private_key_out,
                                SECKEYPublicKey** public_key_out) = 0;
 
+  // DER encodes |key| and exports it via DBus.
+  // The data sent is a DER-encoded X509 SubjectPublicKeyInfo object.
+  // Returns false on error.
+  virtual bool ExportPublicKeyViaDbus(SECKEYPublicKey* key) = 0;
+
   // DER encodes |key| and writes it out to |key_file|.
   // The blob on disk is a DER-encoded X509 SubjectPublicKeyInfo object.
   // Returns false on error.
-  virtual bool ExportPublicKey(SECKEYPublicKey* key,
-                               const FilePath& key_file) = 0;
+  virtual bool ExportPublicKeyToFile(SECKEYPublicKey* key,
+                                     const FilePath& key_file) = 0;
 
   // Assumes that the file at |key_file| exists.
   // Caller takes ownership of returned object; returns NULL on error.
   // To free, call SECKEY_DestroyPublicKey.
   virtual SECKEYPublicKey* ImportPublicKey(const FilePath& key_file) = 0;
 
+
+  // Looks for the private key associated with |key| in the default slot,
+  // and returns it if it can be found.  Returns NULL otherwise.
+  // To free, call SECKEY_DestroyPrivateKey.
+  virtual SECKEYPrivateKey* FindPrivateKey(SECKEYPublicKey* key) = 0;
+
+  // If something's gone wrong with key generation or key exporting, the
+  // caller may wish to nuke some keys.  This will destroy key objects in
+  // memory and ALSO remove them from the NSS database.
+  virtual void DestroyKeys(SECKEYPrivateKey* private_key,
+                           SECKEYPublicKey* public_key) = 0;
+
+  virtual FilePath GetOwnerKeyFilePath() = 0;
+
  private:
   static Factory* factory_;
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_OWNER_KEY_UTILS_H_

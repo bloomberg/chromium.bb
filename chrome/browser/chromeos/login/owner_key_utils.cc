@@ -20,8 +20,20 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 
+namespace chromeos {
+
+///////////////////////////////////////////////////////////////////////////
+// OwnerKeyUtils
+
 // static
 OwnerKeyUtils::Factory* OwnerKeyUtils::factory_ = NULL;
+
+OwnerKeyUtils::OwnerKeyUtils() {}
+
+OwnerKeyUtils::~OwnerKeyUtils() {}
+
+///////////////////////////////////////////////////////////////////////////
+// OwnerKeyUtilsImpl
 
 class OwnerKeyUtilsImpl : public OwnerKeyUtils {
  public:
@@ -31,9 +43,17 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
   bool GenerateKeyPair(SECKEYPrivateKey** private_key_out,
                                SECKEYPublicKey** public_key_out);
 
-  bool ExportPublicKey(SECKEYPublicKey* key, const FilePath& key_file);
+  bool ExportPublicKeyViaDbus(SECKEYPublicKey* key);
+
+  bool ExportPublicKeyToFile(SECKEYPublicKey* key, const FilePath& key_file);
 
   SECKEYPublicKey* ImportPublicKey(const FilePath& key_file);
+
+  SECKEYPrivateKey* FindPrivateKey(SECKEYPublicKey* key);
+
+  void DestroyKeys(SECKEYPrivateKey* private_key, SECKEYPublicKey* public_key);
+
+  FilePath GetOwnerKeyFilePath();
 
  private:
   // Fills in fields of |key_der| with DER encoded data from a file at
@@ -48,7 +68,9 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
   //    SECITEM_FreeItem(key_der, PR_FALSE);
   static bool ReadDERFromFile(const FilePath& key_file, SECItem* key_der);
 
-  // The place outside the owner's encrypted home directory where her
+  static bool EncodePublicKey(SECKEYPublicKey* key, std::string* out);
+
+  // The file outside the owner's encrypted home directory where her
   // key will live.
   static const char kOwnerKeyFile[];
 
@@ -60,10 +82,7 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
   DISALLOW_COPY_AND_ASSIGN(OwnerKeyUtilsImpl);
 };
 
-OwnerKeyUtils::OwnerKeyUtils() {}
-
-OwnerKeyUtils::~OwnerKeyUtils() {}
-
+// Defined here, instead of up above, because we need OwnerKeyUtilsImpl.
 OwnerKeyUtils* OwnerKeyUtils::Create() {
   if (!factory_)
     return new OwnerKeyUtilsImpl();
@@ -147,18 +166,9 @@ bool OwnerKeyUtilsImpl::GenerateKeyPair(SECKEYPrivateKey** private_key_out,
   if (!is_success) {
     LOG(ERROR) << "Owner key generation failed! (NSS error code "
                << PR_GetError() << ")";
-    // Do cleanups
-    base::AutoNSSWriteLock lock;
-    if (*private_key_out) {
-      PK11_DestroyTokenObject((*private_key_out)->pkcs11Slot,
-                              (*private_key_out)->pkcs11ID);
-      SECKEY_DestroyPrivateKey(*private_key_out);
-    }
-    if (*public_key_out) {
-      PK11_DestroyTokenObject((*public_key_out)->pkcs11Slot,
-                              (*public_key_out)->pkcs11ID);
-      SECKEY_DestroyPublicKey(*public_key_out);
-    }
+    DestroyKeys(*private_key_out, *public_key_out);
+    *private_key_out = NULL;
+    *public_key_out = NULL;
   } else {
     LOG(INFO) << "Owner key generation succeeded!";
   }
@@ -169,39 +179,48 @@ bool OwnerKeyUtilsImpl::GenerateKeyPair(SECKEYPrivateKey** private_key_out,
   return is_success;
 }
 
-bool OwnerKeyUtilsImpl::ExportPublicKey(SECKEYPublicKey* key,
-                                        const FilePath& key_file) {
+bool OwnerKeyUtilsImpl::ExportPublicKeyViaDbus(SECKEYPublicKey* key) {
   DCHECK(key);
-  SECItem* der;
+  bool ok = false;
+
+  std::string to_export;
+  if (!EncodePublicKey(key, &to_export)) {
+    LOG(ERROR) << "Formatting key for export failed!";
+    return ok;
+  }
+
+  // TODO(cmasone): send the data over dbus.
+  return ok;
+}
+
+bool OwnerKeyUtilsImpl::ExportPublicKeyToFile(SECKEYPublicKey* key,
+                                              const FilePath& key_file) {
+  DCHECK(key);
   bool ok = false;
   int safe_file_size = 0;
 
-  // Instead of exporting/importing the key directly, I'm actually
-  // going to use a SubjectPublicKeyInfo.  The reason is because NSS
-  // exports functions that encode/decode these kinds of structures, while
-  // it does not export the ones that deal directly with public keys.
-  der = SECKEY_EncodeDERSubjectPublicKeyInfo(key);
-  if (!der) {
-    LOG(ERROR) << "Could not encode public key for export!";
-    return false;
+  std::string to_export;
+  if (!EncodePublicKey(key, &to_export)) {
+    LOG(ERROR) << "Formatting key for export failed!";
+    return ok;
   }
 
-  if (der->len > static_cast<uint>(INT_MAX)) {
-    LOG(ERROR) << "key is too big! " << der->len;
+  if (to_export.length() > static_cast<uint>(INT_MAX)) {
+    LOG(ERROR) << "key is too big! " << to_export.length();
   } else {
-    safe_file_size = static_cast<int>(der->len);
+    safe_file_size = static_cast<int>(to_export.length());
 
-    ok = (safe_file_size ==
-          file_util::WriteFile(key_file,
-                               reinterpret_cast<char*>(der->data),
-                               der->len));
+    ok = (safe_file_size == file_util::WriteFile(key_file,
+                                                 to_export.c_str(),
+                                                 safe_file_size));
   }
-  SECITEM_FreeItem(der, PR_TRUE);
   return ok;
 }
 
 SECKEYPublicKey* OwnerKeyUtilsImpl::ImportPublicKey(const FilePath& key_file) {
   SECItem key_der;
+  key_der.data = NULL;
+  key_der.len = 0;
 
   if (!ReadDERFromFile(key_file, &key_der)) {
     PLOG(ERROR) << "Could not read in key from " << key_file.value() << ":";
@@ -231,6 +250,8 @@ bool OwnerKeyUtilsImpl::ReadDERFromFile(const FilePath& key_file,
   // considered internal to the NSS command line utils.
   // This code is lifted, in spirit, from the implementation of that function.
   DCHECK(key_der) << "Don't pass NULL for |key_der|";
+  DCHECK(key_der->data == NULL);
+  DCHECK(key_der->len == 0);
 
   // Get the file size (must fit in a 32 bit int for NSS).
   int64 file_size;
@@ -265,3 +286,68 @@ bool OwnerKeyUtilsImpl::ReadDERFromFile(const FilePath& key_file,
   }
   return true;
 }
+
+bool OwnerKeyUtilsImpl::EncodePublicKey(SECKEYPublicKey* key,
+                                        std::string* out) {
+  SECItem* der;
+
+  // Instead of exporting/importing the key directly, I'm actually
+  // going to use a SubjectPublicKeyInfo.  The reason is because NSS
+  // exports functions that encode/decode these kinds of structures, while
+  // it does not export the ones that deal directly with public keys.
+  der = SECKEY_EncodeDERSubjectPublicKeyInfo(key);
+  if (!der) {
+    LOG(ERROR) << "Could not encode public key for export!";
+    return false;
+  }
+
+  out->assign(reinterpret_cast<char*>(der->data), der->len);
+
+  SECITEM_FreeItem(der, PR_TRUE);
+  return true;
+}
+
+SECKEYPrivateKey* OwnerKeyUtilsImpl::FindPrivateKey(SECKEYPublicKey* key) {
+  DCHECK(key);
+
+  PK11SlotInfo* slot = NULL;
+  SECItem* ck_id = NULL;
+  SECKEYPrivateKey* found = NULL;
+
+  slot = base::GetDefaultNSSKeySlot();
+  if (!slot)
+    goto cleanup;
+
+  ck_id = PK11_MakeIDFromPubKey(&(key->u.rsa.modulus));
+  if (!ck_id)
+    goto cleanup;
+
+  found = PK11_FindKeyByKeyID(slot, ck_id, NULL);
+
+ cleanup:
+  if (slot)
+    PK11_FreeSlot(slot);
+  if (ck_id)
+    SECITEM_FreeItem(ck_id, PR_TRUE);
+
+  return found;
+}
+
+void OwnerKeyUtilsImpl::DestroyKeys(SECKEYPrivateKey* private_key,
+                                    SECKEYPublicKey* public_key) {
+  base::AutoNSSWriteLock lock;
+  if (private_key) {
+    PK11_DestroyTokenObject(private_key->pkcs11Slot, private_key->pkcs11ID);
+    SECKEY_DestroyPrivateKey(private_key);
+  }
+  if (public_key) {
+    PK11_DestroyTokenObject(public_key->pkcs11Slot, public_key->pkcs11ID);
+    SECKEY_DestroyPublicKey(public_key);
+  }
+}
+
+FilePath OwnerKeyUtilsImpl::GetOwnerKeyFilePath() {
+  return FilePath(OwnerKeyUtilsImpl::kOwnerKeyFile);
+}
+
+}  // namespace chromeos

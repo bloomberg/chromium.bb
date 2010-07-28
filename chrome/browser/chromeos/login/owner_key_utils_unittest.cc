@@ -69,32 +69,17 @@ TEST_F(OwnerKeyUtilsTest, ExportImportPublicKey) {
   ASSERT_TRUE(tmpdir.CreateUniqueTempDir());
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(tmpdir.path(), &tmpfile));
 
-  EXPECT_TRUE(utils_->ExportPublicKey(public_key_, tmpfile));
+  EXPECT_TRUE(utils_->ExportPublicKeyToFile(public_key_, tmpfile));
 
-  // Now, verify that we can look up the private key, given the public key
-  // we exported.  We'll create
-  // an ID from the key, and then use that ID to query the token in the
-  // default slot for a matching private key.  Then we'll make sure it's
-  // the same as |private_key_|
-  PK11SlotInfo* slot = NULL;
-  SECItem* ck_id = NULL;
+  // Now, verify that we can look up the private key, given the public
+  // key we exported.  Then we'll make sure it's the same as |private_key_|
   SECKEYPublicKey* from_disk = NULL;
   SECKEYPrivateKey* found = NULL;
-
-  slot = base::GetDefaultNSSKeySlot();
-  EXPECT_TRUE(slot != NULL);
-  if (NULL == slot)
-    goto cleanup;
 
   from_disk = utils_->ImportPublicKey(tmpfile);
   ASSERT_TRUE(from_disk != NULL);
 
-  ck_id = PK11_MakeIDFromPubKey(&(from_disk->u.rsa.modulus));
-  EXPECT_TRUE(ck_id != NULL);
-  if (NULL == ck_id)
-    goto cleanup;
-
-  found = PK11_FindKeyByKeyID(slot, ck_id, NULL);
+  found = utils_->FindPrivateKey(from_disk);
   EXPECT_TRUE(found != NULL);
   if (NULL == found)
     goto cleanup;
@@ -102,14 +87,10 @@ TEST_F(OwnerKeyUtilsTest, ExportImportPublicKey) {
   EXPECT_EQ(private_key_->pkcs11ID, found->pkcs11ID);
 
  cleanup:
-  if (slot)
-    PK11_FreeSlot(slot);
   if (from_disk)
     SECKEY_DestroyPublicKey(from_disk);
   if (found)
     SECKEY_DestroyPrivateKey(found);
-  if (ck_id)
-    SECITEM_ZfreeItem(ck_id, PR_TRUE);
 }
 
 }  // namespace chromeos
