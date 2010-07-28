@@ -14,34 +14,6 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 
-namespace {
-
-ListValue* CreateMultipleChoiceList(
-    const chromeos::LanguageMultipleChoicePreference<const char*>& preference) {
-  int list_length = 0;
-  for (size_t i = 0;
-       i < chromeos::LanguageMultipleChoicePreference<const char*>::kMaxItems;
-       ++i) {
-    if (preference.values_and_ids[i].item_message_id == 0)
-      break;
-    ++list_length;
-  }
-  DCHECK_GT(list_length, 0);
-
-  ListValue* list_value = new ListValue();
-  for (int i = 0; i < list_length; ++i) {
-    ListValue* option = new ListValue();
-    option->Append(Value::CreateStringValue(
-        preference.values_and_ids[i].ibus_config_value));
-    option->Append(Value::CreateStringValue(l10n_util::GetString(
-        preference.values_and_ids[i].item_message_id)));
-    list_value->Append(option);
-  }
-  return list_value;
-}
-
-}  // namespace
-
 LanguageChewingOptionsHandler::LanguageChewingOptionsHandler() {
 }
 
@@ -81,7 +53,7 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
         l10n_util::GetString(preference.label_message_id));
     localized_strings->Set(
         GetTemplateDataPropertyName(preference),
-        CreateMultipleChoiceList(preference));
+        chromeos::CreateMultipleChoiceList(preference));
   }
 
   localized_strings->SetString(

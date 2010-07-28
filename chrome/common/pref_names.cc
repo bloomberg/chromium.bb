@@ -303,7 +303,7 @@ const wchar_t kLanguagePinyinLookupTablePageSize[] =
 const wchar_t kLanguageMozcPreeditMethod[] =
     L"settings.language.mozc_preedit_method";
 const wchar_t kLanguageMozcSessionKeymap[] =
-    L"settings.language.mozc_sessoin_keymap";
+    L"settings.language.mozc_session_keymap";
 const wchar_t kLanguageMozcPunctuationMethod[] =
     L"settings.language.mozc_punctuation_method";
 const wchar_t kLanguageMozcSymbolMethod[] =

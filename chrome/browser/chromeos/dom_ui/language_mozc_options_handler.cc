@@ -25,4 +25,14 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
         GetI18nContentValue(chromeos::kMozcBooleanPrefs[i]),
         l10n_util::GetString(chromeos::kMozcBooleanPrefs[i].message_id));
   }
+
+  for (size_t i = 0; i < arraysize(chromeos::kMozcMultipleChoicePrefs); ++i) {
+    const chromeos::LanguageMultipleChoicePreference<const char*>& preference =
+        chromeos::kMozcMultipleChoicePrefs[i];
+    localized_strings->SetString(
+        GetI18nContentValue(preference),
+        l10n_util::GetString(preference.label_message_id));
+    localized_strings->Set(GetTemplateDataPropertyName(preference),
+                           chromeos::CreateMultipleChoiceList(preference));
+  }
 }

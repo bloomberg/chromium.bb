@@ -4,8 +4,12 @@
 
 #ifndef CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_UTIL_H_
+#pragma once
 
+#include "base/string_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+
+class ListValue;
 
 namespace {
 
@@ -36,5 +40,12 @@ std::wstring GetTemplateDataMaxName(const T& preference) {
 }
 
 }  // namespace
+
+namespace chromeos {
+
+ListValue* CreateMultipleChoiceList(
+    const LanguageMultipleChoicePreference<const char*>& preference);
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_UTIL_H_
