@@ -156,6 +156,7 @@ class Profile;
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
 
 // Returns an array of labels representing the addresses in the |profiles_|.
+// Only returns labels for which there exists address information.
 - (NSArray*)addressLabels;
 
 @end

@@ -591,6 +591,19 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
 
   std::vector<AutoFillProfile>::iterator i;
   for (i = profiles_.begin(); i != profiles_.end(); ++i) {
+    FieldTypeSet fields;
+    i->GetAvailableFieldTypes(&fields);
+    if (fields.find(ADDRESS_HOME_LINE1) == fields.end() &&
+        fields.find(ADDRESS_HOME_LINE2) == fields.end() &&
+        fields.find(ADDRESS_HOME_APT_NUM) == fields.end() &&
+        fields.find(ADDRESS_HOME_CITY) == fields.end() &&
+        fields.find(ADDRESS_HOME_STATE) == fields.end() &&
+        fields.find(ADDRESS_HOME_ZIP) == fields.end() &&
+        fields.find(ADDRESS_HOME_COUNTRY) == fields.end()) {
+      // No address information in this profile; it's useless as a billing
+      // address.
+      continue;
+    }
     [array addObject:SysUTF16ToNSString(i->Label())];
   }
 
