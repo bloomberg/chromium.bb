@@ -28,7 +28,7 @@ print "Email:",
 email = raw_input()
 password = getpass.getpass("Password: ")
 
-xapi_auth = gaia_auth.GaiaAuthenticator('xapi')
+xapi_auth = gaia_auth.GaiaAuthenticator('chromoting')
 xapi_token = xapi_auth.authenticate(email, password)
 
 host_id = str(uuid.uuid1())
@@ -41,11 +41,11 @@ print "Generating RSA key pair...",
 print "Done"
 
 params = ('{"data":{' + \
-          '"host_id": "%(host_id)s",' + \
-          '"host_name": "%(host_name)s",' + \
-          '"public_key": "%(public_key)s"}}') % \
-          {'host_id': host_id, 'host_name': host_name,
-           'public_key': public_key}
+          '"hostId": "%(hostId)s",' + \
+          '"hostName": "%(hostName)s",' + \
+          '"publicKey": "%(publicKey)s"}}') % \
+          {'hostId': host_id, 'hostName': host_name,
+           'publicKey': public_key}
 headers = {"Authorization": "GoogleLogin auth=" + xapi_token,
            "Content-Type": "application/json" }
 request = urllib2.Request(url, params, headers)
