@@ -837,14 +837,10 @@
    bug_35164
    Memcheck:Cond
    ...
+   fun:gl_context_init_client_state
+   fun:ogl_begin_rendering
    fun:CARenderOGLRender
    fun:view_draw
-   fun:view_display_link
-   fun:link_callback
-   fun:_ZN13CVDisplayLink9performIOEP11CVTimeStamp
-   fun:_ZN13CVDisplayLink11runIOThreadEv
-   fun:_pthread_start
-   fun:thread_start
 }
 {
    bug_35601
