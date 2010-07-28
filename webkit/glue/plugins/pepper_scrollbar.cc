@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/ppapi/c/ppp_scrollbar.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
@@ -16,6 +17,10 @@
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_WIN)
+#include "base/win_util.h"
+#endif
 
 using WebKit::WebInputEvent;
 using WebKit::WebRect;
@@ -159,6 +164,14 @@ bool Scrollbar::Paint(const PP_Rect* rect, ImageData* image) {
   if (!canvas)
     return false;
   scrollbar_->paint(webkit_glue::ToWebCanvas(canvas), gfx_rect);
+
+#if defined(OS_WIN)
+  if (win_util::GetWinVersion() == win_util::WINVERSION_XP) {
+    canvas->getTopPlatformDevice().makeOpaque(
+        gfx_rect.x(), gfx_rect.y(), gfx_rect.width(), gfx_rect.height());
+  }
+#endif
+
   return true;
 }
 
