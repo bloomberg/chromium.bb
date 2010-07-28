@@ -114,6 +114,16 @@ OptionsPage.registerOverlay = function(page) {
 };
 
 /**
+ * Callback for window.onpopstate.
+ * @param {Object} data State data pushed into history.
+ */
+OptionsPage.setState = function(data) {
+  if (data && data.pageName) {
+    OptionsPage.showPageByName(data.pageName);
+  }
+};
+
+/**
  * Initializes the complete options page.  This will cause
  * all C++ handlers to be invoked to do final setup.
  */
@@ -151,9 +161,9 @@ OptionsPage.prototype = {
         var overlay = $('overlay');
         overlay.classList.remove('hidden');
       } else {
+        // Recent webkit change no longer allows url change from "chrome://".
         window.history.pushState({pageName: this.name},
-                                 this.title,
-                                 '/' + this.name);
+                                 this.title);
       }
       if (this.tab) {
         this.tab.classList.add('navbar-item-selected');
