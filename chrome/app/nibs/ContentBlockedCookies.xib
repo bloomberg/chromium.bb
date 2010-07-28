@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
+			<integer value="4"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -56,7 +56,7 @@
 								<object class="NSTextField" id="266815090">
 									<reference key="NSNextResponder" ref="301729179"/>
 									<int key="NSvFlags">266</int>
-									<string key="NSFrame">{{17, 86}, {282, 14}}</string>
+									<string key="NSFrame">{{17, 80}, {282, 14}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="157361777">
@@ -92,7 +92,7 @@
 								<object class="NSBox" id="913795455">
 									<reference key="NSNextResponder" ref="301729179"/>
 									<int key="NSvFlags">34</int>
-									<string key="NSFrame">{{20, 48}, {276, 5}}</string>
+									<string key="NSFrame">{{20, 42}, {276, 5}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<string key="NSOffsets">{0, 0}</string>
 									<object class="NSTextFieldCell" key="NSTitleCell">
@@ -149,7 +149,7 @@
 											</object>
 										</object>
 									</object>
-									<string key="NSFrame">{{0, 5}, {192, 37}}</string>
+									<string key="NSFrame">{{0, -1}, {192, 37}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<string key="NSClassName">GTMWidthBasedTweaker</string>
 								</object>
@@ -179,7 +179,7 @@
 											</object>
 										</object>
 									</object>
-									<string key="NSFrame">{{193, 5}, {123, 37}}</string>
+									<string key="NSFrame">{{193, -1}, {123, 37}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<string key="NSClassName">GTMWidthBasedTweaker</string>
 								</object>
@@ -209,12 +209,12 @@
 											</object>
 										</object>
 									</object>
-									<string key="NSFrame">{{0, 41}, {192, 37}}</string>
+									<string key="NSFrame">{{0, 35}, {192, 37}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<string key="NSClassName">GTMWidthBasedTweaker</string>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, -6}, {316, 120}}</string>
+							<string key="NSFrameSize">{316, 114}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<string key="NSClassName">InfoBubbleView</string>
 						</object>
@@ -516,9 +516,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{345, 582}, {316, 114}}</string>
+					<string>{{565, 582}, {316, 114}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{345, 582}, {316, 114}}</string>
+					<string>{{565, 582}, {316, 114}}</string>
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
@@ -563,6 +563,18 @@
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="IBPartialClassDescription">
+					<string key="className">BaseBubbleController</string>
+					<string key="superclassName">NSWindowController</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">bubble_</string>
+						<string key="NS.object.0">InfoBubbleView</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/base_bubble_controller.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">ChromeEventProcessingWindow</string>
 					<string key="superclassName">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -580,18 +592,20 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ContentBlockedBubbleController</string>
-					<string key="superclassName">NSWindowController</string>
+					<string key="superclassName">BaseBubbleController</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>allowBlockToggled:</string>
 							<string>closeBubble:</string>
+							<string>loadAllPlugins:</string>
 							<string>manageBlocking:</string>
 							<string>showMoreInfo:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -603,7 +617,6 @@
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>allowBlockRadioGroup_</string>
-							<string>bubble_</string>
 							<string>contentsContainer_</string>
 							<string>doneButton_</string>
 							<string>manageButton_</string>
@@ -612,7 +625,6 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMatrix</string>
-							<string>InfoBubbleView</string>
 							<string>NSView</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
