@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_NATIVE_SCROLL_BAR_WRAPPER_H_
 #define VIEWS_CONTROLS_NATIVE_SCROLL_BAR_WRAPPER_H_
@@ -19,9 +19,7 @@ class NativeScrollBarWrapper {
 
   // Updates the scroll bar appearance given a viewport size, content size and
   // current position.
-  virtual void Update(int viewport_size,
-                      int content_size,
-                      int current_pos) = 0;
+  virtual void Update(int viewport_size, int content_size, int current_pos) = 0;
 
   // Retrieves the views::View that hosts the native control.
   virtual View* GetView() = 0;
@@ -40,4 +38,3 @@ class NativeScrollBarWrapper {
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_NATIVE_SCROLL_BAR_WRAPPER_H_
-
