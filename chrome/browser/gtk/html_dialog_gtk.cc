@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,7 +142,7 @@ void HtmlDialogGtk::InitDialog() {
       flags,
       NULL);
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
@@ -160,8 +160,6 @@ void HtmlDialogGtk::InitDialog() {
   gtk_widget_show_all(dialog_);
 }
 
-// static
-void HtmlDialogGtk::OnResponse(GtkWidget* widget, int response,
-                               HtmlDialogGtk* dialog) {
-  dialog->OnDialogClosed(std::string());
+void HtmlDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+  OnDialogClosed(std::string());
 }
