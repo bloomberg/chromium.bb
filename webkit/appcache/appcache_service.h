@@ -15,6 +15,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_storage.h"
 
 class URLRequestContext;
@@ -27,29 +28,6 @@ namespace appcache {
 
 class AppCacheBackendImpl;
 class AppCachePolicy;
-
-// Structure that contains basic info about an appcache.
-struct AppCacheInfo {
-  AppCacheInfo() {}
-  AppCacheInfo(const GURL& manifest_url,
-               int64 size,
-               base::Time creation_time,
-               base::Time last_access_time,
-               base::Time last_update_time)
-      : manifest_url(manifest_url),
-        size(size),
-        creation_time(creation_time),
-        last_access_time(last_access_time),
-        last_update_time(last_update_time) {
-  }
-  GURL manifest_url;
-  int64 size;
-  base::Time creation_time;
-  base::Time last_access_time;
-  base::Time last_update_time;
-};
-
-typedef std::vector<AppCacheInfo> AppCacheInfoVector;
 
 // Refcounted container to avoid copying the collection in callbacks.
 struct AppCacheInfoCollection

@@ -601,10 +601,9 @@ IPC_BEGIN_MESSAGES(View)
 
   // Notifies the renderer of the appcache that has been selected for a
   // a particular host. This is sent in reply to AppCacheMsg_SelectCache.
-  IPC_MESSAGE_CONTROL3(AppCacheMsg_CacheSelected,
+  IPC_MESSAGE_CONTROL2(AppCacheMsg_CacheSelected,
                        int /* host_id */,
-                       int64 /* appcache_id */,
-                       appcache::Status)
+                       appcache::AppCacheInfo)
 
   // Notifies the renderer of an AppCache status change.
   IPC_MESSAGE_CONTROL2(AppCacheMsg_StatusChanged,
@@ -1867,6 +1866,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheMsg_SwapCache,
                               int /* host_id */,
                               bool /* success */)
+
+  // Gets resource list from appcache synchronously.
+  IPC_SYNC_MESSAGE_CONTROL1_1(AppCacheMsg_GetResourceList,
+                              int /* host_id in*/,
+                              std::vector<appcache::AppCacheResourceInfo>
+                              /* resources out */)
 
   // Returns the resizer box location in the window this widget is embedded.
   // Important for Mac OS X, but not Win or Linux.

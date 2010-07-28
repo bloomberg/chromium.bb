@@ -54,7 +54,8 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   int64 group_id() const { return group_id_; }
   const GURL& manifest_url() const { return manifest_url_; }
-
+  const base::Time& creation_time() const { return creation_time_; }
+  void set_creation_time(const base::Time& time) { creation_time_ = time; }
   bool is_obsolete() const { return is_obsolete_; }
   void set_obsolete(bool value) { is_obsolete_ = value; }
 
@@ -122,6 +123,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   const int64 group_id_;
   const GURL manifest_url_;
+  base::Time creation_time_;
   UpdateStatus update_status_;
   bool is_obsolete_;
   bool is_being_deleted_;

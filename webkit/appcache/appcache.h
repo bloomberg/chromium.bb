@@ -72,6 +72,9 @@ class AppCache : public base::RefCounted<AppCache> {
   }
 
   base::Time update_time() const { return update_time_; }
+
+  int64 cache_size() const { return cache_size_; }
+
   void set_update_time(base::Time ticks) { update_time_ = ticks; }
 
   // Initializes the cache with information in the manifest.
@@ -134,6 +137,8 @@ class AppCache : public base::RefCounted<AppCache> {
 
   // when this cache was last updated
   base::Time update_time_;
+
+  int64 cache_size_;
 
   // to notify service when cache is deleted
   AppCacheService* service_;

@@ -6,6 +6,7 @@
 #define CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_H_
 #pragma once
 
+#include <string>
 #include <vector>
 #include "chrome/common/appcache/appcache_backend_proxy.h"
 #include "ipc/ipc_message.h"
@@ -26,8 +27,7 @@ class AppCacheDispatcher {
 
  private:
   // Ipc message handlers
-  void OnCacheSelected(int host_id, int64 cache_id,
-                       appcache::Status status);
+  void OnCacheSelected(int host_id, const appcache::AppCacheInfo& info);
   void OnStatusChanged(const std::vector<int>& host_ids,
                        appcache::Status status);
   void OnEventRaised(const std::vector<int>& host_ids,

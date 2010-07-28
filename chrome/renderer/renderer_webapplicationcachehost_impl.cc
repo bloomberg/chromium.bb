@@ -43,10 +43,10 @@ void RendererWebApplicationCacheHostImpl::OnContentBlocked(
 }
 
 void RendererWebApplicationCacheHostImpl::OnCacheSelected(
-    int64 selected_cache_id, appcache::Status status) {
+    const appcache::AppCacheInfo& info) {
   // TODO(jochen): Send a ViewHostMsg_AppCacheAccessed to the browser once this
   // methods gets the manifest url passed.
-  WebApplicationCacheHostImpl::OnCacheSelected(selected_cache_id, status);
+  WebApplicationCacheHostImpl::OnCacheSelected(info);
 }
 
 RenderView* RendererWebApplicationCacheHostImpl::GetRenderView() {

@@ -221,11 +221,15 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
          group != groups.end(); ++group) {
       AppCacheDatabase::CacheRecord cache_record;
       database_->FindCacheForGroup(group->group_id, &cache_record);
-      infos.push_back(
-          AppCacheInfo(
-              group->manifest_url, cache_record.cache_size,
-              group->creation_time, group->last_access_time,
-              cache_record.update_time));
+      AppCacheInfo info;
+      info.manifest_url = group->manifest_url;
+      info.creation_time = group->creation_time;
+      info.size = cache_record.cache_size;
+      info.last_access_time = group->last_access_time;
+      info.last_update_time = cache_record.update_time;
+      info.cache_id = cache_record.cache_id;
+      info.is_complete = true;
+      infos.push_back(info);
     }
   }
 }
@@ -282,6 +286,7 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
     (*group) = new AppCacheGroup(
         storage_->service_, group_record_.manifest_url,
         group_record_.group_id);
+    group->get()->set_creation_time(group_record_.creation_time);
     group->get()->AddCache(cache->get());
   }
   DCHECK(group->get()->newest_complete_cache() == cache->get());
@@ -376,8 +381,7 @@ void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
       CreateCacheAndGroupFromRecords(&cache, &group);
     } else {
       group = new AppCacheGroup(
-          storage_->service_, manifest_url_,
-          storage_->NewGroupId());
+          storage_->service_, manifest_url_, storage_->NewGroupId());
     }
   }
   FOR_EACH_DELEGATE(delegates_, OnGroupLoaded(group, manifest_url_));
@@ -483,6 +487,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
   if (success_) {
+    // TODO(kkanetkar): Add to creation time when that's enabled.
     storage_->origins_with_groups_.insert(group_->manifest_url().GetOrigin());
     if (cache_ != group_->newest_complete_cache()) {
       cache_->set_complete(true);
@@ -536,13 +541,11 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
 };
 
 namespace {
-
 bool SortByLength(
     const AppCacheDatabase::FallbackNameSpaceRecord& lhs,
     const AppCacheDatabase::FallbackNameSpaceRecord& rhs) {
   return lhs.namespace_url.spec().length() > rhs.namespace_url.spec().length();
 }
-
 }
 
 void AppCacheStorageImpl::FindMainResponseTask::Run() {

@@ -6,9 +6,9 @@
 
 #include "chrome/common/render_messages.h"
 
-void AppCacheFrontendProxy::OnCacheSelected(int host_id, int64 cache_id ,
-                                            appcache::Status status) {
-  sender_->Send(new AppCacheMsg_CacheSelected(host_id, cache_id, status));
+void AppCacheFrontendProxy::OnCacheSelected(
+    int host_id, const appcache::AppCacheInfo& info) {
+  sender_->Send(new AppCacheMsg_CacheSelected(host_id, info));
 }
 
 void AppCacheFrontendProxy::OnStatusChanged(const std::vector<int>& host_ids,

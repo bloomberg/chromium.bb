@@ -22,8 +22,7 @@ class RendererWebApplicationCacheHostImpl
   virtual void OnLogMessage(appcache::LogLevel log_level,
                             const std::string& message);
   virtual void OnContentBlocked(const GURL& manifest_url);
-  virtual void OnCacheSelected(int64 selected_cache_id,
-                               appcache::Status status);
+  virtual void OnCacheSelected(const appcache::AppCacheInfo& info);
 
  private:
   RenderView* GetRenderView();

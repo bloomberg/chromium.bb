@@ -22,9 +22,9 @@ bool AppCacheDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void AppCacheDispatcher::OnCacheSelected(int host_id, int64 cache_id,
-                                         appcache::Status status) {
-  frontend_impl_.OnCacheSelected(host_id, cache_id, status);
+void AppCacheDispatcher::OnCacheSelected(
+    int host_id, const appcache::AppCacheInfo& info) {
+  frontend_impl_.OnCacheSelected(host_id, info);
 }
 
 void AppCacheDispatcher::OnStatusChanged(const std::vector<int>& host_ids,

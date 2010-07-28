@@ -59,16 +59,17 @@ class SimpleFrontendProxy
 
   void clear_appcache_system() { system_ = NULL; }
 
-  virtual void OnCacheSelected(int host_id, int64 cache_id ,
-                               appcache::Status status) {
+  virtual void OnCacheSelected(int host_id,
+      const appcache::AppCacheInfo& info) {
     if (!system_)
       return;
     if (system_->is_io_thread())
       system_->ui_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
           this, &SimpleFrontendProxy::OnCacheSelected,
-          host_id, cache_id, status));
-    else if (system_->is_ui_thread())
-      system_->frontend_impl_.OnCacheSelected(host_id, cache_id, status);
+          host_id, info));
+    else if (system_->is_ui_thread()) {
+      system_->frontend_impl_.OnCacheSelected(host_id, info);
+    }
     else
       NOTREACHED();
   }
@@ -208,6 +209,20 @@ class SimpleBackendProxy
       system_->backend_impl_->SelectCache(host_id, document_url,
                                           cache_document_was_loaded_from,
                                           manifest_url);
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  virtual void GetResourceList(
+      int host_id,
+      std::vector<appcache::AppCacheResourceInfo>* resource_infos) {
+    if (system_->is_ui_thread()) {
+      system_->io_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &SimpleBackendProxy::GetResourceList,
+          host_id, resource_infos));
+    } else if (system_->is_io_thread()) {
+      system_->backend_impl_->GetResourceList(host_id, resource_infos);
     } else {
       NOTREACHED();
     }

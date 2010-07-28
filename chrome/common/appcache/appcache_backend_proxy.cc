@@ -63,3 +63,8 @@ bool AppCacheBackendProxy::SwapCache(int host_id) {
   sender_->Send(new AppCacheMsg_SwapCache(host_id, &result));
   return result;
 }
+
+void AppCacheBackendProxy::GetResourceList(
+    int host_id, std::vector<appcache::AppCacheResourceInfo>* resource_infos) {
+  sender_->Send(new AppCacheMsg_GetResourceList(host_id, resource_infos));
+}

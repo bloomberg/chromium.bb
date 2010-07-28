@@ -252,6 +252,25 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
   return NULL;
 }
 
+void AppCacheHost::GetResourceList(
+    std::vector<AppCacheResourceInfo>* resource_infos) {
+  if (associated_cache_.get() && associated_cache_->is_complete()) {
+    for (AppCache::EntryMap::const_iterator it =
+         associated_cache_->entries().begin();
+         it != associated_cache_->entries().end(); ++it) {
+      AppCacheResourceInfo info;
+      info.url = it->first;
+      info.is_master = it->second.IsMaster();
+      info.is_manifest = it->second.IsManifest();
+      info.is_fallback = it->second.IsFallback();
+      info.is_foreign = it->second.IsForeign();
+      info.is_explicit = it->second.IsExplicit();
+      info.size = it->second.response_size();
+      resource_infos->push_back(info);
+    }
+  }
+}
+
 Status AppCacheHost::GetStatus() {
   // 6.9.8 Application cache API
   AppCache* cache = associated_cache();
@@ -417,12 +436,23 @@ void AppCacheHost::AssociateCache(AppCache* cache) {
 
   associated_cache_ = cache;
   SetSwappableCache(cache ? cache->owning_group() : NULL);
-
+  AppCacheInfo info;
   if (cache) {
     cache->AssociateHost(this);
-    frontend_->OnCacheSelected(host_id_, cache->cache_id(), GetStatus());
+    info.cache_id = cache->cache_id();
+    info.status = GetStatus();
+    info.is_complete = cache->is_complete();
+    if (cache->is_complete()) {
+      // TODO(kkanetkar): Get manifest URL info for NULL owning_group().
+      info.manifest_url = cache->owning_group()->manifest_url();
+      info.last_update_time = cache->update_time();
+      info.creation_time = cache->owning_group()->creation_time();
+      info.size = cache->cache_size();
+    }
+    frontend_->OnCacheSelected(host_id_, info);
   } else {
-    frontend_->OnCacheSelected(host_id_, kNoCacheId, UNCACHED);
+    // No Cache.
+    frontend_->OnCacheSelected(host_id_, info);
   }
 }
 

@@ -9,8 +9,9 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/time.h"
+#include "googleurl/src/gurl.h"
 
-class GURL;
 class URLRequest;
 
 namespace appcache {
@@ -51,11 +52,37 @@ enum LogLevel {
   LOG_ERROR,
 };
 
+struct AppCacheInfo {
+  GURL manifest_url;
+  base::Time creation_time;
+  base::Time last_update_time;
+  base::Time last_access_time;
+  int64 cache_id;
+  Status status;
+  int64 size;
+  bool is_complete;
+  AppCacheInfo() : cache_id(kNoCacheId), status(UNCACHED),
+                   size(0), is_complete(false) { }
+};
+
+typedef std::vector<AppCacheInfo> AppCacheInfoVector;
+
+// POD type to hold information about a single appcache resource.
+struct AppCacheResourceInfo {
+  GURL url;
+  int64 size;
+  bool is_master;
+  bool is_manifest;
+  bool is_fallback;
+  bool is_foreign;
+  bool is_explicit;
+};
+
 // Interface used by backend (browser-process) to talk to frontend (renderer).
 class AppCacheFrontend {
  public:
-  virtual void OnCacheSelected(int host_id, int64 cache_id ,
-                               Status status) = 0;
+  virtual void OnCacheSelected(
+      int host_id, const appcache::AppCacheInfo& info) = 0;
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
                                Status status) = 0;
   virtual void OnEventRaised(const std::vector<int>& host_ids,
@@ -93,6 +120,8 @@ class AppCacheBackend {
   virtual Status GetStatus(int host_id) = 0;
   virtual bool StartUpdate(int host_id) = 0;
   virtual bool SwapCache(int host_id) = 0;
+  virtual void GetResourceList(
+      int host_id, std::vector<AppCacheResourceInfo>* resource_infos) = 0;
 
   virtual ~AppCacheBackend() {}
 };

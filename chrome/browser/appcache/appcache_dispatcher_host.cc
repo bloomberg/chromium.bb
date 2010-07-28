@@ -61,6 +61,7 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& msg,
   IPC_BEGIN_MESSAGE_MAP_EX(AppCacheDispatcherHost, msg, *msg_ok)
     IPC_MESSAGE_HANDLER(AppCacheMsg_RegisterHost, OnRegisterHost);
     IPC_MESSAGE_HANDLER(AppCacheMsg_UnregisterHost, OnUnregisterHost);
+    IPC_MESSAGE_HANDLER(AppCacheMsg_GetResourceList, OnGetResourceList);
     IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCache, OnSelectCache);
     IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCacheForWorker,
                         OnSelectCacheForWorker);
@@ -102,8 +103,7 @@ void AppCacheDispatcherHost::OnSelectCache(
       ReceivedBadMessage(AppCacheMsg_SelectCache::ID);
     }
   } else {
-    frontend_proxy_.OnCacheSelected(
-        host_id, appcache::kNoCacheId, appcache::UNCACHED);
+    frontend_proxy_.OnCacheSelected(host_id, appcache::AppCacheInfo());
   }
 }
 
@@ -115,8 +115,7 @@ void AppCacheDispatcherHost::OnSelectCacheForWorker(
       ReceivedBadMessage(AppCacheMsg_SelectCacheForWorker::ID);
     }
   } else {
-    frontend_proxy_.OnCacheSelected(
-        host_id, appcache::kNoCacheId, appcache::UNCACHED);
+    frontend_proxy_.OnCacheSelected(host_id, appcache::AppCacheInfo());
   }
 }
 
@@ -126,8 +125,7 @@ void AppCacheDispatcherHost::OnSelectCacheForSharedWorker(
     if (!backend_impl_.SelectCacheForSharedWorker(host_id, appcache_id))
       ReceivedBadMessage(AppCacheMsg_SelectCacheForSharedWorker::ID);
   } else {
-    frontend_proxy_.OnCacheSelected(
-        host_id, appcache::kNoCacheId, appcache::UNCACHED);
+    frontend_proxy_.OnCacheSelected(host_id, appcache::AppCacheInfo());
   }
 }
 
@@ -140,6 +138,12 @@ void AppCacheDispatcherHost::OnMarkAsForeignEntry(
       ReceivedBadMessage(AppCacheMsg_MarkAsForeignEntry::ID);
     }
   }
+}
+
+void AppCacheDispatcherHost::OnGetResourceList(
+    int host_id, std::vector<appcache::AppCacheResourceInfo>* params) {
+  if (appcache_service_.get())
+    backend_impl_.GetResourceList(host_id, params);
 }
 
 void AppCacheDispatcherHost::OnGetStatus(int host_id,

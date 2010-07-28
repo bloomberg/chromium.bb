@@ -167,8 +167,8 @@ class MockFrontend : public AppCacheFrontend {
         start_update_trigger_(CHECKING_EVENT), update_(NULL) {
   }
 
-  virtual void OnCacheSelected(int host_id, int64 cache_id,
-                               Status status) {
+  virtual void OnCacheSelected(
+      int host_id, const appcache::AppCacheInfo& info) {
   }
 
   virtual void OnStatusChanged(const std::vector<int>& host_ids,

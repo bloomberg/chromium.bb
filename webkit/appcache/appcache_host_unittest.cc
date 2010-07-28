@@ -34,11 +34,11 @@ class AppCacheHostTest : public testing::Test {
           last_event_id_(appcache::OBSOLETE_EVENT) {
     }
 
-    virtual void OnCacheSelected(int host_id, int64 cache_id ,
-                                 appcache::Status status) {
+    virtual void OnCacheSelected(
+        int host_id, const appcache::AppCacheInfo& info) {
       last_host_id_ = host_id;
-      last_cache_id_ = cache_id;
-      last_status_ = status;
+      last_cache_id_ = info.cache_id;
+      last_status_ = info.status;
     }
 
     virtual void OnStatusChanged(const std::vector<int>& host_ids,

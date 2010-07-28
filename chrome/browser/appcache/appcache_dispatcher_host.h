@@ -59,7 +59,9 @@ class AppCacheDispatcherHost {
   void OnGetStatus(int host_id, IPC::Message* reply_msg);
   void OnStartUpdate(int host_id, IPC::Message* reply_msg);
   void OnSwapCache(int host_id, IPC::Message* reply_msg);
-
+  void OnGetResourceList(
+      int host_id,
+      std::vector<appcache::AppCacheResourceInfo>* resource_infos);
   void GetStatusCallback(appcache::Status status, void* param);
   void StartUpdateCallback(bool result, void* param);
   void SwapCacheCallback(bool result, void* param);

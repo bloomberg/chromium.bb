@@ -36,6 +36,9 @@ class AppCacheBackendProxy : public appcache::AppCacheBackend {
   virtual appcache::Status GetStatus(int host_id);
   virtual bool StartUpdate(int host_id);
   virtual bool SwapCache(int host_id);
+  virtual void GetResourceList(
+      int host_id,
+      std::vector<appcache::AppCacheResourceInfo>* resource_infos);
 
  private:
   IPC::Message::Sender* sender_;

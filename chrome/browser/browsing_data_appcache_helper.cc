@@ -118,12 +118,9 @@ void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
       return;
   }
 
-  appcache_infos_.push_back(
-      appcache::AppCacheInfo(manifest_url,
-                             0,
-                             base::Time(),
-                             base::Time(),
-                             base::Time()));
+  appcache::AppCacheInfo info;
+  info.manifest_url = manifest_url;
+  appcache_infos_.push_back(info);
 }
 
 void CannedBrowsingDataAppCacheHelper::Reset() {

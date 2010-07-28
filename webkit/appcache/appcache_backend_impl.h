@@ -32,6 +32,8 @@ class AppCacheBackendImpl {
                    const GURL& document_url,
                    const int64 cache_document_was_loaded_from,
                    const GURL& manifest_url);
+  void GetResourceList(
+      int host_id, std::vector<AppCacheResourceInfo>* resource_infos);
   bool SelectCacheForWorker(int host_id, int parent_process_id,
                             int parent_host_id);
   bool SelectCacheForSharedWorker(int host_id, int64 appcache_id);

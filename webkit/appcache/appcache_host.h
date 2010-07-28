@@ -74,6 +74,9 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   AppCacheRequestHandler* CreateRequestHandler(
       URLRequest* request, ResourceType::Type resource_type);
 
+  // Support for devtools inspecting appcache resources.
+  void GetResourceList(std::vector<AppCacheResourceInfo>* resource_infos);
+
   // Establishes an association between this host and a cache. 'cache' may be
   // NULL to break any existing association. Associations are established
   // either thru the cache selection algorithm implemented (in this class),

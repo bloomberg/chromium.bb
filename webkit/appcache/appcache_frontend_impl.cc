@@ -14,11 +14,11 @@ inline WebApplicationCacheHostImpl* GetHost(int id) {
   return WebApplicationCacheHostImpl::FromId(id);
 }
 
-void AppCacheFrontendImpl::OnCacheSelected(int host_id, int64 cache_id ,
-                                           Status status) {
+void AppCacheFrontendImpl::OnCacheSelected(
+    int host_id, const AppCacheInfo& info) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
-    host->OnCacheSelected(cache_id, status);
+    host->OnCacheSelected(info);
 }
 
 void AppCacheFrontendImpl::OnStatusChanged(const std::vector<int>& host_ids,

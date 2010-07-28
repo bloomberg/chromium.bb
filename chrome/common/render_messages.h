@@ -3144,6 +3144,90 @@ struct ParamTraits<ViewMsg_ExtensionExtentsUpdated_Params> {
   }
 };
 
+template<>
+struct ParamTraits<appcache::AppCacheResourceInfo> {
+  typedef appcache::AppCacheResourceInfo param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.url);
+    WriteParam(m, p.size);
+    WriteParam(m, p.is_manifest);
+    WriteParam(m, p.is_master);
+    WriteParam(m, p.is_fallback);
+    WriteParam(m, p.is_foreign);
+    WriteParam(m, p.is_explicit);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->url) &&
+      ReadParam(m, iter, &p->size) &&
+      ReadParam(m, iter, &p->is_manifest) &&
+      ReadParam(m, iter, &p->is_master) &&
+      ReadParam(m, iter, &p->is_fallback) &&
+      ReadParam(m, iter, &p->is_foreign) &&
+      ReadParam(m, iter, &p->is_explicit);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.url, l);
+    l->append(L", ");
+    LogParam(p.size, l);
+    l->append(L", ");
+    LogParam(p.is_manifest, l);
+    l->append(L", ");
+    LogParam(p.is_master, l);
+    l->append(L", ");
+    LogParam(p.is_fallback, l);
+    l->append(L", ");
+    LogParam(p.is_foreign, l);
+    l->append(L", ");
+    LogParam(p.is_explicit, l);
+    l->append(L")");
+  }
+};
+
+template <>
+  struct ParamTraits<appcache::AppCacheInfo> {
+    typedef appcache::AppCacheInfo param_type;
+    static void Write(Message* m, const param_type& p) {
+      WriteParam(m, p.manifest_url);
+      WriteParam(m, p.creation_time);
+      WriteParam(m, p.last_update_time);
+      WriteParam(m, p.last_access_time);
+      WriteParam(m, p.cache_id);
+      WriteParam(m, p.status);
+      WriteParam(m, p.size);
+      WriteParam(m, p.is_complete);
+    }
+    static bool Read(const Message* m, void** iter, param_type* p) {
+      return ReadParam(m, iter, &p->manifest_url) &&
+          ReadParam(m, iter, &p->creation_time) &&
+          ReadParam(m, iter, &p->last_update_time) &&
+          ReadParam(m, iter, &p->last_access_time) &&
+          ReadParam(m, iter, &p->cache_id) &&
+          ReadParam(m, iter, &p->status) &&
+          ReadParam(m, iter, &p->size) &&
+          ReadParam(m, iter, &p->is_complete);
+    }
+    static void Log(const param_type& p, std::wstring* l) {
+      l->append(L"(");
+      LogParam(p.manifest_url, l);
+      l->append(L", ");
+      LogParam(p.creation_time, l);
+      l->append(L", ");
+      LogParam(p.last_update_time, l);
+      l->append(L", ");
+      LogParam(p.last_access_time, l);
+      l->append(L", ");
+      LogParam(p.cache_id, l);
+      l->append(L", ");
+      LogParam(p.status, l);
+      l->append(L", ");
+      LogParam(p.size, l);
+      l->append(L")");
+      LogParam(p.is_complete, l);
+      l->append(L", ");
+    }
+  };
+
 template <>
 struct ParamTraits<WindowContainerType> {
   typedef WindowContainerType param_type;

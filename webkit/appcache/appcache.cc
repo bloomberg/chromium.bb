@@ -21,6 +21,7 @@ AppCache::AppCache(AppCacheService *service, int64 cache_id)
       owning_group_(NULL),
       online_whitelist_all_(false),
       is_complete_(false),
+      cache_size_(0),
       service_(service) {
   service_->storage()->working_set()->AddCache(this);
 }
@@ -51,7 +52,8 @@ bool AppCache::AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry) {
   // Entry already exists.  Merge the types of the new and existing entries.
   if (!ret.second)
     ret.first->second.add_types(entry.types());
-
+  else
+    cache_size_ += entry.response_size();  // New entry. Add to cache size.
   return ret.second;
 }
 
@@ -61,12 +63,10 @@ AppCacheEntry* AppCache::GetEntry(const GURL& url) {
 }
 
 namespace {
-
 bool SortByLength(
     const FallbackNamespace& lhs, const FallbackNamespace& rhs) {
   return lhs.first.spec().length() > rhs.first.spec().length();
 }
-
 }
 
 void AppCache::InitializeWithManifest(Manifest* manifest) {
@@ -161,7 +161,6 @@ void AppCache::ToDatabaseRecords(
     }
   }
 }
-
 
 bool AppCache::FindResponseForRequest(const GURL& url,
     AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,

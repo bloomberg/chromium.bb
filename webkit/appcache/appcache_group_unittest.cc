@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/mock_appcache_service.h"
 #include "webkit/appcache/appcache_update_job.h"
+#include "webkit/appcache/appcache_interfaces.h"
 
 namespace {
 
@@ -18,11 +21,11 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
         last_status_(appcache::OBSOLETE) {
   }
 
-  virtual void OnCacheSelected(int host_id, int64 cache_id ,
-                               appcache::Status status) {
+  virtual void OnCacheSelected(
+      int host_id, const appcache::AppCacheInfo& info) {
     last_host_id_ = host_id;
-    last_cache_id_ = cache_id;
-    last_status_ = status;
+    last_cache_id_ = info.cache_id;
+    last_status_ = info.status;
   }
 
   virtual void OnStatusChanged(const std::vector<int>& host_ids,

@@ -21,6 +21,7 @@ using WebKit::WebFrame;
 using WebKit::WebURLRequest;
 using WebKit::WebURL;
 using WebKit::WebURLResponse;
+using WebKit::WebVector;
 
 namespace appcache {
 
@@ -87,10 +88,12 @@ WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {
   all_hosts()->Remove(host_id_);
 }
 
-void WebApplicationCacheHostImpl::OnCacheSelected(int64 selected_cache_id,
-                                                  appcache::Status status) {
-  status_ = status;
+void WebApplicationCacheHostImpl::OnCacheSelected(
+    const appcache::AppCacheInfo& info) {
+  status_ = info.status;
   has_status_ = true;
+  cache_info_ = info;
+  client_->didChangeCacheAssociation();
 }
 
 void WebApplicationCacheHostImpl::OnStatusChanged(appcache::Status status) {
@@ -167,6 +170,38 @@ void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
   backend_->SelectCache(host_id_, document_url_,
                         document_response_.appCacheID(),
                         GURL());
+}
+
+void WebApplicationCacheHostImpl::getAssociatedCacheInfo(
+    WebApplicationCacheHost::CacheInfo* info) {
+  if (!cache_info_.is_complete)
+    return;
+  info->manifestURL = cache_info_.manifest_url;
+  info->creationTime = cache_info_.creation_time.ToDoubleT();
+  info->updateTime = cache_info_.last_update_time.ToDoubleT();
+  info->totalSize = cache_info_.size;
+}
+
+void WebApplicationCacheHostImpl::getResourceList(
+    WebVector<ResourceInfo>* resources) {
+  if (!cache_info_.is_complete)
+    return;
+  std::vector<AppCacheResourceInfo> resource_infos;
+  backend_->GetResourceList(host_id_, &resource_infos);
+
+  WebVector<ResourceInfo> web_resources(resource_infos.size());
+  // Convert resource_infos to WebKit API.
+  for (size_t i = 0; i < resource_infos.size(); ++i) {
+    web_resources[i].size = resource_infos[i].size;
+    web_resources[i].isMaster = resource_infos[i].is_master;
+    web_resources[i].isExplicit = resource_infos[i].is_explicit;
+    web_resources[i].isManifest = resource_infos[i].is_manifest;
+    web_resources[i].isForeign = resource_infos[i].is_foreign;
+    web_resources[i].isFallback = resource_infos[i].is_fallback;
+    web_resources[i].url = resource_infos[i].url;
+  }
+
+  resources->swap(web_resources);
 }
 
 bool WebApplicationCacheHostImpl::selectCacheWithManifest(
