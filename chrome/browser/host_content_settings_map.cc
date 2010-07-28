@@ -338,7 +338,7 @@ void HostContentSettingsMap::SetDefaultContentSetting(
   }
   updating_preferences_ = false;
 
-  NotifyObservers(ContentSettingsDetails(true));
+  NotifyObservers(ContentSettingsDetails(content_type));
 }
 
 void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
@@ -403,7 +403,7 @@ void HostContentSettingsMap::SetContentSetting(const Pattern& pattern,
     ScopedPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
   updating_preferences_ = false;
 
-  NotifyObservers(ContentSettingsDetails(pattern));
+  NotifyObservers(ContentSettingsDetails(pattern, content_type));
 }
 
 void HostContentSettingsMap::AddExceptionForURL(
@@ -466,7 +466,7 @@ void HostContentSettingsMap::ClearSettingsForOneType(
     ScopedPrefUpdate update(prefs, prefs::kContentSettingsPatterns);
   updating_preferences_ = false;
 
-  NotifyObservers(ContentSettingsDetails(true));
+  NotifyObservers(ContentSettingsDetails(content_type));
 }
 
 void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
@@ -510,7 +510,7 @@ void HostContentSettingsMap::ResetToDefaults() {
     prefs->ClearPref(prefs::kContentSettingsPatterns);
     prefs->ClearPref(prefs::kBlockThirdPartyCookies);
     updating_preferences_ = false;
-    NotifyObservers(ContentSettingsDetails(true));
+    NotifyObservers(ContentSettingsDetails());
   }
 }
 
@@ -542,7 +542,7 @@ void HostContentSettingsMap::Observe(NotificationType type,
     }
 
     if (!is_off_the_record_)
-      NotifyObservers(ContentSettingsDetails(true));
+      NotifyObservers(ContentSettingsDetails());
   } else if (NotificationType::PROFILE_DESTROYED == type) {
     UnregisterObservers();
   } else {

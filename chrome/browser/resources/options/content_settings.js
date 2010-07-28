@@ -52,7 +52,7 @@ ContentSettings.prototype = {
       imagesExceptionsList.redraw();
     };
 
-    options.contentSettings.ExceptionsList.decorate($('imagesExceptionsList'));
+    options.contentSettings.ExceptionsArea.decorate($('imagesExceptionsArea'));
   },
 
   /**
@@ -93,6 +93,7 @@ ContentSettings.setInitialContentFilterSettingsValue = function(dict) {
  *     is the filter string, and the second is the setting (allow/block).
  */
 ContentSettings.setImagesExceptions = function(list) {
+  imagesExceptionsList.clear();
   for (var i = 0; i < list.length; ++i) {
     imagesExceptionsList.addException(list[i]);
   }

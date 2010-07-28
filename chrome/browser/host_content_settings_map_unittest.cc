@@ -42,6 +42,7 @@ class StubSettingsObserver : public NotificationObserver {
     last_notifier = content_settings.ptr();
     last_pattern = settings_details.ptr()->pattern();
     last_update_all = settings_details.ptr()->update_all();
+    last_update_all_types = settings_details.ptr()->update_all_types();
     // This checks that calling a Get function from an observer doesn't
     // deadlock.
     last_notifier->GetContentSettings(GURL("http://random-hostname.com/"));
@@ -50,6 +51,7 @@ class StubSettingsObserver : public NotificationObserver {
   HostContentSettingsMap* last_notifier;
   HostContentSettingsMap::Pattern last_pattern;
   bool last_update_all;
+  bool last_update_all_types;
   int counter;
 
  private:
@@ -250,23 +252,27 @@ TEST_F(HostContentSettingsMapTest, Observer) {
   EXPECT_EQ(host_content_settings_map, observer.last_notifier);
   EXPECT_EQ(pattern, observer.last_pattern);
   EXPECT_FALSE(observer.last_update_all);
+  EXPECT_FALSE(observer.last_update_all_types);
   EXPECT_EQ(1, observer.counter);
 
   host_content_settings_map->ClearSettingsForOneType(
       CONTENT_SETTINGS_TYPE_IMAGES);
   EXPECT_EQ(host_content_settings_map, observer.last_notifier);
   EXPECT_TRUE(observer.last_update_all);
+  EXPECT_FALSE(observer.last_update_all_types);
   EXPECT_EQ(2, observer.counter);
 
   host_content_settings_map->ResetToDefaults();
   EXPECT_EQ(host_content_settings_map, observer.last_notifier);
   EXPECT_TRUE(observer.last_update_all);
+  EXPECT_TRUE(observer.last_update_all_types);
   EXPECT_EQ(3, observer.counter);
 
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(host_content_settings_map, observer.last_notifier);
   EXPECT_TRUE(observer.last_update_all);
+  EXPECT_FALSE(observer.last_update_all_types);
   EXPECT_EQ(4, observer.counter);
 }
 

@@ -36,25 +36,28 @@ cr.define('options.contentSettings', function() {
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
+      // TODO(estade): these should be plain text when the items are not
+      // actively being edited.
       var input = cr.doc.createElement('input');
       input.type = 'text';
       input.value = this.exceptionsPattern;
       this.appendChild(input);
+      input.className = 'exceptionInput';
 
       var select = cr.doc.createElement('select');
       var option_allow = cr.doc.createElement('option');
       option_allow.textContent = templateData.allowException;
       var option_block = cr.doc.createElement('option');
       option_block.textContent = templateData.blockException;
-
       select.appendChild(option_allow);
       select.appendChild(option_block);
       this.appendChild(select);
+      select.className = 'exceptionSelect';
 
       this.input = input;
       this.select = select;
       this.option_allow = option_allow;
-      this.option_block = option_block
+      this.option_block = option_block;
     }
   };
 
@@ -86,16 +89,65 @@ cr.define('options.contentSettings', function() {
     },
 
     /**
-     * Adds an exception to the model.
+     * Adds an exception to the js model.
      * @param {Array} entry A pair of the form [filter, setting].
      */
     addException: function(entry) {
       this.dataModel.push(entry);
+    },
+
+    /**
+     * Removes all exceptions from the js model.
+     */
+    clear: function() {
+      this.dataModel = new ArrayDataModel([]);
+    },
+
+    /**
+     * Removes all selected rows from browser's model.
+     */
+    removeSelectedRows: function() {
+      var selection = this.selectionModel;
+      var removePatterns = [];
+      var selectedItems = this.selectedItems;
+      for (var i = 0; i < selectedItems.length; ++i) {
+        removePatterns.push(selectedItems[i][0]);
+      }
+
+      chrome.send('removeImageExceptions', removePatterns);
+    }
+  };
+
+  var ExceptionsArea = cr.ui.define('div');
+
+  ExceptionsArea.prototype = {
+    __proto__: HTMLDivElement.prototype,
+
+    decorate: function() {
+      ExceptionsList.decorate($('imagesExceptionsList'));
+
+      var addRow = cr.doc.createElement('button');
+      addRow.textContent = templateData.addExceptionRow;
+      this.appendChild(addRow);
+
+      // TODO(estade): disable "Remove" when no row is highlighted.
+      var removeRow = cr.doc.createElement('button');
+      removeRow.textContent = templateData.removeExceptionRow;
+      this.appendChild(removeRow);
+
+      removeRow.onclick = function(event) {
+        imagesExceptionsList.removeSelectedRows();
+      };
+
+      addRow.onclick = function(event) {
+        // TODO(estade): implement this.
+      };
     }
   };
 
   return {
     ExceptionsListItem: ExceptionsListItem,
-    ExceptionsList: ExceptionsList
+    ExceptionsList: ExceptionsList,
+    ExceptionsArea: ExceptionsArea
   };
 });

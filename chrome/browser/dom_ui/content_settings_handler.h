@@ -7,6 +7,8 @@
 #pragma once
 
 #include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 class ContentSettingsHandler : public OptionsPageUIHandler {
  public:
@@ -20,10 +22,18 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
 
   virtual void RegisterMessages();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   void UpdateImagesExceptionsViewFromModel();
   void SetContentFilter(const Value* value);
   void SetAllowThirdPartyCookies(const Value* value);
+  void RemoveExceptions(const Value* value);
+
+  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);
 };

@@ -10,9 +10,14 @@
 #include "base/values.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+
+typedef HostContentSettingsMap::ContentSettingsDetails ContentSettingsDetails;
 
 namespace {
 
@@ -106,6 +111,10 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON));
   localized_strings->SetString(L"blockException",
       l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON));
+  localized_strings->SetString(L"addExceptionRow",
+      l10n_util::GetString(IDS_EXCEPTIONS_ADD_BUTTON));
+  localized_strings->SetString(L"removeExceptionRow",
+      l10n_util::GetString(IDS_EXCEPTIONS_REMOVE_BUTTON));
 
   // Cookies filter.
   localized_strings->SetString(L"cookies_tab_label",
@@ -221,12 +230,31 @@ void ContentSettingsHandler::Initialize() {
       L"ContentSettings.setBlockThirdPartyCookies", *bool_value.get());
 
   UpdateImagesExceptionsViewFromModel();
+  notification_registrar_.Add(
+      this, NotificationType::CONTENT_SETTINGS_CHANGED,
+      Source<const HostContentSettingsMap>(settings_map));
 }
 
 // TODO(estade): generalize this function to work on all content settings types
 // rather than just images.
-// TODO(estade): call this in response to content exceptions change
-// notifications.
+void ContentSettingsHandler::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  if (type != NotificationType::CONTENT_SETTINGS_CHANGED)
+    return OptionsPageUIHandler::Observe(type, source, details);
+
+  const ContentSettingsDetails* settings_details =
+      static_cast<Details<const ContentSettingsDetails> >(details).ptr();
+
+  if (settings_details->type() == CONTENT_SETTINGS_TYPE_IMAGES ||
+      settings_details->update_all_types()) {
+    // TODO(estade): we pretend update_all() is always true.
+    UpdateImagesExceptionsViewFromModel();
+  }
+}
+
+// TODO(estade): generalize this function to work on all content settings types
+// rather than just images.
 void ContentSettingsHandler::UpdateImagesExceptionsViewFromModel() {
   HostContentSettingsMap::SettingsForOneType entries;
   const HostContentSettingsMap* settings_map =
@@ -253,6 +281,9 @@ void ContentSettingsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("setAllowThirdPartyCookies",
       NewCallback(this,
                   &ContentSettingsHandler::SetAllowThirdPartyCookies));
+  dom_ui_->RegisterMessageCallback("removeImageExceptions",
+      NewCallback(this,
+                  &ContentSettingsHandler::RemoveExceptions));
 }
 
 void ContentSettingsHandler::SetContentFilter(const Value* value) {
@@ -275,4 +306,21 @@ void ContentSettingsHandler::SetAllowThirdPartyCookies(const Value* value) {
 
   dom_ui_->GetProfile()->GetHostContentSettingsMap()->SetBlockThirdPartyCookies(
       allow == L"true");
+}
+
+// TODO(estade): generalize this function to work on all content settings types
+// rather than just images.
+void ContentSettingsHandler::RemoveExceptions(const Value* value) {
+  const ListValue* list_value = static_cast<const ListValue*>(value);
+
+  HostContentSettingsMap* settings_map =
+      dom_ui_->GetProfile()->GetHostContentSettingsMap();
+  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+    std::string pattern;
+    bool rv = list_value->GetString(i, &pattern);
+    DCHECK(rv);
+    settings_map->SetContentSetting(HostContentSettingsMap::Pattern(pattern),
+                                    CONTENT_SETTINGS_TYPE_IMAGES,
+                                    CONTENT_SETTING_DEFAULT);
+  }
 }

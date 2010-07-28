@@ -73,21 +73,34 @@ class HostContentSettingsMap
   // for each pattern.
   class ContentSettingsDetails {
    public:
-    explicit ContentSettingsDetails(const Pattern& pattern)
-        : pattern_(pattern), update_all_(false) {}
+    // Update the setting that matches this pattern/content type.
+    ContentSettingsDetails(const Pattern& pattern, ContentSettingsType type)
+        : pattern_(pattern), type_(type) {}
 
-    explicit ContentSettingsDetails(bool update_all)
-        : pattern_(), update_all_(update_all) {}
+    // No pattern is specified. Update all settings for this content type.
+    explicit ContentSettingsDetails(ContentSettingsType type) : type_(type) {}
+
+    // No content type or pattern is specified. Update all settings.
+    ContentSettingsDetails() : type_(CONTENT_SETTINGS_TYPE_DEFAULT) {}
 
     // The pattern whose settings have changed.
     const Pattern& pattern() const { return pattern_; }
 
-    // True if many settings changed at once.
-    bool update_all() const { return update_all_; }
+    // True if all settings should be updated for the given type.
+    bool update_all() const { return pattern_.AsString().empty(); }
+
+    // The type of the pattern whose settings have changed.
+    ContentSettingsType type() const { return type_; }
+
+    // True if all types should be updated. If update_all() is false, this will
+    // be false as well (although the reverse does not hold true).
+    bool update_all_types() const {
+      return CONTENT_SETTINGS_TYPE_DEFAULT == type_;
+    }
 
    private:
     Pattern pattern_;
-    bool update_all_;
+    ContentSettingsType type_;
   };
 
 
