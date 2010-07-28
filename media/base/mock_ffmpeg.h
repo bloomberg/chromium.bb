@@ -19,7 +19,7 @@ class MockFFmpeg {
   // TODO(ajwong): Organize this class, and make sure that all mock entrypoints
   // are still used.
   MOCK_METHOD0(AVCodecInit, void());
-  MOCK_METHOD1(AVRegisterProtocol, int(URLProtocol* protocol));
+  MOCK_METHOD2(AVRegisterProtocol2, int(URLProtocol* protocol, int size));
   MOCK_METHOD0(AVRegisterAll, void());
   MOCK_METHOD1(AVRegisterLockManager, int(int (*cb)(void**, enum AVLockOp)));
 

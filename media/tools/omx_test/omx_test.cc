@@ -274,7 +274,7 @@ static bool InitFFmpeg() {
     return false;
   avcodec_init();
   av_register_all();
-  av_register_protocol(&kFFmpegFileProtocol);
+  av_register_protocol2(&kFFmpegFileProtocol, sizeof(kFFmpegFileProtocol));
   return true;
 }
 
