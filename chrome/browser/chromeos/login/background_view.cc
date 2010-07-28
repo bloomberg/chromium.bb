@@ -150,12 +150,6 @@ void BackgroundView::OpenButtonOptions(const views::View* button_view) const {
   // TODO(avayvod): Add some dialog for options or remove them completely.
 }
 
-bool BackgroundView::IsButtonVisible(const views::View* button_view) const {
-  if (button_view == status_area_->feedback_view())
-    return false;
-  return true;
-}
-
 bool BackgroundView::IsBrowserMode() const {
   return false;
 }
@@ -173,6 +167,8 @@ void BackgroundView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
+  // Feedback button shoudn't be visible on OOBE/login/screen lock.
+  status_area_->feedback_view()->SetVisible(false);
   AddChildView(status_area_);
 }
 

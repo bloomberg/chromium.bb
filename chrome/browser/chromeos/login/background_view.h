@@ -67,7 +67,6 @@ class BackgroundView : public views::View, public StatusAreaHost {
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const;
   virtual void OpenButtonOptions(const views::View* button_view) const;
-  virtual bool IsButtonVisible(const views::View* button_view) const;
   virtual bool IsBrowserMode() const;
   virtual bool IsScreenLockerMode() const;
 
