@@ -63,7 +63,15 @@ GoogleAuthenticator::~GoogleAuthenticator() {}
 
 void GoogleAuthenticator::CancelClientLogin() {
   if (gaia_authenticator_->HasPendingFetch()) {
+    LOG(INFO) << "Canceling ClientLogin attempt.";
     gaia_authenticator_->CancelRequest();
+
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(this,
+                          &GoogleAuthenticator::LoadLocalaccount,
+                          std::string(kLocalaccountFile)));
+
     CheckOffline("Login has timed out; please try again!");
   }
 }

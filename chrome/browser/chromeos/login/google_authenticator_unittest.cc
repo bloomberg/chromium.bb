@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
@@ -49,6 +48,41 @@ class MockConsumer : public LoginStatusConsumer {
   MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
   MOCK_METHOD1(OnPasswordChangeDetected,
       void(const GaiaAuthConsumer::ClientLoginResult& result));
+};
+
+// Simulates a URL fetch by posting a delayed task.  This fetch expects to be
+// canceled, and fails the test if it is not
+class ExpectCanceledFetcher : public URLFetcher {
+ public:
+  ExpectCanceledFetcher(bool success,
+                        const GURL& url,
+                        URLFetcher::RequestType request_type,
+                        URLFetcher::Delegate* d)
+      : URLFetcher(url, request_type, d) {
+  }
+
+  ~ExpectCanceledFetcher() {
+    task_->Cancel();
+  }
+
+  static void CompleteFetch() {
+    ADD_FAILURE() << "Fetch completed in ExpectCanceledFetcher!";
+    MessageLoop::current()->Quit();  // Allow exiting even if we mess up.
+  }
+
+  void Start() {
+    LOG(INFO) << "Delaying fetch completion in mock";
+    task_ = NewRunnableFunction(&ExpectCanceledFetcher::CompleteFetch);
+    ChromeThread::PostDelayedTask(ChromeThread::UI,
+                                  FROM_HERE,
+                                  task_,
+                                  100);
+  }
+
+ private:
+  CancelableTask* task_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExpectCanceledFetcher);
 };
 
 class GoogleAuthenticatorTest : public ::testing::Test {
@@ -134,12 +168,11 @@ class GoogleAuthenticatorTest : public ::testing::Test {
   }
 
   void CancelLogin(GoogleAuthenticator* auth) {
-    ChromeThread::PostDelayedTask(
+    ChromeThread::PostTask(
         ChromeThread::UI,
         FROM_HERE,
         NewRunnableMethod(auth,
-                          &GoogleAuthenticator::CancelClientLogin),
-        50);
+                          &GoogleAuthenticator::CancelClientLogin));
   }
 
   unsigned char fake_hash_[32];
@@ -486,12 +519,25 @@ TEST_F(GoogleAuthenticatorTest, CheckLocalaccount) {
 }
 
 // Compatible with LoginStatusConsumer::OnLoginSuccess()
-static void Quit(const std::string& username,
-                 const GaiaAuthConsumer::ClientLoginResult& credentials) {
+static void OnSuccessQuit(
+    const std::string& username,
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
   MessageLoop::current()->Quit();
 }
+
+static void OnSuccessQuitAndFail(
+    const std::string& username,
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  ADD_FAILURE() << "Login should NOT have succeeded!";
+  MessageLoop::current()->Quit();
+}
+
 // Compatible with LoginStatusConsumer::OnLoginFailure()
-static void QuitAndFail(const std::string& error) {
+static void OnFailQuit(const std::string& error) {
+  MessageLoop::current()->Quit();
+}
+
+static void OnFailQuitAndFail(const std::string& error) {
   ADD_FAILURE() << "Login should have succeeded!";
   MessageLoop::current()->Quit();
 }
@@ -504,17 +550,15 @@ TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
   MockConsumer consumer;
-  ON_CALL(consumer, OnLoginSuccess(username_, _))
-      .WillByDefault(Invoke(Quit));
   EXPECT_CALL(consumer, OnLoginSuccess(username_, _))
-      .Times(1)
+      .WillOnce(Invoke(OnSuccessQuit))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, MountForBwsi(_))
       .WillOnce(Return(true))
       .RetiresOnSaturation();
   // Enable the test to terminate (and fail), even if the login fails.
   ON_CALL(consumer, OnLoginFailure(_))
-      .WillByDefault(Invoke(QuitAndFail));
+      .WillByDefault(Invoke(OnFailQuitAndFail));
 
   // Manually prep for login, so that localaccount isn't set for us.
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
@@ -562,7 +606,7 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
 
   TestingProfile profile;
 
-  MockFactory factory;
+  MockFactory<MockFetcher> factory;
   URLFetcher::set_factory(&factory);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
@@ -574,15 +618,21 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
 }
 
 TEST_F(GoogleAuthenticatorTest, CancelLogin) {
-  MessageLoopForUI message_loop;
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
   chromeos::CryptohomeBlob salt_v(fake_hash_, fake_hash_ + sizeof(fake_hash_));
 
   MockConsumer consumer;
+  // The expected case.
   EXPECT_CALL(consumer, OnLoginFailure(_))
-      .Times(1)
+      .WillOnce(Invoke(OnFailQuit))
       .RetiresOnSaturation();
 
+  // A failure case, but we still want the test to finish gracefully.
+  ON_CALL(consumer, OnLoginSuccess(username_, _))
+      .WillByDefault(Invoke(OnSuccessQuitAndFail));
+
+  // Stuff we expect to happen along the way.
   EXPECT_CALL(*mock_library_, GetSystemSalt())
       .WillOnce(Return(salt_v))
       .RetiresOnSaturation();
@@ -592,17 +642,84 @@ TEST_F(GoogleAuthenticatorTest, CancelLogin) {
 
   TestingProfile profile;
 
-  MockFactory factory;
-  factory.set_success(false);
+  // This is how we inject fake URLFetcher objects, with a factory.
+  // This factory creates fake URLFetchers that Start() a fake fetch attempt
+  // and then come back on the UI thread after a small delay.  They expect to
+  // be canceled before they come back, and the test will fail if they are not.
+  MockFactory<ExpectCanceledFetcher> factory;
   URLFetcher::set_factory(&factory);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
-  ReadLocalaccountFile(auth.get(), "");  // No localaccount file.
+
+  // For when |auth| tries to load the localaccount file.
+  ChromeThread file_thread(ChromeThread::FILE);
+  file_thread.Start();
+
+  // Start an authentication attempt, which will kick off a URL "fetch" that
+  // we expect to cancel before it completes.
   auth->AuthenticateToLogin(
       &profile, username_, hash_ascii_, std::string(), std::string());
+
+  // Post a task to cancel the login attempt.
   CancelLogin(auth.get());
+
   URLFetcher::set_factory(NULL);
-  message_loop.RunAllPending();
+
+  // Run the UI thread until we exit it gracefully.
+  message_loop.Run();
+}
+
+TEST_F(GoogleAuthenticatorTest, CancelLoginAlreadyGotLocalaccount) {
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+  chromeos::CryptohomeBlob salt_v(fake_hash_, fake_hash_ + sizeof(fake_hash_));
+
+  MockConsumer consumer;
+  // The expected case.
+  EXPECT_CALL(consumer, OnLoginFailure(_))
+      .WillOnce(Invoke(OnFailQuit))
+      .RetiresOnSaturation();
+
+  // A failure case, but we still want the test to finish gracefully.
+  ON_CALL(consumer, OnLoginSuccess(username_, _))
+      .WillByDefault(Invoke(OnSuccessQuitAndFail));
+
+  // Stuff we expect to happen along the way.
+  EXPECT_CALL(*mock_library_, GetSystemSalt())
+      .WillOnce(Return(salt_v))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_library_, CheckKey(username_, _))
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
+
+  TestingProfile profile;
+
+  // This is how we inject fake URLFetcher objects, with a factory.
+  // This factory creates fake URLFetchers that Start() a fake fetch attempt
+  // and then come back on the UI thread after a small delay.  They expect to
+  // be canceled before they come back, and the test will fail if they are not.
+  MockFactory<ExpectCanceledFetcher> factory;
+  URLFetcher::set_factory(&factory);
+
+  scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+
+  // This time, instead of allowing |auth| to go get the localaccount file
+  // itself, we simulate the case where the file is already loaded, which
+  // happens when this isn't the first login since chrome started.
+  ReadLocalaccountFile(auth.get(), "");
+
+  // Start an authentication attempt, which will kick off a URL "fetch" that
+  // we expect to cancel before it completes.
+  auth->AuthenticateToLogin(
+      &profile, username_, hash_ascii_, std::string(), std::string());
+
+  // Post a task to cancel the login attempt.
+  CancelLogin(auth.get());
+
+  URLFetcher::set_factory(NULL);
+
+  // Run the UI thread until we exit it gracefully.
+  message_loop.Run();
 }
 
 }  // namespace chromeos

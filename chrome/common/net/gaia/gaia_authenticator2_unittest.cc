@@ -247,7 +247,7 @@ TEST_F(GaiaAuthenticator2Test, FullLogin) {
 
   TestingProfile profile;
 
-  MockFactory factory;
+  MockFactory<MockFetcher> factory;
   URLFetcher::set_factory(&factory);
 
   GaiaAuthenticator2 auth(&consumer, std::string(),
@@ -268,7 +268,7 @@ TEST_F(GaiaAuthenticator2Test, FullLoginFailure) {
 
   TestingProfile profile;
 
-  MockFactory factory;
+  MockFactory<MockFetcher> factory;
   URLFetcher::set_factory(&factory);
   factory.set_success(false);
 

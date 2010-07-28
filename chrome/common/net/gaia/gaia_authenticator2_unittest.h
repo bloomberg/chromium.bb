@@ -50,6 +50,7 @@ class MockFetcher : public URLFetcher {
   DISALLOW_COPY_AND_ASSIGN(MockFetcher);
 };
 
+template<typename T>
 class MockFactory : public URLFetcher::Factory {
  public:
   MockFactory()
@@ -59,7 +60,7 @@ class MockFactory : public URLFetcher::Factory {
                                const GURL& url,
                                URLFetcher::RequestType request_type,
                                URLFetcher::Delegate* d) {
-    return new MockFetcher(success_, url, request_type, d);
+    return new T(success_, url, request_type, d);
   }
   void set_success(bool success) {
     success_ = success;
