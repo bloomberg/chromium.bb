@@ -562,17 +562,10 @@ class NotificationBridge : public NotificationObserver {
 }
 
 - (void)badgeWrenchMenu {
-  // The wrench menu gets an upgrade dot. This gets ugly because we only have a
-  // PNG so we need to position it. TODO(avi): Get a PDF version, one ready for
-  // overlaying. http://crbug.com/49668
-  //
   // In the Windows version, the ball doesn't actually pulsate, and is always
   // drawn with the inactive image. Why? (We follow suit, though not on the
   // weird positioning they do that overlaps the button border.)
-  ThemeProvider* theme_provider = profile_->GetThemeProvider();
-  NSImage* badge = theme_provider->GetNSImageNamed(IDR_UPGRADE_DOT_INACTIVE,
-                                                   true);
-
+  NSImage* badge = nsimage_cache::ImageNamed(@"upgrade_dot.pdf");
   NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
   NSSize wrenchImageSize = [wrenchImage size];
 
