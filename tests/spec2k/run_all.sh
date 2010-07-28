@@ -316,31 +316,45 @@ CleanBenchmarks() {
 }
 
 #@
-#@ BuildBenchmarks <setup> <benchmark>*
+#@ BuildBenchmarks <do_timing> <setup> <benchmark>*
 #@
 #@  Build all benchmarks according to the setup
+#@  First arg should be either 0 (no timing) or 1 (run timing measure).
+#@  Results are delivered to {execname}.compile_time
 BuildBenchmarks() {
   export PREFIX=
+  timeit=$1
+  shift
   "$1"
   shift
-  local list=$(GetBenchmarkList "$@")
 
+  local list=$(GetBenchmarkList "$@")
   ConfigInfo
   for i in ${list} ; do
     Banner "Building: $i"
     cd $i
 
-    make ${i#*.}.${SUFFIX}
+    make timeit=${timeit} ${i#*.}.${SUFFIX}
     cd ..
-done
-
+  done
 }
 
+#@
+#@ TimedRunCmd <time_result_file> {actual_cmd }
+#@
+#@  Run the command under time. Each individual timed run files
+#@  have a history of one run. To keep history, refer to CollectTimingInfo
+#@
+TimedRunCmd() {
+  target=$1
+  shift
+  /usr/bin/time -f "TIME %U %S %e %C" -o ${target} "$@"
+}
 
 #@
 #@ RunBenchmarks <setup> <benchmark>*
 #@
-#@  Run all benchmarks according to the setup
+#@  Run all benchmarks according to the setup.
 RunBenchmarks() {
   export PREFIX=
   "$1"
@@ -351,27 +365,69 @@ RunBenchmarks() {
   for i in ${list} ; do
     Banner "Benchmarking: $i"
     cd $i
-    size  ./${i#*.}.${SUFFIX}
-    time ${SCRIPT} ./${i#*.}.${SUFFIX}
+    target_file=./${i#*.}.${SUFFIX}
+    size  ${target_file}
+    ${SCRIPT} ${target_file}
     cd ..
   done
 }
+
+
+#@
+#@ RunTimedBenchmarks <setup> <benchmark>*
+#@
+#@  Run all benchmarks according to the setup.
+#@  All timing related files are stored in {execname}.run_time
+#@  Note that the VERIFY variable effects the timing!
+#@
+RunTimedBenchmarks() {
+  export PREFIX=
+  "$1"
+  shift
+  local list=$(GetBenchmarkList "$@")
+
+  ConfigInfo
+  for i in ${list} ; do
+    Banner "Benchmarking: $i"
+    cd $i
+    target_file=./${i#*.}.${SUFFIX}
+    size  ${target_file}
+    TimedRunCmd ${target_file}.run_time ${SCRIPT} ${target_file}
+    cd ..
+  done
+}
+
 
 #@
 #@ BuildAndRunBenchmarks <setup> <benchmark>*
 #@
 #@   Builds and run all benchmarks according to the setup
 BuildAndRunBenchmarks() {
-  BuildBenchmarks "$@"
+  BuildBenchmarks 0 "$@"
   RunBenchmarks "$@"
 }
 
 #@
-#@ PoplateFromSpecHarness <path>
+#@ TimedBuildAndRunBenchmarks <setup> <benchmark>*
+#@
+#@   Builds and run all benchmarks according to the setup, using
+#@   and records the time spent at each task..
+#@   Results are saved in {execname}.compile_time and
+#@   {execname}.run_time for each benchmark executable
+#@   Note that the VERIFY variable effects the timing!
+
+TimedBuildAndRunBenchmarks() {
+  BuildBenchmarks 1 "$@"
+  RunTimedBenchmarks "$@"
+}
+
+
+#@
+#@ PopulateFromSpecHarness <path>
 #@
 #@   populate a few essential directories (src, date) from
 #@   the given spec2k harness
-PoplateFromSpecHarness() {
+PopulateFromSpecHarness() {
   harness=$1
   cp -r ${harness}/bin .
   echo ${LIST}

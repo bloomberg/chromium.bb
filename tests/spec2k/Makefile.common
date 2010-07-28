@@ -18,9 +18,24 @@ CFLAGS = $(CFLAGS_EXTRA)
 .SUFFIXES : .c .o .bc
 
 ######################################################################
+
+######################################################################
+# time command wrapper
+# invoke the makefile with
+######################################################################
+
+ifeq ($(timeit),1)
+TIME_CMD=/usr/bin/time -f "TIME %U %S %e %C" -o $@.compile_time
+else
+TIME_CMD=
+endif
+
+
+
 clean:
 	rm -f *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
               $(IT) $(IT).* *.out src/*bc $(EXTRA_CLEAN)
+
 
 
 pnacl_bin: $(IT).pnacl.arm $(IT).pnacl.opt.arm \
@@ -39,7 +54,7 @@ all: pnacl_bin nacl_bin nosfi_bin
 ######################################################################
 ## NON-SANDBOXING TOOLCHAINS
 ######################################################################
-LOCAL_GCC=/usr/bin/gcc
+LOCAL_GCC=$(TIME_CMD) /usr/bin/gcc
 
 # straight x86-32 gcc
 $(IT).gcc.x8632: $(SRC)
@@ -124,8 +139,8 @@ $(IT).opt.bc: $(IT).bc
 LIB_BC_PATH=$(TC_ROOT)/linux_arm-untrusted/libs-bitcode
 LIBS_BC = -lc -lm -lnacl -lpthread -lnosys
 
-BC_ARM=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch arm
-BC_ARM_TRANSLATOR=${TRANSLATOR_ROOT}/arm/translator
+BC_ARM=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch arm
+BC_ARM_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/arm/translator
 
 $(IT).pnacl.arm: $(IT).bc
 	$(BC_ARM) $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
@@ -143,8 +158,8 @@ $(IT).pnacl_translator.opt.arm: $(IT).opt.bc
 
 ######################################################################
 # BITCODE - BACKEND - X8632
-BC_X8632=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-32
-BC_X8632_TRANSLATOR=${TRANSLATOR_ROOT}/x8632/translator
+BC_X8632=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-32
+BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8632/translator
 
 $(IT).pnacl.x8632: $(IT).bc
 	$(BC_X8632)  $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
@@ -160,8 +175,8 @@ $(IT).pnacl_translator.opt.x8632: $(IT).bc
 
 ######################################################################
 # BITCODE - BACKEND - X8664
-BC_X8664=$(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-64
-BC_X8664_TRANSLATOR=${TRANSLATOR_ROOT}/x8664/translator
+BC_X8664=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-64
+BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8664/translator
 
 $(IT).pnacl.x8664: $(IT).bc
 	$(BC_X8664) $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@

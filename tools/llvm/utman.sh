@@ -2390,13 +2390,65 @@ test-all() {
 
 #@ test-spec <official-spec-dir> <setup> -  run spec tests
 test-spec() {
+  if [ $# < 2 ]; then
+    echo "test-spec {spec2krefdir} {setupfunc} {*optional_list_of_benchmarks}"
+    exit 1
+  fi;
   official=$(readlink -f $1)
   spushd tests/spec2k
   ./run_all.sh CleanBenchmarks
-  ./run_all.sh PoplateFromSpecHarness ${official}
-  ./run_all.sh BuildAndRunBenchmarks $2
+  ./run_all.sh PopulateFromSpecHarness ${official}
+  ./run_all.sh BuildAndRunBenchmarks  $2
   spopd
 }
+
+#@ CollectTimingInfo <directory> <timing_result_file> <tagtype...>
+#@  CD's into the directory in a subshell and collects all the
+#@  relevant timed run info
+#@  tagtype just gets printed out.
+CollectTimingInfo() {
+  wd=$1
+  result_file=$2
+  setup=$3
+  (cd ${wd};
+   echo "##################################################" >>${result_file}
+   date +"# Completed at %F %H:%M:%S %A ${result_file}" >> ${result_file}
+   echo "# " ${wd}
+   echo "#" $(uname -a) >> ${result_file}
+   echo "# SETUP: ${setup}" >>${result_file}
+   echo "##################################################" >>${result_file}
+   for ff in $(find . -name "*.compile_time"); do
+     cat ${ff} >> ${result_file}
+   done
+   for ff in $(find . -name "*.run_time"); do
+     cat ${ff} >> ${result_file}
+   done
+   cat ${result_file}
+  )
+}
+
+#@ timed-test-spec <result-file> <official-spec-dir> <setup> -  run spec tests
+#@  result-file is NOT cleared out, so you can reuse the same file to gather
+#@  run-time data from different runs.
+#@  Individual results files ARE cleaned out during each run, so as to not
+#@  pollute the final results file
+#@  Note that the VERIFY variable effects the timing!
+timed-test-spec() {
+  if [ "$#" -lt "3" ]; then
+    echo "timed-test-spec {result-file} {spec2krefdir} {setupfunc}"
+    exit 1
+  fi;
+  result_file=$1
+  shift
+  official=$(readlink -f $1)
+  spushd tests/spec2k
+  ./run_all.sh CleanBenchmarks
+  ./run_all.sh PopulateFromSpecHarness ${official}
+  ./run_all.sh TimedBuildAndRunBenchmarks $2
+  CollectTimingInfo $(pwd) ${result_file} $2
+  spopd
+}
+
 
 
 #@ test-bot-base         - tests that must pass on the bots to validate a TC
