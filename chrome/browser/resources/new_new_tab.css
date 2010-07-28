@@ -245,42 +245,15 @@ html[dir=rtl] .item {
   margin: 0 10px;
 }
 
-#set-as-home-page {
-  display: none;
-  margin: 10px 0;
-  text-align: center;
-}
-
 #top-bar {
   display: -webkit-box;
   -webkit-box-align: center;
   min-height: 56px;
 }
 
-#tip-line {
-  -webkit-box-flex: 1;
-  -webkit-transition: opacity .15s;
-  -webkit-user-select: text;
-  border: 0;
-  cursor: text;
-  display: block;  /* Since we are reusing the section display logic we need
-                      to override the display for hidden tips. */
-  margin: 10px;
-  -webkit-margin-start: 50%;
-  text-align: end;
-}
-
-.notification.hidden,
-#tip-line.hidden,
-.notification-shown #tip-line {
+.notification.hidden {
   opacity: 0;
   pointer-events: none;
-}
-
-#tip-line a,
-#tip-line button {
-  /* We do not want a trailing single word from a link on the last line */
-  white-space: nowrap;
 }
 
 #option-button {
@@ -288,7 +261,9 @@ html[dir=rtl] .item {
   background-color: transparent;
   width: 19px;
   height: 17px;
-  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 20px;
   border: 0;
   padding: 0;
   vertical-align: top;

@@ -11,48 +11,6 @@ function updateSimpleSection(id, section) {
     $(id).classList.add('hidden');
 }
 
-var tipCache = {};
-
-function tips(data) {
-  logEvent('received tips');
-  tipCache = data;
-  renderTip();
-}
-
-function createTip(data) {
-  if (data.length) {
-    if (data[0].set_homepage_tip) {
-      var homepageButton = document.createElement('button');
-      homepageButton.className = 'link';
-      homepageButton.textContent = data[0].set_homepage_tip;
-      homepageButton.addEventListener('click', setAsHomePageLinkClicked);
-      return homepageButton;
-    } else {
-      try {
-        return parseHtmlSubset(data[0].tip_html_text);
-      } catch (parseErr) {
-        console.error('Error parsing tips: ' + parseErr.message);
-      }
-    }
-  }
-  // Return an empty DF in case of failure.
-  return document.createDocumentFragment();
-}
-
-function clearTipLine() {
-  var tipElement = $('tip-line');
-  // There should always be only one tip.
-  tipElement.textContent = '';
-  tipElement.removeEventListener('click', setAsHomePageLinkClicked);
-}
-
-function renderTip() {
-  clearTipLine();
-  var tipElement = $('tip-line');
-  tipElement.appendChild(createTip(tipCache));
-  fixLinkUnderlines(tipElement);
-}
-
 function recentlyClosedTabs(data) {
   logEvent('received recently closed tabs');
   // We need to store the recent items so we can update the layout on a resize.
@@ -847,17 +805,6 @@ function callGetSyncMessageIfSyncIsPresent() {
   }
 }
 
-function setAsHomePageLinkClicked(e) {
-  chrome.send('setHomePage');
-  e.preventDefault();
-}
-
-function onHomePageSet(data) {
-  showNotification(data[0], data[1]);
-  // Removes the "make this my home page" tip.
-  clearTipLine();
-}
-
 function hideAllMenus() {
   optionMenu.hide();
 }
@@ -937,14 +884,3 @@ function mostVisitedPages(data, firstRun) {
     showFirstRunNotification();
   }
 }
-
-// Log clicked links from the tips section.
-document.addEventListener('click', function(e) {
-  var tipLinks = document.querySelectorAll('#tip-line a');
-  for (var i = 0, tipLink; tipLink = tipLinks[i]; i++) {
-    if (tipLink.contains(e.target)) {
-      chrome.send('metrics', ['NTPTip_' + tipLink.href]);
-      break;
-    }
-  }
-});

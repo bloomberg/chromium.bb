@@ -23,7 +23,6 @@
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
-#include "chrome/browser/dom_ui/tips_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -463,8 +462,6 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
     AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
     AddMessageHandler((new MetricsHandler())->Attach(this));
-    if (WebResourcesEnabled())
-      AddMessageHandler((new TipsHandler())->Attach(this));
     if (GetProfile()->IsSyncAccessible())
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     if (Extension::AppsAreEnabled()) {
@@ -540,8 +537,6 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
 
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);
-  if (NewTabUI::WebResourcesEnabled())
-    TipsHandler::RegisterUserPrefs(prefs);
 
   UpdateUserPrefsVersion(prefs);
 }

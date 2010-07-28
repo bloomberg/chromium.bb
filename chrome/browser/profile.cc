@@ -639,10 +639,6 @@ class OffTheRecordProfileImpl : public Profile,
     NOTREACHED();
   }
 
-  virtual void InitWebResources() {
-    NOTREACHED();
-  }
-
   virtual NTPResourceCache* GetNTPResourceCache() {
     // Just return the real profile resource cache.
     return profile_->GetNTPResourceCache();
@@ -894,14 +890,6 @@ void ProfileImpl::InitExtensions() {
     FilePath path = command_line->GetSwitchValuePath(switches::kLoadExtension);
     extensions_service_->LoadExtension(path);
   }
-}
-
-void ProfileImpl::InitWebResources() {
-  if (web_resource_service_)
-    return;  // Already initialized.
-
-  web_resource_service_ = new WebResourceService(this);
-  web_resource_service_->StartAfterDelay();
 }
 
 NTPResourceCache* ProfileImpl::GetNTPResourceCache() {
