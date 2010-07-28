@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
+#include "chrome/browser/session_startup_pref.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -28,6 +29,24 @@
   sawNotification_ = YES;
 }
 @end
+
+@interface NSObject ()
+- (void)setURL:(NSString*)url;
+@end
+
+namespace {
+
+// Helper that creates an autoreleased entry.
+CustomHomePageEntry* MakeEntry(NSString* url) {
+  CustomHomePageEntry* entry = [[[CustomHomePageEntry alloc] init] autorelease];
+  [entry setURL:url];
+  return entry;
+}
+
+// Helper that casts from |id| to the Entry type and returns the URL string.
+NSString* EntryURL(id entry) {
+  return [static_cast<CustomHomePageEntry*>(entry) URL];
+}
 
 class CustomHomePagesModelTest : public PlatformTest {
  public:
@@ -78,9 +97,9 @@ TEST_F(CustomHomePagesModelTest, KVOObserveWhenListChanges) {
   scoped_nsobject<CustomHomePageHelper> kvo_helper(
       [[CustomHomePageHelper alloc] init]);
   [model_ addObserver:kvo_helper
-          forKeyPath:@"customHomePages"
-             options:0L
-             context:NULL];
+           forKeyPath:@"customHomePages"
+              options:0L
+              context:NULL];
   EXPECT_FALSE(kvo_helper.get()->sawNotification_);
 
   std::vector<GURL> urls;
@@ -99,37 +118,34 @@ TEST_F(CustomHomePagesModelTest, KVO) {
   scoped_nsobject<CustomHomePageHelper> kvo_helper(
       [[CustomHomePageHelper alloc] init]);
   [model_ addObserver:kvo_helper
-          forKeyPath:@"customHomePages"
-             options:0L
-             context:NULL];
+           forKeyPath:@"customHomePages"
+              options:0L
+              context:NULL];
   EXPECT_FALSE(kvo_helper.get()->sawNotification_);
 
   // Cheat and insert NSString objects into the array. As long as we don't
   // call -URLs, we'll be ok.
-  [model_ insertObject:@"www.google.com" inCustomHomePagesAtIndex:0];
+  [model_ insertObject:MakeEntry(@"www.google.com") inCustomHomePagesAtIndex:0];
   EXPECT_TRUE(kvo_helper.get()->sawNotification_);
-  [model_ insertObject:@"www.yahoo.com" inCustomHomePagesAtIndex:1];
-  [model_ insertObject:@"dev.chromium.org" inCustomHomePagesAtIndex:2];
+  [model_ insertObject:MakeEntry(@"www.yahoo.com") inCustomHomePagesAtIndex:1];
+  [model_ insertObject:MakeEntry(@"dev.chromium.org")
+      inCustomHomePagesAtIndex:2];
   EXPECT_EQ([model_ countOfCustomHomePages], 3U);
 
-  EXPECT_TRUE([[model_ objectInCustomHomePagesAtIndex:1]
-                  isEqualToString:@"www.yahoo.com"]);
+  EXPECT_TRUE([EntryURL([model_ objectInCustomHomePagesAtIndex:1])
+                  isEqualToString:@"http://www.yahoo.com/"]);
 
   kvo_helper.get()->sawNotification_ = NO;
   [model_ removeObjectFromCustomHomePagesAtIndex:1];
   EXPECT_TRUE(kvo_helper.get()->sawNotification_);
   EXPECT_EQ([model_ countOfCustomHomePages], 2U);
-  EXPECT_TRUE([[model_ objectInCustomHomePagesAtIndex:1]
-                  isEqualToString:@"dev.chromium.org"]);
-  EXPECT_TRUE([[model_ objectInCustomHomePagesAtIndex:0]
-                  isEqualToString:@"www.google.com"]);
+  EXPECT_TRUE([EntryURL([model_ objectInCustomHomePagesAtIndex:1])
+                  isEqualToString:@"http://dev.chromium.org/"]);
+  EXPECT_TRUE([EntryURL([model_ objectInCustomHomePagesAtIndex:0])
+                  isEqualToString:@"http://www.google.com/"]);
 
   [model_ removeObserver:kvo_helper forKeyPath:@"customHomePages"];
 }
-
-@interface NSObject()
-- (void)setURL:(NSString*)url;
-@end
 
 // Test that when individual items are changed that they broadcast a message.
 TEST_F(CustomHomePagesModelTest, ModelChangedNotification) {
@@ -149,3 +165,31 @@ TEST_F(CustomHomePagesModelTest, ModelChangedNotification) {
   EXPECT_TRUE(kvo_helper.get()->sawNotification_);
   [[NSNotificationCenter defaultCenter] removeObserver:kvo_helper];
 }
+
+TEST_F(CustomHomePagesModelTest, ReloadURLs) {
+  scoped_nsobject<CustomHomePageHelper> kvo_helper(
+      [[CustomHomePageHelper alloc] init]);
+  [model_ addObserver:kvo_helper
+           forKeyPath:@"customHomePages"
+              options:0L
+              context:NULL];
+  EXPECT_FALSE(kvo_helper.get()->sawNotification_);
+  EXPECT_EQ([model_ countOfCustomHomePages], 0U);
+
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://www.google.com"));
+  SessionStartupPref pref;
+  pref.urls = urls;
+  SessionStartupPref::SetStartupPref(helper_.profile(), pref);
+
+  [model_ reloadURLs];
+
+  EXPECT_TRUE(kvo_helper.get()->sawNotification_);
+  EXPECT_EQ([model_ countOfCustomHomePages], 1U);
+  EXPECT_TRUE([EntryURL([model_ objectInCustomHomePagesAtIndex:0])
+                  isEqualToString:@"http://www.google.com/"]);
+
+  [model_ removeObserver:kvo_helper.get() forKeyPath:@"customHomePages"];
+}
+
+}  // namespace

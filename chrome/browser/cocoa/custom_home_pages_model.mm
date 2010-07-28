@@ -5,28 +5,15 @@
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/session_startup_pref.h"
 
 NSString* const kHomepageEntryChangedNotification =
     @"kHomepageEntryChangedNotification";
 
-// An entry representing a single item in the custom home page model. Stores
-// a url and a favicon.
-@interface CustomHomePageEntry : NSObject {
- @private
-  scoped_nsobject<NSString> url_;
-  scoped_nsobject<NSImage> icon_;
-
-  // If non-zero, indicates we're loading the favicon for the page.
-  HistoryService::Handle icon_handle_;
-}
-@property(nonatomic, copy) NSString* URL;
-@property(nonatomic, retain) NSImage* image;
+@interface CustomHomePagesModel (Private)
+- (void)setURLsInternal:(const std::vector<GURL>&)urls;
 @end
-
-//----------------------------------------------------------------------------
-
 
 @implementation CustomHomePagesModel
 
@@ -52,6 +39,8 @@ NSString* const kHomepageEntryChangedNotification =
 
 - (void)removeObjectFromCustomHomePagesAtIndex:(NSUInteger)index {
   [entries_ removeObjectAtIndex:index];
+  // Force a save.
+  [self validateURLs];
 }
 
 // Get/set the urls the model currently contains as a group. These will weed
@@ -70,6 +59,15 @@ NSString* const kHomepageEntryChangedNotification =
 
 - (void)setURLs:(const std::vector<GURL>&)urls {
   [self willChangeValueForKey:@"customHomePages"];
+  [self setURLsInternal:urls];
+  SessionStartupPref pref(SessionStartupPref::GetStartupPref(profile_));
+  pref.urls = urls;
+  SessionStartupPref::SetStartupPref(profile_, pref);
+  [self didChangeValueForKey:@"customHomePages"];
+}
+
+// Converts the C++ URLs to Cocoa objects without notifying KVO.
+- (void)setURLsInternal:(const std::vector<GURL>&)urls {
   [entries_ removeAllObjects];
   for (size_t i = 0; i < urls.size(); ++i) {
     scoped_nsobject<CustomHomePageEntry> entry(
@@ -81,6 +79,12 @@ NSString* const kHomepageEntryChangedNotification =
       [entries_ addObject:entry];
     }
   }
+}
+
+- (void)reloadURLs {
+  [self willChangeValueForKey:@"customHomePages"];
+  SessionStartupPref pref(SessionStartupPref::GetStartupPref(profile_));
+  [self setURLsInternal:pref.urls];
   [self didChangeValueForKey:@"customHomePages"];
 }
 
@@ -127,6 +131,10 @@ NSString* const kHomepageEntryChangedNotification =
 
 - (NSImage*)image {
   return icon_.get();
+}
+
+- (NSString*)description {
+  return url_.get();
 }
 
 @end

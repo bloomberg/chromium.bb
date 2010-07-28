@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "base/scoped_nsobject.h"
+#include "chrome/browser/history/history.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -36,6 +37,10 @@ class Profile;
 - (std::vector<GURL>)URLs;
 - (void)setURLs:(const std::vector<GURL>&)urls;
 
+// Reloads the URLs from their stored state. This will notify using KVO
+// |customHomePages|.
+- (void)reloadURLs;
+
 // Validates the set of URLs stored in the model. The user may have input bad
 // data. This function removes invalid entries from the model, which will result
 // in anyone observing being updated.
@@ -48,11 +53,31 @@ class Profile;
 - (void)removeObjectFromCustomHomePagesAtIndex:(NSUInteger)index;
 @end
 
-@interface CustomHomePagesModel(InternalOrTestingAPI)
+////////////////////////////////////////////////////////////////////////////////
+
+// An entry representing a single item in the custom home page model. Stores
+// a url and a favicon.
+@interface CustomHomePageEntry : NSObject {
+ @private
+  scoped_nsobject<NSString> url_;
+  scoped_nsobject<NSImage> icon_;
+
+  // If non-zero, indicates we're loading the favicon for the page.
+  HistoryService::Handle icon_handle_;
+}
+
+@property(nonatomic, copy) NSString* URL;
+@property(nonatomic, retain) NSImage* image;
+
+@end
+
+////////////////////////////////////////////////////////////////////////////////
+
+@interface CustomHomePagesModel (InternalOrTestingAPI)
 
 // Clears the URL string at the specified index. This constitutes bad data. The
 // validator should scrub the entry from the list the next time it is run.
-- (void) setURLStringEmptyAt:(NSUInteger)index;
+- (void)setURLStringEmptyAt:(NSUInteger)index;
 
 @end
 
