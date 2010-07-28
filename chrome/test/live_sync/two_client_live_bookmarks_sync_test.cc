@@ -942,7 +942,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 // Test Scribe ID - 371879.
 // TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_DelBMFoldWithBMsNonEmptyAccountAfterwards) {
+    SC_DelBMFoldWithBMsNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1008,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 // Test Scribe ID - 371880.
 // TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_DelBMFoldWithBMsAndBMFoldsNonEmptyACAfterwards) {
+    SC_DelBMFoldWithBMsAndBMFoldsNonEmptyACAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
@@ -1110,7 +1110,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 // Test Scribe ID - 371882.
 // TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    FAILS_SC_DelBMFoldWithParentAndChildrenBMsAndBMFolds) {
+    SC_DelBMFoldWithParentAndChildrenBMsAndBMFolds) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);

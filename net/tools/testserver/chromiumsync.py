@@ -509,15 +509,50 @@ class SyncDataModel(object):
     # tombstone.  A sync server must track deleted IDs forever, since it does
     # not keep track of client knowledge (there's no deletion ACK event).
     if entry.deleted:
-      # Only the ID, version and deletion state are preserved on a tombstone.
-      # TODO(nick): Does the production server not preserve the type?  Not
-      # doing so means that tombstones cannot be filtered based on
-      # requested_types at GetUpdates time.
-      tombstone = sync_pb2.SyncEntity()
-      tombstone.id_string = entry.id_string
-      tombstone.deleted = True
-      tombstone.name = ''
-      entry = tombstone
+      def MakeTombstone(id_string):
+        """Make a tombstone entry that will replace the entry being deleted.
+
+        Args:
+          id_string: Index of the SyncEntity to be deleted.
+        Returns:
+          A new SyncEntity reflecting the fact that the entry is deleted.
+        """
+        # Only the ID, version and deletion state are preserved on a tombstone.
+        # TODO(nick): Does the production server not preserve the type?  Not
+        # doing so means that tombstones cannot be filtered based on
+        # requested_types at GetUpdates time.
+        tombstone = sync_pb2.SyncEntity()
+        tombstone.id_string = id_string
+        tombstone.deleted = True
+        tombstone.name = ''
+        return tombstone
+
+      def IsChild(child_id):
+        """Check if a SyncEntity is a child of entry, or any of its children.
+
+        Args:
+          child_id: Index of the SyncEntity that is a possible child of entry.
+        Returns:
+          True if it is a child; false otherwise.
+        """
+        if child_id not in self._entries:
+          return False
+        if self._entries[child_id].parent_id_string == entry.id_string:
+          return True
+        return IsChild(self._entries[child_id].parent_id_string)
+
+      # Identify any children entry might have.
+      child_ids = []
+      for possible_child in self._entries.itervalues():
+        if IsChild(possible_child.id_string):
+          child_ids.append(possible_child.id_string)
+
+      # Mark all children that were identified as deleted.
+      for child_id in child_ids:
+        self._SaveEntry(MakeTombstone(child_id))
+
+      # Delete entry itself.
+      entry = MakeTombstone(entry.id_string)
     else:
       # Comments in sync.proto detail how the representation of positional
       # ordering works: the 'insert_after_item_id' field specifies a
@@ -543,7 +578,6 @@ class SyncDataModel(object):
 
     # Commit the change.  This also updates the version number.
     self._SaveEntry(entry)
-    # TODO(nick): Handle recursive deletion.
     return entry
 
 class TestServer(object):
