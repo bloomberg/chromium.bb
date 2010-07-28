@@ -94,6 +94,7 @@ readonly TC_BUILD_LLVM_TOOLS_X8632_SB="${TC_BUILD}/llvm-tools-x8632-sandboxed"
 readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
 readonly TC_BUILD_BINUTILS_LIBERTY_X86="${TC_BUILD}/binutils-liberty-x86"
 readonly TC_BUILD_BINUTILS_X8632_SB="${TC_BUILD}/binutils-x8632-sandboxed"
+readonly TC_BUILD_BINUTILS_X8664_SB="${TC_BUILD}/binutils-x8664-sandboxed"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
 
@@ -1630,6 +1631,97 @@ binutils-x8632-sb-install() {
   spopd
 }
 
+#+-------------------------------------------------------------------------
+#TODO(abetul): Share more code with binutils 32-bit sandboxing.
+#+ binutils-x8664-sb       - Build and install binutils (sandboxed) for x8664
+binutils-x8664-sb() {
+  StepBanner "BINUTILS-X8664-SB"
+
+  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
+    echo "ERROR: install Native Client toolchain"
+    exit -1
+  fi
+
+  if [ ! -f ${PNACL_CLIENT_TC_LIB}/libiberty.a ] ; then
+    echo "ERROR: install Portable Native Client toolchain"
+    exit -1
+  fi
+
+  # TODO(pdox): make this incremental
+  binutils-x8664-sb-clean
+  binutils-x8664-sb-configure
+  binutils-x8664-sb-make
+  binutils-x8664-sb-install
+}
+
+#+ binutils-x8664-sb-clean - Clean binutils (sandboxed) for x8664
+binutils-x8664-sb-clean() {
+  StepBanner "BINUTILS-X8664-SB" "Clean"
+  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
+
+  rm -rf "${objdir}"
+  mkdir -p "${objdir}"
+}
+
+#+ binutils-x8664-sb-configure - Configure binutils (sandboxed) for x8664
+binutils-x8664-sb-configure() {
+  StepBanner "BINUTILS-X8664-SB" "Configure"
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
+
+  mkdir ${TC_BUILD_BINUTILS_X8664_SB}/opcodes
+  spushd ${objdir}
+  cp ${PNACL_CLIENT_TC_LIB}/libiberty.a ./opcodes/.
+  RunWithLog \
+    binutils.x8664.sandboxed.configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    AR="${NACL_TOOLCHAIN}/bin/nacl64-ar" \
+    AS="${NACL_TOOLCHAIN}/bin/nacl64-as" \
+    CC="${NACL_TOOLCHAIN}/bin/nacl64-gcc" \
+    CXX="${NACL_TOOLCHAIN}/bin/nacl64-g++" \
+    LD="${NACL_TOOLCHAIN}/bin/nacl64-ld" \
+    RANLIB="${NACL_TOOLCHAIN}/bin/nacl64-ranlib" \
+    CFLAGS="-m64 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl64/include" \
+    LDFLAGS="-s" \
+    LDFLAGS_FOR_BUILD="-L." \
+    ${srcdir}/binutils-2.20/configure \
+                             --prefix=${PNACL_CLIENT_TC_X8664} \
+                             --host=nacl64 \
+                             --target=nacl64 \
+                             --disable-nls \
+                             --enable-static \
+                             --enable-shared=no \
+                             --with-sysroot=${NEWLIB_INSTALL_DIR}
+  spopd
+}
+
+#+ binutils-x8664-sb-make - Make binutils (sandboxed) for x8664
+binutils-x8664-sb-make() {
+  StepBanner "BINUTILS-X8664-SB" "Make"
+  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
+  spushd ${objdir}
+
+  RunWithLog binutils.x8664.sandboxed.make \
+    env -i PATH="/usr/bin:/bin" \
+    make ${MAKE_OPTS} all-gas
+  spopd
+}
+
+#+ binutils-x8664-sb-install - Install binutils (sandboxed) for x8664
+binutils-x8664-sb-install() {
+  StepBanner "BINUTILS-X8664-SB" "Install"
+  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
+  spushd ${objdir}
+
+  RunWithLog binutils.x8664.sandboxed.install \
+    env -i PATH="/usr/bin:/bin" \
+    make install-gas
+
+  spopd
+}
+
+#+-------------------------------------------------------------------------
 #@ build_sandboxed_translators - build and package up sandbox translators
 build_sandboxed_translators() {
   StepBanner "TRANSLATORS"
