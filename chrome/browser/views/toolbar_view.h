@@ -117,6 +117,13 @@ class ToolbarView : public AccessibleToolbarView,
   virtual void Paint(gfx::Canvas* canvas);
   virtual void OnThemeChanged();
 
+  // The apparent horizontal space between most items, and the vertical padding
+  // above and below them.
+  static const int kStandardSpacing;
+  // The top of the toolbar has an edge we have to skip over in addition to the
+  // standard spacing.
+  static const int kVertSpacing;
+
  protected:
 
   // Overridden from AccessibleToolbarView
@@ -149,7 +156,7 @@ class ToolbarView : public AccessibleToolbarView,
 
   // Gets a canvas with the icon for the app menu. It will possibly contain
   // an overlaid badge if an update is recommended.
-  SkBitmap GetAppMenuIcon();
+  SkBitmap GetAppMenuIcon(views::CustomButton::ButtonState state);
 
   scoped_ptr<BackForwardMenuModel> back_menu_model_;
   scoped_ptr<BackForwardMenuModel> forward_menu_model_;

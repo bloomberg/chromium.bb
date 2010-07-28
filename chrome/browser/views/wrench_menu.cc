@@ -559,9 +559,7 @@ void WrenchMenu::Init(menus::MenuModel* model) {
 void WrenchMenu::RunMenu(views::MenuButton* host) {
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(host, &screen_loc);
-  // Subtract 1 from the height to make the popup flush with the button border.
-  gfx::Rect bounds(screen_loc.x(), screen_loc.y(), host->width(),
-                   host->height() - 1);
+  gfx::Rect bounds(screen_loc, host->size());
   root_->RunMenuAt(host->GetWindow()->GetNativeWindow(), host, bounds,
       base::i18n::IsRTL() ? MenuItemView::TOPLEFT : MenuItemView::TOPRIGHT,
       true);

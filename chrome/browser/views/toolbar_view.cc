@@ -33,9 +33,17 @@
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 
-static const int kControlHorizOffset = 4;
-static const int kControlVertOffset = 6;
-static const int kControlIndent = 3;
+// The space between items is 4 px in general.
+const int ToolbarView::kStandardSpacing = 4;
+// The top of the toolbar has an edge we have to skip over in addition to the 4
+// px of spacing.
+const int ToolbarView::kVertSpacing = kStandardSpacing + 1;
+// The edge graphics have some built-in spacing/shadowing, so we have to adjust
+// our spacing to make it still appear to be 4 px.
+static const int kEdgeSpacing = ToolbarView::kStandardSpacing - 1;
+// The buttons to the left of the omnibox are close together.
+static const int kButtonSpacing = 1;
+
 static const int kStatusBubbleWidth = 480;
 
 // The length of time to run the upgrade notification animation (the time it
@@ -44,15 +52,6 @@ static const int kPulseDuration = 2000;
 
 // How long to wait between pulsating the upgrade notifier.
 static const int kPulsateEveryMs = 8000;
-
-// The offset in pixels of the upgrade dot on the app menu.
-static const int kUpgradeDotOffset = 11;
-
-// Separation between the location bar and the menus.
-static const int kMenuButtonOffset = 3;
-
-// Padding to the right of the location bar
-static const int kPaddingRight = 2;
 
 static const int kPopupTopSpacingNonGlass = 3;
 static const int kPopupBottomSpacingNonGlass = 2;
@@ -155,6 +154,7 @@ void ToolbarView::Init(Profile* profile) {
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
   app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  app_menu_->set_border(NULL);
   app_menu_->EnableCanvasFlippingForRTLUI(true);
   app_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_APP));
   app_menu_->SetTooltipText(l10n_util::GetStringF(IDS_APPMENU_TOOLTIP,
@@ -281,7 +281,9 @@ void ToolbarView::OnInputInProgress(bool in_progress) {
 // ToolbarView, AnimationDelegate implementation:
 
 void ToolbarView::AnimationProgressed(const Animation* animation) {
-  app_menu_->SetIcon(GetAppMenuIcon());
+  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
+  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
+  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
   SchedulePaint();
 }
 
@@ -386,14 +388,14 @@ void ToolbarView::ExecuteCommand(int command_id) {
 
 gfx::Size ToolbarView::GetPreferredSize() {
   if (IsDisplayModeNormal()) {
-    int min_width = kControlIndent + back_->GetPreferredSize().width() +
-        forward_->GetPreferredSize().width() + kControlHorizOffset +
-        reload_->GetPreferredSize().width() + kControlHorizOffset +
+    int min_width = kEdgeSpacing +
+        back_->GetPreferredSize().width() + kButtonSpacing +
+        forward_->GetPreferredSize().width() + kButtonSpacing +
+        reload_->GetPreferredSize().width() + kStandardSpacing +
         (show_home_button_.GetValue() ?
-            (home_->GetPreferredSize().width() + kControlHorizOffset) : 0) +
+            (home_->GetPreferredSize().width() + kButtonSpacing) : 0) +
         browser_actions_->GetPreferredSize().width() +
-        kMenuButtonOffset +
-        app_menu_->GetPreferredSize().width() + kPaddingRight;
+        app_menu_->GetPreferredSize().width() + kEdgeSpacing;
 
     static SkBitmap normal_background;
     if (normal_background.isNull()) {
@@ -424,7 +426,7 @@ void ToolbarView::Layout() {
     return;
   }
 
-  int child_y = std::min(kControlVertOffset, height());
+  int child_y = std::min(kVertSpacing, height());
   // We assume all child elements are the same height.
   int child_height =
       std::min(back_->GetPreferredSize().height(), height() - child_y);
@@ -438,20 +440,20 @@ void ToolbarView::Layout() {
   //                http://crbug.com/5540
   int back_width = back_->GetPreferredSize().width();
   if (browser_->window() && browser_->window()->IsMaximized())
-    back_->SetBounds(0, child_y, back_width + kControlIndent, child_height);
+    back_->SetBounds(0, child_y, back_width + kEdgeSpacing, child_height);
   else
-    back_->SetBounds(kControlIndent, child_y, back_width, child_height);
+    back_->SetBounds(kEdgeSpacing, child_y, back_width, child_height);
 
-  forward_->SetBounds(back_->x() + back_->width(), child_y,
-                      forward_->GetPreferredSize().width(), child_height);
+  forward_->SetBounds(back_->x() + back_->width() + kButtonSpacing,
+      child_y, forward_->GetPreferredSize().width(), child_height);
 
-  reload_->SetBounds(forward_->x() + forward_->width() + kControlHorizOffset,
+  reload_->SetBounds(forward_->x() + forward_->width() + kButtonSpacing,
       child_y, reload_->GetPreferredSize().width(), child_height);
 
   if (show_home_button_.GetValue()) {
     home_->SetVisible(true);
-    home_->SetBounds(reload_->x() + reload_->width() + kControlHorizOffset,
-                     child_y, home_->GetPreferredSize().width(), child_height);
+    home_->SetBounds(reload_->x() + reload_->width() + kButtonSpacing, child_y,
+                     home_->GetPreferredSize().width(), child_height);
   } else {
     home_->SetVisible(false);
     home_->SetBounds(reload_->x() + reload_->width(), child_y, 0, child_height);
@@ -459,16 +461,15 @@ void ToolbarView::Layout() {
 
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
   int app_menu_width = app_menu_->GetPreferredSize().width();
-  int location_x = home_->x() + home_->width() + kControlHorizOffset;
-  int available_width = width() - kPaddingRight - app_menu_width -
-      browser_actions_width - kMenuButtonOffset - location_x;
+  int location_x = home_->x() + home_->width() + kStandardSpacing;
+  int available_width = width() - kEdgeSpacing - app_menu_width -
+      browser_actions_width - location_x;
 
   location_bar_->SetBounds(location_x, child_y, std::max(available_width, 0),
                            child_height);
-  int next_menu_x =
-      location_bar_->x() + location_bar_->width() + kMenuButtonOffset;
 
-  browser_actions_->SetBounds(next_menu_x, 0, browser_actions_width, height());
+  browser_actions_->SetBounds(location_bar_->x() + location_bar_->width(), 0,
+                              browser_actions_width, height());
   // The browser actions need to do a layout explicitly, because when an
   // extension is loaded/unloaded/changed, BrowserActionContainer removes and
   // re-adds everything, regardless of whether it has a page action. For a
@@ -477,9 +478,9 @@ void ToolbarView::Layout() {
   // TODO(sidchat): Rework the above behavior so that explicit layout is not
   //                required.
   browser_actions_->Layout();
-  next_menu_x += browser_actions_width;
 
-  app_menu_->SetBounds(next_menu_x, child_y, app_menu_width, child_height);
+  app_menu_->SetBounds(browser_actions_->x() + browser_actions_width, child_y,
+                       app_menu_width, child_height);
 }
 
 void ToolbarView::Paint(gfx::Canvas* canvas) {
@@ -567,7 +568,9 @@ void ToolbarView::LoadImages() {
   home_->SetImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_HOME_P));
 
-  app_menu_->SetIcon(GetAppMenuIcon());
+  app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
+  app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
+  app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
 }
 
 void ToolbarView::ShowUpgradeReminder() {
@@ -586,10 +589,17 @@ void ToolbarView::PulsateUpgradeNotifier() {
   update_reminder_animation_->Show();
 }
 
-SkBitmap ToolbarView::GetAppMenuIcon() {
+SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   ThemeProvider* tp = GetThemeProvider();
 
-  SkBitmap icon = *tp->GetBitmapNamed(IDR_TOOLS);
+  int id = 0;
+  switch (state) {
+    case views::CustomButton::BS_NORMAL: id = IDR_TOOLS;   break;
+    case views::CustomButton::BS_HOT:    id = IDR_TOOLS_H; break;
+    case views::CustomButton::BS_PUSHED: id = IDR_TOOLS_P; break;
+    default:                             NOTREACHED();     break;
+  }
+  SkBitmap icon = *tp->GetBitmapNamed(id);
 
   if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
     return icon;
@@ -625,8 +635,9 @@ SkBitmap ToolbarView::GetAppMenuIcon() {
         value);
   }
 
-  canvas->DrawBitmapInt(badge, kUpgradeDotOffset,
-                        icon.height() - badge.height());
+  static const int kBadgeLeftSpacing = 8;
+  static const int kBadgeTopSpacing = 18;
+  canvas->DrawBitmapInt(badge, kBadgeLeftSpacing, kBadgeTopSpacing);
 
   return canvas->ExtractBitmap();
 }
