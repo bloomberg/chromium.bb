@@ -15,12 +15,13 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/client/jingle_host_connection.h"
+#include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "third_party/ppapi/c/pp_event.h"
-#include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/cpp/completion_callback.h"
+#include "third_party/ppapi/cpp/rect.h"
 
 namespace remoting {
 
@@ -40,9 +41,7 @@ ChromotingPlugin::~ChromotingPlugin() {
   // to the message loop before this point.  Right now, we don't have a well
   // defined stop for the plugin process, and the thread shutdown is likely a
   // race condition.
-  if (context_.get()) {
-    context_->Stop();
-  }
+  context_.Stop();
 }
 
 bool ChromotingPlugin::Init(uint32_t argc,
@@ -63,60 +62,48 @@ bool ChromotingPlugin::Init(uint32_t argc,
   pepper_main_loop_dont_post_to_me_ = MessageLoop::current();
   LOG(INFO) << "Started ChromotingPlugin::Init";
 
-  // Extract the URL from the arguments.
-  const char* url = NULL;
-  for (uint32_t i = 0; i < argc; ++i) {
-    if (strcmp(argn[i], "src") == 0) {
-      url = argv[i];
-      break;
-    }
-  }
-
-  if (!url) {
-    return false;
-  }
-
-  ClientConfig config;
-  if (!GetLoginInfoFromUrlParams(url, &config)) {
-    LOG(WARNING) << "Could not parse URL: " << url;
-    return false;
-  }
+  // Start all the threads.
+  context_.Start();
 
   // Create the chromoting objects.
-  host_connection_.reset(new JingleHostConnection(context_.get()));
+  host_connection_.reset(new JingleHostConnection(&context_));
   view_.reset(new PepperView(this));
   input_handler_.reset(new PepperInputHandler());
+
+  // Default to a medium grey.
+  view_->SetSolidFill(0xFFCDCDCD);
+
+  return true;
+}
+
+void ChromotingPlugin::Connect(const ClientConfig& config) {
+  DCHECK(CurrentlyOnPluginThread());
+
   client_.reset(new ChromotingClient(config,
-                                     context_.get(),
+                                     &context_,
                                      host_connection_.get(),
                                      view_.get(),
                                      input_handler_.get(),
                                      NULL));
 
-  // Default to a medium grey.
-  view_->SetSolidFill(0xFFCDCDCD);
-
   // Kick off the connection.
-  context_->Start();
   client_->Start();
-
-  return true;
 }
 
-void ChromotingPlugin::ViewChanged(const PP_Rect& position,
-                                   const PP_Rect& clip) {
+void ChromotingPlugin::ViewChanged(const pp::Rect& position,
+                                   const pp::Rect& clip) {
   DCHECK(CurrentlyOnPluginThread());
 
   // TODO(ajwong): This is going to be a race condition when the view changes
   // and we're in the middle of a Paint().
   LOG(INFO) << "ViewChanged "
-            << position.point.x << ","
-            << position.point.y << ","
-            << position.size.width << ","
-            << position.size.height;
+            << position.x() << ","
+            << position.y() << ","
+            << position.width() << ","
+            << position.height();
 
-  view_->SetViewport(position.point.x, position.point.y,
-                       position.size.width, position.size.height);
+  view_->SetViewport(position.x(), position.y(),
+                     position.width(), position.height());
   view_->Paint();
 }
 
@@ -145,6 +132,20 @@ bool ChromotingPlugin::HandleEvent(const PP_Event& event) {
   }
 
   return false;
+}
+
+pp::Var ChromotingPlugin::GetInstanceObject() {
+  LOG(ERROR) << "Getting instance object.";
+  if (instance_object_.is_void()) {
+    ChromotingScriptableObject* object = new ChromotingScriptableObject(this);
+    object->Init();
+
+    LOG(ERROR) << "Object initted.";
+    // The pp::Var takes ownership of object here.
+    instance_object_ = pp::Var(object);
+  }
+
+  return instance_object_;
 }
 
 }  // namespace remoting

@@ -73,7 +73,7 @@ void X11View::TearDown() {
 
 void X11View::Paint() {
   // Don't bother attempting to paint if the display hasn't been set up.
-  if (!display_ || !window_ || !height_ || !width_) {
+  if (!display_ || !window_ || !height_ || !width_ || !frame_) {
     return;
   }
 
@@ -146,6 +146,8 @@ void X11View::SetHostScreenSize(int width, int height) {
   width_ = width;
   height_ = height;
   XResizeWindow(display_, window_, width_, height_);
+  media::VideoFrame::CreateFrame(media::VideoFrame::RGB32, width_, height_,
+                                 base::TimeDelta(), base::TimeDelta(), &frame_);
 }
 
 void X11View::InitPaintTarget() {
