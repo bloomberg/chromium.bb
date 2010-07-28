@@ -42,24 +42,13 @@
 using views::View;
 
 // static
-const int LocationBarView::kVertMargin = 2;
-const int LocationBarView::kEdgeThickness = 2;
+const int LocationBarView::kNormalHorizontalEdgeThickness = 1;
+const int LocationBarView::kVerticalEdgeThickness = 2;
 const int LocationBarView::kItemPadding = 3;
+const int LocationBarView::kEdgeItemPadding = kItemPadding;
+const int LocationBarView::kBubblePadding = 1;
 const char LocationBarView::kViewClassName[] =
     "browser/views/location_bar/LocationBarView";
-
-// Convenience: Total space at the edges of the bar.
-const int kEdgePadding =
-    LocationBarView::kEdgeThickness + LocationBarView::kItemPadding;
-
-// Padding before the start of a bubble.
-static const int kBubblePadding = kEdgePadding - 1;
-
-// Padding between the location icon and the edit, if they're adjacent.
-static const int kLocationIconEditPadding = LocationBarView::kItemPadding - 1;
-
-// Padding after the star.
-static const int kStarPadding = kEdgePadding + 1;
 
 static const int kEVBubbleBackgroundImages[] = {
   IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,
@@ -125,7 +114,7 @@ void LocationBarView::Init() {
 
   // If this makes the font too big, try to make it smaller so it will fit.
   const int height =
-      std::max(GetPreferredSize().height() - TopMargin() - kVertMargin, 0);
+      std::max(GetPreferredSize().height() - (kVerticalEdgeThickness * 2), 0);
   while ((font_.height() > height) && (font_.FontSize() > 1))
     font_ = font_.DeriveFont(-1);
 
@@ -173,9 +162,9 @@ void LocationBarView::Init() {
   location_entry_view_->SetAccessibleName(
       l10n_util::GetString(IDS_ACCNAME_LOCATION));
 
-  selected_keyword_view_ =
-      new SelectedKeywordView(kSelectedKeywordBackgroundImages,
-                              IDR_OMNIBOX_SEARCH, SK_ColorBLACK, profile_),
+  selected_keyword_view_ = new SelectedKeywordView(
+      kSelectedKeywordBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER,
+      GetColor(ToolbarModel::NONE, TEXT), profile_),
   AddChildView(selected_keyword_view_);
   selected_keyword_view_->SetFont(font_);
   selected_keyword_view_->SetVisible(false);
@@ -389,7 +378,29 @@ void LocationBarView::Layout() {
   if (!location_entry_.get())
     return;
 
-  int entry_width = width() - (star_view_ ? kStarPadding : kEdgePadding);
+  // TODO(sky): baseline layout.
+  int location_y = kVerticalEdgeThickness;
+  // In some cases (e.g. fullscreen mode) we may have 0 height.  We still want
+  // to position our child views in this case, because other things may be
+  // positioned relative to them (e.g. the "bookmark added" bubble if the user
+  // hits ctrl-d).
+  int location_height = std::max(height() - (kVerticalEdgeThickness * 2), 0);
+
+  // The edge stroke is 1 px thick.  In popup mode, the edges are drawn by the
+  // omnibox' parent, so there isn't any edge to account for at all.
+  const int kEdgeThickness = (mode_ == NORMAL) ?
+      kNormalHorizontalEdgeThickness : 0;
+  // The edit has 1 px of horizontal whitespace inside it before the text.
+  const int kEditInternalSpace = 1;
+  // The space between an item and the edit is the normal item space, minus the
+  // edit's built-in space (so the apparent space will be the same).
+  const int kItemEditPadding =
+      LocationBarView::kItemPadding - kEditInternalSpace;
+  const int kEdgeEditPadding =
+      LocationBarView::kEdgeItemPadding - kEditInternalSpace;
+
+  // Start by reserving the padding at the right edge.
+  int entry_width = width() - kEdgeThickness - kEdgeItemPadding;
 
   // |location_icon_view_| is visible except when |ev_bubble_view_| or
   // |selected_keyword_view_| are visible.
@@ -401,7 +412,8 @@ void LocationBarView::Layout() {
   const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
   const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
   if (show_selected_keyword) {
-    entry_width -= kEdgePadding;  // Assume the keyword might be hidden.
+    // Assume the keyword might be hidden.
+    entry_width -= (kEdgeThickness + kEdgeEditPadding);
   } else if (model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
     ev_bubble_view_->SetVisible(true);
     ev_bubble_view_->SetLabel(model_->GetEVCertName());
@@ -410,8 +422,8 @@ void LocationBarView::Layout() {
   } else {
     location_icon_view_->SetVisible(true);
     location_icon_width = location_icon_view_->GetPreferredSize().width();
-    entry_width -=
-        kEdgePadding + location_icon_width + kLocationIconEditPadding;
+    entry_width -= (kEdgeThickness + kEdgeItemPadding + location_icon_width +
+        kItemEditPadding);
   }
 
   if (star_view_)
@@ -419,13 +431,15 @@ void LocationBarView::Layout() {
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->IsVisible())
-      entry_width -= (*i)->GetPreferredSize().width() + kItemPadding;
+      entry_width -= ((*i)->GetPreferredSize().width() + kItemPadding);
   }
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
     if ((*i)->IsVisible())
-      entry_width -= (*i)->GetPreferredSize().width() + kItemPadding;
+      entry_width -= ((*i)->GetPreferredSize().width() + kItemPadding);
   }
+  // The gap between the edit and whatever is to its right is shortened.
+  entry_width += kEditInternalSpace;
 
   // Size the EV bubble.  We do this after taking the star/page actions/content
   // settings out of |entry_width| so we won't take too much space.
@@ -434,11 +448,11 @@ void LocationBarView::Layout() {
     // space, but never elide it any smaller than 150 px.
     static const int kMinElidedBubbleWidth = 150;
     static const double kMaxBubbleFraction = 0.5;
+    const int total_padding =
+        kEdgeThickness + kBubblePadding + kItemEditPadding;
     ev_bubble_width = std::min(ev_bubble_width, std::max(kMinElidedBubbleWidth,
-        static_cast<int>((entry_width - kBubblePadding - kItemPadding) *
-        kMaxBubbleFraction)));
-
-    entry_width -= kBubblePadding + ev_bubble_width + kItemPadding;
+        static_cast<int>((entry_width - total_padding) * kMaxBubbleFraction)));
+    entry_width -= (total_padding + ev_bubble_width);
   }
 
 #if defined(OS_WIN)
@@ -462,7 +476,6 @@ void LocationBarView::Layout() {
   if (show_selected_keyword) {
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
-
       const TemplateURL* template_url =
           profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
       if (template_url && template_url->IsExtensionKeyword()) {
@@ -479,20 +492,13 @@ void LocationBarView::Layout() {
       keyword_hint_view_->SetKeyword(keyword);
   }
 
-  // TODO(sky): baseline layout.
-  int location_y = TopMargin();
-  int location_height = std::max(height() - location_y - kVertMargin, 0);
-
   // Lay out items to the right of the edit field.
-  int offset = width();
+  int offset = width() - kEdgeThickness - kEdgeItemPadding;
   if (star_view_) {
-    offset -= kStarPadding;
     int star_width = star_view_->GetPreferredSize().width();
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
     offset -= kItemPadding;
-  } else {
-    offset -= kEdgePadding;
   }
 
   for (PageActionViews::const_iterator i(page_action_views_.begin());
@@ -520,28 +526,43 @@ void LocationBarView::Layout() {
 
   // Now lay out items to the left of the edit field.
   if (location_icon_view_->IsVisible()) {
-    location_icon_view_->SetBounds(kEdgePadding, location_y,
-                                   location_icon_width, location_height);
-    offset = location_icon_view_->bounds().right() + kLocationIconEditPadding;
+    location_icon_view_->SetBounds(kEdgeThickness + kEdgeItemPadding,
+        location_y, location_icon_width, location_height);
+    offset = location_icon_view_->bounds().right() + kItemEditPadding;
   } else if (ev_bubble_view_->IsVisible()) {
-    ev_bubble_view_->SetBounds(kBubblePadding, location_y, ev_bubble_width,
-                               location_height);
-    offset = ev_bubble_view_->bounds().right() + kItemPadding;
+    ev_bubble_view_->SetBounds(kEdgeThickness + kBubblePadding,
+        location_y + kBubblePadding, ev_bubble_width,
+        ev_bubble_view_->GetPreferredSize().height());
+    offset = ev_bubble_view_->bounds().right() + kItemEditPadding;
   } else {
-    offset = show_selected_keyword ? kBubblePadding : kEdgePadding;
+    offset = kEdgeThickness +
+        (show_selected_keyword ? kBubblePadding : kEdgeEditPadding);
   }
 
   // Now lay out the edit field and views that autocollapse to give it more
   // room.
   gfx::Rect location_bounds(offset, location_y, entry_width, location_height);
   if (show_selected_keyword) {
-    LayoutView(true, selected_keyword_view_, available_width, &location_bounds);
-    if (!selected_keyword_view_->IsVisible()) {
-      location_bounds.set_x(
-          location_bounds.x() + kEdgePadding - kBubblePadding);
-    }
+    selected_keyword_view_->SetBounds(0, location_y + kBubblePadding, 0,
+        selected_keyword_view_->GetPreferredSize().height());
+    LayoutView(selected_keyword_view_, kItemEditPadding, available_width,
+               true, &location_bounds);
+    location_bounds.set_x(selected_keyword_view_->IsVisible() ?
+        (offset + selected_keyword_view_->width() + kItemEditPadding) :
+        (kEdgeThickness + kEdgeEditPadding));
   } else if (show_keyword_hint) {
-    LayoutView(false, keyword_hint_view_, available_width, &location_bounds);
+    keyword_hint_view_->SetBounds(0, location_y, 0, location_height);
+    // Tricky: |entry_width| has already been enlarged by |kEditInternalSpace|.
+    // But if we add a trailing view, it needs to have that enlargement be to
+    // its left.  So we undo the enlargement, then include it in the padding for
+    // the added view.
+    location_bounds.Inset(0, 0, kEditInternalSpace, 0);
+    LayoutView(keyword_hint_view_, kItemEditPadding, available_width, false,
+               &location_bounds);
+    if (!keyword_hint_view_->IsVisible()) {
+      // Put back the enlargement that we undid above.
+      location_bounds.Inset(0, 0, -kEditInternalSpace, 0);
+    }
   }
 
   location_entry_view_->SetBounds(location_bounds);
@@ -567,7 +588,7 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
   // reverse; this antialiases better (see comments in
   // AutocompletePopupContentsView::Paint()).
   gfx::Rect bounds(GetLocalBounds(false));
-  bounds.Inset(0, TopMargin(), 0, kVertMargin);
+  bounds.Inset(0, kVerticalEdgeThickness);
   SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));
   if (mode_ == NORMAL) {
     SkPaint paint;
@@ -577,7 +598,7 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
     // The round corners of the omnibox match the round corners of the dropdown
     // below, and all our other bubbles.
     const SkScalar radius(SkIntToScalar(BubbleBorder::GetCornerRadius()));
-    bounds.Inset(kEdgeThickness, 0);
+    bounds.Inset(kNormalHorizontalEdgeThickness, 0);
     canvas->AsCanvasSkia()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
                                           radius, paint);
   } else {
@@ -719,10 +740,6 @@ std::wstring LocationBarView::GetTitle() const {
   return UTF16ToWideHack(delegate_->GetTabContents()->GetTitle());
 }
 
-int LocationBarView::TopMargin() const {
-  return std::min(kVertMargin, height());
-}
-
 int LocationBarView::AvailableWidth(int location_bar_width) {
 #if defined(OS_WIN)
   // Use font_.GetStringWidth() instead of
@@ -735,33 +752,23 @@ int LocationBarView::AvailableWidth(int location_bar_width) {
   return location_bar_width - location_entry_->TextWidth();
 #endif
 }
-
-bool LocationBarView::UsePref(int pref_width, int available_width) {
-  return (pref_width + kItemPadding <= available_width);
-}
-
-void LocationBarView::LayoutView(bool leading,
-                                 views::View* view,
+void LocationBarView::LayoutView(views::View* view,
+                                 int padding,
                                  int available_width,
+                                 bool leading,
                                  gfx::Rect* bounds) {
   DCHECK(view && bounds);
   gfx::Size view_size = view->GetPreferredSize();
-  if (!UsePref(view_size.width(), available_width))
+  if ((view_size.width() + padding) > available_width)
     view_size = view->GetMinimumSize();
-  if (view_size.width() + kItemPadding >= bounds->width()) {
-    view->SetVisible(false);
-    return;
+  int desired_width = view_size.width() + padding;
+  view->SetVisible(desired_width < bounds->width());
+  if (view->IsVisible()) {
+    view->SetBounds(
+        leading ? bounds->x() : (bounds->right() - view_size.width()),
+        view->y(), view_size.width(), view->height());
+    bounds->set_width(bounds->width() - desired_width);
   }
-  if (leading) {
-    view->SetBounds(bounds->x(), bounds->y(), view_size.width(),
-                    bounds->height());
-    bounds->Offset(view_size.width() + kItemPadding, 0);
-  } else {
-    view->SetBounds(bounds->right() - view_size.width(), bounds->y(),
-                    view_size.width(), bounds->height());
-  }
-  bounds->set_width(bounds->width() - view_size.width() - kItemPadding);
-  view->SetVisible(true);
 }
 
 void LocationBarView::RefreshContentSettingViews() {
@@ -868,8 +875,10 @@ void LocationBarView::ShowFirstRunBubbleInternal(
     return;
 
   // Point at the start of the edit control; adjust to look as good as possible.
-  const int kXOffset = 6;   // Text looks like it actually starts 6 px in.
-  const int kYOffset = -4;  // Point into the omnibox, not just at its edge.
+  const int kXOffset = kNormalHorizontalEdgeThickness + kEdgeItemPadding +
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_OMNIBOX_HTTP)->width() + kItemPadding;
+  const int kYOffset = -(kVerticalEdgeThickness + 2);
   gfx::Point origin(location_entry_view_->bounds().x() + kXOffset,
                     y() + height() + kYOffset);
   // If the UI layout is RTL, the coordinate system is not transformed and

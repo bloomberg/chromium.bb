@@ -226,9 +226,16 @@ class LocationBarView : public LocationBar,
   // Overridden from TemplateURLModelObserver
   virtual void OnTemplateURLModelChanged();
 
-  static const int kVertMargin;     // Space above and below the edit.
-  static const int kEdgeThickness;  // Unavailable space at horizontal edges.
-  static const int kItemPadding;    // Space between items within the bar.
+  // Thickness of the left and right edges of the omnibox, in normal mode.
+  static const int kNormalHorizontalEdgeThickness;
+  // Thickness of the top and bottom edges of the omnibox.
+  static const int kVerticalEdgeThickness;
+  // Space between items in the location bar.
+  static const int kItemPadding;
+  // Space between the edges and the items next to them.
+  static const int kEdgeItemPadding;
+  // Space between the edge and a bubble.
+  static const int kBubblePadding;
 
  protected:
   void Focus();
@@ -240,24 +247,20 @@ class LocationBarView : public LocationBar,
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
 
-  // Returns the height in pixels of the margin at the top of the bar.
-  int TopMargin() const;
-
   // Returns the amount of horizontal space (in pixels) out of
   // |location_bar_width| that is not taken up by the actual text in
   // location_entry_.
   int AvailableWidth(int location_bar_width);
 
-  // Returns whether the |available_width| is large enough to contain a view
-  // with preferred width |pref_width| at its preferred size. If this returns
-  // true, the preferred size should be used. If this returns false, the
-  // minimum size of the view should be used.
-  bool UsePref(int pref_width, int available_width);
-
-  // If View fits in the specified region, it is made visible and the
-  // bounds are adjusted appropriately. If the View does not fit, it is
-  // made invisible.
-  void LayoutView(bool leading, views::View* view, int available_width,
+  // If |view| fits in |available_width|, it is made visible and positioned at
+  // the leading or trailing end of |bounds|, which are then shrunk
+  // appropriately.  Otherwise |view| is made invisible.
+  // Note: |view| is expected to have already been positioned and sized
+  // vertically.
+  void LayoutView(views::View* view,
+                  int padding,
+                  int available_width,
+                  bool leading,
                   gfx::Rect* bounds);
 
   // Update the visibility state of the Content Blocked icons to reflect what is

@@ -222,10 +222,10 @@ void InfoBubbleContentsView::Layout() {
     return;
 
   gfx::Rect bounds = GetLocalBounds(false);
-  // The browser's location bar use a vertical padding that we need to take into
+  // The browser's location bar uses vertical padding that we need to take into
   // account to match its height.
-  int location_bar_height =
-      location_bar_->GetPreferredSize().height() - LocationBarView::kVertMargin;
+  int location_bar_height = location_bar_->GetPreferredSize().height() -
+      LocationBarView::kVerticalEdgeThickness;
   location_bar_->SetBounds(bounds.x(), bounds.y(), bounds.width(),
                            location_bar_height);
   int render_y = location_bar_->bounds().bottom() + kNavigationBarBottomPadding;

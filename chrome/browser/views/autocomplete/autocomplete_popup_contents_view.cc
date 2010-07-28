@@ -305,13 +305,13 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
 }
 
 void AutocompleteResultView::Layout() {
-  icon_bounds_.SetRect(LocationBarView::kItemPadding,
+  icon_bounds_.SetRect(LocationBarView::kEdgeItemPadding,
                        (height() - icon_size_) / 2, icon_size_, icon_size_);
   int text_x = icon_bounds_.right() + LocationBarView::kItemPadding;
   int font_height = std::max(normal_font_.height(), bold_font_.height());
   text_bounds_.SetRect(text_x, std::max(0, (height() - font_height) / 2),
-      std::max(0, bounds().width() - text_x - LocationBarView::kItemPadding),
-      font_height);
+      std::max(bounds().width() - text_x - LocationBarView::kEdgeItemPadding,
+      0), font_height);
 }
 
 gfx::Size AutocompleteResultView::GetPreferredSize() {
@@ -688,7 +688,8 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     // The normal location bar is drawn using a background graphic that includes
     // the border, so we inset by enough to make the edges line up, and the
     // bubble appear at the same height as the Star bubble.
-    location_bar_bounds.Inset(LocationBarView::kEdgeThickness, 0);
+    location_bar_bounds.Inset(LocationBarView::kNormalHorizontalEdgeThickness,
+                              0);
   }
   gfx::Point location_bar_origin(location_bar_bounds.origin());
   views::View::ConvertPointToScreen(location_bar_, &location_bar_origin);
