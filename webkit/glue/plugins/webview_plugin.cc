@@ -55,6 +55,7 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
 void WebViewPlugin::destroy() {
   delegate_->WillDestroyPlugin();
   delegate_ = NULL;
+  container_ = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -114,7 +115,7 @@ void WebViewPlugin::startDragging(const WebDragData&,
 
 void WebViewPlugin::didInvalidateRect(const WebRect& rect) {
   if (container_)
-    container_->invalidateRect(WebRect(rect));
+    container_->invalidateRect(rect);
 }
 
 void WebViewPlugin::didChangeCursor(const WebCursorInfo& cursor) {
@@ -122,7 +123,8 @@ void WebViewPlugin::didChangeCursor(const WebCursorInfo& cursor) {
 }
 
 void WebViewPlugin::didClearWindowObject(WebFrame* frame) {
-  delegate_->BindWebFrame(frame);
+  if (delegate_)
+    delegate_->BindWebFrame(frame);
 }
 
 bool WebViewPlugin::canHandleRequest(WebFrame* frame,
