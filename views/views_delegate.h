@@ -11,6 +11,8 @@
 #include <windows.h>
 #endif
 
+#include "views/accessibility/accessibility_types.h"
+
 class Clipboard;
 
 namespace gfx {
@@ -18,6 +20,8 @@ class Rect;
 }
 
 namespace views {
+
+class View;
 
 // ViewsDelegate is an interface implemented by an object using the views
 // framework. It is used to obtain various high level application utilities
@@ -47,6 +51,11 @@ class ViewsDelegate {
   // name.
   virtual bool GetSavedMaximizedState(const std::wstring& window_name,
                                       bool* maximized) const = 0;
+
+  // Notify the delegate that an accessibility event has happened in
+  // a particular view.
+  virtual void NotifyAccessibilityEvent(
+      views::View* view, AccessibilityTypes::Event event_type) = 0;
 
 #if defined(OS_WIN)
   // Retrieves the default window icon to use for windows if none is specified.
