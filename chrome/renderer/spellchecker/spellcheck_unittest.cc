@@ -588,6 +588,19 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       // A Russian word including U+0451. (Bug 15558 <http://crbug.com/15558>)
       L"\u0451\u043B\u043A\u0430"
     }, {
+      // Serbian
+      "sr",
+      L"\x0047\x006f\x006f\x0067\x006c\x0065\x002d\x043e\x0432\x0430 "
+      L"\x043c\x0438\x0441\x0438\x0458\x0430 \x0458\x0435 \x0434\x0430 "
+      L"\x043e\x0440\x0433\x0430\x043d\x0438\x0437\x0443\x0458\x0435 "
+      L"\x0441\x0432\x0435 "
+      L"\x0438\x043d\x0444\x043e\x0440\x043c\x0430\x0446\x0438\x0458\x0435 "
+      L"\x043d\x0430 \x0441\x0432\x0435\x0442\x0443 \x0438 "
+      L"\x0443\x0447\x0438\x043d\x0438 \x0438\x0445 "
+      L"\x0443\x043d\x0438\x0432\x0435\x0440\x0437\x0430\x043b\x043d\x043e "
+      L"\x0434\x043e\x0441\x0442\x0443\x043f\x043d\x0438\x043c \x0438 "
+      L"\x043a\x043e\x0440\x0438\x0441\x043d\x0438\x043c."
+    }, {
       // Slovak
       "sk-SK",
       L"Spolo\x010Dnos\x0165 Google si dala za \x00FAlohu usporiada\x0165 "
@@ -612,6 +625,21 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"misyonu, d\x00FCnyadaki t\x00FCm bilgileri "
       L"organize etmek ve evrensel olarak eri\x015Filebilir ve "
       L"kullan\x0131\x015Fl\x0131 k\x0131lmakt\x0131r."
+    }, {
+      // Ukranian
+      "uk-UA",
+      L"\x041c\x0456\x0441\x0456\x044f "
+      L"\x043a\x043e\x043c\x043f\x0430\x043d\x0456\x0457 Google "
+      L"\x043f\x043e\x043b\x044f\x0433\x0430\x0454 \x0432 "
+      L"\x0442\x043e\x043c\x0443, \x0449\x043e\x0431 "
+      L"\x0443\x043f\x043e\x0440\x044f\x0434\x043a\x0443\x0432\x0430\x0442"
+      L"\x0438 \x0456\x043d\x0444\x043e\x0440\x043c\x0430\x0446\x0456\x044e "
+      L"\x0437 \x0443\x0441\x044c\x043e\x0433\x043e "
+      L"\x0441\x0432\x0456\x0442\x0443 \x0442\x0430 "
+      L"\x0437\x0440\x043e\x0431\x0438\x0442\x0438 \x0457\x0457 "
+      L"\x0443\x043d\x0456\x0432\x0435\x0440\x0441\x0430\x043b\x044c\x043d"
+      L"\x043e \x0434\x043e\x0441\x0442\x0443\x043f\x043d\x043e\x044e "
+      L"\x0442\x0430 \x043a\x043e\x0440\x0438\x0441\x043d\x043e\x044e."
     }, {
       // Vietnamese
       "vi-VN",

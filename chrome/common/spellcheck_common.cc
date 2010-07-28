@@ -46,8 +46,10 @@ static const struct {
   {"ru", "ru-RU"},
   {"sk", "sk-SK"},
   {"sl", "sl-SI"},
+  {"sr", "sr"},
   {"sv", "sv-SE"},
   {"tr", "tr-TR"},
+  {"uk", "uk-UA"},
   {"vi", "vi-VN"},
 };
 
@@ -98,6 +100,8 @@ FilePath GetVersionedFileName(const std::string& input_language,
     {"ro-RO", "-2-0"},
     {"ru-RU", "-2-0"},
     {"bg-BG", "-2-0"},
+    {"sr", "-2-0"},
+    {"uk-UA", "-2-0"},
   };
 
   // Generate the bdict file name using default version string or special
