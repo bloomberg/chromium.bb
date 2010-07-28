@@ -3625,13 +3625,3 @@
    fun:_ZN7Browser16InitCommandStateEv
    fun:_ZN7Browser*ENS_4TypeEP7Profile
 }
-{
-   bug_50504
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25SharedResourcesDataSource8RegisterEv
-   fun:_Z27RegisterURLRequestChromeJobv
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
-}

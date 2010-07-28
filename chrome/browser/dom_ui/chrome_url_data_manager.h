@@ -11,7 +11,6 @@
 
 #include "base/task.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/chrome_thread.h"
 
 class DictionaryValue;
 class FilePath;
@@ -44,9 +43,7 @@ class ChromeURLDataManager {
   // An implementation of DataSource should handle calls to
   // StartDataRequest() by starting its (implementation-specific) asynchronous
   // request for the data, then call SendResponse() to notify
-  class DataSource
-      : public base::RefCountedThreadSafe<DataSource,
-                                          ChromeThread::DeleteOnUIThread> {
+  class DataSource : public base::RefCountedThreadSafe<DataSource> {
    public:
     // See source_name_ and message_loop_ below for docs on these parameters.
     DataSource(const std::string& source_name,
@@ -86,8 +83,6 @@ class ChromeURLDataManager {
 
    protected:
     friend class base::RefCountedThreadSafe<DataSource>;
-    friend struct ChromeThread::DeleteOnThread<ChromeThread::UI>;
-    friend class DeleteTask<DataSource>;
 
     virtual ~DataSource();
 

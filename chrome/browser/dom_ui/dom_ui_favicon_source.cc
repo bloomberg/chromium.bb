@@ -17,13 +17,11 @@ DOMUIFavIconSource::DOMUIFavIconSource(Profile* profile)
 }
 
 DOMUIFavIconSource::~DOMUIFavIconSource() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 void DOMUIFavIconSource::StartDataRequest(const std::string& path,
                                           bool is_off_the_record,
                                           int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (favicon_service) {
@@ -58,7 +56,6 @@ void DOMUIFavIconSource::OnFavIconDataAvailable(
     scoped_refptr<RefCountedMemory> data,
     bool expired,
     GURL icon_url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   int request_id = cancelable_consumer_.GetClientData(favicon_service,

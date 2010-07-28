@@ -23,13 +23,11 @@ DOMUIThumbnailSource::DOMUIThumbnailSource(Profile* profile)
 }
 
 DOMUIThumbnailSource::~DOMUIThumbnailSource() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
 void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     scoped_refptr<history::TopSites> top_sites = profile_->GetTopSites();
     RefCountedBytes* data = NULL;
@@ -75,7 +73,6 @@ void DOMUIThumbnailSource::SendDefaultThumbnail(int request_id) {
 void DOMUIThumbnailSource::OnThumbnailDataAvailable(
     HistoryService::Handle request_handle,
     scoped_refptr<RefCountedBytes> data) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   HistoryService* hs =
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   int request_id = cancelable_consumer_.GetClientData(hs, request_handle);
