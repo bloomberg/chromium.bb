@@ -82,7 +82,7 @@ class DatabaseTracker_TestHelper_Test {
   static void TestDeleteOpenDatabase(bool incognito_mode) {
     // Initialize the tracker database.
     ScopedTempDir temp_dir;
-    EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
         new DatabaseTracker(temp_dir.path(), incognito_mode));
 
@@ -181,7 +181,7 @@ class DatabaseTracker_TestHelper_Test {
   static void TestDatabaseTracker(bool incognito_mode) {
     // Initialize the tracker database.
     ScopedTempDir temp_dir;
-    EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     scoped_refptr<DatabaseTracker> tracker(
         new DatabaseTracker(temp_dir.path(), incognito_mode));
 

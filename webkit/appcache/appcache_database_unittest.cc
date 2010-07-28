@@ -54,7 +54,7 @@ TEST(AppCacheDatabaseTest, LazyOpen) {
 TEST(AppCacheDatabaseTest, ReCreate) {
   // Real files on disk for this test.
   ScopedTempDir temp_dir;
-  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
   const FilePath kNestedDir = temp_dir.path().AppendASCII("nested");
   const FilePath kOtherFile =  kNestedDir.AppendASCII("other_file");
