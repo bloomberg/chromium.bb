@@ -289,7 +289,7 @@
         <include name="IDR_SEARCH_ENGINE_LOGO_ASK" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_BAIDU" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_BING" file="notused.png" type="BINDATA" />
-        <include name="IDR_SEARCH_ENGINE_LOGO_CENTRUMCZ" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_CENTRUM" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_DAUM" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_DELFI" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_GOO" file="notused.png" type="BINDATA" />
