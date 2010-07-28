@@ -1912,8 +1912,8 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
                      NULL);
 
         guint32 click_time = event->time - last_click_time;
-        int click_move_x = static_cast<int>(event->x - last_click_position.x());
-        int click_move_y = static_cast<int>(event->y - last_click_position.y());
+        int click_move_x = abs(event->x - last_click_position.x());
+        int click_move_y = abs(event->y - last_click_position.y());
 
         if (click_time > static_cast<guint32>(double_click_time) ||
             click_move_x > double_click_distance ||
