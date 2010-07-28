@@ -1046,7 +1046,6 @@ const char kUseSystemSSL[]                  = "use-system-ssl";
 #endif
 
 #if defined(OS_POSIX)
-// Bypass the error dialog when the profile lock couldn't be attained.
 // A flag, generated internally by Chrome for renderer and other helper process
 // command lines on Linux and Mac.  It tells the helper process to enable crash
 // dumping and reporting, because helpers cannot access the profile or other
@@ -1055,6 +1054,7 @@ const char kUseSystemSSL[]                  = "use-system-ssl";
 // as well, thereby force-enabling the crash reporter.
 const char kEnableCrashReporter[]           = "enable-crash-reporter";
 
+// Bypass the error dialog when the profile lock couldn't be attained.
 // This switch is used during automated testing.
 const char kNoProcessSingletonDialog[]      = "no-process-singleton-dialog";
 

@@ -60,7 +60,7 @@ def _LocateBinDirs():
                              os.pardir, os.pardir, 'third_party'),
                 script_dir,
   ]
-  sys.path += bin_dirs.get(sys.platform, []) + deps_dirs
+  sys.path += map(os.path.normpath, bin_dirs.get(sys.platform, []) + deps_dirs)
 
 _LocateBinDirs()
 
@@ -1305,7 +1305,7 @@ class Main(object):
         else:
           args = self._LoadTestNamesFrom(pyauto_tests_file)
     args = args * self._options.repeat
-    logging.debug("Loading tests from %s", args)
+    logging.debug("Loading %d tests from %s", len(args), args)
     loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(args)
     return loaded_tests
 
@@ -1337,8 +1337,15 @@ class Main(object):
       raw_input('Attach debugger to process %s and hit <enter> ' % os.getpid())
 
     suite_args = [sys.argv[0]]
-    if self._options.chrome_flags:
-      suite_args.append('--extra-chrome-flags=' + self._options.chrome_flags)
+    chrome_flags = self._options.chrome_flags
+    # Enable crash reporter by default on posix.
+    # On windows, the choice to enable/disable crash reporting is made when
+    # downloading the installer.
+    # TODO(nirnimesh): Figure out a way to control this from here on Win too.
+    if PyUITest.IsPosix():
+      chrome_flags += ' --enable-crash-reporter'
+    if chrome_flags:
+      suite_args.append('--extra-chrome-flags=%s' % chrome_flags)
     pyauto_suite = PyUITestSuite(suite_args)
     loaded_tests = self._LoadTests(self._args)
     pyauto_suite.addTests(loaded_tests)
