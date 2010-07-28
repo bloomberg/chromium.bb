@@ -26,9 +26,7 @@ enum SandboxProcessType {
   // is allowed to one configurable directory.
   SANDBOX_TYPE_UTILITY,
 
-  // Native Client sandboxes. The plugin contains trusted code and the
-  // loader contains the user's untrusted code.
-  SANDBOX_TYPE_NACL_PLUGIN,
+  // Native Client sandbox for the user's untrusted code.
   SANDBOX_TYPE_NACL_LOADER,
 
   SANDBOX_AFTER_TYPE_LAST_TYPE,  // Placeholder to ease iteration.
