@@ -533,17 +533,12 @@ int ToolbarView::PopupTopSpacing() const {
 void ToolbarView::LoadImages() {
   ThemeProvider* tp = GetThemeProvider();
 
-  SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
-  SkBitmap* background = tp->GetBitmapNamed(IDR_THEME_BUTTON_BACKGROUND);
-
   back_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_BACK));
   back_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_BACK_H));
   back_->SetImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_BACK_P));
   back_->SetImage(views::CustomButton::BS_DISABLED,
       tp->GetBitmapNamed(IDR_BACK_D));
-  back_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_BACK_MASK));
 
   forward_->SetImage(views::CustomButton::BS_NORMAL,
       tp->GetBitmapNamed(IDR_FORWARD));
@@ -553,8 +548,6 @@ void ToolbarView::LoadImages() {
       tp->GetBitmapNamed(IDR_FORWARD_P));
   forward_->SetImage(views::CustomButton::BS_DISABLED,
       tp->GetBitmapNamed(IDR_FORWARD_D));
-  forward_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_FORWARD_MASK));
 
   reload_->SetImage(views::CustomButton::BS_NORMAL,
       tp->GetBitmapNamed(IDR_RELOAD));
@@ -568,15 +561,11 @@ void ToolbarView::LoadImages() {
       tp->GetBitmapNamed(IDR_STOP_H));
   reload_->SetToggledImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_STOP_P));
-  reload_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_BUTTON_MASK));
 
   home_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_HOME));
   home_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_HOME_H));
   home_->SetImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_HOME_P));
-  home_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_BUTTON_MASK));
 
   app_menu_->SetIcon(GetAppMenuIcon());
 }

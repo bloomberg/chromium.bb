@@ -25,7 +25,6 @@
       <include name="IDR_BACK" file="back.png" type="BINDATA" />
       <include name="IDR_BACK_D" file="back_d.png" type="BINDATA" />
       <include name="IDR_BACK_H" file="back_h.png" type="BINDATA" />
-      <include name="IDR_BACK_MASK" file="back_mask.png" type="BINDATA" />
       <include name="IDR_BACK_P" file="back_p.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE" file="balloon_close.png" type="BINDATA" />
       <include name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" type="BINDATA" />
@@ -56,7 +55,6 @@
       <include name="IDR_BUBBLE_TL" file="bubble_tl.png" type="BINDATA" />
       <include name="IDR_BUBBLE_TR" file="bubble_tr.png" type="BINDATA" />
       <include name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t.png" type="BINDATA" />
-      <include name="IDR_BUTTON_MASK" file="button_mask.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
@@ -145,7 +143,6 @@
       <include name="IDR_FORWARD" file="forward.png" type="BINDATA" />
       <include name="IDR_FORWARD_D" file="forward_d.png" type="BINDATA" />
       <include name="IDR_FORWARD_H" file="forward_h.png" type="BINDATA" />
-      <include name="IDR_FORWARD_MASK" file="forward_mask.png" type="BINDATA" />
       <include name="IDR_FORWARD_P" file="forward_p.png" type="BINDATA" />
       <include name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" type="BINDATA" />
       <include name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" type="BINDATA" />
