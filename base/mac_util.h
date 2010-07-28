@@ -17,6 +17,7 @@ class FilePath;
 @class NSWindow;
 #else
 class NSBundle;
+class NSImage;
 class NSWindow;
 #endif
 
@@ -140,6 +141,13 @@ CFTypeRef GetValueFromDictionary(CFDictionaryRef dict,
 
 // Sets the process name as displayed in Activity Monitor to process_name.
 void SetProcessName(CFStringRef process_name);
+
+// Converts a NSImage to a CGImageRef.  Normally, the system frameworks can do
+// this fine, especially on 10.6.  On 10.5, however, CGImage cannot handle
+// converting a PDF-backed NSImage into a CGImageRef.  This function will
+// rasterize the PDF into a bitmap CGImage.  The caller is responsible for
+// releasing the return value.
+CGImageRef CopyNSImageToCGImage(NSImage* image);
 
 }  // namespace mac_util
 

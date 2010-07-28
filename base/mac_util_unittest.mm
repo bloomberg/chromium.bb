@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,6 +163,21 @@ TEST_F(MacUtilTest, TestGetValueFromDictionary) {
   EXPECT_FALSE(GetValueFromDictionary(dict, CFSTR("key"), CFNumberGetTypeID()));
   EXPECT_FALSE(GetValueFromDictionary(
                    dict, CFSTR("no-exist"), CFStringGetTypeID()));
+}
+
+TEST_F(MacUtilTest, CopyNSImageToCGImage) {
+  scoped_nsobject<NSImage> nsImage(
+      [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
+  [nsImage lockFocus];
+  [[NSColor redColor] set];
+  NSRect rect = NSZeroRect;
+  rect.size = [nsImage size];
+  NSRectFill(rect);
+  [nsImage unlockFocus];
+
+  scoped_cftyperef<CGImageRef> cgImage(
+      mac_util::CopyNSImageToCGImage(nsImage.get()));
+  EXPECT_TRUE(cgImage.get());
 }
 
 }  // namespace

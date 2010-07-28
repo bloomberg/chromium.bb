@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/animatable_image.h"
 
 #include "base/logging.h"
+#import "base/mac_util.h"
 #include "base/scoped_cftyperef.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
@@ -126,36 +127,13 @@
   [CATransaction commit];
 }
 
-// CALayer expects a CGImageRef contents. If the image is a PDF, 10.5 CGImage
-// cannot handle the conversion to bitmap. To get it to work, rasterize the
-// image into a bitmap CGImageRef. This is based loosely on
-// http://www.cocoadev.com/index.pl?CGImageRef.
+// Sets the layer contents by converting the NSImage to a CGImageRef.  This will
+// rasterize PDF resources.
 - (void)setLayerContents:(CALayer*)layer {
-  NSSize size = [image_ size];
-  CGContextRef context =
-      CGBitmapContextCreate(NULL,  // Allow CG to allocate memory.
-                            size.width,
-                            size.height,
-                            8,  // bitsPerComponent
-                            0,  // bytesPerRow - CG will calculate by default.
-                            [[NSColorSpace genericRGBColorSpace] CGColorSpace],
-                            kCGBitmapByteOrder32Host |
-                                kCGImageAlphaPremultipliedFirst);
-
-  [NSGraphicsContext saveGraphicsState];
-  [NSGraphicsContext setCurrentContext:
-      [NSGraphicsContext graphicsContextWithGraphicsPort:context flipped:NO]];
-  [image_ drawInRect:NSMakeRect(0,0, size.width, size.height)
-            fromRect:NSZeroRect
-           operation:NSCompositeCopy
-            fraction:1.0];
-  [NSGraphicsContext restoreGraphicsState];
-
-  scoped_cftyperef<CGImageRef> cgImage(CGBitmapContextCreateImage(context));
-  CGContextRelease(context);
-
+  scoped_cftyperef<CGImageRef> image(
+      mac_util::CopyNSImageToCGImage(image_.get()));
   // Create the layer that will be animated.
-  [layer setContents:(id)cgImage.get()];
+  [layer setContents:(id)image.get()];
 }
 
 // CAAnimation delegate method called when the animation is complete.

@@ -479,4 +479,37 @@ void SetProcessName(CFStringRef process_name) {
   LOG_IF(ERROR, err) << "Call to set process name failed, err " << err;
 }
 
+// Converts a NSImage to a CGImageRef.  Normally, the system frameworks can do
+// this fine, especially on 10.6.  On 10.5, however, CGImage cannot handle
+// converting a PDF-backed NSImage into a CGImageRef.  This function will
+// rasterize the PDF into a bitmap CGImage.  The caller is responsible for
+// releasing the return value.
+CGImageRef CopyNSImageToCGImage(NSImage* image) {
+  // This is based loosely on http://www.cocoadev.com/index.pl?CGImageRef .
+  NSSize size = [image size];
+  scoped_cftyperef<CGContextRef> context(
+      CGBitmapContextCreate(NULL,  // Allow CG to allocate memory.
+                            size.width,
+                            size.height,
+                            8,  // bitsPerComponent
+                            0,  // bytesPerRow - CG will calculate by default.
+                            [[NSColorSpace genericRGBColorSpace] CGColorSpace],
+                            kCGBitmapByteOrder32Host |
+                                kCGImageAlphaPremultipliedFirst));
+  if (!context.get())
+    return NULL;
+
+  [NSGraphicsContext saveGraphicsState];
+  [NSGraphicsContext setCurrentContext:
+      [NSGraphicsContext graphicsContextWithGraphicsPort:context.get()
+                                                 flipped:NO]];
+  [image drawInRect:NSMakeRect(0,0, size.width, size.height)
+           fromRect:NSZeroRect
+          operation:NSCompositeCopy
+           fraction:1.0];
+  [NSGraphicsContext restoreGraphicsState];
+
+  return CGBitmapContextCreateImage(context);
+}
+
 }  // namespace mac_util
