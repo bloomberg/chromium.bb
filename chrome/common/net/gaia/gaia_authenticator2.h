@@ -26,12 +26,9 @@
 
 class GaiaAuthenticator2Test;
 
+// TODO(chron): Rename this to GaiaAuthFetcher or something.
 class GaiaAuthenticator2 : public URLFetcher::Delegate {
  public:
-  // Constants to use in the ClientLogin request POST body.
-  static const char kChromeOSSource[];
-  static const char kContactsService[];
-
   // The URLs for different calls in the Google Accounts programmatic login API.
   static const char kClientLoginUrl[];
   static const char kIssueAuthTokenUrl[];

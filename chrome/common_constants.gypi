@@ -24,6 +24,8 @@
           'common/env_vars.h',
           'common/json_value_serializer.cc',
           'common/json_value_serializer.h',
+          'common/net/gaia/gaia_constants.cc',
+          'common/net/gaia/gaia_constants.h',
           'common/pref_names.cc',
           'common/pref_names.h',
         ],

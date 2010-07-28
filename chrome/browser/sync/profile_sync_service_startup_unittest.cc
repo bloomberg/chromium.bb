@@ -203,7 +203,10 @@ TEST_F(ProfileSyncServiceStartupBootstrapTest, SKIP_MACOSX(StartFirstTime)) {
   GaiaAuthConsumer::ClientLoginResult result;
   result.sid = "sid";
   result.lsid = "lsid";
-  profile_.GetTokenService()->SetClientLoginResult(result);
+  profile_.GetTokenService()->Initialize("test",
+                                         profile_.GetRequestContext(),
+                                         result);
+
   // Will start sync even though setup hasn't been completed (since
   // setup is bypassed when bootstrapping is enabled).
   service_->Initialize();

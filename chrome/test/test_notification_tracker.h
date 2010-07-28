@@ -64,11 +64,11 @@ class TestNotificationTracker : public NotificationObserver {
   // be in [0, size).
   const Event& at(size_t i) const { return events_[i]; }
 
- private:
+ protected:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
+ private:
   NotificationRegistrar registrar_;
 
   // Lists all received since last cleared, in the order they were received.

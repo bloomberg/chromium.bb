@@ -29,6 +29,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -153,7 +154,9 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       logging::DELETE_OLD_LOG_FILE);
 
   // Supply credentials for sync and others to use
-  profile->GetTokenService()->SetClientLoginResult(credentials);
+  profile->GetTokenService()->Initialize(GaiaConstants::kChromeOSSource,
+                                         profile->GetRequestContext(),
+                                         credentials);
 
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is

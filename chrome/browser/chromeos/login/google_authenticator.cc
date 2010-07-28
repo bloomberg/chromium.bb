@@ -26,6 +26,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -79,7 +80,7 @@ void GoogleAuthenticator::CancelClientLogin() {
 void GoogleAuthenticator::TryClientLogin() {
   gaia_authenticator_->StartClientLogin(username_,
                                         password_,
-                                        GaiaAuthenticator2::kContactsService,
+                                        GaiaConstants::kContactsService,
                                         login_token_,
                                         login_captcha_);
   ChromeThread::PostDelayedTask(
@@ -122,7 +123,7 @@ bool GoogleAuthenticator::AuthenticateToLogin(
 
   gaia_authenticator_.reset(
       new GaiaAuthenticator2(this,
-                             GaiaAuthenticator2::kChromeOSSource,
+                             GaiaConstants::kChromeOSSource,
                              profile->GetRequestContext()));
   // Will be used for retries.
   PrepareClientLoginAttempt(password, login_token, login_captcha);

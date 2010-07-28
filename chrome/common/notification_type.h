@@ -1023,6 +1023,19 @@ class NotificationType {
     // are a ChromeCookieDetails object.
     COOKIE_CHANGED,
 
+    // Token Service -----------------------------------------------------------
+
+    // When the token service has a new token available for a service, one of
+    // these notifications is issued per new token.
+    // The source is a TokenService on the Profile. The details are a
+    // TokenAvailableDetails object.
+    TOKEN_AVAILABLE,
+
+    // If a token request failed, one of these is issued per failed request.
+    // The source is a TokenService on the Profile. The details are a
+    // TokenRequestFailedDetails object.
+    TOKEN_REQUEST_FAILED,
+
     // Misc --------------------------------------------------------------------
 
 #if defined(OS_CHROMEOS)

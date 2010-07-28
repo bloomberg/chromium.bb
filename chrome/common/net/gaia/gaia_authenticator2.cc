@@ -46,11 +46,6 @@ const char GaiaAuthenticator2::kCookiePersistence[] = "true";
 // static
 const char GaiaAuthenticator2::kAccountType[] = "HOSTED_OR_GOOGLE";
 // static
-const char GaiaAuthenticator2::kChromeOSSource[] = "chromeos";
-// static
-// Service name for Gaia Contacts API. API is used to get user's image.
-const char GaiaAuthenticator2::kContactsService[] = "cp";
-// static
 const char GaiaAuthenticator2::kSecondFactor[] = "Info=InvalidSecondFactor";
 
 // TODO(chron): These urls are also in auth_response_handler.h.

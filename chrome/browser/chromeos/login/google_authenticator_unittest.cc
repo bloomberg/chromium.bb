@@ -56,6 +56,7 @@ class ExpectCanceledFetcher : public URLFetcher {
  public:
   ExpectCanceledFetcher(bool success,
                         const GURL& url,
+                        const std::string& results,
                         URLFetcher::RequestType request_type,
                         URLFetcher::Delegate* d)
       : URLFetcher(url, request_type, d) {

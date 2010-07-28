@@ -9,6 +9,8 @@
 #define CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_UNITTEST_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/http_return.h"
@@ -19,12 +21,16 @@ class MockFetcher : public URLFetcher {
  public:
   MockFetcher(bool success,
               const GURL& url,
+              const std::string& results,
               URLFetcher::RequestType request_type,
               URLFetcher::Delegate* d)
       : URLFetcher(url, request_type, d),
         success_(success),
-        url_(url) {}
+        url_(url),
+        results_(results) {}
+
   ~MockFetcher() {}
+
   void Start() {
     URLRequestStatus::Status code;
     int http_code;
@@ -42,11 +48,12 @@ class MockFetcher : public URLFetcher {
                                    status,
                                    http_code,
                                    ResponseCookies(),
-                                   std::string());
+                                   results_);
   }
  private:
   bool success_;
   GURL url_;
+  std::string results_;
   DISALLOW_COPY_AND_ASSIGN(MockFetcher);
 };
 
@@ -60,13 +67,17 @@ class MockFactory : public URLFetcher::Factory {
                                const GURL& url,
                                URLFetcher::RequestType request_type,
                                URLFetcher::Delegate* d) {
-    return new T(success_, url, request_type, d);
+    return new T(success_, url, results_, request_type, d);
   }
   void set_success(bool success) {
     success_ = success;
   }
+  void set_results(const std::string& results) {
+    results_ = results;
+  }
  private:
   bool success_;
+  std::string results_;
   DISALLOW_COPY_AND_ASSIGN(MockFactory);
 };
 
