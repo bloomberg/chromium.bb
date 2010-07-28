@@ -228,11 +228,15 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
     defaultImage_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
 
-    // Register for theme changes.
+    // Register for theme changes, bookmark button pulsing, ...
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
                       selector:@selector(themeDidChangeNotification:)
                           name:kBrowserThemeDidChangeNotification
+                        object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(pulseBookmarkNotification:)
+                          name:bookmark_button::kPulseBookmarkButtonNotification
                         object:nil];
 
     // This call triggers an awakeFromNib, which builds the bar, which
@@ -241,6 +245,40 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     [[self animatableView] setResizeDelegate:resizeDelegate];
   }
   return self;
+}
+
+- (void)pulseBookmarkNotification:(NSNotification*)notification {
+  NSDictionary* dict = [notification userInfo];
+  const BookmarkNode* node = NULL;
+  NSValue *value = [dict objectForKey:bookmark_button::kBookmarkKey];
+  DCHECK(value);
+  if (value)
+    node = static_cast<const BookmarkNode*>([value pointerValue]);
+  NSNumber* number = [dict
+                       objectForKey:bookmark_button::kBookmarkPulseFlagKey];
+  DCHECK(number);
+  BOOL doPulse = number ? [number boolValue] : NO;
+
+  // 3 cases:
+  // button on the bar: flash it
+  // button in "other bookmarks" folder: flash other bookmarks
+  // button in "off the side" folder: flash the chevron
+  for (BookmarkButton* button in [self buttons]) {
+    if ([button bookmarkNode] == node) {
+      [button setIsContinuousPulsing:doPulse];
+      return;
+    }
+  }
+  if ([otherBookmarksButton_ bookmarkNode] == node) {
+    [otherBookmarksButton_ setIsContinuousPulsing:doPulse];
+    return;
+  }
+  if (node->GetParent() == bookmarkModel_->GetBookmarkBarNode()) {
+    [offTheSideButton_ setIsContinuousPulsing:doPulse];
+    return;
+  }
+
+  NOTREACHED() << "no bookmark button found to pulse!";
 }
 
 - (void)dealloc {

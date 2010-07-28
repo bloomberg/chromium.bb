@@ -27,13 +27,187 @@
                    innerFrame:(NSRect*)returnInnerFrame
                     innerPath:(NSBezierPath**)returnInnerPath
                      clipPath:(NSBezierPath**)returnClipPath;
+
+
 @end
 
+
 static const NSTimeInterval kAnimationShowDuration = 0.2;
+
+// Note: due to a bug (?), drawWithFrame:inView: does not call
+// drawBorderAndFillForTheme::::: unless the mouse is inside.  The net
+// effect is that our "fade out" when the mouse leaves becaumes
+// instantaneous.  When I "fixed" it things looked horrible; the
+// hover-overed bookmark button would stay highlit for 0.4 seconds
+// which felt like latency/lag.  I'm leaving the "bug" in place for
+// now so we don't suck.  -jrg
 static const NSTimeInterval kAnimationHideDuration = 0.4;
 
+static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
+
 @implementation GradientButtonCell
+
 @synthesize hoverAlpha = hoverAlpha_;
+
+// For nib instantiations
+- (id)initWithCoder:(NSCoder*)decoder {
+  if ((self = [super initWithCoder:decoder])) {
+    [self sharedInit];
+  }
+  return self;
+}
+
+// For programmatic instantiations
+- (id)initTextCell:(NSString*)string {
+  if ((self = [super initTextCell:string])) {
+    [self sharedInit];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  if (trackingArea_) {
+    [[self controlView] removeTrackingArea:trackingArea_];
+    trackingArea_.reset();
+  }
+  [super dealloc];
+}
+
+// Return YES if we are pulsing (towards another state or continuously).
+- (BOOL)pulsing {
+  if ((pulseState_ == gradient_button_cell::kPulsingOn) ||
+      (pulseState_ == gradient_button_cell::kPulsingOff) ||
+      (pulseState_ == gradient_button_cell::kPulsingContinuous))
+    return YES;
+  return NO;
+}
+
+// Perform one pulse step when animating a pulse.
+- (void)performOnePulseStep {
+  NSTimeInterval thisUpdate = [NSDate timeIntervalSinceReferenceDate];
+  NSTimeInterval elapsed = thisUpdate - lastHoverUpdate_;
+  CGFloat opacity = [self hoverAlpha];
+
+  // Update opacity based on state.
+  // Adjust state if we have finished.
+  switch (pulseState_) {
+  case gradient_button_cell::kPulsingOn:
+    opacity += elapsed / kAnimationShowDuration;
+    if (opacity > 1.0) {
+      [self setPulseState:gradient_button_cell::kPulsedOn];
+      return;
+    }
+    break;
+  case gradient_button_cell::kPulsingOff:
+    opacity -= elapsed / kAnimationHideDuration;
+    if (opacity < 0.0) {
+      [self setPulseState:gradient_button_cell::kPulsedOff];
+      return;
+    }
+    break;
+  case gradient_button_cell::kPulsingContinuous:
+    opacity += elapsed / kAnimationContinuousCycleDuration * pulseMultiplier_;
+    if (opacity > 1.0) {
+      opacity = 1.0;
+      pulseMultiplier_ *= -1.0;
+    } else if (opacity < 0.0) {
+      opacity = 0.0;
+      pulseMultiplier_ *= -1.0;
+    }
+    outerStrokeAlphaMult_ = opacity;
+    break;
+  default:
+    NOTREACHED() << "unknown pulse state";
+  }
+
+  // Update our control.
+  lastHoverUpdate_ = thisUpdate;
+  [self setHoverAlpha:opacity];
+  [[self controlView] setNeedsDisplay:YES];
+
+  // If our state needs it, keep going.
+  if ([self pulsing]) {
+    [self performSelector:_cmd withObject:nil afterDelay:0.02];
+  }
+}
+
+- (gradient_button_cell::PulseState)pulseState {
+  return pulseState_;
+}
+
+// Set the pulsing state.  This can either set the pulse to on or off
+// immediately (e.g. kPulsedOn, kPulsedOff) or initiate an animated
+// state change.
+- (void)setPulseState:(gradient_button_cell::PulseState)pstate {
+  pulseState_ = pstate;
+  pulseMultiplier_ = 0.0;
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  lastHoverUpdate_ = [NSDate timeIntervalSinceReferenceDate];
+
+  switch (pstate) {
+  case gradient_button_cell::kPulsedOn:
+  case gradient_button_cell::kPulsedOff:
+    outerStrokeAlphaMult_ = 1.0;
+    [self setHoverAlpha:((pulseState_ == gradient_button_cell::kPulsedOn) ?
+                         1.0 : 0.0)];
+    [[self controlView] setNeedsDisplay:YES];
+    break;
+  case gradient_button_cell::kPulsingOn:
+  case gradient_button_cell::kPulsingOff:
+    outerStrokeAlphaMult_ = 1.0;
+    // Set initial value then engage timer.
+    [self setHoverAlpha:((pulseState_ == gradient_button_cell::kPulsingOn) ?
+                         0.0 : 1.0)];
+    [self performOnePulseStep];
+    break;
+  case gradient_button_cell::kPulsingContinuous:
+    // Semantics of continuous pulsing are that we pulse independent
+    // of mouse position.
+    pulseMultiplier_ = 1.0;
+    [self performOnePulseStep];
+    break;
+  default:
+    CHECK(0);
+    break;
+  }
+}
+
+- (void)safelyStopPulsing {
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
+}
+
+- (void)setIsContinuousPulsing:(BOOL)continuous {
+  if (!continuous && pulseState_ != gradient_button_cell::kPulsingContinuous)
+    return;
+  if (continuous) {
+    [self setPulseState:gradient_button_cell::kPulsingContinuous];
+  } else {
+    [self setPulseState:(isMouseInside_ ? gradient_button_cell::kPulsedOn :
+                         gradient_button_cell::kPulsedOff)];
+  }
+}
+
+- (BOOL)isContinuousPulsing {
+  return (pulseState_ == gradient_button_cell::kPulsingContinuous) ?
+      YES : NO;
+}
+
+#if 1
+// If we are not continuously pulsing, perform a pulse animation to
+// reflect our new state.
+- (void)setMouseInside:(BOOL)flag animate:(BOOL)animated {
+  isMouseInside_ = flag;
+  if (pulseState_ != gradient_button_cell::kPulsingContinuous) {
+    if (animated) {
+      [self setPulseState:(isMouseInside_ ? gradient_button_cell::kPulsingOn :
+                           gradient_button_cell::kPulsingOff)];
+    } else {
+      [self setPulseState:(isMouseInside_ ? gradient_button_cell::kPulsedOn :
+                           gradient_button_cell::kPulsedOff)];
+    }
+  }
+}
+#else
 
 - (void)adjustHoverValue {
   NSTimeInterval thisUpdate = [NSDate timeIntervalSinceReferenceDate];
@@ -72,29 +246,9 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   [[self controlView] setNeedsDisplay:YES];
 }
 
-// For nib instantiations
-- (id)initWithCoder:(NSCoder*)decoder {
-  if ((self = [super initWithCoder:decoder])) {
-    [self sharedInit];
-  }
-  return self;
-}
 
-// For programmatic instantiations
-- (id)initTextCell:(NSString*)string {
-  if ((self = [super initTextCell:string])) {
-    [self sharedInit];
-  }
-  return self;
-}
 
-- (void)dealloc {
-  if (trackingArea_) {
-    [[self controlView] removeTrackingArea:trackingArea_];
-    trackingArea_.reset();
-  }
-  [super dealloc];
-}
+#endif
 
 - (NSGradient*)gradientForHoverAlpha:(CGFloat)hoverAlpha
                             isThemed:(BOOL)themed {
@@ -121,6 +275,9 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 - (void)sharedInit {
   shouldTheme_ = YES;
+  pulseState_ = gradient_button_cell::kPulsedOff;
+  pulseMultiplier_ = 1.0;
+  outerStrokeAlphaMult_ = 1.0;
   gradient_.reset([[self gradientForHoverAlpha:0.0 isThemed:NO] retain]);
 }
 
@@ -283,12 +440,15 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   // Draw the outer stroke.
   NSColor* strokeColor = nil;
   if (showClickedGradient) {
-    strokeColor = [NSColor colorWithCalibratedWhite:0.0 alpha:0.3];
+    strokeColor = [NSColor
+                    colorWithCalibratedWhite:0.0
+                                       alpha:0.3 * outerStrokeAlphaMult_];
   } else {
     strokeColor = themeProvider ? themeProvider->GetNSColor(
         active ? BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE :
                  BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
-        true) : [NSColor colorWithCalibratedWhite:0.0 alpha:0.6];
+        true) : [NSColor colorWithCalibratedWhite:0.0
+                                            alpha:0.6 * outerStrokeAlphaMult_];
   }
   [strokeColor setStroke];
 
@@ -366,12 +526,17 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   // the only time we want to draw the inner gradient is if we're highlighted.
   if (([self isBordered] && ![self showsBorderOnlyWhileMouseInside]) ||
       pressed ||
-      [self isMouseInside]) {
+      [self isMouseInside] ||
+      [self isContinuousPulsing]) {
+
+    // When pulsing we want the bookmark to stand out a little more.
+    BOOL showClickedGradient = pressed ||
+        (pulseState_ == gradient_button_cell::kPulsingContinuous);
 
     [self drawBorderAndFillForTheme:themeProvider
                         controlView:controlView
                           innerPath:innerPath
-                showClickedGradient:pressed
+                showClickedGradient:showClickedGradient
               showHighlightGradient:[self isHighlighted]
                          hoverAlpha:[self hoverAlpha]
                              active:active

@@ -198,6 +198,13 @@ class ThemeProvider;
 // http://crbug.com/35967
 - (BOOL)isEmpty;
 
+// Turn on or off pulsing of a bookmark button.
+// Triggered by the bookmark bubble.
+- (void)setIsContinuousPulsing:(BOOL)flag;
+
+// Return continuous pulse state.
+- (BOOL)isContinuousPulsing;
+
 @end  // @interface BookmarkButton
 
 
@@ -205,3 +212,17 @@ class ThemeProvider;
 - (void)beginDrag:(NSEvent*)event;
 @end
 
+namespace bookmark_button {
+
+// Notifications for pulsing of bookmarks.
+extern const NSString* kPulseBookmarkButtonNotification;
+
+// Key for userInfo dict of a kPulseBookmarkButtonNotification.
+// Value is a [NSValue valueWithPointer:]; pointer is a (const BookmarkNode*).
+extern const NSString* kBookmarkKey;
+
+// Key for userInfo dict of a kPulseBookmarkButtonNotification.
+// Value is a [NSNumber numberWithBool:] to turn pulsing on or off.
+extern const NSString* kBookmarkPulseFlagKey;
+
+};

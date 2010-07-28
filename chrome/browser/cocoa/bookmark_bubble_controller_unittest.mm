@@ -15,6 +15,41 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+// Watch for bookmark pulse notifications so we can confirm they were sent.
+@interface BookmarkPulseObserver : NSObject {
+  int notifications_;
+}
+@property (assign, nonatomic) int notifications;
+@end
+
+
+@implementation BookmarkPulseObserver
+
+@synthesize notifications = notifications_;
+
+- (id)init {
+  if ((self = [super init])) {
+    [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(pulseBookmarkNotification:)
+             name:bookmark_button::kPulseBookmarkButtonNotification
+           object:nil];
+  }
+  return self;
+}
+
+- (void)pulseBookmarkNotification:(NSNotificationCenter *)notification {
+  notifications_++;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+@end
+
+
 namespace {
 
 class BookmarkBubbleControllerTest : public CocoaTest {
@@ -187,6 +222,7 @@ TEST_F(BookmarkBubbleControllerTest, TestEdit) {
 }
 
 // CallClose; bubble gets closed.
+// Also confirm pulse notifications get sent.
 TEST_F(BookmarkBubbleControllerTest, TestClose) {
     BookmarkModel* model = GetBookmarkModel();
     const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
@@ -195,12 +231,17 @@ TEST_F(BookmarkBubbleControllerTest, TestClose) {
                                              GURL("http://www.google.com"));
   EXPECT_EQ(edits_, 0);
 
+  scoped_nsobject<BookmarkPulseObserver> observer([[BookmarkPulseObserver alloc]
+                                                    init]);
+  EXPECT_EQ([observer notifications], 0);
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
   EXPECT_FALSE(IsWindowClosing());
+  EXPECT_EQ([observer notifications], 1);
   [controller ok:controller];
   EXPECT_EQ(edits_, 0);
   EXPECT_TRUE(IsWindowClosing());
+  EXPECT_EQ([observer notifications], 2);
 }
 
 // User changes title and parent folder in the UI

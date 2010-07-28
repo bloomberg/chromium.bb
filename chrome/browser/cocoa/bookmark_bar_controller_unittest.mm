@@ -2026,4 +2026,39 @@ TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
   EXPECT_CGFLOAT_EQ(expected, actual);
 }
 
+TEST_F(BookmarkBarControllerDragDropTest, PulseButton) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* root = model->GetBookmarkBarNode();
+  GURL gurl("http://www.google.com");
+  const BookmarkNode* node = model->AddURL(root, root->GetChildCount(),
+                                           L"title", gurl);
+
+  BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
+  EXPECT_FALSE([button isContinuousPulsing]);
+
+  NSValue *value = [NSValue valueWithPointer:node];
+  NSDictionary *dict = [NSDictionary
+                         dictionaryWithObjectsAndKeys:value,
+                         bookmark_button::kBookmarkKey,
+                         [NSNumber numberWithBool:YES],
+                         bookmark_button::kBookmarkPulseFlagKey,
+                         nil];
+  [[NSNotificationCenter defaultCenter]
+        postNotificationName:bookmark_button::kPulseBookmarkButtonNotification
+                      object:nil
+                    userInfo:dict];
+  EXPECT_TRUE([button isContinuousPulsing]);
+
+  dict = [NSDictionary dictionaryWithObjectsAndKeys:value,
+                       bookmark_button::kBookmarkKey,
+                       [NSNumber numberWithBool:NO],
+                       bookmark_button::kBookmarkPulseFlagKey,
+                       nil];
+  [[NSNotificationCenter defaultCenter]
+        postNotificationName:bookmark_button::kPulseBookmarkButtonNotification
+                      object:nil
+                    userInfo:dict];
+  EXPECT_FALSE([button isContinuousPulsing]);
+}
+
 }  // namespace

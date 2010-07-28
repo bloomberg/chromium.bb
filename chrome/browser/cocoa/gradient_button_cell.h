@@ -32,6 +32,23 @@ enum {
 };
 typedef NSInteger ButtonType;
 
+namespace gradient_button_cell {
+
+// Pulsing state for this button.
+typedef enum {
+  // Stable states.
+  kPulsedOn,
+  kPulsedOff,
+  // In motion which will end in a stable state.
+  kPulsingOn,
+  kPulsingOff,
+  // In continuous motion.
+  kPulsingContinuous,
+} PulseState;
+
+};
+
+
 @interface GradientButtonCell : NSButtonCell {
  @private
   // Custom drawing means we need to perform our own mouse tracking if
@@ -42,6 +59,9 @@ typedef NSInteger ButtonType;
   CGFloat hoverAlpha_;  // 0-1. Controls the alpha during mouse hover
   NSTimeInterval lastHoverUpdate_;
   scoped_nsobject<NSGradient> gradient_;
+  gradient_button_cell::PulseState pulseState_;
+  CGFloat pulseMultiplier_;  // for selecting pulse direction when continuous.
+  CGFloat outerStrokeAlphaMult_;  // For pulsing.
   scoped_nsobject<NSImage> overlayImage_;
 }
 
@@ -68,15 +88,33 @@ typedef NSInteger ButtonType;
 - (NSBezierPath*)clipPathForFrame:(NSRect)cellFrame
                            inView:(NSView*)controlView;
 
+// Turn on or off continuous pulsing.  When turning off continuous
+// pulsing, leave our pulse state in the correct ending position for
+// our isMouseInside_ property.  Public since it's called from the
+// bookmark bubble.
+- (void)setIsContinuousPulsing:(BOOL)continuous;
+
+// Returns continuous pulse state.
+- (BOOL)isContinuousPulsing;
+
+// Safely stop continuous pulsing by turning off all timers.
+// May leave the cell in an odd state.
+// Needed by an owning control's dealloc routine.
+- (void)safelyStopPulsing;
+
 @property(assign, nonatomic) CGFloat hoverAlpha;
 
 // An image that will be drawn after the normal content of the button cell,
 // overlaying it.  Never themed.
 @property(retain, nonatomic) NSImage* overlayImage;
+
 @end
 
 @interface GradientButtonCell(TestingAPI)
 - (BOOL)isMouseInside;
+- (BOOL)pulsing;
+- (gradient_button_cell::PulseState)pulseState;
+- (void)setPulseState:(gradient_button_cell::PulseState)pstate;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_GRADIENT_BUTTON_CELL_H_

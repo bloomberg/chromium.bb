@@ -11,7 +11,7 @@
 #include "testing/platform_test.h"
 
 @interface GradientButtonCell (HoverValueTesting)
-- (void)adjustHoverValue;
+- (void)performOnePulseStep;
 @end
 
 namespace {
@@ -51,7 +51,7 @@ TEST_F(GradientButtonCellTest, Hover) {
 
   [cell setMouseInside:NO animate:YES];
   CGFloat alpha1 = [cell hoverAlpha];
-  [cell adjustHoverValue];
+  [cell performOnePulseStep];
   CGFloat alpha2 = [cell hoverAlpha];
   EXPECT_TRUE(alpha2 < alpha1);
 }
@@ -75,6 +75,38 @@ TEST_F(GradientButtonCellTest, TrackingRects) {
   [cell setShowsBorderOnlyWhileMouseInside:YES];
   [cell setShowsBorderOnlyWhileMouseInside:NO];
   [cell setShowsBorderOnlyWhileMouseInside:NO];
+}
+
+TEST_F(GradientButtonCellTest, ContinuousPulseOnOff) {
+  GradientButtonCell* cell = [view_ cell];
+
+  // On/off
+  EXPECT_FALSE([cell isContinuousPulsing]);
+  [cell setIsContinuousPulsing:YES];
+  EXPECT_TRUE([cell isContinuousPulsing]);
+  EXPECT_TRUE([cell pulsing]);
+  [cell setIsContinuousPulsing:NO];
+  EXPECT_FALSE([cell isContinuousPulsing]);
+
+  // On/safeOff
+  [cell setIsContinuousPulsing:YES];
+  EXPECT_TRUE([cell isContinuousPulsing]);
+  [cell safelyStopPulsing];
+}
+
+// More for valgrind; we don't confirm state change does anything useful.
+TEST_F(GradientButtonCellTest, PulseState) {
+  GradientButtonCell* cell = [view_ cell];
+
+  [cell setMouseInside:YES animate:YES];
+  // Allow for immediate state changes to keep test unflaky
+  EXPECT_TRUE(([cell pulseState] == gradient_button_cell::kPulsingOn) ||
+              ([cell pulseState] == gradient_button_cell::kPulsedOn));
+
+  [cell setMouseInside:NO animate:YES];
+  // Allow for immediate state changes to keep test unflaky
+  EXPECT_TRUE(([cell pulseState] == gradient_button_cell::kPulsingOff) ||
+              ([cell pulseState] == gradient_button_cell::kPulsedOff));
 }
 
 }  // namespace

@@ -26,6 +26,9 @@ class BookmarkNode;
   BookmarkModel* model_;  // weak
   const BookmarkNode* node_;  // weak
 
+  // The bookmark node whose button we asked to pulse.
+  const BookmarkNode* pulsingBookmarkNode_;  // weak
+
   BOOL alreadyBookmarked_;
 
   // Ping me when the bookmark model changes out from under us.
