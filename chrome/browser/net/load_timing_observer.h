@@ -81,6 +81,8 @@ class LoadTimingObserver : public ChromeNetLog::Observer {
   URLRequestToRecordMap url_request_to_record_;
   ConnectJobToRecordMap connect_job_to_record_;
   SocketToRecordMap socket_to_record_;
+  uint32 last_connect_job_id_;
+  ConnectJobRecord last_connect_job_record_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadTimingObserver);
 };

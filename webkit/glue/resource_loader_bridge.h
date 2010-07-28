@@ -117,12 +117,12 @@ class ResourceLoaderBridge {
     // The time that DNS lookup ended. For reused sockets this time is -1.
     int32 dns_end;
 
-    // The time that establishing connection started. For reused sockets
-    // this time is -1. Connect time includes dns time.
+    // The time that establishing connection started. Connect time includes
+    // DNS, blocking, TCP, TCP retries and SSL time.
     int32 connect_start;
 
-    // The time that establishing connection ended. For reused sockets this
-    // time is -1. Connect time includes dns time.
+    // The time that establishing connection ended. Connect time includes
+    // DNS, blocking, TCP, TCP retries and SSL time.
     int32 connect_end;
 
     // The time at which SSL handshake started. For non-HTTPS requests this

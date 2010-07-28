@@ -48,7 +48,8 @@ LoadTimingObserver::URLRequestRecord::URLRequestRecord()
       socket_reused(false) {
 }
 
-LoadTimingObserver::LoadTimingObserver() {
+LoadTimingObserver::LoadTimingObserver()
+    : last_connect_job_id_(net::NetLog::Source::kInvalidId) {
 }
 
 LoadTimingObserver::~LoadTimingObserver() {
@@ -118,7 +119,7 @@ void LoadTimingObserver::OnAddURLRequestEntry(
 
   ResourceLoaderBridge::LoadTimingInfo& timing = record->timing;
 
-  switch(type) {
+  switch (type) {
     case net::NetLog::TYPE_PROXY_SERVICE:
       if (is_begin)
         timing.proxy_start = TimeTicksToOffset(time, record);
@@ -135,12 +136,12 @@ void LoadTimingObserver::OnAddURLRequestEntry(
       {
         uint32 connect_job_id = static_cast<net::NetLogSourceParameter*>(
             params)->value().id;
-        ConnectJobToRecordMap::iterator it =
-            connect_job_to_record_.find(connect_job_id);
-        if (it != connect_job_to_record_.end() &&
-                !it->second.dns_start.is_null()) {
-          timing.dns_start = TimeTicksToOffset(it->second.dns_start, record);
-          timing.dns_end = TimeTicksToOffset(it->second.dns_end, record);
+        if (last_connect_job_id_ == connect_job_id &&
+            !last_connect_job_record_.dns_start.is_null()) {
+          timing.dns_start =
+              TimeTicksToOffset(last_connect_job_record_.dns_start, record);
+          timing.dns_end =
+              TimeTicksToOffset(last_connect_job_record_.dns_end, record);
         }
       }
       break;
@@ -154,8 +155,8 @@ void LoadTimingObserver::OnAddURLRequestEntry(
         SocketToRecordMap::iterator it =
             socket_to_record_.find(record->socket_log_id);
         if (it != socket_to_record_.end() && !it->second.ssl_start.is_null()) {
-            timing.ssl_start = TimeTicksToOffset(it->second.ssl_start, record);
-            timing.ssl_end = TimeTicksToOffset(it->second.ssl_end, record);
+          timing.ssl_start = TimeTicksToOffset(it->second.ssl_start, record);
+          timing.ssl_end = TimeTicksToOffset(it->second.ssl_end, record);
         }
       }
       break;
@@ -201,7 +202,13 @@ void LoadTimingObserver::OnAddConnectJobEntry(
       connect_job_to_record_.insert(
           std::make_pair(source.id, ConnectJobRecord()));
     } else if (is_end) {
-      connect_job_to_record_.erase(source.id);
+      ConnectJobToRecordMap::iterator it =
+          connect_job_to_record_.find(source.id);
+      if (it != connect_job_to_record_.end()) {
+        last_connect_job_id_ = it->first;
+        last_connect_job_record_ = it->second;
+        connect_job_to_record_.erase(it);
+      }
     }
   } else if (type == net::NetLog::TYPE_HOST_RESOLVER_IMPL) {
     ConnectJobToRecordMap::iterator it =

@@ -223,6 +223,7 @@ TEST(LoadTimingObserverTest, DnsTime) {
                 NULL);
   current_time += TimeDelta::FromSeconds(2);
   AddEndEntry(observer, connect_source, NetLog::TYPE_HOST_RESOLVER_IMPL, NULL);
+  AddEndConnectJobEntries(observer, 1);
 
   // Bind to connect job.
   scoped_refptr<net::NetLogSourceParameter> params(
