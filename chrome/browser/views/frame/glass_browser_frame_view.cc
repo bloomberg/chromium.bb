@@ -335,8 +335,10 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Draw the content/toolbar separator.
   canvas->DrawLineInt(ResourceBundle::toolbar_separator_color,
-                      toolbar_bounds.x(), toolbar_bounds.bottom() - 1,
-                      toolbar_bounds.right() - 1, toolbar_bounds.bottom() - 1);
+                      toolbar_bounds.x(),
+                      toolbar_bounds.bottom() - kClientEdgeThickness,
+                      toolbar_bounds.right(),
+                      toolbar_bounds.bottom() - kClientEdgeThickness);
 }
 
 void GlassBrowserFrameView::PaintOTRAvatar(gfx::Canvas* canvas) {

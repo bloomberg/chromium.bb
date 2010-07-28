@@ -848,10 +848,10 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Draw the content/toolbar separator.
   canvas->DrawLineInt(ResourceBundle::toolbar_separator_color,
-      MirroredLeftPointForRect(toolbar_bounds),
-      toolbar_bounds.bottom() - kClientEdgeThickness,
-      toolbar_bounds.width() - kClientEdgeThickness,
-      toolbar_bounds.bottom() - kClientEdgeThickness);
+                      toolbar_bounds.x(),
+                      toolbar_bounds.bottom() - kClientEdgeThickness,
+                      toolbar_bounds.right(),
+                      toolbar_bounds.bottom() - kClientEdgeThickness);
 }
 
 void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
