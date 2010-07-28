@@ -16,16 +16,16 @@ namespace remoting {
 // Following constants define names for configuration parameters.
 
 // Login used to authenticate in XMPP network.
-extern const std::wstring kXmppLoginConfigPath;
+extern const wchar_t* kXmppLoginConfigPath;
 // Auth token used to authenticate in XMPP network.
-extern const std::wstring kXmppAuthTokenConfigPath;
+extern const wchar_t* kXmppAuthTokenConfigPath;
 // Unique identifier of the host used to register the host in directory.
 // Normally a random UUID.
-extern const std::wstring kHostIdConfigPath;
+extern const wchar_t* kHostIdConfigPath;
 // Readable host name.
-extern const std::wstring kHostNameConfigPath;
+extern const wchar_t* kHostNameConfigPath;
 // Private keys used for host authentication.
-extern const std::wstring kPrivateKeyConfigPath;
+extern const wchar_t* kPrivateKeyConfigPath;
 
 // HostConfig interace provides read-only access to host configuration.
 class HostConfig : public base::RefCountedThreadSafe<HostConfig> {

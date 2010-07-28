@@ -6,10 +6,10 @@
 
 namespace remoting {
 
-const std::wstring kXmppLoginConfigPath(L"xmpp_login");
-const std::wstring kXmppAuthTokenConfigPath(L"xmpp_auth_token");
-const std::wstring kHostIdConfigPath(L"host_id");
-const std::wstring kHostNameConfigPath(L"host_name");
-const std::wstring kPrivateKeyConfigPath(L"private_key");
+const wchar_t* kXmppLoginConfigPath = L"xmpp_login";
+const wchar_t* kXmppAuthTokenConfigPath = L"xmpp_auth_token";
+const wchar_t* kHostIdConfigPath = L"host_id";
+const wchar_t* kHostNameConfigPath = L"host_name";
+const wchar_t* kPrivateKeyConfigPath = L"private_key";
 
 }  // namespace remoting
