@@ -6,12 +6,16 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
+
+PepperPluginInfo::PepperPluginInfo() : is_internal(false) {
+}
 
 // static
 PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
@@ -32,6 +36,19 @@ void PepperPluginRegistry::GetList(std::vector<PepperPluginInfo>* plugins) {
 
   GetPluginInfoFromSwitch(plugins);
   GetExtraPlugins(plugins);
+}
+
+// static
+void PepperPluginRegistry::PreloadModules() {
+  std::vector<PepperPluginInfo> plugins;
+  GetList(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    if (!plugins[i].is_internal) {
+      base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path);
+      LOG_IF(WARNING, !library) << "Unable to load plugin "
+                                << plugins[i].path.value();
+    }
+  }
 }
 
 // static
@@ -89,6 +106,10 @@ void PepperPluginRegistry::GetExtraPlugins(
   }
 }
 
+PepperPluginRegistry::InternalPluginInfo::InternalPluginInfo() {
+  is_internal = true;
+}
+
 // static
 void PepperPluginRegistry::GetInternalPluginInfo(
     InternalPluginInfoList* plugin_info) {
@@ -108,6 +129,7 @@ void PepperPluginRegistry::GetInternalPluginInfo(
       switches::kEnableChromoting)) {
     InternalPluginInfo info;
     // Add the chromoting plugin.
+    DCHECK(info.is_internal);
     info.path =
         FilePath(FILE_PATH_LITERAL("internal-chromoting"));
     info.mime_types.push_back("pepper-application/x-chromoting");

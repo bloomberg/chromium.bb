@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,33 +84,28 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   // Append any switches from the browser process that need to be forwarded on
   // to the zygote/renderers.
   // Should this list be obtained from browser_render_process_host.cc?
-  if (browser_command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
-    cmd_line.AppendSwitch(switches::kAllowSandboxDebugging);
-  }
-  if (browser_command_line.HasSwitch(switches::kLoggingLevel)) {
-    cmd_line.AppendSwitchWithValue(switches::kLoggingLevel,
-                                   browser_command_line.GetSwitchValueASCII(
-                                       switches::kLoggingLevel));
-  }
-  if (browser_command_line.HasSwitch(switches::kEnableLogging)) {
-    // Append with value to support --enable-logging=stderr.
-    cmd_line.AppendSwitchWithValue(switches::kEnableLogging,
-                                   browser_command_line.GetSwitchValueASCII(
-                                       switches::kEnableLogging));
-  }
-  if (browser_command_line.HasSwitch(switches::kUserDataDir)) {
-    // Append with value so logs go to the right file.
-    cmd_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                   browser_command_line.GetSwitchValueASCII(
-                                       switches::kUserDataDir));
-  }
+  static const char* kForwardSwitches[] = {
+    switches::kAllowSandboxDebugging,
+    switches::kLoggingLevel,
+    switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
+    switches::kUserDataDir,  // Make logs go to the right file.
+    // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
+    switches::kRegisterPepperPlugins,
 #if defined(USE_SECCOMP_SANDBOX)
-  if (browser_command_line.HasSwitch(switches::kDisableSeccompSandbox))
-    cmd_line.AppendSwitch(switches::kDisableSeccompSandbox);
+    switches::kDisableSeccompSandbox,
 #else
-  if (browser_command_line.HasSwitch(switches::kEnableSeccompSandbox))
-    cmd_line.AppendSwitch(switches::kEnableSeccompSandbox);
+    switches::kEnableSeccompSandbox,
 #endif
+    NULL
+  };
+  for (const char** sw = kForwardSwitches; *sw; sw++) {
+    if (browser_command_line.HasSwitch(*sw)) {
+      // Always append with value for those switches which need it; it does no
+      // harm for those which don't.
+      cmd_line.AppendSwitchWithValue(*sw,
+          browser_command_line.GetSwitchValueASCII(*sw));
+    }
+  }
 
   sandbox_binary_ = sandbox_cmd.c_str();
   struct stat st;

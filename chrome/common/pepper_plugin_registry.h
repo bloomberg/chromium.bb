@@ -13,7 +13,10 @@
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
 struct PepperPluginInfo {
-  FilePath path;  // Internal plugins are of the form "internal-[name]".
+  PepperPluginInfo();  // Needed to initialize |is_internal|.
+
+  bool is_internal;  // Defaults to false (see constructor).
+  FilePath path;  // Internal plugins have "internal-[name]" as path.
   std::vector<std::string> mime_types;
   std::string name;
   std::string description;
@@ -31,6 +34,11 @@ class PepperPluginRegistry {
   // pepper plugin modules.
   static void GetList(std::vector<PepperPluginInfo>* plugins);
 
+  // Loads the (native) libraries but does not initialize them (i.e., does not
+  // call PPP_InitializeModule). This is needed by the zygote on Linux to get
+  // access to the plugins before entering the sandbox.
+  static void PreloadModules();
+
   pepper::PluginModule* GetModule(const FilePath& path) const;
 
  private:
@@ -38,6 +46,7 @@ class PepperPluginRegistry {
   static void GetExtraPlugins(std::vector<PepperPluginInfo>* plugins);
 
   struct InternalPluginInfo : public PepperPluginInfo {
+    InternalPluginInfo();  // Sets |is_internal|.
     pepper::PluginModule::EntryPoints entry_points;
   };
   typedef std::vector<InternalPluginInfo> InternalPluginInfoList;
