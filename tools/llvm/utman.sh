@@ -92,6 +92,7 @@ readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
 readonly TC_BUILD_LLVM_TOOLS_X8632_SB="${TC_BUILD}/llvm-tools-x8632-sandboxed"
 readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
+readonly TC_BUILD_BINUTILS_LIBERTY_X86="${TC_BUILD}/binutils-liberty-x86"
 readonly TC_BUILD_BINUTILS_X8632_SB="${TC_BUILD}/binutils-x8632-sandboxed"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
@@ -117,6 +118,9 @@ readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
 readonly PNACL_CLIENT_TC_ROOT="$(pwd)/toolchain/sandboxed_translators"
 readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
 readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
+
+# Libraries needed for building sandboxed translators
+readonly PNACL_CLIENT_TC_LIB="${PNACL_CLIENT_TC_ROOT}/lib"
 
 # Current milestones within each Hg repo:
 readonly LLVM_REV=3b27ab07879a
@@ -1335,6 +1339,102 @@ binutils-arm-install() {
   spopd
 }
 
+#+-------------------------------------------------------------------------
+#+ binutils-liberty-x86          - Build and install binutils-libiberty for X86
+binutils-liberty-x86() {
+  StepBanner "BINUTILS-LIBERTY-X86"
+
+  local srcdir="${TC_SRC_BINUTILS}"
+
+  assert-dir "${srcdir}" "You need to checkout binutils."
+
+  if binutils-liberty-x86-needs-configure; then
+    binutils-liberty-x86-clean
+    binutils-liberty-x86-configure
+  else
+    SkipBanner "BINUTILS-LIBERTY-X86" "configure"
+  fi
+
+  if binutils-liberty-x86-needs-make; then
+    binutils-liberty-x86-make
+  else
+    SkipBanner "BINUTILS-LIBERTY-X86" "make"
+  fi
+
+  binutils-liberty-x86-install
+}
+
+binutils-liberty-x86-needs-configure() {
+  [ ! -f "${TC_BUILD_BINUTILS_LIBERTY_X86}/config.status" ]
+  return $?
+}
+
+#+ binutils-liberty-x86-clean    - Clean binutils-liberty
+binutils-liberty-x86-clean() {
+  StepBanner "BINUTILS-LIBERTY-X86" "Clean"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+  rm -rf ${objdir}
+}
+
+#+ binutils-liberty-x86-configure - Configure binutils-liberty for X86
+binutils-liberty-x86-configure() {
+  StepBanner "BINUTILS-LIBERTY-X86" "Configure"
+
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+
+  mkdir -p "${objdir}"
+  spushd "${objdir}"
+
+  RunWithLog binutils.liberty.x86.configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    CC=${CC} \
+    CXX=${CXX} \
+    ${srcdir}/binutils-2.20/configure --prefix=${PNACL_CLIENT_TC_LIB} \
+                                      --with-sysroot=${NEWLIB_INSTALL_DIR}
+  spopd
+}
+
+binutils-liberty-x86-needs-make() {
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+
+  ts-modified "$srcdir" "$objdir"
+  return $?
+}
+
+#+ binutils-liberty-x86-make     - Make binutils-liberty for X86
+binutils-liberty-x86-make() {
+  StepBanner "BINUTILS-LIBERTY-X86" "Make"
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+  spushd "${objdir}"
+
+  ts-touch-open "${objdir}"
+
+  RunWithLog binutils.liberty.x86.make \
+    env -i PATH="/usr/bin:/bin" \
+    make ${MAKE_OPTS} all-libiberty
+
+  ts-touch-commit "${objdir}"
+
+  spopd
+}
+
+#+ binutils-liberty-x86-install  - Install binutils-liberty for X86
+binutils-liberty-x86-install() {
+  StepBanner "BINUTILS-LIBERTY-X86" "Install"
+  local objdir="${TC_BUILD_BINUTILS_LIBERTY_X86}"
+  spushd "${objdir}"
+
+  RunWithLog binutils.liberty.x86.install \
+    env -i PATH="/usr/bin:/bin" \
+    make install-libiberty ${MAKE_OPTS}
+
+  spopd
+}
+
 #########################################################################
 #     CLIENT BINARIES (SANDBOXED)
 #########################################################################
@@ -1450,7 +1550,7 @@ binutils-x8632-sb() {
     exit -1
   fi
 
-  if [ ! -f ${INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ] ; then
+  if [ ! -f ${PNACL_CLIENT_TC_LIB}/libiberty.a ] ; then
     echo "ERROR: install Portable Native Client toolchain"
     exit -1
   fi
@@ -1479,7 +1579,7 @@ binutils-x8632-sb-configure() {
 
   mkdir ${TC_BUILD_BINUTILS_X8632_SB}/opcodes
   spushd ${objdir}
-  cp ${INSTALL_DIR}/${CROSS_TARGET}/lib/libiberty.a ./opcodes/.
+  cp ${PNACL_CLIENT_TC_LIB}/libiberty.a ./opcodes/.
   RunWithLog \
     binutils.x8632.sandboxed.configure \
     env -i \
@@ -1493,7 +1593,7 @@ binutils-x8632-sb-configure() {
     RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
     CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
     LDFLAGS="-s" \
-    LDFLAGS_FOR_BUILD="-L." \
+    LDFLAGS_FOR_BUILD="-L ." \
     ${srcdir}/binutils-2.20/configure \
                              --prefix=${PNACL_CLIENT_TC_X8632} \
                              --host=nacl \
