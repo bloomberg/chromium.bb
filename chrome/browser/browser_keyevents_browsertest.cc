@@ -669,7 +669,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
+#if defined(OS_MACOSX)
+// See http://crbug.com/50447 for details.
+#define MAYBE_ReservedAccelerators FLAKY_ReservedAccelerators
+#else
+#define MAYBE_ReservedAccelerators ReservedAccelerators
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
