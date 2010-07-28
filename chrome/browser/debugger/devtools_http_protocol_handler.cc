@@ -246,21 +246,15 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
 
 void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
     HttpListenSocket* socket,
-    const std::string& d) {
+    const std::string& data) {
   SocketToClientHostMap::iterator it = socket_to_client_host_ui_.find(socket);
   if (it == socket_to_client_host_ui_.end())
     return;
 
-  std::string data = d;
   // TODO(pfeldman): Replace with proper parsing / dispatching.
   DevToolsMessageData message_data;
   message_data.class_name = "ToolsAgent";
   message_data.method_name = "dispatchOnInspectorController";
-
-  size_t pos = data.find(" ");
-  message_data.arguments.push_back(data.substr(0, pos));
-  data = data.substr(pos + 1);
-
   message_data.arguments.push_back(data);
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
