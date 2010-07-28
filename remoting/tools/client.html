@@ -1,0 +1,30 @@
+<!--
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<html>
+  <head>
+    <script type="text/javascript" src="client.js"></script>
+    <title>Get hosts</title>
+  </head>
+  <body onload="init_params();">
+    <form name="connectparams" action="" method="GET">
+    <input type="text" name="username" value="" />
+    <input type="text" name="host_jid" value="" />
+    <input type="text" name="auth_token" value="" />
+    <input type="button" name="connect" value="Connect" onclick="do_connect(this.form)" />
+    </form>
+
+    <div id="debug_div" style="border: red 1px solid;">
+    -- Debugging messages go here -- 
+    </div>
+
+    <br />
+
+    <div id="plugin_div" style="border: black 1px dashed;">
+    <embed name="chromoting" src="chrome://remoting" type="pepper-application/x-chromoting">
+    </div>
+  </body>
+</html>
