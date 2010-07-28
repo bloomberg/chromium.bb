@@ -162,10 +162,12 @@ void DevToolsManager::RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
 void DevToolsManager::InspectElement(RenderViewHost* inspected_rvh,
                                      int x,
                                      int y) {
-  OpenDevToolsWindow(inspected_rvh);
   IPC::Message* m = new DevToolsAgentMsg_InspectElement(x, y);
   m->set_routing_id(inspected_rvh->routing_id());
   inspected_rvh->Send(m);
+  // TODO(loislo): we should initiate DevTools window opening from within
+  // renderer. Otherwise, we still can hit a race condition here.
+  OpenDevToolsWindow(inspected_rvh);
 }
 
 void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
