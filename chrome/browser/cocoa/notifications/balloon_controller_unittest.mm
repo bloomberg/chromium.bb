@@ -78,6 +78,7 @@ TEST_F(BalloonControllerTest, ShowAndCloseTest) {
   [controller closeBalloon:YES];
 
   [mock verify];
+  [controller release];
 }
 
 TEST_F(BalloonControllerTest, SizesTest) {
@@ -98,6 +99,7 @@ TEST_F(BalloonControllerTest, SizesTest) {
   EXPECT_TRUE([controller desiredTotalWidth] > 100);
   EXPECT_TRUE([controller desiredTotalHeight] > 100);
   [mock verify];
+  [controller release];
 }
 
 }
