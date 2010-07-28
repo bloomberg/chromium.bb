@@ -125,7 +125,7 @@ readonly PNACL_CLIENT_TC_LIB="${PNACL_CLIENT_TC_ROOT}/lib"
 
 # Current milestones within each Hg repo:
 readonly LLVM_REV=cc43d3ce315e
-readonly LLVM_GCC_REV=d76a4d89ec6d
+readonly LLVM_GCC_REV=95a73ee79716
 readonly NEWLIB_REV=c74ed6d22b4f
 readonly BINUTILS_REV=1675524d3abe
 
@@ -2362,9 +2362,7 @@ test-arm() {
 #@ test-x86-32           - run x86-32 tests via pnacl toolchain
 #@ test-x86-32 <test>    - run a single x86-32 test via pnacl toolchain
 test-x86-32() {
-  # TODO(robertm): we cannot run the full suite because c++ derived bitcode
-  #                has arm bias with respect to exception handling
-  test-scons-common x86-32 smoke_tests "$@"
+  test-scons-common x86-32 "$@"
 }
 
 #@ test-x86-64           - run all x86-64 tests via pnacl toolchain
