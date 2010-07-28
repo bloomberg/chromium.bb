@@ -21,6 +21,8 @@
 <script src="options/pref_ui.js"></script>
 <script src="options/options_page.js"></script>
 <if expr="pp_ifdef('chromeos')">
+  <script src="options/chromeos_internet_network_list.js"></script>
+  <script src="options/chromeos_internet_options.js"></script>
   <script src="options/chromeos_language_list.js"></script>
   <script src="options/chromeos_language_options.js"></script>
   <script src="options/chromeos_system_options.js"></script>
@@ -50,6 +52,7 @@ function load() {
 
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
+    OptionsPage.register(InternetOptions.getInstance());
     OptionsPage.register(AccountsOptions.getInstance());
     // TODO(mazda): uncomment this once the language options is ready
     // OptionsPage.register(new OptionsPage(
@@ -118,6 +121,7 @@ window.onpopstate = function(e) {
 <link rel="stylesheet" href="options/clear_browser_data_overlay.css">
 <if expr="pp_ifdef('chromeos')">
   <link rel="stylesheet" href="options/chromeos_accounts_options_page.css">
+  <link rel="stylesheet" href="options/chromeos_internet_options_page.css">
   <link rel="stylesheet" href="options/chromeos_language_options.css">
 </if>
 <link rel="stylesheet" href="options/personal_options.css">
@@ -147,6 +151,7 @@ window.onpopstate = function(e) {
   <div id="mainview">
      <if expr="pp_ifdef('chromeos')">
         <include src="options/chromeos_system_options.html">
+        <include src="options/chromeos_internet_options.html">
         <include src="options/chromeos_language_options.html">
         <include src="options/chromeos_labs.html">
         <include src="options/chromeos_accounts_options.html">

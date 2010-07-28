@@ -32,6 +32,8 @@ class Network {
   bool failed() const { return state_ == STATE_FAILURE; }
   ConnectionError error() const { return error_; }
 
+  void set_service_path(const std::string& service_path) {
+      service_path_ = service_path; }
   void set_connecting(bool connecting) { state_ = (connecting ?
       STATE_ASSOCIATION : STATE_IDLE); }
   void set_connected(bool connected) { state_ = (connected ?
@@ -92,6 +94,7 @@ class WirelessNetwork : public Network {
   bool auto_connect() const { return auto_connect_; }
 
   void set_name(const std::string& name) { name_ = name; }
+  void set_strength(int strength) { strength_ = strength; }
   void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
 
   // Network overrides.
@@ -339,7 +342,7 @@ class NetworkLibrary {
   virtual void SaveWifiNetwork(const WifiNetwork& network) = 0;
 
   // Forget the passed in wireless (either cellular or wifi) network.
-  virtual void ForgetWirelessNetwork(const WirelessNetwork& network) = 0;
+  virtual void ForgetWirelessNetwork(const std::string& service_path) = 0;
 
   virtual bool ethernet_available() const = 0;
   virtual bool wifi_available() const = 0;
@@ -450,7 +453,7 @@ class NetworkLibraryImpl : public NetworkLibrary,
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network);
   virtual void SaveCellularNetwork(const CellularNetwork& network);
   virtual void SaveWifiNetwork(const WifiNetwork& network);
-  virtual void ForgetWirelessNetwork(const WirelessNetwork& network);
+  virtual void ForgetWirelessNetwork(const std::string& service_path);
 
   virtual bool ethernet_available() const {
       return available_devices_ & (1 << TYPE_ETHERNET);
@@ -505,6 +508,8 @@ class NetworkLibraryImpl : public NetworkLibrary,
   // This methods loads the initial list of networks on startup and starts the
   // monitoring of network changes.
   void Init();
+  // Initialize with test data.
+  void InitTestData();
 
   // Returns the preferred wifi network.
   WifiNetwork* GetPreferredNetwork();

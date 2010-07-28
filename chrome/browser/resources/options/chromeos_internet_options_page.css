@@ -1,0 +1,17 @@
+.network-list {
+  border: 1px solid lightgrey;
+  padding: 2px;
+  width: 600px;
+  height: 200px;
+}
+
+.network-list > * > .label {
+  -webkit-padding-start: 30px;
+  background: 0 50% no-repeat;
+}
+
+.network-list > * > button {
+  border: 1px solid hsl(214, 91%, 85%);
+  border-radius: 3px;
+  width: 150px;
+}

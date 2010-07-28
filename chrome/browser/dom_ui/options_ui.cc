@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_ui/options_ui.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
@@ -47,6 +49,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dom_ui/accounts_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/core_chromeos_options_handler.h"
+#include "chrome/browser/chromeos/dom_ui/internet_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/labs_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_chewing_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_hangul_options_handler.h"
@@ -133,6 +136,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::AccountsOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new InternetOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LabsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageChewingOptionsHandler());

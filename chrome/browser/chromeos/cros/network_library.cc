@@ -215,6 +215,8 @@ NetworkLibraryImpl::NetworkLibraryImpl()
       offline_mode_(false) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     Init();
+  } else {
+    InitTestData();
   }
   g_url_request_job_tracker.AddObserver(this);
 }
@@ -460,9 +462,10 @@ void NetworkLibraryImpl::SaveWifiNetwork(const WifiNetwork& network) {
   }
 }
 
-void NetworkLibraryImpl::ForgetWirelessNetwork(const WirelessNetwork& network) {
+void NetworkLibraryImpl::ForgetWirelessNetwork(
+    const std::string& service_path) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    DeleteRememberedService(network.service_path().c_str());
+    DeleteRememberedService(service_path.c_str());
   }
 }
 
@@ -643,6 +646,77 @@ void NetworkLibraryImpl::Init() {
   // Now, register to receive updates on network status.
   network_status_connection_ = MonitorNetwork(&NetworkStatusChangedHandler,
                                               this);
+}
+
+void NetworkLibraryImpl::InitTestData() {
+  ethernet_.Clear();
+  ethernet_.set_connected(true);
+
+  wifi_networks_.clear();
+  WifiNetwork wifi1 = WifiNetwork();
+  wifi1.set_service_path("fw1");
+  wifi1.set_name("Fake Wifi 1");
+  wifi1.set_strength(90);
+  wifi1.set_connected(false);
+  wifi1.set_encryption(SECURITY_NONE);
+  wifi_networks_.push_back(wifi1);
+
+  WifiNetwork wifi2 = WifiNetwork();
+  wifi2.set_service_path("fw2");
+  wifi2.set_name("Fake Wifi 2");
+  wifi2.set_strength(70);
+  wifi2.set_connected(true);
+  wifi2.set_encryption(SECURITY_WEP);
+  wifi_networks_.push_back(wifi2);
+
+  WifiNetwork wifi3 = WifiNetwork();
+  wifi3.set_service_path("fw3");
+  wifi3.set_name("Fake Wifi 3");
+  wifi3.set_strength(50);
+  wifi3.set_connected(false);
+  wifi3.set_encryption(SECURITY_WEP);
+  wifi_networks_.push_back(wifi3);
+
+  wifi_ = wifi2;
+
+  cellular_networks_.clear();
+
+  cellular_networks_.clear();
+  CellularNetwork cellular1 = CellularNetwork();
+  cellular1.set_service_path("fc1");
+  cellular1.set_name("Fake Cellular 1");
+  cellular1.set_strength(90);
+  cellular1.set_connected(false);
+  cellular_networks_.push_back(cellular1);
+
+  CellularNetwork cellular2 = CellularNetwork();
+  cellular2.set_service_path("fc2");
+  cellular2.set_name("Fake Cellular 2");
+  cellular2.set_strength(70);
+  cellular2.set_connected(true);
+  cellular_networks_.push_back(cellular2);
+
+  CellularNetwork cellular3 = CellularNetwork();
+  cellular3.set_service_path("fc3");
+  cellular3.set_name("Fake Cellular 3");
+  cellular3.set_strength(50);
+  cellular3.set_connected(false);
+  cellular_networks_.push_back(cellular3);
+
+  cellular_ = cellular2;
+
+  remembered_wifi_networks_.clear();
+  remembered_wifi_networks_.push_back(wifi2);
+
+  remembered_cellular_networks_.clear();
+  remembered_cellular_networks_.push_back(cellular2);
+
+  int devices = (1 << TYPE_ETHERNET) | (1 << TYPE_WIFI) |
+      (1 << TYPE_CELLULAR);
+  available_devices_ = devices;
+  enabled_devices_ = devices;
+  connected_devices_ = devices;
+  offline_mode_ = false;
 }
 
 void NetworkLibraryImpl::UpdateSystemInfo() {

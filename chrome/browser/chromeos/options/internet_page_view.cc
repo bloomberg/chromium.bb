@@ -474,12 +474,12 @@ void RememberedSection::ButtonClicked(int button, int connection_type, int id) {
   if (connection_type == TYPE_CELLULAR) {
     if (static_cast<int>(celluar_networks_.size()) > id) {
       CrosLibrary::Get()->GetNetworkLibrary()->ForgetWirelessNetwork(
-          celluar_networks_[id]);
+          celluar_networks_[id].service_path());
     }
   } else if (connection_type == TYPE_WIFI) {
     if (static_cast<int>(wifi_networks_.size()) > id) {
       CrosLibrary::Get()->GetNetworkLibrary()->ForgetWirelessNetwork(
-          wifi_networks_[id]);
+          wifi_networks_[id].service_path());
     }
   } else {
     NOTREACHED();
