@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #import "base/cocoa_protocols_mac.h"
+#include "base/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/cocoa/menu_controller.h"
@@ -33,7 +34,10 @@ const int kRightMargin = 1;
 @implementation BalloonController
 
 - (id)initWithBalloon:(Balloon*)balloon {
-  if ((self = [super initWithWindowNibName:@"Notification"])) {
+  NSString* nibpath =
+      [mac_util::MainAppBundle() pathForResource:@"Notification"
+                                          ofType:@"nib"];
+  if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     balloon_ = balloon;
     [self initializeHost];
     menuModel_.reset(new NotificationOptionsMenuModel(balloon));
@@ -57,11 +61,14 @@ const int kRightMargin = 1;
       WideToUTF16(balloon_->notification().display_source()));
   [originLabel_ setStringValue:sourceLabelText];
 
-  gfx::NativeView contents = htmlContents_->native_view();
-  [contents setFrame:NSMakeRect(kLeftMargin, kTopMargin, 0, 0)];
-  [[htmlContainer_ superview] addSubview:contents
-                              positioned:NSWindowBelow
-                              relativeTo:nil];
+  // This condition is false in unit tests which have no RVH.
+  if (htmlContents_.get()) {
+    gfx::NativeView contents = htmlContents_->native_view();
+    [contents setFrame:NSMakeRect(kLeftMargin, kTopMargin, 0, 0)];
+    [[htmlContainer_ superview] addSubview:contents
+                                positioned:NSWindowBelow
+                                relativeTo:nil];
+  }
 }
 
 - (IBAction)optionsButtonPressed:(id)sender {
@@ -104,7 +111,9 @@ const int kRightMargin = 1;
   int w = [self desiredTotalWidth];
   int h = [self desiredTotalHeight];
 
-  htmlContents_->UpdateActualSize(balloon_->content_size());
+  if (htmlContents_.get())
+    htmlContents_->UpdateActualSize(balloon_->content_size());
+
   [[self window] setFrame:NSMakeRect(x, y, w, h)
                   display:YES
                   animate:YES];

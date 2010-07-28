@@ -13,6 +13,16 @@
 #include "chrome/test/testing_profile.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
+// Subclass balloon controller and mock out the initialization of the RVH.
+@interface TestBalloonController : BalloonController {
+}
+- (void)initializeHost;
+@end
+
+@implementation TestBalloonController
+- (void)initializeHost {}
+@end
+
 namespace {
 
 // Use a dummy balloon collection for testing.
@@ -67,18 +77,14 @@ TEST_F(BalloonControllerTest, ShowAndCloseTest) {
       new NotificationObjectProxy(-1, -1, -1, false));
   scoped_ptr<Balloon> balloon(
       new Balloon(n, profile_.get(), collection_.get()));
+  balloon->SetPosition(gfx::Point(1, 1), false);
+  balloon->set_content_size(gfx::Size(100, 100));
 
-  BalloonController* controller = [BalloonController alloc];
+  BalloonController* controller =
+      [[TestBalloonController alloc] initWithBalloon:balloon.get()];
 
-  id mock = [OCMockObject partialMockForObject:controller];
-  [[mock expect] initializeHost];
-
-  [controller initWithBalloon:balloon.get()];
   [controller showWindow:nil];
   [controller closeBalloon:YES];
-
-  [mock verify];
-  [controller release];
 }
 
 TEST_F(BalloonControllerTest, SizesTest) {
@@ -87,19 +93,19 @@ TEST_F(BalloonControllerTest, SizesTest) {
       new NotificationObjectProxy(-1, -1, -1, false));
   scoped_ptr<Balloon> balloon(
       new Balloon(n, profile_.get(), collection_.get()));
+  balloon->SetPosition(gfx::Point(1, 1), false);
   balloon->set_content_size(gfx::Size(100, 100));
 
-  BalloonController* controller = [BalloonController alloc];
-
-  id mock = [OCMockObject partialMockForObject:controller];
-  [[mock expect] initializeHost];
+  BalloonController* controller =
+      [[TestBalloonController alloc] initWithBalloon:balloon.get()];
 
   [controller initWithBalloon:balloon.get()];
+  [controller showWindow:nil];
 
   EXPECT_TRUE([controller desiredTotalWidth] > 100);
   EXPECT_TRUE([controller desiredTotalHeight] > 100);
-  [mock verify];
-  [controller release];
+
+  [controller closeBalloon:YES];
 }
 
 }
