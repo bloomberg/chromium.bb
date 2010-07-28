@@ -270,6 +270,7 @@ void NativeControl::Focus() {
   if (container_) {
     DCHECK(container_->GetControl());
     ::SetFocus(container_->GetControl());
+    NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
   }
 }
 

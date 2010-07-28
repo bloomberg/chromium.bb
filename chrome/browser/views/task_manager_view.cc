@@ -484,6 +484,11 @@ void TaskManagerView::Show() {
     instance_->InitAlwaysOnTopState();
     instance_->model_->StartUpdating();
     instance_->window()->Show();
+
+    // Set the initial focus to the list of tasks.
+    views::FocusManager* focus_manager = instance_->GetFocusManager();
+    if (focus_manager)
+      focus_manager->SetFocusedView(instance_->tab_table_);
   }
 }
 
