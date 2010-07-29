@@ -121,7 +121,7 @@ const int kLotsOfNodesCount = 150;
 class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
   BrowserTestHelper helper_;
-  scoped_nsobject<BookmarkBarController> parentBarController_;
+  scoped_nsobject<BookmarkBarController> bar_;
   const BookmarkNode* folderA_;  // owned by model
   const BookmarkNode* longTitleNode_;  // owned by model
 
@@ -149,21 +149,21 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
     model->AddURL(folderB, folderB->GetChildCount(), L"t",
                   GURL("http://www.google.com/c"));
 
-    parentBarController_.reset(
+    bar_.reset(
       [[BookmarkBarControllerChildFolderRedirect alloc]
           initWithBrowser:helper_.browser()
              initialWidth:300
                  delegate:nil
            resizeDelegate:nil]);
-    [parentBarController_ loaded:model];
+    [bar_ loaded:model];
     // Make parent frame for bookmark bar then open it.
     NSRect frame = [[test_window() contentView] frame];
     frame = NSInsetRect(frame, 100, 200);
     NSView* fakeToolbarView = [[[NSView alloc] initWithFrame:frame]
                                 autorelease];
     [[test_window() contentView] addSubview:fakeToolbarView];
-    [fakeToolbarView addSubview:[parentBarController_ view]];
-    [parentBarController_ setBookmarkBarEnabled:YES];
+    [fakeToolbarView addSubview:[bar_ view]];
+    [bar_ setBookmarkBarEnabled:YES];
   }
 
   // Remove the bookmark with the long title.
@@ -187,13 +187,12 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
 
   // Return a simple BookmarkBarFolderController.
   BookmarkBarFolderControllerPong* SimpleBookmarkBarFolderController() {
-    BookmarkButton* parentButton = [[parentBarController_ buttons]
-                                     objectAtIndex:0];
+    BookmarkButton* parentButton = [[bar_ buttons] objectAtIndex:0];
     BookmarkBarFolderControllerPong* c =
       [[BookmarkBarFolderControllerPong alloc]
                initWithParentButton:parentButton
                    parentController:nil
-                      barController:parentBarController_];
+                      barController:bar_];
     [c window];  // Force nib load.
     return c;
   }
@@ -241,8 +240,7 @@ TEST_F(BookmarkBarFolderControllerTest, ReleaseOnClose) {
 }
 
 TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
- BookmarkButton* parentButton = [[parentBarController_ buttons]
-                                   objectAtIndex:0];
+ BookmarkButton* parentButton = [[bar_ buttons] objectAtIndex:0];
   EXPECT_TRUE(parentButton);
 
   // If parent is a BookmarkBarController, grow down.
@@ -250,7 +248,7 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   bbfc.reset([[BookmarkBarFolderControllerLow alloc]
                initWithParentButton:parentButton
                    parentController:nil
-                      barController:parentBarController_]);
+                      barController:bar_]);
   [bbfc window];
   [bbfc setRealTopLeft:YES];
   NSPoint pt = [bbfc windowTopLeftForWidth:0];  // screen coords
@@ -272,7 +270,7 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   bbfc2.reset([[BookmarkBarFolderControllerLow alloc]
                 initWithParentButton:[[bbfc buttons] objectAtIndex:0]
                     parentController:bbfc.get()
-                       barController:parentBarController_]);
+                       barController:bar_]);
   [bbfc2 window];
   [bbfc2 setRealTopLeft:YES];
   pt = [bbfc2 windowTopLeftForWidth:0];
@@ -297,8 +295,7 @@ TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
 
   // Setup initial state for opening all folders.
   folder = parent;
-  BookmarkButton* parentButton = [[parentBarController_ buttons]
-                                   objectAtIndex:0];
+  BookmarkButton* parentButton = [[bar_ buttons] objectAtIndex:0];
   BookmarkBarFolderController* parentController = nil;
   EXPECT_TRUE(parentButton);
 
@@ -310,7 +307,7 @@ TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
         [[BookmarkBarFolderControllerNoLevel alloc]
           initWithParentButton:parentButton
               parentController:parentController
-                 barController:parentBarController_];
+                 barController:bar_];
     [folder_controller_array addObject:bbfcl];
     [bbfcl autorelease];
     [bbfcl window];
@@ -412,7 +409,7 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderCallbacks) {
   scoped_nsobject<BookmarkBarFolderControllerPong> bbfc;
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
-  [parentBarController_ setChildFolderDelegate:bbfc.get()];
+  [bar_ setChildFolderDelegate:bbfc.get()];
 
   EXPECT_FALSE([bbfc childFolderWillShow]);
   [bbfc openBookmarkFolderFromButton:[[bbfc buttons] objectAtIndex:0]];
@@ -422,7 +419,7 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderCallbacks) {
   [bbfc closeBookmarkFolder:nil];
   EXPECT_TRUE([bbfc childFolderWillClose]);
 
-  [parentBarController_ setChildFolderDelegate:nil];
+  [bar_ setChildFolderDelegate:nil];
 }
 
 // Make sure bookmark folders have variable widths.
@@ -503,6 +500,59 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
     EXPECT_TRUE(NSContainsRect(screenFrame,
                                [[bbfc window] frame]));
   }
+}
+
+// Folder menu sizing and placementwhile deleting bookmarks and scrolling tests.
+TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
+  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  AddLotsOfNodes();
+  bbfc.reset(SimpleBookmarkBarFolderController());
+  [bbfc showWindow:bbfc.get()];
+  NSWindow* menuWindow = [bbfc window];
+  BookmarkBarFolderController* folder = [bar_ folderController];
+  NSArray* buttons = [folder buttons];
+
+  // Before scrolling any, delete a bookmark and make sure the window top has
+  // not moved. Pick a button which is near the top and visible.
+  CGFloat oldTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
+  BookmarkButton* button = [buttons objectAtIndex:3];
+  [folder deleteBookmark:button];
+  CGFloat newTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
+  EXPECT_CGFLOAT_EQ(oldTop, newTop);
+
+  // Scroll so that both the top and bottom scroll arrows show, make sure
+  // the top of the window has moved up, then delete a visible button and
+  // make sure the top has not moved.
+  oldTop = newTop;
+  const CGFloat scrollOneBookmark = bookmarks::kBookmarkButtonHeight +
+      bookmarks::kBookmarkVerticalPadding;
+  NSUInteger buttonCounter = 0;
+  NSUInteger extraButtonLimit = 3;
+  while (![bbfc canScrollDown] || extraButtonLimit > 0) {
+    [bbfc performOneScroll:scrollOneBookmark];
+    ++buttonCounter;
+    if ([bbfc canScrollDown])
+      --extraButtonLimit;
+  }
+  newTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
+  EXPECT_NE(oldTop, newTop);
+  oldTop = newTop;
+  button = [buttons objectAtIndex:buttonCounter + 3];
+  [folder deleteBookmark:button];
+  newTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
+  EXPECT_CGFLOAT_EQ(oldTop, newTop);
+
+  // Scroll so that the top scroll arrow is no longer showing, make sure
+  // the top of the window has not moved, then delete a visible button and
+  // make sure the top has not moved.
+  while ([bbfc canScrollDown]) {
+    [bbfc performOneScroll:-scrollOneBookmark];
+    --buttonCounter;
+  }
+  button = [buttons objectAtIndex:buttonCounter + 3];
+  [folder deleteBookmark:button];
+  newTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
+  EXPECT_CGFLOAT_EQ(oldTop, newTop);
 }
 
 @interface FakedDragInfo : NSObject {
@@ -1080,7 +1130,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_TRUE(folderController);
   NSWindow* folderMenu = [folderController window];
   EXPECT_TRUE(folderMenu);
-  CGFloat expectedHeight = (CGFloat)bookmarks::kBookmarkButtonHeight;
+  CGFloat expectedHeight = (CGFloat)bookmarks::kBookmarkButtonHeight +
+      bookmarks::kBookmarkVerticalPadding;
   NSRect menuFrame = [folderMenu frame];
   CGFloat menuHeight = NSHeight(menuFrame);
   EXPECT_CGFLOAT_EQ(expectedHeight, menuHeight);
