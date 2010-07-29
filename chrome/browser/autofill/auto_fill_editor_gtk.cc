@@ -631,7 +631,7 @@ AutoFillCreditCardEditor::AutoFillCreditCardEditor(
     SetWidgetValues(credit_card);
   } else {
     // We're creating a new credit card. Select a default billing address (if
-    // there are any) and select Januay of next year.
+    // there are any) and select January of next year.
     PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
     if (!data_manager->profiles().empty())
       gtk_combo_box_set_active(GTK_COMBO_BOX(address_), 0);
@@ -661,6 +661,20 @@ GtkListStore* AutoFillCreditCardEditor::CreateAddressStore() {
   for (std::vector<AutoFillProfile*>::const_iterator i =
            data_manager->profiles().begin();
        i != data_manager->profiles().end(); ++i) {
+    FieldTypeSet fields;
+    (*i)->GetAvailableFieldTypes(&fields);
+    if (fields.find(ADDRESS_HOME_LINE1) == fields.end() &&
+        fields.find(ADDRESS_HOME_LINE2) == fields.end() &&
+        fields.find(ADDRESS_HOME_APT_NUM) == fields.end() &&
+        fields.find(ADDRESS_HOME_CITY) == fields.end() &&
+        fields.find(ADDRESS_HOME_STATE) == fields.end() &&
+        fields.find(ADDRESS_HOME_ZIP) == fields.end() &&
+        fields.find(ADDRESS_HOME_COUNTRY) == fields.end()) {
+      // No address information in this profile; it's useless as a billing
+      // address.
+      continue;
+    }
+
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(
         store, &iter,
