@@ -221,6 +221,18 @@
    fun:_ZN4dyld24initializeMainExecutableEv
 }
 {
+   # With our tweaks to get Chromium to link on Mac 10.5, we sometimes get	
+   # this suppression instead.	
+   Mac_Sandbox_Intentional_Leak3	
+   Memcheck:Leak	
+   fun:_Znw*	
+   fun:_Z41__static_initialization_and_destruction_0ii	
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE	
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj	
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE	
+   fun:_ZN4dyld24initializeMainExecutableEv	
+}
+{
    # jrg thinks this is probably a bug in Cocoa but is harmless.  We
    # can hit it by using --homepage=about:blank, which triggers a
    # location bar focus earlier than normal (earlier than when a
