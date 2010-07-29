@@ -31,6 +31,10 @@ D2D1_POINT_2F PointToPoint2F(const gfx::Point& point) {
                        static_cast<float>(point.y()));
 }
 
+D2D1_POINT_2F PointToPoint2F(int x, int y) {
+  return D2D1::Point2F(static_cast<float>(x), static_cast<float>(y));
+}
+
 D2D1_EXTEND_MODE TileModeToExtendMode(gfx::Canvas::TileMode tile_mode) {
   switch (tile_mode) {
     case gfx::Canvas::TileMode_Clamp:
@@ -45,6 +49,13 @@ D2D1_EXTEND_MODE TileModeToExtendMode(gfx::Canvas::TileMode tile_mode) {
   return D2D1_EXTEND_MODE_CLAMP;
 }
 
+D2D1_BITMAP_INTERPOLATION_MODE FilterToInterpolationMode(bool filter) {
+  return filter ? D2D1_BITMAP_INTERPOLATION_MODE_LINEAR
+                : D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+}
+
+// Creates a Direct2D gradient stop collection for the specified colors and
+// positions. The caller is responsible for releasing this object.
 ID2D1GradientStopCollection* CreateGradientStopCollection(
     ID2D1RenderTarget* render_target,
     const SkColor colors[],
@@ -65,6 +76,46 @@ ID2D1GradientStopCollection* CreateGradientStopCollection(
       TileModeToExtendMode(tile_mode),
       &gradient_stop_collection);
   return SUCCEEDED(hr) ? gradient_stop_collection : NULL;
+}
+
+// Creates a Direct2D bitmap object from the contents of a SkBitmap. The caller
+// is responsible for releasing this object.
+ID2D1Bitmap* CreateD2D1BitmapFromSkBitmap(ID2D1RenderTarget* render_target,
+                                          const SkBitmap& bitmap) {
+  ID2D1Bitmap* d2d1_bitmap = NULL;
+  HRESULT hr = render_target->CreateBitmap(
+      D2D1::SizeU(bitmap.width(), bitmap.height()),
+      NULL,
+      NULL,
+      D2D1::BitmapProperties(
+          D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,
+                            D2D1_ALPHA_MODE_IGNORE)),
+      &d2d1_bitmap);
+  if (FAILED(hr))
+    return NULL;
+  bitmap.lockPixels();
+  d2d1_bitmap->CopyFromMemory(NULL, bitmap.getPixels(), bitmap.rowBytes());
+  bitmap.unlockPixels();
+  return d2d1_bitmap;
+}
+
+// Creates a Direct2D bitmap brush from the contents of a SkBitmap. The caller
+// is responsible for releasing this object.
+ID2D1Brush* CreateD2D1BrushFromSkBitmap(ID2D1RenderTarget* render_target,
+                                        const SkBitmap& bitmap,
+                                        gfx::Canvas::TileMode tile_mode_x,
+                                        gfx::Canvas::TileMode tile_mode_y) {
+  ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
+      CreateD2D1BitmapFromSkBitmap(render_target, bitmap));
+
+  ID2D1BitmapBrush* brush = NULL;
+  render_target->CreateBitmapBrush(
+      d2d1_bitmap,
+      D2D1::BitmapBrushProperties(TileModeToExtendMode(tile_mode_x),
+                                  TileModeToExtendMode(tile_mode_y)),
+      D2D1::BrushProperties(),
+      &brush);
+  return brush;
 }
 
 // A platform wrapper for a Direct2D brush that makes sure the underlying
@@ -196,6 +247,7 @@ void CanvasDirect2D::ScaleInt(int x, int y) {
 
 void CanvasDirect2D::FillRectInt(int x, int y, int w, int h,
                                  const SkPaint& paint) {
+  NOTIMPLEMENTED();
 }
 
 void CanvasDirect2D::FillRectInt(const SkColor& color, int x, int y, int w,
@@ -213,52 +265,69 @@ void CanvasDirect2D::FillRectInt(const gfx::Brush* brush, int x, int y, int w,
 
 void CanvasDirect2D::DrawRectInt(const SkColor& color, int x, int y, int w,
                                  int h) {
-
+  ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
+  rt_->CreateSolidColorBrush(SkColorToColorF(color), solid_brush.Receive());
+  rt_->DrawRectangle(RectToRectF(x, y, w, h), solid_brush);
 }
 
 void CanvasDirect2D::DrawRectInt(const SkColor& color, int x, int y, int w,
                                  int h, SkXfermode::Mode mode) {
-
+  NOTIMPLEMENTED();
 }
 
 void CanvasDirect2D::DrawLineInt(const SkColor& color, int x1, int y1, int x2,
                                  int y2) {
-
+  ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
+  rt_->CreateSolidColorBrush(SkColorToColorF(color), solid_brush.Receive());
+  rt_->DrawLine(PointToPoint2F(x1, y1), PointToPoint2F(x2, y2), solid_brush);
 }
 
 void CanvasDirect2D::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {
+  ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
+      CreateD2D1BitmapFromSkBitmap(rt_, bitmap));
+  rt_->DrawBitmap(d2d1_bitmap,
+                  RectToRectF(x, y, bitmap.width(), bitmap.height()),
+                  1.0f,
+                  D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR,
+                  RectToRectF(0, 0, bitmap.width(), bitmap.height()));
 }
 
 void CanvasDirect2D::DrawBitmapInt(const SkBitmap& bitmap, int x, int y,
                                    const SkPaint& paint) {
-
+  NOTIMPLEMENTED();
 }
 
 void CanvasDirect2D::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
                                    int src_w, int src_h, int dest_x, int dest_y,
                                    int dest_w, int dest_h, bool filter) {
-
+  ScopedComPtr<ID2D1Bitmap> d2d1_bitmap(
+      CreateD2D1BitmapFromSkBitmap(rt_, bitmap));
+  rt_->DrawBitmap(d2d1_bitmap,
+                  RectToRectF(dest_x, dest_y, dest_w, dest_h),
+                  1.0f,
+                  FilterToInterpolationMode(filter),
+                  RectToRectF(src_x, src_y, src_w, src_h));
 }
 
 void CanvasDirect2D::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
                                    int src_w, int src_h, int dest_x, int dest_y,
                                    int dest_w, int dest_h, bool filter,
                                    const SkPaint& paint) {
-
+  NOTIMPLEMENTED();
 }
 
 void CanvasDirect2D::DrawStringInt(const std::wstring& text,
                                    const gfx::Font& font,
                                    const SkColor& color, int x, int y, int w,
                                    int h) {
-
+  NOTIMPLEMENTED();
 }
 
 void CanvasDirect2D::DrawStringInt(const std::wstring& text,
                                    const gfx::Font& font,
                                    const SkColor& color,
                                    const gfx::Rect& display_rect) {
-
+  NOTIMPLEMENTED();
 }
 
 void CanvasDirect2D::DrawStringInt(const std::wstring& text,
@@ -266,19 +335,24 @@ void CanvasDirect2D::DrawStringInt(const std::wstring& text,
                                    const SkColor& color,
                                    int x, int y, int w, int h,
                                    int flags) {
-
+  NOTIMPLEMENTED();
 }
 
 void CanvasDirect2D::DrawFocusRect(int x, int y, int width, int height) {
+  NOTIMPLEMENTED();
 }
 
 void CanvasDirect2D::TileImageInt(const SkBitmap& bitmap, int x, int y, int w,
                                   int h) {
+  ScopedComPtr<ID2D1Brush> brush(
+      CreateD2D1BrushFromSkBitmap(rt_, bitmap, TileMode_Repeat,
+                                  TileMode_Repeat));
+  rt_->FillRectangle(RectToRectF(x, y, w, h), brush);
 }
 
 void CanvasDirect2D::TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
                                   int dest_x, int dest_y, int w, int h) {
-
+  NOTIMPLEMENTED();
 }
 
 gfx::NativeDrawingContext CanvasDirect2D::BeginPlatformPaint() {
@@ -346,27 +420,9 @@ Brush* CanvasDirect2D::CreateBitmapBrush(
     const SkBitmap& bitmap,
     TileMode tile_mode_x,
     TileMode tile_mode_y) {
-  ScopedComPtr<ID2D1Bitmap> d2d1_bitmap;
-  HRESULT hr = rt_->CreateBitmap(
-      D2D1::SizeU(bitmap.width(), bitmap.height()),
-      NULL,
-      NULL,
-      D2D1::BitmapProperties(
-          D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,
-                            D2D1_ALPHA_MODE_IGNORE)),
-      d2d1_bitmap.Receive());
-  bitmap.lockPixels();
-  d2d1_bitmap->CopyFromMemory(NULL, bitmap.getPixels(), bitmap.rowBytes());
-  bitmap.unlockPixels();
-
-  ID2D1BitmapBrush* brush = NULL;
-  hr = rt_->CreateBitmapBrush(
-      d2d1_bitmap,
-      D2D1::BitmapBrushProperties(TileModeToExtendMode(tile_mode_x),
-                                  TileModeToExtendMode(tile_mode_y)),
-      D2D1::BrushProperties(),
-      &brush);
-  return SUCCEEDED(hr) ? new Direct2DBrush(brush) : NULL;
+  ID2D1Brush* brush =
+      CreateD2D1BrushFromSkBitmap(rt_, bitmap, tile_mode_x, tile_mode_y);
+  return brush ? new Direct2DBrush(brush) : NULL;
 }
 
 CanvasSkia* CanvasDirect2D::AsCanvasSkia() {

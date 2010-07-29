@@ -210,6 +210,7 @@ class Canvas {
   // |tile_mode| specifies how the gradient brush repeats outside its natural
   // bounds.
   // Returns an encapsulated platform brush object which the caller must delete.
+  // Returns NULL if the system is unable to create the brush for some reason.
   virtual Brush* CreateLinearGradientBrush(
       const gfx::Point& start_point,
       const gfx::Point& end_point,
@@ -228,6 +229,7 @@ class Canvas {
   // |tile_mode| specifies how the gradient brush repeats outside its natural
   // bounds.
   // Returns an encapsulated platform brush object which the caller must delete.
+  // Returns NULL if the system is unable to create the brush for some reason.
   virtual Brush* CreateRadialGradientBrush(
       const gfx::Point& center_point,
       float radius,
@@ -241,6 +243,7 @@ class Canvas {
   // |tile_mode_x,y| - specifies how the brush tiles the areas beyond those
   // filled by its bitmap along each axis.
   // Returns an encapsulated platform brush object which the caller must delete.
+  // Returns NULL if the system is unable to create the brush for some reason.
   virtual Brush* CreateBitmapBrush(
       const SkBitmap& bitmap,
       TileMode tile_mode_x,

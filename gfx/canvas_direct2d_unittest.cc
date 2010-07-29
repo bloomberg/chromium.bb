@@ -281,3 +281,55 @@ TEST(CanvasDirect2D, CreateBitmapBrush) {
   canvas.Restore();
 }
 
+TEST(CanvasDirect2D, DrawRectInt) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  canvas.Save();
+  canvas.DrawRectInt(SK_ColorRED, 10, 10, 200, 200);
+  canvas.Restore();
+}
+
+TEST(CanvasDirect2D, DrawLineInt) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  canvas.Save();
+  canvas.DrawLineInt(SK_ColorRED, 10, 10, 210, 210);
+  canvas.Restore();
+}
+
+TEST(CanvasDirect2D, DrawBitmapInt) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  SkBitmap bitmap = LoadBitmapFromResources(IDR_BITMAP_BRUSH_IMAGE);
+
+  canvas.Save();
+  canvas.DrawBitmapInt(bitmap, 100, 100);
+  canvas.Restore();
+}
+
+TEST(CanvasDirect2D, DrawBitmapInt2) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  SkBitmap bitmap = LoadBitmapFromResources(IDR_BITMAP_BRUSH_IMAGE);
+
+  canvas.Save();
+  canvas.DrawBitmapInt(bitmap, 5, 5, 30, 30, 10, 10, 30, 30, false);
+  canvas.DrawBitmapInt(bitmap, 5, 5, 30, 30, 110, 110, 100, 100, true);
+  canvas.DrawBitmapInt(bitmap, 5, 5, 30, 30, 220, 220, 100, 100, false);
+  canvas.Restore();
+}
+
+TEST(CanvasDirect2D, TileImageInt) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  SkBitmap bitmap = LoadBitmapFromResources(IDR_BITMAP_BRUSH_IMAGE);
+
+  canvas.Save();
+  canvas.TileImageInt(bitmap, 10, 10, 300, 300);
+  canvas.Restore();
+}
