@@ -217,6 +217,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return PyUITest.IsMac() or PyUITest.IsLinux()
 
   @staticmethod
+  def IsEnUS():
+    """Are we en-US?"""
+    # TODO: figure out the machine's langugage.
+    return True
+
+  @staticmethod
   def EvalDataFrom(filename):
     """Return eval of python code from given file.
 
