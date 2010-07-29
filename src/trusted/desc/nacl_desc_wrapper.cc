@@ -597,16 +597,10 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
 }
 
 DescWrapper* DescWrapper::Connect() {
-  int rv = desc_->vtbl->ConnectAddr(desc_, common_data_->effp());
+  struct NaClDesc* connected_desc;
+  int rv = desc_->vtbl->ConnectAddr(desc_, &connected_desc);
   if (0 != rv) {
     // Connect failed.
-    return NULL;
-  }
-  struct NaClNrdXferEffector* nrd_effector =
-      reinterpret_cast<struct NaClNrdXferEffector*>(common_data_->effp());
-  struct NaClDesc* connected_desc = NaClNrdXferEffectorTakeDesc(nrd_effector);
-  if (NULL == connected_desc) {
-    // Take from effector failed.
     return NULL;
   }
   DescWrapper* wrapper =
@@ -618,17 +612,10 @@ DescWrapper* DescWrapper::Connect() {
 }
 
 DescWrapper* DescWrapper::Accept() {
-  int rv = desc_->vtbl->AcceptConn(desc_, common_data_->effp());
+  struct NaClDesc* connected_desc;
+  int rv = desc_->vtbl->AcceptConn(desc_, &connected_desc);
   if (0 != rv) {
     // Accept failed.
-    return NULL;
-  }
-
-  struct NaClNrdXferEffector* nrd_effector =
-      reinterpret_cast<struct NaClNrdXferEffector*>(common_data_->effp());
-  struct NaClDesc* connected_desc = NaClNrdXferEffectorTakeDesc(nrd_effector);
-  if (NULL == connected_desc) {
-    // Take from effector failed.
     return NULL;
   }
   DescWrapper* wrapper =

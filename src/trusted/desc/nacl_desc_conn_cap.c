@@ -87,8 +87,8 @@ int NaClDescConnCapExternalize(struct NaClDesc          *vself,
   return 0;
 }
 
-int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
-                               struct NaClDescEffector  *effp) {
+int NaClDescConnCapConnectAddr(struct NaClDesc *vself,
+                               struct NaClDesc **result) {
   /*
    * See NaClDescImcBoundDescAcceptConn code in
    * nacl_desc_imc_bound_desc.c
@@ -143,12 +143,8 @@ int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
   }
   nh[1] = NACL_INVALID_HANDLE;
 
-  retval = (*effp->vtbl->ReturnCreatedDesc)(effp, ((struct NaClDesc *) peer));
-  if (retval < 0) {
-    /* peer is fully constructed, so we cannot simply free it at this pt */
-    NaClDescUnref((struct NaClDesc *) peer);
-    peer = NULL;
-  }
+  *result = (struct NaClDesc *) peer;
+  retval = 0;
 
 cleanup:
   if (retval < 0) {
@@ -163,10 +159,10 @@ cleanup:
   return retval;
 }
 
-int NaClDescConnCapAcceptConn(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp) {
+int NaClDescConnCapAcceptConn(struct NaClDesc *vself,
+                              struct NaClDesc **result) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(result);
 
   NaClLog(LOG_ERROR, "NaClDescConnCapAcceptConn: not IMC\n");
   return -NACL_ABI_EINVAL;

@@ -1525,7 +1525,11 @@ int32_t NaClCommonSysImc_Accept(struct NaClAppThread  *natp,
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
   } else {
-    retval = (*ndp->vtbl->AcceptConn)(ndp, natp->effp);
+    struct NaClDesc *result_desc;
+    retval = (*ndp->vtbl->AcceptConn)(ndp, &result_desc);
+    if (retval == 0) {
+      retval = NaClSetAvail(natp->nap, result_desc);
+    }
     NaClDescUnref(ndp);
   }
 
@@ -1547,7 +1551,11 @@ int32_t NaClCommonSysImc_Connect(struct NaClAppThread *natp,
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
   } else {
-    retval = (*ndp->vtbl->ConnectAddr)(ndp, natp->effp);
+    struct NaClDesc *result;
+    retval = (*ndp->vtbl->ConnectAddr)(ndp, &result);
+    if (retval == 0) {
+      retval = NaClSetAvail(natp->nap, result);
+    }
     NaClDescUnref(ndp);
   }
 

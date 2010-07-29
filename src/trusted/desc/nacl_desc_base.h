@@ -314,11 +314,15 @@ struct NaClDescVtbl {
                      struct NaClMessageHeader *dgram,
                      int                      flags) NACL_WUR;
 
-  int (*ConnectAddr)(struct NaClDesc          *vself,
-                     struct NaClDescEffector  *effp) NACL_WUR;
-
-  int (*AcceptConn)(struct NaClDesc         *vself,
-                    struct NaClDescEffector *effp) NACL_WUR;
+  /*
+   * ConnectAddr() and AcceptConn():
+   * On success, returns 0 and a descriptor via *result.
+   * On error, returns a negative errno value.
+   */
+  int (*ConnectAddr)(struct NaClDesc *vself,
+                     struct NaClDesc **result) NACL_WUR;
+  int (*AcceptConn)(struct NaClDesc *vself,
+                    struct NaClDesc **result) NACL_WUR;
 
   int (*Post)(struct NaClDesc         *vself,
               struct NaClDescEffector *effp) NACL_WUR;
@@ -659,10 +663,10 @@ ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
                                   struct NaClDescEffector   *effp,
                                   struct NaClMessageHeader  *dgram,
                                   int                       flags);
-int NaClDescConnectAddrNotImplemented(struct NaClDesc         *vself,
-                                      struct NaClDescEffector *effp);
-int NaClDescAcceptConnNotImplemented(struct NaClDesc          *vself,
-                                     struct NaClDescEffector  *effp);
+int NaClDescConnectAddrNotImplemented(struct NaClDesc *vself,
+                                      struct NaClDesc **result);
+int NaClDescAcceptConnNotImplemented(struct NaClDesc *vself,
+                                     struct NaClDesc **result);
 int NaClDescPostNotImplemented(struct NaClDesc          *vself,
                                struct NaClDescEffector  *effp);
 int NaClDescSemWaitNotImplemented(struct NaClDesc         *vself,

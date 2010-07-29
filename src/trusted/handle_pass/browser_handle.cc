@@ -103,34 +103,17 @@ static NaClSrpcError Shutdown(NaClSrpcChannel* channel,
 }
 
 static void WINAPI HandleServer(void* dummy) {
-  // Set up an effector.
-  struct NaClNrdXferEffector effector;
-  struct NaClDescEffector* effp;
   struct NaClDesc* lookup_desc;
   struct NaClSrpcHandlerDesc handlers[] = {
       { "lookup:ii:i", Lookup },
       { "shutdown::", Shutdown },
       { (char const *) NULL, (NaClSrpcMethod) 0, },};
 
-  // Create an effector to use to receive the connected socket.
-  if (!NaClNrdXferEffectorCtor(&effector)) {
-    goto no_state;
-  }
-  effp = (struct NaClDescEffector*) &effector;
   // Accept on the bound socket.
-  if (0 != (handle_descs[0]->vtbl->AcceptConn)(handle_descs[0], effp)) {
-    goto effector_constructed;
+  if (0 == (handle_descs[0]->vtbl->AcceptConn)(handle_descs[0], &lookup_desc)) {
+    // Create an SRPC client and start the message loop.
+    NaClSrpcServerLoop(lookup_desc, handlers, NULL);
   }
-  // Get the connected socket from the effector.
-  lookup_desc = NaClNrdXferEffectorTakeDesc(&effector);
-  // Create an SRPC client and start the message loop.
-  NaClSrpcServerLoop(lookup_desc, handlers, NULL);
-  // Success.  Clean up.
-
- effector_constructed:
-  effp->vtbl->Dtor(effp);
- no_state:
-  NaClThreadExit();
 }
 
 struct NaClDesc* NaClHandlePassBrowserGetSocketAddress() {

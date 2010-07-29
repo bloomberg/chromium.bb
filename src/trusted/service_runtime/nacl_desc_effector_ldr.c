@@ -35,21 +35,6 @@ static void NaClDescEffLdrDtor(struct NaClDescEffector *vself) {
   vself->vtbl = (struct NaClDescEffectorVtbl *) NULL;
 }
 
-static int NaClDescEffLdrReturnCreatedDesc(struct NaClDescEffector *vself,
-                                           struct NaClDesc         *ndp) {
-  struct NaClDescEffectorLdr  *self = (struct NaClDescEffectorLdr *) vself;
-  int                         d;
-
-  NaClLog(4,
-          "NaClDescEffLdrReturnCreatedDesc(0x%08"NACL_PRIxPTR", "
-          "0x%08"NACL_PRIxPTR")\n",
-          (uintptr_t) vself,
-          (uintptr_t) ndp);
-  d = NaClSetAvail(self->natp->nap, ndp);
-  NaClLog(4, " returning %d\n", d);
-  return d;
-}
-
 #if NACL_WINDOWS
 static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
                                      uintptr_t                sysaddr,
@@ -134,7 +119,6 @@ static uintptr_t NaClDescEffLdrMapAnonMem(struct NaClDescEffector *vself,
 
 static struct NaClDescEffectorVtbl NaClDescEffectorLdrVtbl = {
   NaClDescEffLdrDtor,
-  NaClDescEffLdrReturnCreatedDesc,
   NaClDescEffLdrUnmapMemory,
   NaClDescEffLdrMapAnonMem,
 };

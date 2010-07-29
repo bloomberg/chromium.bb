@@ -43,32 +43,6 @@ struct NaClDescEffectorVtbl {
   void (*Dtor)(struct NaClDescEffector *vself);
 
   /*
-   * Return a constructed NaClDesc object to the calling environment
-   * through the effector interface.  Takes ownership of the NaClDesc
-   * object.
-   *
-   * For the service runtime, this insert the newly created NaClDesc
-   * object into open-file table, returning index (descriptor).
-   *
-   * For trusted application code, each call returns a NaClDesc, but
-   * in methods that may return more than one, dynamic cast style
-   * checks are needed to determine which NaClDesc is which (assuming
-   * that their types differ), or be determined by the order in which
-   * they'red produced (which is fragile, since the implementation
-   * might change the order in which the NaClDesc objects are
-   * produced).  The returned indices are used for the return value
-   * from the NaClDesc virtual function (or as output arguments) and
-   * should not be negative; otherwise the value is immaterial.
-   *
-   * For example, NaClDescConnCapConnectAddr and NaClDescImcBoundDesc
-   * uses this method since they are factories that produce
-   * NaClDescImcDesc objects.
-   */
-  int (*ReturnCreatedDesc)(struct NaClDescEffector  *vself,
-                           struct NaClDesc          *ndp);
-
-
-  /*
    * For service runtime, the NaClDesc's Map virtual function will
    * call this to unmap any existing memory before mapping new pages
    * in on top.  This method should handle the necessary unmapping

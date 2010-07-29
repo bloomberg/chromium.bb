@@ -40,16 +40,6 @@ void NaClDescEffectorShmDtor(struct NaClDescEffector *vself) {
 }
 
 static
-int NaClDescEffectorShmReturnCreatedDesc(struct NaClDescEffector  *vself,
-                                         struct NaClDesc          *ndp) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(ndp);
-
-  NaClLog(LOG_FATAL, "NaClDescEffectorShmReturnCreatedDesc called\n");
-  return -NACL_ABI_EINVAL;
-}
-
-static
 int NaClDescEffectorShmUnmapMemory(struct NaClDescEffector  *vself,
                                    uintptr_t                sysaddr,
                                    size_t                   nbytes) {
@@ -83,7 +73,6 @@ uintptr_t NaClDescEffectorShmMapAnonymousMemory(struct NaClDescEffector *vself,
 static
 struct NaClDescEffectorVtbl kNaClDescEffectorShmVtbl = {
   NaClDescEffectorShmDtor,
-  NaClDescEffectorShmReturnCreatedDesc,
   NaClDescEffectorShmUnmapMemory,
   NaClDescEffectorShmMapAnonymousMemory,
 };

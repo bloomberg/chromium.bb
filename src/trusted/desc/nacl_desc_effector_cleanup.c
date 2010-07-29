@@ -25,14 +25,6 @@ static void NaClDescEffCleanDtor(struct NaClDescEffector *vself) {
   return;
 }
 
-static int NaClDescEffCleanReturnCreatedDesc(struct NaClDescEffector *vself,
-                                             struct NaClDesc         *ndp) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(ndp);
-  NaClLog(LOG_FATAL, "Cleanup effector's ReturnCreatedDesc called\n");
-  return 0;
-}
-
 static int NaClDescEffCleanUnmapMemory(struct NaClDescEffector  *vself,
                                        uintptr_t                sysaddr,
                                        size_t                   nbytes) {
@@ -57,7 +49,6 @@ static uintptr_t NaClDescEffCleanMapAnonMem(struct NaClDescEffector *vself,
 
 static struct NaClDescEffectorVtbl NaClDescEffectorCleanupVtbl = {
   NaClDescEffCleanDtor,
-  NaClDescEffCleanReturnCreatedDesc,
   NaClDescEffCleanUnmapMemory,
   NaClDescEffCleanMapAnonMem,
 };

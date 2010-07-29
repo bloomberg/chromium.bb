@@ -1001,14 +1001,12 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
   /*
    * this block until the plugin connects
    */
-  status = ((*nap->service_port->vtbl->AcceptConn)
-            (nap->service_port,
-             (struct NaClDescEffector *) &nnxep));
-  if (status < 0) {
+  status = (*nap->service_port->vtbl->AcceptConn)
+            (nap->service_port, &nap->secure_channel);
+  if (status != 0) {
     NaClLog(LOG_FATAL,
             "NaClSecureCommandChannel: unable to establish channel\n");
   }
-  nap->secure_channel = NaClNrdXferEffectorTakeDesc(&nnxep);
 
   (*nnxep.base.vtbl->Dtor)((struct NaClDescEffector *) &nnxep);
   /*

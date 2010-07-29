@@ -26,15 +26,6 @@ static void NaClDescEffTrustedMemDtor(struct NaClDescEffector *vself) {
   return;
 }
 
-static int NaClDescEffTrustedMemReturnCreatedDesc(
-    struct NaClDescEffector *vself,
-    struct NaClDesc         *ndp) {
-  UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(ndp);
-  NaClLog(LOG_FATAL, "TrustedMem effector's ReturnCreatedDesc called\n");
-  return 0;
-}
-
 static int NaClDescEffTrustedMemUnmapMemory(struct NaClDescEffector  *vself,
                                             uintptr_t                sysaddr,
                                             size_t                   nbytes) {
@@ -60,7 +51,6 @@ static uintptr_t NaClDescEffTrustedMemMapAnonMem(
 
 static struct NaClDescEffectorVtbl NaClDescEffectorTrustedMemVtbl = {
   NaClDescEffTrustedMemDtor,
-  NaClDescEffTrustedMemReturnCreatedDesc,
   NaClDescEffTrustedMemUnmapMemory,
   NaClDescEffTrustedMemMapAnonMem,
 };

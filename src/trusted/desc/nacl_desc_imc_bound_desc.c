@@ -69,8 +69,8 @@ int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
   return 0;
 }
 
-int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
-                                   struct NaClDescEffector  *effp) {
+int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
+                                   struct NaClDesc **result) {
   /*
    * See NaClDescConnCapConnectAddr code in nacl_desc_conn_cap.c
    */
@@ -95,11 +95,9 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
   nh = NACL_INVALID_HANDLE;
 
   NaClLog(3,
-          ("NaClDescImcBoundDescAcceptConn(0x%08"NACL_PRIxPTR", "
-           "0x%08"NACL_PRIxPTR"):"
+          ("NaClDescImcBoundDescAcceptConn(0x%08"NACL_PRIxPTR"):"
            " h = %d\n"),
           (uintptr_t) vself,
-          (uintptr_t) effp,
           self->h);
 
   if (-1 == (nbytes = NaClReceiveDatagram(self->h, &conn_msg, 0))) {
@@ -129,11 +127,8 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
   }
   nh = NACL_INVALID_HANDLE;
 
-  retval = (*effp->vtbl->ReturnCreatedDesc)(effp, (struct NaClDesc *) peer);
-
-  if (retval < 0) {
-    (*peer->base.base.vtbl->Dtor)((struct NaClDesc *) peer);
-  }
+  *result = (struct NaClDesc *) peer;
+  retval = 0;
 
 cleanup:
   if (retval < 0) {

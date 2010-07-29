@@ -20,51 +20,12 @@
 static struct NaClDescEffectorVtbl NaClNrdXferEffectorVtbl;
 
 int NaClNrdXferEffectorCtor(struct NaClNrdXferEffector  *self) {
-  self->out_desc = NULL;
-
   self->base.vtbl = &NaClNrdXferEffectorVtbl;
   return 1;
 }
 
 static void NaClNrdXferEffectorDtor(struct NaClDescEffector *vself) {
-  struct NaClNrdXferEffector *self = (struct NaClNrdXferEffector *) vself;
-
-  if (NULL != self->out_desc) {
-    NaClLog(LOG_WARNING,
-            ("NaClNrdXferEffectorDtor: called with out_desc non-NULL,"
-             " unref'ing\n"));
-    NaClDescUnref(self->out_desc);
-    self->out_desc = NULL;
-  }
-  return;
-}
-
-struct NaClDesc *NaClNrdXferEffectorTakeDesc(struct NaClNrdXferEffector *self) {
-  struct NaClDesc *ndp = self->out_desc;
-  self->out_desc = NULL;
-  return ndp;
-}
-
-static int NaClNrdXferEffectorReturnCreatedDesc(struct NaClDescEffector *vself,
-                                                struct NaClDesc         *ndp) {
-  struct NaClNrdXferEffector *self = (struct NaClNrdXferEffector *) vself;
-  if (NULL != self->out_desc) {
-    NaClLog(LOG_WARNING,
-            ("NaClNrdXferEffectorReturnCreatedDesc: "
-             " got new return descriptor at 0x%08"NACL_PRIxPTR", but"
-             " previously returned one at 0x%08"NACL_PRIxPTR" not retrieved"
-             " (unref'ing)\n"),
-            (uintptr_t) ndp,
-            (uintptr_t) self->out_desc);
-    NaClDescUnref(self->out_desc);
-  }
-  if (NULL == ndp) {
-    NaClLog(LOG_WARNING,
-            "NaClNrdXferEffectorReturnCreatedDesc: "
-            " called with NULL returned NaClDesc object\n");
-  }
-  self->out_desc = ndp;
-  return 0;
+  UNREFERENCED_PARAMETER(vself);
 }
 
 static int NaClNrdXferEffectorUnmapMemory(struct NaClDescEffector *vself,
@@ -90,7 +51,6 @@ static uintptr_t NaClNrdXferEffectorMapAnonymousMemory(
 
 static struct NaClDescEffectorVtbl NaClNrdXferEffectorVtbl = {
   NaClNrdXferEffectorDtor,
-  NaClNrdXferEffectorReturnCreatedDesc,
   NaClNrdXferEffectorUnmapMemory,
   NaClNrdXferEffectorMapAnonymousMemory,
 };

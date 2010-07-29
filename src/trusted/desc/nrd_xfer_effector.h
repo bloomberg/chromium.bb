@@ -20,18 +20,10 @@ EXTERN_C_BEGIN
 
 struct NaClNrdXferEffector {
   struct NaClDescEffector base;
-  struct NaClDesc         *out_desc;  /* one returned desc at a time */
 };
 
 /* bool: returns non-zero for success, ups refcount on src_desc */
 int NaClNrdXferEffectorCtor(struct NaClNrdXferEffector  *self);
-
-/*
- * yields returned NaClDesc, if any, passing ownership.
- */
-struct NaClDesc *NaClNrdXferEffectorTakeDesc(struct NaClNrdXferEffector *self);
-
-
 
 EXTERN_C_END
 

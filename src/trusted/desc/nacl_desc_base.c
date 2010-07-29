@@ -444,9 +444,9 @@ ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescConnectAddrNotImplemented(struct NaClDesc         *vself,
-                                      struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
+int NaClDescConnectAddrNotImplemented(struct NaClDesc *vself,
+                                      struct NaClDesc **result) {
+  UNREFERENCED_PARAMETER(result);
 
   NaClLog(LOG_ERROR,
           "ConnectAddr method is not implemented for object of type %s\n",
@@ -454,9 +454,9 @@ int NaClDescConnectAddrNotImplemented(struct NaClDesc         *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescAcceptConnNotImplemented(struct NaClDesc          *vself,
-                                     struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
+int NaClDescAcceptConnNotImplemented(struct NaClDesc *vself,
+                                     struct NaClDesc **result) {
+  UNREFERENCED_PARAMETER(result);
 
   NaClLog(LOG_ERROR,
           "AcceptConn method is not implemented for object of type %s\n",

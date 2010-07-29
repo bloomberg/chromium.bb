@@ -32,47 +32,27 @@ void NaClHandlePassLdrInit() {
 int NaClHandlePassLdrCtor(struct NaClDesc* socket_address,
                           DWORD renderer_pid,
                           NaClHandle renderer_handle) {
-  struct NaClNrdXferEffector effector;
-  struct NaClDescEffector* effp;
-  int retval = 0;
-
   NaClMutexLock(&pid_handle_map_mu);
   local_pid_handle_map = new(std::nothrow) std::map<DWORD, HANDLE>;
   if (NULL == local_pid_handle_map) {
-    retval = 0;
     NaClMutexUnlock(&pid_handle_map_mu);
-    goto no_state;
+    return 0;
   }
   (*local_pid_handle_map)[renderer_pid] = renderer_handle;
   NaClMutexUnlock(&pid_handle_map_mu);
   NaClHandlePassSetLookupMode(HANDLE_PASS_CLIENT_PROCESS);
 
-  // Create an effector to use to receive the connected socket.
-  if (!NaClNrdXferEffectorCtor(&effector)) {
-    goto no_state;
-  }
-  effp = reinterpret_cast<struct NaClDescEffector*>(&effector);
   // Connect to the given socket address.
-  if (0 != (socket_address->vtbl->ConnectAddr)(socket_address, effp)) {
-    goto effector_constructed;
+  if (0 == (socket_address->vtbl->ConnectAddr)(socket_address, &lookup_desc)) {
+    return 0;
   }
-  // Get the connected socket from the effector.
-  lookup_desc = NaClNrdXferEffectorTakeDesc(&effector);
   // Create an SRPC client for lookup requests.
   if (!NaClSrpcClientCtor(&lookup_channel, lookup_desc)) {
-    goto error_connected;
+    NaClDescUnref(lookup_desc);
+    return 0;
   }
-  // Success.  Clean up everything but lookup_channel and lookup_desc.
-  retval = 1;
-  goto effector_constructed;
-
- error_connected:
-  NaClDescUnref(lookup_desc);
- effector_constructed:
-  // Clean up the effector.
-  effp->vtbl->Dtor(effp);
- no_state:
-  return retval;
+  // Success.
+  return 1;
 }
 
 HANDLE NaClHandlePassLdrLookupHandle(DWORD pid) {

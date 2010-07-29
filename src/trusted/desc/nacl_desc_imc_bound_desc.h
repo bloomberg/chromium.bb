@@ -38,8 +38,8 @@ void NaClDescImcBoundDescDtor(struct NaClDesc *vself);
 int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
                               struct NaClDescEffector *effp);
 
-int NaClDescImcBoundDescAcceptConn(struct NaClDesc          *vself,
-                                   struct NaClDescEffector  *effp);
+int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
+                                   struct NaClDesc **result);
 
 EXTERN_C_END
 

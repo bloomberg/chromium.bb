@@ -77,12 +77,11 @@ int NaClDescConnCapFdExternalize(struct NaClDesc          *vself,
   return 0;
 }
 
-int NaClDescConnCapFdConnectAddr(struct NaClDesc          *vself,
-                                 struct NaClDescEffector  *effp) {
+int NaClDescConnCapFdConnectAddr(struct NaClDesc *vself,
+                                 struct NaClDesc **result) {
   struct NaClDescConnCapFd *self = (struct NaClDescConnCapFd *) vself;
   NaClHandle sock_pair[2];
   struct NaClDescImcDesc *connected_socket;
-  int retval;
   char control_buf[CMSG_SPACE(sizeof(int))];
   struct iovec iovec;
   struct msghdr connect_msg;
@@ -125,20 +124,14 @@ int NaClDescConnCapFdConnectAddr(struct NaClDesc          *vself,
     return -NACL_ABI_ENOMEM;
   }
 
-  retval = (*effp->vtbl->ReturnCreatedDesc)(
-      effp, (struct NaClDesc *) connected_socket);
-  if (retval < 0) {
-    /* connected_socket is fully constructed, so we cannot simply free
-       it at this point. */
-    NaClDescUnref((struct NaClDesc *) connected_socket);
-  }
-  return retval;
+  *result = (struct NaClDesc *) connected_socket;
+  return 0;
 }
 
-int NaClDescConnCapFdAcceptConn(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp) {
+int NaClDescConnCapFdAcceptConn(struct NaClDesc *vself,
+                                struct NaClDesc **result) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(result);
 
   NaClLog(LOG_ERROR, "NaClDescConnCapFdAcceptConn: not IMC\n");
   return -NACL_ABI_EINVAL;
