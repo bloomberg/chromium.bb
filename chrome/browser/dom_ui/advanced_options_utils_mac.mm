@@ -4,11 +4,10 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/dom_ui/advanced_options_utils.h"
+#include "chrome/browser/dom_ui/advanced_options_utils_mac.h"
 #include "base/logging.h"
 
-void AdvancedOptionsUtilities::ShowNetworkProxySettings(
-      TabContents* tab_contents) {
+void AdvancedOptionsUtilities::ShowNetworkProxySettings() {
   NSArray* itemsToOpen = [NSArray arrayWithObject:[NSURL fileURLWithPath:
       @"/System/Library/PreferencePanes/Network.prefPane"]];
 
@@ -30,8 +29,7 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
     AEDisposeDesc(&openParams);
 }
 
-void AdvancedOptionsUtilities::ShowManageSSLCertificates(
-      TabContents* tab_contents) {
+void AdvancedOptionsUtilities::ShowManageSSLCertificates() {
   NSString* const kKeychainBundleId = @"com.apple.keychainaccess";
   [[NSWorkspace sharedWorkspace]
    launchAppWithBundleIdentifier:kKeychainBundleId

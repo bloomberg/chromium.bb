@@ -28,6 +28,9 @@ AdvancedOptions.prototype = {
     $('privacyClearDataButton').onclick = function(event) {
       OptionsPage.showOverlay('clearBrowserDataOverlay');
     };
+    $('proxiesConfigureButton').onclick = function(event) {
+      chrome.send('showNetworkProxySettings');
+    };
     $('downloadLocationBrowseButton').onclick = function(event) {
       chrome.send('selectDownloadLocation');
     };
@@ -37,15 +40,9 @@ AdvancedOptions.prototype = {
     $('fontSettingsConfigureFontsOnlyButton').onclick = function(event) {
       OptionsPage.showOverlay('fontSettingsOverlay');
     };
-
-    if (!cr.isChromeOS) {
-      $('proxiesConfigureButton').onclick = function(event) {
-        chrome.send('showNetworkProxySettings');
-      };
-      $('certificatesManageButton').onclick = function(event) {
-        chrome.send('showManageSSLCertificates');
-      };
-    }
+    $('certificatesManageButton').onclick = function(event) {
+      chrome.send('showManageSSLCertificates');
+    };
 
     if (cr.isWindows) {
       $('sslCheckRevocation').onclick = function(event) {
