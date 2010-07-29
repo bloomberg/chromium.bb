@@ -11,7 +11,6 @@
 #include "views/accessibility/view_accessibility.h"
 #include "views/accessibility/view_accessibility_wrapper.h"
 #include "views/border.h"
-#include "views/views_delegate.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_win.h"
@@ -31,26 +30,15 @@ int View::GetMenuShowDelay() {
   return delay;
 }
 
+// Notifies accessibility clients of the event_type on this view.
+// Clients will call get_accChild found in ViewAccessibility with the supplied
+// child id we generate here to retrieve the IAccessible associated with this
+// view.
 void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type) {
-  NotifyAccessibilityEvent(event_type, true);
-}
-
-void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
-    bool send_native_event) {
-  // Send the notification to the delegate.
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->NotifyAccessibilityEvent(this, event_type);
-
-  // Now call the Windows-specific method to notify MSAA clients of this
-  // event.  The widget gives us a temporary unique child ID to associate
-  // with this view so that clients can call get_accChild in ViewAccessibility
-  // to retrieve the IAccessible associated with this view.
-  if (send_native_event) {
-    WidgetWin* view_widget = static_cast<WidgetWin*>(GetWidget());
-    int child_id = view_widget->AddAccessibilityViewEvent(this);
-    ::NotifyWinEvent(ViewAccessibility::MSAAEvent(event_type),
-        view_widget->GetNativeView(), OBJID_CLIENT, child_id);
-  }
+  WidgetWin* view_widget = static_cast<WidgetWin*>(GetWidget());
+  int child_id = view_widget->AddAccessibilityViewEvent(this);
+  ::NotifyWinEvent(ViewAccessibility::MSAAEvent(event_type),
+      view_widget->GetNativeView(), OBJID_CLIENT, child_id);
 }
 
 ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {

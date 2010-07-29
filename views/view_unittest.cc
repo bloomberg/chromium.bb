@@ -686,8 +686,6 @@ class TestViewsDelegate : public views::ViewsDelegate {
                                       bool* maximized) const {
     return false;
   }
-  virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type) {}
   virtual HICON GetDefaultWindowIcon() const {
     return NULL;
   }

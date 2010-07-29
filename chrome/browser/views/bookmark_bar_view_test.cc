@@ -70,9 +70,6 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
     return false;
   }
 
-  virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type) {}
-
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const { return 0; }
 #endif

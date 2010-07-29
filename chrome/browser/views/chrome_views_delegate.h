@@ -23,8 +23,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
                                     gfx::Rect* bounds) const;
   virtual bool GetSavedMaximizedState(const std::wstring& window_name,
                                       bool* maximized) const;
-  virtual void NotifyAccessibilityEvent(
-    views::View* view, AccessibilityTypes::Event event_type) {}
 #if defined(OS_WIN)
   virtual HICON GetDefaultWindowIcon() const;
 #endif

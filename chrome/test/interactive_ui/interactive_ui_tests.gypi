@@ -36,7 +36,6 @@
     '<(DEPTH)/chrome/browser/gtk/bookmark_bar_gtk_interactive_uitest.cc',
     '<(DEPTH)/chrome/browser/notifications/notifications_interactive_uitest.cc',
     '<(DEPTH)/chrome/browser/views/bookmark_bar_view_test.cc',
-    '<(DEPTH)/chrome/browser/views/browser_keyboard_accessibility_test_win.cc',
     '<(DEPTH)/chrome/browser/views/find_bar_host_interactive_uitest.cc',
     '<(DEPTH)/chrome/browser/views/tabs/tab_dragging_test.cc',
     '<(DEPTH)/chrome/test/in_process_browser_test.cc',
