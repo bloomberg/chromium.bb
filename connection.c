@@ -344,7 +344,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 			types[i] = &ffi_type_pointer;
 			object = wl_hash_table_lookup(objects, *p);
 			if (object == NULL && *p != 0)
-				printf("unknown object (%d)\n", *p);
+				printf("unknown object (%d), message %s(%s)\n",
+				       *p, message->name, message->signature);
 			values[i].object = object;
 			p++;
 			break;
