@@ -149,6 +149,16 @@ int ConstructSpdyHeader(const char* const extra_headers[],
                         int buffer_length,
                         int index);
 
+// Constructs a standard SPDY GET SYN packet, optionally compressed
+// for the url |url|.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdyGet(const char* const url,
+                                  bool compressed,
+                                  int stream_id,
+                                  RequestPriority request_priority);
+
 // Constructs a standard SPDY GET SYN packet, optionally compressed.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.

@@ -256,9 +256,8 @@ int SpdyNetworkTransaction::DoGetStream() {
 
   CHECK(!stream_.get());
 
-  stream_.reset(new SpdyHttpStream());
-  return stream_->InitializeStream(spdy_, *request_,
-                                   net_log_, &io_callback_);
+  stream_.reset(new SpdyHttpStream(spdy_));
+  return stream_->InitializeStream(request_, net_log_, &io_callback_);
 }
 
 int SpdyNetworkTransaction::DoGetStreamComplete(int result) {
@@ -281,10 +280,12 @@ int SpdyNetworkTransaction::DoSendRequest() {
     if (!upload_data_stream)
       return error_code;
   }
-  stream_->InitializeRequest(base::Time::Now(), upload_data_stream);
   spdy_ = NULL;
 
-  return stream_->SendRequest(&response_, &io_callback_);
+  return stream_->SendRequest("",
+                              upload_data_stream,
+                              &response_,
+                              &io_callback_);
 }
 
 int SpdyNetworkTransaction::DoSendRequestComplete(int result) {

@@ -248,6 +248,43 @@ int ConstructSpdyHeader(const char* const extra_headers[],
   return n;
 }
 
+// Constructs a standard SPDY GET SYN packet, optionally compressed
+// for the url |url|.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdyGet(const char* const url,
+                                  bool compressed,
+                                  int stream_id,
+                                  RequestPriority request_priority) {
+  const SpdyHeaderInfo kSynStartHeader = {
+    spdy::SYN_STREAM,             // Kind = Syn
+    stream_id,                    // Stream ID
+    0,                            // Associated stream ID
+    request_priority,             // Priority
+    spdy::CONTROL_FLAG_FIN,       // Control Flags
+    compressed,                   // Compressed
+    spdy::INVALID,                // Status
+    NULL,                         // Data
+    0,                            // Length
+    spdy::DATA_FLAG_NONE          // Data Flags
+  };
+  const char* const headers[] = {
+    "method",
+    "GET",
+    "url",
+    url,
+    "version",
+    "HTTP/1.1"
+  };
+  return ConstructSpdyPacket(
+      kSynStartHeader,
+      NULL,
+      0,
+      headers,
+      arraysize(headers) / 2);
+}
+
 // Constructs a standard SPDY GET SYN packet, optionally compressed.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
