@@ -84,6 +84,9 @@ class ButtonMenuItemModel {
   // Returns the enabled state of the button at |index|.
   bool IsEnabledAt(int index) const;
 
+  // Returns the enabled state of the command specified by |command_id|.
+  bool IsCommandIdEnabled(int command_id) const;
+
   const string16& label() const { return item_label_; }
 
  private:

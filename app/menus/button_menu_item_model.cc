@@ -103,8 +103,12 @@ void ButtonMenuItemModel::ActivatedCommand(int command_id) {
 }
 
 bool ButtonMenuItemModel::IsEnabledAt(int index) const {
+  return IsCommandIdEnabled(items_[index].command_id);
+}
+
+bool ButtonMenuItemModel::IsCommandIdEnabled(int command_id) const {
   if (delegate_)
-    return delegate_->IsCommandIdEnabled(items_[index].command_id);
+    return delegate_->IsCommandIdEnabled(command_id);
   return true;
 }
 
