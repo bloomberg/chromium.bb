@@ -345,6 +345,7 @@
           'dependencies': [
             '../webkit/webkit.gyp:npapi_test_plugin',
             '../webkit/webkit.gyp:npapi_pepper_test_plugin',
+            '../third_party/mesa/mesa.gyp:osmesa',
           ],
         }],
         ['OS=="linux"', {
