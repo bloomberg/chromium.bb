@@ -36,3 +36,10 @@ BUGWK42371 : ietestcenter/Javascript/15.3.4.5-9-1.html = FAIL
 BUGWK42371 : ietestcenter/Javascript/15.3.4.5-9-2.html = FAIL
 
 BUG50438 : media/controls-drag-timebar.html = PASS FAIL
+
+// This test fails because the expected output is wrong.
+// The reason is the device orientation runtime feature
+// switch had to be switched off for test_shell until
+// it provides a mock DeviceOrientationClient.
+// See crbug.com/50637.
+BUG50637 : fast/dom/prototype-inheritance.html = FAIL
