@@ -4,6 +4,7 @@
 
 #include "gfx/canvas_direct2d.h"
 
+#include "base/scoped_ptr.h"
 #include "gfx/rect.h"
 
 namespace {
@@ -42,6 +43,28 @@ D2D1_EXTEND_MODE TileModeToExtendMode(gfx::Canvas::TileMode tile_mode) {
       NOTREACHED() << "Invalid TileMode";
   }
   return D2D1_EXTEND_MODE_CLAMP;
+}
+
+ID2D1GradientStopCollection* CreateGradientStopCollection(
+    ID2D1RenderTarget* render_target,
+    const SkColor colors[],
+    const float positions[],
+    size_t position_count,
+    gfx::Canvas::TileMode tile_mode) {
+  scoped_array<D2D1_GRADIENT_STOP> gradient_stops(
+      new D2D1_GRADIENT_STOP[position_count]);
+  for (size_t i = 0; i < position_count; ++i) {
+    gradient_stops[i].color = SkColorToColorF(colors[i]);
+    gradient_stops[i].position = positions[i];
+  }
+  ID2D1GradientStopCollection* gradient_stop_collection = NULL;
+  HRESULT hr = render_target->CreateGradientStopCollection(
+      gradient_stops.get(),
+      position_count,
+      D2D1_GAMMA_2_2,
+      TileModeToExtendMode(tile_mode),
+      &gradient_stop_collection);
+  return SUCCEEDED(hr) ? gradient_stop_collection : NULL;
 }
 
 // A platform wrapper for a Direct2D brush that makes sure the underlying
@@ -280,28 +303,70 @@ Brush* CanvasDirect2D::CreateLinearGradientBrush(
     const float positions[],
     size_t position_count,
     TileMode tile_mode) {
-  ID2D1GradientStopCollection* gradient_stop_collection = NULL;
-  D2D1_GRADIENT_STOP* gradient_stops = new D2D1_GRADIENT_STOP[position_count];
-  for (size_t i = 0; i < position_count; ++i) {
-    gradient_stops[i].color = SkColorToColorF(colors[i]);
-    gradient_stops[i].position = positions[i];
-  }
-  HRESULT hr = rt_->CreateGradientStopCollection(gradient_stops,
-      position_count,
-      D2D1_GAMMA_2_2,
-      TileModeToExtendMode(tile_mode),
-      &gradient_stop_collection);
-  if (FAILED(hr))
+  ScopedComPtr<ID2D1GradientStopCollection> gradient_stop_collection(
+      CreateGradientStopCollection(rt_, colors, positions, position_count,
+                                   tile_mode));
+  if (!gradient_stop_collection.get())
     return NULL;
 
   ID2D1LinearGradientBrush* brush = NULL;
-  hr = rt_->CreateLinearGradientBrush(
+  HRESULT hr = rt_->CreateLinearGradientBrush(
       D2D1::LinearGradientBrushProperties(PointToPoint2F(start_point),
                                           PointToPoint2F(end_point)),
       gradient_stop_collection,
       &brush);
+  return SUCCEEDED(hr) ? new Direct2DBrush(brush) : NULL;
+}
 
-  return new Direct2DBrush(brush);
+Brush* CanvasDirect2D::CreateRadialGradientBrush(
+    const gfx::Point& center_point,
+    float radius,
+    const SkColor colors[],
+    const float positions[],
+    size_t position_count,
+    TileMode tile_mode) {
+  ScopedComPtr<ID2D1GradientStopCollection> gradient_stop_collection(
+      CreateGradientStopCollection(rt_, colors, positions, position_count,
+                                   tile_mode));
+  if (!gradient_stop_collection.get())
+    return NULL;
+
+  ID2D1RadialGradientBrush* brush = NULL;
+  HRESULT hr = rt_->CreateRadialGradientBrush(
+      D2D1::RadialGradientBrushProperties(PointToPoint2F(center_point),
+                                          PointToPoint2F(gfx::Point()),
+                                          radius,
+                                          radius),
+      gradient_stop_collection,
+      &brush);
+  return SUCCEEDED(hr) ? new Direct2DBrush(brush) : NULL;
+}
+
+Brush* CanvasDirect2D::CreateBitmapBrush(
+    const SkBitmap& bitmap,
+    TileMode tile_mode_x,
+    TileMode tile_mode_y) {
+  ScopedComPtr<ID2D1Bitmap> d2d1_bitmap;
+  HRESULT hr = rt_->CreateBitmap(
+      D2D1::SizeU(bitmap.width(), bitmap.height()),
+      NULL,
+      NULL,
+      D2D1::BitmapProperties(
+          D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,
+                            D2D1_ALPHA_MODE_IGNORE)),
+      d2d1_bitmap.Receive());
+  bitmap.lockPixels();
+  d2d1_bitmap->CopyFromMemory(NULL, bitmap.getPixels(), bitmap.rowBytes());
+  bitmap.unlockPixels();
+
+  ID2D1BitmapBrush* brush = NULL;
+  hr = rt_->CreateBitmapBrush(
+      d2d1_bitmap,
+      D2D1::BitmapBrushProperties(TileModeToExtendMode(tile_mode_x),
+                                  TileModeToExtendMode(tile_mode_y)),
+      D2D1::BrushProperties(),
+      &brush);
+  return SUCCEEDED(hr) ? new Direct2DBrush(brush) : NULL;
 }
 
 CanvasSkia* CanvasDirect2D::AsCanvasSkia() {

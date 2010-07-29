@@ -207,9 +207,9 @@ class Canvas {
   // |positions| is a list of positions corresponding to the color stops, an
   // array of floats of increasing value ranging from 0.0f to 1.0f.
   // |position_count| is the size of the |colors| and |positions| arrays.
-  // |tile_mode|
-  // Returns an encapsulated platform shader object which the caller must
-  // delete.
+  // |tile_mode| specifies how the gradient brush repeats outside its natural
+  // bounds.
+  // Returns an encapsulated platform brush object which the caller must delete.
   virtual Brush* CreateLinearGradientBrush(
       const gfx::Point& start_point,
       const gfx::Point& end_point,
@@ -217,6 +217,34 @@ class Canvas {
       const float positions[],
       size_t position_count,
       TileMode tile_mode) = 0;
+
+  // Creates a radial gradient brush.
+  // |center_point| is the center of the circle in the brush's coordinate space.
+  // |radius| is the radius of the circle.
+  // |colors| is a list of color stops.
+  // |positions| is a list of positions corresponding to the color stops, an
+  // array of floats of increasing value ranging from 0.0f to 1.0f.
+  // |position_count| is the size of the |colors| and |positions| arrays.
+  // |tile_mode| specifies how the gradient brush repeats outside its natural
+  // bounds.
+  // Returns an encapsulated platform brush object which the caller must delete.
+  virtual Brush* CreateRadialGradientBrush(
+      const gfx::Point& center_point,
+      float radius,
+      const SkColor colors[],
+      const float positions[],
+      size_t position_count,
+      TileMode tile_mode) = 0;
+
+  // Creates a bitmap brush.
+  // |bitmap| is the bitmap to be used for the brush.
+  // |tile_mode_x,y| - specifies how the brush tiles the areas beyond those
+  // filled by its bitmap along each axis.
+  // Returns an encapsulated platform brush object which the caller must delete.
+  virtual Brush* CreateBitmapBrush(
+      const SkBitmap& bitmap,
+      TileMode tile_mode_x,
+      TileMode tile_mode_y) = 0;
 
   // TODO(beng): remove this once we don't need to use any skia-specific methods
   //             through this interface.

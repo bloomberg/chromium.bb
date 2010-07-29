@@ -18,6 +18,12 @@
 
 namespace {
 
+SkPoint PointToSkPoint(const gfx::Point point) {
+  SkPoint sk_point;
+  sk_point.set(SkIntToScalar(point.x()), SkIntToScalar(point.y()));
+  return sk_point;
+}
+
 SkShader::TileMode TileModeToSkShaderTileMode(gfx::Canvas::TileMode tile_mode) {
   switch (tile_mode) {
     case gfx::Canvas::TileMode_Clamp:
@@ -361,6 +367,34 @@ Brush* CanvasSkia::CreateLinearGradientBrush(
       positions,
       position_count,
       TileModeToSkShaderTileMode(tile_mode));
+  return new SkiaShader(shader);
+}
+
+Brush* CanvasSkia::CreateRadialGradientBrush(
+    const gfx::Point& center_point,
+    float radius,
+    const SkColor colors[],
+    const float positions[],
+    size_t position_count,
+    TileMode tile_mode) {
+  SkShader* shader = SkGradientShader::CreateRadial(
+      PointToSkPoint(center_point),
+      radius,
+      colors,
+      positions,
+      position_count,
+      TileModeToSkShaderTileMode(tile_mode));
+  return new SkiaShader(shader);
+}
+
+Brush* CanvasSkia::CreateBitmapBrush(
+    const SkBitmap& bitmap,
+    TileMode tile_mode_x,
+    TileMode tile_mode_y) {
+  SkShader* shader = SkShader::CreateBitmapShader(
+      bitmap,
+      TileModeToSkShaderTileMode(tile_mode_x),
+      TileModeToSkShaderTileMode(tile_mode_y));
   return new SkiaShader(shader);
 }
 

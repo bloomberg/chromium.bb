@@ -113,4 +113,8 @@
     "includes": [17500],
     "structures": [18000],
   },
+
+  "gfx/gfx_resources.grd": {
+    "includes": [18500],
+  }
 }

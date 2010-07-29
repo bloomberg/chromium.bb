@@ -131,6 +131,17 @@ class CanvasSkia : public skia::PlatformCanvas,
       const float positions[],
       size_t position_count,
       TileMode tile_mode);
+  virtual Brush* CreateRadialGradientBrush(
+      const gfx::Point& center_point,
+      float radius,
+      const SkColor colors[],
+      const float positions[],
+      size_t position_count,
+      TileMode tile_mode);
+  virtual Brush* CreateBitmapBrush(
+      const SkBitmap& bitmap,
+      TileMode tile_mode_x,
+      TileMode tile_mode_y);
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;
 

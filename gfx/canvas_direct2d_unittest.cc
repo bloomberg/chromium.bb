@@ -8,12 +8,17 @@
 #include <vssym32.h>
 
 #include "base/command_line.h"
+#include "base/ref_counted_memory.h"
+#include "base/resource_util.h"
 #include "base/scoped_ptr.h"
 #include "gfx/canvas_direct2d.h"
 #include "gfx/canvas_skia.h"
+#include "gfx/codec/png_codec.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/window_impl.h"
+#include "grit/gfx_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 
 namespace {
 
@@ -70,6 +75,27 @@ class TestWindow : public gfx::WindowImpl {
 
 // static
 const wchar_t* TestWindow::kVisibleModeFlag = L"d2d-canvas-visible";
+
+// Loads a png data blob from the data resources associated with this
+// executable, decodes it and returns a SkBitmap.
+SkBitmap LoadBitmapFromResources(int resource_id) {
+  SkBitmap bitmap;
+
+  HINSTANCE resource_instance = _AtlBaseModule.GetResourceInstance();
+  void* data_ptr;
+  size_t data_size;
+  if (base::GetDataResourceFromModule(resource_instance, resource_id, &data_ptr,
+                                      &data_size)) {
+    scoped_refptr<RefCountedMemory> memory(new RefCountedStaticMemory(
+        reinterpret_cast<const unsigned char*>(data_ptr), data_size));
+    if (!memory)
+      return bitmap;
+
+    if (!gfx::PNGCodec::Decode(memory->front(), memory->size(), &bitmap))
+      NOTREACHED() << "Unable to decode theme image resource " << resource_id;
+  }
+  return bitmap;
+}
 
 }  // namespace
 
@@ -221,3 +247,37 @@ TEST(CanvasDirect2D, CreateLinearGradientBrush) {
   canvas.FillRectInt(brush.get(), 0, 0, 500, 500);
   canvas.Restore();
 }
+
+TEST(CanvasDirect2D, CreateRadialGradientBrush) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  canvas.Save();
+  SkColor colors[] = { SK_ColorBLUE, SK_ColorGREEN };
+  float positions[] = { 0.0f, 1.0f };
+  scoped_ptr<gfx::Brush> brush(canvas.CreateRadialGradientBrush(
+      gfx::Point(200, 200),
+      100.0f,
+      colors,
+      positions,
+      2,
+      gfx::Canvas::TileMode_Clamp));
+  canvas.FillRectInt(brush.get(), 0, 0, 500, 500);
+  canvas.Restore();
+}
+
+TEST(CanvasDirect2D, CreateBitmapBrush) {
+  TestWindow window;
+  gfx::CanvasDirect2D canvas(window.rt());
+
+  SkBitmap bitmap = LoadBitmapFromResources(IDR_BITMAP_BRUSH_IMAGE);
+
+  canvas.Save();
+  scoped_ptr<gfx::Brush> brush(canvas.CreateBitmapBrush(
+      bitmap,
+      gfx::Canvas::TileMode_Mirror,
+      gfx::Canvas::TileMode_Mirror));
+  canvas.FillRectInt(brush.get(), 0, 0, 500, 500);
+  canvas.Restore();
+}
+
