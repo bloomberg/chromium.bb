@@ -60,10 +60,19 @@ class SortHelper {
         model_(model) {}
 
   bool operator()(int a, int b) {
-    int cmp_result = model_->CompareValues(a, b, sort_column_ );
+    std::pair<int, int> group_range1 = model_->GetGroupRangeForResource(a);
+    std::pair<int, int> group_range2 = model_->GetGroupRangeForResource(b);
+    if (group_range1 == group_range2) {
+      // The two rows are in the same group, sort so that items in the same
+      // group always appear in the same order. |ascending_| is intentionally
+      // ignored.
+      return a < b;
+    }
+    // Sort by the first entry of each of the groups.
+    int cmp_result = model_->CompareValues(
+        group_range1.first, group_range2.first, sort_column_);
     if (!ascending_)
       cmp_result = -cmp_result;
-    // TODO(thakis): Do grouping like on GTK.
     return cmp_result < 0;
   }
  private:
@@ -410,7 +419,8 @@ class SortHelper {
     NSString* title = [self modelTextForRow:rowIndex
                                     column:[[tableColumn identifier] intValue]];
     [buttonCell setTitle:title];
-    [buttonCell setImage:taskManagerObserver_->GetImageForRow(rowIndex)];
+    [buttonCell setImage:
+        taskManagerObserver_->GetImageForRow(indexShuffle_[rowIndex])];
     [buttonCell setRefusesFirstResponder:YES];  // Don't push in like a button.
     [buttonCell setHighlightsBy:NSNoCellMask];
   }
