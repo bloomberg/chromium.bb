@@ -112,7 +112,7 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 	source->func = func;
 	source->data = data;
 
-	ep.events = 0;
+	memset(&ep, 0, sizeof ep);
 	if (mask & WL_EVENT_READABLE)
 		ep.events |= EPOLLIN;
 	if (mask & WL_EVENT_WRITEABLE)
@@ -135,7 +135,7 @@ wl_event_source_fd_update(struct wl_event_source *source, uint32_t mask)
 	struct wl_event_loop *loop = source->loop;
 	struct epoll_event ep;
 
-	ep.events = 0;
+	memset(&ep, 0, sizeof ep);
 	if (mask & WL_EVENT_READABLE)
 		ep.events |= EPOLLIN;
 	if (mask & WL_EVENT_WRITEABLE)
@@ -210,6 +210,7 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 	source->func = func;
 	source->data = data;
 
+	memset(&ep, 0, sizeof ep);
 	ep.events = EPOLLIN;
 	ep.data.ptr = source;
 
@@ -310,6 +311,7 @@ wl_event_loop_add_signal(struct wl_event_loop *loop,
 	source->func = func;
 	source->data = data;
 
+	memset(&ep, 0, sizeof ep);
 	ep.events = EPOLLIN;
 	ep.data.ptr = source;
 
