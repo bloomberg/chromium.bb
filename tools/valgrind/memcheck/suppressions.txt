@@ -3572,13 +3572,6 @@
    fun:_ZN7Browser*ENS_4TypeEP7Profile
 }
 {
-   bug_50583
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN64_GLOBAL__N_net_base_cookie_monster_unittest.cc_00000000_C9F6D94420AddKeyedCookieToListERKSsS1_RKN4base4TimeEPSt6vectorISt4pairISsPN3net13CookieMonster15CanonicalCookieEESaISC_EE
-   fun:_ZN3net55CookieMonsterTest_DontImportDuplicateCreationTimes_Test8TestBodyEv
-}
-{
    bug_50630
    Memcheck:Value4
    fun:modp_b64_encode

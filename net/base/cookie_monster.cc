@@ -203,6 +203,9 @@ void CookieMonster::InitStore() {
                                  it->second->Name().c_str(),
                                  it->first.c_str(),
                                  it->second->Path().c_str());
+      // We've been given ownership of the cookie and are throwing it
+      // away; reclaim the space.
+      delete it->second;
     }
   }
 
