@@ -7,15 +7,18 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "grit/generated_resources.h"
 
-static const string16 kCreditCardSeparators = ASCIIToUTF16(" -");
-static const char* kCreditCardObfuscationString = "************";
+namespace {
 
-static const AutoFillFieldType kAutoFillCreditCardTypes[] = {
+const string16::value_type kCreditCardSeparators[] = {' ','-',0};
+const char* kCreditCardObfuscationString = "************";
+
+const AutoFillFieldType kAutoFillCreditCardTypes[] = {
   CREDIT_CARD_NAME,
   CREDIT_CARD_NUMBER,
   CREDIT_CARD_TYPE,
@@ -23,8 +26,9 @@ static const AutoFillFieldType kAutoFillCreditCardTypes[] = {
   CREDIT_CARD_EXP_4_DIGIT_YEAR,
 };
 
-static const int kAutoFillCreditCardLength =
-    arraysize(kAutoFillCreditCardTypes);
+const int kAutoFillCreditCardLength = arraysize(kAutoFillCreditCardTypes);
+
+}  // namespace
 
 CreditCard::CreditCard(const string16& label, int unique_id)
     : expiration_month_(0),
@@ -309,7 +313,7 @@ bool CreditCard::operator!=(const CreditCard& creditcard) const {
 // static
 bool CreditCard::IsCreditCardNumber(const string16& text) {
   string16 number;
-  RemoveChars(text, kCreditCardSeparators.c_str(), &number);
+  RemoveChars(text, kCreditCardSeparators, &number);
 
   int sum = 0;
   bool odd = false;

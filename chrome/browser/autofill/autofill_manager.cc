@@ -39,8 +39,8 @@ const int kAutoFillPhoneNumberPrefixCount = 3;
 const int kAutoFillPhoneNumberSuffixOffset = 3;
 const int kAutoFillPhoneNumberSuffixCount = 4;
 
-const string16::value_type kCreditCardPrefix[] = {'*', 0};
-const string16::value_type kLabelSeparator[] = {';',' ', '*', 0};
+const string16::value_type kCreditCardPrefix[] = {'*',0};
+const string16::value_type kLabelSeparator[] = {';',' ','*',0};
 
 // Combines the |label| string with the last four digits of the credit card
 // |cc|.  If one, the other, or both are empty strings we omit the separator.
