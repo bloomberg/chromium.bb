@@ -27,19 +27,24 @@ cr.define('options.accounts', function() {
       // HACK(arv): http://crbug.com/40902
       window.addEventListener('resize', cr.bind(this.redraw, this));
 
-      this.addEventListener('click', this.handleClick_);
-
       var self = this;
+      if (!this.boundHandleChange_) {
+        this.boundHandleChange_ =
+            cr.bind(this.handleChange_, this);
+      }
 
       // Listens to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
             self.load_(event.value);
           });
+
+      // Listens to list selection change.
+      this.addEventListener('change', this.boundHandleChange_);
     },
 
     createItem: function(user) {
-      return new UserListItem(user);
+      return new ListItem({label: user.email});
     },
 
     /**
@@ -52,32 +57,21 @@ cr.define('options.accounts', function() {
     },
 
     /**
-     * Removes given user from model and update backend.
+     * Removes currently selected user from model and update backend.
      */
-    removeUser: function(user) {
+    removeSelectedUser: function() {
+      var sm = this.selectionModel;
       var dataModel = this.dataModel;
 
-      var index = dataModel.indexOf(user);
-      if (index >= 0) {
-        dataModel.splice(index, 1);
-        this.updateBackend_();
-      }
-    },
-
-    /**
-     * Handles the clicks on the list and triggers user removal if the click
-     * is on the remove user button.
-     * @private
-     * @param {!Event} e The click event object.
-     */
-    handleClick_: function(e) {
-      // Handle left button click
-      if (e.button == 0) {
-        var el = e.target;
-        if (el.className == 'remove-user-button') {
-          this.removeUser(el.parentNode.user);
+      var newUsers = [];
+      for (var i = 0; i < dataModel.length; ++i) {
+        if (!sm.getIndexSelected(i)) {
+          newUsers.push(dataModel.item(i));
         }
       }
+      this.load_(newUsers);
+
+      this.updateBackend_();
     },
 
     /**
@@ -93,64 +87,13 @@ cr.define('options.accounts', function() {
      */
     updateBackend_: function() {
       Preferences.setObjectPref(this.pref, this.dataModel.slice());
-    }
-  };
+    },
 
-  /**
-   * Creates a new user list item.
-   * @param user The user account this represents.
-   * @constructor
-   * @extends {cr.ui.ListItem}
-   */
-  function UserListItem(user) {
-    var el = cr.doc.createElement('div');
-    el.user = user;
-    UserListItem.decorate(el);
-    return el;
-  }
-
-  /**
-   * Decorates an element as a user account item.
-   * @param {!HTMLElement} el The element to decorate.
-   */
-  UserListItem.decorate = function(el) {
-    el.__proto__ = UserListItem.prototype;
-    el.decorate();
-  };
-
-  UserListItem.prototype = {
-    __proto__: ListItem.prototype,
-
-    /** @inheritDoc */
-    decorate: function() {
-      ListItem.prototype.decorate.call(this);
-
-      this.className = 'user-list-item';
-
-      var icon = this.ownerDocument.createElement('img');
-      icon.className = 'user-icon';
-      // TODO(xiyuan): Replace this with real user picture when ready.
-      icon.src = 'chrome://theme/IDR_LOGIN_DEFAULT_USER';
-
-      var labelEmail = this.ownerDocument.createElement('span');
-      labelEmail.className = 'user-email-label';
-      labelEmail.textContent = this.user.email;
-
-      var labelName = this.ownerDocument.createElement('span');
-      labelName.className = 'user-name-label';
-      labelName.textContent = this.user.owner ?
-          localStrings.getStringF('username_format', this.user.name) :
-          this.user.name;
-
-      this.appendChild(icon);
-      this.appendChild(labelEmail);
-      this.appendChild(labelName);
-
-      if (!this.user.owner) {
-        var removeButton = this.ownerDocument.createElement('button');
-        removeButton.className = 'remove-user-button';
-        this.appendChild(removeButton);
-      }
+    /**
+     * Handles selection change.
+     */
+    handleChange_: function(e) {
+      $('removeUserButton').disabled = this.selectionModel.selectedIndex == -1;
     }
   };
 
