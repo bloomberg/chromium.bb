@@ -8,6 +8,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
+#include "views/event.h"
 
 // This functionality currently works on Windows and on Linux when
 // toolkit_views is defined (i.e. for Chrome OS). It's not needed
@@ -24,8 +25,8 @@ class KeyboardAccessTest : public UITest {
   }
 
   // Use the keyboard to select "New Tab" from the app menu.
-  // This test depends on the fact that there are two menus and that
-  // New Tab is the first item in the app menu. If the menus change,
+  // This test depends on the fact that there is one menu and that
+  // New Tab is the first item in the menu. If the menus change,
   // this test will need to be changed to reflect that.
   //
   // If alternate_key_sequence is true, use "Alt" instead of "F10" to
@@ -99,6 +100,39 @@ TEST_F(KeyboardAccessTest, TestMenuKeyboardAccess) {
 
 TEST_F(KeyboardAccessTest, TestAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true);
+}
+
+TEST_F(KeyboardAccessTest, ReserveKeyboardAccelerators) {
+  const std::string kBadPage =
+      "<html><script>"
+      "document.onkeydown = function() {"
+      "  event.preventDefault();"
+      "  return false;"
+      "}"
+      "</script></html>";
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser);
+  browser->AppendTab(GURL("data:text/html," + kBadPage));
+  int tab_count = 0;
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(tab_count, 2);
+
+  int active_tab = 0;
+  ASSERT_TRUE(browser->GetActiveTabIndex(&active_tab));
+  ASSERT_EQ(active_tab, 1);
+
+  scoped_refptr<WindowProxy> window(browser->GetWindow());
+  ASSERT_TRUE(window);
+  ASSERT_TRUE(window->SimulateOSKeyPress(
+      base::VKEY_TAB, views::Event::EF_CONTROL_DOWN));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(0, action_max_timeout_ms()));
+
+#if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
+  ASSERT_TRUE(browser->ActivateTab(1));
+  ASSERT_TRUE(window->SimulateOSKeyPress(
+      base::VKEY_F4, views::Event::EF_CONTROL_DOWN));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
+#endif
 }
 
 }  // namespace
