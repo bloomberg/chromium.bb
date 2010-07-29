@@ -55,12 +55,17 @@ NaClProcessHost::~NaClProcessHost() {
   if (!reply_msg_)
     return;
 
+  // nacl::Close() is not available at link time if DISABLE_NACL is
+  // defined, but we still compile a bunch of other code from this
+  // file anyway.  TODO(mseaborn): Make this less messy.
+#ifndef DISABLE_NACL
   for (size_t i = 0; i < sockets_for_renderer_.size(); i++) {
     nacl::Close(sockets_for_renderer_[i]);
   }
   for (size_t i = 0; i < sockets_for_sel_ldr_.size(); i++) {
     nacl::Close(sockets_for_sel_ldr_[i]);
   }
+#endif
 
   // OnProcessLaunched didn't get called because the process couldn't launch.
   // Don't keep the renderer hanging.
