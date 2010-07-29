@@ -37,15 +37,16 @@
             pref="safebrowsing.enabled" type="checkbox"><span
             i18n-content="safeBrowsingEnableProtection"></span></label></td>
       </tr>
-      <if expr="pp_ifdef('_google_chrome')">
-        <tr id="metricsReportingCheckbox">
-          <td class="option-name"><label><input id="metricsReportingEnabled"
-              pref="user_experience_metrics.reporting_enabled" type="checkbox">
-              <span i18n-content="enableLogging"></span></label></td>
-        </tr>
-      </if>
+<if expr="pp_ifdef('_google_chrome')">
+      <tr id="metricsReportingCheckbox">
+        <td class="option-name"><label><input id="metricsReportingEnabled"
+            pref="user_experience_metrics.reporting_enabled" type="checkbox">
+            <span i18n-content="enableLogging"></span></label></td>
+      </tr>
+</if>
     </table>
   </section>
+<if expr="not pp_ifdef('chromeos')">
   <section>
     <h3 i18n-content="advancedSectionTitleNetwork"></h3>
     <table class="option-control-table">
@@ -59,6 +60,7 @@
       </td></tr>
     </table>
   </section>
+</if>
   <section>
     <h3 i18n-content="advancedSectionTitleTranslate"></h3>
     <table class="option-control-table">
@@ -96,19 +98,20 @@
   <section>
     <h3 i18n-content="advancedSectionTitleContent"></h3>
     <table class="option-control-table">
-      <if expr="os == 'darwin'">
-        <tr id="tabsToLinksCheckbox">
-          <td class="option-name"><label><input id="tabsToLinksPref"
-              pref="webkit.webprefs.tabs_to_links" type="checkbox"><span
-              i18n-content="tabsToLinksPref"></span></label></td>
-        </tr>
-      </if>
+<if expr="os == 'darwin'">
+      <tr id="tabsToLinksCheckbox">
+        <td class="option-name"><label><input id="tabsToLinksPref"
+            pref="webkit.webprefs.tabs_to_links" type="checkbox"><span
+            i18n-content="tabsToLinksPref"></span></label></td>
+      </tr>
+</if>
       <tr id="fontSettingsConfigureFontsOnlyButton"><td>
         <button id="fontSettingsConfigureFontsOnlyButton"
             i18n-content="fontSettingsConfigureFontsOnlyButton"></button>
       </td></tr>
     </table>
   </section>
+<if expr="not pp_ifdef('chromeos')">
   <section>
     <h3 i18n-content="advancedSectionTitleSecurity"></h3>
     <table class="option-control-table">
@@ -118,42 +121,45 @@
         <button id="certificatesManageButton"
             i18n-content="certificatesManageButton"></button>
       </td></tr>
-      <if expr="os == 'win32'">
-        <!-- Configure these options for manual handling on windows -->
-        <tr id="sslCheckRevocationCheckbox">
-          <td class="option-name"><label><input id="sslCheckRevocation"
-              type="checkbox"><span i18n-content="sslCheckRevocation"></span>
-              </label></td>
-        </tr>
-        <tr id="sslUseSSL2Checkbox">
-          <td class="option-name"><label><input id="sslUseSSL2"
-              type="checkbox"><span i18n-content="sslUseSSL2"></span>
-              </label></td>
-        </tr>
-      </if>
-      <if expr="os == 'linux2' or os.find('bsd') != -1">
-        <!-- Configure these options for Linux/BSD as preference keys -->
-        <tr id="sslCheckRevocationCheckbox">
-          <td class="option-name"><label><input id="sslCheckRevocation"
-              pref="ssl.rev_checking.enabled" type="checkbox"><span
-              i18n-content="sslCheckRevocation"></span></label></td>
-        </tr>
-        <tr id="sslUseSSL2Checkbox">
-          <td class="option-name"><label><input id="sslUseSSL2"
-              pref="ssl.ssl2.enabled" type="checkbox"><span
-              i18n-content="sslUseSSL2"></span></label></td>
-        </tr>
-        <tr id="sslUseSSL3Checkbox">
-          <td class="option-name"><label><input id="sslUseSSL3"
-              pref="ssl.ssl3.enabled" type="checkbox"><span
-              i18n-content="sslUseSSL3"></span></label></td>
-        </tr>
-        <tr id="sslUseTLS1Checkbox">
-          <td class="option-name"><label><input id="sslUseTLS1"
-              pref="ssl.tls1.enabled" type="checkbox"><span
-              i18n-content="sslUseTLS1"></span></label></td>
-        </tr>
-      </if>
+</if>
+<if expr="os == 'win32'">
+      <!-- Configure these options for manual handling on windows -->
+      <tr id="sslCheckRevocationCheckbox">
+        <td class="option-name"><label><input id="sslCheckRevocation"
+            type="checkbox"><span i18n-content="sslCheckRevocation"></span>
+            </label></td>
+      </tr>
+      <tr id="sslUseSSL2Checkbox">
+        <td class="option-name"><label><input id="sslUseSSL2"
+            type="checkbox"><span i18n-content="sslUseSSL2"></span>
+            </label></td>
+      </tr>
+</if>
+<if expr="not pp_ifdef('chromeos') and (os == 'linux2' or os.find('bsd') != -1)">
+      <!-- Configure these options for Linux/BSD as preference keys -->
+      <tr id="sslCheckRevocationCheckbox">
+        <td class="option-name"><label><input id="sslCheckRevocation"
+            pref="ssl.rev_checking.enabled" type="checkbox"><span
+            i18n-content="sslCheckRevocation"></span></label></td>
+      </tr>
+      <tr id="sslUseSSL2Checkbox">
+        <td class="option-name"><label><input id="sslUseSSL2"
+            pref="ssl.ssl2.enabled" type="checkbox"><spa
+            i18n-content="sslUseSSL2"></span></label></td>
+      </tr>
+      <tr id="sslUseSSL3Checkbox">
+        <td class="option-name"><label><input id="sslUseSSL3"
+            pref="ssl.ssl3.enabled" type="checkbox"><span
+            i18n-content="sslUseSSL3"></span></label></td>
+      </tr>
+      <tr id="sslUseTLS1Checkbox">
+        <td class="option-name"><label><input id="sslUseTLS1"
+            pref="ssl.tls1.enabled" type="checkbox"><span
+            i18n-content="sslUseTLS1"></span></label></td>
+      </tr>
+</if>
+<if expr="not pp_ifdef('chromeos')">
     </table>
   </section>
+</if>
 </div>
