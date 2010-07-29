@@ -24,6 +24,7 @@
 #include "chrome/browser/views/detachable_toolbar_view.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
+#include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_source.h"
@@ -44,47 +45,13 @@
 
 #include "grit/theme_resources.h"
 
-namespace {
+// Horizontal spacing between most items in the container, as well as after the
+// last item or chevron (if visible).
+static const int kItemSpacing = ToolbarView::kStandardSpacing;
+// Horizontal spacing before the chevron (if visible).
+static const int kChevronSpacing = kItemSpacing - 2;
 
-// The size (both dimensions) of the buttons for page actions.
-static const int kButtonSize = 29;
-
-// The padding between the browser actions and the OmniBox/page menu.
-static const int kHorizontalPadding = 4;
-static const int kHorizontalPaddingRtl = 8;
-
-// The padding between browser action buttons. Visually, the actual number of
-// empty (non-drawing) pixels is this value + 2 when adjacent browser icons
-// use their maximum allowed size.
-static const int kBrowserActionButtonPadding = 3;
-
-// This is the same value from toolbar.cc. We position the browser actions
-// container flush with the edges of the toolbar as a special case so that we
-// can draw the badge outside the visual bounds of the container.
-static const int kControlVertOffset = 6;
-
-// The margin between the divider and the chrome menu buttons.
-static const int kDividerHorizontalMargin = 2;
-
-// The padding above and below the divider.
-static const int kDividerVerticalPadding = 9;
-
-// The margin above the chevron.
-static const int kChevronTopMargin = 9;
-
-// The margin to the right of the chevron.
-static const int kChevronRightMargin = 4;
-
-// Width for the resize area.
-static const int kResizeAreaWidth = 4;
-
-// The x offset for the drop indicator (how much we shift it by).
-static const int kDropIndicatorOffsetLtr = 3;
-static const int kDropIndicatorOffsetRtl = 9;
-
-}  // namespace.
-
-// Static.
+// static
 bool BrowserActionsContainer::disable_animations_during_testing_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,6 +66,7 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       showing_context_menu_(false),
       panel_(panel) {
+  set_border(NULL);
   set_alignment(TextButton::ALIGN_CENTER);
 
   // No UpdateState() here because View hierarchy not setup yet. Our parent
@@ -154,11 +122,40 @@ void BrowserActionButton::UpdateState() {
   if (tab_id < 0)
     return;
 
-  SkBitmap image = browser_action()->GetIcon(tab_id);
-  if (!image.isNull())
-    SetIcon(image);
-  else if (!default_icon_.isNull())
-    SetIcon(default_icon_);
+  SkBitmap icon(browser_action()->GetIcon(tab_id));
+  if (icon.isNull())
+    icon = default_icon_;
+  if (!icon.isNull()) {
+    SkPaint paint;
+    paint.setXfermode(SkXfermode::Create(SkXfermode::kSrcOver_Mode));
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+    SkBitmap bg;
+    rb.GetBitmapNamed(IDR_BROWSER_ACTION)->copyTo(&bg,
+        SkBitmap::kARGB_8888_Config);
+    SkCanvas bg_canvas(bg);
+    bg_canvas.drawBitmap(icon, SkIntToScalar((bg.width() - icon.width()) / 2),
+        SkIntToScalar((bg.height() - icon.height()) / 2), &paint);
+    SetIcon(bg);
+
+    SkBitmap bg_h;
+    rb.GetBitmapNamed(IDR_BROWSER_ACTION_H)->copyTo(&bg_h,
+        SkBitmap::kARGB_8888_Config);
+    SkCanvas bg_h_canvas(bg_h);
+    bg_h_canvas.drawBitmap(icon,
+        SkIntToScalar((bg_h.width() - icon.width()) / 2),
+        SkIntToScalar((bg_h.height() - icon.height()) / 2), &paint);
+    SetHoverIcon(bg_h);
+
+    SkBitmap bg_p;
+    rb.GetBitmapNamed(IDR_BROWSER_ACTION_P)->copyTo(&bg_p,
+        SkBitmap::kARGB_8888_Config);
+    SkCanvas bg_p_canvas(bg_p);
+    bg_p_canvas.drawBitmap(icon,
+        SkIntToScalar((bg_p.width() - icon.width()) / 2),
+        SkIntToScalar((bg_p.height() - icon.height()) / 2), &paint);
+    SetPushedIcon(bg_p);
+  }
 
   // If the browser action name is empty, show the extension name instead.
   std::wstring name = UTF8ToWide(browser_action()->GetTitle(tab_id));
@@ -195,7 +192,7 @@ bool BrowserActionButton::Activate() {
   if (!IsPopup())
     return true;
 
-  panel_->OnBrowserActionExecuted(this, false);  // |inspect_with_devtools|.
+  panel_->OnBrowserActionExecuted(this, false);
 
   // TODO(erikkay): Run a nested modal loop while the mouse is down to
   // enable menu-like drag-select behavior.
@@ -306,7 +303,7 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   canvas->DrawBitmapInt(icon, 0, 0);
 
   if (tab_id >= 0) {
-    gfx::Rect bounds(icon.width(), icon.height() + kControlVertOffset);
+    gfx::Rect bounds(icon.width(), icon.height() + ToolbarView::kVertSpacing);
     button_->extension()->browser_action()->PaintBadge(canvas, bounds, tab_id);
   }
 
@@ -320,7 +317,15 @@ bool BrowserActionView::GetAccessibleRole(AccessibilityTypes::Role* role) {
 }
 
 void BrowserActionView::Layout() {
-  button_->SetBounds(0, kControlVertOffset, width(), kButtonSize);
+  // We can't rely on button_->GetPreferredSize() here because that's not set
+  // correctly until the first call to
+  // BrowserActionsContainer::RefreshBrowserActionViews(), whereas this can be
+  // called before that when the initial bounds are set (and then not after,
+  // since the bounds don't change).  So instead of setting the height from the
+  // button's preferred size, we use IconHeight(), since that's how big the
+  // button should be regardless of what it's displaying.
+  button_->SetBounds(0, ToolbarView::kVertSpacing, width(),
+                     BrowserActionsContainer::IconHeight());
 }
 
 void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
@@ -342,6 +347,7 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       popup_(NULL),
       popup_button_(NULL),
       model_(NULL),
+      container_width_(0),
       chevron_(NULL),
       overflow_menu_(NULL),
       suppress_chevron_(false),
@@ -362,31 +368,13 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
   resize_area_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_SEPARATOR));
   AddChildView(resize_area_);
 
-  // TODO(glen): Come up with a new bitmap for the chevron.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* chevron_image = rb.GetBitmapNamed(IDR_BOOKMARK_BAR_CHEVRONS);
   chevron_ = new views::MenuButton(NULL, std::wstring(), this, false);
-  chevron_->SetVisible(false);
-  chevron_->SetIcon(*chevron_image);
+  chevron_->set_border(NULL);
+  chevron_->EnableCanvasFlippingForRTLUI(true);
   chevron_->SetAccessibleName(
       l10n_util::GetString(IDS_ACCNAME_EXTENSIONS_CHEVRON));
-  // Chevron contains >> that should point left in LTR locales.
-  chevron_->EnableCanvasFlippingForRTLUI(true);
+  chevron_->SetVisible(false);
   AddChildView(chevron_);
-
-  if (model_ &&
-      !profile_->GetPrefs()->HasPrefPath(prefs::kExtensionToolbarSize)) {
-    // Migration code to the new VisibleIconCount pref.
-    // TODO(mpcomplete): remove this after users are upgraded to 5.0.
-    int predefined_width =
-        profile_->GetPrefs()->GetInteger(prefs::kBrowserActionContainerWidth);
-    if (predefined_width != 0) {
-      model_->SetVisibleIconCount((predefined_width - WidthOfNonIconArea()) /
-          (kButtonSize + kBrowserActionButtonPadding));
-    }
-  }
-  if (model_ && model_->extensions_initialized())
-    SetContainerWidth();
 
   SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
 }
@@ -402,6 +390,24 @@ BrowserActionsContainer::~BrowserActionsContainer() {
 // Static.
 void BrowserActionsContainer::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kBrowserActionContainerWidth, 0);
+}
+
+void BrowserActionsContainer::Init() {
+  LoadImages();
+
+  // We wait to set the container width until now so that the chevron images
+  // will be loaded.  The width calculation needs to know the chevron size.
+  if (model_ &&
+      !profile_->GetPrefs()->HasPrefPath(prefs::kExtensionToolbarSize)) {
+    // Migration code to the new VisibleIconCount pref.
+    // TODO(mpcomplete): remove this after users are upgraded to 5.0.
+    int predefined_width =
+        profile_->GetPrefs()->GetInteger(prefs::kBrowserActionContainerWidth);
+    if (predefined_width != 0)
+      model_->SetVisibleIconCount(WidthToIconCount(predefined_width));
+  }
+  if (model_ && model_->extensions_initialized())
+    SetContainerWidth();
 }
 
 int BrowserActionsContainer::GetCurrentTabId() const {
@@ -510,7 +516,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() {
   if (browser_action_views_.empty())
-    return gfx::Size(0, 0);
+    return gfx::Size(ToolbarView::kStandardSpacing, 0);
 
   // We calculate the size of the view by taking the current width and
   // subtracting resize_amount_ (the latter represents how far the user is
@@ -520,58 +526,42 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
   // other words: ContainerMinSize() < width() - resize < ClampTo(MAX).
   int clamped_width = std::min(
       std::max(ContainerMinSize(), container_width_ - resize_amount_),
-      ClampToNearestIconCount(-1, false));
-  return gfx::Size(clamped_width, kButtonSize);
+      IconCountToWidth(-1, false));
+  return gfx::Size(clamped_width, 0);
 }
 
 void BrowserActionsContainer::Layout() {
   if (browser_action_views_.empty()) {
     SetVisible(false);
-    chevron_->SetVisible(false);
     return;
   }
 
   SetVisible(true);
+  resize_area_->SetBounds(0, ToolbarView::kVertSpacing, kItemSpacing,
+                          IconHeight());
 
-  resize_area_->SetBounds(0, 0, kResizeAreaWidth, height());
-  int x = kResizeAreaWidth;
-
-  x += base::i18n::IsRTL() ? kHorizontalPaddingRtl : kHorizontalPadding;
-
-  // Calculate if all icons fit without showing the chevron. We need to know
-  // this beforehand, because showing the chevron will decrease the space that
-  // we have to draw the visible ones (ie. if one icon is visible and another
-  // doesn't have enough room).
-  int last_x_of_icons = x +
-      (browser_action_views_.size() * kButtonSize) +
-      ((browser_action_views_.size() - 1) *
-          kBrowserActionButtonPadding);
-
-  gfx::Size sz = GetPreferredSize();
-  int max_x = sz.width() - kDividerHorizontalMargin - kChevronRightMargin;
-
-  // If they don't all fit, show the chevron (unless suppressed).
-  if (last_x_of_icons >= max_x && !suppress_chevron_) {
+  // If the icons don't all fit, show the chevron (unless suppressed).
+  int max_x = GetPreferredSize().width();
+  if ((IconCountToWidth(-1, false) > max_x) && !suppress_chevron_) {
     chevron_->SetVisible(true);
     gfx::Size chevron_size(chevron_->GetPreferredSize());
-    max_x -= chevron_size.width();
-    chevron_->SetBounds(width() - chevron_size.width() - kChevronRightMargin,
-                        kChevronTopMargin,
-                        chevron_size.width(), chevron_size.height());
+    max_x -=
+        ToolbarView::kStandardSpacing + chevron_size.width() + kChevronSpacing;
+    chevron_->SetBounds(
+        width() - ToolbarView::kStandardSpacing - chevron_size.width(),
+        ToolbarView::kVertSpacing, chevron_size.width(), chevron_size.height());
   } else {
     chevron_->SetVisible(false);
   }
 
   // Now draw the icons for the browser actions in the available space.
+  int icon_width = IconWidth(false);
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
     BrowserActionView* view = browser_action_views_[i];
-    // Add padding between buttons if multiple buttons.
-    int padding = (i > 0) ? kBrowserActionButtonPadding : 0;
-    if (x + kButtonSize + padding < max_x) {
-      x += padding;
-      view->SetBounds(x, 0, kButtonSize, height());
+    int x = ToolbarView::kStandardSpacing + (i * IconWidth(true));
+    if (x + icon_width <= max_x) {
+      view->SetBounds(x, 0, icon_width, height());
       view->SetVisible(true);
-      x += kButtonSize;
     } else {
       view->SetVisible(false);
     }
@@ -579,15 +569,6 @@ void BrowserActionsContainer::Layout() {
 }
 
 void BrowserActionsContainer::Paint(gfx::Canvas* canvas) {
-  // The one-pixel themed vertical divider to the right of the browser actions.
-  int x = base::i18n::IsRTL() ?
-      kDividerHorizontalMargin : (width() - kDividerHorizontalMargin);
-  DetachableToolbarView::PaintVerticalDivider(
-      canvas, x, height(), kDividerVerticalPadding,
-      DetachableToolbarView::kEdgeDividerColor,
-      DetachableToolbarView::kMiddleDividerColor,
-      GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
-
   // TODO(sky/glen): Instead of using a drop indicator, animate the icons while
   // dragging (like we do for tab dragging).
   if (drop_indicator_position_ > -1) {
@@ -595,8 +576,7 @@ void BrowserActionsContainer::Paint(gfx::Canvas* canvas) {
     static const int kDropIndicatorWidth = 2;
     gfx::Rect indicator_bounds(
         drop_indicator_position_ - (kDropIndicatorWidth / 2),
-        kDividerVerticalPadding, kDropIndicatorWidth,
-        height() - (2 * kDividerVerticalPadding));
+        ToolbarView::kVertSpacing, kDropIndicatorWidth, IconHeight());
 
     // Color of the drop indicator.
     static const SkColor kDropIndicatorColor = SK_ColorBLACK;
@@ -653,30 +633,52 @@ int BrowserActionsContainer::OnDragUpdated(
   }
   StopShowFolderDropMenuTimer();
 
-  // Modifying the x value before clamping affects how far you have to drag to
-  // get the drop indicator to shift to another position. Modifying after
-  // clamping affects where the drop indicator is drawn.
+  // Figure out where to display the indicator.  This is a complex calculation:
 
-  // We add half a button size so that when you drag a button to the right and
-  // you are half-way dragging across a button the drop indicator moves from the
-  // left of that button to the right of that button.
-  int x = event.x() + (kButtonSize / 2) + (2 * kBrowserActionButtonPadding);
-  if (chevron_->IsVisible())
-    x += chevron_->bounds().width();
-  x = ClampToNearestIconCount(x, false);
+  // First, we figure out how much space is to the left of the icon area, so we
+  // can calculate the true offset into the icon area.
+  int width_before_icons = ToolbarView::kStandardSpacing +
+      (base::i18n::IsRTL() ?
+          (chevron_->GetPreferredSize().width() + kChevronSpacing) : 0);
+  int offset_into_icon_area = event.x() - width_before_icons;
 
-  if (!base::i18n::IsRTL() && chevron_->IsVisible()) {
-    // The clamping function includes the chevron width. In LTR locales, the
-    // chevron is on the right and we never want to account for its width. In
-    // RTL it is on the left and we always want to count the width.
-    x -= chevron_->width();
-  }
+  // Next, we determine which icon to place the indicator in front of.  We want
+  // to place the indicator in front of icon n when the cursor is between the
+  // midpoints of icons (n - 1) and n.  To do this we take the offset into the
+  // icon area and transform it as follows:
+  //
+  // Real icon area:
+  //   0   a     *  b        c
+  //   |   |        |        |
+  //   |[IC|ON]  [IC|ON]  [IC|ON]
+  // We want to be before icon 0 for 0 < x <= a, icon 1 for a < x <= b, etc.
+  // Here the "*" represents the offset into the icon area, and since it's
+  // between a and b, we want to return "1".
+  //
+  // Transformed "icon area":
+  //   0        a     *  b        c
+  //   |        |        |        |
+  //   |[ICON]  |[ICON]  |[ICON]  |
+  // If we shift both our offset and our divider points later by half an icon
+  // plus one spacing unit, then it becomes very easy to calculate how many
+  // divider points we've passed, because they're the multiples of "one icon
+  // plus padding".
+  int before_icon_unclamped = (offset_into_icon_area + (IconWidth(false) / 2) +
+      kItemSpacing) / IconWidth(true);
 
-  // Clamping gives us a value where the next button will be drawn, but we want
-  // to subtract the padding (and then some) to make it appear in-between the
-  // buttons.
-  SetDropIndicator(x - kBrowserActionButtonPadding - (base::i18n::IsRTL() ?
-      kDropIndicatorOffsetRtl : kDropIndicatorOffsetLtr));
+  // Because the user can drag outside the container bounds, we need to clamp to
+  // the valid range.  Note that the maximum allowable value is (num icons), not
+  // (num icons - 1), because we represent the indicator being past the last
+  // icon as being "before the (last + 1) icon".
+  int before_icon = std::min(std::max(before_icon_unclamped, 0),
+                             static_cast<int>(VisibleBrowserActions()));
+
+  // Now we convert back to a pixel offset into the container.  We want to place
+  // the center of the drop indicator at the midpoint of the space before our
+  // chosen icon.
+  SetDropIndicator(width_before_icons + (before_icon * IconWidth(true)) -
+      (kItemSpacing / 2));
+
   return DragDropTypes::DRAG_MOVE;
 }
 
@@ -726,6 +728,10 @@ int BrowserActionsContainer::OnPerformDrop(
 
   OnDragExited();  // Perform clean up after dragging.
   return DragDropTypes::DRAG_MOVE;
+}
+
+void BrowserActionsContainer::OnThemeChanged() {
+  LoadImages();
 }
 
 bool BrowserActionsContainer::GetAccessibleRole(
@@ -779,28 +785,25 @@ bool BrowserActionsContainer::CanStartDrag(View* sender,
 }
 
 void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
-  if (!done_resizing) {
-    resize_amount_ = resize_amount;
-    OnBrowserActionVisibilityChanged();
-  } else {
-    // For details on why we do the following see the class comments in the
-    // header.
-
-    // Clamp lower limit to 0 and upper limit to the amount that allows enough
-    // room for all icons to show.
-    int new_width = std::max(0, container_width_ - resize_amount);
-    int max_width = ClampToNearestIconCount(-1, false);
-    new_width = std::min(new_width, max_width);
-
+  if (done_resizing) {
     // Up until now we've only been modifying the resize_amount, but now it is
-    // time to set the container size to the size we have resized to, but then
-    // animate to the nearest icon count size (or down to min size if no icon).
-    container_width_ = new_width;
-    animation_target_size_ = ClampToNearestIconCount(new_width, true);
-    resize_animation_->Reset();
-    resize_animation_->SetTweenType(Tween::EASE_OUT);
-    resize_animation_->Show();
+    // time to set the container size to the size we have resized to, and then
+    // animate to the nearest icon count size if necessary (which may be 0).
+    int max_width = IconCountToWidth(-1, false);
+    container_width_ =
+        std::min(std::max(0, container_width_ - resize_amount), max_width);
+    if (container_width_ < max_width) {
+      animation_target_size_ =
+          IconCountToWidth(WidthToIconCount(container_width_), true);
+      resize_animation_->Reset();
+      resize_animation_->SetTweenType(Tween::EASE_OUT);
+      resize_animation_->Show();
+      return;
+    }
+  } else {
+    resize_amount_ = resize_amount;
   }
+  OnBrowserActionVisibilityChanged();
 }
 
 void BrowserActionsContainer::AnimationProgressed(const Animation* animation) {
@@ -859,14 +862,39 @@ void BrowserActionsContainer::HidePopup() {
 
 void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
   BrowserActionButton* button = browser_action_views_[index]->button();
-  OnBrowserActionExecuted(button, false);  // |inspect_with_devtools|.
+  OnBrowserActionExecuted(button, false);
 }
 
 void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
+  model_->SetVisibleIconCount(icons);
   chevron_->SetVisible(icons < browser_action_views_.size());
-  container_width_ = IconCountToWidth(icons);
+  container_width_ = IconCountToWidth(icons, chevron_->IsVisible());
   Layout();
   SchedulePaint();
+}
+
+// static
+int BrowserActionsContainer::IconWidth(bool include_padding) {
+  static bool initialized = false;
+  static int icon_width = 0;
+  if (!initialized) {
+    initialized = true;
+    icon_width = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_BROWSER_ACTION)->width();
+  }
+  return icon_width + (include_padding ? kItemSpacing : 0);
+}
+
+// static
+int BrowserActionsContainer::IconHeight() {
+  static bool initialized = false;
+  static int icon_height = 0;
+  if (!initialized) {
+    initialized = true;
+    icon_height = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_BROWSER_ACTION)->height();
+  }
+  return icon_height;
 }
 
 void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
@@ -888,7 +916,6 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
   // Add the new browser action to the vector and the view hierarchy.
   if (profile_->IsOffTheRecord())
     index = model_->OriginalIndexToIncognito(index);
-
   BrowserActionView* view = new BrowserActionView(extension, this);
   browser_action_views_.insert(browser_action_views_.begin() + index, view);
   AddChildView(index, view);
@@ -897,23 +924,15 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
   if (!model_->extensions_initialized())
     return;
 
-  // For details on why we do the following see the class comments in the
-  // header.
-
-  // Determine if we need to increase (we only do that if the container was
-  // showing all icons before the addition of this icon).
-  if (model_->GetVisibleIconCount() >= 0 || extension->being_upgraded()) {
-    // Some icons were hidden, don't increase the size of the container.
-    OnBrowserActionVisibilityChanged();
-  } else {
-    // Container was at max, increase the size of it by one icon.
-    int target_size = IconCountToWidth(visible_actions + 1);
-
-    // We don't want the chevron to appear while we animate. See documentation
-    // in the header for why we do this.
-    suppress_chevron_ = !chevron_->IsVisible();
-
+  // Enlarge the container if it was already at maximum size and we're not in
+  // the middle of upgrading.
+  if ((model_->GetVisibleIconCount() < 0) && !extension->being_upgraded()) {
+    int target_size = IconCountToWidth(visible_actions + 1, false);
+    suppress_chevron_ = true;
     Animate(Tween::LINEAR, target_size);
+  } else {
+    // Just redraw the (possibly modified) visible icon set.
+    OnBrowserActionVisibilityChanged();
   }
 }
 
@@ -936,18 +955,18 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
       if (extension->being_upgraded())
         return;
 
-      // For details on why we do the following see the class comments in the
-      // header.
-
-      // Calculate the target size we'll animate to (end state). This might be
-      // the same size (if the icon we are removing is in the overflow bucket
-      // and there are other icons there). We don't decrement visible_actions
-      // because we want the container to stay the same size (clamping will take
-      // care of shrinking the container if there aren't enough icons to show).
-      int target_size =
-          ClampToNearestIconCount(IconCountToWidth(visible_actions), true);
-
-      Animate(Tween::EASE_OUT, target_size);
+      if (browser_action_views_.size() > visible_actions) {
+        // If we have more icons than we can show, then we must not be changing
+        // the container size (since we either removed an icon from the main
+        // area and one from the overflow list will have shifted in, or we
+        // removed an entry directly from the overflow list).
+        OnBrowserActionVisibilityChanged();
+      } else {
+        // Either we went from overflow to no-overflow, or we shrunk the no-
+        // overflow container by 1.  Either way the size changed, so animate.
+        chevron_->SetVisible(false);
+        Animate(Tween::EASE_OUT, IconCountToWidth(-1, false));
+      }
       return;
     }
   }
@@ -973,12 +992,19 @@ void BrowserActionsContainer::ModelLoaded() {
   SetContainerWidth();
 }
 
+void BrowserActionsContainer::LoadImages() {
+  ThemeProvider* tp = GetThemeProvider();
+  chevron_->SetIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
+  chevron_->SetHoverIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW_H));
+  chevron_->SetPushedIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW_P));
+}
+
 void BrowserActionsContainer::SetContainerWidth() {
   int visible_actions = model_->GetVisibleIconCount();
   if (visible_actions < 0)  // All icons should be visible.
     visible_actions = model_->size();
   chevron_->SetVisible(static_cast<size_t>(visible_actions) < model_->size());
-  container_width_ = IconCountToWidth(visible_actions);
+  container_width_ = IconCountToWidth(visible_actions, chevron_->IsVisible());
 }
 
 void BrowserActionsContainer::CloseOverflowMenu() {
@@ -1014,65 +1040,34 @@ void BrowserActionsContainer::SetDropIndicator(int x_pos) {
   }
 }
 
-int BrowserActionsContainer::ClampToNearestIconCount(
-    int pixelWidth,
-    bool allow_shrink_to_minimum) const {
-  // Calculate the width of one icon.
-  int icon_width = (kButtonSize + kBrowserActionButtonPadding);
-
-  // Calculate pixel count for the area not used by the icons.
-  int extras = WidthOfNonIconArea();
-
-  size_t icon_count = 0u;
-  if (pixelWidth >= 0) {
-    // Caller wants to know how many icons fit within a given space so we start
-    // by subtracting the padding, resize area and dividers.
-    int icon_area = pixelWidth - extras;
-    icon_area = std::max(0, icon_area);
-
-    // Make sure we never throw an icon into the chevron menu just because
-    // there isn't enough enough space for the invisible padding around buttons.
-    icon_area += kBrowserActionButtonPadding - 1;
-
-    // Count the number of icons that fit within that area.
-    icon_count = icon_area / icon_width;
-
-    if (icon_count == 0 && allow_shrink_to_minimum) {
-      extras = ContainerMinSize();  // Allow very narrow width if no icons.
-    } else if (icon_count > browser_action_views_.size()) {
-      // No use allowing more than what we have.
-      icon_count = browser_action_views_.size();
-    }
-  } else {
-    // A negative |pixels| count indicates caller wants to know the max width
-    // that fits all icons;
-    icon_count = browser_action_views_.size();
-  }
-
-  return extras + (icon_count * icon_width);
+int BrowserActionsContainer::IconCountToWidth(int icons,
+                                              bool display_chevron) const {
+  if (icons < 0)
+    icons = browser_action_views_.size();
+  if ((icons == 0) && !display_chevron)
+    return ToolbarView::kStandardSpacing;
+  int icons_size =
+      (icons == 0) ? 0 : ((icons * IconWidth(true)) - kItemSpacing);
+  int chevron_size = display_chevron ?
+      (kChevronSpacing + chevron_->GetPreferredSize().width()) : 0;
+  return ToolbarView::kStandardSpacing + icons_size + chevron_size +
+      ToolbarView::kStandardSpacing;
 }
 
-int BrowserActionsContainer::WidthOfNonIconArea() const {
-  int chevron_size = (chevron_->IsVisible()) ?
-                     chevron_->GetPreferredSize().width() : 0;
-  int padding = base::i18n::IsRTL() ?
-      kHorizontalPaddingRtl : kHorizontalPadding;
-  return kResizeAreaWidth + padding + chevron_size + kChevronRightMargin +
-      kDividerHorizontalMargin;
-}
-
-int BrowserActionsContainer::IconCountToWidth(int icons) const {
-  DCHECK_GE(icons, 0);
-  if (icons == 0)
-    return ContainerMinSize();
-
-  int icon_width = kButtonSize + kBrowserActionButtonPadding;
-
-  return WidthOfNonIconArea() + (icons * icon_width);
+int BrowserActionsContainer::WidthToIconCount(int pixels) const {
+  // We need to reserve space for the resize area, chevron, and the spacing on
+  // either side of the chevron.
+  int available_space = pixels - ToolbarView::kStandardSpacing -
+      chevron_->GetPreferredSize().width() - kChevronSpacing -
+      ToolbarView::kStandardSpacing;
+  // Now we add an extra between-item padding value so the space can be divided
+  // evenly by (size of icon with padding).
+  return std::max(0, available_space + kItemSpacing) / IconWidth(true);
 }
 
 int BrowserActionsContainer::ContainerMinSize() const {
-  return kResizeAreaWidth + chevron_->width() + kChevronRightMargin;
+  return ToolbarView::kStandardSpacing + kChevronSpacing +
+      chevron_->GetPreferredSize().width() + ToolbarView::kStandardSpacing;
 }
 
 void BrowserActionsContainer::Animate(Tween::Type tween_type, int target_size) {

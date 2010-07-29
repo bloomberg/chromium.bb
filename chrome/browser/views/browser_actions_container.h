@@ -176,24 +176,24 @@ class BrowserActionView : public views::View {
 // The BrowserActionsContainer is a container view, responsible for drawing the
 // browser action icons (extensions that add icons to the toolbar).
 //
-// The BrowserActionsContainer (when it contains one or more icons) consists of
-// the following elements, numbered as seen below the line:
-//
-//    r _ Icon _ Icon _ Icon _ [chevron] _ | _
-//    -----------------------------------------
-//    1 2   3  4                   5     6 7 8
-//
-// 1) An invisible resize area.
-// 2) Padding  (kHorizontalPadding).
-// 3) The browser action icon button (BrowserActionView).
-// 4) Padding to visually separate icons from one another
-//    (kBrowserActionButtonPadding). Not included if only one icon visible.
-// 5) The chevron menu (MenuButton), shown when there is not enough room to show
-//    all the icons.
-// 6) Padding  (kDividerHorizontalMargin).
-// 7) A thin vertical divider drawn during Paint to create visual separation for
-//    the container from the Page and Wrench menus.
-// 8) Padding  (kChevronRightMargin).
+// The container is placed flush against the omnibox and wrench menu, and its
+// layout looks like:
+//   rI_I_IcCs
+// Where the letters are as follows:
+//   r: An invisible resize area.  This is ToolbarView::kStandardSpacing pixels
+//      wide and directly adjacent to the omnibox.
+//   I: An icon.  This is as wide as the IDR_BROWSER_ACTION image.
+//   _: kItemSpacing pixels of empty space.
+//   c: kChevronSpacing pixels of empty space.  Only present if C is present.
+//   C: An optional chevron, visible for overflow.  As wide as the
+//      IDR_BROWSER_ACTIONS_OVERFLOW image.
+//   s: ToolbarView::kStandardSpacing pixels of empty space (before the wrench
+//      menu).
+// The reason the container contains the trailing space "s", rather than having
+// it be handled by the parent view, is so that when the chevron is invisible
+// and the user starts dragging an icon around, we have the space to draw the
+// ultimate drop indicator.  (Otherwise, we'd be trying to draw it into the
+// padding beyond our right edge, and it wouldn't appear.)
 //
 // The BrowserActionsContainer follows a few rules, in terms of user experience:
 //
@@ -259,6 +259,8 @@ class BrowserActionsContainer
 
   static void RegisterUserPrefs(PrefService* prefs);
 
+  void Init();
+
   // Get the number of browser actions being displayed.
   int num_browser_actions() const { return browser_action_views_.size(); }
 
@@ -319,6 +321,7 @@ class BrowserActionsContainer
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
+  virtual void OnThemeChanged();
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
 
   // Overridden from views::ViewMenuDelegate:
@@ -373,15 +376,24 @@ class BrowserActionsContainer
   static bool disable_animations_during_testing_;
 
  private:
+  friend class BrowserActionView;  // So it can access IconHeight().
   friend class ShowFolderMenuTask;
 
   typedef std::vector<BrowserActionView*> BrowserActionViews;
+
+  // Returns the width of an icon, optionally with its padding.
+  static int IconWidth(bool include_padding);
+
+  // Returns the height of an icon.
+  static int IconHeight();
 
   // ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);
   virtual void BrowserActionMoved(Extension* extension, int index);
   virtual void ModelLoaded();
+
+  void LoadImages();
 
   // Sets the initial container width.
   void SetContainerWidth();
@@ -402,26 +414,19 @@ class BrowserActionsContainer
   // changed).
   void SetDropIndicator(int x_pos);
 
-  // Takes a width in pixels, calculates how many icons fit within that space
-  // (up to the maximum number of icons in our vector) and shaves off the
-  // excess pixels. |allow_shrink_to_minimum| specifies whether this function
-  // clamps the size down further (down to ContainerMinSize()) if there is not
-  // room for even one icon. When determining how large the container should be
-  // this should be |true|. When determining where to place items, such as the
-  // drop indicator, this should be |false|.
-  int ClampToNearestIconCount(int pixels, bool allow_shrink_to_minimum) const;
+  // Given a number of |icons| and whether to |display_chevron|, returns the
+  // amount of pixels needed to draw the entire container.  For convenience,
+  // callers can set |icons| to -1 to mean "all icons".
+  int IconCountToWidth(int icons, bool display_chevron) const;
 
-  // Calculates the width of the container area NOT used to show the icons (the
-  // controls to the left and to the right of the icons).
-  int WidthOfNonIconArea() const;
-
-  // Given a number of |icons| return the amount of pixels needed to draw it,
-  // including the controls (chevron if visible and resize area).
-  int IconCountToWidth(int icons) const;
+  // Given a pixel width, returns the number of icons that fit, assuming we need
+  // to show a chevron.
+  int WidthToIconCount(int pixels) const;
 
   // Returns the absolute minimum size you can shrink the container down to and
-  // still show it. We account for the chevron and the resize gripper, but not
-  // all the padding that we normally show if there are icons.
+  // still show it.  This assumes a visible chevron because the only way we
+  // would not have a chevron when shrinking down this far is if there were no
+  // icons, in which case the container wouldn't be shown at all.
   int ContainerMinSize() const;
 
   // Animate to the target value (unless testing, in which case we go straight
