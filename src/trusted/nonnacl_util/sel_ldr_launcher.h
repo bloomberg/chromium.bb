@@ -74,11 +74,6 @@ struct SelLdrLauncher {
   Handle ExportImcFD(int dest_fd);
 
   // TODO(robertm): shouldn't some of these args go in the constructor
-  // application_argv can take a "$CHAN" as an argument which will be replaced
-  // with `imc_fd` number if the target application is a NaCl module
-  // and with `channel_` number if the target application is a native OS
-  // binary.
-
   void Init(const nacl::string& application_name,
             int imc_fd,
             const std::vector<nacl::string>& sel_ldr_argv,
@@ -86,7 +81,7 @@ struct SelLdrLauncher {
 
   // If subprocess creation fails, both child_ and channel_ are set to
   // kInvalidHandle. We have different implementations for unix and win.
-  // NOTE: you must call Init() and InitChannelBuf() before Launch()
+  // NOTE: you must call Init() before Launch()
   bool Launch();
 
   bool Start(const nacl::string& application_name,
@@ -140,25 +135,19 @@ struct SelLdrLauncher {
 
   nacl::string GetSelLdrPathName();
 
-  nacl::string ExpandVar(nacl::string arg);
-
   void BuildArgv(std::vector<nacl::string>* argv);
-
-  void InitChannelBuf(Handle handle);
 
   void CloseHandlesAfterLaunch();
 
   Handle child_;
   Handle channel_;
+  int channel_number_;
   // The following strings and vectors are used by BuildArgv to
   // create a command line, they are initialized by InitBasic().
-  nacl::string channel_number_;
   nacl::string sel_ldr_;
   nacl::string application_name_;
   std::vector<nacl::string> sel_ldr_argv_;
   std::vector<nacl::string> application_argv_;
-  // unlike the others above this is set from within Launch();
-  nacl::string channel_buf_;
   std::vector<Handle> close_after_launch_;
 
   // The socket address returned from sel_ldr for connects.

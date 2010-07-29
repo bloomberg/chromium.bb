@@ -151,42 +151,16 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
 }
 
 
-nacl::string SelLdrLauncher::ExpandVar(nacl::string arg) {
-  if (arg[0] != '$') return arg;
-
-  if (arg == "$SEL_LDR_EXE") {
-    return sel_ldr_;
-  } else if (arg == "$APP_EXE") {
-    return application_name_;
-  } else if (arg == "$CHAN_BUF") {
-    return channel_buf_;
-  } else if (arg == "$CHAN") {
-    return channel_number_;
-  } else {
-    // TODO(robertm): add error message
-    return "BAD_BAD_BAD";
-  }
-}
-
-
 void SelLdrLauncher::BuildArgv(vector<nacl::string>* command) {
-  // assert that both Init() and SetChannelBuf() were called
-  assert(channel_buf_ != "");
+  // assert that Init() was called
   assert(sel_ldr_ != "");
-  // NOTE: this is followed by sel_ldr_argv, "--", application_argv
-  static const char* kCommandLineTemplate[] = {
-    "$SEL_LDR_EXE",        // something like sel_ldr
-    "-f", "$APP_EXE",      // something like app_name.nexe
-    "-i", "$CHAN_BUF",     // something like <NaCl fd>:<imcchannel#>
-    0,
-  };
 
-  for (size_t i = 0; kCommandLineTemplate[i]; ++i) {
-    command->push_back(ExpandVar(kCommandLineTemplate[i]));
-  }
+  command->push_back(sel_ldr_);
+  command->push_back("-f");
+  command->push_back(application_name_);
 
   for (size_t i = 0; i < sel_ldr_argv_.size(); ++i) {
-    command->push_back(ExpandVar(sel_ldr_argv_[i]));
+    command->push_back(sel_ldr_argv_[i]);
   }
 
   if (application_argv_.size() > 0) {
@@ -194,7 +168,7 @@ void SelLdrLauncher::BuildArgv(vector<nacl::string>* command) {
     command->push_back("--");
 
     for (size_t i = 0; i < application_argv_.size(); ++i) {
-      command->push_back(ExpandVar(application_argv_[i]));
+      command->push_back(application_argv_[i]);
     }
   }
 }
@@ -215,19 +189,7 @@ void SelLdrLauncher::Init(const nacl::string& application_name,
   application_name_ = application_name;
   copy(sel_ldr_argv.begin(), sel_ldr_argv.end(), back_inserter(sel_ldr_argv_));
   copy(app_argv.begin(), app_argv.end(), back_inserter(application_argv_));
-  channel_number_ = ToString(imc_fd);
-}
-
-//
-void SelLdrLauncher::InitChannelBuf(Handle imc_channel_handle) {
-  channel_buf_ = channel_number_ + ":" +
-                 // TODO(robertm): eliminate #ifdef
-                 // NOTE: before we used printf("%d:%u", ...)
-#if NACL_WINDOWS
-                 ToString(reinterpret_cast<uintptr_t>(imc_channel_handle));
-#else
-                 ToString(imc_channel_handle);
-#endif
+  channel_number_ = imc_fd;
 }
 
 void SelLdrLauncher::CloseHandlesAfterLaunch() {

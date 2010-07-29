@@ -97,26 +97,13 @@ Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
 }
 
 bool SelLdrLauncher::Launch() {
-  Handle pair[2];
   STARTUPINFOA startup_info;
   PROCESS_INFORMATION process_infomation;
 
-  if (SocketPair(pair) == -1) {
-    return false;
+  if (channel_number_ != -1) {
+    channel_ = ExportImcFD(channel_number_);
   }
 
-  // Transfer pair[1] to child_ by an inheritance.
-  // TODO(mseaborn): This could use ExportImcFD().
-  Handle channel;
-  if (!DuplicateHandle(GetCurrentProcess(), pair[1],
-                       GetCurrentProcess(), &channel,
-                       0, TRUE, DUPLICATE_SAME_ACCESS)) {
-    Close(pair[0]);
-    Close(pair[1]);
-    return false;
-  }
-
-  InitChannelBuf(channel);
   vector<nacl::string> command;
   BuildArgv(&command);
 
@@ -138,18 +125,12 @@ bool SelLdrLauncher::Launch() {
                       NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL,
                       &startup_info,
                       &process_infomation)) {
-    Close(pair[0]);
-    Close(pair[1]);
-    Close(channel);
     return false;
   }
 
   CloseHandlesAfterLaunch();
-  Close(pair[1]);
-  Close(channel);
   CloseHandle(process_infomation.hThread);
   child_ = process_infomation.hProcess;
-  channel_ = pair[0];
   return true;
 }
 

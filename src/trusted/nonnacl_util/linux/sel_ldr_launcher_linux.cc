@@ -73,17 +73,16 @@ Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
 const size_t kMaxExecArgs = 64;
 
 bool SelLdrLauncher::Launch() {
-  Handle pair[2];
   // Uncomment to turn on the sandbox, or set this in your environment
   // TODO(neha):  Turn this on by default.
   //
   // setenv("NACL_ENABLE_OUTER_SANDBOX");
-  if (SocketPair(pair) == -1) {
-    return false;
+
+  if (channel_number_ != -1) {
+    channel_ = ExportImcFD(channel_number_);
   }
 
   // complete command line setup
-  InitChannelBuf(pair[1]);
   vector<nacl::string> command;
   BuildArgv(&command);
   if (kMaxExecArgs <= command.size()) {
@@ -96,8 +95,6 @@ bool SelLdrLauncher::Launch() {
   // Fork the sel_ldr process.
   child_ = fork();
   if (child_ == -1) {
-    Close(pair[0]);
-    Close(pair[1]);
     return false;
   }
 
@@ -111,7 +108,6 @@ bool SelLdrLauncher::Launch() {
     }
     argv[command.size()] = 0;
 
-    Close(pair[0]);
     execv(sel_ldr_.c_str(), const_cast<char**>(argv));
     NaClLog(LOG_ERROR, "execv failed, args were:\n");
     for (size_t i = 0; i < command.size(); ++i) {
@@ -121,14 +117,6 @@ bool SelLdrLauncher::Launch() {
     _exit(EXIT_FAILURE);
   }
   CloseHandlesAfterLaunch();
-  Close(pair[1]);
-  channel_ = pair[0];
-
-  int flags = fcntl(channel_, F_GETFD);
-  if (flags != -1) {
-    flags |= FD_CLOEXEC;
-    fcntl(channel_, F_SETFD, flags);
-  }
   return true;
 }
 
