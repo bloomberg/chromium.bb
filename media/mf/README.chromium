@@ -1,0 +1,26 @@
+This tool demonstrates the use of the Media Foundation H.264 decoder as a
+standalone Media Foundation Transform (MFT). The H.264 decoder takes sample
+objects (IMFSample) containing Annex B streams as input, and outputs decoded
+NV12 video frames as output, contained in a buffer object (if DXVA is not
+enabled) or a Direct3D surface (if DXVA is enabled.)
+
+This tool uses ffmpeg's parser and bitstream converter to read a file
+containing H.264 video and outputs packets containing Annex B streams which are
+then fed into the H.264 decoder. This tool also demonstrates the use of the
+H.264 decoder as a state machine, and the steps taken in each state.
+
+Requirements: Windows 7
+
+Note1: This tool currently does decoding only. There is no visible output
+besides the log entry containing state of the decoder at each input/output
+step.
+
+Note2: There is a mysterious 1-off decoded frame count when DXVA is enabled.
+
+Note3: This tool requires the ffmpeg library to have the H.264 codec and Annex
+B bitstream filter. You might need build your own, or grab one from
+http://ffmpeg.arrozcru.org/autobuilds/
+
+Note4: A single H264Mft instance is only for 1 H.264 video stream only. 
+Inputting streams consisting of more than 1 video to a single instance
+may result in undefined behavior.
