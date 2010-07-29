@@ -134,8 +134,8 @@ void InitCrashReporter() {
 
   if (!is_browser) {
     // Get the guid from the command line switch.
-    std::string guid = WideToASCII(
-        command_line->GetSwitchValue(switches::kEnableCrashReporter));
+    std::string guid =
+        command_line->GetSwitchValueASCII(switches::kEnableCrashReporter);
     child_process_logging::SetClientId(guid);
    }
 }
