@@ -319,7 +319,7 @@ void LoginHandler::SetAuthDeferred(const std::wstring& username,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   if (request_) {
-    request_->SetAuth(username, password);
+    request_->SetAuth(WideToUTF16Hack(username), WideToUTF16Hack(password));
     ResetLoginHandlerForRequest(request_);
   }
 }

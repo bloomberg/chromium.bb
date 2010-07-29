@@ -1,8 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/spdy/spdy_network_transaction.h"
+
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -78,8 +80,8 @@ int SpdyNetworkTransaction::RestartWithCertificate(
 }
 
 int SpdyNetworkTransaction::RestartWithAuth(
-    const std::wstring& username,
-    const std::wstring& password,
+    const string16& username,
+    const string16& password,
     CompletionCallback* callback) {
   // TODO(mbelshe): implement me.
   NOTIMPLEMENTED();

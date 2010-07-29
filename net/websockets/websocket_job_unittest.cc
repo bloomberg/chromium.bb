@@ -35,7 +35,7 @@ class MockSocketStream : public SocketStream {
 
   virtual void Close() {}
   virtual void RestartWithAuth(
-      const std::wstring& username, const std::wstring& password) {}
+      const string16& username, const string16& password) {}
   virtual void DetachDelegate() {
     delegate_ = NULL;
   }

@@ -18,6 +18,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string16.h"
 #include "base/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -346,8 +347,8 @@ class TestDelegate : public URLRequest::Delegate {
   void set_allow_certificate_errors(bool val) {
     allow_certificate_errors_ = val;
   }
-  void set_username(const std::wstring& u) { username_ = u; }
-  void set_password(const std::wstring& p) { password_ = p; }
+  void set_username(const string16& u) { username_ = u; }
+  void set_password(const string16& p) { password_ = p; }
 
   // query state
   const std::string& data_received() const { return data_received_; }
@@ -376,8 +377,8 @@ class TestDelegate : public URLRequest::Delegate {
   bool quit_on_redirect_;
   bool allow_certificate_errors_;
 
-  std::wstring username_;
-  std::wstring password_;
+  string16 username_;
+  string16 password_;
 
   // tracks status of callbacks
   int response_started_count_;

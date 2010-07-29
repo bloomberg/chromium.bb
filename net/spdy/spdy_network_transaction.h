@@ -1,17 +1,17 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_NETWORK_TRANSACTION_H_
-#define NET_SPDY_NETWORK_TRANSACTION_H_
+#ifndef NET_SPDY_SPDY_NETWORK_TRANSACTION_H_
+#define NET_SPDY_SPDY_NETWORK_TRANSACTION_H_
 #pragma once
 
-#include <string>
 #include <deque>
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
@@ -43,8 +43,8 @@ class SpdyNetworkTransaction : public HttpTransaction {
   virtual int RestartIgnoringLastError(CompletionCallback* callback);
   virtual int RestartWithCertificate(X509Certificate* client_cert,
                                      CompletionCallback* callback);
-  virtual int RestartWithAuth(const std::wstring& username,
-                              const std::wstring& password,
+  virtual int RestartWithAuth(const string16& username,
+                              const string16& password,
                               CompletionCallback* callback);
   virtual bool IsReadyToRestartForAuth() { return false; }
   virtual int Read(IOBuffer* buf, int buf_len, CompletionCallback* callback);
@@ -121,4 +121,4 @@ class SpdyNetworkTransaction : public HttpTransaction {
 
 }  // namespace net
 
-#endif  // NET_SPDY_NETWORK_TRANSACTION_H_
+#endif  // NET_SPDY_SPDY_NETWORK_TRANSACTION_H_
