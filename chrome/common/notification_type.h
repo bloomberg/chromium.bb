@@ -1068,6 +1068,10 @@ class NotificationType {
     // in chrome/browser/chromeos/network_state_notifier.h.
     // TODO(oshima): Port this to all platforms.
     NETWORK_STATE_CHANGED,
+
+    // Sent when an attempt to acquire the public key of the owner of a chromium
+    // os device has completed.  Details are a boolean value indicating success.
+    OWNER_KEY_FETCH_ATTEMPT_COMPLETE,
 #endif
 
     // Sent before the repost form warning is brought up.
