@@ -92,21 +92,11 @@ class PPAPITest : public UITest {
   }
 };
 
-#if defined(OS_MACOSX)
-// TODO(brettw) this fails on Mac for unknown reasons.
-TEST_F(PPAPITest, DISABLED_DeviceContext2D) {
-#else
 TEST_F(PPAPITest, DeviceContext2D) {
-#endif
   RunTest("DeviceContext2D");
 }
 
-#if defined(OS_MACOSX)
-// TODO(brettw) this fails on Mac for unknown reasons.
-TEST_F(PPAPITest, DISABLED_ImageData) {
-#else
 TEST_F(PPAPITest, ImageData) {
-#endif
   RunTest("ImageData");
 }
 
