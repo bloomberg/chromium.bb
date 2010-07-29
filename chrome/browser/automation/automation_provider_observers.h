@@ -14,6 +14,7 @@
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -596,27 +597,6 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderBookmarkModelObserver);
 };
 
-// When asked for pending downloads, the DownloadManager places
-// results in a DownloadManager::Observer.
-class AutomationProviderDownloadManagerObserver
-    : public DownloadManager::Observer {
- public:
-  AutomationProviderDownloadManagerObserver() : DownloadManager::Observer()  {}
-  virtual ~AutomationProviderDownloadManagerObserver() {}
-  virtual void ModelChanged() {}
-  virtual void SetDownloads(std::vector<DownloadItem*>& downloads) {
-    downloads_ = downloads;
-  }
-  std::vector<DownloadItem*> Downloads() {
-    return downloads_;
-  }
- private:
-  std::vector<DownloadItem*> downloads_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadManagerObserver);
-};
-
-
 // Allows the automation provider to wait for all downloads to finish.
 class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
  public:
@@ -679,8 +659,8 @@ class AutomationProviderImportSettingsObserver
 };
 
 // Allows automation provider to wait for getting passwords to finish.
-class AutomationProviderGetPasswordsObserver :
-    public PasswordStoreConsumer {
+class AutomationProviderGetPasswordsObserver
+    : public PasswordStoreConsumer {
  public:
   AutomationProviderGetPasswordsObserver(
       AutomationProvider* provider,

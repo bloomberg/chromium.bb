@@ -168,7 +168,7 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
 
     download_manager_->RemoveObserver(this);
     // waiting_ will have been set if not all downloads were complete on first
-    // pass below in SetDownloads().
+    // pass below in OnSearchDownloadsComplete().
     if (waiting_)
       MessageLoopForUI::current()->Quit();
     return true;
@@ -186,10 +186,13 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
 
   // DownloadManager::Observer
   virtual void ModelChanged() {
-    download_manager_->GetDownloads(this, L"");
+    download_manager_->download_history()->Search(
+        string16(),
+        NewCallback(this,
+                    &DownloadsCompleteObserver::OnSearchDownloadsComplete));
   }
 
-  virtual void SetDownloads(std::vector<DownloadItem*>& downloads) {
+  void OnSearchDownloadsComplete(std::vector<DownloadItem*> downloads) {
     downloads_ = downloads;
     if (CheckAllDownloadsComplete())
       return;

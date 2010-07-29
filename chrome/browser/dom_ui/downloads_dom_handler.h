@@ -35,7 +35,8 @@ class DownloadsDOMHandler : public DOMMessageHandler,
 
   // DownloadManager::Observer interface
   virtual void ModelChanged();
-  virtual void SetDownloads(std::vector<DownloadItem*>& downloads);
+
+  void OnSearchDownloadsComplete(std::vector<DownloadItem*> downloads);
 
   // Callback for the "getDownloads" message.
   void HandleGetDownloads(const Value* value);

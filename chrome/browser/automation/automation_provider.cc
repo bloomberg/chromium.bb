@@ -2099,8 +2099,6 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
 void AutomationProvider::GetDownloadsInfo(Browser* browser,
                                           DictionaryValue* args,
                                           IPC::Message* reply_message) {
-  AutomationProviderDownloadManagerObserver observer;
-  std::vector<DownloadItem*> downloads;
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   AutomationJSONReply reply(this, reply_message);
 
@@ -2108,11 +2106,9 @@ void AutomationProvider::GetDownloadsInfo(Browser* browser,
     reply.SendError("no download manager");
     return;
   }
-  // Use DownloadManager's GetDownloads() method and not GetCurrentDownloads()
-  // since that would be transient; a download might enter and empty out
-  // the current download queue too soon to be noticed.
-  profile_->GetDownloadManager()->GetDownloads(&observer, L"");
-  downloads = observer.Downloads();
+
+  std::vector<DownloadItem*> downloads;
+  profile_->GetDownloadManager()->GetAllDownloads(FilePath(), &downloads);
 
   std::map<DownloadItem::DownloadState, std::string> state_to_string;
   state_to_string[DownloadItem::IN_PROGRESS] = std::string("IN_PROGRESS");
@@ -2160,8 +2156,6 @@ void AutomationProvider::WaitForDownloadsToComplete(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationProviderDownloadManagerObserver observer;
-  std::vector<DownloadItem*> downloads;
   AutomationJSONReply reply(this, reply_message);
 
   // Look for a quick return.
@@ -2169,9 +2163,9 @@ void AutomationProvider::WaitForDownloadsToComplete(
     reply.SendSuccess(NULL);  // No download manager.
     return;
   }
-  profile_->GetDownloadManager()->GetCurrentDownloads(&observer, FilePath());
-  downloads = observer.Downloads();
-  if (downloads.size() == 0) {
+  std::vector<DownloadItem*> downloads;
+  profile_->GetDownloadManager()->GetCurrentDownloads(FilePath(), &downloads);
+  if (downloads.empty()) {
     reply.SendSuccess(NULL);
     return;
   }

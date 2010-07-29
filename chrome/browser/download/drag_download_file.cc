@@ -151,17 +151,13 @@ void DragDownloadFile::DownloadCompleted(bool is_successful) {
 void DragDownloadFile::ModelChanged() {
   AssertCurrentlyOnUIThread();
 
-  download_manager_->GetTemporaryDownloads(this, file_path_.DirName());
-}
-
-void DragDownloadFile::SetDownloads(std::vector<DownloadItem*>& downloads) {
-  AssertCurrentlyOnUIThread();
-
-  std::vector<DownloadItem*>::const_iterator it = downloads.begin();
-  for (; it != downloads.end(); ++it) {
-    if (!download_item_observer_added_ && (*it)->url() == url_) {
+  std::vector<DownloadItem*> downloads;
+  download_manager_->GetTemporaryDownloads(file_path_.DirName(), &downloads);
+  for (std::vector<DownloadItem*>::const_iterator i = downloads.begin();
+       i != downloads.end(); ++i) {
+    if (!download_item_observer_added_ && (*i)->url() == url_) {
       download_item_observer_added_ = true;
-      (*it)->AddObserver(this);
+      (*i)->AddObserver(this);
     }
   }
 }

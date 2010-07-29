@@ -171,7 +171,6 @@ class DownloadItem {
   void set_db_handle(int64 handle) { db_handle_ = handle; }
   int64 db_handle() const { return db_handle_; }
   bool is_paused() const { return is_paused_; }
-  void set_is_paused(bool pause) { is_paused_ = pause; }
   bool open_when_complete() const { return open_when_complete_; }
   void set_open_when_complete(bool open) { open_when_complete_ = open; }
   int render_process_id() const { return render_process_id_; }

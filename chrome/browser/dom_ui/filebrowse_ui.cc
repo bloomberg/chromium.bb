@@ -126,7 +126,8 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
   // DownloadManager::Observer interface
   virtual void ModelChanged();
-  virtual void SetDownloads(std::vector<DownloadItem*>& downloads);
+
+  void OnSearchDownloadsComplete(std::vector<DownloadItem*> downloads);
 
   // Callback for the "getRoots" message.
   void HandleGetRoots(const Value* value);
@@ -969,7 +970,8 @@ void FilebrowseHandler::ModelChanged() {
   download_manager_->GetAllDownloads(this, FilePath());
 }
 
-void FilebrowseHandler::SetDownloads(std::vector<DownloadItem*>& downloads) {
+void FilebrowseHandler::OnSearchDownloadsComplete(
+    std::vector<DownloadItem*> downloads) {
   ClearDownloadItems();
   std::vector<DownloadItem*> new_downloads;
   // Scan for any in progress downloads and add ourself to them as an observer.

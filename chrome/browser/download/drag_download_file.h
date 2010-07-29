@@ -52,7 +52,6 @@ class DragDownloadFile : public DownloadFileProvider,
   // DownloadManager::Observer methods.
   // Called on UI thread.
   virtual void ModelChanged();
-  virtual void SetDownloads(std::vector<DownloadItem*>& downloads);
 
   // DownloadItem::Observer methods.
   // Called on UI thread.

@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_file_manager.h"
+#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -66,13 +67,6 @@ void DeleteDownloadedFile(const FilePath& path) {
 
 }  // namespace
 
-// Our download table ID starts at 1, so we use 0 to represent a download that
-// has started, but has not yet had its data persisted in the table. We use fake
-// database handles in incognito mode starting at -1 and progressively getting
-// more negative.
-// static
-const int DownloadManager::kUninitializedHandle = 0;
-
 // static
 void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPromptForDownload, false);
@@ -109,8 +103,7 @@ void DownloadManager::RegisterUserPrefs(PrefService* prefs) {
 DownloadManager::DownloadManager()
     : shutdown_needed_(false),
       profile_(NULL),
-      file_manager_(NULL),
-      fake_db_handle_(kUninitializedHandle - 1) {
+      file_manager_(NULL) {
 }
 
 DownloadManager::~DownloadManager() {
@@ -127,9 +120,6 @@ void DownloadManager::Shutdown() {
   if (file_manager_)
     file_manager_->RemoveDownloadManager(this);
 
-  // Stop making history service requests
-  cancelable_consumer_.CancelAllRequests();
-
   // 'in_progress_' may contain DownloadItems that have not finished the start
   // complete (from the history service) and thus aren't in downloads_.
   DownloadMap::iterator it = in_progress_.begin();
@@ -145,8 +135,8 @@ void DownloadManager::Shutdown() {
     }
     DCHECK_EQ(DownloadItem::IN_PROGRESS, download->state());
     download->Cancel(false);
-    UpdateHistoryForDownload(download);
-    if (download->db_handle() == kUninitializedHandle) {
+    download_history_->UpdateEntry(download);
+    if (download->db_handle() == DownloadHistory::kUninitializedHandle) {
       // An invalid handle means that 'download' does not yet exist in
       // 'downloads_', so we have to delete it here.
       delete download;
@@ -167,7 +157,7 @@ void DownloadManager::Shutdown() {
     download->Remove(true);
     // Same as above, delete the download if it is not in 'downloads_' (as the
     // Remove() call above won't have deleted it).
-    if (handle == kUninitializedHandle)
+    if (handle == DownloadHistory::kUninitializedHandle)
       delete download;
   }
   to_remove.clear();
@@ -186,123 +176,38 @@ void DownloadManager::Shutdown() {
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
 
+  download_history_.reset();
+
   shutdown_needed_ = false;
 }
 
-// Issue a history query for downloads matching 'search_text'. If 'search_text'
-// is empty, return all downloads that we know about.
-void DownloadManager::GetDownloads(Observer* observer,
-                                   const std::wstring& search_text) {
-  std::vector<DownloadItem*> otr_downloads;
-
-  if (profile_->IsOffTheRecord() && search_text.empty()) {
-    // List all incognito downloads and add that to the downloads the parent
-    // profile lists.
-    otr_downloads.reserve(downloads_.size());
-    for (DownloadMap::iterator it = downloads_.begin();
-         it != downloads_.end(); ++it) {
-      DownloadItem* download = it->second;
-      if (download->is_otr() && !download->is_extension_install() &&
-          !download->is_temporary()) {
-        otr_downloads.push_back(download);
-      }
-    }
-  }
-
-  profile_->GetOriginalProfile()->GetDownloadManager()->
-    DoGetDownloads(observer, search_text, otr_downloads);
-}
-
-void DownloadManager::DoGetDownloads(
-    Observer* observer,
-    const std::wstring& search_text,
-    std::vector<DownloadItem*>& otr_downloads) {
-  DCHECK(observer);
-
-  // Return a empty list if we've not yet received the set of downloads from the
-  // history system (we'll update all observers once we get that list in
-  // OnQueryDownloadEntriesComplete), or if there are no downloads at all.
-  if (downloads_.empty()) {
-    observer->SetDownloads(otr_downloads);
-    return;
-  }
-
-  std::vector<DownloadItem*> download_copy;
-  // We already know all the downloads and there is no filter, so just return a
-  // copy to the observer.
-  if (search_text.empty()) {
-    download_copy.reserve(downloads_.size());
-    for (DownloadMap::iterator it = downloads_.begin();
-         it != downloads_.end(); ++it) {
-      if (it->second->db_handle() > kUninitializedHandle)
-        download_copy.push_back(it->second);
-    }
-
-    // Merge sort based on start time.
-    std::vector<DownloadItem*> merged_downloads;
-    std::merge(otr_downloads.begin(), otr_downloads.end(),
-               download_copy.begin(), download_copy.end(),
-               std::back_inserter(merged_downloads),
-               CompareStartTime);
-
-    // We retain ownership of the DownloadItems.
-    observer->SetDownloads(merged_downloads);
-    return;
-  }
-
-  DCHECK(otr_downloads.empty());
-
-  // Issue a request to the history service for a list of downloads matching
-  // our search text.
-  HistoryService* hs =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (hs) {
-    HistoryService::Handle h =
-        hs->SearchDownloads(WideToUTF16(search_text),
-                            &cancelable_consumer_,
-                            NewCallback(this,
-                                        &DownloadManager::OnSearchComplete));
-    cancelable_consumer_.SetClientData(hs, h, observer);
-  }
-}
-
-void DownloadManager::GetTemporaryDownloads(Observer* observer,
-                                            const FilePath& dir_path) {
-  DCHECK(observer);
-
-  std::vector<DownloadItem*> download_copy;
+void DownloadManager::GetTemporaryDownloads(
+    const FilePath& dir_path, std::vector<DownloadItem*>* result) {
+  DCHECK(result);
 
   for (DownloadMap::iterator it = downloads_.begin();
        it != downloads_.end(); ++it) {
     if (it->second->is_temporary() &&
         it->second->full_path().DirName() == dir_path)
-      download_copy.push_back(it->second);
+      result->push_back(it->second);
   }
-
-  observer->SetDownloads(download_copy);
 }
 
-void DownloadManager::GetAllDownloads(Observer* observer,
-                                      const FilePath& dir_path) {
-  DCHECK(observer);
-
-  std::vector<DownloadItem*> download_copy;
+void DownloadManager::GetAllDownloads(
+    const FilePath& dir_path, std::vector<DownloadItem*>* result) {
+  DCHECK(result);
 
   for (DownloadMap::iterator it = downloads_.begin();
        it != downloads_.end(); ++it) {
     if (!it->second->is_temporary() &&
         (dir_path.empty() || it->second->full_path().DirName() == dir_path))
-      download_copy.push_back(it->second);
+      result->push_back(it->second);
   }
-
-  observer->SetDownloads(download_copy);
 }
 
-void DownloadManager::GetCurrentDownloads(Observer* observer,
-                                          const FilePath& dir_path) {
-  DCHECK(observer);
-
-  std::vector<DownloadItem*> download_copy;
+void DownloadManager::GetCurrentDownloads(
+    const FilePath& dir_path, std::vector<DownloadItem*>* result) {
+  DCHECK(result);
 
   for (DownloadMap::iterator it = downloads_.begin();
        it != downloads_.end(); ++it) {
@@ -310,10 +215,8 @@ void DownloadManager::GetCurrentDownloads(Observer* observer,
         (it->second->state() == DownloadItem::IN_PROGRESS ||
          it->second->safety_state() == DownloadItem::DANGEROUS) &&
         (dir_path.empty() || it->second->full_path().DirName() == dir_path))
-      download_copy.push_back(it->second);
+      result->push_back(it->second);
   }
-
-  observer->SetDownloads(download_copy);
 }
 
 // Query the history service for information about all persisted downloads.
@@ -324,14 +227,9 @@ bool DownloadManager::Init(Profile* profile) {
 
   profile_ = profile;
   request_context_getter_ = profile_->GetRequestContext();
-
-  // 'incognito mode' will have access to past downloads, but we won't store
-  // information about new downloads while in that mode.
-  QueryHistoryForDownloads();
-
-  // Cleans up entries only when called for the first time. Subsequent calls are
-  // a no op.
-  CleanUpInProgressHistoryEntries();
+  download_history_.reset(new DownloadHistory(profile, this));
+  download_history_->Load(
+      NewCallback(this, &DownloadManager::OnQueryDownloadEntriesComplete));
 
   // In test mode, there may be no ResourceDispatcherHost.  In this case it's
   // safe to avoid setting |file_manager_| because we only call a small set of
@@ -374,27 +272,6 @@ bool DownloadManager::Init(Profile* profile) {
       new OtherDownloadManagerObserver(this));
 
   return true;
-}
-
-void DownloadManager::QueryHistoryForDownloads() {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (hs) {
-    hs->QueryDownloads(
-        &cancelable_consumer_,
-        NewCallback(this, &DownloadManager::OnQueryDownloadEntriesComplete));
-  }
-}
-
-void DownloadManager::CleanUpInProgressHistoryEntries() {
-  static bool already_cleaned_up = false;
-
-  if (!already_cleaned_up) {
-    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (hs) {
-      hs->CleanUpInProgressEntries();
-      already_cleaned_up = true;
-    }
-  }
 }
 
 // We have received a message from DownloadFileManager about a new download. We
@@ -613,63 +490,10 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
 
   download->Rename(target_path);
 
-  // Do not store the download in the history database for a few special cases:
-  // - incognito mode (that is the point of this mode)
-  // - extensions (users don't think of extension installation as 'downloading')
-  // - temporary download, like in drag-and-drop
-  // - history service is not available (e.g. in tests)
-  // We have to make sure that these handles don't collide with normal db
-  // handles, so we use a negative value. Eventually, they could overlap, but
-  // you'd have to do enough downloading that your ISP would likely stab you in
-  // the neck first. YMMV.
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (download->is_otr() || download->is_extension_install() ||
-      download->is_temporary() || !hs) {
-    OnCreateDownloadEntryComplete(*info, fake_db_handle_.GetNext());
-  } else {
-    // Update the history system with the new download.
-    hs->CreateDownload(
-        *info, &cancelable_consumer_,
-        NewCallback(this, &DownloadManager::OnCreateDownloadEntryComplete));
-  }
+  download_history_->AddEntry(*info, download,
+      NewCallback(this, &DownloadManager::OnCreateDownloadEntryComplete));
 
   UpdateAppIcon();
-}
-
-// Convenience function for updating the history service for a download.
-void DownloadManager::UpdateHistoryForDownload(DownloadItem* download) {
-  DCHECK(download);
-
-  // Don't store info in the database if the download was initiated while in
-  // incognito mode or if it hasn't been initialized in our database table.
-  if (download->db_handle() <= kUninitializedHandle)
-    return;
-
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (hs) {
-    hs->UpdateDownload(download->received_bytes(),
-                       download->state(),
-                       download->db_handle());
-  }
-}
-
-void DownloadManager::RemoveDownloadFromHistory(DownloadItem* download) {
-  DCHECK(download);
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (download->db_handle() > kUninitializedHandle && hs)
-    hs->RemoveDownload(download->db_handle());
-}
-
-void DownloadManager::RemoveDownloadsFromHistoryBetween(
-    const base::Time remove_begin,
-    const base::Time remove_end) {
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (hs)
-    hs->RemoveDownloadsBetween(remove_begin, remove_end);
 }
 
 void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
@@ -677,7 +501,7 @@ void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
   if (it != in_progress_.end()) {
     DownloadItem* download = it->second;
     download->Update(size);
-    UpdateHistoryForDownload(download);
+    download_history_->UpdateEntry(download);
   }
   UpdateAppIcon();
 }
@@ -707,9 +531,9 @@ void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
 
   // Clean up will happen when the history system create callback runs if we
   // don't have a valid db_handle yet.
-  if (download->db_handle() != kUninitializedHandle) {
+  if (download->db_handle() != DownloadHistory::kUninitializedHandle) {
     in_progress_.erase(it);
-    UpdateHistoryForDownload(download);
+    download_history_->UpdateEntry(download);
   }
 
   UpdateAppIcon();
@@ -861,9 +685,9 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
 
   // Clean up will happen when the history system create callback runs if we
   // don't have a valid db_handle yet.
-  if (download->db_handle() != kUninitializedHandle) {
+  if (download->db_handle() != DownloadHistory::kUninitializedHandle) {
     in_progress_.erase(it);
-    UpdateHistoryForDownload(download);
+    download_history_->UpdateEntry(download);
   }
 
   DownloadCancelledInternal(download_id,
@@ -956,17 +780,7 @@ void DownloadManager::UpdateAppIcon() {
 void DownloadManager::RenameDownload(DownloadItem* download,
                                      const FilePath& new_path) {
   download->Rename(new_path);
-
-  // Update the history.
-
-  // No update necessary if the download was initiated while in incognito mode.
-  if (download->db_handle() <= kUninitializedHandle)
-    return;
-
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (hs)
-    hs->UpdateDownloadPath(new_path, download->db_handle());
+  download_history_->UpdateDownloadPath(download, new_path);
 }
 
 void DownloadManager::RemoveDownload(int64 download_handle) {
@@ -976,7 +790,7 @@ void DownloadManager::RemoveDownload(int64 download_handle) {
 
   // Make history update.
   DownloadItem* download = it->second;
-  RemoveDownloadFromHistory(download);
+  download_history_->RemoveEntry(download);
 
   // Remove from our tables and delete.
   downloads_.erase(it);
@@ -992,7 +806,7 @@ void DownloadManager::RemoveDownload(int64 download_handle) {
 
 int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
                                             const base::Time remove_end) {
-  RemoveDownloadsFromHistoryBetween(remove_begin, remove_end);
+  download_history_->RemoveEntriesBetween(remove_begin, remove_end);
 
   DownloadMap::iterator it = downloads_.begin();
   std::vector<DownloadItem*> pending_deletes;
@@ -1412,6 +1226,16 @@ void DownloadManager::SaveAutoOpens() {
   }
 }
 
+DownloadItem* DownloadManager::GetDownloadItemFromDbHandle(int64 db_handle) {
+  for (DownloadMap::iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    DownloadItem* item = it->second;
+    if (item->db_handle() == db_handle)
+      return item;
+  }
+  return NULL;
+}
+
 void DownloadManager::FileSelected(const FilePath& path,
                                    int index, void* params) {
   DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
@@ -1505,10 +1329,10 @@ void DownloadManager::OnCreateDownloadEntryComplete(DownloadCreateInfo info,
   // happen when the history database is offline. We cannot have multiple
   // DownloadItems with the same invalid db_handle, so we need to assign a
   // unique |db_handle| here.
-  if (db_handle == kUninitializedHandle)
-    db_handle = fake_db_handle_.GetNext();
+  if (db_handle == DownloadHistory::kUninitializedHandle)
+    db_handle = download_history_->GetNextFakeDbHandle();
 
-  DCHECK(download->db_handle() == kUninitializedHandle);
+  DCHECK(download->db_handle() == DownloadHistory::kUninitializedHandle);
   download->set_db_handle(db_handle);
 
   // Insert into our full map.
@@ -1527,31 +1351,11 @@ void DownloadManager::OnCreateDownloadEntryComplete(DownloadCreateInfo info,
   // observers so that they get more than just the start notification.
   if (download->state() != DownloadItem::IN_PROGRESS) {
     in_progress_.erase(it);
-    UpdateHistoryForDownload(download);
+    download_history_->UpdateEntry(download);
     download->UpdateObservers();
   }
 
   UpdateAppIcon();
-}
-
-// Called when the history service has retrieved the list of downloads that
-// match the search text.
-void DownloadManager::OnSearchComplete(HistoryService::Handle handle,
-                                       std::vector<int64>* results) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  Observer* requestor = cancelable_consumer_.GetClientData(hs, handle);
-  if (!requestor)
-    return;
-
-  std::vector<DownloadItem*> searched_downloads;
-  for (std::vector<int64>::iterator it = results->begin();
-       it != results->end(); ++it) {
-    DownloadMap::iterator dit = downloads_.find(*it);
-    if (dit != downloads_.end())
-      searched_downloads.push_back(dit->second);
-  }
-
-  requestor->SetDownloads(searched_downloads);
 }
 
 void DownloadManager::ShowDownloadInBrowser(const DownloadCreateInfo& info,
@@ -1617,10 +1421,6 @@ DownloadManager::OtherDownloadManagerObserver::~OtherDownloadManagerObserver() {
 
 void DownloadManager::OtherDownloadManagerObserver::ModelChanged() {
   observing_download_manager_->NotifyModelChanged();
-}
-
-void DownloadManager::OtherDownloadManagerObserver::SetDownloads(
-    std::vector<DownloadItem*>& downloads) {
 }
 
 void DownloadManager::OtherDownloadManagerObserver::ManagerGoingDown() {

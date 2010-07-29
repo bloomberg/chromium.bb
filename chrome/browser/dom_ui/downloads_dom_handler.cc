@@ -9,11 +9,13 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/fileicon_source.h"
+#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -110,15 +112,16 @@ void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {
 }
 
 // A download has started or been deleted. Query our DownloadManager for the
-// current set of downloads, which will call us back in SetDownloads once it
-// has retrieved them.
+// current set of downloads.
 void DownloadsDOMHandler::ModelChanged() {
   ClearDownloadItems();
-  download_manager_->GetDownloads(this, search_text_);
+  download_manager_->download_history()->Search(
+      WideToUTF16(search_text_),
+      NewCallback(this, &DownloadsDOMHandler::OnSearchDownloadsComplete));
 }
 
-void DownloadsDOMHandler::SetDownloads(
-    std::vector<DownloadItem*>& downloads) {
+void DownloadsDOMHandler::OnSearchDownloadsComplete(
+    std::vector<DownloadItem*> downloads) {
   ClearDownloadItems();
 
   // Swap new downloads in.
@@ -149,7 +152,9 @@ void DownloadsDOMHandler::HandleGetDownloads(const Value* value) {
   if (search_text_.compare(new_search) != 0) {
     search_text_ = new_search;
     ClearDownloadItems();
-    download_manager_->GetDownloads(this, search_text_);
+    download_manager_->download_history()->Search(
+        WideToUTF16(search_text_),
+        NewCallback(this, &DownloadsDOMHandler::OnSearchDownloadsComplete));
   } else {
     SendCurrentDownloads();
   }

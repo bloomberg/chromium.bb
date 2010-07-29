@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/timer.h"
+#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_types.h"
@@ -68,7 +69,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(info.start_time),
-      db_handle_(DownloadManager::kUninitializedHandle),
+      db_handle_(DownloadHistory::kUninitializedHandle),
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),
@@ -103,7 +104,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(base::Time::Now()),
-      db_handle_(DownloadManager::kUninitializedHandle),
+      db_handle_(DownloadHistory::kUninitializedHandle),
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),
