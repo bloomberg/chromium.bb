@@ -552,17 +552,13 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     RecordLaunchModeHistogram(LM_AS_WEBAPP);
   }
 
-#if !defined(OS_MACOSX)
-  // In kiosk mode, we want to always be fullscreen, so switch to that now.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
-    BrowserList::GetLastActive()->ToggleFullscreenMode();
-#endif
-
 #if defined(OS_WIN)
   // Print the selected page if the command line switch exists. Note that the
   // current selected tab would be the page which will be printed.
-  if (command_line_.HasSwitch(switches::kPrint))
-    BrowserList::GetLastActive()->Print();
+  if (command_line_.HasSwitch(switches::kPrint)) {
+    Browser* browser = BrowserList::GetLastActive();
+    browser->Print();
+  }
 #endif
 
   // If we're recording or playing back, startup the EventRecorder now
@@ -745,6 +741,12 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
     gtk_util::SetWMLastUserActionTime(browser->window()->GetNativeHandle());
 #endif
   }
+
+#if !defined(OS_MACOSX)
+  // In kiosk mode, we want to always be fullscreen, so switch to that now.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    browser->ToggleFullscreenMode();
+#endif
 
   bool first_tab = true;
   for (size_t i = 0; i < tabs.size(); ++i) {
