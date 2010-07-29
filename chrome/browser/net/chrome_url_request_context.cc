@@ -841,8 +841,15 @@ void ChromeURLRequestContext::OnUnloadedExtension(const std::string& id) {
   if (is_off_the_record_)
     return;
   ExtensionInfoMap::iterator iter = extension_info_.find(id);
-  DCHECK(iter != extension_info_.end());
-  extension_info_.erase(iter);
+  if (iter != extension_info_.end()) {
+    extension_info_.erase(iter);
+  } else {
+    // NOTE: This can currently happen if we receive multiple unload
+    // notifications, e.g. setting incognito-enabled state for a
+    // disabled extension (e.g., via sync).  See
+    // http://code.google.com/p/chromium/issues/detail?id=50582 .
+    NOTREACHED() << id;
+  }
 }
 
 bool ChromeURLRequestContext::AreCookiesEnabled() const {
