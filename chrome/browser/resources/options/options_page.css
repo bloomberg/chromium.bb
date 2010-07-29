@@ -153,7 +153,7 @@ section > h3 {
   margin-top: 5px;
 }
 
-.option-control-table {
+.option-control-table, section > div:only-of-type {
   margin-top: 5px;
   -webkit-padding-start: 10px;
 }
@@ -162,10 +162,21 @@ section > h3 {
   -webkit-margin-start: 18px;
 }
 
+/* TODO(stuartmorgan): make this less specific once all pages
+ * are converted to the non-table style.
+ */
+section > div:only-of-type label {
+  display: block;
+}
+
 .hidden {
   display: none;
 }
 
 .touch-slider {
   -webkit-appearance: slider-horizontal;
+}
+
+input[type="checkbox"] {
+  margin-top: 6px;
 }
