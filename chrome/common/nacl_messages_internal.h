@@ -10,9 +10,8 @@
 // These are messages sent from the browser to the NaCl process.
 IPC_BEGIN_MESSAGES(NaClProcess)
   // Tells the NaCl process to start.
-  IPC_MESSAGE_CONTROL2(NaClProcessMsg_Start,
-                       int /* descriptor id */,
-                       nacl::FileDescriptor /* handle value */)
+  IPC_MESSAGE_CONTROL1(NaClProcessMsg_Start,
+                       std::vector<nacl::FileDescriptor> /* sockets */)
 
   // Tells the NaCl broker to launch a NaCl loader process.
   IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchLoaderThroughBroker,

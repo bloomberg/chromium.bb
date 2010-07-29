@@ -22,7 +22,7 @@ class NaClThread : public ChildThread {
 
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
-  void OnStartSelLdr(int channel_descriptor, nacl::FileDescriptor handle);
+  void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles);
 
   // TODO(gregoryd): do we need to override Cleanup as in PluginThread?
   DISALLOW_COPY_AND_ASSIGN(NaClThread);

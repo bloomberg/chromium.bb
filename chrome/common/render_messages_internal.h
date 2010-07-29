@@ -1409,8 +1409,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // the process and return a handle to an IMC channel.
   IPC_SYNC_MESSAGE_CONTROL2_3(ViewHostMsg_LaunchNaCl,
                               std::wstring /* url for the NaCl module */,
-                              int /* channel number */,
-                              nacl::FileDescriptor /* imc channel handle */,
+                              int /* socket count */,
+                              std::vector<nacl::FileDescriptor>
+                                  /* imc channel handles */,
                               base::ProcessHandle /* NaCl process handle */,
                               base::ProcessId /* NaCl process id */)
 

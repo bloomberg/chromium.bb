@@ -52,17 +52,45 @@ bool LaunchNaClProcess(const char* url,
                        int* nacl_process_id) {
   // TODO(gregoryd): nacl::FileDescriptor will be soon merged with
   // base::FileDescriptor
-  nacl::FileDescriptor imc_descriptor;
+  std::vector<nacl::FileDescriptor> sockets;
   base::ProcessHandle nacl_process;
   if (!RenderThread::current()->Send(
-    new ViewHostMsg_LaunchNaCl(ASCIIToWide(url),
-        imc_fd,
-        &imc_descriptor,
+    new ViewHostMsg_LaunchNaCl(
+        ASCIIToWide(url),
+        /* socket_count= */ 1,
+        &sockets,
         &nacl_process,
         reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
     return false;
   }
-  *imc_handle = nacl::ToNativeHandle(imc_descriptor);
+  CHECK(static_cast<int>(sockets.size()) == 1);
+  *imc_handle = nacl::ToNativeHandle(sockets[0]);
+  *nacl_process_handle = nacl_process;
+  return true;
+}
+
+bool LaunchNaClProcessMultiFD(const char* alleged_url,
+                              int socket_count,
+                              nacl::Handle* imc_handles,
+                              nacl::Handle* nacl_process_handle,
+                              int* nacl_process_id) {
+  // TODO(gregoryd): nacl::FileDescriptor will be soon merged with
+  // base::FileDescriptor
+  std::vector<nacl::FileDescriptor> sockets;
+  base::ProcessHandle nacl_process;
+  if (!RenderThread::current()->Send(
+    new ViewHostMsg_LaunchNaCl(
+        ASCIIToWide(alleged_url),
+        socket_count,
+        &sockets,
+        &nacl_process,
+        reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
+    return false;
+  }
+  CHECK(static_cast<int>(sockets.size()) == socket_count);
+  for (int i = 0; i < socket_count; i++) {
+    imc_handles[i] = nacl::ToNativeHandle(sockets[i]);
+  }
   *nacl_process_handle = nacl_process;
   return true;
 }
@@ -160,6 +188,8 @@ RenderProcessImpl::RenderProcessImpl()
     std::map<std::string, uintptr_t> funcs;
     funcs["launch_nacl_process"] =
       reinterpret_cast<uintptr_t>(LaunchNaClProcess);
+    funcs["launch_nacl_process_multi_fd"] =
+      reinterpret_cast<uintptr_t>(LaunchNaClProcessMultiFD);
     RegisterInternalNaClPlugin(funcs);
   }
 #endif

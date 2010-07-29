@@ -29,7 +29,7 @@ class NaClProcessHost : public BrowserChildProcessHost {
 
   // Initialize the new NaCl process, returning true on success.
   bool Launch(ResourceMessageFilter* resource_message_filter,
-              const int descriptor,
+              int socket_count,
               IPC::Message* reply_msg);
 
   virtual void OnMessageReceived(const IPC::Message& msg);
@@ -69,11 +69,9 @@ class NaClProcessHost : public BrowserChildProcessHost {
   // The reply message to send.
   IPC::Message* reply_msg_;
 
-  // The socket pair for the NaCl process.
-  nacl::Handle pair_[2];
-
-  // The NaCl specific descriptor for this process.
-  int descriptor_;
+  // Socket pairs for the NaCl process and renderer.
+  std::vector<nacl::Handle> sockets_for_renderer_;
+  std::vector<nacl::Handle> sockets_for_sel_ldr_;
 
   // Windows platform flag
   bool running_on_wow64_;

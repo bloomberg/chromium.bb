@@ -36,8 +36,11 @@ void NaClThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-void NaClThread::OnStartSelLdr(int channel_descriptor,
-                               nacl::FileDescriptor handle) {
-  NaClHandle nacl_handle = nacl::ToNativeHandle(handle);
-  NaClMainForChromium(/* handle_count= */ 1, &nacl_handle);
+void NaClThread::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
+  NaClHandle* array = new NaClHandle[handles.size()];
+  for (size_t i = 0; i < handles.size(); i++) {
+    array[i] = nacl::ToNativeHandle(handles[i]);
+  }
+  NaClMainForChromium(static_cast<int>(handles.size()), array);
+  delete array;
 }
