@@ -3511,7 +3511,7 @@
    Memcheck:Value4
    fun:modp_b64_encode
    fun:_ZN4base12Base64EncodeERKSsPSs
-   fun:_ZN3net14HttpAuthGSSAPI17GenerateAuthTokenEPKSbIwSt11char_traitsIwESaIwEES6_RS5_PSs
+   fun:_ZN3net14HttpAuthGSSAPI17GenerateAuthToken*
    fun:_ZN3net24HttpAuthHandlerNegotiate19DoGenerateAuthTokenEv
    fun:_ZN3net24HttpAuthHandlerNegotiate6DoLoopEi
    fun:_ZN3net24HttpAuthHandlerNegotiate12OnIOCompleteEi
@@ -3616,7 +3616,7 @@
    fun:_ZN4base12Base64EncodeERKSsPSs
    fun:_Z24ConvertSkBitmapToDataURLRK8SkBitmap
    fun:_ZN22InternetOptionsHandler10GetNetworkERKSsRK8SkBitmapS1_bbib
-   fun:_ZN22InternetOptionsHandler15GetWirelessListEv
+   ...
    fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
    fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
    fun:_ZN9OptionsUIC1EP11TabContents
