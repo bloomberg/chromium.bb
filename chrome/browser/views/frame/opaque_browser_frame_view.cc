@@ -957,24 +957,28 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
       close_button_size.height());
 
 #if defined(OS_CHROMEOS)
-  minimize_button_->SetVisible(!is_maximized);
-  restore_button_->SetVisible(!is_maximized);
-  maximize_button_->SetVisible(!is_maximized);
-
-  if (browser_view_->browser()->type() == Browser::TYPE_DEVTOOLS)
-    close_button_->SetVisible(true);
-  else
-    close_button_->SetVisible(!is_maximized);
-
   if (is_maximized) {
-    // Set the bounds of the minimize button so that we don't have to change
-    // other places that rely on the bounds. Put it slightly to the right
-    // of the edge of the view, so that when we remove the spacing it lines
-    // up with the edge.
-    minimize_button_->SetBounds(
-        width() - FrameBorderThickness() + kNewTabCaptionMaximizedSpacing, 0, 0,
-        0);
+    minimize_button_->SetVisible(false);
+    restore_button_->SetVisible(false);
+    maximize_button_->SetVisible(false);
+
+    if (browser_view_->browser()->type() == Browser::TYPE_DEVTOOLS) {
+      close_button_->SetVisible(true);
+      minimize_button_->SetBounds(close_button_->bounds().x(), 0, 0, 0);
+    } else {
+      close_button_->SetVisible(false);
+      // Set the bounds of the minimize button so that we don't have to change
+      // other places that rely on the bounds. Put it slightly to the right
+      // of the edge of the view, so that when we remove the spacing it lines
+      // up with the edge.
+      minimize_button_->SetBounds(
+          width() - FrameBorderThickness() + kNewTabCaptionMaximizedSpacing,
+          0, 0, 0);
+    }
+
     return;
+  } else {
+    close_button_->SetVisible(true);
   }
 #endif
 
