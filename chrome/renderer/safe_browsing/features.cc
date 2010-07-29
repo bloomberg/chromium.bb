@@ -15,6 +15,10 @@ FeatureMap::FeatureMap() {}
 FeatureMap::~FeatureMap() {}
 
 bool FeatureMap::AddBooleanFeature(const std::string& name) {
+  return AddRealFeature(name, 1.0);
+}
+
+bool FeatureMap::AddRealFeature(const std::string& name, double value) {
   if (features_.size() >= kMaxFeatureMapSize) {
     // If we hit this case, it indicates that either kMaxFeatureMapSize is
     // too small, or there is a bug causing too many features to be added.
@@ -25,7 +29,16 @@ bool FeatureMap::AddBooleanFeature(const std::string& name) {
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.TooManyFeatures", 1);
     return false;
   }
-  features_[name] = 1.0;
+  // We only expect features in the range [0.0, 1.0], so fail if the feature is
+  // outside this range.
+  if (value < 0.0 || value > 1.0) {
+    LOG(ERROR) << "Not adding feature: " << name << " because the value "
+               << value << " is not in the range [0.0, 1.0].";
+    UMA_HISTOGRAM_COUNTS("SBClientPhishing.IllegalFeatureValue", 1);
+    return false;
+  }
+
+  features_[name] = value;
   return true;
 }
 
@@ -46,6 +59,26 @@ const char kUrlNumOtherHostTokensGTThree[] = "UrlNumOtherHostTokens>3";
 
 // URL path features
 const char kUrlPathToken[] = "UrlPathToken=";
+
+// DOM HTML form features
+const char kPageHasForms[] = "PageHasForms";
+const char kPageActionOtherDomainFreq[] = "PageActionOtherDomainFreq";
+const char kPageHasTextInputs[] = "PageHasTextInputs";
+const char kPageHasPswdInputs[] = "PageHasPswdInputs";
+const char kPageHasRadioInputs[] = "PageHasRadioInputs";
+const char kPageHasCheckInputs[] = "PageHasCheckInputs";
+
+// DOM HTML link features
+const char kPageExternalLinksFreq[] = "PageExternalLinksFreq";
+const char kPageLinkDomain[] = "PageLinkDomain=";
+const char kPageSecureLinksFreq[] = "PageSecureLinksFreq";
+
+// DOM HTML script features
+const char kPageNumScriptTagsGTOne[] = "PageNumScriptTags>1";
+const char kPageNumScriptTagsGTSix[] = "PageNumScriptTags>6";
+
+// Other DOM HTML features
+const char kPageImgOtherDomainFreq[] = "PageImgOtherDomainFreq";
 
 }  // namespace features
 }  // namespace safe_browsing

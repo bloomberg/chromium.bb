@@ -44,6 +44,12 @@ class FeatureMap {
   // kMaxFeatureMapSize.
   bool AddBooleanFeature(const std::string& name);
 
+  // Adds a real-valued feature to a FeatureMap with the given value.
+  // Values must always be in the range [0.0, 1.0].  Returns true on
+  // success, or false if the feature map exceeds kMaxFeatureMapSize
+  // or the value is outside of the allowed range.
+  bool AddRealFeature(const std::string& name, double value);
+
   // Provides read-only access to the current set of features.
   const base::hash_map<std::string, double>& features() const {
     return features_;
@@ -102,6 +108,55 @@ extern const char kUrlNumOtherHostTokensGTThree[];
 // least 3 characters long.  For example, "/abc/d/efg" would have 2 path
 // token features, "abc" and "efg".  Query parameters are not included.
 extern const char kUrlPathToken[];
+
+////////////////////////////////////////////////////
+// DOM HTML form features
+////////////////////////////////////////////////////
+
+// Set if the page has any <form> elements.
+extern const char kPageHasForms[];
+// The fraction of form elements whose |action| attribute points to a
+// URL on a different domain from the document URL.
+extern const char kPageActionOtherDomainFreq[];
+
+// Set if the page has any <input type="text"> elements
+// (includes inputs with missing or unknown types).
+extern const char kPageHasTextInputs[];
+// Set if the page has any <input type="password"> elements.
+extern const char kPageHasPswdInputs[];
+// Set if the page has any <input type="radio"> elements.
+extern const char kPageHasRadioInputs[];
+// Set if the page has any <input type="checkbox"> elements.
+extern const char kPageHasCheckInputs[];
+
+////////////////////////////////////////////////////
+// DOM HTML link features
+////////////////////////////////////////////////////
+
+// The fraction of links in the page which point to a domain other than the
+// domain of the document.  See "URL host features" above for a discussion
+// of how the doamin is computed.
+extern const char kPageExternalLinksFreq[];
+// Token feature containing each external domain that is linked to.
+extern const char kPageLinkDomain[];
+// Fraction of links in the page that use https.
+extern const char kPageSecureLinksFreq[];
+
+////////////////////////////////////////////////////
+// DOM HTML script features
+////////////////////////////////////////////////////
+
+// Set if the number of <script> elements in the page is greater than 1.
+extern const char kPageNumScriptTagsGTOne[];
+// Set if the number of <script> elements in the page is greater than 6.
+extern const char kPageNumScriptTagsGTSix[];
+
+////////////////////////////////////////////////////
+// Other DOM HTML features
+////////////////////////////////////////////////////
+
+// The fraction of images whose src attribute points to an external domain.
+extern const char kPageImgOtherDomainFreq[];
 
 }  // namespace features
 }  // namepsace safe_browsing

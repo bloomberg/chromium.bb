@@ -168,6 +168,8 @@
         'renderer/renderer_webstoragenamespace_impl.h',
         'renderer/safe_browsing/features.cc',
         'renderer/safe_browsing/features.h',
+        'renderer/safe_browsing/phishing_dom_feature_extractor.cc',
+        'renderer/safe_browsing/phishing_dom_feature_extractor.h',
         'renderer/safe_browsing/phishing_url_feature_extractor.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor.h',
         'renderer/spellchecker/spellcheck.cc',
