@@ -18,6 +18,7 @@
 		8B31FF8911F0C6FB00FCF3E4 /* module.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8B31FF8611F0C6FB00FCF3E4 /* module.cc */; };
 		8B31FFC511F0C8AB00FCF3E4 /* dwarf2diehandler.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8B31FFC311F0C8AB00FCF3E4 /* dwarf2diehandler.cc */; };
 		8B40BDC00C0638E4009535AF /* logging.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8B40BDBF0C0638E4009535AF /* logging.cc */; };
+		8B4BDBBD120131CA009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDBBC120131CA009C7060 /* libcrypto.dylib */; };
 		8DD76F9A0486AA7600D96B5E /* crash_report.mm in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* crash_report.mm */; settings = {ATTRIBUTES = (); }; };
 		8DD76F9C0486AA7600D96B5E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08FB779EFE84155DC02AAC07 /* Foundation.framework */; };
 		9B35FEEA0B26761C008DE8C7 /* basic_code_modules.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9B35FEE70B26761C008DE8C7 /* basic_code_modules.cc */; };
@@ -47,7 +48,7 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* crash_report.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = crash_report.mm; sourceTree = "<group>"; };
-		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5578003E0BE1F28500EC23E0 /* macho_utilities.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = macho_utilities.cc; path = ../../../common/mac/macho_utilities.cc; sourceTree = SOURCE_ROOT; };
 		5578003F0BE1F28500EC23E0 /* macho_utilities.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macho_utilities.h; path = ../../../common/mac/macho_utilities.h; sourceTree = SOURCE_ROOT; };
 		8B31025311F0D2D400FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
@@ -72,6 +73,7 @@
 		8B31FFC311F0C8AB00FCF3E4 /* dwarf2diehandler.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dwarf2diehandler.cc; path = ../../../common/dwarf/dwarf2diehandler.cc; sourceTree = SOURCE_ROOT; };
 		8B31FFC411F0C8AB00FCF3E4 /* dwarf2diehandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dwarf2diehandler.h; path = ../../../common/dwarf/dwarf2diehandler.h; sourceTree = SOURCE_ROOT; };
 		8B40BDBF0C0638E4009535AF /* logging.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = logging.cc; path = ../../../processor/logging.cc; sourceTree = SOURCE_ROOT; };
+		8B4BDBBC120131CA009C7060 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		8DD76FA10486AA7600D96B5E /* crash_report */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = crash_report; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B35FEE20B2675F9008DE8C7 /* code_module.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = code_module.h; path = ../../../google_breakpad/processor/code_module.h; sourceTree = SOURCE_ROOT; };
 		9B35FEE30B2675F9008DE8C7 /* code_modules.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = code_modules.h; path = ../../../google_breakpad/processor/code_modules.h; sourceTree = SOURCE_ROOT; };
@@ -134,6 +136,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DD76F9C0486AA7600D96B5E /* Foundation.framework in Frameworks */,
+				8B4BDBBD120131CA009C7060 /* libcrypto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -190,6 +193,7 @@
 		08FB779DFE84155DC02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				8B4BDBBC120131CA009C7060 /* libcrypto.dylib */,
 				08FB779EFE84155DC02AAC07 /* Foundation.framework */,
 			);
 			name = "External Frameworks and Libraries";
@@ -386,20 +390,16 @@
 		1DEB927508733DD40010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				OTHER_LDFLAGS = "-lcrypto";
+				HEADER_SEARCH_PATHS = ../../../../src;
 				PRODUCT_NAME = crash_report;
-				USER_HEADER_SEARCH_PATHS = "../../../../** $(inherited)";
 			};
 			name = Debug;
 		};
 		1DEB927608733DD40010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				OTHER_LDFLAGS = "-lcrypto";
+				HEADER_SEARCH_PATHS = ../../../../src;
 				PRODUCT_NAME = crash_report;
-				USER_HEADER_SEARCH_PATHS = "../../../../** $(inherited)";
 			};
 			name = Release;
 		};

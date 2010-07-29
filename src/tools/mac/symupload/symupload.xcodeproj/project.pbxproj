@@ -31,7 +31,7 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* symupload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = symupload.m; sourceTree = "<group>"; };
-		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		8B31022B11F0CE6900FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B3102B611F0D5CE00FCF3E4 /* BreakpadDebug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadDebug.xcconfig; path = ../../../common/mac/BreakpadDebug.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B3102B711F0D5CE00FCF3E4 /* BreakpadRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadRelease.xcconfig; path = ../../../common/mac/BreakpadRelease.xcconfig; sourceTree = SOURCE_ROOT; };
@@ -175,16 +175,16 @@
 		1DEB927508733DD40010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = ../../..;
 				PRODUCT_NAME = symupload;
-				USER_HEADER_SEARCH_PATHS = "../../../** $(inherited)";
 			};
 			name = Debug;
 		};
 		1DEB927608733DD40010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = ../../..;
 				PRODUCT_NAME = symupload;
-				USER_HEADER_SEARCH_PATHS = "../../../** $(inherited)";
 			};
 			name = Release;
 		};
@@ -205,16 +205,16 @@
 		9BD836030B0544BB0055103E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = ../../..;
 				PRODUCT_NAME = minidump_upload;
-				USER_HEADER_SEARCH_PATHS = "../../../**";
 			};
 			name = Debug;
 		};
 		9BD836040B0544BB0055103E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = ../../..;
 				PRODUCT_NAME = minidump_upload;
-				USER_HEADER_SEARCH_PATHS = "../../../**";
 			};
 			name = Release;
 		};

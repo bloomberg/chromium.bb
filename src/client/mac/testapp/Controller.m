@@ -76,7 +76,7 @@
 
   NSString *resourcePath = [[NSBundle bundleForClass:
                                         [self class]] resourcePath];
-  NSString *execProgname;
+  NSString *execProgname = nil;
   if (progCrashPoint == DURINGLAUNCH) {
     execProgname = [resourcePath stringByAppendingString:@"/crashduringload"];
   } else if (progCrashPoint == AFTERLAUNCH) {

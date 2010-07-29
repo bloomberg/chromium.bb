@@ -47,6 +47,9 @@
 		8B3102E611F0D74C00FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		8B3102EB11F0D78000FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		8B31FC8211EFD2B800FCF3E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
+		8B4BDAAF12012BC5009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
+		8B4BDABE12012CEF009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
+		8B4BDAC512012D05009C7060 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B4BDAA7120124EA009C7060 /* libcrypto.dylib */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		D2A5DD301188633800081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
 		D2A5DD401188640400081F03 /* breakpad_nlist_64.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53690ECCE3FD009BE4BA /* breakpad_nlist_64.cc */; };
@@ -433,9 +436,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
-		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		32DBCF5E0370ADEE00C91783 /* Breakpad_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Breakpad_Prefix.pch; path = Framework/Breakpad_Prefix.pch; sourceTree = "<group>"; };
 		3329D4EC0FA16D820007BBC5 /* Breakpad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Breakpad.xib; path = sender/Breakpad.xib; sourceTree = "<group>"; };
 		33880C7F0F9E097100817F82 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = sender/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -446,6 +449,7 @@
 		8B31027711F0D3AF00FCF3E4 /* BreakpadDebug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadDebug.xcconfig; path = ../../common/mac/BreakpadDebug.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B31027811F0D3AF00FCF3E4 /* BreakpadRelease.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = BreakpadRelease.xcconfig; path = ../../common/mac/BreakpadRelease.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B31FFF611F0C90500FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
+		8B4BDAA7120124EA009C7060 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		8DC2EF5B0486A6940098B216 /* Breakpad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Breakpad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE43467411C72855004F095F /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = sender/da.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DE43467511C72857004F095F /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = sender/de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -509,7 +513,7 @@
 		F92C538F0ECCE70A009BE4BA /* minidump_file_writer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump_file_writer.cc; path = ../minidump_file_writer.cc; sourceTree = SOURCE_ROOT; };
 		F92C53900ECCE70A009BE4BA /* minidump_file_writer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = minidump_file_writer.h; path = ../minidump_file_writer.h; sourceTree = SOURCE_ROOT; };
 		F92C53B70ECCE7B3009BE4BA /* Inspector.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Inspector.mm; path = crash_generation/Inspector.mm; sourceTree = SOURCE_ROOT; };
-		F92C554A0ECCF530009BE4BA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		F92C554A0ECCF530009BE4BA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		F92C55CE0ECD0064009BE4BA /* Breakpad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Breakpad.h; path = Framework/Breakpad.h; sourceTree = "<group>"; };
 		F92C55CF0ECD0064009BE4BA /* Breakpad.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Breakpad.mm; path = Framework/Breakpad.mm; sourceTree = "<group>"; };
 		F92C56310ECD0DF1009BE4BA /* OnDemandServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OnDemandServer.h; path = Framework/OnDemandServer.h; sourceTree = "<group>"; };
@@ -542,7 +546,7 @@
 		F9C44DBB0EF072A0003AEBAA /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = testapp/English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		F9C44DBF0EF0778F003AEBAA /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Controller.h; path = testapp/Controller.h; sourceTree = "<group>"; };
 		F9C44DC00EF0778F003AEBAA /* TestClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestClass.h; path = testapp/TestClass.h; sourceTree = "<group>"; };
-		F9C44EE40EF0A006003AEBAA /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
+		F9C44EE40EF0A006003AEBAA /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		F9C44EE70EF0A3C1003AEBAA /* GTMLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GTMLogger.h; path = ../../common/mac/GTMLogger.h; sourceTree = SOURCE_ROOT; };
 		F9C44EE80EF0A3C1003AEBAA /* GTMLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GTMLogger.m; path = ../../common/mac/GTMLogger.m; sourceTree = SOURCE_ROOT; };
 		F9C77DDA0F7DD5CF0045F7DB /* UnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -578,6 +582,7 @@
 			files = (
 				8B31FC8211EFD2B800FCF3E4 /* Foundation.framework in Frameworks */,
 				F92C56570ECD113E009BE4BA /* Carbon.framework in Frameworks */,
+				8B4BDAAF12012BC5009C7060 /* libcrypto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -596,6 +601,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B31029411F0D54300FCF3E4 /* Foundation.framework in Frameworks */,
+				8B4BDABE12012CEF009C7060 /* libcrypto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -611,6 +617,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B3102E611F0D74C00FCF3E4 /* Foundation.framework in Frameworks */,
+				8B4BDAC512012D05009C7060 /* libcrypto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -673,6 +680,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8B4BDAA7120124EA009C7060 /* libcrypto.dylib */,
 				8B3101E911F0CDE300FCF3E4 /* SenTestingKit.framework */,
 				F9C44EE40EF0A006003AEBAA /* SystemConfiguration.framework */,
 				F92C554A0ECCF530009BE4BA /* Carbon.framework */,
@@ -1654,10 +1662,9 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
-				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework/Breakpad_Prefix.pch;
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				INFOPLIST_FILE = Framework/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = Breakpad;
@@ -1673,7 +1680,7 @@
 				FRAMEWORK_VERSION = A;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework/Breakpad_Prefix.pch;
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				INFOPLIST_FILE = Framework/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = Breakpad;
@@ -1700,11 +1707,7 @@
 		F92C53560ECCE34A009BE4BA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "../..//**";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-lcrypto",
-				);
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = Inspector;
 			};
 			name = Debug;
@@ -1712,11 +1715,7 @@
 		F92C53570ECCE34A009BE4BA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "../..//**";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-lcrypto",
-				);
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = Inspector;
 			};
 			name = Release;
@@ -1726,13 +1725,11 @@
 			buildSettings = {
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				GCC_DYNAMIC_NO_PIC = NO;
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-headerpad_max_install_names",
-					"-lcrypto",
 				);
 				PRODUCT_NAME = breakpadUtilities;
 			};
@@ -1743,12 +1740,11 @@
 			buildSettings = {
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-headerpad_max_install_names",
-					"-lcrypto",
 				);
 				PRODUCT_NAME = breakpadUtilities;
 			};
@@ -1757,7 +1753,7 @@
 		F92C56A30ECE04A8009BE4BA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				INFOPLIST_FILE = "sender/crash_report_sender-Info.plist";
 				PRODUCT_NAME = crash_report_sender;
 			};
@@ -1766,7 +1762,7 @@
 		F92C56A40ECE04A8009BE4BA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				INFOPLIST_FILE = "sender/crash_report_sender-Info.plist";
 				PRODUCT_NAME = crash_report_sender;
 			};
@@ -1775,16 +1771,15 @@
 		F93803C00F808210004D428B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				OTHER_LDFLAGS = "-lcrypto";
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = generator_test;
-				USER_HEADER_SEARCH_PATHS = ../../;
 			};
 			name = Debug;
 		};
 		F93803C10F808210004D428B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				OTHER_LDFLAGS = "-lcrypto";
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = generator_test;
 			};
 			name = Release;
@@ -1792,15 +1787,15 @@
 		F93DE2D30F82A67400608B94 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = minidump_file_writer_unittest;
-				USER_HEADER_SEARCH_PATHS = ../../;
 			};
 			name = Debug;
 		};
 		F93DE2D40F82A67400608B94 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = minidump_file_writer_unittest;
 			};
 			name = Release;
@@ -1808,16 +1803,15 @@
 		F93DE32E0F82C55700608B94 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				OTHER_LDFLAGS = "-lcrypto";
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = handler_test;
-				USER_HEADER_SEARCH_PATHS = ../../;
 			};
 			name = Debug;
 		};
 		F93DE32F0F82C55700608B94 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				OTHER_LDFLAGS = "-lcrypto";
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = handler_test;
 			};
 			name = Release;
@@ -1836,10 +1830,9 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
-				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework/Breakpad_Prefix.pch;
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				INFOPLIST_FILE = Framework/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = Breakpad;
@@ -1850,11 +1843,7 @@
 		F93DE3BB0F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "../..//**";
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-lcrypto",
-				);
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = Inspector;
 			};
 			name = "Debug With Code Coverage";
@@ -1864,13 +1853,11 @@
 			buildSettings = {
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				GCC_DYNAMIC_NO_PIC = NO;
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				LD_DYLIB_INSTALL_NAME = "@executable_path/../Resources/$(EXECUTABLE_PATH)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-headerpad_max_install_names",
-					"-lcrypto",
 				);
 				PRODUCT_NAME = breakpadUtilities;
 			};
@@ -1879,7 +1866,7 @@
 		F93DE3BD0F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = "../..//**";
+				HEADER_SEARCH_PATHS = ../..;
 				INFOPLIST_FILE = "sender/crash_report_sender-Info.plist";
 				PRODUCT_NAME = crash_report_sender;
 			};
@@ -1910,7 +1897,6 @@
 				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				INFOPLIST_FILE = "UnitTests-Info.plist";
-				LIBRARY_SEARCH_PATHS = ./gcov;
 				PRODUCT_NAME = UnitTests;
 				WRAPPER_EXTENSION = octest;
 			};
@@ -1919,42 +1905,24 @@
 		F93DE3C10F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				LIBRARY_SEARCH_PATHS = ./gcov;
-				OTHER_LDFLAGS = (
-					"-lgcov",
-					"-lcrypto",
-					"-framework",
-					Foundation,
-				);
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = generator_test;
-				USER_HEADER_SEARCH_PATHS = ../../;
 			};
 			name = "Debug With Code Coverage";
 		};
 		F93DE3C20F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
-				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
-				LIBRARY_SEARCH_PATHS = ./gcov;
-				OTHER_LDFLAGS = "-lgcov";
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = minidump_file_writer_unittest;
-				USER_HEADER_SEARCH_PATHS = ../../;
 			};
 			name = "Debug With Code Coverage";
 		};
 		F93DE3C30F830E7000608B94 /* Debug With Code Coverage */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
-				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
-				LIBRARY_SEARCH_PATHS = ./gcov;
-				OTHER_LDFLAGS = (
-					"-lcrypto",
-					"-lgcov",
-				);
+				HEADER_SEARCH_PATHS = ../..;
 				PRODUCT_NAME = handler_test;
-				USER_HEADER_SEARCH_PATHS = ../../;
 			};
 			name = "Debug With Code Coverage";
 		};
