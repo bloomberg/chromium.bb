@@ -48,6 +48,22 @@ class NetworkChangeNotifier;
 //    things which should be done immediately before the start of the main
 //    message loop should go in |PreMainMessageLoopStart()|.
 //  - (more to come)
+//
+// How to add stuff (to existing parts):
+//  - Figure out when your new code should be executed. What must happen
+//    before/after your code is executed? Are there performance reasons for
+//    running your code at a particular time? Document these things!
+//  - Split out any platform-specific bits. Please avoid #ifdefs it at all
+//    possible. You have two choices for platform-specific code: (1) Execute it
+//    from one of the platform-specific |Pre/Post...()| methods; do this if the
+//    code is unique to a platform type. Or (2) execute it from one of the
+//    "parts" (e.g., |EarlyInitialization()|) and provide platform-specific
+//    implementations of your code (in a virtual method); do this if you need to
+//    provide different implementations across most/all platforms.
+//  - Unless your new code is just one or two lines, put it into a separate
+//    method with a well-defined purpose. (Likewise, if you're adding to an
+//    existing chunk which makes it longer than one or two lines, please move
+//    the code out into a separate method.)
 class BrowserMainParts {
  public:
   // This static method is to be implemented by each platform and should
@@ -95,7 +111,7 @@ class BrowserMainParts {
   void SpdyFieldTrial();
 
   // Used to initialize NSPR where appropriate.
-  void InitializeSSL();
+  virtual void InitializeSSL() = 0;
 
   // Methods for |MainMessageLoopStart()| --------------------------------------
 

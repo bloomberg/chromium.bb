@@ -15,6 +15,11 @@ class BrowserMainPartsPosix : public BrowserMainParts {
  protected:
   virtual void PreEarlyInitialization();
   virtual void PostMainMessageLoopStart();
+
+ private:
+#if !defined(OS_MACOSX)
+  virtual void InitializeSSL() {}
+#endif
 };
 
 #endif  // CHROME_BROWSER_BROWSER_MAIN_POSIX_H_

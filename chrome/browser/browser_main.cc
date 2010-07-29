@@ -121,7 +121,6 @@
 #include "chrome/installer/util/version.h"
 #include "net/base/net_util.h"
 #include "net/base/sdch_manager.h"
-#include "net/socket/ssl_client_socket_nss_factory.h"
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
 #endif  // defined(OS_WIN)
@@ -129,11 +128,6 @@
 #if defined(OS_MACOSX)
 #include <Security/Security.h>
 #include "chrome/browser/cocoa/install_from_dmg.h"
-#include "net/socket/ssl_client_socket_mac_factory.h"
-#endif
-
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#include "base/nss_util.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -169,7 +163,7 @@ void BrowserMainParts::EarlyInitialization() {
   ConnectionFieldTrial();
   SocketTimeoutFieldTrial();
   SpdyFieldTrial();
-  InitializeSSL();  // TODO(viettrungluu): move to platform-specific method(s)
+  InitializeSSL();
 
   PostEarlyInitialization();
 }
@@ -310,31 +304,6 @@ void BrowserMainParts::SpdyFieldTrial() {
       CHECK(!is_spdy_trial);
     }
   }
-}
-
-// TODO(viettrungluu): move to platform-specific methods
-void BrowserMainParts::InitializeSSL() {
-  // Use NSS for SSL by default.
-#if defined(OS_MACOSX)
-  // The default client socket factory uses NSS for SSL by default on Mac.
-  if (parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
-    net::ClientSocketFactory::SetSSLClientSocketFactory(
-        net::SSLClientSocketMacFactory);
-  } else {
-    // We want to be sure to init NSPR on the main thread.
-    base::EnsureNSPRInit();
-  }
-#elif defined(OS_WIN)
-  // Because of a build system issue (http://crbug.com/43461), the default
-  // client socket factory uses SChannel (the system SSL library) for SSL by
-  // default on Windows.
-  if (!parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
-    net::ClientSocketFactory::SetSSLClientSocketFactory(
-        net::SSLClientSocketNSSFactory);
-    // We want to be sure to init NSPR on the main thread.
-    base::EnsureNSPRInit();
-  }
-#endif
 }
 
 // BrowserMainParts: |MainMessageLoopStart()| and related ----------------------
@@ -723,8 +692,24 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // are NOT deleted. If you need something to run during WM_ENDSESSION add it
   // to browser_shutdown::Shutdown or BrowserProcess::EndSession.
 
-  // TODO(beng, brettw): someday, break this out into sub functions with well
-  //                     defined roles (e.g. pre/post-profile startup, etc).
+  // !!!!!!!!!! READ ME !!!!!!!!!!
+  // I (viettrungluu) am in the process of refactoring |BrowserMain()|. If you
+  // need to add something above this comment, read the documentation in
+  // browser_main.h. If you need to add something below, please do the
+  // following:
+  //  - Figure out where you should add your code. Do NOT just pick a random
+  //    location "which works".
+  //  - Document the dependencies apart from compile-time-checkable ones. What
+  //    must happen before your new code is executed? Does your new code need to
+  //    run before something else? Are there performance reasons for executing
+  //    your code at that point?
+  //  - If you need to create a (persistent) object, heap allocate it and keep a
+  //    |scoped_ptr| to it rather than allocating it on the stack. Otherwise
+  //    I'll have to convert your code when I refactor.
+  //  - Unless your new code is just a couple of lines, factor it out into a
+  //    function with a well-defined purpose. Do NOT just add it inline in
+  //    |BrowserMain()|.
+  // Thanks!
 
   // TODO(viettrungluu): put the remainder into BrowserMainParts
   const CommandLine& parsed_command_line = parameters.command_line_;
