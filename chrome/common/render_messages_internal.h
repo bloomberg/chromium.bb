@@ -1875,12 +1875,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::vector<appcache::AppCacheResourceInfo>
                               /* resources out */)
 
-  // Returns the resizer box location in the window this widget is embedded.
-  // Important for Mac OS X, but not Win or Linux.
-  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_GetRootWindowResizerRect,
-                             gfx::NativeViewId /* window */,
-                             gfx::Rect /* Out: Window location */)
-
   // Queries the browser for AutoFill suggestions for a form input field.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_QueryFormFieldAutoFill,
                       int /* id of this message */,
