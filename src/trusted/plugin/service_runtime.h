@@ -43,7 +43,7 @@ class ServiceRuntime {
   //  browser cache, typically).  It spawns a sel_ldr instance and establishes
   //  a ConnectedSocket to it.
   bool Start(const char* nacl_file);
-  bool Start(const char* url, nacl::DescWrapper *);
+  bool StartUnderChromium(const char* url, nacl::DescWrapper* shm);
 
   bool Kill();
   bool Log(int severity, nacl::string msg);
@@ -62,7 +62,7 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  bool InitCommunication(nacl::DescWrapper*);
+  bool InitCommunication(nacl::Handle bootstrap_socket, nacl::DescWrapper* shm);
   BrowserInterface* browser_interface_;
   ScriptableHandle* default_socket_address_;
   ScriptableHandle* default_socket_;

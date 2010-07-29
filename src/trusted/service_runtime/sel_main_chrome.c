@@ -73,14 +73,6 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles) {
   envp = (const char **) environ;
 #endif
 
-  /*
-   * TODO(mseaborn): Currently Chromium is only capable of passing one
-   * handle, and the plugin only passes one.  This will be changed to
-   * support sendAsyncMessage and setAsyncCallback.  See
-   * http://code.google.com/p/nativeclient/issues/detail?id=642
-   */
-  CHECK(handle_count == 1);
-
   NaClAllModulesInit();
 
   /* Used to be set by -P. */
@@ -100,7 +92,10 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles) {
   errcode = LOAD_OK;
 
   /* import IMC handle - used to be "-i" */
+  CHECK(handle_count == 3);
   NaClAddImcHandle(nap, handles[0], export_addr_to);
+  NaClAddImcHandle(nap, handles[1], 6); /* async_receive_desc */
+  NaClAddImcHandle(nap, handles[2], 7); /* async_send_desc */
 
   /*
    * in order to report load error to the browser plugin through the

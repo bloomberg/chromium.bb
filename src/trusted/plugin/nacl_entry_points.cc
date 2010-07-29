@@ -50,8 +50,6 @@ extern "C" {
   NPError API_CALL NP_Shutdown(void);
 }
 
-LaunchNaClProcessFunc launch_nacl_process = NULL;
-
 NPError API_CALL NaCl_NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
 #if NACL_WINDOWS || NACL_OSX
   return NP_GetEntryPoints(pFuncs);
@@ -103,17 +101,16 @@ static void RegisterCommon() {
   NPAPI::PluginList::Singleton()->RegisterInternalPlugin(nacl_plugin_info);
 }
 
-void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func) {
+// This gets called in the browser process.
+void RegisterInternalNaClPlugin() {
   RegisterCommon();
-  if (NULL != launch_func) {
-    launch_nacl_process = launch_func;
-  }
 }
 
+// This gets called in the renderer process.
 void RegisterInternalNaClPlugin(const std::map<std::string, uintptr_t>& funcs) {
   RegisterCommon();
   std::map<std::string, uintptr_t>::const_iterator it =
-    funcs.find("launch_nacl_process");
+    funcs.find("launch_nacl_process_multi_fd");
   if (it != funcs.end()) {
     launch_nacl_process = reinterpret_cast<LaunchNaClProcessFunc>(it->second);
   }

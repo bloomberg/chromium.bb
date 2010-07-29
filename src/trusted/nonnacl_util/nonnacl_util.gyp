@@ -42,6 +42,7 @@
         'sources': [
           'sel_ldr_launcher.cc',
           'sel_ldr_launcher.h',
+          'sel_ldr_launcher_chrome.cc',
         ],
         'cflags!': [
           '-Wextra',
@@ -74,11 +75,6 @@
             '-Wextra',
           ]
         },
-      }],
-      ['target_base=="nonnacl_util_chrome"', {
-        'sources': [
-          'sel_ldr_launcher_chrome.cc',
-        ],
       }],
     ]
   },
@@ -177,9 +173,6 @@
         {
           'target_name': 'nonnacl_util_chrome',
           'type': 'static_library',
-          'variables': {
-            'target_base': 'nonnacl_util_chrome',
-          },
           'dependencies': [
             'sel_ldr_launcher',
           ],
@@ -199,9 +192,6 @@
         {
           'target_name': 'nonnacl_util_chrome64',
           'type': 'static_library',
-          'variables': {
-            'target_base': 'nonnacl_util_chrome',
-          },
           'dependencies': [
             'sel_ldr_launcher64',
           ],

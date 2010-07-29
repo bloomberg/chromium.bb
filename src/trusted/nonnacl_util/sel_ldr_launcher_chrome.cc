@@ -7,31 +7,30 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 
+LaunchNaClProcessFunc launch_nacl_process = NULL;
+
 namespace nacl {
-  bool SelLdrLauncher::Start(const char* url, int imc_fd) {
+  bool SelLdrLauncher::StartUnderChromium(const char* url, int socket_count,
+                                          Handle* result_sockets) {
     // send a synchronous message to the browser process
-    Handle imc_handle;
     Handle nacl_proc_handle;
     int nacl_proc_id;
     if (!launch_nacl_process ||
         !launch_nacl_process(url,
-                             imc_fd,
-                             &imc_handle,
+                             socket_count,
+                             result_sockets,
                              &nacl_proc_handle,
                              &nacl_proc_id)) {
       return false;
     }
 
-#if NACL_WINDOWS
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
     NaClHandlePassBrowserRememberHandle(nacl_proc_id, nacl_proc_handle);
 #endif
 
     CloseHandlesAfterLaunch();
     // TODO(gregoryd): the handle is currently returned on Windows only.
     child_ = nacl_proc_handle;
-    // The handle we get back is the plugins end of the initial communication
-    // channel - it is now created by the browser process
-    channel_ = imc_handle;
     return true;
   }
 }

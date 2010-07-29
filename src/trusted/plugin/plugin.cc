@@ -548,7 +548,8 @@ bool Plugin::Load(nacl::string logical_url,
     }
     nacl::DescWrapper* wrapped_shm =
         wrapper_factory_->MakeGeneric(NaClDescRef(raw_desc));
-    service_runtime_started = service_runtime_->Start(local_url_, wrapped_shm);
+    service_runtime_started =
+        service_runtime_->StartUnderChromium(local_url_, wrapped_shm);
     // Start consumes the wrapped_shm.
   }
   if (!service_runtime_started) {

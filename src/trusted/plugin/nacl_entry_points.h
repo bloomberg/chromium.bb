@@ -41,8 +41,8 @@
 
 
 typedef bool (*LaunchNaClProcessFunc)(const char* url,
-                                      int imc_fd,
-                                      nacl::Handle* imc_handle,
+                                      int socket_count,
+                                      nacl::Handle* result_sockets,
                                       nacl::Handle* nacl_process_handle,
                                       int* nacl_process_id);
 
@@ -50,8 +50,9 @@ extern LaunchNaClProcessFunc launch_nacl_process;
 
 // Registers the internal NaCl plugin with PluginList.
 // Old version.  TODO(mseaborn): Remove this eventually, when Chromium
-// has stopped using it for a while.
-void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func = NULL);
+// has stopped using it for a while.  Note that this is still called
+// by Chromium in the browser process.
+void RegisterInternalNaClPlugin();
 // New version.
 void RegisterInternalNaClPlugin(const std::map<std::string, uintptr_t>& funcs);
 

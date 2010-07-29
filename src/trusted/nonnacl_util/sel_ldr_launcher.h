@@ -92,19 +92,11 @@ struct SelLdrLauncher {
     return Launch();
   }
 
-  // TODO(gregoryd): add some background story here
-#ifdef NACL_STANDALONE
-  // Should never be called when not running in Chrome.
-  bool Start(const char* url, int imc_fd) {
-    UNREFERENCED_PARAMETER(url);
-    UNREFERENCED_PARAMETER(imc_fd);
-    return false;
-  }
-#else
   // Launch sel_ldr process in Chrome by sending a message
   // to the browser process.
-  bool Start(const char* url, int imc_fd);
-#endif
+  bool StartUnderChromium(const char* url, int socket_count,
+                          Handle* result_sockets);
+
   // OpenSrpcChannels essentially is a triple Ctor for the three
   // NaClSrpcChannel objects; if it returns true (success), all were
   // constructed; if it returns false, none were constructed (and thus

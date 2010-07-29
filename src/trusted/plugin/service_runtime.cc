@@ -49,18 +49,18 @@ ServiceRuntime::ServiceRuntime(
 }
 
 // shm is consumed (Delete invoked).
-bool ServiceRuntime::InitCommunication(nacl::DescWrapper* shm) {
+bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
+                                       nacl::DescWrapper* shm) {
   // TODO(sehr): this should use the new
   // SelLdrLauncher::OpenSrpcChannels interface, which should be free
   // of resource leaks.
-  // Channel5 was opened to communicate with the sel_ldr instance.
-  // Get the first IMC message and create a socket address from it.
-  nacl::Handle channel5 = subprocess_->channel();
+  // bootstrap_socket was opened to communicate with the sel_ldr instance.
+  // Get the first IMC message and receive a socket address FD from it.
   PLUGIN_PRINTF(("ServiceRuntime(%p): opened %p 0x%p\n",
                  static_cast<void*>(this), static_cast<void*>(subprocess_),
-                 reinterpret_cast<void*>(channel5)));
-  // GetSocketAddress implicitly invokes Close(channel5).
-  default_socket_address_ = GetSocketAddress(plugin_, channel5);
+                 reinterpret_cast<void*>(bootstrap_socket)));
+  // GetSocketAddress implicitly invokes Close(bootstrap_socket).
+  default_socket_address_ = GetSocketAddress(plugin_, bootstrap_socket);
   PLUGIN_PRINTF(("ServiceRuntime::Start: "
                  "Got service channel descriptor %p\n",
                  static_cast<void*>(default_socket_address_)));
@@ -249,7 +249,7 @@ bool ServiceRuntime::Start(const char* nacl_file) {
                               "Could not create SelLdrLauncher");
     return false;
   }
-  subprocess_->Init(nacl_file, 5, kArgv, kEmpty);
+  subprocess_->Init(nacl_file, -1, kArgv, kEmpty);
 
   nacl::Handle receive_handle = subprocess_->ExportImcFD(6);
   if (receive_handle == nacl::kInvalidHandle) {
@@ -267,6 +267,13 @@ bool ServiceRuntime::Start(const char* nacl_file) {
   }
   async_send_desc = plugin()->wrapper_factory()->MakeImcSock(send_handle);
 
+  nacl::Handle bootstrap_socket = subprocess_->ExportImcFD(5);
+  if (bootstrap_socket == nacl::kInvalidHandle) {
+    browser_interface_->Alert(plugin()->instance_id(),
+                              "Failed to create socket handle");
+    return false;
+  }
+
   if (!subprocess_->Launch()) {
     PLUGIN_PRINTF(("ServiceRuntime: Could not start SelLdrLauncher"));
     browser_interface_->Alert(plugin()->instance_id(),
@@ -278,7 +285,7 @@ bool ServiceRuntime::Start(const char* nacl_file) {
 
   // TODO(gregoryd) - this should deal with buffer and size correctly
   // - do we need to send the load command from here?
-  if (!InitCommunication(NULL)) {
+  if (!InitCommunication(bootstrap_socket, NULL)) {
     return false;
   }
 
@@ -286,19 +293,25 @@ bool ServiceRuntime::Start(const char* nacl_file) {
   return true;
 }
 
-// Chromium version.
-bool ServiceRuntime::Start(const char* url, nacl::DescWrapper* shm) {
+bool ServiceRuntime::StartUnderChromium(const char* url,
+                                        nacl::DescWrapper* shm) {
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
     return false;
   }
-  if (!subprocess_->Start(url, 5)) {
-      delete subprocess_;
-      subprocess_ = NULL;
-      return false;
+  nacl::Handle sockets[3];
+  if (!subprocess_->StartUnderChromium(url, NACL_ARRAY_SIZE(sockets),
+                                       sockets)) {
+    delete subprocess_;
+    subprocess_ = NULL;
+    return false;
   }
 
-  if (!InitCommunication(shm)) {
+  nacl::Handle bootstrap_socket = sockets[0];
+  async_receive_desc = plugin()->wrapper_factory()->MakeImcSock(sockets[1]);
+  async_send_desc = plugin()->wrapper_factory()->MakeImcSock(sockets[2]);
+
+  if (!InitCommunication(bootstrap_socket, shm)) {
     return false;
   }
 
