@@ -34,6 +34,7 @@ extern "C" { // needed to compile on Leopard
 }
 
 #include "breakpad_nlist_64.h"
+#include <assert.h>
 #include <dlfcn.h>
 #include <mach/mach_vm.h>
 #include <algorithm>
