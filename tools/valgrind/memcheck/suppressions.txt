@@ -3609,3 +3609,15 @@
    fun:_ZN64_GLOBAL__N_net_base_cookie_monster_unittest.cc_00000000_C9F6D94420AddKeyedCookieToListERKSsS1_RKN4base4TimeEPSt6vectorISt4pairISsPN3net13CookieMonster15CanonicalCookieEESaISC_EE
    fun:_ZN3net55CookieMonsterTest_DontImportDuplicateCreationTimes_Test8TestBodyEv
 }
+{
+   bug_50630
+   Memcheck:Value4
+   fun:modp_b64_encode
+   fun:_ZN4base12Base64EncodeERKSsPSs
+   fun:_Z24ConvertSkBitmapToDataURLRK8SkBitmap
+   fun:_ZN22InternetOptionsHandler10GetNetworkERKSsRK8SkBitmapS1_bbib
+   fun:_ZN22InternetOptionsHandler15GetWirelessListEv
+   fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
+   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
+   fun:_ZN9OptionsUIC1EP11TabContents
+}
