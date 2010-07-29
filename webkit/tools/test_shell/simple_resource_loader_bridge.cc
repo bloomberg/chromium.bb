@@ -33,6 +33,7 @@
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #if defined(OS_MACOSX) || defined(OS_WIN)
 #include "base/nss_util.h"
@@ -824,4 +825,14 @@ void SimpleResourceLoaderBridge::SetAcceptAllCookies(bool accept_all_cookies) {
 scoped_refptr<base::MessageLoopProxy>
     SimpleResourceLoaderBridge::GetCacheThread() {
   return g_cache_thread->message_loop_proxy();
+}
+
+// static
+scoped_refptr<base::MessageLoopProxy>
+    SimpleResourceLoaderBridge::GetIoThread() {
+  if (!EnsureIOThread()) {
+    LOG(DFATAL) << "Failed to create IO thread.";
+    return NULL;
+  }
+  return g_io_thread->message_loop_proxy();
 }

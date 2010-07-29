@@ -37,8 +37,11 @@ class SimpleResourceLoaderBridge {
   static bool EnsureIOThread();
   static void SetAcceptAllCookies(bool accept_all_cookies);
 
-  // This method should only be called after Init(), and before Shutdown().
+  // These methods should only be called after Init(), and before
+  // Shutdown(). The MessageLoops get replaced upon each call to
+  // Init(), and destroyed upon a call to ShutDown().
   static scoped_refptr<base::MessageLoopProxy> GetCacheThread();
+  static scoped_refptr<base::MessageLoopProxy> GetIoThread();
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
