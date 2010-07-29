@@ -385,7 +385,10 @@ TEST_F(SessionHistoryTest, FragmentBackForward) {
 // back/forward list (such as trigger our start/stop loading events).  This
 // means the test will hang if it attempts to navigate too far forward or back,
 // since we'll be waiting forever for a load stop event.
-TEST_F(SessionHistoryTest, JavascriptHistory) {
+//
+// TODO(brettw) bug 50648: fix flakyness. This test seems like it was failing
+// about 1/4 of the time on Vista by failing to execute JavascriptGo (see bug).
+TEST_F(SessionHistoryTest, FLAKY_JavascriptHistory) {
   scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
