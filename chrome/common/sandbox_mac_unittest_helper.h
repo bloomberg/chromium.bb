@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SANDBOX_MAC_UNITTEST_RUNNER_H_
-#define CHROME_COMMON_SANDBOX_MAC_UNITTEST_RUNNER_H_
+#ifndef CHROME_COMMON_SANDBOX_MAC_UNITTEST_HELPER_H_
+#define CHROME_COMMON_SANDBOX_MAC_UNITTEST_HELPER_H_
 #pragma once
 
 #include "base/multiprocess_test.h"
@@ -15,12 +15,12 @@ namespace sandboxtest {
 //
 // How to write a sandboxed test:
 // 1. Create a class that inherits from MacSandboxTestCase and overrides
-// it's functions to run code before or after the sandbox is initialised in a
+// its functions to run code before or after the sandbox is initialised in a
 // subprocess.
 // 2. Register the class you just created with the REGISTER_SANDBOX_TEST_CASE()
 // macro.
 // 3. Write a test [using TEST_F()] that inherits from MacSandboxTest and call
-// one of it's helper functions to launch the test.
+// one of its helper functions to launch the test.
 //
 // Example:
 //  class TestCaseThatRunsInSandboxedSubprocess :
@@ -114,4 +114,4 @@ template <class T> struct RegisterSandboxTest {
 
 }  // namespace sandboxtest
 
-#endif  // CHROME_COMMON_SANDBOX_MAC_UNITTEST_RUNNER_H_
+#endif  // CHROME_COMMON_SANDBOX_MAC_UNITTEST_HELPER_H_
