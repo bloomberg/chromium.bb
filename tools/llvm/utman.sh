@@ -120,9 +120,6 @@ readonly PNACL_CLIENT_TC_ROOT="$(pwd)/toolchain/sandboxed_translators"
 readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
 readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 
-# Libraries needed for building sandboxed translators
-readonly PNACL_CLIENT_TC_LIB="${PNACL_CLIENT_TC_ROOT}/lib"
-
 # Current milestones within each Hg repo:
 readonly LLVM_REV=8d110cbedf4e
 readonly LLVM_GCC_REV=95a73ee79716
@@ -1391,7 +1388,7 @@ binutils-liberty-x86-configure() {
     PATH="/usr/bin:/bin" \
     CC=${CC} \
     CXX=${CXX} \
-    ${srcdir}/binutils-2.20/configure --prefix=${PNACL_CLIENT_TC_LIB} \
+    ${srcdir}/binutils-2.20/configure --prefix=${PNACL_CLIENT_TC_ROOT} \
                                       --with-sysroot=${NEWLIB_INSTALL_DIR}
   spopd
 }
@@ -1521,9 +1518,14 @@ llvm-tools-x8632-sb-make() {
   local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
   spushd ${objdir}
 
+  ts-touch-open "${objdir}"
+
   RunWithLog llvm.tools.x8632.sandboxed.make \
     env -i PATH="/usr/bin:/bin" \
     make VERBOSE=1 tools-only
+
+  ts-touch-commit "${objdir}"
+
   spopd
 }
 
@@ -1550,16 +1552,30 @@ binutils-x8632-sb() {
     exit -1
   fi
 
-  if [ ! -f ${PNACL_CLIENT_TC_LIB}/libiberty.a ] ; then
-    echo "ERROR: install Portable Native Client toolchain"
+  if [ ! -f ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ] ; then
+    echo "ERROR: missing lib. Run this script with  binutils-liberty-x86 option"
     exit -1
   fi
 
-  # TODO(pdox): make this incremental
-  binutils-x8632-sb-clean
-  binutils-x8632-sb-configure
-  binutils-x8632-sb-make
+  if binutils-x8632-sb-needs-configure; then
+    binutils-x8632-sb-clean
+    binutils-x8632-sb-configure
+  else
+    SkipBanner "BINUTILS-X8632-SB" "configure"
+  fi
+
+  if binutils-x8632-sb-needs-make; then
+    binutils-x8632-sb-make
+  else
+    SkipBanner "BINUTILS-X8632-SB" "make"
+  fi
+
   binutils-x8632-sb-install
+}
+
+binutils-x8632-sb-needs-configure() {
+  [ ! -f "${TC_BUILD_BINUTILS_X8632_SB}/config.status" ]
+  return $?
 }
 
 #+ binutils-x8632-sb-clean - Clean binutils (sandboxed) for x8632
@@ -1579,7 +1595,7 @@ binutils-x8632-sb-configure() {
 
   mkdir ${TC_BUILD_BINUTILS_X8632_SB}/opcodes
   spushd ${objdir}
-  cp ${PNACL_CLIENT_TC_LIB}/libiberty.a ./opcodes/.
+  cp ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ./opcodes/.
   RunWithLog \
     binutils.x8632.sandboxed.configure \
     env -i \
@@ -1588,7 +1604,6 @@ binutils-x8632-sb-configure() {
     AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
     CC="${NACL_TOOLCHAIN}/bin/nacl-gcc" \
     CXX="${NACL_TOOLCHAIN}/bin/nacl-g++" \
-    EMULATOR_FOR_BUILD="$(pwd)/scons-out/dbg-linux-x86-32/staging/sel_ldr -d" \
     LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
     RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
     CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
@@ -1605,15 +1620,28 @@ binutils-x8632-sb-configure() {
   spopd
 }
 
+binutils-x8632-sb-needs-make() {
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
+
+  ts-modified "$srcdir" "$objdir"
+  return $?
+}
+
 #+ binutils-x8632-sb-make - Make binutils (sandboxed) for x8632
 binutils-x8632-sb-make() {
   StepBanner "BINUTILS-X8632-SB" "Make"
   local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
   spushd ${objdir}
 
+  ts-touch-open "${objdir}"
+
   RunWithLog binutils.x8632.sandboxed.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS} all-gas
+
+  ts-touch-commit "${objdir}"
+
   spopd
 }
 
@@ -1641,16 +1669,30 @@ binutils-x8664-sb() {
     exit -1
   fi
 
-  if [ ! -f ${PNACL_CLIENT_TC_LIB}/libiberty.a ] ; then
-    echo "ERROR: install Portable Native Client toolchain"
+  if [ ! -f ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ] ; then
+    echo "ERROR: missing lib. Run this script with  binutils-liberty-x86 option"
     exit -1
   fi
 
-  # TODO(pdox): make this incremental
-  binutils-x8664-sb-clean
-  binutils-x8664-sb-configure
-  binutils-x8664-sb-make
+  if binutils-x8664-sb-needs-configure; then
+    binutils-x8664-sb-clean
+    binutils-x8664-sb-configure
+  else
+    SkipBanner "BINUTILS-X8664-SB" "configure"
+  fi
+
+  if binutils-x8664-sb-needs-make; then
+    binutils-x8664-sb-make
+  else
+    SkipBanner "BINUTILS-X8664-SB" "make"
+  fi
+
   binutils-x8664-sb-install
+}
+
+binutils-x8664-sb-needs-configure() {
+  [ ! -f "${TC_BUILD_BINUTILS_X8664_SB}/config.status" ]
+  return $?
 }
 
 #+ binutils-x8664-sb-clean - Clean binutils (sandboxed) for x8664
@@ -1670,7 +1712,7 @@ binutils-x8664-sb-configure() {
 
   mkdir ${TC_BUILD_BINUTILS_X8664_SB}/opcodes
   spushd ${objdir}
-  cp ${PNACL_CLIENT_TC_LIB}/libiberty.a ./opcodes/.
+  cp ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ./opcodes/.
   RunWithLog \
     binutils.x8664.sandboxed.configure \
     env -i \
@@ -1695,15 +1737,28 @@ binutils-x8664-sb-configure() {
   spopd
 }
 
+binutils-x8664-sb-needs-make() {
+  local srcdir="${TC_SRC_BINUTILS}"
+  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
+
+  ts-modified "$srcdir" "$objdir"
+  return $?
+}
+
 #+ binutils-x8664-sb-make - Make binutils (sandboxed) for x8664
 binutils-x8664-sb-make() {
   StepBanner "BINUTILS-X8664-SB" "Make"
   local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
   spushd ${objdir}
 
+  ts-touch-open "${objdir}"
+
   RunWithLog binutils.x8664.sandboxed.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS} all-gas
+
+  ts-touch-commit "${objdir}"
+
   spopd
 }
 
