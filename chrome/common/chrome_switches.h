@@ -91,6 +91,7 @@ extern const char kDnsPrefetchDisable[];
 extern const char kDomAutomationController[];
 extern const char kDumpHistogramsOnExit[];
 extern const char kEnableAcceleratedCompositing[];
+extern const char kEnableAccelerated2dCanvas[];
 extern const char kEnableAeroPeekTabs[];
 extern const char kEnableApps[];
 extern const char kEnableAuthNegotiatePort[];

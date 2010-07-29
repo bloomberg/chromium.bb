@@ -96,6 +96,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);
 
+  // Enable gpu-accelerated 2d canvas if requested on the command line.
+  settings->setAccelerated2dCanvasEnabled(accelerated_2d_canvas_enabled);
+
   // Enable memory info reporting to page if requested on the command line.
   settings->setMemoryInfoEnabled(memory_info_enabled);
 

@@ -268,6 +268,9 @@ const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 // Enable gpu-accelerated compositing.
 const char kEnableAcceleratedCompositing[]  = "enable-accelerated-compositing";
 
+// Enable gpu-accelerated 2d canvas.
+const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
+
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 
