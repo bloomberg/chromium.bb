@@ -152,6 +152,8 @@ class TaskManager {
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Basic);
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, Resources);
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, RefreshCalled);
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerWindowControllerTest, Init);
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerWindowControllerTest, Sort);
 
   // Obtain an instance via GetInstance().
   TaskManager();

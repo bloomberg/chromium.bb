@@ -7,6 +7,8 @@
 #pragma once
 
 #import <Cocoa/Cocoa.h>
+#include <vector>
+
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/table_row_nsimage_cache.h"
 #include "chrome/browser/task_manager.h"
@@ -25,6 +27,13 @@ class TaskManagerMac;
   TaskManagerModel* model_;  // weak
 
   scoped_nsobject<WindowSizeAutosaver> size_saver_;
+
+  // Contains a permutation of [0..|model_->ResourceCount() - 1|]. Used to
+  // implement sorting.
+  std::vector<int> indexShuffle_;
+
+  // Descriptor of the current sort column.
+  scoped_nsobject<NSSortDescriptor> currentSortDescriptor_;
 }
 
 // Creates and shows the task manager's window.
@@ -43,11 +52,15 @@ class TaskManagerMac;
 - (void)selectDoubleClickedTab:(id)sender;
 @end
 
+@interface TaskManagerWindowController (TestingAPI)
+- (NSTableView*)tableView;
+@end
+
 // This class listens to task changed events sent by chrome.
 class TaskManagerMac : public TaskManagerModelObserver,
                        public TableRowNSImageCache::Table {
  public:
-  TaskManagerMac();
+  TaskManagerMac(TaskManager* task_manager);
   virtual ~TaskManagerMac();
 
   // TaskManagerModelObserver
@@ -74,9 +87,11 @@ class TaskManagerMac : public TaskManagerModelObserver,
   // Lazily converts the image at the given row and caches it in |icon_cache_|.
   NSImage* GetImageForRow(int row);
 
+  // Returns the cocoa object. Used for testing.
+  TaskManagerWindowController* cocoa_controller() { return window_controller_; }
  private:
   // The task manager.
-   TaskManager* const task_manager_;  // weak
+  TaskManager* const task_manager_;  // weak
 
   // Our model.
   TaskManagerModel* const model_;  // weak

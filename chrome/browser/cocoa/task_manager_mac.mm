@@ -15,17 +15,15 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
-// TODO(thakis): Column sort comparator
-// TODO(thakis): Clicking column header doesn't sort
-// TODO(thakis): Default sort column
+namespace {
 
 // Width of "a" and most other letters/digits in "small" table views.
-static const int kCharWidth = 6;
+const int kCharWidth = 6;
 
 // Some of the strings below have spaces at the end or are missing letters, to
 // make the columns look nicer, and to take potentially longer localized strings
 // into account.
-static const struct ColumnWidth {
+const struct ColumnWidth {
   int columnId;
   int minWidth;
   int maxWidth;  // If this is -1, 1.5*minColumWidth is used as max width.
@@ -53,6 +51,28 @@ static const struct ColumnWidth {
   { IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN,
       arraysize("15 ") * kCharWidth, -1 },
 };
+
+class SortHelper {
+ public:
+  SortHelper(TaskManagerModel* model, NSSortDescriptor* column)
+      : sort_column_([[column key] intValue]),
+        ascending_([column ascending]),
+        model_(model) {}
+
+  bool operator()(int a, int b) {
+    int cmp_result = model_->CompareValues(a, b, sort_column_ );
+    if (!ascending_)
+      cmp_result = -cmp_result;
+    // TODO(thakis): Do grouping like on GTK.
+    return cmp_result < 0;
+  }
+ private:
+  int sort_column_;
+  bool ascending_;
+  TaskManagerModel* model_;  // weak;
+};
+
+}  // namespace
 
 @interface TaskManagerWindowController (Private)
 - (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible;
@@ -83,12 +103,22 @@ static const struct ColumnWidth {
                     path:prefs::kTaskManagerWindowPlacement
                    state:kSaveWindowRect]);
     }
-    [[self window] makeKeyAndOrderFront:self];
+    [self showWindow:self];
   }
   return self;
 }
 
+- (void)sortShuffleArray {
+  indexShuffle_.resize(model_->ResourceCount());
+  for (size_t i = 0; i < indexShuffle_.size(); ++i)
+    indexShuffle_[i] = i;
+
+  std::sort(indexShuffle_.begin(), indexShuffle_.end(),
+            SortHelper(model_, currentSortDescriptor_.get()));
+}
+
 - (void)reloadData {
+  [self sortShuffleArray];
   [tableView_ reloadData];
   [self adjustSelectionAndEndProcessButton];
 }
@@ -111,6 +141,10 @@ static const struct ColumnWidth {
   if (row < 0)
     return;  // Happens e.g. if the table header is double-clicked.
   taskManager_->ActivateProcess(row);
+}
+
+- (NSTableView*)tableView {
+  return tableView_;
 }
 
 - (void)awakeFromNib {
@@ -140,6 +174,14 @@ static const struct ColumnWidth {
 
   [column.get() setHidden:!isVisible];
   [column.get() setEditable:NO];
+
+  // The page column should by default be sorted ascending.
+  BOOL ascending = columnId == IDS_TASK_MANAGER_PAGE_COLUMN;
+
+  scoped_nsobject<NSSortDescriptor> sortDescriptor([[NSSortDescriptor alloc]
+      initWithKey:[NSString stringWithFormat:@"%d", columnId]
+        ascending:ascending]);
+  [column.get() setSortDescriptorPrototype:sortDescriptor.get()];
 
   // Default values, only used in release builds if nobody notices the DCHECK
   // during development when adding new columns.
@@ -180,6 +222,10 @@ static const struct ColumnWidth {
   [nameCell.get() setAlignment:[[nameColumn dataCell] alignment]];
   [nameCell.get() setFont:[[nameColumn dataCell] font]];
   [nameColumn setDataCell:nameCell.get()];
+
+  // Initially, sort on the tab name.
+  [tableView_ setSortDescriptors:
+      [NSArray arrayWithObject:[nameColumn sortDescriptorPrototype]]];
 
   [self addColumnWithId:IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_SHARED_MEM_COLUMN visible:NO];
@@ -260,6 +306,14 @@ static const struct ColumnWidth {
   [self adjustSelectionAndEndProcessButton];
 }
 
+- (void)windowWillClose:(NSNotification*)notification {
+  if (taskManagerObserver_) {
+    taskManagerObserver_->WindowWasClosed();
+    taskManagerObserver_ = nil;
+  }
+  [self autorelease];
+}
+
 @end
 
 @implementation TaskManagerWindowController (NSTableDataSource)
@@ -270,6 +324,8 @@ static const struct ColumnWidth {
 }
 
 - (NSString*)modelTextForRow:(int)row column:(int)columnId {
+  DCHECK_LT(static_cast<size_t>(row), indexShuffle_.size());
+  row = indexShuffle_[row];
   switch (columnId) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
       return base::SysWideToNSString(model_->GetResourceTitle(row));
@@ -362,14 +418,24 @@ static const struct ColumnWidth {
   return cell;
 }
 
+- (void)           tableView:(NSTableView*)tableView
+    sortDescriptorsDidChange:(NSArray*)oldDescriptors {
+  NSArray* newDescriptors = [tableView sortDescriptors];
+  if ([newDescriptors count] < 1)
+    return;
+
+  currentSortDescriptor_.reset([[newDescriptors objectAtIndex:0] retain]);
+  [self reloadData];  // Sorts.
+}
+
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerMac implementation:
 
-TaskManagerMac::TaskManagerMac()
-  : task_manager_(TaskManager::GetInstance()),
-    model_(TaskManager::GetInstance()->model()),
+TaskManagerMac::TaskManagerMac(TaskManager* task_manager)
+  : task_manager_(task_manager),
+    model_(task_manager->model()),
     icon_cache_(this) {
   window_controller_ =
       [[TaskManagerWindowController alloc] initWithTaskManagerObserver:this];
@@ -380,7 +446,11 @@ TaskManagerMac::TaskManagerMac()
 TaskManagerMac* TaskManagerMac::instance_ = NULL;
 
 TaskManagerMac::~TaskManagerMac() {
-  task_manager_->OnWindowClosed();
+  if (this == instance_) {
+    // Do not do this when running in unit tests: |StartUpdating()| never got
+    // called in that case.
+    task_manager_->OnWindowClosed();
+  }
   model_->RemoveObserver(this);
 }
 
@@ -426,7 +496,7 @@ void TaskManagerMac::Show() {
     [[instance_->window_controller_ window]
         makeKeyAndOrderFront:instance_->window_controller_];
   } else {
-    instance_ = new TaskManagerMac;
+    instance_ = new TaskManagerMac(TaskManager::GetInstance());
     instance_->model_->StartUpdating();
   }
 }
