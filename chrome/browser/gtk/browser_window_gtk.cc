@@ -810,7 +810,20 @@ void BrowserWindowGtk::SetFullscreen(bool fullscreen) {
   if (fullscreen) {
     gtk_window_fullscreen(window_);
   } else {
+    // Work around a bug where if we try to unfullscreen, metacity immediately
+    // fullscreens us again.  This is a little flickery and not necessary if
+    // there's a gnome-panel, but it's not easy to detect whether there's a
+    // panel or not.
+    std::string wm_name;
+    bool unmaximize_before_unfullscreen = IsMaximized() &&
+        x11_util::GetWindowManagerName(&wm_name) && wm_name == "Metacity";
+    if (unmaximize_before_unfullscreen)
+      UnMaximize();
+
     gtk_window_unfullscreen(window_);
+
+    if (unmaximize_before_unfullscreen)
+      gtk_window_maximize(window_);
   }
 }
 
@@ -1922,9 +1935,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
           // We do this to avoid triggering fullscreen mode in metacity
           // (without the --no-force-fullscreen flag) and in compiz (with
           // Legacy Fullscreen Mode enabled).
-          GdkScreen* screen = gtk_window_get_screen(window_);
-          if (bounds_.width() != gdk_screen_get_width(screen) ||
-              bounds_.height() != gdk_screen_get_height(screen)) {
+          if (!BoundsMatchMonitorSize()) {
             gtk_window_begin_move_drag(window_, event->button,
                                        static_cast<gint>(event->x_root),
                                        static_cast<gint>(event->y_root),
@@ -2103,6 +2114,17 @@ bool BrowserWindowGtk::UseCustomFrame() {
   return use_custom_frame_pref_.GetValue() &&
       browser_->type() != Browser::TYPE_APP &&
       browser_->type() != Browser::TYPE_APP_POPUP;
+}
+
+bool BrowserWindowGtk::BoundsMatchMonitorSize() {
+  // A screen can be composed of multiple monitors.
+  GdkScreen* screen = gtk_window_get_screen(window_);
+  gint monitor_num = gdk_screen_get_monitor_at_window(screen,
+      GTK_WIDGET(window_)->window);
+
+  GdkRectangle monitor_size;
+  gdk_screen_get_monitor_geometry(screen, monitor_num, &monitor_size);
+  return bounds_ == gfx::Rect(monitor_size);
 }
 
 void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {

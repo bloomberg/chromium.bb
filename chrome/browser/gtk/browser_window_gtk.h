@@ -344,6 +344,9 @@ class BrowserWindowGtk : public BrowserWindow,
   // Returns |true| if we should use the custom frame.
   bool UseCustomFrame();
 
+  // Returns |true| if the window bounds match the monitor size.
+  bool BoundsMatchMonitorSize();
+
   // Put the bookmark bar where it belongs.
   void PlaceBookmarkBar(bool is_floating);
 
