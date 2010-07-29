@@ -1,6 +1,6 @@
 Core wayland protocol
 
- - implement glyph cache and dnd
+ - glyph cache
 
  - dnd, figure out large object transfer: through wayland protocol or
    pass an fd through the compositor to the other client and let them
@@ -28,14 +28,6 @@ Core wayland protocol
    to be able to throw away the surfaces in the session we're
    switching away from.  for minimized windows that we don't want live
    thumb nails for. etc.
-
- - Move/resize protocols?  In the style of the dnd protocol, if a
-   surface has grabbed an input, it can request a resize (top/bottom |
-   left/right) or a move.  Goes on for duration of grab or until
-   surface cancels.  Surface gets resize(w,h) during resize events and
-   must reallocate buffer and redraw.
-
- - Initial surface placement issue.
 
  - Consolidate drm buffer upload with a create_buffer request, returns
    buffer object we can use in surface.attach, cache.upload and
@@ -95,6 +87,8 @@ Core wayland protocol
 
     - multi touch?
 
+    - synaptics, 3-button emulation, scim
+
  - sparse/gcc plugin based idl compiler
 
     - crack?
@@ -130,12 +124,6 @@ Core wayland protocol
    let the compositor reduce overdraw.
 
  - multi gpu, needs queue and seqno to wait on in requests
-
- - synaptics, 3-button emulation, scim
-
- - what to do when protocol out buffer fills up?  Just block on write
-   would work I guess.  Clients are supposed to throttle using the
-   bread crumb events, so we shouldn't get into this situation.
 
 Clients and ports
 
