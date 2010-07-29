@@ -280,7 +280,9 @@ WebData WebKitClientImpl::loadResource(const char* name) {
       return WebData(resource.data(), resource.size());
     }
   }
-  NOTREACHED() << "Unknown image resource " << name;
+  // TODO(jhawkins): Restore this NOTREACHED once WK stops sending in empty
+  // strings. http://crbug.com/50675.
+  //NOTREACHED() << "Unknown image resource " << name;
   return WebData();
 }
 
