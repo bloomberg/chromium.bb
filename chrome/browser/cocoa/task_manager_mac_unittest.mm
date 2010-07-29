@@ -16,16 +16,15 @@ namespace {
 
 class TestResource : public TaskManager::Resource {
  public:
-  TestResource(const string16& title) : title_(title) {}
+  TestResource(const string16& title, pid_t pid) : title_(title), pid_(pid) {}
   virtual std::wstring GetTitle() const { return UTF16ToWide(title_); }
   virtual SkBitmap GetIcon() const { return SkBitmap(); }
-  virtual base::ProcessHandle GetProcess() const {
-    return base::GetCurrentProcessHandle();
-  }
+  virtual base::ProcessHandle GetProcess() const { return pid_; }
   virtual bool SupportNetworkUsage() const { return false; }
   virtual void SetSupportNetworkUsage() { NOTREACHED(); }
   virtual void Refresh() {}
   string16 title_;
+  pid_t pid_;
 };
 
 }  // namespace
@@ -46,24 +45,28 @@ TEST_F(TaskManagerWindowControllerTest, Init) {
 TEST_F(TaskManagerWindowControllerTest, Sort) {
   TaskManager task_manager;
 
-  TestResource resource1(UTF8ToUTF16("zzz"));
-  TestResource resource2(UTF8ToUTF16("zza"));
+  TestResource resource1(UTF8ToUTF16("zzz"), 1);
+  TestResource resource2(UTF8ToUTF16("zzb"), 2);
+  TestResource resource3(UTF8ToUTF16("zza"), 2);
 
   task_manager.AddResource(&resource1);
-  task_manager.AddResource(&resource2);  // Will be in the same group.
+  task_manager.AddResource(&resource2);
+  task_manager.AddResource(&resource3);  // Will be in the same group as 2.
 
   TaskManagerMac* bridge(new TaskManagerMac(&task_manager));
   TaskManagerWindowController* controller = bridge->cocoa_controller();
   NSTableView* table = [controller tableView];
-  ASSERT_EQ(2, [controller numberOfRowsInTableView:table]);
+  ASSERT_EQ(3, [controller numberOfRowsInTableView:table]);
 
   // Test that table is sorted on title.
   NSTableColumn* title_column = [table tableColumnWithIdentifier:
       [NSNumber numberWithInt:IDS_TASK_MANAGER_PAGE_COLUMN]];
   NSCell* cell;
   cell = [controller tableView:table dataCellForTableColumn:title_column row:0];
-  EXPECT_TRUE([@"zza" isEqualToString:[cell title]]);
+  EXPECT_TRUE([@"zzb" isEqualToString:[cell title]]);
   cell = [controller tableView:table dataCellForTableColumn:title_column row:1];
+  EXPECT_TRUE([@"zza" isEqualToString:[cell title]]);
+  cell = [controller tableView:table dataCellForTableColumn:title_column row:2];
   EXPECT_TRUE([@"zzz" isEqualToString:[cell title]]);
 
   // Releases the controller, which in turn deletes |bridge|.
@@ -71,4 +74,5 @@ TEST_F(TaskManagerWindowControllerTest, Sort) {
 
   task_manager.RemoveResource(&resource1);
   task_manager.RemoveResource(&resource2);
+  task_manager.RemoveResource(&resource3);
 }
