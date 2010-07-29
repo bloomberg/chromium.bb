@@ -543,8 +543,8 @@ class MemcheckAnalyzer:
     sys.stdout.flush()
 
     retcode = 0
-    if self._errors:
-      logging.error("FAIL! There were %s errors: " % len(self._errors))
+    if cur_report_errors:
+      logging.error("FAIL! There were %s errors: " % len(cur_report_errors))
 
       if TheAddressTable != None:
         TheAddressTable.ResolveAll()
