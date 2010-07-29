@@ -42,14 +42,12 @@ class AudioHandler {
   // Mutes all audio.  Non-blocking call.
   void SetMute(bool do_mute);
 
-  // AudioHandler is a singleton initialized at startup.  Use this to determine
-  // if there is a valid connection to a mixer.
-  bool IsValid();
-
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
   // and constructor/destructor private as recommended for Singletons.
   friend struct DefaultSingletonTraits<AudioHandler>;
+
+  void OnMixerInitialized(bool success);
 
   AudioHandler();
   virtual ~AudioHandler();

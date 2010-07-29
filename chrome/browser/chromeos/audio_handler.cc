@@ -95,15 +95,18 @@ void AudioHandler::SetMute(bool do_mute) {
   mixer_->SetMute(do_mute);
 }
 
-bool AudioHandler::IsValid() {
-  return mixer_->CheckState() == PulseAudioMixer::READY;
+void AudioHandler::OnMixerInitialized(bool success) {
+  connected_ = success;
+  DLOG(INFO) << "OnMixerInitialized, success = " << success;
 }
 
 AudioHandler::AudioHandler()
-    : reconnect_tries_(0) {
+    : connected_(false),
+      reconnect_tries_(0) {
   mixer_.reset(new PulseAudioMixer());
-  connected_ = mixer_->InitSync();
-  DLOG(INFO) << "Mixer connected = " << connected_;
+  if (!mixer_->Init(NewCallback(this, &AudioHandler::OnMixerInitialized))) {
+    LOG(ERROR) << "Unable to connect to PulseAudio";
+  }
 }
 
 AudioHandler::~AudioHandler() {
