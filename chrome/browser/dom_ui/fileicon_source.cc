@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/fileicon_source.h"
 
 #include "base/callback.h"
+#include "base/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/time_format.h"
