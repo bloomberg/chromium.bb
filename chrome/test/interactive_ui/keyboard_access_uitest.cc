@@ -112,7 +112,7 @@ TEST_F(KeyboardAccessTest, ReserveKeyboardAccelerators) {
       "</script></html>";
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser);
-  browser->AppendTab(GURL("data:text/html," + kBadPage));
+  ASSERT_TRUE(browser->AppendTab(GURL("data:text/html," + kBadPage)));
   int tab_count = 0;
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
   ASSERT_EQ(tab_count, 2);
