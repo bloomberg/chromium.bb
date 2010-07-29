@@ -41,19 +41,19 @@ readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 
 # TODO(pdox): Decide what the target should really permanently be
-readonly CROSS_TARGET=arm-none-linux-gnueabi
+readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
 readonly REAL_CROSS_TARGET=pnacl
 
 readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
-readonly TARGET_ROOT="${INSTALL_ROOT}/${CROSS_TARGET}"
+readonly TARGET_ROOT="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp3
-readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
+readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
 readonly GCC_VER="4.2.1"
 
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
-readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET}"
+readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
 
 # This toolchain currenlty builds only on linux.
 # TODO(abetul): Remove the restriction on developer's OS choices.
@@ -99,7 +99,7 @@ readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
 
 # This apparently has to be at this location or gcc install breaks.
-readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC1}/${CROSS_TARGET}/libstdc++-v3"
+readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC1}/${CROSS_TARGET_ARM}/libstdc++-v3"
 
 readonly TC_BUILD_LIBSTDCPP_BITCODE="${TC_BUILD_LLVM_GCC1}/libstdcpp-bitcode"
 
@@ -152,11 +152,11 @@ CC=${CC:-}
 # bug that brakes the build if we do that.
 CXX=${CXX:-g++}
 
-readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${CROSS_TARGET}-ar
-readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET}-as
-readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET}-ld
-readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET}-nm
-readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET}-ranlib
+readonly CROSS_TARGET_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
+readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-as
+readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ld
+readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-nm
+readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ranlib
 readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
 
 # NOTE: this tools.sh defines: LD_FOR_TARGET, CC_FOR_TARGET, CXX_FOR_TARGET, ...
@@ -834,7 +834,7 @@ llvm-configure() {
              --enable-optimized \
              --with-binutils-include=${binutils_include} \
              --enable-targets=x86,x86_64,arm \
-             --target=${CROSS_TARGET} \
+             --target=${CROSS_TARGET_ARM} \
              --prefix=${INSTALL_DIR} \
              --with-llvmgccdir=${INSTALL_DIR}
   spopd
@@ -930,8 +930,8 @@ gcc-stage1() {
 gcc-stage1-sysroot() {
   StepBanner "GCC-STAGE1" "Setting up initial sysroot"
 
-  local sys_include="${INSTALL_DIR}/${CROSS_TARGET}/include"
-  local sys_include2="${INSTALL_DIR}/${CROSS_TARGET}/sys-include"
+  local sys_include="${INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
+  local sys_include2="${INSTALL_DIR}/${CROSS_TARGET_ARM}/sys-include"
 
   rm -rf "${sys_include}" "${sys_include2}"
   mkdir -p "${sys_include}"
@@ -980,7 +980,7 @@ gcc-stage1-configure() {
                --disable-libstdcxx-pch \
                --disable-shared \
                --without-headers \
-               --target=${CROSS_TARGET} \
+               --target=${CROSS_TARGET_ARM} \
                --with-arch=${ARM_ARCH} \
                --with-fpu=${ARM_FPU} \
                --with-sysroot="${NEWLIB_INSTALL_DIR}"
@@ -1139,14 +1139,14 @@ libstdcpp-configure-common() {
       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
         "${STD_ENV_FOR_LIBSTDCPP[@]}" \
         "${srcdir}"/configure \
-          --host=${CROSS_TARGET} \
+          --host=${CROSS_TARGET_ARM} \
           --prefix=${INSTALL_DIR} \
           --enable-llvm=${INSTALL_DIR} \
           --with-newlib \
           --disable-libstdcxx-pch \
           --disable-shared \
           --enable-languages=c,c++ \
-          --target=${CROSS_TARGET} \
+          --target=${CROSS_TARGET_ARM} \
           --with-sysroot=${NEWLIB_INSTALL_DIR} \
           --with-arch=${ARM_ARCH} \
           --srcdir="${srcdir}"
@@ -1285,7 +1285,7 @@ binutils-arm-configure() {
     CC=${CC} \
     CXX=${CXX} \
     ${srcdir}/binutils-2.20/configure --prefix=${INSTALL_DIR} \
-                                      --target=${CROSS_TARGET} \
+                                      --target=${CROSS_TARGET_ARM} \
                                       --enable-checking \
                                       --enable-gold \
                                       --enable-plugins \
@@ -1495,7 +1495,7 @@ llvm-tools-x8632-sb-configure() {
     ${srcdir}/llvm-trunk/configure \
                              --prefix=${PNACL_CLIENT_TC_X8632} \
                              --host=nacl \
-                             --target=${CROSS_TARGET} \
+                             --target=${CROSS_TARGET_ARM} \
                              --disable-jit \
                              --enable-optimized \
                              --enable-targets=x86,x86_64 \
@@ -1862,29 +1862,29 @@ newlib-bitcode-install() {
   ###########################################################
   #                -- HACK HACK HACK --
   # newlib installs into ${REAL_CROSS_TARGET}
-  # For now, move it back to the old ${CROSS_TARGET}
+  # For now, move it back to the old ${CROSS_TARGET_ARM}
   # where everything expects it to be.
-  rm -rf "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}"
+  rm -rf "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}"
   mv "${NEWLIB_INSTALL_DIR}/${REAL_CROSS_TARGET}" \
-     "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}"
+     "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}"
   ###########################################################
 
   StepBanner "NEWLIB-BITCODE" "Extra-install"
-  local sys_include=${INSTALL_DIR}/${CROSS_TARGET}/include
-  local sys_lib=${INSTALL_DIR}/${CROSS_TARGET}/lib
+  local sys_include=${INSTALL_DIR}/${CROSS_TARGET_ARM}/include
+  local sys_lib=${INSTALL_DIR}/${CROSS_TARGET_ARM}/lib
   # NOTE: we provide a new one via extra-sdk
-  rm ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/pthread.h
+  rm ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/pthread.h
 
-  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/machine/endian.h \
+  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/machine/endian.h \
     ${sys_include}
-  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/sys/param.h \
+  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/sys/param.h \
     ${sys_include}
-  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/newlib.h \
+  cp ${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/newlib.h \
     ${sys_include}
 
   # NOTE: we provide our own pthread.h via extra-sdk
   StepBanner "NEWLIB-BITCODE" "Removing old pthreads headers"
-  rm -f "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/usr/include/pthread.h"
+  rm -f "${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/usr/include/pthread.h"
   rm -f "${sys_include}/pthread.h"
 
   StepBanner "NEWLIB-BITCODE" "copying libraries"
@@ -1956,7 +1956,7 @@ extrasdk-bitcode-make() {
 
   # Keep a backup of the files extrasdk generated
   # in case we want to re-install them again.
-  local include_install="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/nacl"
+  local include_install="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/nacl"
   local lib_install="${PNACL_BITCODE_ROOT}"
   local include_save="${TC_BUILD_EXTRASDK_BITCODE}/include-nacl"
   local lib_save="${TC_BUILD_EXTRASDK_BITCODE}/lib"
@@ -1987,7 +1987,7 @@ extrasdk-bitcode-install() {
   StepBanner "EXTRASDK-BITCODE" "Install from ${TC_BUILD_EXTRASDK_BITCODE}"
 
   # Copy from the save directories
-  local include_install="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET}/include/nacl"
+  local include_install="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/nacl"
   local lib_install="${PNACL_BITCODE_ROOT}"
   local lib_install_native="${PNACL_ARM_ROOT}"
   local include_save="${TC_BUILD_EXTRASDK_BITCODE}/include-nacl"
@@ -2160,7 +2160,7 @@ organize-native-code() {
 
 
 readonly LLVM_DIS=${INSTALL_DIR}/bin/llvm-dis
-readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET}-ar
+readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 
 
 # Usage: VerifyObject <regexp> <filename>
