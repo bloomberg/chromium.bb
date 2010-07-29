@@ -24,16 +24,6 @@ import common
 # Global symbol table (yuck)
 TheAddressTable = None
 
-# Contains the time when the we started analyzing the first log file.
-# This variable is used to skip incomplete logs after some timeout.
-# TODO(timurrrr): Currently, this needs to be a global variable
-# because analyzer can be called multiple times (e.g. ui_tests)
-# unless we re-factor the analyze system to avoid creating multiple analyzers.
-AnalyzeStartTime = None
-
-# Max time to wait for memcheck logs to complete.
-LOG_COMPLETION_TIMEOUT = 180.0
-
 # These are functions (using C++ mangled names) that we look for in stack
 # traces. We don't show stack frames while pretty printing when they are below
 # any of the following:
@@ -219,10 +209,11 @@ class ValgrindError:
   def __str__(self):
     ''' Pretty print the type and backtrace(s) of this specific error,
         including suppression (which is just a mangled backtrace).'''
-    output = self._kind + "\n"
+    output = ""
     if (self._commandline):
       output += self._commandline + "\n"
 
+    output += self._kind + "\n"
     for backtrace in self._backtraces:
       output += backtrace[0] + "\n"
       filter = subprocess.Popen("c++filt -n", stdin=subprocess.PIPE,
@@ -255,37 +246,32 @@ class ValgrindError:
           output += " (" + frame[OBJECT_FILE] + ")"
         output += "\n"
 
-      # TODO(dank): stop synthesizing suppressions once everyone has
-      # valgrind-3.5 and we can rely on xml
-      if (self._suppression == None):
-        output += "Suppression:\n"
-        for frame in backtrace[1]:
-          output += "  fun:" + (frame[FUNCTION_NAME] or "*") + "\n"
+    assert self._suppression != None, "Your Valgrind doesn't generate " \
+                                      "suppressions - is it too old?"
 
-    if (self._suppression != None):
-      output += "Suppression:"
-      # Widen suppression slightly to make portable between mac and linux
-      supp = self._suppression;
-      supp = supp.replace("fun:_Znwj", "fun:_Znw*")
-      supp = supp.replace("fun:_Znwm", "fun:_Znw*")
-      # Split into lines so we can enforce length limits
-      supplines = supp.split("\n")
+    output += "Suppression (error hash=#%X#):" % self.__hash__()
+    # Widen suppression slightly to make portable between mac and linux
+    supp = self._suppression;
+    supp = supp.replace("fun:_Znwj", "fun:_Znw*")
+    supp = supp.replace("fun:_Znwm", "fun:_Znw*")
+    # Split into lines so we can enforce length limits
+    supplines = supp.split("\n")
 
-      # Truncate at line 26 (VG_MAX_SUPP_CALLERS plus 2 for name and type)
-      # or at the first 'boring' caller.
-      # (https://bugs.kde.org/show_bug.cgi?id=199468 proposes raising
-      # VG_MAX_SUPP_CALLERS, but we're probably fine with it as is.)
-      # TODO(dkegel): add more boring callers
-      newlen = 26;
-      try:
-        newlen = min(newlen, supplines.index("   fun:_ZN11MessageLoop3RunEv"))
-      except ValueError:
-        pass
-      if (len(supplines) > newlen):
-        supplines = supplines[0:newlen]
-        supplines.append("}")
+    # Truncate at line 26 (VG_MAX_SUPP_CALLERS plus 2 for name and type)
+    # or at the first 'boring' caller.
+    # (https://bugs.kde.org/show_bug.cgi?id=199468 proposes raising
+    # VG_MAX_SUPP_CALLERS, but we're probably fine with it as is.)
+    # TODO(dkegel): add more boring callers
+    newlen = 26;
+    try:
+      newlen = min(newlen, supplines.index("   fun:_ZN11MessageLoop3RunEv"))
+    except ValueError:
+      pass
+    if (len(supplines) > newlen):
+      supplines = supplines[0:newlen]
+      supplines.append("}")
 
-      output += "\n".join(supplines) + "\n"
+    output += "\n".join(supplines) + "\n"
 
     return output
 
@@ -320,7 +306,7 @@ def find_and_truncate(f):
       f.truncate()
       return True
 
-class MemcheckAnalyze:
+class MemcheckAnalyzer:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
   unique them and output the results.'''
 
@@ -354,15 +340,37 @@ class MemcheckAnalyze:
       "bug_49253 Memcheck sanity test 08 (new/write left) or Memcheck sanity test 09 (new/write right) on Mac.": 2,
   }
 
-  def __init__(self, source_dir, files, show_all_leaks=False, use_gdb=False):
-    '''Reads in a set of files.
+  # Max time to wait for memcheck logs to complete.
+  LOG_COMPLETION_TIMEOUT = 180.0
+
+  def __init__(self, source_dir, show_all_leaks=False, use_gdb=False):
+    '''Create a parser for Memcheck logs.
 
     Args:
       source_dir: Path to top of source tree for this build
-      files: A list of filenames.
-      show_all_leaks: whether to show even less important leaks
+      show_all_leaks: Whether to show even less important leaks
+      use_gdb: Whether to use gdb to resolve source filenames and line numbers
+               in the report stacktraces
     '''
+    self._source_dir = source_dir
+    self._show_all_leaks = show_all_leaks
+    self._use_gdb = use_gdb
 
+    # Contains the set of unique errors
+    self._errors = set()
+
+    # Contains the time when the we started analyzing the first log file.
+    # This variable is used to skip incomplete logs after some timeout.
+    self._analyze_start_time = None
+
+
+  def Report(self, files, check_sanity=False):
+    '''Reads in a set of files and prints Memcheck report.
+
+    Args:
+      files: A list of filenames.
+      check_sanity: if true, search for SANITY_TEST_SUPPRESSIONS
+    '''
     # Beyond the detailed errors parsed by ValgrindError above,
     # the xml file contain records describing suppressions that were used:
     # <suppcounts>
@@ -384,16 +392,19 @@ class MemcheckAnalyze:
     # into the process.
 
     global TheAddressTable
-    if use_gdb:
+    if self._use_gdb:
       TheAddressTable = gdb_helper.AddressTable()
-    self._errors = set()
-    self._suppcounts = {}
+    else:
+      TheAddressTable = None
+    cur_report_errors = set()
+    suppcounts = {}
     badfiles = set()
 
-    global AnalyzeStartTime
-    if AnalyzeStartTime == None:
-      AnalyzeStartTime = time.time()
-    self._parse_failed = False
+    if self._analyze_start_time == None:
+      self._analyze_start_time = time.time()
+    start_time = self._analyze_start_time
+
+    parse_failed = False
     for file in files:
       # Wait up to three minutes for valgrind to finish writing all files,
       # but after that, just skip incomplete files and warn.
@@ -407,7 +418,7 @@ class MemcheckAnalyze:
       origsize = os.path.getsize(file)
       while (running and not found and
              (firstrun or
-              ((time.time() - AnalyzeStartTime) < LOG_COMPLETION_TIMEOUT))):
+              ((time.time() - start_time) < self.LOG_COMPLETION_TIMEOUT))):
         firstrun = False
         f.seek(0)
         if pid:
@@ -435,7 +446,7 @@ class MemcheckAnalyze:
         try:
           parsed_file = parse(file);
         except ExpatError, e:
-          self._parse_failed = True
+          parse_failed = True
           logging.warn("could not parse %s: %s" % (file, e))
           lineno = e.lineno - 1
           context_lines = 5
@@ -471,10 +482,20 @@ class MemcheckAnalyze:
         raw_errors = parsed_file.getElementsByTagName("error")
         for raw_error in raw_errors:
           # Ignore "possible" leaks for now by default.
-          if (show_all_leaks or
+          if (self._show_all_leaks or
               getTextOf(raw_error, "kind") != "Leak_PossiblyLost"):
-            error = ValgrindError(source_dir, raw_error, commandline)
-            self._errors.add(error)
+            error = ValgrindError(self._source_dir, raw_error, commandline)
+            if error not in cur_report_errors:
+              # We haven't seen such errors doing this report yet...
+              if error in self._errors:
+                # ... but we saw it in earlier reports, e.g. previous UI test
+                cur_report_errors.add("This error was already printed "
+                                      "in some other test, see 'hash=#%X#'" % \
+                                      error.__hash__())
+              else:
+                # ... and we haven't seen it in other tests as well
+                self._errors.add(error)
+                cur_report_errors.add(error)
 
         suppcountlist = parsed_file.getElementsByTagName("suppcounts")
         if len(suppcountlist) > 0:
@@ -482,10 +503,10 @@ class MemcheckAnalyze:
           for node in suppcountlist.getElementsByTagName("pair"):
             count = getTextOf(node, "count");
             name = getTextOf(node, "name");
-            if name in self._suppcounts:
-              self._suppcounts[name] += int(count)
+            if name in suppcounts:
+              suppcounts[name] += int(count)
             else:
-              self._suppcounts[name] = int(count)
+              suppcounts[name] = int(count)
 
     if len(badfiles) > 0:
       logging.warn("valgrind didn't finish writing %d files?!" % len(badfiles))
@@ -493,8 +514,7 @@ class MemcheckAnalyze:
         logging.warn("Last 20 lines of %s :" % file)
         os.system("tail -n 20 '%s' 1>&2" % file)
 
-  def Report(self, check_sanity=False):
-    if self._parse_failed:
+    if parse_failed:
       logging.error("FAIL! Couldn't parse Valgrind output file")
       return -2
 
@@ -504,15 +524,15 @@ class MemcheckAnalyze:
     print "  count name"
 
     if common.IsLinux():
-      remaining_sanity_supp = MemcheckAnalyze.SANITY_TEST_SUPPRESSIONS_LINUX
+      remaining_sanity_supp = MemcheckAnalyzer.SANITY_TEST_SUPPRESSIONS_LINUX
     elif common.IsMac():
-      remaining_sanity_supp = MemcheckAnalyze.SANITY_TEST_SUPPRESSIONS_MAC
+      remaining_sanity_supp = MemcheckAnalyzer.SANITY_TEST_SUPPRESSIONS_MAC
     else:
       remaining_sanity_supp = {}
       if check_sanity:
         logging.warn("No sanity test list for platform %s", sys.platform)
 
-    for (name, count) in sorted(self._suppcounts.items(),
+    for (name, count) in sorted(suppcounts.items(),
                                 key=lambda (k,v): (v,k)):
       print "%7d %s" % (count, name)
       if name in remaining_sanity_supp and remaining_sanity_supp[name] == count:
@@ -526,11 +546,10 @@ class MemcheckAnalyze:
     if self._errors:
       logging.error("FAIL! There were %s errors: " % len(self._errors))
 
-      global TheAddressTable
       if TheAddressTable != None:
         TheAddressTable.ResolveAll()
 
-      for error in self._errors:
+      for error in cur_report_errors:
         logging.error(error)
 
       retcode = -1
@@ -551,7 +570,7 @@ class MemcheckAnalyze:
     return 0
 
 def _main():
-  '''For testing only. The MemcheckAnalyze class should be imported instead.'''
+  '''For testing only. The MemcheckAnalyzer class should be imported instead.'''
   retcode = 0
   parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
   parser.add_option("", "--source_dir",
@@ -563,8 +582,8 @@ def _main():
     parser.error("no filename specified")
   filenames = args
 
-  analyzer = MemcheckAnalyze(options.source_dir, filenames, use_gdb=True)
-  retcode = analyzer.Report()
+  analyzer = MemcheckAnalyzer(options.source_dir, use_gdb=True)
+  retcode = analyzer.Report(filenames)
 
   sys.exit(retcode)
 

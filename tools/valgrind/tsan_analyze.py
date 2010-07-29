@@ -33,7 +33,7 @@ class _StackTraceLine(object):
     else:
       return self.raw_line_.replace(self.binary, '%s:%s' % (file, line))
 
-class TsanAnalyze:
+class TsanAnalyzer:
   ''' Given a set of ThreadSanitizer output files, parse all the errors out of
   them, unique them and output the results.'''
 
@@ -48,37 +48,27 @@ class TsanAnalyze:
       "(has been created by T.* at this point|is program's main thread)")
 
   SANITY_TEST_SUPPRESSION = "ThreadSanitizer sanity test"
-  def __init__(self, source_dir, files, use_gdb=False):
+  def __init__(self, source_dir, use_gdb=False):
     '''Reads in a set of files.
 
     Args:
       source_dir: Path to top of source tree for this build
-      files: A list of filenames.
     '''
 
-    self.use_gdb = use_gdb
-    if use_gdb:
-      global TheAddressTable
-      TheAddressTable = gdb_helper.AddressTable()
-    self.races = []
-    self.used_suppressions = {}
-    for file in files:
-      self.ParseReportFile(file)
-    if self.use_gdb:
-      TheAddressTable.ResolveAll()
+    self._use_gdb = use_gdb
 
   def ReadLine(self):
     self.line_ = self.cur_fd_.readline()
     self.stack_trace_line_ = None
-    if not self.use_gdb:
+    if not self._use_gdb:
       return
     global TheAddressTable
-    match = TsanAnalyze.LOAD_LIB_RE.match(self.line_)
+    match = TsanAnalyzer.LOAD_LIB_RE.match(self.line_)
     if match:
       binary, ip = match.groups()
       TheAddressTable.AddBinaryAt(binary, ip)
       return
-    match = TsanAnalyze.TSAN_LINE_RE.match(self.line_)
+    match = TsanAnalyzer.TSAN_LINE_RE.match(self.line_)
     if match:
       address, binary_name = match.groups()
       stack_trace_line = _StackTraceLine(self.line_, address, binary_name)
@@ -106,7 +96,7 @@ class TsanAnalyze:
         break
 
       tmp = []
-      while re.search(TsanAnalyze.THREAD_CREATION_STR, self.line_):
+      while re.search(TsanAnalyzer.THREAD_CREATION_STR, self.line_):
         tmp.extend(self.ReadSection())
         self.ReadLine()
       if re.search("Possible data race", self.line_):
@@ -123,14 +113,29 @@ class TsanAnalyze:
           self.used_suppressions[supp_name] = count
     self.cur_fd_.close()
 
-  def Report(self, check_sanity=False):
+  def Report(self, files, check_sanity=False):
+    '''TODO!!!
+      files: A list of filenames.
+    '''
+    global TheAddressTable
+    if self._use_gdb:
+      TheAddressTable = gdb_helper.AddressTable()
+    else:
+      TheAddressTable = None
+    self.races = []
+    self.used_suppressions = {}
+    for file in files:
+      self.ParseReportFile(file)
+    if self._use_gdb:
+      TheAddressTable.ResolveAll()
+
     is_sane = False
     print "-----------------------------------------------------"
     print "Suppressions used:"
     print "  count name"
     for item in sorted(self.used_suppressions.items(), key=lambda (k,v): (v,k)):
       print "%7s %s" % (item[1], item[0])
-      if item[0].startswith(TsanAnalyze.SANITY_TEST_SUPPRESSION):
+      if item[0].startswith(TsanAnalyzer.SANITY_TEST_SUPPRESSION):
         is_sane = True
     print "-----------------------------------------------------"
     sys.stdout.flush()
@@ -156,7 +161,7 @@ class TsanAnalyze:
     return 0
 
 if __name__ == '__main__':
-  '''For testing only. The TsanAnalyze class should be imported instead.'''
+  '''For testing only. The TsanAnalyzer class should be imported instead.'''
   retcode = 0
   parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
   parser.add_option("", "--source_dir",
@@ -168,7 +173,7 @@ if __name__ == '__main__':
     parser.error("no filename specified")
   filenames = args
 
-  analyzer = TsanAnalyze(options.source_dir, filenames, use_gdb=True)
-  retcode = analyzer.Report()
+  analyzer = TsanAnalyzer(options.source_dir, use_gdb=True)
+  retcode = analyzer.Report(filenames)
 
   sys.exit(retcode)

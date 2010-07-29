@@ -437,9 +437,10 @@ class ValgrindTool(BaseTool):
     ppids = set([int(f.split(".")[-2]) \
                 for f in filenames if re.search("\.[0-9]+\.[0-9]+$", f)])
 
+    analyzer = self.CreateAnalyzer()
     if len(ppids) == 0:
       # Fast path - no browser wrapper was set.
-      return self.CreateAnalyzer(filenames).Report(check_sanity)
+      return analyzer.Report(filenames, check_sanity)
 
     ret = 0
     for ppid in ppids:
@@ -453,7 +454,7 @@ class ValgrindTool(BaseTool):
                         if re.search("\.%d\.[0-9]+$" % ppid, f)]
       # check_sanity won't work with browser wrappers
       assert check_sanity == False
-      ret |= self.CreateAnalyzer(ppid_filenames).Report()
+      ret |= analyzer.Report(ppid_filenames)
       print "====================================================="
       sys.stdout.flush()
 
@@ -502,9 +503,9 @@ class Memcheck(ValgrindTool):
 
     return ret
 
-  def CreateAnalyzer(self, filenames):
+  def CreateAnalyzer(self):
     use_gdb = common.IsMac()
-    return memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames,
+    return memcheck_analyze.MemcheckAnalyzer(self._source_dir,
                                             self._options.show_all_leaks,
                                             use_gdb=use_gdb)
 
@@ -656,9 +657,9 @@ class ThreadSanitizerPosix(ThreadSanitizerBase, ValgrindTool):
     proc += ["-v"]
     return proc
 
-  def CreateAnalyzer(self, filenames):
+  def CreateAnalyzer(self):
     use_gdb = common.IsMac()
-    return tsan_analyze.TsanAnalyze(self._source_dir, filenames)
+    return tsan_analyze.TsanAnalyzer(self._source_dir)
 
   def Analyze(self, check_sanity=False):
     ret = self.GetAnalyzeResults(check_sanity)
@@ -702,8 +703,8 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
 
   def Analyze(self, check_sanity=False):
     filenames = glob.glob(self.TMP_DIR + "/tsan.*")
-    analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames)
-    ret = analyzer.Report(check_sanity)
+    analyzer = tsan_analyze.TsanAnalyzer(self._source_dir)
+    ret = analyzer.Report(filenames, check_sanity)
     if ret != 0:
       logging.info(self.INFO_MESSAGE)
     return ret
