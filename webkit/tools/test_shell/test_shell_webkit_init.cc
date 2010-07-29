@@ -43,6 +43,9 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
   WebKit::WebRuntimeFeatures::enableTouch(true);
   WebKit::WebRuntimeFeatures::enableIndexedDatabase(true);
 
+  // TODO(hwennborg): Enable this once the implementation supports it.
+  WebKit::WebRuntimeFeatures::enableDeviceOrientation(false);
+
   // Load libraries for media and enable the media player.
   FilePath module_path;
   WebKit::WebRuntimeFeatures::enableMediaPlayer(
