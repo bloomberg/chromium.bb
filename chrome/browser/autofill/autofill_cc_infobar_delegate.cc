@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/histogram.h"
 #include "chrome/browser/autofill/autofill_cc_infobar.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser.h"
@@ -80,6 +81,7 @@ std::wstring AutoFillCCInfoBarDelegate::GetButtonLabel(
 }
 
 bool AutoFillCCInfoBarDelegate::Accept() {
+  UMA_HISTOGRAM_COUNTS("AutoFill.CCInfoBarAccepted", 1);
   if (host_) {
     host_->OnInfoBarClosed(true);
     host_ = NULL;
@@ -88,6 +90,7 @@ bool AutoFillCCInfoBarDelegate::Accept() {
 }
 
 bool AutoFillCCInfoBarDelegate::Cancel() {
+  UMA_HISTOGRAM_COUNTS("AutoFill.CCInfoBarDenied", 1);
   if (host_) {
     host_->OnInfoBarClosed(false);
     host_ = NULL;
