@@ -23,7 +23,7 @@
 #ifndef _WAYLAND_CLIENT_H
 #define _WAYLAND_CLIENT_H
 
-#include <wayland-util.h>
+#include "wayland-util.h"
 
 #ifdef  __cplusplus
 extern "C" {
