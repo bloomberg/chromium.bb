@@ -3602,3 +3602,10 @@
    fun:_Z16DispatchToMethodIN3net16HostResolverImpl3JobEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net16HostResolverImpl3JobEMS2_FvvE6Tuple0E3RunEv
 }
+{
+   bug_50583
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN64_GLOBAL__N_net_base_cookie_monster_unittest.cc_00000000_C9F6D94420AddKeyedCookieToListERKSsS1_RKN4base4TimeEPSt6vectorISt4pairISsPN3net13CookieMonster15CanonicalCookieEESaISC_EE
+   fun:_ZN3net55CookieMonsterTest_DontImportDuplicateCreationTimes_Test8TestBodyEv
+}
