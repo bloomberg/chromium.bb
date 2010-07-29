@@ -10,7 +10,9 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "net/base/cookie_store.h"
 #include "net/base/mock_host_resolver.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -63,7 +65,7 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
 
 // Visits a page that sets a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server != NULL);
 
   browser()->profile()->GetHostContentSettingsMap()->
@@ -84,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
 // a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
                        AllowFirstPartyCookiesRedirect) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server != NULL);
 
   browser()->profile()->GetHostContentSettingsMap()->

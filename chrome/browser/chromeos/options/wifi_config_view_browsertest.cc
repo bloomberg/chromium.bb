@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 

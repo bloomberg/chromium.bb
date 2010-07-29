@@ -17,6 +17,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -278,7 +279,8 @@ TEST_F(ChromePluginTest, CanMakeGETRequestAsync) {
 
 // Tests that the plugin can issue a POST request.
 TEST_F(ChromePluginTest, CanMakePOSTRequest) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL url = server->TestServerPage("echo");

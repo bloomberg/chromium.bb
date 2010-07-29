@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::HttpBridge;
@@ -174,7 +175,8 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
 // Full round-trip test of the HttpBridge, using default UA string and
 // no request cookies.
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -198,7 +200,8 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
 
 // Full round-trip test of the HttpBridge, using custom UA string
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
@@ -225,7 +228,8 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
 }
 
 TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
@@ -253,7 +257,8 @@ TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
 }
 
 TEST_F(HttpBridgeTest, TestResponseHeader) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 

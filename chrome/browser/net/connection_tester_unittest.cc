@@ -5,7 +5,7 @@
 #include "chrome/browser/net/connection_tester.h"
 
 #include "net/base/mock_host_resolver.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -87,8 +87,8 @@ class ConnectionTesterTest : public PlatformTest {
 };
 
 TEST_F(ConnectionTesterTest, RunAllTests) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
+  scoped_refptr<net::HTTPTestServer> server =
+      net::HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
 
   ConnectionTester tester(&test_delegate_);
 
@@ -113,8 +113,8 @@ TEST_F(ConnectionTesterTest, RunAllTests) {
 }
 
 TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
+  scoped_refptr<net::HTTPTestServer> server =
+      net::HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
 
   scoped_ptr<ConnectionTester> tester(new ConnectionTester(&test_delegate_));
 

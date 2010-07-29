@@ -16,7 +16,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -145,7 +145,8 @@ TEST_F(SessionRestoreUITest, RestoresForwardAndBackwardNavs) {
 // cross-site page and then forward again works.  (Bug 1204135)
 TEST_F(SessionRestoreUITest, RestoresCrossSiteForwardAndBackwardNavs) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL cross_site_url(server->TestServerPage("files/title2.html"));
 

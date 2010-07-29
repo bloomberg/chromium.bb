@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/process_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/child_process_security_policy.h"

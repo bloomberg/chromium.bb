@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_registrar.h"
+#include "googleurl/src/gurl.h"
 
 namespace {
 

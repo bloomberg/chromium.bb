@@ -34,6 +34,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -98,7 +99,7 @@ class BrowserTest : public ExtensionBrowserTest {
   // Used by phantom tab tests. Creates two tabs, pins the first and makes it
   // a phantom tab (by closing it).
   void PhantomTabTest() {
-    HTTPTestServer* server = StartHTTPServer();
+    net::HTTPTestServer* server = StartHTTPServer();
     ASSERT_TRUE(server);
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
     GURL url(server->TestServerPage("empty.html"));
@@ -329,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFile) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  scoped_refptr<HTTPTestServer> http_server(
-        HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> http_server(
+        net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != http_server.get());
   GURL http_url(http_server->TestServerPage(""));
   ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
@@ -341,8 +342,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  scoped_refptr<HTTPSTestServer> https_server(
-        HTTPSTestServer::CreateGoodServer(kDocRoot));
+  scoped_refptr<net::HTTPSTestServer> https_server(
+      net::HTTPSTestServer::CreateGoodServer(kDocRoot));
   ASSERT_TRUE(NULL != https_server.get());
   GURL https_url(https_server->TestServerPage("/"));
   ASSERT_TRUE(https_url.SchemeIs(chrome::kHttpsScheme));
@@ -353,8 +354,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  scoped_refptr<FTPTestServer> ftp_server(
-        FTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::FTPTestServer> ftp_server(
+      net::FTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != ftp_server.get());
   GURL ftp_url(ftp_server->TestServerPage(""));
   ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));
@@ -388,8 +389,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 // to an anchor in javascript body.onload handler.
 IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(
-        HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+        net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url(server->TestServerPage("files/onload_redirect_to_anchor.html"));
   GURL expected_favicon_url(server->TestServerPage("files/test.png"));
@@ -452,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
 // Makes sure TabClosing is sent when uninstalling an extension that is an app
 // tab.
 IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(server->TestServerPage("empty.html"));
@@ -509,8 +510,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   static const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(
-        HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+        net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
@@ -553,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
 #endif
 // Makes sure pinned tabs are restored correctly on start.
 IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   // Add an pinned app tab.
@@ -669,7 +670,7 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
     return true;
   }
 
-  HTTPTestServer* server_;
+  net::HTTPTestServer* server_;
   Extension* extension_app_;
   Profile* profile_;
 };

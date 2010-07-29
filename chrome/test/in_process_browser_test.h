@@ -7,12 +7,16 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "net/url_request/url_request_unittest.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Browser;
+class CommandLine;
 class Profile;
+
 namespace net {
+class HTTPTestServer;
 class RuleBasedHostResolverProc;
 }
 
@@ -98,7 +102,7 @@ class InProcessBrowserTest : public testing::Test {
   void SetInitialTimeoutInMS(int initial_timeout);
 
   // Starts an HTTP server.
-  HTTPTestServer* StartHTTPServer() WARN_UNUSED_RESULT;
+  net::HTTPTestServer* StartHTTPServer() WARN_UNUSED_RESULT;
 
   // Creates a browser with a single tab (about:blank), waits for the tab to
   // finish loading and shows the browser.
@@ -133,7 +137,7 @@ class InProcessBrowserTest : public testing::Test {
   Browser* browser_;
 
   // HTTPServer, created when StartHTTPServer is invoked.
-  scoped_refptr<HTTPTestServer> http_server_;
+  scoped_refptr<net::HTTPTestServer> http_server_;
 
   // Whether this test requires the browser windows to be shown (interactive
   // tests for example need the windows shown).

@@ -7,7 +7,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 class ErrorPageTest : public UITest {
  protected:
@@ -168,8 +168,8 @@ TEST_F(ErrorPageTest, IFrame404) {
   // In this test, the iframe sets the title of the parent page to "SUCCESS"
   // when the iframe loads.  If the iframe fails to load (because an alternate
   // error page loads instead), then the title will remain as "FAIL".
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"chrome/test/data");
+  scoped_refptr<net::HTTPTestServer> server =
+      net::HTTPTestServer::CreateServer(L"chrome/test/data");
   ASSERT_TRUE(NULL != server.get());
   GURL test_url = server->TestServerPage("files/iframe404.html");
   NavigateToURL(test_url);

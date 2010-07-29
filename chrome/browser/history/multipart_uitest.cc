@@ -6,9 +6,10 @@
 
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
+#include "base/file_util.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -30,8 +31,8 @@ TEST_F(MultipartResponseUITest, MAYBE_SingleVisit) {
   // Make sure that visiting a multipart/x-mixed-replace site only
   // creates one entry in the visits table.
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(kDocRoot);
+  scoped_refptr<net::HTTPTestServer> server =
+      net::HTTPTestServer::CreateServer(kDocRoot);
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));

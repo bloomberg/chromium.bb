@@ -27,6 +27,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
+#include "net/test/test_server.h"
 
 const std::string kSubscribePage = "/subscribe.html";
 const std::string kFeedPage = "files/feeds/feed.html";
@@ -206,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
 
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   // This page action will not show an icon, since it doesn't specify one but
@@ -235,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
 
 // Tests that we don't lose the page action icon on in-page navigations.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   FilePath extension_path(test_data_dir_.AppendASCII("api_test")
@@ -261,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
 
 // Tests that the location bar forgets about unloaded page actions.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
@@ -316,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
 // Makes sure that the RSS detects RSS feed links, even when rel tag contains
 // more than just "alternate".
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -355,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
 // Tests that tooltips of a page action icon can be specified using UTF8.
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
@@ -382,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
                extension->page_action()->GetTitle(tab_id).c_str());
 }
 
-GURL GetFeedUrl(HTTPTestServer* server, const std::string& feed_page,
+GURL GetFeedUrl(net::HTTPTestServer* server, const std::string& feed_page,
                 bool direct_url, std::string extension_id) {
   GURL feed_url = server->TestServerPage(feed_page);
   if (direct_url) {
@@ -445,7 +446,7 @@ bool ValidatePageElement(TabContents* tab,
 // extension to kick in, detect the feed and redirect to a feed preview page.
 // |sniff_xml_type| is generally set to true if the feed is sniffable and false
 // for invalid feeds.
-void NavigateToFeedAndValidate(HTTPTestServer* server,
+void NavigateToFeedAndValidate(net::HTTPTestServer* server,
                                const std::string& url,
                                Browser* browser,
                                bool sniff_xml_type,
@@ -484,7 +485,7 @@ void NavigateToFeedAndValidate(HTTPTestServer* server,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -498,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -512,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -526,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -540,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -556,7 +557,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -571,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -586,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -601,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -616,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(
@@ -631,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   ASSERT_TRUE(LoadExtension(

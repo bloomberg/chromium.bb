@@ -14,7 +14,7 @@
 #include "chrome/browser/view_ids.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 
@@ -87,7 +87,7 @@ class FindInPageTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // First we navigate to our test page (tab A).
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL url = server->TestServerPage("title1.html");
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   return;
 #endif
 
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server);
 
   // First we navigate to any page.

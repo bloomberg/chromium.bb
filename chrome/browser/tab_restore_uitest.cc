@@ -19,7 +19,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 // http://code.google.com/p/chromium/issues/detail?id=14774
 #if (defined(OS_WIN) || defined(OS_CHROMEOS)) && !defined(NDEBUG)
@@ -459,7 +459,8 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreIntoSameWindow) {
 // to an existing SiteInstance.  (Bug 1230446)
 TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL http_url1(server->TestServerPage("files/title1.html"));
   GURL http_url2(server->TestServerPage("files/title2.html"));
@@ -505,7 +506,8 @@ TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
 // already exists.  (Bug 1204135)
 TEST_F(TabRestoreUITest, RestoreCrossSiteWithExistingSiteInstance) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL http_url1(server->TestServerPage("files/title1.html"));
   GURL http_url2(server->TestServerPage("files/title2.html"));
@@ -646,7 +648,8 @@ TEST_F(TabRestoreUITest, RestoreTabWithSpecialURL) {
 // entry and see that it loads properly. See http://crbug.com/31905
 TEST_F(TabRestoreUITest, RestoreTabWithSpecialURLOnBack) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(server.get());
   const GURL http_url(server->TestServerPage("files/title1.html"));
 

@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_
 #pragma once
 
+#include <deque>
+#include <string>
+
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/notification_service.h"
 

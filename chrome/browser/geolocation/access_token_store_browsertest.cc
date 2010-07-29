@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/access_token_store.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"

@@ -10,7 +10,7 @@
 
 #include "googleurl/src/gurl.h"
 #include "base/ref_counted.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 class FilePath;
 
@@ -23,10 +23,10 @@ class ChromeFrameHTTPServer {
   GURL Resolve(const wchar_t* relative_url);
   FilePath GetDataDir();
 
-  HTTPTestServer* server() { return server_; }
+  net::HTTPTestServer* server() { return server_; }
 
  protected:
-  scoped_refptr<HTTPTestServer> server_;
+  scoped_refptr<net::HTTPTestServer> server_;
 };
 
 #endif  // CHROME_FRAME_TEST_HTTP_SERVER_H_

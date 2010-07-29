@@ -14,6 +14,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/url_request/url_request_about_job.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/test/test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +28,7 @@ class AccountScreenTest : public WizardInProcessBrowserTest {
  protected:
   // Overridden from WizardInProcessBrowserTest:
   virtual void SetUpWizard() {
-    HTTPTestServer* server = StartHTTPServer();
+    net::HTTPTestServer* server = StartHTTPServer();
     ASSERT_TRUE(server != NULL);
     GURL new_account_page_url(server->TestServerPage("files/new_account.html"));
     AccountScreen::set_new_account_page_url(new_account_page_url);

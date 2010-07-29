@@ -17,7 +17,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -79,7 +79,8 @@ TEST_F(ResourceDispatcherTest, ContentDispositionInline) {
 // Test for bug #1091358.
 TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
@@ -100,7 +101,8 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest) {
 
 TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_Disallowed) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
@@ -124,7 +126,8 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_Disallowed) {
 // if executed while navigating to a new page.
 TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_DuringUnload) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
@@ -160,7 +163,8 @@ TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_DuringUnload) {
 // Tests that onunload is run for cross-site requests.  (Bug 1114994)
 TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
@@ -254,7 +258,8 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationNonBuffered) {
 // away from the link doctor page.  (Bug 1235537)
 TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));

@@ -5,6 +5,8 @@
 #include "app/x11_util.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"

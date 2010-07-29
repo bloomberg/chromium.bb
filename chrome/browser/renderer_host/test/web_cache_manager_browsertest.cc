@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/message_loop.h"
+#include "base/process_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"

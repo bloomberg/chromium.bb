@@ -9,7 +9,7 @@
 #include "chrome/test/ui/ui_layout_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 class SearchProviderTest : public UITest {
  protected:
@@ -21,14 +21,14 @@ class SearchProviderTest : public UITest {
       const char* host,
       const char* expected_result);
 
-  scoped_refptr<HTTPTestServer> server_;
+  scoped_refptr<net::HTTPTestServer> server_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
 };
 
 SearchProviderTest::SearchProviderTest()
-    : server_(HTTPTestServer::CreateServer(L"chrome/test/data")) {
+    : server_(net::HTTPTestServer::CreateServer(L"chrome/test/data")) {
   if (!server_)
     return;
 

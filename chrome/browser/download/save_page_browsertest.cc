@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"

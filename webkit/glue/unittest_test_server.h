@@ -5,17 +5,18 @@
 #ifndef WEBKIT_GLUE_UNITTEST_TEST_SERVER_H__
 #define WEBKIT_GLUE_UNITTEST_TEST_SERVER_H__
 
+#include "net/base/load_flags.h"
+#include "net/test/test_server.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/resource_loader_bridge.h"
-#include "net/base/load_flags.h"
-#include "net/url_request/url_request_unittest.h"
 
 using webkit_glue::ResourceLoaderBridge;
 
 // We need to use ResourceLoaderBridge to communicate with the testserver
 // instead of using URLRequest directly because URLRequests need to be run on
 // the test_shell's IO thread.
-class UnittestTestServer : public HTTPTestServer {
+class UnittestTestServer : public net::HTTPTestServer {
  protected:
   UnittestTestServer() {
   }

@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/ui_test_utils.h"
+#include "googleurl/src/gurl.h"
+#include "net/test/test_server.h"
 
 // Tests that we throw errors when you try using extension APIs that aren't
 // supported in content scripts.
@@ -14,7 +16,8 @@
 // should be available in content scripts) or update the list of privileged APIs
 // in renderer_extension_bindings.js.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Stubs) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
 
   ASSERT_TRUE(RunExtensionTest("stubs")) << message_;
 

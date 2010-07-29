@@ -12,7 +12,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -198,7 +198,8 @@ const wchar_t kDocRoot[] = L"chrome/test/data/workers";
 #endif
 // Make sure that auth dialog is displayed from worker context.
 TEST_F(WorkerTest, WorkerHttpAuth) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -215,7 +216,8 @@ TEST_F(WorkerTest, WorkerHttpAuth) {
 #endif
 // Make sure that auth dialog is displayed from shared worker context.
 TEST_F(WorkerTest, SharedWorkerHttpAuth) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());

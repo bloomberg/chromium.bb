@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
+#include "base/path_service.h"
+#include "base/ref_counted.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -18,6 +21,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
+#include "net/test/test_server.h"
 
 class RenderViewHostManagerTest : public InProcessBrowserTest {
  public:
@@ -32,10 +36,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        SwapProcessWithRelNoreferrerAndTargetBlank) {
   // Start two servers with different sites.
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> http_server =
-      HTTPTestServer::CreateServer(kDocRoot);
-  scoped_refptr<HTTPSTestServer> https_server =
-      HTTPSTestServer::CreateGoodServer(kDocRoot);
+  scoped_refptr<net::HTTPTestServer> http_server =
+      net::HTTPTestServer::CreateServer(kDocRoot);
+  scoped_refptr<net::HTTPSTestServer> https_server =
+      net::HTTPSTestServer::CreateGoodServer(kDocRoot);
 
   // Load a page with links that open in a new window.
   ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
@@ -75,10 +79,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        DontSwapProcessWithOnlyTargetBlank) {
   // Start two servers with different sites.
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> http_server =
-      HTTPTestServer::CreateServer(kDocRoot);
-  scoped_refptr<HTTPSTestServer> https_server =
-      HTTPSTestServer::CreateGoodServer(kDocRoot);
+  scoped_refptr<net::HTTPTestServer> http_server =
+      net::HTTPTestServer::CreateServer(kDocRoot);
+  scoped_refptr<net::HTTPSTestServer> https_server =
+      net::HTTPSTestServer::CreateGoodServer(kDocRoot);
 
   // Load a page with links that open in a new window.
   ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
@@ -118,10 +122,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        DontSwapProcessWithOnlyRelNoreferrer) {
   // Start two servers with different sites.
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> http_server =
-      HTTPTestServer::CreateServer(kDocRoot);
-  scoped_refptr<HTTPSTestServer> https_server =
-      HTTPSTestServer::CreateGoodServer(kDocRoot);
+  scoped_refptr<net::HTTPTestServer> http_server =
+      net::HTTPTestServer::CreateServer(kDocRoot);
+  scoped_refptr<net::HTTPSTestServer> https_server =
+      net::HTTPSTestServer::CreateGoodServer(kDocRoot);
 
   // Load a page with links that open in a new window.
   ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(

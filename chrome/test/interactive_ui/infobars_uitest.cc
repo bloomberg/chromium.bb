@@ -6,7 +6,7 @@
 #include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 class InfoBarsUITest : public UITest {
  public:
@@ -17,7 +17,8 @@ class InfoBarsUITest : public UITest {
 
 TEST_F(InfoBarsUITest, TestInfoBarsCloseOnNewTheme) {
   const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(server.get() != NULL);
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());

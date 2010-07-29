@@ -4,13 +4,18 @@
 
 #include "chrome_frame/test/http_server.h"
 
+#include "base/base_paths.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
 
 void ChromeFrameHTTPServer::SetUp() {
   std::wstring document_root(kDocRoot);
-  server_ = HTTPTestServer::CreateServer(document_root);
+  server_ = net::HTTPTestServer::CreateServer(document_root);
   ASSERT_TRUE(server_ != NULL);
 
   // copy CFInstance.js into the test directory

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -112,7 +114,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   }
 
   void OpenDevToolsWindow(const std::string& test_page) {
-    HTTPTestServer* server = StartHTTPServer();
+    net::HTTPTestServer* server = StartHTTPServer();
     GURL url = server->TestServerPage(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
 

@@ -10,8 +10,8 @@
 #include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/http/http_response_headers.h"
-#include "net/test/test_server.h"
 #include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -431,7 +431,8 @@ void URLFetcherCancelTest::CancelRequest() {
 }
 
 TEST_F(URLFetcherTest, SameThreadsTest) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // Create the fetcher on the main thread.  Since IO will happen on the main
@@ -443,7 +444,8 @@ TEST_F(URLFetcherTest, SameThreadsTest) {
 }
 
 TEST_F(URLFetcherTest, DifferentThreadsTest) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // Create a separate thread that will create the URLFetcher.  The current
@@ -460,15 +462,16 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
 }
 
 TEST_F(URLFetcherPostTest, Basic) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   CreateFetcher(GURL(server->TestServerPage("echo")));
   MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherHeadersTest, Headers) {
-  scoped_refptr<HTTPTestServer> server =
-      HTTPTestServer::CreateServer(L"net/data/url_request_unittest");
+  scoped_refptr<net::HTTPTestServer> server =
+      net::HTTPTestServer::CreateServer(L"net/data/url_request_unittest");
   ASSERT_TRUE(NULL != server.get());
   CreateFetcher(GURL(server->TestServerPage("files/with-headers.html")));
   MessageLoop::current()->Run();
@@ -476,7 +479,8 @@ TEST_F(URLFetcherHeadersTest, Headers) {
 }
 
 TEST_F(URLFetcherProtectTest, Overload) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("defaultresponse"));
 
@@ -493,7 +497,8 @@ TEST_F(URLFetcherProtectTest, Overload) {
 }
 
 TEST_F(URLFetcherProtectTest, ServerUnavailable) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
 
@@ -512,7 +517,8 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
 }
 
 TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
 
@@ -534,8 +540,8 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
 
 
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
-  scoped_refptr<HTTPSTestServer> server =
-      HTTPSTestServer::CreateExpiredServer(kDocRoot);
+  scoped_refptr<net::HTTPSTestServer> server =
+      net::HTTPSTestServer::CreateExpiredServer(kDocRoot);
   ASSERT_TRUE(NULL != server.get());
 
   CreateFetcher(GURL(server->TestServerPage("defaultresponse")));
@@ -544,7 +550,8 @@ TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
 }
 
 TEST_F(URLFetcherCancelTest, ReleasesContext) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
 
@@ -570,7 +577,8 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
 }
 
 TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
   GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
 

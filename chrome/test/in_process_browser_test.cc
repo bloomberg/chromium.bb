@@ -36,6 +36,7 @@
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
+#include "net/test/test_server.h"
 #include "sandbox/src/dep.h"
 
 #if defined(OS_LINUX)
@@ -238,9 +239,9 @@ void InProcessBrowserTest::TearDown() {
   RenderProcessHost::set_run_renderer_in_process(original_single_process_);
 }
 
-HTTPTestServer* InProcessBrowserTest::StartHTTPServer() {
+net::HTTPTestServer* InProcessBrowserTest::StartHTTPServer() {
   DCHECK(!http_server_.get());
-  http_server_ = HTTPTestServer::CreateServer(
+  http_server_ = net::HTTPTestServer::CreateServer(
       L"chrome/test/data");
   return http_server_.get();
 }

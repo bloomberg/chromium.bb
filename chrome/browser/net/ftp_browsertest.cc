@@ -4,16 +4,16 @@
 
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FtpBrowserTest : public InProcessBrowserTest {
  public:
-  FtpBrowserTest() : server_(FTPTestServer::CreateServer(L"")) {
+  FtpBrowserTest() : server_(net::FTPTestServer::CreateServer(L"")) {
   }
 
  protected:
-  scoped_refptr<FTPTestServer> server_;
+  scoped_refptr<net::FTPTestServer> server_;
 };
 
 IN_PROC_BROWSER_TEST_F(FtpBrowserTest, DirectoryListing) {

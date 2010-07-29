@@ -4,7 +4,9 @@
 
 #include "chrome_frame/test/test_with_web_server.h"
 
+#include "base/base_paths.h"
 #include "base/file_version_info.h"
+#include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"

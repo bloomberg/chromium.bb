@@ -11,7 +11,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -80,7 +80,8 @@ class SessionHistoryTest : public UITest {
 };
 
 TEST_F(SessionHistoryTest, BasicBackForward) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // about:blank should be loaded first.
@@ -146,7 +147,8 @@ TEST_F(SessionHistoryTest, BasicBackForward) {
 #define MAYBE_FrameBackForward FrameBackForward
 #endif
 TEST_F(SessionHistoryTest, MAYBE_FrameBackForward) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // about:blank should be loaded first.
@@ -211,7 +213,8 @@ TEST_F(SessionHistoryTest, MAYBE_FrameBackForward) {
 
 // Test that back/forward preserves POST data and document state in subframes.
 TEST_F(SessionHistoryTest, FrameFormBackForward) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // about:blank should be loaded first.
@@ -272,7 +275,8 @@ TEST_F(SessionHistoryTest, FrameFormBackForward) {
 // across frames (ie, from frame -> nonframe).
 // Hangs, see http://crbug.com/45058.
 TEST_F(SessionHistoryTest, DISABLED_CrossFrameFormBackForward) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // about:blank should be loaded first.
@@ -317,7 +321,8 @@ TEST_F(SessionHistoryTest, DISABLED_CrossFrameFormBackForward) {
 // Test that back/forward entries are created for reference fragment
 // navigations. Bug 730379.
 TEST_F(SessionHistoryTest, FragmentBackForward) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // about:blank should be loaded first.
@@ -389,7 +394,8 @@ TEST_F(SessionHistoryTest, FragmentBackForward) {
 // TODO(brettw) bug 50648: fix flakyness. This test seems like it was failing
 // about 1/4 of the time on Vista by failing to execute JavascriptGo (see bug).
 TEST_F(SessionHistoryTest, FLAKY_JavascriptHistory) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // about:blank should be loaded first.
@@ -472,7 +478,8 @@ TEST_F(SessionHistoryTest, FLAKY_JavascriptHistory) {
 TEST_F(SessionHistoryTest, FAILS_LocationReplace) {
   // Test that using location.replace doesn't leave the title of the old page
   // visible.
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   ASSERT_TRUE(tab_->NavigateToURL(server->TestServerPage(
@@ -498,7 +505,8 @@ TEST_F(SessionHistoryTest, FLAKY_HistorySearchXSS) {
 }
 
 TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(server.get());
 
   ASSERT_TRUE(tab_->NavigateToURL(server->TestServerPage(
@@ -518,7 +526,8 @@ TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
 #define HistoryLength DISABLED_HistoryLength
 #endif  // defined(OS_WIN)
 TEST_F(SessionHistoryTest, HistoryLength) {
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(server.get());
 
   int length;

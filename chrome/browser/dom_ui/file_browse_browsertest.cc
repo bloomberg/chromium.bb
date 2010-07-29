@@ -16,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "net/test/test_server.h"
 
 namespace {
 
@@ -105,7 +106,7 @@ class FileBrowseUiObserver : public NotificationObserver {
 };
 
 IN_PROC_BROWSER_TEST_F(FileBrowseBrowserTest, InputFileTriggerFileBrowse) {
-  HTTPTestServer* server = StartHTTPServer();
+  net::HTTPTestServer* server = StartHTTPServer();
   ui_test_utils::NavigateToURL(browser(),
                                server->TestServerPage("files/input_file.html"));
 

@@ -9,7 +9,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 #include "webkit/glue/plugins/plugin_switches.h"
 
 namespace {
@@ -74,8 +74,8 @@ class PPAPITest : public UITest {
 
   void RunTestViaHTTP(const std::string& test_case) {
     const wchar_t kDocRoot[] = L"third_party/ppapi/tests";
-    scoped_refptr<HTTPTestServer> server(
-        HTTPTestServer::CreateServer(kDocRoot));
+    scoped_refptr<net::HTTPTestServer> server(
+        net::HTTPTestServer::CreateServer(kDocRoot));
     ASSERT_TRUE(server);
     RunTestURL(server->TestServerPage("files/test_case.html?" + test_case));
   }

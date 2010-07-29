@@ -30,7 +30,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "gfx/rect.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_unittest.h"
+#include "net/test/test_server.h"
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 #include "views/event.h"
@@ -971,7 +971,8 @@ TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
 
 TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
   const wchar_t kDocRoot[] = L"chrome/test/data/external_tab";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_THAT(server.get(), testing::NotNull());
 
   scoped_refptr<TabProxy> tab;

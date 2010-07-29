@@ -29,6 +29,7 @@
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
+#include "net/test/test_server.h"
 
 // Used to block until an iframe is loaded via a javascript call.
 // Note: NavigateToURLBlockUntilNavigationsComplete doesn't seem to work for
@@ -330,7 +331,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
         expected, function, current_browser_->GetSelectedTabContents());
   }
 
-  scoped_refptr<HTTPTestServer> server_;
+  scoped_refptr<net::HTTPTestServer> server_;
   InfoBarDelegate* infobar_;
   Browser* current_browser_;
   // path element of a URL referencing the html content for this test.

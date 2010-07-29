@@ -9,6 +9,7 @@
 #include <atlcom.h>
 #include <string>
 
+#include "base/utf_string_conversions.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/test_server.h"
