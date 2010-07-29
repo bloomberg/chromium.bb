@@ -309,7 +309,7 @@ resize_handler(struct window *window, void *data)
 
 static void
 keyboard_focus_handler(struct window *window,
-		       struct wl_input_device *device, void *data)
+		       struct input *device, void *data)
 {
 	struct gears *gears = data;
 

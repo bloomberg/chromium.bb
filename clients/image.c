@@ -190,7 +190,7 @@ redraw_handler(struct window *window, void *data)
 
 static void
 keyboard_focus_handler(struct window *window,
-		       struct wl_input_device *device, void *data)
+		       struct input *device, void *data)
 {
 	struct image *image = data;
 
@@ -224,7 +224,8 @@ image_create(struct display *display, uint32_t key, const char *filename)
 
 	window_set_user_data(image->window, image);
 	window_set_redraw_handler(image->window, redraw_handler);
-	window_set_keyboard_focus_handler(image->window, keyboard_focus_handler);
+	window_set_keyboard_focus_handler(image->window,
+					  keyboard_focus_handler);
 
 	image_draw(image);
 
