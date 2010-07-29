@@ -76,7 +76,7 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
       verbosechar = 'v'
     else:
       verbosechar = ''
-    os.spawnv(os.P_WAIT, os.path.join(target, 'tmptar', 'tar.exe'),
+    os.spawnv(os.P_WAIT, os.path.join('tmptar', 'tar.exe'),
       ['/tmptar/tar', '--use-compress-program', '/tmptar/gzip',
        '-xS' + verbosechar + 'pf', '../.tgz'])
     os.chdir(saveddir)

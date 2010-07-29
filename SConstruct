@@ -1100,8 +1100,6 @@ naclsdk_mode=<mode>   where <mode>:
 
 --prebuilt          Do not build things, just do install steps
 
---download          Download the sdk and unpack it at the appropriate place
-
 --verbose           Full command line logging before command execution
 
 pp=1                Use command line pretty printing (more concise output)
@@ -1533,10 +1531,13 @@ SCons.Script.AddOption('--download',
                        metavar='DOWNLOAD',
                        default=False,
                        action='store_true',
-                       help='allow tools to download')
+                       help='deprecated - allow tools to download')
 
 if nacl_env.GetOption('download'):
-  nacl_env.DownloadSdk()
+  print '@@@@ --download is deprecated, use gclient runhooks --force'
+  nacl_sync_env = nacl_env.Clone()
+  nacl_sync_env['ENV'] = os.environ
+  nacl_sync_env.Execute('gclient runhooks --force')
 
 # ----------------------------------------------------------
 # Sanity check whether we are ready to build nacl modules

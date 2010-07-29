@@ -37,7 +37,6 @@ import shutil
 import sys
 import SCons.Script
 import subprocess
-import sync_tgz
 
 
 # Mapping from env['PLATFORM'] (scons) to a single host platform from the point
@@ -88,24 +87,6 @@ def _PlatformSubdirs(env):
   return name
 
 
-def _DefaultDownloadUrl(env):
-  """Returns the URL for downloading the SDK.
-
-  http://build.chromium.org/buildbot/nacl_archive/nacl/toolchain/latest/...
-  """
-  # TODO(bradnelson): Once the toolchain tarballs have been made to match,
-  #     this should be removed.
-  if env['NATIVE_CLIENT_SDK_PLATFORM'] == 'win_x86':
-    return ('http://build.chromium.org/buildbot/nacl_archive/'
-            'nacl/toolchain/latest/naclsdk_win_x86a.tgz/naclsdk.tgz')
-  if env['NATIVE_CLIENT_SDK_PLATFORM'] == 'linux_x86':
-    return ('http://build.chromium.org/buildbot/nacl_archive/'
-            'nacl/toolchain/latest/naclsdk_linux_x86.tgz')
-  return ('http://build.chromium.org/buildbot/nacl_archive/'
-          'nacl/toolchain/latest/'
-          'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')
-
-
 def _GetNaclSdkRoot(env, sdk_mode):
   """Return the path to the sdk.
 
@@ -135,13 +116,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
 
   elif sdk_mode == 'download':
     platforms = _PlatformSubdirs(env)
-    if env['TARGET_ARCHITECTURE'] == 'arm':
-      root = os.path.join(env['MAIN_DIR'], 'toolchain', platforms[-1])
-    else:
-      # TODO(bradnelson): Once the toolchain tarballs have been made to match,
-      #     this should become the same as arm.
-      root = os.path.join(env['MAIN_DIR'], 'toolchain',
-                          platforms[-1], 'sdk', 'nacl-sdk')
+    root = os.path.join(env['MAIN_DIR'], 'toolchain', platforms[-1])
     return root
 
   elif sdk_mode.startswith('custom:'):
@@ -152,42 +127,6 @@ def _GetNaclSdkRoot(env, sdk_mode):
 
   else:
     raise Exception('Unknown sdk mode: %r' % sdk_mode)
-
-
-def DownloadSdk(env):
-  """Download and untar the latest sdk.
-
-  Args:
-    env: SCons environment in question.
-  """
-
-  # Only try to download once.
-  try:
-    if __builtin__.nacl_sdk_downloaded: return
-  except AttributeError:
-    __builtin__.nacl_sdk_downloaded = True
-
-  for psubdir in _PlatformSubdirs(env):
-    # Get path to extract to.
-    target = env.subst('$MAIN_DIR/toolchain/%s' % psubdir)
-
-    # Set NATIVE_CLIENT_SDK_PLATFORM before substitution.
-    env['NATIVE_CLIENT_SDK_PLATFORM'] = psubdir
-
-    # Allow sdk selection function to be used instead.
-    if env.get('NATIVE_CLIENT_SDK_SOURCE'):
-      url = env['NATIVE_CLIENT_SDK_SOURCE'](env)
-    else:
-      # Pick download url.
-      url = [
-          env.subst(env.get(
-              'NATIVE_CLIENT_SDK_URL',
-              _DefaultDownloadUrl(env))),
-          env.get('NATIVE_CLIENT_SDK_USERNAME'),
-          env.get('NATIVE_CLIENT_SDK_PASSWORD'),
-      ]
-
-    sync_tgz.SyncTgz(url[0], target, url[1], url[2])
 
 
 def _SetEnvForX86Sdk(env, sdk_path):
@@ -286,7 +225,7 @@ def ValidateSdk(env):
                              env.subst(c))):
       continue
     message = env.subst('''
-ERROR: NativeClient SDK does not seem present!,
+ERROR: NativeClient toolchain does not seem present!,
        Missing: %s
 
 Configuration is:
@@ -300,7 +239,7 @@ Configuration is:
   LINK=${LINK}
   RANLIB=${RANLIB}
 
-Run again with the --download flag or build the SDK yourself.
+Run: gclient runhooks --force or build the SDK yourself.
 ''' % c)
     sys.stderr.write(message + "\n\n")
     sys.exit(-1)
@@ -316,7 +255,6 @@ def generate(env):
   """
 
   # make these methods to the top level scons file
-  env.AddMethod(DownloadSdk)
   env.AddMethod(ValidateSdk)
 
   sdk_mode = SCons.Script.ARGUMENTS.get('naclsdk_mode', 'download')

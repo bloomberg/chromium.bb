@@ -3,6 +3,9 @@ vars = {
   "native_client_trunk": "http://nativeclient.googlecode.com/svn/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
 
+  "x86_toolchain_version": "2827",
+  "arm_toolchain_version": "2832",
+
   "breakpad_rev": "452",
   "chrome_rev": "51741",
   "nacl_breakpad_gyp_rev": "1806",
@@ -96,6 +99,12 @@ hooks = [
     "pattern": ".",
     "action": ["python", "native_client/build/gyp_nacl",
                "native_client/build/all.gyp"],
+  },
+  {
+    "pattern": "DEPS$",
+    "action": ["python", "native_client/build/download_toolchains.py",
+               "--x86-version", Var("x86_toolchain_version"),
+               "--arm-version", Var("arm_toolchain_version")],
   },
 ]
 
