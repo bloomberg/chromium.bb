@@ -20,18 +20,21 @@
 
 \subsection{Replacing X11}
 
-Over the last 10 years, a lot of functionality have slowly moved out
-of the X server and into libraries or kernel drivers. It started with
-freetype and fontconfig providing an alternative to the core X fonts
-and direct rendering OpenGL as a graphics driver in a client side
-library. Then cairo came along and provided a modern 2D rendering
-library independent of X and compositing managers took over control of
-the rendering of the desktop. Recently with GEM and KMS in the Linux
+Over time, a lot of functionality have slowly moved out of the X
+server and into client-side libraries or kernel drivers. One of the
+first components to move out was font rendering, with freetype and
+fontconfig providing an alternative to the core X fonts.  Direct
+rendering OpenGL as a graphics driver in a client side library. Then
+cairo came along and provided a modern 2D rendering library
+independent of X and compositing managers took over control of the
+rendering of the desktop. Recently with GEM and KMS in the Linux
 kernel, we can do modesetting outside X and schedule several direct
 rendering clients. The end result is a highly modular graphics stack.
 
+\subsection{Make the compositing manager the display server}
+
 Wayland is a new display server building on top of all those
-components. We’re trying to distill out the functionality in the X
+components. We are trying to distill out the functionality in the X
 server that is still used by the modern Linux desktop. This turns out
 to be not a whole lot. Applications can allocate their own off-screen
 buffers and render their window contents by themselves. In the end,
