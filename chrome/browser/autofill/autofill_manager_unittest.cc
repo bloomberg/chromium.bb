@@ -92,7 +92,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     credit_card = new CreditCard;
     autofill_unittest::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
                                          "Mastercard", "0987654321098765", "10",
-                                         "2014", "");
+                                         "2014", "Work");
     credit_card->set_unique_id(5);
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
@@ -396,12 +396,12 @@ TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsEmptyValue)) {
   EXPECT_EQ(ASCIIToUTF16("************8765"), values[4]);
   EXPECT_EQ(ASCIIToUTF16("************8765"), values[5]);
   ASSERT_EQ(6U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home; *3456"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work; *3456"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
-  EXPECT_EQ(ASCIIToUTF16("Home; *8765"), labels[3]);
-  EXPECT_EQ(ASCIIToUTF16("Work; *8765"), labels[4]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; *8765"), labels[5]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Aaron Presley; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley; *3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("*3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Aaron Presley; *8765"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley; *8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("*8765"), labels[5]);
 }
 
 TEST_F(AutoFillManagerTest,
@@ -438,9 +438,9 @@ TEST_F(AutoFillManagerTest,
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[1]);
   EXPECT_EQ(ASCIIToUTF16("************3456"), values[2]);
   ASSERT_EQ(3U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home; *3456"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work; *3456"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Aaron Presley; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley; *3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("*3456"), labels[2]);
 }
 
 TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsNonCCNumber)) {
@@ -479,12 +479,12 @@ TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsNonCCNumber)) {
   EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[4]);
   EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[5]);
   ASSERT_EQ(6U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home; *3456"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work; *3456"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
-  EXPECT_EQ(ASCIIToUTF16("Home; *8765"), labels[3]);
-  EXPECT_EQ(ASCIIToUTF16("Work; *8765"), labels[4]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; *8765"), labels[5]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Aaron Presley; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley; *3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("*3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Aaron Presley; *8765"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley; *8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("*8765"), labels[5]);
 }
 
 TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsSemicolon)) {
@@ -534,14 +534,14 @@ TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsSemicolon)) {
   EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[6]);
   EXPECT_EQ(ASCIIToUTF16("Buddy Holly"), values[7]);
   ASSERT_EQ(8U, labels.size());
-  EXPECT_EQ(ASCIIToUTF16("Home; *3456"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Work; *3456"), labels[1]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; *3456"), labels[2]);
-  EXPECT_EQ(ASCIIToUTF16("Home; 8765; *3456"), labels[3]);
-  EXPECT_EQ(ASCIIToUTF16("Home; *8765"), labels[4]);
-  EXPECT_EQ(ASCIIToUTF16("Work; *8765"), labels[5]);
-  EXPECT_EQ(ASCIIToUTF16("Empty; *8765"), labels[6]);
-  EXPECT_EQ(ASCIIToUTF16("Home; 8765; *8765"), labels[7]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Aaron Presley; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley; *3456"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("*3456"), labels[2]);
+  EXPECT_EQ(ASCIIToUTF16("Joe Ely; *3456"), labels[3]);
+  EXPECT_EQ(ASCIIToUTF16("Elvis Aaron Presley; *8765"), labels[4]);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley; *8765"), labels[5]);
+  EXPECT_EQ(ASCIIToUTF16("*8765"), labels[6]);
+  EXPECT_EQ(ASCIIToUTF16("Joe Ely; *8765"), labels[7]);
 }
 
 TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetCreditCardSuggestionsNonHTTPS)) {
@@ -725,6 +725,42 @@ TEST_F(AutoFillManagerTest,
   EXPECT_EQ(string16(), labels[1]);
 }
 
+TEST_F(AutoFillManagerTest, GetBillingSuggestionsAddress1) {
+  FormData form;
+  CreateTestFormDataBilling(&form);
+
+  // Set up our FormStructures.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+  autofill_manager_->FormsSeen(forms);
+
+  // The page ID sent to the AutoFillManager from the RenderView, used to send
+  // an IPC message back to the renderer.
+  const int kPageID = 1;
+
+  webkit_glue::FormField field;
+  autofill_unittest::CreateTestFormField(
+      "Address Line 1", "billingAddr1", "", "text", &field);
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(kPageID, false, field));
+
+  // No suggestions provided, so send an empty vector as the results.
+  // This triggers the combined message send.
+  rvh()->AutocompleteSuggestionsReturned(kPageID, std::vector<string16>());
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels));
+  EXPECT_EQ(kPageID, page_id);
+  ASSERT_EQ(2U, values.size());
+  EXPECT_EQ(ASCIIToUTF16("3734 Elvis Presley Blvd."), values[0]);
+  EXPECT_EQ(ASCIIToUTF16("123 Apple St."), values[1]);
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("Elvis Aaron Presley; *3456"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley; *8765"), labels[1]);
+}
+
 TEST_F(AutoFillManagerTest, SKIP_BRANDED(FillCreditCardForm)) {
   FormData form;
   CreateTestFormDataBilling(&form);
@@ -737,12 +773,9 @@ TEST_F(AutoFillManagerTest, SKIP_BRANDED(FillCreditCardForm)) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(
-      autofill_manager_->FillAutoFillFormData(kPageID,
-                                              form,
-                                              string16(),
-                                              ASCIIToUTF16("Home; *3456"),
-                                              AutoFillManager::PackIDs(4, 1)));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
+      kPageID, form, string16(), ASCIIToUTF16("Elvis Aaron Presley; *3456"),
+      AutoFillManager::PackIDs(4, 1)));
 
   int page_id = 0;
   FormData results;
@@ -824,12 +857,9 @@ TEST_F(AutoFillManagerTest, SKIP_BRANDED(FillNonBillingFormSemicolon)) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(
-      autofill_manager_->FillAutoFillFormData(kPageID,
-                                              form,
-                                              string16(),
-                                              ASCIIToUTF16("Home; 8765"),
-                                              AutoFillManager::PackIDs(4, 7)));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
+      kPageID, form, string16(), ASCIIToUTF16("Elvis Aaron Presley; 8765"),
+      AutoFillManager::PackIDs(4, 7)));
 
   int page_id = 0;
   FormData results;
@@ -1070,11 +1100,9 @@ TEST_F(AutoFillManagerTest, SKIP_BRANDED(FormChangesRemoveField)) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(kPageID,
-                                                      form,
-                                                      ASCIIToUTF16("Elvis"),
-                                                      ASCIIToUTF16("Home"),
-                                                      1));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
+      kPageID, form, ASCIIToUTF16("Elvis"), ASCIIToUTF16("Elvis Aaron Presley"),
+      1));
 
   int page_id = 0;
   FormData results;
@@ -1137,11 +1165,9 @@ TEST_F(AutoFillManagerTest, SKIP_BRANDED(FormChangesAddField)) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(kPageID,
-                                                      form,
-                                                      ASCIIToUTF16("Elvis"),
-                                                      ASCIIToUTF16("Home"),
-                                                      1));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
+      kPageID, form, ASCIIToUTF16("Elvis"), ASCIIToUTF16("Elvis Aaron Presley"),
+      1));
 
   int page_id = 0;
   FormData results;
@@ -1224,3 +1250,4 @@ TEST_F(AutoFillManagerTest, AuxiliaryProfilesReset) {
       prefs::kAutoFillAuxiliaryProfilesEnabled));
 #endif
 }
+

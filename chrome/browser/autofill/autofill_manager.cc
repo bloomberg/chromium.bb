@@ -39,9 +39,20 @@ const int kAutoFillPhoneNumberPrefixCount = 3;
 const int kAutoFillPhoneNumberSuffixOffset = 3;
 const int kAutoFillPhoneNumberSuffixCount = 4;
 
-
-const string16::value_type kCreditCardLabelPrefix[] = {'*', 0};
+const string16::value_type kCreditCardPrefix[] = {'*', 0};
 const string16::value_type kLabelSeparator[] = {';',' ', '*', 0};
+
+// Combines the |label| string with the last four digits of the credit card
+// |cc|.  If one, the other, or both are empty strings we omit the separator.
+string16 CombineLabelAndCreditCard(const string16& label,
+                                   const CreditCard* cc) {
+  if (label.empty())
+    return kCreditCardPrefix + cc->LastFourDigits();
+  else if (cc->LastFourDigits().empty())
+    return label;
+  else
+    return label + kLabelSeparator + cc->LastFourDigits();
+}
 
 // The name of the generic credit card icon, which maps to the image resource ID
 // in webkit/glue:WebKitClientImpl.
@@ -515,13 +526,15 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
          personal_data_->credit_cards().begin();
          cc != personal_data_->credit_cards().end(); ++cc) {
       expanded_values.push_back((*values)[i]);
-      string16 label = (*labels)[i] + kLabelSeparator + (*cc)->LastFourDigits();
+      string16 label = CombineLabelAndCreditCard((*labels)[i], *cc);
       expanded_labels.push_back(label);
       expanded_ids.push_back(PackIDs((*cc)->unique_id(), profile->unique_id()));
     }
   }
   expanded_labels.swap(*labels);
   expanded_values.swap(*values);
+  // No CC, so no icons.
+  icons->resize(values->size());
   expanded_ids.swap(*unique_ids);
 }
 
@@ -533,10 +546,6 @@ void AutoFillManager::GetBillingProfileSuggestions(
     std::vector<string16>* labels,
     std::vector<string16>* icons,
     std::vector<int>* unique_ids) {
-  std::vector<CreditCard*> matching_creditcards;
-  std::vector<AutoFillProfile*> matching_profiles;
-  std::vector<string16> cc_values;
-  std::vector<string16> cc_labels;
 
   // If the form is non-HTTPS, no CC suggestions are provided; however, give the
   // user the option of filling the billing address fields with regular address
@@ -547,6 +556,11 @@ void AutoFillManager::GetBillingProfileSuggestions(
     return;
   }
 
+  std::vector<CreditCard*> matching_creditcards;
+  std::vector<AutoFillProfile*> matching_profiles;
+
+  // Collect matching pairs of credit cards and related profiles, where profile
+  // field value matches form field value.
   for (std::vector<CreditCard*>::const_iterator cc =
            personal_data_->credit_cards().begin();
        cc != personal_data_->credit_cards().end(); ++cc) {
@@ -573,18 +587,27 @@ void AutoFillManager::GetBillingProfileSuggestions(
     if (!billing_profile)
       continue;
 
-    for (std::vector<AutoFillProfile*>::const_iterator iter =
-             personal_data_->profiles().begin();
-         iter != personal_data_->profiles().end(); ++iter) {
-      values->push_back(billing_profile->GetFieldText(type));
+    matching_creditcards.push_back(*cc);
+    matching_profiles.push_back(billing_profile);
+  }
 
-      string16 label = (*iter)->Label() + kLabelSeparator +
-                       (*cc)->LastFourDigits();
-      labels->push_back(label);
-      icons->push_back(ASCIIToUTF16(kGenericCC));
-      unique_ids->push_back(
-          PackIDs((*cc)->unique_id(), (*iter)->unique_id()));
-    }
+  std::vector<string16> inferred_labels;
+  AutoFillProfile::CreateInferredLabels(&matching_profiles, &inferred_labels, 0,
+                                        type.field_type());
+
+  DCHECK_EQ(matching_profiles.size(), matching_creditcards.size());
+  DCHECK_EQ(matching_profiles.size(), inferred_labels.size());
+
+  // Process the matching pairs into suggested |values|, |labels|, and
+  // |unique_ids|.
+  for (size_t i = 0; i < matching_profiles.size(); ++i) {
+    values->push_back(matching_profiles[i]->GetFieldText(type));
+    string16 label = CombineLabelAndCreditCard(inferred_labels[i],
+                                               matching_creditcards[i]);
+    labels->push_back(label);
+    icons->push_back(ASCIIToUTF16(kGenericCC));
+    unique_ids->push_back(PackIDs(matching_creditcards[i]->unique_id(),
+                                  matching_profiles[i]->unique_id()));
   }
 }
 
@@ -613,21 +636,28 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
 
       if (!form->HasNonBillingFields()) {
         values->push_back(creditcard_field_value);
-        labels->push_back(
-            kCreditCardLabelPrefix + credit_card->LastFourDigits());
+        labels->push_back(CombineLabelAndCreditCard(string16(), credit_card));
+        icons->push_back(ASCIIToUTF16(kGenericCC));
         unique_ids->push_back(PackIDs(credit_card->unique_id(), 0));
       } else {
-        for (std::vector<AutoFillProfile*>::const_iterator iter =
-                 personal_data_->profiles().begin();
-             iter != personal_data_->profiles().end(); ++iter) {
+        const std::vector<AutoFillProfile*>& profiles
+            = personal_data_->profiles();
+        std::vector<string16> inferred_labels;
+        AutoFillProfile::CreateInferredLabels(&profiles,
+                                              &inferred_labels,
+                                              0,
+                                              type.field_type());
+        DCHECK_EQ(profiles.size(), inferred_labels.size());
+
+        for (size_t i = 0; i < profiles.size(); ++i) {
           values->push_back(creditcard_field_value);
 
-          string16 label = (*iter)->Label() + kLabelSeparator +
-                           credit_card->LastFourDigits();
+          string16 label = CombineLabelAndCreditCard(inferred_labels[i],
+                                                     credit_card);
           labels->push_back(label);
           icons->push_back(ASCIIToUTF16(kGenericCC));
           unique_ids->push_back(
-            PackIDs(credit_card->unique_id(), (*iter)->unique_id()));
+              PackIDs(credit_card->unique_id(), profiles[i]->unique_id()));
         }
       }
     }
