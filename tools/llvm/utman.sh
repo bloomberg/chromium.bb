@@ -166,8 +166,7 @@ setup-tools-common() {
   RANLIB_FOR_SFI_TARGET="${CROSS_TARGET_RANLIB}"
 
   # Preprocessor flags
-  CPPFLAGS_FOR_SFI_TARGET="-D__native_client__=1 \
-                           -DMISSING_SYSCALL_NAMES=1"
+  CPPFLAGS_FOR_SFI_TARGET="-DMISSING_SYSCALL_NAMES=1"
   # C flags
   CFLAGS_FOR_SFI_TARGET="${CPPFLAGS_FOR_SFI_TARGET} \
                          -march=${ARM_ARCH} \
