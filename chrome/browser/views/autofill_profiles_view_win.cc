@@ -227,7 +227,7 @@ void AutoFillProfilesView::ChildWindowClosed() {
   UpdateButtonState();
 }
 
-SkBitmap* AutoFillProfilesView::GetWarningBimap(bool good) {
+SkBitmap* AutoFillProfilesView::GetWarningBitmap(bool good) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetBitmapNamed(good ? IDR_INPUT_GOOD : IDR_INPUT_ALERT);
 }
@@ -562,7 +562,7 @@ bool AutoFillProfilesView::PhoneSubView::IsValid() const {
 void AutoFillProfilesView::PhoneSubView::UpdateButtons() {
   if (phone_warning_button_) {
     SkBitmap* image = text_phone_->text().empty() ? NULL :
-        autofill_view_->GetWarningBimap(IsValid());
+        autofill_view_->GetWarningBitmap(IsValid());
     phone_warning_button_->SetImage(views::CustomButton::BS_NORMAL, image);
     if (last_state_ != IsValid()) {
       last_state_ = IsValid();
@@ -595,7 +595,7 @@ void AutoFillProfilesView::PhoneSubView::ViewHierarchyChanged(
     layout->AddView(text_phone_);
     phone_warning_button_ = new views::ImageButton(this);
     // Set default size of the image.
-    SkBitmap* image = autofill_view_->GetWarningBimap(true);
+    SkBitmap* image = autofill_view_->GetWarningBitmap(true);
     phone_warning_button_->SetPreferredSize(gfx::Size(image->width(),
                                                       image->height()));
     phone_warning_button_->SetEnabled(false);
@@ -1217,24 +1217,37 @@ bool AutoFillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
 // AutoFillProfilesView::AddressComboBoxModel, public:
 AutoFillProfilesView::AddressComboBoxModel::AddressComboBoxModel(
     bool is_billing)
-    : address_labels_(NULL),
-      is_billing_(is_billing) {
+    : is_billing_(is_billing) {
 }
 
 void AutoFillProfilesView::AddressComboBoxModel::set_address_labels(
     const std::vector<EditableSetInfo>* address_labels) {
-  DCHECK(!address_labels_);
-  address_labels_ = address_labels;
+  for (size_t i = 0; i < address_labels->size(); ++i) {
+    const EditableSetInfo& item = address_labels->at(i);
+    DCHECK(item.is_address);
+    FieldTypeSet fields;
+    item.address.GetAvailableFieldTypes(&fields);
+    if (fields.find(ADDRESS_HOME_LINE1) == fields.end() &&
+        fields.find(ADDRESS_HOME_LINE2) == fields.end() &&
+        fields.find(ADDRESS_HOME_APT_NUM) == fields.end() &&
+        fields.find(ADDRESS_HOME_CITY) == fields.end() &&
+        fields.find(ADDRESS_HOME_STATE) == fields.end() &&
+        fields.find(ADDRESS_HOME_ZIP) == fields.end() &&
+        fields.find(ADDRESS_HOME_COUNTRY) == fields.end()) {
+      // No address information in this profile; it's useless as a billing
+      // address.
+      continue;
+    }
+    address_labels_.push_back(item);
+  }
 }
 
 void AutoFillProfilesView::AddressComboBoxModel::UsedWithComboBox(
     views::Combobox* combo_box) {
-  DCHECK(address_labels_);
   combo_boxes_.push_back(combo_box);
 }
 
 void AutoFillProfilesView::AddressComboBoxModel::LabelChanged() {
-  DCHECK(address_labels_);
   for (std::list<views::Combobox*>::iterator it = combo_boxes_.begin();
        it != combo_boxes_.end();
        ++it)
@@ -1243,10 +1256,8 @@ void AutoFillProfilesView::AddressComboBoxModel::LabelChanged() {
 
 int AutoFillProfilesView::AddressComboBoxModel::GetIndex(int unique_id) {
   int shift = is_billing_ ? 0 : 1;
-  DCHECK(address_labels_);
-  for (size_t i = 0; i < address_labels_->size(); ++i) {
-    DCHECK(address_labels_->at(i).is_address);
-    if (address_labels_->at(i).address.unique_id() == unique_id)
+  for (size_t i = 0; i < address_labels_.size(); ++i) {
+    if (address_labels_.at(i).address.unique_id() == unique_id)
       return i + shift;
   }
   return -1;
@@ -1255,20 +1266,18 @@ int AutoFillProfilesView::AddressComboBoxModel::GetIndex(int unique_id) {
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::AddressComboBoxModel,  ComboboxModel methods
 int AutoFillProfilesView::AddressComboBoxModel::GetItemCount() {
-  DCHECK(address_labels_);
   int shift = is_billing_ ? 0 : 1;
-  return static_cast<int>(address_labels_->size()) + shift;
+  return static_cast<int>(address_labels_.size()) + shift;
 }
 
 std::wstring AutoFillProfilesView::AddressComboBoxModel::GetItemAt(int index) {
-  DCHECK(address_labels_);
   int shift = is_billing_ ? 0 : 1;
-  DCHECK(index < (static_cast<int>(address_labels_->size()) + shift));
+  DCHECK(index < (static_cast<int>(address_labels_.size()) + shift));
   if (!is_billing_ && !index)
     return l10n_util::GetString(IDS_AUTOFILL_DIALOG_SAME_AS_BILLING);
-  DCHECK(address_labels_->at(index - shift).is_address);
+  DCHECK(address_labels_.at(index - shift).is_address);
   std::wstring label =
-      address_labels_->at(index - shift).address.Label();
+      address_labels_.at(index - shift).address.Label();
   if (label.empty())
     label = l10n_util::GetString(IDS_AUTOFILL_NEW_ADDRESS);
   return label;
