@@ -43,12 +43,14 @@ void PepperView::Paint() {
     return;
   }
 
-  // TODO(ajwong): We shouldn't assume the image data format.
-  pp::ImageData image(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+  // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
+  // is wrong.
+  pp::ImageData image(pp::ImageData::GetNativeImageDataFormat(),
                       pp::Size(viewport_width_, viewport_height_),
                       false);
   if (image.is_null()) {
-    LOG(ERROR) << "Unable to allocate image.";
+    LOG(ERROR) << "Unable to allocate image of size: "
+               << viewport_width_ << "x" << viewport_height_;
     return;
   }
 

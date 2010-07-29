@@ -78,6 +78,8 @@
       'sources': [
         'client/plugin/chromoting_plugin.cc',
         'client/plugin/chromoting_plugin.h',
+        'client/plugin/chromoting_scriptable_object.cc',
+        'client/plugin/chromoting_scriptable_object.h',
         'client/plugin/pepper_entrypoints.cc',
         'client/plugin/pepper_entrypoints.h',
         'client/plugin/pepper_input_handler.cc',

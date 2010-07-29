@@ -78,42 +78,4 @@ bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
   return true;
 }
 
-// Get host JID from command line arguments, or stdin if not specified.
-bool GetLoginInfoFromUrlParams(const std::string& url, ClientConfig* config) {
-  // TODO(ajwong): We should use GURL or something.  Don't parse this by hand!
-
-  // The Url should be of the form:
-  //
-  //   chrome://remoting?user=<userid>&auth=<authtoken>&jid=<hostjid>
-  //
-  vector<string> parts;
-  SplitString(url, '&', &parts);
-  if (parts.size() != 3) {
-    return false;
-  }
-
-  size_t pos = parts[0].rfind('=');
-  if (pos == string::npos && (pos + 1) != string::npos) {
-    return false;
-  }
-  std::string username = parts[0].substr(pos + 1);
-
-  pos = parts[1].rfind('=');
-  if (pos == string::npos && (pos + 1) != string::npos) {
-    return false;
-  }
-  std::string auth_token = parts[1].substr(pos + 1);
-
-  pos = parts[2].rfind('=');
-  if (pos == string::npos && (pos + 1) != string::npos) {
-    return false;
-  }
-  std::string host_jid = parts[2].substr(pos + 1);
-
-  config->host_jid = host_jid;
-  config->username = username;
-  config->auth_token = auth_token;
-  return true;
-}
-
 }  // namespace remoting
