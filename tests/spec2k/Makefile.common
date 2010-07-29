@@ -74,7 +74,9 @@ $(IT).gcc.opt.x8664: $(SRC)
 	$(LOCAL_GCC) -O3 -m64 $(CFLAGS) $(SRC)  -static -lm  -o $@
 
 ######################################################################
-LOCAL_CROSS_GCC=$(TC_ROOT)/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
+LOCAL_CROSS_GCC=$(TIME_CMD) \
+	$(TC_ROOT)/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
+
 # straight arm gcc (code sourcery)
 $(IT).gcc.arm: $(SRC)
 	$(LOCAL_CROSS_GCC) -O0 -march=armv6 $(CFLAGS) $(SRC)  -static  -lm  -o $@
@@ -86,7 +88,7 @@ $(IT).gcc.opt.arm: $(SRC)
 ######################################################################
 ## NACL-GCC TOOLCHAINS
 ######################################################################
-NACL_GCC=$(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl-gcc
+NACL_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl-gcc
 
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC)
@@ -97,7 +99,7 @@ $(IT).nacl.opt.x8632: $(SRC)
 	$(NACL_GCC) -O3 -m32 $(CFLAGS) $(SRC)  -static -lm  -lnosys -o $@
 
 ######################################################################
-NACL64_GCC=$(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl64-gcc
+NACL64_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl64-gcc
 
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC)
@@ -189,4 +191,3 @@ $(IT).pnacl.opt.x8664: $(IT).opt.bc
 
 $(IT).pnacl_translator.opt.x8664: $(IT).bc
 	$(BC_X8664_TRANSLATOR) $(IT).opt.bc $@
-
