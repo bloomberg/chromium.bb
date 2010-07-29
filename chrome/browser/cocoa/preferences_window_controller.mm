@@ -392,8 +392,9 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 
   explicit ManagedPrefsBannerState(PreferencesWindowController* controller,
                                    OptionsPage page,
+                                   PrefService* local_state,
                                    PrefService* prefs)
-      : ManagedPrefsBannerBase(prefs, page),
+    : ManagedPrefsBannerBase(local_state, prefs, page),
         controller_(controller),
         page_(page) { }
 
@@ -1958,9 +1959,16 @@ const int kDisabledIndex = 1;
 // preferences relevant to the given options |page|.
 - (void)initBannerStateForPage:(OptionsPage)page {
   page = [self normalizePage:page];
+
+  // During unit tests, there is no local state object, so we fall back to
+  // the prefs object (where we've explicitly registered this pref so we
+  // know it's there).
+  PrefService* local = g_browser_process->local_state();
+  if (!local)
+    local = prefs_;
   bannerState_.reset(
       new PreferencesWindowControllerInternal::ManagedPrefsBannerState(
-          self, page, prefs_));
+          self, page, local, prefs_));
 }
 
 - (void)switchToPage:(OptionsPage)page animate:(BOOL)animate {
