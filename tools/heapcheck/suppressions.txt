@@ -956,3 +956,15 @@
    fun:Browser
    fun:BrowserWithTestWindowTest::SetUp
 }
+{
+   bug_50583
+   Heapcheck:Leak
+   ...
+   fun:net::CookieMonsterTest_DontImportDuplicateCreationTimes_Test::TestBody
+}
+{
+   bug_50598
+   Heapcheck:Leak
+   ...
+   fun:safe_browsing::PhishingDOMFeatureExtractorTest::SetUp
+}
