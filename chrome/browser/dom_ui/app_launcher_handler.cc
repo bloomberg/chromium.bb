@@ -5,9 +5,8 @@
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 
 #include "app/animation.h"
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/base64.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_launched_animation.h"

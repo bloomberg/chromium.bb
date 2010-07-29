@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
-
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/string16.h"

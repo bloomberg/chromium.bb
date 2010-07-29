@@ -5,7 +5,6 @@
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 
 #include "app/l10n_util.h"
-#include "app/l10n_util_collator.h"
 #include "app/table_model_observer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/content_settings_helper.h"

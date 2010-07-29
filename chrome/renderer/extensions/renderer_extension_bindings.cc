@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/singleton.h"
 #include "base/values.h"

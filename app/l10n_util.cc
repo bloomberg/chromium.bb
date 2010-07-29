@@ -7,7 +7,6 @@
 #include <cstdlib>
 
 #include "app/app_paths.h"
-#include "app/app_switches.h"
 #include "app/l10n_util_collator.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"

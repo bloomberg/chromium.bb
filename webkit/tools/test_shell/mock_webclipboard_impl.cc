@@ -1,10 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 
-#include "app/clipboard/clipboard.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
@@ -86,4 +85,3 @@ void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
     m_writeSmartPaste = false;
   }
 }
-

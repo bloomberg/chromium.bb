@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/platform_file.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"

@@ -8,7 +8,6 @@
 
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
-#include "app/sql/transaction.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/scoped_ptr.h"

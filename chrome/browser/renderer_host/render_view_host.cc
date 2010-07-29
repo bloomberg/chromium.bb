@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/stats_counters.h"
@@ -1981,4 +1980,3 @@ void RenderViewHost::OnWebDatabaseAccessed(const GURL& url,
 void RenderViewHost::OnSetDisplayingPDFContent() {
   delegate_->SetDisplayingPDFContent();
 }
-

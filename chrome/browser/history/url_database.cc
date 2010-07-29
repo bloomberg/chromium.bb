@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"

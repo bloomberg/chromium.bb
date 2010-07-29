@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/starred_url_database.h"
 
-#include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/logging.h"

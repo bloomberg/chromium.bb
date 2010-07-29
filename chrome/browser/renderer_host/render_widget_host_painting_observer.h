@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_PAINTING_OBSERVER_H_
 #pragma once
 
-#include "app/surface/transport_dib.h"
-
 class BackingStore;
 class RenderWidgetHost;
 class SkBitmap;

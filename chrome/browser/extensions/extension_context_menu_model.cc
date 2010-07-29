@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"

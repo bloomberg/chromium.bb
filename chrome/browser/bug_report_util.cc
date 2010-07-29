@@ -4,8 +4,10 @@
 
 #include "chrome/browser/bug_report_util.h"
 
-#include "app/l10n_util.h"
+#include <string>
+
 #include "base/file_version_info.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/profile.h"
@@ -17,8 +19,6 @@
 #include "grit/locale_settings.h"
 #include "net/url_request/url_request_status.h"
 #include "unicode/locid.h"
-
-#include <string>
 
 namespace {
 

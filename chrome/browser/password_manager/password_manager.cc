@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/platform_thread.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"

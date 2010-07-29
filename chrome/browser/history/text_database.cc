@@ -8,7 +8,6 @@
 
 #include "chrome/browser/history/text_database.h"
 
-#include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/file_util.h"

@@ -10,8 +10,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/table_model_observer.h"
-#include "app/tree_node_model.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/linked_ptr.h"

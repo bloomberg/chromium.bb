@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
@@ -368,4 +367,3 @@ TEST(AutoFillProfileTest, MergeWith) {
 }
 
 }  // namespace
-

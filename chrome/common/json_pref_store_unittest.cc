@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/test/data/resource.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"

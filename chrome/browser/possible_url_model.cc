@@ -4,7 +4,6 @@
 
 #include "chrome/browser/possible_url_model.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
 #include "base/callback.h"

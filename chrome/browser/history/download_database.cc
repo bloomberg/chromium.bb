@@ -7,7 +7,6 @@
 #include <limits>
 #include <vector>
 
-#include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"

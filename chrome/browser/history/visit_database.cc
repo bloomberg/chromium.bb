@@ -9,7 +9,6 @@
 #include <map>
 #include <set>
 
-#include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/logging.h"
 #include "chrome/browser/history/url_database.h"

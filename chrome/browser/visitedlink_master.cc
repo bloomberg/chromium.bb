@@ -13,9 +13,6 @@
 
 #include <algorithm>
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"

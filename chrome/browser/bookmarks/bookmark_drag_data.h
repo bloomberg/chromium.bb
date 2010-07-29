@@ -19,7 +19,6 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class OSExchangeData;
 class Pickle;
 class Profile;
 

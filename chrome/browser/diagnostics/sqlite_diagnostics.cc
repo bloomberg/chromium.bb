@@ -6,7 +6,6 @@
 
 #include "app/sql/connection.h"
 #include "app/sql/diagnostic_error_delegate.h"
-#include "app/sql/init_status.h"
 #include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/histogram.h"

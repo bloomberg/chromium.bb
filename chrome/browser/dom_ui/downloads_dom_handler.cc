@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/downloads_dom_handler.h"
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/singleton.h"

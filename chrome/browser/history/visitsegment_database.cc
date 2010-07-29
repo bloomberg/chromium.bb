@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"

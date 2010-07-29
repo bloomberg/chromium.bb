@@ -11,11 +11,14 @@
 #include <string>
 #include <vector>
 
-#include "app/sql/connection.h"
 #include "app/sql/meta_table.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "net/base/cookie_monster.h"
+
+namespace sql {
+class Connection;
+}
 
 class FilePath;
 

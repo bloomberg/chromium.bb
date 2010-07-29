@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_infobar_module.h"
 
-#include "app/l10n_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_module_constants.h"

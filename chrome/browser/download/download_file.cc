@@ -13,7 +13,6 @@
 #include "net/base/net_errors.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
 #include "chrome/common/win_safe_util.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/cocoa/file_metadata.h"

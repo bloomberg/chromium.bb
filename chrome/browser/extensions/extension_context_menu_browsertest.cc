@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/menus/menu_model.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -13,7 +12,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "webkit/glue/context_menu.h"
 
-using menus::MenuModel;
 using WebKit::WebContextMenuData;
 
 // This test class helps us sidestep platform-specific issues with popping up a

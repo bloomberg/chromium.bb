@@ -4,8 +4,6 @@
 
 #include "app/animation_container.h"
 
-#include "app/animation.h"
-
 using base::TimeDelta;
 using base::TimeTicks;
 

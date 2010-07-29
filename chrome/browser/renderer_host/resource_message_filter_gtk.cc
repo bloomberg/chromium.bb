@@ -8,7 +8,6 @@
 #include <map>
 
 #include "app/clipboard/clipboard.h"
-#include "app/l10n_util.h"
 #include "app/x11_util.h"
 #include "base/file_util.h"
 #include "base/path_service.h"

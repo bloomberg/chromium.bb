@@ -5,7 +5,6 @@
 #include "chrome/browser/dom_ui/core_options_handler.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/notification_service.h"

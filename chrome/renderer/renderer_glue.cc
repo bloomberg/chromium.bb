@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "app/clipboard/clipboard.h"
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_version_info.h"

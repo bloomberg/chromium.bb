@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browser_theme_pack.h"
 
-#include "app/theme_provider.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"

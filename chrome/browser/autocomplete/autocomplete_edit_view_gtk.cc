@@ -9,8 +9,6 @@
 
 #include <algorithm>
 
-#include "app/clipboard/clipboard.h"
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/l10n_util.h"
 #include "base/gtk_util.h"
 #include "base/logging.h"

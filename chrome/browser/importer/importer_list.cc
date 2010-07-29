@@ -19,7 +19,6 @@
 #include "grit/generated_resources.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #endif

@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "app/text_elider.h"
-#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"

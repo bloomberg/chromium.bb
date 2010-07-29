@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/callback.h"
 #include "base/file_path.h"

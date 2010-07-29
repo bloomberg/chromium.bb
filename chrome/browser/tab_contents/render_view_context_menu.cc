@@ -7,8 +7,6 @@
 
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
-#include "app/clipboard/clipboard.h"
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/histogram.h"

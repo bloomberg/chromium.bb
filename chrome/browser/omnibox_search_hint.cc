@@ -4,7 +4,6 @@
 
 #include "chrome/browser/omnibox_search_hint.h"
 
-#include "app/animation.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"

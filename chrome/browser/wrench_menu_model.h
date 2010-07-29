@@ -19,10 +19,6 @@
 
 class Browser;
 
-namespace menus {
-class ButtonMenuItemModel;
-}  // namespace menus
-
 namespace {
 class MockWrenchMenuModel;
 }  // namespace

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ssl/ssl_policy.h"
 
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"

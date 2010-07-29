@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "app/table_model.h"
-#include "app/table_model_observer.h"
+
+class TableModelObserver;
 
 class LanguageOrderTableModel : public TableModel {
  public:

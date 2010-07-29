@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "app/app_paths.h"
-#include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/data_pack.h"
 #include "base/file_path.h"

@@ -4,7 +4,6 @@
 
 #include "webkit/database/quota_table.h"
 
-#include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"

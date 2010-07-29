@@ -4,7 +4,6 @@
 
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 
-#include "app/clipboard/clipboard.h"
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/tree_node_iterator.h"
@@ -42,7 +41,6 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #elif defined(TOOLKIT_GTK)
-#include "app/gtk_util.h"
 #include "chrome/browser/gtk/custom_drag.h"
 #endif
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/dom_ui/personal_options_handler.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/path_service.h"
@@ -34,7 +33,7 @@ void PersonalOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
 
   DCHECK(localized_strings);
-  //Personal Stuff page
+  // Personal Stuff page
   localized_strings->SetString(L"sync_section",
       l10n_util::GetString(IDS_SYNC_OPTIONS_GROUP_NAME));
   localized_strings->SetString(L"sync_not_setup_info",

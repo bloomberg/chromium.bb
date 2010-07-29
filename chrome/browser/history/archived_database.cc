@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/archived_database.h"

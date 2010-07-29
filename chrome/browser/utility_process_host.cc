@@ -5,7 +5,6 @@
 #include "chrome/browser/utility_process_host.h"
 
 #include "app/app_switches.h"
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"

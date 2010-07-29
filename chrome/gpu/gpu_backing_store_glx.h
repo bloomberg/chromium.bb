@@ -7,7 +7,6 @@
 #pragma once
 
 #include "app/surface/transport_dib.h"
-#include "app/x11_util.h"
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "ipc/ipc_channel.h"

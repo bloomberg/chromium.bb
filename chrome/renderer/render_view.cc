@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"

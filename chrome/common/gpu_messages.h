@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "chrome/common/common_param_traits.h"
@@ -85,4 +84,3 @@ struct ParamTraits<gpu::CommandBuffer::State> {
 #include "ipc/ipc_message_macros.h"
 
 #endif  // CHROME_COMMON_GPU_MESSAGES_H_
-

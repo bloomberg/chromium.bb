@@ -5,7 +5,6 @@
 #include "chrome/browser/dom_ui/sync_options_handler.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"

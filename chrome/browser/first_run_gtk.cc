@@ -5,7 +5,6 @@
 #include "chrome/browser/first_run.h"
 
 #include "app/app_switches.h"
-#include "app/resource_bundle.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"

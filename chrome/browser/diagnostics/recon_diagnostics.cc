@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/app_paths.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/json/json_reader.h"

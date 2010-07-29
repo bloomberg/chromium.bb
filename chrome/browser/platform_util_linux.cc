@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_util.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"

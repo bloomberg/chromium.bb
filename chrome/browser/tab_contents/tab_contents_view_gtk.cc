@@ -8,7 +8,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "app/gtk_dnd_util.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
 #include "build/build_config.h"

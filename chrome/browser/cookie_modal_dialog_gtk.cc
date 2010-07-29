@@ -4,7 +4,6 @@
 
 #include "chrome/browser/cookie_modal_dialog.h"
 
-#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"

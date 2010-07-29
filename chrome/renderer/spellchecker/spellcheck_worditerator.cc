@@ -10,6 +10,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "third_party/icu/public/common/unicode/normlzr.h"
@@ -365,4 +367,3 @@ bool SpellcheckWordIterator::Normalize(int input_start,
 
   return !output_string->empty();
 }
-

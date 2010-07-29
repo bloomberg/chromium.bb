@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
