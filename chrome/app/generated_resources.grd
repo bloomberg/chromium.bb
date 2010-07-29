@@ -5712,12 +5712,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Clear form
       </message>
       <if expr="os != 'darwin'">
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The title of the AutoFill dialog.">
+        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the AutoFill dialog.">
+          AutoFill Options
+        </message>
+        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the AutoFill options menu entry and button.">
           AutoFill options
         </message>
       </if>
       <if expr="os == 'darwin'">
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The title of the AutoFill dialog.">
+        <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the AutoFill dialog.">
+          AutoFill Preferences
+        </message>
+        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the AutoFill options menu entry and button.">
           AutoFill preferences
         </message>
       </if>

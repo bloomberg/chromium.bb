@@ -306,7 +306,7 @@ bool AutoFillProfilesView::IsDialogButtonEnabled(
 
 
 std::wstring AutoFillProfilesView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_AUTOFILL_OPTIONS);
+  return l10n_util::GetString(IDS_AUTOFILL_OPTIONS_TITLE);
 }
 
 void AutoFillProfilesView::WindowClosing() {

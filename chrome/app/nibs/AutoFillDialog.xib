@@ -43,7 +43,7 @@
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{1022, 804}, {570, 401}}</string>
 				<int key="NSWTFlags">544735232</int>
-				<string key="NSWindowTitle">^IDS_AUTOFILL_OPTIONS</string>
+				<string key="NSWindowTitle">^IDS_AUTOFILL_OPTIONS_TITLE</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
