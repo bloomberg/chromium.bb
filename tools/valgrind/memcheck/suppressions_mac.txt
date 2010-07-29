@@ -1577,3 +1577,14 @@
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
 }
+{
+   bug_50638
+   Memcheck:Cond
+   fun:gleUpdateViewScissorData
+   ...
+   fun:cgl_set_surface
+   fun:ogl_attach_surface
+   fun:ogl_render_fade_transition
+   fun:ogl_render_layer_
+   fun:ogl_render_layers
+}
