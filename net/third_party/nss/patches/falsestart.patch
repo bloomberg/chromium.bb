@@ -1,10 +1,10 @@
 Index: mozilla/security/nss/cmd/strsclnt/strsclnt.c
 ===================================================================
 RCS file: /cvsroot/mozilla/security/nss/cmd/strsclnt/strsclnt.c,v
-retrieving revision 1.66
-diff -u -p -r1.66 strsclnt.c
---- mozilla/security/nss/cmd/strsclnt/strsclnt.c	10 Feb 2010 18:07:20 -0000	1.66
-+++ mozilla/security/nss/cmd/strsclnt/strsclnt.c	16 Mar 2010 01:25:41 -0000
+retrieving revision 1.67
+diff -u -p -r1.67 strsclnt.c
+--- mozilla/security/nss/cmd/strsclnt/strsclnt.c	3 Apr 2010 18:27:28 -0000	1.67
++++ mozilla/security/nss/cmd/strsclnt/strsclnt.c	29 Jul 2010 01:49:04 -0000
 @@ -162,6 +162,7 @@ static PRBool disableLocking  = PR_FALSE
  static PRBool ignoreErrors    = PR_FALSE;
  static PRBool enableSessionTickets = PR_FALSE;
@@ -60,7 +60,7 @@ RCS file: /cvsroot/mozilla/security/nss/cmd/tstclnt/tstclnt.c,v
 retrieving revision 1.62
 diff -u -p -r1.62 tstclnt.c
 --- mozilla/security/nss/cmd/tstclnt/tstclnt.c	10 Feb 2010 18:07:21 -0000	1.62
-+++ mozilla/security/nss/cmd/tstclnt/tstclnt.c	16 Mar 2010 01:25:41 -0000
++++ mozilla/security/nss/cmd/tstclnt/tstclnt.c	29 Jul 2010 01:49:04 -0000
 @@ -225,6 +225,7 @@ static void Usage(const char *progName)
      fprintf(stderr, "%-20s Renegotiate N times (resuming session if N>1).\n", "-r N");
      fprintf(stderr, "%-20s Enable the session ticket extension.\n", "-u");
@@ -117,14 +117,14 @@ RCS file: /cvsroot/mozilla/security/nss/lib/ssl/ssl.h,v
 retrieving revision 1.38
 diff -u -p -r1.38 ssl.h
 --- mozilla/security/nss/lib/ssl/ssl.h	17 Feb 2010 02:29:07 -0000	1.38
-+++ mozilla/security/nss/lib/ssl/ssl.h	16 Mar 2010 01:25:41 -0000
++++ mozilla/security/nss/lib/ssl/ssl.h	29 Jul 2010 01:49:04 -0000
 @@ -128,6 +128,17 @@ SSL_IMPORT PRFileDesc *SSL_ImportFD(PRFi
                                            /* Renegotiation  Info (RI)       */
  					  /* extension in ALL handshakes.   */
                                            /* default: off                   */
-+#define SSL_ENABLE_FALSE_START	       22 /* Enable SSL false start (off by */
-+					  /* default, applies only to       */
-+					  /* clients). False start is a     */
++#define SSL_ENABLE_FALSE_START         22 /* Enable SSL false start (off by */
++                                          /* default, applies only to       */
++                                          /* clients). False start is a     */
 +/* mode where an SSL client will start sending application data before      */
 +/* verifying the server's Finished message. This means that we could end up */
 +/* sending data to an imposter. However, the data will be encrypted and     */
@@ -139,11 +139,11 @@ diff -u -p -r1.38 ssl.h
 Index: mozilla/security/nss/lib/ssl/ssl3con.c
 ===================================================================
 RCS file: /cvsroot/mozilla/security/nss/lib/ssl/ssl3con.c,v
-retrieving revision 1.136
-diff -u -p -r1.136 ssl3con.c
---- mozilla/security/nss/lib/ssl/ssl3con.c	17 Feb 2010 02:29:07 -0000	1.136
-+++ mozilla/security/nss/lib/ssl/ssl3con.c	16 Mar 2010 01:25:41 -0000
-@@ -5656,7 +5656,17 @@ ssl3_RestartHandshakeAfterCertReq(sslSoc
+retrieving revision 1.142
+diff -u -p -r1.142 ssl3con.c
+--- mozilla/security/nss/lib/ssl/ssl3con.c	24 Jun 2010 19:53:20 -0000	1.142
++++ mozilla/security/nss/lib/ssl/ssl3con.c	29 Jul 2010 01:49:04 -0000
+@@ -5665,7 +5665,17 @@ ssl3_RestartHandshakeAfterCertReq(sslSoc
      return rv;
  }
  
@@ -162,12 +162,12 @@ diff -u -p -r1.136 ssl3con.c
  
  /* Called from ssl3_HandleHandshakeMessage() when it has deciphered a complete
   * ssl3 Server Hello Done message.
-@@ -5728,6 +5738,12 @@ ssl3_HandleServerHelloDone(sslSocket *ss
+@@ -5737,6 +5747,12 @@ ssl3_HandleServerHelloDone(sslSocket *ss
  	ss->ssl3.hs.ws = wait_new_session_ticket;
      else
  	ss->ssl3.hs.ws = wait_change_cipher;
 +
-+    /* Do the handshake callback for sslv3 here. */
++    /* Do the handshake callback for sslv3 here, if we can false start. */
 +    if (ss->handshakeCallback != NULL && ssl3_CanFalseStart(ss)) {
 +	(ss->handshakeCallback)(ss->fd, ss->handshakeCallbackData);
 +    }
@@ -175,11 +175,13 @@ diff -u -p -r1.136 ssl3con.c
      return SECSuccess;
  
  loser:
-@@ -8468,7 +8484,7 @@ xmit_loser:
+@@ -8476,8 +8492,8 @@ xmit_loser:
+     }
      ss->ssl3.hs.ws = idle_handshake;
  
-     /* Do the handshake callback for sslv3 here. */
+-    /* Do the handshake callback for sslv3 here. */
 -    if (ss->handshakeCallback != NULL) {
++    /* Do the handshake callback for sslv3 here, if we cannot false start. */
 +    if (ss->handshakeCallback != NULL && !ssl3_CanFalseStart(ss)) {
  	(ss->handshakeCallback)(ss->fd, ss->handshakeCallbackData);
      }
@@ -190,7 +192,7 @@ RCS file: /cvsroot/mozilla/security/nss/lib/ssl/ssl3gthr.c,v
 retrieving revision 1.9
 diff -u -p -r1.9 ssl3gthr.c
 --- mozilla/security/nss/lib/ssl/ssl3gthr.c	20 Nov 2008 07:37:25 -0000	1.9
-+++ mozilla/security/nss/lib/ssl/ssl3gthr.c	16 Mar 2010 01:25:41 -0000
++++ mozilla/security/nss/lib/ssl/ssl3gthr.c	29 Jul 2010 01:49:04 -0000
 @@ -188,6 +188,7 @@ ssl3_GatherCompleteHandshake(sslSocket *
  {
      SSL3Ciphertext cText;
@@ -227,7 +229,7 @@ RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslimpl.h,v
 retrieving revision 1.77
 diff -u -p -r1.77 sslimpl.h
 --- mozilla/security/nss/lib/ssl/sslimpl.h	10 Feb 2010 00:33:50 -0000	1.77
-+++ mozilla/security/nss/lib/ssl/sslimpl.h	16 Mar 2010 01:25:41 -0000
++++ mozilla/security/nss/lib/ssl/sslimpl.h	29 Jul 2010 01:49:04 -0000
 @@ -333,6 +333,7 @@ typedef struct sslOptionsStr {
      unsigned int enableDeflate          : 1;  /* 19 */
      unsigned int enableRenegotiation    : 2;  /* 20-21 */
@@ -251,7 +253,7 @@ RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslsecur.c,v
 retrieving revision 1.43
 diff -u -p -r1.43 sslsecur.c
 --- mozilla/security/nss/lib/ssl/sslsecur.c	14 Jan 2010 22:15:25 -0000	1.43
-+++ mozilla/security/nss/lib/ssl/sslsecur.c	16 Mar 2010 01:25:41 -0000
++++ mozilla/security/nss/lib/ssl/sslsecur.c	29 Jul 2010 01:49:04 -0000
 @@ -1199,8 +1199,17 @@ ssl_SecureSend(sslSocket *ss, const unsi
      	ss->writerThread = PR_GetCurrentThread();
      /* If any of these is non-zero, the initial handshake is not done. */
@@ -274,10 +276,10 @@ diff -u -p -r1.43 sslsecur.c
 Index: mozilla/security/nss/lib/ssl/sslsock.c
 ===================================================================
 RCS file: /cvsroot/mozilla/security/nss/lib/ssl/sslsock.c,v
-retrieving revision 1.66
-diff -u -p -r1.66 sslsock.c
---- mozilla/security/nss/lib/ssl/sslsock.c	26 Feb 2010 20:44:54 -0000	1.66
-+++ mozilla/security/nss/lib/ssl/sslsock.c	16 Mar 2010 01:25:41 -0000
+retrieving revision 1.67
+diff -u -p -r1.67 sslsock.c
+--- mozilla/security/nss/lib/ssl/sslsock.c	25 Apr 2010 23:37:38 -0000	1.67
++++ mozilla/security/nss/lib/ssl/sslsock.c	29 Jul 2010 01:49:04 -0000
 @@ -183,6 +183,7 @@ static sslOptions ssl_defaults = {
      PR_FALSE,   /* enableDeflate      */
      2,          /* enableRenegotiation (default: requires extension) */
@@ -330,16 +332,16 @@ RCS file: /cvsroot/mozilla/security/nss/tests/ssl/sslstress.txt,v
 retrieving revision 1.18
 diff -u -p -r1.18 sslstress.txt
 --- mozilla/security/nss/tests/ssl/sslstress.txt	3 Feb 2010 02:25:36 -0000	1.18
-+++ mozilla/security/nss/tests/ssl/sslstress.txt	16 Mar 2010 01:25:41 -0000
++++ mozilla/security/nss/tests/ssl/sslstress.txt	29 Jul 2010 01:49:04 -0000
 @@ -42,9 +42,11 @@
    noECC     0      _         -c_1000_-C_A                  Stress SSL2 RC4 128 with MD5
    noECC     0      _         -c_1000_-C_c_-T               Stress SSL3 RC4 128 with MD5
    noECC     0      _         -c_1000_-C_c                  Stress TLS  RC4 128 with MD5
-+  noECC     0      _         -c_1000_-C_c_-h               Stress TLS  RC4 128 with MD5 (false start)
++  noECC     0      _         -c_1000_-C_c_-g               Stress TLS  RC4 128 with MD5 (false start)
    noECC     0      -u        -2_-c_1000_-C_c_-u            Stress TLS  RC4 128 with MD5 (session ticket)
    noECC     0      -z        -2_-c_1000_-C_c_-z            Stress TLS  RC4 128 with MD5 (compression)
    noECC     0      -u_-z     -2_-c_1000_-C_c_-u_-z         Stress TLS  RC4 128 with MD5 (session ticket, compression)
-+  noECC     0      -u_-z     -2_-c_1000_-C_c_-u_-z_-h      Stress TLS  RC4 128 with MD5 (session ticket, compression, false start)
++  noECC     0      -u_-z     -2_-c_1000_-C_c_-u_-z_-g      Stress TLS  RC4 128 with MD5 (session ticket, compression, false start)
    SNI       0      -u_-a_Host-sni.Dom -2_-3_-c_1000_-C_c_-u Stress TLS RC4 128 with MD5 (session ticket, SNI)
  
  #
@@ -347,9 +349,9 @@ diff -u -p -r1.18 sslstress.txt
    noECC     0      -r_-r     -c_100_-C_c_-N_-n_TestUser    Stress TLS RC4 128 with MD5 (no reuse, client auth)
    noECC     0      -r_-r_-u  -2_-c_100_-C_c_-n_TestUser_-u Stress TLS RC4 128 with MD5 (session ticket, client auth)
    noECC     0      -r_-r_-z  -2_-c_100_-C_c_-n_TestUser_-z Stress TLS RC4 128 with MD5 (compression, client auth)
-+  noECC     0      -r_-r_-z  -2_-c_100_-C_c_-n_TestUser_-z_-h Stress TLS RC4 128 with MD5 (compression, client auth, false start)
++  noECC     0      -r_-r_-z  -2_-c_100_-C_c_-n_TestUser_-z_-g Stress TLS RC4 128 with MD5 (compression, client auth, false start)
    noECC     0   -r_-r_-u_-z  -2_-c_100_-C_c_-n_TestUser_-u_-z Stress TLS RC4 128 with MD5 (session ticket, compression, client auth)
-+  noECC     0   -r_-r_-u_-z  -2_-c_100_-C_c_-n_TestUser_-u_-z_-h Stress TLS RC4 128 with MD5 (session ticket, compression, client auth, false start)
++  noECC     0   -r_-r_-u_-z  -2_-c_100_-C_c_-n_TestUser_-u_-z_-g Stress TLS RC4 128 with MD5 (session ticket, compression, client auth, false start)
    SNI       0   -r_-r_-u_-a_Host-sni.Dom -2_-3_-c_1000_-C_c_-u Stress TLS RC4 128 with MD5 (session ticket, SNI, client auth, default virt host)
    SNI       0   -r_-r_-u_-a_Host-sni.Dom_-k_Host-sni.Dom -2_-3_-c_1000_-C_c_-u_-a_Host-sni.Dom Stress TLS RC4 128 with MD5 (session ticket, SNI, client auth, change virt host)
  
