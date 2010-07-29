@@ -307,6 +307,10 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 {
 	EGLint major, minor;
 	const char *extensions;
+	static const EGLint context_attribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
 
 	ec->base.base.device = strdup(udev_device_get_devnode(device));
 	ec->drm_fd = open(ec->base.base.device, O_RDWR);
@@ -334,9 +338,9 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	eglBindAPI(EGL_OPENGL_API);
-	ec->base.context = eglCreateContext(ec->base.display,
-					    NULL, EGL_NO_CONTEXT, NULL);
+	eglBindAPI(EGL_OPENGL_ES_API);
+	ec->base.context = eglCreateContext(ec->base.display, NULL,
+					    EGL_NO_CONTEXT, context_attribs);
 	if (ec->base.context == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;

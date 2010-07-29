@@ -200,6 +200,10 @@ x11_compositor_init_egl(struct x11_compositor *c)
 {
 	EGLint major, minor;
 	const char *extensions;
+	static const EGLint context_attribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
 
 	if (dri2_connect(c) < 0)
 		return -1;
@@ -232,9 +236,9 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		return -1;
 	}
 
-	eglBindAPI(EGL_OPENGL_API);
-	c->base.context = eglCreateContext(c->base.display,
-					   NULL, EGL_NO_CONTEXT, NULL);
+	eglBindAPI(EGL_OPENGL_ES_API);
+	c->base.context = eglCreateContext(c->base.display, NULL,
+					   EGL_NO_CONTEXT, context_attribs);
 	if (c->base.context == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
