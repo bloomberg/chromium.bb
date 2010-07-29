@@ -461,7 +461,7 @@ NPError SetValueForURL(NPP instance, NPNURLVariable variable, const char* url,
                        const char* value, uint32 len)  {
   DCHECK(IsInitialized()) << __FUNCTION__;
   DCHECK(npapi::VersionMinor() >= NPVERS_HAS_URL_AND_AUTH_INFO);
-  if (g_setvalueforurl) {
+  if (!g_setvalueforurl) {
     NOTREACHED();
     return NPERR_INCOMPATIBLE_VERSION_ERROR;
   }

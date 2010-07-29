@@ -30,10 +30,15 @@ bool GetXPCOMCookieServiceAndURI(NPP instance, const std::string& url,
   DCHECK(uri);
 
   ScopedNsPtr<nsIServiceManager> service_manager;
-  NPError nperr = npapi::GetValue(instance, NPNVserviceManager,
-      service_manager.Receive());
-  if (nperr != NPERR_NO_ERROR || !service_manager.get())
-    return false;
+
+  NPError nperr = NS_GetServiceManager(service_manager.Receive());
+  if (nperr != NPERR_NO_ERROR || !service_manager.get()) {
+    NPError nperr = npapi::GetValue(instance, NPNVserviceManager,
+        service_manager.Receive());
+    if (nperr != NPERR_NO_ERROR || !service_manager.get()) {
+      return false;
+    }
+  }
 
   ScopedNsPtr<nsIIOService, &IID_nsIIOService> io_service;
   service_manager->GetServiceByContractID(
