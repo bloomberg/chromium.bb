@@ -33,8 +33,7 @@ PP_Var NPObjectToPPVar(NPObject* object);
 NPObject* GetNPObject(PP_Var var);
 
 // Returns a PP_Var of type string that contains a copy of the given string.
-// The input data must be valid UTF-8 encoded text. The return value will
-// have a reference count of 1.
+// The input data must be valid UTF-8 encoded text.
 PP_Var StringToPPVar(const std::string& str);
 
 // Returns the String corresponding to the PP_Var.  This pointer has not been

@@ -22,7 +22,6 @@ class FileRef;
 class Font;
 class ImageData;
 class PluginModule;
-class PrivateFontFile;
 class Scrollbar;
 class URLLoader;
 class URLRequestInfo;
@@ -81,7 +80,6 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   virtual FileRef* AsFileRef() { return NULL; }
   virtual Font* AsFont() { return NULL; }
   virtual ImageData* AsImageData() { return NULL; }
-  virtual PrivateFontFile* AsPrivateFontFile() { return NULL; }
   virtual Scrollbar* AsScrollbar() { return NULL; }
   virtual URLLoader* AsURLLoader() { return NULL; }
   virtual URLRequestInfo* AsURLRequestInfo() { return NULL; }
