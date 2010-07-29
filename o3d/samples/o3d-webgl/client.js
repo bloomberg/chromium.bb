@@ -854,7 +854,7 @@ o3d.Client.getAbsolutePosition_ = function(element) {
 o3d.Client.getLocalXY_ = function(eventInfo) {
   var event = eventInfo.event;
   var p = o3d.Client.getAbsolutePosition_(eventInfo.element);
-  return {x: event.x - p.x, y: event.y - p.y};
+  return {x: event.pageX - p.x, y: event.pageY - p.y};
 };
 
 
