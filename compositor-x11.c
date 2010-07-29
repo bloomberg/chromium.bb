@@ -198,15 +198,8 @@ dri2_authenticate(struct x11_compositor *c)
 static int
 x11_compositor_init_egl(struct x11_compositor *c)
 {
-	EGLint major, minor, count;
-	EGLConfig config;
-
-	static const EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE,		0,
-		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
-		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
-		EGL_NONE
-	};
+	EGLint major, minor;
+	const char *extensions;
 
 	if (dri2_connect(c) < 0)
 		return -1;
@@ -233,16 +226,15 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		return -1;
 	}
 
-	if (!eglChooseConfig(c->base.display,
-			     config_attribs, &config, 1, &count) ||
-	    count == 0) {
-		fprintf(stderr, "eglChooseConfig() failed\n");
+	extensions = eglQueryString(c->base.display, EGL_EXTENSIONS);
+	if (!strstr(extensions, "EGL_KHR_surfaceless_opengl")) {
+		fprintf(stderr, "EGL_KHR_surfaceless_opengl not available\n");
 		return -1;
 	}
 
 	eglBindAPI(EGL_OPENGL_API);
 	c->base.context = eglCreateContext(c->base.display,
-					   config, EGL_NO_CONTEXT, NULL);
+					   NULL, EGL_NO_CONTEXT, NULL);
 	if (c->base.context == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;

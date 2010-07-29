@@ -870,18 +870,10 @@ struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 {
 	struct display *d;
-	EGLint major, minor, count;
-	EGLConfig config;
+	EGLint major, minor;
 	int fd;
 	GOptionContext *context;
 	GError *error;
-
-	static const EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE,		0,
-		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
-		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
-		EGL_NONE
-	};
 
 	g_type_init();
 
@@ -925,15 +917,9 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		return NULL;
 	}
 
-	if (!eglChooseConfig(d->dpy, config_attribs, &config, 1, &count) ||
-	    count == 0) {
-		fprintf(stderr, "eglChooseConfig() failed\n");
-		return NULL;
-	}
-
 	eglBindAPI(EGL_OPENGL_API);
 
-	d->ctx = eglCreateContext(d->dpy, config, EGL_NO_CONTEXT, NULL);
+	d->ctx = eglCreateContext(d->dpy, NULL, EGL_NO_CONTEXT, NULL);
 	if (d->ctx == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return NULL;

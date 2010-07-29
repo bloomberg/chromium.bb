@@ -348,17 +348,9 @@ static struct gears *
 gears_create(struct display *display)
 {
 	const int x = 200, y = 200, width = 450, height = 500;
-	EGLint major, minor, count;
-	EGLConfig config;
+	EGLint major, minor;
 	struct gears *gears;
 	int i;
-
-	static const EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE,		0,
-		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
-		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
-		EGL_NONE
-	};
 
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
@@ -373,13 +365,10 @@ gears_create(struct display *display)
 	if (!eglInitialize(gears->display, &major, &minor))
 		die("failed to initialize display\n");
 
-	if (!eglChooseConfig(gears->display, config_attribs, &config, 1, &count) ||
-	    count == 0)
-		die("eglChooseConfig() failed\n");
-
 	eglBindAPI(EGL_OPENGL_API);
 
-	gears->context = eglCreateContext(gears->display, config, EGL_NO_CONTEXT, NULL);
+	gears->context = eglCreateContext(gears->display,
+					  NULL, EGL_NO_CONTEXT, NULL);
 	if (gears->context == NULL)
 		die("failed to create context\n");
 

@@ -305,15 +305,8 @@ on_drm_input(int fd, uint32_t mask, void *data)
 static int
 init_egl(struct drm_compositor *ec, struct udev_device *device)
 {
-	EGLint major, minor, count;
-	EGLConfig config;
-
-	static const EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE,		0,
-		EGL_NO_SURFACE_CAPABLE_MESA,	EGL_OPENGL_BIT,
-		EGL_RENDERABLE_TYPE,		EGL_OPENGL_BIT,
-		EGL_NONE
-	};
+	EGLint major, minor;
+	const char *extensions;
 
 	ec->base.base.device = strdup(udev_device_get_devnode(device));
 	ec->drm_fd = open(ec->base.base.device, O_RDWR);
@@ -335,16 +328,15 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	if (!eglChooseConfig(ec->base.display,
-			     config_attribs, &config, 1, &count) ||
-	    count == 0) {
-		fprintf(stderr, "eglChooseConfig() failed\n");
+	extensions = eglQueryString(ec->base.display, EGL_EXTENSIONS);
+	if (!strstr(extensions, "EGL_KHR_surfaceless_opengl")) {
+		fprintf(stderr, "EGL_KHR_surfaceless_opengl not available\n");
 		return -1;
 	}
 
 	eglBindAPI(EGL_OPENGL_API);
 	ec->base.context = eglCreateContext(ec->base.display,
-					    config, EGL_NO_CONTEXT, NULL);
+					    NULL, EGL_NO_CONTEXT, NULL);
 	if (ec->base.context == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
