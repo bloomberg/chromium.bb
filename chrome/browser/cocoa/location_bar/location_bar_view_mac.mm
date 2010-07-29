@@ -69,12 +69,14 @@ LocationBarViewMac::LocationBarViewMac(
       disposition_(CURRENT_TAB),
       location_icon_decoration_(new LocationIconDecoration(this)),
       selected_keyword_decoration_(
-          new SelectedKeywordDecoration([field_ font])),
+          new SelectedKeywordDecoration(
+              AutocompleteEditViewMac::GetFieldFont())),
       ev_bubble_decoration_(
           new EVBubbleDecoration(location_icon_decoration_.get(),
-                                 [field_ font])),
+                                 AutocompleteEditViewMac::GetFieldFont())),
       star_decoration_(new StarDecoration(command_updater)),
-      keyword_hint_decoration_(new KeywordHintDecoration([field_ font])),
+      keyword_hint_decoration_(
+          new KeywordHintDecoration(AutocompleteEditViewMac::GetFieldFont())),
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),

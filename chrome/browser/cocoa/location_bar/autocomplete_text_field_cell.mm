@@ -11,13 +11,13 @@
 
 namespace {
 
-const CGFloat kBaselineAdjust = 2.0;
+const CGFloat kBaselineAdjust = 3.0;
 
 // Matches the clipping radius of |GradientButtonCell|.
 const CGFloat kCornerRadius = 4.0;
 
 // How far to inset the left-hand decorations from the field's bounds.
-const CGFloat kLeftDecorationXOffset = 3.0;
+const CGFloat kLeftDecorationXOffset = 4.0;
 
 // How far to inset the right-hand decorations from the field's bounds.
 // TODO(shess): Why is this different from |kLeftDecorationXOffset|?

@@ -920,5 +920,5 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 // static
 NSFont* AutocompleteEditViewMac::GetFieldFont() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetFont(ResourceBundle::BaseFont).nativeFont();
+  return rb.GetFont(ResourceBundle::BaseFont).DeriveFont(1).nativeFont();
 }

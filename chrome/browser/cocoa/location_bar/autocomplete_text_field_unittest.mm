@@ -427,7 +427,7 @@ TEST_F(AutocompleteTextFieldTest, ClickBorderSelectsAll) {
 TEST_F(AutocompleteTextFieldTest, ClickSelectsAll) {
   EXPECT_FALSE([field_ currentEditor]);
 
-  const NSPoint point(NSMakePoint(20.0, 5.0));
+  const NSPoint point = NSMakePoint(20.0, NSMidY([field_ bounds]));
   NSEvent* downEvent(Event(field_, point, NSLeftMouseDown));
   NSEvent* upEvent(Event(field_, point, NSLeftMouseUp));
   [NSApp postEvent:upEvent atStart:YES];
@@ -468,7 +468,7 @@ TEST_F(AutocompleteTextFieldTest, ClickDragSelectsText) {
 TEST_F(AutocompleteTextFieldTest, DoubleClickSelectsWord) {
   EXPECT_FALSE([field_ currentEditor]);
 
-  const NSPoint point(NSMakePoint(20.0, 5.0));
+  const NSPoint point = NSMakePoint(20.0, NSMidY([field_ bounds]));
   NSEvent* downEvent(Event(field_, point, NSLeftMouseDown, 1));
   NSEvent* upEvent(Event(field_, point, NSLeftMouseUp, 1));
   NSEvent* downEvent2(Event(field_, point, NSLeftMouseDown, 2));

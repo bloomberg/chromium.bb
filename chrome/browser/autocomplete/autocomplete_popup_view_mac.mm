@@ -40,10 +40,10 @@ const CGFloat kPopupFieldGap = 2.0;
 const CGFloat kPopupAlpha = 240.0 / 255.0;
 
 // How far to offset image column from the left.
-const CGFloat kImageXOffset = 2.0;
+const CGFloat kImageXOffset = 3.0;
 
 // How far to offset the text column from the left.
-const CGFloat kTextXOffset = 25.0;
+const CGFloat kTextXOffset = 26.0;
 
 // Animation duration when animating the popup window smaller.
 const NSTimeInterval kShrinkAnimationDuration = 0.1;

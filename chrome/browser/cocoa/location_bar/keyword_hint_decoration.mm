@@ -16,11 +16,11 @@
 namespace {
 
 // How far to inset the hint text area from sides.
-const CGFloat kHintTextYInset = 4.0;
+const CGFloat kHintTextYInset = 5.0;
 
 // How far to inset the hint image from sides.  Lines baseline of text
 // in image with baseline of prefix and suffix.
-const CGFloat kHintImageYInset = 4.0;
+const CGFloat kHintImageYInset = 5.0;
 
 // Maxmimum of the available space to allow the hint to take over.
 // Should leave enough so that the user has space to edit things.

@@ -47,7 +47,7 @@ class BubbleDecoration : public LocationBarDecoration {
   FRIEND_TEST_ALL_PREFIXES(SelectedKeywordDecorationTest,
                            UsesPartialKeywordIfNarrow);
 
-  // Contains font attribute for drawing |label_|.
+  // Contains font and color attribute for drawing |label_|.
   scoped_nsobject<NSDictionary> attributes_;
 
   // Image drawn in the left side of the bubble.
@@ -60,7 +60,6 @@ class BubbleDecoration : public LocationBarDecoration {
   // constructor.
   scoped_nsobject<NSColor> background_color_;
   scoped_nsobject<NSColor> border_color_;
-  scoped_nsobject<NSColor> text_color_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleDecoration);
 };

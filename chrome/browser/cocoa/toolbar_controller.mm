@@ -538,7 +538,6 @@ class NotificationBridge : public NotificationObserver {
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
 
-  [reloadButton_ setFrame:NSOffsetRect([reloadButton_ frame], moveX, 0)];
   [locationBar_ setFrame:[self adjustRect:[locationBar_ frame]
                                  byAmount:moveX]];
   [homeButton_ setHidden:hide];

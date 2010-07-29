@@ -161,23 +161,20 @@ TEST_F(ToolbarControllerTest, LoadingState) {
 }
 
 // Check that toggling the state of the home button changes the visible
-// state of the home button and moves the other buttons accordingly.
+// state of the home button and moves the other items accordingly.
 TEST_F(ToolbarControllerTest, ToggleHome) {
   PrefService* prefs = helper_.profile()->GetPrefs();
   bool showHome = prefs->GetBoolean(prefs::kShowHomeButton);
   NSView* homeButton = [[bar_ toolbarViews] objectAtIndex:kHomeIndex];
   EXPECT_EQ(showHome, ![homeButton isHidden]);
 
-  NSView* reloadButton = [[bar_ toolbarViews] objectAtIndex:kReloadIndex];
   NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
-  NSRect originalReloadFrame = [reloadButton frame];
   NSRect originalLocationBarFrame = [locationBar frame];
 
   // Toggle the pref and make sure the button changed state and the other
   // views moved.
   prefs->SetBoolean(prefs::kShowHomeButton, !showHome);
   EXPECT_EQ(showHome, [homeButton isHidden]);
-  EXPECT_NE(NSMinX(originalReloadFrame), NSMinX([reloadButton frame]));
   EXPECT_NE(NSMinX(originalLocationBarFrame), NSMinX([locationBar frame]));
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
 }
