@@ -336,7 +336,7 @@ void UITestBase::StartHttpServerWithPort(const FilePath& root_directory,
   ASSERT_TRUE(cmd_line.get());
   cmd_line->AppendSwitchWithValue("server", "start");
   cmd_line->AppendSwitch("register_cygwin");
-  cmd_line->AppendSwitchWithValue("root", root_directory.ToWStringHack());
+  cmd_line->AppendSwitchPath("root", root_directory);
 
   // For Windows 7, if we start the lighttpd server on the foreground mode,
   // it will mess up with the command window and cause conhost.exe to crash. To
@@ -1118,12 +1118,10 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   command_line.AppendSwitch(switches::kNoDefaultBrowserCheck);
 
   // This is a UI test.
-  command_line.AppendSwitchWithValue(switches::kTestType,
-                                     ASCIIToWide(kUITestType));
+  command_line.AppendSwitchWithValue(switches::kTestType, kUITestType);
 
   // Tell the browser to use a temporary directory just for this test.
-  command_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                     user_data_dir().ToWStringHack());
+  command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir());
 
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)
@@ -1134,7 +1132,7 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
 
   if (include_testing_id_) {
     command_line.AppendSwitchWithValue(switches::kTestingChannelID,
-                                       ASCIIToWide(server_->channel_id()));
+                                       server_->channel_id());
   }
 
   if (!show_error_dialogs_ &&
@@ -1156,14 +1154,12 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   if (disable_breakpad_)
     command_line.AppendSwitch(switches::kDisableBreakpad);
   if (!homepage_.empty())
-    command_line.AppendSwitchWithValue(switches::kHomePage,
-                                       homepage_);
+    command_line.AppendSwitchWithValue(switches::kHomePage, homepage_);
   // Don't try to fetch web resources during UI testing.
   command_line.AppendSwitch(switches::kDisableWebResources);
 
   if (!js_flags_.empty())
-    command_line.AppendSwitchWithValue(switches::kJavaScriptFlags,
-                                       js_flags_);
+    command_line.AppendSwitchWithValue(switches::kJavaScriptFlags, js_flags_);
   if (!log_level_.empty())
     command_line.AppendSwitchWithValue(switches::kLoggingLevel, log_level_);
 
@@ -1180,8 +1176,7 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
 #endif
 
   if (!ui_test_name_.empty())
-    command_line.AppendSwitchWithValue(switches::kTestName,
-                                       ui_test_name_);
+    command_line.AppendSwitchWithValue(switches::kTestName, ui_test_name_);
 
   // The tests assume that file:// URIs can freely access other file:// URIs.
   command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);

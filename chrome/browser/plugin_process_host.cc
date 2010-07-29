@@ -363,15 +363,14 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   // in process listings using native process management tools.
   cmd_line->AppendSwitchWithValue(switches::kProcessType,
                                   switches::kPluginProcess);
-  cmd_line->AppendSwitchWithValue(switches::kPluginPath,
-                                  info.path.ToWStringHack());
+  cmd_line->AppendSwitchPath(switches::kPluginPath, info.path);
 
   if (logging::DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   // Propagate the following switches to the plugin command line (along with
   // any associated values) if present in the browser command line
-  static const char* const switch_names[] = {
+  static const char* const kSwitchNames[] = {
     switches::kPluginStartupDialog,
     switches::kNoSandbox,
     switches::kSafePlugins,
@@ -396,13 +395,8 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 #endif
   };
 
-  for (size_t i = 0; i < arraysize(switch_names); ++i) {
-    if (browser_command_line.HasSwitch(switch_names[i])) {
-      cmd_line->AppendSwitchWithValue(
-          switch_names[i],
-          browser_command_line.GetSwitchValueASCII(switch_names[i]));
-    }
-  }
+  cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                             arraysize(kSwitchNames));
 
   // If specified, prepend a launcher program to the command line.
   if (!plugin_launcher.empty())
@@ -415,13 +409,12 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   }
 
   // Gears requires the data dir to be available on startup.
-  std::wstring data_dir =
-    PluginService::GetInstance()->GetChromePluginDataDir().ToWStringHack();
+  FilePath data_dir =
+    PluginService::GetInstance()->GetChromePluginDataDir();
   DCHECK(!data_dir.empty());
-  cmd_line->AppendSwitchWithValue(switches::kPluginDataDir, data_dir);
+  cmd_line->AppendSwitchPath(switches::kPluginDataDir, data_dir);
 
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                  ASCIIToWide(channel_id()));
+  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
 
   SetCrashReporterCommandLine(cmd_line);
 

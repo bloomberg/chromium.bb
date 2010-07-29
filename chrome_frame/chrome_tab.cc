@@ -281,7 +281,7 @@ HRESULT SetupRunOnce() {
   if (run_once.Create(HKEY_CURRENT_USER, kRunOnce, KEY_READ | KEY_WRITE)) {
     CommandLine run_once_command(chrome_launcher::GetChromeExecutablePath());
     run_once_command.AppendSwitchWithValue(
-        switches::kAutomationClientChannelID, L"0");
+        switches::kAutomationClientChannelID, "0");
     run_once_command.AppendSwitch(switches::kChromeFrame);
     run_once.WriteValue(L"A", run_once_command.command_line_string().c_str());
   }

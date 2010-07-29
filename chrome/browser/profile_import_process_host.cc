@@ -87,8 +87,7 @@ bool ProfileImportProcessHost::StartProcess() {
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchWithValue(switches::kProcessType,
                                   switches::kProfileImportProcess);
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                  ASCIIToWide(channel_id()));
+  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
 
   SetCrashReporterCommandLine(cmd_line);
 

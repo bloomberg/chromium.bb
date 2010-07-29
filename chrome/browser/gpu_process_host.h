@@ -92,12 +92,6 @@ class GpuProcessHost : public BrowserChildProcessHost {
   void ReplyToRenderer(const IPC::ChannelHandle& channel,
                        ResourceMessageFilter* filter);
 
-  // Copies applicable command line switches from the given |browser_cmd| line
-  // flags to the output |gpu_cmd| line flags. Not all switches will be
-  // copied over.
-  void PropagateBrowserCommandLineToGpu(const CommandLine& browser_cmd,
-                                        CommandLine* gpu_cmd) const;
-
   // ResourceDispatcherHost::Receiver implementation:
   virtual URLRequestContext* GetRequestContext(
       uint32 request_id,

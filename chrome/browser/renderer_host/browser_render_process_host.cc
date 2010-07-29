@@ -331,8 +331,7 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
     if (!renderer_prefix.empty())
       cmd_line->PrependWrapper(renderer_prefix);
     AppendRendererCommandLine(cmd_line);
-    cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                    ASCIIToWide(channel_id));
+    cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id);
 
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     // As long as there's no renderer prefix, we can use the zygote process
@@ -459,7 +458,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
 
   // Pass on the browser locale.
   const std::string locale = g_browser_process->GetApplicationLocale();
-  command_line->AppendSwitchWithValue(switches::kLang, ASCIIToWide(locale));
+  command_line->AppendSwitchWithValue(switches::kLang, locale);
 
   // If we run FieldTrials, we want to pass to their state to the renderer so
   // that it can act in accordance with each state, or record histograms
@@ -475,10 +474,8 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
 
   FilePath user_data_dir =
       browser_command_line.GetSwitchValuePath(switches::kUserDataDir);
-
   if (!user_data_dir.empty())
-    command_line->AppendSwitchWithValue(switches::kUserDataDir,
-                                        user_data_dir.value());
+    command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 #if defined(OS_CHROMEOS)
   const std::string& profile =
       browser_command_line.GetSwitchValueASCII(switches::kProfile);
@@ -492,7 +489,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     CommandLine* renderer_cmd) const {
   // Propagate the following switches to the renderer command line (along
   // with any associated values) if present in the browser command line.
-  static const char* const switch_names[] = {
+  static const char* const kSwitchNames[] = {
     switches::kRendererAssertTest,
 #if !defined(OFFICIAL_BUILD)
     switches::kRendererCheckFalseTest,
@@ -580,13 +577,8 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableClickToPlay,
     switches::kPrelaunchGpuProcess,
   };
-
-  for (size_t i = 0; i < arraysize(switch_names); ++i) {
-    if (browser_cmd.HasSwitch(switch_names[i])) {
-      renderer_cmd->AppendSwitchWithValue(switch_names[i],
-          browser_cmd.GetSwitchValueASCII(switch_names[i]));
-    }
-  }
+  renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
+                                 arraysize(kSwitchNames));
 
   // Disable databases in incognito mode.
   if (profile()->IsOffTheRecord() &&

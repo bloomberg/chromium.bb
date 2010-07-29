@@ -422,10 +422,10 @@ bool UpdateJumpList(const wchar_t* app_id,
 
   // Retrieve the command-line switches of this process.
   CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
-  std::wstring user_data_dir = CommandLine::ForCurrentProcess()->
-      GetSwitchValue(switches::kUserDataDir);
+  FilePath user_data_dir = CommandLine::ForCurrentProcess()->
+      GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
-    command_line.AppendSwitchWithValue(switches::kUserDataDir, user_data_dir);
+    command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
   std::wstring chrome_switches = command_line.command_line_string();
 

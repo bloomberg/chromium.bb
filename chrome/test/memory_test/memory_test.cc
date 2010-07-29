@@ -116,8 +116,7 @@ class MemoryTest : public UITest {
       browser_directory_ = browser_dir;
     }
 
-    launch_arguments_.AppendSwitchWithValue(switches::kUserDataDir,
-                                            user_data_dir_.ToWStringHack());
+    launch_arguments_.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
     UITest::SetUp();
   }
 

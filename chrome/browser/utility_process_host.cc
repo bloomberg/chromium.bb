@@ -80,8 +80,7 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchWithValue(switches::kProcessType,
                                   switches::kUtilityProcess);
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                  ASCIIToWide(channel_id()));
+  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
   std::string locale = g_browser_process->GetApplicationLocale();
   cmd_line->AppendSwitchWithValue(switches::kLang, locale);
 
@@ -114,8 +113,7 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
         switches::kUtilityCmdPrefix));
   }
 
-  cmd_line->AppendSwitchWithValue(switches::kUtilityProcessAllowedDir,
-                                  exposed_dir.value().c_str());
+  cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir, exposed_dir);
 #endif
 
   Launch(

@@ -136,15 +136,13 @@ void InProcessBrowserTest::SetUp() {
   // Turn off tip loading for tests; see http://crbug.com/17725
   command_line->AppendSwitch(switches::kDisableWebResources);
 
-  command_line->AppendSwitchWithValue(switches::kUserDataDir,
-                                      user_data_dir.ToWStringHack());
+  command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
   // Don't show the first run ui.
   command_line->AppendSwitch(switches::kNoFirstRun);
 
   // This is a Browser test.
-  command_line->AppendSwitchWithValue(switches::kTestType,
-                                      ASCIIToWide(kBrowserTestType));
+  command_line->AppendSwitchWithValue(switches::kTestType, kBrowserTestType);
 
   // Single-process mode is not set in BrowserMain so it needs to be processed
   // explicitly.
@@ -155,8 +153,8 @@ void InProcessBrowserTest::SetUp() {
 #if defined(OS_WIN)
   // The Windows sandbox requires that the browser and child processes are the
   // same binary.  So we launch browser_process.exe which loads chrome.dll
-  command_line->AppendSwitchWithValue(switches::kBrowserSubprocessPath,
-                                      command_line->GetProgram().value());
+  command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
+                                 command_line->GetProgram());
 #else
   // Explicitly set the path of the binary used for child processes, otherwise
   // they'll try to use browser_tests which doesn't contain ChromeMain.
@@ -165,8 +163,8 @@ void InProcessBrowserTest::SetUp() {
   subprocess_path = subprocess_path.DirName();
   subprocess_path = subprocess_path.AppendASCII(WideToASCII(
       chrome::kBrowserProcessExecutablePath));
-  command_line->AppendSwitchWithValue(switches::kBrowserSubprocessPath,
-                                      subprocess_path.ToWStringHack());
+  command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
+                                 subprocess_path);
 #endif
 
   // Enable warning level logging so that we can see when bad stuff happens.

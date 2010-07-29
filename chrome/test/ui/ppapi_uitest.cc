@@ -36,15 +36,10 @@ class PPAPITest : public UITest {
 
     FilePath plugin_lib = plugin_dir.Append(library_name);
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
-
-#if defined(OS_WIN)
-    std::wstring pepper_plugin = plugin_lib.value();
-#else
-    std::wstring pepper_plugin = UTF8ToWide(plugin_lib.value());
-#endif
-    pepper_plugin.append(L";application/x-ppapi-tests");
-    launch_arguments_.AppendSwitchWithValue(switches::kRegisterPepperPlugins,
-                                            pepper_plugin);
+    FilePath::StringType pepper_plugin = plugin_lib.value();
+    pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
+    launch_arguments_.AppendSwitchNative(switches::kRegisterPepperPlugins,
+                                         pepper_plugin);
 
     // The test sends us the result via a cookie.
     launch_arguments_.AppendSwitch(switches::kEnableFileCookies);

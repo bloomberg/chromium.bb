@@ -618,11 +618,10 @@ TestWebSocketServer::TestWebSocketServer(const FilePath& root_directory) {
   cmd_line->AppendSwitchWithValue("server", "start");
   cmd_line->AppendSwitch("chromium");
   cmd_line->AppendSwitch("register_cygwin");
-  cmd_line->AppendSwitchWithValue("root", root_directory.ToWStringHack());
+  cmd_line->AppendSwitchPath("root", root_directory);
   temp_dir_.CreateUniqueTempDir();
   websocket_pid_file_ = temp_dir_.path().AppendASCII("websocket.pid");
-  cmd_line->AppendSwitchWithValue("pidfile",
-                                  websocket_pid_file_.ToWStringHack());
+  cmd_line->AppendSwitchPath("pidfile", websocket_pid_file_);
   SetPythonPath();
   base::LaunchApp(*cmd_line.get(), true, false, NULL);
 }
@@ -664,8 +663,7 @@ TestWebSocketServer::~TestWebSocketServer() {
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
   cmd_line->AppendSwitchWithValue("server", "stop");
   cmd_line->AppendSwitch("chromium");
-  cmd_line->AppendSwitchWithValue("pidfile",
-                                  websocket_pid_file_.ToWStringHack());
+  cmd_line->AppendSwitchPath("pidfile", websocket_pid_file_);
   base::LaunchApp(*cmd_line.get(), true, false, NULL);
 }
 

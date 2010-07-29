@@ -134,8 +134,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   cmd_line->AppendSwitchWithValue(switches::kProcessType,
                                   switches::kNaClLoaderProcess);
 
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                  ASCIIToWide(channel_id()));
+  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
 
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)

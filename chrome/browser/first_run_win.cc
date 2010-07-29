@@ -682,12 +682,13 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
                               HWND parent_window) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());
-  // Propagate user data directory switch.
-  if (cmdline.HasSwitch(switches::kUserDataDir)) {
-    import_cmd.AppendSwitchWithValue(
-        switches::kUserDataDir,
-        cmdline.GetSwitchValueASCII(switches::kUserDataDir));
-  }
+
+  const char* kSwitchNames[] = {
+    switches::kUserDataDir,
+    switches::kChromeFrame,
+    switches::kCountry,
+  };
+  import_cmd.CopySwitchesFrom(cmdline, kSwitchNames, arraysize(kSwitchNames));
 
   // Since ImportSettings is called before the local state is stored on disk
   // we pass the language as an argument.  GetApplicationLocale checks the
@@ -704,15 +705,6 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
   if (!import_bookmarks_path.empty()) {
     import_cmd.CommandLine::AppendSwitchWithValue(
         switches::kImportFromFile, import_bookmarks_path.c_str());
-  }
-
-  if (cmdline.HasSwitch(switches::kChromeFrame)) {
-    import_cmd.AppendSwitch(switches::kChromeFrame);
-  }
-
-  if (cmdline.HasSwitch(switches::kCountry)) {
-    import_cmd.AppendSwitchWithValue(switches::kCountry,
-      cmdline.GetSwitchValueASCII(switches::kCountry));
   }
 
   // Time to launch the process that is going to do the import.

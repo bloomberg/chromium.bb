@@ -572,8 +572,8 @@ Profile* CreateProfile(const MainFunctionParams& parameters,
     // TODO(tc): It would be nice to remove the flag we don't want, but that
     // sounds risky if we parse differently than CommandLineToArgvW.
     CommandLine new_command_line = parameters.command_line_;
-    new_command_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                           new_user_data_dir.ToWStringHack());
+    new_command_line.AppendSwitchPath(switches::kUserDataDir,
+                                      new_user_data_dir);
     base::LaunchApp(new_command_line, false, false, NULL);
   }
 #else

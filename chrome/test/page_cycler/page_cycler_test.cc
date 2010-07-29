@@ -163,7 +163,7 @@ class PageCyclerTest : public UITest {
 
     // Expose garbage collection for the page cycler tests.
     launch_arguments_.AppendSwitchWithValue(switches::kJavaScriptFlags,
-                                            L"--expose_gc");
+                                            "--expose_gc");
 #if defined(OS_MACOSX)
     static rlim_t initial_fd_limit = GetFileDescriptorLimit();
     fd_limit_ = initial_fd_limit;

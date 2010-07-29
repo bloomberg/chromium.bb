@@ -18,18 +18,16 @@ const FilePath::CharType kSrpcHwHtmlFileName[] =
 
 NaClSandboxTest::NaClSandboxTest() : NaClTest() {
   // Append the --test-nacl-sandbox=$TESTDLL flag before launching.
-  FilePath dylibDir;
-  PathService::Get(base::DIR_EXE, &dylibDir);
+  FilePath dylib_dir;
+  PathService::Get(base::DIR_EXE, &dylib_dir);
 #if defined(OS_MACOSX)
-  dylibDir = dylibDir.AppendASCII("libnacl_security_tests.dylib");
-  launch_arguments_.AppendSwitchWithValue(switches::kTestNaClSandbox,
-                                          dylibDir.value());
+  dylib_dir = dylib_dir.AppendASCII("libnacl_security_tests.dylib");
+  launch_arguments_.AppendSwitchPath(switches::kTestNaClSandbox, dylib_dir);
 #elif defined(OS_WIN)
   // Let the NaCl process detect if it is 64-bit or not and hack on
   // the appropriate suffix to this dll.
-  dylibDir = dylibDir.AppendASCII("nacl_security_tests");
-  launch_arguments_.AppendSwitchWithValue(switches::kTestNaClSandbox,
-                                          dylibDir.value());
+  dylib_dir = dylib_dir.AppendASCII("nacl_security_tests");
+  launch_arguments_.AppendSwitchPath(switches::kTestNaClSandbox, dylib_dir);
 #elif defined(OS_LINUX)
   // We currently do not test the Chrome Linux SUID or seccomp sandboxes.
 #endif

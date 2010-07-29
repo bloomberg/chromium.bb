@@ -280,7 +280,7 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   scoped_ptr<CommandLine> command_line(
       chrome_launcher::CreateLaunchCommandLine());
   command_line->AppendSwitchWithValue(switches::kAutomationClientChannelID,
-      ASCIIToWide(proxy->channel_id()));
+      proxy->channel_id());
 
   // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
   // and registry keys that Chrome looks in via the BrowserDistribution
@@ -304,8 +304,7 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
     command_line->AppendSwitch(switches::kFullMemoryCrashReport);
 
   DLOG(INFO) << "Profile path: " << params.profile_path.value();
-  command_line->AppendSwitchWithValue(switches::kUserDataDir,
-      params.profile_path.value());
+  command_line->AppendSwitchPath(switches::kUserDataDir, params.profile_path);
 
   std::wstring command_line_string(command_line->command_line_string());
   // If there are any extra arguments, append them to the command line.

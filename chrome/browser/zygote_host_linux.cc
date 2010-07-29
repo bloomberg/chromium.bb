@@ -96,16 +96,9 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 #else
     switches::kEnableSeccompSandbox,
 #endif
-    NULL
   };
-  for (const char** sw = kForwardSwitches; *sw; sw++) {
-    if (browser_command_line.HasSwitch(*sw)) {
-      // Always append with value for those switches which need it; it does no
-      // harm for those which don't.
-      cmd_line.AppendSwitchWithValue(*sw,
-          browser_command_line.GetSwitchValueASCII(*sw));
-    }
-  }
+  cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
+                            arraysize(kForwardSwitches));
 
   sandbox_binary_ = sandbox_cmd.c_str();
   struct stat st;

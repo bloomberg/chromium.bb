@@ -47,8 +47,7 @@ bool NaClBrokerHost::Init() {
   cmd_line->AppendSwitchWithValue(switches::kProcessType,
       switches::kNaClBrokerProcess);
 
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-      ASCIIToWide(channel_id()));
+  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
 
   BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   return true;

@@ -49,8 +49,8 @@ void NPAPITesterBase::SetUp() {
 #if defined(OS_MACOSX)
   // The plugins directory isn't read by default on the Mac, so it needs to be
   // explicitly registered.
-  launch_arguments_.AppendSwitchWithValue(switches::kExtraPluginDir,
-                                          plugins_directory.value());
+  launch_arguments_.AppendSwitchPath(switches::kExtraPluginDir,
+                                     plugins_directory);
 #endif
 
   UITest::SetUp();

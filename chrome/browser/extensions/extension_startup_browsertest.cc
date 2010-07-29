@@ -60,9 +60,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
       command_line->AppendSwitch(switches::kDisableExtensions);
     }
 
-    if (!load_extension_.value().empty()) {
-      command_line->AppendSwitchWithValue(switches::kLoadExtension,
-                                          load_extension_.ToWStringHack());
+    if (!load_extension_.empty()) {
+      command_line->AppendSwitchPath(switches::kLoadExtension, load_extension_);
       command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);
     }
   }

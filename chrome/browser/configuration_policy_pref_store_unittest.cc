@@ -198,11 +198,11 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingsProxyConfig) {
   command_line.AppendSwitch(switches::kNoProxyServer);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
   command_line.AppendSwitchWithValue(switches::kProxyPacUrl,
-                                     L"http://chromium.org/test.pac");
+                                     "http://chromium.org/test.pac");
   command_line.AppendSwitchWithValue(switches::kProxyServer,
-                                     L"http://chromium2.org");
+                                     "http://chromium2.org");
   command_line.AppendSwitchWithValue(switches::kProxyBypassList,
-                                     L"http://chromium3.org");
+                                     "http://chromium3.org");
 
   ConfigurationPolicyPrefStore store(&command_line, NULL);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
@@ -232,11 +232,11 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigManualOverride) {
   command_line.AppendSwitch(switches::kNoProxyServer);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
   command_line.AppendSwitchWithValue(switches::kProxyPacUrl,
-                                     L"http://chromium.org/test.pac");
+                                     "http://chromium.org/test.pac");
   command_line.AppendSwitchWithValue(switches::kProxyServer,
-                                     L"http://chromium.org");
+                                     "http://chromium.org");
   command_line.AppendSwitchWithValue(switches::kProxyBypassList,
-                                     L"http://chromium.org");
+                                     "http://chromium.org");
 
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());

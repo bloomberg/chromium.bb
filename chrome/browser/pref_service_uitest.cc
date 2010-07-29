@@ -49,8 +49,7 @@ class PreferenceServiceTest : public UITest {
         FILE_ATTRIBUTE_NORMAL));
 #endif
 
-    launch_arguments_.AppendSwitchWithValue(switches::kUserDataDir,
-                                            tmp_profile_.ToWStringHack());
+    launch_arguments_.AppendSwitchPath(switches::kUserDataDir, tmp_profile_);
   }
 
   bool LaunchAppWithProfile() {

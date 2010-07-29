@@ -79,7 +79,7 @@ MULTIPROCESS_TEST_MAIN(SimpleRenderer) {
   SandboxInitWrapper dummy_sandbox_init;
   CommandLine cl(*CommandLine::ForCurrentProcess());
   cl.AppendSwitchWithValue(switches::kProcessChannelID,
-                           ASCIIToWide(kRendererTestChannelName));
+                           kRendererTestChannelName);
 
   MainFunctionParams dummy_params(cl, dummy_sandbox_init, NULL);
   return RendererMain(dummy_params);

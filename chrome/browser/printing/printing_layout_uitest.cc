@@ -28,10 +28,8 @@ const wchar_t kDocRoot[] = L"chrome/test/data";
 class PrintingLayoutTest : public PrintingTest<UITest> {
  public:
   PrintingLayoutTest() {
-    emf_path_ = browser_directory_;
-    emf_path_ = emf_path_.AppendASCII("metafile_dumps");
-    launch_arguments_.AppendSwitchWithValue("debug-print",
-                                            L'"' + emf_path_.value() + L'"');
+    emf_path_ = browser_directory_.AppendASCII("metafile_dumps");
+    launch_arguments_.AppendSwitchPath("debug-print", emf_path_);
     show_window_ = true;
   }
 

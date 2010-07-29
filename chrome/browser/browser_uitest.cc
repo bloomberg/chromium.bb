@@ -278,8 +278,7 @@ public:
     file_util::Delete(tmp_profile_, true);
     file_util::CreateDirectory(tmp_profile_);
 
-    launch_arguments_.AppendSwitchWithValue(switches::kUserDataDir,
-                                            tmp_profile_.ToWStringHack());
+    launch_arguments_.AppendSwitchPath(switches::kUserDataDir, tmp_profile_);
   }
 
   bool LaunchAppWithProfile() {

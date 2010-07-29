@@ -57,10 +57,8 @@ class ExtensionUITest : public ExternalTabUITest {
  public:
    explicit ExtensionUITest(const std::string& extension_path)
       : loop_(MessageLoop::current()) {
-    FilePath filename(test_data_directory_);
-    filename = filename.AppendASCII(extension_path);
-    launch_arguments_.AppendSwitchWithValue(switches::kLoadExtension,
-                                            filename.value());
+    FilePath filename = test_data_directory_.AppendASCII(extension_path);
+    launch_arguments_.AppendSwitchPath(switches::kLoadExtension, filename);
     functions_enabled_.push_back("*");
   }
 

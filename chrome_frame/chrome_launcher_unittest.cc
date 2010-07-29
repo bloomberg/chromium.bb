@@ -20,7 +20,7 @@ TEST(ChromeLauncher, IsValidCommandLine) {
 
   CommandLine good(FilePath(L"dummy.exe"));
   good.AppendSwitch(switches::kNoFirstRun);  // in whitelist
-  good.AppendSwitchWithValue(switches::kUserDataDir, L"foo");  // in whitelist
+  good.AppendSwitchWithValue(switches::kUserDataDir, "foo");  // in whitelist
 
   EXPECT_TRUE(chrome_launcher::IsValidCommandLine(
       good.command_line_string().c_str()));

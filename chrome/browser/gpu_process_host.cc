@@ -90,19 +90,15 @@ bool GpuProcessHost::Init() {
                                   ASCIIToWide(channel_id()));
 
   // Propagate relevant command line switches.
-  static const char* const switch_names[] = {
+  static const char* const kSwitchNames[] = {
     switches::kUseGL,
+    switches::kDisableLogging,
+    switches::kEnableLogging,
+    switches::kGpuStartupDialog,
+    switches::kLoggingLevel,
   };
-
-  for (size_t i = 0; i < arraysize(switch_names); ++i) {
-    if (browser_command_line.HasSwitch(switch_names[i])) {
-      cmd_line->AppendSwitchWithValue(switch_names[i],
-          browser_command_line.GetSwitchValueASCII(switch_names[i]));
-    }
-  }
-
-  const CommandLine& browser_cmd_line = *CommandLine::ForCurrentProcess();
-  PropagateBrowserCommandLineToGpu(browser_cmd_line, cmd_line);
+  cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                             arraysize(kSwitchNames));
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())
@@ -213,26 +209,6 @@ void GpuProcessHost::ReplyToRenderer(
   // the synchronous ViewHostMsg_SynchronizeGpu message.
   message->set_unblock(true);
   filter->Send(message);
-}
-
-void GpuProcessHost::PropagateBrowserCommandLineToGpu(
-    const CommandLine& browser_cmd,
-    CommandLine* gpu_cmd) const {
-  // Propagate the following switches to the GPU process command line (along
-  // with any associated values) if present in the browser command line.
-  static const char* const switch_names[] = {
-    switches::kDisableLogging,
-    switches::kEnableLogging,
-    switches::kGpuStartupDialog,
-    switches::kLoggingLevel,
-  };
-
-  for (size_t i = 0; i < arraysize(switch_names); ++i) {
-    if (browser_cmd.HasSwitch(switch_names[i])) {
-      gpu_cmd->AppendSwitchWithValue(switch_names[i],
-          browser_cmd.GetSwitchValueASCII(switch_names[i]));
-    }
-  }
 }
 
 URLRequestContext* GpuProcessHost::GetRequestContext(

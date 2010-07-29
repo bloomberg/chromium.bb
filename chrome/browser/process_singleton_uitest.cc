@@ -62,8 +62,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
 
     FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
-    command_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                       user_data_directory.ToWStringHack());
+    command_line.AppendSwitchPath(switches::kUserDataDir, user_data_directory);
 
     if (first_run)
       command_line.AppendSwitch(switches::kFirstRun);

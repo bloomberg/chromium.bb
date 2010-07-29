@@ -16,7 +16,7 @@ namespace nacl {
     // Propagate the following switches to the NaCl loader command line (along
     // with any associated values) if present in the browser command line.
     // TODO(gregoryd): check which flags of those below can be supported.
-    static const char* const switch_names[] = {
+    static const char* const kSwitchNames[] = {
       switches::kNoSandbox,
       switches::kTestNaClSandbox,
       switches::kDisableBreakpad,
@@ -28,13 +28,7 @@ namespace nacl {
       switches::kSilentDumpOnDCHECK,
       switches::kMemoryProfiling,
     };
-
-    for (size_t i = 0; i < arraysize(switch_names); ++i) {
-      if (browser_command_line.HasSwitch(switch_names[i])) {
-        cmd_line->AppendSwitchWithValue(
-          switch_names[i],
-          browser_command_line.GetSwitchValueASCII(switch_names[i]));
-      }
-    }
+    cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                               arraysize(kSwitchNames));
   }
 }
