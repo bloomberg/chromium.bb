@@ -418,13 +418,12 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	attribs[1] = reply->width;
 	attribs[3] = reply->height;
 	attribs[5] = buffers[0].pitch / 4;
-	free(reply);
-
 	output->image =
 		eglCreateImageKHR(c->base.display, c->base.context,
 				  EGL_DRM_IMAGE_MESA,
 				  (EGLClientBuffer) buffers[0].name,
 				  attribs);
+	free(reply);
 
 	glGenRenderbuffers(1, &output->rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, output->rbo);
