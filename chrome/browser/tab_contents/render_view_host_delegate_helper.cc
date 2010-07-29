@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/pref_service.h"
