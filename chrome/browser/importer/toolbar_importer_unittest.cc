@@ -9,7 +9,7 @@
 
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/toolbar_importer.h"
 #include "chrome/common/libxml_utils.h"

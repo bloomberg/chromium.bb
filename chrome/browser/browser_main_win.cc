@@ -19,7 +19,7 @@
 #include "base/path_service.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/views/uninstall_view.h"
 #include "chrome/common/chrome_switches.h"

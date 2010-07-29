@@ -10,7 +10,7 @@ typedef struct _GtkButton GtkButton;
 typedef struct _GtkWidget GtkWidget;
 
 #include "app/gtk_signal.h"
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/importer.h"
 
 class FirstRunDialog : public ImportObserver {

@@ -50,7 +50,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/host_zoom_map.h"

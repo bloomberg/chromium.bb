@@ -5,7 +5,7 @@
 #include "base/at_exit.h"
 #include "base/process_util.h"
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #endif
 
 // The entry point for all invocations of Chromium, browser and renderer. On

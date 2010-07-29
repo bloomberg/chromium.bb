@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/task.h"
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/views/info_bubble.h"
 
 class FirstRunBubbleViewBase;

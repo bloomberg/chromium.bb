@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 
 #include "build/build_config.h"
 

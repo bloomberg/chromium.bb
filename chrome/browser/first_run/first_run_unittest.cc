@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FirstRunTest : public testing::Test {

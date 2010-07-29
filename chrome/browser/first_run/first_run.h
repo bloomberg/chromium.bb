@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FIRST_RUN_H_
-#define CHROME_BROWSER_FIRST_RUN_H_
+#ifndef CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
+#define CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 #pragma once
 
 #include <string>
@@ -295,4 +295,4 @@ bool OpenFirstRunDialog(Profile* profile,
                         bool randomize_search_engine_experiment,
                         ProcessSingleton* process_singleton);
 
-#endif  // CHROME_BROWSER_FIRST_RUN_H_
+#endif  // CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_

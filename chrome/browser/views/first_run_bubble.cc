@@ -13,7 +13,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/metrics/user_metrics.h"

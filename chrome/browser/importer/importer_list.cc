@@ -9,7 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/first_run.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox3_importer.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
