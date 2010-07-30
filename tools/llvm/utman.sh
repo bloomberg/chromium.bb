@@ -57,7 +57,7 @@ readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
 
 # This toolchain currenlty builds only on linux.
 # TODO(abetul): Remove the restriction on developer's OS choices.
-readonly NACL_TOOLCHAIN=$(pwd)/toolchain/linux_x86/sdk/nacl-sdk
+readonly NACL_TOOLCHAIN=$(pwd)/toolchain/linux_x86
 
 readonly PATCH_DIR=$(pwd)/tools/patches
 
@@ -2166,9 +2166,9 @@ RecordRevisionInfo() {
 organize-native-code() {
   StepBanner "PNACL" "Organizing Native Code"
 
-  readonly arm_src=toolchain/linux_arm-untrusted
-  readonly x86_src=toolchain/linux_x86/sdk/nacl-sdk
-  readonly arm_llvm_gcc=${arm_src}/arm-none-linux-gnueabi
+  readonly arm_src=${INSTALL_ROOT}
+  readonly x86_src=${NACL_TOOLCHAIN}
+  readonly arm_llvm_gcc=${TARGET_ROOT}
 
   # TODO(espindola): There is a transitive dependency from libgcc to
   # libc, libnosys and libnacl. We should try to factor this better.

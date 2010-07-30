@@ -50,10 +50,10 @@ BASE_ARM = BASE + '/arm-none-linux-gnueabi'
 LD_SCRIPT_ARM = BASE_ARM + '/ld_script_arm_untrusted'
 
 # NOTE: derived from
-# toolchain/linux_x86/sdk/nacl-sdk/nacl64/lib/ldscripts/elf_nacl.x
+# toolchain/linux_x86/nacl64/lib/ldscripts/elf_nacl.x
 LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x8632_untrusted'
 # NOTE: derived from
-# toolchain/linux_x86/sdk/nacl-sdk/nacl64/lib/ldscripts/elf64_nacl.x
+# toolchain/linux_x86/nacl64/lib/ldscripts/elf64_nacl.x
 LD_SCRIPT_X8664 = BASE + '/../../tools/llvm/ld_script_x8664_untrusted'
 
 # arm libstdc++
@@ -214,7 +214,7 @@ OPT = BASE_ARM + '/bin/opt'
 AS_ARM = BASE_ARM + '/bin/arm-none-linux-gnueabi-as'
 
 # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
-AS_X86 = BASE + '/../linux_x86/sdk/nacl-sdk/bin/nacl64-as'
+AS_X86 = BASE + '/../linux_x86/bin/nacl64-as'
 
 ELF_LD = BASE_ARM + '/bin/arm-none-linux-gnueabi-ld'
 
