@@ -85,9 +85,9 @@ static void RegisterCommon() {
 
   const NPAPI::PluginVersionInfo nacl_plugin_info = {
       FilePath(FILE_PATH_LITERAL("internal_nacl")),
-      L"Native Client",
-      L"Statically linked NaCl",
-      L"1, 0, 0, 1",
+      L"Google Native Client",
+      L"Google Native Client",
+      L"1",
       L"application/x-nacl-srpc",
       L"",
       L"",
