@@ -46,12 +46,17 @@
   'win': [
     # testBookmarkBarVisible fails on windows. crbug.com/42823
     '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
+    # download test fails on official builder, thru buildbot only.
+    # crbug.com/50481
+    '-downloads.DownloadsTest.testZip',
   ],
 
   'mac': [
     # Keychain popups make password & autofill tests difficult. crbug.com/49378
     '-passwords',
     '-autofill',
+    # codesign tests should run *after* signing. crbug.com/50481
+    '-codesign',
   ],
 
   'linux': [  # linux != chromeos
