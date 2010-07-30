@@ -132,13 +132,14 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
     }
   }
 
-  if (!browser_)
-    CreateDevToolsBrowser();
-
   // Avoid consecutive window switching if the devtools window has been opened
   // and the Inspect Element shortcut is pressed in the inspected tab.
   bool should_show_window =
       !browser_ || action != DEVTOOLS_TOGGLE_ACTION_INSPECT;
+
+  if (!browser_)
+    CreateDevToolsBrowser();
+
   if (should_show_window)
     browser_->window()->Show();
   SetAttachedWindow();
