@@ -3539,6 +3539,18 @@
    fun:_ZN3net46HttpAuthHandlerNegotiateTest_DisableCname_Test8TestBodyEv
 }
 {
+   bug_49404c
+   Memcheck:Value4
+   fun:modp_b64_encode
+   fun:_ZN4base12Base64EncodeERKSsPSs
+   fun:_ZN3net14HttpAuthGSSAPI17GenerateAuthTokenEPKSbItN4base20string16_char_traitsESaItEES6_RKSbIwSt11char_traitsIwESaIwEEPSs
+   ...
+   fun:_ZN3net24HttpAuthHandlerNegotiate6DoLoopEi
+   fun:_ZN3net24HttpAuthHandlerNegotiate21GenerateAuthTokenImplEPKSbItN4base20string16_char_traitsESaItEES6_PKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPSs
+   fun:_ZN3net15HttpAuthHandler17GenerateAuthTokenEPKSbItN4base20string16_char_traitsESaItEES6_PKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPSs
+   fun:_ZN3net46HttpAuthHandlerNegotiateTest_DisableCname_Test8TestBodyEv
+}
+{
    bug_50056
    Memcheck:Leak
    fun:_Znw*
@@ -3601,4 +3613,76 @@
    fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
    fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
    fun:_ZN9OptionsUIC1EP11TabContents
+}
+{
+   bug_50728_a
+   Memcheck:Cond
+   ...
+   fun:_ZNK7WebCore16CSSStyleSelector15SelectorChecker26determineLinkStateSlowCaseEPNS_7ElementE
+   fun:_ZNK7WebCore16CSSStyleSelector15SelectorChecker18determineLinkStateEPNS_7ElementE
+   fun:_ZN7WebCore16CSSStyleSelector11initElementEPNS_7ElementE
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbbb
+   fun:_ZN7WebCore4Node16styleForRendererEv
+   fun:_ZN7WebCore4Node22createRendererIfNeededEv
+   fun:_ZN7WebCore7Element6attachEv
+   fun:_ZN7WebCore21LegacyHTMLTreeBuilder10insertNodeEPNS_4NodeEb
+   fun:_ZN7WebCore21LegacyHTMLTreeBuilder25insertNodeAfterLimitDepthEPNS_4NodeEb
+   fun:_ZN7WebCore21LegacyHTMLTreeBuilder10parseTokenEPNS_5TokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder23passTokenToLegacyParserERNS_9HTMLTokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder22constructTreeFromTokenERNS_9HTMLTokenE
+   fun:_ZN7WebCore18HTMLDocumentParser13pumpTokenizerENS0_15SynchronousModeE
+   fun:_ZN7WebCore18HTMLDocumentParser23pumpTokenizerIfPossibleENS0_15SynchronousModeE
+   fun:_ZN7WebCore18HTMLDocumentParser6appendERKNS_15SegmentedStringE
+   fun:_ZN7WebCore25DecodedDataDocumentParser11appendBytesEPNS_14DocumentWriterEPKcib
+   fun:_ZN7WebCore14DocumentWriter7addDataEPKcib
+   fun:_ZN7WebCore14DocumentWriter27endIfNotLoadingMainResourceEv
+}
+{
+   bug_50728_b
+   Memcheck:Value4
+   ...
+   fun:_ZNK7WebCore16CSSStyleSelector15SelectorChecker26determineLinkStateSlowCaseEPNS_7ElementE
+   fun:_ZNK7WebCore16CSSStyleSelector15SelectorChecker18determineLinkStateEPNS_7ElementE
+   fun:_ZN7WebCore16CSSStyleSelector11initElementEPNS_7ElementE
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbbb
+   fun:_ZN7WebCore4Node16styleForRendererEv
+   fun:_ZN7WebCore4Node22createRendererIfNeededEv
+   fun:_ZN7WebCore7Element6attachEv
+   fun:_ZN7WebCore21LegacyHTMLTreeBuilder10insertNodeEPNS_4NodeEb
+   fun:_ZN7WebCore21LegacyHTMLTreeBuilder25insertNodeAfterLimitDepthEPNS_4NodeEb
+   fun:_ZN7WebCore21LegacyHTMLTreeBuilder10parseTokenEPNS_5TokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder23passTokenToLegacyParserERNS_9HTMLTokenE
+   fun:_ZN7WebCore15HTMLTreeBuilder22constructTreeFromTokenERNS_9HTMLTokenE
+   fun:_ZN7WebCore18HTMLDocumentParser13pumpTokenizerENS0_15SynchronousModeE
+   fun:_ZN7WebCore18HTMLDocumentParser23pumpTokenizerIfPossibleENS0_15SynchronousModeE
+   fun:_ZN7WebCore18HTMLDocumentParser6appendERKNS_15SegmentedStringE
+   fun:_ZN7WebCore25DecodedDataDocumentParser11appendBytesEPNS_14DocumentWriterEPKcib
+   fun:_ZN7WebCore14DocumentWriter7addDataEPKcib
+   fun:_ZN7WebCore14DocumentWriter27endIfNotLoadingMainResourceEv
+}
+{
+   bug_50729
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackI19DownloadsDOMHandlerSt6vectorIP12DownloadItemSaIS3_EEEPN9Callback1IT0_E4TypeEPT_MSB_FvS7_E
+   fun:_ZN19DownloadsDOMHandler12ModelChangedEv
+   fun:_ZN15DownloadManager11AddObserverEPNS_8ObserverE
+   fun:_ZN19DownloadsDOMHandler4InitEv
+   fun:_ZN11DownloadsUIC1EP11TabContents
+   fun:_Z8NewDOMUII11DownloadsUIEP5DOMUIP11TabContentsRK4GURL
+   fun:_ZN12DOMUIFactory17CreateDOMUIForURLEP11TabContentsRK4GURL
+   fun:_ZN11TabContents27CreateDOMUIForRenderManagerERK4GURL
+   fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
+   fun:_ZNK7Browser23CreateTabContentsForURLERK4GURLS2_P7ProfilejbP12SiteInstance
+   fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jiiP12SiteInstanceRKSs
+   fun:_ZN7Browser16ShowSingletonTabERK4GURL
+   fun:_ZN7Browser16ShowDownloadsTabEv
+   fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
+   fun:_ZN7Browser14ExecuteCommandEi
+   fun:_ZN18AutomationProvider21ExecuteBrowserCommandEiiPN3IPC7MessageE
 }
