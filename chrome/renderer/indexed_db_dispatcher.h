@@ -29,7 +29,7 @@ class IndexedDBDispatcher {
   // handled.
   bool OnMessageReceived(const IPC::Message& msg);
 
-  void RequestIndexedDatabaseOpen(
+  void RequestIDBFactoryOpen(
       const string16& name, const string16& description,
       WebKit::WebIDBCallbacks* callbacks, const string16& origin,
       WebKit::WebFrame* web_frame);

@@ -56,7 +56,7 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
-#include "chrome/renderer/renderer_webindexeddatabase_impl.h"
+#include "chrome/renderer/renderer_webidbfactory_impl.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"

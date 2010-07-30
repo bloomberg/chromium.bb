@@ -60,7 +60,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       unsigned key_size_index,
       const WebKit::WebString& challenge,
       const WebKit::WebURL& url);
-  virtual WebKit::WebIndexedDatabase* indexedDatabase();
+  virtual WebKit::WebIDBFactory* idbFactory();
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
@@ -93,7 +93,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   // to WorkerService on the browser thread.
   scoped_ptr<WebSharedWorkerRepositoryImpl> shared_worker_repository_;
 
-  scoped_ptr<WebKit::WebIndexedDatabase> web_indexed_database_;
+  scoped_ptr<WebKit::WebIDBFactory> web_idb_factory_;
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_

@@ -16,8 +16,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBIndex.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBObjectStore.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 
 using WebKit::WebDOMStringList;
@@ -81,7 +81,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(process_handle_);
 
   switch (message.type()) {
-    case ViewHostMsg_IndexedDatabaseOpen::ID:
+    case ViewHostMsg_IDBFactoryOpen::ID:
     case ViewHostMsg_IDBDatabaseName::ID:
     case ViewHostMsg_IDBDatabaseDescription::ID:
     case ViewHostMsg_IDBDatabaseVersion::ID:
@@ -153,8 +153,8 @@ void IndexedDBDispatcherHost::OnMessageReceivedWebKit(
     handled = true;
     DCHECK(msg_is_ok);
     IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost, message, msg_is_ok)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_IndexedDatabaseOpen,
-                          OnIndexedDatabaseOpen)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_IDBFactoryOpen,
+                          OnIDBFactoryOpen)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   }
@@ -178,18 +178,17 @@ int32 IndexedDBDispatcherHost::Add(WebIDBObjectStore* idb_object_store) {
   return object_store_dispatcher_host_->map_.Add(idb_object_store);
 }
 
-void IndexedDBDispatcherHost::OnIndexedDatabaseOpen(
-    const ViewHostMsg_IndexedDatabaseOpen_Params& params) {
+void IndexedDBDispatcherHost::OnIDBFactoryOpen(
+    const ViewHostMsg_IDBFactoryOpen_Params& params) {
   // TODO(jorlow): Check the content settings map and use params.routing_id_
   //               if it's necessary to ask the user for permission.
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  Context()->GetIndexedDatabase()->open(
+  Context()->GetIDBFactory()->open(
       params.name_, params.description_,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL);
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Helper templates.

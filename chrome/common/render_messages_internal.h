@@ -2196,9 +2196,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               GURL /* url */,
                               bool /* something_cleared */)
 
-  // WebIndexedDatabase::open() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IndexedDatabaseOpen,
-                       ViewHostMsg_IndexedDatabaseOpen_Params)
+  // WebIDBFactory::open() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBFactoryOpen,
+                       ViewHostMsg_IDBFactoryOpen_Params)
 
   // WebIDBDatabase::name() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseName,

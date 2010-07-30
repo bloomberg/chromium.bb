@@ -11,7 +11,7 @@
 #include "base/scoped_ptr.h"
 
 namespace WebKit {
-class WebIndexedDatabase;
+class WebIDBFactory;
 }
 
 class IndexedDBContext {
@@ -21,10 +21,10 @@ class IndexedDBContext {
 
   // TODO(jorlow): If this is all this class ever does, then we should kill it
   //               and move this variable to WebKitContext.
-  WebKit::WebIndexedDatabase* GetIndexedDatabase();
+  WebKit::WebIDBFactory* GetIDBFactory();
 
  private:
-  scoped_ptr<WebKit::WebIndexedDatabase> indexed_database_;
+  scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContext);
 };

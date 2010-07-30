@@ -2,30 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/renderer_webindexeddatabase_impl.h"
+#include "chrome/renderer/renderer_webidbfactory_impl.h"
 
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
+using WebKit::WebDOMStringList;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 
-RendererWebIndexedDatabaseImpl::RendererWebIndexedDatabaseImpl() {
+RendererWebIDBFactoryImpl::RendererWebIDBFactoryImpl() {
 }
 
-RendererWebIndexedDatabaseImpl::~RendererWebIndexedDatabaseImpl() {
+RendererWebIDBFactoryImpl::~RendererWebIDBFactoryImpl() {
 }
 
-void RendererWebIndexedDatabaseImpl::open(
+void RendererWebIDBFactoryImpl::open(
     const WebString& name, const WebString& description,
     WebIDBCallbacks* callbacks, const WebSecurityOrigin& origin,
     WebFrame* web_frame) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIndexedDatabaseOpen(
+  dispatcher->RequestIDBFactoryOpen(
       name, description, callbacks, origin.databaseIdentifier(), web_frame);
 }

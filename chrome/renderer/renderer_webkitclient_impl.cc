@@ -16,7 +16,7 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
-#include "chrome/renderer/renderer_webindexeddatabase_impl.h"
+#include "chrome/renderer/renderer_webidbfactory_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/renderer/webgles2context_impl.h"
@@ -26,7 +26,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
@@ -59,7 +59,7 @@
 #endif
 
 using WebKit::WebFrame;
-using WebKit::WebIndexedDatabase;
+using WebKit::WebIDBFactory;
 using WebKit::WebKitClient;
 using WebKit::WebStorageArea;
 using WebKit::WebStorageEventDispatcher;
@@ -268,14 +268,14 @@ void RendererWebKitClientImpl::dispatchStorageEvent(
 
 //------------------------------------------------------------------------------
 
-WebIndexedDatabase* RendererWebKitClientImpl::indexedDatabase() {
-  if (!web_indexed_database_.get()) {
+WebIDBFactory* RendererWebKitClientImpl::idbFactory() {
+  if (!web_idb_factory_.get()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
-      web_indexed_database_.reset(WebIndexedDatabase::create());
+      web_idb_factory_.reset(WebIDBFactory::create());
     else
-      web_indexed_database_.reset(new RendererWebIndexedDatabaseImpl());
+      web_idb_factory_.reset(new RendererWebIDBFactoryImpl());
   }
-  return web_indexed_database_.get();
+  return web_idb_factory_.get();
 }
 
 //------------------------------------------------------------------------------

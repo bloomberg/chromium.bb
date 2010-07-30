@@ -5,10 +5,10 @@
 #include "chrome/browser/in_process_webkit/indexed_db_context.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 
 using WebKit::WebIDBDatabase;
-using WebKit::WebIndexedDatabase;
+using WebKit::WebIDBFactory;
 
 IndexedDBContext::IndexedDBContext() {
 }
@@ -16,9 +16,9 @@ IndexedDBContext::IndexedDBContext() {
 IndexedDBContext::~IndexedDBContext() {
 }
 
-WebIndexedDatabase* IndexedDBContext::GetIndexedDatabase() {
-  if (!indexed_database_.get())
-    indexed_database_.reset(WebIndexedDatabase::create());
-  DCHECK(indexed_database_.get());
-  return indexed_database_.get();
+WebIDBFactory* IndexedDBContext::GetIDBFactory() {
+  if (!idb_factory_.get())
+    idb_factory_.reset(WebIDBFactory::create());
+  DCHECK(idb_factory_.get());
+  return idb_factory_.get();
 }

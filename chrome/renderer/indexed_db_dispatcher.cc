@@ -49,7 +49,7 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void IndexedDBDispatcher::RequestIndexedDatabaseOpen(
+void IndexedDBDispatcher::RequestIDBFactoryOpen(
     const string16& name, const string16& description,
     WebIDBCallbacks* callbacks_ptr, const string16& origin,
     WebFrame* web_frame) {
@@ -61,13 +61,13 @@ void IndexedDBDispatcher::RequestIndexedDatabaseOpen(
   if (!render_view)
     return; // We must be shutting down.
 
-  ViewHostMsg_IndexedDatabaseOpen_Params params;
+  ViewHostMsg_IDBFactoryOpen_Params params;
   params.routing_id_ = render_view->routing_id();
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
   params.origin_ = origin;
   params.name_ = name;
   params.description_ = description;
-  RenderThread::current()->Send(new ViewHostMsg_IndexedDatabaseOpen(params));
+  RenderThread::current()->Send(new ViewHostMsg_IDBFactoryOpen(params));
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseCreateObjectStore(

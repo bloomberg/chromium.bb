@@ -598,7 +598,7 @@ struct ViewMsg_DOMStorageEvent_Params {
 };
 
 // Used to open an indexed database.
-struct ViewHostMsg_IndexedDatabaseOpen_Params {
+struct ViewHostMsg_IDBFactoryOpen_Params {
   // The routing ID of the view initiating the open.
   int32 routing_id_;
 
@@ -2722,10 +2722,10 @@ struct ParamTraits<ViewMsg_DOMStorageEvent_Params> {
   }
 };
 
-// Traits for ViewHostMsg_IndexedDatabaseOpen_Params.
+// Traits for ViewHostMsg_IDBFactoryOpen_Params.
 template <>
-struct ParamTraits<ViewHostMsg_IndexedDatabaseOpen_Params> {
-  typedef ViewHostMsg_IndexedDatabaseOpen_Params param_type;
+struct ParamTraits<ViewHostMsg_IDBFactoryOpen_Params> {
+  typedef ViewHostMsg_IDBFactoryOpen_Params param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.routing_id_);
     WriteParam(m, p.response_id_);

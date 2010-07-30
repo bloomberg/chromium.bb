@@ -15,8 +15,8 @@
 
 class IndexedDBKey;
 class SerializedScriptValue;
-struct ViewHostMsg_IndexedDatabaseOpen_Params;
 struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
+struct ViewHostMsg_IDBFactoryOpen_Params;
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params;
 
 namespace WebKit {
@@ -65,7 +65,7 @@ class IndexedDBDispatcherHost
   // Message processing. Most of the work is delegated to the dispatcher hosts
   // below.
   void OnMessageReceivedWebKit(const IPC::Message& message);
-  void OnIndexedDatabaseOpen(const ViewHostMsg_IndexedDatabaseOpen_Params& p);
+  void OnIDBFactoryOpen(const ViewHostMsg_IDBFactoryOpen_Params& p);
 
   // Helper templates.
   template <class ReturnType>
