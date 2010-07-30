@@ -107,7 +107,7 @@ class PrefService : public NonThreadSafe {
   // preference values.
   explicit PrefService(PrefValueStore* pref_value_store);
 
-  ~PrefService();
+  virtual ~PrefService();
 
   // Reloads the data from file. This should only be called when the importer
   // is running during first run, and the main process may not change pref

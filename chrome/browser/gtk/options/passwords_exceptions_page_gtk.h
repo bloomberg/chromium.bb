@@ -20,7 +20,7 @@
 class PasswordsExceptionsPageGtk {
  public:
   explicit PasswordsExceptionsPageGtk(Profile* profile);
-  ~PasswordsExceptionsPageGtk();
+  virtual ~PasswordsExceptionsPageGtk();
 
   GtkWidget* get_page_widget() const { return page_; }
 

@@ -53,6 +53,9 @@ class TestInterstitialPage : public InterstitialPage {
    public:
     virtual void TestInterstitialPageDeleted(
         TestInterstitialPage* interstitial) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // IMPORTANT NOTE: if you pass stack allocated values for |state| and

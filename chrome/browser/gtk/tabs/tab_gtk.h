@@ -80,7 +80,7 @@ class TabGtk : public TabRendererGtk,
     virtual ThemeProvider* GetThemeProvider() = 0;
 
    protected:
-    ~TabDelegate() {}
+    virtual ~TabDelegate() {}
   };
 
   explicit TabGtk(TabDelegate* delegate);

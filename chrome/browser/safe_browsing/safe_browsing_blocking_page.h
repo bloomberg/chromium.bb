@@ -146,7 +146,7 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
 // Factory for creating SafeBrowsingBlockingPage.  Useful for tests.
 class SafeBrowsingBlockingPageFactory {
  public:
-  ~SafeBrowsingBlockingPageFactory() { }
+  virtual ~SafeBrowsingBlockingPageFactory() { }
 
   virtual SafeBrowsingBlockingPage* CreateSafeBrowsingPage(
       SafeBrowsingService* service,

@@ -17,6 +17,9 @@ class DownloadInProgressDialogGtk {
  public:
   explicit DownloadInProgressDialogGtk(Browser* browser);
 
+ protected:
+  virtual ~DownloadInProgressDialogGtk() {}
+
  private:
   CHROMEGTK_CALLBACK_1(DownloadInProgressDialogGtk, void, OnResponse, int);
 

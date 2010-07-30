@@ -17,7 +17,7 @@
 class PasswordsPageGtk {
  public:
   explicit PasswordsPageGtk(Profile* profile);
-  ~PasswordsPageGtk();
+  virtual ~PasswordsPageGtk();
 
   GtkWidget* get_page_widget() const { return page_; }
 

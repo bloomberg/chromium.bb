@@ -305,7 +305,7 @@ class ModelessHtmlDialogDelegate : public HtmlDialogUIDelegate {
     main_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         this, &ModelessHtmlDialogDelegate::Show));
   }
-  ~ModelessHtmlDialogDelegate() {
+  virtual ~ModelessHtmlDialogDelegate() {
     DCHECK(ChromePluginLib::IsPluginThread());
   }
 

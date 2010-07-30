@@ -52,7 +52,7 @@ class HtmlDialogUIDelegate {
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) = 0;
 
  protected:
-  ~HtmlDialogUIDelegate() {}
+  virtual ~HtmlDialogUIDelegate() {}
 };
 
 // Displays file URL contents inside a modal HTML dialog.

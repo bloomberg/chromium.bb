@@ -56,6 +56,10 @@ class BugReportUtil::PostCleanup : public URLFetcher::Delegate {
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
+
+ protected:
+  virtual ~PostCleanup() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PostCleanup);
 };

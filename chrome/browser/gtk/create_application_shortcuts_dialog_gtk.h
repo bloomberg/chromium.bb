@@ -33,7 +33,7 @@ class CreateApplicationShortcutsDialogGtk
 
   CreateApplicationShortcutsDialogGtk(GtkWindow* parent,
                                       TabContents* tab_contents);
-  ~CreateApplicationShortcutsDialogGtk();
+  virtual ~CreateApplicationShortcutsDialogGtk();
 
   CHROMEGTK_CALLBACK_1(CreateApplicationShortcutsDialogGtk, void,
                        OnCreateDialogResponse, int);

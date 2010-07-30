@@ -20,7 +20,7 @@ class FullscreenExitBubbleGtk {
  public:
   // We place the bubble in |container|.
   explicit FullscreenExitBubbleGtk(GtkFloatingContainer* container);
-  ~FullscreenExitBubbleGtk();
+  virtual ~FullscreenExitBubbleGtk();
 
   void InitWidgets();
 

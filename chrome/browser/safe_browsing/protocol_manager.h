@@ -70,7 +70,7 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
                               const std::string& info_url_prefix,
                               const std::string& mackey_url_prefix,
                               bool disable_auto_update);
-  ~SafeBrowsingProtocolManager();
+  virtual ~SafeBrowsingProtocolManager();
 
   // Sets up the update schedule and internal state for making periodic requests
   // of the SafeBrowsing service.

@@ -160,7 +160,7 @@ class AutoFillProfileEditor {
  private:
   friend class DeleteTask<AutoFillProfileEditor>;
 
-  ~AutoFillProfileEditor() {}
+  virtual ~AutoFillProfileEditor() {}
 
   void Init();
 
@@ -541,7 +541,7 @@ class AutoFillCreditCardEditor {
     COL_COUNT
   };
 
-  ~AutoFillCreditCardEditor() {}
+  virtual ~AutoFillCreditCardEditor() {}
 
   // Creates the GtkListStore used to show the billing addresses.
   GtkListStore* CreateAddressStore();

@@ -77,6 +77,8 @@ EditSearchEngineDialog::EditSearchEngineDialog(
   Init(parent_window, profile);
 }
 
+EditSearchEngineDialog::~EditSearchEngineDialog() {}
+
 void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   std::string dialog_name = l10n_util::GetStringUTF8(
       controller_->template_url() ?

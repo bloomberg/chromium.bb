@@ -43,6 +43,7 @@ class ContentExceptionEditor {
                          const HostContentSettingsMap::Pattern& pattern,
                          ContentSetting setting,
                          bool is_off_the_record);
+  virtual ~ContentExceptionEditor() {}
 
  private:
   // Returns true if we're adding a new item.

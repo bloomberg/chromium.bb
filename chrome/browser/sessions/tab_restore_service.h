@@ -44,6 +44,9 @@ class TabRestoreService : public BaseSessionService {
     // Sent to all remaining Observers when TabRestoreService's
     // destructor is run.
     virtual void TabRestoreServiceDestroyed(TabRestoreService* service) = 0;
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Interface used to allow the test to provide a custom time.

@@ -16,7 +16,7 @@ class TabContents;
 class SadTabGtk {
  public:
   explicit SadTabGtk(TabContents* tab_contents);
-  ~SadTabGtk();
+  virtual ~SadTabGtk();
 
   GtkWidget* widget() const { return event_box_.get(); }
 

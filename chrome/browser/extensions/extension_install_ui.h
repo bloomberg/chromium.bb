@@ -48,6 +48,9 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     // We call this method after ConfirmInstall()/ConfirmUninstall() to signal
     // that the installation/uninstallation should stop.
     virtual void InstallUIAbort() = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   explicit ExtensionInstallUI(Profile* profile);

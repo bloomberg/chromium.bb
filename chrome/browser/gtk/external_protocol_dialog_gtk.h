@@ -18,6 +18,9 @@ class ExternalProtocolDialogGtk {
  public:
   explicit ExternalProtocolDialogGtk(const GURL& url);
 
+ protected:
+  virtual ~ExternalProtocolDialogGtk() {}
+
  private:
   CHROMEGTK_CALLBACK_1(ExternalProtocolDialogGtk, void, OnDialogResponse, int);
 

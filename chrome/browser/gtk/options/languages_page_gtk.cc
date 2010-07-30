@@ -42,6 +42,8 @@ GtkWidget* NewComboboxFromModel(ComboboxModel* model) {
 class AddLanguageDialog {
  public:
   AddLanguageDialog(Profile* profile, LanguagesPageGtk* delegate);
+  virtual ~AddLanguageDialog() {}
+
  private:
   // Callback for dialog buttons.
   CHROMEGTK_CALLBACK_1(AddLanguageDialog, void, OnResponse, int);

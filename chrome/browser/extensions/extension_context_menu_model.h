@@ -28,6 +28,9 @@ class ExtensionContextMenuModel
     // Called when the user selects the menu item which requests that the
     // popup be shown and inspected.
     virtual void InspectPopup(ExtensionAction* action) = 0;
+
+   protected:
+    virtual ~PopupDelegate() {}
   };
 
   // Creates a menu model for the given extension action. If

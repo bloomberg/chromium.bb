@@ -173,7 +173,7 @@ class TabStripGtk : public TabStripModelObserver,
   class DropInfo {
    public:
     DropInfo(int index, bool drop_before, bool point_down);
-    ~DropInfo();
+    virtual ~DropInfo();
 
     // TODO(jhawkins): Factor out this code into a TransparentContainer class.
 

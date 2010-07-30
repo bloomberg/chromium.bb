@@ -114,6 +114,9 @@ class TreeAdapter : public TreeModelObserver {
 
     // Called after any change to the GtkTreeStore.
     virtual void OnAnyModelUpdate() {}
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   TreeAdapter(Delegate* delegate, TreeModel* tree_model);

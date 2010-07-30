@@ -36,6 +36,9 @@ class ExtensionToolbarModel : public NotificationObserver {
 
     // Called when the model has finished loading.
     virtual void ModelLoaded() {}
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Functions called by the view.

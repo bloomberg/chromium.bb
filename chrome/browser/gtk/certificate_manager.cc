@@ -50,6 +50,7 @@ std::string Stringize(char* nss_text) {
 class CertificatePage {
  public:
   explicit CertificatePage(psm::CertType type);
+  virtual ~CertificatePage() {}
 
   void PopulateTree(CERTCertList* cert_list);
 
@@ -349,7 +350,7 @@ void CertificatePage::OnViewClicked(GtkWidget* button) {
 class CertificateManager {
  public:
   explicit CertificateManager(gfx::NativeWindow parent, Profile* profile);
-  ~CertificateManager();
+  virtual ~CertificateManager();
 
   // Shows the Tab corresponding to the specified |page|.
   void ShowCertificatePage(CertificateManagerPage page);
