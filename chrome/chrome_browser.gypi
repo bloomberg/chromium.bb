@@ -2109,6 +2109,8 @@
         'browser/process_singleton_win.cc',
         'browser/profile.cc',
         'browser/profile.h',
+        'browser/profile_impl.cc',
+        'browser/profile_impl.h',
         'browser/profile_import_process_host.cc',
         'browser/profile_import_process_host.h',
         'browser/profile_manager.cc',
