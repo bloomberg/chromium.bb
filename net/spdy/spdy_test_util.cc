@@ -276,9 +276,9 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const url,
   std::string str_path = gurl.PathForRequest();
   std::string str_scheme = gurl.scheme();
   std::string str_host = gurl.host();  // TODO(mbelshe): should have a port.
-  scoped_ptr<char> req(new char[str_path.size() + 1]);
-  scoped_ptr<char> scheme(new char[str_scheme.size() + 1]);
-  scoped_ptr<char> host(new char[str_host.size() + 1]);
+  scoped_array<char> req(new char[str_path.size() + 1]);
+  scoped_array<char> scheme(new char[str_scheme.size() + 1]);
+  scoped_array<char> host(new char[str_host.size() + 1]);
   memcpy(req.get(), str_path.c_str(), str_path.size());
   memcpy(scheme.get(), str_scheme.c_str(), str_scheme.size());
   memcpy(host.get(), str_host.c_str(), str_host.size());
