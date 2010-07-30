@@ -743,7 +743,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
+// Flaky, http://crbug.com/50763.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
   BringBrowserWindowToFront();
 
   // Open the history tab, focus should be on the tab contents.
