@@ -57,14 +57,7 @@ InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type) {
   SkColor top_color;
   SkColor bottom_color;
   switch (infobar_type) {
-    case InfoBarDelegate::INFO_TYPE:
-      top_color = kInfoBackgroundColorTop;
-      bottom_color = kInfoBackgroundColorBottom;
-      break;
     case InfoBarDelegate::WARNING_TYPE:
-      top_color = kWarningBackgroundColorTop;
-      bottom_color = kWarningBackgroundColorBottom;
-      break;
     case InfoBarDelegate::ERROR_TYPE:
       top_color = kErrorBackgroundColorTop;
       bottom_color = kErrorBackgroundColorBottom;
@@ -108,9 +101,6 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   set_background(new InfoBarBackground(delegate->GetInfoBarType()));
 
   switch (delegate->GetInfoBarType()) {
-    case InfoBarDelegate::INFO_TYPE:
-      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_INFO));
-      break;
     case InfoBarDelegate::WARNING_TYPE:
       SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_WARNING));
       break;

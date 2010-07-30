@@ -87,9 +87,7 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
     return l10n_util::GetString(IDS_OMNIBOX_SEARCH_HINT_INFOBAR_BUTTON_LABEL);
   }
 
-  virtual Type GetInfoBarType() {
-    return INFO_TYPE;
-  }
+  virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }
 
   virtual bool Accept() {
     action_taken_ = true;
