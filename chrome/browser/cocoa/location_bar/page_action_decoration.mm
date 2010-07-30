@@ -141,8 +141,17 @@ void PageActionDecoration::UpdateVisibility(
       }
     }
 
-    if (!skia_icon.isNull())
+    if (!skia_icon.isNull()) {
       SetImage(gfx::SkBitmapToNSImage(skia_icon));
+    } else if (!GetImage()) {
+      // During install the action can be displayed before the icons
+      // have come in.  Rather than deal with this in multiple places,
+      // provide a placeholder image.  This will be replaced when an
+      // icon comes in.
+      const NSSize default_size = NSMakeSize(Extension::kPageActionIconMaxSize,
+                                             Extension::kPageActionIconMaxSize);
+      SetImage([[NSImage alloc] initWithSize:default_size]);
+    }
   }
   if (IsVisible() != visible) {
     SetVisible(visible);
