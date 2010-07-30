@@ -78,6 +78,10 @@ ACCEPTABLE_ARGUMENTS = {
     'dangerous_debug_disable_inner_sandbox': None,
     # disable warning mechanism in src/untrusted/nosys/warning.h
     'disable_nosys_linker_warnings': None,
+    # where should we store extrasdk libraries
+    'extra_sdk_lib_destination': None,
+    # where should we store extrasdk headers
+    'extra_sdk_include_destination': None,
     # force emulator use by tests
     'force_emulator': None,
     # force sel_ldr use by tests
@@ -104,6 +108,7 @@ ACCEPTABLE_ARGUMENTS = {
     'run_under': None,
     # Multiply timeout values by this number.
     'scale_timeout': None,
+    # enable use of SDL
     'sdl': None,
     # disable printing of sys info with sysinfo=
     'sysinfo': None,
@@ -1682,7 +1687,11 @@ nacl_extra_sdk_env.Alias('extra_sdk_update', [])
 # headers go under nacl/, but there are non-specific headers, such as
 # the OpenGLES2 headers, that go under their own subdir.
 def AddHeaderToSdk(env, nodes, subdir = 'nacl/'):
-  n = env.Replicate('${NACL_SDK_INCLUDE}/' + subdir, nodes)
+  dir = ARGUMENTS.get('extra_sdk_include_destination')
+  if not dir:
+    dir = '${NACL_SDK_INCLUDE}'
+
+  n = env.Replicate(dir + '/' + subdir, nodes)
   env.Alias('extra_sdk_update_header', n)
   return n
 
@@ -1702,9 +1711,9 @@ def AddLibraryToSdkHelper(env, nodes, is_lib, is_platform):
   # NOTE: hack see comment
   nacl_extra_sdk_env.Requires(nodes, sdk_headers)
 
-  dir = '${NACL_SDK_LIB}/'
-  if is_platform:
-    dir =  '${NACL_SDK_LIB_PLATFORM}/'
+  dir = ARGUMENTS.get('extra_sdk_lib_destination')
+  if not dir:
+    dir = '${NACL_SDK_LIB}/'
 
   if is_lib:
     n = env.ReplicatePublished(dir, nodes, 'link')

@@ -149,13 +149,12 @@ def _SetEnvForX86Sdk(env, sdk_path):
     assert 0
 
   env.Replace(# Replace header and lib paths.
-              # where to find/put nacl extra sdk headers
+              # where to put nacl extra sdk headers
+              # TODO(robertm): switch to using the mechanism that
+              #                passes arguments to scons
               NACL_SDK_INCLUDE=sdk_path + '/nacl64/include',
               # where to find/put nacl generic extra sdk libraries
               NACL_SDK_LIB=sdk_path + '/nacl64' + libsuffix,
-              # where to find/put nacl platform specific extra sdk libraries
-              # NOTE: these are the same except in a pnacl scenario
-              NACL_SDK_LIB_PLATFORM=sdk_path + '/nacl64' + libsuffix,
               # Replace the normal unix tools with the NaCl ones.
               CC='nacl64-gcc',
               CXX='nacl64-g++',
@@ -198,7 +197,6 @@ def _SetEnvForSdkManually(env):
   env.Replace(# Replace header and lib paths.
               NACL_SDK_INCLUDE=GetEnvOrDummy('INCLUDE'),
               NACL_SDK_LIB=GetEnvOrDummy('LIB'),
-              NACL_SDK_LIB_PLATFORM=GetEnvOrDummy('LIB_PLATFORM'),
               # Replace the normal unix tools with the NaCl ones.
               CC=GetEnvOrDummy('CC'),
               CXX=GetEnvOrDummy('CXX'),
@@ -231,7 +229,6 @@ ERROR: NativeClient toolchain does not seem present!,
 Configuration is:
   NACL_SDK_INCLUDE=${NACL_SDK_INCLUDE}
   NACL_SDK_LIB=${NACL_SDK_LIB}
-  NACL_SDK_LIB_PLATFORM=${NACL_SDK_LIB_PLATFORM}
   CC=${CC}
   CXX=${CXX}
   AR=${AR}
@@ -297,7 +294,4 @@ def generate(env):
       print "ERROR: unknown TARGET_ARCHITECTURE: ", env['TARGET_ARCHITECTURE']
       assert 0
 
-  # NOTE: the NACL_SDK_LIB_PLATFORM path contains object code and libs
-  #       that are pulled in by the compiler driver, so scons will not see
-  #       dependencies on them and hence we do omit the PATH here.
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')

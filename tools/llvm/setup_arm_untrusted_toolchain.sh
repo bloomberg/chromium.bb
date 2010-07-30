@@ -6,23 +6,20 @@
 
 source $(dirname ${BASH_SOURCE[0]})/tools.sh || return
 
-NACL_SDK_INSTALL=\
-"$(pwd)/toolchain/linux_arm-untrusted/arm-newlib/arm-none-linux-gnueabi"
-
 ######################################################################
 #
 ######################################################################
 
-# NOTE: NACL_SDK_LIB is used as a destination for extra sdk builds, so
-# if we use bitcode we need to redirect to the bitcode libdir
-
+# NOTE: NACL_SDK_LIB is used by pnacl to find libraries
+# NOTE: NACL_SDK_LIB is used to specify where to place libraries
+#        during extrasdk install
+# TODO(robertm): remove the last use case
 export NACL_SDK_LIB="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
-# NOTE: this should really be: "export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/pnacl-untrusted/arm"
-# TOOD(robertm): change this together with the rest of the builder script
-export NACL_SDK_LIB_PLATFORM="$(pwd)/toolchain/linux_arm-untrusted/libs-bitcode"
-
-
-export NACL_SDK_INCLUDE="${NACL_SDK_INSTALL}/include"
+# NOTE: NACL_SDK_INCLUDE is used to validate sdk presence
+# NOTE: NACL_SDK_INCLUDE is used to specify where to place headers
+#        during extrasdk install
+# TODO(robertm): remove both use cases
+export NACL_SDK_INCLUDE="$(pwd)/toolchain/linux_arm-untrusted/arm-newlib/arm-none-linux-gnueabi/include"
 
 EXTRA_FLAGS="-emit-llvm"
 # NOTE: NACL_* defines are currently needed for building extra_sdk, e.g.
