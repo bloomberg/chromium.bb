@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppengine.h"
 
 namespace remoting {
@@ -42,7 +42,7 @@ class IqRequest : private buzz::XmppIqHandler {
   }
 
  private:
-  FRIEND_TEST(IqRequestTest, MakeIqStanza);
+  FRIEND_TEST_ALL_PREFIXES(IqRequestTest, MakeIqStanza);
 
   // XmppIqHandler interface.
   virtual void IqResponse(buzz::XmppIqCookie cookie,

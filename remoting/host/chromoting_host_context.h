@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/thread.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace remoting {
 
@@ -29,7 +29,7 @@ class ChromotingHostContext {
   virtual MessageLoop* encode_message_loop();
 
  private:
-  FRIEND_TEST(ChromotingHostContextTest, StartAndStop);
+  FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
 
   // A thread that hosts all network operations.
   JingleThread jingle_thread_;

@@ -14,13 +14,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/histogram.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "net/base/cookie_store.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class GURL;
 
@@ -158,8 +158,10 @@ class CookieMonster : public CookieStore {
 
   // Testing support.
   friend class CookieMonsterTest;
-  FRIEND_TEST(CookieMonsterTest, TestCookieDeleteAllCreatedAfterTimestamp);
-  FRIEND_TEST(CookieMonsterTest, TestCookieDeleteAllCreatedBetweenTimestamps);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
+                           TestCookieDeleteAllCreatedAfterTimestamp);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
+                           TestCookieDeleteAllCreatedBetweenTimestamps);
   bool SetCookieWithCreationTime(const GURL& url,
                                  const std::string& cookie_line,
                                  const base::Time& creation_time);

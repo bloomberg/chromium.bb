@@ -9,6 +9,7 @@
 #include <deque>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -54,8 +55,8 @@ class SpdyNetworkTransaction : public HttpTransaction {
   virtual uint64 GetUploadProgress() const;
 
  private:
-  FRIEND_TEST(SpdyNetworkTransactionTest, WindowUpdate);
-  FRIEND_TEST(SpdyNetworkTransactionTest, WindowUpdateOverflow);
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest, WindowUpdate);
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest, WindowUpdateOverflow);
 
   enum State {
     STATE_INIT_CONNECTION,

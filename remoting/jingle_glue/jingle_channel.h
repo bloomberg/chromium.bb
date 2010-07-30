@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/condition_variable.h"
+#include "base/gtest_prod_util.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 
 namespace base {
@@ -94,10 +94,10 @@ class JingleChannel : public base::RefCountedThreadSafe<JingleChannel> {
   State state_;
 
  private:
-  FRIEND_TEST(JingleChannelTest, Init);
-  FRIEND_TEST(JingleChannelTest, Write);
-  FRIEND_TEST(JingleChannelTest, Read);
-  FRIEND_TEST(JingleChannelTest, Close);
+  FRIEND_TEST_ALL_PREFIXES(JingleChannelTest, Init);
+  FRIEND_TEST_ALL_PREFIXES(JingleChannelTest, Write);
+  FRIEND_TEST_ALL_PREFIXES(JingleChannelTest, Read);
+  FRIEND_TEST_ALL_PREFIXES(JingleChannelTest, Close);
 
   typedef std::deque<scoped_refptr<media::DataBuffer> > DataQueue;
 

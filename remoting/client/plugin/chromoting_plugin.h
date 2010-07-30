@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/at_exit.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
@@ -59,7 +60,7 @@ class ChromotingPlugin : public pp::Instance {
   virtual bool CurrentlyOnPluginThread() const;
 
  private:
-  FRIEND_TEST(ChromotingPluginTest, TestCaseSetup);
+  FRIEND_TEST_ALL_PREFIXES(ChromotingPluginTest, TestCaseSetup);
 
   // Since we're an internal plugin, we can just grab the message loop during
   // init to figure out which thread we're on.  This should only be used to
