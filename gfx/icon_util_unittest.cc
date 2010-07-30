@@ -2,62 +2,59 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_ptr.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "gfx/gfx_paths.h"
 #include "gfx/icon_util.h"
 #include "gfx/size.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 
-  static const wchar_t* const kSmallIconName = L"icon_util\\16_X_16_icon.ico";
-  static const wchar_t* const kLargeIconName = L"icon_util\\128_X_128_icon.ico";
-  static const wchar_t* const kTempIconFilename = L"temp_test_icon.ico";
+static const char kSmallIconName[] = "icon_util/16_X_16_icon.ico";
+static const char kLargeIconName[] = "icon_util/128_X_128_icon.ico";
+static const char kTempIconFilename[] = "temp_test_icon.ico";
 
-  class IconUtilTest : public testing::Test {
-   public:
-    IconUtilTest() {
-      PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_);
-    }
-    ~IconUtilTest() {}
+class IconUtilTest : public testing::Test {
+ public:
+  IconUtilTest() {
+    PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_);
+  }
+  ~IconUtilTest() {}
 
-    static const int kSmallIconWidth = 16;
-    static const int kSmallIconHeight = 16;
-    static const int kLargeIconWidth = 128;
-    static const int kLargeIconHeight = 128;
+  static const int kSmallIconWidth = 16;
+  static const int kSmallIconHeight = 16;
+  static const int kLargeIconWidth = 128;
+  static const int kLargeIconHeight = 128;
 
-    // Given a file name for an .ico file and an image dimentions, this
-    // function loads the icon and returns an HICON handle.
-    HICON LoadIconFromFile(const std::wstring& filename,
-                           int width,
-                           int height) {
-      HICON icon =
-          static_cast<HICON>(LoadImage(NULL,
-                                       filename.c_str(),
-                                       IMAGE_ICON,
-                                       width,
-                                       height,
-                                       LR_LOADTRANSPARENT | LR_LOADFROMFILE));
-      return icon;
-    }
+  // Given a file name for an .ico file and an image dimentions, this
+  // function loads the icon and returns an HICON handle.
+  HICON LoadIconFromFile(const FilePath& filename, int width, int height) {
+    HICON icon = static_cast<HICON>(LoadImage(NULL,
+                                    filename.value().c_str(),
+                                    IMAGE_ICON,
+                                    width,
+                                    height,
+                                    LR_LOADTRANSPARENT | LR_LOADFROMFILE));
+    return icon;
+  }
 
-   protected:
-    // The root directory for test files.
-    std::wstring test_data_directory_;
+ protected:
+  // The root directory for test files.
+  FilePath test_data_directory_;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(IconUtilTest);
-  };
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IconUtilTest);
 };
+
+}  // namespace
 
 // The following test case makes sure IconUtil::SkBitmapFromHICON fails
 // gracefully when called with invalid input parameters.
 TEST_F(IconUtilTest, TestIconToBitmapInvalidParameters) {
-  std::wstring icon_filename(test_data_directory_);
-  file_util::AppendToPath(&icon_filename, kSmallIconName);
+  FilePath icon_filename = test_data_directory_.AppendASCII(kSmallIconName);
   gfx::Size icon_size(kSmallIconWidth, kSmallIconHeight);
   HICON icon = LoadIconFromFile(icon_filename,
                                 icon_size.width(),
@@ -114,8 +111,8 @@ TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
 // fails gracefully when called with invalid input parameters.
 TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   scoped_ptr<SkBitmap> bitmap;
-  std::wstring valid_icon_filename(test_data_directory_);
-  file_util::AppendToPath(&valid_icon_filename, kSmallIconName);
+  FilePath valid_icon_filename = test_data_directory_.AppendASCII(
+      kSmallIconName);
   std::wstring invalid_icon_filename(L"C:\\<>?.ico");
 
   // Wrong bitmap format.
@@ -153,8 +150,8 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
 // the HICON into a bitmap, the bitmap has the expected format and dimentions.
 TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
   scoped_ptr<SkBitmap> bitmap;
-  std::wstring small_icon_filename(test_data_directory_);
-  file_util::AppendToPath(&small_icon_filename, kSmallIconName);
+  FilePath small_icon_filename = test_data_directory_.AppendASCII(
+      kSmallIconName);
   gfx::Size small_icon_size(kSmallIconWidth, kSmallIconHeight);
   HICON small_icon = LoadIconFromFile(small_icon_filename,
                                       small_icon_size.width(),
@@ -167,8 +164,8 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
   EXPECT_EQ(bitmap->config(), SkBitmap::kARGB_8888_Config);
   ::DestroyIcon(small_icon);
 
-  std::wstring large_icon_filename(test_data_directory_);
-  file_util::AppendToPath(&large_icon_filename, kLargeIconName);
+  FilePath large_icon_filename = test_data_directory_.AppendASCII(
+      kLargeIconName);
   gfx::Size large_icon_size(kLargeIconWidth, kLargeIconHeight);
   HICON large_icon = LoadIconFromFile(large_icon_filename,
                                       large_icon_size.width(),
@@ -230,8 +227,7 @@ TEST_F(IconUtilTest, TestBasicCreateHICONFromSkBitmap) {
 // creates a valid .ico file given an SkBitmap.
 TEST_F(IconUtilTest, TestCreateIconFile) {
   scoped_ptr<SkBitmap> bitmap;
-  std::wstring icon_filename(test_data_directory_);
-  file_util::AppendToPath(&icon_filename, kTempIconFilename);
+  FilePath icon_filename = test_data_directory_.AppendASCII(kTempIconFilename);
 
   // Allocating the bitmap.
   bitmap.reset(new SkBitmap);

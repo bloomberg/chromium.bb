@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,7 +255,7 @@ bool CreateIconFile(const SkBitmap& bitmap,
 
   // Create an icon file from the favicon attached to the given |page|, and
   // save it as the temporary file.
-  if (!IconUtil::CreateIconFileFromSkBitmap(bitmap, path.value()))
+  if (!IconUtil::CreateIconFileFromSkBitmap(bitmap, path))
     return false;
 
   // Add this icon file to the list and return its absolute path.

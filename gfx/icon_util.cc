@@ -255,6 +255,10 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   return !delete_file;
 }
 
+bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
+                                          const FilePath& icon_path) {
+  return CreateIconFileFromSkBitmap(bitmap, icon_path.ToWStringHack());
+}
 bool IconUtil::PixelsHaveAlpha(const uint32* pixels, size_t num_pixels) {
   for (const uint32* end = pixels + num_pixels; pixels != end; ++pixels) {
     if ((*pixels & 0xff000000) != 0)
