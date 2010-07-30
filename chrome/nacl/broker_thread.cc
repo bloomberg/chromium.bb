@@ -52,8 +52,8 @@ void NaClBrokerThread::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kNaClLoaderProcess);
 
-    cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
-                                loader_channel_id);
+    cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
+                                    loader_channel_id);
 
     loader_process = sandbox::StartProcessWithAccess(cmd_line, FilePath());
     if (loader_process) {
