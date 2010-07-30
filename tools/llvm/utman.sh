@@ -1381,7 +1381,7 @@ binutils-arm-make() {
 
 #+ binutils-arm-install  - Install binutils for ARM
 binutils-arm-install() {
-  StepBanner "BINUTILS" "Install"
+  StepBanner "BINUTILS-ARM" "Install"
   local objdir="${TC_BUILD_BINUTILS_ARM}"
   spushd "${objdir}"
 
@@ -1396,8 +1396,6 @@ binutils-arm-install() {
 #+-------------------------------------------------------------------------
 #+ binutils-liberty-x86          - Build and install binutils-libiberty for X86
 binutils-liberty-x86() {
-  StepBanner "BINUTILS-LIBERTY-X86"
-
   local srcdir="${TC_SRC_BINUTILS}"
 
   assert-dir "${srcdir}" "You need to checkout binutils."
@@ -1602,7 +1600,9 @@ llvm-tools-x8632-sb-install() {
 #+-------------------------------------------------------------------------
 #+ binutils-x8632-sb       - Build and install binutils (sandboxed) for x8632
 binutils-x8632-sb() {
-  StepBanner "BINUTILS-X8632-SB"
+  local srcdir="${TC_SRC_BINUTILS}"
+
+  assert-dir "${srcdir}" "You need to checkout binutils."
 
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
     echo "ERROR: install Native Client toolchain"
@@ -1719,7 +1719,9 @@ binutils-x8632-sb-install() {
 #TODO(abetul): Share more code with binutils 32-bit sandboxing.
 #+ binutils-x8664-sb       - Build and install binutils (sandboxed) for x8664
 binutils-x8664-sb() {
-  StepBanner "BINUTILS-X8664-SB"
+  local srcdir="${TC_SRC_BINUTILS}"
+
+  assert-dir "${srcdir}" "You need to checkout binutils."
 
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
     echo "ERROR: install Native Client toolchain"
@@ -1833,22 +1835,82 @@ binutils-x8664-sb-install() {
 }
 
 #+-------------------------------------------------------------------------
-#@ build_sandboxed_translators - build and package up sandbox translators
-build_sandboxed_translators() {
-  StepBanner "TRANSLATORS"
+#@ build-sandboxed-translators - Build and package up sandboxed translators
+build-sandboxed-translators() {
+  StepBanner "BUILD SANDBOXED TRANSLATORS"
 
-  StepBanner "TRANSLATORS" "arm"
-  # TODO: this is just skeleton at this point
-  mkdir -p "${PNACL_CLIENT_TC_ARM}"
+  # TODO(abetul): Missing arm translator work.
+  # StepBanner "ARM" "Sandboxing"
 
-  StepBanner "TRANSLATORS" "x86-32"
-  mkdir -p "${PNACL_CLIENT_TC_X8632}"
+  StepBanner "X86" "Prepare"
+  StepBanner "---" "-------"
+  binutils-liberty-x86
+  echo ""
+
+  StepBanner "32-bit X86" "Sandboxing"
+  StepBanner "----------" "----------"
+  binutils-x8632-sb
   cp tools/llvm/dummy_translator_x8632.sh "${PNACL_CLIENT_TC_X8632}/translator"
+  echo ""
 
-  StepBanner "TRANSLATORS" "x86-64"
-  mkdir -p "${PNACL_CLIENT_TC_X8664}"
+  StepBanner "64-bit X86" "Sandboxing"
+  StepBanner "----------" "----------"
+  binutils-x8664-sb
   cp tools/llvm/dummy_translator_x8664.sh "${PNACL_CLIENT_TC_X8664}/translator"
+  echo ""
+}
 
+# TODO(abetul): Make sure this works with arm when it's ready to demo.
+# TODO(abetul): Replace ld and llc with sandboxed executables.
+#+-------------------------------------------------------------------------
+#@ copy-translator-to-dir <arch> <dir> - Copies <arch> translator components to <dir>
+copy-translator-to-dir() {
+  StepBanner "COPY TRANSLATOR TO DIRECTORY"
+
+  if [ $# != 2 ]; then
+    echo "Usage copy-translator-to-dir <arch> <dir>"
+    exit -1
+  fi
+
+  assert-dir "${PNACL_CLIENT_TC_X8632}" \
+        "Run this script with build-sandboxed-translators"
+  assert-dir "${PNACL_CLIENT_TC_X8664}" \
+        "Run this script with build-sandboxed-translators"
+
+  local arch=$1
+  local dir_name=$2
+  local bindir="${PNACL_CLIENT_TC_ROOT}/${arch}"
+  assert-dir "${bindir}" "Unsupported arch. Choose one of: x8632, x8664"
+
+  if ! mkdir -p "${dir_name}" ; then
+     echo "ERROR: ${dir_name} can't be created."
+    exit -1
+  fi
+
+  assert-file "${TARGET_ROOT}/bin/llc" "Install PNaCl toolchain."
+  cp "${TARGET_ROOT}/bin/llc" "${dir_name}"
+
+  assert-file "${bindir}/bin/as" \
+        "Run this script with build-sandboxed-translators"
+  cp "${bindir}/bin/as" "${dir_name}"
+
+  assert-file "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" \
+        "Install PNaCl toolchain."
+  cp "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" "${dir_name}/ld"
+
+  assert-dir "${PNACL_TOOLCHAIN_ROOT}/libs-${arch}" \
+        "Install PNaCl toolchain."
+  cp "${PNACL_TOOLCHAIN_ROOT}/libs-${arch}/"* "${dir_name}/."
+
+  assert-file "$(pwd)/tools/llvm/ld_script_${arch}_untrusted" \
+        "Install NaCl toolchain."
+  cp "$(pwd)/tools/llvm/ld_script_${arch}_untrusted" "${dir_name}/ld_script"
+
+  assert-file "${bindir}/translator" \
+        "Run this script with build-sandboxed-translators"
+  cp "${bindir}/translator" "${dir_name}"
+
+  echo "Done"
 }
 
 #########################################################################
@@ -2769,7 +2831,7 @@ assert-file() {
   local fn="$1"
   local msg="$2"
 
-  if [ ! -d "${fn}" ]; then
+  if [ ! -f "${fn}" ]; then
     Banner "ERROR: ${fn} does not exist. ${msg}"
     exit -1
   fi
