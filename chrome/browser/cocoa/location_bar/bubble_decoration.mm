@@ -19,7 +19,7 @@ const CGFloat kBubblePadding = 3.0;
 // to differ from the location icon's.  Indeed, that's how the views
 // implementation handles the problem.  This draws the bubble edge a
 // little bit further left, which is easier but no less hacky.
-const CGFloat kLeftSideOverdraw = 1.0;
+const CGFloat kLeftSideOverdraw = 2.0;
 
 // Omnibox corner radius is |4.0|, this needs to look tight WRT that.
 const CGFloat kBubbleCornerRadius = 2.0;
@@ -30,9 +30,6 @@ const CGFloat kBubbleCornerRadius = 2.0;
 // space outside the border, and perhaps the border.  Then this could
 // reflect the single pixel space w/in that.
 const CGFloat kBubbleYInset = 4.0;
-
-// How far to inset the text from the edge of the bubble.
-const CGFloat kTextYInset = 1.0;
 
 }  // namespace
 
@@ -129,7 +126,6 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     NSRect textRect = decorationFrame;
     textRect.origin.x = NSMaxX(imageRect);
     textRect.size.width = NSMaxX(decorationFrame) - NSMinX(textRect);
-    textRect.origin.y += kTextYInset;
     [label_ drawInRect:textRect withAttributes:attributes_];
   }
 }

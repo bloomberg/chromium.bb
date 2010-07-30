@@ -17,11 +17,12 @@ const CGFloat kBaselineAdjust = 3.0;
 const CGFloat kCornerRadius = 4.0;
 
 // How far to inset the left-hand decorations from the field's bounds.
-const CGFloat kLeftDecorationXOffset = 4.0;
+const CGFloat kLeftDecorationXOffset = 5.0;
 
 // How far to inset the right-hand decorations from the field's bounds.
 // TODO(shess): Why is this different from |kLeftDecorationXOffset|?
-const CGFloat kRightDecorationXOffset = 4.0;
+// |kDecorationOuterXOffset|?
+const CGFloat kRightDecorationXOffset = 5.0;
 
 // The amount of padding on either side reserved for drawing
 // decorations.  [Views has |kItemPadding| == 3.]
