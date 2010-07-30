@@ -347,8 +347,10 @@ void StatusBubbleMac::Create() {
 void StatusBubbleMac::Attach() {
   // This method may be called several times during the process of creating or
   // showing a status bubble to attach the bubble to its parent window.
-  if (!is_attached())
+  if (!is_attached()) {
     [parent_ addChildWindow:window_ ordered:NSWindowAbove];
+    UpdateSizeAndPosition();
+  }
 }
 
 void StatusBubbleMac::Detach() {

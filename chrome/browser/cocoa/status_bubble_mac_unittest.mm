@@ -458,3 +458,23 @@ TEST_F(StatusBubbleMacTest, UpdateSizeAndPosition) {
   EXPECT_NE(rect_before.size.width, rect_after.size.width);
   EXPECT_EQ(rect_before.size.height, rect_after.size.height);
 }
+
+TEST_F(StatusBubbleMacTest, MovingWindowUpdatesPosition) {
+  NSWindow* window = test_window();
+
+  // Show the bubble and make sure it has the same origin as |window|.
+  bubble_->SetStatus(L"Showing");
+  NSWindow* child = GetWindow();
+  EXPECT_TRUE(NSEqualPoints([window frame].origin, [child frame].origin));
+
+  // Hide the bubble, move the window, and show it again.
+  bubble_->Hide();
+  NSRect frame = [window frame];
+  frame.origin.x += 50;
+  [window setFrame:frame display:YES];
+  bubble_->SetStatus(L"Reshowing");
+
+  // The bubble should reattach in the correct location.
+  child = GetWindow();
+  EXPECT_TRUE(NSEqualPoints([window frame].origin, [child frame].origin));
+}
