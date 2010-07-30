@@ -725,7 +725,7 @@ TEST_F(AutoFillManagerTest,
   EXPECT_EQ(string16(), labels[1]);
 }
 
-TEST_F(AutoFillManagerTest, GetBillingSuggestionsAddress1) {
+TEST_F(AutoFillManagerTest, SKIP_BRANDED(GetBillingSuggestionsAddress1)) {
   FormData form;
   CreateTestFormDataBilling(&form);
 
