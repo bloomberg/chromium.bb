@@ -22,7 +22,7 @@ class WrenchMenuModel;
 //
 // This object is instantiated in Toolbar.xib and is configured by the
 // ToolbarController.
-@interface WrenchMenuController : MenuController <NSMenuDelegate> {
+@interface WrenchMenuController : MenuController<NSMenuDelegate> {
   IBOutlet NSView* editItem_;
   IBOutlet NSSegmentedControl* editControl_;
 
@@ -42,6 +42,21 @@ class WrenchMenuModel;
 // NSCarbonMenuWindow; this screws up the typical |-commandDispatch:| system.
 - (IBAction)dispatchWrenchMenuCommand:(id)sender;
 
+// Returns the weak reference to the WrenchMenuModel.
+- (WrenchMenuModel*)wrenchMenuModel;
+
+@end
+
+////////////////////////////////////////////////////////////////////////////////
+
+@interface WrenchMenuController (UnitTesting)
+// |-dispatchWrenchMenuCommand:| calls this after it has determined the tag of
+// the sender. The default implementation executes the command on the outermost
+// run loop using |-performSelector...withDelay:|. This is not desirable in
+// unit tests because it's hard to test around run loops in a deterministic
+// manner. To avoid those headaches, tests should provide an alternative
+// implementation.
+- (void)dispatchCommandInternal:(NSInteger)tag;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_WRENCH_MENU_CONTROLLER_H_

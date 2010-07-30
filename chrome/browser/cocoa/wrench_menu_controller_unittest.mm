@@ -14,11 +14,28 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+// Override to avoid dealing with run loops in the testing environment.
+@implementation WrenchMenuController (UnitTesting)
+- (void)dispatchCommandInternal:(NSInteger)tag {
+  [self wrenchMenuModel]->ExecuteCommand(tag);
+}
+@end
+
+
 namespace {
 
 class MockWrenchMenuModel : public WrenchMenuModel {
  public:
   MockWrenchMenuModel() : WrenchMenuModel() {}
+  ~MockWrenchMenuModel() {
+    // This dirty, ugly hack gets around a bug in the test. In
+    // ~WrenchMenuModel(), there's a call to TabstripModel::RemoveObserver(this)
+    // which mysteriously leads to this crash: http://crbug.com/49206 .  It
+    // seems that the vector of observers is getting hosed somewhere between
+    // |-[ToolbarController dealloc]| and ~MockWrenchMenuModel(). This line
+    // short-circuits the parent destructor to avoid this crash.
+    tabstrip_model_ = NULL;
+  }
   MOCK_METHOD1(ExecuteCommand, void(int command_id));
 };
 
@@ -48,14 +65,12 @@ class WrenchMenuControllerTest : public CocoaTest {
   scoped_nsobject<ToolbarController> toolbar_controller_;
 };
 
-// Test crashes sometimes. http://crbug.com/49206
-TEST_F(WrenchMenuControllerTest, DISABLED_Initialized) {
+TEST_F(WrenchMenuControllerTest, Initialized) {
   EXPECT_TRUE([controller() menu]);
   EXPECT_GE([[controller() menu] numberOfItems], 5);
 }
 
-// Test crashes sometimes. http://crbug.com/49206
-TEST_F(WrenchMenuControllerTest, DISABLED_DispatchSimple) {
+TEST_F(WrenchMenuControllerTest, DispatchSimple) {
   scoped_nsobject<NSButton> button([[NSButton alloc] init]);
   [button setTag:IDC_ZOOM_PLUS];
 
@@ -66,8 +81,7 @@ TEST_F(WrenchMenuControllerTest, DISABLED_DispatchSimple) {
   [controller() dispatchWrenchMenuCommand:button.get()];
 }
 
-// Test crashes sometimes. http://crbug.com/49206
-TEST_F(WrenchMenuControllerTest, DISABLED_DispatchSegmentedControl) {
+TEST_F(WrenchMenuControllerTest, DispatchSegmentedControl) {
   // Set fake model to test dispatching.
   EXPECT_CALL(fake_model_, ExecuteCommand(IDC_CUT));
   [controller() setModel:&fake_model_];
