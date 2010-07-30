@@ -324,6 +324,19 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
   return [field_ convertPoint:bubble_point toView:nil];
 }
 
+NSRect LocationBarViewMac::GetBlockedPopupRect() const {
+  const size_t kPopupIndex = CONTENT_SETTINGS_TYPE_POPUPS;
+  const LocationBarDecoration* decoration =
+      content_setting_decorations_[kPopupIndex];
+  if (!decoration || !decoration->IsVisible())
+    return NSZeroRect;
+
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect frame = [cell frameForDecoration:decoration
+                                        inFrame:[field_ bounds]];
+  return [field_ convertRect:frame toView:nil];
+}
+
 ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
   if (index < page_action_decorations_.size())
     return page_action_decorations_[index]->page_action();

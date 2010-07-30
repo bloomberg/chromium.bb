@@ -9,6 +9,8 @@
 
 #import "base/nsimage_cache_mac.h"
 #import "chrome/browser/cocoa/animatable_image.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -116,9 +118,28 @@ class PopupBlockedAnimationObserver : public NotificationObserver {
     // slightly to the Omnibox. While the geometry won't align perfectly, it's
     // close enough for the user to take note of the new icon. These numbers
     // come from measuring the Omnibox without any page actions.
-    [animation_ setEndFrame:CGRectMake(animationFrame.size.width - 115,
-                                       animationFrame.size.height - 50,
-                                       16, 16)];
+    CGRect endFrame = CGRectMake(animationFrame.size.width - 115,
+                                 animationFrame.size.height - 50,
+                                 16, 16);
+
+    // If the location-bar can be found, ask it for better
+    // coordinates.
+    BrowserWindowController* bwc = [parentWindow windowController];
+    if ([bwc isKindOfClass:[BrowserWindowController class]]) {
+      LocationBarViewMac* lbvm = [bwc locationBarBridge];
+      if (lbvm) {
+        NSRect frame = lbvm->GetBlockedPopupRect();
+        if (!NSIsEmptyRect(frame)) {
+          // Convert up to the screen, then back down to the animation
+          // window.
+          NSPoint screenPoint = [parentWindow convertBaseToScreen:frame.origin];
+          frame.origin = [animation_ convertScreenToBase:screenPoint];
+          endFrame = NSRectToCGRect(frame);
+        }
+      }
+    }
+
+    [animation_ setEndFrame:endFrame];
     [animation_ setStartOpacity:1.0];
     [animation_ setEndOpacity:0.2];
     [animation_ setDuration:0.7];

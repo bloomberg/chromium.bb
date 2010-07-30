@@ -115,6 +115,12 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Returns |NSZeroPoint| if |page_action| is not present.
   NSPoint GetPageActionBubblePoint(ExtensionAction* page_action);
 
+  // Get the blocked-popup content setting's frame in window
+  // coordinates.  Used by the blocked-popup animation.  Returns
+  // |NSZeroRect| if the relevant content setting decoration is not
+  // visible.
+  NSRect GetBlockedPopupRect() const;
+
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,
       PageTransition::Type transition,
