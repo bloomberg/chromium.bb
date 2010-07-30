@@ -330,7 +330,7 @@ void InProcessBrowserTest::QuitBrowsers() {
 
 void InProcessBrowserTest::TimedOut() {
   std::string error_message = "Test timed out. Each test runs for a max of ";
-  error_message += IntToString(kInitialTimeoutInMS);
+  error_message += IntToString(initial_timeout_);
   error_message += " ms (kInitialTimeoutInMS).";
 
   GTEST_NONFATAL_FAILURE_(error_message.c_str());

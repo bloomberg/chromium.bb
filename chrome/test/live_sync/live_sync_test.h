@@ -26,8 +26,8 @@ namespace net {
 class ScopedDefaultHostResolverProc;
 }
 
-// Live sync tests are allowed to run for up to 45 seconds.
-const int kTestTimeoutInMS = 45000;
+// Live sync tests are allowed to run for up to 5 minutes.
+const int kTestTimeoutInMS = 300000;
 
 // This is the base class for integration tests for all sync data types. Derived
 // classes must be defined for each sync data type. Individual tests are defined
