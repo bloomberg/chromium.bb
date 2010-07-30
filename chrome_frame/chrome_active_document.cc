@@ -972,6 +972,13 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
   if (cf_url.attach_to_external_tab()) {
     dimensions_ = cf_url.dimensions();
     automation_client_->AttachExternalTab(cf_url.cookie());
+  } else if (!automation_client_->InitiateNavigation(utf8_url,
+                                                     referrer,
+                                                     is_privileged_)) {
+    DLOG(ERROR) << "Invalid URL: " << url_;
+    Error(L"Invalid URL");
+    url_.Reset();
+    return false;
   }
 
   if (is_automation_client_reused_)
