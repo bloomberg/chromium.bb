@@ -600,8 +600,24 @@ def TryChange(argv,
   parser.add_option_group(group)
 
   options, args = parser.parse_args(argv)
-  if len(args) == 1 and args[0] == 'help':
+
+  # Note that the args array includes the script name, so
+  # a single argument results in len(args) == 2.
+
+  # If they've asked for help, give it to them
+  if len(args) == 2 and args[1] == 'help':
     parser.print_help()
+    return 0
+
+  # If they've said something confusing, don't spawn a try job until you
+  # understand what they want.
+  if len(args) > 1:
+    plural = ""
+    if len(args) > 2:
+      plural = "s"
+    print "Argument%s \"%s\" not understood" % (plural, " ".join(args[1:]))
+    parser.print_help()
+    return 1
 
   LOG_FORMAT = '%(levelname)s %(filename)s(%(lineno)d): %(message)s'
   if not swallow_exception:
