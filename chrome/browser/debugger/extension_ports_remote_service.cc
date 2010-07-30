@@ -12,7 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -280,7 +280,7 @@ void ExtensionPortsRemoteService::OnExtensionMessage(
     return;
   }
   content.Set(kDataWide, data);
-  SendResponse(content, kToolName, IntToString(port_id));
+  SendResponse(content, kToolName, base::IntToString(port_id));
 }
 
 void ExtensionPortsRemoteService::OnExtensionPortDisconnected(int port_id) {
@@ -289,7 +289,7 @@ void ExtensionPortsRemoteService::OnExtensionPortDisconnected(int port_id) {
   DictionaryValue content;
   content.SetString(kCommandWide, kOnDisconnect);
   content.SetInteger(kResultWide, RESULT_OK);
-  SendResponse(content, kToolName, IntToString(port_id));
+  SendResponse(content, kToolName, base::IntToString(port_id));
 }
 
 void ExtensionPortsRemoteService::ConnectCommand(

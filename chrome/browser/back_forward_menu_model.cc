@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -368,7 +369,7 @@ std::string BackForwardMenuModel::BuildActionName(
   metric_string += action;
   if (index != -1) {
     // +1 is for historical reasons (indices used to start at 1).
-    metric_string += IntToString(index + 1);
+    metric_string += base::IntToString(index + 1);
   }
   return metric_string;
 }

@@ -31,7 +31,7 @@
 #include "base/logging.h"
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/stl_util-inl.h"
 #include "base/time.h"
 #include "chrome/browser/sync/engine/syncer.h"
@@ -1441,7 +1441,7 @@ Id Directory::NextId() {
     kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
   }
   DCHECK_LT(result, 0);
-  return Id::CreateFromClientString(Int64ToString(result));
+  return Id::CreateFromClientString(base::Int64ToString(result));
 }
 
 Id Directory::GetChildWithNullIdField(IdField field,

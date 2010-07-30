@@ -16,6 +16,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stats_table.h"
+#include "base/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
@@ -261,8 +262,8 @@ int main(int argc, char* argv[]) {
 
   // truncate the random # to 32 bits for the benefit of Mac OS X, to
   // avoid tripping over its maximum shared memory segment name length
-  std::string stats_filename =
-      kStatsFilePrefix + Uint64ToString(base::RandUint64() & 0xFFFFFFFFL);
+  std::string stats_filename = kStatsFilePrefix +
+      base::Uint64ToString(base::RandUint64() & 0xFFFFFFFFL);
   RemoveSharedMemoryFile(stats_filename);
   StatsTable *table = new StatsTable(stats_filename,
       kStatsFileThreads,

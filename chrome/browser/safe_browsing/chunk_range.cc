@@ -7,6 +7,7 @@
 #include "chrome/browser/safe_browsing/chunk_range.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 
 ChunkRange::ChunkRange(int start) : start_(start), stop_(start) {
@@ -61,7 +62,7 @@ void RangesToString(const std::vector<ChunkRange>& ranges,
     if (!result->empty())
       result->append(",");
     if (it->start() == it->stop()) {
-      std::string num_buf = IntToString(it->start());
+      std::string num_buf = base::IntToString(it->start());
       result->append(num_buf);
     } else {
       result->append(StringPrintf("%d-%d", it->start(), it->stop()));

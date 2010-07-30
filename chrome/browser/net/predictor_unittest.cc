@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/timer.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -235,7 +235,7 @@ TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
 
   UrlList names;
   for (int i = 0; i < 100; i++)
-    names.push_back(GURL("http://host" + IntToString(i) + ".notfound:80"));
+    names.push_back(GURL("http://host" + base::IntToString(i) + ".notfound:80"));
 
   // Try to flood the predictor with many concurrent requests.
   for (int i = 0; i < 10; i++)

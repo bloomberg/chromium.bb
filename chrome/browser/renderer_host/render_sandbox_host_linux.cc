@@ -23,6 +23,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/unix_domain_socket_posix.h"
 #include "chrome/common/sandbox_methods_linux.h"
@@ -336,7 +337,7 @@ class SandboxIPCProcess  {
     std::string inode_output;
 
     std::vector<std::string> sandbox_cmd = sandbox_cmd_;
-    sandbox_cmd.push_back(Int64ToString(inode));
+    sandbox_cmd.push_back(base::Int64ToString(inode));
     CommandLine get_inode_cmd(sandbox_cmd);
     if (base::GetAppOutput(get_inode_cmd, &inode_output))
       StringToInt(inode_output, &pid);

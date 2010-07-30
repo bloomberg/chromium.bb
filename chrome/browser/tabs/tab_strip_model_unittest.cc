@@ -148,7 +148,7 @@ class TabStripModelTest : public RenderViewHostTestHarness {
       if (i > 0)
         actual += " ";
 
-      actual += IntToString(GetID(model.GetTabContentsAt(i)));
+      actual += base::IntToString(GetID(model.GetTabContentsAt(i)));
 
       if (model.IsAppTab(i))
         actual += "a";
@@ -171,7 +171,7 @@ class TabStripModelTest : public RenderViewHostTestHarness {
     for (size_t i = 0; i < indices.size(); ++i) {
       if (i != 0)
         result += " ";
-      result += IntToString(indices[i]);
+      result += base::IntToString(indices[i]);
     }
     return result;
   }

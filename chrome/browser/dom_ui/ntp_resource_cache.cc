@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -104,10 +105,10 @@ std::string GetNewTabBackgroundCSS(const ThemeProvider* theme_provider,
 
   if (alignment & BrowserThemeProvider::ALIGN_TOP) {
     if (alignment & BrowserThemeProvider::ALIGN_LEFT)
-      return "0% " + IntToString(-offset) + "px";
+      return "0% " + base::IntToString(-offset) + "px";
     else if (alignment & BrowserThemeProvider::ALIGN_RIGHT)
-      return "100% " + IntToString(-offset) + "px";
-    return "center " + IntToString(-offset) + "px";
+      return "100% " + base::IntToString(-offset) + "px";
+    return "center " + base::IntToString(-offset) + "px";
   }
   return BrowserThemeProvider::AlignmentToString(alignment);
 }

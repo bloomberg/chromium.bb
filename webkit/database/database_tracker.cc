@@ -13,7 +13,7 @@
 #include "app/sql/transaction.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "webkit/database/databases_table.h"
@@ -196,7 +196,7 @@ string16 DatabaseTracker::GetOriginDirectory(
     return it->second;
 
   string16 origin_directory =
-      IntToString16(incognito_origin_directories_generator_++);
+      base::IntToString16(incognito_origin_directories_generator_++);
   incognito_origin_directories_[origin_identifier] = origin_directory;
   return origin_directory;
 }

@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/unix_domain_socket_posix.h"
 
@@ -156,7 +157,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
       std::vector<std::string> get_inode_cmdline;
       get_inode_cmdline.push_back(sandbox_binary_);
       get_inode_cmdline.push_back(base::kFindInodeSwitch);
-      get_inode_cmdline.push_back(Int64ToString(inode));
+      get_inode_cmdline.push_back(base::Int64ToString(inode));
       CommandLine get_inode_cmd(get_inode_cmdline);
       if (base::GetAppOutput(get_inode_cmd, &inode_output)) {
         StringToInt(inode_output, &pid_);
@@ -272,8 +273,8 @@ pid_t ZygoteHost::ForkRenderer(
 
     adj_oom_score_cmdline.push_back(sandbox_binary_);
     adj_oom_score_cmdline.push_back(base::kAdjustOOMScoreSwitch);
-    adj_oom_score_cmdline.push_back(Int64ToString(pid));
-    adj_oom_score_cmdline.push_back(IntToString(kRendererScore));
+    adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
+    adj_oom_score_cmdline.push_back(base::IntToString(kRendererScore));
     CommandLine adj_oom_score_cmd(adj_oom_score_cmdline);
     if (base::LaunchApp(adj_oom_score_cmdline, dummy_map, false,
                         &sandbox_helper_process)) {

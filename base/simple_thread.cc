@@ -7,7 +7,7 @@
 #include "base/waitable_event.h"
 #include "base/logging.h"
 #include "base/platform_thread.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 
 namespace base {
 

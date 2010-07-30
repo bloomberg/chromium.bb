@@ -22,7 +22,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -738,7 +738,7 @@ DictionaryValue* UITestBase::GetLocalState() {
 DictionaryValue* UITestBase::GetDefaultProfilePreferences() {
   FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
-  path = path.AppendASCII(WideToASCII(chrome::kNotSignedInProfile));
+  path = path.AppendASCII(WideToUTF8(chrome::kNotSignedInProfile));
   return LoadDictionaryValueFromPath(path.Append(chrome::kPreferencesFilename));
 }
 
@@ -1228,7 +1228,7 @@ void UITestBase::UpdateHistoryDates() {
 
   ASSERT_TRUE(db.Open(history));
   Time yesterday = Time::Now() - TimeDelta::FromDays(1);
-  std::string yesterday_str = Int64ToString(yesterday.ToInternalValue());
+  std::string yesterday_str = base::Int64ToString(yesterday.ToInternalValue());
   std::string query = StringPrintf(
       "UPDATE segment_usage "
       "SET time_slot = %s "

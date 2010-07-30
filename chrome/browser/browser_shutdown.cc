@@ -13,6 +13,7 @@
 #include "base/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -208,7 +209,8 @@ void Shutdown() {
     // and then write it to a file to be read at startup.
     // We can't use prefs since all services are shutdown at this point.
     TimeDelta shutdown_delta = Time::Now() - shutdown_started_;
-    std::string shutdown_ms = Int64ToString(shutdown_delta.InMilliseconds());
+    std::string shutdown_ms =
+        base::Int64ToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;
     FilePath shutdown_ms_file = GetShutdownMsPath();
     file_util::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);

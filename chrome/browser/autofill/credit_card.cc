@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_type.h"
@@ -62,7 +63,7 @@ std::string GetCreditCardType(string16 number) {
     return kGenericCard;
 
   int first_four_digits = 0;
-  if (!StringToInt(number.substr(0, 4), &first_four_digits))
+  if (!base::StringToInt(number.substr(0, 4), &first_four_digits))
     return kGenericCard;
 
   int first_three_digits = first_four_digits / 10;
@@ -438,7 +439,7 @@ string16 CreditCard::ExpirationMonthAsString() const {
   if (expiration_month_ == 0)
     return string16();
 
-  string16 month = IntToString16(expiration_month_);
+  string16 month = base::IntToString16(expiration_month_);
   if (expiration_month_ >= 10)
     return month;
 
@@ -451,14 +452,14 @@ string16 CreditCard::Expiration4DigitYearAsString() const {
   if (expiration_year_ == 0)
     return string16();
 
-  return IntToString16(Expiration4DigitYear());
+  return base::IntToString16(Expiration4DigitYear());
 }
 
 string16 CreditCard::Expiration2DigitYearAsString() const {
   if (expiration_year_ == 0)
     return string16();
 
-  return IntToString16(Expiration2DigitYear());
+  return base::IntToString16(Expiration2DigitYear());
 }
 
 void CreditCard::SetExpirationMonthFromString(const string16& text) {
@@ -563,7 +564,7 @@ bool CreditCard::IsNameOnCard(const string16& text) const {
 
 bool CreditCard::IsExpirationMonth(const string16& text) const {
   int month;
-  if (!StringToInt(text, &month))
+  if (!base::StringToInt(text, &month))
     return false;
 
   return expiration_month_ == month;
@@ -571,7 +572,7 @@ bool CreditCard::IsExpirationMonth(const string16& text) const {
 
 bool CreditCard::Is2DigitExpirationYear(const string16& text) const {
   int year;
-  if (!StringToInt(text, &year))
+  if (!base::StringToInt(text, &year))
     return false;
 
   return year < 100 && (expiration_year_ % 100) == year;
@@ -579,7 +580,7 @@ bool CreditCard::Is2DigitExpirationYear(const string16& text) const {
 
 bool CreditCard::Is4DigitExpirationYear(const string16& text) const {
   int year;
-  if (!StringToInt(text, &year))
+  if (!base::StringToInt(text, &year))
     return false;
 
   return expiration_year_ == year;
@@ -587,7 +588,7 @@ bool CreditCard::Is4DigitExpirationYear(const string16& text) const {
 
 bool CreditCard::ConvertDate(const string16& date, int* num) const {
   if (!date.empty()) {
-    bool converted = StringToInt(date, num);
+    bool converted = base::StringToInt(date, num);
     DCHECK(converted);
     if (!converted)
       return false;

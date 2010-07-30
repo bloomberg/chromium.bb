@@ -46,6 +46,7 @@
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/stats_counters.h"
 #include "base/stats_table.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
@@ -583,8 +584,9 @@ int ChromeMain(int argc, char** argv) {
     std::wstring channel_name =
       parsed_command_line.GetSwitchValue(switches::kProcessChannelID);
 
-    browser_pid =
-        static_cast<base::ProcessId>(StringToInt(WideToASCII(channel_name)));
+    int browser_pid_int;
+    base::StringToInt(WideToUTF8(channel_name), &browser_pid_int);
+    browser_pid = static_cast<base::ProcessId>(browser_pid_int);
     DCHECK_NE(browser_pid, 0u);
 #elif defined(OS_MACOSX)
     browser_pid = base::GetCurrentProcId();

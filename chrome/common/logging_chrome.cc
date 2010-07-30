@@ -38,6 +38,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -210,7 +211,7 @@ void InitChromeLogging(const CommandLine& command_line,
   std::string log_level = command_line.GetSwitchValueASCII(
       switches::kLoggingLevel);
   int level = 0;
-  if (StringToInt(log_level, &level)) {
+  if (base::StringToInt(log_level, &level)) {
     if ((level >= 0) && (level < LOG_NUM_SEVERITIES))
       logging::SetMinLogLevel(level);
   } else {

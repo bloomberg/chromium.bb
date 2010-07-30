@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
 #include "base/base64.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -223,7 +224,7 @@ bool GetWindowFunction::RunImpl() {
                                                include_incognito(), &error_);
   if (!browser || !browser->window()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, IntToString(window_id));
+        keys::kWindowNotFoundError, base::IntToString(window_id));
     return false;
   }
 
@@ -396,7 +397,7 @@ bool UpdateWindowFunction::RunImpl() {
                                                include_incognito(), &error_);
   if (!browser || !browser->window()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, IntToString(window_id));
+        keys::kWindowNotFoundError, base::IntToString(window_id));
     return false;
   }
 
@@ -746,7 +747,7 @@ bool MoveTabFunction::RunImpl() {
       contents = source_tab_strip->DetachTabContentsAt(tab_index);
       if (!contents) {
         error_ = ExtensionErrorUtils::FormatErrorMessage(
-            keys::kTabNotFoundError, IntToString(tab_id));
+            keys::kTabNotFoundError, base::IntToString(tab_id));
         return false;
       }
 
@@ -1060,7 +1061,7 @@ static Browser* GetBrowserInProfileWithId(Profile* profile,
 
   if (error_message)
     *error_message = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, IntToString(window_id));
+        keys::kWindowNotFoundError, base::IntToString(window_id));
 
   return NULL;
 }
@@ -1078,7 +1079,7 @@ static bool GetTabById(int tab_id, Profile* profile,
 
   if (error_message)
     *error_message = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kTabNotFoundError, IntToString(tab_id));
+        keys::kTabNotFoundError, base::IntToString(tab_id));
 
   return false;
 }

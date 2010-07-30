@@ -21,7 +21,7 @@
 #include "base/leak_annotations.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/host_resolver.h"
@@ -134,7 +134,7 @@ bool TestServerLauncher::Start(Protocol protocol,
       return false;
   }
 
-  std::string port_str = IntToString(port);
+  std::string port_str = base::IntToString(port);
 
   // Get path to python server script
   FilePath testserver_path;

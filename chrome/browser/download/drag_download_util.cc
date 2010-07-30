@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "googleurl/src/gurl.h"
@@ -65,9 +66,9 @@ FileStream* CreateFileStreamForDrop(FilePath* file_path) {
       new_file_path = *file_path;
     } else {
  #if defined(OS_WIN)
-      std::wstring suffix = std::wstring(L"-") + IntToWString(seq);
+      string16 suffix = ASCIIToUTF16("-") + base::IntToString16(seq);
  #else
-      std::string suffix = std::string("-") + IntToString(seq);
+      std::string suffix = std::string("-") + base::IntToString(seq);
  #endif
       new_file_path = file_path->InsertBeforeExtension(suffix);
     }

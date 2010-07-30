@@ -91,13 +91,13 @@ struct ParamTraits<AutocompleteMatchData> {
     l->append(L"[");
     l->append(UTF8ToWide(p.provider_name));
     l->append(L" ");
-    l->append(IntToWString(p.relevance));
+    l->append(UTF8ToWide(base::IntToString(p.relevance)));
     l->append(L" ");
     l->append(p.deletable ? L"true" : L"false");
     l->append(L" ");
     l->append(p.fill_into_edit);
     l->append(L" ");
-    l->append(IntToWString(p.inline_autocomplete_offset));
+    l->append(UTF8ToWide(base::IntToString(p.inline_autocomplete_offset)));
     l->append(L" ");
     l->append(UTF8ToWide(p.destination_url.spec()));
     l->append(L" ");

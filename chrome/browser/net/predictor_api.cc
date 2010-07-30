@@ -10,7 +10,7 @@
 #include "base/singleton.h"
 #include "base/stats_counters.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "base/values.h"
@@ -310,7 +310,7 @@ void PrefetchObserver::StartupListAppend(const std::string& host, int port) {
   std::string url_spec = is_ssl ? "https://" : "http://";
   url_spec += host;
   url_spec += ":";
-  url_spec += IntToString(port);
+  url_spec += base::IntToString(port);
 
   GURL url(url_spec);
   first_resolutions_.insert(url);

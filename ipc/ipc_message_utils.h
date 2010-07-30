@@ -16,6 +16,7 @@
 #include "base/format_macros.h"
 #include "base/nullable_string16.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/time.h"
@@ -209,7 +210,7 @@ struct ParamTraits<long long> {
     return m->ReadInt64(iter, reinterpret_cast<int64*>(r));
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(Int64ToWString(static_cast<int64>(p)));
+    l->append(UTF8ToWide(base::Int64ToString(static_cast<int64>(p))));
   }
 };
 
@@ -223,7 +224,7 @@ struct ParamTraits<unsigned long long> {
     return m->ReadInt64(iter, reinterpret_cast<int64*>(r));
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(Uint64ToWString(p));
+    l->append(UTF8ToWide(base::Uint64ToString(p)));
   }
 };
 

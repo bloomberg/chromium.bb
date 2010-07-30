@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
@@ -166,12 +166,12 @@ void DebuggerRemoteService::DebuggerOutput(int32 tab_uid,
   std::string content = StringPrintf(
       "{\"command\":\"%s\",\"result\":%s,\"data\":%s}",
       DebuggerRemoteServiceCommand::kDebuggerCommand.c_str(),
-      IntToString(RESULT_OK).c_str(),
+      base::IntToString(RESULT_OK).c_str(),
       message.c_str());
   scoped_ptr<DevToolsRemoteMessage> response_message(
       DevToolsRemoteMessageBuilder::instance().Create(
           kToolName,
-          IntToString(tab_uid),
+          base::IntToString(tab_uid),
           content));
   delegate_->Send(*(response_message.get()));
 }
@@ -186,7 +186,7 @@ void DebuggerRemoteService::FrameNavigate(int32 tab_uid,
   value.SetString(kCommandWide, DebuggerRemoteServiceCommand::kFrameNavigate);
   value.SetInteger(kResultWide, RESULT_OK);
   value.SetString(kDataWide, url);
-  SendResponse(value, kToolName, IntToString(tab_uid));
+  SendResponse(value, kToolName, base::IntToString(tab_uid));
 }
 
 // Gets invoked from a DevToolsClientHost callback whenever
@@ -196,7 +196,7 @@ void DebuggerRemoteService::TabClosed(int32 tab_id) {
   DictionaryValue value;
   value.SetString(kCommandWide, DebuggerRemoteServiceCommand::kTabClosed);
   value.SetInteger(kResultWide, RESULT_OK);
-  SendResponse(value, kToolName, IntToString(tab_id));
+  SendResponse(value, kToolName, base::IntToString(tab_id));
 }
 
 // Attaches a remote debugger to the target tab specified by |destination|

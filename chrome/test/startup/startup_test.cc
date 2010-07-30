@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/test/test_file_util.h"
@@ -226,7 +227,7 @@ class StartupTest : public UITest {
       if (nth_timed_tab > 0) {
         // Display only the time necessary to load the first n tabs.
         times.clear();
-        name = name_base + "-" + IntToString(nth_timed_tab);
+        name = name_base + "-" + base::IntToString(nth_timed_tab);
         for (int i = 0; i < numCycles; ++i)
           StringAppendF(&times, "%.2f,", timings[i].nth_tab_stop_ms);
         PrintResultList(graph, "", name.c_str(), times, "ms", important);

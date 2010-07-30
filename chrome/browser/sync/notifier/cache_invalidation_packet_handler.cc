@@ -10,7 +10,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
+//#include "base/string_util.h"
 #include "chrome/browser/sync/sync_constants.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 #include "jingle/notifier/listener/xml_element_util.h"
@@ -170,7 +171,7 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
     buzz::XmlElement* cache_invalidation_iq_packet =
         new buzz::XmlElement(kQnData, true);
     iq->AddElement(cache_invalidation_iq_packet);
-    cache_invalidation_iq_packet->SetAttr(kQnSeq, IntToString(seq));
+    cache_invalidation_iq_packet->SetAttr(kQnSeq, base::IntToString(seq));
     cache_invalidation_iq_packet->SetAttr(kQnSid, sid);
     cache_invalidation_iq_packet->SetAttr(kQnServiceUrl,
                                           browser_sync::kSyncServiceUrl);
@@ -188,7 +189,7 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
 
 std::string MakeSid() {
   uint64 sid = base::RandUint64();
-  return std::string("chrome-sync-") + Uint64ToString(sid);
+  return std::string("chrome-sync-") + base::Uint64ToString(sid);
 }
 
 }  // namespace

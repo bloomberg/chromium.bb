@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -105,11 +106,12 @@ void SetGpuInfo(const GPUInfo& gpu_info) {
     if (!set_gpu_info)
       return;
   }
-  (set_gpu_info)(UintToWString(gpu_info.vendor_id()).c_str(),
-                 UintToWString(gpu_info.device_id()).c_str(),
-                 gpu_info.driver_version().c_str(),
-                 UintToWString(gpu_info.pixel_shader_version()).c_str(),
-                 UintToWString(gpu_info.vertex_shader_version()).c_str());
+  (set_gpu_info)(
+      base::UintToString16(gpu_info.vendor_id()).c_str(),
+      base::UintToString16(gpu_info.device_id()).c_str(),
+      gpu_info.driver_version().c_str(),
+      base::UintToString16(gpu_info.pixel_shader_version()).c_str(),
+      base::UintToString16(gpu_info.vertex_shader_version()).c_str());
 }
 
 }  // namespace child_process_logging

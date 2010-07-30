@@ -27,6 +27,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
@@ -303,8 +304,8 @@ FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
   FilePath alternative_filepath(filepath.value() + ".desktop");
   for (size_t i = 1; i < 100; ++i) {
     if (file_util::PathExists(FilePath(alternative_filepath))) {
-      alternative_filepath = FilePath(filepath.value() + "_" + IntToString(i) +
-                                      ".desktop");
+      alternative_filepath = FilePath(
+          filepath.value() + "_" + base::IntToString(i) + ".desktop");
     } else {
       return FilePath(alternative_filepath).BaseName();
     }

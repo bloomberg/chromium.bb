@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -41,7 +42,8 @@ DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
   } else {
     warning_text =
         l10n_util::GetStringFUTF8(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
-                                  product_name, IntToString16(download_count));
+                                  product_name,
+                                  base::IntToString16(download_count));
     explanation_text =
         l10n_util::GetStringFUTF8(
             IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name);

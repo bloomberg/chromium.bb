@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 
 namespace browser_sync {
@@ -33,9 +33,9 @@ class TestIdFactory {
     if (value == 0)
       return root();
     else if (value < 0)
-      return syncable::Id::CreateFromClientString(Int64ToString(value));
+      return syncable::Id::CreateFromClientString(base::Int64ToString(value));
     else
-      return syncable::Id::CreateFromServerId(Int64ToString(value));
+      return syncable::Id::CreateFromServerId(base::Int64ToString(value));
   }
 
   // Create a local ID from a name.
@@ -51,13 +51,13 @@ class TestIdFactory {
   // Autogenerate a fresh local ID.
   syncable::Id NewLocalId() {
     return syncable::Id::CreateFromClientString(
-        std::string("_auto ") + IntToString(-next_value()));
+        std::string("_auto ") + base::IntToString(-next_value()));
   }
 
   // Autogenerate a fresh server ID.
   syncable::Id NewServerId() {
     return syncable::Id::CreateFromServerId(
-        std::string("_auto ") + IntToString(next_value()));
+        std::string("_auto ") + base::IntToString(next_value()));
   }
 
  private:

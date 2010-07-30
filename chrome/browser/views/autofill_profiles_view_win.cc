@@ -1,6 +1,7 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/views/autofill_profiles_view_win.h"
 
 #include <vsstyle.h>
@@ -9,7 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/phone_number.h"
@@ -877,7 +878,7 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
     } else {
       DCHECK(new_index < static_cast<int>(observer_->profiles_set_.size()));
       temporary_info_.credit_card.set_billing_address(
-          IntToString16(
+          base::IntToString16(
           observer_->profiles_set_[new_index].address.unique_id()));
     }
   } else if (combo_box == combo_box_month_) {

@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/sha1.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/field_types.h"
@@ -82,7 +82,8 @@ FormStructure::FormStructure(const FormData& form)
     }
 
     // Generate a unique name for this field by appending a counter to the name.
-    string16 unique_name = field->name() + IntToString16(fields_.size() + 1);
+    string16 unique_name = field->name() +
+        base::IntToString16(fields_.size() + 1);
     fields_.push_back(new AutoFillField(*field, unique_name));
   }
 

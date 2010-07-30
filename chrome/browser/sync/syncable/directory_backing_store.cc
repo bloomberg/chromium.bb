@@ -16,6 +16,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -286,7 +287,7 @@ bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
        ++it) {
     if (it != handles.begin())
       query.append(",");
-    query.append(Int64ToString(*it));
+    query.append(base::Int64ToString(*it));
   }
   query.append(")");
   SQLStatement statement;

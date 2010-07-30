@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -321,7 +322,7 @@ void GKRMethod::AddLogin(const PasswordForm& form) {
       "signon_realm", form.signon_realm.c_str(),
       "ssl_valid", form.ssl_valid,
       "preferred", form.preferred,
-      "date_created", Int64ToString(form.date_created.ToTimeT()).c_str(),
+      "date_created", base::Int64ToString(form.date_created.ToTimeT()).c_str(),
       "blacklisted_by_user", form.blacklisted_by_user,
       "scheme", form.scheme,
       "application", GNOME_KEYRING_APPLICATION_CHROME,

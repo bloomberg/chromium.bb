@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/menus/button_menu_item_model.h"
 #include "app/resource_bundle.h"
+#include "base/string_number_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
@@ -354,7 +355,7 @@ void WrenchMenuModel::UpdateZoomControls() {
   int zoom_percent =
       static_cast<int>(GetZoom(&enable_increment, &enable_decrement) * 100);
   zoom_label_ = l10n_util::GetStringFUTF16(
-      IDS_ZOOM_PERCENT, IntToString16(zoom_percent));
+      IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));
 }
 
 double WrenchMenuModel::GetZoom(bool* enable_increment,

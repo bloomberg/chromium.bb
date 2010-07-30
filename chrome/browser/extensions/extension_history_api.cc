@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_history_api_constants.h"
@@ -28,7 +28,7 @@ double MilliSecondsFromTime(const base::Time& time) {
 
 void GetHistoryItemDictionary(const history::URLRow& row,
                               DictionaryValue* value) {
-  value->SetString(keys::kIdKey, Int64ToString(row.id()));
+  value->SetString(keys::kIdKey, base::Int64ToString(row.id()));
   value->SetString(keys::kUrlKey, row.url().spec());
   value->SetStringFromUTF16(keys::kTitleKey, row.title());
   value->SetReal(keys::kLastVisitdKey, MilliSecondsFromTime(row.last_visit()));
@@ -44,11 +44,11 @@ void AddHistoryNode(const history::URLRow& row, ListValue* list) {
 
 void GetVisitInfoDictionary(const history::VisitRow& row,
                             DictionaryValue* value) {
-  value->SetString(keys::kIdKey, Int64ToString(row.url_id));
-  value->SetString(keys::kVisitId, Int64ToString(row.visit_id));
+  value->SetString(keys::kIdKey, base::Int64ToString(row.url_id));
+  value->SetString(keys::kVisitId, base::Int64ToString(row.visit_id));
   value->SetReal(keys::kVisitTime, MilliSecondsFromTime(row.visit_time));
   value->SetString(keys::kReferringVisitId,
-                   Int64ToString(row.referring_visit));
+                   base::Int64ToString(row.referring_visit));
 
   const char* trans = PageTransition::CoreTransitionString(row.transition);
   DCHECK(trans) << "Invalid transition.";

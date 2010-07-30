@@ -9,7 +9,7 @@
 #include "app/tree_node_iterator.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
@@ -165,7 +165,7 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
 
   string16 message = l10n_util::GetStringFUTF16(
       IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
-      IntToString16(descendant_count));
+      base::IntToString16(descendant_count));
   string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   return platform_util::SimpleYesNoBox(parent, title, message);
 }

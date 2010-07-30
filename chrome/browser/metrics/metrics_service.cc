@@ -167,6 +167,7 @@
 #include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/md5.h"
+#include "base/string_number_conversions.h"
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -515,7 +516,7 @@ void MetricsService::SetRecording(bool enabled) {
 
         // Might as well make a note of how long this ID has existed
         pref->SetString(prefs::kMetricsClientIDTimestamp,
-                        Int64ToString(Time::Now().ToTimeT()));
+                        base::Int64ToString(Time::Now().ToTimeT()));
       }
     }
     child_process_logging::SetClientId(client_id_);

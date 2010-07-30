@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
@@ -58,7 +58,7 @@ class SqliteIntegrityTest : public DiagnosticTest {
           RecordFailure(ASCIIToUTF16("DB locked by another process"));
         } else {
           string16 str(ASCIIToUTF16("Pragma failed. Error: "));
-          str += IntToString16(error);
+          str += base::IntToString16(error);
           RecordFailure(str);
         }
         return false;
@@ -72,7 +72,7 @@ class SqliteIntegrityTest : public DiagnosticTest {
     // All done. Report to the user.
     if (errors != 0) {
       string16 str(ASCIIToUTF16("Database corruption detected :"));
-      str += IntToString16(errors) + ASCIIToUTF16(" errors");
+      str += base::IntToString16(errors) + ASCIIToUTF16(" errors");
       RecordFailure(str);
       return true;
     }

@@ -20,9 +20,10 @@
 #include "net/base/net_errors.h"
 #endif
 
+#include "base/compiler_specific.h"
 #include "base/eintr_wrapper.h"
 #include "base/platform_thread.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/debugger/devtools_remote.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 
@@ -60,7 +61,7 @@ void DevToolsRemoteListenSocket::StartNextField() {
       if (protocol_field_.size() == 0) {  // empty line - end of headers
         const std::string& payload_length_string = GetHeader(
             DevToolsRemoteMessageHeaders::kContentLength, "0");
-        remaining_payload_length_ = StringToInt(payload_length_string);
+        base::StringToInt(payload_length_string, &remaining_payload_length_);
         state_ = PAYLOAD;
         if (remaining_payload_length_ == 0) {  // no payload
           DispatchField();

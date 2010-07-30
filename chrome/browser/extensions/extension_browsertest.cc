@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/location_bar.h"
@@ -147,8 +147,9 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
 
   size_t num_after = service->extensions()->size();
   if (num_after != (num_before + expected_change)) {
-    std::cout << "Num extensions before: " << IntToString(num_before) << " "
-              << "num after: " << IntToString(num_after) << " "
+    std::cout << "Num extensions before: "
+              << base::IntToString(num_before) << " "
+              << "num after: " << base::IntToString(num_after) << " "
               << "Installed extensions follow:\n";
 
     for (size_t i = 0; i < service->extensions()->size(); ++i)

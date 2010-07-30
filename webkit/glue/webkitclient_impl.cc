@@ -18,6 +18,7 @@
 #include "base/platform_file.h"
 #include "base/singleton.h"
 #include "base/stats_counters.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -307,7 +308,7 @@ WebString WebKitClientImpl::queryLocalizedString(
   if (message_id < 0)
     return WebString();
   return ReplaceStringPlaceholders(GetLocalizedString(message_id),
-                                   IntToString16(numeric_value),
+                                   base::IntToString16(numeric_value),
                                    NULL);
 }
 

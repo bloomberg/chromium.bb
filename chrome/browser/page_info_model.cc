@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/pref_service.h"
@@ -136,7 +137,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
         subject_name,
-        IntToString16(ssl.security_bits())));
+        base::IntToString16(ssl.security_bits())));
     if (ssl.displayed_insecure_content() || ssl.ran_insecure_content()) {
       state = false;
       description.assign(l10n_util::GetStringFUTF16(

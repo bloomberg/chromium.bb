@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/program_manager.h"
+
 #include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 namespace gpu {
@@ -227,7 +229,7 @@ const ProgramManager::ProgramInfo::UniformInfo*
       }
     }
     for (GLsizei ii = 1; ii < info.size; ++ii) {
-      std::string element_name(base_name + "[" + IntToString(ii) + "]");
+      std::string element_name(base_name + "[" + base::IntToString(ii) + "]");
       info.element_locations[ii] =
           glGetUniformLocation(service_id_, element_name.c_str());
     }

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "gfx/canvas.h"
@@ -51,7 +52,7 @@ string16 PowerMenuButton::GetLabelAt(int index) const {
     double percent = cros->battery_fully_charged() ? 100 :
                                                      cros->battery_percentage();
     return l10n_util::GetStringFUTF16(IDS_STATUSBAR_BATTERY_PERCENTAGE,
-        IntToString16(static_cast<int>(percent)));
+        base::IntToString16(static_cast<int>(percent)));
   }
 
   // The second item shows the battery is charged if it is.
@@ -77,8 +78,8 @@ string16 PowerMenuButton::GetLabelAt(int index) const {
                                       IDS_STATUSBAR_BATTERY_TIME_UNTIL_EMPTY;
     int hour = time.InHours();
     int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-    string16 hour_str = IntToString16(hour);
-    string16 min_str = IntToString16(min);
+    string16 hour_str = base::IntToString16(hour);
+    string16 min_str = base::IntToString16(min);
     // Append a "0" before the minute if it's only a single digit.
     if (min < 10)
       min_str = ASCIIToUTF16("0") + min_str;

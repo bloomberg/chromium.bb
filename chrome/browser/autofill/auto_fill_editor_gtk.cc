@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/phone_number.h"
@@ -887,14 +888,14 @@ void AutoFillCreditCardEditor::SetCreditCardValuesFromWidgets(
   if (selected_month_index == -1)
     selected_month_index = 0;
   card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
-                IntToString16(selected_month_index + 1));
+                base::IntToString16(selected_month_index + 1));
 
   int selected_year_index =
       gtk_combo_box_get_active(GTK_COMBO_BOX(year_));
   if (selected_year_index == -1)
     selected_year_index = 0;
   card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-                IntToString16(selected_year_index + base_year_));
+                base::IntToString16(selected_year_index + base_year_));
 }
 
 void AutoFillCreditCardEditor::UpdateOkButton() {

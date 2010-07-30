@@ -10,7 +10,7 @@
 #include <streambuf>
 #include <string>
 
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 
 using std::ostream;
 using std::streambuf;
@@ -32,7 +32,7 @@ class FastDump {
 
 inline browser_sync::FastDump& operator <<
   (browser_sync::FastDump& dump, int64 n) {
-  string numbuf(Int64ToString(n));
+  string numbuf(base::Int64ToString(n));
   const char* number = numbuf.c_str();
   dump.out_->sputn(number, numbuf.length());
   return dump;
@@ -40,7 +40,7 @@ inline browser_sync::FastDump& operator <<
 
 inline browser_sync::FastDump& operator <<
   (browser_sync::FastDump& dump, int32 n) {
-  string numbuf(IntToString(n));
+  string numbuf(base::IntToString(n));
   const char* number = numbuf.c_str();
   dump.out_->sputn(number, numbuf.length());
   return dump;

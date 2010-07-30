@@ -4,7 +4,7 @@
 
 #include "chrome_frame/npapi_url_request.h"
 
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome_frame/np_browser_functions.h"
 #include "chrome_frame/np_utils.h"
 #include "net/base/net_errors.h"
@@ -74,7 +74,7 @@ bool NPAPIUrlRequest::Start() {
       // Firefox looks specifically for "Content-length: \d+\r\n\r\n"
       // to detect if extra headers are added to the message buffer.
       buffer += "\r\nContent-length: ";
-      buffer += IntToString(data_len);
+      buffer += base::IntToString(data_len);
       buffer += "\r\n\r\n";
     }
 

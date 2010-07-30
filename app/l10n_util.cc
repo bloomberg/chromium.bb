@@ -16,8 +16,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "base/string_piece.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #include "build/build_config.h"
 #include "gfx/canvas.h"
@@ -648,11 +647,11 @@ string16 GetStringFUTF16(int message_id,
 }
 
 std::wstring GetStringF(int message_id, int a) {
-  return GetStringF(message_id, IntToWString(a));
+  return GetStringF(message_id, UTF8ToWide(base::IntToString(a)));
 }
 
 std::wstring GetStringF(int message_id, int64 a) {
-  return GetStringF(message_id, Int64ToWString(a));
+  return GetStringF(message_id, UTF8ToWide(base::Int64ToString(a)));
 }
 
 std::wstring TruncateString(const std::wstring& string, size_t length) {

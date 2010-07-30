@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/mac_util.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
@@ -532,7 +533,7 @@ void RecordLastRunAppBundlePath() {
     // Dialog text: warning and explanation.
     warningText = l10n_util::GetNSStringF(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING, product_name,
-        IntToString16(downloadCount));
+        base::IntToString16(downloadCount));
     explanationText = l10n_util::GetNSStringF(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name);
 

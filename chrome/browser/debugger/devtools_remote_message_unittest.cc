@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/debugger/devtools_remote.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,7 @@ TEST_F(DevToolsRemoteMessageTest, ConstructInstanceManually) {
   std::string content = "{\"command\":\"ping\"}";
   headers[DevToolsRemoteMessageHeaders::kTool] = "DevToolsService";
   headers[DevToolsRemoteMessageHeaders::kContentLength] =
-      IntToString(content.size());
+      base::IntToString(content.size());
 
   DevToolsRemoteMessage message(headers, content);
   ASSERT_STREQ("DevToolsService",

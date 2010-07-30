@@ -8,11 +8,12 @@
 // and track call stacks for any allocations that are made.  It can
 // then be used to see what memory is in use.
 
-#ifndef MEMORY_WATCHER_MEMORY_WATCHER_
-#define MEMORY_WATCHER_MEMORY_WATCHER_
+#ifndef TOOLS_MEMORY_WATCHER_MEMORY_WATCHER_
+#define TOOLS_MEMORY_WATCHER_MEMORY_WATCHER_
 
 #include <map>
 #include <functional>
+
 #include "base/lock.h"
 #include "tools/memory_watcher/memory_hook.h"
 
@@ -91,4 +92,4 @@ class MemoryWatcher : MemoryObserver {
 
 
 
-#endif  // MEMORY_WATCHER_
+#endif  // TOOLS_MEMORY_WATCHER_MEMORY_WATCHER_

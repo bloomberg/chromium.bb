@@ -10,6 +10,7 @@
 #include "base/file_version_info.h"
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/path_service.h"
@@ -295,7 +296,7 @@ class JSONTest : public DiagnosticTest {
     scoped_ptr<Value> json_root(json.Deserialize(&error_code, &error_message));
     if (base::JSONReader::JSON_NO_ERROR != error_code) {
       if (error_message.empty()) {
-        error_message = "Parse error " + IntToString(error_code);
+        error_message = "Parse error " + base::IntToString(error_code);
       }
       RecordFailure(UTF8ToUTF16(error_message));
       return true;

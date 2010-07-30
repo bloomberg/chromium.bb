@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "third_party/ppapi/c/pp_var.h"
 #include "third_party/ppapi/c/ppb_var.h"
@@ -200,7 +201,7 @@ PP_Var NPIdentifierToPPVarString(NPIdentifier id) {
   if (var.type == PP_VARTYPE_STRING)
     return var;
   DCHECK(var.type == PP_VARTYPE_INT32);
-  const std::string& str = IntToString(var.value.as_int);
+  const std::string& str = base::IntToString(var.value.as_int);
   return VarFromUtf8(str.data(), str.size());
 }
 

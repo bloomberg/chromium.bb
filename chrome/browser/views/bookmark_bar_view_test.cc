@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/keyboard_codes.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -221,8 +221,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_->AddURL(f11, 0, L"f11a", GURL(test_base + "f11a"));
     if (big_menu) {
       for (int i = 1; i <= 100; ++i) {
-        model_->AddURL(f1, i + 1, L"f" + IntToWString(i),
-                       GURL(test_base + "f" + IntToString(i)));
+        model_->AddURL(f1, i + 1, L"f" + UTF8ToWide(base::IntToString(i)),
+                       GURL(test_base + "f" + base::IntToString(i)));
       }
     }
     model_->AddURL(model_->GetBookmarkBarNode(), 1, L"a",

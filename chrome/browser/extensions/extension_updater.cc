@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/sha2.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/thread.h"
@@ -105,8 +106,8 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
   parts.push_back("uc");
 
   if (ShouldPing(days)) {
-    parts.push_back("ping=" + EscapeQueryParamValue("r=" + IntToString(days),
-                                                    true));
+    parts.push_back("ping=" +
+        EscapeQueryParamValue("r=" + base::IntToString(days), true));
   }
 
   std::string extra = full_url_.has_query() ? "&" : "?";
@@ -556,7 +557,8 @@ void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
   // Verify sha256 hash value.
   char sha256_hash_value[base::SHA256_LENGTH];
   base::SHA256HashString(data, sha256_hash_value, base::SHA256_LENGTH);
-  std::string hash_in_hex = HexEncode(sha256_hash_value, base::SHA256_LENGTH);
+  std::string hash_in_hex = base::HexEncode(sha256_hash_value,
+                                            base::SHA256_LENGTH);
 
   if (current_extension_fetch_.package_hash != hash_in_hex) {
     NOTREACHED() << "Fetched blacklist checksum is not as expected. "

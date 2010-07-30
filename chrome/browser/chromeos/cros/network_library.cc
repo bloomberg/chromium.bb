@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
@@ -530,12 +531,14 @@ std::string NetworkLibraryImpl::GetHtmlInfo(int refresh) {
   output.append("<html><head><title>About Network</title>");
   if (refresh > 0)
     output.append("<meta http-equiv=\"refresh\" content=\"" +
-        IntToString(refresh) + "\"/>");
+        base::IntToString(refresh) + "\"/>");
   output.append("</head><body>");
-  if (refresh > 0)
-    output.append("(Auto-refreshing page every " + IntToString(refresh) + "s)");
-  else
+  if (refresh > 0) {
+    output.append("(Auto-refreshing page every " +
+                  base::IntToString(refresh) + "s)");
+  } else {
     output.append("(To auto-refresh this page: about:network/&lt;secs&gt;)");
+  }
 
   output.append("<h3>Ethernet:</h3><table border=1>");
   output.append("<tr>" + ToHtmlTableHeader(&ethernet_) + "</tr>");

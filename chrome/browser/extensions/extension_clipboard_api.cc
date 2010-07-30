@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_clipboard_api.h"
 
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -23,8 +23,8 @@ bool ClipboardFunction::RunImpl() {
   TabContents* contents = NULL;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
                                     NULL, NULL, &contents, NULL)) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(kNoTabError,
-                                                     IntToString(tab_id));
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        kNoTabError, base::IntToString(tab_id));
     return false;
   }
 

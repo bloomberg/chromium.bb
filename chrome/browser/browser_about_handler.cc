@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/stats_table.h"
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -996,11 +997,14 @@ void AboutMemoryHandler::OnDetailsAvailable() {
       log_string.append(L", ");
     log_string.append(browser_processes[index].name);
     log_string.append(L", ");
-    log_string.append(Int64ToWString(aggregate.working_set.priv));
+    log_string.append(UTF8ToWide(
+        base::Int64ToString(aggregate.working_set.priv)));
     log_string.append(L", ");
-    log_string.append(Int64ToWString(aggregate.working_set.shared));
+    log_string.append(UTF8ToWide(
+        base::Int64ToString(aggregate.working_set.shared)));
     log_string.append(L", ");
-    log_string.append(Int64ToWString(aggregate.working_set.shareable));
+    log_string.append(UTF8ToWide(
+        base::Int64ToString(aggregate.working_set.shareable)));
   }
   if (log_string.length() > 0)
     LOG(INFO) << "memory: " << log_string;

@@ -18,8 +18,8 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -52,7 +52,7 @@ namespace {
 
 // Formats |t| as a decimal number, in milliseconds.
 std::string TickCountToString(const base::TimeTicks& t) {
-  return Int64ToString((t - base::TimeTicks()).InMilliseconds());
+  return base::Int64ToString((t - base::TimeTicks()).InMilliseconds());
 }
 
 // Returns the HostCache for |context|'s primary HostResolver, or NULL if
@@ -589,7 +589,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     // Pass it as a string, since it may be too large to fit in an integer.
     CallJavascriptFunction(L"g_browser.receivedTimeTickOffset",
                            Value::CreateStringValue(
-                               Int64ToString(tick_to_unix_time_ms)));
+                               base::Int64ToString(tick_to_unix_time_ms)));
   }
 
   OnGetPassiveLogEntries(NULL);

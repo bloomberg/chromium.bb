@@ -11,8 +11,9 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/child_thread.h"
 #include "grit/chromium_strings.h"
 
@@ -76,7 +77,7 @@ void ChildProcess::WaitForDebugger(const std::wstring& label) {
     std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);
     std::wstring message = label;
     message += L" starting with pid: ";
-    message += IntToWString(base::GetCurrentProcId());
+    message += UTF8ToWide(base::IntToString(base::GetCurrentProcId()));
     title += L" ";
     title += label;  // makes attaching to process easier
     ::MessageBox(NULL, message.c_str(), title.c_str(),

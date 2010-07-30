@@ -13,7 +13,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -52,8 +52,8 @@ class WriteToDiskTask : public Task {
     }
     if (bytes_written < data_.length()) {
       file_util::Delete(tmp_file_path, false);
-      LogFailure("error writing, bytes_written=" + UintToString(
-          static_cast<unsigned int>(bytes_written)));
+      LogFailure("error writing, bytes_written=" +
+                 base::Uint64ToString(bytes_written));
       return;
     }
 

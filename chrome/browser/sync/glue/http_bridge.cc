@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/chrome_thread.h"
@@ -143,7 +143,7 @@ void HttpBridge::SetURL(const char* url, int port) {
       << "HttpBridge::SetURL called more than once?!";
   GURL temp(url);
   GURL::Replacements replacements;
-  std::string port_str = IntToString(port);
+  std::string port_str = base::IntToString(port);
   replacements.SetPort(port_str.c_str(),
                        url_parse::Component(0, port_str.length()));
   url_for_request_ = temp.ReplaceComponents(replacements);

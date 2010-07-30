@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_bookmark_helpers.h"
 
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 
 namespace keys = extension_bookmarks_module_constants;
@@ -16,11 +16,11 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
                                    bool recurse,
                                    bool only_folders) {
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(keys::kIdKey, Int64ToString(node->id()));
+  dict->SetString(keys::kIdKey, base::Int64ToString(node->id()));
 
   const BookmarkNode* parent = node->GetParent();
   if (parent) {
-    dict->SetString(keys::kParentIdKey, Int64ToString(parent->id()));
+    dict->SetString(keys::kParentIdKey, base::Int64ToString(parent->id()));
     dict->SetInteger(keys::kIndexKey, parent->IndexOfChild(node));
   }
 

@@ -6,7 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "net/base/net_errors.h"
 
 namespace appcache {
@@ -62,7 +62,7 @@ int AppCacheDiskCache::CreateEntry(int64 key, disk_cache::Entry** entry,
   if (!disk_cache_.get())
     return net::ERR_FAILED;
 
-  return disk_cache_->CreateEntry(Int64ToString(key), entry, callback);
+  return disk_cache_->CreateEntry(base::Int64ToString(key), entry, callback);
 }
 
 int AppCacheDiskCache::OpenEntry(int64 key, disk_cache::Entry** entry,
@@ -78,7 +78,7 @@ int AppCacheDiskCache::OpenEntry(int64 key, disk_cache::Entry** entry,
   if (!disk_cache_.get())
     return net::ERR_FAILED;
 
-  return disk_cache_->OpenEntry(Int64ToString(key), entry, callback);
+  return disk_cache_->OpenEntry(base::Int64ToString(key), entry, callback);
 }
 
 int AppCacheDiskCache::DoomEntry(int64 key,
@@ -94,7 +94,7 @@ int AppCacheDiskCache::DoomEntry(int64 key,
   if (!disk_cache_.get())
     return net::ERR_FAILED;
 
-  return disk_cache_->DoomEntry(Int64ToString(key), callback);
+  return disk_cache_->DoomEntry(base::Int64ToString(key), callback);
 }
 
 int AppCacheDiskCache::Init(net::CacheType cache_type,

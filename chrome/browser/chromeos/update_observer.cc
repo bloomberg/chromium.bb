@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/update_observer.h"
 
 #include "app/l10n_util.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
@@ -41,7 +41,7 @@ void UpdateObserver::UpdateStatusChanged(UpdateLibrary* library) {
       if (progress != progress_) {
         progress_ = progress;
         notification_.Show(l10n_util::GetStringFUTF16(IDS_UPDATE_DOWNLOADING,
-            IntToString16(progress_)), false);
+            base::IntToString16(progress_)), false);
       }
     }
       break;

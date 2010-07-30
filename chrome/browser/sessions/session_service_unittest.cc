@@ -7,7 +7,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/sessions/session_backend.h"
@@ -32,7 +32,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
  protected:
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
-    std::string b = Int64ToString(base::Time::Now().ToInternalValue());
+    std::string b = base::Int64ToString(base::Time::Now().ToInternalValue());
 
     PathService::Get(base::DIR_TEMP, &path_);
     path_ = path_.Append(FILE_PATH_LITERAL("SessionTestDirs"));
@@ -510,7 +510,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
 
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
-    TabNavigation nav(0, GURL(base_url + IntToString(i)), GURL(),
+    TabNavigation nav(0, GURL(base_url + base::IntToString(i)), GURL(),
                       ASCIIToUTF16("a"), "b", PageTransition::QUALIFIER_MASK);
     UpdateNavigation(window_id, tab_id, nav, i, (i == 3));
   }
@@ -534,11 +534,11 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   SessionTab* tab = windows[0]->tabs[0];
   ASSERT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(3U, tab->navigations.size());
-  EXPECT_TRUE(GURL(base_url + IntToString(2)) ==
+  EXPECT_TRUE(GURL(base_url + base::IntToString(2)) ==
               tab->navigations[0].virtual_url());
-  EXPECT_TRUE(GURL(base_url + IntToString(3)) ==
+  EXPECT_TRUE(GURL(base_url + base::IntToString(3)) ==
               tab->navigations[1].virtual_url());
-  EXPECT_TRUE(GURL(base_url + IntToString(4)) ==
+  EXPECT_TRUE(GURL(base_url + base::IntToString(4)) ==
               tab->navigations[2].virtual_url());
 }
 
@@ -551,7 +551,7 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
 
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
-    TabNavigation nav(0, GURL(base_url + IntToString(i)), GURL(),
+    TabNavigation nav(0, GURL(base_url + base::IntToString(i)), GURL(),
                       ASCIIToUTF16("a"), "b", PageTransition::QUALIFIER_MASK);
     UpdateNavigation(window_id, tab_id, nav, i, (i == 3));
   }

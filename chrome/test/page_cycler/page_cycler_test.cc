@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_constants.h"
@@ -215,7 +215,7 @@ class PageCyclerTest : public UITest {
     // run N iterations
     GURL::Replacements replacements;
     const std::string query_string =
-        "iterations=" + IntToString(GetTestIterations()) + "&auto=1";
+        "iterations=" + base::IntToString(GetTestIterations()) + "&auto=1";
     replacements.SetQuery(
         query_string.c_str(),
         url_parse::Component(0, query_string.length()));

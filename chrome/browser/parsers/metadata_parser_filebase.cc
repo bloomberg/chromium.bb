@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/parsers/metadata_parser_filebase.h"
 
 #include "base/file_util.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 
 FileMetadataParser::FileMetadataParser(const FilePath& path)
@@ -17,7 +17,7 @@ bool FileMetadataParser::Parse() {
   std::string value;
   int64 size;
   if (file_util::GetFileSize(path_, &size)) {
-    properties_[MetadataParser::kPropertyFilesize] = Int64ToString(size);
+    properties_[MetadataParser::kPropertyFilesize] = base::Int64ToString(size);
   }
 #if defined(OS_WIN)
   value = WideToUTF8(path_.BaseName().value());

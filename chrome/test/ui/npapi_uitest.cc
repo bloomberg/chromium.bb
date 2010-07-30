@@ -21,6 +21,7 @@
 
 #include "base/file_path.h"
 #include "base/keyboard_codes.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -54,7 +55,7 @@ TEST_F(NPAPITester, FLAKY_ManyPlugins) {
 
   for (int i = 1; i <= 15; i++) {
     SCOPED_TRACE(StringPrintf("Waiting for plugin #%d", i));
-    ASSERT_NO_FATAL_FAILURE(WaitForFinish("arguments", IntToString(i),
+    ASSERT_NO_FATAL_FAILURE(WaitForFinish("arguments", base::IntToString(i),
                                           url, kTestCompleteCookie,
                                           kTestCompleteSuccess,
                                           action_max_timeout_ms()));

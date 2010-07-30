@@ -4,7 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/config_dir_policy_provider.h"
 #include "chrome/browser/mock_configuration_policy_store.h"
 #include "chrome/common/json_value_serializer.h"
@@ -93,12 +93,12 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
   DictionaryValue test_dict_bar;
   test_dict_bar.SetString(L"HomepageLocation", L"http://bar.com");
   for (unsigned int i = 1; i <= 4; ++i)
-    WriteConfigFile(test_dict_bar, IntToString(i));
+    WriteConfigFile(test_dict_bar, base::IntToString(i));
   DictionaryValue test_dict_foo;
   test_dict_foo.SetString(L"HomepageLocation", L"http://foo.com");
   WriteConfigFile(test_dict_foo, "9");
   for (unsigned int i = 5; i <= 8; ++i)
-    WriteConfigFile(test_dict_bar, IntToString(i));
+    WriteConfigFile(test_dict_bar, base::IntToString(i));
   ConfigDirPolicyProvider provider(test_dir_);
 
   EXPECT_TRUE(provider.Provide(policy_store_.get()));

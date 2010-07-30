@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,8 @@
 
 #include "app/l10n_util_win.h"
 #include "base/i18n/rtl.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
+//#include "base/string_util.h"
 #include "base/win_util.h"
 
 #include "grit/app_locale_settings.h"
@@ -107,7 +108,11 @@ bool NeedOverrideDefaultUIFont(std::wstring* override_font_family,
   }
 
   std::wstring ui_font_family = GetString(ui_font_family_id);
-  int scaler100 = StringToInt(l10n_util::GetString(ui_font_size_scaler_id));
+  int scaler100;
+  if (!base::StringToInt(l10n_util::GetString(ui_font_size_scaler_id),
+                         &scaler100))
+    return false;
+
   // We use the OS default in two cases:
   // 1) The resource bundle has 'default' and '100' for font family and
   //    font scaler.

@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_HISTORY_MENU
@@ -207,7 +208,7 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
       } else {
         item->title =l10n_util::GetStringFUTF16(
             IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE,
-                IntToString16(item->tabs.size()));
+                base::IntToString16(item->tabs.size()));
       }
 
       // Sometimes it is possible for there to not be any subitems for a given

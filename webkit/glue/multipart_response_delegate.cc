@@ -5,6 +5,7 @@
 #include "webkit/glue/multipart_response_delegate.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
@@ -363,9 +364,9 @@ bool MultipartResponseDelegate::ReadContentRanges(
       content_range.substr(byte_range_upper_bound_start_offset,
                            byte_range_upper_bound_characters);
 
-  if (!StringToInt(byte_range_lower_bound, content_range_lower_bound))
+  if (!base::StringToInt(byte_range_lower_bound, content_range_lower_bound))
     return false;
-  if (!StringToInt(byte_range_upper_bound, content_range_upper_bound))
+  if (!base::StringToInt(byte_range_upper_bound, content_range_upper_bound))
     return false;
   return true;
 }

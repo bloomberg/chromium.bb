@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/version.h"
@@ -767,7 +768,7 @@ class ExtensionUpdaterTest : public testing::Test {
     if (ping_days == 0) {
       EXPECT_TRUE(url1_query.find(search_string) == std::string::npos);
     } else {
-      search_string += "%253D" + IntToString(ping_days);
+      search_string += "%253D" + base::IntToString(ping_days);
       size_t pos = url1_query.find(search_string);
       EXPECT_TRUE(pos != std::string::npos);
     }

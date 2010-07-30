@@ -15,6 +15,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/webkit_param_traits.h"
 #include "gfx/native_widget_types.h"
@@ -304,8 +306,8 @@ struct ParamTraits<NPIdentifier_Param> {
       l->append(UTF8ToWide(str));
       NPN_MemFree(str);
     } else {
-      l->append(IntToWString(
-          WebKit::WebBindings::intFromIdentifier(p.identifier)));
+      l->append(UTF8ToWide(base::IntToString(
+          WebKit::WebBindings::intFromIdentifier(p.identifier))));
     }
   }
 };

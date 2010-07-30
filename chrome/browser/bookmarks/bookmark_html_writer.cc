@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -218,9 +218,10 @@ class Writer : public Task {
   // Converts a time string written to the JSON codec into a time_t string
   // (used by bookmarks.html) and writes it.
   bool WriteTime(const std::string& time_string) {
-    base::Time time = base::Time::FromInternalValue(
-        StringToInt64(time_string));
-    return Write(Int64ToString(time.ToTimeT()));
+    int64 internal_value;
+    base::StringToInt64(time_string, &internal_value);
+    return Write(base::Int64ToString(
+        base::Time::FromInternalValue(internal_value).ToTimeT()));
   }
 
   // Writes the node and all its children, returning true on success.

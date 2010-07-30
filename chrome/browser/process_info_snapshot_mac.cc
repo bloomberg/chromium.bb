@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 
@@ -50,7 +51,7 @@ bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
   for (std::vector<base::ProcessId>::iterator it = pid_list.begin();
       it != pid_list.end(); ++it) {
     argv.push_back("-p");
-    argv.push_back(Int64ToString(static_cast<int64>(*it)));
+    argv.push_back(base::Int64ToString(static_cast<int64>(*it)));
   }
 
   std::string output;

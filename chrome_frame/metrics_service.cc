@@ -52,6 +52,7 @@
 #include "base/file_version_info.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -170,7 +171,7 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
                                   LPWSTR* additional_headers) {
     std::string new_headers;
     new_headers = StringPrintf("Content-Length: %s\r\n",
-                               Int64ToString(upload_data_size_).c_str());
+                               base::Int64ToString(upload_data_size_).c_str());
     new_headers += kMetricsType;
 
     *additional_headers = reinterpret_cast<wchar_t*>(

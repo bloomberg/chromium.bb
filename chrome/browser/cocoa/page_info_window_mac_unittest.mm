@@ -5,6 +5,7 @@
 #include "app/l10n_util.h"
 #include "base/scoped_nsobject.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/page_info_window_mac.h"
 #import "chrome/browser/cocoa/page_info_window_controller.h"
@@ -170,7 +171,7 @@ TEST_F(PageInfoWindowMacTest, NoHistoryMixedSecurity) {
           l10n_util::GetStringFUTF16(
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
               ASCIIToUTF16("chrome.google.com"),
-              IntToString16(1024)),
+              base::IntToString16(1024)),
           l10n_util::GetStringUTF16(
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING)));
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/ui_test_utils.h"
 #include "views/view.h"
@@ -165,7 +165,7 @@ void ViewEventTestBase::RunTestMethod(Task* task) {
 
 void ViewEventTestBase::TimedOut() {
   std::string error_message = "Test timed out. Each test runs for a max of ";
-  error_message += IntToString(kTimeoutInMS);
+  error_message += base::IntToString(kTimeoutInMS);
   error_message += " ms (kTimeoutInMS).";
 
   GTEST_NONFATAL_FAILURE_(error_message.c_str());

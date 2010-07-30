@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -188,7 +189,8 @@ bool ExtensionContextMenuFunction::GetParent(
 
   ExtensionMenuItem* parent = manager.GetItemById(parent_id);
   if (!parent) {
-    error_ = "Cannot find menu item with id " + IntToString(parent_id.second);
+    error_ = "Cannot find menu item with id " +
+        base::IntToString(parent_id.second);
     return false;
   }
   if (parent->type() != ExtensionMenuItem::NORMAL) {
@@ -246,7 +248,7 @@ bool CreateContextMenuFunction::RunImpl() {
     ExtensionMenuItem* parent = menu_manager->GetItemById(parent_id);
     if (!parent) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
-          kCannotFindItemError, IntToString(parent_id.second));
+          kCannotFindItemError, base::IntToString(parent_id.second));
       return false;
     }
     if (parent->type() != ExtensionMenuItem::NORMAL) {
@@ -273,7 +275,7 @@ bool UpdateContextMenuFunction::RunImpl() {
   ExtensionMenuItem* item = manager->GetItemById(item_id);
   if (!item || item->extension_id() != extension_id()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
-        kCannotFindItemError, IntToString(item_id.second));
+        kCannotFindItemError, base::IntToString(item_id.second));
     return false;
   }
 
@@ -341,7 +343,7 @@ bool RemoveContextMenuFunction::RunImpl() {
   // Ensure one extension can't remove another's menu items.
   if (!item || item->extension_id() != extension_id()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
-        kCannotFindItemError, IntToString(id.second));
+        kCannotFindItemError, base::IntToString(id.second));
     return false;
   }
 

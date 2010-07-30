@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -452,7 +453,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
       // just to get the throbber to stop spinning if it's running.
       imageID = IDR_UPDATE_FAIL;
       message = l10n_util::GetNSStringFWithFixup(IDS_UPGRADE_ERROR,
-                                                 IntToString16(status));
+                                                 base::IntToString16(status));
 
       break;
 
@@ -550,14 +551,14 @@ static BOOL recentShownUserActionFailedStatus = NO;
       // just to get the throbber to stop spinning if it's running.
       imageID = IDR_UPDATE_FAIL;
       message = l10n_util::GetNSStringFWithFixup(IDS_UPGRADE_ERROR,
-                                                 IntToString16(status));
+                                                 base::IntToString16(status));
 
       break;
 
     case kAutoupdateRegisterFailed:
       imageID = IDR_UPDATE_FAIL;
       message = l10n_util::GetNSStringFWithFixup(IDS_UPGRADE_ERROR,
-                                                 IntToString16(status));
+                                                 base::IntToString16(status));
       enablePromoteButton = false;
 
       break;
@@ -565,7 +566,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
     case kAutoupdateCheckFailed:
       imageID = IDR_UPDATE_FAIL;
       message = l10n_util::GetNSStringFWithFixup(IDS_UPGRADE_ERROR,
-                                                 IntToString16(status));
+                                                 base::IntToString16(status));
 
       break;
 
@@ -574,7 +575,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
 
       imageID = IDR_UPDATE_FAIL;
       message = l10n_util::GetNSStringFWithFixup(IDS_UPGRADE_ERROR,
-                                                 IntToString16(status));
+                                                 base::IntToString16(status));
 
       // Allow another chance.
       enableUpdateButton = true;
@@ -586,7 +587,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
 
       imageID = IDR_UPDATE_FAIL;
       message = l10n_util::GetNSStringFWithFixup(IDS_UPGRADE_ERROR,
-                                                 IntToString16(status));
+                                                 base::IntToString16(status));
 
       break;
 

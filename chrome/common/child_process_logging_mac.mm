@@ -6,7 +6,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "googleurl/src/gurl.h"
@@ -112,19 +114,19 @@ void SetGpuKeyValue(const char* param_name, const std::string& value_str,
 void SetGpuInfoImpl(const GPUInfo& gpu_info,
                     SetCrashKeyValueFuncPtr set_key_func) {
   SetGpuKeyValue(kGPUVendorIdParamName,
-                 UintToString(gpu_info.vendor_id()),
+                 base::UintToString(gpu_info.vendor_id()),
                  set_key_func);
   SetGpuKeyValue(kGPUDeviceIdParamName,
-                 UintToString(gpu_info.device_id()),
+                 base::UintToString(gpu_info.device_id()),
                  set_key_func);
   SetGpuKeyValue(kGPUDriverVersionParamName,
-                 WideToASCII(gpu_info.driver_version()),
+                 WideToUTF8(gpu_info.driver_version()),
                  set_key_func);
   SetGpuKeyValue(kGPUPixelShaderVersionParamName,
-                 UintToString(gpu_info.pixel_shader_version()),
+                 base::UintToString(gpu_info.pixel_shader_version()),
                  set_key_func);
   SetGpuKeyValue(kGPUVertexShaderVersionParamName,
-                 UintToString(gpu_info.vertex_shader_version()),
+                 base::UintToString(gpu_info.vertex_shader_version()),
                  set_key_func);
 }
 

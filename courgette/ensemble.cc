@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// *** File comments
-
 #include "courgette/ensemble.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 
 #include "courgette/image_info.h"
 #include "courgette/region.h"
@@ -23,9 +21,9 @@ Element::Element(Kind kind, Ensemble* ensemble, const Region& region)
 
 std::string Element::Name() const {
   return ensemble_->name() + "("
-      + IntToString(kind()) + ","
-      + Uint64ToString(offset_in_ensemble()) + ","
-      + Uint64ToString(region().length()) + ")";
+      + base::IntToString(kind()) + ","
+      + base::Uint64ToString(offset_in_ensemble()) + ","
+      + base::Uint64ToString(region().length()) + ")";
 }
 
 // A subclass of Element that has a PEInfo.

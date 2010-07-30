@@ -13,6 +13,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/find_bar_controller.h"
@@ -384,8 +385,8 @@ void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
   if (!find_text.empty() && have_valid_range) {
     gtk_label_set_text(GTK_LABEL(match_count_label_),
         l10n_util::GetStringFUTF8(IDS_FIND_IN_PAGE_COUNT,
-            IntToString16(result.active_match_ordinal()),
-            IntToString16(result.number_of_matches())).c_str());
+            base::IntToString16(result.active_match_ordinal()),
+            base::IntToString16(result.number_of_matches())).c_str());
     UpdateMatchLabelAppearance(result.number_of_matches() == 0 &&
                                result.final_update());
   } else {

@@ -8,7 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/json/json_writer.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -77,10 +77,10 @@ void AddNodeToList(ListValue* list, const BookmarkNode& node) {
 
   // Add id and parentId so we can associate the data with existing nodes on the
   // client side.
-  std::string id_string = Int64ToString(node.id());
+  std::string id_string = base::Int64ToString(node.id());
   dict->SetString(keys::kIdKey, id_string);
 
-  std::string parent_id_string = Int64ToString(node.GetParent()->id());
+  std::string parent_id_string = base::Int64ToString(node.GetParent()->id());
   dict->SetString(keys::kParentIdKey, parent_id_string);
 
   if (node.is_url())

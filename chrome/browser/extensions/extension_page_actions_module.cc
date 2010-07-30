@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/profile.h"
@@ -71,8 +71,8 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   bool result = ExtensionTabUtil::GetTabById(
       tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
   if (!result || !contents) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(kNoTabError,
-                                                     IntToString(tab_id));
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        kNoTabError, base::IntToString(tab_id));
     return false;
   }
 
@@ -104,8 +104,8 @@ bool PageActionFunction::InitCommon(int tab_id) {
   bool result = ExtensionTabUtil::GetTabById(
       tab_id, profile(), include_incognito(), NULL, NULL, &contents_, NULL);
   if (!result || !contents_) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(kNoTabError,
-                                                     IntToString(tab_id));
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        kNoTabError, base::IntToString(tab_id));
     return false;
   }
 

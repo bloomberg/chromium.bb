@@ -7,10 +7,10 @@
 #include <wininet.h>
 #include <urlmon.h>
 
-#include "base/scoped_ptr.h"
-#include "base/string_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/extra_system_apis.h"
@@ -450,7 +450,7 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     if (get_upload_data(&bind_info->stgmedData.pstm) == S_OK) {
       bind_info->stgmedData.tymed = TYMED_ISTREAM;
       DLOG(INFO) << __FUNCTION__ << me() << method()
-                 << " request with " << Int64ToString(post_data_len())
+                 << " request with " << base::Int64ToString(post_data_len())
                  << " bytes. url=" << url();
     } else {
       DLOG(INFO) << __FUNCTION__ << me() << "POST request with no data!";
@@ -543,7 +543,7 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     // Tack on the Content-Length header since when using an IStream type
     // STGMEDIUM, it looks like it doesn't get set for us :(
     new_headers = StringPrintf("Content-Length: %s\r\n",
-                               Int64ToString(post_data_len()).c_str());
+                               base::Int64ToString(post_data_len()).c_str());
   }
 
   if (!extra_headers().empty()) {

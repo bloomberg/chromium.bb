@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "talk/xmllite/qname.h"
 #include "talk/xmllite/xmlconstants.h"
 #include "talk/xmllite/xmlelement.h"
@@ -35,7 +35,7 @@ buzz::XmlElement* MakeIntXmlElement(const char* name, int value) {
   const buzz::QName intAttrQName(buzz::STR_EMPTY, "int");
   buzz::XmlElement* int_xml_element =
       new buzz::XmlElement(elementQName, true);
-  int_xml_element->AddAttr(intAttrQName, IntToString(value));
+  int_xml_element->AddAttr(intAttrQName, base::IntToString(value));
   return int_xml_element;
 }
 

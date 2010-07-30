@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/google_url_tracker.h"
@@ -818,11 +819,11 @@ void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
   prefs->SetString(prefs::kDefaultSearchProviderName, name);
 
   const std::string id_string =
-      t_url ? Int64ToString(t_url->id()) : std::string();
+      t_url ? base::Int64ToString(t_url->id()) : std::string();
   prefs->SetString(prefs::kDefaultSearchProviderID, id_string);
 
   const std::string prepopulate_id =
-      t_url ? Int64ToString(t_url->prepopulate_id()) : std::string();
+      t_url ? base::Int64ToString(t_url->prepopulate_id()) : std::string();
   prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID, prepopulate_id);
 
   prefs->ScheduleSavePersistentPrefs();

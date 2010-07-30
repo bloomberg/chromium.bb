@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -175,7 +175,7 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   // Creates a new cookie name. We will have to use a new cookie because
   // this function could be called multiple times.
   std::string status_cookie(kTestCompleteCookie);
-  status_cookie += IntToString(test_count_);
+  status_cookie += base::IntToString(test_count_);
   test_count_++;
 
   // Reads the layout test HTML file.

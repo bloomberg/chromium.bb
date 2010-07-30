@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/common/geoposition.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -202,7 +202,7 @@ void GetLocationFromResponse(bool http_post_result,
   }
   if (status_code != 200) {  // HTTP OK.
     std::string message = "Returned error code ";
-    message += IntToString(status_code);
+    message += base::IntToString(status_code);
     FormatPositionError(server_url, message, position);
     return;
   }

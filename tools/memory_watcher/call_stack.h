@@ -8,8 +8,8 @@
 //  http://www.codeproject.com/KB/threads/StackWalker.aspx
 //       by Jochen Kalmbach
 
-#ifndef MEMORY_WATCHER_CALL_STACK_H_
-#define MEMORY_WATCHER_CALL_STACK_H_
+#ifndef TOOLS_MEMORY_WATCHER_CALL_STACK_H_
+#define TOOLS_MEMORY_WATCHER_CALL_STACK_H_
 
 #include <windows.h>
 #include <dbghelp.h>
@@ -17,9 +17,9 @@
 #include <map>
 #include <string>
 
-#include "memory_watcher.h"
 #include "base/lock.h"
 #include "base/logging.h"
+#include "tools/memory_watcher/memory_watcher.h"
 
 // The CallStack Class
 // A stack where memory has been allocated.
@@ -165,4 +165,4 @@ class AllocationStack : public CallStack {
   DISALLOW_COPY_AND_ASSIGN(AllocationStack);
 };
 
-#endif  // MEMORY_WATCHER_CALL_STACK_H_
+#endif  // TOOLS_MEMORY_WATCHER_CALL_STACK_H_

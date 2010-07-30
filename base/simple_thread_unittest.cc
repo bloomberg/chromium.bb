@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/atomic_sequence_num.h"
 #include "base/lock.h"
 #include "base/simple_thread.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,8 +122,8 @@ TEST(SimpleThreadTest, NamedWithOptions) {
 
   thread.Start();
   EXPECT_EQ(thread.name_prefix(), "event_waiter");
-  EXPECT_EQ(thread.name(), std::string("event_waiter/") +
-                            IntToString(thread.tid()));
+  EXPECT_EQ(thread.name(),
+            std::string("event_waiter/") + base::IntToString(thread.tid()));
   event.Wait();
 
   EXPECT_TRUE(event.IsSignaled());
@@ -130,8 +131,8 @@ TEST(SimpleThreadTest, NamedWithOptions) {
 
   // We keep the name and tid, even after the thread is gone.
   EXPECT_EQ(thread.name_prefix(), "event_waiter");
-  EXPECT_EQ(thread.name(), std::string("event_waiter/") +
-                            IntToString(thread.tid()));
+  EXPECT_EQ(thread.name(),
+            std::string("event_waiter/") + base::IntToString(thread.tid()));
 }
 
 TEST(SimpleThreadTest, ThreadPool) {

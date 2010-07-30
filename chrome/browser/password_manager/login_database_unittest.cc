@@ -7,7 +7,8 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
+#include "base/string_util.h"  // TODO(brettw) remove when ASCIIToUTF16 moves.
 #include "base/time.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/common/chrome_paths.h"
@@ -21,7 +22,7 @@ class LoginDatabaseTest : public testing::Test {
     PathService::Get(chrome::DIR_TEST_DATA, &file_);
     const std::string test_db =
         "TestMetadataStoreMacDatabase" +
-        Int64ToString(base::Time::Now().ToInternalValue()) + ".db";
+        base::Int64ToString(base::Time::Now().ToInternalValue()) + ".db";
     file_ = file_.AppendASCII(test_db);
     file_util::Delete(file_, false);
   }

@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/sha1.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -56,7 +56,7 @@ void BookmarksFunction::Run() {
 
 bool BookmarksFunction::GetBookmarkIdAsInt64(
     const std::string& id_string, int64* id) {
-  if (StringToInt64(id_string, id))
+  if (base::StringToInt64(id_string, id))
     return true;
 
   error_ = keys::kInvalidIdError;
@@ -112,12 +112,13 @@ void ExtensionBookmarkEventRouter::BookmarkNodeMoved(
     int new_index) {
   ListValue args;
   const BookmarkNode* node = new_parent->GetChild(new_index);
-  args.Append(new StringValue(Int64ToString(node->id())));
+  args.Append(new StringValue(base::Int64ToString(node->id())));
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->SetString(keys::kParentIdKey, Int64ToString(new_parent->id()));
+  object_args->SetString(keys::kParentIdKey,
+                         base::Int64ToString(new_parent->id()));
   object_args->SetInteger(keys::kIndexKey, new_index);
   object_args->SetString(keys::kOldParentIdKey,
-                         Int64ToString(old_parent->id()));
+                         base::Int64ToString(old_parent->id()));
   object_args->SetInteger(keys::kOldIndexKey, old_index);
   args.Append(object_args);
 
@@ -131,7 +132,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                                      int index) {
   ListValue args;
   const BookmarkNode* node = parent->GetChild(index);
-  args.Append(new StringValue(Int64ToString(node->id())));
+  args.Append(new StringValue(base::Int64ToString(node->id())));
   DictionaryValue* obj =
       extension_bookmark_helpers::GetNodeDictionary(node, false, false);
   args.Append(obj);
@@ -147,9 +148,10 @@ void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
     int index,
     const BookmarkNode* node) {
   ListValue args;
-  args.Append(new StringValue(Int64ToString(node->id())));
+  args.Append(new StringValue(base::Int64ToString(node->id())));
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->SetString(keys::kParentIdKey, Int64ToString(parent->id()));
+  object_args->SetString(keys::kParentIdKey,
+                         base::Int64ToString(parent->id()));
   object_args->SetInteger(keys::kIndexKey, index);
   args.Append(object_args);
 
@@ -161,7 +163,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
 void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
     BookmarkModel* model, const BookmarkNode* node) {
   ListValue args;
-  args.Append(new StringValue(Int64ToString(node->id())));
+  args.Append(new StringValue(base::Int64ToString(node->id())));
 
   // TODO(erikkay) The only three things that BookmarkModel sends this
   // notification for are title, url and favicon.  Since we're currently
@@ -187,12 +189,12 @@ void ExtensionBookmarkEventRouter::BookmarkNodeFavIconLoaded(
 void ExtensionBookmarkEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   ListValue args;
-  args.Append(new StringValue(Int64ToString(node->id())));
+  args.Append(new StringValue(base::Int64ToString(node->id())));
   int childCount = node->GetChildCount();
   ListValue* children = new ListValue();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    Value* child_id = new StringValue(Int64ToString(child->id()));
+    Value* child_id = new StringValue(base::Int64ToString(child->id()));
     children->Append(child_id);
   }
   DictionaryValue* reorder_info = new DictionaryValue();
@@ -347,7 +349,7 @@ bool RemoveBookmarkFunction::ExtractIds(const ListValue* args,
   if (!args->GetString(0, &id_string))
     return false;
   int64 id;
-  if (StringToInt64(id_string, &id))
+  if (base::StringToInt64(id_string, &id))
     ids->push_back(id);
   else
     *invalid_id = true;
@@ -618,7 +620,10 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
         return;
     }
     BookmarkModel* model = profile_->GetBookmarkModel();
-    const BookmarkNode* parent = model->GetNodeByID(StringToInt64(parent_id));
+
+    int64 parent_id_int64;
+    base::StringToInt64(parent_id, &parent_id_int64);
+    const BookmarkNode* parent = model->GetNodeByID(parent_id_int64);
     if (!parent)
       return;
 

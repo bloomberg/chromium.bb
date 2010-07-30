@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -84,12 +85,12 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
 
 Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
   DictionaryValue* value = new DictionaryValue();
-  std::string id = Int64ToString(node->id());
+  std::string id = base::Int64ToString(node->id());
   value->SetString(kIdKey, id);
   const string16& title = node->GetTitleAsString16();
   value->SetStringFromUTF16(kNameKey, title);
   value->SetString(kDateAddedKey,
-                   Int64ToString(node->date_added().ToInternalValue()));
+                   base::Int64ToString(node->date_added().ToInternalValue()));
   if (node->type() == BookmarkNode::URL) {
     value->SetString(kTypeKey, kTypeURL);
     std::string url = node->GetURL().possibly_invalid_spec();
@@ -98,7 +99,7 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
   } else {
     value->SetString(kTypeKey, kTypeFolder);
     value->SetString(kDateModifiedKey,
-                     Int64ToString(node->date_group_modified().
+                     base::Int64ToString(node->date_group_modified().
                                    ToInternalValue()));
     UpdateChecksumWithFolderNode(id, title);
 
@@ -207,7 +208,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
 
   std::string date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))
-    date_added_string = Int64ToString(Time::Now().ToInternalValue());
+    date_added_string = base::Int64ToString(Time::Now().ToInternalValue());
   base::Time date_added = base::Time::FromInternalValue(
       StringToInt64(date_added_string));
 #if !defined(OS_WIN)
@@ -249,7 +250,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
   } else {
     std::string last_modified_date;
     if (!value.GetString(kDateModifiedKey, &last_modified_date))
-      last_modified_date = Int64ToString(Time::Now().ToInternalValue());
+      last_modified_date = base::Int64ToString(Time::Now().ToInternalValue());
 
     Value* child_values;
     if (!value.Get(kChildrenKey, &child_values))

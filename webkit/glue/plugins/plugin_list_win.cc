@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -313,8 +314,10 @@ bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
   if (a_ver.size() != b_ver.size())
     return false;
   for (size_t i = 0; i < a_ver.size(); i++) {
-    int cur_a = StringToInt(a_ver[i]);
-    int cur_b = StringToInt(b_ver[i]);
+    int cur_a, cur_b;
+    base::StringToInt(a_ver[i], &cur_a);
+    base::StringToInt(b_ver[i], &cur_b);
+
     if (cur_a > cur_b)
       return false;
     if (cur_a < cur_b)
@@ -370,9 +373,9 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     SplitString(info.version, '.', &ver);
     int major, minor, update;
     if (ver.size() == 4 &&
-        StringToInt(ver[0], &major) &&
-        StringToInt(ver[1], &minor) &&
-        StringToInt(ver[2], &update)) {
+        base::StringToInt(ver[0], &major) &&
+        base::StringToInt(ver[1], &minor) &&
+        base::StringToInt(ver[2], &update)) {
       if (major == 6 && minor == 0 && update < 120)
         return false;  // Java SE6 Update 11 or older.
     }

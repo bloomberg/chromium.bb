@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/page_state.h"
 #include "chrome/common/json_value_serializer.h"
@@ -80,25 +80,25 @@ bool PageState::GetProperty(const std::wstring& key,
 }
 
 void PageState::SetInt64Property(const std::wstring& key, int64 value) {
-  SetProperty(key, Int64ToWString(value));
+  SetProperty(key, UTF8ToWide(base::Int64ToString(value)));
 }
 
 bool PageState::GetInt64Property(const std::wstring& key, int64* value) const {
   std::wstring v;
   if (GetProperty(key, &v)) {
-    return StringToInt64(WideToUTF16Hack(v), value);
+    return base::StringToInt64(WideToUTF8(v), value);
   }
   return false;
 }
 
 void PageState::SetIntProperty(const std::wstring& key, int value) {
-  SetProperty(key, IntToWString(value));
+  SetProperty(key, UTF8ToWide(base::IntToString(value)));
 }
 
 bool PageState::GetIntProperty(const std::wstring& key, int* value) const {
   std::wstring v;
   if (GetProperty(key, &v)) {
-    return StringToInt(WideToUTF16Hack(v), value);
+    return base::StringToInt(WideToUTF8(v), value);
   }
   return false;
 }

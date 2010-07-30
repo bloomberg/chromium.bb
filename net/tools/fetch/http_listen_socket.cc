@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "net/tools/fetch/http_server_request_info.h"
 #include "net/tools/fetch/http_server_response_info.h"
 
@@ -37,8 +37,10 @@ void HttpListenSocket::Accept() {
   }
 }
 
-HttpListenSocket* HttpListenSocket::Listen(const std::string& ip, int port,
-                                           HttpListenSocket::Delegate* delegate) {
+HttpListenSocket* HttpListenSocket::Listen(
+    const std::string& ip,
+    int port,
+    HttpListenSocket::Delegate* delegate) {
   SOCKET s = ListenSocket::Listen(ip, port);
   if (s == ListenSocket::kInvalidSocket) {
     // TODO (ibrar): error handling
@@ -227,7 +229,7 @@ void HttpListenSocket::Respond(HttpServerResponseInfo* info,
     response += "Content-type: " + info->content_type + "\r\n";
 
   if (info->content_length > 0)
-    response += "Content-length: " + IntToString(info->content_length) +
+    response += "Content-length: " + base::IntToString(info->content_length) +
         "\r\n";
 
   if (info->connection_close)

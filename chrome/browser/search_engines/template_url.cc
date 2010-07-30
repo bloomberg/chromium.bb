@@ -8,6 +8,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google_url_tracker.h"
@@ -109,11 +110,11 @@ bool TemplateURLRef::ParseParameter(size_t start,
       url->insert(start, kDefaultCount);
   } else if (parameter == kStartIndexParameter) {
     if (!optional) {
-      url->insert(start, IntToString(index_offset_));
+      url->insert(start, base::IntToString(index_offset_));
     }
   } else if (parameter == kStartPageParameter) {
     if (!optional) {
-      url->insert(start, IntToString(page_offset_));
+      url->insert(start, base::IntToString(page_offset_));
     }
   } else if (parameter == kLanguageParameter) {
     replacements->push_back(Replacement(LANGUAGE, start));

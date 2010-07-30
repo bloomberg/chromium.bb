@@ -1,13 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "call_stack.h"
+#include "tools/memory_watcher/call_stack.h"
+
 #include <shlwapi.h>
 #include <tlhelp32.h>
 
-#include "memory_hook.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
+#include "tools/memory_watcher/memory_hook.h"
 
 // Typedefs for explicit dynamic linking with functions exported from
 // dbghelp.dll.
@@ -341,7 +342,7 @@ void CallStack::ToString(PrivateAllocatorString* output) {
           // TODO(jar): get something like this template to work :-/
           // line += IntToCustomString<PrivateAllocatorString>(Line.LineNumber);
           // ...and then delete this line, which uses std::string.
-          line += IntToString(Line.LineNumber).c_str();
+          line += base::IntToString(Line.LineNumber).c_str();
           line += "): ";
           line += symbol->Name;
           line += "\n";

@@ -627,10 +627,10 @@ void SetPageRange(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(kStartPageSwitch)) {
     ASSERT_TRUE(parsed_command_line.HasSwitch(kEndPageSwitch));
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kStartPageSwitch)), &g_start_page));
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kEndPageSwitch)), &g_end_page));
     ASSERT_TRUE(g_start_page > 0 && g_end_page > 0);
     ASSERT_TRUE(g_start_page < g_end_page);
@@ -645,14 +645,14 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kStartIndexSwitch)) {
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kStartIndexSwitch)), &g_start_index));
     ASSERT_GT(g_start_index, 0);
   }
 
   if (parsed_command_line.HasSwitch(kEndIndexSwitch)) {
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kEndIndexSwitch)), &g_end_index));
     ASSERT_GT(g_end_index, 0);
   }
@@ -664,7 +664,7 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kIterationSwitch)) {
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kIterationSwitch)), &g_iterations));
     ASSERT_GT(g_iterations, 0);
   }
@@ -685,7 +685,7 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kTimeoutSwitch)) {
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kTimeoutSwitch)), &g_timeout_ms));
     ASSERT_GT(g_timeout_ms, 0);
   }

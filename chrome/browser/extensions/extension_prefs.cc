@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -317,7 +319,7 @@ void ExtensionPrefs::SetLastPingDayImpl(const Time& time,
     NOTREACHED();
     return;
   }
-  std::string value = Int64ToString(time.ToInternalValue());
+  std::string value = base::Int64ToString(time.ToInternalValue());
   dictionary->SetString(kLastPingDay, value);
   prefs_->ScheduleSavePersistentPrefs();
 }
@@ -695,7 +697,7 @@ void ExtensionPrefs::SetIdleInstallInfo(const std::string& extension_id,
   info->SetString(kIdleInstallInfoCrxPath, crx_path.value());
   info->SetString(kIdleInstallInfoVersion, version);
   info->SetString(kIdleInstallInfoFetchTime,
-                  Int64ToString(fetch_time.ToInternalValue()));
+                  base::Int64ToString(fetch_time.ToInternalValue()));
   extension_prefs->Set(kIdleInstallInfo, info);
   prefs_->ScheduleSavePersistentPrefs();
 }

@@ -12,7 +12,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -100,7 +100,7 @@ class WebDatabaseTest : public testing::Test {
 #endif
     PathService::Get(chrome::DIR_TEST_DATA, &file_);
     const std::string test_db = "TestWebDatabase" +
-        Int64ToString(base::Time::Now().ToInternalValue()) +
+        base::Int64ToString(base::Time::Now().ToInternalValue()) +
         ".db";
     file_ = file_.AppendASCII(test_db);
     file_util::Delete(file_, false);

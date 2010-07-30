@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
+
+#include "base/string_number_conversions.h"
 
 const char DevToolsRemoteMessageHeaders::kContentLength[] = "Content-Length";
 const char DevToolsRemoteMessageHeaders::kTool[] = "Tool";
@@ -47,7 +48,7 @@ DevToolsRemoteMessage* DevToolsRemoteMessageBuilder::Create(
     const std::string& content) {
   DevToolsRemoteMessage::HeaderMap headers;
   headers[DevToolsRemoteMessageHeaders::kContentLength] =
-      IntToString(content.size());
+      base::IntToString(content.size());
   headers[DevToolsRemoteMessageHeaders::kTool] = tool;
   headers[DevToolsRemoteMessageHeaders::kDestination] = destination;
   return new DevToolsRemoteMessage(headers, content);

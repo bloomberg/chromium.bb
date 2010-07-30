@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,8 @@
 #include "base/md5.h"
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
+#include "base/string_util.h"  // TODO(brettw) remove when ASCIIToUTF16 moves.
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"
@@ -100,7 +101,7 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
                                const std::string& version_string)
     : start_time_(Time::Now()),
       client_id_(client_id),
-      session_id_(IntToString(session_id)),
+      session_id_(base::IntToString(session_id)),
       locked_(false),
       xml_wrapper_(new XmlWrapper),
       num_events_(0) {
@@ -238,7 +239,7 @@ void MetricsLogBase::RecordLoadEvent(int window_id,
   WriteAttribute("action", "load");
   WriteIntAttribute("docid", session_index);
   WriteIntAttribute("window", window_id);
-  WriteAttribute("loadtime", Int64ToString(load_time.InMilliseconds()));
+  WriteAttribute("loadtime", base::Int64ToString(load_time.InMilliseconds()));
 
   std::string origin_string;
 
@@ -295,16 +296,16 @@ void MetricsLogBase::RecordWindowEvent(WindowEventType type,
 
   OPEN_ELEMENT_FOR_SCOPE("window");
   WriteAttribute("action", WindowEventTypeToString(type));
-  WriteAttribute("windowid", IntToString(window_id));
+  WriteAttribute("windowid", base::IntToString(window_id));
   if (parent_id >= 0)
-    WriteAttribute("parent", IntToString(parent_id));
+    WriteAttribute("parent", base::IntToString(parent_id));
   WriteCommonEventAttributes();
 
   ++num_events_;
 }
 
 std::string MetricsLogBase::GetCurrentTimeString() {
-  return Uint64ToString(Time::Now().ToTimeT());
+  return base::Uint64ToString(Time::Now().ToTimeT());
 }
 
 // These are the attributes that are common to every event.
@@ -325,11 +326,11 @@ void MetricsLogBase::WriteAttribute(const std::string& name,
 }
 
 void MetricsLogBase::WriteIntAttribute(const std::string& name, int value) {
-  WriteAttribute(name, IntToString(value));
+  WriteAttribute(name, base::IntToString(value));
 }
 
 void MetricsLogBase::WriteInt64Attribute(const std::string& name, int64 value) {
-  WriteAttribute(name, Int64ToString(value));
+  WriteAttribute(name, base::Int64ToString(value));
 }
 
 // static

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "skia/ext/platform_canvas.h"
@@ -285,7 +286,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     std::vector<std::wstring> version;
     SplitString(plugin_info.version, L'.', &version);
     if (version.size() > 0) {
-      int major = static_cast<int>(StringToInt64(version[0]));
+      int major;
+      base::StringToInt(version[0], &major);
       if (major >= 9) {
         quirks_ |= PLUGIN_QUIRK_DIE_AFTER_UNLOAD;
 
