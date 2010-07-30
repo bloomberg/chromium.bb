@@ -456,8 +456,8 @@ def drover(options, args):
     if not inCheckoutRoot(working):
       print "'%s' appears not to be the root of a working copy" % working
       return 1
-    if isSVNDirty():
-      print "Working copy contains uncommitted files"
+    if (isSVNDirty() and not
+        prompt("Working copy contains uncommitted files. Continue?")):
       return 1
 
   command = 'svn log ' + url + " -r "+str(revision) + " -v"
