@@ -700,6 +700,8 @@ void AutocompleteEditViewWin::ClosePopup() {
 
 void AutocompleteEditViewWin::SetFocus() {
   ::SetFocus(m_hWnd);
+  parent_view_->
+      NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS, false);
 }
 
 IAccessible* AutocompleteEditViewWin::GetIAccessible() {

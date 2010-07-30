@@ -558,8 +558,13 @@ class View : public AcceleratorTarget {
   // TODO(klink): Move all this out to a AccessibleInfo wrapper class.
 
   // Notify the platform specific accessibility client of changes in the user
-  // interface.
+  // interface.  This will always raise native notifications.
   virtual void NotifyAccessibilityEvent(AccessibilityTypes::Event event_type);
+
+  // Raise an accessibility notification with an option to also raise a native
+  // notification.
+  virtual void NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
+      bool send_native_event);
 
   // Returns the MSAA default action of the current view. The string returned
   // describes the default action that will occur when executing

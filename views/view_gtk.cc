@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
+#include "views/views_delegate.h"
 
 namespace views {
 
@@ -21,7 +22,17 @@ int View::GetMenuShowDelay() {
 }
 
 void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type) {
-  // Not implemented on GTK.
+  NotifyAccessibilityEvent(event_type, true);
+}
+
+void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
+    bool send_native_event) {
+  // Send the notification to the delegate.
+  if (ViewsDelegate::views_delegate)
+    ViewsDelegate::views_delegate->NotifyAccessibilityEvent(this, event_type);
+
+  // In the future if we add native GTK accessibility support, the
+  // notification should be sent here.
 }
 
 ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
