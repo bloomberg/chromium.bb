@@ -4,7 +4,6 @@
 
 #include "base/scoped_temp_dir.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -27,19 +26,15 @@ bool ScopedTempDir::CreateUniqueTempDir() {
   return true;
 }
 
-bool ScopedTempDir::CreateUniqueTempDirUnderPath(const FilePath& base_path,
-                                                 bool loose_permissions) {
+bool ScopedTempDir::CreateUniqueTempDirUnderPath(const FilePath& base_path) {
   // If |path| does not exist, create it.
-  if (!file_util::CreateDirectory(base_path)) {
-    LOG(ERROR) << "Failed to create base directory " << base_path.value();
+  if (!file_util::CreateDirectory(base_path))
     return false;
-  }
 
   // Create a new, uniquely named directory under |base_path|.
   if (!file_util::CreateTemporaryDirInDir(
           base_path,
           FILE_PATH_LITERAL("scoped_dir_"),
-          loose_permissions,
           &path_)) {
     return false;
   }

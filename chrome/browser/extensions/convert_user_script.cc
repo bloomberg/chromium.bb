@@ -45,7 +45,7 @@ Extension* ConvertUserScriptToExtension(const FilePath& user_script_path,
   CHECK(PathService::Get(chrome::DIR_USER_DATA_TEMP, &user_data_temp_dir));
 
   ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDirUnderPath(user_data_temp_dir, false)) {
+  if (!temp_dir.CreateUniqueTempDirUnderPath(user_data_temp_dir)) {
     *error = "Could not create temporary directory.";
     return NULL;
   }

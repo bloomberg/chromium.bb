@@ -42,18 +42,8 @@ void SandboxedExtensionUnpacker::Start() {
   // file IO on.
   CHECK(ChromeThread::GetCurrentThreadIdentifier(&thread_identifier_));
 
-  // To understand crbug/35198, allow users who can reproduce the bug
-  // to loosen permissions on the scoped directory.
-  bool loosen_permissions = false;
-#if defined (OS_WIN)
-  loosen_permissions = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIssue35198Permission);
-  LOG(INFO) << "loosen_permissions = " << loosen_permissions;
-#endif
-
   // Create a temporary directory to work in.
-  if (!temp_dir_.CreateUniqueTempDirUnderPath(temp_path_,
-                                              loosen_permissions)) {
+  if (!temp_dir_.CreateUniqueTempDirUnderPath(temp_path_)) {
     ReportFailure("Could not create temporary directory.");
     return;
   }
@@ -61,15 +51,6 @@ void SandboxedExtensionUnpacker::Start() {
   // Initialize the path that will eventually contain the unpacked extension.
   extension_root_ = temp_dir_.path().AppendASCII(
       extension_filenames::kTempExtensionName);
-
-  // To understand crbug/35198, allow users who can reproduce the bug to
-  // create the unpack directory in the browser process.
-  bool crxdir_in_browser = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIssue35198CrxDirBrowser);
-  LOG(INFO) << "crxdir_in_browser = " << crxdir_in_browser;
-  if (crxdir_in_browser && !file_util::CreateDirectory(extension_root_)) {
-    LOG(ERROR) << "Failed to create directory " << extension_root_.value();
-  }
 
   // Extract the public key and validate the package.
   if (!ValidateSignature())
