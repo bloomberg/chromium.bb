@@ -754,12 +754,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
-  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Open the download tab, focus should be on the tab contents.
   browser()->ShowDownloadsTab();
-  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open about:blank, focus should be on the location bar.
@@ -793,7 +791,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
-  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
@@ -819,7 +816,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReloadCrashedTab) {
 
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
-  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 

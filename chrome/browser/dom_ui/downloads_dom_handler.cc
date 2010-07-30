@@ -46,7 +46,8 @@ class DownloadItemSorter : public std::binary_function<DownloadItem*,
 
 DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
     : search_text_(),
-      download_manager_(dlm) {
+      download_manager_(dlm),
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Create our fileicon data source.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
@@ -117,7 +118,8 @@ void DownloadsDOMHandler::ModelChanged() {
   ClearDownloadItems();
   download_manager_->download_history()->Search(
       WideToUTF16(search_text_),
-      NewCallback(this, &DownloadsDOMHandler::OnSearchDownloadsComplete));
+      callback_factory_.NewCallback(
+          &DownloadsDOMHandler::OnSearchDownloadsComplete));
 }
 
 void DownloadsDOMHandler::OnSearchDownloadsComplete(

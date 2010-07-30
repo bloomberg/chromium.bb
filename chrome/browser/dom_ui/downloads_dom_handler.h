@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/scoped_callback_factory.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
@@ -95,6 +96,8 @@ class DownloadsDOMHandler : public DOMMessageHandler,
   // kept in order, sorted by ascending start time.
   typedef std::vector<DownloadItem*> OrderedDownloads;
   OrderedDownloads download_items_;
+
+  base::ScopedCallbackFactory<DownloadsDOMHandler> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDOMHandler);
 };
