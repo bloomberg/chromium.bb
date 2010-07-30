@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autofill/credit_card.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string_util.h"
@@ -27,6 +29,100 @@ const AutoFillFieldType kAutoFillCreditCardTypes[] = {
 };
 
 const int kAutoFillCreditCardLength = arraysize(kAutoFillCreditCardTypes);
+
+// These values must match the values in WebKitClientImpl in webkit/glue. We
+// send these strings to WK, which then asks WebKitClientImpl to load the image
+// data.
+const char* kAmericanExpressCard = "americanExpressCC";
+const char* kDinersCard = "dinersCC";
+const char* kDiscoverCard = "discoverCC";
+const char* kGenericCard = "genericCC";
+const char* kJCBCard = "jcbCC";
+const char* kMasterCard = "masterCardCC";
+const char* kSoloCard = "soloCC";
+const char* kVisaCard = "visaCC";
+
+std::string GetCreditCardType(string16 number) {
+  // Credit card number specifications taken from:
+  // http://en.wikipedia.org/wiki/Credit_card_numbers and
+  // http://www.beachnet.com/~hstiles/cardtype.html
+  // Card Type              Prefix(es)                      Length
+  // ---------------------------------------------------------------
+  // Visa                   4                               13,16
+  // American Express       34,37                           15
+  // Diners Club            300-305,2014,2149,36,           14,15
+  // Discover Card          6011,65                         16
+  // JCB                    3                               16
+  // JCB                    2131,1800                       15
+  // MasterCard             51-55                           16
+  // Solo (debit card)      6334,6767                       16,18,19
+
+  // We need at least 4 digits to work with.
+  if (number.length() < 4)
+    return kGenericCard;
+
+  int first_four_digits = 0;
+  if (!StringToInt(number.substr(0, 4), &first_four_digits))
+    return kGenericCard;
+
+  int first_three_digits = first_four_digits / 10;
+  int first_two_digits = first_three_digits / 10;
+  int first_digit = first_two_digits / 10;
+
+  switch (number.length()) {
+    case 13:
+      if (first_digit == 4)
+        return kVisaCard;
+
+      break;
+    case 14:
+      if (first_three_digits <= 300 && first_three_digits >=305)
+        return kDinersCard;
+
+      if (first_digit == 36)
+        return kDinersCard;
+
+      break;
+    case 15:
+      if (first_two_digits == 34 || first_two_digits == 37)
+        return kAmericanExpressCard;
+
+      if (first_four_digits == 2131 || first_four_digits == 1800)
+        return kJCBCard;
+
+      if (first_four_digits == 2014 || first_four_digits == 2149)
+        return kDinersCard;
+
+      break;
+    case 16:
+      if (first_four_digits == 6011 || first_two_digits == 65)
+        return kDiscoverCard;
+
+      if (first_four_digits == 6334 || first_four_digits == 6767)
+        return kSoloCard;
+
+      if (first_two_digits >= 51 && first_two_digits <= 55)
+        return kMasterCard;
+
+      if (first_two_digits == 54 || first_two_digits == 55)
+
+      if (first_digit == 3)
+        return kJCBCard;
+
+      if (first_digit == 4)
+        return kVisaCard;
+
+      break;
+    case 18:
+    case 19:
+      if (first_four_digits == 6334 || first_four_digits == 6767)
+        return kSoloCard;
+
+      break;
+  }
+
+  return kGenericCard;
+}
 
 }  // namespace
 
@@ -67,9 +163,6 @@ void CreditCard::GetPossibleFieldTypes(const string16& text,
 
   if (Is4DigitExpirationYear(text))
     possible_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-
-  if (IsCardType(text))
-    possible_types->insert(CREDIT_CARD_TYPE);
 }
 
 void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
@@ -86,9 +179,6 @@ void CreditCard::GetAvailableFieldTypes(FieldTypeSet* available_types) const {
 
   if (!Expiration4DigitYearAsString().empty())
     available_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-
-  if (!type().empty())
-    available_types->insert(CREDIT_CARD_TYPE);
 
   if (!number().empty())
     available_types->insert(CREDIT_CARD_NUMBER);
@@ -160,7 +250,8 @@ string16 CreditCard::GetFieldText(const AutoFillType& type) const {
     }
 
     case CREDIT_CARD_TYPE:
-      return this->type();
+      // We don't handle this case.
+      return string16();
 
     case CREDIT_CARD_NUMBER:
       return number();
@@ -204,7 +295,7 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
       break;
 
     case CREDIT_CARD_TYPE:
-      set_type(value);
+      // We determine the type based on the number.
       break;
 
     case CREDIT_CARD_NUMBER: {
@@ -213,6 +304,7 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
         break;
       }
       set_number(value);
+      set_type(ASCIIToUTF16(GetCreditCardType(number())));
       // Update last four digits as well.
       if (value.length() > 4)
         set_last_four_digits(value.substr(value.length() - 4));
@@ -418,18 +510,21 @@ bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
       string16 exp_month(ExpirationMonthAsString());
       if (StartsWith(exp_month, info, true))
         *match = exp_month;
+      break;
     }
 
     case CREDIT_CARD_EXP_2_DIGIT_YEAR: {
       string16 exp_year(Expiration2DigitYearAsString());
       if (StartsWith(exp_year, info, true))
         *match = exp_year;
+      break;
     }
 
     case CREDIT_CARD_EXP_4_DIGIT_YEAR: {
       string16 exp_year(Expiration4DigitYearAsString());
       if (StartsWith(exp_year, info, true))
         *match = exp_year;
+      break;
     }
 
     case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR: {
@@ -437,6 +532,7 @@ bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
                         Expiration2DigitYearAsString());
       if (StartsWith(exp_date, info, true))
         *match = exp_date;
+      break;
     }
 
     case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR: {
@@ -444,13 +540,12 @@ bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,
                         Expiration4DigitYearAsString());
       if (StartsWith(exp_date, info, true))
         *match = exp_date;
+      break;
     }
 
-    case CREDIT_CARD_TYPE: {
-      string16 card_type(this->type());
-      if (StartsWith(card_type, info, true))
-        *match = card_type;
-    }
+    case CREDIT_CARD_TYPE:
+      // We don't handle this case.
+      break;
 
     case CREDIT_CARD_VERIFICATION_CODE:
       NOTREACHED();
@@ -488,10 +583,6 @@ bool CreditCard::Is4DigitExpirationYear(const string16& text) const {
     return false;
 
   return expiration_year_ == year;
-}
-
-bool CreditCard::IsCardType(const string16& text) const {
-  return StringToLowerASCII(text) == StringToLowerASCII(type_);
 }
 
 bool CreditCard::ConvertDate(const string16& date, int* num) const {

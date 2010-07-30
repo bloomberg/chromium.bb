@@ -39,6 +39,7 @@ class CreditCard : public FormGroup {
   // The last four digits of the credit card number.
   string16 LastFourDigits() const;
 
+  const string16& type() const { return type_; }
   const string16& billing_address() const { return billing_address_; }
   int unique_id() const { return unique_id_; }
 
@@ -79,7 +80,6 @@ class CreditCard : public FormGroup {
 
   const string16& number() const { return number_; }
   const string16& name_on_card() const { return name_on_card_; }
-  const string16& type() const { return type_; }
   const string16& last_four_digits() const { return last_four_digits_; }
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
@@ -118,10 +118,6 @@ class CreditCard : public FormGroup {
   // Returns true if the integer value of |text| matches the 4-digit expiration
   // year.
   bool Is4DigitExpirationYear(const string16& text) const;
-
-  // Returns true if |text| matches the type of the card.  The comparison is
-  // case-insensitive.
-  bool IsCardType(const string16& text) const;
 
   // Converts |date| to an integer form.  Returns true if the conversion
   // succeeded.

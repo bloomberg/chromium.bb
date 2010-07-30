@@ -235,7 +235,6 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     const char* name;
     int id;
   } resources[] = {
-    { "genericCC", IDR_AUTOFILL_CC_GENERIC },
     { "missingImage", IDR_BROKENIMAGE },
     { "mediaPause", IDR_MEDIA_PAUSE_BUTTON },
     { "mediaPlay", IDR_MEDIA_PLAY_BUTTON },
@@ -255,6 +254,14 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     { "inputSpeech", IDR_INPUT_SPEECH },
     { "inputSpeechRecording", IDR_INPUT_SPEECH_RECORDING },
     { "inputSpeechWaiting", IDR_INPUT_SPEECH_WAITING },
+    { "americanExpressCC", IDR_AUTOFILL_CC_AMEX },
+    { "dinersCC", IDR_AUTOFILL_CC_DINERS },
+    { "discoverCC", IDR_AUTOFILL_CC_DISCOVER },
+    { "genericCC", IDR_AUTOFILL_CC_GENERIC },
+    { "jcbCC", IDR_AUTOFILL_CC_JCB },
+    { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
+    { "soloCC", IDR_AUTOFILL_CC_SOLO },
+    { "visaCC", IDR_AUTOFILL_CC_VISA },
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     // TODO(port): rename these to "skia" instead of "Linux".
     { "linuxCheckboxDisabledIndeterminate",

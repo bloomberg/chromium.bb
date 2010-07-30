@@ -54,12 +54,6 @@ string16 CombineLabelAndCreditCard(const string16& label,
     return label + kLabelSeparator + cc->LastFourDigits();
 }
 
-// The name of the generic credit card icon, which maps to the image resource ID
-// in webkit/glue:WebKitClientImpl.
-// TODO(jhawkins): Move the images to chrome/common and implement the resource
-// handling in RendererWebKitClientImpl.
-const char kGenericCC[] = "genericCC";
-
 // Removes duplicate elements whilst preserving original order of |elements| and
 // |unique_ids|.
 void RemoveDuplicateElements(
@@ -505,14 +499,13 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
     }
   }
 
-  // No CC, so no icons.
-  icons->resize(values->size());
-
   AutoFillProfile::CreateInferredLabels(&matched_profiles, labels, 0,
                                         type.field_type());
 
-  if (!include_cc_labels || !form->HasBillingFields() || !FormIsHTTPS(form))
+  if (!include_cc_labels || !form->HasBillingFields() || !FormIsHTTPS(form)) {
+    icons->resize(values->size());  // No CC, so no icons.
     return;
+  }
 
   size_t i = 0;
   std::vector<string16> expanded_values;
@@ -528,13 +521,13 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
       expanded_values.push_back((*values)[i]);
       string16 label = CombineLabelAndCreditCard((*labels)[i], *cc);
       expanded_labels.push_back(label);
+      icons->push_back((*cc)->type());
       expanded_ids.push_back(PackIDs((*cc)->unique_id(), profile->unique_id()));
     }
   }
+
   expanded_labels.swap(*labels);
   expanded_values.swap(*values);
-  // No CC, so no icons.
-  icons->resize(values->size());
   expanded_ids.swap(*unique_ids);
 }
 
@@ -605,7 +598,7 @@ void AutoFillManager::GetBillingProfileSuggestions(
     string16 label = CombineLabelAndCreditCard(inferred_labels[i],
                                                matching_creditcards[i]);
     labels->push_back(label);
-    icons->push_back(ASCIIToUTF16(kGenericCC));
+    icons->push_back(matching_creditcards[i]->type());
     unique_ids->push_back(PackIDs(matching_creditcards[i]->unique_id(),
                                   matching_profiles[i]->unique_id()));
   }
@@ -637,7 +630,7 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
       if (!form->HasNonBillingFields()) {
         values->push_back(creditcard_field_value);
         labels->push_back(CombineLabelAndCreditCard(string16(), credit_card));
-        icons->push_back(ASCIIToUTF16(kGenericCC));
+        icons->push_back(credit_card->type());
         unique_ids->push_back(PackIDs(credit_card->unique_id(), 0));
       } else {
         const std::vector<AutoFillProfile*>& profiles
@@ -655,7 +648,7 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
           string16 label = CombineLabelAndCreditCard(inferred_labels[i],
                                                      credit_card);
           labels->push_back(label);
-          icons->push_back(ASCIIToUTF16(kGenericCC));
+          icons->push_back(credit_card->type());
           unique_ids->push_back(
               PackIDs(credit_card->unique_id(), profiles[i]->unique_id()));
         }
