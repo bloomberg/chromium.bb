@@ -485,7 +485,9 @@ bool ChromeFrameAutomationClient::Initialize(
     const ChromeFrameLaunchParams& chrome_launch_params) {
   DCHECK(!IsWindow());
   chrome_frame_delegate_ = chrome_frame_delegate;
+
   chrome_launch_params_ = chrome_launch_params;
+
   ui_thread_id_ = PlatformThread::CurrentId();
 #ifndef NDEBUG
   // In debug mode give more time to work with a debugger.
@@ -522,10 +524,6 @@ bool ChromeFrameAutomationClient::Initialize(
 
   if (chrome_launch_params_.url.is_valid())
     navigate_after_initialization_ = false;
-
-  if (!navigate_after_initialization_) {
-    chrome_launch_params_.url = url_;
-  }
 
   proxy_factory_->GetAutomationServer(
       static_cast<ProxyFactory::LaunchDelegate*>(this),
@@ -591,19 +589,22 @@ bool ChromeFrameAutomationClient::InitiateNavigation(
     return false;
   }
 
-  // Important: Since we will be using the referrer_ variable from a different
-  // thread, we need to force a new std::string buffer instance for the
-  // referrer_ GURL variable.  Otherwise we can run into strangeness when the
-  // GURL is accessed and it could result in a bad URL that can cause the
-  // referrer to be dropped or something worse.
-  referrer_ = GURL(referrer.c_str());
-  url_ = parsed_url;
-  navigate_after_initialization_ = false;
+  if (parsed_url != chrome_launch_params_.url) {
+    // Important: Since we will be using the referrer_ variable from a
+    // different thread, we need to force a new std::string buffer instance for
+    // the referrer_ GURL variable.  Otherwise we can run into strangeness when
+    // the GURL is accessed and it could result in a bad URL that can cause the
+    // referrer to be dropped or something worse.
+    chrome_launch_params_.referrer = GURL(referrer.c_str());
+    chrome_launch_params_.url = parsed_url;
 
-  if (is_initialized()) {
-    BeginNavigate(url_, referrer_);
-  } else {
-    navigate_after_initialization_ = true;
+    navigate_after_initialization_ = false;
+
+    if (is_initialized()) {
+      BeginNavigate(chrome_launch_params_.url, chrome_launch_params_.referrer);
+    } else {
+      navigate_after_initialization_ = true;
+    }
   }
 
   return true;
@@ -648,7 +649,8 @@ void ChromeFrameAutomationClient::BeginNavigate(const GURL& url,
   // Could be NULL if we failed to launch Chrome in LaunchAutomationServer()
   if (!automation_server_ || !tab_.get()) {
     DLOG(WARNING) << "BeginNavigate - can't navigate.";
-    ReportNavigationError(AUTOMATION_MSG_NAVIGATION_ERROR, url_.spec());
+    ReportNavigationError(AUTOMATION_MSG_NAVIGATION_ERROR,
+                          chrome_launch_params_.url.spec());
     return;
   }
 
@@ -674,7 +676,8 @@ void ChromeFrameAutomationClient::BeginNavigate(const GURL& url,
 void ChromeFrameAutomationClient::BeginNavigateCompleted(
     AutomationMsg_NavigationResponseValues result) {
   if (result == AUTOMATION_MSG_NAVIGATION_ERROR)
-     ReportNavigationError(AUTOMATION_MSG_NAVIGATION_ERROR, url_.spec());
+     ReportNavigationError(AUTOMATION_MSG_NAVIGATION_ERROR,
+                           chrome_launch_params_.url.spec());
 }
 
 void ChromeFrameAutomationClient::FindInPage(const std::wstring& search_string,
@@ -794,8 +797,10 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
   DCHECK(IsWindow());
   DCHECK(automation_server_ != NULL);
 
-  // TODO(ananta)
-  // We should pass in the referrer for the initial navigation.
+  if (chrome_launch_params_.url.is_valid()) {
+    navigate_after_initialization_ = false;
+  }
+
   const IPC::ExternalTabSettings settings = {
     m_hWnd,
     gfx::Rect(),
@@ -917,7 +922,8 @@ void ChromeFrameAutomationClient::InitializeComplete(
     // If host specified destination URL - navigate. Apparently we do not use
     // accelerator table.
     if (navigate_after_initialization_) {
-      BeginNavigate(url_, referrer_);
+      BeginNavigate(chrome_launch_params_.url,
+                    chrome_launch_params_.referrer);
     }
   }
 

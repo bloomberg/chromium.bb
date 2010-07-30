@@ -57,7 +57,7 @@
           // page will detect and notify us back by sending us a message.
           // We set focus on a timeout as on IE it takes a while for the window
           // to become visible.
-          setTimeout(SetFocusToCF2, 100);
+          setTimeout(SetFocusToCF2, 1000);
         } catch(e) {
           appendStatus('Error setting focus to CF2. Error: ' + e.description);
           onFailure(g_test_name, g_test_id, 'CF2 focus() error');

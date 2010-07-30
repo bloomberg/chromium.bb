@@ -321,8 +321,6 @@ class ChromeFrameAutomationClient
   HWND chrome_window_;
   scoped_refptr<TabProxy> tab_;
   ChromeFrameDelegate* chrome_frame_delegate_;
-  GURL url_;
-  GURL referrer_;
 
   // Handle to the underlying chrome window. This is a child of the external
   // tab window.

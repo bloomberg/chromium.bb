@@ -409,8 +409,9 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
 
     // Probe to see whether the host implements the privileged service.
     ScopedComPtr<IChromeFramePrivileged> service;
-    HRESULT service_hr = DoQueryService(SID_ChromeFramePrivileged, client_site,
-                                service.Receive());
+    HRESULT service_hr = DoQueryService(SID_ChromeFramePrivileged,
+                                        m_spClientSite,
+                                        service.Receive());
     if (SUCCEEDED(service_hr) && service) {
       // Does the host want privileged mode?
       boolean wants_privileged = false;
@@ -462,6 +463,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     if (!InitializeAutomation(profile_name, chrome_extra_arguments,
                               IsIEInPrivate(), true, GURL(utf8_url),
                               GURL())) {
+      DLOG(ERROR) << "Failed to navigate to url:" << utf8_url;
       return E_FAIL;
     }
   }

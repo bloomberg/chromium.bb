@@ -159,7 +159,6 @@ void AutomationResourceMessageFilter::UnRegisterRequest(
     DCHECK(ContainsKey(pending_request_map_, job->id()));
     pending_request_map_.erase(job->id());
   } else {
-    DCHECK(ContainsKey(request_map_, job->id()));
     request_map_.erase(job->id());
   }
 }
