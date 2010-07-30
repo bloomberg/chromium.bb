@@ -263,17 +263,23 @@ GdkColor SkColorToGdkColor(const SkColor& color) {
 
 // A helper method for setting the GtkWindow size that should be used in place
 // of calling gtk_window_resize directly.  This is done to avoid a WM "feature"
-// where setting the window size to the screen size causes the WM to set the
+// where setting the window size to the monitor size causes the WM to set the
 // EWMH for full screen mode.
-void SetWindowSize(GtkWindow* window, int width, int height) {
+void SetWindowSize(GtkWindow* window, const gfx::Size& size) {
   GdkScreen* screen = gtk_window_get_screen(window);
-  if (width >= gdk_screen_get_width(screen) &&
-      height >= gdk_screen_get_height(screen)) {
-    // Adjust the height so we don't trigger the WM feature.
-    gtk_window_resize(window, width, height - 1);
-  } else {
-    gtk_window_resize(window, width, height);
+  gint num_monitors = gdk_screen_get_n_monitors(screen);
+  // Make sure the window doesn't match any monitor size.  We compare against
+  // all monitors because we don't know which monitor the window is going to
+  // open on (the WM decides that).
+  for (gint i = 0; i < num_monitors; ++i) {
+    GdkRectangle monitor_size;
+    gdk_screen_get_monitor_geometry(screen, i, &monitor_size);
+    if (gfx::Size(monitor_size.width, monitor_size.height) == size) {
+      gtk_window_resize(window, size.width(), size.height() - 1);
+      return;
+    }
   }
+  gtk_window_resize(window, size.width(), size.height());
 }
 
 GQuark GetBrowserWindowQuarkKey() {
@@ -648,7 +654,7 @@ void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds, bool exterior) {
   gtk_window_move(window_, x, y);
 
   if (exterior) {
-    SetWindowSize(window_, width, height);
+    SetWindowSize(window_, gfx::Size(width, height));
   } else {
     gtk_widget_set_size_request(contents_container_->widget(),
                                 width, height);
@@ -1490,7 +1496,7 @@ void BrowserWindowGtk::SetGeometryHints() {
     SetBoundsImpl(bounds, !is_popup);
   } else {
     // Ignore the position but obey the size.
-    SetWindowSize(window_, bounds.width(), bounds.height());
+    SetWindowSize(window_, bounds.size());
   }
 }
 
@@ -2124,7 +2130,7 @@ bool BrowserWindowGtk::BoundsMatchMonitorSize() {
 
   GdkRectangle monitor_size;
   gdk_screen_get_monitor_geometry(screen, monitor_num, &monitor_size);
-  return bounds_ == gfx::Rect(monitor_size);
+  return bounds_.size() == gfx::Size(monitor_size.width, monitor_size.height);
 }
 
 void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
