@@ -41,7 +41,7 @@ static const char kRunClientProcess[] = "client";
 //    testing/multiprocess_func_list.h.
 //    See the declaration of the MULTIPROCESS_TEST_MAIN macro
 //    in that file for an example.
-// 3) Call SpawnChild(L"foo"), where "foo" is the name of
+// 3) Call SpawnChild("foo"), where "foo" is the name of
 //    the function you wish to run in the child processes.
 // That's it!
 //
@@ -61,11 +61,11 @@ class MultiProcessTest : public PlatformTest {
   //
   // TODO(darin): re-enable this once we have base/debug_util.h
   // ProcessDebugFlags(&cl, DebugUtil::UNKNOWN, false);
-  base::ProcessHandle SpawnChild(const std::wstring& procname) {
+  base::ProcessHandle SpawnChild(const std::string& procname) {
     return SpawnChild(procname, false);
   }
 
-  base::ProcessHandle SpawnChild(const std::wstring& procname,
+  base::ProcessHandle SpawnChild(const std::string& procname,
                                  bool debug_on_start) {
 #if defined(OS_WIN)
     return SpawnChildImpl(procname, debug_on_start);
@@ -77,7 +77,7 @@ class MultiProcessTest : public PlatformTest {
 
 #if defined(OS_POSIX)
   base::ProcessHandle SpawnChild(
-      const std::wstring& procname,
+      const std::string& procname,
       const base::file_handle_mapping_vector& fds_to_map,
       bool debug_on_start) {
     return SpawnChildImpl(procname, fds_to_map, debug_on_start);
@@ -85,9 +85,9 @@ class MultiProcessTest : public PlatformTest {
 #endif
 
 protected:
-  CommandLine MakeCmdLine(const std::wstring& procname, bool debug_on_start) {
+  CommandLine MakeCmdLine(const std::string& procname, bool debug_on_start) {
     CommandLine cl(*CommandLine::ForCurrentProcess());
-    cl.AppendSwitchWithValue(kRunClientProcess, procname);
+    cl.AppendSwitchASCII(kRunClientProcess, procname);
     if (debug_on_start)
       cl.AppendSwitch(switches::kDebugOnStart);
     return cl;
@@ -95,7 +95,7 @@ protected:
 
  private:
 #if defined(OS_WIN)
-  base::ProcessHandle SpawnChildImpl(const std::wstring& procname,
+  base::ProcessHandle SpawnChildImpl(const std::string& procname,
                                      bool debug_on_start) {
     base::ProcessHandle handle = static_cast<base::ProcessHandle>(NULL);
     base::LaunchApp(MakeCmdLine(procname, debug_on_start),
@@ -107,7 +107,7 @@ protected:
   // TODO(port): with the CommandLine refactoring, this code is very similar
   // to the Windows code.  Investigate whether this can be made shorter.
   base::ProcessHandle SpawnChildImpl(
-      const std::wstring& procname,
+      const std::string& procname,
       const base::file_handle_mapping_vector& fds_to_map,
       bool debug_on_start) {
     base::ProcessHandle handle = base::kNullProcessHandle;

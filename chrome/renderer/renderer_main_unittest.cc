@@ -30,8 +30,8 @@ class RendererMainTest : public MultiProcessTest {
   virtual void TearDown();
 
   // Spawns a child process of the specified type
-  base::ProcessHandle SpawnChild(const std::wstring &procname,
-                                 IPC::Channel *channel);
+  base::ProcessHandle SpawnChild(const std::string& procname,
+                                 IPC::Channel* channel);
 
   // Created around each test instantiation.
   MessageLoopForIO *message_loop_;
@@ -51,8 +51,8 @@ void RendererMainTest::TearDown() {
   MultiProcessTest::TearDown();
 }
 
-ProcessHandle RendererMainTest::SpawnChild(const std::wstring &procname,
-                                           IPC::Channel *channel) {
+ProcessHandle RendererMainTest::SpawnChild(const std::string& procname,
+                                           IPC::Channel* channel) {
   base::file_handle_mapping_vector fds_to_map;
   const int ipcfd = channel->GetClientFileDescriptor();
   if (ipcfd > -1) {
@@ -90,7 +90,7 @@ TEST_F(RendererMainTest, CreateDestroy) {
   IPC::Channel control_channel(kRendererTestChannelName,
                                IPC::Channel::MODE_SERVER,
                                &listener);
-  base::ProcessHandle renderer_pid = SpawnChild(L"SimpleRenderer",
+  base::ProcessHandle renderer_pid = SpawnChild("SimpleRenderer",
                                                 &control_channel);
 
   control_channel.Connect();

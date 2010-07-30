@@ -34,7 +34,7 @@ class MacDirAccessSandboxTest : public MultiProcessTest {
  public:
   bool CheckSandbox(std::string directory_to_try) {
     setenv(kSandboxAccessPathKey, directory_to_try.c_str(), 1);
-    base::ProcessHandle child_process = SpawnChild(L"mac_sandbox_path_access");
+    base::ProcessHandle child_process = SpawnChild("mac_sandbox_path_access");
     int code = -1;
     if (!base::WaitForExitCode(child_process, &code)) {
       LOG(WARNING) << "base::WaitForExitCode failed";

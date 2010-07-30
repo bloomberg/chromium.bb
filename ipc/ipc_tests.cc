@@ -67,20 +67,15 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
 
   switch (child_type) {
   case TEST_CLIENT:
-    return MultiProcessTest::SpawnChild(L"RunTestClient", debug_on_start);
-    break;
+    return MultiProcessTest::SpawnChild("RunTestClient", debug_on_start);
   case TEST_REFLECTOR:
-    return MultiProcessTest::SpawnChild(L"RunReflector", debug_on_start);
-    break;
+    return MultiProcessTest::SpawnChild("RunReflector", debug_on_start);
   case FUZZER_SERVER:
-    return MultiProcessTest::SpawnChild(L"RunFuzzServer", debug_on_start);
-    break;
+    return MultiProcessTest::SpawnChild("RunFuzzServer", debug_on_start);
   case SYNC_SOCKET_SERVER:
-    return MultiProcessTest::SpawnChild(L"RunSyncSocketServer", debug_on_start);
-    break;
+    return MultiProcessTest::SpawnChild("RunSyncSocketServer", debug_on_start);
   default:
     return NULL;
-    break;
   }
 }
 #elif defined(OS_POSIX)
@@ -99,32 +94,32 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
   base::ProcessHandle ret = NULL;
   switch (child_type) {
   case TEST_CLIENT:
-    ret = MultiProcessTest::SpawnChild(L"RunTestClient",
+    ret = MultiProcessTest::SpawnChild("RunTestClient",
                                        fds_to_map,
                                        debug_on_start);
     break;
   case TEST_DESCRIPTOR_CLIENT:
-    ret = MultiProcessTest::SpawnChild(L"RunTestDescriptorClient",
+    ret = MultiProcessTest::SpawnChild("RunTestDescriptorClient",
                                        fds_to_map,
                                        debug_on_start);
     break;
   case TEST_DESCRIPTOR_CLIENT_SANDBOXED:
-    ret = MultiProcessTest::SpawnChild(L"RunTestDescriptorClientSandboxed",
+    ret = MultiProcessTest::SpawnChild("RunTestDescriptorClientSandboxed",
                                        fds_to_map,
                                        debug_on_start);
     break;
   case TEST_REFLECTOR:
-    ret = MultiProcessTest::SpawnChild(L"RunReflector",
+    ret = MultiProcessTest::SpawnChild("RunReflector",
                                        fds_to_map,
                                        debug_on_start);
     break;
   case FUZZER_SERVER:
-    ret = MultiProcessTest::SpawnChild(L"RunFuzzServer",
+    ret = MultiProcessTest::SpawnChild("RunFuzzServer",
                                        fds_to_map,
                                        debug_on_start);
     break;
   case SYNC_SOCKET_SERVER:
-    ret = MultiProcessTest::SpawnChild(L"RunSyncSocketServer",
+    ret = MultiProcessTest::SpawnChild("RunSyncSocketServer",
                                        fds_to_map,
                                        debug_on_start);
     break;
@@ -272,7 +267,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
     }
 
     base::ProcessHandle process_handle = MultiProcessTest::SpawnChild(
-        L"RunTestClient",
+        "RunTestClient",
         fds_to_map,
         debug_on_start);
 #endif  // defined(OS_POSIX)

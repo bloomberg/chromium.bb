@@ -29,7 +29,7 @@ bool IsProcessDead(base::ProcessHandle child) {
 
 TEST_F(ProcessWatcherTest, DelayedTermination) {
   base::ProcessHandle child_process =
-      SpawnChild(L"process_watcher_test_never_die");
+      SpawnChild("process_watcher_test_never_die");
   ProcessWatcher::EnsureProcessTerminated(child_process);
   base::WaitForSingleProcess(child_process, 5000);
 
@@ -47,7 +47,7 @@ MULTIPROCESS_TEST_MAIN(process_watcher_test_never_die) {
 
 TEST_F(ProcessWatcherTest, ImmediateTermination) {
   base::ProcessHandle child_process =
-      SpawnChild(L"process_watcher_test_die_immediately");
+      SpawnChild("process_watcher_test_die_immediately");
   // Give it time to die.
   sleep(2);
   ProcessWatcher::EnsureProcessTerminated(child_process);

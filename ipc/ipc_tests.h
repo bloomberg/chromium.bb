@@ -40,11 +40,10 @@ class IPCChannelTest : public MultiProcessTest {
   virtual void TearDown();
 
   // Spawns a child process of the specified type
-  base::ProcessHandle SpawnChild(ChildType child_type,
-                                 IPC::Channel *channel);
+  base::ProcessHandle SpawnChild(ChildType child_type, IPC::Channel* channel);
 
   // Created around each test instantiation.
-  MessageLoopForIO *message_loop_;
+  MessageLoopForIO* message_loop_;
 };
 
 #endif  // IPC_IPC_TESTS_H__
