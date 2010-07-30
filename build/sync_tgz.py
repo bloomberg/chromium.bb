@@ -83,11 +83,16 @@ def SyncTgz(url, target, username=None, password=None, verbose=True):
     # Some antivirus software can prevent the removal - print message, but
     # don't stop.
     for filename in tarfiles:
-      try:
-        os.remove(os.path.join(target, 'tmptar', filename))
-      except EnvironmentError, e:
-        if verbose:
-          print "Can not remove %s: %s" % (filename, e.strerror)
+      count = 0
+      while True:
+        try:
+          os.remove(os.path.join(target, 'tmptar', filename))
+          break
+        except EnvironmentError, e:
+          if count > 10:
+            if verbose:
+              print "Can not remove %s: %s" % (filename, e.strerror)
+            break
     try:
       os.rmdir(os.path.join(target, 'tmptar'))
     except EnvironmentError, e:
