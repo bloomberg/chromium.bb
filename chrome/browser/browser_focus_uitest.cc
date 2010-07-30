@@ -745,19 +745,20 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 // types of tabs.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   BringBrowserWindowToFront();
+
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
-
   ui_test_utils::RunAllPendingInMessageLoop();
-
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
+  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Open the download tab, focus should be on the tab contents.
   browser()->ShowDownloadsTab();
+  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open about:blank, focus should be on the location bar.
@@ -775,7 +776,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 
   // Open the new tab, reload.
   browser()->NewTab();
-
   ui_test_utils::RunAllPendingInMessageLoop();
 
   browser()->Reload(CURRENT_TAB);
@@ -789,8 +789,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
   browser()->Reload(CURRENT_TAB);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
+  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
@@ -813,8 +815,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReloadCrashedTab) {
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
   browser()->Reload(CURRENT_TAB);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
+  ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
