@@ -5,9 +5,13 @@
 #include "chrome/browser/renderer_host/redirect_to_file_resource_handler.h"
 
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/platform_file.h"
+#include "base/task.h"
+#include "chrome/browser/file_system_proxy.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/resource_response.h"
+#include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
@@ -19,7 +23,8 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
     ResourceHandler* next_handler,
     int process_id,
     ResourceDispatcherHost* host)
-    : host_(host),
+    : callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      host_(host),
       next_handler_(next_handler),
       process_id_(process_id),
       request_id_(-1),
@@ -50,8 +55,7 @@ bool RedirectToFileResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response) {
   if (response->response_head.status.is_success()) {
-    // TODO(darin): Move this file creation to a background thread.
-    file_util::CreateTemporaryFile(&file_path_);
+    DCHECK(!file_path_.empty());
     response->response_head.download_file_path = file_path_;
   }
   return next_handler_->OnResponseStarted(request_id, response);
@@ -60,6 +64,17 @@ bool RedirectToFileResourceHandler::OnResponseStarted(
 bool RedirectToFileResourceHandler::OnWillStart(int request_id,
                                                 const GURL& url,
                                                 bool* defer) {
+  request_id_ = request_id;
+  if (file_path_.empty()) {
+    // Defer starting the request until we have created the temporary file.
+    // TODO(darin): This is sub-optimal.  We should not delay starting the
+    // network request like this.
+    *defer = true;
+    FileSystemProxy::CreateTemporary(
+        callback_factory_.NewCallback(
+            &RedirectToFileResourceHandler::DidCreateTemporaryFile));
+    return true;
+  }
   return next_handler_->OnWillStart(request_id, url, defer);
 }
 
@@ -103,18 +118,9 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
   DCHECK(new_offset <= buf_->capacity());
   buf_->set_offset(new_offset);
 
-  if (!file_stream_.IsOpen()) {
-    int rv = file_stream_.Open(file_path_, base::PLATFORM_FILE_OPEN |
-                                           base::PLATFORM_FILE_WRITE |
-                                           base::PLATFORM_FILE_ASYNC);
-    if (rv != net::OK)
-      return false;
-  }
-
   if (BufIsFull())
     host_->PauseRequest(process_id_, request_id, true);
 
-  request_id_ = request_id;
   return WriteMore();
 }
 
@@ -127,9 +133,30 @@ bool RedirectToFileResourceHandler::OnResponseCompleted(
 
 void RedirectToFileResourceHandler::OnRequestClosed() {
   next_handler_->OnRequestClosed();
+
+  // The renderer no longer has a WebURLLoader open to this request, so we can
+  // close and unlink the file.
+
+  // We require this explicit call to Close since file_stream_ was constructed
+  // directly from a PlatformFile.
+  file_stream_->Close();
+  file_stream_.reset();
+
+  FileSystemProxy::Delete(file_path_, NULL);
 }
 
 RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
+  DCHECK(!file_stream_.get());
+}
+
+void RedirectToFileResourceHandler::DidCreateTemporaryFile(
+    base::PassPlatformFile file_handle,
+    FilePath file_path) {
+  file_path_ = file_path;
+  file_stream_.reset(new net::FileStream(file_handle.ReleaseValue(),
+                                         base::PLATFORM_FILE_WRITE |
+                                         base::PLATFORM_FILE_ASYNC));
+  host_->StartDeferredRequest(process_id_, request_id_);
 }
 
 void RedirectToFileResourceHandler::DidWriteToFile(int result) {
@@ -148,6 +175,7 @@ void RedirectToFileResourceHandler::DidWriteToFile(int result) {
 }
 
 bool RedirectToFileResourceHandler::WriteMore() {
+  DCHECK(file_stream_.get());
   for (;;) {
     if (write_cursor_ == buf_->offset()) {
       // We've caught up to the network load, but it may be in the process of
@@ -163,9 +191,9 @@ bool RedirectToFileResourceHandler::WriteMore() {
     if (write_callback_pending_)
       return true;
     DCHECK(write_cursor_ < buf_->offset());
-    int rv = file_stream_.Write(buf_->StartOfBuffer() + write_cursor_,
-                                buf_->offset() - write_cursor_,
-                                &write_callback_);
+    int rv = file_stream_->Write(buf_->StartOfBuffer() + write_cursor_,
+                                 buf_->offset() - write_cursor_,
+                                 &write_callback_);
     if (rv == net::ERR_IO_PENDING) {
       write_callback_pending_ = true;
       return true;

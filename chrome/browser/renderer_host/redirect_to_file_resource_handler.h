@@ -6,14 +6,18 @@
 #define CHROME_BROWSER_RENDERER_HOST_REDIRECT_TO_FILE_RESOURCE_HANDLER_H_
 
 #include "base/file_path.h"
+#include "base/platform_file.h"
 #include "base/ref_counted.h"
+#include "base/scoped_callback_factory.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "net/base/completion_callback.h"
-#include "net/base/file_stream.h"
 
+class RefCountedPlatformFile;
 class ResourceDispatcherHost;
 
 namespace net {
+class FileStream;
 class GrowableIOBuffer;
 }
 
@@ -42,9 +46,13 @@ class RedirectToFileResourceHandler : public ResourceHandler {
 
  private:
   virtual ~RedirectToFileResourceHandler();
+  void DidCreateTemporaryFile(base::PassPlatformFile file_handle,
+                              FilePath file_path);
   void DidWriteToFile(int result);
   bool WriteMore();
   bool BufIsFull() const;
+
+  base::ScopedCallbackFactory<RedirectToFileResourceHandler> callback_factory_;
 
   ResourceDispatcherHost* host_;
   scoped_refptr<ResourceHandler> next_handler_;
@@ -63,7 +71,7 @@ class RedirectToFileResourceHandler : public ResourceHandler {
   int write_cursor_;
 
   FilePath file_path_;
-  net::FileStream file_stream_;
+  scoped_ptr<net::FileStream> file_stream_;
   net::CompletionCallbackImpl<RedirectToFileResourceHandler> write_callback_;
   bool write_callback_pending_;
 
