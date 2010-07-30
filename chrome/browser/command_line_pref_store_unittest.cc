@@ -32,7 +32,7 @@ static const wchar_t* unknown_string = L"unknown_other_switch";
 // Tests a simple string pref on the command line.
 TEST(CommandLinePrefStoreTest, SimpleStringPref) {
   CommandLine cl(CommandLine::ARGUMENTS_ONLY);
-  cl.AppendSwitchWithValue(switches::kLang, "hi-MOM");
+  cl.AppendSwitchASCII(switches::kLang, "hi-MOM");
   CommandLinePrefStore store(&cl);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
@@ -57,7 +57,7 @@ TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
 TEST(CommandLinePrefStoreTest, NoPrefs) {
   CommandLine cl(CommandLine::ARGUMENTS_ONLY);
   cl.AppendSwitch(WideToASCII(unknown_string));
-  cl.AppendSwitchWithValue(WideToASCII(unknown_bool), "a value");
+  cl.AppendSwitchASCII(WideToASCII(unknown_bool), "a value");
   CommandLinePrefStore store(&cl);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
@@ -75,9 +75,9 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
   CommandLine cl(CommandLine::ARGUMENTS_ONLY);
   cl.AppendSwitch(WideToASCII(unknown_string));
   cl.AppendSwitch(switches::kProxyAutoDetect);
-  cl.AppendSwitchWithValue(switches::kProxyServer, "proxy");
-  cl.AppendSwitchWithValue(switches::kProxyBypassList, "list");
-  cl.AppendSwitchWithValue(WideToASCII(unknown_bool), "a value");
+  cl.AppendSwitchASCII(switches::kProxyServer, "proxy");
+  cl.AppendSwitchASCII(switches::kProxyBypassList, "list");
+  cl.AppendSwitchASCII(WideToASCII(unknown_bool), "a value");
   CommandLinePrefStore store(&cl);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
@@ -121,9 +121,9 @@ TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
   // All proxy switches except no-proxy.
   CommandLine cl2(CommandLine::ARGUMENTS_ONLY);
   cl2.AppendSwitch(switches::kProxyAutoDetect);
-  cl2.AppendSwitchWithValue(switches::kProxyServer, "server");
-  cl2.AppendSwitchWithValue(switches::kProxyPacUrl, "url");
-  cl2.AppendSwitchWithValue(switches::kProxyBypassList, "list");
+  cl2.AppendSwitchASCII(switches::kProxyServer, "server");
+  cl2.AppendSwitchASCII(switches::kProxyPacUrl, "url");
+  cl2.AppendSwitchASCII(switches::kProxyBypassList, "list");
   TestCommandLinePrefStore store4(&cl2);
   EXPECT_EQ(store4.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
   EXPECT_TRUE(store4.ProxySwitchesAreValid());

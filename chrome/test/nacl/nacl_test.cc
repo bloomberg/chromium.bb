@@ -33,7 +33,7 @@ NaClTest::NaClTest()
 #if defined(OS_LINUX) && defined(USE_SECCOMP_SANDBOX)
   launch_arguments_.AppendSwitch(switches::kDisableSeccompSandbox);
 #endif
-  launch_arguments_.AppendSwitchWithValue(switches::kLoggingLevel, "0");
+  launch_arguments_.AppendSwitchASCII(switches::kLoggingLevel, "0");
 }
 
 NaClTest::~NaClTest() {}

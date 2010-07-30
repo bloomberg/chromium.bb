@@ -81,9 +81,8 @@ bool ServiceUtilityProcessHost::StartProcess() {
   }
 
   CommandLine cmd_line(exe_path);
-  cmd_line.AppendSwitchWithValue(switches::kProcessType,
-                                 switches::kUtilityProcess);
-  cmd_line.AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
+  cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kUtilityProcess);
+  cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id());
   cmd_line.AppendSwitch(switches::kLang);
 
   return Launch(&cmd_line);

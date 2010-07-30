@@ -197,12 +197,12 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingsProxyConfig) {
   CommandLine command_line(unused_path);
   command_line.AppendSwitch(switches::kNoProxyServer);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
-  command_line.AppendSwitchWithValue(switches::kProxyPacUrl,
-                                     "http://chromium.org/test.pac");
-  command_line.AppendSwitchWithValue(switches::kProxyServer,
-                                     "http://chromium2.org");
-  command_line.AppendSwitchWithValue(switches::kProxyBypassList,
-                                     "http://chromium3.org");
+  command_line.AppendSwitchASCII(switches::kProxyPacUrl,
+                                 "http://chromium.org/test.pac");
+  command_line.AppendSwitchASCII(switches::kProxyServer,
+                                 "http://chromium2.org");
+  command_line.AppendSwitchASCII(switches::kProxyBypassList,
+                                 "http://chromium3.org");
 
   ConfigurationPolicyPrefStore store(&command_line, NULL);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
@@ -231,12 +231,12 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigManualOverride) {
   CommandLine command_line(unused_path);
   command_line.AppendSwitch(switches::kNoProxyServer);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
-  command_line.AppendSwitchWithValue(switches::kProxyPacUrl,
-                                     "http://chromium.org/test.pac");
-  command_line.AppendSwitchWithValue(switches::kProxyServer,
-                                     "http://chromium.org");
-  command_line.AppendSwitchWithValue(switches::kProxyBypassList,
-                                     "http://chromium.org");
+  command_line.AppendSwitchASCII(switches::kProxyPacUrl,
+                                 "http://chromium.org/test.pac");
+  command_line.AppendSwitchASCII(switches::kProxyServer,
+                                 "http://chromium.org");
+  command_line.AppendSwitchASCII(switches::kProxyBypassList,
+                                 "http://chromium.org");
 
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());

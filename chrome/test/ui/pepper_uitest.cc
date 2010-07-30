@@ -32,7 +32,7 @@ class PepperTester : public NPAPITesterBase {
     launch_arguments_.AppendSwitch(switches::kEnableGPUPlugin);
     // Use Mesa software renderer so it can run on testbots without any
     // graphics hardware.
-    launch_arguments_.AppendSwitchWithValue(switches::kUseGL, "osmesa");
+    launch_arguments_.AppendSwitchASCII(switches::kUseGL, "osmesa");
     NPAPITesterBase::SetUp();
   }
 };

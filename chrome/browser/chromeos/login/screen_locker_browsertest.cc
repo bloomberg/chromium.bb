@@ -141,7 +141,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitchWithValue(switches::kLoginProfile, "user");
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
     command_line->AppendSwitch(switches::kNoFirstRun);
   }
 

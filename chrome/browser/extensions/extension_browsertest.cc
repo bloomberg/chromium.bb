@@ -53,9 +53,9 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // This makes sure that we create the Default profile first, with no
   // ExtensionsService and then the real profile with one, as we do when
   // running on chromeos.
-  command_line->AppendSwitchWithValue(
-      switches::kLoginUser, "TestUser@gmail.com");
-  command_line->AppendSwitchWithValue(switches::kLoginProfile, "user");
+  command_line->AppendSwitchASCII(switches::kLoginUser,
+                                  "TestUser@gmail.com");
+  command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   command_line->AppendSwitch(switches::kNoFirstRun);
 #endif
 }

@@ -81,9 +81,8 @@ class LoginUserTest : public LoginTestBase {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitchWithValue(
-        switches::kLoginUser, "TestUser@gmail.com");
-    command_line->AppendSwitchWithValue(switches::kLoginProfile, "user");
+    command_line->AppendSwitchASCII(switches::kLoginUser, "TestUser@gmail.com");
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
     command_line->AppendSwitch(switches::kNoFirstRun);
   }
 };
@@ -96,7 +95,7 @@ class LoginProfileTest : public LoginTestBase {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitchWithValue(switches::kLoginProfile, "user");
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
     command_line->AppendSwitch(switches::kNoFirstRun);
   }
 };

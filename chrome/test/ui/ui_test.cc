@@ -334,7 +334,7 @@ void UITestBase::StartHttpServerWithPort(const FilePath& root_directory,
                                      const std::wstring& port) {
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
-  cmd_line->AppendSwitchWithValue("server", "start");
+  cmd_line->AppendSwitchASCII("server", "start");
   cmd_line->AppendSwitch("register_cygwin");
   cmd_line->AppendSwitchPath("root", root_directory);
 
@@ -355,7 +355,7 @@ void UITestBase::StartHttpServerWithPort(const FilePath& root_directory,
 void UITestBase::StopHttpServer() {
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
-  cmd_line->AppendSwitchWithValue("server", "stop");
+  cmd_line->AppendSwitchASCII("server", "stop");
   RunCommand(*cmd_line.get());
 }
 
@@ -1118,7 +1118,7 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   command_line.AppendSwitch(switches::kNoDefaultBrowserCheck);
 
   // This is a UI test.
-  command_line.AppendSwitchWithValue(switches::kTestType, kUITestType);
+  command_line.AppendSwitchASCII(switches::kTestType, kUITestType);
 
   // Tell the browser to use a temporary directory just for this test.
   command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir());
@@ -1131,8 +1131,8 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
     command_line.AppendSwitch(switches::kDomAutomationController);
 
   if (include_testing_id_) {
-    command_line.AppendSwitchWithValue(switches::kTestingChannelID,
-                                       server_->channel_id());
+    command_line.AppendSwitchASCII(switches::kTestingChannelID,
+                                   server_->channel_id());
   }
 
   if (!show_error_dialogs_ &&

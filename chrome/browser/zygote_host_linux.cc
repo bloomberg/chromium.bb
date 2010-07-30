@@ -67,8 +67,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
   CommandLine cmd_line(chrome_path);
 
-  cmd_line.AppendSwitchWithValue(switches::kProcessType,
-                                 switches::kZygoteProcess);
+  cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kZygoteProcess);
 
   int fds[2];
   CHECK(socketpair(PF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);

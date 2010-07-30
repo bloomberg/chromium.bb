@@ -44,10 +44,10 @@ bool NaClBrokerHost::Init() {
   CommandLine* cmd_line = new CommandLine(nacl_path);
   nacl::CopyNaClCommandLineArguments(cmd_line);
 
-  cmd_line->AppendSwitchWithValue(switches::kProcessType,
-      switches::kNaClBrokerProcess);
+  cmd_line->AppendSwitchASCII(switches::kProcessType,
+                              switches::kNaClBrokerProcess);
 
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
   BrowserChildProcessHost::Launch(FilePath(), cmd_line);
   return true;

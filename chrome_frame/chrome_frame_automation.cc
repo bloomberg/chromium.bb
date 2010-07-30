@@ -279,8 +279,8 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   // Launch browser
   scoped_ptr<CommandLine> command_line(
       chrome_launcher::CreateLaunchCommandLine());
-  command_line->AppendSwitchWithValue(switches::kAutomationClientChannelID,
-      proxy->channel_id());
+  command_line->AppendSwitchASCII(switches::kAutomationClientChannelID,
+                                  proxy->channel_id());
 
   // Run Chrome in Chrome Frame mode. In practice, this modifies the paths
   // and registry keys that Chrome looks in via the BrowserDistribution

@@ -174,7 +174,7 @@ class TabSwitchingUITest : public UITest {
   void AddLaunchArguments() {
     launch_arguments_.AppendSwitch(switches::kEnableLogging);
     launch_arguments_.AppendSwitch(switches::kDumpHistogramsOnExit);
-    launch_arguments_.AppendSwitchWithValue(switches::kLoggingLevel, "0");
+    launch_arguments_.AppendSwitchASCII(switches::kLoggingLevel, "0");
   }
 
   DISALLOW_COPY_AND_ASSIGN(TabSwitchingUITest);

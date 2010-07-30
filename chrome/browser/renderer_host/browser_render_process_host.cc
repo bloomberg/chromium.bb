@@ -331,7 +331,7 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
     if (!renderer_prefix.empty())
       cmd_line->PrependWrapper(renderer_prefix);
     AppendRendererCommandLine(cmd_line);
-    cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id);
+    cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     // As long as there's no renderer prefix, we can use the zygote process
@@ -445,7 +445,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   // Pass the process type first, so it shows first in process listings.
   // Extensions use a special pseudo-process type to make them distinguishable,
   // even though they're just renderers.
-  command_line->AppendSwitchWithValue(switches::kProcessType,
+  command_line->AppendSwitchASCII(switches::kProcessType,
       extension_process_ ? switches::kExtensionProcess :
                            switches::kRendererProcess);
 
@@ -458,7 +458,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
 
   // Pass on the browser locale.
   const std::string locale = g_browser_process->GetApplicationLocale();
-  command_line->AppendSwitchWithValue(switches::kLang, locale);
+  command_line->AppendSwitchASCII(switches::kLang, locale);
 
   // If we run FieldTrials, we want to pass to their state to the renderer so
   // that it can act in accordance with each state, or record histograms
@@ -466,8 +466,8 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   std::string field_trial_states;
   FieldTrialList::StatesToString(&field_trial_states);
   if (!field_trial_states.empty()) {
-    command_line->AppendSwitchWithValue(switches::kForceFieldTestNameAndValue,
-        field_trial_states);
+    command_line->AppendSwitchASCII(switches::kForceFieldTestNameAndValue,
+                                    field_trial_states);
   }
 
   BrowserChildProcessHost::SetCrashReporterCommandLine(command_line);
@@ -480,7 +480,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   const std::string& profile =
       browser_command_line.GetSwitchValueASCII(switches::kProfile);
   if (!profile.empty())
-    command_line->AppendSwitchWithValue(switches::kProfile, profile);
+    command_line->AppendSwitchASCII(switches::kProfile, profile);
 #endif
 }
 

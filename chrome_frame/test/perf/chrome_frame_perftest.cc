@@ -1300,7 +1300,7 @@ bool RunSingleTestOutOfProc(const std::string& test_name) {
   // Always enable disabled tests.  This method is not called with disabled
   // tests unless this flag was specified to the browser test executable.
   cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
-  cmd_line.AppendSwitchWithValue("gtest_filter", test_name);
+  cmd_line.AppendSwitchASCII("gtest_filter", test_name);
 
   base::ProcessHandle process_handle;
   if (!base::LaunchApp(cmd_line, false, false, &process_handle))

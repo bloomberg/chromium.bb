@@ -455,7 +455,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       // Hack for Google Desktop crash. Trick GD into not injecting its DLL into
       // this subprocess. See
       // http://code.google.com/p/chromium/issues/detail?id=25580
-      cmd_line->AppendSwitchWithValue("ignored", " --type=renderer ");
+      cmd_line->AppendSwitchASCII("ignored", " --type=renderer ");
     }
   }
 

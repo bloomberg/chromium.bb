@@ -64,8 +64,8 @@ class PluginTest : public UITest {
       // the new plugin.
       launch_arguments_.AppendSwitch(kUseOldWMPPluginSwitch);
     } else if (strcmp(test_info->name(), "FlashSecurity") == 0) {
-      launch_arguments_.AppendSwitchWithValue(switches::kTestSandbox,
-                                              "security_tests.dll");
+      launch_arguments_.AppendSwitchASCII(switches::kTestSandbox,
+                                          "security_tests.dll");
     }
 
     UITest::SetUp();

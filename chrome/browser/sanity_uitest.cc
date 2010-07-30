@@ -60,7 +60,7 @@ class EarlyReturnTest : public UITest {
     // handshake that will never come.
     set_command_execution_timeout_ms(1);
     set_action_timeout_ms(1);
-    launch_arguments_.AppendSwitchWithValue(switches::kTryChromeAgain, "10001");
+    launch_arguments_.AppendSwitchASCII(switches::kTryChromeAgain, "10001");
   }
 };
 

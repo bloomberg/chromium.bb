@@ -361,8 +361,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   CommandLine* cmd_line = new CommandLine(exe_path);
   // Put the process type and plugin path first so they're easier to see
   // in process listings using native process management tools.
-  cmd_line->AppendSwitchWithValue(switches::kProcessType,
-                                  switches::kPluginProcess);
+  cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kPluginProcess);
   cmd_line->AppendSwitchPath(switches::kPluginPath, info.path);
 
   if (logging::DialogsAreSuppressed())
@@ -414,7 +413,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   DCHECK(!data_dir.empty());
   cmd_line->AppendSwitchPath(switches::kPluginDataDir, data_dir);
 
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
   SetCrashReporterCommandLine(cmd_line);
 

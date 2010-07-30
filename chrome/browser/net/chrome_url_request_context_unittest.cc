@@ -24,24 +24,23 @@ TEST(ChromeURLRequestContextTest, CreateProxyConfigTest) {
   no_proxy.AppendSwitch(switches::kNoProxyServer);
   CommandLine no_proxy_extra_params(unused_path);
   no_proxy_extra_params.AppendSwitch(switches::kNoProxyServer);
-  no_proxy_extra_params.AppendSwitchWithValue(switches::kProxyServer,
-      "http://proxy:8888");
+  no_proxy_extra_params.AppendSwitchASCII(switches::kProxyServer,
+                                          "http://proxy:8888");
   CommandLine single_proxy(unused_path);
-  single_proxy.AppendSwitchWithValue(switches::kProxyServer,
-      "http://proxy:8888");
+  single_proxy.AppendSwitchASCII(switches::kProxyServer, "http://proxy:8888");
   CommandLine per_scheme_proxy(unused_path);
-  per_scheme_proxy.AppendSwitchWithValue(switches::kProxyServer,
-      "http=httpproxy:8888;ftp=ftpproxy:8889");
+  per_scheme_proxy.AppendSwitchASCII(switches::kProxyServer,
+                                     "http=httpproxy:8888;ftp=ftpproxy:8889");
   CommandLine per_scheme_proxy_bypass(unused_path);
-  per_scheme_proxy_bypass.AppendSwitchWithValue(switches::kProxyServer,
+  per_scheme_proxy_bypass.AppendSwitchASCII(
+      switches::kProxyServer,
       "http=httpproxy:8888;ftp=ftpproxy:8889");
-  per_scheme_proxy_bypass.AppendSwitchWithValue(
+  per_scheme_proxy_bypass.AppendSwitchASCII(
       switches::kProxyBypassList,
       ".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8");
   CommandLine with_pac_url(unused_path);
-  with_pac_url.AppendSwitchWithValue(switches::kProxyPacUrl,
-      "http://wpad/wpad.dat");
-  with_pac_url.AppendSwitchWithValue(
+  with_pac_url.AppendSwitchASCII(switches::kProxyPacUrl, "http://wpad/wpad.dat");
+  with_pac_url.AppendSwitchASCII(
       switches::kProxyBypassList,
       ".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8");
   CommandLine with_auto_detect(unused_path);

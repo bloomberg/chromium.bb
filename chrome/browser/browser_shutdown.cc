@@ -181,7 +181,7 @@ void Shutdown() {
         switches.begin(); i != switches.end(); ++i) {
       CommandLine::StringType switch_value = i->second;
       if (!switch_value.empty())
-        new_cl->AppendSwitchWithValue(i->first, i->second);
+        new_cl->AppendSwitchNative(i->first, i->second);
       else
         new_cl->AppendSwitch(i->first);
     }

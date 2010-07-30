@@ -29,7 +29,7 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
       command_line->AppendSwitch(switches::kDebugOnStart);
       should_help_child = true;
     }
-    command_line->AppendSwitchWithValue(switches::kDebugChildren, value);
+    command_line->AppendSwitchASCII(switches::kDebugChildren, value);
   } else if (current_cmd_line.HasSwitch(switches::kWaitForDebuggerChildren)) {
     // Look to pass-on the kWaitForDebugger flag.
     std::string value = current_cmd_line.GetSwitchValueASCII(
@@ -43,8 +43,7 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
          value == switches::kPluginProcess)) {
       command_line->AppendSwitch(switches::kWaitForDebugger);
     }
-    command_line->AppendSwitchWithValue(switches::kWaitForDebuggerChildren,
-                                        value);
+    command_line->AppendSwitchASCII(switches::kWaitForDebuggerChildren, value);
   }
   return should_help_child;
 }

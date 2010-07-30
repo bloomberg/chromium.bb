@@ -29,7 +29,7 @@ class LocaleTestsBase : public UITest {
 class LocaleTestsDa : public LocaleTestsBase {
  public:
   LocaleTestsDa() : LocaleTestsBase() {
-    launch_arguments_.AppendSwitchWithValue("lang", "da");
+    launch_arguments_.AppendSwitchASCII("lang", "da");
 
     // Linux doesn't use --lang, it only uses environment variables to set the
     // language.
@@ -43,7 +43,7 @@ class LocaleTestsDa : public LocaleTestsBase {
 class LocaleTestsHe : public LocaleTestsBase {
  public:
   LocaleTestsHe() : LocaleTestsBase() {
-    launch_arguments_.AppendSwitchWithValue("lang", "he");
+    launch_arguments_.AppendSwitchASCII("lang", "he");
 #if defined(OS_LINUX)
     old_lc_all_ = getenv("LC_ALL");
     setenv("LC_ALL", "he_IL.UTF-8", 1);
@@ -54,7 +54,7 @@ class LocaleTestsHe : public LocaleTestsBase {
 class LocaleTestsZhTw : public LocaleTestsBase {
  public:
   LocaleTestsZhTw() : LocaleTestsBase() {
-    launch_arguments_.AppendSwitchWithValue("lang", "zh-TW");
+    launch_arguments_.AppendSwitchASCII("lang", "zh-TW");
 #if defined(OS_LINUX)
     old_lc_all_ = getenv("LC_ALL");
     setenv("LC_ALL", "zh_TW.UTF-8", 1);

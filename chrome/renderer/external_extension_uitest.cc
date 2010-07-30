@@ -43,8 +43,7 @@ SearchProviderTest::SearchProviderTest()
     host_rule.append(":");
     host_rule.append(server_url.port());
   }
-  launch_arguments_.AppendSwitchWithValue(switches::kHostRules,
-                                          host_rule);
+  launch_arguments_.AppendSwitchASCII(switches::kHostRules, host_rule);
 }
 
 SearchProviderTest::~SearchProviderTest() {

@@ -615,7 +615,7 @@ void AppendToPythonPath(const FilePath& dir) {
 
 TestWebSocketServer::TestWebSocketServer(const FilePath& root_directory) {
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
-  cmd_line->AppendSwitchWithValue("server", "start");
+  cmd_line->AppendSwitchASCII("server", "start");
   cmd_line->AppendSwitch("chromium");
   cmd_line->AppendSwitch("register_cygwin");
   cmd_line->AppendSwitchPath("root", root_directory);
@@ -661,7 +661,7 @@ CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
 
 TestWebSocketServer::~TestWebSocketServer() {
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
-  cmd_line->AppendSwitchWithValue("server", "stop");
+  cmd_line->AppendSwitchASCII("server", "stop");
   cmd_line->AppendSwitch("chromium");
   cmd_line->AppendSwitchPath("pidfile", websocket_pid_file_);
   base::LaunchApp(*cmd_line.get(), true, false, NULL);

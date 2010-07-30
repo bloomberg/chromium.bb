@@ -78,11 +78,11 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   }
 
   CommandLine* cmd_line = new CommandLine(exe_path);
-  cmd_line->AppendSwitchWithValue(switches::kProcessType,
-                                  switches::kUtilityProcess);
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessType,
+                              switches::kUtilityProcess);
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
   std::string locale = g_browser_process->GetApplicationLocale();
-  cmd_line->AppendSwitchWithValue(switches::kLang, locale);
+  cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
   SetCrashReporterCommandLine(cmd_line);
 

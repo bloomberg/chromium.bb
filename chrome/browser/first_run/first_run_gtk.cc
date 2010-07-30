@@ -113,7 +113,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   return false;
 }
 
-//  TODO(port): This is just a piece of the silent import functionality from
+// TODO(port): This is just a piece of the silent import functionality from
 // ImportSettings for Windows.  It would be nice to get the rest of it ported.
 bool FirstRun::ImportBookmarks(const std::wstring& import_bookmarks_path) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
@@ -121,16 +121,14 @@ bool FirstRun::ImportBookmarks(const std::wstring& import_bookmarks_path) {
 
   // Propagate user data directory switch.
   if (cmdline.HasSwitch(switches::kUserDataDir)) {
-    import_cmd.AppendSwitchWithValue(
-        switches::kUserDataDir,
-        cmdline.GetSwitchValueASCII(switches::kUserDataDir));
+    import_cmd.AppendSwitchPath(switches::kUserDataDir,
+        cmdline.GetSwitchValuePath(switches::kUserDataDir));
   }
   // Since ImportSettings is called before the local state is stored on disk
   // we pass the language as an argument. GetApplicationLocale checks the
   // current command line as fallback.
-  import_cmd.AppendSwitchWithValue(
-      switches::kLang,
-      ASCIIToWide(g_browser_process->GetApplicationLocale()));
+  import_cmd.AppendSwitchASCII(switches::kLang,
+                               g_browser_process->GetApplicationLocale());
 
   import_cmd.CommandLine::AppendSwitchWithValue(
       switches::kImportFromFile, import_bookmarks_path);

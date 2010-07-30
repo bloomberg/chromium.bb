@@ -66,13 +66,13 @@ class OutOfProcTestRunner : public tests::TestRunner {
     switches.erase(kGTestOutputFlag);
     for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
          iter != switches.end(); ++iter) {
-      new_cmd_line.AppendSwitchWithValue((*iter).first, (*iter).second);
+      new_cmd_line.AppendSwitchNative((*iter).first, (*iter).second);
     }
 
     // Always enable disabled tests.  This method is not called with disabled
     // tests unless this flag was specified to the browser test executable.
     new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
-    new_cmd_line.AppendSwitchWithValue("gtest_filter", test_name);
+    new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
     new_cmd_line.AppendSwitch(kChildProcessFlag);
 
     // Do not let the child ignore failures.  We need to propagate the

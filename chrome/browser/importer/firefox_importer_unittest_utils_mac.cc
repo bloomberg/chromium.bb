@@ -34,7 +34,7 @@ const char kTestChannelID[] = "T1";
 bool LaunchNSSDecrypterChildProcess(const std::wstring& nss_path,
     const IPC::Channel& channel, base::ProcessHandle* handle) {
   CommandLine cl(*CommandLine::ForCurrentProcess());
-  cl.AppendSwitchWithValue("client", "NSSDecrypterChildProcess");
+  cl.AppendSwitchASCII("client", "NSSDecrypterChildProcess");
 
   FilePath ff_dylib_dir = FilePath::FromWStringHack(nss_path);
   // Set env variable needed for FF encryption libs to load.

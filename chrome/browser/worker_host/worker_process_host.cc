@@ -105,9 +105,8 @@ bool WorkerProcessHost::Init() {
     return false;
 
   CommandLine* cmd_line = new CommandLine(exe_path);
-  cmd_line->AppendSwitchWithValue(switches::kProcessType,
-                                  switches::kWorkerProcess);
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID, channel_id());
+  cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kWorkerProcess);
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
   SetCrashReporterCommandLine(cmd_line);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -136,10 +135,10 @@ bool WorkerProcessHost::Init() {
   }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLoggingLevel)) {
-    const std::wstring level =
-        CommandLine::ForCurrentProcess()->GetSwitchValue(
+    const std::string level =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kLoggingLevel);
-    cmd_line->AppendSwitchWithValue(switches::kLoggingLevel, level);
+    cmd_line->AppendSwitchASCII(switches::kLoggingLevel, level);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(

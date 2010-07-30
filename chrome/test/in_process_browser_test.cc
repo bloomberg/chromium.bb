@@ -142,7 +142,7 @@ void InProcessBrowserTest::SetUp() {
   command_line->AppendSwitch(switches::kNoFirstRun);
 
   // This is a Browser test.
-  command_line->AppendSwitchWithValue(switches::kTestType, kBrowserTestType);
+  command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
 
   // Single-process mode is not set in BrowserMain so it needs to be processed
   // explicitly.

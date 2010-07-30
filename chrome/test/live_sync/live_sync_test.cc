@@ -60,8 +60,8 @@ void LiveSyncTest::SetUp() {
   // TODO(rsimha): Until we implement a fake Tango server against which tests
   // can run, we need to set the --sync-notification-method to "transitional".
   if (!cl->HasSwitch(switches::kSyncNotificationMethod)) {
-    cl->AppendSwitchWithValue(switches::kSyncNotificationMethod,
-        "transitional");
+    cl->AppendSwitchASCII(switches::kSyncNotificationMethod,
+                          "transitional");
   }
 
   // Unless a sync server was explicitly provided, run a test one locally.
@@ -183,9 +183,9 @@ void LiveSyncTest::SetUpLocalTestServer() {
   started_local_test_server_ = true;
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  cl->AppendSwitchWithValue(switches::kSyncServiceURL,
+  cl->AppendSwitchASCII(switches::kSyncServiceURL,
       StringPrintf("http://%s:%d/chromiumsync", server_.kHostName,
-          server_.kOKHTTPSPort));
+                   server_.kOKHTTPSPort));
 }
 
 void LiveSyncTest::TearDownLocalTestServer() {

@@ -84,10 +84,8 @@ bool GpuProcessHost::Init() {
     return false;
 
   CommandLine* cmd_line = new CommandLine(exe_path);
-  cmd_line->AppendSwitchWithValue(switches::kProcessType,
-                                  switches::kGpuProcess);
-  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                  ASCIIToWide(channel_id()));
+  cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
+  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
 
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {

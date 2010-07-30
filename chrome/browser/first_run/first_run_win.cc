@@ -135,7 +135,7 @@ bool LaunchSetupWithParam(const std::string& param, const std::wstring& value,
   exe_path = exe_path.Append(installer_util::kSetupExe);
   base::ProcessHandle ph;
   CommandLine cl(exe_path);
-  cl.AppendSwitchWithValue(param, value);
+  cl.AppendSwitchNative(param, value);
 
   CommandLine* browser_command_line = CommandLine::ForCurrentProcess();
   if (browser_command_line->HasSwitch(switches::kChromeFrame)) {
@@ -580,8 +580,8 @@ class HungImporterMonitor : public WorkerThreadTicker::Callback {
   DISALLOW_COPY_AND_ASSIGN(HungImporterMonitor);
 };
 
-std::wstring EncodeImportParams(int browser_type, int options, HWND window) {
-  return StringPrintf(L"%d@%d@%d", browser_type, options, window);
+std::string EncodeImportParams(int browser_type, int options, HWND window) {
+  return StringPrintf("%d@%d@%d", browser_type, options, window);
 }
 
 bool DecodeImportParams(const std::wstring& encoded,
@@ -693,12 +693,11 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
   // Since ImportSettings is called before the local state is stored on disk
   // we pass the language as an argument.  GetApplicationLocale checks the
   // current command line as fallback.
-  import_cmd.AppendSwitchWithValue(
-      switches::kLang,
-      ASCIIToWide(g_browser_process->GetApplicationLocale()));
+  import_cmd.AppendSwitchASCII(switches::kLang,
+                               g_browser_process->GetApplicationLocale());
 
   if (items_to_import) {
-    import_cmd.CommandLine::AppendSwitchWithValue(switches::kImport,
+    import_cmd.CommandLine::AppendSwitchASCII(switches::kImport,
         EncodeImportParams(browser_type, items_to_import, parent_window));
   }
 

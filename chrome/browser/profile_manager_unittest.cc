@@ -95,7 +95,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   ProfileManager profile_manager;
   std::string profile_dir("my_user");
 
-  cl->AppendSwitchWithValue(switches::kLoginProfile, profile_dir);
+  cl->AppendSwitchASCII(switches::kLoginProfile, profile_dir);
   cl->AppendSwitch(switches::kTestType);
 
   FilePath expected_default =

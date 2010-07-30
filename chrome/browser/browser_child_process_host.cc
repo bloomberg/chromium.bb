@@ -88,15 +88,15 @@ void BrowserChildProcessHost::SetCrashReporterCommandLine(
 #if defined(USE_LINUX_BREAKPAD)
   const bool unattended = (getenv(env_vars::kHeadless) != NULL);
   if (unattended || GoogleUpdateSettings::GetCollectStatsConsent()) {
-    command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
-                                        ASCIIToWide(google_update::posix_guid +
-                                                    "," +
-                                                    base::GetLinuxDistro()));
+    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
+                                    google_update::posix_guid +
+                                    "," +
+                                    base::GetLinuxDistro());
   }
 #elif defined(OS_MACOSX)
   if (GoogleUpdateSettings::GetCollectStatsConsent())
-    command_line->AppendSwitchWithValue(switches::kEnableCrashReporter,
-                                        ASCIIToWide(google_update::posix_guid));
+    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
+                                    google_update::posix_guid);
 #endif  // OS_MACOSX
 }
 
