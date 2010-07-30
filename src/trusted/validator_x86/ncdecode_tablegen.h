@@ -13,7 +13,7 @@
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 
 /* Report the given fatal error, and then quit. */
-void NaClFatal(const char* s) NORETURN;
+void NaClFatal(const char* s);
 
 /* Possible run modes for instructions. */
 typedef enum {
