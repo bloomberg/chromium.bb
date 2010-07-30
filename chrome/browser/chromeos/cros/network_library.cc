@@ -132,8 +132,12 @@ std::string Network::GetErrorString() {
       return "DHCP Failed";
     case ERROR_CONNECT_FAILED:
       return "Connect Failed";
+    case ERROR_BAD_PASSPHRASE:
+      return "Bad Passphrase";
+    case ERROR_BAD_WEPKEY:
+      return "Bad WEP Key";
   }
-  return "";
+  return "Unknown Error";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
