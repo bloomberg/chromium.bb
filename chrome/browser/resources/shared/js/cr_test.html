@@ -244,6 +244,33 @@ function testAddSingletonGetter() {
       x, z);
 }
 
+function testWithDoc() {
+  var d = {};
+
+  assertEquals(document, cr.doc);
+
+  cr.withDoc(d, function() {
+    assertEquals(d, cr.doc);
+  });
+
+  assertEquals(document, cr.doc);
+}
+
+function testDefineWithGetter() {
+  var v = 0;
+  cr.define('foo', function() {
+    return {
+      get v() {
+        return v;
+      }
+    }
+  });
+
+  assertEquals(0, foo.v);
+
+  v = 1;
+  assertEquals(1, foo.v);
+}
 
 </script>
 

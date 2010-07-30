@@ -300,8 +300,14 @@ const cr = (function() {
   function define(name, fun) {
     var obj = exportPath(name);
     var exports = fun();
-    for (var key in exports) {
-      obj[key] = exports[key];
+    for (var propertyName in exports) {
+      // Maybe we should check the prototype chain here? The current usage
+      // pattern is always using an object literal so we only care about own
+      // properties.
+      var propertyDescriptor = Object.getOwnPropertyDescriptor(exports,
+                                                               propertyName);
+      if (propertyDescriptor)
+        Object.defineProperty(obj, propertyName, propertyDescriptor);
     }
   }
 
