@@ -24,7 +24,7 @@ class UpdateObserver : public UpdateLibrary::Observer {
   virtual ~UpdateObserver();
 
  private:
-  virtual void Changed(UpdateLibrary* object);
+  virtual void UpdateStatusChanged(UpdateLibrary* library);
 
   SystemNotification notification_;
   int progress_;  // Last displayed remaining time in minutes

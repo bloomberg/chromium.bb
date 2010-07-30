@@ -22,8 +22,8 @@ UpdateObserver::~UpdateObserver() {
   notification_.Hide();
 }
 
-void UpdateObserver::Changed(UpdateLibrary* object) {
-  switch (object->status().status) {
+void UpdateObserver::UpdateStatusChanged(UpdateLibrary* library) {
+  switch (library->status().status) {
     case UPDATE_STATUS_IDLE:
     case UPDATE_STATUS_CHECKING_FOR_UPDATE:
       // Do nothing in these cases, we don't want to notify the user of the
@@ -36,7 +36,7 @@ void UpdateObserver::Changed(UpdateLibrary* object) {
       break;
     case UPDATE_STATUS_DOWNLOADING:
     {
-      int progress = static_cast<int>(object->status().download_progress *
+      int progress = static_cast<int>(library->status().download_progress *
           100.0);
       if (progress != progress_) {
         progress_ = progress;

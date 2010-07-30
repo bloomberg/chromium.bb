@@ -53,12 +53,18 @@ class UpdateLibrary {
   class Observer {
    public:
     virtual ~Observer() { }
-    virtual void Changed(UpdateLibrary* obj) = 0;
+    virtual void UpdateStatusChanged(UpdateLibrary* library) = 0;
   };
 
   virtual ~UpdateLibrary() {}
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Initiates update check and returns true if check was initiated.
+  virtual bool CheckForUpdate() = 0;
+
+  // Reboots if update has been performed.
+  virtual bool RebootAfterUpdate() = 0;
 
   virtual const Status& status() const = 0;
 };
@@ -72,6 +78,8 @@ class UpdateLibraryImpl : public UpdateLibrary {
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
 
+  virtual bool CheckForUpdate();
+  virtual bool RebootAfterUpdate();
   virtual const Status& status() const;
 
  private:

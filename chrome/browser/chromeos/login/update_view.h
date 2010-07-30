@@ -24,17 +24,24 @@ class UpdateView : public views::View {
   explicit UpdateView(ScreenObserver* observer);
   virtual ~UpdateView();
 
-  virtual void Init();
-  virtual void Reset();
-  virtual void UpdateLocalizedStrings();
+  void Init();
+  void Reset();
+  void UpdateLocalizedStrings();
 
   // Sets update controller.
-  virtual void set_controller(UpdateController* controller) {
+  void set_controller(UpdateController* controller) {
     controller_ = controller;
   }
 
   // Advances view's progress bar. Maximum progress is 100.
-  virtual void AddProgress(int progress);
+  void AddProgress(int progress);
+
+  // Sets the current value for the progress bar. Maximum progress is 100.
+  void SetProgress(int progress);
+
+  // Shows label with instructions for user to do a manual reboot.
+  // Usually is not called since we rely on API that will reboot after update.
+  void ShowManualRebootInfo();
 
   // views::View implementation:
   virtual void Layout();
@@ -49,6 +56,8 @@ class UpdateView : public views::View {
 
   // Dialog controls.
   views::Label* installing_updates_label_;
+  views::Label* reboot_label_;
+  views::Label* manual_reboot_label_;
   views::Label* escape_to_skip_label_;
   views::ProgressBar* progress_bar_;
 

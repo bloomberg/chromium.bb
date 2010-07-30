@@ -34,7 +34,7 @@ void CallObservers(chromeos::MockUpdateLibrary* lib,
     .WillRepeatedly((ReturnRef(x)))
     .RetiresOnSaturation();
   FOR_EACH_OBSERVER(chromeos::UpdateLibrary::Observer, *observers,
-                    Changed(lib));
+                    UpdateStatusChanged(lib));
 }
 
 void FireSuccessSequence(chromeos::MockUpdateLibrary* lib,

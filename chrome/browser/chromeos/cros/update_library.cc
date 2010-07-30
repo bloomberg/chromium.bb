@@ -36,6 +36,20 @@ void UpdateLibraryImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool UpdateLibraryImpl::CheckForUpdate() {
+  if (!CrosLibrary::Get()->EnsureLoaded())
+    return false;
+
+  return InitiateUpdateCheck();
+}
+
+bool UpdateLibraryImpl::RebootAfterUpdate() {
+  if (!CrosLibrary::Get()->EnsureLoaded())
+    return false;
+
+  return RebootIfUpdated();
+}
+
 const UpdateLibrary::Status& UpdateLibraryImpl::status() const {
   return status_;
 }
@@ -43,8 +57,8 @@ const UpdateLibrary::Status& UpdateLibraryImpl::status() const {
 // static
 void UpdateLibraryImpl::ChangedHandler(void* object,
     const UpdateProgress& status) {
-  UpdateLibraryImpl* power = static_cast<UpdateLibraryImpl*>(object);
-  power->UpdateStatus(Status(status));
+  UpdateLibraryImpl* updater = static_cast<UpdateLibraryImpl*>(object);
+  updater->UpdateStatus(Status(status));
 }
 
 void UpdateLibraryImpl::Init() {
@@ -61,7 +75,7 @@ void UpdateLibraryImpl::UpdateStatus(const Status& status) {
   }
 
   status_ = status;
-  FOR_EACH_OBSERVER(Observer, observers_, Changed(this));
+  FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(this));
 }
 
 }  // namespace chromeos

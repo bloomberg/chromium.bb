@@ -8,9 +8,9 @@
 
 #include "base/ref_counted.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/login/update_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
-#include "chrome/browser/google_update.h"
 
 namespace chromeos {
 
@@ -23,16 +23,14 @@ class UpdateController {
 };
 
 class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
-                    public GoogleUpdateStatusListener,
+                    public UpdateLibrary::Observer,
                     public UpdateController {
  public:
   explicit UpdateScreen(WizardScreenDelegate* delegate);
   virtual ~UpdateScreen();
 
-  // Overridden from GoogleUpdateStatusListener:
-  virtual void OnReportResults(GoogleUpdateUpgradeResult result,
-                               GoogleUpdateErrorCode error_code,
-                               const std::wstring& version);
+  // UpdateLibrary::Observer implementation:
+  virtual void UpdateStatusChanged(UpdateLibrary* library);
 
   // Overridden from UpdateController:
   virtual void StartUpdate();
@@ -40,25 +38,27 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
 
   // Reports update results to the ScreenObserver.
   virtual void ExitUpdate();
+
   // Returns true if minimal update time has elapsed.
   virtual bool MinimalUpdateTimeElapsed();
-  // Creates GoogleUpdate object.
-  virtual GoogleUpdate* CreateGoogleUpdate();
 
  private:
-  // Timer notification handler.
+  // Timer notification handlers.
   void OnMinimalUpdateTimeElapsed();
+  void OnWaitForRebootTimeElapsed();
 
-  // Timer.
+  // Timer for the minimal interval when update screen is shown.
   base::OneShotTimer<UpdateScreen> minimal_update_time_timer_;
 
-  // Update status.
-  GoogleUpdateUpgradeResult update_result_;
-  GoogleUpdateErrorCode update_error_;
-  bool checking_for_update_;
+  // Timer for the interval to wait for the reboot.
+  // If reboot didn't happen - ask user to reboot manually.
+  base::OneShotTimer<UpdateScreen> reboot_timer_;
 
-  // Google Updater.
-  scoped_refptr<GoogleUpdate> google_updater_;
+  // True if should proceed with OOBE once timer is elapsed.
+  bool proceed_with_oobe_;
+
+  // True if in the process of checking for update.
+  bool checking_for_update_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreen);
 };

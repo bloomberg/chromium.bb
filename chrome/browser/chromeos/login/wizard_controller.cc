@@ -90,7 +90,7 @@ class ContentView : public views::View {
         accel_image_screen_(views::Accelerator(base::VKEY_I,
                                                false, true, true)),
         accel_eula_screen_(views::Accelerator(base::VKEY_E,
-                                                false, true, true)) {
+                                              false, true, true)) {
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
