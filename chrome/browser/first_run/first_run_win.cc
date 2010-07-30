@@ -155,11 +155,12 @@ bool WriteEULAtoTempFile(FilePath* eula_path) {
       ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_TERMS_HTML);
   if (terms.empty())
     return false;
-  FilePath temp_dir;
-  if (!file_util::GetTempDir(&temp_dir))
+  FILE *file = file_util::CreateAndOpenTemporaryFile(eula_path);
+  if (!file)
     return false;
-  *eula_path = temp_dir.Append(L"chrome_eula_iframe.html");
-  return (file_util::WriteFile(*eula_path, terms.data(), terms.size()) > 0);
+  bool good = fwrite(terms.data(), terms.size(), 1, file) == 1;
+  fclose(file);
+  return good;
 }
 
 // Helper class that performs delayed first-run tasks that need more of the

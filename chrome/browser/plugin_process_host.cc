@@ -147,11 +147,9 @@ void PluginDownloadUrlHelper::OnSSLCertificateError(
 
 void PluginDownloadUrlHelper::OnResponseStarted(URLRequest* request) {
   if (!download_file_->IsOpen()) {
-    file_util::GetTempDir(&download_file_path_);
-
-    GURL request_url = request->url();
-    download_file_path_ = download_file_path_.Append(
-        UTF8ToWide(request_url.ExtractFileName()));
+    // This is safe because once the temp file has been safely created, an
+    // attacker can't drop a symlink etc into place.
+    file_util::CreateTemporaryFile(&download_file_path_);
     download_file_->Open(download_file_path_,
                          base::PLATFORM_FILE_CREATE_ALWAYS |
                          base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE);
