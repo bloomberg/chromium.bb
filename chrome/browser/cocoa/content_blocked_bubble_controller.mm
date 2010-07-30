@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/blocked_popup_container.h"
@@ -14,6 +15,7 @@
 #import "chrome/browser/cocoa/l10n_util.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -86,6 +88,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (void)initializePopupList;
 - (void)initializeGeoLists;
 - (void)sizeToFitManageDoneButtons;
+- (void)removeInfoButton;
 - (void)popupLinkClicked:(id)sender;
 - (void)clearGeolocationForCurrentHost:(id)sender;
 @end
@@ -358,6 +361,18 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [[self window] setFrame:frame display:NO];
 }
 
+- (void)removeInfoButton {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCookiePrompt)) {
+    // Remove info button and resize vertically.
+    int deltaY = NSHeight([infoButton_ frame]);
+    [infoButton_ removeFromSuperview];
+    NSRect frame = [[self window] frame];
+    frame.size.height -= deltaY;
+    [[self window] setFrame:frame display:NO];
+  }
+}
+
 - (void)awakeFromNib {
   [[self bubble] setBubbleType:info_bubble::kWhiteInfoBubble];
   [[self bubble] setArrowLocation:info_bubble::kTopRight];
@@ -366,6 +381,9 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [self sizeToFitManageDoneButtons];
 
   [self initializeTitle];
+  if (contentSettingBubbleModel_->content_type() ==
+      CONTENT_SETTINGS_TYPE_COOKIES)
+    [self removeInfoButton];
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
     [self initializeRadioGroup];
   if (contentSettingBubbleModel_->content_type() ==

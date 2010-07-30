@@ -5,6 +5,7 @@
 #include "chrome/browser/content_setting_bubble_model.h"
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -73,7 +75,9 @@ class ContentSettingTitleLinkAndInfoModel
                                       Profile* profile,
                                       ContentSettingsType content_type)
       : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
-    SetInfoLink();
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableCookiePrompt))
+      SetInfoLink();
   }
 
  private:

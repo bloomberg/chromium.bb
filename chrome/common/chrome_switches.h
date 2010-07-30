@@ -49,6 +49,7 @@ extern const char kDisableAudio[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackingStoreLimit[];
 extern const char kDisableByteRangeSupport[];
+extern const char kDisableCookiePrompt[];
 extern const char kDisableCustomJumpList[];
 extern const char kDisableDatabases[];
 extern const char kDisableDesktopNotifications[];

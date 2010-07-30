@@ -123,6 +123,9 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // Disable support for cached byte-ranges.
 const char kDisableByteRangeSupport[]       = "disable-byte-range-support";
 
+// Disables the cookie prompt.
+const char kDisableCookiePrompt[]           = "disable-cookie-prompt";
+
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 

@@ -33,6 +33,9 @@ typedef std::map<NSButton*, int> PopupLinks;
   // The container for the bubble contents of the geolocation bubble.
   IBOutlet NSView* contentsContainer_;
 
+  // The info button of the cookies bubble.
+  IBOutlet NSButton* infoButton_;
+
   scoped_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
   content_blocked_bubble::PopupLinks popupLinks_;
 }

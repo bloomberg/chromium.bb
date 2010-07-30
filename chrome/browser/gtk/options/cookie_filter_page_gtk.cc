@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/options/cookie_filter_page_gtk.h"
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/gtk/options/cookies_view.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -64,6 +66,9 @@ void CookieFilterPageGtk::HighlightGroup(OptionsGroup highlight_group) {
 }
 
 GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
+  bool disable_cookie_prompt = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCookiePrompt);
+
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   allow_radio_ = gtk_radio_button_new_with_label(NULL,
@@ -71,6 +76,15 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   g_signal_connect(G_OBJECT(allow_radio_), "toggled",
                    G_CALLBACK(OnCookiesAllowToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(vbox), allow_radio_, FALSE, FALSE, 0);
+
+  if (!disable_cookie_prompt) {
+    ask_every_time_radio_ = gtk_radio_button_new_with_label_from_widget(
+        GTK_RADIO_BUTTON(allow_radio_),
+        l10n_util::GetStringUTF8(IDS_COOKIES_ASK_EVERY_TIME_RADIO).c_str());
+    g_signal_connect(G_OBJECT(ask_every_time_radio_), "toggled",
+                     G_CALLBACK(OnCookiesAllowToggledThunk), this);
+    gtk_box_pack_start(GTK_BOX(vbox), ask_every_time_radio_, FALSE, FALSE, 0);
+  }
 
   block_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(allow_radio_),
@@ -89,9 +103,11 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   GtkWidget* radio_button = NULL;
   if (default_setting == CONTENT_SETTING_ALLOW) {
     radio_button = allow_radio_;
-  } else {
-    DCHECK(default_setting == CONTENT_SETTING_BLOCK);
+  } else if (default_setting == CONTENT_SETTING_BLOCK) {
     radio_button = block_radio_;
+  } else {
+    DCHECK(default_setting == CONTENT_SETTING_ASK);
+    radio_button = ask_every_time_radio_;
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio_button), TRUE);
 
@@ -148,6 +164,8 @@ void CookieFilterPageGtk::OnCookiesAllowToggled(GtkWidget* toggle_button) {
   ContentSetting setting = CONTENT_SETTING_ALLOW;
   if (toggle_button == allow_radio_)
     setting = CONTENT_SETTING_ALLOW;
+  else if (toggle_button == ask_every_time_radio_)
+    setting = CONTENT_SETTING_ASK;
   else if (toggle_button == block_radio_)
     setting = CONTENT_SETTING_BLOCK;
 

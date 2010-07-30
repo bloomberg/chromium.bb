@@ -44,6 +44,7 @@ class CookieFilterPageGtk : public OptionsPageBase {
 
   // Widgets of the cookie storing group
   GtkWidget* allow_radio_;
+  GtkWidget* ask_every_time_radio_;
   GtkWidget* block_radio_;
 
   GtkWidget* exceptions_button_;

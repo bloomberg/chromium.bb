@@ -5,6 +5,7 @@
 #include "chrome/browser/views/options/content_filter_page_view.h"
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_exceptions_table_model.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/exceptions_view.h"
 #include "chrome/browser/views/options/simple_content_exceptions_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/radio_button.h"
 #include "views/grid_layout.h"
@@ -88,7 +90,7 @@ void ContentFilterPageView::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   static const int kAskIDs[] = {
-    0,
+    IDS_COOKIES_ASK_EVERY_TIME_RADIO,
     0,
     0,
     0,
@@ -100,14 +102,18 @@ void ContentFilterPageView::InitControlLayout() {
                  Need_a_setting_for_every_content_settings_type);
   DCHECK_EQ(arraysize(kAskIDs),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-  if (kAskIDs[content_type_] != 0) {
-    ask_radio_ = new views::RadioButton(
-        l10n_util::GetString(kAskIDs[content_type_]), radio_button_group);
-    ask_radio_->set_listener(this);
-    ask_radio_->SetMultiLine(true);
-    layout->StartRow(0, single_column_set_id);
-    layout->AddView(ask_radio_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  if (content_type_ != CONTENT_SETTINGS_TYPE_COOKIES ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCookiePrompt)) {
+    if (kAskIDs[content_type_] != 0) {
+      ask_radio_ = new views::RadioButton(
+          l10n_util::GetString(kAskIDs[content_type_]), radio_button_group);
+      ask_radio_->set_listener(this);
+      ask_radio_->SetMultiLine(true);
+      layout->StartRow(0, single_column_set_id);
+      layout->AddView(ask_radio_);
+      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+    }
   }
 
   static const int kBlockIDs[] = {

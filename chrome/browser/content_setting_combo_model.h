@@ -27,6 +27,8 @@ class ContentSettingComboModel : public ComboboxModel {
  private:
   const bool show_session_;
 
+  const bool disable_cookie_prompt_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentSettingComboModel);
 };
 

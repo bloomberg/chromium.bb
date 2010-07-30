@@ -4,6 +4,7 @@
 
 #include "chrome/browser/host_content_settings_map.h"
 
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
@@ -13,6 +14,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -581,9 +583,13 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
       }
     }
   }
-  // Migrate obsolete cookie prompt mode.
-  if (settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] == CONTENT_SETTING_ASK)
-    settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCookiePrompt)) {
+    // Migrate obsolete cookie prompt mode.
+    if (settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] ==
+        CONTENT_SETTING_ASK)
+      settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
+  }
 }
 
 void HostContentSettingsMap::ForceDefaultsToBeExplicit() {

@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/mac_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -22,6 +23,7 @@
 #import "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -123,6 +125,8 @@ class PrefObserverDisabler {
 
 - (id)initWithProfile:(Profile*)profile {
   DCHECK(profile);
+  disableCookiePrompt_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCookiePrompt);
   NSString* nibpath =
       [mac_util::MainAppBundle() pathForResource:@"ContentSettings"
                                           ofType:@"nib"];
@@ -173,6 +177,9 @@ class PrefObserverDisabler {
   DCHECK(tabView_);
   DCHECK(tabViewPicker_);
   DCHECK_EQ(self, [[self window] delegate]);
+
+  [tabView_ removeTabViewItem:[tabView_
+      tabViewItemAtIndex:disableCookiePrompt_ ? 0 : 1]];
 
   // Adapt views to potentially long localized strings.
   CGFloat windowDelta = 0;
@@ -232,8 +239,13 @@ class PrefObserverDisabler {
 
 - (void)setCookieSettingIndex:(NSInteger)value {
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  // If the cookie prompt is disabled, the radio button for "block" is at the
+  // position of the "ask" radio in the old dialog.
+  if (disableCookiePrompt_ && value == kCookieAskIndex)
+    value = kCookieDisabledIndex;
   switch (value) {
     case kCookieEnabledIndex:  setting = CONTENT_SETTING_ALLOW; break;
+    case kCookieAskIndex:      setting = CONTENT_SETTING_ASK; break;
     case kCookieDisabledIndex: setting = CONTENT_SETTING_BLOCK; break;
     default:
       NOTREACHED();
@@ -249,7 +261,12 @@ class PrefObserverDisabler {
   switch (profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES)) {
     case CONTENT_SETTING_ALLOW:        return kCookieEnabledIndex;
-    case CONTENT_SETTING_BLOCK:        return kCookieDisabledIndex;
+    case CONTENT_SETTING_ASK:          return kCookieAskIndex;
+    // If the cookie prompt is disabled, the radio button for "block" is at the
+    // position of the "ask" radio in the old dialog.
+    case CONTENT_SETTING_BLOCK:        return disableCookiePrompt_ ?
+                                           kCookieAskIndex :
+                                           kCookieDisabledIndex;
     default:
       NOTREACHED();
       return kCookieEnabledIndex;
