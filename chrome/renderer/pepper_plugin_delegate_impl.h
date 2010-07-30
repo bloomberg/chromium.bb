@@ -33,6 +33,10 @@ class PepperPluginDelegateImpl
   // pepper::PluginDelegate implementation.
   virtual void InstanceCreated(pepper::PluginInstance* instance);
   virtual void InstanceDeleted(pepper::PluginInstance* instance);
+  virtual PlatformAudio* CreateAudio(
+      uint32_t sample_rate,
+      uint32_t sample_count,
+      pepper::PluginDelegate::PlatformAudio::Client* client);
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual void DidChangeNumberOfFindResults(int identifier,
                                             int total,

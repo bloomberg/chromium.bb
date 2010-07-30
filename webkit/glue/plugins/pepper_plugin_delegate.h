@@ -5,7 +5,11 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 
+#include "base/shared_memory.h"
+#include "base/sync_socket.h"
 #include "third_party/ppapi/c/pp_stdint.h"
+
+class AudioMessageFilter;
 
 namespace skia {
 class PlatformCanvas;
@@ -34,6 +38,33 @@ class PluginDelegate {
     virtual intptr_t GetSharedMemoryHandle() const = 0;
   };
 
+  class PlatformAudio {
+   public:
+    class Client {
+     public:
+      virtual ~Client() {}
+
+      // Called when the stream is created.
+      virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
+                                 size_t shared_memory_size,
+                                 base::SyncSocket::Handle socket) = 0;
+    };
+
+    virtual ~PlatformAudio() {}
+
+    // Starts the playback. Returns false on error or if called before the
+    // stream is created or after the stream is closed.
+    virtual bool StartPlayback() = 0;
+
+    // Stops the playback. Returns false on error or if called before the stream
+    // is created or after the stream is closed.
+    virtual bool StopPlayback() = 0;
+
+    // Closes the stream. Make sure to call this before the object is
+    // destructed.
+    virtual void ShutDown() = 0;
+  };
+
   // Indicates that the given instance has been created.
   virtual void InstanceCreated(pepper::PluginInstance* instance) = 0;
 
@@ -52,6 +83,11 @@ class PluginDelegate {
 
   // Notifies that the index of the currently selected item has been updated.
   virtual void DidChangeSelectedFindResult(int identifier, int index) = 0;
+
+  // The caller will own the pointer returned from this.
+  virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
+                                     uint32_t sample_count,
+                                     PlatformAudio::Client* client) = 0;
 };
 
 }  // namespace pepper

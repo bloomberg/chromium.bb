@@ -34,6 +34,7 @@
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/pp_var.h"
+#include "webkit/glue/plugins/pepper_audio.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_directory_reader.h"
@@ -156,6 +157,12 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetInterface();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
     return ImageData::GetInterface();
+  if (strcmp(name, PPB_AUDIO_CONFIG_INTERFACE) == 0)
+    return AudioConfig::GetInterface();
+  if (strcmp(name, PPB_AUDIO_INTERFACE) == 0)
+    return Audio::GetInterface();
+  if (strcmp(name, PPB_AUDIO_TRUSTED_INTERFACE) == 0)
+    return Audio::GetTrustedInterface();
   if (strcmp(name, PPB_DEVICECONTEXT2D_INTERFACE) == 0)
     return DeviceContext2D::GetInterface();
   if (strcmp(name, PPB_URLLOADER_INTERFACE) == 0)

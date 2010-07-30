@@ -5,7 +5,10 @@
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 
 #include "app/surface/transport_dib.h"
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "chrome/common/render_messages.h"
+#include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/render_view.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
@@ -41,6 +44,116 @@ class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
 
   DISALLOW_COPY_AND_ASSIGN(PlatformImage2DImpl);
 };
+
+class PlatformAudioImpl
+    : public pepper::PluginDelegate::PlatformAudio,
+      public AudioMessageFilter::Delegate {
+ public:
+  explicit PlatformAudioImpl(scoped_refptr<AudioMessageFilter> filter)
+      : client_(NULL), filter_(filter), stream_id_(0) {
+    DCHECK(filter_);
+  }
+
+  virtual ~PlatformAudioImpl() {
+    // Make sure we have been shut down.
+    DCHECK_EQ(0, stream_id_);
+    DCHECK(!client_);
+  }
+
+  // Initialize this audio context. StreamCreated() will be called when the
+  // stream is created.
+  bool Initialize(uint32_t sample_rate, uint32_t sample_count,
+       pepper::PluginDelegate::PlatformAudio::Client* client);
+
+  virtual bool StartPlayback() {
+    return filter_ && filter_->Send(
+        new ViewHostMsg_PlayAudioStream(0, stream_id_));
+  }
+
+  virtual bool StopPlayback() {
+    return filter_ && filter_->Send(
+        new ViewHostMsg_PauseAudioStream(0, stream_id_));
+  }
+
+  virtual void ShutDown();
+
+ private:
+  virtual void OnRequestPacket(uint32 bytes_in_buffer,
+                               const base::Time& message_timestamp) {
+    LOG(FATAL) << "Should never get OnRequestPacket in PlatformAudioImpl";
+  }
+
+  virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state) { }
+
+  virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length) {
+    LOG(FATAL) << "Should never get OnCreated in PlatformAudioImpl";
+  }
+
+  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
+                                   base::SyncSocket::Handle socket_handle,
+                                   uint32 length);
+
+  virtual void OnVolume(double volume) { }
+
+  // The client to notify when the stream is created.
+  pepper::PluginDelegate::PlatformAudio::Client* client_;
+  // MessageFilter used to send/receive IPC.
+  scoped_refptr<AudioMessageFilter> filter_;
+  // Our ID on the MessageFilter.
+  int32 stream_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformAudioImpl);
+};
+
+bool PlatformAudioImpl::Initialize(
+    uint32_t sample_rate, uint32_t sample_count,
+    pepper::PluginDelegate::PlatformAudio::Client* client) {
+
+  DCHECK(client);
+  // Make sure we don't call init more than once.
+  DCHECK_EQ(0, stream_id_);
+
+  client_ = client;
+
+  ViewHostMsg_Audio_CreateStream_Params params;
+  params.format = AudioManager::AUDIO_PCM_LINEAR;
+  params.channels = 2;
+  params.sample_rate = sample_rate;
+  params.bits_per_sample = 16;
+
+  params.packet_size = sample_count * params.channels *
+      (params.bits_per_sample >> 3);
+
+  stream_id_ = filter_->AddDelegate(this);
+  return filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params,
+                                                         true));
+}
+
+void PlatformAudioImpl::OnLowLatencyCreated(
+    base::SharedMemoryHandle handle, base::SyncSocket::Handle socket_handle,
+    uint32 length) {
+#if defined(OS_WIN)
+  DCHECK(handle);
+  DCHECK(socket_handle);
+#else
+  DCHECK_NE(-1, handle.fd);
+  DCHECK_NE(-1, socket_handle);
+#endif
+  DCHECK(length);
+
+  client_->StreamCreated(handle, length, socket_handle);
+}
+
+void PlatformAudioImpl::ShutDown() {
+  // Make sure we don't call shutdown more than once.
+  if (!stream_id_) {
+    return;
+  }
+  filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
+  filter_->RemoveDelegate(stream_id_);
+  stream_id_ = 0;
+  client_ = NULL;
+}
 
 }  // namespace
 
@@ -148,3 +261,16 @@ void PepperPluginDelegateImpl::DidChangeSelectedFindResult(int identifier,
   render_view_->reportFindInPageSelection(
       identifier, index + 1, WebKit::WebRect());
 }
+
+pepper::PluginDelegate::PlatformAudio* PepperPluginDelegateImpl::CreateAudio(
+    uint32_t sample_rate, uint32_t sample_count,
+    pepper::PluginDelegate::PlatformAudio::Client* client) {
+  scoped_ptr<PlatformAudioImpl> audio(
+      new PlatformAudioImpl(render_view_->audio_message_filter()));
+  if (audio->Initialize(sample_rate, sample_count, client)) {
+    return audio.release();
+  } else {
+    return NULL;
+  }
+}
+

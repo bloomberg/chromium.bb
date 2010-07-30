@@ -97,7 +97,6 @@ class Graphics2DDeviceContext {
 class AudioDeviceContext : public AudioMessageFilter::Delegate,
                            public base::DelegateSimpleThread::Delegate {
  public:
-  // TODO(neb): if plugin_delegate parameter is indeed unused, remove it
   explicit AudioDeviceContext() : stream_id_(0) {
   }
   virtual ~AudioDeviceContext();
@@ -121,13 +120,13 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate,
                                    base::SyncSocket::Handle socket_handle,
                                    uint32 length);
   virtual void OnVolume(double volume);
+  virtual void OnDestroy();
   // End of AudioMessageFilter::Delegate implementation
 
   // DelegateSimpleThread::Delegate implementation
   virtual void Run();
   // End of DelegateSimpleThread::Delegate implementation
 
-  void OnDestroy();
   void FireAudioCallback() {
     if (context_ && context_->config.callback) {
       context_->config.callback(context_);

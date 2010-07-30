@@ -14,6 +14,8 @@
 namespace pepper {
 
 class Buffer;
+class Audio;
+class AudioConfig;
 class DeviceContext2D;
 class DirectoryReader;
 class FileChooser;
@@ -73,6 +75,8 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   // Type-specific getters for individual resource types. These will return
   // NULL if the resource does not match the specified type. Used by the Cast()
   // function.
+  virtual Audio* AsAudio() { return NULL; }
+  virtual AudioConfig* AsAudioConfig() { return NULL; }
   virtual Buffer* AsBuffer() { return NULL; }
   virtual DeviceContext2D* AsDeviceContext2D() { return NULL; }
   virtual DirectoryReader* AsDirectoryReader() { return NULL; }
@@ -117,6 +121,8 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
       return As##Type();                             \
   }
 
+DEFINE_RESOURCE_CAST(Audio)
+DEFINE_RESOURCE_CAST(AudioConfig)
 DEFINE_RESOURCE_CAST(Buffer)
 DEFINE_RESOURCE_CAST(DeviceContext2D)
 DEFINE_RESOURCE_CAST(DirectoryReader)
