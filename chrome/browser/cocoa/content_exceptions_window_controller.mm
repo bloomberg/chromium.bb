@@ -518,6 +518,8 @@ static ContentExceptionsWindowController*
       return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_ALLOW_BUTTON);
     case CONTENT_SETTING_BLOCK:
       return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_BLOCK_BUTTON);
+    case CONTENT_SETTING_ASK:
+      return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_ASK_BUTTON);
     case CONTENT_SETTING_SESSION_ONLY:
       return l10n_util::GetNSStringWithFixup(
           IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
