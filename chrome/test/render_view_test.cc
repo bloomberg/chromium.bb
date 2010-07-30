@@ -80,7 +80,7 @@ void RenderViewTest::SetUp() {
 
   // Setting flags and really doing anything with WebKit is fairly fragile and
   // hacky, but this is the world we live in...
-  webkit_glue::SetJavaScriptFlags(L" --expose-gc");
+  webkit_glue::SetJavaScriptFlags(" --expose-gc");
   WebKit::initialize(&webkitclient_);
   WebScriptController::registerExtension(BaseJsV8Extension::Get());
   WebScriptController::registerExtension(JsonSchemaJsV8Extension::Get());

@@ -165,14 +165,14 @@ RenderProcessImpl::RenderProcessImpl()
 
   // Out of process dev tools rely upon auto break behavior.
   webkit_glue::SetJavaScriptFlags(
-      L"--debugger-auto-break"
+      "--debugger-auto-break"
       // Enable lazy in-memory profiling.
-      L" --prof --prof-lazy --logfile=* --compress-log");
+      " --prof --prof-lazy --logfile=* --compress-log");
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
     webkit_glue::SetJavaScriptFlags(
-      command_line.GetSwitchValue(switches::kJavaScriptFlags));
+        command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
   }
 
   if (command_line.HasSwitch(switches::kEnableWatchdog)) {

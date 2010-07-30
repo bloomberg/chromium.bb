@@ -152,7 +152,7 @@ TEST_F(SessionHistoryTest, MAYBE_FrameBackForward) {
   ASSERT_TRUE(NULL != server.get());
 
   // about:blank should be loaded first.
-  GURL home(WideToUTF8(homepage_));
+  GURL home(homepage_);
   ASSERT_FALSE(tab_->GoBack());
   EXPECT_EQ(L"", GetTabTitle());
   EXPECT_EQ(home, GetTabURL());

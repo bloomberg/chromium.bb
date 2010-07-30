@@ -33,6 +33,7 @@
 #include "chrome/common/debug_flags.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -83,8 +84,8 @@ bool UITestBase::enable_dcheck_ = false;
 bool UITestBase::silent_dump_on_dcheck_ = false;
 bool UITestBase::disable_breakpad_ = false;
 int UITestBase::timeout_ms_ = 10 * 60 * 1000;
-std::wstring UITestBase::js_flags_ = L"";
-std::wstring UITestBase::log_level_ = L"";
+std::string UITestBase::js_flags_ = "";
+std::string UITestBase::log_level_ = "";
 
 // Specify the time (in milliseconds) that the ui_tests should wait before
 // timing out. This is used to specify longer timeouts when running under Purify
@@ -110,7 +111,7 @@ UITestBase::UITestBase()
     : launch_arguments_(CommandLine::ARGUMENTS_ONLY),
       expected_errors_(0),
       expected_crashes_(0),
-      homepage_(L"about:blank"),
+      homepage_(chrome::kAboutBlankURL),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
       process_(base::kNullProcessHandle),
@@ -136,7 +137,7 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
     : launch_arguments_(CommandLine::ARGUMENTS_ONLY),
       expected_errors_(0),
       expected_crashes_(0),
-      homepage_(L"about:blank"),
+      homepage_(chrome::kAboutBlankURL),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
       process_(base::kNullProcessHandle),
@@ -1153,14 +1154,14 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   if (disable_breakpad_)
     command_line.AppendSwitch(switches::kDisableBreakpad);
   if (!homepage_.empty())
-    command_line.AppendSwitchWithValue(switches::kHomePage, homepage_);
+    command_line.AppendSwitchASCII(switches::kHomePage, homepage_);
   // Don't try to fetch web resources during UI testing.
   command_line.AppendSwitch(switches::kDisableWebResources);
 
   if (!js_flags_.empty())
-    command_line.AppendSwitchWithValue(switches::kJavaScriptFlags, js_flags_);
+    command_line.AppendSwitchASCII(switches::kJavaScriptFlags, js_flags_);
   if (!log_level_.empty())
-    command_line.AppendSwitchWithValue(switches::kLoggingLevel, log_level_);
+    command_line.AppendSwitchASCII(switches::kLoggingLevel, log_level_);
 
   command_line.AppendSwitch(switches::kMetricsRecordingOnly);
 
@@ -1175,7 +1176,7 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
 #endif
 
   if (!ui_test_name_.empty())
-    command_line.AppendSwitchWithValue(switches::kTestName, ui_test_name_);
+    command_line.AppendSwitchASCII(switches::kTestName, ui_test_name_);
 
   // The tests assume that file:// URIs can freely access other file:// URIs.
   command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
@@ -1510,10 +1511,8 @@ void UITest::SetUp() {
   const testing::TestInfo* const test_info =
       testing::UnitTest::GetInstance()->current_test_info();
   if (test_info) {
-    std::string test_name = test_info->test_case_name();
-    test_name += ".";
-    test_name += test_info->name();
-    set_ui_test_name(ASCIIToWide(test_name));
+    set_ui_test_name(test_info->test_case_name() + std::string(".") +
+                     test_info->name());
   }
   UITestBase::SetUp();
   PlatformTest::SetUp();

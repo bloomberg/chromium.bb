@@ -11,14 +11,14 @@
 #include "base/file_path.h"
 #include "base/platform_thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/net_util.h"
 
 class GoogleTest : public UITest {
  protected:
   GoogleTest() : UITest() {
-    FilePath test_file(test_data_directory_);
-    test_file = test_file.AppendASCII("google");
-    test_file = test_file.AppendASCII("google.html");
-    homepage_ = test_file.ToWStringHack();
+    FilePath test_file =
+        test_data_directory_.AppendASCII("google").AppendASCII("google.html");
+    homepage_ = GURL(net::FilePathToFileURL(test_file)).spec();
   }
 };
 
@@ -34,9 +34,8 @@ TEST_F(GoogleTest, Crash) {
 class ColumnLayout : public UITest {
  protected:
   ColumnLayout() : UITest() {
-    FilePath test_file(test_data_directory_);
-    test_file = test_file.AppendASCII("columns.html");
-    homepage_ = test_file.ToWStringHack();
+    FilePath test_file = test_data_directory_.AppendASCII("columns.html");
+    homepage_ = GURL(net::FilePathToFileURL(test_file)).spec();
   }
 };
 

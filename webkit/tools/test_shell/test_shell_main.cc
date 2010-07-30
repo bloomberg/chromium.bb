@@ -239,10 +239,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  std::wstring js_flags =
-    parsed_command_line.GetSwitchValue(test_shell::kJavaScriptFlags);
+  std::string js_flags =
+      parsed_command_line.GetSwitchValueASCII(test_shell::kJavaScriptFlags);
   // Test shell always exposes the GC.
-  js_flags += L" --expose-gc";
+  js_flags += " --expose-gc";
   webkit_glue::SetJavaScriptFlags(js_flags);
   // Expose GCController to JavaScript.
   WebScriptController::registerExtension(extensions_v8::GCExtension::Get());

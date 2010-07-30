@@ -362,13 +362,13 @@ class UITestBase {
     timeout_ms_ = value;
   }
 
-  static std::wstring js_flags() { return js_flags_; }
-  static void set_js_flags(const std::wstring& value) {
+  static const std::string& js_flags() { return js_flags_; }
+  static void set_js_flags(const std::string& value) {
     js_flags_ = value;
   }
 
-  static std::wstring log_level() { return log_level_; }
-  static void set_log_level(const std::wstring& value) {
+  static const std::string& log_level() { return log_level_; }
+  static void set_log_level(const std::string& value) {
     log_level_ = value;
   }
 
@@ -420,9 +420,7 @@ class UITestBase {
 
   int sleep_timeout_ms() const { return sleep_timeout_ms_; }
 
-  std::wstring ui_test_name() const { return ui_test_name_; }
-
-  void set_ui_test_name(const std::wstring& name) {
+  void set_ui_test_name(const std::string& name) {
     ui_test_name_ = name;
   }
 
@@ -439,7 +437,7 @@ class UITestBase {
 
   // Sets homepage_. Should be called before launching browser to have
   // any effect.
-  void set_homepage(const std::wstring& homepage) {
+  void set_homepage(const std::string& homepage) {
     homepage_ = homepage;
   }
 
@@ -557,7 +555,7 @@ class UITestBase {
                                         // the run (generally 0).
   int expected_crashes_;                // The number of crashes expected during
                                         // the run (generally 0).
-  std::wstring homepage_;               // Homepage used for testing.
+  std::string homepage_;                // Homepage used for testing.
   bool wait_for_initial_loads_;         // Wait for initial loads to complete
                                         // in SetUp() before running test body.
   base::TimeTicks browser_launch_time_; // Time when the browser was run.
@@ -607,8 +605,8 @@ class UITestBase {
   static bool disable_breakpad_;        // Disable breakpad on the browser.
   static int timeout_ms_;               // Timeout in milliseconds to wait
                                         // for an test to finish.
-  static std::wstring js_flags_;        // Flags passed to the JS engine.
-  static std::wstring log_level_;       // Logging level.
+  static std::string js_flags_;         // Flags passed to the JS engine.
+  static std::string log_level_;        // Logging level.
 
   scoped_ptr<AutomationProxy> server_;
 
@@ -618,7 +616,7 @@ class UITestBase {
   int sleep_timeout_ms_;
   int terminate_timeout_ms_;
 
-  std::wstring ui_test_name_;
+  std::string ui_test_name_;
 
   // We use a temporary directory for profile to avoid issues with being
   // unable to delete some files because they're in use, etc.

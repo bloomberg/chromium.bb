@@ -81,16 +81,14 @@ void UITestSuite::Initialize() {
   }
 #endif
 
-  std::wstring js_flags =
-    parsed_command_line.GetSwitchValue(switches::kJavaScriptFlags);
-  if (!js_flags.empty()) {
+  std::string js_flags =
+    parsed_command_line.GetSwitchValueASCII(switches::kJavaScriptFlags);
+  if (!js_flags.empty())
     UITest::set_js_flags(js_flags);
-  }
-  std::wstring log_level =
-    parsed_command_line.GetSwitchValue(switches::kLoggingLevel);
-  if (!log_level.empty()) {
+  std::string log_level =
+    parsed_command_line.GetSwitchValueASCII(switches::kLoggingLevel);
+  if (!log_level.empty())
     UITest::set_log_level(log_level);
-  }
 
 #if defined(OS_WIN)
   LoadCrashService();

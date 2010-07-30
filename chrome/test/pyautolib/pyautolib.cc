@@ -30,7 +30,7 @@ void PyUITestSuiteBase::Initialize(const FilePath& browser_dir) {
 PyUITestBase::PyUITestBase(bool clear_profile, std::wstring homepage)
     : UITestBase() {
   set_clear_profile(clear_profile);
-  set_homepage(homepage);
+  set_homepage(WideToASCII(homepage));
   message_loop_ = GetSharedMessageLoop(MessageLoop::TYPE_DEFAULT);
 }
 

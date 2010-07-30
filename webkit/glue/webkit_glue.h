@@ -42,7 +42,7 @@ namespace webkit_glue {
 
 //---- BEGIN FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -----------------------------
 
-void SetJavaScriptFlags(const std::wstring& flags);
+void SetJavaScriptFlags(const std::string& flags);
 
 // Turn on the logging for notImplemented() calls from WebCore.
 void EnableWebCoreNotImplementedLogging();

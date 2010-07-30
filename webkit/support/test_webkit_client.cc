@@ -121,7 +121,7 @@ TestWebKitClient::TestWebKitClient(bool unit_test_mode)
   SimpleResourceLoaderBridge::Init(FilePath(), cache_mode, true);
 
   // Test shell always exposes the GC.
-  webkit_glue::SetJavaScriptFlags(L" --expose-gc");
+  webkit_glue::SetJavaScriptFlags(" --expose-gc");
   // Expose GCController to JavaScript.
   WebScriptController::registerExtension(extensions_v8::GCExtension::Get());
 }

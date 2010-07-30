@@ -80,7 +80,7 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
                                     IPC::Channel::MODE_SERVER, this));
     ASSERT_TRUE(channel_->Connect());
 
-    webkit_glue::SetJavaScriptFlags(L"--expose-gc");
+    webkit_glue::SetJavaScriptFlags("--expose-gc");
     mock_process_.reset(new MockRenderProcess);
     render_thread_ = new RenderThread(thread_name);
     mock_process_->set_main_thread(render_thread_);

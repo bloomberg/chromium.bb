@@ -74,11 +74,9 @@ namespace webkit_glue {
 // Global variable used by the plugin quirk "die after unload".
 bool g_forcefully_terminate_plugin_process = false;
 
-void SetJavaScriptFlags(const std::wstring& str) {
+void SetJavaScriptFlags(const std::string& str) {
 #if WEBKIT_USING_V8
-  std::string utf8_str = WideToUTF8(str);
-  v8::V8::SetFlagsFromString(
-      utf8_str.data(), static_cast<int>(utf8_str.size()));
+  v8::V8::SetFlagsFromString(str.data(), static_cast<int>(str.size()));
 #endif
 }
 
@@ -257,7 +255,8 @@ void ResetBeforeTestRun(WebView* view) {
 #ifndef NDEBUG
 // The log macro was having problems due to collisions with WTF, so we just
 // code here what that would have inlined.
-void DumpLeakedObject(const char* file, int line, const char* object, int count) {
+void DumpLeakedObject(const char* file, int line, const char* object,
+                      int count) {
   std::string msg = StringPrintf("%s LEAKED %d TIMES", object, count);
   AppendToLog(file, line, msg.c_str());
 }
