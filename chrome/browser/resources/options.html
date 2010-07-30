@@ -29,6 +29,13 @@
   <script src="options/chromeos_accounts_options.js"></script>
   <script src="options/chromeos_accounts_user_list.js"></script>
   <script src="options/chromeos_accounts_user_name_edit.js"></script>
+  <script>
+    var AccountsOptions = options.AccountsOptions;
+    var InternetOptions = options.InternetOptions;
+    var LanguageHangulOptions = options.LanguageHangulOptions;
+    var LanguageOptions = options.LanguageOptions;
+    var SystemOptions = options.SystemOptions;
+  </script>
 </if>
 <script src="options/add_startup_page_overlay.js"></script>
 <script src="options/advanced_options.js"></script>
@@ -44,8 +51,19 @@
 <script src="options/stop_syncing_overlay.js"></script>
 <script>
 
-///////////////////////////////////////////////////////////////////////////////
-// Document Functions:
+var AddStartupPageOverlay = options.AddStartupPageOverlay;
+var AdvancedOptions = options.AdvancedOptions;
+var BrowserOptions = options.BrowserOptions;
+var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
+var ContentSettings = options.ContentSettings;
+var FontSettingsOverlay = options.FontSettingsOverlay;
+var ImportDataOverlay = options.ImportDataOverlay;
+var OptionsPage = options.OptionsPage;
+var PersonalOptions = options.PersonalOptions;
+var Preferences = options.Preferences;
+var SearchEngineManager = options.SearchEngineManager;
+var StopSyncingOverlay = options.StopSyncingOverlay;
+
 /**
  * Window onload handler, sets up the page.
  */
@@ -113,9 +131,8 @@ function load() {
 document.addEventListener('DOMContentLoaded', load);
 
 window.onpopstate = function(e) {
-  OptionsPage.setState(e.state);
+  options.OptionsPage.setState(e.state);
 };
-
 </script>
 <link rel="stylesheet" href="chrome://resources/css/list.css">
 <link rel="stylesheet" href="dom_ui.css">
@@ -178,14 +195,14 @@ window.onpopstate = function(e) {
 
 <script>
 // Decorate the existing elements in the document.
-cr.ui.decorate('input[pref][type=checkbox]', PrefCheckbox);
-cr.ui.decorate('input[pref][type=number]', PrefNumber);
-cr.ui.decorate('input[pref][type=radio]', PrefRadio);
-cr.ui.decorate('input[pref][type=range]', PrefRange);
-cr.ui.decorate('select[pref]', PrefSelect);
-cr.ui.decorate('input[pref][type=url]', PrefTextField);
-cr.ui.decorate('#contentSettingsPage input[type=radio]', ContentSettingsRadio);
-// TODO(zelidrag) add other elements here when we implement them
+cr.ui.decorate('input[pref][type=checkbox]', options.PrefCheckbox);
+cr.ui.decorate('input[pref][type=number]', options.PrefNumber);
+cr.ui.decorate('input[pref][type=radio]', options.PrefRadio);
+cr.ui.decorate('input[pref][type=range]', options.PrefRange);
+cr.ui.decorate('select[pref]', options.PrefSelect);
+cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
+cr.ui.decorate('#contentSettingsPage input[type=radio]',
+    options.ContentSettingsRadio);
 </script>
 </body>
 </html>

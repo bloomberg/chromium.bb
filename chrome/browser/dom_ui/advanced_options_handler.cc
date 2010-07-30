@@ -264,7 +264,7 @@ void AdvancedOptionsHandler::SetupDownloadLocationPath() {
   DCHECK(dom_ui_);
   StringValue value(default_download_location_.GetValue().value());
   dom_ui_->CallJavascriptFunction(
-      L"advancedOptionsSetDownloadLocationPath", value);
+      L"options.AdvancedOptions.SetDownloadLocationPath", value);
 }
 
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
@@ -275,7 +275,7 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   bool disabled = !(manager && manager->HasAutoOpenFileTypesRegistered());
   FundamentalValue value(disabled);
   dom_ui_->CallJavascriptFunction(
-      L"advancedOptionsSetAutoOpenFileTypesDisabledAttribute", value);
+      L"options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
 }
 
 #if defined(OS_WIN)
@@ -291,9 +291,10 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   }
   FundamentalValue checkRevocationValue(checkRevocationSetting);
   dom_ui_->CallJavascriptFunction(
-      L"advancedOptionsSetCheckRevocationCheckboxState", checkRevocationValue);
+      L"options.AdvancedOptions.SetCheckRevocationCheckboxState",
+      checkRevocationValue);
   FundamentalValue useSSLValue(useSSLSetting);
   dom_ui_->CallJavascriptFunction(
-      L"advancedOptionsSetUseSSL2CheckboxStatechecked", useSSLValue);
+      L"options.AdvancedOptions.SetUseSSL2CheckboxStatechecked", useSSLValue);
 }
 #endif

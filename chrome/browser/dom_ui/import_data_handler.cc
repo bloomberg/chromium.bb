@@ -67,5 +67,6 @@ void ImportDataHandler::DetectSupportedBrowsers() {
   }
 
   dom_ui_->CallJavascriptFunction(
-      L"ImportDataOverlay.updateSupportedBrowsers", supported_browsers);
+      L"options.ImportDataOverlay.updateSupportedBrowsers",
+      supported_browsers);
 }

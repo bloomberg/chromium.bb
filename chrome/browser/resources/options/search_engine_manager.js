@@ -2,28 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-///////////////////////////////////////////////////////////////////////////////
-// SearchEngineManager class:
+cr.define('options', function() {
 
-/**
- * Encapsulated handling of search engine management page.
- * @constructor
- */
-function SearchEngineManager() {
-  this.activeNavTab = null;
-  OptionsPage.call(this, 'searchEngines',
-                   templateData.searchEngineManagerPage,
-                   'searchEngineManagerPage');
-}
+  var OptionsPage = options.OptionsPage;
 
-cr.addSingletonGetter(SearchEngineManager);
+  /////////////////////////////////////////////////////////////////////////////
+  // SearchEngineManager class:
 
-SearchEngineManager.prototype = {
-  __proto__: OptionsPage.prototype,
+  /**
+   * Encapsulated handling of search engine management page.
+   * @constructor
+   */
+  function SearchEngineManager() {
+    this.activeNavTab = null;
+    OptionsPage.call(this, 'searchEngines',
+                     templateData.searchEngineManagerPage,
+                     'searchEngineManagerPage');
+  }
 
-  initializePage: function() {
-    OptionsPage.prototype.initializePage.call(this);
+  cr.addSingletonGetter(SearchEngineManager);
 
-    // TODO(stuartmorgan): Add initialization here.
-  },
-};
+  SearchEngineManager.prototype = {
+    __proto__: OptionsPage.prototype,
+
+    initializePage: function() {
+      OptionsPage.prototype.initializePage.call(this);
+
+      // TODO(stuartmorgan): Add initialization here.
+    }
+  };
+
+  // Export
+  return {
+    SearchEngineManager: SearchEngineManager
+  };
+
+});
+

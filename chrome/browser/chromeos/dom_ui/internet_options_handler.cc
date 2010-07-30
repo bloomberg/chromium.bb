@@ -85,7 +85,8 @@ void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
     dictionary.Set(L"wiredList", GetWiredList());
     dictionary.Set(L"wirelessList", GetWirelessList());
     dictionary.Set(L"rememberedList", GetRememberedList());
-    dom_ui_->CallJavascriptFunction(L"refreshNetworkData", dictionary);
+    dom_ui_->CallJavascriptFunction(
+        L"options.InternetOptions.refreshNetworkData", dictionary);
   }
 }
 

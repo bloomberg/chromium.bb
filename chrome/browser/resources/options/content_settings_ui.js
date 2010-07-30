@@ -2,25 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-////////////////////////////////////////////////////////////////////////////////
-// ContentSettingsRadio class:
+cr.define('options', function() {
 
-// Define a constructor that uses an input element as its underlying element.
-var ContentSettingsRadio = cr.ui.define('input');
+  //////////////////////////////////////////////////////////////////////////////
+  // ContentSettingsRadio class:
 
-ContentSettingsRadio.prototype = {
-  __proto__: HTMLInputElement.prototype,
+  // Define a constructor that uses an input element as its underlying element.
+  var ContentSettingsRadio = cr.ui.define('input');
 
-  /**
-   * Initialization function for the cr.ui framework.
-   */
-  decorate: function() {
-    this.type = 'radio';
-    var self = this;
+  ContentSettingsRadio.prototype = {
+    __proto__: HTMLInputElement.prototype,
 
-    this.addEventListener('change',
-        function(e) {
-          chrome.send('setContentFilter', [this.name, this.value]);
-        });
-  },
-};
+    /**
+     * Initialization function for the cr.ui framework.
+     */
+    decorate: function() {
+      this.type = 'radio';
+      var self = this;
+
+      this.addEventListener('change',
+          function(e) {
+            chrome.send('setContentFilter', [this.name, this.value]);
+          });
+    },
+  };
+
+  // Export
+  return {
+    ContentSettingsRadio: ContentSettingsRadio
+  };
+
+});
+
