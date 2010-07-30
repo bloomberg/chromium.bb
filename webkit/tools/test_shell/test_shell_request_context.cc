@@ -55,7 +55,8 @@ void TestShellRequestContext::Init(
 #else
   // Use the system proxy settings.
   scoped_ptr<net::ProxyConfigService> proxy_config_service(
-      net::ProxyService::CreateSystemProxyConfigService(NULL, NULL));
+      net::ProxyService::CreateSystemProxyConfigService(
+          MessageLoop::current(), NULL));
 #endif
   host_resolver_ =
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism);

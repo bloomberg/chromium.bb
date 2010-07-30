@@ -167,7 +167,8 @@ class ExperimentURLRequestContext : public URLRequestContext {
     return net::ERR_NOT_IMPLEMENTED;
 #else
     config_service->reset(
-        net::ProxyService::CreateSystemProxyConfigService(NULL, NULL));
+        net::ProxyService::CreateSystemProxyConfigService(
+            MessageLoop::current(), NULL));
     return net::OK;
 #endif
   }
