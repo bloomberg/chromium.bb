@@ -162,8 +162,7 @@ TEST(Snippets, UTF8) {
             UTF16ToUTF8(BuildSnippet(kSampleDocument, "relationship")));
 }
 
-// Bug: 1274923
-// TODO(jungshik): Move this bug report to crbugs.com
+// Bug http://crbug.com/50705.
 // Fails consistently. From the report, "Broken by latest ICU. Need new expected
 // results."
 TEST(Snippets, FAILS_ThaiUTF8) {
