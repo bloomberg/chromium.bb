@@ -13,6 +13,7 @@
 class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
  public:
   explicit WebDatabaseObserverImpl(IPC::Message::Sender* sender);
+  virtual ~WebDatabaseObserverImpl() {}
   virtual void databaseOpened(const WebKit::WebDatabase& database);
   virtual void databaseModified(const WebKit::WebDatabase& database);
   virtual void databaseClosed(const WebKit::WebDatabase& database);

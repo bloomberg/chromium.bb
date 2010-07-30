@@ -90,6 +90,9 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
       public:
         virtual void OnPrinterAdded() = 0;
         // TODO(gene): Do we need OnPrinterDeleted notification here?
+
+      protected:
+        virtual ~Delegate() {}
     };
 
     virtual ~PrintServerWatcher() {}
@@ -105,6 +108,9 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
         virtual void OnPrinterDeleted() = 0;
         virtual void OnPrinterChanged() = 0;
         virtual void OnJobChanged() = 0;
+
+      protected:
+        virtual ~Delegate() {}
     };
 
     virtual ~PrinterWatcher() {}

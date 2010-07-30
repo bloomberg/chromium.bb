@@ -46,6 +46,9 @@ class TestRunner {
 class TestRunnerFactory {
  public:
   virtual TestRunner* CreateTestRunner() const = 0;
+
+ protected:
+  virtual ~TestRunnerFactory() {}
 };
 
 }  // namespace

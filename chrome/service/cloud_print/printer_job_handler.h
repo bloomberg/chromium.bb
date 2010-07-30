@@ -91,6 +91,9 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
    public:
      virtual void OnPrinterJobHandlerShutdown(
         PrinterJobHandler* job_handler, const std::string& printer_id) = 0;
+
+   protected:
+     virtual ~Delegate() {}
   };
 
   // Begin public interface

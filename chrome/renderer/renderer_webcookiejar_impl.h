@@ -20,6 +20,7 @@ class RendererWebCookieJarImpl : public WebKit::WebCookieJar {
   explicit RendererWebCookieJarImpl(IPC::Message::Sender* sender)
       : sender_(sender) {
   }
+  virtual ~RendererWebCookieJarImpl() {}
 
  private:
   // WebKit::WebCookieJar methods:

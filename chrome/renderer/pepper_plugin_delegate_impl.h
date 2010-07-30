@@ -24,6 +24,7 @@ class PepperPluginDelegateImpl
       public base::SupportsWeakPtr<PepperPluginDelegateImpl> {
  public:
   explicit PepperPluginDelegateImpl(RenderView* render_view);
+  virtual ~PepperPluginDelegateImpl() {}
 
   // Called by RenderView to tell us about painting events, these two functions
   // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..

@@ -30,7 +30,7 @@ class WebWorkerStubBase;
 class WebWorkerClientProxy : public WebKit::WebWorkerClient {
  public:
   WebWorkerClientProxy(int route_id, WebWorkerStubBase* stub);
-  ~WebWorkerClientProxy();
+  virtual ~WebWorkerClientProxy();
 
   // WebWorkerClient implementation.
   virtual void postMessageToWorkerObject(

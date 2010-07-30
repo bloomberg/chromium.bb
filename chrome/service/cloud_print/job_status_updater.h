@@ -39,6 +39,7 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
                    const GURL& cloud_print_server_url,
                    cloud_print::PrintSystem* print_system,
                    Delegate* delegate);
+  virtual ~JobStatusUpdater() {}
   // Checks the status of the local print job and sends an update.
   void UpdateStatus();
   void Stop();
@@ -48,6 +49,7 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
+
  private:
   std::string printer_name_;
   std::string job_id_;
