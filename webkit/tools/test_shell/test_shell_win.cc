@@ -792,6 +792,9 @@ base::StringPiece GetDataResource(int resource_id) {
   case IDR_DEVTOOLS_INJECT_WEBKIT_JS:
   case IDR_DEVTOOLS_INJECT_DISPATCH_JS:
   case IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS:
+  case IDR_INPUT_SPEECH:
+  case IDR_INPUT_SPEECH_RECORDING:
+  case IDR_INPUT_SPEECH_WAITING:
     return NetResourceProvider(resource_id);
 
   default:

@@ -705,6 +705,9 @@ base::StringPiece GetDataResource(int resource_id) {
   case IDR_MEDIA_SOUND_DISABLED:
   case IDR_MEDIA_SLIDER_THUMB:
   case IDR_MEDIA_VOLUME_SLIDER_THUMB:
+  case IDR_INPUT_SPEECH:
+  case IDR_INPUT_SPEECH_RECORDING:
+  case IDR_INPUT_SPEECH_WAITING:
     return TestShell::NetResourceProvider(resource_id);
 
   default:

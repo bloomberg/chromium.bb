@@ -42,6 +42,7 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
   WebKit::WebRuntimeFeatures::enableNotifications(true);
   WebKit::WebRuntimeFeatures::enableTouch(true);
   WebKit::WebRuntimeFeatures::enableIndexedDatabase(true);
+  WebKit::WebRuntimeFeatures::enableSpeechInput(true);
 
   // TODO(hwennborg): Enable this once the implementation supports it.
   WebKit::WebRuntimeFeatures::enableDeviceOrientation(false);
