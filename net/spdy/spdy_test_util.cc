@@ -385,10 +385,12 @@ spdy::SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
 }
 
 // Constructs a standard SPDY POST SYN packet.
+// |content_length| is the size of post data.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
 // Returns a SpdyFrame.
-spdy::SpdyFrame* ConstructSpdyPost(const char* const extra_headers[],
+spdy::SpdyFrame* ConstructSpdyPost(int64 content_length,
+                                   const char* const extra_headers[],
                                    int extra_header_count) {
   const SpdyHeaderInfo kSynStartHeader = {
     spdy::SYN_STREAM,             // Kind = Syn
@@ -402,7 +404,8 @@ spdy::SpdyFrame* ConstructSpdyPost(const char* const extra_headers[],
     0,                            // Length
     spdy::DATA_FLAG_NONE          // Data Flags
   };
-  static const char* const kStandardGetHeaders[] = {
+  std::string length_str = Int64ToString(content_length);
+  const char* post_headers[] = {
     "method",
     "POST",
     "url",
@@ -412,14 +415,16 @@ spdy::SpdyFrame* ConstructSpdyPost(const char* const extra_headers[],
     "scheme",
     "http",
     "version",
-    "HTTP/1.1"
+    "HTTP/1.1",
+    "content-length",
+    length_str.c_str()
   };
   return ConstructSpdyPacket(
       kSynStartHeader,
       extra_headers,
       extra_header_count,
-      kStandardGetHeaders,
-      arraysize(kStandardGetHeaders) / 2);
+      post_headers,
+      arraysize(post_headers) / 2);
 }
 
 // Constructs a standard SPDY SYN_REPLY packet to match the SPDY POST.
