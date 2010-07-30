@@ -40,6 +40,15 @@ PLATFORM_MAPPING = {
 }
 
 
+def Retry(op, *args):
+  for i in range(0, 10):
+    try:
+      op(*args)
+      break
+    except OSError:
+      time.sleep(pow(2, i))
+
+
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option(
@@ -80,13 +89,9 @@ def main(argv):
     else:
       dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
       sync_tgz.SyncTgz(url, dst_tmp)
-      os.rename(os.path.join(dst_tmp, 'sdk', 'nacl-sdk'), dst)
-      os.rmdir(os.path.join(dst_tmp, 'sdk'))
-      # May not succeed if the anti-virus prevents tar from being deleted.
-      try:
-        os.rmdir(dst_tmp)
-      except OSError:
-        pass
+      Retry(os.rename, os.path.join(dst_tmp, 'sdk', 'nacl-sdk'), dst)
+      Retry(os.rmdir, os.path.join(dst_tmp, 'sdk'))
+      Retry(os.rmdir, dst_tmp)
 
 
 if __name__ == '__main__':
