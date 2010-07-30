@@ -480,6 +480,8 @@ PAGE_CYCLER_HTTP_TESTS("dom", DomHttp);
 PAGE_CYCLER_HTTP_TESTS("bloat", BloatHttp);
 
 // HTML5 database tests
+// These tests are _really_ slow on XP/Vista.
+#if !defined(OS_WIN)
 PAGE_CYCLER_DATABASE_TESTS("select-transactions",
                            SelectTransactions);
 PAGE_CYCLER_DATABASE_TESTS("select-readtransactions",
@@ -494,5 +496,6 @@ PAGE_CYCLER_DATABASE_TESTS("delete-transactions",
                            DeleteTransactions);
 PAGE_CYCLER_DATABASE_TESTS("pseudo-random-transactions",
                            PseudoRandomTransactions);
+#endif
 
 }  // namespace
