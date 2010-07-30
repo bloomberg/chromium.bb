@@ -38,8 +38,8 @@ class SessionRestoreUITest : public UITest {
 
     clear_profile_ = false;
 
-    launch_arguments_.AppendSwitchWithValue(switches::kRestoreLastSession,
-                                            IntToWString(expected_tab_count));
+    launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
+                                        IntToString(expected_tab_count));
     UITest::SetUp();
   }
 

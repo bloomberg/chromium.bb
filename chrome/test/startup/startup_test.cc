@@ -282,8 +282,8 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     // The session will be restored once per cycle for numCycles test cycles,
     // and each time, UITest::SetUp will wait for |tab_count| tabs to
     // finish loading.
-    launch_arguments_.AppendSwitchWithValue(switches::kRestoreLastSession,
-                                            IntToWString(tab_count));
+    launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
+                                        IntToString(tab_count));
   }
   RunStartupTest(graph, trace, WARM, NOT_IMPORTANT, UITest::DEFAULT_THEME,
                  tab_count, nth_timed_tab);

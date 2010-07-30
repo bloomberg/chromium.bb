@@ -169,8 +169,7 @@ void InProcessBrowserTest::SetUp() {
 
   // Enable warning level logging so that we can see when bad stuff happens.
   command_line->AppendSwitch(switches::kEnableLogging);
-  command_line->AppendSwitchWithValue(switches::kLoggingLevel,
-                                      IntToWString(1));  // warning
+  command_line->AppendSwitchASCII(switches::kLoggingLevel, "1");  // warning
 
   // If ncecessary, disable TabCloseableStateWatcher.
   if (!tab_closeable_state_watcher_enabled_)

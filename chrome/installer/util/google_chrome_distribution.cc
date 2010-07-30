@@ -130,7 +130,7 @@ int GetDirectoryWriteAgeInHours(const wchar_t* path) {
 bool RelaunchSetup(const std::wstring& flag, int value,
                    bool system_level_toast) {
   CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
-  cmd_line.AppendSwitchWithValue(WideToASCII(flag), IntToWString(value));
+  cmd_line.AppendSwitchASCII(WideToASCII(flag), IntToString(value));
   if (system_level_toast)
     cmd_line.AppendSwitch(
       WideToASCII(installer_util::switches::kSystemLevelToast));
