@@ -12,6 +12,7 @@ import optparse
 import os
 import shutil
 import sys
+import time
 
 import sync_tgz
 
