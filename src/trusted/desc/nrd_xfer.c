@@ -562,15 +562,15 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
 
   i = 0;
   while (xfer.next_byte < xfer.byte_buffer_end) {
-    if (i >= NACL_ARRAY_SIZE(kern_handle)) {
-      NaClLog(LOG_FATAL,
-              ("NaClImcRecvTypedMsg: trusted peer tried to send too many"
-               " descriptors!\n"));
-    }
     type_tag = 0xff & *xfer.next_byte++;
     /* 0 <= type_tag */
     if (NACL_DESC_TYPE_END_TAG == type_tag) {
       break;
+    }
+    if (i >= NACL_ARRAY_SIZE(new_desc)) {
+      NaClLog(LOG_FATAL,
+              ("NaClImcRecvTypedMsg: trusted peer tried to send too many"
+               " descriptors!\n"));
     }
     if (type_tag >= NACL_DESC_TYPE_MAX) {
       NaClLog(4, ("illegal type tag %"NACL_PRIdS" (0x%"NACL_PRIxS")\n"),

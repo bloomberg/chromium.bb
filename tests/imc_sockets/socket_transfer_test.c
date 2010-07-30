@@ -15,6 +15,9 @@
 #include <sys/nacl_syscalls.h>
 
 
+/* TODO(mseaborn): This should really be in an IMC header file. */
+static const int kKnownInvalidDescNumber = -1;
+
 void checked_close(int fd) {
   int rc = close(fd);
   assert(rc == 0);
@@ -199,6 +202,82 @@ void test_imc_connect_with_no_acceptor() {
   checked_close(bound_pair[1]);
 }
 
+void test_special_invalid_fd() {
+  int sock_pair[2];
+  int sent;
+  int received;
+  int fd_to_send;
+  char data_buf[10];
+  int fds_buf[IMC_DESC_MAX];
+  int fds_got;
+
+  printf("Test sending and receiving the special 'invalid' descriptor...\n");
+  make_socket_pair(sock_pair);
+
+  fd_to_send = kKnownInvalidDescNumber;
+  sent = send_message(sock_pair[0], "", 0, &fd_to_send, 1);
+  assert(sent == 0);
+  received = receive_message(sock_pair[1], data_buf, sizeof(data_buf),
+                             fds_buf, IMC_DESC_MAX, &fds_got);
+  assert(received == 0);
+  assert(fds_got == 1);
+  assert(fds_buf[0] == kKnownInvalidDescNumber);
+
+  /* Other invalid FD numbers are not accepted. */
+  fd_to_send = 1234;
+  sent = send_message(sock_pair[0], "", 0, &fd_to_send, 1);
+  assert(sent == -1);
+  assert(errno == EBADF);
+
+  /* We don't accept other negative numbers. */
+  fd_to_send = -2;
+  sent = send_message(sock_pair[0], "", 0, &fd_to_send, 1);
+  assert(sent == -1);
+  assert(errno == EBADF);
+
+  checked_close(sock_pair[0]);
+  checked_close(sock_pair[1]);
+}
+
+void test_sending_and_receiving_max_fd_count() {
+  int sock_pair[2];
+  int sent;
+  int received;
+  char data_buf[10];
+  int fds_send_buf[IMC_DESC_MAX + 1];
+  int fds_receive_buf[IMC_DESC_MAX];
+  int fds_got;
+  int i;
+
+  printf("Test sending and receiving many FDs...\n");
+  make_socket_pair(sock_pair);
+
+  /* Test exactly the maximum. */
+  for (i = 0; i < IMC_DESC_MAX; i++) {
+    fds_send_buf[i] = kKnownInvalidDescNumber;
+  }
+  sent = send_message(sock_pair[0], "", 0, fds_send_buf, IMC_DESC_MAX);
+  assert(sent == 0);
+  received = receive_message(sock_pair[1], data_buf, sizeof(data_buf),
+                             fds_receive_buf, IMC_DESC_MAX, &fds_got);
+  assert(received == 0);
+  assert(fds_got == IMC_DESC_MAX);
+  for (i = 0; i < IMC_DESC_MAX; i++) {
+    assert(fds_receive_buf[i] == kKnownInvalidDescNumber);
+  }
+
+  /* Test above the maximum. */
+  for (i = 0; i < IMC_DESC_MAX + 1; i++) {
+    fds_send_buf[i] = kKnownInvalidDescNumber;
+  }
+  sent = send_message(sock_pair[0], "", 0, fds_send_buf, IMC_DESC_MAX + 1);
+  assert(sent == -1);
+  assert(errno == EINVAL);
+
+  checked_close(sock_pair[0]);
+  checked_close(sock_pair[1]);
+}
+
 int main(int argc, char **argv) {
   /* TODO(mseaborn): It would be better to have a way to pass
      environment variables through sel_ldr into the NaCl process. */
@@ -217,6 +296,10 @@ int main(int argc, char **argv) {
   }
 
   test_imc_connect_with_no_acceptor();
+
+  test_special_invalid_fd();
+
+  test_sending_and_receiving_max_fd_count();
 
   return 0;
 }
