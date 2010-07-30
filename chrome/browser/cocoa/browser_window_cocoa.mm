@@ -553,6 +553,10 @@ void BrowserWindowCocoa::ToggleTabStripMode() {
   [controller_ toggleTabStripDisplayMode];
 }
 
+void BrowserWindowCocoa::OpenTabpose() {
+  [controller_ toggleTabStripDisplayMode];
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

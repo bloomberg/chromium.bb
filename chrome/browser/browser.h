@@ -433,6 +433,7 @@ class Browser : public TabStripModelDelegate,
   void CloseTab();
   void SelectNextTab();
   void SelectPreviousTab();
+  void OpenTabpose();
   void MoveTabNext();
   void MoveTabPrevious();
   void SelectNumberedTab(int index);

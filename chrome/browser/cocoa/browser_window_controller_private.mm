@@ -26,7 +26,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/pref_names.h"
 
-
 namespace {
 
 // Space between the incognito badge and the right edge of the window.

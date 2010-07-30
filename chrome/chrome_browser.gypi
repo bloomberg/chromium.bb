@@ -999,6 +999,8 @@
         'browser/cocoa/tab_window_controller.mm',
         'browser/cocoa/table_row_nsimage_cache.h',
         'browser/cocoa/table_row_nsimage_cache.mm',
+        'browser/cocoa/tabpose_window.h',
+        'browser/cocoa/tabpose_window.mm',
         'browser/cocoa/task_manager_mac.h',
         'browser/cocoa/task_manager_mac.mm',
         'browser/cocoa/themed_window.h',

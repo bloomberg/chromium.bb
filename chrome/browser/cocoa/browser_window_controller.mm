@@ -44,6 +44,7 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/tab_view.h"
+#import "chrome/browser/cocoa/tabpose_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -1473,6 +1474,7 @@
     // TODO(pinkerton): figure out page-up, http://crbug.com/16305
   } else if ([event deltaY] < -0.5) {
     // TODO(pinkerton): figure out page-down, http://crbug.com/16305
+    browser_->ExecuteCommand(IDC_TABPOSE);
   }
 
   // Ensure the command is valid first (ExecuteCommand() won't do that) and
@@ -1839,6 +1841,23 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (BOOL)floatingBarHasFocus {
   NSResponder* focused = [[self window] firstResponder];
   return [focused isKindOfClass:[AutocompleteTextFieldEditor class]];
+}
+
+- (void)openTabpose {
+  NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+  BOOL slomo = (modifierFlags & NSShiftKeyMask) != 0;
+
+  // Cover info bars, inspector window, and detached bookmark bar on NTP.
+  // Do not cover download shelf.
+  NSRect activeArea = [[self tabContentArea] frame];
+  activeArea.size.height +=
+      NSHeight([[infoBarContainerController_ view] frame]);
+  if ([self isBookmarkBarVisible] && [self placeBookmarkBarBelowInfoBar]) {
+    NSView* bookmarkBarView = [bookmarkBarController_ view];
+    activeArea.size.height += NSHeight([bookmarkBarView frame]);
+  }
+
+  [TabposeWindow openTabposeFor:[self window] rect:activeArea slomo:slomo];
 }
 
 @end  // @implementation BrowserWindowController(Fullscreen)

@@ -1340,6 +1340,20 @@ void Browser::SelectPreviousTab() {
   tabstrip_model_.SelectPreviousTab();
 }
 
+void Browser::OpenTabpose() {
+#if defined(OS_MACOSX)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableExposeForTabs)) {
+    return;
+  }
+
+  UserMetrics::RecordAction(UserMetricsAction("OpenTabpose"), profile_);
+  window()->OpenTabpose();
+#else
+  NOTREACHED();
+#endif
+}
+
 void Browser::MoveTabNext() {
   UserMetrics::RecordAction(UserMetricsAction("MoveTabNext"), profile_);
   tabstrip_model_.MoveTabNext();
@@ -1978,6 +1992,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_CLOSE_TAB:             CloseTab();                       break;
     case IDC_SELECT_NEXT_TAB:       SelectNextTab();                  break;
     case IDC_SELECT_PREVIOUS_TAB:   SelectPreviousTab();              break;
+    case IDC_TABPOSE:               OpenTabpose();                    break;
     case IDC_MOVE_TAB_NEXT:         MoveTabNext();                    break;
     case IDC_MOVE_TAB_PREVIOUS:     MoveTabPrevious();                break;
     case IDC_SELECT_TAB_0:
