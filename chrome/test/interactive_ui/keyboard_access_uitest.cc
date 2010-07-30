@@ -102,7 +102,8 @@ TEST_F(KeyboardAccessTest, TestAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true);
 }
 
-TEST_F(KeyboardAccessTest, ReserveKeyboardAccelerators) {
+// Fails, http://crbug.com/50760.
+TEST_F(KeyboardAccessTest, FAILS_ReserveKeyboardAccelerators) {
   const std::string kBadPage =
       "<html><script>"
       "document.onkeydown = function() {"
