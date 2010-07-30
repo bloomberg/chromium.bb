@@ -21,7 +21,9 @@ class Lock {
   void Release() { lock_.Unlock(); }
 
   // If the lock is not held, take it and return true. If the lock is already
-  // held by another thread, immediately return false.
+  // held by another thread, immediately return false. This must not be called
+  // by a thread already holding the lock (what happens is undefined and an
+  // assertion may fail).
   bool Try() { return lock_.Try(); }
 
   // Null implementation if not debug.
