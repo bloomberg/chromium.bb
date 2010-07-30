@@ -162,6 +162,7 @@ class SortHelper {
   [self adjustSelectionAndEndProcessButton];
 
   [tableView_ setDoubleAction:@selector(selectDoubleClickedTab:)];
+  [tableView_ sizeToFit];
 }
 
 // Adds a column which has the given string id as title. |isVisible| specifies
