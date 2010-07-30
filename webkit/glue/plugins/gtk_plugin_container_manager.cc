@@ -65,17 +65,21 @@ void GtkPluginContainerManager::MovePluginContainer(
     return;
   }
 
-  DCHECK(GTK_WIDGET_REALIZED(widget));
   gtk_widget_show(widget);
 
   if (!move.rects_valid)
     return;
 
-  GdkRectangle clip_rect = move.clip_rect.ToGdkRectangle();
-  GdkRegion* clip_region = gdk_region_rectangle(&clip_rect);
-  gfx::SubtractRectanglesFromRegion(clip_region, move.cutout_rects);
-  gdk_window_shape_combine_region(widget->window, clip_region, 0, 0);
-  gdk_region_destroy(clip_region);
+  // TODO(piman): if the widget hasn't been realized (e.g. the tab has been
+  // torn off and the parent gtk widget has been detached from the hierarchy),
+  // we lose the cutout information.
+  if (GTK_WIDGET_REALIZED(widget)) {
+    GdkRectangle clip_rect = move.clip_rect.ToGdkRectangle();
+    GdkRegion* clip_region = gdk_region_rectangle(&clip_rect);
+    gfx::SubtractRectanglesFromRegion(clip_region, move.cutout_rects);
+    gdk_window_shape_combine_region(widget->window, clip_region, 0, 0);
+    gdk_region_destroy(clip_region);
+  }
 
   // Update the window position.  Resizing is handled by WebPluginDelegate.
   // TODO(deanm): Verify that we only need to move and not resize.
