@@ -20,7 +20,6 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/dom_view.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -29,7 +28,6 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
-#include "views/layout_manager.h"
 #include "views/standard_layout.h"
 
 namespace {
@@ -49,19 +47,6 @@ enum kLayoutColumnsets {
   SINGLE_CONTROL_WITH_SHIFT_ROW,
   SINGLE_LINK_WITH_SHIFT_ROW,
   LAST_ROW
-};
-
-// A simple LayoutManager that causes the associated view's one child to be
-// sized to match the bounds of its parent except the bounds, if set.
-struct FillLayoutWithBorder : public views::LayoutManager {
-  // Overridden from LayoutManager:
-  virtual void Layout(views::View* host) {
-    DCHECK(host->GetChildViewCount());
-    host->GetChildViewAt(0)->SetBounds(host->GetLocalBounds(false));
-  }
-  virtual gfx::Size GetPreferredSize(views::View* host) {
-    return gfx::Size(host->width(), host->height());
-  }
 };
 
 }  // namespace
@@ -132,24 +117,14 @@ void EulaView::Init() {
   static const int kPadding = kBorderSize + kMargin;
   layout->AddPaddingRow(0, kPadding);
   layout->StartRow(0, SINGLE_CONTROL_ROW);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font label_font =
-      rb.GetFont(ResourceBundle::MediumFont).DeriveFont(0, gfx::Font::NORMAL);
-  google_eula_label_ = new views::Label(std::wstring(), label_font);
+  google_eula_label_ = new views::Label();
   layout->AddView(google_eula_label_, 1, 1,
                   views::GridLayout::LEADING, views::GridLayout::FILL);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
   layout->StartRow(1, SINGLE_CONTROL_ROW);
-  views::View* box_view = new views::View();
-  box_view->set_border(views::Border::CreateSolidBorder(1, SK_ColorBLACK));
-  box_view->SetLayoutManager(new FillLayoutWithBorder());
-  layout->AddView(box_view);
-
   google_eula_view_ = new DOMView();
-  box_view->AddChildView(google_eula_view_);
+  layout->AddView(google_eula_view_);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, SINGLE_CONTROL_WITH_SHIFT_ROW);
   usage_statistics_checkbox_ = new views::Checkbox();
   usage_statistics_checkbox_->SetMultiLine(true);
@@ -164,21 +139,15 @@ void EulaView::Init() {
 
   layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, SINGLE_CONTROL_ROW);
-  oem_eula_label_ = new views::Label(std::wstring(), label_font);
+  oem_eula_label_ = new views::Label();
   layout->AddView(oem_eula_label_, 1, 1,
                   views::GridLayout::LEADING, views::GridLayout::FILL);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
   layout->StartRow(1, SINGLE_CONTROL_ROW);
-  box_view = new views::View();
-  box_view->set_border(views::Border::CreateSolidBorder(1, SK_ColorBLACK));
-  box_view->SetLayoutManager(new FillLayoutWithBorder());
-  layout->AddView(box_view);
-
   oem_eula_view_ = new DOMView();
-  box_view->AddChildView(oem_eula_view_);
+  layout->AddView(oem_eula_view_);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, LAST_ROW);
   system_security_settings_link_ = new views::Link();
   system_security_settings_link_->SetController(this);
@@ -203,6 +172,7 @@ void EulaView::LoadEulaView(DOMView* eula_view,
                   SiteInstance::CreateSiteInstanceForURL(profile, eula_url));
   eula_view->LoadURL(eula_url);
   eula_view->tab_contents()->set_delegate(this);
+  eula_label->SetText(UTF16ToWide(eula_view->tab_contents()->GetTitle()));
 }
 
 void EulaView::UpdateLocalizedStrings() {
@@ -213,18 +183,13 @@ void EulaView::UpdateLocalizedStrings() {
   const StartupCustomizationDocument *customization =
       WizardController::default_controller()->GetCustomization();
   if (customization) {
-    const FilePath eula_page_path = customization->GetEULAPagePath(
-        g_browser_process->GetApplicationLocale());
-    if (!eula_page_path.empty()) {
-      const std::string page_path = std::string(chrome::kFileScheme) +
-          chrome::kStandardSchemeSeparator + eula_page_path.value();
-      LoadEulaView(oem_eula_view_, oem_eula_label_, GURL(page_path));
-    } else {
-      LOG(ERROR) << "No eula found for locale: "
-                 << g_browser_process->GetApplicationLocale();
+    const StartupCustomizationDocument::SetupContent *setup_content =
+        customization->GetSetupContent(
+            g_browser_process->GetApplicationLocale());
+    if (setup_content) {
+      LoadEulaView(oem_eula_view_, oem_eula_label_,
+                   GURL(setup_content->eula_page_path));
     }
-  } else {
-    LOG(ERROR) << "No manifest found.";
   }
 
   // Load other labels from resources.
@@ -267,31 +232,6 @@ void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
 
 void EulaView::LinkActivated(views::Link* source, int event_flags) {
   // TODO(glotov): handle link clicks.
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// TabContentsDelegate implementation:
-
-// Convenience function. Queries |eula_view| for HTML title and, if it
-// is ready, assigns it to |eula_label| and returns true so the caller
-// view calls Layout().
-static bool PublishTitleIfReady(const TabContents* contents,
-                                DOMView* eula_view,
-                                views::Label* eula_label) {
-  if (contents != eula_view->tab_contents())
-    return false;
-  eula_label->SetText(UTF16ToWide(eula_view->tab_contents()->GetTitle()));
-  return true;
-}
-
-void EulaView::NavigationStateChanged(const TabContents* contents,
-                                      unsigned changed_flags) {
-  if (changed_flags & TabContents::INVALIDATE_TITLE) {
-    if (PublishTitleIfReady(contents, google_eula_view_, google_eula_label_) ||
-        PublishTitleIfReady(contents, oem_eula_view_, oem_eula_label_)) {
-      Layout();
-    }
-  }
 }
 
 }  // namespace chromeos
