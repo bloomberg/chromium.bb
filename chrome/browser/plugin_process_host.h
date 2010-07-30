@@ -46,7 +46,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
 
   // Initialize the new plugin process, returning true on success. This must
   // be called before the object can be used.
-  bool Init(const WebPluginInfo& info, const std::wstring& locale);
+  bool Init(const WebPluginInfo& info, const std::string& locale);
 
   // Force the plugin process to shutdown (cleanly).
   void ForceShutdown();

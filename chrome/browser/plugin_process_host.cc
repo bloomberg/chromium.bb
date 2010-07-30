@@ -339,7 +339,7 @@ PluginProcessHost::~PluginProcessHost() {
 }
 
 bool PluginProcessHost::Init(const WebPluginInfo& info,
-                             const std::wstring& locale) {
+                             const std::string& locale) {
   info_ = info;
   set_name(UTF16ToWideHack(info_.name));
   set_version(UTF16ToWideHack(info_.version));
@@ -402,7 +402,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   if (!locale.empty()) {
     // Pass on the locale so the null plugin will use the right language in the
     // prompt to install the desired plugin.
-    cmd_line->AppendSwitchWithValue(switches::kLang, locale);
+    cmd_line->AppendSwitchASCII(switches::kLang, locale);
   }
 
   // Gears requires the data dir to be available on startup.

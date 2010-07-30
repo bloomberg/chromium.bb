@@ -61,7 +61,7 @@ class PluginService
   const FilePath& GetChromePluginDataDir();
 
   // Gets the browser's UI locale.
-  const std::wstring& GetUILocale();
+  const std::string& GetUILocale();
 
   // Returns the plugin process host corresponding to the plugin process that
   // has been started by this service. Returns NULL if no process has been
@@ -135,7 +135,7 @@ class PluginService
   FilePath chrome_plugin_data_dir_;
 
   // The browser's UI locale.
-  const std::wstring ui_locale_;
+  const std::string ui_locale_;
 
   // Map of plugin paths to the origin they are restricted to.  Used for
   // extension-only plugins.

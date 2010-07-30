@@ -79,7 +79,7 @@ void PluginService::EnableChromePlugins(bool enable) {
 PluginService::PluginService()
     : main_message_loop_(MessageLoop::current()),
       resource_dispatcher_host_(NULL),
-      ui_locale_(ASCIIToWide(g_browser_process->GetApplicationLocale())) {
+      ui_locale_(g_browser_process->GetApplicationLocale()) {
   RegisterPepperPlugins();
 
   // Have the NPAPI plugin list search for Chrome plugins as well.
@@ -173,7 +173,7 @@ const FilePath& PluginService::GetChromePluginDataDir() {
   return chrome_plugin_data_dir_;
 }
 
-const std::wstring& PluginService::GetUILocale() {
+const std::string& PluginService::GetUILocale() {
   return ui_locale_;
 }
 
