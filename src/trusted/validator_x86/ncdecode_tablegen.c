@@ -46,7 +46,7 @@ typedef struct NaClMrmInst {
 /* Note: in general all errors in this module will be fatal.
  * To debug: use gdb or your favorite debugger.
  */
-static void NaClFatal(const char* s) {
+void NaClFatal(const char* s) {
   fprintf(stderr, "%s\n", s);
   fprintf(stderr, "fatal error, cannot recover\n");
   exit(-1);
@@ -170,6 +170,10 @@ void NaClDefDefaultInstPrefix(const NaClInstPrefix prefix) {
 
 void NaClResetToDefaultInstPrefix() {
   NaClDefInstPrefix(default_opcode_prefix);
+}
+
+NaClInst* NaClGetDefInst() {
+  return current_inst;
 }
 
 /* Check that the given operand is an extention of the opcode
@@ -712,6 +716,17 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
     NaClApplySanityChecksToOp(operand_index);
   } else {
     NaClFatalOp((int) operand_index, "NaClAddOpFlags: index out of range\n");
+  }
+}
+
+void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
+  DEBUG(printf("Removing flags:");
+        NaClPrintlnOpFlags(more_flags));
+  if (operand_index <= current_inst->num_operands) {
+    current_inst->operands[operand_index].flags &= ~more_flags;
+    NaClApplySanityChecksToOp(operand_index);
+  } else {
+    NaClFatalOp((int) operand_index, "NaClRemoveOpFlags: index out of range\n");
   }
 }
 

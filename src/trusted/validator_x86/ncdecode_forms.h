@@ -27,13 +27,23 @@
  *
  *     OP Dest
  *
+ * Note: Most instruction defines an OpDest flag. This flag is associated with
+ * the first (visible) operand of the instruction, corresponding to the
+ * Dest argument. A few instructions (such as compare and exchange operations)
+ * define both the source and the destinations with the flag OpDest. Compare's
+ * do this because the operations an commutative (meaning that operands can
+ * be listed in any order). Exchange operations change the value of both
+ * arguments, and therefore have multiple destinations.
+ *
+ * The current use of operand flag OpDest is to define what operands can
+ * be locked, when the lock prefix is used.
+ *
  * Reading the text associated with each instruction, one should be able to
  * categorize (most) instructions, into one of the following:
  */
 typedef enum NaClInstCat {
   /* The following are for categorizing operands with a single operand. */
   UnarySet,    /* The value of Dest is set to a predetermined value. */
-  UnaryUse,    /* The value of Dest is not modified. */
   UnaryUpdate, /* Dest := f(Dest) for some f. */
   /* The following are for categorizing operations with 2 or more operands. */
   Move,       /* Dest := f(Source) for some f. */
@@ -44,7 +54,21 @@ typedef enum NaClInstCat {
   Exchange,   /* Dest := f(Dest, Source) for some f, and
                  Source := g(Dest, Source) for some g.
               */
+  Push,       /* Implicit first (stack) argument is updated, and the
+               * value of the Dest is not modified.
+               */
+  Pop,        /* Implicit first (stack) argument is updated, and
+               * dest := f() for some f (i.e. f gets the value on
+               * top of the stack).
+               */
+  Jump,       /* Implicit first (IP) argument is updated to the
+               * value of the Dest argument.
+               */
+  Uses,       /* All arguments are uses. */
 } NaClInstCat;
+
+/* Returns the name for the given enumerated value. */
+const char* NaClInstCatName(NaClInstCat cat);
 
 /* Returns the operand flags for the destination argument of the instruction,
  * given the category of instruction.
@@ -56,10 +80,10 @@ NaClOpFlags NaClGetDestFlags(NaClInstCat icat);
  */
 NaClOpFlags NaClGetSourceFlags(NaClInstCat icat);
 
-/* Returns the operand flags for the operand with the given index (one-based)
- * of the instruction, given the category of the instruction.
+/* Adds OpSet/OpUse/OpDest flags to operands to the current instruction,
+ * based on the given instruction categorization.
  */
-NaClOpFlags NaClGetIcatFlags(NaClInstCat icat, int operand_index);
+void NaClSetInstCat(NaClInstCat icat);
 
 /*
  * Operands are encoded using up to 3 characters. Each character defines

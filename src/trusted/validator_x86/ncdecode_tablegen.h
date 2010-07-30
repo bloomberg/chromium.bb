@@ -12,6 +12,9 @@
 
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 
+/* Report the given fatal error, and then quit. */
+void NaClFatal(const char* s) NORETURN;
+
 /* Possible run modes for instructions. */
 typedef enum {
   X86_32,       /* Model x86-32 bit instructions. */
@@ -117,6 +120,13 @@ void NaClDefInst(
     NaClIFlags flags,
     const NaClMnemonic name);
 
+/* Returns the current instruction being defined.
+ * ***WARNING***: If you call any function within this header file
+ * that modifies the current instruction will invalidate the contents
+ * returned by this function.
+ */
+NaClInst* NaClGetDefInst();
+
 /* Defines a specific sequence of byte codes for which the next NaClDefInst
  * should apply. When specified, restricts the match to be only defined for
  * that specific sequence of characters.
@@ -143,6 +153,10 @@ void NaClDefOp(NaClOpKind kind, NaClOpFlags flags);
  */
 void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags);
 
+/* Removes operand flags from the indexed operand of the current
+ * instruction being processed (index is 0 based).
+ */
+void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags flags);
 
 /* Defines one byte opcodes. */
 void NaClDefOneByteInsts();

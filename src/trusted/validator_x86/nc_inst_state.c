@@ -634,15 +634,23 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
     if (state->inst->flags & NACL_IFLAG(OpcodeLockable)) {
       /* Only allow if all destination operands are memory stores. */
       uint32_t i;
+      Bool has_lockable_dest = FALSE;
       NaClExpVector* vector = NaClInstStateExpVector(state);
+      DEBUG(printf("checking if lock valid on:\n");
+            NaClExpVectorPrint(stdout, vector));
       for (i = 0; i < vector->number_expr_nodes; ++i) {
         NaClExp* node = &vector->node[i];
+        DEBUG(printf("  checking node %d\n", i));
         if ((NACL_EMPTY_EFLAGS != (node->flags & NACL_EFLAG(ExprDest))) &&
-            (node->kind != ExprMemOffset)) {
-          DEBUG(printf("Instruction doesn't allow lock prefix "
-                       "on non-memory destination"));
-          return FALSE;
+            (node->kind == ExprMemOffset)) {
+          has_lockable_dest = TRUE;
+          break;
         }
+      }
+      if (!has_lockable_dest) {
+        DEBUG(printf("Instruction doesn't allow lock prefix "
+                     "on non-memory destination"));
+        return FALSE;
       }
     } else {
       DEBUG(printf("Instruction doesn't allow lock prefix\n"));
