@@ -5,6 +5,7 @@
 #include "net/base/listen_socket_unittest.h"
 
 #include <fcntl.h>
+#include <sys/types.h>
 
 #include "base/eintr_wrapper.h"
 #include "net/base/net_util.h"
@@ -13,31 +14,16 @@
 const int ListenSocketTester::kTestPort = 9999;
 
 static const int kReadBufSize = 1024;
-static const char* kHelloWorld = "HELLO, WORLD";
+static const char kHelloWorld[] = "HELLO, WORLD";
 static const int kMaxQueueSize = 20;
-static const char* kLoopback = "127.0.0.1";
+static const char kLoopback[] = "127.0.0.1";
 static const int kDefaultTimeoutMs = 5000;
-#if defined(OS_POSIX)
-static const char* kSemaphoreName = "chromium.listen_socket";
-#endif
-
 
 ListenSocket* ListenSocketTester::DoListen() {
   return ListenSocket::Listen(kLoopback, kTestPort, this);
 }
 
 void ListenSocketTester::SetUp() {
-#if defined(OS_WIN)
-  InitializeCriticalSection(&lock_);
-  semaphore_ = CreateSemaphore(NULL, 0, kMaxQueueSize, NULL);
-  server_ = NULL;
-  net::EnsureWinsockInit();
-#elif defined(OS_POSIX)
-  ASSERT_EQ(0, pthread_mutex_init(&lock_, NULL));
-  sem_unlink(kSemaphoreName);
-  semaphore_ = sem_open(kSemaphoreName, O_CREAT, 0, 0);
-  ASSERT_NE(SEM_FAILED, semaphore_);
-#endif
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   thread_.reset(new base::Thread("socketio_test"));
@@ -48,7 +34,7 @@ void ListenSocketTester::SetUp() {
       this, &ListenSocketTester::Listen));
 
   // verify Listen succeeded
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  NextAction();
   ASSERT_FALSE(server_ == NULL);
   ASSERT_EQ(ACTION_LISTEN, last_action_.type());
 
@@ -59,124 +45,55 @@ void ListenSocketTester::SetUp() {
   client.sin_family = AF_INET;
   client.sin_addr.s_addr = inet_addr(kLoopback);
   client.sin_port = htons(kTestPort);
-  int ret =
-      HANDLE_EINTR(connect(test_socket_, reinterpret_cast<sockaddr*>(&client),
-                           sizeof(client)));
+  int ret = HANDLE_EINTR(
+      connect(test_socket_, reinterpret_cast<sockaddr*>(&client),
+              sizeof(client)));
   ASSERT_NE(ret, SOCKET_ERROR);
 
-  net::SetNonBlocking(test_socket_);
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  NextAction();
   ASSERT_EQ(ACTION_ACCEPT, last_action_.type());
 }
 
 void ListenSocketTester::TearDown() {
-  // verify close
 #if defined(OS_WIN)
-  closesocket(test_socket_);
+  ASSERT_EQ(0, closesocket(test_socket_));
 #elif defined(OS_POSIX)
-  close(test_socket_);
+  ASSERT_EQ(0, HANDLE_EINTR(close(test_socket_)));
 #endif
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  NextAction();
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());
 
   loop_->PostTask(FROM_HERE, NewRunnableMethod(
       this, &ListenSocketTester::Shutdown));
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  NextAction();
   ASSERT_EQ(ACTION_SHUTDOWN, last_action_.type());
-
-#if defined(OS_WIN)
-  CloseHandle(semaphore_);
-  semaphore_ = 0;
-  DeleteCriticalSection(&lock_);
-#elif defined(OS_POSIX)
-  ASSERT_EQ(0, pthread_mutex_lock(&lock_));
-  semaphore_ = NULL;
-  ASSERT_EQ(0, pthread_mutex_unlock(&lock_));
-  ASSERT_EQ(0, sem_unlink(kSemaphoreName));
-  ASSERT_EQ(0, pthread_mutex_destroy(&lock_));
-#endif
 
   thread_.reset();
   loop_ = NULL;
 }
 
 void ListenSocketTester::ReportAction(const ListenSocketTestAction& action) {
-#if defined(OS_WIN)
-  EnterCriticalSection(&lock_);
+  AutoLock locked(lock_);
   queue_.push_back(action);
-  LeaveCriticalSection(&lock_);
-  ReleaseSemaphore(semaphore_, 1, NULL);
-#elif defined(OS_POSIX)
-  ASSERT_EQ(0, pthread_mutex_lock(&lock_));
-  queue_.push_back(action);
-  ASSERT_EQ(0, pthread_mutex_unlock(&lock_));
-  ASSERT_EQ(0, sem_post(semaphore_));
-#endif
+  cv_.Broadcast();
 }
 
-bool ListenSocketTester::NextAction(int timeout) {
-#if defined(OS_WIN)
-  DWORD ret = ::WaitForSingleObject(semaphore_, timeout);
-  if (ret != WAIT_OBJECT_0)
-    return false;
-  EnterCriticalSection(&lock_);
-  if (queue_.size() == 0) {
-    LeaveCriticalSection(&lock_);
-    return false;
-  }
+void ListenSocketTester::NextAction() {
+  AutoLock locked(lock_);
+  while (queue_.empty())
+    cv_.Wait();
   last_action_ = queue_.front();
   queue_.pop_front();
-  LeaveCriticalSection(&lock_);
-  return true;
-#elif defined(OS_POSIX)
-  if (semaphore_ == SEM_FAILED)
-    return false;
-  while (true) {
-    int result = sem_trywait(semaphore_);
-    PlatformThread::Sleep(1);  // 1MS sleep
-    timeout--;
-    if (timeout <= 0)
-      return false;
-    if (result == 0)
-      break;
-  }
-  pthread_mutex_lock(&lock_);
-  if (queue_.size() == 0) {
-    pthread_mutex_unlock(&lock_);
-    return false;
-  }
-  last_action_ = queue_.front();
-  queue_.pop_front();
-  pthread_mutex_unlock(&lock_);
-  return true;
-#endif
 }
 
 int ListenSocketTester::ClearTestSocket() {
   char buf[kReadBufSize];
   int len_ret = 0;
-  int time_out = 0;
   do {
     int len = HANDLE_EINTR(recv(test_socket_, buf, kReadBufSize, 0));
-#if defined(OS_WIN)
-    if (len == SOCKET_ERROR) {
-      int err = WSAGetLastError();
-      if (err == WSAEWOULDBLOCK) {
-#elif defined(OS_POSIX)
-    if (len == SOCKET_ERROR) {
-      if (errno == EWOULDBLOCK || errno == EAGAIN) {
-#endif
-        PlatformThread::Sleep(1);
-        time_out++;
-        if (time_out > 10)
-          break;
-        continue;  // still trying
-      }
-    } else if (len == 0) {
-      // socket closed
+    if (len == SOCKET_ERROR || len == 0) {
       break;
     } else {
-      time_out = 0;
       len_ret += len;
     }
   } while (true);
@@ -236,30 +153,30 @@ bool ListenSocketTester::Send(SOCKET sock, const std::string& str) {
 
 void ListenSocketTester::TestClientSend() {
   ASSERT_TRUE(Send(test_socket_, kHelloWorld));
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  NextAction();
   ASSERT_EQ(ACTION_READ, last_action_.type());
   ASSERT_EQ(last_action_.data(), kHelloWorld);
 }
 
 void ListenSocketTester::TestClientSendLong() {
-  int hello_len = strlen(kHelloWorld);
+  size_t hello_len = strlen(kHelloWorld);
   std::string long_string;
-  int long_len = 0;
+  size_t long_len = 0;
   for (int i = 0; i < 200; i++) {
     long_string += kHelloWorld;
     long_len += hello_len;
   }
   ASSERT_TRUE(Send(test_socket_, long_string));
-  int read_len = 0;
+  size_t read_len = 0;
   while (read_len < long_len) {
-    ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+    NextAction();
     ASSERT_EQ(ACTION_READ, last_action_.type());
     std::string last_data = last_action_.data();
     size_t len = last_data.length();
     if (long_string.compare(read_len, len, last_data)) {
       ASSERT_EQ(long_string.compare(read_len, len, last_data), 0);
     }
-    read_len += static_cast<int>(last_data.length());
+    read_len += last_data.length();
   }
   ASSERT_EQ(read_len, long_len);
 }
@@ -267,24 +184,18 @@ void ListenSocketTester::TestClientSendLong() {
 void ListenSocketTester::TestServerSend() {
   loop_->PostTask(FROM_HERE, NewRunnableMethod(
       this, &ListenSocketTester::SendFromTester));
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  NextAction();
   ASSERT_EQ(ACTION_SEND, last_action_.type());
-  // TODO(erikkay): Without this sleep, the recv seems to fail a small amount
-  // of the time.  I could fix this by making the socket blocking, but then
-  // this test might hang in the case of errors.  It would be nice to do
-  // something that felt more reliable here.
-  PlatformThread::Sleep(10);  // sleep for 10ms
   const int buf_len = 200;
   char buf[buf_len+1];
-  int recv_len;
-  do {
-    recv_len = HANDLE_EINTR(recv(test_socket_, buf, buf_len, 0));
-#if defined(OS_POSIX)
-  } while (recv_len == SOCKET_ERROR && errno == EINTR);
-#else
-  } while (false);
-#endif
-  ASSERT_NE(recv_len, SOCKET_ERROR);
+  unsigned recv_len = 0;
+  while (recv_len < strlen(kHelloWorld)) {
+    int r = HANDLE_EINTR(recv(test_socket_, buf, buf_len, 0));
+    ASSERT_GE(r, 0);
+    recv_len += static_cast<unsigned>(r);
+    if (!r)
+      break;
+  }
   buf[recv_len] = 0;
   ASSERT_STREQ(buf, kHelloWorld);
 }
@@ -319,8 +230,6 @@ TEST_F(ListenSocketTest, ClientSendLong) {
   tester_->TestClientSendLong();
 }
 
-// This test is flaky; see comment in ::TestServerSend.
-// http://code.google.com/p/chromium/issues/detail?id=48562
-TEST_F(ListenSocketTest, FLAKY_ServerSend) {
+TEST_F(ListenSocketTest, ServerSend) {
   tester_->TestServerSend();
 }

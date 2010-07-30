@@ -13,18 +13,18 @@
 #elif defined(OS_POSIX)
 #include <sys/socket.h>
 #include <errno.h>
-#include <semaphore.h>
 #include <arpa/inet.h>
 #endif
 
-#include "base/scoped_ptr.h"
-#include "base/thread.h"
 #include "base/basictypes.h"
+#include "base/condition_variable.h"
+#include "base/lock.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "net/base/net_util.h"
 #include "net/base/listen_socket.h"
+#include "net/base/net_util.h"
 #include "net/base/winsock_init.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,14 +80,15 @@ class ListenSocketTester :
       : thread_(NULL),
         loop_(NULL),
         server_(NULL),
-        connection_(NULL){
+        connection_(NULL),
+        cv_(&lock_) {
   }
 
   virtual void SetUp();
   virtual void TearDown();
 
   void ReportAction(const ListenSocketTestAction& action);
-  bool NextAction(int timeout);
+  void NextAction();
 
   // read all pending data from the test socket
   int ClearTestSocket();
@@ -106,22 +107,18 @@ class ListenSocketTester :
   // verify a send/read from server to client
   void TestServerSend();
 
-#if defined(OS_WIN)
-  CRITICAL_SECTION lock_;
-  HANDLE semaphore_;
-#elif defined(OS_POSIX)
-  pthread_mutex_t lock_;
-  sem_t* semaphore_;
-#endif
-
   scoped_ptr<base::Thread> thread_;
   MessageLoopForIO* loop_;
   ListenSocket* server_;
   ListenSocket* connection_;
   ListenSocketTestAction last_action_;
-  std::deque<ListenSocketTestAction> queue_;
+
   SOCKET test_socket_;
   static const int kTestPort;
+
+  Lock lock_;  // protects |queue_| and wraps |cv_|
+  ConditionVariable cv_;
+  std::deque<ListenSocketTestAction> queue_;
 };
 
 #endif  // NET_BASE_LISTEN_SOCKET_UNITTEST_H_
