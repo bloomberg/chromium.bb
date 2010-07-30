@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class DictionaryValue;
 class ListValue;
-class FilePath;
 
 namespace chromeos {
 
@@ -36,6 +36,7 @@ class CustomizationDocument {
   // Parses manifest's attributes from the JSON dictionary value.
   virtual bool ParseFromJsonValue(const DictionaryValue* root);
 
+ private:
   // Manifest version string.
   std::string version_;
 
@@ -46,6 +47,22 @@ class CustomizationDocument {
 
 class StartupCustomizationDocument : public CustomizationDocument {
  public:
+  StartupCustomizationDocument() {}
+
+  virtual bool LoadManifestFromFile(const FilePath& manifest_path);
+
+  const std::string& product_sku() const { return product_sku_; }
+  const std::string& initial_locale() const { return initial_locale_; }
+  const std::string& initial_timezone() const { return initial_timezone_; }
+  SkColor background_color() const { return background_color_; }
+  const std::string& registration_url() const { return registration_url_; }
+
+  // Returns full path to the specified resource in the specified
+  // locale. If the locale is not found in manifest, empty path is returned.
+  FilePath GetHelpPagePath(const std::string& locale) const;
+  FilePath GetEULAPagePath(const std::string& locale) const;
+
+ private:
   struct SetupContent {
     SetupContent() {}
     SetupContent(const std::string& help_page_path,
@@ -61,18 +78,9 @@ class StartupCustomizationDocument : public CustomizationDocument {
 
   typedef std::map<std::string, SetupContent> SetupContentMap;
 
-  StartupCustomizationDocument() {}
-
-  const std::string& product_sku() const { return product_sku_; }
-  const std::string& initial_locale() const { return initial_locale_; }
-  const std::string& initial_timezone() const { return initial_timezone_; }
-  SkColor background_color() const { return background_color_; }
-  const std::string& registration_url() const { return registration_url_; }
-
-  const SetupContent* GetSetupContent(const std::string& locale) const;
-
- protected:
   virtual bool ParseFromJsonValue(const DictionaryValue* root);
+  FilePath GetSetupContentPagePath(const std::string& locale,
+                                   std::string SetupContent::* page_path) const;
 
   // Product SKU.
   std::string product_sku_;
@@ -92,8 +100,20 @@ class StartupCustomizationDocument : public CustomizationDocument {
   // Setup content for different locales.
   SetupContentMap setup_content_;
 
+  // Copy of manifest full path.
+  FilePath manifest_path_;
+
   DISALLOW_COPY_AND_ASSIGN(StartupCustomizationDocument);
 };
+
+inline FilePath StartupCustomizationDocument::GetHelpPagePath(
+    const std::string& locale) const {
+  return GetSetupContentPagePath(locale, &SetupContent::help_page_path);
+}
+inline FilePath StartupCustomizationDocument::GetEULAPagePath(
+    const std::string& locale) const {
+  return GetSetupContentPagePath(locale, &SetupContent::eula_page_path);
+}
 
 // OEM services customization document class.
 
@@ -115,7 +135,7 @@ class ServicesCustomizationDocument : public CustomizationDocument {
   const StringList& web_apps() const { return web_apps_; }
   const StringList& extensions() const { return extensions_; }
 
- protected:
+ private:
   virtual bool ParseFromJsonValue(const DictionaryValue* root);
 
   bool ParseStringListFromJsonValue(const ListValue* list_value,

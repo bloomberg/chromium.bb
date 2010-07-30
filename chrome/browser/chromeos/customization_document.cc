@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -72,6 +71,16 @@ bool CustomizationDocument::ParseFromJsonValue(const DictionaryValue* root) {
 
 // StartupCustomizationDocument implementation.
 
+bool StartupCustomizationDocument::LoadManifestFromFile(
+    const FilePath& manifest_path) {
+  if (CustomizationDocument::LoadManifestFromFile(manifest_path)) {
+    manifest_path_ = manifest_path;
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool StartupCustomizationDocument::ParseFromJsonValue(
     const DictionaryValue* root) {
   if (!CustomizationDocument::ParseFromJsonValue(root))
@@ -128,14 +137,14 @@ bool StartupCustomizationDocument::ParseFromJsonValue(
   return true;
 }
 
-const StartupCustomizationDocument::SetupContent*
-    StartupCustomizationDocument::GetSetupContent(
-        const std::string& locale) const {
+FilePath StartupCustomizationDocument::GetSetupContentPagePath(
+    const std::string& locale, std::string SetupContent::* page_path) const {
   SetupContentMap::const_iterator content_iter = setup_content_.find(locale);
   if (content_iter != setup_content_.end()) {
-    return &content_iter->second;
+    return manifest_path_.DirName().Append(content_iter->second.*page_path);
+  } else {
+    return FilePath();
   }
-  return NULL;
 }
 
 // ServicesCustomizationDocument implementation.
