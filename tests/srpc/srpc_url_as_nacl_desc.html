@@ -241,7 +241,6 @@ function handleTestTimeout() {
         } else if (!testPassed) {
           return 'Generic test failure.';
         } else {
-          document.cookie = 'status=OK';
           return '';
         }
       }

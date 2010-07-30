@@ -319,10 +319,6 @@ var RunAllTests = function() {
     clearTimeout(testTimeoutHandler);
     testTimeoutHandler = 0;
   }
-  if (0 == failingCount) {
-    // All tests passed -- set the selenium magic to success here.
-    document.cookie = 'status=OK';
-  }
 }
 
 function HandleTestTimeout() {

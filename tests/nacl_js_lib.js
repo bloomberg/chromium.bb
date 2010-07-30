@@ -1,5 +1,6 @@
 // JavaScript Library for Nacl Tests and Demos
 
+
 function NaclLib(embed_name, status_id, num_retries) {
    this.embed_name_ = embed_name;
    this.statusfield_ = document.getElementById(status_id);
@@ -123,7 +124,9 @@ NaclLib.prototype.checkModuleReadiness = function() {
     }
 
     if (result == "") {
-      this.setStatusSuccess("");
+      this.setStatusSuccess("all tests passed");
+      // Set the magic Selenium variable to signal success.
+      document.cookie = 'status=OK';
     } else {
       this.setStatusError(result);
     }
