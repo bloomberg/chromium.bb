@@ -3686,3 +3686,11 @@
    fun:_ZN7Browser14ExecuteCommandEi
    fun:_ZN18AutomationProvider21ExecuteBrowserCommandEiiPN3IPC7MessageE
 }
+{
+   bug_50745
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackI19DownloadsDOMHandlerSt6vectorIP12DownloadItemSaIS3_EEEPN9Callback1IT0_E4TypeEPT_MSB_FvS7_E
+   fun:_ZN19DownloadsDOMHandler12ModelChangedEv
+   fun:_ZN15DownloadManager18NotifyModelChangedEv
+}
